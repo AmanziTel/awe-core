@@ -7,7 +7,9 @@ import junit.framework.Assert;
 import org.amanzi.neo.services.DataService.DatasetRelationTypes;
 import org.amanzi.neo.services.DataService.DatasetTypes;
 import org.amanzi.neo.services.DataService.DriveTypes;
-import org.amanzi.neo.services.exceptions.InvalidParameterException;
+import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
+import org.amanzi.neo.services.exceptions.DublicateDatasetException;
+import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
 import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
 import org.amanzi.testing.AbstractAWETest;
 import org.junit.After;
@@ -44,7 +46,6 @@ public class DataServiceTest extends AbstractAWETest {
 
 	@Before
 	public final void before() {
-		tx = graphDatabaseService.beginTx();
 		service = new DataService(graphDatabaseService);
 		initProjectNode();
 	}
@@ -52,9 +53,7 @@ public class DataServiceTest extends AbstractAWETest {
 	@After
 	public final void after() {
 		deleteProjectNode();
-		tx.failure();
-		tx.finish();
-		tx = null;
+
 	}
 
 	/**
@@ -88,10 +87,17 @@ public class DataServiceTest extends AbstractAWETest {
 	 * create Project node in database
 	 */
 	private void initProjectNode() {
-		projectNode = graphDatabaseService.createNode();
-		graphDatabaseService.getReferenceNode().createRelationshipTo(
-				projectNode, DatasetRelationTypes.PROJECT);
-		projectNode.setProperty(DataService.NAME, "project");
+		tx = graphDatabaseService.beginTx();
+		try {
+			projectNode = graphDatabaseService.createNode();
+			graphDatabaseService.getReferenceNode().createRelationshipTo(
+					projectNode, DatasetRelationTypes.PROJECT);
+			projectNode.setProperty(DataService.NAME, "project");
+			tx.success();
+		} finally {
+			tx.finish();
+			tx = null;
+		}
 	}
 
 	/**
@@ -104,10 +110,20 @@ public class DataServiceTest extends AbstractAWETest {
 	 */
 	private Node initDatasetNode(String name, DatasetTypes type,
 			DriveTypes driveType) {
-		Node datasetNode = graphDatabaseService.createNode();
-		projectNode.createRelationshipTo(datasetNode,
-				DatasetRelationTypes.DATASET);
-		setPropertyToDatasetNode(datasetNode, name, type, driveType);
+		Node datasetNode = null;
+		tx = graphDatabaseService.beginTx();
+		try {
+			datasetNode = graphDatabaseService.createNode();
+			projectNode.createRelationshipTo(datasetNode,
+					DatasetRelationTypes.DATASET);
+			setPropertyToDatasetNode(datasetNode, name, type, driveType);
+
+			tx.success();
+
+		} finally {
+			tx.finish();
+			tx = null;
+		}
 		return datasetNode;
 	}
 
@@ -115,37 +131,34 @@ public class DataServiceTest extends AbstractAWETest {
 	 * delete PROJECT relation
 	 */
 	private void deleteProjectNode() {
-		projectNode.getSingleRelationship(DatasetRelationTypes.PROJECT,
-				Direction.INCOMING).delete();
-	}
+		tx = graphDatabaseService.beginTx();
+		try {
+			projectNode.getSingleRelationship(DatasetRelationTypes.PROJECT,
+					Direction.INCOMING).delete();
+			tx.failure();
 
-	/**
-	 * get property of dataset node by key
-	 * 
-	 * @param key
-	 * @return Object value
-	 */
-	private Object getDatasetProperty(String key) {
-		return projectNode
-				.getSingleRelationship(DatasetRelationTypes.DATASET,
-						Direction.OUTGOING).getEndNode().getProperty(key);
+		} finally {
+
+			tx.finish();
+			tx = null;
+		}
 	}
 
 	/**
 	 * testing method findDataset(String name, DatasetTypes type, Node
 	 * projectNode) when this dataset exists
 	 * 
-	 * @throws InvalidParameterException
+	 * @throws InvalidDatasetParameterException
 	 * @throws DatasetTypeParameterException
 	 */
 	@Test
-	public void findDatasetTest() throws InvalidParameterException,
+	public void findDatasetTest() throws InvalidDatasetParameterException,
 			DatasetTypeParameterException {
 
 		Node datasetNode = initDatasetNode(NAME_1, DatasetTypes.NETWORK, null);
 
-		Node checkNode = service.findDataset(NAME_1, DatasetTypes.NETWORK,
-				projectNode);
+		Node checkNode = service.findDataset(projectNode, NAME_1,
+				DatasetTypes.NETWORK);
 
 		Assert.assertTrue("method findDataset() return wrong node",
 				datasetNode.equals(checkNode));
@@ -156,17 +169,17 @@ public class DataServiceTest extends AbstractAWETest {
 	 * testing method findDataset(String name, DatasetTypes type, Node
 	 * projectNode) when this dataset doesn't exist
 	 * 
-	 * @throws InvalidParameterException
+	 * @throws InvalidDatasetParameterException
 	 * @throws DatasetTypeParameterException
 	 */
 	@Test
-	public void findDatasetNullTest() throws InvalidParameterException,
+	public void findDatasetNullTest() throws InvalidDatasetParameterException,
 			DatasetTypeParameterException {
 
 		initDatasetNode(NAME_1, DatasetTypes.NETWORK, null);
 
-		Node checkNode = service.findDataset(NAME_2, DatasetTypes.NETWORK,
-				projectNode);
+		Node checkNode = service.findDataset(projectNode, NAME_2,
+				DatasetTypes.NETWORK);
 
 		Assert.assertNull("method findDataset() return wrong node", checkNode);
 
@@ -176,13 +189,14 @@ public class DataServiceTest extends AbstractAWETest {
 	 * testing method findDataset(String name, DatasetTypes type, Node
 	 * projectNode) when parameter name = null
 	 * 
-	 * @throws InvalidParameterException
+	 * @throws InvalidDatasetParameterException
 	 * @throws DatasetTypeParameterException
 	 */
-	@Test(expected = InvalidParameterException.class)
-	public void findDatasetExeptionNameTest() throws InvalidParameterException,
+	@Test(expected = InvalidDatasetParameterException.class)
+	public void findDatasetExeptionNameTest()
+			throws InvalidDatasetParameterException,
 			DatasetTypeParameterException {
-		service.findDataset(null, DatasetTypes.NETWORK, projectNode);
+		service.findDataset(projectNode, null, DatasetTypes.NETWORK);
 
 	}
 
@@ -190,13 +204,14 @@ public class DataServiceTest extends AbstractAWETest {
 	 * testing method findDataset(String name, DatasetTypes type, Node
 	 * projectNode) when parameter type = null
 	 * 
-	 * @throws InvalidParameterException
+	 * @throws InvalidDatasetParameterException
 	 * @throws DatasetTypeParameterException
 	 */
-	@Test(expected = InvalidParameterException.class)
-	public void findDatasetExeptionTypeTest() throws InvalidParameterException,
+	@Test(expected = InvalidDatasetParameterException.class)
+	public void findDatasetExeptionTypeTest()
+			throws InvalidDatasetParameterException,
 			DatasetTypeParameterException {
-		service.findDataset(NAME_1, null, projectNode);
+		service.findDataset(projectNode, NAME_1, null);
 
 	}
 
@@ -204,13 +219,14 @@ public class DataServiceTest extends AbstractAWETest {
 	 * testing method findDataset(String name, DatasetTypes type, Node
 	 * projectNode) when parameter projectNode = null
 	 * 
-	 * @throws InvalidParameterException
+	 * @throws InvalidDatasetParameterException
 	 * @throws DatasetTypeParameterException
 	 */
-	@Test(expected = InvalidParameterException.class)
+	@Test(expected = InvalidDatasetParameterException.class)
 	public void findDatasetExeptionProjectNodeTest()
-			throws InvalidParameterException, DatasetTypeParameterException {
-		service.findDataset(NAME_1, DatasetTypes.NETWORK, null);
+			throws InvalidDatasetParameterException,
+			DatasetTypeParameterException {
+		service.findDataset(null, NAME_1, DatasetTypes.NETWORK);
 
 	}
 
@@ -218,13 +234,14 @@ public class DataServiceTest extends AbstractAWETest {
 	 * testing method findDataset(String name, DatasetTypes type, Node
 	 * projectNode) when parameter name = ""
 	 * 
-	 * @throws InvalidParameterException
+	 * @throws InvalidDatasetParameterException
 	 * @throws DatasetTypeParameterException
 	 */
-	@Test(expected = InvalidParameterException.class)
+	@Test(expected = InvalidDatasetParameterException.class)
 	public void findDatasetExeptionEmptyNameTest()
-			throws InvalidParameterException, DatasetTypeParameterException {
-		service.findDataset("", DatasetTypes.NETWORK, projectNode);
+			throws InvalidDatasetParameterException,
+			DatasetTypeParameterException {
+		service.findDataset(projectNode, "", DatasetTypes.NETWORK);
 
 	}
 
@@ -233,12 +250,13 @@ public class DataServiceTest extends AbstractAWETest {
 	 * projectNode) when parameter type != NETWORK
 	 * 
 	 * @throws DatasetTypeParameterException
-	 * @throws InvalidParameterException
+	 * @throws InvalidDatasetParameterException
 	 */
 	@Test(expected = DatasetTypeParameterException.class)
-	public void findDatasetNetworkTest() throws InvalidParameterException,
+	public void findDatasetNetworkTest()
+			throws InvalidDatasetParameterException,
 			DatasetTypeParameterException {
-		service.findDataset(NAME_1, DatasetTypes.OTHER, projectNode);
+		service.findDataset(projectNode, NAME_1, DatasetTypes.DRIVE);
 
 	}
 
@@ -247,17 +265,18 @@ public class DataServiceTest extends AbstractAWETest {
 	 * driveType, Node projectNode) when this dataset exists
 	 * 
 	 * @throws DatasetTypeParameterException
-	 * @throws InvalidParameterException
+	 * @throws InvalidDatasetParameterException
 	 */
 	@Test
 	public void findDatasetWithDriveTypeTest()
-			throws InvalidParameterException, DatasetTypeParameterException {
+			throws InvalidDatasetParameterException,
+			DatasetTypeParameterException {
 
-		Node datasetNode = initDatasetNode(NAME_1, DatasetTypes.OTHER,
-				DriveTypes.DRIVE_TYPE_1);
+		Node datasetNode = initDatasetNode(NAME_1, DatasetTypes.DRIVE,
+				DriveTypes.NEMO_V1);
 
-		Node checkNode = service.findDataset(NAME_1, DatasetTypes.OTHER,
-				DriveTypes.DRIVE_TYPE_1, projectNode);
+		Node checkNode = service.findDataset(projectNode, NAME_1,
+				DatasetTypes.DRIVE, DriveTypes.NEMO_V1);
 
 		Assert.assertTrue("method findDataset() return wrong node",
 				datasetNode.equals(checkNode));
@@ -269,14 +288,15 @@ public class DataServiceTest extends AbstractAWETest {
 	 * driveType, Node projectNode) when this dataset doesn't exist
 	 * 
 	 * @throws DatasetTypeParameterException
-	 * @throws InvalidParameterException
+	 * @throws InvalidDatasetParameterException
 	 */
 	@Test
 	public void findDatasetWithDriveTypeNullTest()
-			throws InvalidParameterException, DatasetTypeParameterException {
+			throws InvalidDatasetParameterException,
+			DatasetTypeParameterException {
 
-		Node checkNode = service.findDataset(NAME_2, DatasetTypes.OTHER,
-				DriveTypes.DRIVE_TYPE_1, projectNode);
+		Node checkNode = service.findDataset(projectNode, NAME_2,
+				DatasetTypes.DRIVE, DriveTypes.NEMO_V1);
 
 		Assert.assertNull("method findDataset() return wrong node", checkNode);
 
@@ -287,13 +307,14 @@ public class DataServiceTest extends AbstractAWETest {
 	 * driveType, Node projectNode) when parameter type = NETWORK
 	 * 
 	 * @throws DatasetTypeParameterException
-	 * @throws InvalidParameterException
+	 * @throws InvalidDatasetParameterException
 	 */
 	@Test(expected = DatasetTypeParameterException.class)
 	public void findDatasetWithDriveTypeNetworkTest()
-			throws InvalidParameterException, DatasetTypeParameterException {
-		service.findDataset(NAME_1, DatasetTypes.NETWORK,
-				DriveTypes.DRIVE_TYPE_1, projectNode);
+			throws InvalidDatasetParameterException,
+			DatasetTypeParameterException {
+		service.findDataset(projectNode, NAME_1, DatasetTypes.NETWORK,
+				DriveTypes.NEMO_V1);
 
 	}
 
@@ -302,13 +323,14 @@ public class DataServiceTest extends AbstractAWETest {
 	 * driveType, Node projectNode) when parameter name = null
 	 * 
 	 * @throws DatasetTypeParameterException
-	 * @throws InvalidParameterException
+	 * @throws InvalidDatasetParameterException
 	 */
-	@Test(expected = InvalidParameterException.class)
+	@Test(expected = InvalidDatasetParameterException.class)
 	public void findDatasetWithDriveTypeExeptionNameTest()
-			throws InvalidParameterException, DatasetTypeParameterException {
-		service.findDataset(null, DatasetTypes.OTHER, DriveTypes.DRIVE_TYPE_1,
-				projectNode);
+			throws InvalidDatasetParameterException,
+			DatasetTypeParameterException {
+		service.findDataset(projectNode, null, DatasetTypes.DRIVE,
+				DriveTypes.NEMO_V1);
 
 	}
 
@@ -317,12 +339,13 @@ public class DataServiceTest extends AbstractAWETest {
 	 * driveType, Node projectNode) when parameter type = null
 	 * 
 	 * @throws DatasetTypeParameterException
-	 * @throws InvalidParameterException
+	 * @throws InvalidDatasetParameterException
 	 */
-	@Test(expected = InvalidParameterException.class)
+	@Test(expected = InvalidDatasetParameterException.class)
 	public void findDatasetWithDriveTypeExeptionTypeTest()
-			throws InvalidParameterException, DatasetTypeParameterException {
-		service.findDataset(NAME_1, null, DriveTypes.DRIVE_TYPE_1, projectNode);
+			throws InvalidDatasetParameterException,
+			DatasetTypeParameterException {
+		service.findDataset(projectNode, NAME_1, null, DriveTypes.NEMO_V1);
 
 	}
 
@@ -331,12 +354,13 @@ public class DataServiceTest extends AbstractAWETest {
 	 * driveType, Node projectNode) when parameter driveType = null
 	 * 
 	 * @throws DatasetTypeParameterException
-	 * @throws InvalidParameterException
+	 * @throws InvalidDatasetParameterException
 	 */
-	@Test(expected = InvalidParameterException.class)
+	@Test(expected = InvalidDatasetParameterException.class)
 	public void findDatasetWithDriveTypeExeptionDriveTypeTest()
-			throws InvalidParameterException, DatasetTypeParameterException {
-		service.findDataset(NAME_1, DatasetTypes.OTHER, null, projectNode);
+			throws InvalidDatasetParameterException,
+			DatasetTypeParameterException {
+		service.findDataset(projectNode, NAME_1, DatasetTypes.DRIVE, null);
 
 	}
 
@@ -345,13 +369,14 @@ public class DataServiceTest extends AbstractAWETest {
 	 * driveType, Node projectNode) when parameter projectNode = null
 	 * 
 	 * @throws DatasetTypeParameterException
-	 * @throws InvalidParameterException
+	 * @throws InvalidDatasetParameterException
 	 */
-	@Test(expected = InvalidParameterException.class)
+	@Test(expected = InvalidDatasetParameterException.class)
 	public void findDatasetWithDriveTypeExeptionProjectNodeTest()
-			throws InvalidParameterException, DatasetTypeParameterException {
-		service.findDataset(NAME_1, DatasetTypes.OTHER,
-				DriveTypes.DRIVE_TYPE_1, null);
+			throws InvalidDatasetParameterException,
+			DatasetTypeParameterException {
+		service.findDataset(null, NAME_1, DatasetTypes.DRIVE,
+				DriveTypes.NEMO_V1);
 
 	}
 
@@ -360,13 +385,14 @@ public class DataServiceTest extends AbstractAWETest {
 	 * driveType, Node projectNode) when parameter name = ""
 	 * 
 	 * @throws DatasetTypeParameterException
-	 * @throws InvalidParameterException
+	 * @throws InvalidDatasetParameterException
 	 */
-	@Test(expected = InvalidParameterException.class)
+	@Test(expected = InvalidDatasetParameterException.class)
 	public void findDatasetWithDriveTypeExeptionEmptyNameTest()
-			throws InvalidParameterException, DatasetTypeParameterException {
-		service.findDataset("", DatasetTypes.OTHER, DriveTypes.DRIVE_TYPE_1,
-				projectNode);
+			throws InvalidDatasetParameterException,
+			DatasetTypeParameterException {
+		service.findDataset(projectNode, "", DatasetTypes.DRIVE,
+				DriveTypes.NEMO_V1);
 
 	}
 
@@ -374,15 +400,17 @@ public class DataServiceTest extends AbstractAWETest {
 	 * testing method createDataset(String name, DatasetTypes type, DriveType
 	 * driveType, Node projectNode) when all parameter != null
 	 * 
-	 * @throws InvalidParameterException
+	 * @throws InvalidDatasetParameterException
 	 * @throws DatasetTypeParameterException
+	 * @throws DublicateDatasetException 
 	 */
 	@Test
 	public void createDatasetWithDriveTypeTest()
-			throws InvalidParameterException, DatasetTypeParameterException {
+			throws InvalidDatasetParameterException,
+			DatasetTypeParameterException, DublicateDatasetException {
 
-		Node actualDataset = service.createDataset(NAME_1, DatasetTypes.OTHER,
-				DriveTypes.DRIVE_TYPE_1, projectNode);
+		Node actualDataset = service.createDataset(projectNode, NAME_1,
+				DatasetTypes.DRIVE, DriveTypes.NEMO_V1);
 
 		boolean hasRelation = actualDataset.hasRelationship(
 				DatasetRelationTypes.DATASET, Direction.INCOMING);
@@ -395,26 +423,28 @@ public class DataServiceTest extends AbstractAWETest {
 		String actualType = (String) actualDataset
 				.getProperty(DataService.TYPE);
 		Assert.assertEquals("dataset has wrong type",
-				DatasetTypes.OTHER.name(), actualType);
+				DatasetTypes.DRIVE.name(), actualType);
 
 		String actualDriveType = (String) actualDataset
 				.getProperty(DataService.DRIVE_TYPE);
 		Assert.assertEquals("dataset has wrong driveType",
-				DriveTypes.DRIVE_TYPE_1.name(), actualDriveType);
+				DriveTypes.NEMO_V1.name(), actualDriveType);
 	}
 
 	/**
 	 * testing method createDataset(String name, DatasetTypes type, DriveType
 	 * driveType, Node projectNode) when parameter name = null
 	 * 
-	 * @throws InvalidParameterException
+	 * @throws InvalidDatasetParameterException
 	 * @throws DatasetTypeParameterException
+	 * @throws DublicateDatasetException 
 	 */
-	@Test(expected = InvalidParameterException.class)
+	@Test(expected = InvalidDatasetParameterException.class)
 	public void createDatasetWithDriveTypeExeptionNameTest()
-			throws InvalidParameterException, DatasetTypeParameterException {
-		service.createDataset(null, DatasetTypes.NETWORK,
-				DriveTypes.DRIVE_TYPE_1, projectNode);
+			throws InvalidDatasetParameterException,
+			DatasetTypeParameterException, DublicateDatasetException {
+		service.createDataset(projectNode, null, DatasetTypes.NETWORK,
+				DriveTypes.NEMO_V1);
 
 	}
 
@@ -423,12 +453,14 @@ public class DataServiceTest extends AbstractAWETest {
 	 * driveType, Node projectNode) when parameter type == NETWORK
 	 * 
 	 * @throws DatasetTypeParameterException
+	 * @throws DublicateDatasetException 
 	 */
 	@Test(expected = DatasetTypeParameterException.class)
 	public void createDatasetWithDriveTypeExeptionDatasetTypeTest()
-			throws InvalidParameterException, DatasetTypeParameterException {
-		service.createDataset(NAME_1, DatasetTypes.NETWORK,
-				DriveTypes.DRIVE_TYPE_1, projectNode);
+			throws InvalidDatasetParameterException,
+			DatasetTypeParameterException, DublicateDatasetException {
+		service.createDataset(projectNode, NAME_1, DatasetTypes.NETWORK,
+				DriveTypes.NEMO_V1);
 
 	}
 
@@ -436,14 +468,15 @@ public class DataServiceTest extends AbstractAWETest {
 	 * testing method createDataset(String name, DatasetTypes type, DriveType
 	 * driveType, Node projectNode) when parameter type = null
 	 * 
-	 * @throws InvalidParameterException
+	 * @throws InvalidDatasetParameterException
 	 * @throws DatasetTypeParameterException
+	 * @throws DublicateDatasetException 
 	 */
-	@Test(expected = InvalidParameterException.class)
+	@Test(expected = InvalidDatasetParameterException.class)
 	public void createDatasetWithDriveTypeExeptionTypeTest()
-			throws InvalidParameterException, DatasetTypeParameterException {
-		service.createDataset(NAME_1, null, DriveTypes.DRIVE_TYPE_1,
-				projectNode);
+			throws InvalidDatasetParameterException,
+			DatasetTypeParameterException, DublicateDatasetException {
+		service.createDataset(projectNode, NAME_1, null, DriveTypes.NEMO_V1);
 
 	}
 
@@ -452,13 +485,15 @@ public class DataServiceTest extends AbstractAWETest {
 	 * driveType, Node projectNode) when parameter projectNode = null
 	 * 
 	 * @throws DatasetTypeParameterException
-	 * @throws InvalidParameterException
+	 * @throws InvalidDatasetParameterException
+	 * @throws DublicateDatasetException 
 	 */
-	@Test(expected = InvalidParameterException.class)
+	@Test(expected = InvalidDatasetParameterException.class)
 	public void createDatasetWithDriveTypeExeptionProjectNodeTest()
-			throws InvalidParameterException, DatasetTypeParameterException {
-		service.createDataset(NAME_1, DatasetTypes.OTHER,
-				DriveTypes.DRIVE_TYPE_1, null);
+			throws InvalidDatasetParameterException,
+			DatasetTypeParameterException, DublicateDatasetException {
+		service.createDataset(null, NAME_1, DatasetTypes.DRIVE,
+				DriveTypes.NEMO_V1);
 
 	}
 
@@ -467,13 +502,15 @@ public class DataServiceTest extends AbstractAWETest {
 	 * driveType, Node projectNode) when parameter name = ""
 	 * 
 	 * @throws DatasetTypeParameterException
-	 * @throws InvalidParameterException
+	 * @throws InvalidDatasetParameterException
+	 * @throws DublicateDatasetException 
 	 */
-	@Test(expected = InvalidParameterException.class)
+	@Test(expected = InvalidDatasetParameterException.class)
 	public void createDatasetWithDriveTypeExeptionEmptyNameTest()
-			throws InvalidParameterException, DatasetTypeParameterException {
-		service.createDataset("", DatasetTypes.OTHER, DriveTypes.DRIVE_TYPE_1,
-				projectNode);
+			throws InvalidDatasetParameterException,
+			DatasetTypeParameterException, DublicateDatasetException {
+		service.createDataset(projectNode, "", DatasetTypes.DRIVE,
+				DriveTypes.NEMO_V1);
 
 	}
 
@@ -481,15 +518,16 @@ public class DataServiceTest extends AbstractAWETest {
 	 * testing method createDataset(String name, DatasetTypes type, Node
 	 * projectNode) when all parameter != null
 	 * 
-	 * @throws InvalidParameterException
+	 * @throws InvalidDatasetParameterException
 	 * @throws DatasetTypeParameterException
+	 * @throws DublicateDatasetException
 	 */
 	@Test
-	public void createDatasetTest() throws InvalidParameterException,
-			DatasetTypeParameterException {
+	public void createDatasetTest() throws InvalidDatasetParameterException,
+			DatasetTypeParameterException, DublicateDatasetException {
 
-		Node actualDataset = service.createDataset(NAME_1,
-				DatasetTypes.NETWORK, projectNode);
+		Node actualDataset = service.createDataset(projectNode, NAME_1,
+				DatasetTypes.NETWORK);
 
 		boolean hasRelation = actualDataset.hasRelationship(
 				DatasetRelationTypes.DATASET, Direction.INCOMING);
@@ -509,13 +547,15 @@ public class DataServiceTest extends AbstractAWETest {
 	 * testing method createDataset(String name, DatasetTypes type, Node
 	 * projectNode) when parameter name = null
 	 * 
-	 * @throws InvalidParameterException
+	 * @throws InvalidDatasetParameterException
 	 * @throws DatasetTypeParameterException
+	 * @throws DublicateDatasetException
 	 */
-	@Test(expected = InvalidParameterException.class)
+	@Test(expected = InvalidDatasetParameterException.class)
 	public void createDatasetExeptionNameTest()
-			throws InvalidParameterException, DatasetTypeParameterException {
-		service.createDataset(null, DatasetTypes.NETWORK, projectNode);
+			throws InvalidDatasetParameterException,
+			DatasetTypeParameterException, DublicateDatasetException {
+		service.createDataset(projectNode, null, DatasetTypes.NETWORK);
 
 	}
 
@@ -524,11 +564,13 @@ public class DataServiceTest extends AbstractAWETest {
 	 * projectNode) when parameter type != NETWORK
 	 * 
 	 * @throws DatasetTypeParameterException
+	 * @throws DublicateDatasetException
 	 */
 	@Test(expected = DatasetTypeParameterException.class)
 	public void createDatasetExeptionDatasetTypeTest()
-			throws InvalidParameterException, DatasetTypeParameterException {
-		service.createDataset(NAME_1, DatasetTypes.OTHER, projectNode);
+			throws InvalidDatasetParameterException,
+			DatasetTypeParameterException, DublicateDatasetException {
+		service.createDataset(projectNode, NAME_1, DatasetTypes.DRIVE);
 
 	}
 
@@ -536,13 +578,15 @@ public class DataServiceTest extends AbstractAWETest {
 	 * testing method createDataset(String name, DatasetTypes type, Node
 	 * projectNode) when parameter type = null
 	 * 
-	 * @throws InvalidParameterException
+	 * @throws InvalidDatasetParameterException
 	 * @throws DatasetTypeParameterException
+	 * @throws DublicateDatasetException
 	 */
-	@Test(expected = InvalidParameterException.class)
+	@Test(expected = InvalidDatasetParameterException.class)
 	public void createDatasetExeptionTypeTest()
-			throws InvalidParameterException, DatasetTypeParameterException {
-		service.createDataset(NAME_1, null, projectNode);
+			throws InvalidDatasetParameterException,
+			DatasetTypeParameterException, DublicateDatasetException {
+		service.createDataset(projectNode, NAME_1, null);
 
 	}
 
@@ -550,13 +594,15 @@ public class DataServiceTest extends AbstractAWETest {
 	 * testing method createDataset(String name, DatasetTypes type, Node
 	 * projectNode) when parameter projectNode = null
 	 * 
-	 * @throws InvalidParameterException
+	 * @throws InvalidDatasetParameterException
 	 * @throws DatasetTypeParameterException
+	 * @throws DublicateDatasetException
 	 */
-	@Test(expected = InvalidParameterException.class)
+	@Test(expected = InvalidDatasetParameterException.class)
 	public void createDatasetExeptionProjectNodeTest()
-			throws InvalidParameterException, DatasetTypeParameterException {
-		service.createDataset(NAME_1, DatasetTypes.NETWORK, null);
+			throws InvalidDatasetParameterException,
+			DatasetTypeParameterException, DublicateDatasetException {
+		service.createDataset(null, NAME_1, DatasetTypes.NETWORK);
 
 	}
 
@@ -564,13 +610,15 @@ public class DataServiceTest extends AbstractAWETest {
 	 * testing method createDataset(String name, DatasetTypes type, Node
 	 * projectNode) when parameter name = ""
 	 * 
-	 * @throws InvalidParameterException
+	 * @throws InvalidDatasetParameterException
 	 * @throws DatasetTypeParameterException
+	 * @throws DublicateDatasetException
 	 */
-	@Test(expected = InvalidParameterException.class)
+	@Test(expected = InvalidDatasetParameterException.class)
 	public void createDatasetExeptionEmptyNameTest()
-			throws InvalidParameterException, DatasetTypeParameterException {
-		service.createDataset("", DatasetTypes.NETWORK, projectNode);
+			throws InvalidDatasetParameterException,
+			DatasetTypeParameterException, DublicateDatasetException {
+		service.createDataset(projectNode, "", DatasetTypes.NETWORK);
 
 	}
 
@@ -578,14 +626,15 @@ public class DataServiceTest extends AbstractAWETest {
 	 * testing method getDataset(String name, DatasetTypes, Node projectNode)
 	 * when this dataset doesn't exist
 	 * 
-	 * @throws InvalidParameterException
+	 * @throws InvalidDatasetParameterException
 	 * @throws DatasetTypeParameterException
+	 * @throws DublicateDatasetException
 	 */
 	@Test
-	public void getDatasetCreateTest() throws InvalidParameterException,
-			DatasetTypeParameterException {
-		Node actualDataset = service.getDataset(NAME_1, DatasetTypes.NETWORK,
-				projectNode);
+	public void getDatasetCreateTest() throws InvalidDatasetParameterException,
+			DatasetTypeParameterException, DublicateDatasetException {
+		Node actualDataset = service.getDataset(projectNode, NAME_1,
+				DatasetTypes.NETWORK);
 
 		boolean hasRelation = actualDataset.hasRelationship(
 				DatasetRelationTypes.DATASET, Direction.INCOMING);
@@ -605,17 +654,18 @@ public class DataServiceTest extends AbstractAWETest {
 	 * testing method getDataset(String name, DatasetTypes, Node projectNode)
 	 * when this dataset exists
 	 * 
-	 * @throws InvalidParameterException
+	 * @throws InvalidDatasetParameterException
 	 * @throws DatasetTypeParameterException
+	 * @throws DublicateDatasetException
 	 */
 	@Test
-	public void getDatasetFindTest() throws InvalidParameterException,
-			DatasetTypeParameterException {
+	public void getDatasetFindTest() throws InvalidDatasetParameterException,
+			DatasetTypeParameterException, DublicateDatasetException {
 
 		Node datasetNode = initDatasetNode(NAME_1, DatasetTypes.NETWORK, null);
 
-		Node actualDataset = service.getDataset(NAME_1, DatasetTypes.NETWORK,
-				projectNode);
+		Node actualDataset = service.getDataset(projectNode, NAME_1,
+				DatasetTypes.NETWORK);
 
 		Assert.assertEquals("method getDataset return wrong node", datasetNode,
 				actualDataset);
@@ -625,13 +675,15 @@ public class DataServiceTest extends AbstractAWETest {
 	 * testing method getDataset(String name, DatasetTypes type, Node
 	 * projectNode) when parameter name = null
 	 * 
-	 * @throws InvalidParameterException
+	 * @throws InvalidDatasetParameterException
 	 * @throws DatasetTypeParameterException
+	 * @throws DublicateDatasetException
 	 */
-	@Test(expected = InvalidParameterException.class)
-	public void getDatasetExeptionNameTest() throws InvalidParameterException,
-			DatasetTypeParameterException {
-		service.getDataset(null, DatasetTypes.NETWORK, projectNode);
+	@Test(expected = InvalidDatasetParameterException.class)
+	public void getDatasetExeptionNameTest()
+			throws InvalidDatasetParameterException,
+			DatasetTypeParameterException, DublicateDatasetException {
+		service.getDataset(projectNode, null, DatasetTypes.NETWORK);
 
 	}
 
@@ -640,11 +692,13 @@ public class DataServiceTest extends AbstractAWETest {
 	 * projectNode) when parameter type != NETWORK
 	 * 
 	 * @throws DatasetTypeParameterException
+	 * @throws DublicateDatasetException
 	 */
 	@Test(expected = DatasetTypeParameterException.class)
 	public void getDatasetExeptionDatasetTypeTest()
-			throws InvalidParameterException, DatasetTypeParameterException {
-		service.getDataset(NAME_1, DatasetTypes.OTHER, projectNode);
+			throws InvalidDatasetParameterException,
+			DatasetTypeParameterException, DublicateDatasetException {
+		service.getDataset(projectNode, NAME_1, DatasetTypes.DRIVE);
 
 	}
 
@@ -652,13 +706,15 @@ public class DataServiceTest extends AbstractAWETest {
 	 * testing method getDataset(String name, DatasetTypes type, Node
 	 * projectNode) when parameter type = null
 	 * 
-	 * @throws InvalidParameterException
+	 * @throws InvalidDatasetParameterException
 	 * @throws DatasetTypeParameterException
+	 * @throws DublicateDatasetException
 	 */
-	@Test(expected = InvalidParameterException.class)
-	public void getDatasetExeptionTypeTest() throws InvalidParameterException,
-			DatasetTypeParameterException {
-		service.getDataset(NAME_1, null, projectNode);
+	@Test(expected = InvalidDatasetParameterException.class)
+	public void getDatasetExeptionTypeTest()
+			throws InvalidDatasetParameterException,
+			DatasetTypeParameterException, DublicateDatasetException {
+		service.getDataset(projectNode, NAME_1, null);
 
 	}
 
@@ -666,13 +722,15 @@ public class DataServiceTest extends AbstractAWETest {
 	 * testing method getDataset(String name, DatasetTypes type, Node
 	 * projectNode) when parameter projectNode = null
 	 * 
-	 * @throws InvalidParameterException
+	 * @throws InvalidDatasetParameterException
 	 * @throws DatasetTypeParameterException
+	 * @throws DublicateDatasetException
 	 */
-	@Test(expected = InvalidParameterException.class)
+	@Test(expected = InvalidDatasetParameterException.class)
 	public void getDatasetExeptionProjectNodeTest()
-			throws InvalidParameterException, DatasetTypeParameterException {
-		service.getDataset(NAME_1, DatasetTypes.NETWORK, null);
+			throws InvalidDatasetParameterException,
+			DatasetTypeParameterException, DublicateDatasetException {
+		service.getDataset(null, NAME_1, DatasetTypes.NETWORK);
 
 	}
 
@@ -680,13 +738,15 @@ public class DataServiceTest extends AbstractAWETest {
 	 * testing method getDataset(String name, DatasetTypes type, Node
 	 * projectNode) when parameter name = ""
 	 * 
-	 * @throws InvalidParameterException
+	 * @throws InvalidDatasetParameterException
 	 * @throws DatasetTypeParameterException
+	 * @throws DublicateDatasetException
 	 */
-	@Test(expected = InvalidParameterException.class)
+	@Test(expected = InvalidDatasetParameterException.class)
 	public void getDatasetExeptionEmptyNameTest()
-			throws InvalidParameterException, DatasetTypeParameterException {
-		service.getDataset("", DatasetTypes.NETWORK, projectNode);
+			throws InvalidDatasetParameterException,
+			DatasetTypeParameterException, DublicateDatasetException {
+		service.getDataset(projectNode, "", DatasetTypes.NETWORK);
 
 	}
 
@@ -695,17 +755,19 @@ public class DataServiceTest extends AbstractAWETest {
 	 * driveType, Node projectNode) when this dataset exists
 	 * 
 	 * @throws DatasetTypeParameterException
-	 * @throws InvalidParameterException
+	 * @throws InvalidDatasetParameterException
+	 * @throws DublicateDatasetException 
 	 */
 	@Test
 	public void getDatasetWithDriveTypeFindTest()
-			throws InvalidParameterException, DatasetTypeParameterException {
+			throws InvalidDatasetParameterException,
+			DatasetTypeParameterException, DublicateDatasetException {
 
-		Node datasetNode = initDatasetNode(NAME_1, DatasetTypes.OTHER,
-				DriveTypes.DRIVE_TYPE_1);
+		Node datasetNode = initDatasetNode(NAME_1, DatasetTypes.DRIVE,
+				DriveTypes.NEMO_V1);
 
-		Node checkNode = service.getDataset(NAME_1, DatasetTypes.OTHER,
-				DriveTypes.DRIVE_TYPE_1, projectNode);
+		Node checkNode = service.getDataset(projectNode, NAME_1,
+				DatasetTypes.DRIVE, DriveTypes.NEMO_V1);
 
 		Assert.assertTrue("method findDataset() return wrong node",
 				datasetNode.equals(checkNode));
@@ -716,15 +778,17 @@ public class DataServiceTest extends AbstractAWETest {
 	 * testing method getDataset(String name, DatasetTypes type, DriveType
 	 * driveType, Node projectNode) when dataset node doesn't exist
 	 * 
-	 * @throws InvalidParameterException
+	 * @throws InvalidDatasetParameterException
 	 * @throws DatasetTypeParameterException
+	 * @throws DublicateDatasetException 
 	 */
 	@Test
 	public void getDatasetWithDriveTypeCreateTest()
-			throws InvalidParameterException, DatasetTypeParameterException {
+			throws InvalidDatasetParameterException,
+			DatasetTypeParameterException, DublicateDatasetException {
 
-		Node actualDataset = service.getDataset(NAME_1, DatasetTypes.OTHER,
-				DriveTypes.DRIVE_TYPE_1, projectNode);
+		Node actualDataset = service.getDataset(projectNode, NAME_1,
+				DatasetTypes.DRIVE, DriveTypes.NEMO_V1);
 
 		boolean hasRelation = actualDataset.hasRelationship(
 				DatasetRelationTypes.DATASET, Direction.INCOMING);
@@ -737,12 +801,12 @@ public class DataServiceTest extends AbstractAWETest {
 		String actualType = (String) actualDataset
 				.getProperty(DataService.TYPE);
 		Assert.assertEquals("dataset has wrong type",
-				DatasetTypes.OTHER.name(), actualType);
+				DatasetTypes.DRIVE.name(), actualType);
 
 		String actualDriveType = (String) actualDataset
 				.getProperty(DataService.DRIVE_TYPE);
 		Assert.assertEquals("dataset has wrong driveType",
-				DriveTypes.DRIVE_TYPE_1.name(), actualDriveType);
+				DriveTypes.NEMO_V1.name(), actualDriveType);
 	}
 
 	/**
@@ -750,13 +814,15 @@ public class DataServiceTest extends AbstractAWETest {
 	 * driveType, Node projectNode) when parameter type = NETWORK
 	 * 
 	 * @throws DatasetTypeParameterException
-	 * @throws InvalidParameterException
+	 * @throws InvalidDatasetParameterException
+	 * @throws DublicateDatasetException 
 	 */
 	@Test(expected = DatasetTypeParameterException.class)
 	public void getDatasetWithDriveTypeNetworkTest()
-			throws InvalidParameterException, DatasetTypeParameterException {
-		service.getDataset(NAME_1, DatasetTypes.NETWORK,
-				DriveTypes.DRIVE_TYPE_1, projectNode);
+			throws InvalidDatasetParameterException,
+			DatasetTypeParameterException, DublicateDatasetException {
+		service.getDataset(projectNode, NAME_1, DatasetTypes.NETWORK,
+				DriveTypes.NEMO_V1);
 
 	}
 
@@ -765,13 +831,15 @@ public class DataServiceTest extends AbstractAWETest {
 	 * driveType, Node projectNode) when parameter name = null
 	 * 
 	 * @throws DatasetTypeParameterException
-	 * @throws InvalidParameterException
+	 * @throws InvalidDatasetParameterException
+	 * @throws DublicateDatasetException 
 	 */
-	@Test(expected = InvalidParameterException.class)
+	@Test(expected = InvalidDatasetParameterException.class)
 	public void getDatasetWithDriveTypeExeptionNameTest()
-			throws InvalidParameterException, DatasetTypeParameterException {
-		service.getDataset(null, DatasetTypes.OTHER, DriveTypes.DRIVE_TYPE_1,
-				projectNode);
+			throws InvalidDatasetParameterException,
+			DatasetTypeParameterException, DublicateDatasetException {
+		service.getDataset(projectNode, null, DatasetTypes.DRIVE,
+				DriveTypes.NEMO_V1);
 
 	}
 
@@ -780,12 +848,14 @@ public class DataServiceTest extends AbstractAWETest {
 	 * driveType, Node projectNode) when parameter type = null
 	 * 
 	 * @throws DatasetTypeParameterException
-	 * @throws InvalidParameterException
+	 * @throws InvalidDatasetParameterException
+	 * @throws DublicateDatasetException 
 	 */
-	@Test(expected = InvalidParameterException.class)
+	@Test(expected = InvalidDatasetParameterException.class)
 	public void getDatasetWithDriveTypeExeptionTypeTest()
-			throws InvalidParameterException, DatasetTypeParameterException {
-		service.getDataset(NAME_1, null, DriveTypes.DRIVE_TYPE_1, projectNode);
+			throws InvalidDatasetParameterException,
+			DatasetTypeParameterException, DublicateDatasetException {
+		service.getDataset(projectNode, NAME_1, null, DriveTypes.NEMO_V1);
 
 	}
 
@@ -794,12 +864,14 @@ public class DataServiceTest extends AbstractAWETest {
 	 * driveType, Node projectNode) when parameter driveType = null
 	 * 
 	 * @throws DatasetTypeParameterException
-	 * @throws InvalidParameterException
+	 * @throws InvalidDatasetParameterException
+	 * @throws DublicateDatasetException 
 	 */
-	@Test(expected = InvalidParameterException.class)
+	@Test(expected = InvalidDatasetParameterException.class)
 	public void getDatasetWithDriveTypeExeptionDriveTypeTest()
-			throws InvalidParameterException, DatasetTypeParameterException {
-		service.getDataset(NAME_1, DatasetTypes.OTHER, null, projectNode);
+			throws InvalidDatasetParameterException,
+			DatasetTypeParameterException, DublicateDatasetException {
+		service.getDataset(projectNode, NAME_1, DatasetTypes.DRIVE, null);
 
 	}
 
@@ -808,13 +880,14 @@ public class DataServiceTest extends AbstractAWETest {
 	 * driveType, Node projectNode) when parameter projectNode = null
 	 * 
 	 * @throws DatasetTypeParameterException
-	 * @throws InvalidParameterException
+	 * @throws InvalidDatasetParameterException
+	 * @throws DublicateDatasetException 
 	 */
-	@Test(expected = InvalidParameterException.class)
+	@Test(expected = InvalidDatasetParameterException.class)
 	public void getDatasetWithDriveTypeExeptionProjectNodeTest()
-			throws InvalidParameterException, DatasetTypeParameterException {
-		service.getDataset(NAME_1, DatasetTypes.OTHER, DriveTypes.DRIVE_TYPE_1,
-				null);
+			throws InvalidDatasetParameterException,
+			DatasetTypeParameterException, DublicateDatasetException {
+		service.getDataset(null, NAME_1, DatasetTypes.DRIVE, DriveTypes.NEMO_V1);
 
 	}
 
@@ -823,13 +896,15 @@ public class DataServiceTest extends AbstractAWETest {
 	 * driveType, Node projectNode) when parameter name = ""
 	 * 
 	 * @throws DatasetTypeParameterException
-	 * @throws InvalidParameterException
+	 * @throws InvalidDatasetParameterException
+	 * @throws DublicateDatasetException 
 	 */
-	@Test(expected = InvalidParameterException.class)
+	@Test(expected = InvalidDatasetParameterException.class)
 	public void getDatasetWithDriveTypeExeptionEmptyNameTest()
-			throws InvalidParameterException, DatasetTypeParameterException {
-		service.getDataset("", DatasetTypes.OTHER, DriveTypes.DRIVE_TYPE_1,
-				projectNode);
+			throws InvalidDatasetParameterException,
+			DatasetTypeParameterException, DublicateDatasetException {
+		service.getDataset(projectNode, "", DatasetTypes.DRIVE,
+				DriveTypes.NEMO_V1);
 
 	}
 
@@ -837,10 +912,11 @@ public class DataServiceTest extends AbstractAWETest {
 	 * testing method getAllDatasets(Node projectNode) when nobody datasets
 	 * exist
 	 * 
-	 * @throws InvalidParameterException
+	 * @throws InvalidDatasetParameterException
 	 */
 	@Test
-	public void findAllDatasetsEmptyTest() throws InvalidParameterException {
+	public void findAllDatasetsEmptyTest()
+			throws InvalidDatasetParameterException {
 		List<Node> checkList = service.findAllDatasets(projectNode);
 		Assert.assertTrue("method findAllDatasets return wrong nodes",
 				checkList.isEmpty());
@@ -849,13 +925,13 @@ public class DataServiceTest extends AbstractAWETest {
 	/**
 	 * testing method getAllDatasets(Node projectNode) when some datasets exist
 	 * 
-	 * @throws InvalidParameterException
+	 * @throws InvalidDatasetParameterException
 	 */
 	@Test
-	public void findAllDatasetsTest() throws InvalidParameterException {
+	public void findAllDatasetsTest() throws InvalidDatasetParameterException {
 		Node dataset_1 = initDatasetNode(NAME_1, DatasetTypes.NETWORK, null);
-		Node dataset_2 = initDatasetNode(NAME_2, DatasetTypes.OTHER,
-				DriveTypes.DRIVE_TYPE_1);
+		Node dataset_2 = initDatasetNode(NAME_2, DatasetTypes.DRIVE,
+				DriveTypes.NEMO_V1);
 		List<Node> checkList = service.findAllDatasets(projectNode);
 
 		Assert.assertTrue("method findAllDatasets didn't return dataset_1",
@@ -872,10 +948,11 @@ public class DataServiceTest extends AbstractAWETest {
 	/**
 	 * testing method getAllDatasets(Node projectNode) when projectNode == null
 	 * 
-	 * @throws InvalidParameterException
+	 * @throws InvalidDatasetParameterException
 	 */
-	@Test(expected = InvalidParameterException.class)
-	public void findAllDatasetsExceptionTest() throws InvalidParameterException {
+	@Test(expected = InvalidDatasetParameterException.class)
+	public void findAllDatasetsExceptionTest()
+			throws InvalidDatasetParameterException {
 		service.findAllDatasets(null);
 	}
 
@@ -883,14 +960,14 @@ public class DataServiceTest extends AbstractAWETest {
 	 * testing method getAllDatasetsByType(DatasetTypes type,Node projectNode)
 	 * when nobody datasets by given type exist
 	 * 
-	 * @throws InvalidParameterException
+	 * @throws InvalidDatasetParameterException
 	 */
 	@Test
 	public void findAllDatasetByTypesEmptyTest()
-			throws InvalidParameterException {
-		initDatasetNode(NAME_1, DatasetTypes.OTHER, DriveTypes.DRIVE_TYPE_1);
-		List<Node> checkList = service.findAllDatasetsByType(
-				DatasetTypes.NETWORK, projectNode);
+			throws InvalidDatasetParameterException {
+		initDatasetNode(NAME_1, DatasetTypes.DRIVE, DriveTypes.NEMO_V1);
+		List<Node> checkList = service.findAllDatasetsByType(projectNode,
+				DatasetTypes.NETWORK);
 		Assert.assertTrue("method findAllDatasetsByType return wrong nodes",
 				checkList.isEmpty());
 	}
@@ -899,15 +976,16 @@ public class DataServiceTest extends AbstractAWETest {
 	 * testing method getAllDatasetsByType(DatasetTypes type, Node projectNode)
 	 * when some datasets exist
 	 * 
-	 * @throws InvalidParameterException
+	 * @throws InvalidDatasetParameterException
 	 */
 	@Test
-	public void findAllDatasetsByTypeTest() throws InvalidParameterException {
+	public void findAllDatasetsByTypeTest()
+			throws InvalidDatasetParameterException {
 		Node dataset_1 = initDatasetNode(NAME_1, DatasetTypes.NETWORK, null);
-		initDatasetNode(NAME_2, DatasetTypes.OTHER, DriveTypes.DRIVE_TYPE_1);
+		initDatasetNode(NAME_2, DatasetTypes.DRIVE, DriveTypes.NEMO_V1);
 
-		List<Node> checkList = service.findAllDatasetsByType(
-				DatasetTypes.NETWORK, projectNode);
+		List<Node> checkList = service.findAllDatasetsByType(projectNode,
+				DatasetTypes.NETWORK);
 
 		Assert.assertTrue("method findAllDatasets didn't return dataset_1",
 				checkList.contains(dataset_1));
@@ -921,24 +999,24 @@ public class DataServiceTest extends AbstractAWETest {
 	 * testing method getAllDatasetsByType(DatasetTypes type,Node projectNode)
 	 * when projectNode == null
 	 * 
-	 * @throws InvalidParameterException
+	 * @throws InvalidDatasetParameterException
 	 */
-	@Test(expected = InvalidParameterException.class)
+	@Test(expected = InvalidDatasetParameterException.class)
 	public void findAllDatasetsByTypeExceptionProjectNodeTest()
-			throws InvalidParameterException {
-		service.findAllDatasetsByType(DatasetTypes.NETWORK, null);
+			throws InvalidDatasetParameterException {
+		service.findAllDatasetsByType(null, DatasetTypes.NETWORK);
 	}
 
 	/**
 	 * testing method getAllDatasetsByType(DatasetTypes type,Node projectNode)
 	 * when type == null
 	 * 
-	 * @throws InvalidParameterException
+	 * @throws InvalidDatasetParameterException
 	 */
-	@Test(expected = InvalidParameterException.class)
+	@Test(expected = InvalidDatasetParameterException.class)
 	public void findAllDatasetsByTypeExceptionTypeTest()
-			throws InvalidParameterException {
-		service.findAllDatasetsByType(null, projectNode);
+			throws InvalidDatasetParameterException {
+		service.findAllDatasetsByType(projectNode, null);
 	}
 
 }

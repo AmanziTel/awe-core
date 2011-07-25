@@ -48,7 +48,7 @@ public abstract class NewAbstractService {
         tx = graphDb.beginTx();
         try {
             result = graphDb.createNode();
-            result.setProperty(DataService.TYPE, nodeType);
+            result.setProperty(DataService.TYPE, nodeType.getId());
             tx.success();
         } catch (Exception e) {
             LOGGER.error("Could not create node.", e);

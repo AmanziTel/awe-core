@@ -21,7 +21,7 @@ package org.amanzi.neo.services.exceptions;
  * @author kruglik_a
  * @since 1.0.0
  */
-public class InvalidParameterException extends AWEException{
+public class InvalidDatasetParameterException extends AWEException{
 
     /** long serialVersionUID field */
     private static final long serialVersionUID = 6266275810733327853L;
