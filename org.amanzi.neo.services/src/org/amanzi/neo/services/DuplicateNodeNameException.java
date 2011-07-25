@@ -21,16 +21,16 @@ package org.amanzi.neo.services;
  * @author grigoreva_a
  * @since 1.0.0
  */
-public class IllegalDBOperationException extends RuntimeException {
+public class DuplicateNodeNameException extends RuntimeException {
     static final long serialVersionUID = 1;
 
     // TODO: handle some specific data
 
-    public IllegalDBOperationException() {
+    public DuplicateNodeNameException() {
         super();
     }
 
-    public IllegalDBOperationException(String message) {
+    public DuplicateNodeNameException(String message) {
         super(message);
     }
 }

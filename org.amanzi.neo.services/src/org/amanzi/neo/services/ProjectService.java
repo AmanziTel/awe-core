@@ -13,16 +13,18 @@
 
 package org.amanzi.neo.services;
 
+import java.util.Iterator;
+
 import org.amanzi.neo.services.enums.INodeType;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.RelationshipType;
-import org.neo4j.graphdb.ReturnableEvaluator;
-import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.graphdb.Traverser.Order;
+import org.neo4j.graphdb.traversal.Evaluators;
+import org.neo4j.graphdb.traversal.TraversalDescription;
+import org.neo4j.kernel.Traversal;
 
 /**
  * <p>
@@ -65,16 +67,16 @@ public class ProjectService extends NewAbstractService {
             throw new IllegalNodeDataException("Project name cannot be empty.");
         }
         if (findProject(name) != null) {
-            throw new IllegalDBOperationException("A project with name '" + name + "' already exists.");
+            throw new DuplicateNodeNameException("A project with name '" + name + "' already exists.");
         }
 
         // create new project
         Node result = null;
         tx = graphDb.beginTx();
         try {
-            result = createNode(graphDb.getReferenceNode(), ProjectRelationshipType.PROJECT);
-            result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, ProjectNodeType.PROJECT.getId());
+            result = createNode(ProjectNodeType.PROJECT);
             result.setProperty(INeoConstants.PROPERTY_NAME_NAME, name);
+            graphDb.getReferenceNode().createRelationshipTo(result, ProjectRelationshipType.PROJECT);
             tx.success();
         } catch (Exception e) {
             LOGGER.error("Could not create project '" + name + "'.", e);
@@ -90,18 +92,21 @@ public class ProjectService extends NewAbstractService {
             throw new IllegalNodeDataException("Project name cannot be empty.");
         }
 
-        for (Node node : findAllProjects()) {
-            if (name.equals(node.getProperty(INeoConstants.PROPERTY_NAME_NAME, null))) {
-                return node;
-            }
+        Node result = null;
+        Iterator<Node> it = getProjectTraversalDescription().evaluator(new NameTypeEvaluator(name, ProjectNodeType.PROJECT))
+                .traverse(graphDb.getReferenceNode()).nodes().iterator();
+        if (it.hasNext()){
+            result =  it.next();
         }
-        return null;
+        
+        if(it.hasNext()){
+            throw new DuplicateNodeNameException();
+        }
+        return result;
     }
 
     public Iterable<Node> findAllProjects() {
-        // TODO: check
-        return graphDb.getReferenceNode().traverse(Order.BREADTH_FIRST, StopEvaluator.DEPTH_ONE,
-                ReturnableEvaluator.ALL_BUT_START_NODE, ProjectRelationshipType.PROJECT, Direction.OUTGOING);
+        return getProjectTraversalDescription().traverse(graphDb.getReferenceNode()).nodes();
     }
 
     public Node getProject(String name) {
@@ -110,5 +115,10 @@ public class ProjectService extends NewAbstractService {
             result = createProject(name);
         }
         return result;
+    }
+
+    public TraversalDescription getProjectTraversalDescription() {
+        return Traversal.description().depthFirst().evaluator(Evaluators.excludeStartPosition()).evaluator(Evaluators.atDepth(1))
+                .relationships(ProjectRelationshipType.PROJECT, Direction.OUTGOING);
     }
 }

@@ -22,9 +22,8 @@ public class ProjectServiceTest {
 	private static ProjectService projectService;
 	private static GraphDatabaseService graphDb;
 	private static final String prName = "Project";
-	private static final String databasePath = "z:\\test";
-	// System.getProperty("user.home") + File.separator + ".amanzi" +
-	// File.separator + "test";
+	private static final String databasePath = System.getProperty("user.home")
+			+ File.separator + ".amanzi" + File.separator + "test";
 	private static Transaction tx;
 
 	@BeforeClass
@@ -40,6 +39,8 @@ public class ProjectServiceTest {
 			graphDb.shutdown();
 			LOGGER.info("Database shut down");
 		}
+		deleteFolder(new File(databasePath));
+		
 	}
 
 	@Test
@@ -71,7 +72,7 @@ public class ProjectServiceTest {
 		LOGGER.info("testCreateProjectNullName() finished");
 	}
 
-	@Test(expected = IllegalDBOperationException.class)
+	@Test(expected = DuplicateNodeNameException.class)
 	public void testCreateProjectExisting() {
 		LOGGER.info("testCreateProjectExisting() started");
 		projectService.createProject(prName);
@@ -95,7 +96,7 @@ public class ProjectServiceTest {
 		Node found = projectService.findProject(prName + "1");
 		Assert.assertEquals(prName + "1",
 				found.getProperty(INeoConstants.PROPERTY_NAME_NAME, null));
-		Assert.assertEquals(project, found); // TODO: shall it work?
+		Assert.assertEquals(project, found);
 		assertProjectRelatedToRefNode(found);
 		LOGGER.info("testFindProject() finished");
 	}
@@ -189,6 +190,20 @@ public class ProjectServiceTest {
 				ProjectService.ProjectRelationshipType.PROJECT,
 				Direction.INCOMING)) {
 			Assert.assertTrue(rel.getOtherNode(node).equals(refNode));
+		}
+	}
+	
+	private static void deleteFolder(File path){
+		if(path.exists()){
+			for(File file:path.listFiles()){
+				if(file.isDirectory()){
+					deleteFolder(file);
+				}
+				else{
+					file.delete();
+				}
+			}
+			path.delete();
 		}
 	}
 
