@@ -2584,12 +2584,19 @@ public class UTRANLoader extends AbstractLoader {
 
         }
 
-        Pattern pat = Pattern.compile("(^.*IUB_)(\\d+)([^\\d]*$)", Pattern.CASE_INSENSITIVE);
-        Matcher matcher = pat.matcher(ref);
-        if (!matcher.find(0)) {
-            System.err.println("err");
-        }
-        String id = matcher.group(2);
+//        Pattern pat = Pattern.compile("(^.*IUB_)(\\d+)([^\\d]*$)", Pattern.CASE_INSENSITIVE);
+//        Matcher matcher = pat.matcher(ref);
+//        if (!matcher.find(0)) {
+//            System.err.println("err");
+//        }
+//      String id = matcher.group(2);
+        String id=ref.substring(ref.lastIndexOf("=")+1);
+        id=id.substring(id.indexOf("_")+1);
+		if(id.indexOf("'")>-1){
+			id=id.substring(0, id.indexOf("'"));
+		}
+		
+
         String indName = NeoUtils.getLuceneIndexKeyByProperty(network, INeoConstants.PROPERTY_NAME_NAME, NodeTypes.SITE);
         Node node = index.getSingleNode(indName, id);
         if (node == null) {
