@@ -63,7 +63,7 @@ public class GpehStatisticModel {
 	/** The dataset. */
 	private final Node dataset;
 	private static StatisticHandler statistic;
-	private StatisticHandler statisticIMSI;
+	private StatisticHandler statisticEvent;
 	/** The virtual statistic node. */
 	protected Node virtualCurrentNode = null;
 	protected Node virtualParent = null;
@@ -280,7 +280,8 @@ public class GpehStatisticModel {
 			Integer ue_context, String me_context) {
 		Node root = dataset;
 		timestamp = getStartPeriod(timestamp);
-		saveIMSIEvent(databaseService, root, timestamp, imsi, rnc, ue_context,me_context);
+		saveIMSIEvent(databaseService, root, timestamp, imsi, rnc, ue_context,
+				me_context);
 	}
 
 	/**
@@ -329,11 +330,15 @@ public class GpehStatisticModel {
 	}
 
 	public void saveEventStatistic() {
-		statisticIMSI.saveStatistic();
+		if (statisticEvent != null) {
+			statisticEvent.saveStatistic();
+		}
 	}
 
 	public void saveCacheStatistic() {
-		statistic.saveStatistic();
+		if (statistic != null) {
+			statistic.saveStatistic();
+		}
 	}
 
 	/**
@@ -353,7 +358,7 @@ public class GpehStatisticModel {
 		}
 
 		if (NodeTypes.DATASET.checkNode(virtualParent)) {
-			statisticIMSI = new StatisticHandler(virtualParent);
+			statisticEvent = new StatisticHandler(virtualParent);
 			root_key = virtualParent.getProperty(
 					INeoConstants.PROPERTY_NAME_NAME).toString();
 		}
@@ -376,7 +381,7 @@ public class GpehStatisticModel {
 		saveRNCPool(beginTimestamp, virtualCurrentNode, imsi, rnc, ue_context,
 				me_context);
 		virtualCurrentNode.setProperty("statistic property type", statType);
-		statisticIMSI.increaseTypeCount(root_key, NodeTypes.M.getId(), 1);
+		statisticEvent.increaseTypeCount(root_key, NodeTypes.M.getId(), 1);
 	}
 
 	private void saveRNCPool(long beginTimestamp, Node rncNode, Long imsi,
@@ -390,15 +395,15 @@ public class GpehStatisticModel {
 		rncNode.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME,
 				beginTimestamp);
 
-		statisticIMSI.indexValue(root_key, NodeTypes.M.getId(), "IMSI", imsi);
-		statisticIMSI.indexValue(root_key, NodeTypes.M.getId(), "RCN_ID", rnc);
-		statisticIMSI.indexValue(root_key, NodeTypes.M.getId(), "ME_CONTEXT",
+		statisticEvent.indexValue(root_key, NodeTypes.M.getId(), "IMSI", imsi);
+		statisticEvent.indexValue(root_key, NodeTypes.M.getId(), "RCN_ID", rnc);
+		statisticEvent.indexValue(root_key, NodeTypes.M.getId(), "ME_CONTEXT",
 				me_context);
-		statisticIMSI.indexValue(root_key, NodeTypes.M.getId(), "UE_CONTEXT",
+		statisticEvent.indexValue(root_key, NodeTypes.M.getId(), "UE_CONTEXT",
 				ue_context);
-		statisticIMSI.indexValue(root_key, NodeTypes.M.getId(),
+		statisticEvent.indexValue(root_key, NodeTypes.M.getId(),
 				"statistic property type", statType);
-		statisticIMSI.indexValue(root_key, NodeTypes.M.getId(),
+		statisticEvent.indexValue(root_key, NodeTypes.M.getId(),
 				INeoConstants.PROPERTY_TIMESTAMP_NAME, beginTimestamp);
 
 	}
@@ -696,7 +701,7 @@ public class GpehStatisticModel {
 		 *            the rel
 		 * @return the best cell
 		 */
-		
+
 		protected BestCell formBestCell(Node rel) {
 
 			String[] id = rel.getProperty(INeoConstants.PROPERTY_NAME_NAME)
@@ -803,7 +808,7 @@ public class GpehStatisticModel {
 
 			if (parentNode == null) {
 				parentNode = root;
-				//currentNode = parentNode;
+				// currentNode = parentNode;
 				if (NodeTypes.DATASET.checkNode(parentNode)) {
 					statistic = new StatisticHandler(parentNode);
 					root_key = root.getProperty(
@@ -991,39 +996,6 @@ public class GpehStatisticModel {
 		public void clearValues() {
 
 			cellCache.values().clear();
-		}
-	}
-
-	public static class RncCell {
-		Long imsi;
-		int rcn;
-		int ue_context;
-		String me_context;
-
-		// Long imsi;
-
-		RncCell(long imsi, int rnc, int ue_context, String me_context) {
-			this.imsi = imsi;
-			this.rcn = rnc;
-			this.ue_context = ue_context;
-			this.me_context = me_context;
-
-		}
-
-		public int getRcn() {
-			return rcn;
-		}
-
-		public int getUe_context() {
-			return ue_context;
-		}
-
-		public String getMe_context() {
-			return me_context;
-		}
-
-		public Long getIsm() {
-			return imsi;
 		}
 	}
 
@@ -1596,16 +1568,18 @@ public class GpehStatisticModel {
 			clearValues();
 			beginTimestamp = startTime;
 			Node startNode;
-			if (currentNode != null) {
-				startNode = currentNode;
-			} else {
-				startNode = parentNode;
-			}
+			
+			startNode = parentNode;
+			
 
 			while (startNode.hasRelationship(NetworkRelationshipTypes.CHILD,
 					Direction.OUTGOING)
 					|| startNode.hasRelationship(NetworkRelationshipTypes.NEXT,
 							Direction.OUTGOING)) {
+				if(startNode.hasRelationship(NetworkRelationshipTypes.CHILD,
+						Direction.OUTGOING)) {
+				startNode=startNode.getSingleRelationship(NetworkRelationshipTypes.CHILD,Direction.OUTGOING).getEndNode();
+				}
 				BestCell cell = formBestCell(startNode);
 				if (cell != null) {
 					Node cellRoot = startNode;
@@ -1626,12 +1600,13 @@ public class GpehStatisticModel {
 						cache.put(statType, pool);
 					}
 
-					if (startNode.hasRelationship(
-							NetworkRelationshipTypes.NEXT, Direction.OUTGOING)) {
-						startNode = startNode.getSingleRelationship(
-								NetworkRelationshipTypes.NEXT,
-								Direction.OUTGOING).getEndNode();
-					}
+					
+				}
+				if (startNode.hasRelationship(
+						NetworkRelationshipTypes.NEXT, Direction.OUTGOING)) {
+					startNode = startNode.getSingleRelationship(
+							NetworkRelationshipTypes.NEXT,
+							Direction.OUTGOING).getEndNode();
 				}
 			}
 
@@ -1954,7 +1929,6 @@ public class GpehStatisticModel {
 				statistic.indexValue(root_key, NodeTypes.M.getId(),
 						STATISTIC_PROPERTY_TYPE, statType);
 				statistic.increaseTypeCount(root_key, NodeTypes.M.getId(), 1);
-				
 
 				for (Map.Entry<String, Pool> entryCache : entry.getValue().cache
 						.entrySet()) {
@@ -1984,7 +1958,8 @@ public class GpehStatisticModel {
 						statistic.indexValue(root_key, NodeTypes.M.getId(),
 								STATISTIC_PROPERTY_TYPE, statType);
 						storePool(currentNode, entryCache.getValue());
-						statistic.increaseTypeCount(root_key,NodeTypes.M.getId(), 1);
+						statistic.increaseTypeCount(root_key,
+								NodeTypes.M.getId(), 1);
 						parentNode = currentNode;
 					} catch (Exception e) {
 
