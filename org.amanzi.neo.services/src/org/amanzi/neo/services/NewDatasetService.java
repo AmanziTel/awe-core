@@ -307,9 +307,9 @@ public class NewDatasetService extends NewAbstractService {
      *         == null or type == null or projectNode == null
      * @throws DatasetTypeParameterException this method may call exception if type parameter
      *         differs from NETWORK
-     * @throws DublicateDatasetException this method may call exception if dataset with that name
+     * @throws DuplicateNodeNameException this method may call exception if dataset with that name
      *         already exists
-     * @throws NeoServiceException
+     * @throws DatabaseException
      */
     public Node createDataset(Node projectNode, String name, DatasetTypes type) throws InvalidDatasetParameterException,
             DatasetTypeParameterException, DuplicateNodeNameException, DatabaseException {
@@ -373,7 +373,7 @@ public class NewDatasetService extends NewAbstractService {
      *         == null or type == null or driveType == null or projectNode == null
      * @throws DatasetTypeParameterException this method may call exception if type parameter is
      *         NETWORK
-     * @throws DublicateDatasetException this method may call exception if dataset with that name
+     * @throws DuplicateNodeNameException this method may call exception if dataset with that name
      *         already exists
      */
     public Node createDataset(Node projectNode, String name, DatasetTypes type, DriveTypes driveType)
@@ -442,9 +442,9 @@ public class NewDatasetService extends NewAbstractService {
      *         == null or type == null or projectNode == null
      * @throws DatasetTypeParameterException this method may call exception if type parameter
      *         differs from NETWORK
-     * @throws DublicateDatasetException this method may call exception if dataset with that name
+     * @throws DuplicateNodeNameException this method may call exception if dataset with that name
      *         already exists
-     * @throws NeoServiceException
+     * @throws DatabaseException
      */
     public Node getDataset(Node projectNode, String name, DatasetTypes type) throws InvalidDatasetParameterException,
             DatasetTypeParameterException, DuplicateNodeNameException, DatabaseException {
@@ -490,7 +490,7 @@ public class NewDatasetService extends NewAbstractService {
      *         == null or type == null or driveType == null or projectNode == null
      * @throws DatasetTypeParameterException this method may call exception if type parameter is
      *         NETWORK
-     * @throws DublicateDatasetException this method may call exception if dataset with that name
+     * @throws DuplicateNodeNameException this method may call exception if dataset with that name
      *         already exists
      */
     public Node getDataset(Node projectNode, String name, DatasetTypes type, DriveTypes driveType)
