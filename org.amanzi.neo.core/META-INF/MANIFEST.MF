@@ -10,7 +10,6 @@ Require-Bundle: org.eclipse.ui,
  org.amanzi.neo.services.ui;bundle-version="1.0.0";visibility:=reexport
 Export-Package: org.amanzi.neo.core,
  org.amanzi.neo.core.database.entity,
- org.amanzi.neo.core.enums.gpeh,
  org.amanzi.neo.core.preferences,
  org.amanzi.neo.core.propertyFilter,
  org.amanzi.neo.core.service.listener,
