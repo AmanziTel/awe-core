@@ -4,12 +4,14 @@ import java.util.List;
 
 import junit.framework.Assert;
 
-import org.amanzi.neo.services.NewDatasetService.DatasetRelationshipTypes;
+import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.NewDatasetService.DriveTypes;
-import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
-import org.amanzi.neo.services.exceptions.DublicateDatasetException;
+import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
+import org.amanzi.neo.services.exceptions.DatabaseException;
+import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
+import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
 import org.amanzi.testing.AbstractAWETest;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -21,7 +23,7 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 
 /**
- * Test for org.amanzi.neo.services.NewDatasetService
+ * Test for org.amanzi.neo.services.DataService
  * 
  * @author kruglik_a
  * 
@@ -90,7 +92,7 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 		try {
 			projectNode = graphDatabaseService.createNode();
 			graphDatabaseService.getReferenceNode().createRelationshipTo(
-					projectNode, DatasetRelationshipTypes.PROJECT);
+					projectNode, DatasetRelationTypes.PROJECT);
 			projectNode.setProperty(NewDatasetService.NAME, "project");
 			tx.success();
 		} finally {
@@ -114,7 +116,7 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 		try {
 			datasetNode = graphDatabaseService.createNode();
 			projectNode.createRelationshipTo(datasetNode,
-					DatasetRelationshipTypes.DATASET);
+					DatasetRelationTypes.DATASET);
 			setPropertyToDatasetNode(datasetNode, name, type, driveType);
 
 			tx.success();
@@ -132,7 +134,7 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 	private void deleteProjectNode() {
 		tx = graphDatabaseService.beginTx();
 		try {
-			projectNode.getSingleRelationship(DatasetRelationshipTypes.PROJECT,
+			projectNode.getSingleRelationship(DatasetRelationTypes.PROJECT,
 					Direction.INCOMING).delete();
 			tx.failure();
 
@@ -401,18 +403,18 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 	 * 
 	 * @throws InvalidDatasetParameterException
 	 * @throws DatasetTypeParameterException
-	 * @throws DublicateDatasetException
+	 * @throws DuplicateNodeNameException
 	 */
 	@Test
 	public void createDatasetWithDriveTypeTest()
 			throws InvalidDatasetParameterException,
-			DatasetTypeParameterException, DublicateDatasetException {
+			DatasetTypeParameterException, DuplicateNodeNameException {
 
 		Node actualDataset = service.createDataset(projectNode, NAME_1,
 				DatasetTypes.DRIVE, DriveTypes.NEMO_V1);
 
 		boolean hasRelation = actualDataset.hasRelationship(
-				DatasetRelationshipTypes.DATASET, Direction.INCOMING);
+				DatasetRelationTypes.DATASET, Direction.INCOMING);
 		Assert.assertTrue("not create DATASET relation", hasRelation);
 
 		String actualName = (String) actualDataset
@@ -436,12 +438,12 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 	 * 
 	 * @throws InvalidDatasetParameterException
 	 * @throws DatasetTypeParameterException
-	 * @throws DublicateDatasetException
+	 * @throws DuplicateNodeNameException
 	 */
 	@Test(expected = InvalidDatasetParameterException.class)
 	public void createDatasetWithDriveTypeExeptionNameTest()
 			throws InvalidDatasetParameterException,
-			DatasetTypeParameterException, DublicateDatasetException {
+			DatasetTypeParameterException, DuplicateNodeNameException {
 		service.createDataset(projectNode, null, DatasetTypes.NETWORK,
 				DriveTypes.NEMO_V1);
 
@@ -452,12 +454,12 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 	 * driveType, Node projectNode) when parameter type == NETWORK
 	 * 
 	 * @throws DatasetTypeParameterException
-	 * @throws DublicateDatasetException
+	 * @throws DuplicateNodeNameException
 	 */
 	@Test(expected = DatasetTypeParameterException.class)
 	public void createDatasetWithDriveTypeExeptionDatasetTypeTest()
 			throws InvalidDatasetParameterException,
-			DatasetTypeParameterException, DublicateDatasetException {
+			DatasetTypeParameterException, DuplicateNodeNameException {
 		service.createDataset(projectNode, NAME_1, DatasetTypes.NETWORK,
 				DriveTypes.NEMO_V1);
 
@@ -469,12 +471,12 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 	 * 
 	 * @throws InvalidDatasetParameterException
 	 * @throws DatasetTypeParameterException
-	 * @throws DublicateDatasetException
+	 * @throws DuplicateNodeNameException
 	 */
 	@Test(expected = InvalidDatasetParameterException.class)
 	public void createDatasetWithDriveTypeExeptionTypeTest()
 			throws InvalidDatasetParameterException,
-			DatasetTypeParameterException, DublicateDatasetException {
+			DatasetTypeParameterException, DuplicateNodeNameException {
 		service.createDataset(projectNode, NAME_1, null, DriveTypes.NEMO_V1);
 
 	}
@@ -485,12 +487,12 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 	 * 
 	 * @throws DatasetTypeParameterException
 	 * @throws InvalidDatasetParameterException
-	 * @throws DublicateDatasetException
+	 * @throws DuplicateNodeNameException
 	 */
 	@Test(expected = InvalidDatasetParameterException.class)
 	public void createDatasetWithDriveTypeExeptionProjectNodeTest()
 			throws InvalidDatasetParameterException,
-			DatasetTypeParameterException, DublicateDatasetException {
+			DatasetTypeParameterException, DuplicateNodeNameException {
 		service.createDataset(null, NAME_1, DatasetTypes.DRIVE,
 				DriveTypes.NEMO_V1);
 
@@ -502,12 +504,12 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 	 * 
 	 * @throws DatasetTypeParameterException
 	 * @throws InvalidDatasetParameterException
-	 * @throws DublicateDatasetException
+	 * @throws DuplicateNodeNameException
 	 */
 	@Test(expected = InvalidDatasetParameterException.class)
 	public void createDatasetWithDriveTypeExeptionEmptyNameTest()
 			throws InvalidDatasetParameterException,
-			DatasetTypeParameterException, DublicateDatasetException {
+			DatasetTypeParameterException, DuplicateNodeNameException {
 		service.createDataset(projectNode, "", DatasetTypes.DRIVE,
 				DriveTypes.NEMO_V1);
 
@@ -515,17 +517,17 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 
 	/**
 	 * testing method createDataset(String name, DatasetTypes type, DriveTypes
-	 * driveType, Node projectNode) when parameter name dublicate name existing
+	 * driveType, Node projectNode) when parameter name duplicate name existing
 	 * dataset node
 	 * 
 	 * @throws InvalidDatasetParameterException
 	 * @throws DatasetTypeParameterException
-	 * @throws DublicateDatasetException
+	 * @throws DuplicateNodeNameException
 	 */
-	@Test(expected = DublicateDatasetException.class)
+	@Test(expected = DuplicateNodeNameException.class)
 	public void createDatasetWithDriveTypeExeptionDublicateNameTest()
 			throws InvalidDatasetParameterException,
-			DatasetTypeParameterException, DublicateDatasetException {
+			DatasetTypeParameterException, DuplicateNodeNameException {
 
 		initDatasetNode(NAME_1, DatasetTypes.NETWORK, null);
 		service.createDataset(projectNode, NAME_1, DatasetTypes.DRIVE,
@@ -539,17 +541,18 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 	 * 
 	 * @throws InvalidDatasetParameterException
 	 * @throws DatasetTypeParameterException
-	 * @throws DublicateDatasetException
+	 * @throws DuplicateNodeNameException
+	 * @throws DatabaseException 
 	 */
 	@Test
 	public void createDatasetTest() throws InvalidDatasetParameterException,
-			DatasetTypeParameterException, DublicateDatasetException {
+			DatasetTypeParameterException, DuplicateNodeNameException, DatabaseException {
 
 		Node actualDataset = service.createDataset(projectNode, NAME_1,
 				DatasetTypes.NETWORK);
 
 		boolean hasRelation = actualDataset.hasRelationship(
-				DatasetRelationshipTypes.DATASET, Direction.INCOMING);
+				DatasetRelationTypes.DATASET, Direction.INCOMING);
 		Assert.assertTrue("not create DATASET relation", hasRelation);
 
 		String actualName = (String) actualDataset
@@ -568,12 +571,13 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 	 * 
 	 * @throws InvalidDatasetParameterException
 	 * @throws DatasetTypeParameterException
-	 * @throws DublicateDatasetException
+	 * @throws DuplicateNodeNameException
+	 * @throws DatabaseException 
 	 */
 	@Test(expected = InvalidDatasetParameterException.class)
 	public void createDatasetExeptionNameTest()
 			throws InvalidDatasetParameterException,
-			DatasetTypeParameterException, DublicateDatasetException {
+			DatasetTypeParameterException, DuplicateNodeNameException, DatabaseException {
 		service.createDataset(projectNode, null, DatasetTypes.NETWORK);
 
 	}
@@ -583,12 +587,13 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 	 * projectNode) when parameter type != NETWORK
 	 * 
 	 * @throws DatasetTypeParameterException
-	 * @throws DublicateDatasetException
+	 * @throws DuplicateNodeNameException
+	 * @throws DatabaseException 
 	 */
 	@Test(expected = DatasetTypeParameterException.class)
 	public void createDatasetExeptionDatasetTypeTest()
 			throws InvalidDatasetParameterException,
-			DatasetTypeParameterException, DublicateDatasetException {
+			DatasetTypeParameterException, DuplicateNodeNameException, DatabaseException {
 		service.createDataset(projectNode, NAME_1, DatasetTypes.DRIVE);
 
 	}
@@ -599,12 +604,13 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 	 * 
 	 * @throws InvalidDatasetParameterException
 	 * @throws DatasetTypeParameterException
-	 * @throws DublicateDatasetException
+	 * @throws DuplicateNodeNameException
+	 * @throws DatabaseException 
 	 */
 	@Test(expected = InvalidDatasetParameterException.class)
 	public void createDatasetExeptionTypeTest()
 			throws InvalidDatasetParameterException,
-			DatasetTypeParameterException, DublicateDatasetException {
+			DatasetTypeParameterException, DuplicateNodeNameException, DatabaseException {
 		service.createDataset(projectNode, NAME_1, null);
 
 	}
@@ -615,12 +621,13 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 	 * 
 	 * @throws InvalidDatasetParameterException
 	 * @throws DatasetTypeParameterException
-	 * @throws DublicateDatasetException
+	 * @throws DuplicateNodeNameException
+	 * @throws DatabaseException 
 	 */
 	@Test(expected = InvalidDatasetParameterException.class)
 	public void createDatasetExeptionProjectNodeTest()
 			throws InvalidDatasetParameterException,
-			DatasetTypeParameterException, DublicateDatasetException {
+			DatasetTypeParameterException, DuplicateNodeNameException, DatabaseException {
 		service.createDataset(null, NAME_1, DatasetTypes.NETWORK);
 
 	}
@@ -631,12 +638,13 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 	 * 
 	 * @throws InvalidDatasetParameterException
 	 * @throws DatasetTypeParameterException
-	 * @throws DublicateDatasetException
+	 * @throws DuplicateNodeNameException
+	 * @throws DatabaseException 
 	 */
 	@Test(expected = InvalidDatasetParameterException.class)
 	public void createDatasetExeptionEmptyNameTest()
 			throws InvalidDatasetParameterException,
-			DatasetTypeParameterException, DublicateDatasetException {
+			DatasetTypeParameterException, DuplicateNodeNameException, DatabaseException {
 		service.createDataset(projectNode, "", DatasetTypes.NETWORK);
 
 	}
@@ -647,12 +655,13 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 	 * 
 	 * @throws InvalidDatasetParameterException
 	 * @throws DatasetTypeParameterException
-	 * @throws DublicateDatasetException
+	 * @throws DuplicateNodeNameException
+	 * @throws DatabaseException 
 	 */
-	@Test(expected = DublicateDatasetException.class)
+	@Test(expected = DuplicateNodeNameException.class)
 	public void createDatasetExeptionDublicateNameTest()
 			throws InvalidDatasetParameterException,
-			DatasetTypeParameterException, DublicateDatasetException {
+			DatasetTypeParameterException, DuplicateNodeNameException, DatabaseException {
 
 		initDatasetNode(NAME_1, DatasetTypes.NETWORK, null);
 		service.createDataset(projectNode, NAME_1, DatasetTypes.NETWORK);
@@ -665,16 +674,17 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 	 * 
 	 * @throws InvalidDatasetParameterException
 	 * @throws DatasetTypeParameterException
-	 * @throws DublicateDatasetException
+	 * @throws DuplicateNodeNameException
+	 * @throws DatabaseException 
 	 */
 	@Test
 	public void getDatasetCreateTest() throws InvalidDatasetParameterException,
-			DatasetTypeParameterException, DublicateDatasetException {
+			DatasetTypeParameterException, DuplicateNodeNameException, DatabaseException {
 		Node actualDataset = service.getDataset(projectNode, NAME_1,
 				DatasetTypes.NETWORK);
 
 		boolean hasRelation = actualDataset.hasRelationship(
-				DatasetRelationshipTypes.DATASET, Direction.INCOMING);
+				DatasetRelationTypes.DATASET, Direction.INCOMING);
 		Assert.assertTrue("not create DATASET relation", hasRelation);
 
 		String actualName = (String) actualDataset
@@ -693,11 +703,12 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 	 * 
 	 * @throws InvalidDatasetParameterException
 	 * @throws DatasetTypeParameterException
-	 * @throws DublicateDatasetException
+	 * @throws DuplicateNodeNameException
+	 * @throws DatabaseException 
 	 */
 	@Test
 	public void getDatasetFindTest() throws InvalidDatasetParameterException,
-			DatasetTypeParameterException, DublicateDatasetException {
+			DatasetTypeParameterException, DuplicateNodeNameException, DatabaseException {
 
 		Node datasetNode = initDatasetNode(NAME_1, DatasetTypes.NETWORK, null);
 
@@ -714,12 +725,13 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 	 * 
 	 * @throws InvalidDatasetParameterException
 	 * @throws DatasetTypeParameterException
-	 * @throws DublicateDatasetException
+	 * @throws DuplicateNodeNameException
+	 * @throws DatabaseException 
 	 */
 	@Test(expected = InvalidDatasetParameterException.class)
 	public void getDatasetExeptionNameTest()
 			throws InvalidDatasetParameterException,
-			DatasetTypeParameterException, DublicateDatasetException {
+			DatasetTypeParameterException, DuplicateNodeNameException, DatabaseException {
 		service.getDataset(projectNode, null, DatasetTypes.NETWORK);
 
 	}
@@ -729,12 +741,13 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 	 * projectNode) when parameter type != NETWORK
 	 * 
 	 * @throws DatasetTypeParameterException
-	 * @throws DublicateDatasetException
+	 * @throws DuplicateNodeNameException
+	 * @throws DatabaseException 
 	 */
 	@Test(expected = DatasetTypeParameterException.class)
 	public void getDatasetExeptionDatasetTypeTest()
 			throws InvalidDatasetParameterException,
-			DatasetTypeParameterException, DublicateDatasetException {
+			DatasetTypeParameterException, DuplicateNodeNameException, DatabaseException {
 		service.getDataset(projectNode, NAME_1, DatasetTypes.DRIVE);
 
 	}
@@ -745,12 +758,13 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 	 * 
 	 * @throws InvalidDatasetParameterException
 	 * @throws DatasetTypeParameterException
-	 * @throws DublicateDatasetException
+	 * @throws DuplicateNodeNameException
+	 * @throws DatabaseException 
 	 */
 	@Test(expected = InvalidDatasetParameterException.class)
 	public void getDatasetExeptionTypeTest()
 			throws InvalidDatasetParameterException,
-			DatasetTypeParameterException, DublicateDatasetException {
+			DatasetTypeParameterException, DuplicateNodeNameException, DatabaseException {
 		service.getDataset(projectNode, NAME_1, null);
 
 	}
@@ -761,12 +775,13 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 	 * 
 	 * @throws InvalidDatasetParameterException
 	 * @throws DatasetTypeParameterException
-	 * @throws DublicateDatasetException
+	 * @throws DuplicateNodeNameException
+	 * @throws DatabaseException 
 	 */
 	@Test(expected = InvalidDatasetParameterException.class)
 	public void getDatasetExeptionProjectNodeTest()
 			throws InvalidDatasetParameterException,
-			DatasetTypeParameterException, DublicateDatasetException {
+			DatasetTypeParameterException, DuplicateNodeNameException, DatabaseException {
 		service.getDataset(null, NAME_1, DatasetTypes.NETWORK);
 
 	}
@@ -777,12 +792,13 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 	 * 
 	 * @throws InvalidDatasetParameterException
 	 * @throws DatasetTypeParameterException
-	 * @throws DublicateDatasetException
+	 * @throws DuplicateNodeNameException
+	 * @throws DatabaseException 
 	 */
 	@Test(expected = InvalidDatasetParameterException.class)
 	public void getDatasetExeptionEmptyNameTest()
 			throws InvalidDatasetParameterException,
-			DatasetTypeParameterException, DublicateDatasetException {
+			DatasetTypeParameterException, DuplicateNodeNameException, DatabaseException {
 		service.getDataset(projectNode, "", DatasetTypes.NETWORK);
 
 	}
@@ -793,12 +809,12 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 	 * 
 	 * @throws DatasetTypeParameterException
 	 * @throws InvalidDatasetParameterException
-	 * @throws DublicateDatasetException
+	 * @throws DuplicateNodeNameException
 	 */
 	@Test
 	public void getDatasetWithDriveTypeFindTest()
 			throws InvalidDatasetParameterException,
-			DatasetTypeParameterException, DublicateDatasetException {
+			DatasetTypeParameterException, DuplicateNodeNameException {
 
 		Node datasetNode = initDatasetNode(NAME_1, DatasetTypes.DRIVE,
 				DriveTypes.NEMO_V1);
@@ -817,18 +833,18 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 	 * 
 	 * @throws InvalidDatasetParameterException
 	 * @throws DatasetTypeParameterException
-	 * @throws DublicateDatasetException
+	 * @throws DuplicateNodeNameException
 	 */
 	@Test
 	public void getDatasetWithDriveTypeCreateTest()
 			throws InvalidDatasetParameterException,
-			DatasetTypeParameterException, DublicateDatasetException {
+			DatasetTypeParameterException, DuplicateNodeNameException {
 
 		Node actualDataset = service.getDataset(projectNode, NAME_1,
 				DatasetTypes.DRIVE, DriveTypes.NEMO_V1);
 
 		boolean hasRelation = actualDataset.hasRelationship(
-				DatasetRelationshipTypes.DATASET, Direction.INCOMING);
+				DatasetRelationTypes.DATASET, Direction.INCOMING);
 		Assert.assertTrue("not create DATASET relation", hasRelation);
 
 		String actualName = (String) actualDataset
@@ -852,12 +868,12 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 	 * 
 	 * @throws DatasetTypeParameterException
 	 * @throws InvalidDatasetParameterException
-	 * @throws DublicateDatasetException
+	 * @throws DuplicateNodeNameException
 	 */
 	@Test(expected = DatasetTypeParameterException.class)
 	public void getDatasetWithDriveTypeNetworkTest()
 			throws InvalidDatasetParameterException,
-			DatasetTypeParameterException, DublicateDatasetException {
+			DatasetTypeParameterException, DuplicateNodeNameException {
 		service.getDataset(projectNode, NAME_1, DatasetTypes.NETWORK,
 				DriveTypes.NEMO_V1);
 
@@ -869,12 +885,12 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 	 * 
 	 * @throws DatasetTypeParameterException
 	 * @throws InvalidDatasetParameterException
-	 * @throws DublicateDatasetException
+	 * @throws DuplicateNodeNameException
 	 */
 	@Test(expected = InvalidDatasetParameterException.class)
 	public void getDatasetWithDriveTypeExeptionNameTest()
 			throws InvalidDatasetParameterException,
-			DatasetTypeParameterException, DublicateDatasetException {
+			DatasetTypeParameterException, DuplicateNodeNameException {
 		service.getDataset(projectNode, null, DatasetTypes.DRIVE,
 				DriveTypes.NEMO_V1);
 
@@ -886,12 +902,12 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 	 * 
 	 * @throws DatasetTypeParameterException
 	 * @throws InvalidDatasetParameterException
-	 * @throws DublicateDatasetException
+	 * @throws DuplicateNodeNameException
 	 */
 	@Test(expected = InvalidDatasetParameterException.class)
 	public void getDatasetWithDriveTypeExeptionTypeTest()
 			throws InvalidDatasetParameterException,
-			DatasetTypeParameterException, DublicateDatasetException {
+			DatasetTypeParameterException, DuplicateNodeNameException {
 		service.getDataset(projectNode, NAME_1, null, DriveTypes.NEMO_V1);
 
 	}
@@ -902,12 +918,12 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 	 * 
 	 * @throws DatasetTypeParameterException
 	 * @throws InvalidDatasetParameterException
-	 * @throws DublicateDatasetException
+	 * @throws DuplicateNodeNameException
 	 */
 	@Test(expected = InvalidDatasetParameterException.class)
 	public void getDatasetWithDriveTypeExeptionDriveTypeTest()
 			throws InvalidDatasetParameterException,
-			DatasetTypeParameterException, DublicateDatasetException {
+			DatasetTypeParameterException, DuplicateNodeNameException {
 		service.getDataset(projectNode, NAME_1, DatasetTypes.DRIVE, null);
 
 	}
@@ -918,12 +934,12 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 	 * 
 	 * @throws DatasetTypeParameterException
 	 * @throws InvalidDatasetParameterException
-	 * @throws DublicateDatasetException
+	 * @throws DuplicateNodeNameException
 	 */
 	@Test(expected = InvalidDatasetParameterException.class)
 	public void getDatasetWithDriveTypeExeptionProjectNodeTest()
 			throws InvalidDatasetParameterException,
-			DatasetTypeParameterException, DublicateDatasetException {
+			DatasetTypeParameterException, DuplicateNodeNameException {
 		service.getDataset(null, NAME_1, DatasetTypes.DRIVE, DriveTypes.NEMO_V1);
 
 	}
@@ -934,12 +950,12 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 	 * 
 	 * @throws DatasetTypeParameterException
 	 * @throws InvalidDatasetParameterException
-	 * @throws DublicateDatasetException
+	 * @throws DuplicateNodeNameException
 	 */
 	@Test(expected = InvalidDatasetParameterException.class)
 	public void getDatasetWithDriveTypeExeptionEmptyNameTest()
 			throws InvalidDatasetParameterException,
-			DatasetTypeParameterException, DublicateDatasetException {
+			DatasetTypeParameterException, DuplicateNodeNameException {
 		service.getDataset(projectNode, "", DatasetTypes.DRIVE,
 				DriveTypes.NEMO_V1);
 
