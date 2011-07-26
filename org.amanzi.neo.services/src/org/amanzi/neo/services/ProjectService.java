@@ -16,6 +16,7 @@ package org.amanzi.neo.services;
 import java.util.Iterator;
 
 import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.apache.log4j.Logger;
@@ -126,7 +127,7 @@ public class ProjectService extends NewAbstractService {
             result.setProperty(NewAbstractService.PROPERTY_NAME_NAME, name);
             graphDb.getReferenceNode().createRelationshipTo(result, ProjectRelationshipType.PROJECT);
             tx.success();
-        } catch (Exception e) {
+        } catch (DatabaseException e) {
             LOGGER.error("Could not create project '" + name + "'.", e);
         } finally {
             tx.finish();
