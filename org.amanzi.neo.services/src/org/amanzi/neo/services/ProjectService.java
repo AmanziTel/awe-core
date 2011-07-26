@@ -81,7 +81,7 @@ public class ProjectService extends NewAbstractService {
 
     /**
      * Constructs a <code>ProjectService</code> instance, that uses the default
-     * <code>GraphDatabaseService</code> instance of the running project
+     * <code>GraphDatabaseService</code> instance of the running application
      */
     public ProjectService() {
         super();
@@ -109,6 +109,7 @@ public class ProjectService extends NewAbstractService {
      *         already exists
      */
     public Node createProject(String name) throws IllegalNodeDataException, DuplicateNodeNameException {
+        LOGGER.debug("Started createProject '" +  name + "'");
         // validate parameters
         if ((name == null) || (name.equals(""))) {
             throw new IllegalNodeDataException("Project name cannot be empty.");
@@ -122,7 +123,7 @@ public class ProjectService extends NewAbstractService {
         tx = graphDb.beginTx();
         try {
             result = createNode(ProjectNodeType.PROJECT);
-            result.setProperty(INeoConstants.PROPERTY_NAME_NAME, name);
+            result.setProperty(NewAbstractService.PROPERTY_NAME_NAME, name);
             graphDb.getReferenceNode().createRelationshipTo(result, ProjectRelationshipType.PROJECT);
             tx.success();
         } catch (Exception e) {
@@ -130,7 +131,8 @@ public class ProjectService extends NewAbstractService {
         } finally {
             tx.finish();
         }
-        return result;
+        LOGGER.debug("Finished createProject");
+        return result;        
     }
 
     /**
@@ -143,6 +145,7 @@ public class ProjectService extends NewAbstractService {
      *         is found
      */
     public Node findProject(String name) throws IllegalNodeDataException, DuplicateNodeNameException {
+        LOGGER.debug("Started findProject '" +  name + "'");
         // validate parameters
         if ((name == null) || (name.equals(""))) {
             throw new IllegalNodeDataException("Project name cannot be empty.");
@@ -158,6 +161,7 @@ public class ProjectService extends NewAbstractService {
         if (it.hasNext()) {
             throw new DuplicateNodeNameException(name, ProjectNodeType.PROJECT);
         }
+        LOGGER.debug("Finished findProject");
         return result;
     }
 
@@ -167,14 +171,17 @@ public class ProjectService extends NewAbstractService {
      * @return an <code>Iterable</code> over project nodes
      */
     public Iterable<Node> findAllProjects() {
+        LOGGER.debug("Started findAllProjects");
         return getProjectTraversalDescription().traverse(graphDb.getReferenceNode()).nodes();
     }
 
     public Node getProject(String name) throws IllegalNodeDataException, DuplicateNodeNameException {
+        LOGGER.debug("Started getProject '" + name + "'");
         Node result = findProject(name);
         if (result == null) {
             result = createProject(name);
         }
+        LOGGER.debug("Finished getProject");
         return result;
     }
 
@@ -185,6 +192,7 @@ public class ProjectService extends NewAbstractService {
      * @return
      */
     public TraversalDescription getProjectTraversalDescription() {
+        LOGGER.debug("Started getProjectTraversalDescription");
         return Traversal.description().depthFirst().evaluator(Evaluators.excludeStartPosition()).evaluator(Evaluators.atDepth(1))
                 .relationships(ProjectRelationshipType.PROJECT, Direction.OUTGOING);
     }

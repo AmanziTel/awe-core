@@ -24,8 +24,8 @@ import org.neo4j.graphdb.traversal.Evaluation;
 import org.neo4j.graphdb.traversal.Evaluator;
 
 /**
- * TODO Purpose of
  * <p>
+ * New implementation of base class for services
  * </p>
  * 
  * @author grigoreva_a
@@ -40,15 +40,27 @@ public abstract class NewAbstractService {
     protected GraphDatabaseService graphDb;
     private Transaction tx;
 
+    /**
+     * Sets service to use default <code>GraphDatabaseService</code> of the running application 
+     */
     public NewAbstractService() {
         // TODO: get database service
         graphDb = NeoServiceProvider.getProvider().getService();
     }
 
+    /**
+     * Sets service to use the defined <code>GraphDatabaseService</code>
+     * @param graphDb - <code>GraphDatabaseService</code> to use 
+     */
     public NewAbstractService(GraphDatabaseService graphDb) {
         this.graphDb = graphDb;
     }
 
+    /**
+     * Creates a node and sets it's type property
+     * @param nodeType - the new node type
+     * @return - the newly created node
+     */
     protected Node createNode(INodeType nodeType) {
         Node result = null;
         tx = graphDb.beginTx();
@@ -65,10 +77,22 @@ public abstract class NewAbstractService {
         return result;
     }
 
+    /**
+     * <p>
+     * An evaluator that filters nodes with defined name and type. To be used in traversals
+     * </p>
+     * @author grigoreva_a
+     * @since 1.0.0
+     */
     public class NameTypeEvaluator implements Evaluator {
         private String name;
         private INodeType type;
 
+        /**
+         * Constructor
+         * @param name
+         * @param type
+         */
         public NameTypeEvaluator(String name, INodeType type) {
             this.name = name;
             this.type = type;
@@ -80,8 +104,8 @@ public abstract class NewAbstractService {
                 return Evaluation.EXCLUDE_AND_CONTINUE;
             }
             Node node = path.endNode();
-            if          ((node.getProperty(INeoConstants.PROPERTY_NAME_NAME, "").equals(name))
-                    &&   (node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(type.getId()))) {
+            if          ((node.getProperty(NewAbstractService.PROPERTY_NAME_NAME, "").equals(name))
+                    &&   (node.getProperty(NewAbstractService.PROPERTY_TYPE_NAME, "").equals(type.getId()))) {
                 return Evaluation.INCLUDE_AND_CONTINUE;
             } else {
                 return Evaluation.EXCLUDE_AND_CONTINUE;
