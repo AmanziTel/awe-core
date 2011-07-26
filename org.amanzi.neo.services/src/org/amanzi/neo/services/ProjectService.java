@@ -16,7 +16,6 @@ package org.amanzi.neo.services;
 import java.util.Iterator;
 
 import org.amanzi.neo.services.enums.INodeType;
-import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.apache.log4j.Logger;
@@ -37,12 +36,28 @@ import org.neo4j.kernel.Traversal;
  * @author grigoreva_a
  * @since 1.0.0
  */
+/**
+ * TODO Purpose of
+ * <p>
+ * </p>
+ * 
+ * @author grigoreva_a
+ * @since 1.0.0
+ */
 public class ProjectService extends NewAbstractService {
 
     private static Logger LOGGER = Logger.getLogger(ProjectService.class);
 
     private Transaction tx;
 
+    /**
+     * <p>
+     * This enum describes types of projects.
+     * </p>
+     * 
+     * @author grigoreva_a
+     * @since 1.0.0
+     */
     protected enum ProjectNodeType implements INodeType {
         PROJECT {
             @Override
@@ -52,18 +67,47 @@ public class ProjectService extends NewAbstractService {
         }
     }
 
+    /**
+     * <p>
+     * This enum describes types of relationships used with project nodes.
+     * </p>
+     * 
+     * @author grigoreva_a
+     * @since 1.0.0
+     */
     protected enum ProjectRelationshipType implements RelationshipType {
         PROJECT;
     }
 
+    /**
+     * Constructs a <code>ProjectService</code> instance, that uses the default
+     * <code>GraphDatabaseService</code> instance of the running project
+     */
     public ProjectService() {
         super();
     }
 
+    /**
+     * Constructs a <code>ProjectService</code> instance, that uses the defined
+     * <code>GraphDatabaseService</code>
+     * 
+     * @param graphDb - <code>GraphDatabaseService</code> to use
+     */
     public ProjectService(GraphDatabaseService graphDb) {
         super(graphDb);
     }
 
+    /**
+     * Creates a <i>project</i> node with the defined name, sets project type to
+     * <code>ProjectNodeType.PROJECT</code> and creates <code>ProjectRelationshipType.PROJECT</code>
+     * relationship from reference node to the project node
+     * 
+     * @param name - the name of the new project.
+     * @return the newly created project node
+     * @throws IllegalNodeDataException is thrown when <code>name</code> is null or empty
+     * @throws DuplicateNodeNameException is thrown if a <i>project</i> node with the same name
+     *         already exists
+     */
     public Node createProject(String name) throws IllegalNodeDataException, DuplicateNodeNameException {
         // validate parameters
         if ((name == null) || (name.equals(""))) {
@@ -89,6 +133,15 @@ public class ProjectService extends NewAbstractService {
         return result;
     }
 
+    /**
+     * Finds a project with the defined name
+     * 
+     * @param name - the name of a project node to find
+     * @return a project node with the defined name, or <code>null</code>, if nothing was found
+     * @throws IllegalNodeDataException is thrown when <code>name</code> is null or empty
+     * @throws DuplicateNodeNameException is thrown if more than one projects with the defined name
+     *         is found
+     */
     public Node findProject(String name) throws IllegalNodeDataException, DuplicateNodeNameException {
         // validate parameters
         if ((name == null) || (name.equals(""))) {
@@ -108,6 +161,11 @@ public class ProjectService extends NewAbstractService {
         return result;
     }
 
+    /**
+     * Traverses database to find all project nodes
+     * 
+     * @return an <code>Iterable</code> over project nodes
+     */
     public Iterable<Node> findAllProjects() {
         return getProjectTraversalDescription().traverse(graphDb.getReferenceNode()).nodes();
     }
@@ -120,6 +178,12 @@ public class ProjectService extends NewAbstractService {
         return result;
     }
 
+    /**
+     * Generates a <code>TraversalDescription</code> to fetch all project nodes. Assumed that you
+     * would start traversing from DB reference node
+     * 
+     * @return
+     */
     public TraversalDescription getProjectTraversalDescription() {
         return Traversal.description().depthFirst().evaluator(Evaluators.excludeStartPosition()).evaluator(Evaluators.atDepth(1))
                 .relationships(ProjectRelationshipType.PROJECT, Direction.OUTGOING);

@@ -14,8 +14,9 @@
 package org.amanzi.neo.services.exceptions;
 
 /**
- * TODO Purpose of
  * <p>
+ * This exception is to be raised when some wrong data is passed to be set as a <code>Node</code>
+ * property
  * </p>
  * 
  * @author grigoreva_a
@@ -27,8 +28,8 @@ public class IllegalNodeDataException extends AWEException {
     public IllegalNodeDataException() {
         super();
     }
-    
-    public IllegalNodeDataException(String message){
+
+    public IllegalNodeDataException(String message) {
         this.message = message;
     }
 }

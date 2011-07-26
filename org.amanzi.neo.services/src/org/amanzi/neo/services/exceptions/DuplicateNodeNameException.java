@@ -16,10 +16,9 @@ package org.amanzi.neo.services.exceptions;
 import org.amanzi.neo.services.enums.INodeType;
 
 /**
- * TODO Purpose of
  * <p>
  * This exception is to be raised when there is an attempt to create a node with duplicate name and
- * type.
+ * type, or such an occurrence suddenly found.
  * </p>
  * 
  * @author grigoreva_a
@@ -34,10 +33,25 @@ public class DuplicateNodeNameException extends AWEException {
         super();
     }
 
+    /**
+     * Creates an exception with a default message, saying "Duplicate node name '%s' of type '%s'."
+     * 
+     * @param nodeName
+     * @param nodeType
+     */
     public DuplicateNodeNameException(String nodeName, INodeType nodeType) {
         super(defaultMessage, nodeName, nodeType.getId());
     }
 
+    /**
+     * Creates an exception with the defined <code>message</code>. Define message as a formatted
+     * string with two <code>String</code> placeholders (<code>%s</code>) for name and type of the
+     * node.
+     * 
+     * @param message - "* %s * %s *"
+     * @param nodeName
+     * @param nodeType
+     */
     public DuplicateNodeNameException(String message, String nodeName, INodeType nodeType) {
         super(message, nodeName, nodeType.getId());
     }

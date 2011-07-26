@@ -14,26 +14,36 @@
 package org.amanzi.neo.services.exceptions;
 
 /**
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author kruglik_a
  * @since 1.0.0
  */
-public abstract class AWEException extends Exception{
-    
+public abstract class AWEException extends Exception {
+
     protected String message;
 
     /** long serialVersionUID field */
     private static final long serialVersionUID = 8622675133900807087L;
 
-    protected AWEException(String message, Object... params ){
+    /**
+     * This constructor will generate exception message by calling
+     * <code>String.format(message, params);</code>.
+     * 
+     * @param message
+     * @param params
+     */
+    protected AWEException(String message, Object... params) {
         this.message = String.format(message, params);
-        
+
     }
-    protected AWEException(){}
-    
+
+    protected AWEException() {
+        super();
+    }
+
     @Override
     public String getMessage() {
         return message;
