@@ -12,7 +12,6 @@
  */
 
 package org.amanzi.neo.services;
-
 import org.amanzi.neo.db.manager.NeoServiceProvider;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
@@ -58,6 +57,9 @@ public abstract class NewAbstractService {
         this.graphDb = graphDb;
     }
 
+    public String getNodeType(Node node){
+        return (String)node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "");
+    }
     /**
      * Creates a node and sets it's type property
      * 
@@ -65,6 +67,7 @@ public abstract class NewAbstractService {
      * @return - the newly created node
      */
     protected Node createNode(INodeType nodeType) throws DatabaseException {
+
         Node result = null;
         tx = graphDb.beginTx();
         try {
@@ -73,6 +76,7 @@ public abstract class NewAbstractService {
             tx.success();
         } catch (Exception e) {
             LOGGER.error("Could not create node.", e);
+            tx.failure();
             throw new DatabaseException(e);
         } finally {
             tx.finish();
