@@ -16,6 +16,9 @@ package org.amanzi.neo.services;
 import java.util.Iterator;
 
 import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
+import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -61,13 +64,13 @@ public class ProjectService extends NewAbstractService {
         super(graphDb);
     }
 
-    public Node createProject(String name) {
+    public Node createProject(String name) throws IllegalNodeDataException, DuplicateNodeNameException {
         // validate parameters
         if ((name == null) || (name.equals(""))) {
             throw new IllegalNodeDataException("Project name cannot be empty.");
         }
         if (findProject(name) != null) {
-            throw new DuplicateNodeNameException("A project with name '" + name + "' already exists.");
+            throw new DuplicateNodeNameException(name, ProjectNodeType.PROJECT);
         }
 
         // create new project
@@ -86,7 +89,7 @@ public class ProjectService extends NewAbstractService {
         return result;
     }
 
-    public Node findProject(String name) {
+    public Node findProject(String name) throws IllegalNodeDataException, DuplicateNodeNameException {
         // validate parameters
         if ((name == null) || (name.equals(""))) {
             throw new IllegalNodeDataException("Project name cannot be empty.");
@@ -95,12 +98,12 @@ public class ProjectService extends NewAbstractService {
         Node result = null;
         Iterator<Node> it = getProjectTraversalDescription().evaluator(new NameTypeEvaluator(name, ProjectNodeType.PROJECT))
                 .traverse(graphDb.getReferenceNode()).nodes().iterator();
-        if (it.hasNext()){
-            result =  it.next();
+        if (it.hasNext()) {
+            result = it.next();
         }
-        
-        if(it.hasNext()){
-            throw new DuplicateNodeNameException();
+
+        if (it.hasNext()) {
+            throw new DuplicateNodeNameException(name, ProjectNodeType.PROJECT);
         }
         return result;
     }
@@ -109,7 +112,7 @@ public class ProjectService extends NewAbstractService {
         return getProjectTraversalDescription().traverse(graphDb.getReferenceNode()).nodes();
     }
 
-    public Node getProject(String name) {
+    public Node getProject(String name) throws IllegalNodeDataException, DuplicateNodeNameException {
         Node result = findProject(name);
         if (result == null) {
             result = createProject(name);

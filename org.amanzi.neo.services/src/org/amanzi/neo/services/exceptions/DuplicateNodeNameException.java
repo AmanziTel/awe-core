@@ -11,26 +11,34 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.services;
+package org.amanzi.neo.services.exceptions;
+
+import org.amanzi.neo.services.enums.INodeType;
 
 /**
  * TODO Purpose of
  * <p>
+ * This exception is to be raised when there is an attempt to create a node with duplicate name and
+ * type.
  * </p>
  * 
  * @author grigoreva_a
  * @since 1.0.0
  */
-public class DuplicateNodeNameException extends RuntimeException {
+public class DuplicateNodeNameException extends AWEException {
     static final long serialVersionUID = 1;
 
-    // TODO: handle some specific data
+    private static String defaultMessage = "Duplicate node name '%s' of type '%s'.";
 
     public DuplicateNodeNameException() {
         super();
     }
 
-    public DuplicateNodeNameException(String message) {
-        super(message);
+    public DuplicateNodeNameException(String nodeName, INodeType nodeType) {
+        super(defaultMessage, nodeName, nodeType.getId());
+    }
+
+    public DuplicateNodeNameException(String message, String nodeName, INodeType nodeType) {
+        super(message, nodeName, nodeType.getId());
     }
 }

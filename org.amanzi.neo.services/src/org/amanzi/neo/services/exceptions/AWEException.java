@@ -22,9 +22,20 @@ package org.amanzi.neo.services.exceptions;
  * @since 1.0.0
  */
 public abstract class AWEException extends Exception{
+    
+    protected String message;
 
     /** long serialVersionUID field */
     private static final long serialVersionUID = 8622675133900807087L;
 
+    protected AWEException(String message, Object... params ){
+        this.message = String.format(message, params);
+        
+    }
+    protected AWEException(){}
     
+    @Override
+    public String getMessage() {
+        return message;
+    }
 }

@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.services;
+package org.amanzi.neo.services.exceptions;
 
 /**
  * TODO Purpose of
@@ -21,14 +21,14 @@ package org.amanzi.neo.services;
  * @author grigoreva_a
  * @since 1.0.0
  */
-public class IllegalNodeDataException extends IllegalArgumentException {
+public class IllegalNodeDataException extends AWEException {
     static final long serialVersionUID = 1;
 
     public IllegalNodeDataException() {
         super();
     }
-
-    public IllegalNodeDataException(String message) {
-        super(message);
+    
+    public IllegalNodeDataException(String message){
+        this.message = message;
     }
 }
