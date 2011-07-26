@@ -106,8 +106,7 @@ public class InformationProvider {
 					}
 				}
 			}
-		} 
-		else if (NodeTypes.DATASET.checkNode(root)) {
+		} else if (NodeTypes.DATASET.checkNode(root)) {
 
 			Set<String> nodeTypeKey = statistic.getNodeTypeKey(name);
 			// if (nodeTypeKey.isEmpty()) {
