@@ -34,9 +34,11 @@ class SearchQuery
   def stop_on(&block)
     @stop_on=block
   end
+
   def get_node_property(node,prop)
     (node.property? prop) ? node.get_property(prop): node.send(prop.to_sym)
   end
+
   def each
     configure_traverser
     @traverser.each do |node|
@@ -52,7 +54,7 @@ class SearchQuery
           @properties.each_pair do |k,v|
             result[v]=get_node_property(node,k)
           end
-         end
+        end
       else
         @properties.each do |prop|
           result[prop]=(node.property? prop) ? node.get_property(prop): nil
@@ -79,8 +81,8 @@ class SearchQuery
   end
 
   def select_properties(properties,&block)
-#    puts self
-#    puts "Search.select(#{properties},&block)"
+    #    puts self
+    #    puts "Search.select(#{properties},&block)"
     search=SearchQuery.new(properties)
     search.setup &block
     @child=search
@@ -113,6 +115,8 @@ module NodeUtils
     end
     datasets.first
   end
+
+  alias :get_dataset :dataset
 
   def current_project
     ProjectPlugin::getPlugin().getProjectRegistry().getCurrentProject()

@@ -26,6 +26,7 @@ include_class org.amanzi.awe.report.charts.Charts
 include_class org.amanzi.awe.report.charts.CustomBarRenderer
 include_class org.amanzi.awe.report.util.ReportUtils
 include_class org.amanzi.awe.report.pdf.PDFPrintingEngine
+include_class org.amanzi.awe.report.pdf.RtfPrintingEngine
 
 include_class "java.text.SimpleDateFormat"
 include_class org.jfree.data.category.DefaultCategoryDataset;
@@ -67,10 +68,7 @@ module NodeUtils
   end
 
   def find_dataset(dataset_name)
-    traverser=Neo4j.ref_node.outgoing(:CHILD).depth(2).filter      do
-      get_property(:name.to_s)== dataset_name
-    end
-    traverser.first
+    get_dataset(dataset_name)
   end
 
   def find_aggr_node(gis_node,property, distribute, select)
@@ -301,7 +299,7 @@ end
 class Report
   include NodeUtils
   attr_reader :name
-  attr_accessor :date,:author
+  attr_accessor :date,:author,:page_size
   def initialize(name)
     @name = name
   end
@@ -317,6 +315,9 @@ class Report
 
   def date (new_date)
     setDate(new_date)
+  end
+  def page_size (new_size)
+    setPageSize(new_size.to_s)
   end
 
   def text (new_text)
@@ -387,6 +388,11 @@ class Report
     engine=PDFPrintingEngine.new
     engine.printReport(self)
     puts "Report '#{@name}' saved"
+  end
+  def save_rtf
+    engine=RtfPrintingEngine.new
+    engine.printReport(self)
+    puts "Rtf Report '#{@name}' saved"
   end
 end
 
