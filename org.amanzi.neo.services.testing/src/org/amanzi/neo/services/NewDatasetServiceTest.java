@@ -4,13 +4,12 @@ import java.util.List;
 
 import junit.framework.Assert;
 
-import org.amanzi.neo.services.DataService.DatasetRelationTypes;
-import org.amanzi.neo.services.DataService.DatasetTypes;
-import org.amanzi.neo.services.DataService.DriveTypes;
-import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
+import org.amanzi.neo.services.NewDatasetService.DatasetRelationshipTypes;
+import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
+import org.amanzi.neo.services.NewDatasetService.DriveTypes;
+import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
 import org.amanzi.neo.services.exceptions.DublicateDatasetException;
 import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
-import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
 import org.amanzi.testing.AbstractAWETest;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -22,12 +21,12 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 
 /**
- * Test for org.amanzi.neo.services.DataService
+ * Test for org.amanzi.neo.services.NewDatasetService
  * 
  * @author kruglik_a
  * 
  */
-public class DataServiceTest extends AbstractAWETest {
+public class NewDatasetServiceTest extends AbstractAWETest {
 
 	@BeforeClass
 	public static final void beforeClass() {
@@ -42,11 +41,11 @@ public class DataServiceTest extends AbstractAWETest {
 	}
 
 	private Transaction tx;
-	private DataService service;
+	private NewDatasetService service;
 
 	@Before
 	public final void before() {
-		service = new DataService(graphDatabaseService);
+		service = new NewDatasetService(graphDatabaseService);
 		initProjectNode();
 	}
 
@@ -72,10 +71,10 @@ public class DataServiceTest extends AbstractAWETest {
 	 */
 	private void setPropertyToDatasetNode(Node datasetNode, String name,
 			DatasetTypes type, DriveTypes driveType) {
-		datasetNode.setProperty(DataService.NAME, name);
-		datasetNode.setProperty(DataService.TYPE, type.name());
+		datasetNode.setProperty(NewDatasetService.NAME, name);
+		datasetNode.setProperty(NewDatasetService.TYPE, type.name());
 		if (driveType != null)
-			datasetNode.setProperty(DataService.DRIVE_TYPE, driveType.name());
+			datasetNode.setProperty(NewDatasetService.DRIVE_TYPE, driveType.name());
 	}
 
 	/**
@@ -91,8 +90,8 @@ public class DataServiceTest extends AbstractAWETest {
 		try {
 			projectNode = graphDatabaseService.createNode();
 			graphDatabaseService.getReferenceNode().createRelationshipTo(
-					projectNode, DatasetRelationTypes.PROJECT);
-			projectNode.setProperty(DataService.NAME, "project");
+					projectNode, DatasetRelationshipTypes.PROJECT);
+			projectNode.setProperty(NewDatasetService.NAME, "project");
 			tx.success();
 		} finally {
 			tx.finish();
@@ -115,7 +114,7 @@ public class DataServiceTest extends AbstractAWETest {
 		try {
 			datasetNode = graphDatabaseService.createNode();
 			projectNode.createRelationshipTo(datasetNode,
-					DatasetRelationTypes.DATASET);
+					DatasetRelationshipTypes.DATASET);
 			setPropertyToDatasetNode(datasetNode, name, type, driveType);
 
 			tx.success();
@@ -133,7 +132,7 @@ public class DataServiceTest extends AbstractAWETest {
 	private void deleteProjectNode() {
 		tx = graphDatabaseService.beginTx();
 		try {
-			projectNode.getSingleRelationship(DatasetRelationTypes.PROJECT,
+			projectNode.getSingleRelationship(DatasetRelationshipTypes.PROJECT,
 					Direction.INCOMING).delete();
 			tx.failure();
 
@@ -413,20 +412,20 @@ public class DataServiceTest extends AbstractAWETest {
 				DatasetTypes.DRIVE, DriveTypes.NEMO_V1);
 
 		boolean hasRelation = actualDataset.hasRelationship(
-				DatasetRelationTypes.DATASET, Direction.INCOMING);
+				DatasetRelationshipTypes.DATASET, Direction.INCOMING);
 		Assert.assertTrue("not create DATASET relation", hasRelation);
 
 		String actualName = (String) actualDataset
-				.getProperty(DataService.NAME);
+				.getProperty(NewDatasetService.NAME);
 		Assert.assertEquals("dataset has wrong name", NAME_1, actualName);
 
 		String actualType = (String) actualDataset
-				.getProperty(DataService.TYPE);
+				.getProperty(NewDatasetService.TYPE);
 		Assert.assertEquals("dataset has wrong type",
 				DatasetTypes.DRIVE.name(), actualType);
 
 		String actualDriveType = (String) actualDataset
-				.getProperty(DataService.DRIVE_TYPE);
+				.getProperty(NewDatasetService.DRIVE_TYPE);
 		Assert.assertEquals("dataset has wrong driveType",
 				DriveTypes.NEMO_V1.name(), actualDriveType);
 	}
@@ -550,15 +549,15 @@ public class DataServiceTest extends AbstractAWETest {
 				DatasetTypes.NETWORK);
 
 		boolean hasRelation = actualDataset.hasRelationship(
-				DatasetRelationTypes.DATASET, Direction.INCOMING);
+				DatasetRelationshipTypes.DATASET, Direction.INCOMING);
 		Assert.assertTrue("not create DATASET relation", hasRelation);
 
 		String actualName = (String) actualDataset
-				.getProperty(DataService.NAME);
+				.getProperty(NewDatasetService.NAME);
 		Assert.assertEquals("dataset has wrong name", NAME_1, actualName);
 
 		String actualType = (String) actualDataset
-				.getProperty(DataService.TYPE);
+				.getProperty(NewDatasetService.TYPE);
 		Assert.assertEquals("dataset has wrong type",
 				DatasetTypes.NETWORK.name(), actualType);
 	}
@@ -675,15 +674,15 @@ public class DataServiceTest extends AbstractAWETest {
 				DatasetTypes.NETWORK);
 
 		boolean hasRelation = actualDataset.hasRelationship(
-				DatasetRelationTypes.DATASET, Direction.INCOMING);
+				DatasetRelationshipTypes.DATASET, Direction.INCOMING);
 		Assert.assertTrue("not create DATASET relation", hasRelation);
 
 		String actualName = (String) actualDataset
-				.getProperty(DataService.NAME);
+				.getProperty(NewDatasetService.NAME);
 		Assert.assertEquals("dataset has wrong name", NAME_1, actualName);
 
 		String actualType = (String) actualDataset
-				.getProperty(DataService.TYPE);
+				.getProperty(NewDatasetService.TYPE);
 		Assert.assertEquals("dataset has wrong type",
 				DatasetTypes.NETWORK.name(), actualType);
 	}
@@ -829,20 +828,20 @@ public class DataServiceTest extends AbstractAWETest {
 				DatasetTypes.DRIVE, DriveTypes.NEMO_V1);
 
 		boolean hasRelation = actualDataset.hasRelationship(
-				DatasetRelationTypes.DATASET, Direction.INCOMING);
+				DatasetRelationshipTypes.DATASET, Direction.INCOMING);
 		Assert.assertTrue("not create DATASET relation", hasRelation);
 
 		String actualName = (String) actualDataset
-				.getProperty(DataService.NAME);
+				.getProperty(NewDatasetService.NAME);
 		Assert.assertEquals("dataset has wrong name", NAME_1, actualName);
 
 		String actualType = (String) actualDataset
-				.getProperty(DataService.TYPE);
+				.getProperty(NewDatasetService.TYPE);
 		Assert.assertEquals("dataset has wrong type",
 				DatasetTypes.DRIVE.name(), actualType);
 
 		String actualDriveType = (String) actualDataset
-				.getProperty(DataService.DRIVE_TYPE);
+				.getProperty(NewDatasetService.DRIVE_TYPE);
 		Assert.assertEquals("dataset has wrong driveType",
 				DriveTypes.NEMO_V1.name(), actualDriveType);
 	}
