@@ -133,9 +133,8 @@ public class BaseDatasetSelectionInforamation implements ISelectionInformation {
 						public Evaluation evaluate(Path arg0) {
 							Node node = arg0.endNode();
 							String typeId = ds.getTypeId(node);
-							boolean continues = typeId != null
-									&& typeId.equals(nodeType);
-							boolean includes = node.hasProperty(name);
+							boolean continues = true;
+							boolean includes = node.hasProperty(name)&&typeId.equals(nodeType);
 							return Evaluation.of(includes, continues);
 						}
 					}).traverse(root);

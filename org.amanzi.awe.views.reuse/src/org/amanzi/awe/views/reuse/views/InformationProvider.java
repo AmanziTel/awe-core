@@ -73,7 +73,7 @@ public class InformationProvider {
 		HashMap<String, ISelectionInformation> result = new HashMap<String, ISelectionInformation>();
 		Set<String> rootKey = statistic.getRootKey();
 
-		if (rootKey.isEmpty() && !NodeTypes.DATASET.checkNode(root)) {
+		if (rootKey.isEmpty()&&NodeTypes.DATASET.checkNode(root) ) {
 			return result;
 		}
 
@@ -106,7 +106,8 @@ public class InformationProvider {
 					}
 				}
 			}
-		} else if (NodeTypes.DATASET.checkNode(root)) {
+		} 
+		else if (NodeTypes.DATASET.checkNode(root)) {
 
 			Set<String> nodeTypeKey = statistic.getNodeTypeKey(name);
 			// if (nodeTypeKey.isEmpty()) {
