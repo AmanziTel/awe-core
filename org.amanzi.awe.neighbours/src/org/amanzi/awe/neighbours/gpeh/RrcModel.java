@@ -21,7 +21,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.amanzi.awe.neighbours.GpehReportUtil;
+import org.amanzi.awe.gpeh.GpehReportUtil;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.core.preferences.NeoCorePreferencesConstants;
 import org.amanzi.neo.services.enums.NodeTypes;

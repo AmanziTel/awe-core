@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Scanner;
 
+import org.amanzi.awe.gpeh.GpehReportUtil;
 import org.amanzi.awe.gpeh.parser.Events;
 import org.amanzi.awe.l3messages.AsnParserEvent;
 import org.amanzi.awe.l3messages.IAsnParserListener;
@@ -37,7 +38,7 @@ import org.amanzi.awe.l3messages.rrc.MeasurementReport;
 import org.amanzi.awe.l3messages.rrc.UE_InternalMeasuredResults;
 import org.amanzi.awe.l3messages.rrc.UL_DCCH_Message;
 import org.amanzi.awe.l3messages.rrc.UL_DCCH_MessageType;
-import org.amanzi.awe.neighbours.GpehReportUtil;
+
 
 /**
  * TODO refactor for support new mechanism

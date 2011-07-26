@@ -13,6 +13,7 @@
 
 package org.amanzi.awe.neighbours;
 
+import java.beans.EventSetDescriptor;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.LinkedHashSet;
@@ -20,9 +21,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import org.amanzi.neo.core.enums.gpeh.Events;
-import org.amanzi.neo.core.enums.gpeh.Parameters;
-
+import org.amanzi.awe.gpeh.GpehReportUtil;
+import org.amanzi.awe.gpeh.parser.Events;
+import org.amanzi.awe.gpeh.parser.Parameters;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;

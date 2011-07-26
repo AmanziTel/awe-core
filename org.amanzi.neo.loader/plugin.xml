@@ -62,10 +62,7 @@
              class="org.amanzi.neo.loader.handlers.LoadNetworkSiteHandler"
              commandId="org.amanzi.neo.loader.commands.LoadNetworkSite">
        </handler>
-       <handler
-             class="org.amanzi.neo.loader.handlers.LoadGPEHHandler"
-             commandId="org.amanzi.neo.loader.commands.LoadGPEHHandler">
-       </handler>
+       
        <handler
              class="org.amanzi.neo.loader.handlers.LoadDriveHandler"
              commandId="org.amanzi.neo.loader.commands.LoadDrive">
@@ -92,12 +89,7 @@
             id="org.amanzi.neo.loader.LoadNetworkSite"
                    tooltip="Load Network Data">
              </command>
-             <command
-                   commandId="org.amanzi.neo.loader.commands.LoadGPEHHandler"
-            icon="icons/16/oss.png"
-            id="org.amanzi.neo.loader.LoadGPEH"
-                   tooltip="Load OSS Data">
-             </command>
+             
              <command
                    commandId="org.amanzi.neo.loader.commands.LoadDrive"
             icon="icons/16/drive.png"

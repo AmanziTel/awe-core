@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.amanzi.awe.neighbours.GpehReportUtil;
+import org.amanzi.awe.gpeh.GpehReportUtil;
 import org.amanzi.awe.statistics.CallTimePeriods;
 
 import org.amanzi.neo.services.ui.NeoUtils;

@@ -20,8 +20,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
-import org.amanzi.awe.neighbours.GpehReportUtil;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.RrcMeasurement;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;

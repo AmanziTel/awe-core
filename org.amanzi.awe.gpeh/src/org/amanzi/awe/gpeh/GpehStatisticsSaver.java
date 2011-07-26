@@ -25,7 +25,6 @@ import org.amanzi.awe.gpeh.parser.internal.GPEHEvent.Event;
 import org.amanzi.awe.l3messages.AsnParserEvent;
 import org.amanzi.awe.l3messages.IAsnParserListener;
 import org.amanzi.awe.l3messages.MessageDecoder;
-import org.amanzi.awe.neighbours.GpehReportUtil;
 import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.loader.core.DatasetInfo;
 import org.amanzi.neo.loader.core.saver.ISaver;
