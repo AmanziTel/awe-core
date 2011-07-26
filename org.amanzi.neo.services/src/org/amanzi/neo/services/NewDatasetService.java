@@ -18,14 +18,15 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
 import org.amanzi.neo.services.exceptions.DublicateDatasetException;
 import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
-import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.traversal.Evaluation;
@@ -43,19 +44,36 @@ import org.neo4j.kernel.Traversal;
  * @author kruglik_a
  * @since 1.0.0
  */
-public class DataService extends NewAbstractService {
+/**
+ * TODO Purpose of 
+ * <p>
+ *
+ * </p>
+ * @author grigoreva_a
+ * @since 1.0.0
+ */
+/**
+ * TODO Purpose of
+ * <p>
+ * </p>
+ * 
+ * @author grigoreva_a
+ * @since 1.0.0
+ */
+public class NewDatasetService extends NewAbstractService {
 
-    private static Logger LOGGER = Logger.getLogger(DataService.class);
+    private static Logger LOGGER = Logger.getLogger(NewDatasetService.class);
 
-    public enum DatasetRelationTypes implements RelationshipType {
-        PROJECT, DATASET;
+    public enum DatasetRelationshipTypes implements RelationshipType {
+        PROJECT, DATASET, CHILD, NEXT;
     }
+
     /**
-     * 
      * TODO Purpose of DataService
      * <p>
-     *enum of dataset types
+     * enum of dataset types
      * </p>
+     * 
      * @author Kruglik_A
      * @since 1.0.0
      */
@@ -67,18 +85,20 @@ public class DataService extends NewAbstractService {
             return name();
         }
     }
+
     /**
-     * 
      * TODO Purpose of DataService
      * <p>
      * enum of Drive types
      * </p>
+     * 
      * @author Kruglik_A
      * @since 1.0.0
      */
     public enum DriveTypes {
         NEMO_V1, NEMO_V2, TEMS, ROMES;
     }
+
     /**
      * constants for dataset property name
      */
@@ -86,7 +106,9 @@ public class DataService extends NewAbstractService {
     public final static String TYPE = "type";
     public final static String DRIVE_TYPE = "drive_type";
 
-    
+    public final static String PROPERTY_LAST_CHILD_ID_NAME = "last_child_id";
+    public final static String PROPERTY_PARENT_ID_NAME = "parent_id";
+
     /**
      * TODO Purpose of DataService
      * <p>
@@ -127,6 +149,7 @@ public class DataService extends NewAbstractService {
         }
 
     }
+
     /**
      * TODO Purpose of DataService
      * <p>
@@ -157,7 +180,7 @@ public class DataService extends NewAbstractService {
     /**
      * constructor
      */
-    public DataService() {
+    public NewDatasetService() {
         super();
     }
 
@@ -166,16 +189,17 @@ public class DataService extends NewAbstractService {
      * 
      * @param service
      */
-    public DataService(GraphDatabaseService service) {
+    public NewDatasetService(GraphDatabaseService service) {
         super(service);
     }
-    
+
     /**
      * this method return TraversalDescription for Dataset nodes
+     * 
      * @return
      */
     private TraversalDescription getDatasetsTraversalDescription() {
-        return Traversal.description().relationships(DatasetRelationTypes.DATASET, Direction.OUTGOING)
+        return Traversal.description().relationships(DatasetRelationshipTypes.DATASET, Direction.OUTGOING)
                 .evaluator(Evaluators.excludeStartPosition()).evaluator(Evaluators.toDepth(1));
     }
 
@@ -196,7 +220,7 @@ public class DataService extends NewAbstractService {
         if (type != DatasetTypes.NETWORK) {
             LOGGER.error("Dataset type parameter exception");
             throw new DatasetTypeParameterException();
-            
+
         }
 
         Traverser tr = getDatasetsTraversalDescription().evaluator(new FilterDataset(name, type)).traverse(projectNode);
@@ -206,7 +230,7 @@ public class DataService extends NewAbstractService {
             return iter.next();
         }
         return null;
-    }  
+    }
 
     /**
      * find dataset node by name, type and driveType
@@ -255,19 +279,19 @@ public class DataService extends NewAbstractService {
             LOGGER.error("Dataset type parameter exception");
             throw new DatasetTypeParameterException();
         }
-        
-        for (Node node : getDatasetsTraversalDescription().traverse(projectNode).nodes()){
-            if (node.getProperty(NAME, "").equals(name)){
+
+        for (Node node : getDatasetsTraversalDescription().traverse(projectNode).nodes()) {
+            if (node.getProperty(NAME, "").equals(name)) {
                 LOGGER.error("Dublicate Dataset exception");
                 throw new DublicateDatasetException();
             }
         }
-        
+
         Node datasetNode = null;
         Transaction tx = graphDb.beginTx();
-        try {            
+        try {
             datasetNode = createNode(type);
-            projectNode.createRelationshipTo(datasetNode, DatasetRelationTypes.DATASET);
+            projectNode.createRelationshipTo(datasetNode, DatasetRelationshipTypes.DATASET);
             datasetNode.setProperty(NAME, name);
             tx.success();
 
@@ -291,7 +315,7 @@ public class DataService extends NewAbstractService {
      * @return dataset node
      * @throws InvalidDatasetParameterException
      * @throws DatasetTypeParameterException
-     * @throws DublicateDatasetException 
+     * @throws DublicateDatasetException
      */
     public Node createDataset(Node projectNode, String name, DatasetTypes type, DriveTypes driveType)
             throws InvalidDatasetParameterException, DatasetTypeParameterException, DublicateDatasetException {
@@ -304,18 +328,18 @@ public class DataService extends NewAbstractService {
             LOGGER.error("Dataset type parameter exception");
             throw new DatasetTypeParameterException();
         }
-        for (Node node : getDatasetsTraversalDescription().traverse(projectNode).nodes()){
-            if (node.getProperty(NAME, "").equals(name)){
+        for (Node node : getDatasetsTraversalDescription().traverse(projectNode).nodes()) {
+            if (node.getProperty(NAME, "").equals(name)) {
                 LOGGER.error("Dublicate Dataset exception");
                 throw new DublicateDatasetException();
             }
         }
-        
+
         Node datasetNode = null;
         Transaction tx = graphDb.beginTx();
         try {
             datasetNode = createNode(type);
-            projectNode.createRelationshipTo(datasetNode, DatasetRelationTypes.DATASET);
+            projectNode.createRelationshipTo(datasetNode, DatasetRelationshipTypes.DATASET);
             datasetNode.setProperty(NAME, name);
             datasetNode.setProperty(DRIVE_TYPE, driveType.name());
             tx.success();
@@ -372,7 +396,7 @@ public class DataService extends NewAbstractService {
      * @return
      * @throws InvalidDatasetParameterException
      * @throws DatasetTypeParameterException
-     * @throws DublicateDatasetException 
+     * @throws DublicateDatasetException
      */
     public Node getDataset(Node projectNode, String name, DatasetTypes type, DriveTypes driveType)
             throws InvalidDatasetParameterException, DatasetTypeParameterException, DublicateDatasetException {
@@ -404,9 +428,10 @@ public class DataService extends NewAbstractService {
      */
     public List<Node> findAllDatasets(Node projectNode) throws InvalidDatasetParameterException {
         LOGGER.info("start findAllDatasets(Node projectNode)");
-        if (projectNode == null){
+        if (projectNode == null) {
             LOGGER.error("Invalid dataset parameter");
-            throw new InvalidDatasetParameterException();}
+            throw new InvalidDatasetParameterException();
+        }
         List<Node> datasetList = new ArrayList<Node>();
         Traverser tr = getDatasetsTraversalDescription().traverse(projectNode);
         for (Node dataset : tr.nodes()) {
@@ -426,9 +451,10 @@ public class DataService extends NewAbstractService {
      */
     public List<Node> findAllDatasetsByType(Node projectNode, final DatasetTypes type) throws InvalidDatasetParameterException {
         LOGGER.info("start findAllDatasetsByType(Node projectNode, DatasetTypes type)");
-        if (type == null || projectNode == null){
+        if (type == null || projectNode == null) {
             LOGGER.error("Invalid dataset parameter");
-            throw new InvalidDatasetParameterException();}
+            throw new InvalidDatasetParameterException();
+        }
         List<Node> datasetList = new ArrayList<Node>();
         Traverser tr = getDatasetsTraversalDescription().evaluator(new FilterDatasetsByType(type)).traverse(projectNode);
         for (Node dataset : tr.nodes()) {
@@ -436,6 +462,52 @@ public class DataService extends NewAbstractService {
         }
         LOGGER.info("finish findAllDatasetsByType(Node projectNode, DatasetTypes type)");
         return datasetList;
+    }
+
+    
+    /**
+     * Adds <code>child</code> to the end of <code>parent</code>'s children chain. If 
+     * 
+     * @param parent - parent node of a chain
+     * @param child - the node to be added to the end of the chain
+     * @param lastChild - current last child of the chain 
+     * @return - the added node or <code>null</code>, if the node could not be added
+     */
+    public Node addChild(Node parent, Node child, Node lastChild) {
+        return null;
+    }
+
+    /**
+     * Finds parent node for the defined child
+     * @param child
+     * @return - the parent node, or <code>null</code>, if it wasn't found
+     */
+    public Node getParent(Node child) {
+        return null;
+    }
+
+    /**
+     * Finds last child in the defined arent's children chain
+     * @param parent
+     * @return - last child node, or <code>null</code>, if it wasn't found
+     */
+    public Node getLastChild(Node parent) {
+        return null;
+    }
+
+    /**
+     * @param parent
+     * @return an <code>Iterable</code> over children in the chain 
+     */
+    public Iterable<Node> getChildrenChainTraverser(Node parent) {
+        return null;
+    }
+
+    /**
+     * @return <code>TraversalDescription</code> to iterate over children in a chain
+     */
+    protected TraversalDescription getChildrenChainTraversalDescription() {
+        return null;
     }
 
 }
