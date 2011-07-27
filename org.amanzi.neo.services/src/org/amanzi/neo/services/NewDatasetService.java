@@ -53,6 +53,8 @@ public class NewDatasetService extends NewAbstractService {
 
     public final static String DRIVE_TYPE = "drive_type";
     public final static String PROJECT_NODE = "project_node";
+    public static final String LAST_CHILD_ID = "last_child_id";
+    public static final String PARENT_ID = "parent_id";
 
     /**
      * <p>
@@ -63,7 +65,7 @@ public class NewDatasetService extends NewAbstractService {
      * @since 1.0.0
      */
     public enum DatasetRelationTypes implements RelationshipType {
-        PROJECT, DATASET;
+        PROJECT, DATASET, CHILD, NEXT;
     }
 
     /**
