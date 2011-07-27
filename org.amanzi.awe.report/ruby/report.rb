@@ -26,7 +26,6 @@ include_class org.amanzi.awe.report.charts.Charts
 include_class org.amanzi.awe.report.charts.CustomBarRenderer
 include_class org.amanzi.awe.report.util.ReportUtils
 include_class org.amanzi.awe.report.pdf.PDFPrintingEngine
-include_class org.amanzi.awe.report.pdf.RtfPrintingEngine
 
 include_class "java.text.SimpleDateFormat"
 include_class org.jfree.data.category.DefaultCategoryDataset;
@@ -388,11 +387,6 @@ class Report
     engine=PDFPrintingEngine.new
     engine.printReport(self)
     puts "Report '#{@name}' saved"
-  end
-  def save_rtf
-    engine=RtfPrintingEngine.new
-    engine.printReport(self)
-    puts "Rtf Report '#{@name}' saved"
   end
 end
 
