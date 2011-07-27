@@ -544,7 +544,7 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 			throws InvalidDatasetParameterException,
 			DatasetTypeParameterException, DuplicateNodeNameException {
 
-		initDatasetNode(NAME_1, DatasetTypes.NETWORK, null);
+		initDatasetNode(NAME_1, DatasetTypes.DRIVE, DriveTypes.ROMES);
 		service.createDataset(projectNode, NAME_1, DatasetTypes.DRIVE,
 				DriveTypes.ROMES);
 

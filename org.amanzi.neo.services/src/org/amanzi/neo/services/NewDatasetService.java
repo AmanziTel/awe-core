@@ -134,7 +134,7 @@ public class NewDatasetService extends NewAbstractService {
         public Evaluation evaluate(Path arg0) {
             if (super.evaluate(arg0).includes()) {
                 if (driveType == null || driveType.name().equals(arg0.endNode().getProperty(DRIVE_TYPE, ""))) {
-                    return Evaluation.INCLUDE_AND_PRUNE;
+                    return Evaluation.INCLUDE_AND_CONTINUE;
                 }
                 return Evaluation.EXCLUDE_AND_CONTINUE;
             }
@@ -414,7 +414,7 @@ public class NewDatasetService extends NewAbstractService {
             LOGGER.error("DatasetTypeParameterException: parameter driveType can not be NETWORC in this method");
             throw new DatasetTypeParameterException(type);
         }
-        if (findDataset(projectNode, name, type) != null) {
+        if (findDataset(projectNode, name, type, driveType) != null) {
             LOGGER.error("DublicateDatasetException: dataset with that name already exists ");
             throw new DuplicateNodeNameException(name, type);
         }
