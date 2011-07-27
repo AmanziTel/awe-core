@@ -13,6 +13,8 @@
 
 package org.amanzi.neo.services.exceptions;
 
+import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
+
 /**
  * TODO Purpose of 
  * <p>
@@ -25,5 +27,17 @@ public class DatasetTypeParameterException extends AWEException{
 
     /** long serialVersionUID field */
     private static final long serialVersionUID = -6533027214827170224L;
+    private static final String defMessage = "DatasetTypeParameterException";
 
+    public DatasetTypeParameterException(){
+        super();
+    }
+    public DatasetTypeParameterException(DatasetTypes type){
+        if (type == DatasetTypes.NETWORK){
+            this.message = defMessage + ": parameter type can not be NETWORK in this method" ;
+        }
+        else {
+            this.message = defMessage +": type parameter differs from NETWORK";
+        }
+    }
 }

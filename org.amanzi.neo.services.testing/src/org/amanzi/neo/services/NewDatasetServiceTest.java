@@ -155,7 +155,7 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 	@Test
 	public void findDatasetTest() throws InvalidDatasetParameterException,
 			DatasetTypeParameterException {
-
+		
 		Node datasetNode = initDatasetNode(NAME_1, DatasetTypes.NETWORK, null);
 
 		Node checkNode = service.findDataset(projectNode, NAME_1,

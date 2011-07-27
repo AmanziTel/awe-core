@@ -18,12 +18,10 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.amanzi.neo.services.enums.INodeType;
-
 import org.amanzi.neo.services.exceptions.DatabaseException;
+import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
-import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
-
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -39,8 +37,8 @@ import org.neo4j.graphdb.traversal.Traverser;
 import org.neo4j.kernel.Traversal;
 
 /**
- * TODO Purpose of
  * <p>
+ * Service provide common operations with base structure in database
  * </p>
  * 
  * @author kruglik_a
@@ -49,13 +47,27 @@ import org.neo4j.kernel.Traversal;
 public class NewDatasetService extends NewAbstractService {
 
     private static Logger LOGGER = Logger.getLogger(NewDatasetService.class);
+    /**
+     * constants for dataset property name
+     */
+    public final static String NAME = "name";
+    public final static String TYPE = "type";
+    public final static String DRIVE_TYPE = "drive_type";
+    public final static String PROJECT_NODE = "project_node";
 
+    /**
+     * <p>
+     * enum of dataset relationships types
+     * </p>
+     * 
+     * @author Kruglik_A
+     * @since 1.0.0
+     */
     public enum DatasetRelationTypes implements RelationshipType {
         PROJECT, DATASET;
     }
 
     /**
-     * TODO Purpose of DataService
      * <p>
      * enum of dataset types
      * </p>
@@ -73,7 +85,6 @@ public class NewDatasetService extends NewAbstractService {
     }
 
     /**
-     * TODO Purpose of DataService
      * <p>
      * enum of Drive types
      * </p>
@@ -86,14 +97,6 @@ public class NewDatasetService extends NewAbstractService {
     }
 
     /**
-     * constants for dataset property name
-     */
-    public final static String NAME = "name";
-    public final static String TYPE = "type";
-    public final static String DRIVE_TYPE = "drive_type";
-
-    /**
-     * TODO Purpose of DataService
      * <p>
      * this class choose from dataset nodes node by name, type and driveType
      * </p>
@@ -101,49 +104,50 @@ public class NewDatasetService extends NewAbstractService {
      * @author Kruglik_A
      * @since 1.0.0
      */
-    private class FilterDataset implements Evaluator {
+    private class FilterDataset extends NameTypeEvaluator {
 
         private String name;
         private DatasetTypes type;
         private DriveTypes driveType;
+
         /**
          * constructor with name and type parameter for filter
+         * 
          * @param name - dataset name
          * @param type - dataset type
          */
         FilterDataset(String name, DatasetTypes type) {
-            this.name = name;
-            this.type = type;
+            super(name, type);
             this.driveType = null;
         }
+
         /**
          * constructor with name, type and driveType parameter for filter
+         * 
          * @param name - dataset name
          * @param type - dataset type
          * @param driveType - dataset drive type
          */
         FilterDataset(String name, DatasetTypes type, DriveTypes driveType) {
-            this.name = name;
-            this.type = type;
+            super(name, type);
             this.driveType = driveType;
         }
 
         @Override
         public Evaluation evaluate(Path arg0) {
-            boolean includes = false;
-            boolean continues;
-            if (name.equals(arg0.endNode().getProperty(NAME, "")) && type.getId().equals(getNodeType(arg0.endNode()))
-                    && (driveType == null || driveType.name().equals(arg0.endNode().getProperty(DRIVE_TYPE, "")))) {
-                includes = true;
+            if (super.evaluate(arg0).includes()) {
+                if (driveType == null || driveType.name().equals(arg0.endNode().getProperty(DRIVE_TYPE, ""))) {
+                    return Evaluation.INCLUDE_AND_PRUNE;
+                }
+                return Evaluation.EXCLUDE_AND_CONTINUE;
             }
-            continues = !includes;
-            return Evaluation.of(includes, continues);
+
+            return Evaluation.EXCLUDE_AND_CONTINUE;
         }
 
     }
 
     /**
-     * TODO Purpose of DataService
      * <p>
      * this class choose nodes by type from dataset nodes
      * </p>
@@ -154,6 +158,7 @@ public class NewDatasetService extends NewAbstractService {
     private class FilterDatasetsByType implements Evaluator {
         /**
          * constructor for filter datasets by type
+         * 
          * @param type - dataset type
          */
         FilterDatasetsByType(DatasetTypes type) {
@@ -212,34 +217,34 @@ public class NewDatasetService extends NewAbstractService {
      */
     public Node findDataset(Node projectNode, final String name, final DatasetTypes type) throws InvalidDatasetParameterException,
             DatasetTypeParameterException {
-        LOGGER.info("start findDataset(Node projectNode, String name, DatasetTypes type)");
+        LOGGER.debug("start findDataset(Node projectNode, String name, DatasetTypes type)");
 
         if (name == "") {
             LOGGER.error("InvalidDatasetParameterException: parameter name is empty string");
-            throw new InvalidDatasetParameterException();
+            throw new InvalidDatasetParameterException(INeoConstants.PROPERTY_NAME_NAME, name);
         }
         if (name == null) {
             LOGGER.error("InvalidDatasetParameterException: parameter name = null");
-            throw new InvalidDatasetParameterException();
+            throw new InvalidDatasetParameterException(INeoConstants.PROPERTY_NAME_NAME, name);
         }
         if (type == null) {
             LOGGER.error("InvalidDatasetParameterException: parameter type = null");
-            throw new InvalidDatasetParameterException();
+            throw new InvalidDatasetParameterException(INeoConstants.PROPERTY_TYPE_NAME, type);
         }
         if (projectNode == null) {
             LOGGER.error("InvalidDatasetParameterException: parameter projectNode = null");
-            throw new InvalidDatasetParameterException();
+            throw new InvalidDatasetParameterException(PROJECT_NODE, projectNode);
         }
 
         if (type != DatasetTypes.NETWORK) {
             LOGGER.error("DatasetTypeParameterException: type parameter differs from NETWORK");
-            throw new DatasetTypeParameterException();
+            throw new DatasetTypeParameterException(type);
 
         }
 
         Traverser tr = getDatasetsTraversalDescription().evaluator(new FilterDataset(name, type)).traverse(projectNode);
         Iterator<Node> iter = tr.nodes().iterator();
-        LOGGER.info("finish findDataset(Node projectNode, String name, DatasetTypes type)");
+        LOGGER.debug("finish findDataset(Node projectNode, String name, DatasetTypes type)");
         if (iter.hasNext()) {
             return iter.next();
         }
@@ -261,35 +266,35 @@ public class NewDatasetService extends NewAbstractService {
      */
     public Node findDataset(Node projectNode, final String name, final DatasetTypes type, final DriveTypes driveType)
             throws InvalidDatasetParameterException, DatasetTypeParameterException {
-        LOGGER.info("start findDataset(Node projectNode, String name, DatasetTypes type, DriveTypes driveType)");
+        LOGGER.debug("start findDataset(Node projectNode, String name, DatasetTypes type, DriveTypes driveType)");
         if (name == "") {
             LOGGER.error("InvalidDatasetParameterException: parameter name is empty string");
-            throw new InvalidDatasetParameterException();
+            throw new InvalidDatasetParameterException(INeoConstants.PROPERTY_NAME_NAME, name);
         }
         if (name == null) {
             LOGGER.error("InvalidDatasetParameterException: parameter name = null");
-            throw new InvalidDatasetParameterException();
+            throw new InvalidDatasetParameterException(INeoConstants.PROPERTY_NAME_NAME, name);
         }
         if (type == null) {
             LOGGER.error("InvalidDatasetParameterException: parameter type = null");
-            throw new InvalidDatasetParameterException();
+            throw new InvalidDatasetParameterException(INeoConstants.PROPERTY_TYPE_NAME, type);
         }
         if (projectNode == null) {
             LOGGER.error("InvalidDatasetParameterException: parameter projectNode = null");
-            throw new InvalidDatasetParameterException();
+            throw new InvalidDatasetParameterException(PROJECT_NODE, projectNode);
         }
         if (driveType == null) {
             LOGGER.error("InvalidDatasetParameterException: parameter driveType = null");
-            throw new InvalidDatasetParameterException();
+            throw new InvalidDatasetParameterException(DRIVE_TYPE, driveType);
         }
         if (type == DatasetTypes.NETWORK) {
-            LOGGER.error("DatasetTypeParameterException: parameter driveType can not be NETWORC in this method");
-            throw new DatasetTypeParameterException();
+            LOGGER.error("DatasetTypeParameterException: parameter type can not be NETWORK in this method");
+            throw new DatasetTypeParameterException(type);
         }
 
         Traverser tr = getDatasetsTraversalDescription().evaluator(new FilterDataset(name, type, driveType)).traverse(projectNode);
         Iterator<Node> iter = tr.nodes().iterator();
-        LOGGER.info("finish findDataset(Node projectNode, String name, DatasetTypes type, DriveTypes driveType)");
+        LOGGER.debug("finish findDataset(Node projectNode, String name, DatasetTypes type, DriveTypes driveType)");
         if (iter.hasNext()) {
             return iter.next();
         }
@@ -313,26 +318,26 @@ public class NewDatasetService extends NewAbstractService {
      */
     public Node createDataset(Node projectNode, String name, DatasetTypes type) throws InvalidDatasetParameterException,
             DatasetTypeParameterException, DuplicateNodeNameException, DatabaseException {
-        LOGGER.info("start createDataset(Node projectNode, String name, DatasetTypes type)");
+        LOGGER.debug("start createDataset(Node projectNode, String name, DatasetTypes type)");
         if (name == "") {
             LOGGER.error("InvalidDatasetParameterException: parameter name is empty string");
-            throw new InvalidDatasetParameterException();
+            throw new InvalidDatasetParameterException(INeoConstants.PROPERTY_NAME_NAME, name);
         }
         if (name == null) {
             LOGGER.error("InvalidDatasetParameterException: parameter name = null");
-            throw new InvalidDatasetParameterException();
+            throw new InvalidDatasetParameterException(INeoConstants.PROPERTY_NAME_NAME, name);
         }
         if (type == null) {
             LOGGER.error("InvalidDatasetParameterException: parameter type = null");
-            throw new InvalidDatasetParameterException();
+            throw new InvalidDatasetParameterException(INeoConstants.PROPERTY_TYPE_NAME, type);
         }
         if (projectNode == null) {
             LOGGER.error("InvalidDatasetParameterException: parameter projectNode = null");
-            throw new InvalidDatasetParameterException();
+            throw new InvalidDatasetParameterException(PROJECT_NODE, projectNode);
         }
         if (type != DatasetTypes.NETWORK) {
             LOGGER.error("DatasetTypeParameterException: type parameter differs from NETWORK");
-            throw new DatasetTypeParameterException();
+            throw new DatasetTypeParameterException(type);
         }
 
         for (Node node : getDatasetsTraversalDescription().traverse(projectNode).nodes()) {
@@ -357,7 +362,7 @@ public class NewDatasetService extends NewAbstractService {
         } finally {
             tx.finish();
         }
-        LOGGER.info("finish createDataset(Node projectNode, String name, DatasetTypes type)");
+        LOGGER.debug("finish createDataset(Node projectNode, String name, DatasetTypes type)");
         return datasetNode;
     }
 
@@ -378,30 +383,30 @@ public class NewDatasetService extends NewAbstractService {
      */
     public Node createDataset(Node projectNode, String name, DatasetTypes type, DriveTypes driveType)
             throws InvalidDatasetParameterException, DatasetTypeParameterException, DuplicateNodeNameException {
-        LOGGER.info("start createDataset(Node projectNode, String name, DatasetTypes type, DriveTypes driveType)");
+        LOGGER.debug("start createDataset(Node projectNode, String name, DatasetTypes type, DriveTypes driveType)");
         if (name == "") {
             LOGGER.error("InvalidDatasetParameterException: parameter name is empty string");
-            throw new InvalidDatasetParameterException();
+            throw new InvalidDatasetParameterException(INeoConstants.PROPERTY_NAME_NAME, name);
         }
         if (name == null) {
             LOGGER.error("InvalidDatasetParameterException: parameter name = null");
-            throw new InvalidDatasetParameterException();
+            throw new InvalidDatasetParameterException(INeoConstants.PROPERTY_NAME_NAME, name);
         }
         if (type == null) {
             LOGGER.error("InvalidDatasetParameterException: parameter type = null");
-            throw new InvalidDatasetParameterException();
+            throw new InvalidDatasetParameterException(INeoConstants.PROPERTY_TYPE_NAME, type);
         }
         if (projectNode == null) {
             LOGGER.error("InvalidDatasetParameterException: parameter projectNode = null");
-            throw new InvalidDatasetParameterException();
+            throw new InvalidDatasetParameterException(PROJECT_NODE, projectNode);
         }
         if (driveType == null) {
             LOGGER.error("InvalidDatasetParameterException: parameter driveType = null");
-            throw new InvalidDatasetParameterException();
+            throw new InvalidDatasetParameterException(DRIVE_TYPE, driveType);
         }
         if (type == DatasetTypes.NETWORK) {
             LOGGER.error("DatasetTypeParameterException: parameter driveType can not be NETWORC in this method");
-            throw new DatasetTypeParameterException();
+            throw new DatasetTypeParameterException(type);
         }
 
         for (Node node : getDatasetsTraversalDescription().traverse(projectNode).nodes()) {
@@ -426,7 +431,7 @@ public class NewDatasetService extends NewAbstractService {
         } finally {
             tx.finish();
         }
-        LOGGER.info("finish createDataset(Node projectNode, String name, DatasetTypes type, DriveTypes driveType)");
+        LOGGER.debug("finish createDataset(Node projectNode, String name, DatasetTypes type, DriveTypes driveType)");
         return datasetNode;
     }
 
@@ -448,32 +453,32 @@ public class NewDatasetService extends NewAbstractService {
      */
     public Node getDataset(Node projectNode, String name, DatasetTypes type) throws InvalidDatasetParameterException,
             DatasetTypeParameterException, DuplicateNodeNameException, DatabaseException {
-        LOGGER.info("start getDataset(Node projectNode, String name, DatasetTypes type)");
+        LOGGER.debug("start getDataset(Node projectNode, String name, DatasetTypes type)");
         if (name == "") {
             LOGGER.error("InvalidDatasetParameterException: parameter name is empty string");
-            throw new InvalidDatasetParameterException();
+            throw new InvalidDatasetParameterException(INeoConstants.PROPERTY_NAME_NAME, name);
         }
         if (name == null) {
             LOGGER.error("InvalidDatasetParameterException: parameter name = null");
-            throw new InvalidDatasetParameterException();
+            throw new InvalidDatasetParameterException(INeoConstants.PROPERTY_NAME_NAME, name);
         }
         if (type == null) {
             LOGGER.error("InvalidDatasetParameterException: parameter type = null");
-            throw new InvalidDatasetParameterException();
+            throw new InvalidDatasetParameterException(INeoConstants.PROPERTY_TYPE_NAME, type);
         }
         if (projectNode == null) {
             LOGGER.error("InvalidDatasetParameterException: parameter projectNode = null");
-            throw new InvalidDatasetParameterException();
+            throw new InvalidDatasetParameterException(PROJECT_NODE, projectNode);
         }
         if (type != DatasetTypes.NETWORK) {
             LOGGER.error("DatasetTypeParameterException: type parameter differs from NETWORK");
-            throw new DatasetTypeParameterException();
+            throw new DatasetTypeParameterException(type);
         }
         Node datasetNode = findDataset(projectNode, name, type);
         if (datasetNode == null) {
             datasetNode = createDataset(projectNode, name, type);
         }
-        LOGGER.info("finish getDataset(Node projectNode, String name, DatasetTypes type)");
+        LOGGER.debug("finish getDataset(Node projectNode, String name, DatasetTypes type)");
         return datasetNode;
     }
 
@@ -495,38 +500,38 @@ public class NewDatasetService extends NewAbstractService {
      */
     public Node getDataset(Node projectNode, String name, DatasetTypes type, DriveTypes driveType)
             throws InvalidDatasetParameterException, DatasetTypeParameterException, DuplicateNodeNameException {
-        LOGGER.info("start getDataset(Node projectNode, String name, DatasetTypes type, DriveTypes driveType)");
+        LOGGER.debug("start getDataset(Node projectNode, String name, DatasetTypes type, DriveTypes driveType)");
 
         if (name == "") {
             LOGGER.error("InvalidDatasetParameterException: parameter name is empty string");
-            throw new InvalidDatasetParameterException();
+            throw new InvalidDatasetParameterException(INeoConstants.PROPERTY_NAME_NAME, name);
         }
         if (name == null) {
             LOGGER.error("InvalidDatasetParameterException: parameter name = null");
-            throw new InvalidDatasetParameterException();
+            throw new InvalidDatasetParameterException(INeoConstants.PROPERTY_NAME_NAME, name);
         }
         if (type == null) {
             LOGGER.error("InvalidDatasetParameterException: parameter type = null");
-            throw new InvalidDatasetParameterException();
+            throw new InvalidDatasetParameterException(INeoConstants.PROPERTY_TYPE_NAME, type);
         }
         if (projectNode == null) {
             LOGGER.error("InvalidDatasetParameterException: parameter projectNode = null");
-            throw new InvalidDatasetParameterException();
+            throw new InvalidDatasetParameterException(PROJECT_NODE, projectNode);
         }
         if (driveType == null) {
             LOGGER.error("InvalidDatasetParameterException: parameter driveType = null");
-            throw new InvalidDatasetParameterException();
+            throw new InvalidDatasetParameterException(DRIVE_TYPE, driveType);
         }
         if (type == DatasetTypes.NETWORK) {
             LOGGER.error("DatasetTypeParameterException: parameter driveType can not be NETWORC in this method");
-            throw new DatasetTypeParameterException();
+            throw new DatasetTypeParameterException(type);
         }
 
         Node datasetNode = findDataset(projectNode, name, type, driveType);
         if (datasetNode == null) {
             datasetNode = createDataset(projectNode, name, type, driveType);
         }
-        LOGGER.info("finish getDataset(Node projectNode, String name, DatasetTypes type, DriveTypes driveType)");
+        LOGGER.debug("finish getDataset(Node projectNode, String name, DatasetTypes type, DriveTypes driveType)");
         return datasetNode;
     }
 
@@ -539,17 +544,17 @@ public class NewDatasetService extends NewAbstractService {
      *         null
      */
     public List<Node> findAllDatasets(Node projectNode) throws InvalidDatasetParameterException {
-        LOGGER.info("start findAllDatasets(Node projectNode)");
+        LOGGER.debug("start findAllDatasets(Node projectNode)");
         if (projectNode == null) {
             LOGGER.error("InvalidDatasetParameterException: parameter projectNode = null");
-            throw new InvalidDatasetParameterException();
+            throw new InvalidDatasetParameterException(PROJECT_NODE, projectNode);
         }
         List<Node> datasetList = new ArrayList<Node>();
         Traverser tr = getDatasetsTraversalDescription().traverse(projectNode);
         for (Node dataset : tr.nodes()) {
             datasetList.add(dataset);
         }
-        LOGGER.info("finish findAllDatasets(Node projectNode)");
+        LOGGER.debug("finish findAllDatasets(Node projectNode)");
         return datasetList;
     }
 
@@ -559,36 +564,36 @@ public class NewDatasetService extends NewAbstractService {
      * @param projectNode - node, which defines the project, within which will be implemented search
      * @param type - datasets type
      * @return List<Node> list of dataset nodes
-     * @throws InvalidDatasetParameterException this method may call exception if projectNode == null or type == null
-     *         
+     * @throws InvalidDatasetParameterException this method may call exception if projectNode ==
+     *         null or type == null
      */
     public List<Node> findAllDatasetsByType(Node projectNode, final DatasetTypes type) throws InvalidDatasetParameterException {
-        LOGGER.info("start findAllDatasetsByType(Node projectNode, DatasetTypes type)");
-        
+        LOGGER.debug("start findAllDatasetsByType(Node projectNode, DatasetTypes type)");
+
         if (projectNode == null) {
             LOGGER.error("InvalidDatasetParameterException: parameter projectNode = null");
             throw new InvalidDatasetParameterException();
         }
         if (type == null) {
             LOGGER.error("InvalidDatasetParameterException: parameter type = null");
-            throw new InvalidDatasetParameterException();
+            throw new InvalidDatasetParameterException(INeoConstants.PROPERTY_TYPE_NAME, type);
         }
-        
+
         List<Node> datasetList = new ArrayList<Node>();
         Traverser tr = getDatasetsTraversalDescription().evaluator(new FilterDatasetsByType(type)).traverse(projectNode);
         for (Node dataset : tr.nodes()) {
             datasetList.add(dataset);
         }
-        LOGGER.info("finish findAllDatasetsByType(Node projectNode, DatasetTypes type)");
+        LOGGER.debug("finish findAllDatasetsByType(Node projectNode, DatasetTypes type)");
         return datasetList;
     }
-    
+
     /**
-     * Adds <code>child</code> to the end of <code>parent</code>'s children chain. If 
+     * Adds <code>child</code> to the end of <code>parent</code>'s children chain. If
      * 
      * @param parent - parent node of a chain
      * @param child - the node to be added to the end of the chain
-     * @param lastChild - current last child of the chain 
+     * @param lastChild - current last child of the chain
      * @return - the added node or <code>null</code>, if the node could not be added
      */
     public Node addChild(Node parent, Node child, Node lastChild) {
@@ -597,6 +602,7 @@ public class NewDatasetService extends NewAbstractService {
 
     /**
      * Finds parent node for the defined child
+     * 
      * @param child
      * @return - the parent node, or <code>null</code>, if it wasn't found
      */
@@ -606,6 +612,7 @@ public class NewDatasetService extends NewAbstractService {
 
     /**
      * Finds last child in the defined arent's children chain
+     * 
      * @param parent
      * @return - last child node, or <code>null</code>, if it wasn't found
      */
@@ -615,7 +622,7 @@ public class NewDatasetService extends NewAbstractService {
 
     /**
      * @param parent
-     * @return an <code>Iterable</code> over children in the chain 
+     * @return an <code>Iterable</code> over children in the chain
      */
     public Iterable<Node> getChildrenChainTraverser(Node parent) {
         return null;
@@ -627,6 +634,5 @@ public class NewDatasetService extends NewAbstractService {
     protected TraversalDescription getChildrenChainTraversalDescription() {
         return null;
     }
-
 
 }

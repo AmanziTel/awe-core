@@ -25,5 +25,13 @@ public class InvalidDatasetParameterException extends AWEException{
 
     /** long serialVersionUID field */
     private static final long serialVersionUID = 6266275810733327853L;
+    private static final String defMessage = "InvalidDatasetParameterException: parameter '%s' = '%s'";
+    
+    public InvalidDatasetParameterException(){
+        super();
+    }
+    public InvalidDatasetParameterException(String paramName, Object paramValue){
+        super(defMessage, paramName, paramValue);
+    }
 
 }
