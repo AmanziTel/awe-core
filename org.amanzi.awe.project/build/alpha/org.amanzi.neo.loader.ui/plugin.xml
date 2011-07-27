@@ -59,27 +59,42 @@
        <GUI
              class="org.amanzi.neo.loader.ui.wizards.OssImportWizard"
              id="org.amanzi.neo.loader.ui.wizards.OssImportWizard">
-       </GUI>       
+       </GUI>   
+       <GUI
+             class="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
+             id="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard">
+       </GUI>
+       <GUI
+             class="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard"
+             id="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard">
+       </GUI>    
     </extension>
     <extension
           point="org.amanzi.neo.loader.ui.loaders">
        <loader
+             allowCreate="true"
+             config="org.amanzi.neo.loader.ui.validators.NetworkSectorDataValidator"
              description="Network Sector Data"
              gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
              parser="org.amanzi.neo.loader.core.parser.CSVParser"
+             renderable="true"
              saver="org.amanzi.neo.loader.core.saver.impl.NetworkSaver"
              validator="org.amanzi.neo.loader.ui.validators.NetworkSectorDataValidator">
        </loader>
        <loader
              description="Network Site Data"
              gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
+             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
              parser="org.amanzi.neo.loader.core.parser.CSVParser"
              saver="org.amanzi.neo.loader.core.saver.impl.NetworkSiteSaver"
-             validator="org.amanzi.neo.loader.ui.validators.NetworkSiteDataValidator">
+             validator="org.amanzi.neo.loader.ui.validators.NetworkSiteDataValidator"
+             renderable="true"
+             allowCreate="true">
        </loader>
        <loader
              description="Neighbour Loader"
              gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
+             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
              parser="org.amanzi.neo.loader.core.parser.CSVParser"
              saver="org.amanzi.neo.loader.core.saver.impl.NeighbourSaver"
              validator="org.amanzi.neo.loader.ui.validators.NeighbourDataValidator">
@@ -87,6 +102,7 @@
        <loader
              description="Transmission Loader"
              gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
+             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
              parser="org.amanzi.neo.loader.core.parser.CSVParser"
              saver="org.amanzi.neo.loader.core.saver.impl.TransmissionSaver"
              validator="org.amanzi.neo.loader.ui.validators.TransmissionDataValidator">
@@ -95,25 +111,33 @@
              description="Tems Data"
              gui="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard"
              parser="org.amanzi.neo.loader.core.parser.CSVParser"
-             saver="org.amanzi.neo.loader.core.saver.impl.TemsSaver">
+             saver="org.amanzi.neo.loader.core.saver.impl.TemsSaver"
+             renderable="true"
+             allowCreate="true">
        </loader>
        <loader
              description="Romes Data"
              gui="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard"
              parser="org.amanzi.neo.loader.core.parser.CSVParser"
-             saver="org.amanzi.neo.loader.core.saver.impl.RomesSaver">
+             saver="org.amanzi.neo.loader.core.saver.impl.RomesSaver"
+             renderable="true"
+             allowCreate="true">
        </loader>
        <loader
              description="Nemo data v1.86"
              gui="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard"
              parser="org.amanzi.neo.loader.core.parser.LineParser"
-             saver="org.amanzi.neo.loader.core.saver.impl.Nemo1xSaver">
+             saver="org.amanzi.neo.loader.core.saver.impl.Nemo1xSaver"
+             renderable="true"
+             allowCreate="true">
        </loader>
        <loader
              description="Nemo data v2.01"
              gui="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard"
              parser="org.amanzi.neo.loader.core.parser.LineParser"
-             saver="org.amanzi.neo.loader.core.saver.impl.Nemo2xSaver">
+             saver="org.amanzi.neo.loader.core.saver.impl.Nemo2xSaver"
+             renderable="true"
+             allowCreate="true">
        </loader>
     </extension>
 

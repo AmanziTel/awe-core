@@ -9,19 +9,6 @@
        </category>
        <command
              categoryId="org.amanzi.neo.loader.commands.category"
-             id="org.amanzi.neo.loader.commands.LoadNetwork"
-             name="Load Network Data">
-       </command>
-       <command
-             categoryId="org.amanzi.neo.loader.commands.category"
-             id="org.amanzi.neo.loader.commands.LoadNetworkSite"
-             name="Add Site Data">
-          <commandParameter id="org.amanzi.neo.loader.commands.addtoselect" name="add to select" optional="true">
-        </commandParameter>
-             
-       </command>
-       <command
-             categoryId="org.amanzi.neo.loader.commands.category"
              id="org.amanzi.neo.loader.commands.LoadDrive"
              name="Load Drive Data">
                        <commandParameter id="org.amanzi.neo.loader.commands.addtoselect" name="add to select" optional="true">
@@ -29,38 +16,12 @@
         <commandParameter id="org.amanzi.neo.loader.commands.loadfromurl" name="load from url" optional="true">
         </commandParameter>
        </command>       
-       <command
-             categoryId="org.amanzi.neo.loader.commands.category"
-             id="org.amanzi.neo.loader.commands.LoadNeighbour"
-             name="Load Neighbour Data">
-       </command>
-      <command
-             categoryId="org.amanzi.neo.loader.commands.category"
-             id="org.amanzi.neo.loader.commands.LoadTransmission"
-             name="Load Transmission Data">
-       </command>       
     </extension>
     <extension
           point="org.eclipse.ui.handlers">
        <handler
-             class="org.amanzi.neo.loader.handlers.LoadNetworkHandler"
-             commandId="org.amanzi.neo.loader.commands.LoadNetwork">
-       </handler>
-       <handler
-             class="org.amanzi.neo.loader.handlers.LoadNetworkSiteHandler"
-             commandId="org.amanzi.neo.loader.commands.LoadNetworkSite">
-       </handler>
-       <handler
              class="org.amanzi.neo.loader.handlers.LoadDriveHandler"
              commandId="org.amanzi.neo.loader.commands.LoadDrive">
-       </handler>
-        <handler
-             class="org.amanzi.neo.loader.handlers.LoadNeighbourHandler"
-             commandId="org.amanzi.neo.loader.commands.LoadNeighbour">
-       </handler>
-       <handler
-             class="org.amanzi.neo.loader.handlers.LoadTransmissionHandler"
-             commandId="org.amanzi.neo.loader.commands.LoadTransmission">
        </handler>
     </extension>
    
@@ -70,18 +31,6 @@
              locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
           <toolbar
                 id="org.amanzi.neo.loader.toolbar">
-             <command
-                   commandId="org.amanzi.neo.loader.commands.LoadNetworkSite"
-            icon="icons/16/network_site.png"
-            id="org.amanzi.neo.loader.LoadNetworkSite"
-                   tooltip="Load Network Data">
-             </command>            
-             <command
-                   commandId="org.amanzi.neo.loader.commands.LoadDrive"
-            icon="icons/16/drive.png"
-            id="org.amanzi.neo.loader.LoadDrive"
-                   tooltip="Load Drive Data">
-             </command>
              <command
                    commandId="org.amanzi.neo.loader.commands.LoadDrive"
             icon="icons/16/calls.png"
