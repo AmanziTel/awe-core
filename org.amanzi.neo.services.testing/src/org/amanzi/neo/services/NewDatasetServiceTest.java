@@ -3,6 +3,8 @@ package org.amanzi.neo.services;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.management.relation.Relation;
+
 import junit.framework.Assert;
 
 import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;
@@ -61,7 +63,7 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 
 	@After
 	public final void after() {
-		deleteProjectNode();
+		cleanReferenceNode();
 
 	}
 
@@ -140,17 +142,20 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 	}
 
 	/**
-	 * delete PROJECT relation
+	 * removes reference node relationships
 	 */
-	private void deleteProjectNode() {
+	private void cleanReferenceNode() {
 		tx = graphDatabaseService.beginTx();
 		try {
-			projectNode.getSingleRelationship(DatasetRelationTypes.PROJECT,
-					Direction.INCOMING).delete();
-			tx.failure();
+
+			Iterator<Relationship> iter = graphDatabaseService
+					.getReferenceNode().getRelationships().iterator();
+			while (iter.hasNext()) {
+				iter.next().delete();
+			}
+			tx.success();
 
 		} finally {
-
 			tx.finish();
 			tx = null;
 		}
@@ -1111,6 +1116,92 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 			throws InvalidDatasetParameterException {
 		service.findAllDatasetsByType(projectNode, null);
 	}
+	/**
+	 * testing method findAllDatasets() when some datasets exist
+	 */
+	@Test
+	public void findAllDatasetsInAllProjectsTest() {
+
+		Node dataset_1 = initDatasetNode(NAME_1, DatasetTypes.NETWORK, null);
+		initProjectNode();
+		Node dataset_2 = initDatasetNode(NAME_2, DatasetTypes.DRIVE,
+				DriveTypes.TEMS);
+		List<Node> checkList = service.findAllDatasets();
+		Assert.assertTrue("method findAllDatasets didn't return dataset_1",
+				checkList.contains(dataset_1));
+		Assert.assertTrue("method findAllDatasets didn't return dataset_2",
+				checkList.contains(dataset_2));
+		checkList.remove(dataset_1);
+		checkList.remove(dataset_2);
+		Assert.assertTrue("method findAllDatasets return superfluouts nodes",
+				checkList.isEmpty());
+	}
+
+	/**
+	 * testing method findAllDatasets() when nobody datasets exist 
+	 */
+	@Test
+	public void findAllDatasetsInAllProjectsEmptyTest() {
+
+		List<Node> checkList = service.findAllDatasets();
+
+		Assert.assertTrue("method findAllDatasets return superfluouts nodes",
+				checkList.isEmpty());
+	}
+	/**
+	 * testing method findAllDatasetsByType(DatasetTypes type) when some datasets exist
+	 * @throws InvalidDatasetParameterException
+	 */
+	@Test
+	public void findAllDatasetsByTypeInAllProjectsTest()
+			throws InvalidDatasetParameterException {
+
+		Node dataset_1 = initDatasetNode(NAME_1, DatasetTypes.NETWORK, null);
+		initProjectNode();
+		Node dataset_2 = initDatasetNode(NAME_2, DatasetTypes.NETWORK, null);
+		initDatasetNode(NAME_1, DatasetTypes.COUNTERS, DriveTypes.NEMO_V1);
+		List<Node> checkList = service
+				.findAllDatasetsByType(DatasetTypes.NETWORK);
+		Assert.assertTrue(
+				"method findAllDatasetsByType didn't return dataset_1",
+				checkList.contains(dataset_1));
+		Assert.assertTrue(
+				"method findAllDatasetsByType didn't return dataset_2",
+				checkList.contains(dataset_2));
+		checkList.remove(dataset_1);
+		checkList.remove(dataset_2);
+		Assert.assertTrue(
+				"method findAllDatasetsByType return superfluouts nodes",
+				checkList.isEmpty());
+	}
+
+	/**
+	 * testing method findAllDatasetsByType(DatasetTypes type) when nobody datasets exist
+	 * @throws InvalidDatasetParameterException
+	 */
+	@Test
+	public void findAllDatasetsByTypeInAllProjectsEmptyTest()
+			throws InvalidDatasetParameterException {
+
+		initDatasetNode(NAME_1, DatasetTypes.NETWORK, null);
+
+		List<Node> checkList = service
+				.findAllDatasetsByType(DatasetTypes.COUNTERS);
+
+		Assert.assertTrue(
+				"method findAllDatasetsByType return superfluouts nodes",
+				checkList.isEmpty());
+	}
+
+	/**
+	 * testing method findAllDatasetsByType(DatasetTypes type) when type = null
+	 * @throws InvalidDatasetParameterException
+	 */
+	@Test(expected = InvalidDatasetParameterException.class)
+	public void findAllDatasetsByTypeInAllProjectsExceptionTest()
+			throws InvalidDatasetParameterException {
+		service.findAllDatasetsByType(null);
+	}
 
 	// +
 	@Test
@@ -1321,4 +1412,5 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 			prevNode = node;
 		}
 	}
+
 }
