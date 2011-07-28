@@ -539,17 +539,18 @@ public class NewDatasetService extends NewAbstractService {
         LOGGER.debug("finish getDataset(Node projectNode, String name, DatasetTypes type, DriveTypes driveType)");
         return datasetNode;
     }
+
     /**
      * this method find all dataset nodes in all projects
-     *
+     * 
      * @return List<Node> list of dataset nodes
      */
-    public List<Node> findAllDatasets(){
+    public List<Node> findAllDatasets() {
         LOGGER.debug("start findAllDatasets()");
         List<Node> datasetList = new ArrayList<Node>();
         TraversalDescription allProjects = new ProjectService().getProjectTraversalDescription();
-        
-        for(Node projectNode : allProjects.traverse(graphDb.getReferenceNode()).nodes()){
+
+        for (Node projectNode : allProjects.traverse(graphDb.getReferenceNode()).nodes()) {
             Traverser tr = getDatasetsTraversalDescription().traverse(projectNode);
             for (Node dataset : tr.nodes()) {
                 datasetList.add(dataset);
@@ -558,26 +559,26 @@ public class NewDatasetService extends NewAbstractService {
         LOGGER.debug("finish findAllDatasets()");
         return datasetList;
     }
-    
+
     /**
      * this method find all dataset nodes by type in all projects
-     *
+     * 
      * @param type - dataset type
      * @return List<Node> list of dataset nodes
      * @throws InvalidDatasetParameterException this method may call exception if type == null
      */
-    public List<Node> findAllDatasetsByType(DatasetTypes type) throws InvalidDatasetParameterException{
+    public List<Node> findAllDatasetsByType(DatasetTypes type) throws InvalidDatasetParameterException {
         LOGGER.debug("start findAllDatasetsByType()");
-        
+
         if (type == null) {
             LOGGER.error("InvalidDatasetParameterException: parameter type = null");
             throw new InvalidDatasetParameterException(INeoConstants.PROPERTY_TYPE_NAME, type);
         }
-        
+
         List<Node> datasetList = new ArrayList<Node>();
         TraversalDescription allProjects = new ProjectService().getProjectTraversalDescription();
-        
-        for(Node projectNode : allProjects.traverse(graphDb.getReferenceNode()).nodes()){
+
+        for (Node projectNode : allProjects.traverse(graphDb.getReferenceNode()).nodes()) {
             Traverser tr = getDatasetsTraversalDescription().evaluator(new FilterDatasetsByType(type)).traverse(projectNode);
             for (Node dataset : tr.nodes()) {
                 datasetList.add(dataset);
@@ -586,6 +587,7 @@ public class NewDatasetService extends NewAbstractService {
         LOGGER.debug("finish findAllDatasetsByType()");
         return datasetList;
     }
+
     /**
      * this method find all dataset nodes in project
      * 
@@ -640,7 +642,11 @@ public class NewDatasetService extends NewAbstractService {
     }
 
     /**
-     * Adds <code>child</code> to the end of <code>parent</code>'s children chain. If
+     * Adds <code>child</code> to the end of <code>parent</code>'s children chain. If in parent
+     * <code>last_child_id</code> is not set, method tries to add child to the
+     * <code>lastChild</code>. If <code>lastChild</code> is not set, too, the method will look up
+     * for the last child in a chain. If <code>last_child_id</code> property in parent and
+     * <code>lastChild.getId()</code> are not equal, exception is thrown
      * 
      * @param parent - parent node of a chain
      * @param child - the node to be added to the end of the chain
