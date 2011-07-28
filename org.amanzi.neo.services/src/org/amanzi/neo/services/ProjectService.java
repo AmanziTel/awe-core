@@ -194,7 +194,7 @@ public class ProjectService extends NewAbstractService {
      */
     public TraversalDescription getProjectTraversalDescription() {
         LOGGER.debug("Started getProjectTraversalDescription");
-        return Traversal.description().depthFirst().evaluator(Evaluators.excludeStartPosition()).evaluator(Evaluators.atDepth(1))
+        return Traversal.description().breadthFirst().evaluator(Evaluators.excludeStartPosition()).evaluator(Evaluators.atDepth(1))
                 .relationships(ProjectRelationshipType.PROJECT, Direction.OUTGOING);
     }
 }

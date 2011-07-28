@@ -21,14 +21,17 @@ import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
+import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
+import org.neo4j.graphdb.RelationshipExpander;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.traversal.BranchOrderingPolicy;
 import org.neo4j.graphdb.traversal.Evaluation;
 import org.neo4j.graphdb.traversal.Evaluator;
 import org.neo4j.graphdb.traversal.Evaluators;
@@ -55,6 +58,8 @@ public class NewDatasetService extends NewAbstractService {
     public final static String PROJECT_NODE = "project_node";
     public static final String LAST_CHILD_ID = "last_child_id";
     public static final String PARENT_ID = "parent_id";
+
+    private Transaction tx;
 
     /**
      * <p>
@@ -652,9 +657,97 @@ public class NewDatasetService extends NewAbstractService {
      * @param child - the node to be added to the end of the chain
      * @param lastChild - current last child of the chain
      * @return - the added node or <code>null</code>, if the node could not be added
+     * @throws IllegalArgumentException if <code>parent</code> or <code>child</code> id
+     *         <code>null</code>
+     * @throws IllegalArgumentException if last_child_id and lastChild.getId() are not equal
+     * @throws DatabaseException if some neo error occur
      */
-    public Node addChild(Node parent, Node child, Node lastChild) {
-        return null;
+    public Node addChild(Node parent, Node child, Node lastChild) throws DatabaseException {
+        // validate arguments
+        if (parent == null) {
+            throw new IllegalArgumentException("Parent cannot be null");
+        }
+        if (child == null) {
+            throw new IllegalArgumentException("Child cannot be null");
+        }
+
+        // try to chain child to lastChild
+        if (lastChild != null) {
+            long lastChildId = (Long)parent.getProperty(LAST_CHILD_ID, 0L);
+            if (lastChildId > 0) {
+                if (lastChildId == lastChild.getId()) {
+                    insertChild(parent, child, lastChild, DatasetRelationTypes.NEXT);
+                } else {
+                    throw new IllegalArgumentException("Last child ID does not match info in parent properties.");
+                }
+            } else {
+                // try to look up last child
+                Node node = getLastChild(parent);
+                if (node == null) {
+                    // parent has no children
+                    insertChild(parent, child, parent, DatasetRelationTypes.CHILD);
+                } else {
+                    // parent has children
+                    insertChild(parent, child, node, DatasetRelationTypes.NEXT);
+                }
+            }
+        } else {
+            // try to get last child from parent properties
+            long lastChildId = (Long)parent.getProperty(LAST_CHILD_ID, 0L);
+            if (lastChildId != 0) {
+                Node node = graphDb.getNodeById(lastChildId);
+                if (node != null) {
+                    insertChild(parent, child, node, DatasetRelationTypes.NEXT);
+                }
+            } else {
+                // try to look up last child
+                Node node = getLastChild(parent);
+                if (node == null) {
+                    // parent has no children
+                    insertChild(parent, child, node, DatasetRelationTypes.CHILD);
+                } else {
+                    // parent has children
+                    tx = graphDb.beginTx();
+                    insertChild(parent, child, node, DatasetRelationTypes.NEXT);
+                }
+            }
+        }
+        return child;
+    }
+
+    /**
+     * @param parent
+     * @param child
+     */
+    private void updateProperties(Node parent, Node child) {
+        Transaction tx = graphDb.beginTx();
+        try {
+            parent.setProperty(LAST_CHILD_ID, child.getId());
+            child.setProperty(PARENT_ID, parent.getId());
+            tx.success();
+        } finally {
+            tx.finish();
+        }
+    }
+
+    /**
+     * @param parent
+     * @param child
+     * @param linkTo
+     * @param relationship
+     */
+    private void insertChild(Node parent, Node child, Node linkTo, RelationshipType relationship) throws DatabaseException {
+        tx = graphDb.beginTx();
+        try {
+            linkTo.createRelationshipTo(child, relationship);
+            updateProperties(parent, child);
+            tx.success();
+        } catch (Exception e) {
+            LOGGER.error("Could not add child", e);
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
     }
 
     /**
@@ -674,6 +767,11 @@ public class NewDatasetService extends NewAbstractService {
      * @return - last child node, or <code>null</code>, if it wasn't found
      */
     public Node getLastChild(Node parent) {
+        TraversalDescription tr = getChildrenChainTraversalDescription().order(Traversal.postorderDepthFirst());
+        Iterable<Node> nodes = tr.traverse(parent).nodes();
+        for (Node node : nodes) {
+            return node;
+        }
         return null;
     }
 
@@ -682,14 +780,15 @@ public class NewDatasetService extends NewAbstractService {
      * @return an <code>Iterable</code> over children in the chain
      */
     public Iterable<Node> getChildrenChainTraverser(Node parent) {
-        return null;
+        return getChildrenChainTraversalDescription().traverse(parent).nodes();
     }
 
     /**
      * @return <code>TraversalDescription</code> to iterate over children in a chain
      */
     protected TraversalDescription getChildrenChainTraversalDescription() {
-        return null;
+        return Traversal.description().depthFirst().relationships(DatasetRelationTypes.CHILD, Direction.OUTGOING)
+                .relationships(DatasetRelationTypes.NEXT, Direction.OUTGOING).evaluator(Evaluators.excludeStartPosition());
     }
 
 }
