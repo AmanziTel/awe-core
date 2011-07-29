@@ -663,6 +663,7 @@ public class NewDatasetService extends NewAbstractService {
      * @throws DatabaseException if some neo error occur
      */
     public Node addChild(Node parent, Node child, Node lastChild) throws DatabaseException {
+        LOGGER.debug("start addChild(Node parent, Node child, Node lastChild)");
         // validate arguments
         if (parent == null) {
             throw new IllegalArgumentException("Parent cannot be null");
@@ -704,10 +705,9 @@ public class NewDatasetService extends NewAbstractService {
                 Node node = getLastChild(parent);
                 if (node == null) {
                     // parent has no children
-                    insertChild(parent, child, node, DatasetRelationTypes.CHILD);
+                    insertChild(parent, child, parent, DatasetRelationTypes.CHILD);
                 } else {
                     // parent has children
-                    tx = graphDb.beginTx();
                     insertChild(parent, child, node, DatasetRelationTypes.NEXT);
                 }
             }
@@ -720,6 +720,7 @@ public class NewDatasetService extends NewAbstractService {
      * @param child
      */
     private void updateProperties(Node parent, Node child) {
+        LOGGER.debug("start updateProperties(Node parent, Node child)");
         Transaction tx = graphDb.beginTx();
         try {
             parent.setProperty(LAST_CHILD_ID, child.getId());
@@ -728,6 +729,7 @@ public class NewDatasetService extends NewAbstractService {
         } finally {
             tx.finish();
         }
+        LOGGER.debug("finish updateProperties(Node parent, Node child)");
     }
 
     /**
@@ -737,6 +739,7 @@ public class NewDatasetService extends NewAbstractService {
      * @param relationship
      */
     private void insertChild(Node parent, Node child, Node linkTo, RelationshipType relationship) throws DatabaseException {
+        LOGGER.debug("start insertChild(Node parent, Node child, Node linkTo, RelationshipType relationship)");
         tx = graphDb.beginTx();
         try {
             linkTo.createRelationshipTo(child, relationship);
@@ -748,6 +751,7 @@ public class NewDatasetService extends NewAbstractService {
         } finally {
             tx.finish();
         }
+        LOGGER.debug("finish insertChild(Node parent, Node child, Node linkTo, RelationshipType relationship)");
     }
 
     /**
@@ -756,7 +760,36 @@ public class NewDatasetService extends NewAbstractService {
      * @param child
      * @return - the parent node, or <code>null</code>, if it wasn't found
      */
-    public Node getParent(Node child) {
+    public Node getParent(Node child) throws DatabaseException {
+        LOGGER.debug("start getParent(Node child)");
+        // validate parameters
+        if (child == null) {
+            throw new IllegalArgumentException("child is null");
+        }
+
+        // check if parent_id is set
+        long parent_id = (Long)child.getProperty(NewDatasetService.PARENT_ID, 0L);
+        if (parent_id > 0) {
+            return graphDb.getNodeById(parent_id);
+        }
+        // else traverse database to find parent node
+        TraversalDescription tr = getChildrenChainTraversalDescription()
+                .relationships(DatasetRelationTypes.NEXT, Direction.INCOMING)
+                .relationships(DatasetRelationTypes.CHILD, Direction.INCOMING).order(Traversal.postorderDepthFirst());
+        Iterable<Node> nodes = tr.traverse(child).nodes();
+        for (Node node : nodes) {
+            tx = graphDb.beginTx();
+            try {
+                child.setProperty(PARENT_ID, node.getId());
+                tx.success();
+            } catch (Exception e) {
+                LOGGER.error("Could not update child", e);
+                throw new DatabaseException(e);
+            } finally {
+                tx.finish();
+            }
+            return node;
+        }
         return null;
     }
 
@@ -766,10 +799,31 @@ public class NewDatasetService extends NewAbstractService {
      * @param parent
      * @return - last child node, or <code>null</code>, if it wasn't found
      */
-    public Node getLastChild(Node parent) {
+    public Node getLastChild(Node parent) throws DatabaseException {
+        LOGGER.debug("start getLastChild(Node parent)");
+        // validate parameters
+        if (parent == null) {
+            throw new IllegalArgumentException("parent is null");
+        }
+        // check if last_child_id is set
+        long last_child_id = (Long)parent.getProperty(NewDatasetService.LAST_CHILD_ID, 0L);
+        if (last_child_id > 0) {
+            return graphDb.getNodeById(last_child_id);
+        }
+        // else traverse database to find last child node
         TraversalDescription tr = getChildrenChainTraversalDescription().order(Traversal.postorderDepthFirst());
         Iterable<Node> nodes = tr.traverse(parent).nodes();
         for (Node node : nodes) {
+            tx = graphDb.beginTx();
+            try {
+                parent.setProperty(LAST_CHILD_ID, node.getId());
+                tx.success();
+            } catch (Exception e) {
+                LOGGER.error("Could not update child", e);
+                throw new DatabaseException(e);
+            } finally {
+                tx.finish();
+            }
             return node;
         }
         return null;
@@ -780,6 +834,11 @@ public class NewDatasetService extends NewAbstractService {
      * @return an <code>Iterable</code> over children in the chain
      */
     public Iterable<Node> getChildrenChainTraverser(Node parent) {
+        LOGGER.debug("start getChildrenChainTraverser(Node parent)");
+        // validate parameters
+        if (parent == null) {
+            throw new IllegalArgumentException("parent is null");
+        }
         return getChildrenChainTraversalDescription().traverse(parent).nodes();
     }
 
@@ -787,6 +846,7 @@ public class NewDatasetService extends NewAbstractService {
      * @return <code>TraversalDescription</code> to iterate over children in a chain
      */
     protected TraversalDescription getChildrenChainTraversalDescription() {
+        LOGGER.debug("start getChildrenChainTraversalDescription()");
         return Traversal.description().depthFirst().relationships(DatasetRelationTypes.CHILD, Direction.OUTGOING)
                 .relationships(DatasetRelationTypes.NEXT, Direction.OUTGOING).evaluator(Evaluators.excludeStartPosition());
     }

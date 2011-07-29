@@ -1,9 +1,8 @@
 package org.amanzi.neo.services;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import javax.management.relation.Relation;
 
 import junit.framework.Assert;
 
@@ -13,7 +12,6 @@ import org.amanzi.neo.services.NewDatasetService.DriveTypes;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
-import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
 import org.amanzi.testing.AbstractAWETest;
 import org.apache.log4j.Logger;
@@ -26,7 +24,6 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.shell.kernel.apps.Dbinfo;
 
 /**
  * Test for org.amanzi.neo.services.DataService
@@ -1356,17 +1353,10 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 
 		// parent has nodes, last_child_id is wrong, last child set
 		try {
-			service.addChild(parent, child, null);
+			service.addChild(parent, child, lastChild);
 		} catch (DatabaseException e) {
 			LOGGER.error("could not add child", e);
 		}
-	}
-
-	@Test
-	public void testAddChildPresetWrong() {
-		// parent has nodes, last_child_id is wrong, last child set wrong
-		// relationship, last_child_id updated, parent_id updated, chain exists
-		throw new RuntimeException("not yet implemented");
 	}
 
 	// -
@@ -1377,6 +1367,7 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 			service.addChild(null, getNewChild(), null);
 		} catch (DatabaseException e) {
 			LOGGER.error("could not add child", e);
+			Assert.fail();
 		}
 	}
 
@@ -1392,7 +1383,8 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 
 	// +
 	@Test
-	public void testGetParentWithId() {
+	public void testGetParentWithIdOneChild() {
+		parent = getNewChild();
 		Node child = null;
 		try {
 			child = service.addChild(parent, getNewChild(), null);
@@ -1400,14 +1392,44 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 			LOGGER.error("could not add child", e);
 		}
 		// parent_id set:
-		Node node = service.getParent(child);
+		Node node = null;
+		try {
+			node = service.getParent(child);
+		} catch (DatabaseException e) {
+			LOGGER.error("could not get parent", e);
+			Assert.fail();
+		}
 		// parent returned,
 		Assert.assertEquals(parent, node);
 		// chain exists
 		Assert.assertTrue(chainExists(node, child));
 	}
 
-	public void testGetParentNoId() {
+	@Test
+	public void testGetParentWithIdMoreChildren() {
+		Node child = null;
+		try {
+			child = service.addChild(parent, getNewChild(), null);
+		} catch (DatabaseException e) {
+			LOGGER.error("could not add child", e);
+		}
+		// parent_id set:
+		Node node = null;
+		try {
+			node = service.getParent(child);
+		} catch (DatabaseException e) {
+			LOGGER.error("could not get parent", e);
+			Assert.fail();
+		}
+		// parent returned,
+		Assert.assertEquals(parent, node);
+		// chain exists
+		Assert.assertTrue(chainExists(node, child));
+	}
+
+	@Test
+	public void testGetParentNoIdOneChild() {
+		parent = getNewChild();
 		Node child = null;
 		try {
 			child = service.addChild(parent, getNewChild(), null);
@@ -1417,7 +1439,7 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 		// remove parent_id
 		tx = graphDatabaseService.beginTx();
 		try {
-			child.removeProperty(NewDatasetService.LAST_CHILD_ID);
+			child.removeProperty(NewDatasetService.PARENT_ID);
 			tx.success();
 		} catch (Exception e) {
 			LOGGER.error("Could not set property", e);
@@ -1426,35 +1448,112 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 			tx.finish();
 		}
 		// parent_id not set:
-		Node node = service.getParent(child);
+		Node node = null;
+		try {
+			node = service.getParent(child);
+		} catch (DatabaseException e) {
+			LOGGER.error("could not get parent", e);
+			Assert.fail();
+		}
 		// parent returned,
 		Assert.assertEquals(parent, node);
 		// chain exists
 		Assert.assertTrue(chainExists(node, child));
 		// parent_id updated
 		Assert.assertEquals(parent.getId(),
-				child.getProperty(NewDatasetService.PARENT_ID, parent.getId()));
+				child.getProperty(NewDatasetService.PARENT_ID, 0L));
+	}
+
+	@Test
+	public void testGetParentNoIdMoreChildren() {
+		Node child = null;
+		try {
+			child = service.addChild(parent, getNewChild(), null);
+		} catch (DatabaseException e) {
+			LOGGER.error("could not add child", e);
+		}
+		// remove parent_id
+		tx = graphDatabaseService.beginTx();
+		try {
+			child.removeProperty(NewDatasetService.PARENT_ID);
+			tx.success();
+		} catch (Exception e) {
+			LOGGER.error("Could not set property", e);
+			Assert.fail();
+		} finally {
+			tx.finish();
+		}
+		// parent_id not set:
+		Node node = null;
+		try {
+			node = service.getParent(child);
+		} catch (DatabaseException e) {
+			LOGGER.error("could not get parent", e);
+			Assert.fail();
+		}
+		// parent returned,
+		Assert.assertEquals(parent, node);
+		// chain exists
+		Assert.assertTrue(chainExists(node, child));
+		// parent_id updated
+		Assert.assertEquals(parent.getId(),
+				child.getProperty(NewDatasetService.PARENT_ID, 0L));
+	}
+
+	@Test
+	public void testGetParentChildInMiddle() {
+		parent = getNewChild();
+		List<Node> children = new ArrayList<Node>();
+		for (int i = 0; i < 10; i++) {
+			Node child = getNewChild();
+			try {
+				children.add(service.addChild(parent, child, null));
+			} catch (DatabaseException e) {
+				LOGGER.error("could not add child.", e);
+			}
+		}
+
+		Node node = null;
+		for (Node testChild : children) {
+			// testChild in the middle of a chain
+			try {
+				node = service.getParent(testChild);
+			} catch (DatabaseException e) {
+				LOGGER.error("could not get parent", e);
+				Assert.fail();
+			}
+			// parent returned,
+			Assert.assertEquals(parent, node);
+			// chain exists
+			Assert.assertTrue(chainExists(node, testChild));
+		}
 	}
 
 	// -
 	@Test
-	public void testGetParentWrongId() {
-		// parent_id set wrong: parent returned, chain exists, parent_id updated
-		throw new RuntimeException("not yet implemented");
-	}
-
-	@Test
 	public void testGetParentNoParent() {
 		Node child = getNewChild();
 		// child has no parent: return null
-		Node node = service.getParent(child);
+		Node node = null;
+		try {
+			node = service.getParent(child);
+		} catch (DatabaseException e) {
+			LOGGER.error("could not get parent", e);
+			Assert.fail();
+		}
 		Assert.assertNull(node);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testGetParentNull() {
 		// child is null: exception
-		Node node = service.getParent(null);
+		Node node = null;
+		try {
+			node = service.getParent(null);
+		} catch (DatabaseException e) {
+			LOGGER.error("could not get parent", e);
+			Assert.fail();
+		}
 	}
 
 	// +
@@ -1468,7 +1567,13 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 			LOGGER.error("could not add child", e);
 		}
 		// last_child_id set:
-		Node lastChild = service.getLastChild(parent);
+		Node lastChild = null;
+		try {
+			lastChild = service.getLastChild(parent);
+		} catch (DatabaseException e) {
+			LOGGER.error("could not get last child", e);
+			Assert.fail();
+		}
 		// last child returned,
 		Assert.assertEquals(child, lastChild);
 		// chain exists
@@ -1497,40 +1602,14 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 		}
 
 		// last_child_id not set:
-		Node lastChild = service.getLastChild(parent);
-		// last_child returned,
-		Assert.assertEquals(child, lastChild);
-		// chain exists,
-		Assert.assertTrue(chainExists(parent, lastChild));
-		// last_child_id updated
-		Assert.assertEquals(lastChild.getId(),
-				parent.getProperty(NewDatasetService.PARENT_ID, 0L));
-	}
-
-	// -
-	@Test
-	public void testGetLastChildWrongId() {
-		Node child = getNewChild();
+		Node lastChild = null;
 		try {
-			service.addChild(parent, child, null);
+			lastChild = service.getLastChild(parent);
 		} catch (DatabaseException e) {
-			LOGGER.error("could not add child", e);
-		}
-		// remove last_child_id from parent
-		tx = graphDatabaseService.beginTx();
-		try {
-			parent.setProperty(NewDatasetService.LAST_CHILD_ID, parent.getId());
-			tx.success();
-		} catch (Exception e) {
-			LOGGER.error("Could not set property", e);
+			LOGGER.error("could not get last child", e);
 			Assert.fail();
-		} finally {
-			tx.finish();
 		}
-
-		// last_child_id set wrong:
-		Node lastChild = service.getLastChild(parent);
-		// last_chld returned,
+		// last_child returned,
 		Assert.assertEquals(child, lastChild);
 		// chain exists,
 		Assert.assertTrue(chainExists(parent, lastChild));
@@ -1539,18 +1618,31 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 				parent.getProperty(NewDatasetService.LAST_CHILD_ID, 0L));
 	}
 
+	// -
 	@Test
 	public void testGetLastChildNoChildren() {
 		Node node = getNewChild();
 		// parent has no children: return null
-		Node lastChild = service.getLastChild(node);
+		Node lastChild = null;
+		try {
+			lastChild = service.getLastChild(node);
+		} catch (DatabaseException e) {
+			LOGGER.error("could not get last child", e);
+			Assert.fail();
+		}
 		Assert.assertNull(lastChild);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testGetLastChildNull() {
 		// parent is null: exception
-		Node node = service.getLastChild(null);
+		Node node = null;
+		try {
+			node = service.getLastChild(null);
+		} catch (DatabaseException e) {
+			LOGGER.error("could not get last child", e);
+			Assert.fail();
+		}
 	}
 
 	// +
