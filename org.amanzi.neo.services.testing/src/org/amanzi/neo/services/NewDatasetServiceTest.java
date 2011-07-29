@@ -1692,6 +1692,22 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 		Iterable<Node> traverser = service.getChildrenChainTraverser(null);
 	}
 
+	// +
+	@Test
+	public void testGetParentComplexChain() {
+		throw new RuntimeException("not yet implemented");
+	}
+
+	@Test
+	public void testGetLastChildComplexChain() {
+		throw new RuntimeException("not yet implemented");
+	}
+
+	@Test
+	public void testGetChainTraverserComplexChain() {
+		throw new RuntimeException("not yet implemented");
+	}
+
 	private boolean chainExists(Node parent, Node child) {
 		Iterator<Relationship> it = parent.getRelationships(
 				DatasetRelationTypes.CHILD, Direction.OUTGOING).iterator();
