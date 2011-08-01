@@ -51,4 +51,19 @@ public class NewNodeTypeVault implements IVault {
     public void parse() {
     }
 
+    @Override
+    public void addSubVault(IVault vault) {
+        this.subVaults.add(vault);
+    }
+
+    @Override
+    public void setCount(int count) {
+        this.count = count;
+    }
+
+    @Override
+    public void setType(String type) {
+        this.type = type;
+    }
+
 }

@@ -8,6 +8,8 @@ import junit.framework.Assert;
 import org.amanzi.neo.services.NewStatisticsService.StatisticsNodeTypes;
 import org.amanzi.neo.services.NewStatisticsService.StatisticsRelationships;
 import org.amanzi.neo.services.exceptions.DatabaseException;
+import org.amanzi.neo.services.exceptions.DuplicateStatisticsException;
+import org.amanzi.neo.services.exceptions.InvalidStatisticsParameterException;
 import org.amanzi.neo.services.statistic.IVault;
 import org.amanzi.neo.services.statistic.StatisticsVault;
 import org.amanzi.testing.AbstractAWETest;
@@ -57,10 +59,27 @@ public class NewStatisticsServiceTest extends AbstractAWETest {
 	@After
 	public final void after() {
 
+		cleanReferenceNode();
 	}
 
+	private void cleanReferenceNode() {
+		Iterator<Relationship> iter = referenceNode.getRelationships()
+				.iterator();
+		while (iter.hasNext()) {
+			iter.next().delete();
+		}
+	}
+
+	/**
+	 * testing method saveVault(Node rootNode, IVault vault)
+	 * 
+	 * @throws DatabaseException
+	 * @throws InvalidStatisticsParameterException
+	 * @throws DuplicateStatisticsException
+	 */
 	@Test
-	public void saveVaultPositiveTest() throws DatabaseException {
+	public void saveVaultPositiveTest() throws DatabaseException,
+			InvalidStatisticsParameterException, DuplicateStatisticsException {
 
 		StatisticsVault propVault = new StatisticsVault(PROPERTIES);
 		StatisticsVault neighboursSubVault = new StatisticsVault(NEIGHBOURS);
@@ -109,4 +128,95 @@ public class NewStatisticsServiceTest extends AbstractAWETest {
 
 	}
 
+	/**
+	 * testing method saveVault(Node rootNode, IVault vault) when parameter
+	 * rootNode == null
+	 * 
+	 * @throws DatabaseException
+	 * @throws InvalidStatisticsParameterException
+	 * @throws DuplicateStatisticsException
+	 */
+	@Test(expected = InvalidStatisticsParameterException.class)
+	public void saveVaultNullParameterRootNodeNegativeTest()
+			throws DatabaseException, InvalidStatisticsParameterException,
+			DuplicateStatisticsException {
+		StatisticsVault propVault = new StatisticsVault(PROPERTIES);
+		service.saveVault(null, propVault);
+	}
+
+	/**
+	 * testing method saveVault(Node rootNode, IVault vault) when parameter
+	 * vault == null
+	 * 
+	 * @throws DatabaseException
+	 * @throws InvalidStatisticsParameterException
+	 * @throws DuplicateStatisticsException
+	 */
+	@Test(expected = InvalidStatisticsParameterException.class)
+	public void saveVaultNullParameterVaultNegativeTest()
+			throws DatabaseException, InvalidStatisticsParameterException,
+			DuplicateStatisticsException {
+		service.saveVault(referenceNode, null);
+	}
+
+	/**
+	 * testing method saveVault(Node rootNode, IVault vault) when rootNode
+	 * already exists statistics
+	 * 
+	 * @throws DatabaseException
+	 * @throws InvalidStatisticsParameterException
+	 * @throws DuplicateStatisticsException
+	 */
+	@Test(expected = DuplicateStatisticsException.class)
+	public void saveVaultDuplicateStatisticsNegativeTest()
+			throws DatabaseException, InvalidStatisticsParameterException,
+			DuplicateStatisticsException {
+		StatisticsVault propVault = new StatisticsVault(PROPERTIES);
+		tx = graphDatabaseService.beginTx();
+		try {
+			Node statNode = graphDatabaseService.createNode();
+			referenceNode.createRelationshipTo(statNode,
+					StatisticsRelationships.STATISTICS);
+			tx.success();
+		} finally {
+			tx.finish();
+		}
+		service.saveVault(referenceNode, propVault);
+	}
+
+	@Test
+	public void loadVaultPositiveTest() throws DatabaseException,
+			InvalidStatisticsParameterException, DuplicateStatisticsException {
+		StatisticsVault propVault = new StatisticsVault(PROPERTIES);
+		StatisticsVault neighboursSubVault = new StatisticsVault(NEIGHBOURS);
+		StatisticsVault networkSubVault = new StatisticsVault(NETWORK);
+		
+		propVault.addSubVault(neighboursSubVault);
+		neighboursSubVault.addSubVault(networkSubVault);
+		service.saveVault(referenceNode, propVault);
+
+		IVault vault = service.loadVault(referenceNode);
+		Class<?> actualClass = vault.getClass();
+		Assert.assertEquals("load wrong IVault object", StatisticsVault.class,
+				actualClass);
+
+		int actualCount = vault.getCount();
+		Assert.assertEquals("vault has wrong count", 0, actualCount);
+		
+		String actualType = vault.getType();
+		Assert.assertEquals("vault has wrong type", PROPERTIES, actualType);
+
+		Iterator<IVault> iter = vault.getSubVaults().iterator();
+		int count = 0;
+		while(iter.hasNext()){
+			iter.next();
+			count++;
+		}
+		Assert.assertEquals("vault has wrong count of subVault", 1, count);
+		IVault subVault =  vault.getSubVaults().iterator().next();
+		
+		
+
+		
+	}
 }

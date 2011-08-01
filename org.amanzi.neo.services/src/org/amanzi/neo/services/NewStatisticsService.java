@@ -20,9 +20,12 @@ import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateStatisticsException;
 import org.amanzi.neo.services.exceptions.InvalidStatisticsParameterException;
 import org.amanzi.neo.services.statistic.IVault;
+import org.amanzi.neo.services.statistic.NewNodeTypeVault;
+import org.amanzi.neo.services.statistic.StatisticsVault;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
 
@@ -59,12 +62,15 @@ public class NewStatisticsService extends NewAbstractService {
             DuplicateStatisticsException {
         LOGGER.debug("start method saveVault(Node rootNode, IVault vault)");
         if (rootNode == null) {
+            LOGGER.error("InvalidStatisticsParameterException: parameter rootNode = null");
             throw new InvalidStatisticsParameterException("rootNode", rootNode);
         }
         if (vault == null) {
+            LOGGER.error("InvalidStatisticsParameterException: parameter vault = null");
             throw new InvalidStatisticsParameterException("vault", vault);
         }
         if (rootNode.getRelationships(StatisticsRelationships.STATISTICS, Direction.OUTGOING).iterator().hasNext()) {
+            LOGGER.error("DuplicateStatisticsException: for this rootNode already exists statistics");
             throw new DuplicateStatisticsException("for this rootNode already exists statistics");
         }
         Node vaultNode = createNode(StatisticsNodeTypes.VAULT);
@@ -95,6 +101,28 @@ public class NewStatisticsService extends NewAbstractService {
     }
 
     public IVault loadVault(Node rootNode) {
-        return null;
+
+        IVault result;
+        Node vaultNode = rootNode.getSingleRelationship(StatisticsRelationships.STATISTICS, Direction.OUTGOING).getEndNode();
+        result = loadSubVault(vaultNode);
+        return result;
+    }
+
+    private IVault loadSubVault(Node vaultNode) {
+        IVault result;
+        String klass = (String)vaultNode.getProperty(CLASS, null);
+        if (StatisticsVault.class.toString().equals(klass)) {
+            result = new StatisticsVault();
+        } else if (NewNodeTypeVault.class.toString().equals(klass)) {
+            result = new NewNodeTypeVault();
+        } else {
+            return null;
+        }
+        result.setCount((Integer)vaultNode.getProperty(COUNT, null));
+        result.setType((String)vaultNode.getProperty(PROPERTY_NAME_NAME, ""));
+        for (Relationship childRelation : vaultNode.getRelationships(StatisticsRelationships.CHILD, Direction.OUTGOING)) {
+            result.addSubVault(loadSubVault(childRelation.getEndNode()));
+        }
+        return result;
     }
 }

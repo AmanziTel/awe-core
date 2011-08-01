@@ -38,8 +38,21 @@ public interface IVault {
      * @return
      */
     public String getType();
-    
-    
+
+    /**
+     * @param vault
+     */
+    public void addSubVault(IVault vault);
+
+    /**
+     * @param count
+     */
+    public void setCount(int count);
+
+    /**
+     * @param type
+     */
+    public void setType(String type);
 
     /**
      * 

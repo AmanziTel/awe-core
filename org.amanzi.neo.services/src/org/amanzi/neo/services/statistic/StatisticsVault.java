@@ -31,7 +31,13 @@ public class StatisticsVault implements IVault {
     private List<IVault> subVaults = new ArrayList<IVault>();
     private int count;
     private String type;
-   // private Class<?> klass = this.getClass();
+
+    /**
+     * constructor
+     */
+    public StatisticsVault() {
+        super();
+    }
 
     /**
      * constructor
@@ -43,6 +49,7 @@ public class StatisticsVault implements IVault {
         this.count = 0;
     }
 
+    @Override
     public void addSubVault(IVault subVault) {
         subVaults.add(subVault);
     }
@@ -68,5 +75,15 @@ public class StatisticsVault implements IVault {
 
     @Override
     public void parse() {
+    }
+
+    @Override
+    public void setCount(int count) {
+        this.count = count;
+    }
+
+    @Override
+    public void setType(String type) {
+        this.type = type;
     }
 }
