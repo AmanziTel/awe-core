@@ -23,13 +23,20 @@ package org.amanzi.neo.services.exceptions;
  */
 public class DatabaseException extends AWEException {
     static final long serialVersionUID = 1;
-    
+
     private Exception dbException;
-    
-    public DatabaseException(Exception e){
+
+    public DatabaseException(Exception e) {
         this.dbException = e;
     }
-    
+
+    /**
+     * @param message
+     */
+    public DatabaseException(String message) {
+        this.message = message;
+    }
+
     @Override
     public Throwable getCause() {
         return dbException;

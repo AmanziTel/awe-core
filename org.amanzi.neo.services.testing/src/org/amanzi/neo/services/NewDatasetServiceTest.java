@@ -1654,15 +1654,8 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 		Node prevNode = null;
 		for (Node node : traverser) {
 
-			if (prevNode == null) {
-				// first relationship is child,
-				Assert.assertEquals(
-						node,
-						parent.getRelationships(DatasetRelationTypes.CHILD,
-								Direction.OUTGOING).iterator().next()
-								.getOtherNode(parent));
-			} else {
-				// all others - next,
+			if (prevNode != null) {
+				// all relationships - next,
 				// children appear in the order they are linked
 				Assert.assertEquals(
 						node,
@@ -1670,11 +1663,14 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 								Direction.OUTGOING).iterator().next()
 								.getOtherNode(prevNode));
 			}
+			// check that node is in the chain
+			Assert.assertTrue(chainExists(parent, node));
 			prevNode = node;
 		}
 	}
 
 	@Test
+	// TODO: can we return a traverser?
 	public void testGetChildrenChainTraverserNoChildren() {
 		Node node = getNewChild();
 		// project has no children:
@@ -1683,6 +1679,29 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 		Assert.assertNotNull(traverser);
 		// !iterator.hasNext()
 		Assert.assertFalse(traverser.iterator().hasNext());
+	}
+
+	@Test
+	// TODO: can we return a traverser?
+	public void testGetChildrenChainTraverserNoChildrenComplexChain() {
+		parent = getNewChild();
+		Node[][] nodes = getComplexChain(parent);
+
+		// check on nodes that have no childrenhas no children:
+		for (int i = 0; i < nodes.length; i++) {
+			for (int j = 1; j < nodes[i].length; j++) {
+				Iterable<Node> traverser = service
+						.getChildrenChainTraverser(nodes[i][j]);
+				// traverser not null,
+				Assert.assertNotNull(traverser);
+				// !iterator.hasNext()
+				Iterator<Node> it = traverser.iterator();
+				while (it.hasNext()) {
+					System.out.println(it.next().getId());
+				}
+				Assert.assertFalse(it.hasNext());
+			}
+		}
 	}
 
 	// -
@@ -1695,17 +1714,94 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 	// +
 	@Test
 	public void testGetParentComplexChain() {
-		throw new RuntimeException("not yet implemented");
+		parent = getNewChild();
+		Node[][] nodes = getComplexChain(parent);
+
+		// check that valid parent is returned
+		for (int i = 0; i < nodes.length; i++) {
+			try {
+				Assert.assertEquals(parent, service.getParent(nodes[i][0]));
+				Assert.assertTrue(chainExists(parent, nodes[i][0]));
+				for (int j = 1; j < nodes[i].length; j++) {
+					Assert.assertEquals(nodes[i][0],
+							service.getParent(nodes[i][j]));
+					Assert.assertTrue(chainExists(nodes[i][0], nodes[i][j]));
+				}
+			} catch (DatabaseException e) {
+				LOGGER.error("could not get parent", e);
+				Assert.fail();
+			}
+		}
 	}
 
 	@Test
 	public void testGetLastChildComplexChain() {
-		throw new RuntimeException("not yet implemented");
+		parent = getNewChild();
+		Node[][] nodes = getComplexChain(parent);
+
+		// check that valid last child is returned
+		try {
+			Node lastChild = service.getLastChild(parent);
+			Assert.assertEquals(nodes[nodes.length - 1][0], lastChild);
+			Assert.assertTrue(chainExists(parent, lastChild));
+			for (int i = 0; i < nodes.length; i++) {
+				lastChild = service.getLastChild(nodes[i][0]);
+				Assert.assertEquals(nodes[i][nodes[i].length - 1], lastChild);
+				Assert.assertTrue(chainExists(nodes[i][0], lastChild));
+			}
+		} catch (DatabaseException e) {
+			LOGGER.error("could not get last child", e);
+			Assert.fail();
+		}
 	}
 
 	@Test
 	public void testGetChainTraverserComplexChain() {
-		throw new RuntimeException("not yet implemented");
+		parent = getNewChild();
+		Node[][] nodes = getComplexChain(parent);
+
+		// test traverser
+		Iterable<Node> traverser = service.getChildrenChainTraverser(parent);
+		// traverser not null,
+		Assert.assertNotNull(traverser);
+		Node prevNode = null;
+		for (Node node : traverser) {
+			if (prevNode != null) {
+				// all relationships - next,
+				// children appear in the order they are linked
+				Assert.assertEquals(
+						node,
+						prevNode.getRelationships(DatasetRelationTypes.NEXT,
+								Direction.OUTGOING).iterator().next()
+								.getOtherNode(prevNode));
+			}
+			prevNode = node;
+			// check that node is in the chain
+			Assert.assertTrue(chainExists(parent, node));
+		}
+
+		// test traverser on every high level child
+		for (int i = 0; i < nodes.length; i++) {
+			traverser = service.getChildrenChainTraverser(nodes[i][0]);
+			// traverser not null,
+			Assert.assertNotNull(traverser);
+			prevNode = null;
+			for (Node node : traverser) {
+				if (prevNode != null) {
+					// all relationships - next,
+					// children appear in the order they are linked
+					Assert.assertEquals(
+							node,
+							prevNode.getRelationships(
+									DatasetRelationTypes.NEXT,
+									Direction.OUTGOING).iterator().next()
+									.getOtherNode(prevNode));
+				}
+				prevNode = node;
+				// check that node is in the chain
+				Assert.assertTrue(chainExists(nodes[i][0], node));
+			}
+		}
 	}
 
 	private boolean chainExists(Node parent, Node child) {
@@ -1747,6 +1843,25 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 			tx.finish();
 		}
 		return child;
+	}
+
+	private Node[][] getComplexChain(Node parentNode) {
+
+		Node[][] nodes = new Node[10][5];
+
+		// create a complex chain of nodes
+		for (int i = 0; i < nodes.length; i++) {
+			try {
+				nodes[i][0] = service.addChild(parentNode, getNewChild(), null);
+				for (int j = 1; j < nodes[i].length; j++) {
+					nodes[i][j] = service.addChild(nodes[i][0], getNewChild(),
+							null);
+				}
+			} catch (DatabaseException e) {
+				LOGGER.error("could not add child", e);
+			}
+		}
+		return nodes;
 	}
 
 }

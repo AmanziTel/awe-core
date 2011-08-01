@@ -28,6 +28,7 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipExpander;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
@@ -773,14 +774,17 @@ public class NewDatasetService extends NewAbstractService {
             return graphDb.getNodeById(parent_id);
         }
         // else traverse database to find parent node
-        TraversalDescription tr = getChildrenChainTraversalDescription()
-                .relationships(DatasetRelationTypes.NEXT, Direction.INCOMING)
-                .relationships(DatasetRelationTypes.CHILD, Direction.INCOMING).order(Traversal.postorderDepthFirst());
+        TraversalDescription tr = getChildrenChainTraversalDescription().relationships(DatasetRelationTypes.NEXT,
+                Direction.INCOMING).order(Traversal.postorderDepthFirst());
         Iterable<Node> nodes = tr.traverse(child).nodes();
         for (Node node : nodes) {
+            Node parent = getNextNode(node, DatasetRelationTypes.CHILD, Direction.INCOMING);
+            if (parent == null) {
+                return null;
+            }
             tx = graphDb.beginTx();
             try {
-                child.setProperty(PARENT_ID, node.getId());
+                child.setProperty(PARENT_ID, parent.getId());
                 tx.success();
             } catch (Exception e) {
                 LOGGER.error("Could not update child", e);
@@ -788,7 +792,7 @@ public class NewDatasetService extends NewAbstractService {
             } finally {
                 tx.finish();
             }
-            return node;
+            return parent;
         }
         return null;
     }
@@ -811,8 +815,12 @@ public class NewDatasetService extends NewAbstractService {
             return graphDb.getNodeById(last_child_id);
         }
         // else traverse database to find last child node
+        Node child = getNextNode(parent, DatasetRelationTypes.CHILD, Direction.OUTGOING);
+        if (child == null) {
+            return null;
+        }
         TraversalDescription tr = getChildrenChainTraversalDescription().order(Traversal.postorderDepthFirst());
-        Iterable<Node> nodes = tr.traverse(parent).nodes();
+        Iterable<Node> nodes = tr.traverse(child).nodes();
         for (Node node : nodes) {
             tx = graphDb.beginTx();
             try {
@@ -839,7 +847,19 @@ public class NewDatasetService extends NewAbstractService {
         if (parent == null) {
             throw new IllegalArgumentException("parent is null");
         }
-        return getChildrenChainTraversalDescription().traverse(parent).nodes();
+        try {
+            Node firstChild = getNextNode(parent, DatasetRelationTypes.CHILD, Direction.OUTGOING);
+            if (firstChild != null) {
+                return getChildrenChainTraversalDescription().traverse(firstChild).nodes();
+            } else {
+                // a work-around to return an empty traverser
+                return getChildrenChainTraversalDescription().relationships(DatasetRelationTypes.NEXT, Direction.INCOMING)
+                        .evaluator(Evaluators.excludeStartPosition()).traverse(parent).nodes();
+            }
+        } catch (DatabaseException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        return null;
     }
 
     /**
@@ -847,8 +867,23 @@ public class NewDatasetService extends NewAbstractService {
      */
     protected TraversalDescription getChildrenChainTraversalDescription() {
         LOGGER.debug("start getChildrenChainTraversalDescription()");
-        return Traversal.description().depthFirst().relationships(DatasetRelationTypes.CHILD, Direction.OUTGOING)
-                .relationships(DatasetRelationTypes.NEXT, Direction.OUTGOING).evaluator(Evaluators.excludeStartPosition());
+        return Traversal.description().depthFirst().relationships(DatasetRelationTypes.NEXT, Direction.OUTGOING)
+                .evaluator(Evaluators.all());
+    }
+
+    private Node getNextNode(Node startNode, RelationshipType relationship, Direction direction) throws DatabaseException {
+        Node result = null;
+
+        Iterator<Relationship> rels = startNode.getRelationships(relationship, direction).iterator();
+        if (rels.hasNext()) {
+            result = rels.next().getOtherNode(startNode);
+        }
+        if (rels.hasNext()) {
+            // result is ambiguous
+            throw new DatabaseException("Errors exist in database structure");
+        }
+
+        return result;
     }
 
 }
