@@ -9,6 +9,7 @@ import junit.framework.Assert;
 import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.NewDatasetService.DriveTypes;
+import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
@@ -1394,7 +1395,7 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 		// parent_id set:
 		Node node = null;
 		try {
-			node = service.getParent(child);
+			node = service.getParent(child, true);
 		} catch (DatabaseException e) {
 			LOGGER.error("could not get parent", e);
 			Assert.fail();
@@ -1416,7 +1417,7 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 		// parent_id set:
 		Node node = null;
 		try {
-			node = service.getParent(child);
+			node = service.getParent(child, true);
 		} catch (DatabaseException e) {
 			LOGGER.error("could not get parent", e);
 			Assert.fail();
@@ -1450,7 +1451,7 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 		// parent_id not set:
 		Node node = null;
 		try {
-			node = service.getParent(child);
+			node = service.getParent(child, true);
 		} catch (DatabaseException e) {
 			LOGGER.error("could not get parent", e);
 			Assert.fail();
@@ -1486,7 +1487,7 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 		// parent_id not set:
 		Node node = null;
 		try {
-			node = service.getParent(child);
+			node = service.getParent(child, true);
 		} catch (DatabaseException e) {
 			LOGGER.error("could not get parent", e);
 			Assert.fail();
@@ -1517,7 +1518,7 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 		for (Node testChild : children) {
 			// testChild in the middle of a chain
 			try {
-				node = service.getParent(testChild);
+				node = service.getParent(testChild, true);
 			} catch (DatabaseException e) {
 				LOGGER.error("could not get parent", e);
 				Assert.fail();
@@ -1536,7 +1537,7 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 		// child has no parent: return null
 		Node node = null;
 		try {
-			node = service.getParent(child);
+			node = service.getParent(child, true);
 		} catch (DatabaseException e) {
 			LOGGER.error("could not get parent", e);
 			Assert.fail();
@@ -1549,7 +1550,7 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 		// child is null: exception
 		Node node = null;
 		try {
-			node = service.getParent(null);
+			node = service.getParent(null, true);
 		} catch (DatabaseException e) {
 			LOGGER.error("could not get parent", e);
 			Assert.fail();
@@ -1720,11 +1721,12 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 		// check that valid parent is returned
 		for (int i = 0; i < nodes.length; i++) {
 			try {
-				Assert.assertEquals(parent, service.getParent(nodes[i][0]));
+				Assert.assertEquals(parent,
+						service.getParent(nodes[i][0], true));
 				Assert.assertTrue(chainExists(parent, nodes[i][0]));
 				for (int j = 1; j < nodes[i].length; j++) {
 					Assert.assertEquals(nodes[i][0],
-							service.getParent(nodes[i][j]));
+							service.getParent(nodes[i][j], true));
 					Assert.assertTrue(chainExists(nodes[i][0], nodes[i][j]));
 				}
 			} catch (DatabaseException e) {
@@ -1800,6 +1802,109 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 				prevNode = node;
 				// check that node is in the chain
 				Assert.assertTrue(chainExists(nodes[i][0], node));
+			}
+		}
+	}
+
+	// +
+	@Test
+	public void testAddChildNoChain() {
+		parent = getNewChild();
+		List<Node> children = new ArrayList<Node>();
+		// add child to parent
+		for (int i = 0; i < 4; i++) {
+			try {
+				children.add(service.addChild(parent, getNewChild()));
+			} catch (DatabaseException e) {
+				LOGGER.error("could not add child", e);
+				Assert.fail();
+			}
+		}
+		// check that a relationship is created
+		for (Relationship rel : parent.getRelationships(
+				DatasetRelationshipTypes.CHILD, Direction.OUTGOING)) {
+			Assert.assertTrue(children.contains(rel.getOtherNode(parent)));
+		}
+	}
+
+	// -
+	@Test(expected = IllegalArgumentException.class)
+	public void testAddChildNoChainParentNull() {
+		// parent is null: exception
+		try {
+			service.addChild(null, getNewChild());
+		} catch (DatabaseException e) {
+			LOGGER.error("could not add child", e);
+			Assert.fail();
+		}
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testAddChildNoChainChildNull() {
+		// child is null: exception
+		try {
+			service.addChild(parent, null);
+		} catch (DatabaseException e) {
+			LOGGER.error("could not add child", e);
+			Assert.fail();
+		}
+	}
+
+	// +
+	@Test
+	public void testGetChildrenTraverser() {
+		Iterable<Node> traverser = service.getChildrenTraverser(parent);
+		// traverser not null,
+		Assert.assertNotNull(traverser);
+		for (Node node : traverser) {
+			// all children are lined to parent
+			for (Relationship rel : node.getRelationships(
+					DatasetRelationTypes.CHILD, Direction.INCOMING)) {
+				Assert.assertEquals(parent, rel.getOtherNode(node));
+			}
+		}
+	}
+
+	@Test
+	public void testGetChildrenTraverserNoChildren() {
+		// parent has no children
+		parent = getNewChild();
+		Iterable<Node> traverser = service.getChildrenChainTraverser(parent);
+		// traverser not null,
+		Assert.assertNotNull(traverser);
+		// check that no children are returned
+		Assert.assertFalse(traverser.iterator().hasNext());
+	}
+
+	// -
+	@Test(expected = IllegalArgumentException.class)
+	public void testGetChildrenTraverserNull() {
+		// parent is null: exception
+		Iterable<Node> traverser = service.getChildrenChainTraverser(null);
+	}
+
+	// +
+	@Test
+	public void testGetParentNoChain() {
+		// children are added via addChild(Node, Node) method
+		parent = getNewChild();
+		List<Node> children = new ArrayList<Node>();
+		// add child to parent
+		for (int i = 0; i < 4; i++) {
+			try {
+				children.add(service.addChild(parent, getNewChild()));
+			} catch (DatabaseException e) {
+				LOGGER.error("could not add child", e);
+				Assert.fail();
+			}
+		}
+		// check that a relationship is created the valid parent is returned
+		for (Node node : children) {
+			try {
+				Assert.assertEquals(parent, service.getParent(node, false));
+			} catch (DatabaseException e) {
+				LOGGER.error("could not get parent", e);
+				Assert.fail();
 			}
 		}
 	}

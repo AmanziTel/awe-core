@@ -717,6 +717,40 @@ public class NewDatasetService extends NewAbstractService {
     }
 
     /**
+     * The method creates a CHILD relationship from <code>parent</code> to <code>child</code>
+     * 
+     * @param parent
+     * @param child
+     * @return child node
+     * @throws DatabaseException if something went wrong during creating the relationship
+     */
+    public Node addChild(Node parent, Node child) throws DatabaseException {
+        // validate parameters
+        if (parent == null) {
+            throw new IllegalArgumentException("Parent cannot be null");
+        }
+        if (child == null) {
+            throw new IllegalArgumentException("Child cannot be null");
+        }
+
+        // create relationship
+        tx = graphDb.beginTx();
+        try {
+            parent.createRelationshipTo(child, DatasetRelationTypes.CHILD);
+            tx.success();
+        } catch (Exception e) {
+            LOGGER.error("Could not add child.", e);
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
+        return child;
+    }
+
+    /**
+     * Sets <code>last_child_id</code> in parent to <code>child.getId()</code>, and
+     * <code>parent_id</code> in child to <code>parent.getId()</code>
+     * 
      * @param parent
      * @param child
      */
@@ -734,6 +768,9 @@ public class NewDatasetService extends NewAbstractService {
     }
 
     /**
+     * Creates the defined relationship from <code>linkTo</code> to <code>child</code> and updates
+     * properties in <code>parent</code> and <code>child</code>
+     * 
      * @param parent
      * @param child
      * @param linkTo
@@ -756,12 +793,15 @@ public class NewDatasetService extends NewAbstractService {
     }
 
     /**
-     * Finds parent node for the defined child
+     * Finds parent node for the defined child, updates parent_id, if needed
      * 
      * @param child
+     * @param updateProperties - if <code>true</code>, the method updates parent_id property in
+     *        child node
      * @return - the parent node, or <code>null</code>, if it wasn't found
+     * @throws DatabaseException if something went wrong during update
      */
-    public Node getParent(Node child) throws DatabaseException {
+    public Node getParent(Node child, boolean updateProperties) throws DatabaseException {
         LOGGER.debug("start getParent(Node child)");
         // validate parameters
         if (child == null) {
@@ -782,15 +822,17 @@ public class NewDatasetService extends NewAbstractService {
             if (parent == null) {
                 return null;
             }
-            tx = graphDb.beginTx();
-            try {
-                child.setProperty(PARENT_ID, parent.getId());
-                tx.success();
-            } catch (Exception e) {
-                LOGGER.error("Could not update child", e);
-                throw new DatabaseException(e);
-            } finally {
-                tx.finish();
+            if (updateProperties) {
+                tx = graphDb.beginTx();
+                try {
+                    child.setProperty(PARENT_ID, parent.getId());
+                    tx.success();
+                } catch (Exception e) {
+                    LOGGER.error("Could not update child", e);
+                    throw new DatabaseException(e);
+                } finally {
+                    tx.finish();
+                }
             }
             return parent;
         }
@@ -838,6 +880,10 @@ public class NewDatasetService extends NewAbstractService {
     }
 
     /**
+     * Returns a traverser to iterate over chain of nodes linked one after another with NEXT
+     * relationship, te first node in the chain is linked to <code>parent</code> with CHILD
+     * relationship
+     * 
      * @param parent
      * @return an <code>Iterable</code> over children in the chain
      */
@@ -863,6 +909,24 @@ public class NewDatasetService extends NewAbstractService {
     }
 
     /**
+     * Returns a traverser to iterate over nodes, that are linked to <code>parent</code> with CHILD
+     * relationship
+     * 
+     * @param parent
+     * @return
+     */
+    public Iterable<Node> getChildrenTraverser(Node parent) {
+        LOGGER.debug("start getChildrenTraverser(Node parent)");
+        // validate parameters
+        if (parent == null) {
+            throw new IllegalArgumentException("parent is null");
+        }
+
+        return getChildrenChainTraversalDescription().traverse(parent).nodes();
+
+    }
+
+    /**
      * @return <code>TraversalDescription</code> to iterate over children in a chain
      */
     protected TraversalDescription getChildrenChainTraversalDescription() {
@@ -871,6 +935,25 @@ public class NewDatasetService extends NewAbstractService {
                 .evaluator(Evaluators.all());
     }
 
+    /**
+     * @return <code>TraversalDescription</code> to iterate over children of a node
+     */
+    protected TraversalDescription getChildrenTraversalDescription() {
+        LOGGER.debug("start getChildrenTraversalDescription()");
+        return Traversal.description().breadthFirst().relationships(DatasetRelationTypes.CHILD, Direction.OUTGOING)
+                .evaluator(Evaluators.excludeStartPosition()).evaluator(Evaluators.atDepth(1));
+    }
+
+    /**
+     * Safely get a node that is linked to <code>startNode</code> with the defined relationship.
+     * Assumed, that <code>startNode</code> has only one relationship of that kind
+     * 
+     * @param startNode
+     * @param relationship
+     * @param direction
+     * @return the node on the other end of relationship from <code>startNode</code>
+     * @throws DatabaseException if there are more than one relationships
+     */
     private Node getNextNode(Node startNode, RelationshipType relationship, Direction direction) throws DatabaseException {
         Node result = null;
 
