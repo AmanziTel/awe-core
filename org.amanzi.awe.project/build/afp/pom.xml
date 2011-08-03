@@ -116,7 +116,6 @@
       <module>org.amanzi.awe.ui.operation.shape_export</module>
       <module>org.amanzi.awe.views.drive</module>
       <module>org.amanzi.awe.views.kpi</module>
-      <module>org.amanzi.awe.views.neighbours</module>
       <module>org.amanzi.awe.views.network</module>
       <module>org.amanzi.awe.views.reuse</module>
       <module>org.amanzi.awe.views.tree.drive</module>
@@ -150,7 +149,6 @@
       <module>org.rubypeople.rdt.launching</module>
       <module>org.rubypeople.rdt.refactoring</module>
       <module>org.rubypeople.rdt.ui</module>
-      <module>org.amanzi.awe.neighbours</module>
       <module>org.amanzi.awe.wizards</module>
       <module>org.amanzi.awe.report.o2</module>
       <module>org.amanzi.awe.afp-site</module>
@@ -259,7 +257,6 @@
       <module>org.amanzi.awe.ui.operation.shape_export</module>
       <module>org.amanzi.awe.views.drive</module>
       <module>org.amanzi.awe.views.kpi</module>
-      <module>org.amanzi.awe.views.neighbours</module>
       <module>org.amanzi.awe.views.network</module>
       <module>org.amanzi.awe.views.reuse</module>
       <module>org.amanzi.awe.views.tree.drive</module>
@@ -293,7 +290,6 @@
       <module>org.rubypeople.rdt.launching</module>
       <module>org.rubypeople.rdt.refactoring</module>
       <module>org.rubypeople.rdt.ui</module>
-      <module>org.amanzi.awe.neighbours</module>
       <module>org.amanzi.awe.wizards</module>
       <module>org.amanzi.awe.report.o2</module>
       <module>org.amanzi.awe.afp-site</module>
