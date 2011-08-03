@@ -119,6 +119,7 @@
       <module>org.amanzi.awe.views.network</module>
       <module>org.amanzi.awe.views.reuse</module>
       <module>org.amanzi.awe.views.tree.drive</module>
+      <module>org.amanzi.awe.views.neighbours</module>
       <module>org.amanzi.printing</module>
       <module>org.amanzi.gef</module>
       <module>org.amanzi.integrator.awe</module>
@@ -260,6 +261,7 @@
       <module>org.amanzi.awe.views.network</module>
       <module>org.amanzi.awe.views.reuse</module>
       <module>org.amanzi.awe.views.tree.drive</module>
+      <module>org.amanzi.awe.views.neighbours</module>
       <module>org.amanzi.printing</module>
       <module>org.amanzi.gef</module>
       <module>org.amanzi.integrator.awe</module>
