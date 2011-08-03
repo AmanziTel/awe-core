@@ -5,13 +5,10 @@ Bundle-SymbolicName: org.amanzi.awe.views.neighbours; singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.amanzi.awe.views.neighbours.NeighboursPlugin
 Bundle-Vendor: amanzi.org
-Require-Bundle: org.eclipse.ui,
- org.eclipse.core.runtime,
+Require-Bundle: org.eclipse.core.runtime,
  org.amanzi.neo.core;bundle-version="1.0.0",
- org.neo4j;bundle-version="1.0.0",
  net.refractions.udig.project.ui;bundle-version="1.1.1",
  org.amanzi.awe.catalog.neo;bundle-version="1.0.0",
- org.amanzi.neo.services;bundle-version="1.0.0",
  org.amanzi.awe.ui;bundle-version="1.0.0",
  net.refractions.udig.mapgraphic;bundle-version="1.1.1"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
