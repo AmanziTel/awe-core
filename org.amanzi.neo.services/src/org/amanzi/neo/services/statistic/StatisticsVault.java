@@ -13,11 +13,9 @@
 
 package org.amanzi.neo.services.statistic;
 
+
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 
 /**
  * TODO Purpose of
@@ -37,10 +35,12 @@ public class StatisticsVault implements IVault {
      */
     public StatisticsVault() {
         super();
+        this.count = 0;
+        this.type ="";
     }
 
     /**
-     * constructor
+     * constructor with type of vault
      * 
      * @param type
      */
