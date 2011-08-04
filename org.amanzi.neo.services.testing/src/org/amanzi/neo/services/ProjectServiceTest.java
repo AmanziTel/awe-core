@@ -55,7 +55,7 @@ public class ProjectServiceTest {
 
 			Assert.assertNotNull(project);
 			Assert.assertEquals(prName,
-					project.getProperty(NewAbstractService.PROPERTY_NAME_NAME, null));
+					project.getProperty(NewAbstractService.NAME, null));
 			// check that type is 'project'
 			// check that it's attached to the reference node and relation type
 			// is
@@ -98,14 +98,14 @@ public class ProjectServiceTest {
 
 			// create a node of another type with the same name
 			tx = graphDb.beginTx();
-			graphDb.createNode().setProperty(NewAbstractService.PROPERTY_NAME_NAME,
+			graphDb.createNode().setProperty(NewAbstractService.NAME,
 					prName + "1");
 			tx.success();
 			tx.finish();
 
 			Node found = projectService.findProject(prName + "1");
 			Assert.assertEquals(prName + "1",
-					found.getProperty(NewAbstractService.PROPERTY_NAME_NAME, null));
+					found.getProperty(NewAbstractService.NAME, null));
 			Assert.assertEquals(project, found);
 			assertProjectRelatedToRefNode(found);
 		} catch (AWEException e) {
@@ -153,7 +153,7 @@ public class ProjectServiceTest {
 		for (Node node : projectService.findAllProjects()) {
 			count++;
 			Assert.assertTrue(projectNames.contains(node.getProperty(
-					NewAbstractService.PROPERTY_NAME_NAME, null)));
+					NewAbstractService.NAME, null)));
 			assertProjectRelatedToRefNode(node);
 		}
 		Assert.assertTrue(2 == count);
@@ -172,7 +172,7 @@ public class ProjectServiceTest {
 			Node got = projectService.getProject(prName + "2");
 			Assert.assertNotNull(got);
 			Assert.assertEquals(prName + "2",
-					got.getProperty(NewAbstractService.PROPERTY_NAME_NAME, null));
+					got.getProperty(NewAbstractService.NAME, null));
 			assertProjectRelatedToRefNode(got);
 		} catch (AWEException e) {
 			LOGGER.error(e.getMessage(), e);
@@ -210,7 +210,7 @@ public class ProjectServiceTest {
 
 	private void assertProjectRelatedToRefNode(Node node) {
 		Assert.assertEquals(ProjectService.ProjectNodeType.PROJECT.getId(),
-				node.getProperty(NewAbstractService.PROPERTY_TYPE_NAME, null));
+				node.getProperty(NewAbstractService.TYPE, null));
 		Node refNode = graphDb.getReferenceNode();
 		for (Relationship rel : node.getRelationships(
 				ProjectService.ProjectRelationshipType.PROJECT,

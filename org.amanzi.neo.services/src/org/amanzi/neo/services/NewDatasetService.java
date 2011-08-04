@@ -366,7 +366,7 @@ public class NewDatasetService extends NewAbstractService {
         try {
             datasetNode = createNode(type);
             projectNode.createRelationshipTo(datasetNode, DatasetRelationTypes.DATASET);
-            datasetNode.setProperty(PROPERTY_NAME_NAME, name);
+            datasetNode.setProperty(NAME, name);
             tx.success();
 
         } catch (Exception e) {
@@ -432,7 +432,7 @@ public class NewDatasetService extends NewAbstractService {
         try {
             datasetNode = createNode(type);
             projectNode.createRelationshipTo(datasetNode, DatasetRelationTypes.DATASET);
-            datasetNode.setProperty(PROPERTY_NAME_NAME, name);
+            datasetNode.setProperty(NAME, name);
             datasetNode.setProperty(DRIVE_TYPE, driveType.name());
             tx.success();
 

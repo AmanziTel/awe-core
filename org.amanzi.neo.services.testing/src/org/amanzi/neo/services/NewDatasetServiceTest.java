@@ -82,8 +82,8 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 	 */
 	private void setPropertyToDatasetNode(Node datasetNode, String name,
 			DatasetTypes type, DriveTypes driveType) {
-		datasetNode.setProperty(NewDatasetService.PROPERTY_NAME_NAME, name);
-		datasetNode.setProperty(NewDatasetService.PROPERTY_TYPE_NAME,
+		datasetNode.setProperty(NewDatasetService.NAME, name);
+		datasetNode.setProperty(NewDatasetService.TYPE,
 				type.name());
 		if (driveType != null)
 			datasetNode.setProperty(NewDatasetService.DRIVE_TYPE,
@@ -104,7 +104,7 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 			projectNode = graphDatabaseService.createNode();
 			graphDatabaseService.getReferenceNode().createRelationshipTo(
 					projectNode, DatasetRelationTypes.PROJECT);
-			projectNode.setProperty(NewDatasetService.PROPERTY_NAME_NAME,
+			projectNode.setProperty(NewDatasetService.NAME,
 					"project");
 			tx.success();
 		} finally {
@@ -448,11 +448,11 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 		Assert.assertTrue("not create DATASET relation", hasRelation);
 
 		String actualName = (String) actualDataset
-				.getProperty(NewDatasetService.PROPERTY_NAME_NAME);
+				.getProperty(NewDatasetService.NAME);
 		Assert.assertEquals("dataset has wrong name", NAME_1, actualName);
 
 		String actualType = (String) actualDataset
-				.getProperty(NewDatasetService.PROPERTY_TYPE_NAME);
+				.getProperty(NewDatasetService.TYPE);
 		Assert.assertEquals("dataset has wrong type",
 				DatasetTypes.DRIVE.name(), actualType);
 
@@ -587,11 +587,11 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 		Assert.assertTrue("not create DATASET relation", hasRelation);
 
 		String actualName = (String) actualDataset
-				.getProperty(NewDatasetService.PROPERTY_NAME_NAME);
+				.getProperty(NewDatasetService.NAME);
 		Assert.assertEquals("dataset has wrong name", NAME_1, actualName);
 
 		String actualType = (String) actualDataset
-				.getProperty(NewDatasetService.PROPERTY_TYPE_NAME);
+				.getProperty(NewDatasetService.TYPE);
 		Assert.assertEquals("dataset has wrong type",
 				DatasetTypes.NETWORK.name(), actualType);
 	}
@@ -726,11 +726,11 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 		Assert.assertTrue("not create DATASET relation", hasRelation);
 
 		String actualName = (String) actualDataset
-				.getProperty(NewDatasetService.PROPERTY_NAME_NAME);
+				.getProperty(NewDatasetService.NAME);
 		Assert.assertEquals("dataset has wrong name", NAME_1, actualName);
 
 		String actualType = (String) actualDataset
-				.getProperty(NewDatasetService.PROPERTY_TYPE_NAME);
+				.getProperty(NewDatasetService.TYPE);
 		Assert.assertEquals("dataset has wrong type",
 				DatasetTypes.NETWORK.name(), actualType);
 	}
@@ -892,11 +892,11 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 		Assert.assertTrue("not create DATASET relation", hasRelation);
 
 		String actualName = (String) actualDataset
-				.getProperty(NewDatasetService.PROPERTY_NAME_NAME);
+				.getProperty(NewDatasetService.NAME);
 		Assert.assertEquals("dataset has wrong name", NAME_1, actualName);
 
 		String actualType = (String) actualDataset
-				.getProperty(NewDatasetService.PROPERTY_TYPE_NAME);
+				.getProperty(NewDatasetService.TYPE);
 		Assert.assertEquals("dataset has wrong type",
 				DatasetTypes.DRIVE.name(), actualType);
 

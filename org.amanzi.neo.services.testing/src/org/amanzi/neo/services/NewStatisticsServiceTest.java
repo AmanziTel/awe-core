@@ -120,12 +120,12 @@ public class NewStatisticsServiceTest extends AbstractAWETest {
 	private void checkVaultNode(Node vaultNode, String expectedName,
 			Class<?> expectedClass, int expectedCount, int expectedCountSubVault) {
 		String nodeType = (String) vaultNode.getProperty(
-				NewAbstractService.PROPERTY_TYPE_NAME, "");
+				NewAbstractService.TYPE, "");
 		Assert.assertEquals("Vault node has not VAULT type",
 				StatisticsNodeTypes.VAULT.getId(), nodeType);
 
 		String nodeName = (String) vaultNode.getProperty(
-				NewStatisticsService.PROPERTY_NAME_NAME, "");
+				NewStatisticsService.NAME, "");
 		Assert.assertEquals("", expectedName, nodeName);
 
 		String klass = (String) vaultNode.getProperty(
@@ -377,7 +377,7 @@ public class NewStatisticsServiceTest extends AbstractAWETest {
 				hasChildRelationship);
 
 		String name = (String) propStatNode.getProperty(
-				NewAbstractService.PROPERTY_NAME_NAME, "");
+				NewAbstractService.NAME, "");
 		Assert.assertEquals("propertyStatistics node has wrong name",
 				"Counter", name);
 

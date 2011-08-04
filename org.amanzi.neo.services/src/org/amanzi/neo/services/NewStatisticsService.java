@@ -79,7 +79,7 @@ public class NewStatisticsService extends NewAbstractService {
             result = klass.newInstance();
 
             result.setCount((Integer)vaultNode.getProperty(COUNT, null));
-            result.setType((String)vaultNode.getProperty(PROPERTY_NAME_NAME, ""));
+            result.setType((String)vaultNode.getProperty(NAME, ""));
             for (Relationship childRelation : vaultNode.getRelationships(StatisticsRelationships.CHILD, Direction.OUTGOING)) {
                 result.addSubVault(loadSubVault(childRelation.getEndNode()));
             }
@@ -127,7 +127,7 @@ public class NewStatisticsService extends NewAbstractService {
             } else {
                 rootNode.createRelationshipTo(vaultNode, StatisticsRelationships.STATISTICS);
             }
-            vaultNode.setProperty(PROPERTY_NAME_NAME, vault.getType());
+            vaultNode.setProperty(NAME, vault.getType());
             vaultNode.setProperty(COUNT, vault.getCount());
             vaultNode.setProperty(CLASS, vault.getClass().getCanonicalName());
 
@@ -205,7 +205,7 @@ public class NewStatisticsService extends NewAbstractService {
         try {
             Node propStatNode = createNode(StatisticsNodeTypes.PROPERTY_STATISTICS);
             vaultNode.createRelationshipTo(propStatNode, StatisticsRelationships.CHILD);
-            propStatNode.setProperty(PROPERTY_NAME_NAME, name);
+            propStatNode.setProperty(NAME, name);
             propStatNode.setProperty(NUMBER, number);
             propStatNode.setProperty(CLASS, className);
             Iterator<Entry<Object, Integer>> iter = propMap.entrySet().iterator();

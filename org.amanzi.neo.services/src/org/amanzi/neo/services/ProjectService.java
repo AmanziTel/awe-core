@@ -63,7 +63,7 @@ public class ProjectService extends NewAbstractService {
         PROJECT {
             @Override
             public String getId() {
-                return "project";
+                return name();
             }
         }
     }
@@ -110,7 +110,7 @@ public class ProjectService extends NewAbstractService {
      *         already exists
      */
     public Node createProject(String name) throws IllegalNodeDataException, DuplicateNodeNameException {
-        LOGGER.debug("Started createProject '" +  name + "'");
+        LOGGER.debug("Started createProject '" + name + "'");
         // validate parameters
         if ((name == null) || (name.equals(""))) {
             throw new IllegalNodeDataException("Project name cannot be empty.");
@@ -124,7 +124,7 @@ public class ProjectService extends NewAbstractService {
         tx = graphDb.beginTx();
         try {
             result = createNode(ProjectNodeType.PROJECT);
-            result.setProperty(NewAbstractService.PROPERTY_NAME_NAME, name);
+            result.setProperty(NewAbstractService.NAME, name);
             graphDb.getReferenceNode().createRelationshipTo(result, ProjectRelationshipType.PROJECT);
             tx.success();
         } catch (DatabaseException e) {
@@ -133,7 +133,7 @@ public class ProjectService extends NewAbstractService {
             tx.finish();
         }
         LOGGER.debug("Finished createProject");
-        return result;        
+        return result;
     }
 
     /**
@@ -146,7 +146,7 @@ public class ProjectService extends NewAbstractService {
      *         is found
      */
     public Node findProject(String name) throws IllegalNodeDataException, DuplicateNodeNameException {
-        LOGGER.debug("Started findProject '" +  name + "'");
+        LOGGER.debug("Started findProject '" + name + "'");
         // validate parameters
         if ((name == null) || (name.equals(""))) {
             throw new IllegalNodeDataException("Project name cannot be empty.");

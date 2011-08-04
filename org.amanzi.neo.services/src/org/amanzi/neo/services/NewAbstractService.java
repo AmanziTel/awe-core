@@ -12,6 +12,7 @@
  */
 
 package org.amanzi.neo.services;
+
 import org.amanzi.neo.db.manager.NeoServiceProvider;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
@@ -32,8 +33,8 @@ import org.neo4j.graphdb.traversal.Evaluator;
  * @since 1.0.0
  */
 public abstract class NewAbstractService {
-    protected final static String PROPERTY_TYPE_NAME = "type";
-    protected final static String PROPERTY_NAME_NAME = "name";
+    protected final static String TYPE = "type";
+    protected final static String NAME = "name";
 
     private static Logger LOGGER = Logger.getLogger(NewAbstractService.class);
 
@@ -57,9 +58,10 @@ public abstract class NewAbstractService {
         this.graphDb = graphDb;
     }
 
-    public String getNodeType(Node node){
+    public String getNodeType(Node node) {
         return (String)node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "");
     }
+
     /**
      * Creates a node and sets it's type property
      * 
@@ -67,7 +69,11 @@ public abstract class NewAbstractService {
      * @return - the newly created node
      */
     protected Node createNode(INodeType nodeType) throws DatabaseException {
-
+        // validate parameters
+        if (nodeType == null) {
+            throw new IllegalArgumentException("Node type is null.");
+        }
+        // create node
         Node result = null;
         tx = graphDb.beginTx();
         try {
@@ -82,6 +88,19 @@ public abstract class NewAbstractService {
             tx.finish();
         }
         return result;
+    }
+
+    /**
+     * This method generates a string identifier for index for a specific network and a specific
+     * type of nodes
+     * 
+     * @param root a network node
+     * @param nodeType type of nodes
+     * @return a string specifying index name
+     */
+    protected String getIndexKey(Node root, INodeType nodeType) {
+
+        return "" + root.getId() + "@" + nodeType.getId();
     }
 
     /**
@@ -113,8 +132,8 @@ public abstract class NewAbstractService {
                 return Evaluation.EXCLUDE_AND_CONTINUE;
             }
             Node node = path.endNode();
-            if ((node.getProperty(NewAbstractService.PROPERTY_NAME_NAME, "").equals(name))
-                    && (node.getProperty(NewAbstractService.PROPERTY_TYPE_NAME, "").equals(type.getId()))) {
+            if ((node.getProperty(NewAbstractService.NAME, "").equals(name))
+                    && (node.getProperty(NewAbstractService.TYPE, "").equals(type.getId()))) {
                 return Evaluation.INCLUDE_AND_CONTINUE;
             } else {
                 return Evaluation.EXCLUDE_AND_CONTINUE;
