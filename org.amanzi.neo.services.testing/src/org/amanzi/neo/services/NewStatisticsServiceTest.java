@@ -11,6 +11,7 @@ import org.amanzi.neo.services.exceptions.InvalidStatisticsParameterException;
 import org.amanzi.neo.services.exceptions.LoadVaultException;
 import org.amanzi.neo.services.statistic.IVault;
 import org.amanzi.neo.services.statistic.StatisticsVault;
+import org.amanzi.neo.services.statistic.internal.NewPropertyStatistics;
 import org.amanzi.testing.AbstractAWETest;
 import org.apache.log4j.Logger;
 import org.junit.After;
@@ -63,10 +64,16 @@ public class NewStatisticsServiceTest extends AbstractAWETest {
 	 * delete all referenceNode relationships
 	 */
 	private void cleanReferenceNode() {
-		Iterator<Relationship> iter = referenceNode.getRelationships()
-				.iterator();
-		while (iter.hasNext()) {
-			iter.next().delete();
+		tx = graphDatabaseService.beginTx();
+		try {
+			Iterator<Relationship> iter = referenceNode.getRelationships()
+					.iterator();
+			while (iter.hasNext()) {
+				iter.next().delete();
+			}
+			tx.success();
+		} finally {
+			tx.finish();
 		}
 	}
 
@@ -343,4 +350,82 @@ public class NewStatisticsServiceTest extends AbstractAWETest {
 		LOGGER.debug("finish loadVaultExceptionNegativeTest()");
 	}
 
+	/**
+	 * testing method savePropertyStatistics(NewPropertryStatistics propStat,
+	 * Node vaultNode)
+	 * 
+	 * @throws DatabaseException
+	 * @throws InvalidStatisticsParameterException
+	 */
+	@Test
+	public void savePropertyStatisticsPositiveTest() throws DatabaseException,
+			InvalidStatisticsParameterException {
+		LOGGER.debug("start savePropertyStatisticsPositiveTest()");
+		NewPropertyStatistics propStat = new NewPropertyStatistics("Counter", Integer.class);
+		propStat.updatePropertyMap(1, 1);
+		propStat.updatePropertyMap(2, 1);
+		propStat.updatePropertyMap(1, 1);
+
+		service.savePropertyStatistics(propStat, referenceNode);
+
+		Node propStatNode = referenceNode.getSingleRelationship(
+				StatisticsRelationships.CHILD, Direction.OUTGOING).getEndNode();
+
+		boolean hasChildRelationship = propStatNode.hasRelationship(
+				StatisticsRelationships.CHILD, Direction.INCOMING);
+		Assert.assertTrue("not create StatisticsRelationships.CHILD",
+				hasChildRelationship);
+
+		String name = (String) propStatNode.getProperty(
+				NewAbstractService.PROPERTY_NAME_NAME, "");
+		Assert.assertEquals("propertyStatistics node has wrong name",
+				"Counter", name);
+
+		int number = (Integer) propStatNode.getProperty(
+				NewStatisticsService.NUMBER, null);
+		Assert.assertEquals("propertyStatistics node has wrong number", 2,
+				number);
+
+		int v1 = (Integer) propStatNode.getProperty("v1", null);
+		int v2 = (Integer) propStatNode.getProperty("v2", null);
+		int c1 = (Integer) propStatNode.getProperty("c1", null);
+		int c2 = (Integer) propStatNode.getProperty("c2", null);
+		Assert.assertEquals("propertyStatistics node has wrong v1", 1, v1);
+		Assert.assertEquals("propertyStatistics node has wrong v2", 2, v2);
+		Assert.assertEquals("propertyStatistics node has wrong c1", 2, c1);
+		Assert.assertEquals("propertyStatistics node has wrong c2", 1, c2);
+
+		String className = (String) propStatNode.getProperty(
+				NewStatisticsService.CLASS, "");
+		Assert.assertEquals("propertyStatistics node has wrong className",
+				Integer.class.getCanonicalName(), className);
+		LOGGER.debug("finish savePropertyStatisticsPositiveTest()");
+	}
+
+	/**
+	 * testing method savePropertyStatistics(NewPropertryStatistics propStat,
+	 * Node vaultNode) when parameter propStat == null
+	 * 
+	 * @throws DatabaseException
+	 * @throws InvalidStatisticsParameterException
+	 */
+	@Test(expected = InvalidStatisticsParameterException.class)
+	public void savePropertyStatisticsNullParameterPropStatNegativeTest()
+			throws DatabaseException, InvalidStatisticsParameterException {
+		service.savePropertyStatistics(null, referenceNode);
+	}
+
+	/**
+	 * testing method savePropertyStatistics(NewPropertryStatistics propStat,
+	 * Node vaultNode) when parameter vaultNode == null
+	 * 
+	 * @throws DatabaseException
+	 * @throws InvalidStatisticsParameterException
+	 */
+	@Test(expected = InvalidStatisticsParameterException.class)
+	public void savePropertyStatisticsNullParameterVaultNodeNegativeTest()
+			throws DatabaseException, InvalidStatisticsParameterException {
+		service.savePropertyStatistics(new NewPropertyStatistics("name", String.class), null);
+	}
+	
 }

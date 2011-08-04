@@ -15,6 +15,8 @@ package org.amanzi.neo.services.statistic;
 
 import java.util.List;
 
+import org.amanzi.neo.services.statistic.internal.NewPropertyStatistics;
+
 /**
  * TODO Purpose of
  * <p>
@@ -24,42 +26,60 @@ import java.util.List;
  * @since 1.0.0
  */
 public interface IVault {
-   
+
     /**
      * this method get subVaults of vault
+     * 
      * @return List<IVault> subVaults
      */
     public List<IVault> getSubVaults();
 
     /**
      * this method get count
+     * 
      * @return int count
      */
     public int getCount();
 
     /**
      * this method get type of vault
+     * 
      * @return String type
      */
     public String getType();
 
     /**
      * add subVault to vault
+     * 
      * @param vault - subVault
      */
     public void addSubVault(IVault vault);
 
     /**
-     * this method set count to vault 
+     * this method set count to vault
+     * 
      * @param count
      */
     public void setCount(int count);
 
     /**
      * this method set type to vault
+     * 
      * @param type
      */
     public void setType(String type);
+
+    /**
+     * this method get list of propertyStatistics
+     * @return List<NewPropertyStatistics> propertyStatisticsList
+     */
+    public List<NewPropertyStatistics> getPropertyStatisticsList();
+
+    /**
+     * add propertyStatistics to propertyStatisticsList
+     * @param propStat
+     */
+    public void addPropertyStatistics(NewPropertyStatistics propStat);
 
     /**
      * 

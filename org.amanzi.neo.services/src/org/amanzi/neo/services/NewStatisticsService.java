@@ -13,6 +13,10 @@
 
 package org.amanzi.neo.services;
 
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateStatisticsException;
@@ -20,6 +24,7 @@ import org.amanzi.neo.services.exceptions.InvalidStatisticsParameterException;
 import org.amanzi.neo.services.exceptions.LoadVaultException;
 import org.amanzi.neo.services.statistic.IVault;
 import org.amanzi.neo.services.statistic.StatisticsVault;
+import org.amanzi.neo.services.statistic.internal.NewPropertyStatistics;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
@@ -39,6 +44,7 @@ public class NewStatisticsService extends NewAbstractService {
 
     public static final String CLASS = "class";
     public static final String COUNT = "count";
+    public static final String NUMBER = "number";
 
     private static Logger LOGGER = Logger.getLogger(NewAbstractService.class);
     private Transaction tx;
@@ -48,7 +54,7 @@ public class NewStatisticsService extends NewAbstractService {
     }
 
     public enum StatisticsNodeTypes implements INodeType {
-        VAULT;
+        VAULT, PROPERTY_STATISTICS;
 
         @Override
         public String getId() {
@@ -112,6 +118,7 @@ public class NewStatisticsService extends NewAbstractService {
             throw new DuplicateStatisticsException("for this rootNode already exists statistics");
         }
         Node vaultNode = createNode(StatisticsNodeTypes.VAULT);
+
         tx = graphDb.beginTx();
 
         try {
@@ -123,9 +130,7 @@ public class NewStatisticsService extends NewAbstractService {
             vaultNode.setProperty(PROPERTY_NAME_NAME, vault.getType());
             vaultNode.setProperty(COUNT, vault.getCount());
             vaultNode.setProperty(CLASS, vault.getClass().getCanonicalName());
-            for (IVault subVault : vault.getSubVaults()) {
-                saveVault(vaultNode, subVault);
-            }
+
             tx.success();
         } catch (Exception e) {
             LOGGER.error("Could not create vault node in database", e);
@@ -135,6 +140,10 @@ public class NewStatisticsService extends NewAbstractService {
         } finally {
             tx.finish();
             LOGGER.debug("finishmethod saveVault(Node rootNode, IVault vault)");
+        }
+
+        for (IVault subVault : vault.getSubVaults()) {
+            saveVault(vaultNode, subVault);
         }
 
     }
@@ -168,6 +177,56 @@ public class NewStatisticsService extends NewAbstractService {
         }
         LOGGER.debug("finish method loadVault(Node rootNode)");
         return result;
+    }
+
+    /**
+     * this method create propertyStatistics node in database by propertyStatistics object
+     * 
+     * @param propStat - propertyStatistics object
+     * @param vaultNode - parent vault node
+     * @throws DatabaseException - this method may generate exception if exception occurred while
+     *         working with a database
+     * @throws InvalidStatisticsParameterException 
+     */
+    public void savePropertyStatistics(NewPropertyStatistics propStat, Node vaultNode) throws DatabaseException, InvalidStatisticsParameterException {
+
+        if (propStat == null){
+            throw new InvalidStatisticsParameterException("propStat", propStat);
+        }
+        if (vaultNode == null){
+            throw new InvalidStatisticsParameterException("vaultNode", vaultNode);
+        }
+        
+        String name = propStat.getName();
+        Map<Object, Integer> propMap = propStat.getPropertyMap();
+        int number = propMap.size();
+        String className = propStat.getKlass().getCanonicalName();
+        tx = graphDb.beginTx();
+        try {
+            Node propStatNode = createNode(StatisticsNodeTypes.PROPERTY_STATISTICS);
+            vaultNode.createRelationshipTo(propStatNode, StatisticsRelationships.CHILD);
+            propStatNode.setProperty(PROPERTY_NAME_NAME, name);
+            propStatNode.setProperty(NUMBER, number);
+            propStatNode.setProperty(CLASS, className);
+            Iterator<Entry<Object, Integer>> iter = propMap.entrySet().iterator();
+            String valueName = "v";
+            String countName = "c";
+            int count = 0;
+            while (iter.hasNext()) {
+                count++;
+                Entry<Object, Integer> entry = iter.next();
+                propStatNode.setProperty(valueName + count, entry.getKey());
+                propStatNode.setProperty(countName + count, entry.getValue());
+            }
+            tx.success();
+
+        } catch (Exception e) {
+            tx.failure();
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
+
     }
 
 }

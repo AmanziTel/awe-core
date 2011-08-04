@@ -13,7 +13,10 @@
 
 package org.amanzi.neo.services.statistic;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import org.amanzi.neo.services.statistic.internal.NewPropertyStatistics;
 
 /**
  * TODO Purpose of
@@ -27,6 +30,16 @@ public class NewNodeTypeVault implements IVault {
     private List<IVault> subVaults;
     private int count;
     private String type;
+    private List<NewPropertyStatistics> propertyStatisticsList = new ArrayList<NewPropertyStatistics>();
+
+    /**
+     * constructor
+     */
+    public NewNodeTypeVault() {
+        super();
+        this.count = 0;
+        this.type = "";
+    }
 
     @Override
     public List<IVault> getSubVaults() {
@@ -64,6 +77,16 @@ public class NewNodeTypeVault implements IVault {
     @Override
     public void setType(String type) {
         this.type = type;
+    }
+
+    @Override
+    public List<NewPropertyStatistics> getPropertyStatisticsList() {
+        return this.propertyStatisticsList;
+    }
+
+    @Override
+    public void addPropertyStatistics(NewPropertyStatistics propStat) {
+        this.propertyStatisticsList.add(propStat);
     }
 
 }
