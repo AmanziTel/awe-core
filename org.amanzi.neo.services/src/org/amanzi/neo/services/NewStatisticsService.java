@@ -45,21 +45,41 @@ import org.neo4j.kernel.Traversal;
  * @since 1.0.0
  */
 public class NewStatisticsService extends NewAbstractService {
-
+    /**
+     * constants for vaultNodes properties keys
+     */
     public static final String CLASS = "class";
     public static final String COUNT = "count";
     public static final String NUMBER = "number";
 
     private static Logger LOGGER = Logger.getLogger(NewAbstractService.class);
     private Transaction tx;
-
+    /**
+     * TraversalDescription for child nodes
+     */
     public TraversalDescription childNodes = Traversal.description()
             .relationships(StatisticsRelationships.CHILD, Direction.OUTGOING).evaluator(Evaluators.atDepth(1));
 
+    /**
+     * <p>
+     * Relationship types for statistics nodes
+     * </p>
+     * 
+     * @author kruglik_a
+     * @since 1.0.0
+     */
     public enum StatisticsRelationships implements RelationshipType {
         STATISTICS, CHILD;
     }
 
+    /**
+     * <p>
+     * Node types for statistics nodes
+     * </p>
+     * 
+     * @author kruglik_a
+     * @since 1.0.0
+     */
     public enum StatisticsNodeTypes implements INodeType {
         VAULT, PROPERTY_STATISTICS;
 
@@ -97,6 +117,12 @@ public class NewStatisticsService extends NewAbstractService {
 
     }
 
+    /**
+     * this method get all subVault nodes for parent vaultNode
+     * 
+     * @param parentVaultNode
+     * @return Iterable<Node> subVaultNodes
+     */
     public Iterable<Node> getSubVaultNodes(Node parentVaultNode) {
         return childNodes.evaluator(new FilterNodesByType(StatisticsNodeTypes.VAULT)).traverse(parentVaultNode).nodes();
     }
@@ -241,6 +267,11 @@ public class NewStatisticsService extends NewAbstractService {
             tx.finish();
         }
 
+    }
+    
+    public NewPropertyStatistics loadPropertyStatistics(Node vaultNode){
+        
+        return null;
     }
 
 }

@@ -118,7 +118,7 @@ public class NewStatisticsServiceTest extends AbstractAWETest {
 				NewAbstractService.TYPE, "");
 		Assert.assertEquals("Vault node has not VAULT type",
 				StatisticsNodeTypes.VAULT.getId(), nodeType);
-
+		
 		String nodeName = (String) vaultNode.getProperty(
 				NewStatisticsService.NAME, "");
 		Assert.assertEquals("", expectedName, nodeName);
@@ -180,14 +180,10 @@ public class NewStatisticsServiceTest extends AbstractAWETest {
 				.getEndNode();
 		checkVaultNode(propVaultNode, PROPERTIES, StatisticsVault.class, 0, 1);
 
-		Node neighbourtsVaultNode = propVaultNode
-				.getRelationships(StatisticsRelationships.CHILD,
-						Direction.OUTGOING).iterator().next().getEndNode();
+		Node neighbourtsVaultNode = service.getSubVaultNodes(propVaultNode).iterator().next();
 		checkVaultNode(neighbourtsVaultNode, NEIGHBOURS, StatisticsVault.class,
 				0, 1);
-		Node networkVaultNode = neighbourtsVaultNode
-				.getRelationships(StatisticsRelationships.CHILD,
-						Direction.OUTGOING).iterator().next().getEndNode();
+		Node networkVaultNode = service.getSubVaultNodes(neighbourtsVaultNode).iterator().next();
 		checkVaultNode(networkVaultNode, NETWORK, StatisticsVault.class, 0, 0);
 		LOGGER.debug("finish saveVaultPositiveTest()");
 
@@ -432,4 +428,16 @@ public class NewStatisticsServiceTest extends AbstractAWETest {
 		service.savePropertyStatistics(new NewPropertyStatistics("name", String.class), null);
 	}
 	
+	@Test 
+	public void loadPropertyStatisticsPositiveTest() throws DatabaseException, InvalidStatisticsParameterException{
+		NewPropertyStatistics propStat = new NewPropertyStatistics("Counter", Integer.class);
+		propStat.updatePropertyMap(1, 1);
+		propStat.updatePropertyMap(2, 1);
+		propStat.updatePropertyMap(1, 1);
+		service.savePropertyStatistics(propStat, referenceNode);
+		NewPropertyStatistics actualPropStat = service.loadPropertyStatistics(referenceNode);
+		actualPropStat.getName();
+		actualPropStat.getKlass();
+		actualPropStat.getPropertyMap();
+	}
 }
