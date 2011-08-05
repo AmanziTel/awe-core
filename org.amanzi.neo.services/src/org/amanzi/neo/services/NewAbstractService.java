@@ -14,14 +14,15 @@
 package org.amanzi.neo.services;
 
 import org.amanzi.neo.db.manager.NeoServiceProvider;
-import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
+import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.traversal.Evaluation;
 import org.neo4j.graphdb.traversal.Evaluator;
 
@@ -99,9 +100,66 @@ public abstract class NewAbstractService {
      * @param nodeType type of nodes
      * @return a string specifying index name
      */
-    protected String getIndexKey(Node root, INodeType nodeType) {
+    public String getIndexKey(Node root, INodeType nodeType) {
+        // validate parameters
+        if (root == null) {
+            throw new IllegalArgumentException("Root cannot be null");
+        }
+        if (nodeType == null) {
+            throw new IllegalArgumentException("Node type cannot be null");
+        }
 
         return "" + root.getId() + "@" + nodeType.getId();
+    }
+
+    /**
+     * Sets NAME property at <code>node</code>
+     * 
+     * @param node
+     * @param name
+     * @throws IllegalNodeDataException if name is null or empty
+     */
+    protected void setNameProperty(Node node, String name) throws IllegalNodeDataException, DatabaseException {
+        // validate parameters
+        if ((name == null) || name.equals("")) {
+            throw new IllegalNodeDataException("Name cannot be empty.");
+        }
+        if (node == null) {
+            throw new IllegalArgumentException("Node is null.");
+        }
+        tx = graphDb.beginTx();
+        try {
+            node.setProperty(NAME, name);
+            tx.success();
+        } catch (Exception e) {
+            LOGGER.error("Could not set name", e);
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
+    }
+
+    /**
+     * Adds <code>node</code> to <code> indexName</code>. Does not validate arguments.
+     * 
+     * @param node
+     * @param indexName
+     * @param propertyName
+     * @param propertyValue
+     * @throws DatabaseException if something went wrong
+     */
+    protected void addNodeToIndex(Node node, String indexName, String propertyName, Object propertyValue) throws DatabaseException {
+        tx = graphDb.beginTx();
+        try {
+            Index<Node> index = graphDb.index().forNodes(indexName);
+            index.add(node, propertyName, propertyValue);
+            tx.success();
+        } catch (Exception e) {
+            LOGGER.error("Could not index node", e);
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
     }
 
     /**

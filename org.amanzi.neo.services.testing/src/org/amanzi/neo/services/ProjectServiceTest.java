@@ -1,12 +1,12 @@
 package org.amanzi.neo.services;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
+import org.amanzi.testing.AbstractAWETest;
 import org.apache.log4j.Logger;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -19,14 +19,13 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
 
-public class ProjectServiceTest {
+public class ProjectServiceTest extends AbstractAWETest {
 	private static Logger LOGGER = Logger.getLogger(ProjectServiceTest.class);
 
 	private static ProjectService projectService;
 	private static GraphDatabaseService graphDb;
 	private static final String prName = "Project";
-	private static final String databasePath = System.getProperty("user.home")
-			+ File.separator + ".amanzi" + File.separator + "test";
+	private static final String databasePath = getDbLocation();
 	private static Transaction tx;
 
 	@BeforeClass
@@ -42,7 +41,7 @@ public class ProjectServiceTest {
 			graphDb.shutdown();
 			LOGGER.info("Database shut down");
 		}
-		deleteFolder(new File(databasePath));
+		clearDb();
 
 	}
 
@@ -216,20 +215,6 @@ public class ProjectServiceTest {
 				ProjectService.ProjectRelationshipType.PROJECT,
 				Direction.INCOMING)) {
 			Assert.assertTrue(rel.getOtherNode(node).equals(refNode));
-		}
-	}
-
-	// TODO: use a common method instead of this one
-	private static void deleteFolder(File path) {
-		if (path.exists()) {
-			for (File file : path.listFiles()) {
-				if (file.isDirectory()) {
-					deleteFolder(file);
-				} else {
-					file.delete();
-				}
-			}
-			path.delete();
 		}
 	}
 
