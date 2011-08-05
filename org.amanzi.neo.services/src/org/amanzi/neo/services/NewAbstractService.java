@@ -14,6 +14,7 @@
 package org.amanzi.neo.services;
 
 import org.amanzi.neo.db.manager.NeoServiceProvider;
+import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.apache.log4j.Logger;
@@ -111,9 +112,8 @@ public abstract class NewAbstractService {
      * @author grigoreva_a
      * @since 1.0.0
      */
-    public class NameTypeEvaluator implements Evaluator {
+    public class NameTypeEvaluator extends FilterNodesByType {
         private String name;
-        private INodeType type;
 
         /**
          * Constructor
@@ -122,22 +122,52 @@ public abstract class NewAbstractService {
          * @param type
          */
         public NameTypeEvaluator(String name, INodeType type) {
+            super(type);
             this.name = name;
-            this.type = type;
+
         }
 
         @Override
         public Evaluation evaluate(Path path) {
-            if (path.length() == 0) {
+            if (super.evaluate(path).includes()) {
+                if (path.endNode().getProperty(NewAbstractService.NAME, "").equals(name)) {
+                    return Evaluation.INCLUDE_AND_CONTINUE;
+                }
                 return Evaluation.EXCLUDE_AND_CONTINUE;
             }
-            Node node = path.endNode();
-            if ((node.getProperty(NewAbstractService.NAME, "").equals(name))
-                    && (node.getProperty(NewAbstractService.TYPE, "").equals(type.getId()))) {
-                return Evaluation.INCLUDE_AND_CONTINUE;
-            } else {
-                return Evaluation.EXCLUDE_AND_CONTINUE;
-            }
+
+            return Evaluation.EXCLUDE_AND_CONTINUE;
+
         }
+    }
+
+    /**
+     * <p>
+     * this class choose nodes by type
+     * </p>
+     * 
+     * @author Kruglik_A
+     * @since 1.0.0
+     */
+    public class FilterNodesByType implements Evaluator {
+        /**
+         * constructor for filter nodes by type
+         * 
+         * @param type - nodes type
+         */
+        public FilterNodesByType(INodeType type) {
+            this.type = type;
+        }
+
+        private INodeType type;
+
+        @Override
+        public Evaluation evaluate(Path arg0) {
+            boolean includes = false;
+            if (getNodeType(arg0.endNode()).equals(type.getId()))
+                includes = true;
+            return Evaluation.ofIncludes(includes);
+        }
+
     }
 }

@@ -152,35 +152,7 @@ public class NewDatasetService extends NewAbstractService {
 
     }
 
-    /**
-     * <p>
-     * this class choose nodes by type from dataset nodes
-     * </p>
-     * 
-     * @author Kruglik_A
-     * @since 1.0.0
-     */
-    private class FilterDatasetsByType implements Evaluator {
-        /**
-         * constructor for filter datasets by type
-         * 
-         * @param type - dataset type
-         */
-        public FilterDatasetsByType(DatasetTypes type) {
-            this.type = type;
-        }
-
-        private DatasetTypes type;
-
-        @Override
-        public Evaluation evaluate(Path arg0) {
-            boolean includes = false;
-            if (getNodeType(arg0.endNode()).equals(type.name()))
-                includes = true;
-            return Evaluation.ofIncludes(includes);
-        }
-
-    }
+    
 
     /**
      * constructor
@@ -585,7 +557,7 @@ public class NewDatasetService extends NewAbstractService {
         TraversalDescription allProjects = new ProjectService().getProjectTraversalDescription();
 
         for (Node projectNode : allProjects.traverse(graphDb.getReferenceNode()).nodes()) {
-            Traverser tr = getDatasetsTraversalDescription().evaluator(new FilterDatasetsByType(type)).traverse(projectNode);
+            Traverser tr = getDatasetsTraversalDescription().evaluator(new FilterNodesByType(type)).traverse(projectNode);
             for (Node dataset : tr.nodes()) {
                 datasetList.add(dataset);
             }
@@ -639,7 +611,7 @@ public class NewDatasetService extends NewAbstractService {
         }
 
         List<Node> datasetList = new ArrayList<Node>();
-        Traverser tr = getDatasetsTraversalDescription().evaluator(new FilterDatasetsByType(type)).traverse(projectNode);
+        Traverser tr = getDatasetsTraversalDescription().evaluator(new FilterNodesByType(type)).traverse(projectNode);
         for (Node dataset : tr.nodes()) {
             datasetList.add(dataset);
         }

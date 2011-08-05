@@ -98,12 +98,7 @@ public class NewStatisticsServiceTest extends AbstractAWETest {
 		String actualType = vault.getType();
 		Assert.assertEquals("vault has wrong type", expectedType, actualType);
 
-		Iterator<IVault> iter = vault.getSubVaults().iterator();
-		int count = 0;
-		while (iter.hasNext()) {
-			iter.next();
-			count++;
-		}
+		int count = vault.getSubVaults().size();
 		Assert.assertEquals("vault has wrong count of subVault",
 				expectedCountSubVault, count);
 	}
@@ -138,13 +133,12 @@ public class NewStatisticsServiceTest extends AbstractAWETest {
 				null);
 		Assert.assertEquals("Vault node has wrong count", expectedCount, count);
 
-		Iterator<Relationship> iter = vaultNode.getRelationships(
-				StatisticsRelationships.CHILD, Direction.OUTGOING).iterator();
+		
 		int countSubVault = 0;
-		while (iter.hasNext()) {
-			iter.next();
+		for (@SuppressWarnings("unused") Node subVaultNode : service.getSubVaultNodes(vaultNode)){
 			countSubVault++;
 		}
+				
 		Assert.assertEquals(
 				"Vault node has wrong count of CHILD relationships",
 				expectedCountSubVault, countSubVault);
@@ -166,6 +160,14 @@ public class NewStatisticsServiceTest extends AbstractAWETest {
 		StatisticsVault networkSubVault = new StatisticsVault(NETWORK);
 		propVault.addSubVault(neighboursSubVault);
 		neighboursSubVault.addSubVault(networkSubVault);
+		
+		NewPropertyStatistics propStat = new NewPropertyStatistics("Counter", Integer.class);
+		propStat.updatePropertyMap(1, 1);
+		propStat.updatePropertyMap(2, 1);
+		propStat.updatePropertyMap(1, 1);
+		
+		propVault.addPropertyStatistics(propStat);
+		
 		service.saveVault(referenceNode, propVault);
 
 		boolean hasStatisticsRelationships = referenceNode.hasRelationship(
@@ -401,6 +403,8 @@ public class NewStatisticsServiceTest extends AbstractAWETest {
 				Integer.class.getCanonicalName(), className);
 		LOGGER.debug("finish savePropertyStatisticsPositiveTest()");
 	}
+	
+	
 
 	/**
 	 * testing method savePropertyStatistics(NewPropertryStatistics propStat,

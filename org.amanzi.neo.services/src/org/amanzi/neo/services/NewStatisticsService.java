@@ -31,6 +31,10 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.traversal.Evaluator;
+import org.neo4j.graphdb.traversal.Evaluators;
+import org.neo4j.graphdb.traversal.TraversalDescription;
+import org.neo4j.kernel.Traversal;
 
 /**
  * TODO Purpose of
@@ -48,6 +52,9 @@ public class NewStatisticsService extends NewAbstractService {
 
     private static Logger LOGGER = Logger.getLogger(NewAbstractService.class);
     private Transaction tx;
+
+    public TraversalDescription childNodes = Traversal.description()
+            .relationships(StatisticsRelationships.CHILD, Direction.OUTGOING).evaluator(Evaluators.atDepth(1));
 
     public enum StatisticsRelationships implements RelationshipType {
         STATISTICS, CHILD;
@@ -80,14 +87,18 @@ public class NewStatisticsService extends NewAbstractService {
 
             result.setCount((Integer)vaultNode.getProperty(COUNT, null));
             result.setType((String)vaultNode.getProperty(NAME, ""));
-            for (Relationship childRelation : vaultNode.getRelationships(StatisticsRelationships.CHILD, Direction.OUTGOING)) {
-                result.addSubVault(loadSubVault(childRelation.getEndNode()));
+            for (Node subVauldNode : getSubVaultNodes(vaultNode)) {
+                result.addSubVault(loadSubVault(subVauldNode));
             }
         } catch (Exception e) {
             throw new LoadVaultException(e);
         }
         return result;
 
+    }
+
+    public Iterable<Node> getSubVaultNodes(Node parentVaultNode) {
+        return childNodes.evaluator(new FilterNodesByType(StatisticsNodeTypes.VAULT)).traverse(parentVaultNode).nodes();
     }
 
     /**
@@ -130,7 +141,9 @@ public class NewStatisticsService extends NewAbstractService {
             vaultNode.setProperty(NAME, vault.getType());
             vaultNode.setProperty(COUNT, vault.getCount());
             vaultNode.setProperty(CLASS, vault.getClass().getCanonicalName());
-
+            for (NewPropertyStatistics propStat : vault.getPropertyStatisticsList()) {
+                savePropertyStatistics(propStat, vaultNode);
+            }
             tx.success();
         } catch (Exception e) {
             LOGGER.error("Could not create vault node in database", e);
@@ -139,13 +152,13 @@ public class NewStatisticsService extends NewAbstractService {
 
         } finally {
             tx.finish();
-            LOGGER.debug("finishmethod saveVault(Node rootNode, IVault vault)");
+
         }
 
         for (IVault subVault : vault.getSubVaults()) {
             saveVault(vaultNode, subVault);
         }
-
+        LOGGER.debug("finish method saveVault(Node rootNode, IVault vault)");
     }
 
     /**
@@ -186,22 +199,23 @@ public class NewStatisticsService extends NewAbstractService {
      * @param vaultNode - parent vault node
      * @throws DatabaseException - this method may generate exception if exception occurred while
      *         working with a database
-     * @throws InvalidStatisticsParameterException 
+     * @throws InvalidStatisticsParameterException
      */
-    public void savePropertyStatistics(NewPropertyStatistics propStat, Node vaultNode) throws DatabaseException, InvalidStatisticsParameterException {
+    public void savePropertyStatistics(NewPropertyStatistics propStat, Node vaultNode) throws DatabaseException,
+            InvalidStatisticsParameterException {
 
-        if (propStat == null){
+        if (propStat == null) {
             throw new InvalidStatisticsParameterException("propStat", propStat);
         }
-        if (vaultNode == null){
+        if (vaultNode == null) {
             throw new InvalidStatisticsParameterException("vaultNode", vaultNode);
         }
-        
+
         String name = propStat.getName();
         Map<Object, Integer> propMap = propStat.getPropertyMap();
         int number = propMap.size();
         String className = propStat.getKlass().getCanonicalName();
-        tx = graphDb.beginTx();
+        Transaction tx = graphDb.beginTx();
         try {
             Node propStatNode = createNode(StatisticsNodeTypes.PROPERTY_STATISTICS);
             vaultNode.createRelationshipTo(propStatNode, StatisticsRelationships.CHILD);
