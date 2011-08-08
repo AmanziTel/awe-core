@@ -20,6 +20,7 @@ import java.util.Map.Entry;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateStatisticsException;
+import org.amanzi.neo.services.exceptions.InvalidPropertyStatisticsNodeException;
 import org.amanzi.neo.services.exceptions.InvalidStatisticsParameterException;
 import org.amanzi.neo.services.exceptions.LoadVaultException;
 import org.amanzi.neo.services.statistic.IVault;
@@ -28,17 +29,16 @@ import org.amanzi.neo.services.statistic.internal.NewPropertyStatistics;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.graphdb.traversal.Evaluator;
 import org.neo4j.graphdb.traversal.Evaluators;
 import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.kernel.Traversal;
 
 /**
- * TODO Purpose of
+ * 
  * <p>
+ * service to work with statistics
  * </p>
  * 
  * @author Kruglik_A
@@ -107,6 +107,9 @@ public class NewStatisticsService extends NewAbstractService {
 
             result.setCount((Integer)vaultNode.getProperty(COUNT, null));
             result.setType((String)vaultNode.getProperty(NAME, ""));
+            for (Node propStatNode : getPropertyStatisticsNodes(vaultNode)){
+                result.addPropertyStatistics(loadPropertyStatistics(propStatNode));
+            }
             for (Node subVauldNode : getSubVaultNodes(vaultNode)) {
                 result.addSubVault(loadSubVault(subVauldNode));
             }
@@ -125,6 +128,17 @@ public class NewStatisticsService extends NewAbstractService {
      */
     public Iterable<Node> getSubVaultNodes(Node parentVaultNode) {
         return childNodes.evaluator(new FilterNodesByType(StatisticsNodeTypes.VAULT)).traverse(parentVaultNode).nodes();
+    }
+
+    /**
+     * this method get all propertyStatistics nodes for parent vaultNode
+     * 
+     * @param parentVaultNode
+     * @return Iterable<Node> propertyStatisticsNodes
+     */
+    public Iterable<Node> getPropertyStatisticsNodes(Node parentVaultNode) {
+        return childNodes.evaluator(new FilterNodesByType(StatisticsNodeTypes.PROPERTY_STATISTICS)).traverse(parentVaultNode)
+                .nodes();
     }
 
     /**
@@ -225,7 +239,8 @@ public class NewStatisticsService extends NewAbstractService {
      * @param vaultNode - parent vault node
      * @throws DatabaseException - this method may generate exception if exception occurred while
      *         working with a database
-     * @throws InvalidStatisticsParameterException
+     * @throws InvalidStatisticsParameterException- this method may generate exception if some
+     *         parameter is null
      */
     public void savePropertyStatistics(NewPropertyStatistics propStat, Node vaultNode) throws DatabaseException,
             InvalidStatisticsParameterException {
@@ -268,10 +283,47 @@ public class NewStatisticsService extends NewAbstractService {
         }
 
     }
-    
-    public NewPropertyStatistics loadPropertyStatistics(Node vaultNode){
-        
-        return null;
+
+    /**
+     * this method load PropertyStatistics object by propertyStatisticsNode
+     * 
+     * @param propertyStatisticsNode - this node save propertyStatistics information
+     * @return NewPropertyStatistics object
+     * @throws InvalidPropertyStatisticsNodeException
+     * @throws LoadVaultException - this method may generate exception if propertyStatistics node
+     *         has wrong className
+     * @throws InvalidStatisticsParameterException - this method may generate exception if
+     *         propertyStatisticsNode parameter is null
+     */
+    public NewPropertyStatistics loadPropertyStatistics(Node propertyStatisticsNode) throws InvalidPropertyStatisticsNodeException,
+            LoadVaultException, InvalidStatisticsParameterException {
+        if (propertyStatisticsNode == null) {
+            throw new InvalidStatisticsParameterException("propertyStatisticsNode", propertyStatisticsNode);
+        }
+        if (((String)propertyStatisticsNode.getProperty(NAME, "")).isEmpty()) {
+            throw new InvalidPropertyStatisticsNodeException(NAME);
+        }
+        if (!propertyStatisticsNode.hasProperty(CLASS)) {
+            throw new InvalidPropertyStatisticsNodeException(CLASS);
+        }
+        NewPropertyStatistics result = null;
+        try {
+            String name = (String)propertyStatisticsNode.getProperty(NAME);
+            Class< ? > klass = Class.forName((String)propertyStatisticsNode.getProperty(CLASS));
+            result = new NewPropertyStatistics(name, klass);
+            Integer number = (Integer)propertyStatisticsNode.getProperty(NUMBER, 0);
+
+            for (int i = 1; i <= number; i++) {
+                Object value = propertyStatisticsNode.getProperty("v" + i);
+                Integer count = (Integer)propertyStatisticsNode.getProperty("c" + i);
+                result.updatePropertyMap(value, count);
+            }
+
+        } catch (Exception e) {
+            throw new LoadVaultException(e);
+        }
+
+        return result;
     }
 
 }

@@ -1,12 +1,13 @@
 package org.amanzi.neo.services;
 
 import java.util.Iterator;
-
+import java.util.Map;
 import junit.framework.Assert;
 import org.amanzi.neo.services.NewStatisticsService.StatisticsNodeTypes;
 import org.amanzi.neo.services.NewStatisticsService.StatisticsRelationships;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateStatisticsException;
+import org.amanzi.neo.services.exceptions.InvalidPropertyStatisticsNodeException;
 import org.amanzi.neo.services.exceptions.InvalidStatisticsParameterException;
 import org.amanzi.neo.services.exceptions.LoadVaultException;
 import org.amanzi.neo.services.statistic.IVault;
@@ -23,6 +24,8 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
+import org.mockito.Mockito;
+import org.mockito.internal.verification.Times;
 
 public class NewStatisticsServiceTest extends AbstractAWETest {
 
@@ -118,7 +121,7 @@ public class NewStatisticsServiceTest extends AbstractAWETest {
 				NewAbstractService.TYPE, "");
 		Assert.assertEquals("Vault node has not VAULT type",
 				StatisticsNodeTypes.VAULT.getId(), nodeType);
-		
+
 		String nodeName = (String) vaultNode.getProperty(
 				NewStatisticsService.NAME, "");
 		Assert.assertEquals("", expectedName, nodeName);
@@ -133,12 +136,12 @@ public class NewStatisticsServiceTest extends AbstractAWETest {
 				null);
 		Assert.assertEquals("Vault node has wrong count", expectedCount, count);
 
-		
 		int countSubVault = 0;
-		for (@SuppressWarnings("unused") Node subVaultNode : service.getSubVaultNodes(vaultNode)){
+		for (@SuppressWarnings("unused")
+		Node subVaultNode : service.getSubVaultNodes(vaultNode)) {
 			countSubVault++;
 		}
-				
+
 		Assert.assertEquals(
 				"Vault node has wrong count of CHILD relationships",
 				expectedCountSubVault, countSubVault);
@@ -160,15 +163,21 @@ public class NewStatisticsServiceTest extends AbstractAWETest {
 		StatisticsVault networkSubVault = new StatisticsVault(NETWORK);
 		propVault.addSubVault(neighboursSubVault);
 		neighboursSubVault.addSubVault(networkSubVault);
-		
-		NewPropertyStatistics propStat = new NewPropertyStatistics("Counter", Integer.class);
+		// create PropertyStatistics
+		NewPropertyStatistics propStat = new NewPropertyStatistics("Counter",
+				Integer.class);
 		propStat.updatePropertyMap(1, 1);
 		propStat.updatePropertyMap(2, 1);
 		propStat.updatePropertyMap(1, 1);
-		
+		// add PropertyStatistics to propertyVault
 		propVault.addPropertyStatistics(propStat);
-		
-		service.saveVault(referenceNode, propVault);
+		// create spy object
+		NewStatisticsService mockService = Mockito.spy(service);
+
+		mockService.saveVault(referenceNode, propVault);
+		// check whether the method savePropertyStatistics() offered
+		Mockito.verify(mockService, Mockito.times(1)).savePropertyStatistics(
+				(NewPropertyStatistics) Mockito.any(), (Node) Mockito.any());
 
 		boolean hasStatisticsRelationships = referenceNode.hasRelationship(
 				StatisticsRelationships.STATISTICS, Direction.OUTGOING);
@@ -180,10 +189,12 @@ public class NewStatisticsServiceTest extends AbstractAWETest {
 				.getEndNode();
 		checkVaultNode(propVaultNode, PROPERTIES, StatisticsVault.class, 0, 1);
 
-		Node neighbourtsVaultNode = service.getSubVaultNodes(propVaultNode).iterator().next();
+		Node neighbourtsVaultNode = service.getSubVaultNodes(propVaultNode)
+				.iterator().next();
 		checkVaultNode(neighbourtsVaultNode, NEIGHBOURS, StatisticsVault.class,
 				0, 1);
-		Node networkVaultNode = service.getSubVaultNodes(neighbourtsVaultNode).iterator().next();
+		Node networkVaultNode = service.getSubVaultNodes(neighbourtsVaultNode)
+				.iterator().next();
 		checkVaultNode(networkVaultNode, NETWORK, StatisticsVault.class, 0, 0);
 		LOGGER.debug("finish saveVaultPositiveTest()");
 
@@ -261,12 +272,14 @@ public class NewStatisticsServiceTest extends AbstractAWETest {
 	 * @throws InvalidStatisticsParameterException
 	 * @throws DuplicateStatisticsException
 	 * @throws LoadVaultException
+	 * @throws InvalidPropertyStatisticsNodeException
 	 */
 	@Test
 	public void loadVaultPositiveTest() throws DatabaseException,
 			InvalidStatisticsParameterException, DuplicateStatisticsException,
 			ClassNotFoundException, InstantiationException,
-			IllegalAccessException, LoadVaultException {
+			IllegalAccessException, LoadVaultException,
+			InvalidPropertyStatisticsNodeException {
 		LOGGER.debug("start loadVaultPositiveTest()");
 		StatisticsVault propVault = new StatisticsVault(PROPERTIES);
 		StatisticsVault neighboursSubVault = new StatisticsVault(NEIGHBOURS);
@@ -274,9 +287,26 @@ public class NewStatisticsServiceTest extends AbstractAWETest {
 
 		propVault.addSubVault(neighboursSubVault);
 		neighboursSubVault.addSubVault(networkSubVault);
-		service.saveVault(referenceNode, propVault);
 
-		IVault vault = service.loadVault(referenceNode);
+		// create PropertyStatistics
+		NewPropertyStatistics propStat = new NewPropertyStatistics("Counter",
+				Integer.class);
+		propStat.updatePropertyMap(1, 1);
+		propStat.updatePropertyMap(2, 1);
+		propStat.updatePropertyMap(1, 1);
+		// add PropertyStatistics to propertyVault
+		propVault.addPropertyStatistics(propStat);
+
+		service.saveVault(referenceNode, propVault);
+		// create spy object
+		NewStatisticsService mockService = Mockito.spy(service);
+
+		IVault vault = mockService.loadVault(referenceNode);
+		// check whether the method loadPropertyStatistics(Node
+		// propertyStatisticsNode) offered
+		Mockito.verify(mockService, Mockito.times(1)).loadPropertyStatistics(
+				(Node) Mockito.any());
+
 		checkVault(vault, StatisticsVault.class, 0, PROPERTIES, 1);
 		IVault subVault = vault.getSubVaults().iterator().next();
 		checkVault(subVault, StatisticsVault.class, 0, NEIGHBOURS, 1);
@@ -359,7 +389,8 @@ public class NewStatisticsServiceTest extends AbstractAWETest {
 	public void savePropertyStatisticsPositiveTest() throws DatabaseException,
 			InvalidStatisticsParameterException {
 		LOGGER.debug("start savePropertyStatisticsPositiveTest()");
-		NewPropertyStatistics propStat = new NewPropertyStatistics("Counter", Integer.class);
+		NewPropertyStatistics propStat = new NewPropertyStatistics("Counter",
+				Integer.class);
 		propStat.updatePropertyMap(1, 1);
 		propStat.updatePropertyMap(2, 1);
 		propStat.updatePropertyMap(1, 1);
@@ -399,8 +430,6 @@ public class NewStatisticsServiceTest extends AbstractAWETest {
 				Integer.class.getCanonicalName(), className);
 		LOGGER.debug("finish savePropertyStatisticsPositiveTest()");
 	}
-	
-	
 
 	/**
 	 * testing method savePropertyStatistics(NewPropertryStatistics propStat,
@@ -425,19 +454,141 @@ public class NewStatisticsServiceTest extends AbstractAWETest {
 	@Test(expected = InvalidStatisticsParameterException.class)
 	public void savePropertyStatisticsNullParameterVaultNodeNegativeTest()
 			throws DatabaseException, InvalidStatisticsParameterException {
-		service.savePropertyStatistics(new NewPropertyStatistics("name", String.class), null);
+		service.savePropertyStatistics(new NewPropertyStatistics("name",
+				String.class), null);
 	}
-	
-	@Test 
-	public void loadPropertyStatisticsPositiveTest() throws DatabaseException, InvalidStatisticsParameterException{
-		NewPropertyStatistics propStat = new NewPropertyStatistics("Counter", Integer.class);
+
+	/**
+	 * testing method loadPropertyStatistics(Node propertyStatisticsNode)
+	 * 
+	 * @throws DatabaseException
+	 * @throws InvalidStatisticsParameterException
+	 * @throws InvalidPropertyStatisticsNodeException
+	 * @throws LoadVaultException
+	 */
+	@Test
+	public void loadPropertyStatisticsPositiveTest() throws DatabaseException,
+			InvalidStatisticsParameterException,
+			InvalidPropertyStatisticsNodeException, LoadVaultException {
+		NewPropertyStatistics propStat = new NewPropertyStatistics("Counter",
+				Integer.class);
 		propStat.updatePropertyMap(1, 1);
 		propStat.updatePropertyMap(2, 1);
 		propStat.updatePropertyMap(1, 1);
 		service.savePropertyStatistics(propStat, referenceNode);
-		NewPropertyStatistics actualPropStat = service.loadPropertyStatistics(referenceNode);
-		actualPropStat.getName();
-		actualPropStat.getKlass();
-		actualPropStat.getPropertyMap();
+		Node propertyStatisticsNode = service
+				.getPropertyStatisticsNodes(referenceNode).iterator().next();
+		NewPropertyStatistics actualPropStat = service
+				.loadPropertyStatistics(propertyStatisticsNode);
+
+		String actualName = actualPropStat.getName();
+		Class<?> actualClass = actualPropStat.getKlass();
+		Map<Object, Integer> actualPropertyMap = actualPropStat
+				.getPropertyMap();
+
+		Assert.assertEquals("property map has wrong name", "Counter",
+				actualName);
+		Assert.assertEquals("property map has wrong className", Integer.class,
+				actualClass);
+		Assert.assertTrue(
+				"property map has not contain expected value",
+				actualPropertyMap.containsKey(1)
+						&& actualPropertyMap.containsValue(2));
+		Assert.assertTrue(
+				"property map has not contain expected value",
+				actualPropertyMap.containsKey(2)
+						&& actualPropertyMap.containsValue(1));
+		Assert.assertEquals("property map has wrong size", 2,
+				actualPropertyMap.size());
+	}
+
+	/**
+	 * testing method loadPropertyStatistics(Node propertyStatisticsNode) when
+	 * propertyStatisticsNode has not className property
+	 * 
+	 * @throws InvalidPropertyStatisticsNodeException
+	 * @throws LoadVaultException
+	 * @throws InvalidStatisticsParameterException
+	 */
+	@Test(expected = InvalidPropertyStatisticsNodeException.class)
+	public void loadPropetyStatisticsNotClassPropertyNegativeTest()
+			throws InvalidPropertyStatisticsNodeException, LoadVaultException,
+			InvalidStatisticsParameterException {
+		tx = graphDatabaseService.beginTx();
+		try {
+			Node invalidPropStatNode = graphDatabaseService.createNode();
+			invalidPropStatNode.setProperty(NewStatisticsService.NAME, "name");
+			service.loadPropertyStatistics(invalidPropStatNode);
+
+			tx.success();
+		} finally {
+			tx.finish();
+		}
+	}
+
+	/**
+	 * testing method loadPropertyStatistics(Node propertyStatisticsNode) when
+	 * propertyStatisticsNode has not name property
+	 * 
+	 * @throws InvalidPropertyStatisticsNodeException
+	 * @throws LoadVaultException
+	 * @throws InvalidStatisticsParameterException
+	 */
+	@Test(expected = InvalidPropertyStatisticsNodeException.class)
+	public void loadPropetyStatisticsNotNamePropertyNegativeTest()
+			throws InvalidPropertyStatisticsNodeException, LoadVaultException,
+			InvalidStatisticsParameterException {
+		tx = graphDatabaseService.beginTx();
+		try {
+			Node invalidPropStatNode = graphDatabaseService.createNode();
+			invalidPropStatNode.setProperty(NewStatisticsService.CLASS,
+					Integer.class.getCanonicalName());
+			service.loadPropertyStatistics(invalidPropStatNode);
+
+			tx.success();
+		} finally {
+			tx.finish();
+		}
+	}
+
+	/**
+	 * testing method loadPropertyStatistics(Node propertyStatisticsNode) when
+	 * propertyStatisticsNode has empty name property
+	 * 
+	 * @throws InvalidPropertyStatisticsNodeException
+	 * @throws LoadVaultException
+	 * @throws InvalidStatisticsParameterException
+	 */
+	@Test(expected = InvalidPropertyStatisticsNodeException.class)
+	public void loadPropetyStatisticsEmptyNamePropertyNegativeTest()
+			throws InvalidPropertyStatisticsNodeException, LoadVaultException,
+			InvalidStatisticsParameterException {
+		tx = graphDatabaseService.beginTx();
+		try {
+			Node invalidPropStatNode = graphDatabaseService.createNode();
+			invalidPropStatNode.setProperty(NewStatisticsService.CLASS,
+					Integer.class.getCanonicalName());
+			invalidPropStatNode.setProperty(NewStatisticsService.NAME, "");
+			service.loadPropertyStatistics(invalidPropStatNode);
+
+			tx.success();
+		} finally {
+			tx.finish();
+		}
+	}
+
+	/**
+	 * testing method loadPropertyStatistics(Node propertyStatisticsNode) when
+	 * parameter propertyStatisticsNode is null
+	 * 
+	 * @throws InvalidPropertyStatisticsNodeException
+	 * @throws LoadVaultException
+	 * @throws InvalidStatisticsParameterException
+	 */
+	@Test(expected = InvalidStatisticsParameterException.class)
+	public void loadPropetyStatisticsNullParameterNegativeTest()
+			throws InvalidPropertyStatisticsNodeException, LoadVaultException,
+			InvalidStatisticsParameterException {
+		service.loadPropertyStatistics(null);
 	}
 }
