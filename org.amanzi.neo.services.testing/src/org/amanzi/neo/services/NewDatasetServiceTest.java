@@ -83,8 +83,7 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 	private void setPropertyToDatasetNode(Node datasetNode, String name,
 			DatasetTypes type, DriveTypes driveType) {
 		datasetNode.setProperty(NewDatasetService.NAME, name);
-		datasetNode.setProperty(NewDatasetService.TYPE,
-				type.name());
+		datasetNode.setProperty(NewDatasetService.TYPE, type.name());
 		if (driveType != null)
 			datasetNode.setProperty(NewDatasetService.DRIVE_TYPE,
 					driveType.name());
@@ -104,8 +103,7 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 			projectNode = graphDatabaseService.createNode();
 			graphDatabaseService.getReferenceNode().createRelationshipTo(
 					projectNode, DatasetRelationTypes.PROJECT);
-			projectNode.setProperty(NewDatasetService.NAME,
-					"project");
+			projectNode.setProperty(NewDatasetService.NAME, "project");
 			tx.success();
 		} finally {
 			tx.finish();
@@ -1688,7 +1686,7 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 		parent = getNewChild();
 		Node[][] nodes = getComplexChain(parent);
 
-		// check on nodes that have no childrenhas no children:
+		// check on nodes that have no children has no children:
 		for (int i = 0; i < nodes.length; i++) {
 			for (int j = 1; j < nodes[i].length; j++) {
 				Iterable<Node> traverser = service
@@ -1697,9 +1695,6 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 				Assert.assertNotNull(traverser);
 				// !iterator.hasNext()
 				Iterator<Node> it = traverser.iterator();
-				while (it.hasNext()) {
-					System.out.println(it.next().getId());
-				}
 				Assert.assertFalse(it.hasNext());
 			}
 		}

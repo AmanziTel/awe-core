@@ -152,8 +152,6 @@ public class NewDatasetService extends NewAbstractService {
 
     }
 
-    
-
     /**
      * constructor
      */
@@ -871,8 +869,8 @@ public class NewDatasetService extends NewAbstractService {
                 return getChildrenChainTraversalDescription().traverse(firstChild).nodes();
             } else {
                 // a work-around to return an empty traverser
-                return getChildrenChainTraversalDescription().relationships(DatasetRelationTypes.NEXT, Direction.INCOMING)
-                        .evaluator(Evaluators.excludeStartPosition()).traverse(parent).nodes();
+                return getChildrenChainTraversalDescription().evaluator(Evaluators.atDepth(1)).evaluator(Evaluators.fromDepth(2))
+                        .traverse(parent).nodes();
             }
         } catch (DatabaseException e) {
             LOGGER.error(e.getMessage(), e);
