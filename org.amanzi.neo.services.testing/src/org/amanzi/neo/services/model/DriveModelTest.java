@@ -21,6 +21,7 @@ import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.NewNetworkServiceTest;
 import org.amanzi.neo.services.ProjectService;
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.DriveModel.DriveNodeTypes;
 import org.amanzi.neo.services.model.DriveModel.DriveRelationshipTypes;
 import org.amanzi.testing.AbstractAWETest;
@@ -37,8 +38,7 @@ import org.neo4j.kernel.EmbeddedGraphDatabase;
 
 public class DriveModelTest extends AbstractAWETest {
 
-	private static Logger LOGGER = Logger
-			.getLogger(NewNetworkServiceTest.class);
+	private static Logger LOGGER = Logger.getLogger(DriveModelTest.class);
 	private static final String databasePath = getDbLocation();
 	private static Transaction tx;
 	private static ProjectService prServ;
@@ -81,7 +81,14 @@ public class DriveModelTest extends AbstractAWETest {
 	@Test
 	public final void testGetName() {
 		// create a drive model
-		DriveModel dm = new DriveModel(project, dataset, dsName);
+		DriveModel dm = null;
+		try {
+			dm = new DriveModel(project, dataset, dsName,
+					DriveTypes.values()[0]);
+		} catch (AWEException e) {
+			LOGGER.error("Could not create drive model", e);
+			fail();
+		}
 		// check that getName returns the right name
 		Assert.assertEquals(dsName, dm.getName());
 	}
@@ -89,7 +96,14 @@ public class DriveModelTest extends AbstractAWETest {
 	@Test
 	public final void testGetRootNode() {
 		// create a drive model
-		DriveModel dm = new DriveModel(project, dataset, dsName);
+		DriveModel dm = null;
+		try {
+			dm = new DriveModel(project, dataset, dsName,
+					DriveTypes.values()[0]);
+		} catch (AWEException e) {
+			LOGGER.error("Could not create drive model", e);
+			fail();
+		}
 		// check that getName returns the right root node
 		Assert.assertEquals(dataset, dm.getRootNode());
 	}
@@ -97,7 +111,14 @@ public class DriveModelTest extends AbstractAWETest {
 	@Test
 	public final void testConstructor() {
 		// all params set
-		DriveModel dm = new DriveModel(project, dataset, dsName);
+		DriveModel dm = null;
+		try {
+			dm = new DriveModel(project, dataset, dsName,
+					DriveTypes.values()[0]);
+		} catch (AWEException e) {
+			LOGGER.error("Could not create drive model", e);
+			fail();
+		}
 		Assert.assertNotNull(dm);
 		Assert.assertEquals(dataset, dm.getRootNode());
 		Assert.assertEquals(dsName, dm.getName());
@@ -107,7 +128,13 @@ public class DriveModelTest extends AbstractAWETest {
 	public final void testConstructorRootNull() {
 		String name = "drive_model";
 		// root is null
-		DriveModel dm = new DriveModel(project, null, name);
+		DriveModel dm = null;
+		try {
+			dm = new DriveModel(project, null, name, DriveTypes.values()[0]);
+		} catch (AWEException e) {
+			LOGGER.error("Could not create drive model", e);
+			fail();
+		}
 		Assert.assertNotNull(dm);
 		Assert.assertEquals(name, dm.getName());
 		Assert.assertEquals(name,
@@ -116,7 +143,14 @@ public class DriveModelTest extends AbstractAWETest {
 
 	@Test
 	public final void testAddVirtualDataset() {
-		DriveModel dm = new DriveModel(project, dataset, dsName);
+		DriveModel dm = null;
+		try {
+			dm = new DriveModel(project, dataset, dsName,
+					DriveTypes.values()[0]);
+		} catch (AWEException e) {
+			LOGGER.error("Could not create drive model", e);
+			fail();
+		}
 		// add virtual dataset
 		DriveModel virtual = dm.addVirtualDataset("name",
 				DriveTypes.values()[0]);
@@ -136,7 +170,14 @@ public class DriveModelTest extends AbstractAWETest {
 	@Test
 	public final void testGetVirtualDatasets() {
 		// add virtual datasets
-		DriveModel dm = new DriveModel(project, dataset, dsName);
+		DriveModel dm = null;
+		try {
+			dm = new DriveModel(project, dataset, dsName,
+					DriveTypes.values()[0]);
+		} catch (AWEException e) {
+			LOGGER.error("Could not create drive model", e);
+			fail();
+		}
 		List<DriveModel> dss = new ArrayList<DriveModel>();
 		for (int i = 0; i < 4; i++) {
 			dss.add(dm.addVirtualDataset("" + i, DriveTypes.values()[0]));
@@ -153,7 +194,14 @@ public class DriveModelTest extends AbstractAWETest {
 	@Test
 	public final void testGetVirtualDatasetsNoDatasets() {
 		// no virtual datasets
-		DriveModel dm = new DriveModel(project, dataset, dsName);
+		DriveModel dm = null;
+		try {
+			dm = new DriveModel(project, dataset, dsName,
+					DriveTypes.values()[0]);
+		} catch (AWEException e) {
+			LOGGER.error("Could not create drive model", e);
+			fail();
+		}
 		Iterable<DriveModel> it = dm.getVirtualDatasets();
 		// traverser is not null
 		Assert.assertNotNull(it);
@@ -164,16 +212,29 @@ public class DriveModelTest extends AbstractAWETest {
 	@Test
 	public final void testAddFile() {
 		// add file
-		DriveModel dm = new DriveModel(project, dataset, dsName);
+		DriveModel dm = null;
+		try {
+			dm = new DriveModel(project, dataset, dsName,
+					DriveTypes.values()[0]);
+		} catch (AWEException e) {
+			LOGGER.error("Could not create drive model", e);
+			fail();
+		}
 		File f = new File(filename);
-		Node fileNode = dm.addFile(f);
+		Node fileNode = null;
+		try {
+			fileNode = dm.addFile(f);
+		} catch (DatabaseException e) {
+			LOGGER.error("Could not add file node", e);
+			fail();
+		}
 		// node returned is not null
 		Assert.assertNotNull(fileNode);
 		// name correct
 		Assert.assertEquals("file.txt",
 				fileNode.getProperty(NewAbstractService.NAME, null));
 		// path correct
-		Assert.assertEquals("c:\\dev",
+		Assert.assertEquals(filename,
 				fileNode.getProperty(DriveModel.PATH, null));
 		// type correct
 		Assert.assertEquals(DriveNodeTypes.FILE.getId(),
@@ -188,20 +249,52 @@ public class DriveModelTest extends AbstractAWETest {
 	@Test(expected = IllegalArgumentException.class)
 	public final void testAddFileNull() {
 		// add file null
-		DriveModel dm = new DriveModel(project, dataset, dsName);
-		dm.addFile(null);
+		DriveModel dm = null;
+		try {
+			dm = new DriveModel(project, dataset, dsName,
+					DriveTypes.values()[0]);
+		} catch (AWEException e) {
+			LOGGER.error("Could not create drive model", e);
+			fail();
+		}
+		try {
+			dm.addFile(null);
+		} catch (DatabaseException e) {
+			LOGGER.error("Could not add file node", e);
+			fail();
+		}
 		// exception
 	}
 
 	@Test
 	public final void testAddMeasurement() {
 		// add measurement with some parameters
-		DriveModel dm = new DriveModel(project, dataset, dsName);
-		Node f = dm.addFile(new File(filename));
+		DriveModel dm = null;
+		try {
+			dm = new DriveModel(project, dataset, dsName,
+					DriveTypes.values()[0]);
+		} catch (AWEException e) {
+			LOGGER.error("Could not create drive model", e);
+			fail();
+		}
+		Node f = null;
+		try {
+			f = dm.addFile(new File(filename));
+		} catch (DatabaseException e) {
+			LOGGER.error("Could not add file node", e);
+			fail();
+		}
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("fake", "param");
 		params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
-		Node m = dm.addMeasurement(filename, params);
+		Node m = null;
+		try {
+			m = dm.addMeasurement(
+					filename.substring(filename.lastIndexOf('\\') + 1), params);
+		} catch (DatabaseException e) {
+			LOGGER.error("Could not add measurement", e);
+			fail();
+		}
 		// node returned is not null
 		Assert.assertNotNull(m);
 		// all params are set
@@ -228,8 +321,21 @@ public class DriveModelTest extends AbstractAWETest {
 	@Test
 	public final void testAddMeasurementRootParams() {
 		// add few measurements with some parameters
-		DriveModel dm = new DriveModel(project, dataset, dsName);
-		dm.addFile(new File(filename));
+		DriveModel dm = null;
+		try {
+			dm = new DriveModel(project, dataset, dsName,
+					DriveTypes.values()[0]);
+		} catch (AWEException e) {
+			LOGGER.error("Could not create drive model", e);
+			fail();
+		}
+		try {
+			dm.addFile(new File(filename));
+		} catch (DatabaseException e) {
+			LOGGER.error("Could not add file node", e);
+			fail();
+		}
+		;
 
 		Map<Node, Map<String, Object>> ms = new HashMap<Node, Map<String, Object>>();
 		long min_tst = Long.MAX_VALUE, max_tst = 0;
@@ -241,7 +347,15 @@ public class DriveModelTest extends AbstractAWETest {
 			if (tst > max_tst)
 				max_tst = tst;
 			m.put(DriveModel.TIMESTAMP, tst);
-			ms.put(dm.addMeasurement(filename, m), m);
+			Node me = null;
+			try {
+				me = dm.addMeasurement(
+						filename.substring(filename.lastIndexOf('\\') + 1), m);
+			} catch (DatabaseException e) {
+				LOGGER.error("Could not add measurement", e);
+				fail();
+			}
+			ms.put(me, m);
 		}
 
 		// root params updated correctly
@@ -260,8 +374,21 @@ public class DriveModelTest extends AbstractAWETest {
 	@Test
 	public final void testAddMeasurementLatLon() {
 		// add measurement with some parameters
-		DriveModel dm = new DriveModel(project, dataset, dsName);
-		dm.addFile(new File(filename));
+		DriveModel dm = null;
+		try {
+			dm = new DriveModel(project, dataset, dsName,
+					DriveTypes.values()[0]);
+		} catch (AWEException e) {
+			LOGGER.error("Could not create drive model", e);
+			fail();
+		}
+		try {
+			dm.addFile(new File(filename));
+		} catch (DatabaseException e) {
+			LOGGER.error("Could not add file node", e);
+			fail();
+		}
+		;
 
 		Map<String, Object> params = new HashMap<String, Object>();
 		long lat = (long) (Math.random() * Long.MAX_VALUE);
@@ -269,7 +396,14 @@ public class DriveModelTest extends AbstractAWETest {
 		params.put(DriveModel.LATITUDE, lat);
 		params.put(DriveModel.LONGITUDE, lon);
 		params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
-		Node m = dm.addMeasurement(filename, params);
+		Node m = null;
+		try {
+			m = dm.addMeasurement(
+					filename.substring(filename.lastIndexOf('\\') + 1), params);
+		} catch (DatabaseException e) {
+			LOGGER.error("Could not add measurement", e);
+			fail();
+		}
 
 		Node l = dm.getLocation(m);
 		// location node created
@@ -287,14 +421,34 @@ public class DriveModelTest extends AbstractAWETest {
 	@Test
 	public final void testAddMeasurementLatLonNull() {
 		// add measurement with some parameters
-		DriveModel dm = new DriveModel(project, dataset, dsName);
-		dm.addFile(new File(filename));
+		DriveModel dm = null;
+		try {
+			dm = new DriveModel(project, dataset, dsName,
+					DriveTypes.values()[0]);
+		} catch (AWEException e) {
+			LOGGER.error("Could not create drive model", e);
+			fail();
+		}
+		try {
+			dm.addFile(new File(filename));
+		} catch (DatabaseException e) {
+			LOGGER.error("Could not add file node", e);
+			fail();
+		}
+		;
 
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put(DriveModel.LATITUDE, null);
 		params.put(DriveModel.LONGITUDE, null);
 		params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
-		Node m = dm.addMeasurement(filename, params);
+		Node m = null;
+		try {
+			m = dm.addMeasurement(
+					filename.substring(filename.lastIndexOf('\\') + 1), params);
+		} catch (DatabaseException e) {
+			LOGGER.error("Could not add measurement", e);
+			fail();
+		}
 
 		Node l = dm.getLocation(m);
 		// location node not created
@@ -304,14 +458,34 @@ public class DriveModelTest extends AbstractAWETest {
 	@Test
 	public final void testAddMeasurementLatLonEmpty() {
 		// add measurement with some parameters
-		DriveModel dm = new DriveModel(project, dataset, dsName);
-		dm.addFile(new File(filename));
+		DriveModel dm = null;
+		try {
+			dm = new DriveModel(project, dataset, dsName,
+					DriveTypes.values()[0]);
+		} catch (AWEException e) {
+			LOGGER.error("Could not create drive model", e);
+			fail();
+		}
+		try {
+			dm.addFile(new File(filename));
+		} catch (DatabaseException e) {
+			LOGGER.error("Could not add file node", e);
+			fail();
+		}
+		;
 
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put(DriveModel.LATITUDE, 0);
 		params.put(DriveModel.LONGITUDE, 0);
 		params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
-		Node m = dm.addMeasurement(filename, params);
+		Node m = null;
+		try {
+			m = dm.addMeasurement(
+					filename.substring(filename.lastIndexOf('\\') + 1), params);
+		} catch (DatabaseException e) {
+			LOGGER.error("Could not add measurement", e);
+			fail();
+		}
 
 		Node l = dm.getLocation(m);
 		// location node not created
@@ -321,16 +495,41 @@ public class DriveModelTest extends AbstractAWETest {
 	@Test(expected = IllegalArgumentException.class)
 	public final void testAddMeasurementFilenameNull() {
 		// add measurement filename null
-		(new DriveModel(project, dataset, dsName)).addMeasurement(null,
-				new HashMap<String, Object>());
+		DriveModel dm = null;
+		try {
+			dm = new DriveModel(project, dataset, dsName,
+					DriveTypes.values()[0]);
+		} catch (AWEException e) {
+			LOGGER.error("Could not create drive model", e);
+			fail();
+		}
+		try {
+			dm.addMeasurement(null, new HashMap<String, Object>());
+		} catch (DatabaseException e) {
+			LOGGER.error("Could not add measurement", e);
+			fail();
+		}
 		// exception
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public final void testAddMeasurementFilenameEmpty() {
 		// add measurement filename ""
-		(new DriveModel(project, dataset, dsName)).addMeasurement("",
-				new HashMap<String, Object>());
+		DriveModel dm = null;
+		try {
+			dm = new DriveModel(project, dataset, dsName,
+					DriveTypes.values()[0]);
+		} catch (AWEException e) {
+			LOGGER.error("Could not create drive model", e);
+			fail();
+		}
+		try {
+			dm.addMeasurement("", new HashMap<String, Object>());
+		} catch (DatabaseException e) {
+			LOGGER.error("Could not add measurement", e);
+			fail();
+		}
+		;
 		// exception
 	}
 
@@ -366,11 +565,9 @@ public class DriveModelTest extends AbstractAWETest {
 				.getGraphDatabase()
 				.index()
 				.forNodes(
-						dsServ.getIndexKey(parent,
-								NetworkElementNodeType.valueOf(node
-										.getProperty(NewAbstractService.TYPE,
-												"").toString())))
-				.get(name, value).getSingle();
+						dsServ.getIndexKey(parent, DriveNodeTypes.valueOf(node
+								.getProperty(NewAbstractService.TYPE, "")
+								.toString()))).get(name, value).getSingle();
 		return n.equals(node);
 
 	}

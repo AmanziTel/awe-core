@@ -70,7 +70,7 @@ public abstract class NewAbstractService {
      * @param nodeType - the new node type
      * @return - the newly created node
      */
-    protected Node createNode(INodeType nodeType) throws DatabaseException {
+    public Node createNode(INodeType nodeType) throws DatabaseException {
         // validate parameters
         if (nodeType == null) {
             throw new IllegalArgumentException("Node type is null.");

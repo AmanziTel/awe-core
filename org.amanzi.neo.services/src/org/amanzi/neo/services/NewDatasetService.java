@@ -115,7 +115,7 @@ public class NewDatasetService extends NewAbstractService {
      */
     private class FilterDataset extends NameTypeEvaluator {
 
-        private DriveTypes driveType;
+        private IDriveType driveType;
 
         /**
          * constructor with name and type parameter for filter
@@ -135,7 +135,7 @@ public class NewDatasetService extends NewAbstractService {
          * @param type - dataset type
          * @param driveType - dataset drive type
          */
-        public FilterDataset(String name, DatasetTypes type, DriveTypes driveType) {
+        public FilterDataset(String name, DatasetTypes type, IDriveType driveType) {
             super(name, type);
             this.driveType = driveType;
         }
@@ -143,7 +143,7 @@ public class NewDatasetService extends NewAbstractService {
         @Override
         public Evaluation evaluate(Path arg0) {
             if (super.evaluate(arg0).includes()) {
-                if (driveType == null || driveType.name().equals(arg0.endNode().getProperty(DRIVE_TYPE, ""))) {
+                if (driveType == null || driveType.getId().equals(arg0.endNode().getProperty(DRIVE_TYPE, ""))) {
                     return Evaluation.INCLUDE_AND_CONTINUE;
                 }
                 return Evaluation.EXCLUDE_AND_CONTINUE;
@@ -249,7 +249,7 @@ public class NewDatasetService extends NewAbstractService {
      * @throws DuplicateNodeNameException this method may call exception if it find more than one
      *         dataset
      */
-    public Node findDataset(Node projectNode, final String name, final DatasetTypes type, final DriveTypes driveType)
+    public Node findDataset(Node projectNode, final String name, final DatasetTypes type, final IDriveType driveType)
             throws InvalidDatasetParameterException, DatasetTypeParameterException, DuplicateNodeNameException {
         LOGGER.debug("start findDataset(Node projectNode, String name, DatasetTypes type, DriveTypes driveType)");
         if (name == "") {
@@ -367,7 +367,7 @@ public class NewDatasetService extends NewAbstractService {
      * @throws DuplicateNodeNameException this method may call exception if dataset with that name
      *         already exists
      */
-    public Node createDataset(Node projectNode, String name, DatasetTypes type, DriveTypes driveType)
+    public Node createDataset(Node projectNode, String name, DatasetTypes type, IDriveType driveType)
             throws InvalidDatasetParameterException, DatasetTypeParameterException, DuplicateNodeNameException {
         LOGGER.debug("start createDataset(Node projectNode, String name, DatasetTypes type, DriveTypes driveType)");
         if (name == "") {
@@ -405,7 +405,7 @@ public class NewDatasetService extends NewAbstractService {
             datasetNode = createNode(type);
             projectNode.createRelationshipTo(datasetNode, DatasetRelationTypes.DATASET);
             datasetNode.setProperty(NAME, name);
-            datasetNode.setProperty(DRIVE_TYPE, driveType.name());
+            datasetNode.setProperty(DRIVE_TYPE, driveType.getId());
             tx.success();
 
         } catch (Exception e) {
@@ -481,7 +481,7 @@ public class NewDatasetService extends NewAbstractService {
      * @throws DuplicateNodeNameException this method may call exception if dataset with that name
      *         already exists
      */
-    public Node getDataset(Node projectNode, String name, DatasetTypes type, DriveTypes driveType)
+    public Node getDataset(Node projectNode, String name, DatasetTypes type, IDriveType driveType)
             throws InvalidDatasetParameterException, DatasetTypeParameterException, DuplicateNodeNameException {
         LOGGER.debug("start getDataset(Node projectNode, String name, DatasetTypes type, DriveTypes driveType)");
 
