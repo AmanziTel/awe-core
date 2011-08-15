@@ -53,7 +53,7 @@ public class NewNetworkService extends NewAbstractService {
      * @author grigoreva_a
      * @since 1.0.0
      */
-    protected enum NetworkElementNodeType implements INodeType {
+    public enum NetworkElementNodeType implements INodeType {
         NETWORK, BSC, SITE, SECTOR;
         @Override
         public String getId() {

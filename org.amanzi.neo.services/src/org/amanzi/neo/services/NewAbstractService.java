@@ -35,8 +35,8 @@ import org.neo4j.graphdb.traversal.Evaluator;
  * @since 1.0.0
  */
 public abstract class NewAbstractService {
-    protected final static String TYPE = "type";
-    protected final static String NAME = "name";
+    public final static String TYPE = "type";
+    public final static String NAME = "name";
 
     private static Logger LOGGER = Logger.getLogger(NewAbstractService.class);
 

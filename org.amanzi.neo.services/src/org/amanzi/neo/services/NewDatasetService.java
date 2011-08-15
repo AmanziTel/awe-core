@@ -17,11 +17,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.amanzi.neo.services.enums.IDriveType;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
-import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
@@ -29,12 +29,9 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.RelationshipExpander;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.graphdb.traversal.BranchOrderingPolicy;
 import org.neo4j.graphdb.traversal.Evaluation;
-import org.neo4j.graphdb.traversal.Evaluator;
 import org.neo4j.graphdb.traversal.Evaluators;
 import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.graphdb.traversal.Traverser;
@@ -99,8 +96,13 @@ public class NewDatasetService extends NewAbstractService {
      * @author Kruglik_A
      * @since 1.0.0
      */
-    public enum DriveTypes {
+    public enum DriveTypes implements IDriveType {
         NEMO_V1, NEMO_V2, TEMS, ROMES;
+
+        @Override
+        public String getId() {
+            return name();
+        }
     }
 
     /**
