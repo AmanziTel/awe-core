@@ -22,6 +22,8 @@ import org.amanzi.neo.services.NewNetworkServiceTest;
 import org.amanzi.neo.services.ProjectService;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
+import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
+import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.model.DriveModel.DriveNodeTypes;
 import org.amanzi.neo.services.model.DriveModel.DriveRelationshipTypes;
 import org.amanzi.testing.AbstractAWETest;
@@ -152,8 +154,13 @@ public class DriveModelTest extends AbstractAWETest {
 			fail();
 		}
 		// add virtual dataset
-		DriveModel virtual = dm.addVirtualDataset("name",
-				DriveTypes.values()[0]);
+		DriveModel virtual = null;
+		try {
+			virtual = dm.addVirtualDataset("name", DriveTypes.values()[0]);
+		} catch (AWEException e) {
+			LOGGER.error("Could not add virtual dataset", e);
+			fail();
+		}
 		// object returned is not null
 		Assert.assertNotNull(virtual);
 		// name is correct
@@ -161,10 +168,206 @@ public class DriveModelTest extends AbstractAWETest {
 		// root node is correct
 		Assert.assertNotNull(virtual.getRootNode());
 		// root node type is correct
-		Assert.assertEquals(DatasetTypes.DRIVE, virtual.getRootNode()
+		Assert.assertEquals(DatasetTypes.DRIVE.getId(), virtual.getRootNode()
 				.getProperty(NewAbstractService.TYPE, null));
-		Assert.assertEquals(DriveTypes.values()[0], virtual.getRootNode()
-				.getProperty(DriveModel.DRIVE_TYPE, null));
+		Assert.assertEquals(DriveTypes.values()[0].getId(), virtual
+				.getRootNode().getProperty(DriveModel.DRIVE_TYPE, null));
+	}
+
+	@Test(expected = DuplicateNodeNameException.class)
+	public final void testAddVirtualDatasetSameName() throws AWEException {
+		DriveModel dm = null;
+		try {
+			dm = new DriveModel(project, dataset, dsName,
+					DriveTypes.values()[0]);
+		} catch (AWEException e) {
+			LOGGER.error("Could not create drive model", e);
+			fail();
+		}
+		// add first virtual dataset
+		DriveModel virtual = null;
+		try {
+			virtual = dm.addVirtualDataset("name", DriveTypes.values()[0]);
+		} catch (AWEException e) {
+			LOGGER.error("Could not add virtual dataset", e);
+			fail();
+		}
+		// exception
+		virtual = dm.addVirtualDataset("name", DriveTypes.values()[0]);
+	}
+
+	@Test(expected = IllegalNodeDataException.class)
+	public final void testAddVirtualDatasetNameNull() throws AWEException {
+		DriveModel dm = null;
+		try {
+			dm = new DriveModel(project, dataset, dsName,
+					DriveTypes.values()[0]);
+		} catch (AWEException e) {
+			LOGGER.error("Could not create drive model", e);
+			fail();
+		}
+		// add virtual dataset
+		dm.addVirtualDataset(null, DriveTypes.values()[0]);
+		// exception
+	}
+
+	@Test(expected = IllegalNodeDataException.class)
+	public final void testAddVirtualDatasetNameEmpty() throws AWEException {
+		DriveModel dm = null;
+		try {
+			dm = new DriveModel(project, dataset, dsName,
+					DriveTypes.values()[0]);
+		} catch (AWEException e) {
+			LOGGER.error("Could not create drive model", e);
+			fail();
+		}
+		// add virtual dataset
+		dm.addVirtualDataset("", DriveTypes.values()[0]);
+		// exception
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public final void testAddVirtualDatasetTypeNull() {
+		DriveModel dm = null;
+		try {
+			dm = new DriveModel(project, dataset, dsName,
+					DriveTypes.values()[0]);
+		} catch (AWEException e) {
+			LOGGER.error("Could not create drive model", e);
+			fail();
+		}
+		// add virtual dataset
+		try {
+			dm.addVirtualDataset("name", null);
+		} catch (AWEException e) {
+			LOGGER.error("Could not add virtual dataset", e);
+			fail();
+		}
+		// exception
+	}
+
+	@Test
+	public final void testFindVirtualDataset() {
+		// dataset exists
+		DriveModel dm = null;
+		try {
+			dm = new DriveModel(project, dataset, dsName,
+					DriveTypes.values()[0]);
+		} catch (AWEException e) {
+			LOGGER.error("Could not create drive model", e);
+			fail();
+		}
+		// add virtual dataset
+		try {
+			dm.addVirtualDataset("name", DriveTypes.values()[0]);
+		} catch (AWEException e) {
+			LOGGER.error("Could not add virtual dataset", e);
+			fail();
+		}
+
+		DriveModel virtual = dm.findVirtualDataset("name");
+		// DM returned not null
+		Assert.assertNotNull(virtual);
+		// name is correct
+		Assert.assertEquals("name", virtual.getName());
+		// root node is correct
+		Assert.assertEquals(
+				dm.getRootNode(),
+				virtual.getRootNode()
+						.getRelationships(
+								DriveRelationshipTypes.VIRTUAL_DATASET,
+								Direction.INCOMING).iterator().next()
+						.getOtherNode(virtual.getRootNode()));
+	}
+
+	@Test
+	public final void testFindVirtualDatasetNoDataset() {
+		// no dataset
+		DriveModel dm = null;
+		try {
+			dm = new DriveModel(project, dataset, dsName,
+					DriveTypes.values()[0]);
+		} catch (AWEException e) {
+			LOGGER.error("Could not create drive model", e);
+			fail();
+		}
+
+		DriveModel virtual = dm.findVirtualDataset("name");
+		// DM returned null
+		Assert.assertNull(virtual);
+	}
+
+	@Test
+	public final void testGetDataset() {
+		// dataset exists
+		DriveModel dm = null;
+		try {
+			dm = new DriveModel(project, dataset, dsName,
+					DriveTypes.values()[0]);
+		} catch (AWEException e) {
+			LOGGER.error("Could not create drive model", e);
+			fail();
+		}
+		// add virtual dataset
+		try {
+			dm.addVirtualDataset("name", DriveTypes.values()[0]);
+		} catch (AWEException e) {
+			LOGGER.error("Could not add virtual dataset", e);
+			fail();
+		}
+
+		DriveModel virtual = null;
+		try {
+			virtual = dm.getVirtualDataset("name", DriveTypes.values()[0]);
+		} catch (AWEException e) {
+			LOGGER.error("Could not add virtual dataset", e);
+			fail();
+		}
+		// DM returned not null
+		Assert.assertNotNull(virtual);
+		// name is correct
+		Assert.assertEquals("name", virtual.getName());
+		// root node is correct
+		Assert.assertEquals(
+				dm.getRootNode(),
+				virtual.getRootNode()
+						.getRelationships(
+								DriveRelationshipTypes.VIRTUAL_DATASET,
+								Direction.INCOMING).iterator().next()
+						.getOtherNode(virtual.getRootNode()));
+	}
+
+	@Test
+	public final void testGetDatasetNoDataset() {
+		// no dataset
+		DriveModel dm = null;
+		try {
+			dm = new DriveModel(project, dataset, dsName,
+					DriveTypes.values()[0]);
+		} catch (AWEException e) {
+			LOGGER.error("Could not create drive model", e);
+			fail();
+		}
+
+		DriveModel virtual = null;
+		try {
+			virtual = dm.getVirtualDataset("name", DriveTypes.values()[0]);
+		} catch (AWEException e) {
+			LOGGER.error("Could not add virtual dataset", e);
+			fail();
+		}
+		// DM returned not null
+		Assert.assertNotNull(virtual);
+		// name is correct
+		Assert.assertEquals("name", virtual.getName());
+		// root node is correct
+		Assert.assertEquals(
+				dm.getRootNode(),
+				virtual.getRootNode()
+						.getRelationships(
+								DriveRelationshipTypes.VIRTUAL_DATASET,
+								Direction.INCOMING).iterator().next()
+						.getOtherNode(virtual.getRootNode()));
 	}
 
 	@Test
@@ -178,16 +381,22 @@ public class DriveModelTest extends AbstractAWETest {
 			LOGGER.error("Could not create drive model", e);
 			fail();
 		}
-		List<DriveModel> dss = new ArrayList<DriveModel>();
+		List<Node> dss = new ArrayList<Node>();
 		for (int i = 0; i < 4; i++) {
-			dss.add(dm.addVirtualDataset("" + i, DriveTypes.values()[0]));
+			try {
+				dss.add(dm.addVirtualDataset("" + i, DriveTypes.values()[0])
+						.getRootNode());
+			} catch (AWEException e) {
+				LOGGER.error("Could not add virtual dataset", e);
+				fail();
+			}
 		}
 		Iterable<DriveModel> it = dm.getVirtualDatasets();
 		// traverser is not null
 		Assert.assertNotNull(it);
 		// check that all virtual datasets are returned
 		for (DriveModel drm : it) {
-			Assert.assertTrue(dss.contains(drm));
+			Assert.assertTrue(dss.contains(drm.getRootNode()));
 		}
 	}
 
@@ -310,10 +519,10 @@ public class DriveModelTest extends AbstractAWETest {
 		Assert.assertEquals(DriveNodeTypes.M.getId(),
 				dataset.getProperty(DriveModel.PRIMARY_TYPE, null));
 		// root min|max timestamp set
-		Assert.assertEquals(params.get(DriveModel.MIN_TIMESTAMP),
-				dataset.getProperty(DriveModel.TIMESTAMP, 0L));
-		Assert.assertEquals(params.get(DriveModel.MAX_TIMESTAMP),
-				dataset.getProperty(DriveModel.TIMESTAMP, 0L));
+		Assert.assertEquals(params.get(DriveModel.TIMESTAMP),
+				dataset.getProperty(DriveModel.MIN_TIMESTAMP, 0L));
+		Assert.assertEquals(params.get(DriveModel.TIMESTAMP),
+				dataset.getProperty(DriveModel.MAX_TIMESTAMP, 0L));
 		// root count updated
 		Assert.assertEquals(1, dataset.getProperty(DriveModel.COUNT, -1));
 	}
@@ -475,8 +684,8 @@ public class DriveModelTest extends AbstractAWETest {
 		;
 
 		Map<String, Object> params = new HashMap<String, Object>();
-		params.put(DriveModel.LATITUDE, 0);
-		params.put(DriveModel.LONGITUDE, 0);
+		params.put(DriveModel.LATITUDE, 0L);
+		params.put(DriveModel.LONGITUDE, 0L);
 		params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
 		Node m = null;
 		try {

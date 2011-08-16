@@ -14,6 +14,9 @@
 package org.amanzi.neo.services.model;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.amanzi.neo.services.NewAbstractService;
@@ -23,16 +26,21 @@ import org.amanzi.neo.services.enums.IDriveType;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
+import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
+import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
+import org.neo4j.graphdb.traversal.Evaluators;
+import org.neo4j.graphdb.traversal.TraversalDescription;
+import org.neo4j.kernel.Traversal;
 
 /**
- * TODO Purpose of
  * <p>
  * This class manages drive data.
  * </p>
@@ -61,9 +69,20 @@ public class DriveModel {
     private Index<Node> files;
     private Node root;
     private String name;
+    private long min_tst = Long.MAX_VALUE;
+    private long max_tst = 0;
+    private int count = 0;
 
     private NewDatasetService dsServ;
 
+    /**
+     * <p>
+     * This enum describes node types that are present in drive model.
+     * </p>
+     * 
+     * @author Ana Gr.
+     * @since 1.0.0
+     */
     public enum DriveNodeTypes implements INodeType {
         FILE, M, MP;
 
@@ -74,10 +93,28 @@ public class DriveModel {
 
     }
 
+    /**
+     * <p>
+     * This enum describes relationship types that are present in drive model.
+     * </p>
+     * 
+     * @author Ana Gr.
+     * @since 1.0.0
+     */
     public enum DriveRelationshipTypes implements RelationshipType {
         VIRTUAL_DATASET, LOCATION;
     }
 
+    /**
+     * Constructor. Pass only rootNode, if you have one, <i>OR</i> all the other parameters.
+     * 
+     * @param parent a project node
+     * @param rootNode a drive node
+     * @param name the name of root node of the new drive model
+     * @param type the type of root node of the new drive model
+     * @throws AWEException if parameters are null or empty or some errors occur in database during
+     *         creation of nodes
+     */
     public DriveModel(Node parent, Node rootNode, String name, IDriveType type) throws AWEException {
         // if root node is null, get one by name
         if (rootNode != null) {
@@ -99,23 +136,136 @@ public class DriveModel {
         }
     }
 
+    /**
+     * @return the name of the root node of current drive model
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * @return the root node
+     */
     public Node getRootNode() {
         return root;
     }
 
-    public DriveModel addVirtualDataset(String name, IDriveType driveType) {
-        return null;
+    /**
+     * Adds a new node of type DRIVE, creates VIRTUAL_DATASET relationship from root node of current
+     * DM, and creaates and returns a new DM on base of newly created node.
+     * 
+     * @param name the name of new virtual dataset
+     * @param driveType the drive type of new virtual dataset (NB! not TYPE, TYPE is set to DRIVE)
+     * @return DriveModel based on new virtual dataset node
+     * @throws AWEException if parameters are null or empty or some errors occur in database during
+     *         creation of nodes
+     */
+    public DriveModel addVirtualDataset(String name, IDriveType driveType) throws AWEException {
+        LOGGER.debug("start addVirtualDataset(String name, IDriveType driveType)");
+
+        // validate params
+        if ((name == null) || (name.equals(""))) {
+            throw new IllegalNodeDataException("Name is null or empty.");
+        }
+        if (driveType == null) {
+            throw new IllegalArgumentException("Drive type is null");
+        }
+        if (findVirtualDataset(name) != null) {
+            throw new DuplicateNodeNameException(name, DatasetTypes.DRIVE);
+        }
+
+        tx = graphDb.beginTx();
+        Node virtual = dsServ.createNode(DatasetTypes.DRIVE);
+        try {
+            virtual.setProperty(NewAbstractService.NAME, name);
+            virtual.setProperty(DRIVE_TYPE, driveType.getId());
+            root.createRelationshipTo(virtual, DriveRelationshipTypes.VIRTUAL_DATASET);
+            tx.success();
+        } finally {
+            tx.finish();
+        }
+        DriveModel result = new DriveModel(null, virtual, name, null);
+        return result;
     }
 
+    /**
+     * Looks for a virtual dataset node with the defined name, creates a DriveModel based on it, if
+     * found
+     * 
+     * @param name the name of virtual dataset node
+     * @return DriveModel based on the found node or null if search failed
+     */
+    public DriveModel findVirtualDataset(String name) {
+        LOGGER.debug("start findVirtualDataset(String name)");
+
+        DriveModel result = null;
+        for (DriveModel dm : getVirtualDatasets()) {
+            if (dm.getName().equals(name)) {
+                result = dm;
+                break;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Looks for a virtual dataset node or created a new one if nothing found. returns a new
+     * DriveModel based on resulting node.
+     * 
+     * @param name
+     * @param driveType used to create a new virtual dataset
+     * @return a DriveModel based on found or created virtual dataset node
+     * @throws AWEException if errors occurred during creation of new node
+     */
+    public DriveModel getVirtualDataset(String name, IDriveType driveType) throws AWEException {
+        LOGGER.debug("start getVirtualDataset(String name, IDriveType driveType)");
+
+        DriveModel result = findVirtualDataset(name);
+        if (result == null) {
+            result = addVirtualDataset(name, driveType);
+        }
+        return result;
+    }
+
+    /**
+     * @return a List<Node> containing DriveModels created on base of virtual dataset nodes in
+     *         current DriveModel
+     */
     public Iterable<DriveModel> getVirtualDatasets() {
-        return null;
+        LOGGER.debug("start getVirtualDatasets()");
+
+        List<DriveModel> result = new ArrayList<DriveModel>();
+        for (Node node : getVirtualDatasetsTraversalDescription().traverse(root).nodes()) {
+            try {
+                result.add(new DriveModel(null, node, null, null));
+            } catch (AWEException e) {
+                LOGGER.error("Could not create drive model on node " + node.getProperty(NewAbstractService.NAME, null), e);
+            }
+        }
+        return result;
     }
 
+    /**
+     * @return TraversalDescription to iterate over virtual dataset nodes.
+     */
+    protected TraversalDescription getVirtualDatasetsTraversalDescription() {
+        LOGGER.debug("start getVirtualDatasetsTraversalDescription()");
+
+        return Traversal.description().breadthFirst().relationships(DriveRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING)
+                .evaluator(Evaluators.atDepth(1)).evaluator(Evaluators.excludeStartPosition());
+    }
+
+    /**
+     * Adds a FILE node to the drive model. FILE nodes are added to root node via
+     * CHILD-NEXT-...-NEXT chain. FILE nodes are indexed by NAME.
+     * 
+     * @param file a File object containing file name and path
+     * @return the newly created node
+     * @throws DatabaseException if errors occur in database
+     */
     public Node addFile(File file) throws DatabaseException {
+        LOGGER.debug("start addFile(File file)");
+
         // file nodes are added as c-n-n
         // validate params
         if (file == null) {
@@ -140,7 +290,18 @@ public class DriveModel {
         return fileNode;
     }
 
+    /**
+     * Adds a measurement node to a file node with defined filename. If params map contains lat and
+     * lon properties, also creates a location node.
+     * 
+     * @param filename the name of file
+     * @param params a map containing parameters of the new measurement
+     * @return the newly created node
+     * @throws DatabaseException if errors occur in database
+     */
     public Node addMeasurement(String filename, Map<String, Object> params) throws DatabaseException {
+        LOGGER.debug("start addMeasurement(String filename, Map<String, Object> params)");
+
         // measurements are added as c-n-n o file nodes
         // lat, lon properties are stored in a location node
 
@@ -166,11 +327,22 @@ public class DriveModel {
         try {
             Long lat = (Long)params.get(LATITUDE);
             Long lon = (Long)params.get(LONGITUDE);
+            Long tst = (Long)params.get(TIMESTAMP);
 
-            if ((lat != null) && (lon != null)) {
+            if ((lat != null) && (lat != 0) && (lon != null) && (lon != 0)) {
                 createLocationNode(m, lat, lon);
                 params.remove(LATITUDE);
                 params.remove(LONGITUDE);
+            }
+            if ((tst != null) && (tst != 0)) {
+                if (min_tst > tst) {
+                    min_tst = tst;
+                    root.setProperty(MIN_TIMESTAMP, min_tst);
+                }
+                if (max_tst < tst) {
+                    max_tst = tst;
+                    root.setProperty(MAX_TIMESTAMP, max_tst);
+                }
             }
             for (String key : params.keySet()) {
                 Object value = params.get(key);
@@ -178,6 +350,9 @@ public class DriveModel {
                     m.setProperty(key, value);
                 }
             }
+            root.setProperty(PRIMARY_TYPE, DriveNodeTypes.M.getId());
+            count++;
+            root.setProperty(COUNT, count);
             tx.success();
         } finally {
             tx.finish();
@@ -186,24 +361,40 @@ public class DriveModel {
     }
 
     /**
-     * @param m
+     * Created a node, sets its LATITUDE and LONGITUDE properties, and created a LOCATION
+     * relationship from parent node.
+     * 
+     * @param parent
      * @param lat
      * @param lon
-     * @throws DatabaseException
+     * @throws DatabaseException if errors occur in the database
      */
-    private void createLocationNode(Node measurement, long lat, long lon) throws DatabaseException {
+    public void createLocationNode(Node parent, long lat, long lon) throws DatabaseException {
+        LOGGER.debug("start createLocationNode(Node measurement, long lat, long lon)");
+        // validate params
+        if (parent == null) {
+            throw new IllegalArgumentException("Parent nde is null.");
+        }
+
         Node location = dsServ.createNode(DriveNodeTypes.MP);
         location.setProperty(LATITUDE, lat);
         location.setProperty(LONGITUDE, lon);
-        measurement.createRelationshipTo(location, DriveRelationshipTypes.LOCATION);
+        parent.createRelationshipTo(location, DriveRelationshipTypes.LOCATION);
     }
 
     /**
-     * @param m
-     * @return
+     * Finds a location node.
+     * 
+     * @param parent
+     * @return the found location node or null.
      */
-    public Node getLocation(Node measurement) {
-        return measurement.getRelationships(DriveRelationshipTypes.LOCATION, Direction.OUTGOING).iterator().next()
-                .getOtherNode(measurement);
+    public Node getLocation(Node parent) {
+        LOGGER.debug("start getLocation(Node measurement)");
+
+        Iterator<Relationship> it = parent.getRelationships(DriveRelationshipTypes.LOCATION, Direction.OUTGOING).iterator();
+        if (it.hasNext()) {
+            return it.next().getOtherNode(parent);
+        }
+        return null;
     }
 }
