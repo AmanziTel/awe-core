@@ -42,10 +42,8 @@ public class DriveModelTest extends AbstractAWETest {
 
 	private static Logger LOGGER = Logger.getLogger(DriveModelTest.class);
 	private static final String databasePath = getDbLocation();
-	private static Transaction tx;
 	private static ProjectService prServ;
 	private static NewDatasetService dsServ;
-	private static NewNetworkService nwServ;
 	private static Node project, dataset;
 	private static String dsName;
 	private static int count = 0;
@@ -57,7 +55,6 @@ public class DriveModelTest extends AbstractAWETest {
 		LOGGER.info("Database created in folder " + databasePath);
 		prServ = new ProjectService(graphDatabaseService);
 		dsServ = new NewDatasetService(graphDatabaseService);
-		nwServ = new NewNetworkService(graphDatabaseService);
 	}
 
 	@AfterClass
