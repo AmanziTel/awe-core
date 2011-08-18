@@ -56,7 +56,7 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 
 	@Before
 	public final void before() {
-		service = new NewDatasetService(graphDatabaseService);
+		service = NeoServiceFactory.getInstance().getNewDatasetService();
 		initProjectNode();
 	}
 
@@ -1669,7 +1669,6 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 	}
 
 	@Test
-	// TODO: can we return a traverser?
 	public void testGetChildrenChainTraverserNoChildren() {
 		Node node = getNewChild();
 		// project has no children:
@@ -1681,7 +1680,6 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 	}
 
 	@Test
-	// TODO: can we return a traverser?
 	public void testGetChildrenChainTraverserNoChildrenComplexChain() {
 		parent = getNewChild();
 		Node[][] nodes = getComplexChain(parent);

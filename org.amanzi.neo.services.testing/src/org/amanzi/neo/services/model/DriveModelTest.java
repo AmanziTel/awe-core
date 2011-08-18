@@ -11,6 +11,7 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
+import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;
@@ -51,18 +52,16 @@ public class DriveModelTest extends AbstractAWETest {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		graphDatabaseService = new EmbeddedGraphDatabase(databasePath);
+		clearDb();
+		initializeDb();
 		LOGGER.info("Database created in folder " + databasePath);
-		prServ = new ProjectService(graphDatabaseService);
-		dsServ = new NewDatasetService(graphDatabaseService);
+		prServ = NeoServiceFactory.getInstance().getNewProjectService();
+		dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
 	}
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
-		if (graphDatabaseService != null) {
-			graphDatabaseService.shutdown();
-			LOGGER.info("Database shut down");
-		}
+		stopDb();
 		clearDb();
 	}
 

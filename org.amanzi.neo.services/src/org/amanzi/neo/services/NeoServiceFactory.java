@@ -3,7 +3,6 @@ package org.amanzi.neo.services;
 import org.amanzi.neo.services.correlation.CorrelationService;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationService;
 
-
 /* AWE - Amanzi Wireless Explorer
  * http://awe.amanzi.org
  * (C) 2008-2009, AmanziTel AB
@@ -18,31 +17,37 @@ import org.amanzi.neo.services.node2node.NodeToNodeRelationService;
  */
 
 /**
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Lagutko_N
  * @since 1.0.0
  */
 public class NeoServiceFactory {
-    
+
     private static NeoServiceFactory instance = new NeoServiceFactory();
-    private final Object datasetMon=new Object();
+    private final Object datasetMon = new Object();
     private DatasetService datasetService = null;
     private CorrelationService correlationService = null;
-    private AweProjectService projectService=null;
+    private AweProjectService projectService = null;
     private StatisticService statisticService = null;
-    
+
     private NodeToNodeRelationService node2nodeRelationService = null;
     private final Object node2nodeServiceMonitor = new Object();
     private NetworkService networkService;
-    
-    public static  NeoServiceFactory getInstance() {
+
+    // new services
+    private NewDatasetService newDatasetService = null;
+    private NewNetworkService newNetworkService = null;
+    private NewStatisticsService newStatisticsService = null;
+    private ProjectService newProjectService = null;
+
+    public static NeoServiceFactory getInstance() {
         return instance;
     }
-    
-    public  DatasetService getDatasetService() {
+
+    public DatasetService getDatasetService() {
         if (datasetService == null) {
             synchronized (datasetMon) {
                 if (datasetService == null) {
@@ -52,8 +57,8 @@ public class NeoServiceFactory {
         }
         return datasetService;
     }
-    
-    public  CorrelationService getCorrelationService() {
+
+    public CorrelationService getCorrelationService() {
         if (correlationService == null) {
             synchronized (datasetMon) {
                 if (correlationService == null) {
@@ -63,15 +68,15 @@ public class NeoServiceFactory {
         }
         return correlationService;
     }
-//    public synchronized DatasetService getDatasetService(GraphDatabaseService neo) {
-//        if (datasetService == null) {
-//            datasetService = new DatasetService(neo);
-//        }
-//        return datasetService;
-//    }
+
+    // public synchronized DatasetService getDatasetService(GraphDatabaseService neo) {
+    // if (datasetService == null) {
+    // datasetService = new DatasetService(neo);
+    // }
+    // return datasetService;
+    // }
 
     /**
-     *
      * @return
      */
     public AweProjectService getProjectService() {
@@ -84,7 +89,7 @@ public class NeoServiceFactory {
         }
         return projectService;
     }
-    
+
     public StatisticService getStatisticService() {
         if (statisticService == null) {
             synchronized (datasetMon) {
@@ -97,16 +102,17 @@ public class NeoServiceFactory {
     }
 
     public NodeToNodeRelationService getNodeToNodeRelationService() {
-    	if (node2nodeRelationService == null) {
-    		synchronized (node2nodeServiceMonitor) {
-    			if (node2nodeRelationService == null) {
-    				node2nodeRelationService = new NodeToNodeRelationService();
-    			}
-			}
-    	}
-    	
-    	return node2nodeRelationService;
+        if (node2nodeRelationService == null) {
+            synchronized (node2nodeServiceMonitor) {
+                if (node2nodeRelationService == null) {
+                    node2nodeRelationService = new NodeToNodeRelationService();
+                }
+            }
+        }
+
+        return node2nodeRelationService;
     }
+
     public NetworkService getNetworkService() {
         if (networkService == null) {
             synchronized (datasetMon) {
@@ -117,5 +123,49 @@ public class NeoServiceFactory {
         }
         return networkService;
     }
-    
+
+    public NewDatasetService getNewDatasetService() {
+        if (newDatasetService == null) {
+            synchronized (datasetMon) {
+                if (newDatasetService == null) {
+                    newDatasetService = new NewDatasetService();
+                }
+            }
+        }
+        return newDatasetService;
+    }
+
+    public NewNetworkService getNewNetworkService() {
+        if (newNetworkService == null) {
+            synchronized (datasetMon) {
+                if (newNetworkService == null) {
+                    newNetworkService = new NewNetworkService();
+                }
+            }
+        }
+        return newNetworkService;
+    }
+
+    public NewStatisticsService getNewStatisticsService() {
+        if (newStatisticsService == null) {
+            synchronized (datasetMon) {
+                if (newStatisticsService == null) {
+                    newStatisticsService = new NewStatisticsService();
+                }
+            }
+        }
+        return newStatisticsService;
+    }
+
+    public ProjectService getNewProjectService() {
+        if (newProjectService == null) {
+            synchronized (datasetMon) {
+                if (newProjectService == null) {
+                    newProjectService = new ProjectService();
+                }
+            }
+        }
+        return newProjectService;
+    }
+
 }

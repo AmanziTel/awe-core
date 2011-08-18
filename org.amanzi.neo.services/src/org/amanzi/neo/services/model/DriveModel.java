@@ -19,6 +19,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
@@ -119,7 +120,7 @@ public class DriveModel {
         // if root node is null, get one by name
         if (rootNode != null) {
             graphDb = rootNode.getGraphDatabase();
-            dsServ = new NewDatasetService(graphDb);
+            dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
 
             this.root = rootNode;
             this.name = (String)rootNode.getProperty(NewAbstractService.NAME, null);
@@ -130,7 +131,7 @@ public class DriveModel {
             }
 
             graphDb = parent.getGraphDatabase();
-            dsServ = new NewDatasetService(graphDb);
+            dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
             root = dsServ.getDataset(parent, name, DatasetTypes.DRIVE, type);
             this.name = name;
         }

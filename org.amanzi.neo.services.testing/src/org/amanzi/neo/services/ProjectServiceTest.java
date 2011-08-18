@@ -23,24 +23,21 @@ public class ProjectServiceTest extends AbstractAWETest {
 	private static Logger LOGGER = Logger.getLogger(ProjectServiceTest.class);
 
 	private static ProjectService projectService;
-	private static GraphDatabaseService graphDb;
 	private static final String prName = "Project";
 	private static final String databasePath = getDbLocation();
 	private static Transaction tx;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		graphDb = new EmbeddedGraphDatabase(databasePath);
+		clearDb();
+		initializeDb();
 		LOGGER.info("Database created in folder " + databasePath);
-		projectService = new ProjectService(graphDb);
+		projectService = NeoServiceFactory.getInstance().getNewProjectService();
 	}
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
-		if (graphDb != null) {
-			graphDb.shutdown();
-			LOGGER.info("Database shut down");
-		}
+		stopDb();
 		clearDb();
 
 	}
@@ -96,9 +93,9 @@ public class ProjectServiceTest extends AbstractAWETest {
 			Node project = projectService.createProject(prName + "1");
 
 			// create a node of another type with the same name
-			tx = graphDb.beginTx();
-			graphDb.createNode().setProperty(NewAbstractService.NAME,
-					prName + "1");
+			tx = graphDatabaseService.beginTx();
+			graphDatabaseService.createNode().setProperty(
+					NewAbstractService.NAME, prName + "1");
 			tx.success();
 			tx.finish();
 
@@ -210,7 +207,7 @@ public class ProjectServiceTest extends AbstractAWETest {
 	private void assertProjectRelatedToRefNode(Node node) {
 		Assert.assertEquals(ProjectService.ProjectNodeType.PROJECT.getId(),
 				node.getProperty(NewAbstractService.TYPE, null));
-		Node refNode = graphDb.getReferenceNode();
+		Node refNode = graphDatabaseService.getReferenceNode();
 		for (Relationship rel : node.getRelationships(
 				ProjectService.ProjectRelationshipType.PROJECT,
 				Direction.INCOMING)) {
