@@ -54,15 +54,15 @@ public class DriveModel {
     private static Logger LOGGER = Logger.getLogger(DriveModel.class);
 
     // constants
-    protected final static String DRIVE_TYPE = "drive_type";
-    protected final static String TIMESTAMP = "timestamp";
-    protected final static String LATITUDE = "lat";
-    protected final static String LONGITUDE = "lon";
-    protected final static String PATH = "path";
-    protected final static String COUNT = "count";
-    protected final static String PRIMARY_TYPE = "primary_type";
-    protected final static String MIN_TIMESTAMP = "min_timestamp";
-    protected final static String MAX_TIMESTAMP = "max_timestamp";
+    public final static String DRIVE_TYPE = "drive_type";
+    public final static String TIMESTAMP = "timestamp";
+    public final static String LATITUDE = "lat";
+    public final static String LONGITUDE = "lon";
+    public final static String PATH = "path";
+    public final static String COUNT = "count";
+    public final static String PRIMARY_TYPE = "primary_type";
+    public final static String MIN_TIMESTAMP = "min_timestamp";
+    public final static String MAX_TIMESTAMP = "max_timestamp";
 
     // private members
     private GraphDatabaseService graphDb;
