@@ -263,14 +263,18 @@ public class DriveModel {
      * @param file a File object containing file name and path
      * @return the newly created node
      * @throws DatabaseException if errors occur in database
+     * @throws DuplicateNodeNameException when trying to add a file that already exists
      */
-    public Node addFile(File file) throws DatabaseException {
+    public Node addFile(File file) throws DatabaseException, DuplicateNodeNameException {
         LOGGER.debug("start addFile(File file)");
 
         // file nodes are added as c-n-n
         // validate params
         if (file == null) {
             throw new IllegalArgumentException("File is null.");
+        }
+        if (findFile(file.getName()) != null) {
+            throw new DuplicateNodeNameException(file.getName(), DriveNodeTypes.FILE);
         }
         tx = graphDb.beginTx();
 
@@ -314,11 +318,7 @@ public class DriveModel {
             throw new IllegalArgumentException("Parameters map is null.");
         }
 
-        if (files == null) {
-            files = graphDb.index().forNodes(dsServ.getIndexKey(root, DriveNodeTypes.FILE));
-        }
-
-        Node fileNode = files.get(NewAbstractService.NAME, filename).getSingle();
+        Node fileNode = findFile(filename);
         if (fileNode == null) {
             throw new IllegalArgumentException("File node " + filename + " not found.");
         }
@@ -397,5 +397,60 @@ public class DriveModel {
             return it.next().getOtherNode(parent);
         }
         return null;
+    }
+
+    /**
+     * Looks up for a file node through index
+     * 
+     * @param name
+     * @return
+     */
+    public Node findFile(String name) {
+        // validate parameters
+        if ((name == null) || (name.equals(""))) {
+            throw new IllegalArgumentException("Name is null or empty");
+        }
+        if (files == null) {
+            files = graphDb.index().forNodes(dsServ.getIndexKey(root, DriveNodeTypes.FILE));
+        }
+
+        Node fileNode = files.get(NewAbstractService.NAME, name).getSingle();
+        return fileNode;
+    }
+
+    /**
+     * Find or creates a file with the defined name.
+     * 
+     * @param name
+     * @return FILE node
+     * @throws DatabaseException if errors occur in database
+     */
+    public Node getFile(String name) throws DatabaseException {
+        Node result = findFile(name);
+        if (result == null) {
+            try {
+                result = addFile(new File(name));
+            } catch (DuplicateNodeNameException e) {
+                // impossible
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Gets all measurements under defined file.
+     * 
+     * @param filename the name of the file
+     * @return and iterator over measurement nodes
+     */
+    public Iterable<Node> getMeasurements(String filename) {
+        return dsServ.getChildrenChainTraverser(files.get(NewAbstractService.NAME, filename).getSingle());
+    }
+
+    /**
+     * @return an iterator over FILE nodes
+     */
+    public Iterable<Node> getFiles() {
+        return dsServ.getChildrenChainTraverser(root);
     }
 }

@@ -2,17 +2,19 @@ package org.amanzi.neo.loader.core.saver.impl.testing;
 
 import static org.junit.Assert.fail;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.amanzi.neo.loader.core.parser.BaseTransferData;
-import org.amanzi.neo.loader.core.saver.impl.DriveModelSaver;
+import org.amanzi.neo.loader.core.saver.MetaData;
+import org.amanzi.neo.loader.core.saver.impl.RomesDriveModelSaver;
 import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.NewDatasetService.DriveTypes;
 import org.amanzi.neo.services.exceptions.AWEException;
-import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
-import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
-import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
-import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
 import org.amanzi.neo.services.model.DriveModel;
+import org.amanzi.neo.services.model.DriveModel.DriveNodeTypes;
 import org.amanzi.testing.AbstractAWETest;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -22,9 +24,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
 
-public class DriveModelSaverTest extends AbstractAWETest {
+public class RomesDriveModelSaverTest extends AbstractAWETest {
 
-	private static DriveModelSaver<BaseTransferData> saver;
+	private static RomesDriveModelSaver<BaseTransferData> saver;
 	private static BaseTransferData data;
 	private static Node project;
 	private static Node rootDataset;
@@ -47,7 +49,7 @@ public class DriveModelSaverTest extends AbstractAWETest {
 	@Before
 	public void setUp() throws Exception {
 		data = new BaseTransferData();
-		saver = new DriveModelSaver<BaseTransferData>();
+		saver = new RomesDriveModelSaver<BaseTransferData>();
 		project = NeoServiceFactory.getInstance().getNewProjectService()
 				.getProject(projectName);
 		rootDataset = NeoServiceFactory
@@ -67,7 +69,6 @@ public class DriveModelSaverTest extends AbstractAWETest {
 		data.setProjectName(projectName);
 		data.setFileName(filename);
 		data.setRootName(rootName);
-		data.put(DriveModel.DRIVE_TYPE, DriveTypes.ROMES.getId());
 
 		saver.init(data);
 		DriveModel dm = saver.getDriveModel();
@@ -75,6 +76,13 @@ public class DriveModelSaverTest extends AbstractAWETest {
 		Assert.assertNotNull(dm);
 		Assert.assertEquals(rootDataset, dm.getRootNode());
 		Assert.assertEquals(rootName, dm.getName());
+		// file node created
+		Assert.assertNotNull(graphDatabaseService
+				.index()
+				.forNodes(
+						NeoServiceFactory.getInstance().getNewDatasetService()
+								.getIndexKey(rootDataset, DriveNodeTypes.FILE))
+				.get(NewAbstractService.NAME, filename));
 	}
 
 	@Test
@@ -83,7 +91,6 @@ public class DriveModelSaverTest extends AbstractAWETest {
 		data.setProjectName("newProject");
 		data.setFileName(filename);
 		data.setRootName("newRoot");
-		data.put(DriveModel.DRIVE_TYPE, DriveTypes.ROMES.getId());
 
 		saver.init(data);
 		DriveModel dm = saver.getDriveModel();
@@ -112,20 +119,69 @@ public class DriveModelSaverTest extends AbstractAWETest {
 		Assert.assertNotNull(rootDataset);
 		//
 		Assert.assertEquals("newRoot", dm.getName());
+		// file node created
+		Assert.assertNotNull(graphDatabaseService
+				.index()
+				.forNodes(
+						NeoServiceFactory.getInstance().getNewDatasetService()
+								.getIndexKey(rootDataset, DriveNodeTypes.FILE))
+				.get(NewAbstractService.NAME, filename));
 	}
 
 	@Test
 	public void testSave() {
 		// preset
-		// for each line a measurement is created
-		fail("Not yet implemented");
+		data.setProjectName(projectName);
+		data.setFileName(filename);
+		data.setRootName(rootName);
+		saver.init(data);
+
+		data = new BaseTransferData();
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put(DriveModel.LATITUDE, (long) (Math.random() * Integer.MAX_VALUE));
+		map.put(DriveModel.LONGITUDE,
+				(long) (Math.random() * Integer.MAX_VALUE));
+		map.put(DriveModel.TIMESTAMP,
+				(long) (Math.random() * Integer.MAX_VALUE));
+		map.put("some", "fake");
+		map.put("para", "meters");
+		for (String key : map.keySet()) {
+			data.put(key, String.valueOf(map.get(key)));
+		}
+
+		saver.save(data);
+		// a measurement is created
+		DriveModel dm = saver.getDriveModel();
+		Iterable<Node> ms = dm.getMeasurements(filename);
+		Node m = ms.iterator().next();
+		// node not null
+		Assert.assertNotNull(m);
+		// properties set correctly
+		Assert.assertEquals(map.get(DriveModel.TIMESTAMP),
+				m.getProperty(DriveModel.TIMESTAMP, null));
+		Assert.assertEquals(map.get("some"), m.getProperty("some", null));
+		Assert.assertEquals(map.get("para"), m.getProperty("para", null));
+		// Location node created
+		Node l = dm.getLocation(m);
+		Assert.assertNotNull(l);
+		Assert.assertEquals(map.get(DriveModel.LATITUDE),
+				l.getProperty(DriveModel.LATITUDE, null));
+		Assert.assertEquals(map.get(DriveModel.LONGITUDE),
+				l.getProperty(DriveModel.LONGITUDE, null));
+		Assert.assertEquals(map.get(DriveModel.TIMESTAMP),
+				l.getProperty(DriveModel.TIMESTAMP, null));
 	}
 
 	@Test
 	public void testGetMetaData() {
+		Iterable<MetaData> it = saver.getMetaData();
+		MetaData md = it.iterator().next();
 		// metadata not null
+		Assert.assertNotNull(md);
 		// metadata correct
-		fail("Not yet implemented");
+		Assert.assertEquals(DriveTypes.ROMES.getId().toLowerCase(),
+				md.getPropertyValues(MetaData.SUB_TYPE));
+		Assert.assertEquals("dataset", md.getType());
 	}
 
 }

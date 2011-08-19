@@ -432,6 +432,9 @@ public class DriveModelTest extends AbstractAWETest {
 		} catch (DatabaseException e) {
 			LOGGER.error("Could not add file node", e);
 			fail();
+		} catch (DuplicateNodeNameException e) {
+			LOGGER.error("Could not add file node", e);
+			fail();
 		}
 		// node returned is not null
 		Assert.assertNotNull(fileNode);
@@ -467,6 +470,9 @@ public class DriveModelTest extends AbstractAWETest {
 		} catch (DatabaseException e) {
 			LOGGER.error("Could not add file node", e);
 			fail();
+		} catch (DuplicateNodeNameException e) {
+			LOGGER.error("Could not add file node", e);
+			fail();
 		}
 		// exception
 	}
@@ -486,6 +492,9 @@ public class DriveModelTest extends AbstractAWETest {
 		try {
 			f = dm.addFile(new File(filename));
 		} catch (DatabaseException e) {
+			LOGGER.error("Could not add file node", e);
+			fail();
+		} catch (DuplicateNodeNameException e) {
 			LOGGER.error("Could not add file node", e);
 			fail();
 		}
@@ -539,8 +548,10 @@ public class DriveModelTest extends AbstractAWETest {
 		} catch (DatabaseException e) {
 			LOGGER.error("Could not add file node", e);
 			fail();
+		} catch (DuplicateNodeNameException e) {
+			LOGGER.error("Could not add file node", e);
+			fail();
 		}
-		;
 
 		Map<Node, Map<String, Object>> ms = new HashMap<Node, Map<String, Object>>();
 		long min_tst = Long.MAX_VALUE, max_tst = 0;
@@ -592,8 +603,10 @@ public class DriveModelTest extends AbstractAWETest {
 		} catch (DatabaseException e) {
 			LOGGER.error("Could not add file node", e);
 			fail();
+		} catch (DuplicateNodeNameException e) {
+			LOGGER.error("Could not add file node", e);
+			fail();
 		}
-		;
 
 		Map<String, Object> params = new HashMap<String, Object>();
 		long lat = (long) (Math.random() * Long.MAX_VALUE);
@@ -639,8 +652,10 @@ public class DriveModelTest extends AbstractAWETest {
 		} catch (DatabaseException e) {
 			LOGGER.error("Could not add file node", e);
 			fail();
+		} catch (DuplicateNodeNameException e) {
+			LOGGER.error("Could not add file node", e);
+			fail();
 		}
-		;
 
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put(DriveModel.LATITUDE, null);
@@ -676,8 +691,10 @@ public class DriveModelTest extends AbstractAWETest {
 		} catch (DatabaseException e) {
 			LOGGER.error("Could not add file node", e);
 			fail();
+		} catch (DuplicateNodeNameException e) {
+			LOGGER.error("Could not add file node", e);
+			fail();
 		}
-		;
 
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put(DriveModel.LATITUDE, 0L);
@@ -776,5 +793,7 @@ public class DriveModelTest extends AbstractAWETest {
 		return n.equals(node);
 
 	}
+
+	// TODO: test new methods
 
 }

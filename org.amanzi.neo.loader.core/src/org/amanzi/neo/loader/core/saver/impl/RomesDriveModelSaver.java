@@ -1,15 +1,19 @@
 package org.amanzi.neo.loader.core.saver.impl;
 
 import java.io.PrintStream;
+import java.util.Arrays;
 
 import org.amanzi.neo.loader.core.parser.BaseTransferData;
 import org.amanzi.neo.loader.core.saver.ISaver;
 import org.amanzi.neo.loader.core.saver.MetaData;
 import org.amanzi.neo.services.model.DriveModel;
 
-public class DriveModelSaver<T extends BaseTransferData> implements ISaver<T> {
-	
+public class RomesDriveModelSaver<T extends BaseTransferData> implements
+		ISaver<T> {
+
 	private DriveModel dm;
+	private MetaData metadata = new MetaData("dataset", MetaData.SUB_TYPE,
+			"romes");
 
 	@Override
 	public void init(T element) {
@@ -41,18 +45,18 @@ public class DriveModelSaver<T extends BaseTransferData> implements ISaver<T> {
 
 	}
 
+	/*
+	 * the method never really used
+	 * 
+	 * @see org.amanzi.neo.loader.core.saver.ISaver#getMetaData()
+	 */
 	@Override
 	public Iterable<MetaData> getMetaData() {
-		// TODO Auto-generated method stub
-		return null;
+		return Arrays.asList(new MetaData[] { metadata });
 	}
 
 	public DriveModel getDriveModel() {
 		return dm;
-	}
-
-	public void setDm(DriveModel dm) {
-		this.dm = dm;
 	}
 
 }
