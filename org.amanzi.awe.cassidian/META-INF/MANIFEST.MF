@@ -1,8 +1,0 @@
-Manifest-Version: 1.0
-Bundle-ManifestVersion: 2
-Bundle-Name: Cassidian
-Bundle-SymbolicName: org.amanzi.awe.cassidian
-Bundle-Version: 1.0.0.qualifier
-Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Require-Bundle: org.amanzi.neo.loader.core;bundle-version="1.0.0",
- net.refractions.udig.libs;bundle-version="1.1.1"

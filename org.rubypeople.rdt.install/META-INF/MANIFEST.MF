@@ -1,9 +1,0 @@
-Manifest-Version: 1.0
-Bundle-ManifestVersion: 2
-Bundle-Name: Install Plug-in
-Bundle-SymbolicName: org.rubypeople.rdt.install
-Bundle-Version: 0.9.1.awe
-Bundle-Localization: plugin
-Require-Bundle: org.eclipse.core.runtime,
- org.eclipse.update.core
-Bundle-Vendor: Aptana, Inc.

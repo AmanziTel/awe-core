@@ -1,6 +1,0 @@
-Manifest-Version: 1.0
-Bundle-ManifestVersion: 2
-Bundle-Name: AWE integration of uDig GIS Features
-Bundle-SymbolicName: net.refractions.udig.awe
-Bundle-Version: 1.0.0.qualifier
-Bundle-Vendor: amanzi.org
