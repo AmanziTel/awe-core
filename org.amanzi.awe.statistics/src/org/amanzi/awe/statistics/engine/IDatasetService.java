@@ -14,7 +14,6 @@
 package org.amanzi.awe.statistics.engine;
 
 import java.util.Collection;
-import java.util.List;
 
 import org.amanzi.awe.statistics.CallTimePeriods;
 import org.amanzi.awe.statistics.database.PrimaryTypeTraverser;

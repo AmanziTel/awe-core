@@ -48,7 +48,7 @@ public class FrequencyConstraintsSaver extends AbstractHeaderSaver<BaseTransferD
     private static final String PENALTY = "Penalty";
 
     private boolean headerNotHandled;
-    private String networkName;
+    
     private NetworkModel networkModel;
     private IllegalFrequencySpectrumModel frModel;
     private NodeToNodeRelationModel n2n;
@@ -63,7 +63,6 @@ public class FrequencyConstraintsSaver extends AbstractHeaderSaver<BaseTransferD
     @Override
     public void save(BaseTransferData element) {
         if (headerNotHandled) {
-            networkName = rootname;// element.getFileName();
             networkModel = new NetworkModel(rootNode);
             frModel = networkModel.getFrequencySpectrum();
             n2n = networkModel.getIllegalFrequency();

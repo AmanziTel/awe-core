@@ -129,7 +129,8 @@ import org.jfree.experimental.chart.swt.ChartComposite;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.helpers.Predicate;
+import org.neo4j.graphdb.traversal.Evaluation;
+import org.neo4j.graphdb.traversal.Evaluator;
 import org.rubypeople.rdt.core.IRubyProject;
 import org.rubypeople.rdt.internal.ui.wizards.NewRubyElementCreationWizard;
 
@@ -518,10 +519,9 @@ public class FrequencyPlanAnalyser extends ViewPart implements IPropertyChangeLi
                 public void chartMouseMoved(ChartMouseEvent chartmouseevent) {
                 }
 
-                @SuppressWarnings("unchecked")
                 @Override
                 public void chartMouseClicked(ChartMouseEvent chartmouseevent) {
-                    Comparable columnKey = null;
+                    Comparable<?> columnKey = null;
                     if (!isColorThema()) {
                         if (chartmouseevent.getEntity() instanceof CategoryItemEntity) {
                             CategoryItemEntity entity = (CategoryItemEntity)chartmouseevent.getEntity();
@@ -1565,11 +1565,13 @@ public class FrequencyPlanAnalyser extends ViewPart implements IPropertyChangeLi
                     propertyList.add(INeoConstants.PROPERTY_ALL_CHANNELS_NAME);
                 }
 
-                Predicate<org.neo4j.graphdb.Path> propertyReturnableEvalvator = new Predicate<org.neo4j.graphdb.Path>() {
+                Evaluator propertyReturnableEvalvator = new Evaluator() {
 
                     @Override
-                    public boolean accept(org.neo4j.graphdb.Path item) {
-                        return item.endNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(nodeTypeId);
+                    public Evaluation evaluate(org.neo4j.graphdb.Path arg0) {
+                        boolean includes = arg0.endNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(nodeTypeId);
+                        
+                        return Evaluation.of(includes, true);
                     }
                 };
 
@@ -1640,7 +1642,6 @@ public class FrequencyPlanAnalyser extends ViewPart implements IPropertyChangeLi
          * @return the node type id
          */
         private String getNodeTypeId(Node node) {
-            GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
             String result = NeoUtils.getPrimaryType(node);
             if (result==null){
                 String typeid = NeoServiceFactory.getInstance().getDatasetService().getTypeId(node);
@@ -1985,7 +1986,7 @@ public class FrequencyPlanAnalyser extends ViewPart implements IPropertyChangeLi
                 fireDatasetChanged();
             }
 
-            @SuppressWarnings("unchecked")
+            @SuppressWarnings("rawtypes")
             @Override
             public int getColumnIndex(Comparable comparable) {
                 return nodeList.indexOf(comparable);
@@ -2001,7 +2002,7 @@ public class FrequencyPlanAnalyser extends ViewPart implements IPropertyChangeLi
                 return nodeList;
             }
 
-            @SuppressWarnings("unchecked")
+            @SuppressWarnings("rawtypes")
             @Override
             public int getRowIndex(Comparable comparable) {
                 return 0;
@@ -2017,7 +2018,7 @@ public class FrequencyPlanAnalyser extends ViewPart implements IPropertyChangeLi
                 return rowList;
             }
 
-            @SuppressWarnings("unchecked")
+            @SuppressWarnings("rawtypes")
             @Override
             public Number getValue(Comparable comparable0, Comparable comparable1) {
                 if (!(comparable1 instanceof ChartNode)) {

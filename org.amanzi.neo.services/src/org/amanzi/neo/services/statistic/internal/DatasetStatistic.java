@@ -16,7 +16,6 @@ package org.amanzi.neo.services.statistic.internal;
 import java.util.Collection;
 import java.util.Set;
 
-import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.services.statistic.ChangeClassRule;
 import org.amanzi.neo.services.statistic.ISinglePropertyStat;
 import org.amanzi.neo.services.statistic.IStatistic;
@@ -123,7 +122,7 @@ public class DatasetStatistic implements IStatistic {
     }
 
     @Override
-    public Collection<String> getPropertyNameCollection(String key, String nodeTypeId, Comparable<Class> comparable) {
+    public Collection<String> getPropertyNameCollection(String key, String nodeTypeId, Comparable<Class<?>> comparable) {
         return handler.getPropertyNameCollection(key, nodeTypeId, comparable);
     }
 

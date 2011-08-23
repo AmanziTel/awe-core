@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.amanzi.awe.views.reuse.views.BaseNetworkSelectionInformation.BaseNetworkInformationImpl;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
@@ -25,12 +24,10 @@ import org.neo4j.graphdb.traversal.Evaluation;
 import org.neo4j.graphdb.traversal.Evaluator;
 import org.neo4j.graphdb.traversal.Traverser;
 import org.neo4j.kernel.Traversal;
-import org.neo4j.kernel.Uniqueness;
 
 public class BaseDatasetSelectionInforamation implements ISelectionInformation {
 
 	private final String name;
-	private final String nodeType;
 	private Map<String, IPropertyInformation> propertyMap = new HashMap<String, IPropertyInformation>();
 	private boolean isAggregated = false;
 	private final Node root;
@@ -44,12 +41,11 @@ public class BaseDatasetSelectionInforamation implements ISelectionInformation {
 			String name, String nodeType) {
 		this.root = root;
 		this.name = name;
-		this.nodeType = nodeType;
 		Collection<String> col = statistic.getPropertyNameCollection(name,
-				nodeType, new Comparable<Class>() {
+				nodeType, new Comparable<Class<?>>() {
 
 					@Override
-					public int compareTo(Class o) {
+					public int compareTo(Class<?> o) {
 						return Comparable.class.isAssignableFrom(o) ? 0 : -1;
 					}
 				});

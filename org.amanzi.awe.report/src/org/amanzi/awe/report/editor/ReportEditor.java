@@ -159,7 +159,8 @@ public class ReportEditor extends MultiPageEditorPart implements IReportModelLis
             generateScriptFromParts(parts, sb);
             break;
         case PROPERTY_CHANGED:
-            Pair<String, String> pair = (Pair<String, String>)event.getData();
+            @SuppressWarnings("unchecked")
+			Pair<String, String> pair = (Pair<String, String>)event.getData();
             String part = parts.get(index);
             String closure = "\\s*(" + ReportPartType.getTypesAsRegex() + ")(.|\\s)*do(.|\\s)*\\s*end\\s*";
             String hash = "\\s*(" + ReportPartType.getTypesAsRegex() + ")\\s*'\\w*',(\\s*\\w*\\=\\>['|:]?\\w*'?,?)*";

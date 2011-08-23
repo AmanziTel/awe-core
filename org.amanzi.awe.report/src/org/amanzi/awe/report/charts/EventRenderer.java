@@ -31,7 +31,11 @@ import org.jfree.chart.renderer.xy.XYBarRenderer;
  */
 public class EventRenderer extends XYBarRenderer {
 
-    private EventDataset eventDataset;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private EventDataset eventDataset;
     private Color[] colors;
     private static String ALL_EVENTS = "all events";
 

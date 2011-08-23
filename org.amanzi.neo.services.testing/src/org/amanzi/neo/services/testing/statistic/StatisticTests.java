@@ -367,10 +367,10 @@ public class StatisticTests extends AbstractAWETest{
             ArrayList<String> col = new ArrayList<String>();
             col.add(PROPERTY_NAME_1);
             datasetStatistic.indexValue(ROOT_KEY, NODE_TYPE_1, PROPERTY_NAME_1, PROPERTY_VALUE_1);
-            Assert.assertTrue("collection of propertyName is wrong", col.equals(datasetStatistic.getPropertyNameCollection(ROOT_KEY, NODE_TYPE_1,  new Comparable<Class>() {
+            Assert.assertTrue("collection of propertyName is wrong", col.equals(datasetStatistic.getPropertyNameCollection(ROOT_KEY, NODE_TYPE_1,  new Comparable<Class<?>>() {
 
                 @Override
-                public int compareTo(Class o) {
+                public int compareTo(Class<?> o) {
                     return Comparable.class.isAssignableFrom(o) ? 0 : -1;
                 }
             })));
@@ -395,10 +395,10 @@ public class StatisticTests extends AbstractAWETest{
             col.add(PROPERTY_NAME_1);
             datasetStatistic.indexValue(ROOT_KEY, NODE_TYPE_1, PROPERTY_NAME_1, PROPERTY_VALUE_1);
             datasetStatistic.indexValue(ROOT_KEY, NODE_TYPE_1, PROPERTY_NAME_2, PROPERTY_VALUE_1);
-            Assert.assertFalse("collection of propertyName is wrong", col.equals(datasetStatistic.getPropertyNameCollection(ROOT_KEY, NODE_TYPE_1,  new Comparable<Class>() {
+            Assert.assertFalse("collection of propertyName is wrong", col.equals(datasetStatistic.getPropertyNameCollection(ROOT_KEY, NODE_TYPE_1,  new Comparable<Class<?>>() {
 
                 @Override
-                public int compareTo(Class o) {
+                public int compareTo(Class<?> o) {
                     return Comparable.class.isAssignableFrom(o) ? 0 : -1;
                 }
             })));

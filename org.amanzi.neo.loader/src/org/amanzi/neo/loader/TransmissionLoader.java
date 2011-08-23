@@ -124,7 +124,7 @@ public class TransmissionLoader {
             }
             monitor.beginTask("Importing " + baseName, 100);
             stream = new CountingFileInputStream(new File(fileName));
-            String charSet = NeoLoaderPlugin.getDefault().getCharacterSet();
+            String charSet = NeoLoaderPlugin.getCharacterSet();
             reader = new BufferedReader(new InputStreamReader(stream, charSet));
             int perc = stream.percentage();
             int prevPerc = 0;

@@ -28,7 +28,6 @@ import org.amanzi.neo.services.events.UpdateViewEvent;
 import org.amanzi.neo.services.events.UpdateViewEventType;
 import org.amanzi.neo.services.ui.IUpdateViewListener;
 import org.amanzi.neo.services.ui.utils.DistributionSelectionNode;
-import org.amanzi.neo.services.ui.utils.StatisticSelectionNode;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;

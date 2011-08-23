@@ -14,11 +14,8 @@
 package org.amanzi.awe.report.charts;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
-import org.jfree.data.general.AbstractSeriesDataset;
-import org.jfree.data.time.Millisecond;
 import org.jfree.data.time.RegularTimePeriod;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
@@ -34,10 +31,13 @@ import org.jfree.data.xy.AbstractIntervalXYDataset;
  */
 public class EventDataset extends AbstractIntervalXYDataset {
 
-    private TimeSeriesCollection collection;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private TimeSeriesCollection collection;
     private List<String> events = new ArrayList<String>(0);
     private TimeSeries series;
-    private String name;
     private String propertyName;
 
     /**
@@ -48,7 +48,6 @@ public class EventDataset extends AbstractIntervalXYDataset {
         collection = new TimeSeriesCollection();
         series = new TimeSeries(name);
         collection.addSeries(series);
-        this.name=name;
         this.propertyName=propertyName;
     }
 
@@ -82,7 +81,8 @@ public class EventDataset extends AbstractIntervalXYDataset {
         return collection.getSeriesCount();
     }
 
-    @Override
+    @SuppressWarnings("rawtypes")
+	@Override
     public Comparable getSeriesKey(int i) {
         return collection.getSeriesKey(i);
     }

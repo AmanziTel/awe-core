@@ -79,7 +79,7 @@ public class GPSRemoteUrlLoader extends GPSLoader {
         if (monitor != null) {
             monitor.setTaskName(basename);
         }
-        String characterSet = NeoLoaderPlugin.getDefault().getCharacterSet();
+        String characterSet = NeoLoaderPlugin.getCharacterSet();
         BufferedReader reader = null;
 
         mainTx = neo.beginTx();

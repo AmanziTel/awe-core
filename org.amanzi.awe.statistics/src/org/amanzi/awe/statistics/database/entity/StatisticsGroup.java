@@ -16,17 +16,12 @@ package org.amanzi.awe.statistics.database.entity;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.amanzi.awe.statistics.CallTimePeriods;
 import org.amanzi.awe.statistics.database.StatisticsRowIterator;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.services.enums.NodeTypes;
-import org.amanzi.neo.services.ui.NeoUtils;
 import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.Transaction;
 
 /**
  * TODO Purpose of

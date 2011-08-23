@@ -34,6 +34,7 @@ import org.amanzi.neo.loader.nemo_enum.TechnologySystems;
  * @author Cinkel_A
  * @since 1.0.0
  */
+@SuppressWarnings("deprecation")
 public enum NemoEvents {
     // TODO check type for CONTEXT
     AG("#AG") {

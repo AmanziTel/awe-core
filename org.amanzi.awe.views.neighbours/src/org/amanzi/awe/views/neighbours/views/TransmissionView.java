@@ -31,12 +31,10 @@ import org.amanzi.awe.views.neighbours.RelationWrapper;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.services.enums.NetworkSiteType;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.statistic.IPropertyHeader;
 import org.amanzi.neo.services.statistic.PropertyHeader;
 import org.amanzi.neo.services.ui.IconManager;
-import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
@@ -76,7 +74,6 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.part.ViewPart;
 import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ReturnableEvaluator;
@@ -100,8 +97,6 @@ public class TransmissionView extends ViewPart {
      */
     public static final String ID = "org.amanzi.awe.views.neighbours.views.TransmissionView";
     
-    private GraphDatabaseService graphDatabaseService=NeoServiceProviderUi.getProvider().getService();
-
     /** String SHOW_NEIGHBOUR field */
     private static final String SHOW_NEIGHBOUR = "show transmission relation '%s' > '%s' on map";
     private static final String SHOW_SERVE = "show all '%s' transmission on map";

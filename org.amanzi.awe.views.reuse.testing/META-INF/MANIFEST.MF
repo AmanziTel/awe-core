@@ -6,14 +6,11 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: amanzi.org
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.junit4;bundle-version="4.3.1",
- org.amanzi.neo.data_generator;bundle-version="1.0.0",
- org.neo4j;bundle-version="1.0.0",
  org.amanzi.awe.views.reuse;bundle-version="1.0.0",
  org.amanzi.testing;bundle-version="1.0.0",
  org.amanzi.neo.core;bundle-version="1.0.0",
  org.eclipse.core.runtime;bundle-version="3.3.100",
  org.amanzi.neo.loader;bundle-version="1.0.0",
- org.amanzi.neo.loader.testing;bundle-version="1.0.0",
  org.eclipse.swt;bundle-version="3.3.2",
- org.amanzi.neo.services;bundle-version="1.0.0"
+ org.apache.log4j;bundle-version="1.0.0"
 Export-Package: org.amanzi.awe.views.reuse.testing

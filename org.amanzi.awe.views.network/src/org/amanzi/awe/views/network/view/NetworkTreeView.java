@@ -817,8 +817,8 @@ public class NetworkTreeView extends ViewPart {
     /**
      * This is how the framework determines which interfaces we implement.
      */
-    @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
+	@Override
     public Object getAdapter(final Class key) {
         if (key.equals(IPropertySheetPage.class)) {
             return getPropertySheetPage();
@@ -836,7 +836,7 @@ public class NetworkTreeView extends ViewPart {
      */
     private final class NetworkSelectionListener implements ISelectionChangedListener {
 
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings({ "rawtypes" })
         @Override
         public void selectionChanged(SelectionChangedEvent event) {
             StructuredSelection stSel = (StructuredSelection)event.getSelection();
@@ -978,7 +978,8 @@ public class NetworkTreeView extends ViewPart {
          * 
          * @param selection - selection
          */
-        public SelectAction(IStructuredSelection selection) {
+        @SuppressWarnings("rawtypes")
+		public SelectAction(IStructuredSelection selection) {
             Iterator it = selection.iterator();
             while (it.hasNext()) {
                 NeoNode element = (NeoNode)it.next();
@@ -1055,30 +1056,6 @@ public class NetworkTreeView extends ViewPart {
         }
     }
 
-    private class TransmissionAction extends NeighbourAction {
-
-        /**
-         * @param selection
-         */
-        public TransmissionAction(IStructuredSelection selection) {
-            super(selection);
-            text = "Analyse transmission";
-        }
-
-        @Override
-        public void run() {
-            NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new ShowPreparedViewEvent(TRANSMISSION_VIEW_ID, getInputNodes(selection)));
-            /*
-             * IViewPart transmissionView; try { transmissionView =
-             * PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(
-             * TransmissionView.ID); } catch (PartInitException e) {
-             * NeoCorePlugin.error(e.getLocalizedMessage(), e); transmissionView = null; } if
-             * (transmissionView != null) {
-             * ((TransmissionView)transmissionView).setInput(getInputNodes(selection)); }
-             */
-        }
-
-    }
     private class N2NAction extends NeighbourAction {
 
         /**
@@ -1247,8 +1224,8 @@ public class NetworkTreeView extends ViewPart {
             this.text = text;
         }
 
-        @SuppressWarnings("unchecked")
-        private DeleteAction(IStructuredSelection selection) {
+        @SuppressWarnings("rawtypes")
+		private DeleteAction(IStructuredSelection selection) {
             interactive = true;
             nodesToDelete = new ArrayList<NeoNode>();
             Iterator iterator = selection.iterator();
@@ -1901,7 +1878,7 @@ public class NetworkTreeView extends ViewPart {
             return reportName;
         }
 
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings("rawtypes")
         private List<NeoNode> getValidNodes() {
             if (validNodes == null) {
                 validNodes = new ArrayList<NeoNode>();

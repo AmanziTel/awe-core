@@ -23,25 +23,16 @@ import net.refractions.udig.internal.ui.UDIGApplication;
 import net.refractions.udig.internal.ui.UDIGWorkbenchAdvisor;
 
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.db.manager.NeoServiceProvider;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.splash.ui.SplashPlugin;
 import org.apache.log4j.Logger;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IMemento;
 import org.eclipse.ui.application.IWorkbenchConfigurer;
-import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchAdvisor;
-import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import org.eclipse.ui.ide.IDE;
-import org.eclipse.ui.internal.WorkbenchWindowConfigurer;
-import org.eclipse.ui.internal.application.CompatibilityWorkbenchWindowAdvisor;
 import org.eclipse.ui.internal.ide.IDEWorkbenchPlugin;
 import org.eclipse.ui.internal.ide.model.WorkbenchAdapterBuilder;
 import org.osgi.framework.Bundle;
@@ -52,6 +43,7 @@ import org.osgi.framework.Bundle;
  * @since AWE 1.0.0
  * @author craig
  */
+@SuppressWarnings("restriction")
 public class Application extends UDIGApplication implements IApplication {
     private static final Logger LOGGER = Logger.getLogger(Application.class);
 	/**
@@ -130,10 +122,8 @@ public class Application extends UDIGApplication implements IApplication {
                 ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
                 List<IService> services = CatalogPlugin.getDefault().getServiceFactory().createService(
                         new URL("file://" + databaseLocation));
-                IService curService = null;
                 for (IService service : services) {
                     LOGGER.debug("Found catalog service: " + service);
-                    curService = service;
                     if (catalog.getById(IService.class, service.getIdentifier(), new NullProgressMonitor()) != null) {
                         catalog.replace(service.getIdentifier(), service);
                     } else {

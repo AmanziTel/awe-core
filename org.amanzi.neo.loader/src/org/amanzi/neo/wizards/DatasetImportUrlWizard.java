@@ -21,11 +21,10 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.text.ParseException;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedHashSet;
-import java.net.URLEncoder;
 
 import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.loader.DriveLoader;
@@ -48,7 +47,12 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
-import org.neo4j.graphdb.*;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.StopEvaluator;
+import org.neo4j.graphdb.TraversalPosition;
+import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
 
 /**
@@ -59,6 +63,7 @@ import org.neo4j.graphdb.Traverser.Order;
  * @author NiCK
  * @since 1.0.0
  */
+@SuppressWarnings("deprecation")
 public class DatasetImportUrlWizard extends Wizard implements IImportWizard {
 
     /** The Constant PAGE_TITLE. */
@@ -263,7 +268,6 @@ public class DatasetImportUrlWizard extends Wizard implements IImportWizard {
         DriveLoader driveLoader = null;
 
         Node prev_lastMNode = null;
-        Node prev_lastMsNode = null;
         int eventsCnt = 0;
         while(true) {
 			String urlStr = getNextUrl();
@@ -305,7 +309,6 @@ public class DatasetImportUrlWizard extends Wizard implements IImportWizard {
 					}
 				}
 				prev_lastMNode = lastMNode;
-				prev_lastMsNode = lastMsNode;
 				url = new URL(urlStr);
 
 				driveLoader = new TemsRemoteUrlLoader(url, datasetName,display, datasetName,dataset, lastMNode, lastMsNode, mainPage.startDate);

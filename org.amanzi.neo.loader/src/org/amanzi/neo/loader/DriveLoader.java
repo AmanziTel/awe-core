@@ -417,7 +417,6 @@ public abstract class DriveLoader extends AbstractLoader {
             return 0L;
         }
         final int nodeHours = nodeDate.getHours();
-        final int nodeDay = nodeDate.getDay();
         if (!hasDate && hours != null && hours > nodeHours) {
             // next day
             _workDate.add(Calendar.DAY_OF_MONTH, 1);

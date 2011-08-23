@@ -23,7 +23,6 @@ import org.apache.log4j.Logger;
 import org.jfree.chart.plot.Plot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.AbstractRenderer;
-import org.jfree.data.general.AbstractDataset;
 
 /**
  * TODO Purpose of
@@ -45,7 +44,6 @@ public class Chart implements IReportPart {
     private Long[] nodeIds;
     private final List<String> errors = new ArrayList<String>();
     private Plot plot;
-    private AbstractDataset dataset;
     private AbstractRenderer renderer;
     //JFReeChart settings
     private String title="";

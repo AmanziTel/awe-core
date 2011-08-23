@@ -13,20 +13,10 @@
 
 package org.amanzi.awe.report.editor;
 
-import java.io.File;
-
-import org.amanzi.awe.report.ReportPlugin;
 import org.amanzi.awe.report.actions.PrintAction;
-import org.amanzi.awe.report.model.Report;
-import org.amanzi.awe.report.model.ReportModel;
-import org.amanzi.awe.report.pdf.PDFPrintingEngine;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.swt.widgets.MessageBox;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.part.MultiPageEditorActionBarContributor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;

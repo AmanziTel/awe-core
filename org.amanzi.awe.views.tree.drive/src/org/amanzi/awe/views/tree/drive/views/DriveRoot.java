@@ -14,6 +14,7 @@ package org.amanzi.awe.views.tree.drive.views;
 
 import java.util.ArrayList;
 import java.util.Collections;
+
 import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.awe.views.network.proxy.Root;
 import org.amanzi.neo.services.NeoServiceFactory;

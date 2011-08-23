@@ -14,23 +14,17 @@
 package org.amanzi.awe.report.pdf;
 
 import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.List;
-
-import javax.imageio.ImageIO;
 
 import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.internal.command.navigation.SetViewportBBoxCommand;
 import net.refractions.udig.project.render.RenderException;
 import net.refractions.udig.project.ui.ApplicationGIS;
-import net.refractions.udig.project.ui.SelectionStyle;
 import net.refractions.udig.project.ui.ApplicationGIS.DrawMapParameter;
+import net.refractions.udig.project.ui.SelectionStyle;
 
 import org.amanzi.awe.report.charts.Charts;
 import org.amanzi.awe.report.model.Chart;
@@ -41,7 +35,6 @@ import org.amanzi.awe.report.model.ReportMap;
 import org.amanzi.awe.report.model.ReportTable;
 import org.amanzi.awe.report.model.ReportText;
 import org.apache.log4j.Logger;
-import org.jdom.adapters.XercesDOMAdapter;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.title.TextTitle;
@@ -56,11 +49,9 @@ import com.lowagie.text.ImgTemplate;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.Rectangle;
-import com.lowagie.text.SimpleTable;
 import com.lowagie.text.Table;
 import com.lowagie.text.pdf.DefaultFontMapper;
 import com.lowagie.text.pdf.PdfContentByte;
-import com.lowagie.text.pdf.PdfTable;
 import com.lowagie.text.pdf.PdfTemplate;
 import com.lowagie.text.pdf.PdfWriter;
 
@@ -74,9 +65,6 @@ import com.lowagie.text.pdf.PdfWriter;
  */
 public class PDFPrintingEngine {
     private static final Logger LOGGER = Logger.getLogger(PDFPrintingEngine.class);
-    private static final float SPACE_VERTICAL = 20;
-    private float y;
-    private int left;
     private static final String REPORT_DIRECTORY = "Amanzi report";
     public static final String DEFAULT_REPORT_DIRECTORY = System.getProperty("user.home") + File.separator + REPORT_DIRECTORY;
     private final int INDENTATION = 30;
@@ -88,8 +76,6 @@ public class PDFPrintingEngine {
      */
     public void printReport(Report report) {
         final Rectangle paperSize = PageSize.A4;
-        Rectangle paperRectangle = paperSize;
-        y = paperSize.getTop() - INDENTATION - SPACE_VERTICAL;
         Document document = new Document(PageSize.A4, 30, 30,30, 30);
         String fileName = System.getProperty("user.home") + File.separator + REPORT_DIRECTORY;
         File directory = new File(fileName);

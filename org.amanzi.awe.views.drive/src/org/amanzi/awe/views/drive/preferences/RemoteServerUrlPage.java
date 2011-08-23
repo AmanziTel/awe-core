@@ -92,8 +92,6 @@ public class RemoteServerUrlPage extends FieldEditorPreferencePage implements IW
 
         @Override
         protected boolean checkState() {
-            boolean result = false;
-
             Text textField = getTextControl();
 
             String txt = textField.getText();
@@ -103,7 +101,7 @@ public class RemoteServerUrlPage extends FieldEditorPreferencePage implements IW
                 return true;
             }
             try {
-                URL url = new URL(txt);
+                new URL(txt);
             } catch (MalformedURLException e) {
                 // e.printStackTrace();
                 error("URL is not valid!", textField);

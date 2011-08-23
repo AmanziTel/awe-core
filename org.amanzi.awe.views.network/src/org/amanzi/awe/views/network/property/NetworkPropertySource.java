@@ -77,7 +77,8 @@ public class NetworkPropertySource extends NodePropertySource implements IProper
      *
      * @return the property descriptors
      */
-    public IPropertyDescriptor[] getPropertyDescriptors() {
+    @SuppressWarnings({ "unused", "rawtypes" })
+	public IPropertyDescriptor[] getPropertyDescriptors() {
         SelectionPropertyManager propertyManager = SelectionPropertyManager.getInstanse();
         
         // Kasnitskij_V:
@@ -139,7 +140,7 @@ public class NetworkPropertySource extends NodePropertySource implements IProper
             }
             
             int countOfFullValues = 0;
-            for (@SuppressWarnings("unused") String key : keys) {
+            for (String key : keys) {
                 countOfFullValues++;
             }
             

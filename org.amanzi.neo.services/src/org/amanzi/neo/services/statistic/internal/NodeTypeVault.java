@@ -31,7 +31,6 @@ import org.neo4j.graphdb.traversal.Evaluation;
 import org.neo4j.graphdb.traversal.Evaluator;
 import org.neo4j.graphdb.traversal.Evaluators;
 import org.neo4j.graphdb.traversal.TraversalDescription;
-import org.neo4j.helpers.Predicate;
 import org.neo4j.kernel.Traversal;
 import org.neo4j.kernel.Uniqueness;
 
@@ -266,7 +265,7 @@ public class NodeTypeVault {
      * @param comparable the comparable
      * @return the property name collection
      */
-    public Collection<String> getPropertyNameCollection(Comparable<Class> comparable) {
+    public Collection<String> getPropertyNameCollection(Comparable<Class<?>> comparable) {
         Collection<String> result=new ArrayList<String>();
         for (Map.Entry<String, PropertyStatistics> entry:propertyMap.entrySet()){
             if (comparable==null||comparable.compareTo(entry.getValue().getKlass())==0){

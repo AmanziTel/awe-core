@@ -20,7 +20,6 @@ import net.refractions.udig.project.ui.internal.dialogs.ColorEditor;
 
 import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.neo.services.INeoConstants;
-import org.amanzi.neo.services.enums.NetworkTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
@@ -154,11 +153,7 @@ public class NetworkStyleDefiner extends ViewPart {
         cMainProperty.setText(curStyle.getMainProperty());
               
     }
-    private void changeToProbeNetworkStyle() {
-        lMainProperty.setText("Probe property"); //$NON-NLS-1$
-        lFontSize.setText("Probe font size"); //$NON-NLS-1$
-        lFillSite.setText("Probe fill"); //$NON-NLS-1$
-    }
+   
     public void preApply(){
         curStyle.setFill(colorFromRGB(cEdFill.getColorValue()));
         curStyle.setSiteFill(colorFromRGB(cEdFillSite.getColorValue()));

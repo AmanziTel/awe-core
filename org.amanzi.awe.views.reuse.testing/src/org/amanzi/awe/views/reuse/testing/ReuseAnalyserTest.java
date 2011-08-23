@@ -33,7 +33,8 @@ import org.junit.Test;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.helpers.Predicate;
+import org.neo4j.graphdb.traversal.Evaluation;
+import org.neo4j.graphdb.traversal.Evaluator;
 
 
 /**
@@ -58,7 +59,7 @@ public class ReuseAnalyserTest {
         Transaction tx = util.getNeo().beginTx();
         try{
             Node root=createStructure();
-            Predicate<Path> propertyReturnableEvalvator =createReturnableEvaluator(root);
+            Evaluator propertyReturnableEvalvator =createReturnableEvaluator(root);
             tx.success();
             tx.finish();
             tx=util.getNeo().beginTx();
@@ -78,17 +79,19 @@ public class ReuseAnalyserTest {
         }
     }
 
-    private Predicate<Path> createReturnableEvaluator(Node root) {
+    private Evaluator createReturnableEvaluator(Node root) {
     	
         
         final String type= NeoUtils.getPrimaryType(root);
-        return new Predicate<Path>() {
-
-        	@Override
-        	public boolean accept(Path item) {
-        		return item.endNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(type);
-        	}
-        };       
+        return new Evaluator() {
+            
+            @Override
+            public Evaluation evaluate(Path arg0) {
+                boolean includes = arg0.endNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(type);
+                
+                return Evaluation.of(includes, true);
+            }
+        };        
     }
 
     /**

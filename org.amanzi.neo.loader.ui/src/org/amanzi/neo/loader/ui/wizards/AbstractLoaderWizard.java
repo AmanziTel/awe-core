@@ -64,7 +64,7 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
     /** The max main page id. */
     protected int maxMainPageId;
     /** The batch mode. */
-    private DatabaseAccessType accessType=DatabaseAccessType.EMBEDDED;
+    
     private ILoader< ? extends IDataElement, T> selectedLoader;
 
     /**
@@ -93,7 +93,7 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
      * @param accessType the new access type
      */
     public void setAccessType(DatabaseAccessType accessType) {
-        this.accessType = accessType;
+        
     }
 
     @Override

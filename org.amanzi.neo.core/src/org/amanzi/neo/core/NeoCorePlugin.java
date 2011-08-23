@@ -55,10 +55,6 @@ public class NeoCorePlugin extends AbstractUIPlugin{
 
     private PreferencesInitializer initializer = new PreferencesInitializer();
 
-    private AweProjectService aweProjectService;
-
-
-
     /**
      * Constructor for SplashPlugin.
      */

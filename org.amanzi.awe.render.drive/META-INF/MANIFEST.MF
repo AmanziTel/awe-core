@@ -5,15 +5,12 @@ Bundle-SymbolicName: org.amanzi.awe.render.drive;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.amanzi.awe.render.drive.Activator
 Require-Bundle: org.eclipse.core.runtime,
- org.eclipse.ui,
- net.refractions.udig.project,
  org.amanzi.awe.catalog.neo,
  org.amanzi.neo.core;bundle-version="1.0.0",
  org.amanzi.awe.neostyle;bundle-version="1.0.0",
- org.neo4j,
  net.refractions.udig.mapgraphic;bundle-version="1.1.1",
- net.refractions.udig.project.ui;bundle-version="1.1.1",
- org.amanzi.awe.filters;bundle-version="1.0.0"
+ net.refractions.udig.project.ui;bundle-version="1.1.1"
 Eclipse-LazyStart: true
 Bundle-Vendor: amanzi.org
 Export-Package: org.amanzi.awe.render.drive
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6

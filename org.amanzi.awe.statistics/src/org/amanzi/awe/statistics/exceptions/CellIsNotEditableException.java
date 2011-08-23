@@ -23,4 +23,9 @@ package org.amanzi.awe.statistics.exceptions;
  */
 public class CellIsNotEditableException extends RuntimeException {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 }

@@ -81,7 +81,6 @@ public class Loader<T extends IDataElement, T2 extends IConfigurationData> imple
     private ISaver<T> saver;
     private String description = "";
     private T2 data;
-    private DatabaseAccessType accessType;
     private ILoaderInputValidator<T2> validator;
     private PrintStream outputStream;
 
@@ -102,7 +101,6 @@ public class Loader<T extends IDataElement, T2 extends IConfigurationData> imple
 
     @Override
     public void setup(DatabaseAccessType accessType, T2 data) {
-        this.accessType = accessType;
         this.data = data;
         getValidator().filter(data);
     }
@@ -149,7 +147,7 @@ public class Loader<T extends IDataElement, T2 extends IConfigurationData> imple
         updateCatalog();
         sendUpdateEvent(UpdateViewEventType.GIS);
         if (saver instanceof AbstractSaver) {
-            Node root = ((AbstractSaver)saver).getRootNode();
+            Node root = ((AbstractSaver<?>)saver).getRootNode();
             if (root != null) {
                 DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
                 String name = datasetService.getNodeName(root);

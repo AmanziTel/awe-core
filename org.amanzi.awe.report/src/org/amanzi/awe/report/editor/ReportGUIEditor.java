@@ -93,7 +93,6 @@ public class ReportGUIEditor extends EditorPart  {
     private static final Logger LOGGER = Logger.getLogger(ReportGUIEditor.class);
     private boolean isDirty;
     private Composite frame;
-    private Composite parent;
     private Text reportTitle;
     private List<Composite> parts = new ArrayList<Composite>(0);
     private ReportModel reportModel;
@@ -101,9 +100,7 @@ public class ReportGUIEditor extends EditorPart  {
     private ScrolledComposite sc;
     private Font errorFont;
     private static final RGB RGB_WHITE = new RGB(255, 255, 255);
-    private static final String SAVE = "Save";
-    private static final String EDIT = "Edit";
-
+    
     @Override
     public void doSave(IProgressMonitor monitor) {
     }
@@ -130,7 +127,6 @@ public class ReportGUIEditor extends EditorPart  {
 
     @Override
     public void createPartControl(Composite parent) {
-        this.parent = parent;
         sc = new ScrolledComposite(parent, SWT.V_SCROLL|SWT.H_SCROLL);
         GridLayout mainLayout = new GridLayout();
         sc.setLayout(new RowLayout(SWT.VERTICAL));

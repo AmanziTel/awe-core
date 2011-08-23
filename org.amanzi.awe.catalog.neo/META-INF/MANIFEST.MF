@@ -5,10 +5,7 @@ Bundle-SymbolicName: org.amanzi.awe.catalog.neo;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: amanzi.org
 Require-Bundle: org.eclipse.core.runtime,
- net.refractions.udig.catalog.ui,
  org.amanzi.neo.core,
- org.neo4j,
- net.refractions.udig.project;bundle-version="1.1.1",
  org.amanzi.awe.startup.splash;bundle-version="1.0.0",
  org.amanzi.awe.ui;bundle-version="1.0.0",
  net.refractions.udig.project.ui;bundle-version="1.1.1"

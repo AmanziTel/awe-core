@@ -26,9 +26,7 @@ import net.refractions.udig.style.IStyleConfigurator;
 import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.awe.catalog.neo.NeoGeoResource;
 import org.amanzi.neo.services.enums.GisTypes;
-import org.amanzi.neo.services.enums.NetworkTypes;
 import org.amanzi.neo.services.statistic.PropertyHeader;
-import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
@@ -46,7 +44,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Spinner;
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -501,17 +498,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         } finally {
         }
     }
-
-    /**
-     *
-     */
-    private void changeToProbeNetworkStyle() {
-        lMainProperty.setText("Probe property"); //$NON-NLS-1$
-        lFontSize.setText("Probe font size"); //$NON-NLS-1$
-        lFillSite.setText("Probe fill"); //$NON-NLS-1$
-        
-    }
-
+    
     /**
      * get array of possible site names
      * 

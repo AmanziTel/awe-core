@@ -4,10 +4,7 @@ Bundle-Name: Printing Plug-in
 Bundle-SymbolicName: org.amanzi.printing;singleton:=true
 Bundle-Version: 1.0.0
 Bundle-Activator: org.amanzi.printing.Activator
-Require-Bundle: org.eclipse.ui,
- org.eclipse.core.runtime,
- org.eclipse.draw2d,
- net.refractions.udig.printing.model,
+Require-Bundle: org.eclipse.core.runtime,
  net.refractions.udig.printing.model.edit,
  net.refractions.udig.printing.ui,
  com.lowagie.itext,

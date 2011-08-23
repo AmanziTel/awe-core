@@ -490,6 +490,7 @@ public class EditPropertiesPage extends WizardPage {
         public String getDefValue() {
             return defValue;
         }
+        @SuppressWarnings("unchecked")
         public Object getParsedValue() {
             if (getType()==null||getType()==String.class){
                 return defValue;

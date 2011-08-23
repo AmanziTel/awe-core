@@ -26,6 +26,7 @@ import org.eclipse.ui.IWorkbench;
  * @author Cinkel_A
  * @since 1.0.0
  */
+@SuppressWarnings("deprecation")
 public class TemsImportWizard extends Wizard implements IImportWizard {
 
     /** String PAGE_TITLE field */

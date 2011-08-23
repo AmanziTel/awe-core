@@ -61,10 +61,10 @@ public class FreqPlanSelectionInformation implements ISelectionInformation {
         this.model = model;
         propertySet = new HashSet<String>();
         Collection<String> col = statistic.getPropertyNameCollection(model.getName(), NodeTypes.FREQUENCY_PLAN.getId(),
-                new Comparable<Class>() {
+                new Comparable<Class<?>>() {
 
                     @Override
-                    public int compareTo(Class o) {
+                    public int compareTo(Class<?> o) {
                         return Comparable.class.isAssignableFrom(o) ? 0 : -1;
                     }
                 });

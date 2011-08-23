@@ -42,8 +42,7 @@ public class Header {
     int countALL = 0;
     // is type should be fixed?
     private final boolean typeIsFixed;
-    private int notParsedValueCount;
-
+    
     /**
      * Constructor
      * 
@@ -57,7 +56,6 @@ public class Header {
         this.key = key;
         headerTypes = Object.class;
         typeIsFixed = false;
-        notParsedValueCount = 0;
     }
 
     /**
@@ -74,7 +72,6 @@ public class Header {
         this.key = key;
         this.headerTypes = headerTypes;
         typeIsFixed = true;
-        notParsedValueCount = 0;
     }
 
     /**
@@ -103,7 +100,6 @@ public class Header {
                 incValue(value);
             } else {
                 if (typeIsFixed) {
-                    notParsedValueCount++;
                     return null;
                 }
                 if (klass.isAssignableFrom(headerTypes)) {
@@ -116,7 +112,6 @@ public class Header {
                         incValue(doubleValue);
                         return doubleValue;
                     } else {
-                        notParsedValueCount++;
                         return null;
                     }
                 }
@@ -170,7 +165,6 @@ public class Header {
                 return value;
             } catch (Exception e) {
                 if (typeIsFixed){
-                    notParsedValueCount++;
                     return null;
                 }
                 try {
@@ -186,7 +180,6 @@ public class Header {
             }
         }else{
             if (typeIsFixed){
-                notParsedValueCount++;
                 return null;
             }
             incValue(field);

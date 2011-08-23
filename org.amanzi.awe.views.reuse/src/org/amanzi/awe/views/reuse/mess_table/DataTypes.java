@@ -13,7 +13,6 @@
 
 package org.amanzi.awe.views.reuse.mess_table;
 
-import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.DriveTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.ui.NeoUtils;

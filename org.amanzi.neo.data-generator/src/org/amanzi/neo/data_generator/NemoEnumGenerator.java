@@ -13,13 +13,8 @@
 
 package org.amanzi.neo.data_generator;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileWriter;
-import java.io.InputStreamReader;
-import java.text.SimpleDateFormat;
 
 /**
  * <p>
@@ -36,24 +31,8 @@ public class NemoEnumGenerator {
         System.out.println("Started.");
         try {
             // String filename = args[0];
-            String sourceFileName = "D:/source_text.txt";
             String targetFileName = "D:/result_enum.java";
-            FileInputStream is;
-            is = new FileInputStream(new File(targetFileName));
-            String characterSet = "UTF-8";
-            BufferedReader reader = new BufferedReader(new InputStreamReader(is, characterSet));
-
             StringBuilder str2Write = new StringBuilder();
-
-            String pattern = "dd.MM.yyyy hh:mm:ss";
-            SimpleDateFormat sf = new SimpleDateFormat(pattern);
-
-            String line;
-            while ((line = reader.readLine()) != null) {
-                
-                
-
-            }
 
             // FileWriter ryt=new FileWriter(args[1]);
             FileWriter ryt = new FileWriter(targetFileName);

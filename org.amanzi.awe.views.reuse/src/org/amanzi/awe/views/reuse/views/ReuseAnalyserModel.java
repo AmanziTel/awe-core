@@ -59,9 +59,10 @@ import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.TraversalPosition;
 import org.neo4j.graphdb.Traverser.Order;
 import org.neo4j.graphdb.index.RelationshipIndex;
+import org.neo4j.graphdb.traversal.Evaluation;
+import org.neo4j.graphdb.traversal.Evaluator;
 import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.graphdb.traversal.Traverser;
-import org.neo4j.helpers.Predicate;
 import org.neo4j.kernel.Traversal;
 import org.neo4j.kernel.Uniqueness;
 
@@ -98,12 +99,10 @@ public class ReuseAnalyserModel {
     private final ArrayList<Pair<Node, Node>> correlationUpdate = new ArrayList<Pair<Node, Node>>();
 
     /** The property returnable evalvator. */
-    private Predicate<Path> propertyReturnableEvalvator;
+    private Evaluator propertyReturnableEvalvator;
     private Map<String, String[]> aggregatedProperties;
 
     private Transaction currentTransaction;
-
-    private ISelectionInformation information;
 
     private RelationshipIndex index;
 
@@ -128,7 +127,7 @@ public class ReuseAnalyserModel {
      * @param propertyReturnableEvalvator the property returnable evalvator
      * @param service the service
      */
-    public ReuseAnalyserModel(Map<String, String[]> aggregatedProperties, Predicate<Path> propertyReturnableEvalvator, GraphDatabaseService service) {
+    public ReuseAnalyserModel(Map<String, String[]> aggregatedProperties, Evaluator propertyReturnableEvalvator, GraphDatabaseService service) {
         super();
         this.aggregatedProperties = aggregatedProperties;
         this.propertyReturnableEvalvator = propertyReturnableEvalvator;
@@ -140,7 +139,6 @@ public class ReuseAnalyserModel {
      * @param root
      */
     public ReuseAnalyserModel(ISelectionInformation information) {
-        this.information = information;
         this.service = DatabaseManager.getInstance().getCurrentDatabaseService();
         index = service.index().forRelationships(INeoConstants.INDEX_REL_MULTY);
     }
@@ -295,7 +293,7 @@ public class ReuseAnalyserModel {
         Node startTraverse = rootNode.hasRelationship(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING) || gisNode == null ? rootNode : gisNode;
 
         Traverser travers = Traversal.description().depthFirst().uniqueness(Uniqueness.NODE_GLOBAL).relationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)
-                .relationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).filter(propertyReturnableEvalvator).traverse(startTraverse);
+                .relationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).evaluator(propertyReturnableEvalvator).traverse(startTraverse);
 
         Double min = null;
         Double max = null;
@@ -481,7 +479,7 @@ public class ReuseAnalyserModel {
         runGcIfBig(totalWork);
         if (isAggregatedProperty) {
             travers = Traversal.description().depthFirst().uniqueness(Uniqueness.NODE_GLOBAL).relationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)
-                    .relationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).filter(propertyReturnableEvalvator).traverse(gisNode);
+                    .relationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).evaluator(propertyReturnableEvalvator).traverse(gisNode);
             monitor.subTask("Building results from database");
             for (Path path : travers) {
                 Node node = path.endNode();
@@ -512,9 +510,8 @@ public class ReuseAnalyserModel {
         } else if (typeOfGis == GisTypes.NETWORK || select == Select.EXISTS) {
 
             travers = Traversal.description().depthFirst().uniqueness(Uniqueness.NODE_GLOBAL).relationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)
-                    .relationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).filter(propertyReturnableEvalvator).traverse(rootNode);
+                    .relationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).evaluator(propertyReturnableEvalvator).traverse(rootNode);
             monitor.subTask("Building results from database");
-            int i = 0;
             for (Path path : travers) {
                 Node node = path.endNode();
                 if (node.hasProperty(propertyName)) {
@@ -631,7 +628,7 @@ public class ReuseAnalyserModel {
             }
             // linked node
             Traverser travers = Traversal.description().depthFirst().uniqueness(Uniqueness.NODE_GLOBAL).relationships(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)
-                    .relationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).filter(propertyReturnableEvalvator).traverse(gisNode);
+                    .relationships(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).evaluator(propertyReturnableEvalvator).traverse(gisNode);
             for (Path path : travers) {
                 Node node = path.endNode();
                 monitor.worked(1);
@@ -1223,11 +1220,13 @@ public class ReuseAnalyserModel {
      */
     private Number getFirstValueOfMpNode(Node mpNode, final String propertyName) {
         Traverser traverse = Traversal.description().depthFirst().uniqueness(Uniqueness.NODE_GLOBAL).relationships(GeoNeoRelationshipTypes.LOCATION, Direction.INCOMING)
-                .filter(propertyReturnableEvalvator).filter(new Predicate<Path>() {
-
+                .evaluator(propertyReturnableEvalvator).evaluator(new Evaluator() {
+                    
                     @Override
-                    public boolean accept(Path item) {
-                        return (item.length() == 0) && item.endNode().hasProperty(propertyName);
+                    public Evaluation evaluate(Path arg0) {
+                        boolean include = (arg0.length() == 0) && arg0.endNode().hasProperty(propertyName);
+                        
+                        return Evaluation.of(include, true);
                     }
                 }).traverse(mpNode);
 
@@ -1405,6 +1404,7 @@ public class ReuseAnalyserModel {
      * @param findSelectByValue
      * @param monitor
      */
+    @SuppressWarnings("rawtypes")
     private void computeStatistics(ISelectionInformation information, Node rootNode, Node aggrNode, String propertyName, Distribute distribute, Select rules,
             IProgressMonitor monitor) throws StatisticCalculationException {
 

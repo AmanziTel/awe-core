@@ -144,7 +144,7 @@ public class NeighbourLoader {
             }
             monitor.beginTask("Importing " + baseName, 100);
             stream = new CountingFileInputStream(new File(fileName));
-            String charSet = NeoLoaderPlugin.getDefault().getCharacterSet();
+            String charSet = NeoLoaderPlugin.getCharacterSet();
             reader = new BufferedReader(new InputStreamReader(stream, charSet));
             int perc = stream.percentage();
             int prevPerc = 0;
@@ -244,14 +244,12 @@ public class NeighbourLoader {
         private final String[] headers;
         private final LuceneIndexService index;
         private final GraphDatabaseService neo;
-        private final String gisName;
         private Node lastSector;
         private String proxySectorName;
         private String proxyNeighbourName;
         private HashMap<String,Integer> missingServers;
         private HashMap<String,Integer> missingNeighbours;
-        private int lineNumber;
-
+        
         /**
          * Constructor
          * 
@@ -259,7 +257,6 @@ public class NeighbourLoader {
          */
         public Header(String line, GraphDatabaseService neo, LuceneIndexService index, String gisName) {
             this.index = index;
-            this.gisName = gisName;
             this.neo = neo;
             headers = line.split("\\t");
             IPreferenceStore preferenceStore = NeoLoaderPlugin.getDefault().getPreferenceStore();
@@ -273,7 +270,7 @@ public class NeighbourLoader {
             neighbourNodeName = new NodeName(ciString, lacString, btsString);
             missingServers = new HashMap<String,Integer>();
             missingNeighbours = new HashMap<String,Integer>();
-            lineNumber = 0;
+            
             for (int i = 0; i < headers.length; i++) {
                 String fieldHeader = headers[i];
                 if (serverNodeName.setFieldIndex(fieldHeader, i)) {
@@ -367,7 +364,6 @@ public class NeighbourLoader {
          */
         public void parseLine(String line, Node network, String fileName, Node neighbour, boolean isInterference) {
             String fields[] = line.split("\\t");
-            lineNumber++;
             RelationshipType relType2Proxy = NetworkRelationshipTypes.NEIGHBOURS;
             RelationshipType relTypeProxy2Proxy = NetworkRelationshipTypes.NEIGHBOUR;
             if(isInterference) {

@@ -19,7 +19,6 @@ import java.util.Set;
 
 import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.neo.services.INeoConstants;
-import org.amanzi.neo.services.enums.DriveTypes;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.ui.NeoUtils;

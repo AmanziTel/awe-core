@@ -162,6 +162,7 @@ public class DatabaseServiceWrapper implements INeoDbService {
         }
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public boolean enableRemoteShell() {
         r.lock();
@@ -172,6 +173,7 @@ public class DatabaseServiceWrapper implements INeoDbService {
         }
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public boolean enableRemoteShell(Map<String, Serializable> paramMap) {
         r.lock();

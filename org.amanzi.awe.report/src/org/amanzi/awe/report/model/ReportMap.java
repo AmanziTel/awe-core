@@ -13,8 +13,6 @@
 
 package org.amanzi.awe.report.model;
 
-import org.amanzi.awe.filters.experimental.GroupFilter;
-
 import net.refractions.udig.project.IMap;
 
 /**
@@ -31,7 +29,6 @@ public class ReportMap implements IReportPart {
     private int height;
     private int width;
     private String title;
-    private GroupFilter filter;
 
     /**
      * @param map
@@ -109,20 +106,6 @@ public class ReportMap implements IReportPart {
      */
     public String getTitle() {
         return title;
-    }
-
-    /**
-     * @return Returns the filter.
-     */
-    public GroupFilter getFilter() {
-        return filter;
-    }
-
-    /**
-     * @param filter The filter to set.
-     */
-    public void setFilter(GroupFilter filter) {
-        this.filter = filter;
     }
 
 }

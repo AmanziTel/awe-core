@@ -1808,8 +1808,8 @@ public class DriveInquirerView extends ViewPart implements IPropertyChangeListen
             return collection.getSeriesCount();
         }
 
-        @Override
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings("rawtypes")
+		@Override
         public Comparable getSeriesKey(int i) {
             return collection.getSeriesKey(i);
         }
@@ -1976,8 +1976,8 @@ public class DriveInquirerView extends ViewPart implements IPropertyChangeListen
             return collection.getSeriesCount();
         }
 
-        @Override
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings("rawtypes")
+		@Override
         public Comparable getSeriesKey(int i) {
             return collection.getSeriesKey(i);
         }
@@ -1997,44 +1997,44 @@ public class DriveInquirerView extends ViewPart implements IPropertyChangeListen
             return (Number)NeoServiceProviderUi.getProvider().getService().getNodeById(collection.getY(i, j).longValue()).getProperty(propertyName);
         }
 
-        @SuppressWarnings("unchecked")
-        @Override
+        @SuppressWarnings("rawtypes")
+		@Override
         public int getColumnIndex(Comparable comparable) {
             return 0;
         }
 
-        @SuppressWarnings("unchecked")
-        @Override
+        @SuppressWarnings("rawtypes")
+		@Override
         public Comparable getColumnKey(int i) {
             return null;
         }
 
-        @SuppressWarnings("unchecked")
-        @Override
+        @SuppressWarnings("rawtypes")
+		@Override
         public List getColumnKeys() {
             return null;
         }
 
-        @SuppressWarnings("unchecked")
-        @Override
+        @SuppressWarnings("rawtypes")
+		@Override
         public int getRowIndex(Comparable comparable) {
             return 0;
         }
 
-        @SuppressWarnings("unchecked")
-        @Override
+        @SuppressWarnings("rawtypes")
+		@Override
         public Comparable getRowKey(int i) {
             return null;
         }
 
-        @SuppressWarnings("unchecked")
-        @Override
+        @SuppressWarnings("rawtypes")
+		@Override
         public List getRowKeys() {
             return null;
         }
 
-        @SuppressWarnings("unchecked")
-        @Override
+        @SuppressWarnings("rawtypes")
+		@Override
         public Number getValue(Comparable comparable, Comparable comparable1) {
             return null;
         }

@@ -45,8 +45,6 @@ import net.refractions.udig.project.render.RenderException;
 
 import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.awe.catalog.neo.GeoNeo.GeoNode;
-import org.amanzi.awe.filters.AbstractFilter;
-import org.amanzi.awe.filters.FilterUtil;
 import org.amanzi.awe.neostyle.IFilterWrapper;
 import org.amanzi.awe.neostyle.NeoStyleContent;
 import org.amanzi.awe.neostyle.NetworkNeoStyle;
@@ -111,8 +109,6 @@ public class NetworkRenderer extends RendererImpl {
     private MathTransform transform_d2w;
     private MathTransform transform_w2d;
     private Node aggNode;
-    private AbstractFilter filterSectors;
-    private AbstractFilter filterSites;
     private DrawHints drawHints = new DrawHints();
     private IGraphModel graphModel;
     private RelationshipIndex index;
@@ -337,9 +333,6 @@ public class NetworkRenderer extends RendererImpl {
             geoNeo = neoGeoResource.resolve(GeoNeo.class, new SubProgressMonitor(monitor, 10));
             graphModel = geoNeo.getGraphModel();
             LOGGER.debug("NetworkRenderer resolved geoNeo '" + geoNeo.getName() + "' from resource: " + neoGeoResource.getIdentifier());
-            filterSectors = FilterUtil.getFilterOfData(geoNeo.getMainGisNode(), neo);
-            filterSites = FilterUtil.getFilterOfData(
-                    geoNeo.getMainGisNode().getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.OUTGOING).getOtherNode(geoNeo.getMainGisNode()), neo);
             String starProperty = getSelectProperty(geoNeo);
             Pair<Point, Long> starPoint = getStarPoint();
             Node starNode = null;
@@ -396,8 +389,7 @@ public class NetworkRenderer extends RendererImpl {
                     }
                 } else {
                     // Traverse backwards on CHILD relations to closest 'mp' Point
-                    for (@SuppressWarnings("unused")
-                    Node rnode : node.traverse(Order.DEPTH_FIRST, new StopEvaluator() {
+                    for (Node rnode : node.traverse(Order.DEPTH_FIRST, new StopEvaluator() {
                         @Override
                         public boolean isStopNode(TraversalPosition currentPos) {
                             return "site".equals(currentPos.currentNode().getProperty("type", ""));
@@ -425,11 +417,6 @@ public class NetworkRenderer extends RendererImpl {
                 if (bounds_transformed != null && !bounds_transformed.contains(location)) {
                     continue; // Don't draw points outside viewport
                 }
-                if (filterSites != null) {
-                    if (!filterSites.filterNode(node.getNode()).isValid()) {
-                        continue;
-                    }
-                }
                 try {
                     JTS.transform(location, world_location, transform_d2w);
                 } catch (Exception e) {
@@ -447,11 +434,6 @@ public class NetworkRenderer extends RendererImpl {
 
             long startTime = System.currentTimeMillis();
             for (GeoNode node : geoNeo.getGeoNodes(bounds_transformed)) {
-                if (filterSites != null) {
-                    if (!filterSites.filterNode(node.getNode()).isValid()) {
-                        continue;
-                    }
-                }
                 NetworkNeoStyle siteStyle = getSiteStyle(node.getNode());
                 drawHints.setStyle(siteStyle);
                 g.setColor(drawHints.drawColor);
@@ -542,12 +524,6 @@ public class NetworkRenderer extends RendererImpl {
                                     starNode = child;
                                 } else if (geoNeo.getSelectedNodes().contains(child)) {
                                     borderColor = COLOR_SECTOR_SELECTED;
-                                }
-                                // put sector information in to blackboard
-                                if (filterSectors != null) {
-                                    if (!filterSectors.filterNode(child).isValid()) {
-                                        continue;
-                                    }
                                 }
                                 Pair<Point, Point> centerPoint = renderSector(g, p, azimuth, beamwidth, colorsToFill, borderColor);
 
@@ -1101,7 +1077,6 @@ public class NetworkRenderer extends RendererImpl {
          */
         // int drawSize = drawHints.drawSize;
         Color oldColor = g.getColor();
-        Pair<java.awt.Point, java.awt.Point> result = null;
         if (base_transform == null)
             base_transform = g.getTransform();
         if (beamwidth < 10) {

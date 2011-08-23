@@ -277,7 +277,8 @@ protected void changeShellSize(Shell shell, Shell parentShell) {
      *
      * @return the value
      */
-    private Serializable getValue() {
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+	private Serializable getValue() {
         Class klass=getValueClass();
         if (klass!=null){
             String valueStr = value.getText();
@@ -300,7 +301,8 @@ protected void changeShellSize(Shell shell, Shell parentShell) {
      *
      * @return the value class
      */
-    private Class getValueClass() {
+    @SuppressWarnings("rawtypes")
+	private Class getValueClass() {
         Class result=null;
         String name=valuetypes.getText();
         for (Entry<String,Class<? extends Serializable>>  entry:valueTypesMap.entrySet()){

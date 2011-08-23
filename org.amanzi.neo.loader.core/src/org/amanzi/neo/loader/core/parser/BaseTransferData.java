@@ -26,7 +26,7 @@ public class BaseTransferData extends MapBasedTransferData<String, String> {
 
     /** long serialVersionUID field. */
     private static final long serialVersionUID = -5686953917241479358L;
-    private IParser parser;
+    private IParser<?, ?> parser;
     private double currentpersentage;
     
     
@@ -38,11 +38,11 @@ public class BaseTransferData extends MapBasedTransferData<String, String> {
         this.currentpersentage = currentpersentage;
     }
 
-    public IParser getParser() {
+    public IParser<?, ?> getParser() {
         return parser;
     }
 
-    public void setParser(IParser parser) {
+    public void setParser(IParser<?, ?> parser) {
         this.parser = parser;
     }   
 }

@@ -38,7 +38,6 @@ import org.amanzi.awe.catalog.neo.upd_layers.events.RefreshPropertiesEvent;
 import org.amanzi.awe.catalog.neo.upd_layers.events.UpdateLayerEvent;
 import org.amanzi.awe.catalog.neo.upd_layers.events.UpdatePropertiesAndMapEvent;
 import org.amanzi.awe.catalog.neo.upd_layers.events.UpdatePropertiesEvent;
-import org.amanzi.awe.ui.IGraphModel;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.ui.NeoUtils;
@@ -263,7 +262,6 @@ public class UpdateLayerListener {
         Node gis = event.getGisNode();
         GeoNeo geo = getGeoNeo();
         if (gis != null && isEventForThisLayer(gis)) {
-            IGraphModel prevSel = geo.getGraphModel();
             geo.setGraphModel(event.getModel());
             layer.refresh(null);
         }

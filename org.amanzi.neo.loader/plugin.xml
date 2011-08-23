@@ -9,41 +9,13 @@
        </category>
        <command
              categoryId="org.amanzi.neo.loader.commands.category"
-             id="org.amanzi.neo.loader.commands.LoadNetwork"
-             name="Load Network Data">
-       </command>
-       <command
-             categoryId="org.amanzi.neo.loader.commands.category"
-             id="org.amanzi.neo.loader.commands.LoadNetworkSite"
-             name="Add Site Data">
-          <commandParameter id="org.amanzi.neo.loader.commands.addtoselect" name="add to select" optional="true">
-        </commandParameter>
-             
-       </command>
-       <command
-             categoryId="org.amanzi.neo.loader.commands.category"
              id="org.amanzi.neo.loader.commands.LoadDrive"
              name="Load Drive Data">
                        <commandParameter id="org.amanzi.neo.loader.commands.addtoselect" name="add to select" optional="true">
         </commandParameter>
         <commandParameter id="org.amanzi.neo.loader.commands.loadfromurl" name="load from url" optional="true">
         </commandParameter>
-       </command>
-       <command
-             categoryId="org.amanzi.neo.loader.commands.category"
-             id="org.amanzi.neo.loader.commands.Correlate"
-             name="Associate Probe and Drive Data">
-       </command>
-       <command
-             categoryId="org.amanzi.neo.loader.commands.category"
-             id="org.amanzi.neo.loader.commands.LoadNeighbour"
-             name="Load Neighbour Data">
-       </command>
-      <command
-             categoryId="org.amanzi.neo.loader.commands.category"
-             id="org.amanzi.neo.loader.commands.LoadTransmission"
-             name="Load Transmission Data">
-       </command>     
+       </command>       
        <command
              categoryId="org.amanzi.neo.loader.commands.category"
              id="org.amanzi.neo.loader.commands.LoadGPEHHandler"
@@ -55,25 +27,8 @@
     <extension
           point="org.eclipse.ui.handlers">
        <handler
-             class="org.amanzi.neo.loader.handlers.LoadNetworkHandler"
-             commandId="org.amanzi.neo.loader.commands.LoadNetwork">
-       </handler>
-       <handler
-             class="org.amanzi.neo.loader.handlers.LoadNetworkSiteHandler"
-             commandId="org.amanzi.neo.loader.commands.LoadNetworkSite">
-       </handler>
-       
-       <handler
              class="org.amanzi.neo.loader.handlers.LoadDriveHandler"
              commandId="org.amanzi.neo.loader.commands.LoadDrive">
-       </handler>
-       <handler
-             class="org.amanzi.neo.loader.handlers.LoadNeighbourHandler"
-             commandId="org.amanzi.neo.loader.commands.LoadNeighbour">
-       </handler>
-       <handler
-             class="org.amanzi.neo.loader.handlers.LoadTransmissionHandler"
-             commandId="org.amanzi.neo.loader.commands.LoadTransmission">
        </handler>
     </extension>
    
@@ -83,19 +38,7 @@
              locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
           <toolbar
                 id="org.amanzi.neo.loader.toolbar">
-             <command
-                   commandId="org.amanzi.neo.loader.commands.LoadNetworkSite"
-            icon="icons/16/network_site.png"
-            id="org.amanzi.neo.loader.LoadNetworkSite"
-                   tooltip="Load Network Data">
-             </command>
              
-             <command
-                   commandId="org.amanzi.neo.loader.commands.LoadDrive"
-            icon="icons/16/drive.png"
-            id="org.amanzi.neo.loader.LoadDrive"
-                   tooltip="Load Drive Data">
-             </command>
              <command
                    commandId="org.amanzi.neo.loader.commands.LoadDrive"
             icon="icons/16/calls.png"
@@ -107,7 +50,7 @@
        </menuContribution>
     </extension>
     
-   <extension
+    <extension
           point="org.eclipse.ui.importWizards">
        <wizard  
              category="org.amanzi.load"
@@ -129,24 +72,8 @@
  				Import one or more drive data log files into the project database
           </description>
        </wizard>
-        <wizard
-             category="org.amanzi.load"
-             class="org.amanzi.neo.wizards.GPEHImportWizard"
-             icon="icons/16/delta_network.png"
-             id="org.amanzi.neo.wizards.GPEHImportWizard"
-             name="Import Drive data">
-          <description>
- 				Import one or more drive data log files into the project database
-          </description>
-       </wizard>
-          
-       <category
-             id="org.amanzi.load"
-             name="Amanzi Data">
-       </category>
-
+        
     </extension>
-
    <extension
          point="net.refractions.udig.ui.newObjectAction">
       <action
@@ -174,6 +101,7 @@
             label="Create new network">
       </action>
    </extension>
+   
    <extension
          point="org.eclipse.ui.viewActions">
       <viewContribution
@@ -190,4 +118,5 @@
          </action>
       </viewContribution>
    </extension>
+
 </plugin>

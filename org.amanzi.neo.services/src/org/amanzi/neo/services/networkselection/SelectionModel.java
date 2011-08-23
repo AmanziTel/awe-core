@@ -24,7 +24,6 @@ import org.amanzi.neo.services.network.INetworkTraversableModel;
 import org.amanzi.neo.services.utils.Utils;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.traversal.Evaluator;
-import org.neo4j.graphdb.traversal.Traverser;
 
 /**
  * TODO Purpose of 

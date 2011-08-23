@@ -19,8 +19,6 @@ import net.refractions.udig.project.ui.tool.AbstractActionTool;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
-import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
-import org.amanzi.neo.services.enums.NetworkFileType;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -44,6 +42,7 @@ import org.eclipse.swt.widgets.FileDialog;
  * @author craig
  * @since 1.0.0
  */
+@SuppressWarnings("deprecation")
 public class LoadNetwork extends AbstractActionTool {
 	/*
 	 * Names of supported files for Network

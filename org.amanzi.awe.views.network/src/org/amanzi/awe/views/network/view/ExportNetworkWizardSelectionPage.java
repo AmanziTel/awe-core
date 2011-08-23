@@ -61,7 +61,8 @@ import org.neo4j.graphdb.ReturnableEvaluator;
 import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
-import org.neo4j.helpers.Predicate;
+import org.neo4j.graphdb.traversal.Evaluation;
+import org.neo4j.graphdb.traversal.Evaluator;
 
 /**
  * <p>
@@ -282,12 +283,15 @@ public class ExportNetworkWizardSelectionPage extends WizardPage {
          */
         public TreeNeoNode[] getChildren(final DatasetService service) {
 
-            Iterable<Node> networks = service.getRootsDepr(node, new Predicate<Path>() {
+            Iterable<Node> networks = service.getRoots(node, new Evaluator() {
+				
+				@Override
+				public Evaluation evaluate(Path arg0) {
+					boolean isNetwork = NodeTypes.NETWORK.equals(service.getNodeType(arg0.endNode()));
+					
+					return Evaluation.of(isNetwork, true);
+				}
 
-                @Override
-                public boolean accept(Path item) {
-                    return NodeTypes.NETWORK.equals(service.getNodeType(item.endNode()));
-                }
             }).nodes();
             List<TreeNeoNode> result = new LinkedList<TreeNeoNode>();
             for (Node network : networks) {
@@ -301,8 +305,8 @@ public class ExportNetworkWizardSelectionPage extends WizardPage {
             return getName();
         }
 
-        @SuppressWarnings("unchecked")
-        @Override
+        @SuppressWarnings("rawtypes")
+		@Override
         public Object getAdapter(Class adapter) {
             if (adapter == TreeNeoNode.class) {
                 return this;
@@ -338,12 +342,14 @@ public class ExportNetworkWizardSelectionPage extends WizardPage {
          * @return true, if successful
          */
         public boolean hasChildren(final DatasetService service) {
-            Iterable<Node> networks = service.getRootsDepr(node, new Predicate<Path>() {
-
-                @Override
-                public boolean accept(Path item) {
-                    return NodeTypes.NETWORK.equals(service.getNodeType(item.endNode()));
-                }
+            Iterable<Node> networks = service.getRoots(node, new Evaluator() {
+				
+				@Override
+				public Evaluation evaluate(Path arg0) {
+					boolean isNetwork = NodeTypes.NETWORK.equals(service.getNodeType(arg0.endNode()));
+					
+					return Evaluation.of(isNetwork, true);
+				}
             }).nodes();
             List<TreeNeoNode> result = new LinkedList<TreeNeoNode>();
             for (Node network : networks) {

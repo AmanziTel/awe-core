@@ -48,13 +48,10 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.PlatformUI;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.NotFoundException;
@@ -268,23 +265,6 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
      */
     public static ArrayList<String> getFrequencyPlanModelNames() {
         return frequencyPlanModelNames;
-    }
-
-    /**
-     * Displays error message instead of throwing an exception.
-     * 
-     * @param e exception thrown
-     */
-    private void displayErrorMessage(final Exception e) {
-        final Display display = PlatformUI.getWorkbench().getDisplay();
-        display.asyncExec(new Runnable() {
-
-            @Override
-            public void run() {
-                MessageDialog.openError(display.getActiveShell(), "Export problem", e.getMessage());
-            }
-
-        });
     }
 
     /**

@@ -3,9 +3,6 @@ package org.amanzi.awe.report;
 import java.io.IOException;
 import java.net.URL;
 
-import net.refractions.udig.project.internal.Map;
-import net.refractions.udig.project.ui.ApplicationGIS;
-
 import org.amanzi.awe.views.kpi.KPIPlugin;
 import org.amanzi.integrator.awe.AWEProjectManager;
 import org.amanzi.scripting.jruby.ScriptUtils;
@@ -68,7 +65,6 @@ public class ReportPlugin extends AbstractUIPlugin {
     public void start(BundleContext context) throws Exception {
         super.start(context);
         //force to start udig.project.ui plugin
-        Map noMap = ApplicationGIS.NO_MAP;
         LOGGER.debug("[DEBUG]ReportPlugin started");
         plugin = this;
     }
@@ -131,7 +127,7 @@ public class ReportPlugin extends AbstractUIPlugin {
                 try {
                     URL scriptURL = FileLocator.toFileURL(ReportPlugin.getDefault().getBundle().getEntry(INIT_FILE));
                     
-                    final IRubyObject res = runtime.evalScriptlet(scriptURL.getPath());
+                    runtime.evalScriptlet(scriptURL.getPath());
                 } catch (Exception e) {
                     // TODO Handle IOException
                     e.printStackTrace();

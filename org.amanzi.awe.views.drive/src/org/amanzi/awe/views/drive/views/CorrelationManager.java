@@ -557,7 +557,6 @@ public class CorrelationManager extends ViewPart implements INeoServiceProviderL
         private final String networkName;
         private final Node driveNode;
         private final String driveName;
-        private Relationship relation;
         private final Node networkNode;
         private final Long startTime;
         private final Long endTime;
@@ -600,13 +599,6 @@ public class CorrelationManager extends ViewPart implements INeoServiceProviderL
          */
         public Node getDriveNode() {
             return driveNode;
-        }
-
-        /**
-         * @return Returns the relation.
-         */
-        public Relationship getRelation() {
-            return relation;
         }
 
         /**

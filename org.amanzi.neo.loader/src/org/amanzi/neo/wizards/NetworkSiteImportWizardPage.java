@@ -58,6 +58,7 @@ import org.neo4j.graphdb.Transaction;
  * @author TsAr
  * @since 1.0.0
  */
+@SuppressWarnings("deprecation")
 public class NetworkSiteImportWizardPage extends WizardPage {
 
     /**
