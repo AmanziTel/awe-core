@@ -29,7 +29,12 @@ import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
+import org.amanzi.neo.services.model.ICorrelationModel;
+import org.amanzi.neo.services.model.IDataElement;
+import org.amanzi.neo.services.model.IDriveModel;
+import org.amanzi.neo.services.model.INodeToNodeRelationsType;
 import org.apache.log4j.Logger;
+import org.geotools.referencing.CRS;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -49,7 +54,7 @@ import org.neo4j.kernel.Traversal;
  * @author Ana Gr.
  * @since 1.0.0
  */
-public class DriveModel {
+public class DriveModel implements IDriveModel {
 
     private static Logger LOGGER = Logger.getLogger(DriveModel.class);
 
@@ -196,11 +201,11 @@ public class DriveModel {
      * @param name the name of virtual dataset node
      * @return DriveModel based on the found node or null if search failed
      */
-    public DriveModel findVirtualDataset(String name) {
+    public IDriveModel findVirtualDataset(String name) {
         LOGGER.debug("start findVirtualDataset(String name)");
 
-        DriveModel result = null;
-        for (DriveModel dm : getVirtualDatasets()) {
+        IDriveModel result = null;
+        for (IDriveModel dm : getVirtualDatasets()) {
             if (dm.getName().equals(name)) {
                 result = dm;
                 break;
@@ -218,10 +223,10 @@ public class DriveModel {
      * @return a DriveModel based on found or created virtual dataset node
      * @throws AWEException if errors occurred during creation of new node
      */
-    public DriveModel getVirtualDataset(String name, IDriveType driveType) throws AWEException {
+    public IDriveModel getVirtualDataset(String name, IDriveType driveType) throws AWEException {
         LOGGER.debug("start getVirtualDataset(String name, IDriveType driveType)");
 
-        DriveModel result = findVirtualDataset(name);
+        IDriveModel result = findVirtualDataset(name);
         if (result == null) {
             result = addVirtualDataset(name, driveType);
         }
@@ -232,10 +237,10 @@ public class DriveModel {
      * @return a List<Node> containing DriveModels created on base of virtual dataset nodes in
      *         current DriveModel
      */
-    public Iterable<DriveModel> getVirtualDatasets() {
+    public Iterable<IDriveModel> getVirtualDatasets() {
         LOGGER.debug("start getVirtualDatasets()");
 
-        List<DriveModel> result = new ArrayList<DriveModel>();
+        List<IDriveModel> result = new ArrayList<IDriveModel>();
         for (Node node : getVirtualDatasetsTraversalDescription().traverse(root).nodes()) {
             try {
                 result.add(new DriveModel(null, node, null, null));
@@ -452,5 +457,112 @@ public class DriveModel {
      */
     public Iterable<Node> getFiles() {
         return dsServ.getChildrenChainTraverser(root);
+    }
+
+    @Override
+    public Iterable<ICorrelationModel> getCorrelatedModels() {
+        return null;
+    }
+
+    @Override
+    public ICorrelationModel getCorrelatedModel(String correlationModelName) {
+        return null;
+    }
+
+    @Override
+    public IDataElement getParentElement(IDataElement childElement) {
+        return null;
+    }
+
+    @Override
+    public Iterable<IDataElement> getChildren(IDataElement parent) {
+        return null;
+    }
+
+    @Override
+    public IDataElement[] getAllElementsByType(INodeType elementType) {
+        return null;
+    }
+
+    @Override
+    public void finishUp() {
+    }
+
+    @Override
+    public INodeType getType() {
+        return null;
+    }
+
+    @Override
+    public void updateBounds(double latitude, double longitude) {
+    }
+
+    @Override
+    public double getMinLatitude() {
+        return 0;
+    }
+
+    @Override
+    public double getMaxLatitude() {
+        return 0;
+    }
+
+    @Override
+    public double getMinLongitude() {
+        return 0;
+    }
+
+    @Override
+    public double getMaxLongitude() {
+        return 0;
+    }
+
+    @Override
+    public CRS getCRS() {
+        return null;
+    }
+
+    @Override
+    public int getNodeCount(INodeType nodeType) {
+        return 0;
+    }
+
+    @Override
+    public int getPropertyCount(INodeType nodeType, String propertyName) {
+        return 0;
+    }
+
+    @Override
+    public String[] getAllProperties() {
+        return null;
+    }
+
+    @Override
+    public String[] getAllProperties(INodeType nodeType) {
+        return null;
+    }
+
+    @Override
+    public INodeToNodeRelationsType getNodeToNodeRelationsType() {
+        return null;
+    }
+
+    @Override
+    public long getMinTimestamp() {
+        return min_tst;
+    }
+
+    @Override
+    public long getMaxTimestamp() {
+        return max_tst;
+    }
+
+    @Override
+    public void updateTimestamp(long timestamp) {
+    }
+
+    @Override
+    public org.amanzi.neo.services.model.IDriveType getDriveType() {
+        return null;
     }
 }
