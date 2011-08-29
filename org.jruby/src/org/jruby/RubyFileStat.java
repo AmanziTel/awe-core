@@ -34,13 +34,17 @@
 package org.jruby;
 
 import java.io.FileDescriptor;
+import java.io.IOException;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
-import org.jruby.anno.JRubyMethod;
 import org.jruby.anno.JRubyClass;
+import org.jruby.anno.JRubyMethod;
 import org.jruby.ext.posix.FileStat;
 import org.jruby.ext.posix.util.Platform;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ObjectAllocator;
+import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.Visibility;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.util.JRubyFile;
@@ -51,7 +55,11 @@ import org.jruby.util.JRubyFile;
 @JRubyClass(name="File::Stat", include="Comparable")
 public class RubyFileStat extends RubyObject {
     private static final long serialVersionUID = 1L;
-    
+
+    private static final int S_IRUGO = (FileStat.S_IRUSR | FileStat.S_IRGRP | FileStat.S_IROTH);
+    private static final int S_IWUGO = (FileStat.S_IWUSR | FileStat.S_IWGRP | FileStat.S_IWOTH);
+    private static final int S_IXUGO = (FileStat.S_IXUSR | FileStat.S_IXGRP | FileStat.S_IXOTH);
+
     private JRubyFile file;
     private FileStat stat;
 
@@ -79,7 +87,7 @@ public class RubyFileStat extends RubyObject {
     
     public static RubyFileStat newFileStat(Ruby runtime, String filename, boolean lstat) {
         RubyFileStat stat = new RubyFileStat(runtime, runtime.getFileStat());
-        
+
         stat.setup(filename, lstat);
         
         return stat;
@@ -102,6 +110,38 @@ public class RubyFileStat extends RubyObject {
                 && filename.charAt(1) == ':' && Character.isLetter(filename.charAt(0))) {
             filename += "/";
         }
+
+        if (filename.startsWith("file:") && filename.indexOf('!') != -1) {
+            // file: URL handling
+            String zipFileEntry = filename.substring(filename.indexOf("!") + 1);
+            if (zipFileEntry.length() > 0) {
+                if (zipFileEntry.charAt(0) == '/') {
+                    if (zipFileEntry.length() > 1) {
+                        zipFileEntry = zipFileEntry.substring(1);
+                    } else {
+                        throw getRuntime().newErrnoENOENTError("invalid jar/file URL: " + filename);
+                    }
+                }
+            } else {
+                throw getRuntime().newErrnoENOENTError("invalid jar/file URL: " + filename);
+            }
+            String zipfilename = filename.substring(5, filename.indexOf("!"));
+            
+            try {
+                ZipFile zipFile = new ZipFile(zipfilename);
+                ZipEntry zipEntry = RubyFile.getFileEntry(zipFile, zipFileEntry);
+
+                if (zipEntry == null) {
+                    throw getRuntime().newErrnoENOENTError("invalid jar/file URL: " + filename);
+                }
+                stat = new ZipFileStat(zipEntry);
+                return;
+            } catch (IOException ioe) {
+                // fall through and use the zip file as the file to stat
+            }
+
+            filename = zipfilename;
+        }
             
         file = JRubyFile.create(getRuntime().getCurrentDirectory(), filename);
 
@@ -112,11 +152,184 @@ public class RubyFileStat extends RubyObject {
         }
     }
 
-    @JRubyMethod(name = "initialize", required = 1, visibility = Visibility.PRIVATE)
+    public static class ZipFileStat implements FileStat {
+        private final ZipEntry zipEntry;
+
+        public ZipFileStat(ZipEntry zipEntry) {
+            this.zipEntry = zipEntry;
+        }
+        
+        public long atime() {
+            return zipEntry.getTime();
+        }
+
+        public long blocks() {
+            return zipEntry.getSize();
+        }
+
+        public long blockSize() {
+            return 1L;
+        }
+
+        public long ctime() {
+            return zipEntry.getTime();
+        }
+
+        public long dev() {
+            return -1;
+        }
+
+        public String ftype() {
+            return "zip file entry";
+        }
+
+        public int gid() {
+            return -1;
+        }
+
+        public boolean groupMember(int i) {
+            return false;
+        }
+
+        public long ino() {
+            return -1;
+        }
+
+        public boolean isBlockDev() {
+            return false;
+        }
+
+        public boolean isCharDev() {
+            return false;
+        }
+
+        public boolean isDirectory() {
+            return zipEntry.isDirectory();
+        }
+
+        public boolean isEmpty() {
+            return zipEntry.getSize() == 0;
+        }
+
+        public boolean isExecutable() {
+            return false;
+        }
+
+        public boolean isExecutableReal() {
+            return false;
+        }
+
+        public boolean isFifo() {
+            return false;
+        }
+
+        public boolean isFile() {
+            return !zipEntry.isDirectory();
+        }
+
+        public boolean isGroupOwned() {
+            return false;
+        }
+
+        public boolean isIdentical(FileStat fs) {
+            return fs instanceof ZipFileStat && ((ZipFileStat)fs).zipEntry.equals(zipEntry);
+        }
+
+        public boolean isNamedPipe() {
+            return false;
+        }
+
+        public boolean isOwned() {
+            return false;
+        }
+
+        public boolean isROwned() {
+            return false;
+        }
+
+        public boolean isReadable() {
+            return true;
+        }
+
+        public boolean isReadableReal() {
+            return true;
+        }
+
+        public boolean isWritable() {
+            return false;
+        }
+
+        public boolean isWritableReal() {
+            return false;
+        }
+
+        public boolean isSetgid() {
+            return false;
+        }
+
+        public boolean isSetuid() {
+            return false;
+        }
+
+        public boolean isSocket() {
+            return false;
+        }
+
+        public boolean isSticky() {
+            return false;
+        }
+
+        public boolean isSymlink() {
+            return false;
+        }
+
+        public int major(long l) {
+            return -1;
+        }
+
+        public int minor(long l) {
+            return -1;
+        }
+
+        public int mode() {
+            return -1;
+        }
+
+        public long mtime() {
+            return zipEntry.getTime();
+        }
+
+        public int nlink() {
+            return -1;
+        }
+
+        public long rdev() {
+            return -1;
+        }
+
+        public long st_size() {
+            return zipEntry.getSize();
+        }
+
+        public int uid() {
+            return 0;
+        }
+
+    }
+
+    @JRubyMethod(name = "initialize", required = 1, visibility = Visibility.PRIVATE, compat = CompatVersion.RUBY1_8)
     public IRubyObject initialize(IRubyObject fname, Block unusedBlock) {
         setup(fname.convertToString().toString(), false);
 
         return this;
+    }
+
+    @JRubyMethod(name = "initialize", required = 1, visibility = Visibility.PRIVATE, compat = CompatVersion.RUBY1_9)
+    public IRubyObject initialize19(IRubyObject fname, Block unusedBlock) {
+        if (!(fname instanceof RubyString) && fname.respondsTo("to_path")) {
+            fname = fname.callMethod(getRuntime().getCurrentContext(), "to_path");
+        }
+        return initialize(fname, unusedBlock);
     }
     
     @JRubyMethod(name = "atime")
@@ -242,16 +455,16 @@ public class RubyFileStat extends RubyObject {
         // FIXME: Obvious issue that not all platforms can display all attributes.  Ugly hacks.
         // Using generic posix library makes pushing inspect behavior into specific system impls
         // rather painful.
-        try { buf.append("dev=0x").append(Long.toHexString(stat.dev())).append(", "); } catch (Exception e) {}
-        try { buf.append("ino=").append(stat.ino()).append(", "); } catch (Exception e) {}
+        try { buf.append("dev=0x").append(Long.toHexString(stat.dev())); } catch (Exception e) {} finally { buf.append(", "); }
+        try { buf.append("ino=").append(stat.ino()); } catch (Exception e) {} finally { buf.append(", "); }
         buf.append("mode=0").append(Integer.toOctalString(stat.mode())).append(", "); 
-        try { buf.append("nlink=").append(stat.nlink()).append(", "); } catch (Exception e) {}
-        try { buf.append("uid=").append(stat.uid()).append(", "); } catch (Exception e) {}
-        try { buf.append("gid=").append(stat.gid()).append(", "); } catch (Exception e) {}
-        try { buf.append("rdev=0x").append(Long.toHexString(stat.rdev())).append(", "); } catch (Exception e) {}
-        buf.append("size=").append(stat.st_size()).append(", ");
-        try { buf.append("blksize=").append(stat.blockSize()).append(", "); } catch (Exception e) {}
-        try { buf.append("blocks=").append(stat.blocks()).append(", "); } catch (Exception e) {}
+        try { buf.append("nlink=").append(stat.nlink()); } catch (Exception e) {} finally { buf.append(", "); }
+        try { buf.append("uid=").append(stat.uid()); } catch (Exception e) {} finally { buf.append(", "); }
+        try { buf.append("gid=").append(stat.gid()); } catch (Exception e) {} finally { buf.append(", "); }
+        try { buf.append("rdev=0x").append(Long.toHexString(stat.rdev())); } catch (Exception e) {} finally { buf.append(", "); }
+        buf.append("size=").append(sizeInternal()).append(", ");
+        try { buf.append("blksize=").append(stat.blockSize()); } catch (Exception e) {} finally { buf.append(", "); }
+        try { buf.append("blocks=").append(stat.blocks()); } catch (Exception e) {} finally { buf.append(", "); }
         
         buf.append("atime=").append(atime()).append(", ");
         buf.append("mtime=").append(mtime()).append(", ");
@@ -338,14 +551,27 @@ public class RubyFileStat extends RubyObject {
         return getRuntime().newBoolean(stat.isSetuid());
     }
 
+    private long sizeInternal() {
+        // Workaround for JRUBY-4149
+        if (Platform.IS_WINDOWS && file != null) {
+            try {
+                return file.length();
+            } catch (SecurityException ex) {
+                return 0L;
+            }
+        } else {
+            return stat.st_size();
+        }
+    }
+
     @JRubyMethod(name = "size")
     public IRubyObject size() {
-        return getRuntime().newFixnum(stat.st_size());
+        return getRuntime().newFixnum(sizeInternal());
     }
     
     @JRubyMethod(name = "size?")
     public IRubyObject size_p() {
-        long size = stat.st_size();
+        long size = sizeInternal();
         
         if (size == 0) return getRuntime().getNil();
         
@@ -380,5 +606,23 @@ public class RubyFileStat extends RubyObject {
     @JRubyMethod(name = "zero?")
     public IRubyObject zero_p() {
         return getRuntime().newBoolean(stat.isEmpty());
+    }
+
+    @JRubyMethod(name = "world_readable?", compat = CompatVersion.RUBY1_9)
+    public IRubyObject worldReadable(ThreadContext context) {
+        return getWorldMode(context, FileStat.S_IROTH);
+    }
+
+    @JRubyMethod(name = "world_writable?", compat = CompatVersion.RUBY1_9)
+    public IRubyObject worldWritable(ThreadContext context) {
+        return getWorldMode(context, FileStat.S_IWOTH);
+    }
+
+    private IRubyObject getWorldMode(ThreadContext context, int mode) {
+        if ((stat.mode() & mode) == mode) {
+            return RubyNumeric.int2fix(context.getRuntime(),
+                    (stat.mode() & (S_IRUGO | S_IWUGO | S_IXUGO) ));
+        }
+        return context.getRuntime().getNil();
     }
 }

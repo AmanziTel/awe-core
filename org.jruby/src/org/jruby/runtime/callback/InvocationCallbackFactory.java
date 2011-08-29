@@ -44,7 +44,6 @@ import org.jruby.compiler.impl.SkinnyMethodAdapter;
 import org.jruby.exceptions.RaiseException;
 import org.jruby.internal.runtime.methods.DynamicMethod;
 import org.jruby.javasupport.util.RuntimeHelpers;
-import org.jruby.runtime.AbstractCompiledBlockCallback;
 import org.jruby.runtime.Arity;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.CallType;
@@ -63,10 +62,14 @@ public class InvocationCallbackFactory extends CallbackFactory implements Opcode
     private final String typePath;
     protected final Ruby runtime;
 
+    @Deprecated
     private final static String SUPER_CLASS = p(InvocationCallback.class);
+    @Deprecated
     private final static String FAST_SUPER_CLASS = p(FastInvocationCallback.class);
+    @Deprecated
     private final static String CALL_SIG = sig(RubyKernel.IRUBY_OBJECT, params(Object.class,
             Object[].class, Block.class));
+    @Deprecated
     private final static String FAST_CALL_SIG = sig(RubyKernel.IRUBY_OBJECT, params(
             Object.class, Object[].class));
     private final static String BLOCK_CALL_SIG = sig(RubyKernel.IRUBY_OBJECT, params(
@@ -148,14 +151,15 @@ public class InvocationCallbackFactory extends CallbackFactory implements Opcode
         return cw;
     }
 
+    @Deprecated
     private ClassWriter createBlockCtor(String namePath, Class fieldClass) throws Exception {
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
-        cw.visit(RubyInstanceConfig.JAVA_VERSION, ACC_PUBLIC + ACC_SUPER, namePath, null, p(AbstractCompiledBlockCallback.class), null);
+        cw.visit(RubyInstanceConfig.JAVA_VERSION, ACC_PUBLIC + ACC_SUPER, namePath, null, p(CompiledBlockCallback.class), null);
         cw.visitField(ACC_PRIVATE | ACC_FINAL, "$scriptObject", ci(fieldClass), null, null);
-        SkinnyMethodAdapter mv = new SkinnyMethodAdapter(cw.visitMethod(ACC_PUBLIC, "<init>", sig(Void.TYPE, params(Object.class)), null, null));
+        SkinnyMethodAdapter mv = new SkinnyMethodAdapter(cw, ACC_PUBLIC, "<init>", sig(Void.TYPE, params(Object.class)), null, null);
         mv.start();
         mv.aload(0);
-        mv.invokespecial(p(AbstractCompiledBlockCallback.class), "<init>", sig(void.class));
+        mv.invokespecial(p(CompiledBlockCallback.class), "<init>", sig(void.class));
         mv.aload(0);
         mv.aload(1);
         mv.checkcast(p(fieldClass));
@@ -166,11 +170,12 @@ public class InvocationCallbackFactory extends CallbackFactory implements Opcode
         return cw;
     }
 
+    @Deprecated
     private ClassWriter createBlockCtor19(String namePath, Class fieldClass) throws Exception {
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
         cw.visit(RubyInstanceConfig.JAVA_VERSION, ACC_PUBLIC + ACC_SUPER, namePath, null, p(Object.class), new String[] {p(CompiledBlockCallback19.class)});
         cw.visitField(ACC_PRIVATE | ACC_FINAL, "$scriptObject", ci(fieldClass), null, null);
-        SkinnyMethodAdapter mv = new SkinnyMethodAdapter(cw.visitMethod(ACC_PUBLIC, "<init>", sig(Void.TYPE, params(Object.class)), null, null));
+        SkinnyMethodAdapter mv = new SkinnyMethodAdapter(cw, ACC_PUBLIC, "<init>", sig(Void.TYPE, params(Object.class)), null, null);
         mv.start();
         mv.aload(0);
         mv.invokespecial(p(Object.class), "<init>", sig(void.class));
@@ -184,6 +189,7 @@ public class InvocationCallbackFactory extends CallbackFactory implements Opcode
         return cw;
     }
 
+    @Deprecated
     private Class tryClass(String name) {
         try {
             return classLoader.loadClass(name);
@@ -253,8 +259,9 @@ public class InvocationCallbackFactory extends CallbackFactory implements Opcode
         return mv;
     }
 
+    @Deprecated
     private SkinnyMethodAdapter startBlockCall(ClassWriter cw) {
-        SkinnyMethodAdapter mv = new SkinnyMethodAdapter(cw.visitMethod(ACC_PUBLIC | ACC_SYNTHETIC | ACC_FINAL, "call", BLOCK_CALL_SIG, null, null));
+        SkinnyMethodAdapter mv = new SkinnyMethodAdapter(cw, ACC_PUBLIC | ACC_SYNTHETIC | ACC_FINAL, "call", BLOCK_CALL_SIG, null, null);
         
         mv.visitCode();
         Label line = new Label();
@@ -262,8 +269,9 @@ public class InvocationCallbackFactory extends CallbackFactory implements Opcode
         return mv;
     }
 
+    @Deprecated
     private SkinnyMethodAdapter startBlockCall19(ClassWriter cw) {
-        SkinnyMethodAdapter mv = new SkinnyMethodAdapter(cw.visitMethod(ACC_PUBLIC | ACC_SYNTHETIC | ACC_FINAL, "call", BLOCK_CALL_SIG19, null, null));
+        SkinnyMethodAdapter mv = new SkinnyMethodAdapter(cw, ACC_PUBLIC | ACC_SYNTHETIC | ACC_FINAL, "call", BLOCK_CALL_SIG19, null, null);
 
         mv.visitCode();
         Label line = new Label();
@@ -271,6 +279,7 @@ public class InvocationCallbackFactory extends CallbackFactory implements Opcode
         return mv;
     }
 
+    @Deprecated
     protected Class endCall(ClassWriter cw, MethodVisitor mv, String name) {
         mv.visitEnd();
         cw.visitEnd();
@@ -559,6 +568,7 @@ public class InvocationCallbackFactory extends CallbackFactory implements Opcode
                 RubyKernel.IRUBY_OBJECT }, false, true, Arity.fixed(2), false);
     }
 
+    @Deprecated
     public CompiledBlockCallback getBlockCallback(String method, Object scriptObject) {
         Class typeClass = scriptObject.getClass();
         String typePathString = p(typeClass);
@@ -575,9 +585,9 @@ public class InvocationCallbackFactory extends CallbackFactory implements Opcode
                     mv.aload(1);
                     mv.aload(2);
                     mv.aload(3);
-                    mv.invokevirtual(typePathString, method, sig(
-                            RubyKernel.IRUBY_OBJECT, params(ThreadContext.class,
-                                    RubyKernel.IRUBY_OBJECT, IRubyObject.class)));
+                    mv.invokestatic(typePathString, method, sig(
+                            RubyKernel.IRUBY_OBJECT, "L" + typePathString + ";", ThreadContext.class,
+                                    RubyKernel.IRUBY_OBJECT, IRubyObject.class));
                     mv.areturn();
                     
                     mv.visitMaxs(2, 3);
@@ -594,6 +604,7 @@ public class InvocationCallbackFactory extends CallbackFactory implements Opcode
         }
     }
 
+    @Deprecated
     public CompiledBlockCallback19 getBlockCallback19(String method, Object scriptObject) {
         Class typeClass = scriptObject.getClass();
         String typePathString = p(typeClass);
@@ -611,9 +622,9 @@ public class InvocationCallbackFactory extends CallbackFactory implements Opcode
                     mv.aload(2);
                     mv.aload(3);
                     mv.aload(4);
-                    mv.invokevirtual(typePathString, method, sig(
-                            IRubyObject.class, params(ThreadContext.class,
-                                    IRubyObject.class, IRubyObject[].class, Block.class)));
+                    mv.invokestatic(typePathString, method, sig(
+                            IRubyObject.class, "L" + typePathString + ";", ThreadContext.class,
+                                    IRubyObject.class, IRubyObject[].class, Block.class));
                     mv.areturn();
 
                     mv.visitMaxs(2, 3);
@@ -1123,7 +1134,7 @@ public class InvocationCallbackFactory extends CallbackFactory implements Opcode
     @Deprecated
     private void loadArgument(MethodVisitor mv, int argsIndex, int argIndex, Class type1) {
         mv.visitVarInsn(ALOAD, argsIndex);
-        mv.visitLdcInsn(new Integer(argIndex));
+        mv.visitLdcInsn(Integer.valueOf(argIndex));
         mv.visitInsn(AALOAD);
         checkCast(mv, type1);
     }
@@ -1147,7 +1158,7 @@ public class InvocationCallbackFactory extends CallbackFactory implements Opcode
             case 2: mv.iconst_2(); break;
             case 1: mv.iconst_1(); break;
             case 0: mv.iconst_0(); break;
-            default: mv.ldc(new Integer(arity.getValue()));
+            default: mv.ldc(Integer.valueOf(arity.getValue()));
             }
    
             mv.if_icmpeq(arityOk);
@@ -1163,7 +1174,7 @@ public class InvocationCallbackFactory extends CallbackFactory implements Opcode
             case 2: mv.iconst_2(); break;
             case 1: mv.iconst_1(); break;
             case 0: mv.iconst_0(); break;
-            default: mv.ldc(new Integer(arity.getValue()));
+            default: mv.ldc(Integer.valueOf(arity.getValue()));
             }
 
             mv.invokevirtual(p(Ruby.class), "newArgumentError", sig(RaiseException.class, params(int.class, int.class)));

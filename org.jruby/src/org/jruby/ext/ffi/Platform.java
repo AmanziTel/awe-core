@@ -34,18 +34,20 @@ import org.jruby.RubyModule;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.jruby.util.SafePropertyAccessor;
 
 /**
  *
  */
 public class Platform {
-    public static final CPU CPU = determineCPU();
-    public static final OS OS = determineOS();
+    public static final CPU_TYPE CPU = determineCPU();
+    public static final OS_TYPE OS = determineOS();
 
     public static final String NAME = CPU + "-" + OS;
-    public static final String LIBC = OS == OS.WINDOWS ? "msvcrt" : OS == OS.LINUX ? "libc.so.6" : "c";
     public static final String LIBPREFIX = OS == OS.WINDOWS ? "" : "lib";
-    public static final String LIBSUFFIX = OS == OS.WINDOWS ? "dll" : OS == OS.DARWIN ? "dylib" : "so";
+    public static final String LIBSUFFIX = determineLibExt();
+    public static final String LIBC = determineLibC();
+    
     public static final int BIG_ENDIAN = 4321;
     public static final int LITTLE_ENDIAN = 1234;
     public static final int BYTE_ORDER = ByteOrder.nativeOrder().equals(ByteOrder.BIG_ENDIAN) ? BIG_ENDIAN : LITTLE_ENDIAN;
@@ -55,53 +57,62 @@ public class Platform {
     private final long addressMask;
     protected final Pattern libPattern;
     private final int javaVersionMajor;
-    public enum OS {
+
+    public enum OS_TYPE {
         DARWIN,
         FREEBSD,
         NETBSD,
         OPENBSD,
         LINUX,
         SOLARIS,
+        AIX,
         WINDOWS,
 
         UNKNOWN;
         @Override
         public String toString() { return name().toLowerCase(); }
     }
-    public enum CPU {
+
+    public enum CPU_TYPE {
         I386,
         X86_64,
         POWERPC,
         POWERPC64,
         SPARC,
         SPARCV9,
+        S390X,
         UNKNOWN;
         @Override
         public String toString() { return name().toLowerCase(); }
     }
+
     private static final class SingletonHolder {
         private static final Platform PLATFORM = determinePlatform(determineOS());
     }
-    private static final OS determineOS() {
+
+    private static final OS_TYPE determineOS() {
         String osName = System.getProperty("os.name").split(" ")[0].toLowerCase();
-        if (osName.startsWith("mac") || osName.startsWith("darwin")) {
+        if (osName.startsWith("mac") || osName.startsWith("darwin") || osName.equalsIgnoreCase("darwin")) {
             return OS.DARWIN;
         } else if (osName.startsWith("sunos") || osName.startsWith("solaris")) {
             return OS.SOLARIS;
         }
-        for (OS os : OS.values()) {
+        for (OS_TYPE os : OS.values()) {
             if (osName.startsWith(os.toString().toLowerCase())) {
                 return os;
             }
         }
         return OS.UNKNOWN;
     }
-    private static final Platform determinePlatform(OS os) {
+
+    private static final Platform determinePlatform(OS_TYPE os) {
         switch (os) {
             case DARWIN:
                 return new Darwin();
             case LINUX:
                 return new Linux();
+            case AIX:
+                return new AIX();
             case WINDOWS:
                 return new Windows();
             case UNKNOWN:
@@ -110,7 +121,8 @@ public class Platform {
                 return new Default(os);
         }
     }
-    private static final CPU determineCPU() {
+
+    private static final CPU_TYPE determineCPU() {
         String archString = System.getProperty("os.arch").toLowerCase();
         if ("x86".equals(archString) || "i386".equals(archString) || "i86pc".equals(archString)) {
             return CPU.I386;
@@ -124,12 +136,53 @@ public class Platform {
             return CPU.SPARC;
         } else if ("sparcv9".equals(archString)) {
             return CPU.SPARCV9;
-        } else {
-            return CPU.UNKNOWN;
+        } else if ("s390x".equals(archString)) {
+            return CPU.S390X;
+        } else if ("universal".equals(archString)) {
+            // OS X OpenJDK7 builds report "universal" right now
+            String bits = SafePropertyAccessor.getProperty("sun.arch.data.model");
+            if ("32".equals(bits)) {
+                System.setProperty("os.arch", "i386");
+                return CPU.I386;
+            } else if ("64".equals(bits)) {
+                System.setProperty("os.arch", "x86_64");
+                return CPU.X86_64;
+            }
+        }
+        return CPU.UNKNOWN;
+    }
+
+    private static final String determineLibC() {
+        switch (OS) {
+            case WINDOWS:
+                return "msvcrt.dll";
+            case LINUX:
+                return "libc.so.6";
+            case AIX:
+                if (Integer.getInteger("sun.arch.data.model") == 32) {
+                    return "libc.a(shr.o)";
+                } else {
+                    return "libc.a(shr_64.o)";
+                }
+            default:
+                return LIBPREFIX + "c." + LIBSUFFIX;
         }
     }
-    
-    protected Platform(OS os) {
+
+    private static final String determineLibExt() {
+        switch (OS) {
+            case WINDOWS:
+                return "dll";
+            case AIX:
+                return "a";
+            case DARWIN:
+                return "dylib";
+            default:
+                return "so";
+        }
+    }
+
+    protected Platform(OS_TYPE os) {
         int dataModel = Integer.getInteger("sun.arch.data.model");
         if (dataModel != 32 && dataModel != 64) {
             switch (CPU) {
@@ -141,6 +194,7 @@ public class Platform {
                 case X86_64:
                 case POWERPC64:
                 case SPARCV9:
+                case S390X:
                     dataModel = 64;
                     break;
                 default:
@@ -157,6 +211,9 @@ public class Platform {
                 break;
             case DARWIN:
                 libpattern = "lib.*\\.(dylib|jnilib)$";
+                break;
+            case AIX:
+                libpattern = "lib.*\\.a$";
                 break;
             default:
                 libpattern = "lib.*\\.so.*$";
@@ -190,7 +247,7 @@ public class Platform {
      *
      * @return A <tt>OS</tt> value representing the current Operating System.
      */
-    public final OS getOS() {
+    public final OS_TYPE getOS() {
         return OS;
     }
 
@@ -199,7 +256,7 @@ public class Platform {
      *
      * @return A <tt>CPU</tt> value representing the current processor architecture.
      */
-    public final CPU getCPU() {
+    public final CPU_TYPE getCPU() {
         return CPU;
     }
 
@@ -226,7 +283,7 @@ public class Platform {
     public static void createPlatformModule(Ruby runtime, RubyModule ffi) {
         RubyModule module = ffi.defineModuleUnder("Platform");
         Platform platform = Platform.getPlatform();
-        OS os = platform.getOS();
+        OS_TYPE os = platform.getOS();
         module.defineConstant("ADDRESS_SIZE", runtime.newFixnum(platform.addressSize));
         module.defineConstant("LONG_SIZE", runtime.newFixnum(platform.longSize));
         module.defineConstant("OS", runtime.newString(OS.toString()));
@@ -293,7 +350,7 @@ public class Platform {
      * @return the size of a long in bits
      */
     public final int longSize() {
-        return addressSize;
+        return longSize;
     }
 
     /**
@@ -333,18 +390,18 @@ public class Platform {
         return System.mapLibraryName(libName);
     }
     private static class Supported extends Platform {
-        public Supported(OS os) {
+        public Supported(OS_TYPE os) {
             super(os);
         }
     }
     private static class Unsupported extends Platform {
-        public Unsupported(OS os) {
+        public Unsupported(OS_TYPE os) {
             super(os);
         }
     }
     private static final class Default extends Platform {
 
-        public Default(OS os) {
+        public Default(OS_TYPE os) {
             super(os);
         }
 
@@ -368,12 +425,8 @@ public class Platform {
             }
             return "lib" + libName + ".dylib";
         }
-
-        @Override
-        public String getName() {
-            return "darwin";
-        }
     }
+
     /**
      * A {@link Platform} subclass representing the Linux operating system.
      */
@@ -389,6 +442,23 @@ public class Platform {
             // Older JDK on linux map 'c' to 'libc.so' which doesn't work
             return "c".equals(libName) || "libc.so".equals(libName)
                     ? "libc.so.6" : super.mapLibraryName(libName);
+        }
+    }
+
+    /**
+     * A {@link Platform} subclass representing the Linux operating system.
+     */
+    private static final class AIX extends Supported {
+
+        public AIX() {
+            super(OS.AIX);
+        }
+
+
+        @Override
+        public String mapLibraryName(String libName) {
+            return "c".equals(libName) || "libc.so".equals(libName)
+                    ? LIBC : super.mapLibraryName(libName);
         }
     }
 

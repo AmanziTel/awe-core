@@ -36,6 +36,9 @@
  ***** END LICENSE BLOCK *****/
 package org.jruby;
 
+import org.jruby.parser.StaticScope;
+import org.jruby.runtime.Binding;
+import org.jruby.runtime.Block.Type;
 import static org.jruby.util.StringSupport.codeLength;
 import static org.jruby.util.StringSupport.codePoint;
 
@@ -44,11 +47,16 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.jcodings.Encoding;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
+import org.jruby.ast.util.ArgsUtil;
 import org.jruby.common.IRubyWarnings.ID;
 import org.jruby.javasupport.util.RuntimeHelpers;
+import org.jruby.parser.LocalStaticScope;
+import org.jruby.runtime.Arity;
 import org.jruby.runtime.Block;
+import org.jruby.runtime.BlockBody;
 import org.jruby.runtime.BlockCallback;
 import org.jruby.runtime.ClassIndex;
+import org.jruby.runtime.ContextAwareBlockBody;
 import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -76,6 +84,15 @@ public class RubySymbol extends RubyObject {
 
         //        assert internedSymbol == internedSymbol.intern() : internedSymbol + " is not interned";
 
+        if (!runtime.is1_9()) {
+            int length = symbolBytes.getBegin() + symbolBytes.getRealSize();
+            for (int i = symbolBytes.getBegin(); i < length; i++) {
+                if (symbolBytes.getUnsafeBytes()[i] == 0) {
+                    throw runtime.newSyntaxError("symbol cannot contain '\\0'");
+                }
+            }
+        }
+
         this.symbol = internedSymbol;
         this.symbolBytes = symbolBytes;
         this.id = runtime.allocSymbolId();
@@ -90,6 +107,7 @@ public class RubySymbol extends RubyObject {
         runtime.setSymbol(symbolClass);
         RubyClass symbolMetaClass = symbolClass.getMetaClass();
         symbolClass.index = ClassIndex.SYMBOL;
+        symbolClass.setReifiedClass(RubySymbol.class);
         symbolClass.kindOf = new RubyModule.KindOf() {
             public boolean isKindOf(IRubyObject obj, RubyModule type) {
                 return obj instanceof RubySymbol;
@@ -203,7 +221,7 @@ public class RubySymbol extends RubyObject {
         } else {
             bytes = ((RubyString)RubyString.newString(runtime, symbolBytes).dump()).getByteList();
         }
-        ByteList result = new ByteList(bytes.realSize + 1);
+        ByteList result = new ByteList(bytes.getRealSize() + 1);
         result.append((byte)':');
         result.append(bytes);
 
@@ -214,19 +232,21 @@ public class RubySymbol extends RubyObject {
     public IRubyObject inspect19() {
         return inspect19(getRuntime());
     }
+
     @JRubyMethod(name = "inspect", compat = CompatVersion.RUBY1_9)
     public IRubyObject inspect19(ThreadContext context) {
         return inspect19(context.getRuntime());
     }
+
     private final IRubyObject inspect19(Ruby runtime) {
         
-        ByteList result = new ByteList(symbolBytes.realSize + 1);
-        result.encoding = symbolBytes.encoding;
+        ByteList result = new ByteList(symbolBytes.getRealSize() + 1);
+        result.setEncoding(symbolBytes.getEncoding());
         result.append((byte)':');
         result.append(symbolBytes);
 
         RubyString str = RubyString.newString(runtime, result); 
-        if (isPrintable() && isSymbolName(symbol)) { // TODO: 1.9 rb_enc_symname_p
+        if (isPrintable() && isSymbolName19(symbol)) { // TODO: 1.9 rb_enc_symname_p
             return str;
         } else {
             str = (RubyString)str.inspect19();
@@ -293,6 +313,11 @@ public class RubySymbol extends RubyObject {
         return this;
     }
 
+    @JRubyMethod(name = "intern", compat = CompatVersion.RUBY1_9)
+    public IRubyObject to_sym19() {
+        return this;
+    }
+
     @Override
     public IRubyObject taint(ThreadContext context) {
         return this;
@@ -300,6 +325,10 @@ public class RubySymbol extends RubyObject {
 
     private RubyString newShared(Ruby runtime) {
         return RubyString.newStringShared(runtime, symbolBytes);
+    }
+
+    private RubyString rubyStringFromString(Ruby runtime) {
+        return RubyString.newString(runtime, symbol);
     }
 
     @JRubyMethod(name = {"succ", "next"}, compat = CompatVersion.RUBY1_9)
@@ -357,30 +386,30 @@ public class RubySymbol extends RubyObject {
     @JRubyMethod(name = "upcase", compat = CompatVersion.RUBY1_9)
     public IRubyObject upcase(ThreadContext context) {
         Ruby runtime = context.getRuntime();
-        return newSymbol(runtime, newShared(runtime).upcase19(context).toString());
+        return newSymbol(runtime, rubyStringFromString(runtime).upcase19(context).toString());
     }
 
     @JRubyMethod(name = "downcase", compat = CompatVersion.RUBY1_9)
     public IRubyObject downcase(ThreadContext context) {
         Ruby runtime = context.getRuntime();
-        return newSymbol(runtime, newShared(runtime).downcase19(context).toString());
+        return newSymbol(runtime, rubyStringFromString(runtime).downcase19(context).toString());
     }
 
     @JRubyMethod(name = "capitalize", compat = CompatVersion.RUBY1_9)
     public IRubyObject capitalize(ThreadContext context) {
         Ruby runtime = context.getRuntime();
-        return newSymbol(runtime, newShared(runtime).capitalize19(context).toString());
+        return newSymbol(runtime, rubyStringFromString(runtime).capitalize19(context).toString());
     }
 
     @JRubyMethod(name = "swapcase", compat = CompatVersion.RUBY1_9)
     public IRubyObject swapcase(ThreadContext context) {
         Ruby runtime = context.getRuntime();
-        return newSymbol(runtime, newShared(runtime).swapcase19(context).toString());
+        return newSymbol(runtime, rubyStringFromString(runtime).swapcase19(context).toString());
     }
 
     @JRubyMethod(name = "encoding", compat = CompatVersion.RUBY1_9)
     public IRubyObject encoding(ThreadContext context) {
-        return context.getRuntime().getEncodingService().getEncoding(symbolBytes.encoding);
+        return context.getRuntime().getEncodingService().getEncoding(symbolBytes.getEncoding());
     }
 
     private static class ToProcCallback implements BlockCallback {
@@ -390,36 +419,69 @@ public class RubySymbol extends RubyObject {
         }
 
         public IRubyObject call(ThreadContext ctx, IRubyObject[] args, Block blk) {
-            IRubyObject[] currentArgs = args;
-            switch(currentArgs.length) {
-            case 0: throw symbol.getRuntime().newArgumentError("no receiver given");
-            case 1: {
-                if((currentArgs[0] instanceof RubyArray) && ((RubyArray)currentArgs[0]).getLength() != 0) {
-                    // This is needed to unpack stuff
-                    currentArgs = ((RubyArray)currentArgs[0]).toJavaArrayMaybeUnsafe();
-                    IRubyObject[] args2 = new IRubyObject[currentArgs.length-1];
-                    System.arraycopy(currentArgs, 1, args2, 0, args2.length);
-                    return RuntimeHelpers.invoke(ctx, currentArgs[0], symbol.symbol, args2);
-                } else {
-                    return RuntimeHelpers.invoke(ctx, currentArgs[0], symbol.symbol);
+            if (args.length == 0) {
+                throw symbol.getRuntime().newArgumentError("no receiver given");
+            } else {
+                if (args.length == 1 && args[0] instanceof RubyArray) {
+                    args = ((RubyArray)args[0]).toJavaArrayUnsafe();
                 }
-            }
-            default: {
-                IRubyObject[] args2 = new IRubyObject[currentArgs.length-1];
-                System.arraycopy(currentArgs, 1, args2, 0, args2.length);
-                return RuntimeHelpers.invoke(ctx, currentArgs[0], symbol.symbol, args2);
-            }
+                IRubyObject[] args2 = new IRubyObject[args.length-1];
+                System.arraycopy(args, 1, args2, 0, args2.length);
+                return RuntimeHelpers.invoke(ctx, args[0], symbol.symbol, args2);
             }
         }
     }
-    /*
+    
     @JRubyMethod
-    public IRubyObject to_proc() {
-        return RubyProc.newProc(getRuntime(),
-                                CallBlock.newCallClosure(this, getRuntime().getSymbol(), Arity.noArguments(), new ToProcCallback(this), getRuntime().getCurrentContext()),
+    public IRubyObject to_proc(ThreadContext context) {
+        StaticScope scope = new LocalStaticScope(null);
+        
+        BlockBody body = new ContextAwareBlockBody(scope, Arity.OPTIONAL, BlockBody.SINGLE_RESTARG) {
+            @Override
+            public IRubyObject yield(ThreadContext context, IRubyObject value, Binding binding, Type type) {
+                RubyArray array = ArgsUtil.convertToRubyArray(context.getRuntime(), value, false);
+                if (array.isEmpty()) {
+                    throw context.getRuntime().newArgumentError("no receiver given");
+                }
+                IRubyObject receiver = array.shift(context);
+                return RuntimeHelpers.invoke(context, receiver, symbol, array.toJavaArray());
+            }
+
+            @Override
+            public IRubyObject yield(ThreadContext context, IRubyObject value, IRubyObject self, RubyModule klass, boolean aValue, Binding binding, Type type) {
+                RubyArray array = aValue && (value instanceof RubyArray) ? (RubyArray)value : 
+                  ArgsUtil.convertToRubyArray(context.getRuntime(), value, false);
+                if (array.isEmpty()) {
+                    throw context.getRuntime().newArgumentError("no receiver given");
+                }
+                IRubyObject receiver = array.shift(context);
+                return RuntimeHelpers.invoke(context, receiver, symbol, array.toJavaArray());
+            }
+
+            @Override
+            public Block cloneBlock(Binding binding) {
+                return new Block(this, binding);
+            }
+
+            @Override
+            public Arity arity() {
+                return Arity.OPTIONAL;
+            }
+
+            public String getFile() {
+                return symbol;
+            }
+
+            public int getLine() {
+                return -1;
+            }
+        };
+        Block block = new Block(body, context.currentBinding());
+        return RubyProc.newProc(context.getRuntime(),
+                                block,
                                 Block.Type.PROC);
     }
-    */
+    
     private static boolean isIdentStart(char c) {
         return ((c >= 'a' && c <= 'z')|| (c >= 'A' && c <= 'Z')
                 || c == '_');
@@ -479,10 +541,10 @@ public class RubySymbol extends RubyObject {
 
     private boolean isPrintable() {
         Ruby runtime = getRuntime();
-        int p = symbolBytes.begin;
-        int end = p + symbolBytes.realSize;
-        byte[]bytes = symbolBytes.bytes;
-        Encoding enc = symbolBytes.encoding;
+        int p = symbolBytes.getBegin();
+        int end = p + symbolBytes.getRealSize();
+        byte[]bytes = symbolBytes.getUnsafeBytes();
+        Encoding enc = symbolBytes.getEncoding();
 
         while (p < end) {
             int c = codePoint(runtime, enc, bytes, p, end);
@@ -492,12 +554,30 @@ public class RubySymbol extends RubyObject {
         return true;
     }
 
+    private static boolean isSymbolName19(String s) {
+        if (s == null || s.length() < 1) return false;
+
+        int length = s.length();
+        char c = s.charAt(0);
+        if (isSymbolNameCommon(s, c, length) || (c == '!' && (length == 1 ||
+                    (length == 2 && (s.charAt(1) == '~' || s.charAt(1) == '=')) ) )) {
+            return true;
+        }
+
+        return isSymbolLocal(s, c, length);
+    }
+
     private static boolean isSymbolName(String s) {
         if (s == null || s.length() < 1) return false;
 
         int length = s.length();
-
         char c = s.charAt(0);
+        if (isSymbolNameCommon(s, c, length)) return true;
+        
+        return isSymbolLocal(s, c, length);
+    }
+
+    private static boolean isSymbolNameCommon(String s, char c, int length) {        
         switch (c) {
         case '$':
             if (length > 1 && isSpecialGlobalName(s.substring(1))) {
@@ -512,12 +592,12 @@ public class RubySymbol extends RubyObject {
 
             return isIdentifier(s.substring(offset));
         case '<':
-            return (length == 1 || (length == 2 && (s.equals("<<") || s.equals("<="))) || 
+            return (length == 1 || (length == 2 && (s.equals("<<") || s.equals("<="))) ||
                     (length == 3 && s.equals("<=>")));
         case '>':
             return (length == 1) || (length == 2 && (s.equals(">>") || s.equals(">=")));
         case '=':
-            return ((length == 2 && (s.equals("==") || s.equals("=~"))) || 
+            return ((length == 2 && (s.equals("==") || s.equals("=~"))) ||
                     (length == 3 && s.equals("===")));
         case '*':
             return (length == 1 || (length == 2 && s.equals("**")));
@@ -530,28 +610,31 @@ public class RubySymbol extends RubyObject {
         case '[':
             return s.equals("[]") || s.equals("[]=");
         }
-        
+        return false;
+    }
+
+    private static boolean isSymbolLocal(String s, char c, int length) {
         if (!isIdentStart(c)) return false;
 
         boolean localID = (c >= 'a' && c <= 'z');
         int last = 1;
-        
+
         for (; last < length; last++) {
             char d = s.charAt(last);
-            
+
             if (!isIdentChar(d)) {
                 break;
             }
         }
-                    
+
         if (last == length) {
             return true;
         } else if (localID && last == length - 1) {
             char d = s.charAt(last);
-            
+
             return d == '!' || d == '?' || d == '=';
         }
-        
+
         return false;
     }
     
@@ -568,6 +651,14 @@ public class RubySymbol extends RubyObject {
         RubySymbol result = newSymbol(input.getRuntime(), RubyString.byteListToString(input.unmarshalString()));
         input.registerLinkTarget(result);
         return result;
+    }
+
+    @Override
+    public Object toJava(Class target) {
+        if (target == String.class || target == CharSequence.class) {
+            return symbol;
+        }
+        return super.toJava(target);
     }
 
     public static final class SymbolTable {
@@ -771,10 +862,9 @@ public class RubySymbol extends RubyObject {
                     int idx = e.hash & sizeMask;
 
                     //  Single node on list
-                    if (next == null)
+                    if (next == null) {
                         newTable[idx] = e;
-
-                    else {
+                    } else {
                         // Reuse trailing consecutive sequence at same slot
                         SymbolEntry lastRun = e;
                         int lastIdx = idx;

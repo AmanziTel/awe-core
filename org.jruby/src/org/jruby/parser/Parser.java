@@ -31,7 +31,7 @@
  ***** END LICENSE BLOCK *****/
 package org.jruby.parser;
 
-import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
 import org.jruby.Ruby;
@@ -40,13 +40,12 @@ import org.jruby.RubyFile;
 import org.jruby.RubyHash;
 import org.jruby.RubyString;
 import org.jruby.ast.Node;
-import org.jruby.common.NullWarnings;
-//import org.jruby.lexer.yacc.ByteListLexerSource;
 import org.jruby.lexer.yacc.LexerSource;
 import org.jruby.lexer.yacc.SyntaxException;
 import org.jruby.runtime.DynamicScope;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.jruby.runtime.load.LoadServiceResourceInputStream;
 import org.jruby.util.ByteList;
 
 /**
@@ -69,72 +68,76 @@ public class Parser {
         return totalBytes;
     }
     
-    public Node parseRewriter(String file, InputStream content, 
-            ParserConfiguration configuration) throws SyntaxException {
-        long startTime = System.nanoTime();
-        DefaultRubyParser parser = RubyParserPool.getInstance().borrowParser();
-        parser.setWarnings(new NullWarnings());
-        LexerSource lexerSource = LexerSource.getSource(file, content, null, configuration);
-        
-        try {
-            return parser.parse(configuration, lexerSource).getAST();
-        } finally {
-            RubyParserPool.getInstance().returnParser(parser);
-            totalTime += System.nanoTime() - startTime;
-            totalBytes += lexerSource.getOffset();
-        }
-    }
-    
     @SuppressWarnings("unchecked")
     public Node parse(String file, ByteList content, DynamicScope blockScope,
             ParserConfiguration configuration) {
-        return parse(file, new ByteArrayInputStream(content.bytes()), blockScope, configuration);
+        configuration.setDefaultEncoding(content.getEncoding());
+        return parse(file, content.bytes(), blockScope, configuration);
     }
-    
+
+    @SuppressWarnings("unchecked")
+    public Node parse(String file, byte[] content, DynamicScope blockScope,
+            ParserConfiguration configuration) {
+        RubyArray list = getLines(configuration, runtime, file);
+        LexerSource lexerSource = LexerSource.getSource(file, content, list, configuration);
+        return parse(file, lexerSource, blockScope, configuration);
+    }
+
     @SuppressWarnings("unchecked")
     public Node parse(String file, InputStream content, DynamicScope blockScope,
             ParserConfiguration configuration) {
-        long startTime = System.nanoTime();
-        IRubyObject scriptLines = runtime.getObject().fastGetConstantAt("SCRIPT_LINES__");
-        RubyArray list = null;
-        
-        if (!configuration.isEvalParse() && scriptLines != null) {
-            if (scriptLines instanceof RubyHash) {
-                RubyString filename = runtime.newString(file);
-                ThreadContext context = runtime.getCurrentContext();
-                IRubyObject object = ((RubyHash) scriptLines).op_aref(context, filename);
-                
-                list = (RubyArray) (object instanceof RubyArray ? object : runtime.newArray()); 
-                
-                ((RubyHash) scriptLines).op_aset(context, filename, list);
-            }
+        RubyArray list = getLines(configuration, runtime, file);
+        if (content instanceof LoadServiceResourceInputStream) {
+            return parse(file, ((LoadServiceResourceInputStream) content).getBytes(), blockScope, configuration);
+        } else {
+            LexerSource lexerSource = LexerSource.getSource(file, content, list, configuration);
+            return parse(file, lexerSource, blockScope, configuration);
         }
+    }
 
+    @SuppressWarnings("unchecked")
+    public Node parse(String file, LexerSource lexerSource, DynamicScope blockScope,
+            ParserConfiguration configuration) {
         // We only need to pass in current scope if we are evaluating as a block (which
         // is only done for evals).  We need to pass this in so that we can appropriately scope
         // down to captured scopes when we are parsing.
         if (blockScope != null) {
             configuration.parseAsBlock(blockScope);
         }
+        long startTime = System.nanoTime();
         RubyParser parser = RubyParserPool.getInstance().borrowParser(configuration.getVersion());
         RubyParserResult result = null;
         parser.setWarnings(runtime.getWarnings());
-        LexerSource lexerSource = LexerSource.getSource(file, content, list, configuration);
         try {
             result = parser.parse(configuration, lexerSource);
-            if (result.getEndOffset() >= 0) {
+            if (result.getEndOffset() >= 0 && configuration.isSaveData()) {
                 IRubyObject verbose = runtime.getVerbose();
                 runtime.setVerbose(runtime.getNil());
-            	runtime.defineGlobalConstant("DATA", new RubyFile(runtime, file, content));
+                try {
+                    runtime.defineGlobalConstant("DATA", new RubyFile(runtime, file, lexerSource.getRemainingAsStream()));
+                } catch (IOException e) { // Not sure how to handle suddenly closed IO here?
+                    runtime.defineGlobalConstant("DATA", runtime.getNil());
+                }
                 runtime.setVerbose(verbose);
             	result.setEndOffset(-1);
             }
+        } catch (IOException e) {
+            // Enebo: We may want to change this error to be more specific,
+            // but I am not sure which conditions leads to this...so lame message.
+            throw runtime.newSyntaxError("Problem reading source: " + e);
         } catch (SyntaxException e) {
-            StringBuilder buffer = new StringBuilder(100);
-            buffer.append(e.getPosition().getFile()).append(':');
-            buffer.append(e.getPosition().getEndLine() + 1).append(": ");
-            buffer.append(e.getMessage());
-            throw runtime.newSyntaxError(buffer.toString());
+            switch (e.getPid()) {
+                case UNKNOWN_ENCODING:
+                case NOT_ASCII_COMPATIBLE:
+                    throw runtime.newArgumentError(e.getMessage());
+                default:
+                    StringBuilder buffer = new StringBuilder(100);
+                    buffer.append(e.getPosition().getFile()).append(':');
+                    buffer.append(e.getPosition().getStartLine() + 1).append(": ");
+                    buffer.append(e.getMessage());
+
+                    throw runtime.newSyntaxError(buffer.toString());
+            }
         } finally {
             RubyParserPool.getInstance().returnParser(parser);
         }
@@ -154,5 +157,20 @@ public class Parser {
         totalBytes += lexerSource.getOffset();
 
         return ast;
+    }
+
+    private RubyArray getLines(ParserConfiguration configuration, Ruby runtime, String file) {
+        RubyArray list = null;
+        IRubyObject scriptLines = runtime.getObject().fastGetConstantAt("SCRIPT_LINES__");
+        if (!configuration.isEvalParse() && scriptLines != null) {
+            if (scriptLines instanceof RubyHash) {
+                RubyString filename = runtime.newString(file);
+                ThreadContext context = runtime.getCurrentContext();
+                IRubyObject object = ((RubyHash) scriptLines).op_aref(context, filename);
+                list = (RubyArray) (object instanceof RubyArray ? object : runtime.newArray());
+                ((RubyHash) scriptLines).op_aset(context, filename, list);
+            }
+        }
+        return list;
     }
 }

@@ -43,12 +43,13 @@ import org.jruby.runtime.CallSite;
 import org.jruby.runtime.MethodIndex;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.jruby.util.ByteList;
 
 /** 
  * Represents a method call with self as an implicit receiver.
  */
 public class FCallNode extends Node implements INameNode, IArgumentNode, BlockAcceptingNode {
-    private Node argsNode;
+    protected Node argsNode;
     protected Node iterNode;
     public CallSite callAdapter;
 
@@ -126,11 +127,6 @@ public class FCallNode extends Node implements INameNode, IArgumentNode, BlockAc
     }
 
     @Override
-    public String toString() {
-        return "" + getClass().getName() + ": '" + getName() + "' @ " + getPosition();
-    }
-    
-    @Override
     public IRubyObject interpret(Ruby runtime, ThreadContext context, IRubyObject self, Block aBlock) {
         assert false : "Should not happen anymore";
 
@@ -138,9 +134,9 @@ public class FCallNode extends Node implements INameNode, IArgumentNode, BlockAc
     }
     
     @Override
-    public String definition(Ruby runtime, ThreadContext context, IRubyObject self, Block aBlock) {
+    public ByteList definition(Ruby runtime, ThreadContext context, IRubyObject self, Block aBlock) {
         if (self.getMetaClass().isMethodBound(getName(), false)) {
-            return ASTInterpreter.getArgumentDefinition(runtime, context, getArgsNode(), "method", self, aBlock);
+            return ASTInterpreter.getArgumentDefinition(runtime, context, getArgsNode(), METHOD_BYTELIST, self, aBlock);
         }
             
         return null;

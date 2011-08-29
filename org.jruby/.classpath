@@ -1,36 +1,57 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry kind="lib" path="build_lib/ant.jar"/>
+	<classpathentry kind="lib" path="build_lib/asm-3.3.1.jar"/>
+	<classpathentry kind="lib" path="build_lib/asm-analysis-3.3.1.jar"/>
+	<classpathentry kind="lib" path="build_lib/asm-commons-3.3.1.jar"/>
+	<classpathentry kind="lib" path="build_lib/asm-tree-3.3.1.jar"/>
+	<classpathentry kind="lib" path="build_lib/asm-util-3.3.1.jar"/>
+	<classpathentry kind="lib" path="build_lib/bnd.jar"/>
+	<classpathentry kind="lib" path="build_lib/bsf.jar"/>
+	<classpathentry kind="lib" path="build_lib/bytelist.jar"/>
+	<classpathentry kind="lib" path="build_lib/commons-logging-1.1.1.jar"/>
+	<classpathentry kind="lib" path="build_lib/jaffl.jar"/>
+	<classpathentry kind="lib" path="build_lib/jarjar-1.0.jar"/>
+	<classpathentry kind="lib" path="build_lib/jffi-Darwin.jar"/>
+	<classpathentry kind="lib" path="build_lib/jffi-i386-FreeBSD.jar"/>
+	<classpathentry kind="lib" path="build_lib/jffi-i386-Linux.jar"/>
+	<classpathentry kind="lib" path="build_lib/jffi-i386-OpenBSD.jar"/>
+	<classpathentry kind="lib" path="build_lib/jffi-i386-SunOS.jar"/>
+	<classpathentry kind="lib" path="build_lib/jffi-i386-Windows.jar"/>
+	<classpathentry kind="lib" path="build_lib/jffi-ppc-AIX.jar"/>
+	<classpathentry kind="lib" path="build_lib/jffi-ppc-Linux.jar"/>
+	<classpathentry kind="lib" path="build_lib/jffi-ppc64-Linux.jar"/>
+	<classpathentry kind="lib" path="build_lib/jffi-s390x-Linux.jar"/>
+	<classpathentry kind="lib" path="build_lib/jffi-sparc-SunOS.jar"/>
+	<classpathentry kind="lib" path="build_lib/jffi-sparcv9-SunOS.jar"/>
+	<classpathentry kind="lib" path="build_lib/jffi-x86_64-FreeBSD.jar"/>
+	<classpathentry kind="lib" path="build_lib/jffi-x86_64-Linux.jar"/>
+	<classpathentry kind="lib" path="build_lib/jffi-x86_64-OpenBSD.jar"/>
+	<classpathentry kind="lib" path="build_lib/jffi-x86_64-SunOS.jar"/>
+	<classpathentry kind="lib" path="build_lib/jffi-x86_64-Windows.jar"/>
+	<classpathentry kind="lib" path="build_lib/jgrapht-jdk1.5.jar"/>
+	<classpathentry kind="lib" path="build_lib/jline-1.0.jar"/>
+	<classpathentry kind="lib" path="build_lib/jnr-netdb.jar"/>
+	<classpathentry kind="lib" path="build_lib/jnr-posix.jar"/>
+	<classpathentry kind="lib" path="build_lib/joda-time-1.6.2.jar"/>
+	<classpathentry kind="lib" path="build_lib/jsr292-mock.jar"/>
+	<classpathentry kind="lib" path="build_lib/livetribe-jsr223-2.0.6.jar"/>
+	<classpathentry kind="lib" path="build_lib/nailgun-0.7.1.jar"/>
+	<classpathentry kind="lib" path="build_lib/org.osgi.core-4.2.0.jar"/>
+	<classpathentry kind="lib" path="build_lib/snakeyaml-1.8.jar"/>
+	<classpathentry kind="lib" path="build_lib/yecht.jar"/>
+	<classpathentry kind="lib" path="build_lib/jcodings.jar"/>
 	<classpathentry kind="lib" path="build_lib/apt-mirror-api.jar"/>
-	<classpathentry kind="lib" path="build_lib/backport-util-concurrent.jar"/>
-	<classpathentry kind="lib" path="build_lib/bnd-0.0.249.jar"/>
 	<classpathentry kind="lib" path="build_lib/constantine.jar"/>
 	<classpathentry kind="lib" path="build_lib/dynalang-0.3.jar"/>
 	<classpathentry kind="lib" path="build_lib/emma_ant.jar"/>
 	<classpathentry kind="lib" path="build_lib/emma.jar"/>
-	<classpathentry kind="lib" path="build_lib/invokedynamic.jar"/>
-	<classpathentry kind="lib" path="build_lib/jarjar-1.0rc8.jar"/>
-	<classpathentry exported="true" kind="lib" path="build_lib/jcodings.jar"/>
 	<classpathentry kind="lib" path="build_lib/jffi.jar"/>
-	<classpathentry kind="lib" path="build_lib/jline-0.9.93.jar"/>
-	<classpathentry kind="lib" path="build_lib/jna.jar"/>
-	<classpathentry kind="lib" path="build_lib/jna-posix.jar"/>
-	<classpathentry kind="lib" path="build_lib/joda-time-1.5.1.jar"/>
 	<classpathentry kind="lib" path="build_lib/joni.jar"/>
 	<classpathentry kind="lib" path="build_lib/junit.jar"/>
-	<classpathentry kind="lib" path="build_lib/jvyamlb-0.2.5.jar"/>
-	<classpathentry kind="lib" path="build_lib/retroweaver-2.0.5.jar"/>
-	<classpathentry kind="lib" path="build_lib/retroweaver-rt-2.0.5.jar"/>
 	<classpathentry kind="lib" path="build_lib/yydebug.jar"/>
-	<classpathentry kind="lib" path="lib/bsf.jar"/>
-	<classpathentry kind="lib" path="lib/profile.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="build_lib/asm-util-3.0.jar"/>
-	<classpathentry kind="lib" path="build_lib/asm-commons-3.0.jar"/>
-	<classpathentry kind="lib" path="build_lib/asm-3.0.jar"/>
-	<classpathentry kind="lib" path="build_lib/asm-tree-3.0.jar"/>
-	<classpathentry kind="lib" path="build_lib/asm-analysis-3.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="build_lib/bytelist-1.0.1.jar"/>
-	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

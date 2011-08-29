@@ -39,23 +39,26 @@ import org.jruby.runtime.Block;
 import org.jruby.runtime.Frame;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.jruby.runtime.profile.IProfileData;
 
 public class RubyRunnable implements Runnable {
     private Ruby runtime;
     private RubyProc proc;
     private IRubyObject[] arguments;
     private RubyThread rubyThread;
-    private Frame currentFrame;
+
+    /** Frames at thread construction time, to produce a good contextual backtrace **/
+    private Frame[] currentFrames;
+    
     private Thread javaThread;
     private static boolean warnedAboutTC = false;
     
-    public RubyRunnable(RubyThread rubyThread, IRubyObject[] args, Block currentBlock) {
+    public RubyRunnable(RubyThread rubyThread, IRubyObject[] args, Frame[] frames, Block currentBlock) {
         this.rubyThread = rubyThread;
         this.runtime = rubyThread.getRuntime();
-        ThreadContext tc = runtime.getCurrentContext();
         
         proc = runtime.newProc(Block.Type.THREAD, currentBlock);
-        currentFrame = tc.getCurrentFrame();
+        this.currentFrames = frames;
         this.arguments = args;
     }
     
@@ -83,42 +86,50 @@ public class RubyRunnable implements Runnable {
             }
         }
         
-        context.preRunThread(currentFrame);
+        context.preRunThread(currentFrames);
 
-        // Call the thread's code
+        // uber-ThreadKill catcher, since it should always just mean "be dead"
         try {
-            IRubyObject result = proc.call(context, arguments);
-            rubyThread.cleanTerminate(result);
-        } catch (ThreadKill tk) {
-            // notify any killer waiting on our thread that we're going bye-bye
-            synchronized (rubyThread.killLock) {
-                rubyThread.killLock.notifyAll();
-            }
-        } catch (JumpException.ReturnJump rj) {
-            rubyThread.exceptionRaised(runtime.newThreadError("return can't jump across threads"));
-        } catch (RaiseException e) {
-            rubyThread.exceptionRaised(e);
-        } catch (MainExitException mee) {
-            // Someone called exit!, so we need to kill the main thread
-            runtime.getThreadService().getMainThread().kill();
-        } finally {
-            runtime.getThreadService().setCritical(false);
-            runtime.getThreadService().unregisterThread(rubyThread);
-            
-            // synchronize on the RubyThread object for threadgroup updates
-            synchronized (rubyThread) {
-                ((RubyThreadGroup)rubyThread.group()).remove(rubyThread);
-            }
-            
-            // restore context classloader, in case we're using a thread pool
+            // Call the thread's code
             try {
-                javaThread.setContextClassLoader(oldContextClassLoader);
-            } catch (SecurityException se) {
-                // can't set TC classloader
-                if (!warnedAboutTC && runtime.getInstanceConfig().isVerbose()) {
-                    System.err.println("WARNING: Security restrictions disallowed setting context classloader for Ruby threads.");
+                IRubyObject result = proc.call(context, arguments);
+                rubyThread.cleanTerminate(result);
+            } catch (JumpException.ReturnJump rj) {
+                if (runtime.is1_9()) {
+                    rubyThread.exceptionRaised(rj.buildException(runtime));
+                } else {
+                    rubyThread.exceptionRaised(runtime.newThreadError("return can't jump across threads"));
+                }
+            } catch (RaiseException e) {
+                rubyThread.exceptionRaised(e);
+            } catch (MainExitException mee) {
+                // Someone called exit!, so we need to kill the main thread
+                runtime.getThreadService().getMainThread().kill();
+            } finally {
+                rubyThread.beDead();
+                runtime.getThreadService().setCritical(false);
+                runtime.getThreadService().unregisterThread(rubyThread);
+
+                ((RubyThreadGroup)rubyThread.group()).remove(rubyThread);
+
+                // restore context classloader, in case we're using a thread pool
+                try {
+                    javaThread.setContextClassLoader(oldContextClassLoader);
+                } catch (SecurityException se) {
+                    // can't set TC classloader
+                    if (!warnedAboutTC && runtime.getInstanceConfig().isVerbose()) {
+                        System.err.println("WARNING: Security restrictions disallowed setting context classloader for Ruby threads.");
+                    }
+                }
+
+                // dump profile, if any
+                if (runtime.getInstanceConfig().isProfilingEntireRun()) {
+                    IProfileData profileData = (IProfileData) context.getProfileData();
+                    runtime.getInstanceConfig().makeDefaultProfilePrinter(profileData).printProfile(System.err);
                 }
             }
+        } catch (ThreadKill tk) {
+            // be dead
         }
     }
 }

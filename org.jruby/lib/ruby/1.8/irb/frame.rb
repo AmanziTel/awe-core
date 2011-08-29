@@ -1,8 +1,8 @@
 #
 #   frame.rb - 
 #   	$Release Version: 0.9$
-#   	$Revision: 2062 $
-#   	$Date: 2006-06-10 14:14:15 -0500 (Sat, 10 Jun 2006) $
+#   	$Revision$
+#   	$Date$
 #   	by Keiju ISHITSUKA(Nihon Rational Software Co.,Ltd)
 #
 # --

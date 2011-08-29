@@ -23,18 +23,20 @@ class DefaultMethodThreeArg extends DefaultMethod {
             IRubyObject arg1, IRubyObject arg2, IRubyObject arg3) {
         HeapInvocationBuffer buffer = new HeapInvocationBuffer(function);
         if (needsInvocationSession) {
-            Invocation invocation = new Invocation(context);
-            m1.marshal(invocation, buffer, arg1);
-            m2.marshal(invocation, buffer, arg2);
-            m3.marshal(invocation, buffer, arg3);
-            IRubyObject retVal = functionInvoker.invoke(context.getRuntime(), function, buffer);
-            invocation.finish();
-            return retVal;
+            Invocation invocation = new Invocation(context, postInvokeCount, referenceCount);
+            try {
+                m1.marshal(invocation, buffer, arg1);
+                m2.marshal(invocation, buffer, arg2);
+                m3.marshal(invocation, buffer, arg3);
+                return functionInvoker.invoke(context, function, buffer);
+            } finally {
+                invocation.finish();
+            }
         } else {
             m1.marshal(context, buffer, arg1);
             m2.marshal(context, buffer, arg2);
             m3.marshal(context, buffer, arg3);
-            return functionInvoker.invoke(context.getRuntime(), function, buffer);
+            return functionInvoker.invoke(context, function, buffer);
         }
     }
 

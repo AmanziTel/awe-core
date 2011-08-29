@@ -117,11 +117,6 @@ public class ClassNode extends Node implements IScopingNode {
     }
     
     @Override
-    public String toString() {
-        return "ClassNode [" + cpath + "]";
-    }
-    
-    @Override
     public IRubyObject interpret(Ruby runtime, ThreadContext context, IRubyObject self, Block aBlock) {
         RubyModule enclosingClass = cpath.getEnclosingModule(runtime, context, self, aBlock);
 
@@ -135,12 +130,13 @@ public class ClassNode extends Node implements IScopingNode {
             RubyClass.checkInheritable(superObj);
             superClass = (RubyClass)superObj;
         }
-
-
+        
         RubyClass clazz = enclosingClass.defineOrGetClassUnder(cpath.getName(), superClass);
 
         scope.setModule(clazz);
 
-        return ASTInterpreter.evalClassDefinitionBody(runtime, context, scope, bodyNode, clazz, self, aBlock);    
+        IRubyObject classBodyResult = ASTInterpreter.evalClassDefinitionBody(runtime, context, scope, bodyNode, clazz, self, aBlock);
+
+        return classBodyResult;
     }
 }

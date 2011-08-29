@@ -1,4 +1,4 @@
-# logger.rb - saimple logging utility
+# logger.rb - simple logging utility
 # Copyright (C) 2000-2003, 2005  NAKAMURA, Hiroshi <nakahiro@sarion.co.jp>.
 
 require 'monitor'
@@ -10,7 +10,7 @@ require 'monitor'
 # License::
 #   You can redistribute it and/or modify it under the same terms of Ruby's
 #   license; either the dual license version in 2003, or any later version.
-# Revision:: $Id: logger.rb 2906 2007-02-02 00:35:06Z headius $
+# Revision:: $Id$
 #
 # == Description
 #
@@ -170,8 +170,8 @@ require 'monitor'
 
 class Logger
   VERSION = "1.2.6"
-  /: (\S+),v (\S+)/ =~ %q$Id: logger.rb 2906 2007-02-02 00:35:06Z headius $
-  ProgName = "#{$1}/#{$2}"
+  # this is faked to avoid the svn ID changing with every update
+  ProgName = "logger.rb/99999"
 
   class Error < RuntimeError; end
   class ShiftingError < Error; end

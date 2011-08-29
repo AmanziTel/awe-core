@@ -29,7 +29,6 @@
  ***** END LICENSE BLOCK *****/
 package org.jruby.runtime;
 
-import org.jruby.runtime.callsite.DivCallSite;
 import org.jruby.runtime.callsite.LtCallSite;
 import org.jruby.runtime.callsite.LeCallSite;
 import org.jruby.runtime.callsite.MinusCallSite;
@@ -38,130 +37,118 @@ import org.jruby.runtime.callsite.NormalCachingCallSite;
 import org.jruby.runtime.callsite.GtCallSite;
 import org.jruby.runtime.callsite.PlusCallSite;
 import org.jruby.runtime.callsite.GeCallSite;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.jruby.RubyInstanceConfig;
+import org.jruby.runtime.callsite.CmpCallSite;
+import org.jruby.runtime.callsite.EqCallSite;
+import org.jruby.runtime.callsite.BitAndCallSite;
+import org.jruby.runtime.callsite.BitOrCallSite;
 import org.jruby.runtime.callsite.FunctionalCachingCallSite;
 import org.jruby.runtime.callsite.RespondToCallSite;
+import org.jruby.runtime.callsite.ShiftLeftCallSite;
+import org.jruby.runtime.callsite.ShiftRightCallSite;
+import org.jruby.runtime.callsite.SuperCallSite;
 import org.jruby.runtime.callsite.VariableCachingCallSite;
+import org.jruby.runtime.callsite.XorCallSite;
 
 /**
  *
  * @author headius
  */
 public class MethodIndex {
-    @Deprecated
-    public static final List<String> NAMES = new ArrayList<String>();
-    @Deprecated
-    private static final Map<String, Integer> NUMBERS = new HashMap<String, Integer>();
+    public static final int NO_METHOD = 0;
+    public static final int OP_EQUAL = 1;
+    public static final int EQL = 2;
+    public static final int HASH = 3;
+    public static final int OP_CMP = 4;
+    public static final int MAX_METHODS = 5;
     
-    // ensure zero is devoted to no method name
-    @Deprecated
-    public static final int NO_INDEX = getIndex("");
-    
-    // predefine a few other methods we invoke directly elsewhere
-    @Deprecated
-    public static final int OP_PLUS = getIndex("+");
-    @Deprecated
-    public static final int OP_MINUS = getIndex("-");
-    @Deprecated
-    public static final int OP_LT = getIndex("<");
-    @Deprecated
-    public static final int AREF = getIndex("[]");
-    @Deprecated
-    public static final int ASET = getIndex("[]=");
-    @Deprecated
-    public static final int EQUALEQUAL = getIndex("==");
-    @Deprecated
-    public static final int OP_LSHIFT = getIndex("<<");
-    @Deprecated
-    public static final int EMPTY_P = getIndex("empty?");
-    @Deprecated
-    public static final int TO_S = getIndex("to_s");
-    @Deprecated
-    public static final int TO_I = getIndex("to_i");
-    @Deprecated
-    public static final int TO_STR = getIndex("to_str");
-    @Deprecated
-    public static final int TO_ARY = getIndex("to_ary");
-    @Deprecated
-    public static final int TO_INT = getIndex("to_int");
-    @Deprecated
-    public static final int TO_F = getIndex("to_f");
-    @Deprecated
-    public static final int TO_A = getIndex("to_a");
-    @Deprecated
-    public static final int TO_IO = getIndex("to_io");
-    @Deprecated
-    public static final int HASH = getIndex("hash");
-    @Deprecated
-    public static final int OP_GT = getIndex(">");
-    @Deprecated
-    public static final int OP_TIMES = getIndex("*");
-    @Deprecated
-    public static final int OP_LE = getIndex("<=");
-    @Deprecated
-    public static final int OP_SPACESHIP = getIndex("<=>");
-    @Deprecated
-    public static final int OP_EQQ = getIndex("===");
-    @Deprecated
-    public static final int EQL_P = getIndex("eql?");
-    @Deprecated
-    public static final int TO_HASH = getIndex("to_hash");
-    @Deprecated
-    public static final int METHOD_MISSING = getIndex("method_missing");
-    @Deprecated
-    public static final int DEFAULT = getIndex("default");
+    public static final String[] METHOD_NAMES = {
+        "",
+        "==",
+        "eql?",
+        "hash",
+        "<=>"
+    };
 
-    @Deprecated
-    public synchronized static int getIndex(String methodName) {
-        Integer index = NUMBERS.get(methodName);
-        
-        if (index == null) {
-            index = new Integer(NAMES.size());
-            NUMBERS.put(methodName, index);
-            NAMES.add(methodName);
-        }
-        
-        return index;
-    }
-    
-    public synchronized static CallSite getCallSite(String name) {
+    public static CallSite getCallSite(String name) {
         // fast and safe respond_to? call site logic
         if (name.equals("respond_to?")) return new RespondToCallSite();
-        
-        if (!RubyInstanceConfig.FASTOPS_COMPILE_ENABLED) {
-            return new NormalCachingCallSite(name);
-        } else {
-            if (name.equals("+")) {
-                return new PlusCallSite();
-            } else if (name.equals("-")) {
-                return new MinusCallSite();
-            } else if (name.equals("*")) {
-                return new MulCallSite();
-            } else if (name.equals("/")) {
-                return new DivCallSite();
-            } else if (name.equals("<")) {
-                return new LtCallSite();
-            } else if (name.equals("<=")) {
-                return new LeCallSite();
-            } else if (name.equals(">")) {
-                return new GtCallSite();
-            } else if (name.equals(">=")) {
-                return new GeCallSite();
-            } else {
-                return new NormalCachingCallSite(name);
-            }
-        }
+
+        // only use fast ops if we're not tracing
+        if (RubyInstanceConfig.FASTOPS_COMPILE_ENABLED &&
+                !(RubyInstanceConfig.FULL_TRACE_ENABLED)) return getFastOpsCallSite(name);
+
+        return new NormalCachingCallSite(name);
     }
     
-    public synchronized static CallSite getFunctionalCallSite(String name) {
+    public static boolean hasFastOps(String name) {
+        return name.equals("+")
+                || name.equals("-")
+                || name.equals("*")
+                || name.equals("<")
+                || name.equals("<=")
+                || name.equals(">")
+                || name.equals(">=")
+                || name.equals("==")
+                || name.equals("<=>")
+                || name.equals("&")
+                || name.equals("|")
+                || name.equals("^")
+                || name.equals(">>")
+                || name.equals("<<");
+    }
+
+    public static CallSite getFastOpsCallSite(String name) {
+        if (name.equals("+")) {
+            return new PlusCallSite();
+        } else if (name.equals("-")) {
+            return new MinusCallSite();
+        } else if (name.equals("*")) {
+            return new MulCallSite();
+        } else if (name.equals("<")) {
+            return new LtCallSite();
+        } else if (name.equals("<=")) {
+            return new LeCallSite();
+        } else if (name.equals(">")) {
+            return new GtCallSite();
+        } else if (name.equals(">=")) {
+            return new GeCallSite();
+        } else if (name.equals("==")) {
+            return new EqCallSite();
+        } else if (name.equals("<=>")) {
+            return new CmpCallSite();
+        } else if (name.equals("&")) {
+            return new BitAndCallSite();
+        } else if (name.equals("|")) {
+            return new BitOrCallSite();
+        } else if (name.equals("^")) {
+            return new XorCallSite();
+        } else if (name.equals(">>")) {
+            return new ShiftRightCallSite();
+        } else if (name.equals("<<")) {
+            return new ShiftLeftCallSite();
+        // disabled because Array subclasses often override
+//        } else if (name.equals("[]")) {
+//            return new ArefCallSite();
+//        } else if (name.equals("[]=")) {
+//            return new AsetCallSite();
+        // disabled because of differing 1.8/1.9 behavior
+//        } else if (name.equals("%")) {
+//            return new ModCallSite();
+        }
+
+        return new NormalCachingCallSite(name);
+    }
+    
+    public static CallSite getFunctionalCallSite(String name) {
         return new FunctionalCachingCallSite(name);
     }
     
-    public synchronized static CallSite getVariableCallSite(String name) {
+    public static CallSite getVariableCallSite(String name) {
         return new VariableCachingCallSite(name);
+    }
+
+    public static CallSite getSuperCallSite() {
+        return new SuperCallSite();
     }
 }

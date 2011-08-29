@@ -23,10 +23,8 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
 /**
- * TODO Purpose of 
- * <p>
- *
- * </p>
+ * Plugin that controls work with Log4j 
+ * 
  * @author gerzog
  * @since 1.0.0
  */

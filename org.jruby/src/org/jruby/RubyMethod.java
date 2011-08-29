@@ -35,12 +35,16 @@ import org.jruby.anno.JRubyMethod;
 import org.jruby.anno.JRubyClass;
 import org.jruby.exceptions.JumpException;
 import org.jruby.internal.runtime.methods.DynamicMethod;
+import org.jruby.internal.runtime.methods.ProcMethod;
 import org.jruby.runtime.Block;
+import org.jruby.runtime.ClassIndex;
 import org.jruby.runtime.DynamicScope;
 import org.jruby.runtime.MethodBlock;
 import org.jruby.runtime.ObjectAllocator;
+import org.jruby.runtime.PositionAware;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.jruby.runtime.marshal.DataType;
 
 /** 
  * The RubyMethod class represents a RubyMethod object.
@@ -53,7 +57,7 @@ import org.jruby.runtime.builtin.IRubyObject;
  * @since 0.2.3
  */
 @JRubyClass(name="Method")
-public class RubyMethod extends RubyObject {
+public class RubyMethod extends RubyObject implements DataType {
     protected RubyModule implementationModule;
     protected String methodName;
     protected RubyModule originModule;
@@ -72,6 +76,9 @@ public class RubyMethod extends RubyObject {
         // TODO: NOT_ALLOCATABLE_ALLOCATOR is probably ok here. Confirm. JRUBY-415
         RubyClass methodClass = runtime.defineClass("Method", runtime.getObject(), ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR);
         runtime.setMethod(methodClass);
+
+        methodClass.index = ClassIndex.METHOD;
+        methodClass.setReifiedClass(RubyMethod.class);
         
         methodClass.defineAnnotatedMethods(RubyMethod.class);
         
@@ -92,10 +99,14 @@ public class RubyMethod extends RubyObject {
         newMethod.methodName = methodName;
         newMethod.originModule = originModule;
         newMethod.originName = originName;
-        newMethod.method = method.getRealMethod();
+        newMethod.method = method;
         newMethod.receiver = receiver;
 
         return newMethod;
+    }
+
+    public DynamicMethod getMethod() {
+        return method;
     }
 
     /** Call the method.
@@ -135,11 +146,16 @@ public class RubyMethod extends RubyObject {
     @Override
     public RubyBoolean op_equal(ThreadContext context, IRubyObject other) {
         if (!(other instanceof RubyMethod)) return context.getRuntime().getFalse();
+        if (method instanceof ProcMethod) return context.getRuntime().newBoolean(((ProcMethod) method).isSame(((RubyMethod) other).getMethod()));
         RubyMethod otherMethod = (RubyMethod)other;
-        return context.getRuntime().newBoolean(implementationModule == otherMethod.implementationModule &&
-                                       originModule == otherMethod.originModule &&
-                                       receiver == otherMethod.receiver &&
-                                       method.getRealMethod() == otherMethod.method.getRealMethod());
+        return context.getRuntime().newBoolean(receiver == otherMethod.receiver &&
+                originModule == otherMethod.originModule &&
+                method.getRealMethod().getSerialNumber() == otherMethod.method.getRealMethod().getSerialNumber());
+    }
+
+    @JRubyMethod(name = "eql?", required = 1, compat = CompatVersion.RUBY1_9)
+    public IRubyObject op_eql19(ThreadContext context, IRubyObject other) {
+        return op_equal(context, other);
     }
 
     @JRubyMethod(name = "clone")
@@ -151,7 +167,7 @@ public class RubyMethod extends RubyObject {
     /** Create a Proc object.
      * 
      */
-    @JRubyMethod(name = "to_proc", frame = true)
+    @JRubyMethod
     public IRubyObject to_proc(ThreadContext context, Block unusedBlock) {
         Ruby runtime = context.getRuntime();
         DynamicScope currentScope = context.getCurrentScope();
@@ -211,8 +227,8 @@ public class RubyMethod extends RubyObject {
         return ((RubyMethod) arg1).call(context, new IRubyObject[] { blockArg }, Block.NULL_BLOCK);
     }
 
-    @JRubyMethod(name = "unbind", frame = true)
-    public RubyUnboundMethod unbind(Block unusedBlock) {
+    @JRubyMethod
+    public RubyUnboundMethod unbind() {
         RubyUnboundMethod unboundMethod =
         	RubyUnboundMethod.newUnboundMethod(implementationModule, methodName, originModule, originName, method);
         unboundMethod.infectBy(this);
@@ -255,19 +271,63 @@ public class RubyMethod extends RubyObject {
         return str;
     }
 
-    @JRubyMethod(name = "name", compat = CompatVersion.RUBY1_9)
+    @JRubyMethod(name = "name", compat = CompatVersion.RUBY1_8)
     public IRubyObject name(ThreadContext context) {
+        return context.getRuntime().newString(methodName);
+    }
+
+    @JRubyMethod(name = "name", compat = CompatVersion.RUBY1_9)
+    public IRubyObject name19(ThreadContext context) {
         return context.getRuntime().newSymbol(methodName);
     }
 
-    @JRubyMethod(name = "receiver", compat = CompatVersion.RUBY1_9)
+    public String getMethodName() {
+        return methodName;
+    }
+
+    @JRubyMethod(name = "receiver")
     public IRubyObject receiver(ThreadContext context) {
         return receiver;
     }
 
-    @JRubyMethod(name = "owner", compat = CompatVersion.RUBY1_9)
+    @JRubyMethod(name = "owner")
     public IRubyObject owner(ThreadContext context) {
         return implementationModule;
+    }
+
+    @JRubyMethod(name = "source_location", compat = CompatVersion.RUBY1_9)
+    public IRubyObject source_location(ThreadContext context) {
+        Ruby runtime = context.getRuntime();
+
+        String filename = getFilename();
+        if (filename != null) {
+            return runtime.newArray(runtime.newString(filename), runtime.newFixnum(getLine()));
+        }
+
+        return context.getRuntime().getNil();
+    }
+
+    public String getFilename() {
+        DynamicMethod realMethod = method.getRealMethod(); // Follow Aliases
+        if (realMethod instanceof PositionAware) {
+            PositionAware poser = (PositionAware) realMethod;
+            return poser.getFile();
+        }
+        return null;
+    }
+
+    public int getLine() {
+        DynamicMethod realMethod = method.getRealMethod(); // Follow Aliases
+        if (realMethod instanceof PositionAware) {
+            PositionAware poser = (PositionAware) realMethod;
+            return poser.getLine() + 1;
+        }
+        return -1;
+    }
+
+    @JRubyMethod(name = "parameters", compat = CompatVersion.RUBY1_9)
+    public IRubyObject parameters(ThreadContext context) {
+        return RubyJRuby.MethodExtensions.methodArgs(this);
     }
 }
 

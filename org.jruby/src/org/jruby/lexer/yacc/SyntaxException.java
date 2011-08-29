@@ -52,7 +52,15 @@ public class SyntaxException extends RuntimeException {
         STRING_UNKNOWN_TYPE("STRING_UNKNOWN_TYPE"), 
         TRAILING_UNDERSCORE_IN_NUMBER("TRAILING_UNDERSCORE_IN_NUMBER"),
         DUBY_EXTENSIONS_OFF("DUBY_EXTENSIONS_OFF"),
-        BLOCK_GIVEN_TO_YIELD("BLOCK_GIVEN_TO_YIELD");
+        BLOCK_GIVEN_TO_YIELD("BLOCK_GIVEN_TO_YIELD"),
+        VOID_VALUE_EXPRESSION("VOID_VALUE_EXPRESSION"),
+        UNKNOWN_ENCODING("UNKNOWN_ENCODING"),
+        NOT_ASCII_COMPATIBLE("NOT_ASCII_COMPATIBLE"),
+        MIXED_ENCODING("MIXED_ENCODNIG"),
+        NUL_IN_SYMBOL("NUL_IN_SYMBOL"),
+        REGEXP_ENCODING_MISMATCH("REGEXP_ENCODING_MISMATCH"),
+        INVALID_MULTIBYTE_CHAR("INVALID_MULTIBYTE_CHAR")
+        ;
         
         private String id;
         
@@ -70,11 +78,20 @@ public class SyntaxException extends RuntimeException {
     private ISourcePosition position;
     private PID pid;
 
-    public SyntaxException(PID pid, ISourcePosition position, String message, Object... data) {
-        super(message);
+    public SyntaxException(PID pid, ISourcePosition position, String lastLine, String message, Object... data) {
+        super(prepareMessage(message, lastLine));
 
         this.pid = pid;
         this.position = position;
+    }
+
+    private static String prepareMessage(String message, String line) {
+        if (line != null && line.length() > 5) {
+            boolean addNewline = message != null && message.endsWith("\n");
+            return message + (addNewline ? "\n" : "") + line;
+        }
+        
+        return message;
     }
 
     public ISourcePosition getPosition() {

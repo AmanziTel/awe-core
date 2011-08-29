@@ -39,6 +39,7 @@ import org.jruby.lexer.yacc.ISourcePosition;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.jruby.util.ByteList;
 
 /** 
  * Represents a yield statement.
@@ -53,8 +54,8 @@ public class YieldNode extends Node {
      * @param position position of the node in the source
      * @param argsNode the arguments to the yield
      * @param expandedArguments whether the arguments should be treated as directly-passed args
-     *                          as in yield 1, 2, 3 (expandArguments = true) versus
-     *                          yield [1, 2, 3] (expandArguments = false).
+     *                          as in yield 1, 2, 3 (expandedArguments = true) versus
+     *                          yield [1, 2, 3] (expandedArguments = false).
      */
     public YieldNode(ISourcePosition position, Node argsNode, boolean expandedArguments) {
         super(position);
@@ -105,25 +106,15 @@ public class YieldNode extends Node {
     
     @Override
     public IRubyObject interpret(Ruby runtime, ThreadContext context, IRubyObject self, Block aBlock) {
-        IRubyObject result = null;
-        
-        if (argsNode != null) result = argsNode.interpret(runtime, context, self, aBlock);
-
         if (expandedArguments) {
-            return context.getCurrentFrame().getBlock().yield(context, result, null, null, true);
-        } else {
-            return context.getCurrentFrame().getBlock().yield(context, result);
-        }
+            return context.getCurrentFrame().getBlock().yieldArray(context, argsNode.interpret(runtime, context, self, aBlock), null, null);
+        } 
+
+        return context.getCurrentFrame().getBlock().yield(context, argsNode.interpret(runtime, context, self, aBlock));
     }
     
     @Override
-    public String definition(Ruby runtime, ThreadContext context, IRubyObject self, Block aBlock) {
-        return aBlock.isGiven() ? "yield" : null;
-    }
-
-    @Override
-    public String toString() {
-        return "YieldNode[" + (argsNode != null ? argsNode : "") + "]";
-
+    public ByteList definition(Ruby runtime, ThreadContext context, IRubyObject self, Block aBlock) {
+        return aBlock.isGiven() ? YIELD_BYTELIST : null;
     }
 }

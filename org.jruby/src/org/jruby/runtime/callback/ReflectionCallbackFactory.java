@@ -155,14 +155,15 @@ public class ReflectionCallbackFactory extends CallbackFactory {
             true,
             Arity.fixed(2), false);
     }
-    
+
+    @Deprecated
     public CompiledBlockCallback getBlockCallback(String method, final Object scriptObject) {
         try {
             final Method blockMethod = scriptObject.getClass().getMethod(method, new Class[]{ThreadContext.class, IRubyObject.class, IRubyObject.class});
             return new CompiledBlockCallback() {
-                public IRubyObject call(ThreadContext context, IRubyObject self, IRubyObject args) {
+                public IRubyObject call(ThreadContext context, IRubyObject self, IRubyObject args, Block block) {
                     try {
-                        return (IRubyObject)blockMethod.invoke(scriptObject, new Object[]{context, self, args});
+                        return (IRubyObject)blockMethod.invoke(scriptObject, new Object[]{context, self, args, block});
                     } catch (IllegalAccessException ex) {
                         throw new RuntimeException(ex);
                     } catch (IllegalArgumentException ex) {
@@ -178,12 +179,21 @@ public class ReflectionCallbackFactory extends CallbackFactory {
                         }
                     }
                 }
+
+                public String getFile() {
+                    return "(deprecated)";
+                }
+
+                public int getLine() {
+                    return -1;
+                }
             };
         } catch (NoSuchMethodException nsme) {
             throw new RuntimeException(nsme);
         }
     }
 
+    @Deprecated
     public CompiledBlockCallback19 getBlockCallback19(String method, final Object scriptObject) {
         try {
             final Method blockMethod = scriptObject.getClass().getMethod(method, new Class[]{ThreadContext.class, IRubyObject.class, IRubyObject[].class, Block.class});
@@ -205,6 +215,14 @@ public class ReflectionCallbackFactory extends CallbackFactory {
                             throw new RuntimeException(ex);
                         }
                     }
+                }
+
+                public String getFile() {
+                    return "(deprecated)";
+                }
+
+                public int getLine() {
+                    return -1;
                 }
             };
         } catch (NoSuchMethodException nsme) {

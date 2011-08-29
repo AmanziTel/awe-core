@@ -38,7 +38,6 @@ import java.util.Map;
 
 import org.jruby.internal.runtime.methods.DynamicMethod;
 import org.jruby.runtime.builtin.IRubyObject;
-import org.jruby.runtime.builtin.InstanceVariableTable;
 import org.jruby.runtime.builtin.Variable;
 
 /**
@@ -57,7 +56,7 @@ public final class IncludedModuleWrapper extends RubyClass {
     private final RubyModule delegate;
 
     public IncludedModuleWrapper(Ruby runtime, RubyClass superClass, RubyModule delegate) {
-        super(runtime, superClass, delegate.generation, false);
+        super(runtime, superClass, false);
         this.delegate = delegate;
         this.metaClass = delegate.metaClass;
         delegate.addIncludingHierarchy(this);
@@ -113,6 +112,11 @@ public final class IncludedModuleWrapper extends RubyClass {
     }
 
     @Override
+    public Map<String, DynamicMethod> getMethodsForWrite() {
+        return delegate.getMethodsForWrite();
+    }
+
+    @Override
     public void addMethod(String name, DynamicMethod method) {
         throw new UnsupportedOperationException("An included class is only a wrapper for a module");
     }
@@ -133,7 +137,8 @@ public final class IncludedModuleWrapper extends RubyClass {
     
     @Override
     public RubyClass getRealClass() {
-        return getSuperClass().getRealClass();
+        if (superClass == null) return null;
+        return superClass.getRealClass();
     }
 
     @Override
@@ -150,12 +155,14 @@ public final class IncludedModuleWrapper extends RubyClass {
         return delegate.id();
     }
 
-    //
-    // VARIABLE TABLE METHODS - pass to delegate
-    //
     @Override
-    public InstanceVariableTable getVariables() {
-        return delegate.getVariables();
+    protected synchronized Map<String, IRubyObject> getClassVariables() {
+        return delegate.getClassVariables();
+    }
+
+    @Override
+    protected Map<String, IRubyObject> getClassVariablesForRead() {
+        return delegate.getClassVariablesForRead();
     }
 
     @Override
@@ -169,7 +176,7 @@ public final class IncludedModuleWrapper extends RubyClass {
     }
 
     @Override
-    protected IRubyObject variableTableFetch(String name) {
+    protected Object variableTableFetch(String name) {
         return delegate.variableTableFetch(name);
     }
 
@@ -194,35 +201,8 @@ public final class IncludedModuleWrapper extends RubyClass {
     }
 
     @Override
-    protected int variableTableGetSize() {
-        return delegate.variableTableGetSize();
-    }
-
-    @Override
-    protected void variableTableSync(List<Variable<IRubyObject>> vars) {
+    protected void variableTableSync(List<Variable<Object>> vars) {
         delegate.variableTableSync(vars);
-    }
-
-    /**
-     * Method to help ease transition to new variables implementation.
-     * Will likely be deprecated in the near future.
-     */
-    @SuppressWarnings("unchecked")
-    @Override
-    @Deprecated // born deprecated
-    protected Map variableTableGetMap() {
-        return delegate.variableTableGetMap();
-    }
-
-    /**
-     * Method to help ease transition to new variables implementation.
-     * Will likely be deprecated in the near future.
-     */
-    @SuppressWarnings("unchecked")
-    @Override
-    @Deprecated // born deprecated
-    protected Map variableTableGetMap(Map map) {
-        return delegate.variableTableGetMap(map);
     }
 
     //

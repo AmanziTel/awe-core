@@ -33,7 +33,6 @@
 package org.jruby.runtime;
 
 import org.jruby.RubyModule;
-import org.jruby.internal.runtime.JumpTarget;
 import org.jruby.runtime.builtin.IRubyObject;
 
 /**
@@ -61,7 +60,7 @@ import org.jruby.runtime.builtin.IRubyObject;
  * 
  * @see ThreadContext
  */
-public final class Frame implements JumpTarget {
+public final class Frame {
     /** The class against which this call is executing. */
     private RubyModule klazz;
     
@@ -86,29 +85,13 @@ public final class Frame implements JumpTarget {
     private Visibility visibility = Visibility.PUBLIC;
     
     /** The target for non-local jumps, like return from a block */
-    private final JumpTarget jumpTarget;
-    
-    /** A tuple representing the $_ and $~ values for this frame */
-    private static class BackrefAndLastline {
-        public IRubyObject backref;
-        public IRubyObject lastline;
-    }
-    
-    /** The current backref/lastline tuple for this frame */
-    private BackrefAndLastline backrefAndLastline;
-    
-    /** The filename where the calling method is located */
-    private String fileName;
-    
-    /** The line number in the calling method where this call is made */
-    private int line;
+    private int jumpTarget;
     
     /**
      * Empty constructor, since Frame objects are pre-allocated and updated
      * when needed.
      */
     public Frame() {
-        jumpTarget = this;
     }
     
     /**
@@ -121,17 +104,10 @@ public final class Frame implements JumpTarget {
         this.self = frame.self;
         this.name = frame.name;
         this.klazz = frame.klazz;
-        this.fileName = frame.fileName;
-        this.line = frame.line;
         this.block = frame.block;
         this.visibility = frame.visibility;
         this.isBindingFrame = frame.isBindingFrame;
         this.jumpTarget = frame.jumpTarget;
-        
-        // we force the lazy allocation of backref/lastline here to allow
-        // closures to update the original frame
-        frame.lazyBackrefAndLastline();
-        this.backrefAndLastline = frame.backrefAndLastline;
     }
 
     /**
@@ -141,8 +117,8 @@ public final class Frame implements JumpTarget {
      * @param fileName The file where the calling method is located
      * @param line The line number in the calling method where the call is made
      */
-    public void updateFrame(String fileName, int line) {
-        updateFrame(null, null, null, Block.NULL_BLOCK, fileName, line); 
+    public void updateFrame() {
+        updateFrame(null, null, null, Block.NULL_BLOCK, 0);
     }
 
     /**
@@ -153,10 +129,8 @@ public final class Frame implements JumpTarget {
      * @param fileName The file of the calling method
      * @param line The line number of the call to this method
      */
-    public void updateFrame(String name, String fileName, int line) {
+    public void updateFrame(String name) {
         this.name = name;
-        this.fileName = fileName;
-        this.line = line;
     }
 
     /**
@@ -171,16 +145,10 @@ public final class Frame implements JumpTarget {
         this.self = frame.self;
         this.name = frame.name;
         this.klazz = frame.klazz;
-        this.fileName = frame.fileName;
-        this.line = frame.line;
         this.block = frame.block;
         this.visibility = frame.visibility;
         this.isBindingFrame = frame.isBindingFrame;
-        
-        // we force the lazy allocation of backref/lastline here to allow
-        // closures to update the original frame
-        frame.lazyBackrefAndLastline();
-        this.backrefAndLastline = frame.backrefAndLastline;
+        this.jumpTarget = frame.jumpTarget;
     }
 
     /**
@@ -195,17 +163,16 @@ public final class Frame implements JumpTarget {
      * @param jumpTarget The target for non-local jumps (return in block)
      */
     public void updateFrame(RubyModule klazz, IRubyObject self, String name,
-                 Block block, String fileName, int line) {
+                 Block block, int jumpTarget) {
         assert block != null : "Block uses null object pattern.  It should NEVER be null";
 
         this.self = self;
         this.name = name;
         this.klazz = klazz;
-        this.fileName = fileName;
-        this.line = line;
         this.block = block;
         this.visibility = Visibility.PUBLIC;
         this.isBindingFrame = false;
+        this.jumpTarget = jumpTarget;
     }
 
     /**
@@ -219,13 +186,12 @@ public final class Frame implements JumpTarget {
      * @param line The line number where the call is being made
      * @param jumpTarget The target for non-local jumps (return in block)
      */
-    public void updateFrameForEval(IRubyObject self, String fileName, int line) {
+    public void updateFrameForEval(IRubyObject self, int jumpTarget) {
         this.self = self;
         this.name = null;
-        this.fileName = fileName;
-        this.line = line;
         this.visibility = Visibility.PRIVATE;
         this.isBindingFrame = false;
+        this.jumpTarget = jumpTarget;
     }
 
     /**
@@ -236,7 +202,6 @@ public final class Frame implements JumpTarget {
         this.self = null;
         this.klazz = null;
         this.block = Block.NULL_BLOCK;
-        this.backrefAndLastline = null;
     }
     
     /**
@@ -249,134 +214,25 @@ public final class Frame implements JumpTarget {
     }
 
     /**
+     * Clone this frame for use in backtraces only (avoiding long-lived
+     * references to other elements.
+     *
+     * @return A new frame with identical backtrace information to this frame
+     */
+    public Frame duplicateForBacktrace() {
+        Frame backtraceFrame = new Frame();
+        backtraceFrame.name = name;
+        backtraceFrame.isBindingFrame = isBindingFrame;
+        return backtraceFrame;
+    }
+
+    /**
      * Get the jump target for non-local returns in this frame.
      * 
      * @return The jump target for non-local returns
      */
-    public JumpTarget getJumpTarget() {
+    public int getJumpTarget() {
         return jumpTarget;
-    }
-
-    /**
-     * Set the jump target for non-local returns in this frame.
-     * 
-     * @param jumpTarget The new jump target for non-local returns
-     */
-    @Deprecated
-    public void setJumpTarget(JumpTarget jumpTarget) {
-    }
-
-    /**
-     * Get the backref for this frame.
-     * 
-     * @return The backref for this frame
-     */
-    public IRubyObject getBackRef() {
-        if (hasBackref()) {
-            return self.getRuntime().getNil();
-        }
-        return backrefAndLastline.backref;
-    }
-    
-    /**
-     * Whether a backref has been set for this frame.
-     * 
-     * @return True if a backref has been set; false otherwise
-     */
-    private boolean hasBackref() {
-        return backrefAndLastline == null || backrefAndLastline.backref == null;
-    }
-
-    /**
-     * Set the backref for this frame.
-     * 
-     * @param backref The new backref for this frame
-     * @return The passed-in backref value
-     */
-    public IRubyObject setBackRef(IRubyObject backref) {
-        lazyBackrefAndLastline();
-        return this.backrefAndLastline.backref = backref;
-    }
-
-    /**
-     * Get the lastline for this frame.
-     * 
-     * @return The lastline for this frame.
-     */
-    public IRubyObject getLastLine() {
-        if (hasLastline()) {
-            return self.getRuntime().getNil();
-        }
-        return backrefAndLastline.lastline;
-    }
-    
-    /**
-     * Whether a lastline has been set for this frame.
-     * 
-     * @return True if a lastline has been set; false otherwise
-     */
-    private boolean hasLastline() {
-        return backrefAndLastline == null || backrefAndLastline.lastline == null;
-    }
-
-    /**
-     * Set the lastline for this frame.
-     * 
-     * @param lastline The new lastline for this frame
-     * @return The passed-in lastline value
-     */
-    public IRubyObject setLastLine(IRubyObject lastline) {
-        lazyBackrefAndLastline();
-        return this.backrefAndLastline.lastline = lastline;
-    }
-    
-    /**
-     * Initialize the backref/lastline tuple.
-     */
-    private void lazyBackrefAndLastline() {
-         if (backrefAndLastline == null) backrefAndLastline = new BackrefAndLastline();
-    }
-
-    /**
-     * Get the filename of the caller.
-     * 
-     * @return The filename of the caller
-     */
-    public String getFile() {
-        return fileName;
-    }
-
-    /**
-     * Set the filename of the caller.
-     * @param fileName
-     */
-    public void setFile(String fileName) {
-        this.fileName = fileName;
-    }
-    
-    /**
-     * Get the line number where this call is being made.
-     * 
-     * @return The line number where this call is being made
-     */
-    public int getLine() {
-        return line;
-    }
-    
-    /**
-     * Set the line number where this call is being made
-     * @param line The new line number where this call is being made
-     */
-    public void setLine(int line) {
-        this.line = line;
-    }
-
-    /**
-     * Set both the file and line
-     */
-    public void setFileAndLine(String file, int line) {
-        this.fileName = file;
-        this.line = line;
     }
 
     /** 
@@ -481,10 +337,11 @@ public final class Frame implements JumpTarget {
     /* (non-Javadoc)
      * @see java.lang.Object#toString()
      */
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(50);
         
-        sb.append(fileName).append(':').append(line+1).append(':').append(klazz);
+        sb.append(klazz);
         if (name != null) sb.append(" in ").append(name);
 
         return sb.toString();

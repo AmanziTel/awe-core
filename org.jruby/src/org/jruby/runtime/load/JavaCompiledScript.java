@@ -30,8 +30,6 @@ package org.jruby.runtime.load;
 import java.io.IOException;
 import org.jruby.Ruby;
 import org.jruby.ast.executable.Script;
-import org.jruby.runtime.Block;
-import org.jruby.runtime.builtin.IRubyObject;
 
 public class JavaCompiledScript implements Library {
     private final LoadServiceResource resource;
@@ -42,14 +40,14 @@ public class JavaCompiledScript implements Library {
 
     public void load(Ruby runtime, boolean wrap) {
         try {
-            Script script = CompiledScriptLoader.loadScriptFromFile(runtime, resource.getURL().openStream(), resource.getName());
+            Script script = CompiledScriptLoader.loadScriptFromFile(runtime, resource.getInputStream(), resource.getName());
             if (script == null) {
                 // we're depending on the side effect of the load, which loads the class but does not turn it into a script
                 // I don't like it, but until we restructure the code a bit more, we'll need to quietly let it by here.
                 return;
             }
             script.setFilename(resource.getName());
-            script.load(runtime.getCurrentContext(), runtime.getTopSelf(), IRubyObject.NULL_ARRAY, Block.NULL_BLOCK);
+            runtime.loadScript(script, wrap);
         } catch (IOException e) {
             throw runtime.newIOErrorFromException(e);
         }

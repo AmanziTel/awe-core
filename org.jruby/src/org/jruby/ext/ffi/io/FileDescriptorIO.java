@@ -35,11 +35,10 @@ import org.jruby.RubyModule;
 import org.jruby.RubyNumeric;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
-import org.jruby.ext.ffi.FFIProvider;
-import org.jruby.ext.ffi.Factory;
 import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.jruby.util.io.BadDescriptorException;
 import org.jruby.util.io.ChannelDescriptor;
 import org.jruby.util.io.ChannelStream;
 import org.jruby.util.io.InvalidValueException;
@@ -48,7 +47,7 @@ import org.jruby.util.io.ModeFlags;
 /**
  * An IO implementation that reads/writes to a native file descriptor.
  */
-@JRubyClass(name=FFIProvider.MODULE_NAME + "::" + FileDescriptorIO.CLASS_NAME, parent="IO")
+@JRubyClass(name="FFI::" + FileDescriptorIO.CLASS_NAME, parent="IO")
 public class FileDescriptorIO extends RubyIO {
     public static final String CLASS_NAME = "FileDescriptorIO";
     private static final class Allocator implements ObjectAllocator {
@@ -61,19 +60,21 @@ public class FileDescriptorIO extends RubyIO {
         super(runtime, klass);
     }
     public FileDescriptorIO(Ruby runtime, IRubyObject fd) {
-        super(runtime, FFIProvider.getModule(runtime).fastGetClass(CLASS_NAME));
+        super(runtime, runtime.fastGetModule("FFI").fastGetClass(CLASS_NAME));
         ModeFlags modes;
         try {
             modes = new ModeFlags(ModeFlags.RDWR);
+            openFile.setMainStream(ChannelStream.open(getRuntime(),
+                    new ChannelDescriptor(new FileDescriptorByteChannel(getRuntime(), RubyNumeric.fix2int(fd)),
+                    modes)));
+            openFile.setPipeStream(openFile.getMainStreamSafe());
+            openFile.setMode(modes.getOpenFileFlags());
+            openFile.getMainStreamSafe().setSync(true);
+        } catch (BadDescriptorException e) {
+            throw runtime.newErrnoEBADFError();
         } catch (InvalidValueException ex) {
             throw new RuntimeException(ex);
         }
-        openFile.setMainStream(new ChannelStream(getRuntime(),
-                new ChannelDescriptor(Factory.getInstance().newByteChannel(RubyNumeric.fix2int(fd)),
-                getNewFileno(), modes, new java.io.FileDescriptor())));
-        openFile.setPipeStream(openFile.getMainStream());
-        openFile.setMode(modes.getOpenFileFlags());
-        openFile.getMainStream().setSync(true);
     }
     public static RubyClass createFileDescriptorIOClass(Ruby runtime, RubyModule module) {
         RubyClass result = runtime.defineClassUnder(CLASS_NAME, runtime.fastGetClass("IO"),

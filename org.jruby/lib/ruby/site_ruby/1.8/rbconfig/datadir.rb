@@ -1,24 +1,13 @@
-#!/usr/bin/env ruby
 #--
 # Copyright 2006 by Chad Fowler, Rich Kilmer, Jim Weirich and others.
 # All rights reserved.
 # See LICENSE.txt for permissions.
 #++
 
+# N.B. This file is used by Config.datadir in rubygems.rb, and must not be
+# removed before that require is removed. I require to avoid warning more than
+# once.
 
-module Config
-
-  # Only define datadir if it doesn't already exist.
-  unless Config.respond_to?(:datadir)
-    
-    # Return the path to the data directory associated with the given
-    # package name.  Normally this is just
-    # "#{Config::CONFIG['datadir']}/#{package_name}", but may be
-    # modified by packages like RubyGems to handle versioned data
-    # directories.
-    def Config.datadir(package_name)
-      File.join(CONFIG['datadir'], package_name)
-    end
-
-  end
-end
+warn 'rbconfig/datadir.rb and {Rb}Config.datadir is being deprecated from '\
+ 'RubyGems. It will be removed completely on or after June 2011. If you '\
+ 'wish to rely on a datadir, please use Gem.datadir.'

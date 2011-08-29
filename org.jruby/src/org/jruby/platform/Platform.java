@@ -60,6 +60,7 @@ public class Platform {
     private static final String FREEBSD = "freebsd";
     private static final String OPENBSD = "openbsd";
     private static final String SOLARIS = "solaris";
+    private static final String OPENVMS = "openvms";
 
     private static final String GCJ = "GNU libgcj";
 
@@ -69,7 +70,7 @@ public class Platform {
     public static final Map<String, String> ARCH_NAMES = new HashMap<String, String>() {{
         put("x86", "i386");
     }};
-    private static final String initOperatingSystem() {
+    private static String initOperatingSystem() {
         String osname = getProperty("os.name", "unknown").toLowerCase();
         for (String s : OS_NAMES.keySet()) {
             if (s.equalsIgnoreCase(osname)) {
@@ -81,7 +82,7 @@ public class Platform {
         }
         return osname;
     }
-    private static final String initArchitecture() {
+    private static String initArchitecture() {
         String arch = getProperty("os.arch", "unknown").toLowerCase();
         for (String s : ARCH_NAMES.keySet()) {
             if (s.equalsIgnoreCase(arch)) {
@@ -92,7 +93,7 @@ public class Platform {
     }
     public static final String ARCH = initArchitecture();
     public static final String OS = initOperatingSystem();
-    public static final String JVM = System.getProperty("java.vm.name");
+    public static final String JVM = getProperty("java.vm.name", "unknown");
 
     public static final boolean IS_WINDOWS = OS.equals(WINDOWS);
 
@@ -102,6 +103,7 @@ public class Platform {
     public static final boolean IS_LINUX = OS.equals(LINUX);
     public static final boolean IS_SOLARIS = OS.equals(SOLARIS);
     public static final boolean IS_BSD = IS_MAC || IS_FREEBSD || IS_OPENBSD;
+    public static final boolean IS_OPENVMS = OS.equals(OPENVMS);
     public static final String NAME = String.format("%s-%s", ARCH, OS);
     public static final int BIG_ENDIAN = 4321;
     public static final int LITTLE_ENDIAN = 1234;

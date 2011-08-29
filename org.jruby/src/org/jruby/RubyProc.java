@@ -34,39 +34,51 @@
  ***** END LICENSE BLOCK *****/
 package org.jruby;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.anno.JRubyClass;
 import org.jruby.exceptions.JumpException;
-import org.jruby.internal.runtime.JumpTarget;
-import org.jruby.java.MiniJava;
+import org.jruby.javasupport.util.RuntimeHelpers;
+import org.jruby.lexer.yacc.ISourcePosition;
+import org.jruby.parser.BlockStaticScope;
+import org.jruby.parser.StaticScope;
+import org.jruby.runtime.Arity;
+import org.jruby.runtime.Binding;
 import org.jruby.runtime.Block;
+import org.jruby.runtime.BlockBody;
+import org.jruby.runtime.ClassIndex;
+import org.jruby.runtime.MethodBlock;
 import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
-import org.jruby.runtime.Visibility;
+import static org.jruby.CompatVersion.*;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.jruby.runtime.marshal.DataType;
 
 /**
  * @author  jpetersen
  */
 @JRubyClass(name="Proc")
-public class RubyProc extends RubyObject implements JumpTarget {
+public class RubyProc extends RubyObject implements DataType {
     private Block block = Block.NULL_BLOCK;
     private Block.Type type;
-    private String file;
-    private int line;
+    private ISourcePosition sourcePosition;
 
-    public RubyProc(Ruby runtime, RubyClass rubyClass, Block.Type type) {
+    protected RubyProc(Ruby runtime, RubyClass rubyClass, Block.Type type) {
         super(runtime, rubyClass);
         
         this.type = type;
     }
+
+    protected RubyProc(Ruby runtime, RubyClass rubyClass, Block.Type type, ISourcePosition sourcePosition) {
+        this(runtime, rubyClass, type);
+        this.sourcePosition = sourcePosition;
+    }
     
     private static ObjectAllocator PROC_ALLOCATOR = new ObjectAllocator() {
         public IRubyObject allocate(Ruby runtime, RubyClass klass) {
-            RubyProc instance = RubyProc.newProc(runtime, Block.Type.PROC);
+            RubyProc instance = new RubyProc(runtime, runtime.getProc(), Block.Type.PROC);
 
             instance.setMetaClass(klass);
 
@@ -77,6 +89,9 @@ public class RubyProc extends RubyObject implements JumpTarget {
     public static RubyClass createProcClass(Ruby runtime) {
         RubyClass procClass = runtime.defineClass("Proc", runtime.getObject(), PROC_ALLOCATOR);
         runtime.setProc(procClass);
+
+        procClass.index = ClassIndex.PROC;
+        procClass.setReifiedClass(RubyProc.class);
         
         procClass.defineAnnotatedMethods(RubyProc.class);
         
@@ -89,13 +104,19 @@ public class RubyProc extends RubyObject implements JumpTarget {
 
     // Proc class
 
+    @Deprecated
     public static RubyProc newProc(Ruby runtime, Block.Type type) {
-        return new RubyProc(runtime, runtime.getProc(), type);
+        throw runtime.newRuntimeError("deprecated RubyProc.newProc with no block; do not use");
     }
+
     public static RubyProc newProc(Ruby runtime, Block block, Block.Type type) {
-        RubyProc proc = new RubyProc(runtime, runtime.getProc(), type);
-        proc.callInit(NULL_ARRAY, block);
-        
+        return newProc(runtime, block, type, null);
+    }
+
+    public static RubyProc newProc(Ruby runtime, Block block, Block.Type type, ISourcePosition sourcePosition) {
+        RubyProc proc = new RubyProc(runtime, runtime.getProc(), type, sourcePosition);
+        proc.setup(block);
+
         return proc;
     }
     
@@ -104,58 +125,67 @@ public class RubyProc extends RubyObject implements JumpTarget {
      * since we need to deal with special case of Proc.new with no arguments or block arg.  In 
      * this case, we need to check previous frame for a block to consume.
      */
-    @JRubyMethod(name = "new", rest = true, frame = true, meta = true)
+    @JRubyMethod(name = "new", rest = true, meta = true)
     public static IRubyObject newInstance(ThreadContext context, IRubyObject recv, IRubyObject[] args, Block block) {
         // No passed in block, lets check next outer frame for one ('Proc.new')
         if (!block.isGiven()) {
-            block = context.getPreviousFrame().getBlock();
+            block = context.getCurrentFrame().getBlock();
         }
-        
-        if (block.isGiven() && block.getProcObject() != null) {
+
+        // This metaclass == recv check seems gross, but MRI seems to do the same:
+        // if (!proc && ruby_block->block_obj && CLASS_OF(ruby_block->block_obj) == klass) {
+        if (block.isGiven() && block.getProcObject() != null && block.getProcObject().getMetaClass() == recv) {
             return block.getProcObject();
         }
         
-        IRubyObject obj = ((RubyClass) recv).allocate();
+        RubyProc obj = (RubyProc)((RubyClass) recv).allocate();
+        obj.setup(block);
         
         obj.callMethod(context, "initialize", args, block);
         return obj;
     }
     
-    @JRubyMethod(name = "initialize", frame = true, visibility = Visibility.PRIVATE)
-    public IRubyObject initialize(ThreadContext context, Block procBlock) {
+    private void setup(Block procBlock) {
         if (!procBlock.isGiven()) {
             throw getRuntime().newArgumentError("tried to create Proc object without a block");
         }
         
-        if (type == Block.Type.LAMBDA && procBlock == null) {
+        if (isLambda() && procBlock == null) {
             // TODO: warn "tried to create Proc object without a block"
         }
         
         block = procBlock.cloneBlock();
+
+        if (isThread()) {
+            // modify the block with a new backref/lastline-grabbing scope
+            StaticScope oldScope = block.getBody().getStaticScope();
+            StaticScope newScope = new BlockStaticScope(oldScope.getEnclosingScope(), oldScope.getVariables());
+            newScope.setBackrefLastlineScope(true);
+            newScope.setPreviousCRefScope(oldScope.getPreviousCRefScope());
+            newScope.setModule(oldScope.getModule());
+            block.getBody().setStaticScope(newScope);
+        }
+
+        // force file/line info into the new block's binding
+        block.getBinding().setFile(block.getBody().getFile());
+        block.getBinding().setLine(block.getBody().getLine());
+
         block.type = type;
         block.setProcObject(this);
-
-        file = context.getFile();
-        line = context.getLine();
-        return this;
     }
     
     @JRubyMethod(name = "clone")
+    @Override
     public IRubyObject rbClone() {
-    	RubyProc newProc = new RubyProc(getRuntime(), getRuntime().getProc(), type);
-    	newProc.block = getBlock();
-    	newProc.file = file;
-    	newProc.line = line;
+    	RubyProc newProc = newProc(getRuntime(), block, type, sourcePosition);
     	// TODO: CLONE_SETUP here
     	return newProc;
     }
 
     @JRubyMethod(name = "dup")
+    @Override
     public IRubyObject dup() {
-        RubyProc newProc = new RubyProc(getRuntime(), getRuntime().getProc(), type);
-        newProc.block = getBlock();
-        newProc.file = file;
-        newProc.line = line;
+    	RubyProc newProc = newProc(getRuntime(), block, type, sourcePosition);
         return newProc;
     }
     
@@ -163,18 +193,30 @@ public class RubyProc extends RubyObject implements JumpTarget {
     public IRubyObject op_equal(IRubyObject other) {
         if (!(other instanceof RubyProc)) return getRuntime().getFalse();
         
-        if (this == other || this.block == ((RubyProc)other).block) {
+        if (this == other || this.block.equals(((RubyProc)other).block)) {
             return getRuntime().getTrue();
         }
         
         return getRuntime().getFalse();
     }
     
-    @JRubyMethod(name = "to_s")
+    @JRubyMethod(name = "to_s", compat = RUBY1_8)
+    @Override
     public IRubyObject to_s() {
-        return RubyString.newString(getRuntime(), 
-                "#<Proc:0x" + Integer.toString(block.hashCode(), 16) + "@" + 
-                file + ":" + (line + 1) + ">");
+        return RubyString.newString(
+                getRuntime(),"#<Proc:0x" + Integer.toString(block.hashCode(), 16) + "@" +
+                block.getBody().getFile() + ":" + (block.getBody().getLine() + 1) + ">");
+    }
+
+    @JRubyMethod(name = "to_s", compat = RUBY1_9)
+    public IRubyObject to_s19() {
+        StringBuilder sb = new StringBuilder("#<Proc:0x" + Integer.toString(block.hashCode(), 16) + "@" +
+                block.getBody().getFile() + ":" + (block.getBody().getLine() + 1));
+        if (isLambda()) {
+            sb.append(" (lambda)");
+        }
+        sb.append(">");
+        return RubyString.newString(getRuntime(), sb.toString());
     }
 
     @JRubyMethod(name = "binding")
@@ -182,13 +224,41 @@ public class RubyProc extends RubyObject implements JumpTarget {
         return getRuntime().newBinding(block.getBinding());
     }
 
-    @JRubyMethod(name = {"call", "[]"}, rest = true, frame = true, compat = CompatVersion.RUBY1_8)
+    @JRubyMethod(name = {"call", "[]"}, rest = true, compat = RUBY1_8)
+    public IRubyObject call(ThreadContext context, IRubyObject[] args, Block block) {
+        return call(context, args, null, block);
+    }
+
     public IRubyObject call(ThreadContext context, IRubyObject[] args) {
         return call(context, args, null, Block.NULL_BLOCK);
     }
 
-    @JRubyMethod(name = {"call", "[]"}, rest = true, frame = true, compat = CompatVersion.RUBY1_9)
+    @JRubyMethod(name = {"call", "[]", "yield", "==="}, rest = true, compat = RUBY1_9)
     public IRubyObject call19(ThreadContext context, IRubyObject[] args, Block block) {
+        if (isLambda()) {
+            this.block.arity().checkArity(context.getRuntime(), args.length);
+        }
+
+        if (isProc()) {
+            // for procs and blocks, single array passed to multi-arg must be spread
+            if (this.block.arity() != Arity.ONE_ARGUMENT && args.length == 1 && args[0].respondsTo("to_ary")) {
+                args = args[0].convertToArray().toJavaArray();
+            }
+            
+            if (this.block.arity().isFixed()) {
+                List<IRubyObject> list = new ArrayList<IRubyObject>(Arrays.asList(args));
+                int required = this.block.arity().required();
+                if (required > args.length) {
+                    for (int i = args.length; i < required; i++) {
+                        list.add(context.getRuntime().getNil());
+                    }
+                    args = list.toArray(args);
+                } else if (required < args.length) {
+                    args = list.subList(0, required).toArray(args);
+                }
+            }
+        }
+
         return call(context, args, null, block);
     }
 
@@ -196,7 +266,7 @@ public class RubyProc extends RubyObject implements JumpTarget {
         assert args != null;
         
         Block newBlock = block.cloneBlock();
-        JumpTarget jumpTarget = newBlock.getBinding().getFrame().getJumpTarget();
+        int jumpTarget = newBlock.getBinding().getFrame().getJumpTarget();
         
         try {
             if (self != null) newBlock.getBinding().setSelf(self);
@@ -205,13 +275,13 @@ public class RubyProc extends RubyObject implements JumpTarget {
         } catch (JumpException.BreakJump bj) {
             return handleBreakJump(getRuntime(), newBlock, bj, jumpTarget);
         } catch (JumpException.ReturnJump rj) {
-            return handleReturnJump(getRuntime(), rj, jumpTarget);
+            return handleReturnJump(context, rj, jumpTarget);
         } catch (JumpException.RetryJump rj) {
             return handleRetryJump(getRuntime(), rj);
         }
     }
 
-    private IRubyObject handleBreakJump(Ruby runtime, Block newBlock, JumpException.BreakJump bj, JumpTarget jumpTarget) {
+    private IRubyObject handleBreakJump(Ruby runtime, Block newBlock, JumpException.BreakJump bj, int jumpTarget) {
         switch(newBlock.type) {
         case LAMBDA: if (bj.getTarget() == jumpTarget) {
             return (IRubyObject) bj.getValue();
@@ -228,14 +298,29 @@ public class RubyProc extends RubyObject implements JumpTarget {
         }
     }
 
-    private IRubyObject handleReturnJump(Ruby runtime, JumpException.ReturnJump rj, JumpTarget jumpTarget) {
-        Object target = rj.getTarget();
+    private IRubyObject handleReturnJump(ThreadContext context, JumpException.ReturnJump rj, int jumpTarget) {
+        int target = rj.getTarget();
+        Ruby runtime = context.getRuntime();
 
-        if (target == jumpTarget && block.type == Block.Type.LAMBDA) return (IRubyObject) rj.getValue();
-
-        if (type == Block.Type.THREAD) {
-            throw runtime.newThreadError("return can't jump across threads");
+        // lambda always just returns the value
+        if (target == jumpTarget && isLambda()) {
+            return (IRubyObject) rj.getValue();
         }
+
+        // returns can't propagate out of threads
+        if (isThread()) {
+            // just re-throw, let thread handle it
+            throw rj;
+        }
+
+        // If the block-receiving method is not still active and the original
+        // enclosing frame is no longer on the stack, it's a bad return.
+        // FIXME: this is not very efficient for cases where it won't error
+        if (target == jumpTarget && !context.isJumpTargetAlive(target, 0)) {
+            throw runtime.newLocalJumpError(RubyLocalJumpError.Reason.RETURN, (IRubyObject)rj.getValue(), "unexpected return");
+        }
+
+        // otherwise, let it propagate
         throw rj;
     }
 
@@ -252,22 +337,50 @@ public class RubyProc extends RubyObject implements JumpTarget {
     public RubyProc to_proc() {
     	return this;
     }
-    
-    public IRubyObject as(Class asClass) {
-        final Ruby ruby = getRuntime();
-        if (!asClass.isInterface()) {
-            throw ruby.newTypeError(asClass.getCanonicalName() + " is not an interface");
+
+    @JRubyMethod(name = "source_location", compat = RUBY1_9)
+    public IRubyObject source_location(ThreadContext context) {
+        Ruby runtime = context.getRuntime();
+        if (sourcePosition != null) {
+            return runtime.newArray(runtime.newString(sourcePosition.getFile()),
+                    runtime.newFixnum(sourcePosition.getLine() + 1 /*zero-based*/));
+        } else if (block != null) {
+            Binding binding = block.getBinding();
+            return runtime.newArray(runtime.newString(binding.getFile()),
+                    runtime.newFixnum(binding.getLine() + 1 /*zero-based*/));
         }
 
-        return MiniJava.javaToRuby(ruby, Proxy.newProxyInstance(Ruby.getClassLoader(), new Class[] {asClass}, new InvocationHandler() {
-            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                IRubyObject[] rubyArgs = new IRubyObject[args.length + 1];
-                rubyArgs[0] = RubySymbol.newSymbol(ruby, method.getName());
-                for (int i = 1; i < rubyArgs.length; i++) {
-                    rubyArgs[i] = MiniJava.javaToRuby(ruby, args[i - 1]);
-                }
-                return MiniJava.rubyToJava(call(ruby.getCurrentContext(), rubyArgs));
-            }
-        }));
+        return runtime.getNil();
     }
+
+    @JRubyMethod(name = "parameters", compat = RUBY1_9)
+    public IRubyObject parameters(ThreadContext context) {
+        Ruby runtime = context.getRuntime();
+        BlockBody body = this.getBlock().getBody();
+
+        if (body instanceof MethodBlock) {
+            MethodBlock methodBlock = (MethodBlock)body;
+            return methodBlock.getMethod().parameters(context);
+        }
+
+        return RuntimeHelpers.parameterListToParameters(runtime, body.getParameterList(), isLambda());
+    }
+
+    @JRubyMethod(name = "lambda?", compat = RUBY1_9)
+    public IRubyObject lambda_p(ThreadContext context) {
+        return context.getRuntime().newBoolean(isLambda());
+    }
+
+    private boolean isLambda() {
+        return type.equals(Block.Type.LAMBDA);
+    }
+    
+    private boolean isProc() {
+        return type.equals(Block.Type.PROC);
+    }
+
+    private boolean isThread() {
+        return type.equals(Block.Type.THREAD);
+    }
+
 }

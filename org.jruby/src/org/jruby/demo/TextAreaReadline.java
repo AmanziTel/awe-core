@@ -8,7 +8,6 @@ import java.awt.event.KeyListener;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -18,6 +17,7 @@ import javax.swing.plaf.basic.BasicComboPopup;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.DocumentFilter;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.MutableAttributeSet;
@@ -25,6 +25,7 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 
 import org.jruby.Ruby;
+import org.jruby.RubyEncoding;
 import org.jruby.RubyIO;
 import org.jruby.RubyModule;
 import org.jruby.RubyString;
@@ -39,7 +40,7 @@ public class TextAreaReadline implements KeyListener {
     private static final String EMPTY_LINE = "";
     
     private JTextComponent area;
-    private int startPos;
+    private volatile int startPos;
     private String currentLine;
     
     public volatile MutableAttributeSet promptStyle;
@@ -155,12 +156,7 @@ public class TextAreaReadline implements KeyListener {
                 final ReadRequest request = (ReadRequest)args[0];
                 final String line = (String)args[2];
                 if (line.length() != 0) {
-                    byte[] bytes;
-                    try {
-                        bytes = line.getBytes("UTF-8");
-                    } catch (UnsupportedEncodingException e) {
-                        bytes = line.getBytes();
-                    }
+                    byte[] bytes = RubyEncoding.encodeUTF8(line);
                     return request.perform(join, new InputBuffer(bytes));
                 } else {
                     return -1;
@@ -186,6 +182,8 @@ public class TextAreaReadline implements KeyListener {
             }
         });
     }};
+
+    private static final int MAX_DOC_SIZE = 100000;
     private final Join inputJoin = INPUT_SPEC.createJoin();
 
     public TextAreaReadline(JTextComponent area) {
@@ -200,7 +198,7 @@ public class TextAreaReadline implements KeyListener {
         area.addKeyListener(this);
         
         // No editing before startPos
-        if (area.getDocument() instanceof AbstractDocument)
+        if (area.getDocument() instanceof AbstractDocument) {
             ((AbstractDocument) area.getDocument()).setDocumentFilter(
                 new DocumentFilter() {
                     public void insertString(DocumentFilter.FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
@@ -208,7 +206,7 @@ public class TextAreaReadline implements KeyListener {
                     }
                     
                     public void remove(DocumentFilter.FilterBypass fb, int offset, int length) throws BadLocationException {
-                        if (offset >= startPos) super.remove(fb, offset, length);
+                        if (offset >= startPos || offset == 0) super.remove(fb, offset, length);
                     }
                     
                     public void replace(DocumentFilter.FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
@@ -216,6 +214,7 @@ public class TextAreaReadline implements KeyListener {
                     }
                 }
             );
+        }
         
         promptStyle = new SimpleAttributeSet();
         StyleConstants.setForeground(promptStyle, new Color(0xa4, 0x00, 0x00));
@@ -325,8 +324,9 @@ public class TextAreaReadline implements KeyListener {
         int position = Readline.getCompletor(Readline.getHolder(runtime)).complete(bufstr, cursor, candidates);
         
         // no candidates? Fail.
-        if (candidates.isEmpty())
+        if (candidates.isEmpty()) {
             return;
+        }
         
         if (candidates.size() == 1) {
             replaceText(startPos + position, area.getCaretPosition(), (String) candidates.get(0));
@@ -342,10 +342,11 @@ public class TextAreaReadline implements KeyListener {
         int cutoff = bufstr.substring(position).lastIndexOf('.') + 1;
         start += cutoff;
 
-        if (candidates.size() < 10)
+        if (candidates.size() < 10) {
             completePopup.getList().setVisibleRowCount(candidates.size());
-        else
+        } else {
             completePopup.getList().setVisibleRowCount(10);
+        }
 
         completeCombo.removeAllItems();
         for (Iterator i = candidates.iterator(); i.hasNext();) {
@@ -358,8 +359,9 @@ public class TextAreaReadline implements KeyListener {
     }
 
     protected void backAction(KeyEvent event) {
-        if (area.getCaretPosition() <= startPos)
+        if (area.getCaretPosition() <= startPos) {
             event.consume();
+        }
     }
     
     protected void upAction(KeyEvent event) {
@@ -372,10 +374,11 @@ public class TextAreaReadline implements KeyListener {
             return;
         }
         
-        if (!Readline.getHistory(Readline.getHolder(runtime)).next()) // at end
-            currentLine = getLine();
-        else
-            Readline.getHistory(Readline.getHolder(runtime)).previous(); // undo check
+        if (!Readline.getHistory(Readline.getHolder(runtime)).next()) {
+            currentLine = getLine(); // at end
+        } else {
+            Readline.getHistory(Readline.getHolder(runtime)).previous(); //undo check
+        }
         
         if (!Readline.getHistory(Readline.getHolder(runtime)).previous()) return;
         
@@ -396,9 +399,9 @@ public class TextAreaReadline implements KeyListener {
         if (!Readline.getHistory(Readline.getHolder(runtime)).next()) return;
         
         String oldLine;
-        if (!Readline.getHistory(Readline.getHolder(runtime)).next()) // at end
-            oldLine = currentLine;
-        else {
+        if (!Readline.getHistory(Readline.getHolder(runtime)).next()) {
+            oldLine = currentLine; // at end
+        } else {
             Readline.getHistory(Readline.getHolder(runtime)).previous(); // undo check
             oldLine = Readline.getHistory(Readline.getHolder(runtime)).current().trim();
         }
@@ -428,8 +431,9 @@ public class TextAreaReadline implements KeyListener {
         event.consume();
         
         if (completePopup.isVisible()) {
-            if (completeCombo.getSelectedItem() != null)
+            if (completeCombo.getSelectedItem() != null) {
                 replaceText(start, end, (String) completeCombo.getSelectedItem());
+            }
             completePopup.setVisible(false);
             return;
         }
@@ -497,18 +501,31 @@ public class TextAreaReadline implements KeyListener {
     public void shutdown() {
         inputJoin.send(Channel.SHUTDOWN, null);
     }
-    
+
     /** Output methods **/
-    
+
     protected void append(String toAppend, AttributeSet style) {
        try {
-           area.getDocument().insertString(area.getDocument().getLength(), toAppend, style);
-       } catch (BadLocationException e) { }
+           Document doc = area.getDocument();
+           doc.insertString(doc.getLength(), toAppend, style);
+
+           // Cut the document to fit into the MAX_DOC_SIZE.
+           // See JRUBY-4237.
+           int extra = doc.getLength() - MAX_DOC_SIZE;
+           if (extra > 0) {
+               int removeBytes = extra + MAX_DOC_SIZE/10;
+               doc.remove(0, removeBytes);
+               startPos -= removeBytes;
+           }
+       } catch (BadLocationException e) {}
     }
 
     private void writeLineUnsafe(final String line) {
-        if (line.startsWith("=>")) append(line, resultStyle);
-        else append(line, outputStyle);
+        if (line.startsWith("=>")) {
+            append(line, resultStyle);
+        } else {
+            append(line, outputStyle);
+        }
         startPos = area.getDocument().getLength();
     }
     
@@ -585,20 +602,12 @@ public class TextAreaReadline implements KeyListener {
 
         @Override
         public void write(byte[] b, int off, int len) {
-            try {
-                writeLine(new String(b, off, len, "UTF-8"));
-            } catch (UnsupportedEncodingException ex) {
-                writeLine(new String(b, off, len));
-            }
+            writeLine(RubyEncoding.decodeUTF8(b, off, len));
         }
 
         @Override
         public void write(byte[] b) {
-            try {
-                writeLine(new String(b, "UTF-8"));
-            } catch (UnsupportedEncodingException ex) {
-                writeLine(new String(b));
-            }
+            writeLine(RubyEncoding.decodeUTF8(b));
         }
     }
 }

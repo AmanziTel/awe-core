@@ -105,11 +105,18 @@ public class AliasMethod extends DynamicMethod {
         return new AliasMethod(implementationClass, oldMethod, oldName);
     }
 
+    @Override
     public Arity getArity(){
         return oldMethod.getArity();
     }
     
+    @Override
     public DynamicMethod getRealMethod() {
         return oldMethod.getRealMethod();
+    }
+
+    @Override
+    public long getSerialNumber() {
+        return oldMethod.getSerialNumber();
     }
 }

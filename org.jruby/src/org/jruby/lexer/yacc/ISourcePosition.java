@@ -27,9 +27,7 @@
  ***** END LICENSE BLOCK *****/
 package org.jruby.lexer.yacc;
 
-import java.util.Collection;
-
-import org.jruby.ast.CommentNode;
+import org.jruby.runtime.PositionAware;
 
 /**
  * This interface is the combination of two needs:  1) A Ruby interpreter position (for warnings 
@@ -40,7 +38,7 @@ import org.jruby.ast.CommentNode;
  * of 0 and an endOffset of 3 ( 0a1b2c3 ).
  * 
  */
-public interface ISourcePosition {
+public interface ISourcePosition extends PositionAware {
     /**
      * Which file does this source position live in?
      * 
@@ -53,91 +51,20 @@ public interface ISourcePosition {
      * @return
      */
 	public int getStartLine();
-    
-    /**
-     * Which is the last(end) line that this source position occurs on (zero-based)
-     * 
-     * @return the line
-     */
-	public int getEndLine();
-    
-    /**
-     * Modify startOffset by a relativeValue.  At times our grammar and lexer do not give us
-     * the exact positions we need so we need to manually tweak position.  The bummer of this
-     * is this requires ISourcePosition implementations are mutable.  
-     * 
-     * @param relativeValue to nudge startOffset up or down
-     */
-    public void adjustStartOffset(int relativeValue);
-    
-    /** 
-     * Get offset (relative to beginning of source file) immediately before first character 
-     * represented by this source position.
-     * 
-     * @return the offset 
-     */
-	public int getStartOffset();
-    
-    /**
-     * Get offset (relative to beginning of source file) immediately after the last character
-     * represented by this source position
-     *  
-     * @return the offset
-     */
-	public int getEndOffset();
-    
-    /**
-     * Calculates the logical union of the two positions and creates a new resulting position
-     * 
-     * @param position to be unioned against this position
-     * @return a new position
-     */
-    public ISourcePosition union(ISourcePosition position);
-    
-    /**
-     * Get comments associated with this position (really we get this from node, but this is
-     * a hack to save some space when using the interpreter).
-     * @return a collection of comments
-     */
-    public Collection<CommentNode> getComments();
-    public void setComments(Collection<CommentNode> comments);
+
 
     /** For nodes which are added to the AST which are not proper syntactical elements. */
     public static final ISourcePosition INVALID_POSITION = new ISourcePosition() {
         public String getFile() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return "dummy";
         }
 
         public int getStartLine() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return -1;
         }
 
-        public int getEndLine() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public void adjustStartOffset(int relativeValue) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public int getStartOffset() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public int getEndOffset() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public ISourcePosition union(ISourcePosition position) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public Collection<CommentNode> getComments() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public void setComments(Collection<CommentNode> comments) {
-            throw new UnsupportedOperationException("Not supported yet.");
+        public int getLine() {
+            return -1;
         }
     };
 }

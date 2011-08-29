@@ -32,9 +32,10 @@ package org.jruby.internal.runtime.methods;
 
 import org.jruby.RubyModule;
 import org.jruby.RubyProc;
-import org.jruby.internal.runtime.JumpTarget;
+import org.jruby.ast.ArgsNode;
 import org.jruby.runtime.Arity;
 import org.jruby.runtime.Block;
+import org.jruby.runtime.PositionAware;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.Visibility;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -43,7 +44,7 @@ import org.jruby.runtime.builtin.IRubyObject;
  * 
  * @author jpetersen
  */
-public class ProcMethod extends DynamicMethod implements JumpTarget {
+public class ProcMethod extends DynamicMethod implements PositionAware, MethodArgs2 {
     private RubyProc proc;
 
     /**
@@ -60,16 +61,34 @@ public class ProcMethod extends DynamicMethod implements JumpTarget {
      * @see org.jruby.runtime.ICallable#call(Ruby, IRubyObject, String, IRubyObject[], boolean)
      */
     public IRubyObject call(ThreadContext context, IRubyObject self, RubyModule klazz, String name, IRubyObject[] args, Block block) {
-        // FIXME: Not sure if we should pass block or not if 1.9
-        return proc.call(context, args, self, Block.NULL_BLOCK);
+        return proc.call(context, args, self, block);
     }
     
     public DynamicMethod dup() {
         return new ProcMethod(getImplementationClass(), proc, getVisibility());
     }
+
+    // TODO: Push isSame up to DynamicMethod to simplify general equality
+    public boolean isSame(DynamicMethod method) {
+        if (!(method instanceof ProcMethod)) return false;
+
+        return ((ProcMethod) method).proc == proc;
+    }
     
     @Override
     public Arity getArity() {
         return proc.getBlock().arity();
-    }    
+    }
+
+    public String getFile() {
+        return proc.getBlock().getBody().getFile();
+    }
+
+    public int getLine() {
+        return proc.getBlock().getBody().getLine();
+    }
+
+    public String[] getParameterList() {
+        return proc.getBlock().getBody().getParameterList();
+    }
 }

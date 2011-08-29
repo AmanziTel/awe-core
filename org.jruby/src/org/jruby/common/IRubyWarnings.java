@@ -30,6 +30,7 @@
  ***** END LICENSE BLOCK *****/
 package org.jruby.common;
 
+import org.jruby.Ruby;
 import org.jruby.lexer.yacc.ISourcePosition;
 
 // FIXME: Document difference between warn and warning (or rename one better)
@@ -69,6 +70,7 @@ public interface IRubyWarnings {
         NEGATIVE_NUMBER_FOR_U("NEGATIVE_NUMBER_FOR_U"),
         NO_SUPER_CLASS("NO_SUPER_CLASS"),
         NOT_IMPLEMENTED("NOT_IMPLEMENTED"),
+        OBSOLETE_ARGUMENT("OBSOLETE_ARGUMENT"),
         PARENTHISE_ARGUMENTS("PARENTHISE_ARGUMENTS"),
         PROXY_EXTENDED_LATE("PROXY_EXTENDED_LATE"),
         STATEMENT_NOT_REACHED("STATEMENT_NOT_REACHED"), 
@@ -86,7 +88,8 @@ public interface IRubyWarnings {
         TOO_MANY_ARGUMENTS("TOO_MANY_ARGUMENTS"),
         UNDEFINING_BAD("UNDEFINING_BAD"),
         USELESS_EXPRESSION("USELESS_EXPRESSION"),
-        VOID_VALUE_EXPRESSION("VOID_VALUE_EXPRESSION");
+        VOID_VALUE_EXPRESSION("VOID_VALUE_EXPRESSION"),
+        NAMED_CAPTURE_CONFLICT("NAMED_CAPTURE_CONFLICT");
         
         private final String id;
         
@@ -99,11 +102,26 @@ public interface IRubyWarnings {
         }
     }
 
-    public abstract void warn(ID id, ISourcePosition position, String message, Object... data);
-    public abstract void warn(ID id, String fileName, int lineNumber, String message, Object... data);
+    public abstract Ruby getRuntime();
     public abstract boolean isVerbose();
+    
+    public abstract void warn(ID id, ISourcePosition position, String message);
+    public abstract void warn(ID id, String fileName, int lineNumber, String message);
+    public abstract void warn(ID id, String message);
+    public abstract void warning(ID id, String message);
+    public abstract void warning(ID id, ISourcePosition position, String message);
+    public abstract void warning(ID id, String fileName, int lineNumber, String message);
+    
+    @Deprecated
     public abstract void warn(ID id, String message, Object... data);
+    @Deprecated
     public abstract void warning(ID id, String message, Object... data);
+    @Deprecated
+    public abstract void warn(ID id, ISourcePosition position, String message, Object... data);
+    @Deprecated
+    public abstract void warn(ID id, String fileName, int lineNumber, String message, Object... data);
+    @Deprecated
     public abstract void warning(ID id, ISourcePosition position, String message, Object... data);
-    public abstract void warning(ID id, String fileName, int lineNumber, String message, Object... data);
+    @Deprecated
+    public abstract void warning(ID id, String fileName, int lineNumber, String message, Object...data);
 }

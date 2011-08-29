@@ -2,13 +2,16 @@
 
 package org.jruby.ext.ffi;
 
+import java.nio.ByteOrder;
 import org.jruby.Ruby;
+import org.jruby.RubyClass;
+import org.jruby.exceptions.RaiseException;
 
 /**
  * An implementation of MemoryIO that throws an exception on any access.
  */
 public abstract class InvalidMemoryIO implements MemoryIO {
-    private final Ruby runtime;
+    protected final Ruby runtime;
     private final String message;
     
     public InvalidMemoryIO(Ruby runtime) {
@@ -19,13 +22,35 @@ public abstract class InvalidMemoryIO implements MemoryIO {
         this.runtime = runtime;
         this.message = message;
     }
-    
-    private final RuntimeException ex() {
-        return runtime.newRuntimeError(message);
+
+    protected RubyClass getErrorClass(Ruby runtime) {
+        return runtime.getRuntimeError();
     }
+
+    protected RaiseException ex() {
+        return new RaiseException(runtime, getErrorClass(runtime), message, true);
+    }
+
+    public ByteOrder order() {
+        return ByteOrder.nativeOrder();
+    }
+    
     public MemoryIO slice(long offset) {
         return this;
     }
+
+    public MemoryIO slice(long offset, long size) {
+        return this;
+    }
+    
+    public MemoryIO dup() {
+        return this;
+    }
+
+    public java.nio.ByteBuffer asByteBuffer() {
+        throw ex();
+    }
+
     public final byte getByte(long offset) {
         throw ex();
     }
@@ -159,4 +184,17 @@ public abstract class InvalidMemoryIO implements MemoryIO {
     public final void clear() {
         throw ex();
     }
+
+    public byte[] getZeroTerminatedByteArray(long offset) {
+        throw ex();
+    }
+
+    public byte[] getZeroTerminatedByteArray(long offset, int maxlen) {
+        throw ex();
+    }
+
+    public void putZeroTerminatedByteArray(long offset, byte[] bytes, int off, int len) {
+        throw ex();
+    }
+
 }

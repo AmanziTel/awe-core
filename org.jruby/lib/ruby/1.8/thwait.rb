@@ -1,8 +1,8 @@
 #
 #   thwait.rb - thread synchronization class
 #   	$Release Version: 0.9 $
-#   	$Revision: 8696 $
-#   	$Date: 2009-01-10 15:17:58 -0600 (Sat, 10 Jan 2009) $
+#   	$Revision: 1.3 $
+#   	$Date: 1998/06/26 03:19:34 $
 #   	by Keiju ISHITSUKA(Nihpon Rational Software Co.,Ltd.)
 #
 # --
@@ -52,7 +52,7 @@ require "e2mmap.rb"
 #   end
 #
 class ThreadsWait
-  RCS_ID='-$Id: thwait.rb 8696 2009-01-10 21:17:58Z headius $-'
+  RCS_ID='-$Id: thwait.rb,v 1.3 1998/06/26 03:19:34 keiju Exp keiju $-'
   
   Exception2MessageMapper.extend_to(binding)
   def_exception("ErrNoWaitingThread", "No threads for waiting.")
@@ -101,7 +101,8 @@ class ThreadsWait
   end
   
   #
-  # Waits for specified threads to terminate.
+  # Waits for specified threads to terminate, and returns when one of
+  # the threads terminated.
   #
   def join(*threads)
     join_nowait(*threads)

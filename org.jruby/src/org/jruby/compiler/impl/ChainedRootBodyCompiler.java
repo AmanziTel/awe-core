@@ -5,8 +5,6 @@ import org.jruby.parser.StaticScope;
 import org.objectweb.asm.Label;
 
 public class ChainedRootBodyCompiler extends RootScopedBodyCompiler {
-    RootScopedBodyCompiler parent;
-
     @Override
     public void endBody() {
         // return last value from execution
@@ -17,9 +15,12 @@ public class ChainedRootBodyCompiler extends RootScopedBodyCompiler {
         method.end();
     }
 
-    public ChainedRootBodyCompiler(StandardASMCompiler scriptCompiler, String methodName, ASTInspector inspector, StaticScope scope, RootScopedBodyCompiler parent) {
-        super(scriptCompiler, methodName, inspector, scope);
-        this.parent = parent;
+    public ChainedRootBodyCompiler(StandardASMCompiler scriptCompiler, String methodName, String rubyName, ASTInspector inspector, StaticScope scope, RootScopedBodyCompiler parent) {
+        super(scriptCompiler, methodName, rubyName, inspector, scope);
         this.inNestedMethod = true;
+    }
+
+    public boolean isSimpleRoot() {
+        return false;
     }
 }

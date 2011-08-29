@@ -5,12 +5,10 @@
 
 package org.jruby.ext;
 
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.RubyException;
-import org.jruby.RubyKernel;
 import org.jruby.RubyObject;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.anno.JRubyClass;
@@ -19,9 +17,8 @@ import org.jruby.javasupport.util.RuntimeHelpers;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
-import org.jruby.runtime.Visibility;
+import static org.jruby.runtime.Visibility.*;
 import org.jruby.runtime.builtin.IRubyObject;
-import org.jruby.runtime.load.Library;
 
 /**
  *
@@ -31,26 +28,13 @@ import org.jruby.runtime.load.Library;
 public class WeakRef extends RubyObject {
     private WeakReference<IRubyObject> ref;
     
-    private static final ObjectAllocator WEAKREF_ALLOCATOR = new ObjectAllocator() {
+    public static final ObjectAllocator WEAKREF_ALLOCATOR = new ObjectAllocator() {
         public IRubyObject allocate(Ruby runtime, RubyClass klazz) {
             return new WeakRef(runtime, klazz);
         }
     };
     
-    public static class WeakRefLibrary implements Library {
-        public void load(Ruby runtime, boolean wrap) throws IOException {
-            RubyKernel.require(runtime.getKernel(), runtime.newString("delegate"), Block.NULL_BLOCK);
-            
-            RubyClass delegatorClass = (RubyClass)runtime.getClassFromPath("Delegator");
-            RubyClass weakrefClass = runtime.defineClass("WeakRef", delegatorClass, WEAKREF_ALLOCATOR);
-            
-            weakrefClass.defineAnnotatedMethods(WeakRef.class);
-            
-            runtime.defineClass("RefError", runtime.getStandardError(), runtime.getStandardError().getAllocator());
-        }
-    }
-    
-    @JRubyClass(name="RefError", parent="StandardError")
+    @JRubyClass(name="WeakRef::RefError", parent="StandardError")
     public static class RefError {}
 
     public WeakRef(Ruby runtime, RubyClass klazz) {
@@ -68,6 +52,11 @@ public class WeakRef extends RubyObject {
         
         return obj;
     }
+
+    @JRubyMethod(name = "__setobj__")
+    public IRubyObject setobj(IRubyObject obj) {
+        return getRuntime().getNil();
+    }
     
     @JRubyMethod(name = "new", required = 1, meta = true)
     public static IRubyObject newInstance(IRubyObject clazz, IRubyObject arg) {
@@ -77,8 +66,9 @@ public class WeakRef extends RubyObject {
         
         return weakRef;
     }
-    
-    @JRubyMethod(name = "initialize", frame = true, visibility = Visibility.PRIVATE)
+
+    // framed for invokeSuper
+    @JRubyMethod(frame = true, visibility = PRIVATE)
     public IRubyObject initialize(ThreadContext context, IRubyObject obj) {
         ref = new WeakReference<IRubyObject>(obj);
         
@@ -91,10 +81,13 @@ public class WeakRef extends RubyObject {
     }
     
     private RaiseException newRefError(String message) {
+        Ruby runtime = getRuntime();
+        ThreadContext context = runtime.getCurrentContext();
         RubyException exception =
-                (RubyException)getRuntime().getClass("RefError").newInstance(getRuntime().getCurrentContext(),
-                new IRubyObject[] {getRuntime().newString(message)}, Block.NULL_BLOCK);
+                (RubyException)runtime.getClass("WeakRef").getClass("RefError").newInstance(context,
+                new IRubyObject[] {runtime.newString(message)}, Block.NULL_BLOCK);
         
-        return new RaiseException(exception);
+        RaiseException re = new RaiseException(exception);
+        return re;
     }
 }

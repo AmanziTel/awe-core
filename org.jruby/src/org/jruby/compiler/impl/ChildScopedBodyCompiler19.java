@@ -5,14 +5,14 @@ import org.jruby.parser.StaticScope;
 
 public class ChildScopedBodyCompiler19 extends ChildScopedBodyCompiler {
 
-    public ChildScopedBodyCompiler19(StandardASMCompiler scriptCompiler, String closureMethodName, ASTInspector inspector, StaticScope scope) {
-        super(scriptCompiler, closureMethodName, inspector, scope);
+    public ChildScopedBodyCompiler19(StandardASMCompiler scriptCompiler, String closureMethodName, String rubyName, ASTInspector inspector, StaticScope scope) {
+        super(scriptCompiler, closureMethodName, rubyName, inspector, scope);
         // we force argParamCount to 1 since we always know we'll have [] args
         argParamCount = 1;
     }
 
     protected String getSignature() {
-        return StandardASMCompiler.CLOSURE_SIGNATURE19;
+        return StandardASMCompiler.getStaticClosure19Signature(script.getClassname());
     }
 
     public ChainedChildBodyCompiler outline(String methodName) {
@@ -24,10 +24,11 @@ public class ChildScopedBodyCompiler19 extends ChildScopedBodyCompiler {
             method.aload(i);
         }
         // we append an index to ensure two identical method names will not conflict
-        methodName = methodName + "_" + script.getAndIncrementMethodIndex();
-        method.invokevirtual(script.getClassname(), methodName, getSignature());
+        // TODO: make this match general method name structure with SYNTHETIC in place
+        methodName = "chained_" + script.getAndIncrementMethodIndex() + "_" + methodName;
+        method.invokestatic(script.getClassname(), methodName, getSignature());
 
-        ChainedChildBodyCompiler19 methodCompiler = new ChainedChildBodyCompiler19(script, methodName, inspector, scope, this);
+        ChainedChildBodyCompiler19 methodCompiler = new ChainedChildBodyCompiler19(script, methodName, rubyName, inspector, scope, this);
 
         methodCompiler.beginChainedMethod();
 

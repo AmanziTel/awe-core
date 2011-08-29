@@ -270,7 +270,7 @@ public class JavaEmbedUtils {
      * Convert a Ruby object to a Java object.
      */
     public static Object rubyToJava(Ruby runtime, IRubyObject value, Class type) {
-        return JavaUtil.convertArgument(runtime, Java.ruby_to_java(runtime.getObject(), value, Block.NULL_BLOCK), type);
+        return value.toJava(type);
     }
 
     /**
@@ -279,9 +279,7 @@ public class JavaEmbedUtils {
      * @return the converted object
      */
     public static Object rubyToJava(IRubyObject value) {
-        Ruby runtime = value.getRuntime();
-
-        return JavaUtil.convertArgument(runtime, Java.ruby_to_java(runtime.getObject(), value, Block.NULL_BLOCK), Object.class);
+        return value.toJava(Object.class);
     }
 
     /**
@@ -290,7 +288,7 @@ public class JavaEmbedUtils {
     public static IRubyObject javaToRuby(Ruby runtime, Object value) {
         if (value instanceof IRubyObject) return (IRubyObject) value;
 
-        IRubyObject result = JavaUtil.convertJavaToRuby(runtime, value);
+        IRubyObject result = JavaUtil.convertJavaToUsableRubyObject(runtime, value);
         
         return result instanceof JavaObject ? Java.wrap(runtime, result) : result; 
     }
@@ -300,11 +298,11 @@ public class JavaEmbedUtils {
     }
 
     public static IRubyObject javaToRuby(Ruby runtime, byte value) {
-        return javaToRuby(runtime, new Byte(value));
+        return javaToRuby(runtime, Byte.valueOf(value));
     }
 
     public static IRubyObject javaToRuby(Ruby runtime, char value) {
-        return javaToRuby(runtime, new Character(value));
+        return javaToRuby(runtime, Character.valueOf(value));
     }
 
     public static IRubyObject javaToRuby(Ruby runtime, double value) {
@@ -316,14 +314,14 @@ public class JavaEmbedUtils {
     }
 
     public static IRubyObject javaToRuby(Ruby runtime, int value) {
-        return javaToRuby(runtime, new Integer(value));
+        return javaToRuby(runtime, Integer.valueOf(value));
     }
 
     public static IRubyObject javaToRuby(Ruby runtime, long value) {
-        return javaToRuby(runtime, new Long(value));
+        return javaToRuby(runtime, Long.valueOf(value));
     }
 
     public static IRubyObject javaToRuby(Ruby runtime, short value) {
-        return javaToRuby(runtime, new Short(value));
+        return javaToRuby(runtime, Short.valueOf(value));
     }
 }

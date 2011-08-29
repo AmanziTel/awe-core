@@ -1,6 +1,5 @@
 package org.jruby.compiler.impl;
 
-import org.jruby.Ruby;
 import org.jruby.compiler.ASTInspector;
 import org.jruby.compiler.CompilerCallback;
 import org.jruby.compiler.NotCompilableException;
@@ -14,12 +13,18 @@ import static org.jruby.util.CodegenUtils.*;
 
 public class ChildScopedBodyCompiler extends BaseBodyCompiler {
 
-    public ChildScopedBodyCompiler(StandardASMCompiler scriptCompiler, String closureMethodName, ASTInspector inspector, StaticScope scope) {
-        super(scriptCompiler, closureMethodName, inspector, scope);
+    public ChildScopedBodyCompiler(StandardASMCompiler scriptCompiler, String closureMethodName, String rubyName, ASTInspector inspector, StaticScope scope) {
+        super(scriptCompiler, closureMethodName, rubyName, inspector, scope);
+    }
+
+    @Override
+    protected int getActualArgsCount(StaticScope scope) {
+        // always 1, since we pass in an Array (1.8) or an IRubyObject[] (1.9)
+        return 1;
     }
 
     protected String getSignature() {
-        return StandardASMCompiler.CLOSURE_SIGNATURE;
+        return StandardASMCompiler.getStaticClosureSignature(script.getClassname());
     }
 
     protected void createVariableCompiler() {
@@ -34,16 +39,6 @@ public class ChildScopedBodyCompiler extends BaseBodyCompiler {
 
     public void beginMethod(CompilerCallback args, StaticScope scope) {
         method.start();
-
-        // set up a local IRuby variable
-        method.aload(StandardASMCompiler.THREADCONTEXT_INDEX);
-        invokeThreadContext("getRuntime", sig(Ruby.class));
-        method.astore(getRuntimeIndex());
-
-        // grab nil for local variables
-        method.aload(getRuntimeIndex());
-        invokeRuby("getNil", sig(IRubyObject.class));
-        method.astore(getNilIndex());
 
         if (scope == null) {
             // not using a new scope, use saved one for a flat closure
@@ -65,14 +60,15 @@ public class ChildScopedBodyCompiler extends BaseBodyCompiler {
         method.aload(StandardASMCompiler.THIS);
 
         // load all arguments straight through
-        for (int i = 1; i <= 3; i++) {
+        for (int i = 1; i <= 4; i++) {
             method.aload(i);
         }
         // we append an index to ensure two identical method names will not conflict
-        methodName = methodName + "_" + script.getAndIncrementMethodIndex();
-        method.invokevirtual(script.getClassname(), methodName, getSignature());
+        // TODO: make this match general method name structure with SYNTHETIC in place
+        methodName = "chained_" + script.getAndIncrementMethodIndex() + "_" + methodName;
+        method.invokestatic(script.getClassname(), methodName, getSignature());
 
-        ChainedChildBodyCompiler methodCompiler = new ChainedChildBodyCompiler(script, methodName, inspector, scope, this);
+        ChainedChildBodyCompiler methodCompiler = new ChainedChildBodyCompiler(script, methodName, rubyName, inspector, scope, this);
 
         methodCompiler.beginChainedMethod();
 
@@ -142,5 +138,9 @@ public class ChildScopedBodyCompiler extends BaseBodyCompiler {
             // jump back to the top of the main body of this closure
             method.go_to(scopeStart);
         }
+    }
+
+    public boolean isSimpleRoot() {
+        return false;
     }
 }

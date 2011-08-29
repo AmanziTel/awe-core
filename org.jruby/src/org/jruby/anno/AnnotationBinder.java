@@ -2,6 +2,7 @@ package org.jruby.anno;
 
 import com.sun.mirror.apt.*;
 import com.sun.mirror.declaration.*;
+import com.sun.mirror.type.ReferenceType;
 import com.sun.mirror.util.*;
 
 import java.io.ByteArrayOutputStream;
@@ -94,6 +95,7 @@ public class AnnotationBinder implements AnnotationProcessorFactory {
                     out.println("/* THIS FILE IS GENERATED. DO NOT EDIT */");
                     out.println("package org.jruby.gen;");
 
+                    out.println("import org.jruby.Ruby;");
                     out.println("import org.jruby.RubyModule;");
                     out.println("import org.jruby.RubyClass;");
                     out.println("import org.jruby.CompatVersion;");
@@ -112,11 +114,26 @@ public class AnnotationBinder implements AnnotationProcessorFactory {
                     if (DEBUG) {
                         out.println("        System.out.println(\"Using pregenerated populator: \" + \"" + cd.getSimpleName() + "Populator\");");
                     }
+
+                    // scan for meta, compat, etc to reduce findbugs complaints about "dead assignments"
+                    boolean hasMeta = false;
+                    boolean hasModule = false;
+                    boolean hasCompat = false;
+                    for (MethodDeclaration md : cd.getMethods()) {
+                        JRubyMethod anno = md.getAnnotation(JRubyMethod.class);
+                        if (anno == null) {
+                            continue;
+                        }
+                        hasMeta |= anno.meta();
+                        hasModule |= anno.module();
+                        hasCompat |= anno.compat() != CompatVersion.BOTH;
+                    }
+
                     out.println("        JavaMethod javaMethod;");
                     out.println("        DynamicMethod moduleMethod;");
-                    out.println("        RubyClass metaClass = cls.getMetaClass();");
-                    out.println("        RubyModule singletonClass;");
-                    out.println("        CompatVersion compatVersion = cls.getRuntime().getInstanceConfig().getCompatVersion();");
+                    if (hasMeta || hasModule) out.println("        RubyClass singletonClass = cls.getSingletonClass();");
+                    if (hasCompat) out.println("        CompatVersion compatVersion = cls.getRuntime().getInstanceConfig().getCompatVersion();");
+                    out.println("        Ruby runtime = cls.getRuntime();");
 
                     Map<String, List<MethodDeclaration>> annotatedMethods = new HashMap<String, List<MethodDeclaration>>();
                     Map<String, List<MethodDeclaration>> staticAnnotatedMethods = new HashMap<String, List<MethodDeclaration>>();
@@ -126,6 +143,7 @@ public class AnnotationBinder implements AnnotationProcessorFactory {
                     Map<String, List<MethodDeclaration>> staticAnnotatedMethods1_9 = new HashMap<String, List<MethodDeclaration>>();
 
                     Set<String> frameAwareMethods = new HashSet<String>();
+                    Set<String> scopeAwareMethods = new HashSet<String>();
 
                     int methodCount = 0;
                     for (MethodDeclaration md : cd.getMethods()) {
@@ -134,6 +152,18 @@ public class AnnotationBinder implements AnnotationProcessorFactory {
                             continue;
                         }
                         methodCount++;
+
+                        // warn if the method raises any exceptions (JRUBY-4494)
+                        if (md.getThrownTypes().size() != 0) {
+                            System.err.print("Method " + cd.toString() + "." + md.toString() + " should not throw exceptions: ");
+                            boolean comma = false;
+                            for (ReferenceType thrownType : md.getThrownTypes()) {
+                                if (comma) System.err.print(", ");
+                                System.err.print(thrownType);
+                                comma = true;
+                            }
+                            System.err.print("\n");
+                        }
 
                         String name = anno.name().length == 0 ? md.getSimpleName() : anno.name()[0];
 
@@ -165,9 +195,39 @@ public class AnnotationBinder implements AnnotationProcessorFactory {
 
                         methodDescs.add(md);
 
-                        if (anno.frame() || (anno.reads() != null && anno.reads().length >= 1) || (anno.writes() != null && anno.writes().length >= 1)) {
-                            frameAwareMethods.add(name);
+                        // check for frame field reads or writes
+                        boolean frame = false;
+                        boolean scope = false;
+                        if (anno.frame()) {
+                            if (DEBUG) System.out.println("Method has frame = true: " + methodDescs.get(0).getDeclaringType() + ": " + methodDescs);
+                            frame = true;
                         }
+                        if (anno.reads() != null) for (FrameField read : anno.reads()) {
+                            switch (read) {
+                            case BACKREF:
+                            case LASTLINE:
+                                if (DEBUG) System.out.println("Method reads scope field " + read + ": " + methodDescs.get(0).getDeclaringType() + ": " + methodDescs);
+                                scope = true;
+                                break;
+                            default:
+                                if (DEBUG) System.out.println("Method reads frame field " + read + ": " + methodDescs.get(0).getDeclaringType() + ": " + methodDescs);
+                                frame = true;
+                            }
+                        }
+                        if (anno.writes() != null) for (FrameField write : anno.writes()) {
+                            switch (write) {
+                            case BACKREF:
+                            case LASTLINE:
+                                if (DEBUG) System.out.println("Method writes scope field " + write + ": " + methodDescs.get(0).getDeclaringType() + ": " + methodDescs);
+                                scope = true;
+                                break;
+                            default:
+                                if (DEBUG) System.out.println("Method writes frame field " + write + ": " + methodDescs.get(0).getDeclaringType() + ": " + methodDescs);
+                                frame = true;
+                            }
+                        }
+                        if (frame) frameAwareMethods.addAll(Arrays.asList(anno.name()));
+                        if (scope) scopeAwareMethods.addAll(Arrays.asList(anno.name()));
                     }
 
                     if (methodCount == 0) {
@@ -178,36 +238,61 @@ public class AnnotationBinder implements AnnotationProcessorFactory {
                     classNames.add(getActualQualifiedName(cd));
 
                     processMethodDeclarations(staticAnnotatedMethods);
+                    for (Map.Entry<String, List<MethodDeclaration>> entry : staticAnnotatedMethods.entrySet()) {
+                        MethodDeclaration decl = entry.getValue().get(0);
+                        if (!decl.getAnnotation(JRubyMethod.class).omit()) addCoreMethodMapping(entry.getKey(), decl, out);
+                    }
 
                     if (!staticAnnotatedMethods1_8.isEmpty()) {
                         out.println("        if (compatVersion == CompatVersion.RUBY1_8 || compatVersion == CompatVersion.BOTH) {");
                         processMethodDeclarations(staticAnnotatedMethods1_8);
+                        for (Map.Entry<String, List<MethodDeclaration>> entry : staticAnnotatedMethods1_8.entrySet()) {
+                            MethodDeclaration decl = entry.getValue().get(0);
+                            if (!decl.getAnnotation(JRubyMethod.class).omit()) addCoreMethodMapping(entry.getKey(), decl, out);
+                        }
                         out.println("        }");
                     }
 
                     if (!staticAnnotatedMethods1_9.isEmpty()) {
                         out.println("        if (compatVersion == CompatVersion.RUBY1_9 || compatVersion == CompatVersion.BOTH) {");
                         processMethodDeclarations(staticAnnotatedMethods1_9);
+                        for (Map.Entry<String, List<MethodDeclaration>> entry : staticAnnotatedMethods1_9.entrySet()) {
+                            MethodDeclaration decl = entry.getValue().get(0);
+                            if (!decl.getAnnotation(JRubyMethod.class).omit()) addCoreMethodMapping(entry.getKey(), decl, out);
+                        }
                         out.println("        }");
                     }
 
                     processMethodDeclarations(annotatedMethods);
+                    for (Map.Entry<String, List<MethodDeclaration>> entry : annotatedMethods.entrySet()) {
+                        MethodDeclaration decl = entry.getValue().get(0);
+                        if (!decl.getAnnotation(JRubyMethod.class).omit()) addCoreMethodMapping(entry.getKey(), decl, out);
+                    }
 
                     if (!annotatedMethods1_8.isEmpty()) {
                         out.println("        if (compatVersion == CompatVersion.RUBY1_8 || compatVersion == CompatVersion.BOTH) {");
                         processMethodDeclarations(annotatedMethods1_8);
+                        for (Map.Entry<String, List<MethodDeclaration>> entry : annotatedMethods1_8.entrySet()) {
+                            MethodDeclaration decl = entry.getValue().get(0);
+                            if (!decl.getAnnotation(JRubyMethod.class).omit()) addCoreMethodMapping(entry.getKey(), decl, out);
+                        }
                         out.println("        }");
                     }
 
                     if (!annotatedMethods1_9.isEmpty()) {
                         out.println("        if (compatVersion == CompatVersion.RUBY1_9 || compatVersion == CompatVersion.BOTH) {");
                         processMethodDeclarations(annotatedMethods1_9);
+                        for (Map.Entry<String, List<MethodDeclaration>> entry : annotatedMethods1_9.entrySet()) {
+                            MethodDeclaration decl = entry.getValue().get(0);
+                            if (!decl.getAnnotation(JRubyMethod.class).omit()) addCoreMethodMapping(entry.getKey(), decl, out);
+                        }
                         out.println("        }");
                     }
 
                     out.println("    }");
 
                     // write out a static initializer for frame names, so it only fires once
+                    out.println("    static {");
                     if (!frameAwareMethods.isEmpty()) {
                         StringBuffer frameMethodsString = new StringBuffer();
                         boolean first = true;
@@ -216,10 +301,19 @@ public class AnnotationBinder implements AnnotationProcessorFactory {
                             first = false;
                             frameMethodsString.append('"').append(name).append('"');
                         }
-                        out.println("    static {");
-                        out.println("        ASTInspector.FRAME_AWARE_METHODS.addAll((List<String>)Arrays.asList(" + frameMethodsString + "));");
-                        out.println("     }");
+                        out.println("        ASTInspector.addFrameAwareMethods(" + frameMethodsString + ");");
                     }
+                    if (!scopeAwareMethods.isEmpty()) {
+                        StringBuffer scopeMethodsString = new StringBuffer();
+                        boolean first = true;
+                        for (String name : scopeAwareMethods) {
+                            if (!first) scopeMethodsString.append(',');
+                            first = false;
+                            scopeMethodsString.append('"').append(name).append('"');
+                        }
+                        out.println("        ASTInspector.addScopeAwareMethods(" + scopeMethodsString + ");");
+                    }
+                    out.println("     }");
 
                     out.println("}");
                     out.close();
@@ -258,12 +352,18 @@ public class AnnotationBinder implements AnnotationProcessorFactory {
                     boolean hasContext = false;
                     boolean hasBlock = false;
 
+                    StringBuffer buffer = new StringBuffer();
+                    boolean first = true;
                     for (ParameterDeclaration pd : md.getParameters()) {
+                        if (!first) buffer.append(", ");
+                        first = false;
+                        buffer.append(pd.getType().toString());
+                        buffer.append(".class");
                         hasContext |= pd.getType().toString().equals("org.jruby.runtime.ThreadContext");
                         hasBlock |= pd.getType().toString().equals("org.jruby.runtime.Block");
                     }
 
-                    int actualRequired = calculateActualRequired(md.getParameters().size(), anno.optional(), anno.rest(), isStatic, hasContext, hasBlock);
+                    int actualRequired = calculateActualRequired(md, md.getParameters().size(), anno.optional(), anno.rest(), isStatic, hasContext, hasBlock);
 
                     String annotatedBindingName = CodegenUtils.getAnnotatedBindingClassName(
                             md.getSimpleName(),
@@ -273,14 +373,21 @@ public class AnnotationBinder implements AnnotationProcessorFactory {
                             anno.optional(),
                             false,
                             anno.frame());
-                    String implClass = anno.meta() ? "metaClass" : "cls";
+                    String implClass = anno.meta() ? "singletonClass" : "cls";
 
                     out.println("        javaMethod = new " + annotatedBindingName + "(" + implClass + ", Visibility." + anno.visibility() + ");");
                     out.println("        populateMethod(javaMethod, " +
                             getArityValue(anno, actualRequired) + ", \"" +
                             md.getSimpleName() + "\", " +
                             isStatic + ", " +
-                            "CallConfiguration." + getCallConfigNameByAnno(anno) + ");");
+                            "CallConfiguration." + getCallConfigNameByAnno(anno) + ", " +
+                            anno.notImplemented() + ");");
+                    out.println("        javaMethod.setNativeCall("
+                            + md.getDeclaringType().getQualifiedName() + ".class, "
+                            + "\"" + md.getSimpleName() + "\", "
+                            + md.getReturnType().toString() + ".class, "
+                            + "new Class[] {" + buffer.toString() + "}, "
+                            + md.getModifiers().contains(Modifier.STATIC) + ");");
                     generateMethodAddCalls(md, anno);
                 }
             }
@@ -299,7 +406,7 @@ public class AnnotationBinder implements AnnotationProcessorFactory {
                         hasBlock |= pd.getType().toString().equals("org.jruby.runtime.Block");
                     }
 
-                    int actualRequired = calculateActualRequired(md.getParameters().size(), anno.optional(), anno.rest(), isStatic, hasContext, hasBlock);
+                    int actualRequired = calculateActualRequired(md, md.getParameters().size(), anno.optional(), anno.rest(), isStatic, hasContext, hasBlock);
 
                     String annotatedBindingName = CodegenUtils.getAnnotatedBindingClassName(
                             md.getSimpleName(),
@@ -309,16 +416,28 @@ public class AnnotationBinder implements AnnotationProcessorFactory {
                             anno.optional(),
                             true,
                             anno.frame());
-                    String implClass = anno.meta() ? "metaClass" : "cls";
+                    String implClass = anno.meta() ? "singletonClass" : "cls";
 
                     out.println("        javaMethod = new " + annotatedBindingName + "(" + implClass + ", Visibility." + anno.visibility() + ");");
                     out.println("        populateMethod(javaMethod, " +
                             "-1, \"" +
                             md.getSimpleName() + "\", " +
                             isStatic + ", " +
-                            "CallConfiguration." + getCallConfigNameByAnno(anno) + ");");
+                            "CallConfiguration." + getCallConfigNameByAnno(anno) + ", " +
+                            anno.notImplemented() + ");");
                     generateMethodAddCalls(md, anno);
                 }
+            }
+
+            private void addCoreMethodMapping(String rubyName, MethodDeclaration decl, PrintStream out) {
+                out.println(
+                        "        runtime.addBoundMethod(\""
+                        + decl.getDeclaringType().getQualifiedName()
+                        + "."
+                        + decl.getSimpleName()
+                        + "\", \""
+                        + rubyName
+                        + "\");");
             }
 
             private String getActualQualifiedName(TypeDeclaration td) {
@@ -338,17 +457,7 @@ public class AnnotationBinder implements AnnotationProcessorFactory {
                 return qualifiedName;
             }
 
-            private boolean tryClass(String className) {
-                Class tryClass = null;
-                try {
-                    tryClass = Class.forName(className);
-                } catch (ClassNotFoundException cnfe) {
-                }
-
-                return tryClass != null;
-            }
-
-            private int calculateActualRequired(int paramsLength, int optional, boolean rest, boolean isStatic, boolean hasContext, boolean hasBlock) {
+            private int calculateActualRequired(MethodDeclaration md, int paramsLength, int optional, boolean rest, boolean isStatic, boolean hasContext, boolean hasBlock) {
                 int actualRequired;
                 if (optional == 0 && !rest) {
                     int args = paramsLength;
@@ -389,7 +498,8 @@ public class AnnotationBinder implements AnnotationProcessorFactory {
                     }
 
                     if (actualRequired != 0) {
-                        throw new RuntimeException("Combining specific args with IRubyObject[] is not yet supported");
+                        throw new RuntimeException("Combining specific args with IRubyObject[] is not yet supported: "
+                                + md.getDeclaringType().getQualifiedName() + "." + md.toString());
                     }
                 }
 
@@ -397,76 +507,35 @@ public class AnnotationBinder implements AnnotationProcessorFactory {
             }
 
             public void generateMethodAddCalls(MethodDeclaration md, JRubyMethod jrubyMethod) {
-                // TODO: This information
-                if (jrubyMethod.frame()) {
-                    for (String name : jrubyMethod.name()) {
-                        out.println("        ASTInspector.FRAME_AWARE_METHODS.add(\"" + name + "\");");
-                    }
-                }
-                // TODO: compat version
-                //                if(jrubyMethod.compat() == CompatVersion.BOTH ||
-                //                        module.getRuntime().getInstanceConfig().getCompatVersion() == jrubyMethod.compat()) {
-                //RubyModule metaClass = module.metaClass;
-
                 if (jrubyMethod.meta()) {
-                    String baseName;
-                    if (jrubyMethod.name().length == 0) {
-                        baseName = md.getSimpleName();
-                        out.println("        metaClass.addMethod(\"" + baseName + "\", javaMethod);");
-                    } else {
-                        baseName = jrubyMethod.name()[0];
-                        for (String name : jrubyMethod.name()) {
-                            out.println("        metaClass.addMethod(\"" + name + "\", javaMethod);");
-                        }
-                    }
-
-                    if (jrubyMethod.alias().length > 0) {
-                        for (String alias : jrubyMethod.alias()) {
-                            out.println("        metaClass.defineAlias(\"" + alias + "\", \"" + baseName + "\");");
-                        }
-                    }
+                    defineMethodOnClass("javaMethod", "singletonClass", jrubyMethod, md);
                 } else {
-                    String baseName;
-                    if (jrubyMethod.name().length == 0) {
-                        baseName = md.getSimpleName();
-                        out.println("        cls.addMethod(\"" + baseName + "\", javaMethod);");
-                    } else {
-                        baseName = jrubyMethod.name()[0];
-                        for (String name : jrubyMethod.name()) {
-                            out.println("        cls.addMethod(\"" + name + "\", javaMethod);");
-                        }
-                    }
-
-                    if (jrubyMethod.alias().length > 0) {
-                        for (String alias : jrubyMethod.alias()) {
-                            out.println("        cls.defineAlias(\"" + alias + "\", \"" + baseName + "\");");
-                        }
-                    }
-
+                    defineMethodOnClass("javaMethod", "cls", jrubyMethod, md);
                     if (jrubyMethod.module()) {
                         out.println("        moduleMethod = populateModuleMethod(cls, javaMethod);");
-                        out.println("        singletonClass = moduleMethod.getImplementationClass();");
-
-                        //                        RubyModule singletonClass = module.getSingletonClass();
-
-                        if (jrubyMethod.name().length == 0) {
-                            baseName = md.getSimpleName();
-                            out.println("        singletonClass.addMethod(\"" + baseName + "\", moduleMethod);");
-                        } else {
-                            baseName = jrubyMethod.name()[0];
-                            for (String name : jrubyMethod.name()) {
-                                out.println("        singletonClass.addMethod(\"" + name + "\", moduleMethod);");
-                            }
-                        }
-
-                        if (jrubyMethod.alias().length > 0) {
-                            for (String alias : jrubyMethod.alias()) {
-                                out.println("        singletonClass.defineAlias(\"" + alias + "\", \"" + baseName + "\");");
-                            }
-                        }
+                        defineMethodOnClass("moduleMethod", "singletonClass", jrubyMethod, md);
                     }
                 }
             //                }
+            }
+
+            private void defineMethodOnClass(String methodVar, String classVar, JRubyMethod jrubyMethod, MethodDeclaration md) {
+                String baseName;
+                if (jrubyMethod.name().length == 0) {
+                    baseName = md.getSimpleName();
+                    out.println("        " + classVar + ".addMethodAtBootTimeOnly(\"" + baseName + "\", " + methodVar + ");");
+                } else {
+                    baseName = jrubyMethod.name()[0];
+                    for (String name : jrubyMethod.name()) {
+                        out.println("        " + classVar + ".addMethodAtBootTimeOnly(\"" + name + "\", " + methodVar + ");");
+                    }
+                }
+
+                if (jrubyMethod.alias().length > 0) {
+                    for (String alias : jrubyMethod.alias()) {
+                        out.println("        " + classVar + ".defineAlias(\"" + alias + "\", \"" + baseName + "\");");
+                    }
+                }
             }
         }
 

@@ -35,10 +35,12 @@ import java.util.List;
 
 import org.jruby.Ruby;
 import org.jruby.ast.visitor.NodeVisitor;
+import org.jruby.javasupport.util.RuntimeHelpers;
 import org.jruby.lexer.yacc.ISourcePosition;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.jruby.util.ByteList;
 
 /**
  * not is !
@@ -81,5 +83,11 @@ public class NotNode extends Node {
     @Override
     public IRubyObject interpret(Ruby runtime, ThreadContext context, IRubyObject self, Block aBlock) {
         return runtime.newBoolean(!conditionNode.interpret(runtime,context, self, aBlock).isTrue());
+    }
+
+    @Override
+    public ByteList definition(Ruby runtime, ThreadContext context, IRubyObject self, Block aBlock) {
+        ByteList definition = super.definition(runtime, context, self, aBlock);
+        return RuntimeHelpers.getDefinedNot(runtime, definition);
     }
 }

@@ -4,198 +4,280 @@ package org.jruby.ext.ffi.jffi;
 import com.kenai.jffi.CallingConvention;
 import com.kenai.jffi.Closure;
 import com.kenai.jffi.ClosureManager;
-import com.kenai.jffi.Type;
 import java.lang.ref.WeakReference;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.RubyModule;
 import org.jruby.RubyNumeric;
+import org.jruby.RubyObject;
 import org.jruby.RubyProc;
-import org.jruby.RubyString;
 import org.jruby.anno.JRubyClass;
-import org.jruby.ext.ffi.BasePointer;
+import org.jruby.ext.ffi.AbstractInvoker;
+import org.jruby.ext.ffi.AllocatedDirectMemoryIO;
+import org.jruby.ext.ffi.ArrayMemoryIO;
 import org.jruby.ext.ffi.CallbackInfo;
 import org.jruby.ext.ffi.DirectMemoryIO;
-import org.jruby.ext.ffi.FFIProvider;
 import org.jruby.ext.ffi.InvalidMemoryIO;
-import org.jruby.ext.ffi.NativeParam;
-import org.jruby.ext.ffi.NativeType;
+import org.jruby.ext.ffi.MappedType;
+import org.jruby.ext.ffi.MemoryIO;
 import org.jruby.ext.ffi.NullMemoryIO;
+import org.jruby.ext.ffi.Platform;
 import org.jruby.ext.ffi.Pointer;
+import org.jruby.ext.ffi.Struct;
+import org.jruby.ext.ffi.StructByValue;
+import org.jruby.ext.ffi.Type;
 import org.jruby.ext.ffi.Util;
+import org.jruby.internal.runtime.methods.DynamicMethod;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ObjectAllocator;
+import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
+
+/**
+ * Manages Callback instances for the low level FFI backend.
+ */
 public class CallbackManager extends org.jruby.ext.ffi.CallbackManager {
-    private static final com.kenai.jffi.MemoryIO IO = com.kenai.jffi.MemoryIO.getInstance();
+    private static final int LONG_SIZE = Platform.getPlatform().longSize();
+    private static final String CALLBACK_ID = "ffi_callback";
+
+    /** Holder for the single instance of CallbackManager */
     private static final class SingletonHolder {
         static final CallbackManager INSTANCE = new CallbackManager();
     }
-    public static RubyClass createCallbackClass(Ruby runtime, RubyModule module) {
-        RubyClass result = module.defineClassUnder("Callback",
-                module.fastGetClass("Pointer"),
-                ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR);
-        result.defineAnnotatedMethods(Callback.class);
-        result.defineAnnotatedConstants(Callback.class);
 
-        return result;
-    }
-    private final Map<Object, Map<CallbackInfo, Callback>> callbackMap =
-            new WeakHashMap<Object, Map<CallbackInfo, Callback>>();
-    private final Map<CallbackInfo, ClosureInfo> infoMap =
-            Collections.synchronizedMap(new WeakHashMap<CallbackInfo, ClosureInfo>());
+    /** 
+     * Gets the singleton instance of CallbackManager
+     */
     public static final CallbackManager getInstance() {
         return SingletonHolder.INSTANCE;
     }
+    
+    /**
+     * Creates a Callback class for a ruby runtime
+     *
+     * @param runtime The runtime to create the class for
+     * @param module The module to place the class in
+     *
+     * @return The newly created ruby class
+     */
+    public static RubyClass createCallbackClass(Ruby runtime, RubyModule module) {
+
+        RubyClass cbClass = module.defineClassUnder("Callback", module.fastGetClass("Pointer"),
+                ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR);
+
+        cbClass.defineAnnotatedMethods(Callback.class);
+        cbClass.defineAnnotatedConstants(Callback.class);
+
+        return cbClass;
+    }
+    
     public final org.jruby.ext.ffi.Pointer getCallback(Ruby runtime, CallbackInfo cbInfo, Object proc) {
-        Map<CallbackInfo, Callback> map;
-        synchronized (callbackMap) {
-            map = callbackMap.get(proc);
-            if (map != null) {
-                Callback cb = map.get(cbInfo);
+        return proc instanceof RubyObject
+                ? getCallback(runtime, cbInfo, (RubyObject) proc)
+                : newCallback(runtime, cbInfo, proc);
+    }
+
+    /**
+     * Gets a Callback object conforming to the signature contained in the
+     * <tt>CallbackInfo</tt> for the ruby <tt>Proc</tt> or <tt>Block</tt> instance.
+     *
+     * @param runtime The ruby runtime the callback is attached to
+     * @param cbInfo The signature of the native callback
+     * @param proc The ruby object to call when the callback is invoked.
+     * @return A native value returned to the native caller.
+     */
+    public final org.jruby.ext.ffi.Pointer getCallback(Ruby runtime, CallbackInfo cbInfo, RubyObject proc) {
+        if (proc instanceof Function) {
+            return (Function) proc;
+        }
+
+        synchronized (proc) {
+            Object existing = proc.fastGetInternalVariable(CALLBACK_ID);
+            if (existing instanceof Callback && ((Callback) existing).cbInfo == cbInfo) {
+                return (Callback) existing;
+            } else if (existing instanceof Map) {
+                Map m = (Map) existing;
+                Callback cb = (Callback) m.get(proc);
                 if (cb != null) {
                     return cb;
                 }
             }
-            callbackMap.put(proc, map = Collections.synchronizedMap(new HashMap<CallbackInfo, Callback>(2)));
-        }
-        ClosureInfo info = infoMap.get(cbInfo);
-        if (info == null) {
-            CallingConvention convention = "stdcall".equals(null)
-                    ? CallingConvention.STDCALL : CallingConvention.DEFAULT;
-            info = new ClosureInfo(cbInfo, convention);
-            infoMap.put(cbInfo, info);
+
+            Callback cb = newCallback(runtime, cbInfo, proc);
+            
+            if (existing == null) {
+                ((RubyObject) proc).fastSetInternalVariable(CALLBACK_ID, cb);
+            } else {
+                Map<CallbackInfo, Callback> m = existing instanceof Map
+                        ? (Map<CallbackInfo, Callback>) existing
+                        : Collections.synchronizedMap(new WeakHashMap<CallbackInfo, Callback>());
+                m.put(cbInfo, cb);
+                m.put(((Callback) existing).cbInfo, (Callback) existing);
+                ((RubyObject) proc).fastSetInternalVariable(CALLBACK_ID, m);
+            }
+
+            return cb;
         }
         
-        final CallbackProxy cbProxy = new CallbackProxy(runtime, cbInfo, proc);
-        final Closure.Handle handle = ClosureManager.getInstance().newClosure(cbProxy,
-                info.ffiReturnType, info.ffiParameterTypes, info.convention);
-        Callback cb = new Callback(runtime, handle, cbInfo, proc);
-        map.put(cbInfo, cb);
-        return cb;
     }
+
+    /**
+     * Gets a Callback object conforming to the signature contained in the
+     * <tt>CallbackInfo</tt> for the ruby <tt>Proc</tt> or <tt>Block</tt> instance.
+     *
+     * @param runtime The ruby runtime the callback is attached to
+     * @param cbInfo The signature of the native callback
+     * @param proc The ruby <tt>Block</tt> object to call when the callback is invoked.
+     * @return A native value returned to the native caller.
+     */
+    final Callback getCallback(Ruby runtime, CallbackInfo cbInfo, Block proc) {
+        return newCallback(runtime, cbInfo, proc);
+    }
+
+    private final Callback newCallback(Ruby runtime, CallbackInfo cbInfo, Object proc) {
+        ClosureInfo info = getClosureInfo(runtime, cbInfo);
+        WeakRefCallbackProxy cbProxy = new WeakRefCallbackProxy(runtime, info, proc);
+        Closure.Handle handle = ClosureManager.getInstance().newClosure(cbProxy, info.callContext);
+        return new Callback(runtime, handle, cbInfo, info);
+    }
+
+    private final ClosureInfo getClosureInfo(Ruby runtime, CallbackInfo cbInfo) {
+        Object info = cbInfo.getProviderCallbackInfo();
+        if (info != null && info instanceof ClosureInfo) {
+            return (ClosureInfo) info;
+        }
+        cbInfo.setProviderCallbackInfo(info = newClosureInfo(runtime, cbInfo));
+        return (ClosureInfo) info;
+    }
+
+    private final ClosureInfo newClosureInfo(Ruby runtime, CallbackInfo cbInfo) {
+        return new ClosureInfo(runtime, cbInfo.getReturnType(), cbInfo.getParameterTypes(),
+                cbInfo.isStdcall() ? CallingConvention.STDCALL : CallingConvention.DEFAULT);
+    }
+
+    /**
+     */
+    final CallbackMemoryIO newClosure(Ruby runtime, Type returnType, Type[] parameterTypes, 
+            Object proc, CallingConvention convention) {
+        ClosureInfo info = new ClosureInfo(runtime, returnType, parameterTypes, convention);
+
+        final CallbackProxy cbProxy = new CallbackProxy(runtime, info, proc);
+        final Closure.Handle handle = ClosureManager.getInstance().newClosure(cbProxy, info.callContext);
+        
+        return new CallbackMemoryIO(runtime, handle);
+    }
+    
+    /**
+     * Holds the JFFI return type and parameter types to avoid
+     */
     private static class ClosureInfo {
-        private final CallbackInfo cbInfo;
-        private final CallingConvention convention;
-        private final NativeType[] parameterTypes;
-        private final Type[] ffiParameterTypes;
-        private final Type ffiReturnType;
-        public ClosureInfo(CallbackInfo cbInfo, CallingConvention convention) {
-            this.cbInfo = cbInfo;
-            this.convention = convention;
-            NativeParam[] nativeParams = cbInfo.getParameterTypes();
-            ffiParameterTypes = new Type[nativeParams.length];
-            parameterTypes = new NativeType[nativeParams.length];
-            for (int i = 0; i < nativeParams.length; ++i) {
-                if (!(nativeParams[i] instanceof NativeType)) {
-                    throw new RuntimeException("Invalid callback parameter type: " + nativeParams[i]);
-                }
-                switch ((NativeType) nativeParams[i]) {
-                    case INT8:
-                    case UINT8:
-                    case INT16:
-                    case UINT16:
-                    case INT32:
-                    case UINT32:
-                    case LONG:
-                    case ULONG:
-                    case INT64:
-                    case UINT64:
-                    case FLOAT32:
-                    case FLOAT64:
-                    case POINTER:
-                    case STRING:
-                        ffiParameterTypes[i] = getFFIType((NativeType) nativeParams[i]);
-                        parameterTypes[i] = (NativeType) nativeParams[i];
-                        break;
-                    default:
-                        throw new RuntimeException("Invalid callback parameter type: " + nativeParams[i]);
-                }
-            }
-            switch (cbInfo.getReturnType()) {
-                case INT8:
-                case UINT8:
-                case INT16:
-                case UINT16:
-                case INT32:
-                case UINT32:
-                case LONG:
-                case ULONG:
-                case INT64:
-                case UINT64:
-                case FLOAT32:
-                case FLOAT64:
-                case POINTER:
-                case VOID:
-                    this.ffiReturnType = getFFIType(cbInfo.getReturnType());
-                    break;
-                default:
-                   throw cbInfo.getRuntime().newArgumentError("Invalid callback return type: " + cbInfo.getReturnType());
-
-            }
-        }
-    }
-    private static final Type getFFIType(NativeType type) {
-        switch (type) {
-            case VOID: return com.kenai.jffi.Type.VOID;
-            case INT8: return com.kenai.jffi.Type.SINT8;
-            case UINT8: return com.kenai.jffi.Type.UINT8;
-            case INT16: return com.kenai.jffi.Type.SINT16;
-            case UINT16: return com.kenai.jffi.Type.UINT16;
-            case INT32: return com.kenai.jffi.Type.SINT32;
-            case UINT32: return com.kenai.jffi.Type.UINT32;
-            case INT64: return com.kenai.jffi.Type.SINT64;
-            case UINT64: return com.kenai.jffi.Type.UINT64;
-            case LONG:
-                return com.kenai.jffi.Platform.getPlatform().addressSize() == 32
-                        ? com.kenai.jffi.Type.SINT32
-                        : com.kenai.jffi.Type.SINT64;
-            case ULONG:
-                return com.kenai.jffi.Platform.getPlatform().addressSize() == 32
-                        ? com.kenai.jffi.Type.UINT32
-                        : com.kenai.jffi.Type.UINT64;
-            case FLOAT32: return com.kenai.jffi.Type.FLOAT;
-            case FLOAT64: return com.kenai.jffi.Type.DOUBLE;
-            case POINTER: return com.kenai.jffi.Type.POINTER;
-            case BUFFER_IN:
-            case BUFFER_OUT:
-            case BUFFER_INOUT:
-                return com.kenai.jffi.Type.POINTER;
-            case STRING: return com.kenai.jffi.Type.POINTER;
-            default:
-                throw new IllegalArgumentException("Unknown type " + type);
-        }
-    }
-    @JRubyClass(name = "FFI::Callback", parent = "FFI::BasePointer")
-    static class Callback extends BasePointer {
-        private final CallbackInfo cbInfo;
-        private final Object proc;
+        final CallingConvention convention;
+        final Type returnType;
+        final Type[] parameterTypes;
+        final com.kenai.jffi.Type ffiReturnType;
+        final com.kenai.jffi.Type[] ffiParameterTypes;
+        final com.kenai.jffi.CallContext callContext;
         
-        Callback(Ruby runtime, Closure.Handle handle, CallbackInfo cbInfo, Object proc) {
-            super(runtime, FFIProvider.getModule(runtime).fastGetClass("Callback"),
-                    new CallbackMemoryIO(runtime, handle), Long.MAX_VALUE);
-            this.cbInfo = cbInfo;
-            this.proc = proc;
+        public ClosureInfo(Ruby runtime, Type returnType, Type[] paramTypes, CallingConvention convention) {
+            this.convention = convention;
+
+            this.ffiParameterTypes = new com.kenai.jffi.Type[paramTypes.length];
+
+            for (int i = 0; i < paramTypes.length; ++i) {
+                if (!isParameterTypeValid(paramTypes[i]) || (ffiParameterTypes[i] = FFIUtil.getFFIType(paramTypes[i])) == null) {
+                    throw runtime.newTypeError("invalid callback parameter type: " + paramTypes[i]);
+                }
+            }
+            
+            ffiReturnType = FFIUtil.getFFIType(returnType);
+            if (!isReturnTypeValid(returnType) || ffiReturnType == null) {
+                runtime.newTypeError("invalid callback return type: " + returnType);
+            }
+
+            this.callContext = new com.kenai.jffi.CallContext(ffiReturnType, ffiParameterTypes, convention);
+            this.returnType = returnType;
+            this.parameterTypes = (Type[]) paramTypes.clone();
         }
     }
-    private static final class CallbackProxy implements Closure {
-        private final Ruby runtime;
-        private final CallbackInfo cbInfo;
-        private final WeakReference<Object> proc;
-        private final NativeParam[] parameterTypes;
-        private final NativeType returnType;
 
-        CallbackProxy(Ruby runtime, CallbackInfo cbInfo, Object proc) {
-            this.runtime = runtime;
+    /**
+     * Wrapper around the native callback, to represent it as a ruby object
+     */
+    @JRubyClass(name = "FFI::Callback", parent = "FFI::Pointer")
+    static class Callback extends AbstractInvoker {
+        private final CallbackInfo cbInfo;
+        private final ClosureInfo closureInfo;
+        
+        Callback(Ruby runtime, Closure.Handle handle, CallbackInfo cbInfo, ClosureInfo closureInfo) {
+            super(runtime, runtime.fastGetModule("FFI").fastGetClass("Callback"),
+                    cbInfo.getParameterTypes().length, new CallbackMemoryIO(runtime, handle));
             this.cbInfo = cbInfo;
+            this.closureInfo = closureInfo;
+        }
+
+        void dispose() {
+            MemoryIO mem = getMemoryIO();
+            if (mem instanceof CallbackMemoryIO) {
+                ((CallbackMemoryIO) mem).free();
+            }
+        }
+
+        @Override
+        public DynamicMethod createDynamicMethod(RubyModule module) {
+            com.kenai.jffi.Function function = new com.kenai.jffi.Function(((DirectMemoryIO) getMemoryIO()).getAddress(),
+                    closureInfo.ffiReturnType, closureInfo.ffiParameterTypes);
+            return MethodFactory.createDynamicMethod(getRuntime(), module, function,
+                    closureInfo.returnType, closureInfo.parameterTypes, closureInfo.convention, getRuntime().getNil());
+        }
+    }
+
+    /**
+     * Wraps a ruby proc in a JFFI Closure
+     */
+    private static abstract class AbstractCallbackProxy implements Closure {
+        protected final Ruby runtime;
+        protected final ClosureInfo closureInfo;
+        
+        AbstractCallbackProxy(Ruby runtime, ClosureInfo closureInfo) {
+            this.runtime = runtime;
+            this.closureInfo = closureInfo;
+        }
+
+        protected final void invoke(Closure.Buffer buffer, Object recv) {
+            ThreadContext context = runtime.getCurrentContext();
+
+            IRubyObject[] params = new IRubyObject[closureInfo.parameterTypes.length];
+            for (int i = 0; i < params.length; ++i) {
+                params[i] = fromNative(runtime, closureInfo.parameterTypes[i], buffer, i);
+            }
+
+            IRubyObject retVal;
+            if (recv instanceof RubyProc) {
+                retVal = ((RubyProc) recv).call(context, params);
+            } else if (recv instanceof Block) {
+                retVal = ((Block) recv).call(context, params);
+            } else {
+                retVal = ((IRubyObject) recv).callMethod(context, "call", params);
+            }
+
+            setReturnValue(runtime, closureInfo.returnType, buffer, retVal);
+        }
+    }
+
+    /**
+     * Wraps a ruby proc in a JFFI Closure
+     */
+    private static final class WeakRefCallbackProxy extends AbstractCallbackProxy implements Closure {
+        private final WeakReference<Object> proc;
+
+        WeakRefCallbackProxy(Ruby runtime, ClosureInfo closureInfo, Object proc) {
+            super(runtime, closureInfo);
             this.proc = new WeakReference<Object>(proc);
-            this.parameterTypes = cbInfo.getParameterTypes();
-            this.returnType = cbInfo.getReturnType();
         }
         public void invoke(Closure.Buffer buffer) {
             Object recv = proc.get();
@@ -203,35 +285,66 @@ public class CallbackManager extends org.jruby.ext.ffi.CallbackManager {
                 buffer.setIntReturn(0);
                 return;
             }
-            IRubyObject[] params = new IRubyObject[parameterTypes.length];
-            for (int i = 0; i < params.length; ++i) {
-                params[i] = fromNative(runtime, (NativeType) parameterTypes[i], buffer, i);
-            }
-            IRubyObject retVal;
-            if (recv instanceof RubyProc) {
-                retVal = ((RubyProc) recv).call(runtime.getCurrentContext(), params);
-            } else {
-                retVal = ((Block) recv).call(runtime.getCurrentContext(), params);
-            }
-            setReturnValue(runtime, cbInfo.getReturnType(), buffer, retVal);
+            invoke(buffer, recv);
         }
     }
-    static final class CallbackMemoryIO extends InvalidMemoryIO implements DirectMemoryIO {
+
+    /**
+     * Wraps a ruby proc in a JFFI Closure
+     */
+    private static final class CallbackProxy extends AbstractCallbackProxy implements Closure {
+        private final Object proc;
+
+        CallbackProxy(Ruby runtime, ClosureInfo closureInfo, Object proc) {
+            super(runtime, closureInfo);
+            this.proc = proc;
+        }
+
+        public void invoke(Closure.Buffer buffer) {
+            invoke(buffer, proc);
+        }
+    }
+
+    /**
+     * An implementation of MemoryIO that throws exceptions on any attempt to read/write
+     * the callback memory area (which is code).
+     *
+     * This also keeps the callback alive via the handle member, as long as this
+     * CallbackMemoryIO instance is contained in a valid Callback pointer.
+     */
+    static final class CallbackMemoryIO extends InvalidMemoryIO implements AllocatedDirectMemoryIO {
         private final Closure.Handle handle;
+        private final AtomicBoolean released = new AtomicBoolean(false);
+
         public CallbackMemoryIO(Ruby runtime,  Closure.Handle handle) {
             super(runtime);
             this.handle = handle;
         }
+
         public final long getAddress() {
             return handle.getAddress();
         }
+
         public final boolean isNull() {
             return false;
         }
+
         public final boolean isDirect() {
             return true;
         }
+
+        public void free() {
+            if (released.getAndSet(true)) {
+                throw runtime.newRuntimeError("callback already freed");
+            }
+            handle.dispose();
+        }
+
+        public void setAutoRelease(boolean autorelease) {
+            handle.setAutoRelease(autorelease);
+        }
     }
+
     /**
      * Extracts the primitive value from a Ruby object.
      * This is similar to Util.longValue(), except it won't throw exceptions for
@@ -260,92 +373,301 @@ public class CallbackManager extends org.jruby.ext.ffi.CallbackManager {
     private static final long addressValue(IRubyObject value) {
         if (value instanceof RubyNumeric) {
             return ((RubyNumeric) value).getLongValue();
-        } else if (value instanceof BasePointer) {
-            return ((BasePointer) value).getAddress();
+        } else if (value instanceof Pointer) {
+            return ((Pointer) value).getAddress();
         } else if (value.isNil()) {
             return 0L;
         }
         return 0;
     }
-    private static final void setReturnValue(Ruby runtime, NativeType type,
-            Closure.Buffer buffer, IRubyObject value) {
-        switch ((NativeType) type) {
-            case VOID:
-                break;
-            case INT8:
-                buffer.setByteReturn((byte) longValue(value)); break;
-            case UINT8:
-                buffer.setByteReturn((byte) longValue(value)); break;
-            case INT16:
-                buffer.setShortReturn((short) longValue(value)); break;
-            case UINT16:
-                buffer.setShortReturn((short) longValue(value)); break;
-            case INT32:
-                buffer.setIntReturn((int) longValue(value)); break;
-            case UINT32:
-                buffer.setIntReturn((int) longValue(value)); break;
-            case INT64:
-                buffer.setLongReturn(Util.int64Value(value)); break;
-            case UINT64:
-                buffer.setLongReturn(Util.uint64Value(value)); break;
-            case FLOAT32:
-                buffer.setFloatReturn((float) RubyNumeric.num2dbl(value)); break;
-            case FLOAT64:
-                buffer.setDoubleReturn(RubyNumeric.num2dbl(value)); break;
-            case POINTER:
-                buffer.setAddressReturn(addressValue(value)); break;
-            default:
-        }
-    }
-    private static final IRubyObject fromNative(Ruby runtime, NativeType type,
-            Closure.Buffer buffer, int index) {
-        switch (type) {
-            case VOID:
-                return runtime.getNil();
-            case INT8:
-                return Util.newSigned8(runtime, buffer.getByte(index));
-            case UINT8:
-                return Util.newUnsigned8(runtime, buffer.getByte(index));
-            case INT16:
-                return Util.newSigned16(runtime, buffer.getShort(index));
-            case UINT16:
-                return Util.newUnsigned16(runtime, buffer.getShort(index));
-            case INT32:
-                return Util.newSigned32(runtime, buffer.getInt(index));
-            case UINT32:
-                return Util.newUnsigned32(runtime, buffer.getInt(index));
-            case INT64:
-                return Util.newSigned64(runtime, buffer.getLong(index));
-            case UINT64:
-                return Util.newUnsigned64(runtime, buffer.getLong(index));
-            case FLOAT32:
-                return runtime.newFloat(buffer.getFloat(index));
-            case FLOAT64:
-                return runtime.newFloat(buffer.getDouble(index));
-            case POINTER: {
-                final long  address = buffer.getAddress(index);
-                return new BasePointer(runtime, address != 0 ? new NativeMemoryIO(address) : new NullMemoryIO(runtime));
-            }
-            case STRING:
-                return getStringParameter(runtime, buffer, index);
-            default:
-                throw new IllegalArgumentException("Invalid type " + type);
-        }
-    }
-    private static final IRubyObject getStringParameter(Ruby runtime, Closure.Buffer buffer, int index) {
-        long address = buffer.getAddress(index);
-        if (address == 0) {
-            return runtime.getNil();
-        }
-        int len = (int) IO.getStringLength(address);
-        if (len == 0) {
-            return RubyString.newEmptyString(runtime);
-        }
-        byte[] bytes = new byte[len];
-        IO.getByteArray(address, bytes, 0, len);
 
-        RubyString s = RubyString.newStringShared(runtime, bytes);
-        s.setTaint(true);
-        return s;
+    /**
+     * Converts a ruby return value into a native callback return value.
+     *
+     * @param runtime The ruby runtime the callback is attached to
+     * @param type The ruby type of the return value
+     * @param buffer The native parameter buffer
+     * @param value The ruby value
+     */
+    private static final void setReturnValue(Ruby runtime, Type type,
+            Closure.Buffer buffer, IRubyObject value) {
+        if (type instanceof Type.Builtin) {
+            switch (type.getNativeType()) {
+                case VOID:
+                    break;
+                case CHAR:
+                    buffer.setByteReturn((byte) longValue(value)); break;
+                case UCHAR:
+                    buffer.setByteReturn((byte) longValue(value)); break;
+                case SHORT:
+                    buffer.setShortReturn((short) longValue(value)); break;
+                case USHORT:
+                    buffer.setShortReturn((short) longValue(value)); break;
+                case INT:
+                    buffer.setIntReturn((int) longValue(value)); break;
+                case UINT:
+                    buffer.setIntReturn((int) longValue(value)); break;
+                case LONG_LONG:
+                    buffer.setLongReturn(Util.int64Value(value)); break;
+                case ULONG_LONG:
+                    buffer.setLongReturn(Util.uint64Value(value)); break;
+
+                case LONG:
+                    if (LONG_SIZE == 32) {
+                        buffer.setIntReturn((int) longValue(value));
+                    } else {
+                        buffer.setLongReturn(Util.int64Value(value));
+                    }
+                    break;
+
+                case ULONG:
+                    if (LONG_SIZE == 32) {
+                        buffer.setIntReturn((int) longValue(value));
+                    } else {
+                        buffer.setLongReturn(Util.uint64Value(value));
+                    }
+                    break;
+
+                case FLOAT:
+                    buffer.setFloatReturn((float) RubyNumeric.num2dbl(value)); break;
+                case DOUBLE:
+                    buffer.setDoubleReturn(RubyNumeric.num2dbl(value)); break;
+                case POINTER:
+                    buffer.setAddressReturn(addressValue(value)); break;
+
+                case BOOL:
+                    buffer.setIntReturn(value.isTrue() ? 1 : 0); break;
+                default:
+            }
+        } else if (type instanceof CallbackInfo) {
+            if (value instanceof RubyProc || value.respondsTo("call")) {
+                Pointer cb = Factory.getInstance().getCallbackManager().getCallback(runtime, (CallbackInfo) type, value);
+                buffer.setAddressReturn(addressValue(cb));
+            } else {
+                buffer.setAddressReturn(0L);
+                throw runtime.newTypeError("invalid callback return value, expected Proc or callable object");
+            }
+
+        } else if (type instanceof StructByValue) {
+
+            if (value instanceof Struct) {
+                Struct s = (Struct) value;
+                MemoryIO memory = s.getMemory().getMemoryIO();
+
+                if (memory instanceof DirectMemoryIO) {
+                    long address = ((DirectMemoryIO) memory).getAddress();
+                    if (address != 0) {
+                        buffer.setStructReturn(address);
+                    } else {
+                        // Zero it out
+                        buffer.setStructReturn(new byte[type.getNativeSize()], 0);
+                    }
+
+                } else if (memory instanceof ArrayMemoryIO) {
+                    ArrayMemoryIO arrayMemory = (ArrayMemoryIO) memory;
+                    if (arrayMemory.arrayLength() < type.getNativeSize()) {
+                        throw runtime.newRuntimeError("size of struct returned from callback too small");
+                    }
+
+                    buffer.setStructReturn(arrayMemory.array(), arrayMemory.arrayOffset());
+
+                } else {
+                    throw runtime.newRuntimeError("struct return value has illegal backing memory");
+                }
+            } else if (value.isNil()) {
+                // Zero it out
+                buffer.setStructReturn(new byte[type.getNativeSize()], 0);
+            
+            } else {
+                throw runtime.newTypeError(value, runtime.fastGetModule("FFI").fastGetClass("Struct"));
+            }
+
+        } else if (type instanceof MappedType) {
+            MappedType mappedType = (MappedType) type;
+            setReturnValue(runtime, mappedType.getRealType(), buffer, mappedType.toNative(runtime.getCurrentContext(), value));
+
+        } else {
+            buffer.setLongReturn(0L);
+            throw runtime.newRuntimeError("unsupported return type from struct: " + type);
+        }
+    }
+
+    /**
+     * Converts a native value into a ruby object.
+     *
+     * @param runtime The ruby runtime to create the ruby object in
+     * @param type The type of the native parameter
+     * @param buffer The JFFI Closure parameter buffer.
+     * @param index The index of the parameter in the buffer.
+     * @return A new Ruby object.
+     */
+    private static final IRubyObject fromNative(Ruby runtime, Type type,
+            Closure.Buffer buffer, int index) {
+        if (type instanceof Type.Builtin) {
+            switch (type.getNativeType()) {
+                case VOID:
+                    return runtime.getNil();
+                case CHAR:
+                    return Util.newSigned8(runtime, buffer.getByte(index));
+                case UCHAR:
+                    return Util.newUnsigned8(runtime, buffer.getByte(index));
+                case SHORT:
+                    return Util.newSigned16(runtime, buffer.getShort(index));
+                case USHORT:
+                    return Util.newUnsigned16(runtime, buffer.getShort(index));
+                case INT:
+                    return Util.newSigned32(runtime, buffer.getInt(index));
+                case UINT:
+                    return Util.newUnsigned32(runtime, buffer.getInt(index));
+                case LONG_LONG:
+                    return Util.newSigned64(runtime, buffer.getLong(index));
+                case ULONG_LONG:
+                    return Util.newUnsigned64(runtime, buffer.getLong(index));
+
+                case LONG:
+                    return LONG_SIZE == 32
+                            ? Util.newSigned32(runtime, buffer.getInt(index))
+                            : Util.newSigned64(runtime, buffer.getLong(index));
+                case ULONG:
+                    return LONG_SIZE == 32
+                            ? Util.newUnsigned32(runtime, buffer.getInt(index))
+                            : Util.newUnsigned64(runtime, buffer.getLong(index));
+
+                case FLOAT:
+                    return runtime.newFloat(buffer.getFloat(index));
+                case DOUBLE:
+                    return runtime.newFloat(buffer.getDouble(index));
+
+                case POINTER:
+                    return new Pointer(runtime, NativeMemoryIO.wrap(runtime, buffer.getAddress(index)));
+
+                case STRING:
+                    return getStringParameter(runtime, buffer, index);
+
+                case BOOL:
+                    return runtime.newBoolean(buffer.getByte(index) != 0);
+
+                default:
+                    throw runtime.newTypeError("invalid callback parameter type " + type);
+            }
+        
+        } else if (type instanceof CallbackInfo) {
+            final CallbackInfo cbInfo = (CallbackInfo) type;
+            final long address = buffer.getAddress(index);
+            
+            return address != 0
+                ? new Function(runtime, cbInfo.getMetaClass(),
+                    new CodeMemoryIO(runtime, address),
+                    cbInfo.getReturnType(), cbInfo.getParameterTypes(),
+                    cbInfo.isStdcall() ? CallingConvention.STDCALL : CallingConvention.DEFAULT, runtime.getNil())
+
+                : runtime.getNil();
+
+        } else if (type instanceof StructByValue) {
+            StructByValue sbv = (StructByValue) type;
+            final long address = buffer.getStruct(index);
+            DirectMemoryIO memory = address != 0
+                    ? new BoundedNativeMemoryIO(runtime, address, type.getNativeSize())
+                    : new NullMemoryIO(runtime);
+
+            return sbv.getStructClass().newInstance(runtime.getCurrentContext(),
+                        new IRubyObject[] { new Pointer(runtime, memory) },
+                        Block.NULL_BLOCK);
+
+        } else if (type instanceof MappedType) {
+            MappedType mappedType = (MappedType) type;
+            return mappedType.fromNative(runtime.getCurrentContext(), fromNative(runtime, mappedType.getRealType(), buffer, index));
+
+        } else {
+            throw runtime.newTypeError("unsupported callback parameter type: " + type);
+        }
+
+    }
+
+    /**
+     * Converts a native string value into a ruby string object.
+     *
+     * @param runtime The ruby runtime to create the ruby string in
+     * @param buffer The JFFI Closure parameter buffer.
+     * @param index The index of the parameter in the buffer.
+     * @return A new Ruby string object or nil if string is NULL.
+     */
+    private static final IRubyObject getStringParameter(Ruby runtime, Closure.Buffer buffer, int index) {
+        return FFIUtil.getString(runtime, buffer.getAddress(index));
+    }
+
+    /**
+     * Checks if a type is a valid callback return type
+     *
+     * @param type The type to examine
+     * @return <tt>true</tt> if <tt>type</tt> is a valid return type for a callback.
+     */
+    private static final boolean isReturnTypeValid(Type type) {
+        if (type instanceof Type.Builtin) {
+            switch (type.getNativeType()) {
+                case CHAR:
+                case UCHAR:
+                case SHORT:
+                case USHORT:
+                case INT:
+                case UINT:
+                case LONG:
+                case ULONG:
+                case LONG_LONG:
+                case ULONG_LONG:
+                case FLOAT:
+                case DOUBLE:
+                case POINTER:
+                case VOID:
+                case BOOL:
+                    return true;
+            }
+
+        } else if (type instanceof CallbackInfo) {
+            return true;
+
+        } else if (type instanceof StructByValue) {
+            return true;
+        }
+        return false;
+    }
+    
+    /**
+     * Checks if a type is a valid parameter type for a callback
+     *
+     * @param type The type to examine
+     * @return <tt>true</tt> if <tt>type</tt> is a valid parameter type for a callback.
+     */
+    private static final boolean isParameterTypeValid(Type type) {
+        if (type instanceof Type.Builtin) {
+            switch (type.getNativeType()) {
+                case CHAR:
+                case UCHAR:
+                case SHORT:
+                case USHORT:
+                case INT:
+                case UINT:
+                case LONG:
+                case ULONG:
+                case LONG_LONG:
+                case ULONG_LONG:
+                case FLOAT:
+                case DOUBLE:
+                case POINTER:
+                case STRING:
+                case BOOL:
+                    return true;
+            }
+        } else if (type instanceof CallbackInfo) {
+            return true;
+        
+        } else if (type instanceof StructByValue) {
+            return true;
+        
+        } else if (type instanceof MappedType) {
+            return isParameterTypeValid(((MappedType) type).getRealType());
+        }
+        
+        return false;
     }
 }

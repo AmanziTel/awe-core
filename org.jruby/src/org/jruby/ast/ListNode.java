@@ -76,11 +76,7 @@ public class ListNode extends Node {
 
         list.add(node);
 
-        if (getPosition() == null) {
-            setPosition(node.getPosition());
-        } else {
-            setPosition(getPosition().union(node.getPosition()));
-        }
+        if (getPosition() == null) setPosition(node.getPosition());
 
         return this;
     }
@@ -91,7 +87,7 @@ public class ListNode extends Node {
         
         list.add(0, node);
         
-        setPosition(getPosition().union(node.getPosition()));
+        setPosition(node.getPosition());
         return this;
     }
     
@@ -109,8 +105,8 @@ public class ListNode extends Node {
     public ListNode addAll(ListNode other) {
         if (other != null && other.size() > 0) {
             list.addAll(other.list);
-            
-            setPosition(getPosition().union(getLast().getPosition()));
+
+            if (getPosition() == null) setPosition(other.getPosition());
         }
         return this;
     }
@@ -127,18 +123,6 @@ public class ListNode extends Node {
     
     public Node getLast() {
     	return list.size() == 0 ? null : list.get(list.size() - 1);
-    }
-    
-    public String toString() {
-        String string = super.toString();
-    	StringBuilder b = new StringBuilder();
-    	for (int i = 0; i < list.size(); i++) {
-    		b.append(list.get(i));
-            if (i + 1 < list.size()) {
-                b.append(", ");
-            }
-    	}
-    	return string + ": {" + b.toString() + "}";
     }
     
     public List<Node> childNodes() {

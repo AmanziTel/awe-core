@@ -292,10 +292,10 @@ public class JavaProxyClass extends JavaProxyReflectionObject {
             
             if (rt == Void.TYPE) return null;
             if (rt == Boolean.TYPE) return Boolean.FALSE;
-            if (rt == Byte.TYPE) return new Byte((byte) 0);
-            if (rt == Short.TYPE) return new Short((short) 0);
-            if (rt == Integer.TYPE) return new Integer(0);
-            if (rt == Long.TYPE) return new Long(0L);
+            if (rt == Byte.TYPE) return Byte.valueOf((byte) 0);
+            if (rt == Short.TYPE) return Short.valueOf((short) 0);
+            if (rt == Integer.TYPE) return Integer.valueOf(0);
+            if (rt == Long.TYPE) return Long.valueOf(0L);
             if (rt == Float.TYPE) return new Float(0.0f);
             if (rt == Double.TYPE) return new Double(0.0);
 
@@ -382,7 +382,7 @@ public class JavaProxyClass extends JavaProxyReflectionObject {
             Class[] parameterTypes = getParameterTypes();
             for (int i = 0; i < arguments.length; i++) {
                 arguments[i] = 
-                    JavaUtil.convertRubyToJava((IRubyObject) arguments[i], parameterTypes[i]);
+                    ((IRubyObject) arguments[i]).toJava(parameterTypes[i]);
             }
 
             try {
@@ -395,7 +395,7 @@ public class JavaProxyClass extends JavaProxyReflectionObject {
                         iae.getMessage());
             } catch (InvocationTargetException ite) {
                 if (getRuntime().getDebug().isTrue()) ite.getTargetException().printStackTrace();
-                getRuntime().getJavaSupport().handleNativeException(ite.getTargetException());
+                getRuntime().getJavaSupport().handleNativeException(ite.getTargetException(), sm);
                 // This point is only reached if there was an exception handler
                 // installed.
                 return getRuntime().getNil();

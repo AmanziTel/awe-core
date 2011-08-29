@@ -25,10 +25,12 @@
  ***** END LICENSE BLOCK *****/
 package org.jruby;
 
+import static org.jruby.util.Numeric.checkInteger;
+import static org.jruby.util.Numeric.f_abs;
 import static org.jruby.util.Numeric.f_add;
 import static org.jruby.util.Numeric.f_cmp;
 import static org.jruby.util.Numeric.f_div;
-import static org.jruby.util.Numeric.f_equal_p;
+import static org.jruby.util.Numeric.f_equal;
 import static org.jruby.util.Numeric.f_expt;
 import static org.jruby.util.Numeric.f_floor;
 import static org.jruby.util.Numeric.f_gcd;
@@ -53,6 +55,7 @@ import static org.jruby.util.Numeric.i_gcd;
 import static org.jruby.util.Numeric.i_ilog2;
 import static org.jruby.util.Numeric.k_exact_p;
 import static org.jruby.util.Numeric.ldexp;
+import static org.jruby.util.Numeric.nurat_rationalize_internal;
 
 import org.jcodings.specific.ASCIIEncoding;
 import org.jruby.anno.JRubyClass;
@@ -60,13 +63,16 @@ import org.jruby.anno.JRubyMethod;
 import org.jruby.common.IRubyWarnings;
 import org.jruby.runtime.Arity;
 import org.jruby.runtime.ClassIndex;
-import org.jruby.runtime.Frame;
+import org.jruby.runtime.DynamicScope;
 import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.Visibility;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.util.ByteList;
 import org.jruby.util.Numeric;
+
+import static org.jruby.javasupport.util.RuntimeHelpers.invokedynamic;
+import static org.jruby.runtime.MethodIndex.HASH;
 
 /**
  *  1.9 rational.c as of revision: 20011
@@ -80,6 +86,8 @@ public class RubyRational extends RubyNumeric {
         runtime.setRational(rationalc);
 
         rationalc.index = ClassIndex.RATIONAL;
+        rationalc.setReifiedClass(RubyRational.class);
+        
         rationalc.kindOf = new RubyModule.KindOf() {
             @Override
             public boolean isKindOf(IRubyObject obj, RubyModule type) {
@@ -114,7 +122,7 @@ public class RubyRational extends RubyNumeric {
     /** rb_rational_raw
      * 
      */
-    static RubyRational newRationalRaw(Ruby runtime, IRubyObject x, RubyObject y) {
+    static RubyRational newRationalRaw(Ruby runtime, IRubyObject x, IRubyObject y) {
         return new RubyRational(runtime, runtime.getRational(), x, y);
     }
 
@@ -147,28 +155,12 @@ public class RubyRational extends RubyNumeric {
         return canonicalizeInternal(context, clazz, x, y);
     }
 
-    /** f_rational_new1
-     * 
-     */
-    private static IRubyObject newRational(ThreadContext context, IRubyObject clazz, IRubyObject x) {
-        assert !(x instanceof RubyRational);
-        return canonicalizeInternal(context, clazz, x, RubyFixnum.one(context.getRuntime()));
-    }
-
     /** f_rational_new_no_reduce2
      * 
      */
     private static IRubyObject newRationalNoReduce(ThreadContext context, IRubyObject clazz, IRubyObject x, IRubyObject y) {
         assert !(x instanceof RubyRational) && !(y instanceof RubyRational);
         return canonicalizeInternalNoReduce(context, clazz, x, y);
-    }
-
-    /** f_rational_new_no_reduce1
-     * 
-     */
-    private static IRubyObject newRationalNoReduce(ThreadContext context, IRubyObject clazz, IRubyObject x) {
-        assert !(x instanceof RubyRational);
-        return canonicalizeInternalNoReduce(context, clazz, x, RubyFixnum.one(context.getRuntime()));
     }
 
     /** f_rational_new_bang2
@@ -202,12 +194,12 @@ public class RubyRational extends RubyNumeric {
         return null;
     }
 
-    @JRubyMethod(name = "new!", meta = true, visibility = Visibility.PRIVATE)
+    @JRubyMethod(name = "new!", meta = true, visibility = Visibility.PRIVATE, compat = CompatVersion.RUBY1_8)
     public static IRubyObject newInstanceBang(ThreadContext context, IRubyObject recv, IRubyObject num) {
         return newInstanceBang(context, recv, num, RubyFixnum.one(context.getRuntime()));
     }
 
-    @JRubyMethod(name = "new!", meta = true, visibility = Visibility.PRIVATE)
+    @JRubyMethod(name = "new!", meta = true, visibility = Visibility.PRIVATE, compat = CompatVersion.RUBY1_8)
     public static IRubyObject newInstanceBang(ThreadContext context, IRubyObject recv, IRubyObject num, IRubyObject den) {
         if (!(num instanceof RubyInteger)) num = f_to_i(context, num);
         if (!(den instanceof RubyInteger)) den = f_to_i(context, den);
@@ -223,14 +215,28 @@ public class RubyRational extends RubyNumeric {
 
         return new RubyRational(runtime, recv, num, den);
     }
-    
+
+    /** nurat_canonicalization
+     *
+     */
+    private static boolean canonicalization = false;
+    public static void setCanonicalization(boolean canonical) {
+        canonicalization = canonical;
+    }
+
     /** nurat_int_check
      * 
      */
     static void intCheck(ThreadContext context, IRubyObject num) {
         if (num instanceof RubyFixnum || num instanceof RubyBignum) return;
         if (!(num instanceof RubyNumeric) || !num.callMethod(context, "integer?").isTrue()) {
-            throw num.getRuntime().newArgumentError("not an integer");
+            Ruby runtime = num.getRuntime();
+            if (runtime.is1_9()) {
+                throw runtime.newTypeError("can't convert "
+                        + num.getMetaClass().getName() + " into Rational");
+            } else {
+                throw runtime.newArgumentError("not an integer");
+            }
         }
     }
 
@@ -246,7 +252,6 @@ public class RubyRational extends RubyNumeric {
     /** nurat_s_canonicalize_internal
      * 
      */
-    private static boolean canonicalization = false;
     private static IRubyObject canonicalizeInternal(ThreadContext context, IRubyObject clazz, IRubyObject num, IRubyObject den) {
         Ruby runtime = context.getRuntime();
         IRubyObject res = f_cmp(context, den, RubyFixnum.zero(runtime));
@@ -328,6 +333,10 @@ public class RubyRational extends RubyNumeric {
         return convert(context, context.getRuntime().getRational(), x, y);
     }
     
+    public static RubyRational newRational(Ruby runtime, long x, long y) {
+        return new RubyRational(runtime, runtime.getRational(), runtime.newFixnum(x), runtime.newFixnum(y));
+    }
+    
     @Deprecated
     public static IRubyObject convert(ThreadContext context, IRubyObject clazz, IRubyObject[]args) {
         switch (args.length) {
@@ -343,6 +352,10 @@ public class RubyRational extends RubyNumeric {
      */
     @JRubyMethod(name = "convert", meta = true, visibility = Visibility.PRIVATE)
     public static IRubyObject convert(ThreadContext context, IRubyObject recv, IRubyObject a1) {
+        if (a1.isNil()) {
+            throw context.getRuntime().newTypeError("can't convert nil into Rational");
+        }
+        
         return convertCommon(context, recv, a1, context.getRuntime().getNil());
     }
 
@@ -351,6 +364,10 @@ public class RubyRational extends RubyNumeric {
      */
     @JRubyMethod(name = "convert", meta = true, visibility = Visibility.PRIVATE)
     public static IRubyObject convert(ThreadContext context, IRubyObject recv, IRubyObject a1, IRubyObject a2) {
+        if (a1.isNil() || a2.isNil()) {
+            throw context.getRuntime().newTypeError("can't convert nil into Rational");
+        }
+        
         return convertCommon(context, recv, a1, a2);
     }
     
@@ -365,14 +382,18 @@ public class RubyRational extends RubyNumeric {
             if (k_exact_p(a2Complex.getImage()) && f_zero_p(context, a2Complex.getImage())) a2 = a2Complex.getReal();
         }
         
-        Frame frame = context.getCurrentFrame();
-        IRubyObject backref = frame.getBackRef();
+        DynamicScope scope = context.getCurrentScope();
+        IRubyObject backref = scope.getBackRef(context.getRuntime());
         if (backref instanceof RubyMatchData) ((RubyMatchData)backref).use();
         
         if (a1 instanceof RubyFloat) {
             a1 = f_to_r(context, a1);
         } else if (a1 instanceof RubyString) {
             a1 = str_to_r_strict(context, a1);
+        } else {
+            if (a1.respondsTo("to_r")) {
+                a1 = f_to_r(context, a1);
+            }
         }
         
         if (a2 instanceof RubyFloat) {
@@ -381,7 +402,7 @@ public class RubyRational extends RubyNumeric {
             a2 = str_to_r_strict(context, a2);
         }
         
-        frame.setBackRef(backref);
+        scope.setBackRef(backref);
 
         if (a1 instanceof RubyRational) {
             if (a2.isNil() || (k_exact_p(a2) && f_one_p(context, a2))) return a1;
@@ -403,6 +424,7 @@ public class RubyRational extends RubyNumeric {
      * 
      */
     @JRubyMethod(name = "numerator")
+    @Override
     public IRubyObject numerator(ThreadContext context) {
         return num;
     }
@@ -411,6 +433,7 @@ public class RubyRational extends RubyNumeric {
      * 
      */
     @JRubyMethod(name = "denominator")
+    @Override
     public IRubyObject denominator(ThreadContext context) {
         return den;
     }
@@ -440,7 +463,7 @@ public class RubyRational extends RubyNumeric {
      */
     private IRubyObject f_addsub(ThreadContext context, IRubyObject anum, IRubyObject aden, IRubyObject bnum, IRubyObject bden, boolean plus) {
         Ruby runtime = context.getRuntime();
-        IRubyObject num, den, g, a, b;
+        IRubyObject newNum, newDen, g, a, b;
         if (anum instanceof RubyFixnum && aden instanceof RubyFixnum &&
             bnum instanceof RubyFixnum && bden instanceof RubyFixnum) {
             long an = ((RubyFixnum)anum).getLongValue();
@@ -462,11 +485,11 @@ public class RubyRational extends RubyNumeric {
 
         b = f_idiv(context, aden, g);
         g = f_gcd(context, c, g);
-        num = f_idiv(context, c, g);
+        newNum = f_idiv(context, c, g);
         a = f_idiv(context, bden, g);
-        den = f_mul(context, a, b);
+        newDen = f_mul(context, a, b);
         
-        return RubyRational.newRationalNoReduce(context, getMetaClass(), num, den);
+        return RubyRational.newRationalNoReduce(context, getMetaClass(), newNum, newDen);
     }
     
     /** nurat_add
@@ -515,7 +538,7 @@ public class RubyRational extends RubyNumeric {
             bden = tmp;
         }
         
-        final IRubyObject num, den;
+        final IRubyObject newNum, newDen;
         if (anum instanceof RubyFixnum && aden instanceof RubyFixnum &&
             bnum instanceof RubyFixnum && bden instanceof RubyFixnum) {
             long an = ((RubyFixnum)anum).getLongValue();
@@ -525,17 +548,17 @@ public class RubyRational extends RubyNumeric {
             long g1 = i_gcd(an, bd);
             long g2 = i_gcd(ad, bn);
             
-            num = f_imul(context, an / g1, bn / g2);
-            den = f_imul(context, ad / g2, bd / g1);
+            newNum = f_imul(context, an / g1, bn / g2);
+            newDen = f_imul(context, ad / g2, bd / g1);
         } else {
             IRubyObject g1 = f_gcd(context, anum, bden); 
             IRubyObject g2 = f_gcd(context, aden, bnum);
             
-            num = f_mul(context, f_idiv(context, anum, g1), f_idiv(context, bnum, g2));
-            den = f_mul(context, f_idiv(context, aden, g2), f_idiv(context, bden, g1));
+            newNum = f_mul(context, f_idiv(context, anum, g1), f_idiv(context, bnum, g2));
+            newDen = f_mul(context, f_idiv(context, aden, g2), f_idiv(context, bden, g1));
         }
 
-        return RubyRational.newRationalNoReduce(context, getMetaClass(), num, den);
+        return RubyRational.newRationalNoReduce(context, getMetaClass(), newNum, newDen);
     }
 
     /** nurat_mul
@@ -557,7 +580,7 @@ public class RubyRational extends RubyNumeric {
     /** nurat_div
      * 
      */
-    @JRubyMethod(name = {"/", "quo"})
+    @JRubyMethod(name = {"/", "quo"}, backtrace = true)
     public IRubyObject op_div(ThreadContext context, IRubyObject other) {
         if (other instanceof RubyFixnum || other instanceof RubyBignum) {
             if (f_zero_p(context, other)) throw context.getRuntime().newZeroDivisionError();
@@ -575,7 +598,7 @@ public class RubyRational extends RubyNumeric {
     /** nurat_fdiv
      * 
      */
-    @JRubyMethod(name = "fdiv")
+    @JRubyMethod(name = "fdiv", backtrace = true)
     public IRubyObject op_fdiv(ThreadContext context, IRubyObject other) {
         return f_div(context, f_to_f(context, this), other);
     }
@@ -646,34 +669,37 @@ public class RubyRational extends RubyNumeric {
      * 
      */
     @JRubyMethod(name = "==")
+    @Override
     public IRubyObject op_equal(ThreadContext context, IRubyObject other) {
         Ruby runtime = context.getRuntime();
         if (other instanceof RubyFixnum || other instanceof RubyBignum) {
             if (f_zero_p(context, num) && f_zero_p(context, other)) return runtime.getTrue();
             if (!(den instanceof RubyFixnum) || ((RubyFixnum)den).getLongValue() != 1) return runtime.getFalse();
-            if (f_equal_p(context, num, other)) return runtime.getTrue();
-            return runtime.getFalse();
+            return f_equal(context, num, other);
         } else if (other instanceof RubyFloat) {
-            return f_equal_p(context, f_to_f(context, this), other) ? runtime.getTrue() : runtime.getFalse();
+            return f_equal(context, f_to_f(context, this), other);
         } else if (other instanceof RubyRational) {
             RubyRational otherRational = (RubyRational)other;
             if (f_zero_p(context, num) && f_zero_p(context, otherRational.num)) return runtime.getTrue();
-            if (f_equal_p(context, num, otherRational.num) && f_equal_p(context, den, otherRational.den)) return runtime.getTrue();
-            return runtime.getFalse();
+            return runtime.newBoolean(f_equal(context, num, otherRational.num).isTrue() &&
+                    f_equal(context, den, otherRational.den).isTrue());
+
         }
-        return f_equal_p(context, other, this) ? runtime.getTrue() : runtime.getFalse();
+        return f_equal(context, other, this);
     }
 
     /** nurat_coerce
      * 
      */
-    @JRubyMethod(name = "coerce")
+    @JRubyMethod(name = "coerce", backtrace = true)
     public IRubyObject op_coerce(ThreadContext context, IRubyObject other) {
         Ruby runtime = context.getRuntime();
         if (other instanceof RubyFixnum || other instanceof RubyBignum) {
             return runtime.newArray(RubyRational.newRationalBang(context, getMetaClass(), other), this);
         } else if (other instanceof RubyFloat) {
             return runtime.newArray(other, f_to_f(context, this));
+        } else if (other instanceof RubyRational) {
+            return runtime.newArray(other, this);
         }
         throw runtime.newTypeError(other.getMetaClass() + " can't be coerced into " + getMetaClass());
     }
@@ -681,27 +707,51 @@ public class RubyRational extends RubyNumeric {
     /** nurat_idiv
      * 
      */
-    @JRubyMethod(name = "div")
+    @JRubyMethod(name = "div", backtrace = true, compat = CompatVersion.RUBY1_8)
     public IRubyObject op_idiv(ThreadContext context, IRubyObject other) {
         return f_floor(context, f_div(context, this, other));
+    }
+
+    @JRubyMethod(name = "div", backtrace = true, compat = CompatVersion.RUBY1_9)
+    public IRubyObject op_idiv19(ThreadContext context, IRubyObject other) {
+        if (num2dbl(other) == 0.0) {
+            throw context.getRuntime().newZeroDivisionError();
+        }
+        return op_idiv(context, other);
     }
 
     /** nurat_mod
      * 
      */
-    @JRubyMethod(name = {"modulo", "%"})
+    @JRubyMethod(name = {"modulo", "%"}, backtrace = true, compat = CompatVersion.RUBY1_8)
     public IRubyObject op_mod(ThreadContext context, IRubyObject other) {
         IRubyObject val = f_floor(context, f_div(context, this, other));
         return f_sub(context, this, f_mul(context, other, val));
     }
 
+    @JRubyMethod(name = {"modulo", "%"}, backtrace = true, compat = CompatVersion.RUBY1_9)
+    public IRubyObject op_mod19(ThreadContext context, IRubyObject other) {
+        if (num2dbl(other) == 0.0) {
+            throw context.getRuntime().newZeroDivisionError();
+        }
+        return op_mod(context, other);
+    }
+
     /** nurat_divmod
      * 
      */
-    @JRubyMethod(name = "divmod")
+    @JRubyMethod(name = "divmod", backtrace = true, compat = CompatVersion.RUBY1_8)
     public IRubyObject op_divmod(ThreadContext context, IRubyObject other) {
         IRubyObject val = f_floor(context, f_div(context, this, other)); 
         return context.getRuntime().newArray(val, f_sub(context, this, f_mul(context, other, val)));
+    }
+
+    @JRubyMethod(name = "divmod", backtrace = true, compat = CompatVersion.RUBY1_9)
+    public IRubyObject op_divmod19(ThreadContext context, IRubyObject other) {
+        if (num2dbl(other) == 0.0) {
+            throw context.getRuntime().newZeroDivisionError();
+        }
+        return op_divmod(context, other);
     }
 
     /** nurat_rem
@@ -723,8 +773,8 @@ public class RubyRational extends RubyNumeric {
     }
 
     private IRubyObject op_roundCommonPre(ThreadContext context, IRubyObject n) {
+        checkInteger(context, n);
         Ruby runtime = context.getRuntime();
-        if (!(n instanceof RubyInteger)) throw runtime.newTypeError("not an integer");
         return f_expt(context, RubyFixnum.newFixnum(runtime, 10), n);
     }
 
@@ -784,18 +834,18 @@ public class RubyRational extends RubyNumeric {
      */
     @JRubyMethod(name = "round")
     public IRubyObject op_round(ThreadContext context) {
-        IRubyObject num = this.num;
-        boolean neg = f_negative_p(context, num);
-        if (neg) num = f_negate(context, num);
+        IRubyObject myNum = this.num;
+        boolean neg = f_negative_p(context, myNum);
+        if (neg) myNum = f_negate(context, myNum);
 
-        IRubyObject den = this.den;
+        IRubyObject myDen = this.den;
         IRubyObject two = RubyFixnum.two(context.getRuntime());
-        num = f_add(context, f_mul(context, num, two), den);
-        den = f_mul(context, den, two);
-        num = f_idiv(context, num, den);
+        myNum = f_add(context, f_mul(context, myNum, two), myDen);
+        myDen = f_mul(context, myDen, two);
+        myNum = f_idiv(context, myNum, myDen);
 
-        if (neg) num = f_negate(context, num);
-        return num;
+        if (neg) myNum = f_negate(context, myNum);
+        return myNum;
     }
 
     @JRubyMethod(name = "round")
@@ -810,51 +860,60 @@ public class RubyRational extends RubyNumeric {
     private static long ML = (long)(Math.log(Double.MAX_VALUE) / Math.log(2.0) - 1);
     @JRubyMethod(name = "to_f")
     public IRubyObject to_f(ThreadContext context) {
-        Ruby runtime = context.getRuntime();
-        if (f_zero_p(context, num)) return runtime.newFloat(0);
+        return context.runtime.newFloat(getDoubleValue(context));
+    }
+    
+    @Override
+    public double getDoubleValue() {
+        return getDoubleValue(getRuntime().getCurrentContext());
+    }
+    
+    public double getDoubleValue(ThreadContext context) {
+        Ruby runtime = context.runtime;
+        if (f_zero_p(context, num)) return 0;
 
-        IRubyObject num = this.num;
-        IRubyObject den = this.den;
+        IRubyObject myNum = this.num;
+        IRubyObject myDen = this.den;
 
         boolean minus = false;
-        if (f_negative_p(context, num)) {
-            num = f_negate(context, num);
+        if (f_negative_p(context, myNum)) {
+            myNum = f_negate(context, myNum);
             minus = true;
         }
 
-        long nl = i_ilog2(context, num);
-        long dl = i_ilog2(context, den);
+        long nl = i_ilog2(context, myNum);
+        long dl = i_ilog2(context, myDen);
 
         long ne = 0;
         if (nl > ML) {
             ne = nl - ML;
-            num = f_rshift(context, num, RubyFixnum.newFixnum(runtime, ne));
+            myNum = f_rshift(context, myNum, RubyFixnum.newFixnum(runtime, ne));
         }
 
         long de = 0;
         if (dl > ML) {
             de = dl - ML;
-            den = f_rshift(context, den, RubyFixnum.newFixnum(runtime, de));
+            myDen = f_rshift(context, myDen, RubyFixnum.newFixnum(runtime, de));
         }
 
         long e = ne - de;
 
         if (e > 1023 || e < -1022) {
-            runtime.getWarnings().warn(IRubyWarnings.ID.FLOAT_OUT_OF_RANGE, "out of Float range", getMetaClass());
-            return runtime.newFloat(e > 0 ? Double.MAX_VALUE : 0);
+            runtime.getWarnings().warn(IRubyWarnings.ID.FLOAT_OUT_OF_RANGE, "out of Float range");
+            return e > 0 ? Double.MAX_VALUE : 0;
         }
 
-        double f = RubyNumeric.num2dbl(num) / RubyNumeric.num2dbl(den); 
+        double f = RubyNumeric.num2dbl(myNum) / RubyNumeric.num2dbl(myDen);
 
         if (minus) f = -f;
 
         f = ldexp(f, e);
 
         if (Double.isInfinite(f) || Double.isNaN(f)) {
-            runtime.getWarnings().warn(IRubyWarnings.ID.FLOAT_OUT_OF_RANGE, "out of Float range", getMetaClass());
+            runtime.getWarnings().warn(IRubyWarnings.ID.FLOAT_OUT_OF_RANGE, "out of Float range");
         }
 
-        return runtime.newFloat(f);
+        return f;
     }
 
     /** nurat_to_r
@@ -864,13 +923,41 @@ public class RubyRational extends RubyNumeric {
     public IRubyObject to_r(ThreadContext context) {
         return this;
     }
-    
-    /** nurat_to_r
+
+    /** nurat_rationalize
+     *
+     */
+    @JRubyMethod(name = "rationalize", optional = 1, compat = CompatVersion.RUBY1_9)
+    public IRubyObject rationalize(ThreadContext context, IRubyObject[] args) {
+
+        IRubyObject a, b;
+
+        if (args.length == 0) return to_r(context);
+
+        if (f_negative_p(context, this)) {
+            return f_negate(context,
+                    ((RubyRational) f_abs(context, this)).rationalize(context, args));
+        }
+
+        IRubyObject eps = f_abs(context, args[0]);
+        a = f_sub(context, this, eps);
+        b = f_add(context, this, eps);
+
+        if (f_equal(context, a, b).isTrue()) return this;
+        IRubyObject[] ary = new IRubyObject[2];
+        ary[0] = a;
+        ary[1] = b;
+        IRubyObject[] ans = nurat_rationalize_internal(context, ary);
+
+        return newRational(context, this.metaClass, ans[0], ans[1]);
+    }
+
+    /** nurat_hash
      * 
      */
     @JRubyMethod(name = "hash")
     public IRubyObject hash(ThreadContext context) {
-        return f_xor(context, num.callMethod(context, "hash"), den.callMethod(context, "hash"));
+        return f_xor(context, invokedynamic(context, num, HASH), invokedynamic(context, den, HASH));
     }
 
     /** nurat_to_s
@@ -905,21 +992,21 @@ public class RubyRational extends RubyNumeric {
     @JRubyMethod(name = "marshal_dump")
     public IRubyObject marshal_dump(ThreadContext context) {
         RubyArray dump = context.getRuntime().newArray(num, den);
-        if (hasVariables()) dump.syncVariables(getVariableList());
+        if (hasVariables()) dump.syncVariables(this);
         return dump;
     }
 
     /** nurat_marshal_load
      * 
      */
-    @JRubyMethod(name = "marshal_load")
+    @JRubyMethod(name = "marshal_load", backtrace = true)
     public IRubyObject marshal_load(ThreadContext context, IRubyObject arg) {
         RubyArray load = arg.convertToArray();
         num = load.size() > 0 ? load.eltInternal(0) : context.getRuntime().getNil();
         den = load.size() > 1 ? load.eltInternal(1) : context.getRuntime().getNil();
 
         if (f_zero_p(context, den)) throw context.getRuntime().newZeroDivisionError();
-        if (load.hasVariables()) syncVariables(load.getVariableList());
+        if (load.hasVariables()) syncVariables((IRubyObject)load);
         return this;
     }
 
@@ -928,7 +1015,7 @@ public class RubyRational extends RubyNumeric {
         ByteList bytes = s.getByteList();
 
         Ruby runtime = context.getRuntime();
-        if (bytes.realSize == 0) return runtime.newArray(runtime.getNil(), recv);
+        if (bytes.getRealSize() == 0) return runtime.newArray(runtime.getNil(), recv);
 
         IRubyObject m = RubyRegexp.newDummyRegexp(runtime, Numeric.RationalPatterns.rat_pat).callMethod(context, "match", s);
         
@@ -951,9 +1038,9 @@ public class RubyRational extends RubyNumeric {
             if (!fp.isNil()) {
                 bytes = fp.convertToString().getByteList();
                 int count = 0;
-                byte[]buf = bytes.bytes;
-                int i = bytes.begin;
-                int end = i + bytes.realSize;
+                byte[]buf = bytes.getUnsafeBytes();
+                int i = bytes.getBegin();
+                int end = i + bytes.getRealSize();
 
                 while (i < end) {
                     if (ASCIIEncoding.INSTANCE.isDigit(buf[i])) count++;

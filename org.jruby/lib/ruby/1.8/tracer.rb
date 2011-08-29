@@ -1,8 +1,8 @@
 #
 #   tracer.rb - 
 #   	$Release Version: 0.2$
-#   	$Revision: 8696 $
-#   	$Date: 2009-01-10 15:17:58 -0600 (Sat, 10 Jan 2009) $
+#   	$Revision: 1.8 $
+#   	$Date: 1998/05/19 03:42:49 $
 #   	by Keiju ISHITSUKA(Nippon Rational Inc.)
 #
 # --
@@ -14,7 +14,7 @@
 # tracer main class
 #
 class Tracer
-  @RCS_ID='-$Id: tracer.rb 8696 2009-01-10 21:17:58Z headius $-'
+  @RCS_ID='-$Id: tracer.rb,v 1.8 1998/05/19 03:42:49 keiju Exp keiju $-'
 
   @stdout = STDOUT
   @verbose = false
@@ -162,6 +162,6 @@ if $0 == __FILE__
   ARGV.shift
   Tracer.on
   require $0
-elsif caller(0).size == 1
+elsif caller(0).size == 2 # HACK for JRUBY-4484
   Tracer.on
 end

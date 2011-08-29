@@ -39,8 +39,6 @@ import org.jruby.runtime.builtin.IRubyObject;
 public class CallBlock extends BlockBody {
     private final Arity arity;
     private final BlockCallback callback;
-    private final RubyModule imClass;
-    private final ThreadContext context;
     
     public static Block newCallClosure(IRubyObject self, RubyModule imClass, Arity arity, BlockCallback callback, ThreadContext context) {
         Binding binding = context.currentBinding(self, Visibility.PUBLIC);
@@ -53,8 +51,6 @@ public class CallBlock extends BlockBody {
         super(BlockBody.SINGLE_RESTARG);
         this.arity = arity;
         this.callback = callback;
-        this.imClass = imClass;
-        this.context = context;
     }
 
     @Override
@@ -62,18 +58,28 @@ public class CallBlock extends BlockBody {
         return callback.call(context, args, Block.NULL_BLOCK);
     }
 
+    @Override
+    public IRubyObject call(ThreadContext context, IRubyObject[] args, Binding binding,
+            Block.Type type, Block block) {
+        return callback.call(context, args, block);
+    }
+
+    @Override
     public IRubyObject yieldSpecific(ThreadContext context, Binding binding, Block.Type type) {
         return callback.call(context, IRubyObject.NULL_ARRAY, Block.NULL_BLOCK);
     }
 
+    @Override
     public IRubyObject yieldSpecific(ThreadContext context, IRubyObject arg0, Binding binding, Block.Type type) {
         return callback.call(context, new IRubyObject[] {arg0}, Block.NULL_BLOCK);
     }
 
+    @Override
     public IRubyObject yieldSpecific(ThreadContext context, IRubyObject arg0, IRubyObject arg1, Binding binding, Block.Type type) {
         return callback.call(context, new IRubyObject[] {RubyArray.newArrayLight(context.getRuntime(), arg0, arg1)}, Block.NULL_BLOCK);
     }
 
+    @Override
     public IRubyObject yieldSpecific(ThreadContext context, IRubyObject arg0, IRubyObject arg1, IRubyObject arg2, Binding binding, Block.Type type) {
         return callback.call(context, new IRubyObject[] {RubyArray.newArrayLight(context.getRuntime(), arg0, arg1, arg2)}, Block.NULL_BLOCK);
     }
@@ -101,6 +107,10 @@ public class CallBlock extends BlockBody {
         throw new RuntimeException("CallBlock does not have a static scope; this should not be called");
     }
 
+    public void setStaticScope(StaticScope newScope) {
+        throw new RuntimeException("CallBlock does not have a static scope; this should not be called");
+    }
+
     public Block cloneBlock(Binding binding) {
         binding = binding.clone(Visibility.PUBLIC);
         return new Block(this, binding);
@@ -108,5 +118,13 @@ public class CallBlock extends BlockBody {
 
     public Arity arity() {
         return arity;
+    }
+
+    public String getFile() {
+        return "(internal)";
+    }
+
+    public int getLine() {
+        return -1;
     }
 }

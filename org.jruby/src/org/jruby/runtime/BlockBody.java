@@ -30,90 +30,170 @@
  * the provisions above, a recipient may use your version of this file under
  * the terms of any one of the CPL, the GPL or the LGPL.
  ***** END LICENSE BLOCK *****/
+
 package org.jruby.runtime;
 
 import org.jruby.RubyArray;
-import org.jruby.RubyLocalJumpError;
 import org.jruby.RubyModule;
 import org.jruby.ast.IterNode;
 import org.jruby.ast.MultipleAsgnNode;
 import org.jruby.ast.NodeType;
 import org.jruby.common.IRubyWarnings.ID;
-import org.jruby.internal.runtime.JumpTarget;
 import org.jruby.parser.StaticScope;
-import org.jruby.runtime.Block.Type;
 import org.jruby.runtime.builtin.IRubyObject;
 
 /**
  * The executable body portion of a closure.
  */
-public abstract class BlockBody implements JumpTarget {
+public abstract class BlockBody {
     // FIXME: Maybe not best place, but move it to a good home
     public static final int ZERO_ARGS = 0;
     public static final int MULTIPLE_ASSIGNMENT = 1;
     public static final int ARRAY = 2;
     public static final int SINGLE_RESTARG = 3;
-    protected final int argumentType;
+
+    public static final String[] EMPTY_PARAMETER_LIST = new String[0];
     
+    protected final int argumentType;
+
     public BlockBody(int argumentType) {
         this.argumentType = argumentType;
     }
-    
+
     public IRubyObject call(ThreadContext context, IRubyObject[] args, Binding binding, Block.Type type) {
         args = prepareArgumentsForCall(context, args, type);
 
         return yield(context, RubyArray.newArrayNoCopy(context.getRuntime(), args), null, null, true, binding, type);
     }
 
-    // This should only be called by 1.8 (1.9 subclasses this to handle unusedBlock).
-    public IRubyObject call(ThreadContext context, IRubyObject[] args, Binding binding, 
-            Block.Type type, Block unusedBlock) {
-        return call(context, args, binding, type);
+    public IRubyObject call(ThreadContext context, IRubyObject[] args, Binding binding,
+            Block.Type type, Block block) {
+        args = prepareArgumentsForCall(context, args, type);
+
+        return yield(context, RubyArray.newArrayNoCopy(context.getRuntime(), args), null, null, true, binding, type, block);
     }
-    
+
+    public abstract IRubyObject yield(ThreadContext context, IRubyObject value, Binding binding, Block.Type type);
+
+    public abstract IRubyObject yield(ThreadContext context, IRubyObject value, IRubyObject self,
+            RubyModule klass, boolean aValue, Binding binding, Block.Type type);
+
+    // FIXME: This should replace blockless abstract versions of yield above and become abstract.
+    // Here to allow incremental replacement. Overriden by subclasses which support it.
+    public IRubyObject yield(ThreadContext context, IRubyObject value, IRubyObject self,
+            RubyModule klass, boolean aValue, Binding binding, Block.Type type, Block block) {
+        return yield(context, value, self, klass, aValue, binding, type);
+    }
+
+    // FIXME: This should replace blockless abstract versions of yield above and become abstract.
+    // Here to allow incremental replacement. Overriden by subclasses which support it.
+    public IRubyObject yield(ThreadContext context, IRubyObject value,
+            Binding binding, Block.Type type, Block block) {
+        return yield(context, value, binding, type);
+    }
+
     public int getArgumentType() {
         return argumentType;
     }
 
-    public abstract IRubyObject yieldSpecific(ThreadContext context, Binding binding, Block.Type type);
-    public abstract IRubyObject yieldSpecific(ThreadContext context, IRubyObject arg0, Binding binding, Block.Type type);
-    public abstract IRubyObject yieldSpecific(ThreadContext context, IRubyObject arg0, IRubyObject arg1, Binding binding, Block.Type type);
-    public abstract IRubyObject yieldSpecific(ThreadContext context, IRubyObject arg0, IRubyObject arg1, IRubyObject arg2, Binding binding, Block.Type type);
-    
-    public abstract IRubyObject yield(ThreadContext context, IRubyObject value, Binding binding, Block.Type type);
-    
-    public abstract IRubyObject yield(ThreadContext context, IRubyObject value, IRubyObject self, 
-            RubyModule klass, boolean aValue, Binding binding, Block.Type type);
-    
+    public IRubyObject call(ThreadContext context, Binding binding, Block.Type type) {
+        IRubyObject[] args = IRubyObject.NULL_ARRAY;
+        args = prepareArgumentsForCall(context, args, type);
+
+        return yield(context, RubyArray.newArrayNoCopy(context.getRuntime(), args), null, null, true, binding, type);
+    }
+    public IRubyObject call(ThreadContext context, Binding binding,
+            Block.Type type, Block unusedBlock) {
+        return call(context, binding, type);
+    }
+
+    public IRubyObject yieldSpecific(ThreadContext context, Binding binding, Block.Type type) {
+        return yield(context, null, null, null, true, binding, type);
+    }
+    public IRubyObject call(ThreadContext context, IRubyObject arg0, Binding binding, Block.Type type) {
+        IRubyObject[] args = new IRubyObject[] {arg0};
+        args = prepareArgumentsForCall(context, args, type);
+
+        return yield(context, RubyArray.newArrayNoCopy(context.getRuntime(), args), null, null, true, binding, type);
+    }
+    public IRubyObject call(ThreadContext context, IRubyObject arg0, Binding binding,
+            Block.Type type, Block unusedBlock) {
+        return call(context, arg0, binding, type);
+    }
+
+    public IRubyObject yieldSpecific(ThreadContext context, IRubyObject arg0, Binding binding, Block.Type type) {
+        return yield(context, arg0, null, null, true, binding, type);
+    }
+    public IRubyObject call(ThreadContext context, IRubyObject arg0, IRubyObject arg1, Binding binding, Block.Type type) {
+        IRubyObject[] args = new IRubyObject[] {arg0, arg1};
+        args = prepareArgumentsForCall(context, args, type);
+
+        return yield(context, RubyArray.newArrayNoCopy(context.getRuntime(), args), null, null, true, binding, type);
+    }
+    public IRubyObject call(ThreadContext context, IRubyObject arg0, IRubyObject arg1, Binding binding,
+            Block.Type type, Block unusedBlock) {
+        return call(context, arg0, arg1, binding, type);
+    }
+
+    public IRubyObject yieldSpecific(ThreadContext context, IRubyObject arg0, IRubyObject arg1, Binding binding, Block.Type type) {
+        return yield(context, context.getRuntime().newArrayNoCopyLight(arg0, arg1), null, null, true, binding, type);
+    }
+    public IRubyObject call(ThreadContext context, IRubyObject arg0, IRubyObject arg1, IRubyObject arg2, Binding binding, Block.Type type) {
+        IRubyObject[] args = new IRubyObject[] {arg0, arg1, arg2};
+        args = prepareArgumentsForCall(context, args, type);
+
+        return yield(context, RubyArray.newArrayNoCopy(context.getRuntime(), args), null, null, true, binding, type);
+    }
+    public IRubyObject call(ThreadContext context, IRubyObject arg0, IRubyObject arg1, IRubyObject arg2, Binding binding,
+            Block.Type type, Block unusedBlock) {
+        return call(context, arg0, arg1, arg2, binding, type);
+    }
+
+    public IRubyObject yieldSpecific(ThreadContext context, IRubyObject arg0, IRubyObject arg1, IRubyObject arg2, Binding binding, Block.Type type) {
+        return yield(context, context.getRuntime().newArrayNoCopyLight(arg0, arg1, arg2), null, null, true, binding, type);
+    }
+
+
     public abstract StaticScope getStaticScope();
+    public abstract void setStaticScope(StaticScope newScope);
 
     public abstract Block cloneBlock(Binding binding);
 
     /**
      * What is the arity of this block?
-     * 
+     *
      * @return the arity
      */
     public abstract Arity arity();
-    
+
     /**
      * Is the current block a real yield'able block instead a null one
-     * 
+     *
      * @return true if this is a valid block or false otherwise
      */
     public boolean isGiven() {
         return true;
     }
-    
+
+    /**
+     * Get the filename for this block
+     */
+    public abstract String getFile();
+
+    /**
+     * get The line number for this block
+     */
+    public abstract int getLine();
+
     /**
      * Compiled codes way of examining arguments
-     * 
+     *
      * @param nodeId to be considered
      * @return something not linked to AST and a constant to make compiler happy
      */
     public static int asArgumentType(NodeType nodeId) {
         if (nodeId == null) return ZERO_ARGS;
-        
+
         switch (nodeId) {
         case ZEROARGNODE: return ZERO_ARGS;
         case MULTIPLEASGNNODE: return MULTIPLE_ASSIGNMENT;
@@ -121,7 +201,7 @@ public abstract class BlockBody implements JumpTarget {
         }
         return ARRAY;
     }
-    
+
     public IRubyObject[] prepareArgumentsForCall(ThreadContext context, IRubyObject[] args, Block.Type type) {
         switch (type) {
         case NORMAL: {
@@ -154,10 +234,14 @@ public abstract class BlockBody implements JumpTarget {
             }
             break;
         }
-        
+
         return args;
     }
-    
+
+    public String[] getParameterList() {
+        return EMPTY_PARAMETER_LIST;
+    }
+
     public static NodeType getArgumentTypeWackyHack(IterNode iterNode) {
         NodeType argsNodeId = null;
         if (iterNode.getVarNode() != null && iterNode.getVarNode().getNodeType() != NodeType.ZEROARGNODE) {
@@ -171,66 +255,9 @@ public abstract class BlockBody implements JumpTarget {
                 }
             }
         }
-        
+
         return argsNodeId;
     }
-    
-    public static final BlockBody NULL_BODY = new BlockBody(ZERO_ARGS) {
-        @Override
-        public IRubyObject call(ThreadContext context, IRubyObject[] args, Binding binding, Type type) {
-            throw context.getRuntime().newLocalJumpError(
-                    RubyLocalJumpError.Reason.NOREASON, context.getRuntime().newArrayNoCopy(args), "yield called out of block");
-        }
 
-        @Override
-        public IRubyObject yieldSpecific(ThreadContext context, Binding binding, Type type) {
-            throw context.getRuntime().newLocalJumpError(
-                    RubyLocalJumpError.Reason.NOREASON, context.getRuntime().getNil(), "yield called out of block");
-        }
-
-        @Override
-        public IRubyObject yieldSpecific(ThreadContext context, IRubyObject arg0, Binding binding, Type type) {
-            throw context.getRuntime().newLocalJumpError(
-                    RubyLocalJumpError.Reason.NOREASON, context.getRuntime().newArrayNoCopyLight(arg0), "yield called out of block");
-        }
-
-        @Override
-        public IRubyObject yieldSpecific(ThreadContext context, IRubyObject arg0, IRubyObject arg1, Binding binding, Type type) {
-            throw context.getRuntime().newLocalJumpError(
-                    RubyLocalJumpError.Reason.NOREASON, context.getRuntime().newArrayNoCopyLight(arg0, arg1), "yield called out of block");
-        }
-
-        @Override
-        public IRubyObject yieldSpecific(ThreadContext context, IRubyObject arg0, IRubyObject arg1, IRubyObject arg2, Binding binding, Type type) {
-            throw context.getRuntime().newLocalJumpError(
-                    RubyLocalJumpError.Reason.NOREASON, context.getRuntime().newArrayNoCopyLight(arg0, arg1, arg2), "yield called out of block");
-        }
-
-        @Override
-        public IRubyObject yield(ThreadContext context, IRubyObject value, Binding binding, Type type) {
-            throw context.getRuntime().newLocalJumpError(
-                    RubyLocalJumpError.Reason.NOREASON, value, "yield called out of block");
-        }
-
-        @Override
-        public IRubyObject yield(ThreadContext context, IRubyObject value, IRubyObject self, RubyModule klass, boolean aValue, Binding binding, Type type) {
-            throw context.getRuntime().newLocalJumpError(
-                    RubyLocalJumpError.Reason.NOREASON, value, "yield called out of block");
-        }
-        
-        @Override
-        public StaticScope getStaticScope() {
-            return null;
-        }
-
-        @Override
-        public Block cloneBlock(Binding binding) {
-            return null;
-        }
-
-        @Override
-        public Arity arity() {
-            return null;
-        }
-    };
+    public static final BlockBody NULL_BODY = new NullBlockBody();
 }

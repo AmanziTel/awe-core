@@ -125,7 +125,10 @@ public class JavaField extends JavaAccessibleObject {
     public IRubyObject value(ThreadContext context, IRubyObject object) {
         Ruby runtime = context.getRuntime();
 
-        Object javaObject = JavaUtil.unwrapJavaValue(runtime, object, "not a java object");
+        Object javaObject = null;
+        if (!Modifier.isStatic(field.getModifiers())) {
+            javaObject = JavaUtil.unwrapJavaValue(runtime, object, "not a java object");
+        }
         try {
             return JavaUtil.convertJavaToUsableRubyObject(runtime, field.get(javaObject));
         } catch (IllegalAccessException iae) {
@@ -135,13 +138,16 @@ public class JavaField extends JavaAccessibleObject {
 
     @JRubyMethod
     public IRubyObject set_value(IRubyObject object, IRubyObject value) {
-        Object javaObject  = JavaUtil.unwrapJavaValue(getRuntime(), object, "not a java object: " + object);
+        Object javaObject = null;
+        if (!Modifier.isStatic(field.getModifiers())) {
+            javaObject  = JavaUtil.unwrapJavaValue(getRuntime(), object, "not a java object: " + object);
+        }
         IRubyObject val = value;
         if(val.dataGetStruct() instanceof JavaObject) {
             val = (IRubyObject)val.dataGetStruct();
         }
         try {
-            Object convertedValue = JavaUtil.convertArgumentToType(val.getRuntime().getCurrentContext(), val, field.getType());
+            Object convertedValue = val.toJava(field.getType());
 
             field.set(javaObject, convertedValue);
         } catch (IllegalAccessException iae) {
@@ -182,8 +188,7 @@ public class JavaField extends JavaAccessibleObject {
             throw getRuntime().newTypeError("not a java object:" + value);
         }
         try {
-            Object convertedValue = JavaUtil.convertArgument(getRuntime(), ((JavaObject) value).getValue(),
-                                                             field.getType());
+            Object convertedValue = value.toJava(field.getType());
             // TODO: Only setAccessible to account for pattern found by
             // accessing constants included from a non-public interface.
             // (aka java.util.zip.ZipConstants being implemented by many

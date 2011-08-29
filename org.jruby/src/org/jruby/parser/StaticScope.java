@@ -39,7 +39,7 @@ import org.jruby.lexer.yacc.ISourcePosition;
 import org.jruby.runtime.Arity;
 import org.jruby.runtime.DynamicScope;
 import org.jruby.runtime.builtin.IRubyObject;
-import org.jruby.runtime.scope.NoVarsDynamicScope;
+import org.jruby.runtime.scope.DummyDynamicScope;
 
 /**
  * StaticScope represents lexical scoping of variables and module/class constants.
@@ -78,12 +78,19 @@ public abstract class StaticScope implements Serializable {
     
     // index of variable that represents a "rest" arg
     private int restArg = -1;
+
+    private boolean isBackrefLastlineScope = false;
     
-    // Whether this scope is used as the "argument scope" for e.g. zsuper
-    private boolean isArgumentScope = false;
-    
-    private DynamicScope dummyScope = new NoVarsDynamicScope(this);
-    
+    private DynamicScope dummyScope;
+
+    /**
+     * Construct a new static scope. The array of strings should all be the
+     * interned versions, since several other optimizations depend on being
+     * able to do object equality checks.
+     *
+     * @param enclosingScope The lexically containing scope.
+     * @param names The list of interned String variable names.
+     */
     protected StaticScope(StaticScope enclosingScope, String[] names) {
         assert names != null : "names is not null";
         assert namesAreInterned(names);
@@ -93,13 +100,47 @@ public abstract class StaticScope implements Serializable {
         this.variableCaptured = new boolean[variableNames.length];
     }
 
+    /**
+     * Check that all strings in the given array are the interned versions.
+     *
+     * @param names The array of strings
+     * @return true if they are all interned, false otherwise
+     */
     private static boolean namesAreInterned(String[] names) {
         for (String name : names) {
+            // Note that this object equality check is intentional, to ensure
+            // the string and its interned version are the same object.
             if (name != name.intern()) return false;
         }
         return true;
     }
-    
+
+    /**
+     * Add a new variable to this (current) scope unless it is already defined in the
+     * current scope.
+     *
+     * @param name of new variable
+     * @return index+depth merged location of scope
+     */
+    public int addVariableThisScope(String name) {
+        int slot = exists(name);
+
+        if (slot >= 0) return slot;
+
+        // This is perhaps innefficient timewise?  Optimal spacewise
+        growVariableNames(name);
+
+        // Returns slot of variable
+        return variableNames.length - 1;
+    }
+
+    /**
+     * Add a new variable to this (current) scope unless it is already defined in any
+     * reachable scope.
+     *
+     * @param name of new variable
+     * @return index+depth merged location of scope
+     */
     public int addVariable(String name) {
         int slot = isDefined(name); 
 
@@ -273,6 +314,10 @@ public abstract class StaticScope implements Serializable {
         return previousCRefScope;
     }
 
+    public void setPreviousCRefScope(StaticScope crefScope) {
+        this.previousCRefScope = crefScope;
+    }
+
     public void setModule(RubyModule module) {
         this.cref = module;
         
@@ -325,13 +370,20 @@ public abstract class StaticScope implements Serializable {
     public void setRestArg(int restArg) {
         this.restArg = restArg;
     }
-    
-    public boolean isArgumentScope() {
-        return isArgumentScope;
+
+    /**
+     * Argument scopes represent scopes which contain arguments for zsuper.  All LocalStaticScopes
+     * are argument scopes and BlockStaticScopes can be when they are used by define_method.
+     */
+    public abstract boolean isArgumentScope();
+    public abstract void makeArgumentScope();
+
+    public boolean isBackrefLastlineScope() {
+        return isBackrefLastlineScope;
     }
-    
-    public void setArgumentScope(boolean isArgumentScope) {
-        this.isArgumentScope = isArgumentScope;
+
+    public void setBackrefLastlineScope(boolean isBackrefLastlineScope) {
+        this.isBackrefLastlineScope = isBackrefLastlineScope;
     }
     
     public Arity getArity() {
@@ -355,7 +407,7 @@ public abstract class StaticScope implements Serializable {
     }
     
     public DynamicScope getDummyScope() {
-        return dummyScope;
+        return dummyScope == null ? dummyScope = new DummyDynamicScope(this) : dummyScope;
     }
 
     private void growVariableNames(String name) {

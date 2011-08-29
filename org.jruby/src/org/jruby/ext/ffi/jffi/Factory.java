@@ -1,12 +1,18 @@
 
 package org.jruby.ext.ffi.jffi;
 
-import java.nio.channels.ByteChannel;
+import com.kenai.jffi.CallingConvention;
 import org.jruby.Ruby;
+import org.jruby.RubyClass;
 import org.jruby.RubyModule;
+import org.jruby.anno.JRubyMethod;
 import org.jruby.ext.ffi.AllocatedDirectMemoryIO;
+import org.jruby.ext.ffi.CallbackInfo;
 import org.jruby.ext.ffi.DirectMemoryIO;
-import org.jruby.ext.ffi.FFIProvider;
+import org.jruby.ext.ffi.NativeType;
+import org.jruby.ext.ffi.Pointer;
+import org.jruby.runtime.ThreadContext;
+import org.jruby.runtime.builtin.IRubyObject;
 
 public class Factory extends org.jruby.ext.ffi.Factory {
 
@@ -35,21 +41,13 @@ public class Factory extends org.jruby.ext.ffi.Factory {
             if (ffi.fastGetClass("Callback") == null) {
                 CallbackManager.createCallbackClass(runtime, ffi);
             }
+            if (ffi.fastGetClass("Function") == null) {
+                Function.createFunctionClass(runtime, ffi);
+            }
+            if (ffi.fastGetClass("LastError") == null) {
+                ffi.defineModuleUnder("LastError").defineAnnotatedMethods(LastError.class);
+            }
         }
-    }
-    @Override
-    protected FFIProvider newProvider(Ruby runtime) {
-        return new JFFIProvider(runtime);
-    }
-
-    @Override
-    public <T> T loadLibrary(String libraryName, Class<T> libraryClass) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public ByteChannel newByteChannel(int fd) {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     /**
@@ -59,15 +57,69 @@ public class Factory extends org.jruby.ext.ffi.Factory {
      * @param clear If the memory should be cleared.
      * @return A new <tt>MemoryIO</tt>.
      */
-    public AllocatedDirectMemoryIO allocateDirectMemory(int size, boolean clear) {
-        return AllocatedNativeMemoryIO.allocate(size, clear);
+    public AllocatedDirectMemoryIO allocateDirectMemory(Ruby runtime, int size, boolean clear) {
+        return AllocatedNativeMemoryIO.allocate(runtime, size, clear);
     }
 
-    public DirectMemoryIO wrapDirectMemory(long address) {
-        return address != 0 ? new NativeMemoryIO(address) : null;
+    /**
+     * Allocates memory on the native C heap and wraps it in a <tt>MemoryIO</tt> accessor.
+     *
+     * @param size The number of bytes to allocate.
+     * @param align The minimum alignment of the memory
+     * @param clear If the memory should be cleared.
+     * @return A new <tt>MemoryIO</tt>.
+     */
+    public AllocatedDirectMemoryIO allocateDirectMemory(Ruby runtime, int size, int align, boolean clear) {
+        return AllocatedNativeMemoryIO.allocateAligned(runtime, size, align, clear);
     }
+
+    public DirectMemoryIO wrapDirectMemory(Ruby runtime, long address) {
+        return NativeMemoryIO.wrap(runtime, address);
+    }
+
+    @Override
+    public Function newFunction(Ruby runtime, Pointer address, CallbackInfo cbInfo) {
+        CodeMemoryIO mem = new CodeMemoryIO(runtime, address);
+        RubyClass klass = runtime.fastGetModule("FFI").fastGetClass("Function");
+        return new Function(runtime, klass, mem, 
+                cbInfo.getReturnType(), cbInfo.getParameterTypes(),
+                cbInfo.isStdcall() ? CallingConvention.STDCALL : CallingConvention.DEFAULT, null);
+    }
+
+
     @Override
     public CallbackManager getCallbackManager() {
         return CallbackManager.getInstance();
+    }
+
+    private static final com.kenai.jffi.Type getType(NativeType type) {
+        com.kenai.jffi.Type jffiType = FFIUtil.getFFIType(type);
+        if (jffiType == null) {
+            throw new UnsupportedOperationException("Cannot determine native type for " + type);
+        }
+
+        return jffiType;
+    }
+
+    public int sizeOf(NativeType type) {
+        return getType(type).size();
+    }
+
+    public int alignmentOf(NativeType type) {
+        return getType(type).alignment();
+    }
+
+    public static final class LastError {
+        @JRubyMethod(name = {  "error" }, module = true)
+        public static final  IRubyObject error(ThreadContext context, IRubyObject recv) {
+            return context.getRuntime().newFixnum(com.kenai.jffi.LastError.getInstance().get());
+        }
+
+        @JRubyMethod(name = {  "error=" }, module = true)
+        public static final  IRubyObject error_set(ThreadContext context, IRubyObject recv, IRubyObject value) {
+            com.kenai.jffi.LastError.getInstance().set((int)value.convertToInteger().getLongValue());
+
+            return value;
+        }
     }
 }

@@ -29,6 +29,7 @@ package org.jruby.util;
 
 import java.io.OutputStream;
 import java.io.IOException;
+import org.jruby.RubyIO;
 import org.jruby.RubyString;
 import org.jruby.runtime.CallSite;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -47,8 +48,30 @@ import org.jruby.runtime.MethodIndex;
  */
 public class IOOutputStream extends OutputStream {
     private final IRubyObject io;
+    private final OutputStream out;
     private final CallSite writeAdapter;
-    private final CallSite closeAdapter = MethodIndex.getFunctionalCallSite("close");
+    private static final CallSite closeAdapter = MethodIndex.getFunctionalCallSite("close");
+
+    /**
+     * Creates a new OutputStream with the object provided.
+     *
+     * @param io the ruby object
+     */
+    public IOOutputStream(final IRubyObject io, boolean checkAppend, boolean verifyCanWrite) {
+        this.io = io;
+        CallSite writeSite = MethodIndex.getFunctionalCallSite("write");
+        if (io.respondsTo("write")) {
+            writeAdapter = writeSite;
+        } else if (checkAppend && io.respondsTo("<<")) {
+            writeAdapter = MethodIndex.getFunctionalCallSite("<<");
+        } else if (verifyCanWrite) {
+            throw io.getRuntime().newArgumentError("Object: " + io + " is not a legal argument to this wrapper, " +
+                        "cause it doesn't respond to \"write\".");
+        } else {
+            writeAdapter = writeSite;
+        }
+        this.out = io instanceof RubyIO && !((RubyIO)io).isClosed() && ((RubyIO)io).isBuiltin("write") ? ((RubyIO) io).getOutStream() : null;
+    }
 
     /**
      * Creates a new OutputStream with the object provided.
@@ -56,18 +79,16 @@ public class IOOutputStream extends OutputStream {
      * @param io the ruby object
      */
     public IOOutputStream(final IRubyObject io) {
-        if(io.respondsTo("write")) {
-            writeAdapter = MethodIndex.getFunctionalCallSite("write");
-        } else if (io.respondsTo("<<")) {
-            writeAdapter = MethodIndex.getFunctionalCallSite("<<");
-        } else {
-            throw new IllegalArgumentException("Object: " + io + " is not a legal argument to this wrapper, cause it doesn't respond to \"write\".");
-        }
-        this.io = io;
+        this(io, true, true);
     }
-    
+
     public void write(final int bite) throws IOException {
-        writeAdapter.call(io.getRuntime().getCurrentContext(), io, io, RubyString.newStringLight(io.getRuntime(), new ByteList(new byte[]{(byte)bite},false)));
+        if (out != null) {
+            out.write(bite);
+        } else {
+            writeAdapter.call(io.getRuntime().getCurrentContext(), io, io,
+                    RubyString.newStringLight(io.getRuntime(), new ByteList(new byte[]{(byte)bite},false)));
+        }
     }
 
     @Override
@@ -77,11 +98,19 @@ public class IOOutputStream extends OutputStream {
 
     @Override
     public void write(final byte[] b,final int off, final int len) throws IOException {
-        writeAdapter.call(io.getRuntime().getCurrentContext(), io, io, RubyString.newStringLight(io.getRuntime(), new ByteList(b, off, len, false)));
+        if (out != null) {
+            out.write(b, off, len);
+        } else {
+            writeAdapter.call(io.getRuntime().getCurrentContext(), io, io, RubyString.newStringLight(io.getRuntime(), new ByteList(b, off, len, false)));
+        }
     }
     
     @Override
     public void close() throws IOException {
-        if (io.respondsTo("close")) closeAdapter.call(io.getRuntime().getCurrentContext(), io, io);
+        if (out != null) {
+            out.close();
+        } else if (io.respondsTo("close")) {
+            closeAdapter.call(io.getRuntime().getCurrentContext(), io, io);
+        }
     }
 }

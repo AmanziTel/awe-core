@@ -21,33 +21,23 @@ class Gem::Commands::CheckCommand < Gem::Command
       options[:alien] = true
     end
 
-    add_option('-t', '--test', "Run unit tests for gem") do |value, options|
-      options[:test] = true
-    end
-
-    add_version_option 'run tests for'
+    add_version_option 'check'
   end
 
   def execute
-    if options[:test]
-      version = options[:version] || Gem::Requirement.default
-      dep = Gem::Dependency.new get_one_gem_name, version
-      gem_spec = Gem::SourceIndex.from_installed_gems.search(dep).first
-      Gem::Validator.new.unit_test(gem_spec)
-    end
-
     if options[:alien]
       say "Performing the 'alien' operation"
-      Gem::Validator.new.alien.each do |key, val|
-        if(val.size > 0)
+      say
+      gems = get_all_gem_names rescue []
+      Gem::Validator.new.alien(gems).sort.each do |key, val|
+        unless val.empty? then
           say "#{key} has #{val.size} problems"
           val.each do |error_entry|
-            say "\t#{error_entry.path}:"
-            say "\t#{error_entry.problem}"
-            say
+            say "  #{error_entry.path}:"
+            say "    #{error_entry.problem}"
           end
-        else  
-          say "#{key} is error-free"
+        else
+          say "#{key} is error-free" if Gem.configuration.verbose
         end
         say
       end
@@ -66,7 +56,7 @@ class Gem::Commands::CheckCommand < Gem::Command
       say "Verifying gem: '#{gem_name}'"
       begin
         Gem::Validator.new.verify_gem_file(gem_name)
-      rescue Exception => e
+      rescue Exception
         alert_error "#{gem_name} is invalid."
       end
     end

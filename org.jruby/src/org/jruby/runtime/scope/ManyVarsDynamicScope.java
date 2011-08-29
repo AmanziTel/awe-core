@@ -2,7 +2,6 @@ package org.jruby.runtime.scope;
 
 import org.jruby.RubyArray;
 import org.jruby.javasupport.util.RuntimeHelpers;
-import org.jruby.parser.BlockStaticScope;
 import org.jruby.parser.StaticScope;
 import org.jruby.runtime.DynamicScope;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -194,15 +193,18 @@ public class ManyVarsDynamicScope extends DynamicScope {
         System.arraycopy(values, 0, variableValues, 0, size);
     }
 
+    @Override
     public void setArgValues(IRubyObject arg0) {
         variableValues[0] = arg0;
     }
     
+    @Override
     public void setArgValues(IRubyObject arg0, IRubyObject arg1) {
         variableValues[0] = arg0;
         variableValues[1] = arg1;
     }
     
+    @Override
     public void setArgValues(IRubyObject arg0, IRubyObject arg1, IRubyObject arg2) {
         variableValues[0] = arg0;
         variableValues[1] = arg1;
@@ -210,8 +212,6 @@ public class ManyVarsDynamicScope extends DynamicScope {
     }
     
     public void setEndArgValues(IRubyObject[] values, int index, int size) {
-        // FIXME: Some asserts
-        System.out.println("VALUEL: " + values.length + ", SIZE: " + size + ", INDEX: " + index);
         System.arraycopy(values, values.length - size, variableValues, index, size);
     }
 
@@ -267,47 +267,6 @@ public class ManyVarsDynamicScope extends DynamicScope {
             
             variableValues = values;
         }
-    }
-
-    // Helper function to give a good view of current dynamic scope with captured scopes
-    public String toString(StringBuffer buf, String indent) {
-        buf.append(indent).append("Static Type[" + hashCode() + "]: " + 
-                (staticScope instanceof BlockStaticScope ? "block" : "local")+" [");
-        int size = staticScope.getNumberOfVariables();
-        
-        if (size != 0) {
-            String names[] = staticScope.getVariables();
-            for (int i = 0; i < size-1; i++) {
-                buf.append(names[i]).append("=");
-
-                if (variableValues[i] == null) {
-                    buf.append("null");
-                } else {
-                    buf.append(variableValues[i]);
-                }
-                
-                buf.append(",");
-            }
-            buf.append(names[size-1]).append("=");
-            
-            assert variableValues.length == names.length : "V: " + variableValues.length + 
-                " != N: " + names.length + " for " + buf;
-            
-            if (variableValues[size-1] == null) {
-                buf.append("null");
-            } else {
-                buf.append(variableValues[size-1]);
-            }
-            
-        }
-        
-        buf.append("]");
-        if (parent != null) {
-            buf.append("\n");
-            parent.toString(buf, indent + "  ");
-        }
-        
-        return buf.toString();
     }
 
     private void assertGetValue(int offset, int depth) {

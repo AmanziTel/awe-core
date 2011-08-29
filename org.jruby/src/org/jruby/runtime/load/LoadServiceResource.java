@@ -27,26 +27,92 @@
  ***** END LICENSE BLOCK *****/
 package org.jruby.runtime.load;
 
+import org.jruby.util.URLUtil;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 
 /**
- * Simple struct to capture name seperate from URL.  URL and File have internal 
- * logic which does unexpected things when presenting the resource as a string. 
+ * Simple struct to capture name separate from URL.  URL and File have internal
+ * logic which does unexpected things when presenting the resource as a string.
  */
 public class LoadServiceResource {
     private final URL resource;
+    private final File path;
     private final String name;
+    private final boolean absolute;
 
     public LoadServiceResource(URL resource, String name) {
         this.resource = resource;
+        this.path = null;
         this.name = name;
+        this.absolute = false;
+    }
+
+    public LoadServiceResource(URL resource, String name, boolean absolute) {
+        this.resource = resource;
+        this.path = null;
+        this.name = name;
+        this.absolute = absolute;
     }
     
+    public LoadServiceResource(File path, String name) {
+        this.resource = null;
+        this.path = path;
+        this.name = name;
+        this.absolute = false;
+    }
+
+    public LoadServiceResource(File path, String name, boolean absolute) {
+        this.resource = null;
+        this.path = path;
+        this.name = name;
+        this.absolute = absolute;
+    }
+
+    public InputStream getInputStream() throws IOException {
+        if (resource != null) {
+            return new LoadServiceResourceInputStream(resource.openStream());
+        }
+        byte[] bytes = new byte[(int)path.length()];
+        ByteBuffer buffer = ByteBuffer.wrap(bytes);
+        FileInputStream fis = new FileInputStream(path);
+        FileChannel fc = fis.getChannel();
+        fc.read(buffer);
+        fis.close();
+        return new LoadServiceResourceInputStream(bytes);
+    }
+
     public String getName() {
         return name;
     }
+
+    public File getPath() {
+        return path;
+    }
     
-    public URL getURL() {
-        return resource;
+    public URL getURL() throws IOException {
+        if (resource != null) {
+            return resource;
+        } else {
+            return new URL("file", null, path.getAbsolutePath());
+        }
+    }
+
+    public String getAbsolutePath() {
+        try {
+            return new File(URLUtil.getPath(getURL())).getCanonicalPath();
+        } catch (IOException e) {
+            return resource.toString();
+        }
+    }
+
+    public boolean isAbsolute() {
+        return absolute;
     }
 }

@@ -1,6 +1,7 @@
 require File.dirname(__FILE__) + "/../spec_helper"
 
-import "java_integration.fixtures.JavaTypeMethods"
+java_import "java_integration.fixtures.JavaTypeMethods"
+java_import "java_integration.fixtures.InterfaceWrapper"
 
 describe "A Java method returning/receiving uncoercible Java types" do
   it "wraps the objects in Ruby object wrappers" do
@@ -62,5 +63,40 @@ describe "A Java method returning/receiving uncoercible Java types" do
       rsojo.foo.should == true
       rsojo2.foo.should == true
     end
+  end
+end
+
+describe "Java::JavaObject.wrap" do
+  it "wraps a Java object with an appropriate JavaObject subclass" do
+    obj = Java::JavaObject.wrap(java.lang.Object.new)
+    str = Java::JavaObject.wrap(java.lang.String.new)
+    cls = Java::JavaObject.wrap(java.lang.Class.forName('java.lang.String'))
+
+    obj.class.should == Java::JavaObject
+    str.class.should == Java::JavaObject
+    cls.class.should == Java::JavaClass
+  end
+end
+
+describe "Java::newInterfaceImpl" do
+  class BugTest
+    def run
+    end
+  end
+  class Bolt
+    def run
+    end
+  end
+  it "should use the same generated class for wrapping, on different classloaders" do
+    expected1 = InterfaceWrapper.give_me_back(BugTest.new)
+    expected2 = InterfaceWrapper.give_me_back(BugTest.new)
+    expected1.java_class.class_loader.should_not == expected2.java_class.class_loader
+    expected1.java_class.to_s.should == expected2.java_class.to_s
+  end
+
+  it "should not mix classes when generating new types for interfaces" do
+    expected1 = InterfaceWrapper.give_me_back(BugTest.new)
+    expected2 = InterfaceWrapper.give_me_back(Bolt.new)
+    expected1.java_class.should_not == expected2.java_class
   end
 end

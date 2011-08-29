@@ -31,6 +31,8 @@
 package org.jruby.javasupport;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Member;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 
@@ -44,9 +46,11 @@ import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.builtin.IRubyObject;
 
 public abstract class JavaCallable extends JavaAccessibleObject implements ParameterTypes {
+    protected final Class<?>[] parameterTypes;
 
-    public JavaCallable(Ruby runtime, RubyClass rubyClass) {
+    public JavaCallable(Ruby runtime, RubyClass rubyClass, Class<?>[] parameterTypes) {
         super(runtime, rubyClass);
+        this.parameterTypes = parameterTypes;
     }
 
     public static void registerRubyMethods(Ruby runtime, RubyClass result) {
@@ -134,5 +138,37 @@ public abstract class JavaCallable extends JavaAccessibleObject implements Param
         return RubyBoolean.newBoolean(getRuntime(), Modifier.isPublic(getModifiers()));
     }
 
+    protected void checkArity(int length) {
+        if (length != getArity()) {
+            throw getRuntime().newArgumentError(length, getArity());
+        }
+    }
 
+    protected static String dumpArgTypes(Object[] arguments) {
+        StringBuilder str = new StringBuilder("[");
+        for (int i = 0; i < arguments.length; i++) {
+            if (i > 0) {
+                str.append(",");
+            }
+            if (arguments[i] == null) {
+                str.append("null");
+            } else {
+                str.append(arguments[i].getClass().getName());
+            }
+        }
+        str.append("]");
+        return str.toString();
+    }
+
+    protected IRubyObject handleThrowable(Throwable t, Member target) {
+        getRuntime().getJavaSupport().handleNativeException(t, target);
+        // This point is only reached if there was an exception handler installed.
+        return getRuntime().getNil();
+    }
+
+    protected IRubyObject handleInvocationTargetEx(InvocationTargetException ite, Member target) {
+        getRuntime().getJavaSupport().handleNativeException(ite.getTargetException(), target);
+        // This point is only reached if there was an exception handler installed.
+        return getRuntime().getNil();
+    }
 }

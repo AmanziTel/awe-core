@@ -66,6 +66,8 @@ public interface IRubyObject {
     public IRubyObject callMethod(ThreadContext context, int methodIndex, String name);
     @Deprecated
     public IRubyObject callMethod(ThreadContext context, int methodIndex, String name, IRubyObject arg);
+
+    public IRubyObject checkCallMethod(ThreadContext context, String name);
     
     /**
      * RubyMethod isNil.
@@ -152,6 +154,20 @@ public interface IRubyObject {
      * @return boolean
      */
     boolean respondsTo(String string);
+
+    /**
+     * RubyMethod respondsTo.
+     * @param string
+     * @return boolean
+     */
+    boolean respondsToMissing(String string);
+
+    /**
+     * RubyMethod respondsTo.
+     * @param string
+     * @return boolean
+     */
+    boolean respondsToMissing(String string, boolean priv);
     
     /**
      * RubyMethod getRuntime.
@@ -225,12 +241,25 @@ public interface IRubyObject {
      * @return
      */
     IRubyObject checkStringType();
+
+    /**
+     *
+     * @return
+     */
+    IRubyObject checkStringType19();
     
     /**
      *
      * @return
      */
     IRubyObject checkArrayType();
+
+    /**
+     * Convert the object to the specified Java class, if possible.
+     *
+     * @param cls The target type to which the object should be converted.
+     */
+    Object toJava(Class cls);
 
     /**
      * RubyMethod dup.
@@ -280,6 +309,7 @@ public interface IRubyObject {
      * @return the object wrapped.
      */
     Object dataGetStruct();
+    Object dataGetStructChecked();
     
     /**
      *
@@ -324,12 +354,22 @@ public interface IRubyObject {
      * 
      * @param variables the variables to be set for object 
      */
-    void syncVariables(List<Variable<IRubyObject>> variables);
+    @Deprecated
+    void syncVariables(List<Variable<Object>> variables);
+
+    /**
+     * Sets object's variables to those in the supplied object,
+     * removing/replacing any previously defined variables of the same name.
+     * Applies to all variable types (ivar/cvar/constant/internal).
+     *
+     * @param source the source object containing the variables to sync
+     */
+    void syncVariables(IRubyObject source);
     
     /**
      * @return a list of all variables (ivar/cvar/constant/internal)
      */
-    List<Variable<IRubyObject>> getVariableList();
+    List<Variable<Object>> getVariableList();
 
     //
     // INSTANCE VARIABLE METHODS
@@ -349,4 +389,7 @@ public interface IRubyObject {
     List<String> getVariableNameList();
 
     void copySpecialInstanceVariables(IRubyObject clone);
+
+    public Object getVariable(int index);
+    public void setVariable(int index, Object value);
 }

@@ -34,10 +34,10 @@ import org.jruby.Ruby;
 import org.jruby.RubyModule;
 import org.jruby.exceptions.JumpException;
 import org.jruby.exceptions.RaiseException;
+import org.jruby.lexer.yacc.ISourcePosition;
 import org.jruby.parser.StaticScope;
 import org.jruby.runtime.Arity;
 import org.jruby.runtime.Block;
-import org.jruby.runtime.Frame;
 import org.jruby.runtime.RubyEvent;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.Visibility;
@@ -47,9 +47,9 @@ public class ReflectedCompiledMethod extends CompiledMethod {
     private final Method method;
     
     public ReflectedCompiledMethod(RubyModule implementationClass, Arity arity,
-            Visibility visibility, StaticScope staticScope, Object scriptObject, Method method, CallConfiguration callConfig) {
+            Visibility visibility, StaticScope staticScope, Object scriptObject, Method method, CallConfiguration callConfig, ISourcePosition position, String parameterDesc) {
         super();
-        init(implementationClass, arity, visibility, staticScope, scriptObject, callConfig);
+        init(implementationClass, arity, visibility, staticScope, scriptObject, callConfig, position, parameterDesc);
         
         this.method = method;
     }
@@ -57,33 +57,31 @@ public class ReflectedCompiledMethod extends CompiledMethod {
     @Override
     public IRubyObject call(ThreadContext context, IRubyObject self, RubyModule clazz, String name,
             IRubyObject[] args, Block block) {
-        callConfig.pre(context, self, getImplementationClass(), name, block, staticScope, this);
+        callConfig.pre(context, self, getImplementationClass(), name, block, staticScope);
         
         Ruby runtime = context.getRuntime();
+        int callNumber = context.callNumber;
         try {
             boolean isTrace = runtime.hasEventHooks();
             try {
                 if (isTrace) {
-                    // XXX Wrong, but will have to do for now
-                    runtime.callEventHooks(context, RubyEvent.CALL, context.getFile(), context.getLine(), name, getImplementationClass());
+                    runtime.callEventHooks(context, RubyEvent.CALL, position.getFile(), position.getStartLine(), name, getImplementationClass());
                 }
-                return (IRubyObject)method.invoke($scriptObject, context, self, args, block);
+                return (IRubyObject)method.invoke(null, $scriptObject, context, self, args, block);
             } finally {
                 if (isTrace) {
-                    Frame frame = context.getPreviousFrame();
-
-                    runtime.callEventHooks(context, RubyEvent.RETURN, frame.getFile(), frame.getLine(), name, getImplementationClass());
+                    runtime.callEventHooks(context, RubyEvent.RETURN, context.getFile(), context.getLine(), name, getImplementationClass());
                 }
             }
             
         } catch (IllegalArgumentException e) {
-            throw RaiseException.createNativeRaiseException(runtime, e);
+            throw RaiseException.createNativeRaiseException(runtime, e, method);
         } catch (IllegalAccessException e) {
-            throw RaiseException.createNativeRaiseException(runtime, e);
+            throw RaiseException.createNativeRaiseException(runtime, e, method);
         } catch (InvocationTargetException e) {
             Throwable cause = e.getCause();
             if (cause instanceof JumpException.ReturnJump) {
-                return handleReturn(context, (JumpException.ReturnJump)cause);
+                return handleReturn(context, (JumpException.ReturnJump)cause, callNumber);
             } else if (cause instanceof JumpException.RedoJump) {
                 return handleRedo(runtime);
             } else if (cause instanceof RuntimeException) {
@@ -91,7 +89,7 @@ public class ReflectedCompiledMethod extends CompiledMethod {
             } else if (cause instanceof Error) {
                 throw (Error)cause;                
             } else {
-                throw RaiseException.createNativeRaiseException(runtime, cause);
+                throw RaiseException.createNativeRaiseException(runtime, cause, method);
             }
         } finally {
             callConfig.post(context);

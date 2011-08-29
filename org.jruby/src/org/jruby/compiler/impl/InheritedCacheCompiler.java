@@ -10,17 +10,23 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.jcodings.Encoding;
 import org.jruby.Ruby;
+import org.jruby.RubyEncoding;
 import org.jruby.RubyFixnum;
+import org.jruby.RubyFloat;
 import org.jruby.RubyModule;
 import org.jruby.RubyRegexp;
 import org.jruby.RubyString;
 import org.jruby.RubySymbol;
 import org.jruby.ast.NodeType;
 import org.jruby.ast.executable.AbstractScript;
+import org.jruby.ast.executable.RuntimeCache;
 import org.jruby.compiler.ASTInspector;
 import org.jruby.compiler.CacheCompiler;
 import org.jruby.compiler.CompilerCallback;
+import org.jruby.internal.runtime.methods.DynamicMethod;
+import org.jruby.javasupport.util.RuntimeHelpers;
 import org.jruby.parser.StaticScope;
 import org.jruby.runtime.BlockBody;
 import org.jruby.runtime.CallSite;
@@ -28,9 +34,9 @@ import org.jruby.runtime.CallType;
 import org.jruby.runtime.CompiledBlockCallback;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.jruby.runtime.encoding.EncodingService;
 import org.jruby.util.ByteList;
 import org.objectweb.asm.Label;
-import org.objectweb.asm.Opcodes;
 import static org.jruby.util.CodegenUtils.*;
 
 /**
@@ -44,33 +50,38 @@ public class InheritedCacheCompiler implements CacheCompiler {
     List<String> callSiteList = new ArrayList<String>();
     List<CallType> callTypeList = new ArrayList<CallType>();
     Map<String, Integer> stringIndices = new HashMap<String, Integer>();
-    Map<BigInteger, String> bigIntegers = new HashMap<BigInteger, String>();
+    Map<String, Integer> encodingIndices = new HashMap<String, Integer>();
+    Map<String, Integer> stringEncodings = new HashMap<String, Integer>();
     Map<String, Integer> symbolIndices = new HashMap<String, Integer>();
     Map<Long, Integer> fixnumIndices = new HashMap<Long, Integer>();
+    Map<Double, Integer> floatIndices = new HashMap<Double, Integer>();
     int inheritedSymbolCount = 0;
     int inheritedStringCount = 0;
+    int inheritedEncodingCount = 0;
     int inheritedRegexpCount = 0;
     int inheritedBigIntegerCount = 0;
+    int inheritedVariableReaderCount = 0;
+    int inheritedVariableWriterCount = 0;
     int inheritedFixnumCount = 0;
+    int inheritedFloatCount = 0;
     int inheritedConstantCount = 0;
     int inheritedBlockBodyCount = 0;
     int inheritedBlockCallbackCount = 0;
+    int inheritedMethodCount = 0;
+
+    boolean runtimeCacheInited = false;
     
     public InheritedCacheCompiler(StandardASMCompiler scriptCompiler) {
         this.scriptCompiler = scriptCompiler;
     }
 
     public void cacheStaticScope(BaseBodyCompiler method, StaticScope scope) {
-        StringBuffer scopeNames = new StringBuffer();
-        for (int i = 0; i < scope.getVariables().length; i++) {
-            if (i != 0) scopeNames.append(';');
-            scopeNames.append(scope.getVariables()[i]);
-        }
+        String scopeString = RuntimeHelpers.encodeScope(scope);
 
         // retrieve scope from scopes array
         method.loadThis();
         method.loadThreadContext();
-        method.method.ldc(scopeNames.toString());
+        method.method.ldc(scopeString);
         if (scopeCount < AbstractScript.NUMBERED_SCOPE_COUNT) {
             // use numbered access method
             method.method.invokevirtual(scriptCompiler.getClassname(), "getScope" + scopeCount, sig(StaticScope.class, ThreadContext.class, String.class));
@@ -103,7 +114,7 @@ public class InheritedCacheCompiler implements CacheCompiler {
     public void cacheSymbol(BaseBodyCompiler method, String symbol) {
         Integer index = symbolIndices.get(symbol);
         if (index == null) {
-            index = new Integer(inheritedSymbolCount++);
+            index = Integer.valueOf(inheritedSymbolCount++);
             symbolIndices.put(symbol, index);
         }
 
@@ -119,19 +130,20 @@ public class InheritedCacheCompiler implements CacheCompiler {
         }
     }
 
-    public void cacheRegexp(BaseBodyCompiler method, String pattern, int options) {
+    public void cacheRegexp(BaseBodyCompiler method, ByteList pattern, int options) {
+
         method.loadThis();
         method.loadRuntime();
         int index = inheritedRegexpCount++;
         if (index < AbstractScript.NUMBERED_REGEXP_COUNT) {
-            method.method.ldc(pattern);
+            cacheByteList(method, pattern);
             method.method.ldc(options);
-            method.method.invokevirtual(scriptCompiler.getClassname(), "getRegexp" + index, sig(RubyRegexp.class, Ruby.class, String.class, int.class));
+            method.method.invokevirtual(scriptCompiler.getClassname(), "getRegexp" + index, sig(RubyRegexp.class, Ruby.class, ByteList.class, int.class));
         } else {
             method.method.pushInt(index);
-            method.method.ldc(pattern);
+            cacheByteList(method, pattern);
             method.method.ldc(options);
-            method.method.invokevirtual(scriptCompiler.getClassname(), "getRegexp", sig(RubyRegexp.class, Ruby.class, int.class, String.class, int.class));
+            method.method.invokevirtual(scriptCompiler.getClassname(), "getRegexp", sig(RubyRegexp.class, Ruby.class, int.class, ByteList.class, int.class));
         }
     }
 
@@ -140,23 +152,22 @@ public class InheritedCacheCompiler implements CacheCompiler {
         Label alreadyCompiled = new Label();
 
         method.loadThis();
+        method.method.getfield(scriptCompiler.getClassname(), "runtimeCache", ci(RuntimeCache.class));
         method.method.pushInt(index);
-        method.method.invokevirtual(scriptCompiler.getClassname(), "getRegexp", sig(RubyRegexp.class, int.class));
+        method.method.invokevirtual(p(RuntimeCache.class), "getRegexp", sig(RubyRegexp.class, int.class));
+        method.method.dup();
 
         method.ifNotNull(alreadyCompiled);
 
+        method.method.pop();
         method.loadThis();
-        method.loadRuntime();
+        method.method.getfield(scriptCompiler.getClassname(), "runtimeCache", ci(RuntimeCache.class));
         method.method.pushInt(index);
         createStringCallback.call(method);
-        method.method.invokevirtual(p(RubyString.class), "getByteList", sig(ByteList.class));
         method.method.ldc(options);
-        method.method.invokevirtual(scriptCompiler.getClassname(), "cacheRegexp", sig(void.class, Ruby.class, int.class, ByteList.class, int.class));
+        method.method.invokevirtual(p(RuntimeCache.class), "cacheRegexp", sig(RubyRegexp.class, int.class, RubyString.class, int.class));
 
         method.method.label(alreadyCompiled);
-        method.loadThis();
-        method.method.pushInt(index);
-        method.method.invokevirtual(scriptCompiler.getClassname(), "getRegexp", sig(RubyRegexp.class, int.class));
     }
     
     public void cacheFixnum(BaseBodyCompiler method, long value) {
@@ -190,7 +201,7 @@ public class InheritedCacheCompiler implements CacheCompiler {
         } else {
             Integer index = fixnumIndices.get(value);
             if (index == null) {
-                index = new Integer(inheritedFixnumCount++);
+                index =  Integer.valueOf(inheritedFixnumCount++);
                 fixnumIndices.put(value, index);
             }
             
@@ -210,6 +221,22 @@ public class InheritedCacheCompiler implements CacheCompiler {
                 method.method.ldc(value);
                 method.method.invokevirtual(scriptCompiler.getClassname(), "getFixnum", sig(RubyFixnum.class, Ruby.class, int.class, long.class));
             }
+        }
+    }
+    
+    public void cacheFloat(BaseBodyCompiler method, double value) {
+        Integer index = Integer.valueOf(inheritedFloatCount++);
+        floatIndices.put(value, index);
+
+        method.loadThis();
+        method.loadRuntime();
+        if (index < AbstractScript.NUMBERED_FLOAT_COUNT) {
+            method.method.ldc(value);
+            method.method.invokevirtual(scriptCompiler.getClassname(), "getFloat" + index, sig(RubyFloat.class, Ruby.class, double.class));
+        } else {
+            method.method.pushInt(index.intValue());
+            method.method.ldc(value);
+            method.method.invokevirtual(scriptCompiler.getClassname(), "getFloat", sig(RubyFloat.class, Ruby.class, int.class, double.class));
         }
     }
 
@@ -243,22 +270,80 @@ public class InheritedCacheCompiler implements CacheCompiler {
         inheritedConstantCount++;
     }
 
-    public void cacheString(BaseBodyCompiler method, ByteList contents) {
-        String asString = contents.toString();
+    public void cacheString(BaseBodyCompiler method, ByteList contents, int codeRange) {
+        String asString = RuntimeHelpers.rawBytesToString(contents.bytes());
+        
         Integer index = stringIndices.get(asString);
         if (index == null) {
-            index = new Integer(inheritedStringCount++);
+            index = Integer.valueOf(inheritedStringCount++);
             stringIndices.put(asString, index);
+            stringEncodings.put(asString, cacheEncoding(contents.getEncoding()));
         }
 
         method.loadThis();
         method.loadRuntime();
         if (index < AbstractScript.NUMBERED_STRING_COUNT) {
-            method.method.invokevirtual(scriptCompiler.getClassname(), "getString" + index, sig(RubyString.class, Ruby.class));
+            method.method.pushInt(codeRange);
+            method.method.invokevirtual(scriptCompiler.getClassname(), "getString" + index, sig(RubyString.class, Ruby.class, int.class));
         } else {
-            method.method.ldc(index.intValue());
-            method.method.invokevirtual(scriptCompiler.getClassname(), "getString", sig(RubyString.class, Ruby.class, int.class));
+            method.method.pushInt(index.intValue());
+            method.method.pushInt(codeRange);
+            method.method.invokevirtual(scriptCompiler.getClassname(), "getString", sig(RubyString.class, Ruby.class, int.class, int.class));
         }
+    }
+
+    public void cacheByteList(BaseBodyCompiler method, ByteList contents) {
+        String asString = RuntimeHelpers.rawBytesToString(contents.bytes());
+
+        Integer index = stringIndices.get(asString);
+        if (index == null) {
+            index = Integer.valueOf(inheritedStringCount++);
+            stringIndices.put(asString, index);
+            stringEncodings.put(asString, cacheEncoding(contents.getEncoding()));
+        }
+
+        method.loadThis();
+        if (index < AbstractScript.NUMBERED_STRING_COUNT) {
+            method.method.invokevirtual(scriptCompiler.getClassname(), "getByteList" + index, sig(ByteList.class));
+        } else {
+            method.method.pushInt(index.intValue());
+            method.method.invokevirtual(scriptCompiler.getClassname(), "getByteList", sig(ByteList.class, int.class));
+        }
+    }
+
+    public void cacheEncoding(BaseBodyCompiler method, Encoding encoding) {
+        // split into three methods since ByteList depends on two parts in different places
+        int encodingIndex = cacheEncoding(encoding);
+        loadEncoding(method.method, encodingIndex);
+        createRubyEncoding(method);
+    }
+
+    private int cacheEncoding(Encoding encoding) {
+        String encodingName = new String(encoding.getName());
+
+        Integer index = encodingIndices.get(encodingName);
+        if (index == null) {
+            index = Integer.valueOf(inheritedEncodingCount++);
+            encodingIndices.put(encodingName, index);
+        }
+        return index;
+    }
+
+    private void loadEncoding(SkinnyMethodAdapter method, int encodingIndex) {
+        method.aload(0);
+        if (encodingIndex < AbstractScript.NUMBERED_ENCODING_COUNT) {
+            method.invokevirtual(scriptCompiler.getClassname(), "getEncoding" + encodingIndex, sig(Encoding.class));
+        } else {
+            method.pushInt(encodingIndex);
+            method.invokevirtual(scriptCompiler.getClassname(), "getEncoding", sig(Encoding.class, int.class));
+        }
+    }
+
+    private void createRubyEncoding(BaseBodyCompiler method) {
+        method.loadRuntime();
+        method.invokeRuby("getEncodingService", sig(EncodingService.class));
+        method.method.swap();
+        method.method.invokevirtual(p(EncodingService.class), "getEncoding", sig(RubyEncoding.class, Encoding.class));
     }
 
     public void cacheBigInteger(BaseBodyCompiler method, BigInteger bigint) {
@@ -275,22 +360,50 @@ public class InheritedCacheCompiler implements CacheCompiler {
         }
     }
 
-    public void cacheClosure(BaseBodyCompiler method, String closureMethod, int arity, StaticScope scope, boolean hasMultipleArgsHead, NodeType argsNodeId, ASTInspector inspector) {
-        // build scope names string
-        StringBuffer scopeNames = new StringBuffer();
-        for (int i = 0; i < scope.getVariables().length; i++) {
-            if (i != 0) scopeNames.append(';');
-            scopeNames.append(scope.getVariables()[i]);
+    public void cachedGetVariable(BaseBodyCompiler method, String name) {
+        method.loadThis();
+        method.loadRuntime();
+        int index = inheritedVariableReaderCount++;
+        if (index < AbstractScript.NUMBERED_VARIABLEREADER_COUNT) {
+            method.method.ldc(name);
+            method.loadSelf();
+            method.method.invokevirtual(scriptCompiler.getClassname(), "getVariable" + index, sig(IRubyObject.class, Ruby.class, String.class, IRubyObject.class));
+        } else {
+            method.method.pushInt(index);
+            method.method.ldc(name);
+            method.loadSelf();
+            method.method.invokevirtual(scriptCompiler.getClassname(), "getVariable", sig(IRubyObject.class, Ruby.class, int.class, String.class, IRubyObject.class));
         }
+    }
 
-        // build descriptor string
-        String descriptor =
-                closureMethod + ',' +
-                arity + ',' +
-                scopeNames + ',' +
-                hasMultipleArgsHead + ',' +
-                BlockBody.asArgumentType(argsNodeId) + ',' +
-                !(inspector.hasClosure() || inspector.hasScopeAwareMethods());
+    public void cachedSetVariable(BaseBodyCompiler method, String name, CompilerCallback valueCallback) {
+        method.loadThis();
+        method.loadRuntime();
+        int index = inheritedVariableWriterCount++;
+        if (index < AbstractScript.NUMBERED_VARIABLEWRITER_COUNT) {
+            method.method.ldc(name);
+            method.loadSelf();
+            valueCallback.call(method);
+            method.method.invokevirtual(scriptCompiler.getClassname(), "setVariable" + index, sig(IRubyObject.class, Ruby.class, String.class, IRubyObject.class, IRubyObject.class));
+        } else {
+            method.method.pushInt(index);
+            method.method.ldc(name);
+            method.loadSelf();
+            valueCallback.call(method);
+            method.method.invokevirtual(scriptCompiler.getClassname(), "setVariable", sig(IRubyObject.class, Ruby.class, int.class, String.class, IRubyObject.class, IRubyObject.class));
+        }
+    }
+
+    public void cacheClosure(BaseBodyCompiler method, String closureMethod, int arity, StaticScope scope, String file, int line, boolean hasMultipleArgsHead, NodeType argsNodeId, ASTInspector inspector) {
+        String descriptor = RuntimeHelpers.buildBlockDescriptor(
+                closureMethod,
+                arity,
+                scope,
+                file,
+                line,
+                hasMultipleArgsHead,
+                argsNodeId,
+                inspector);
 
         method.loadThis();
         method.loadThreadContext();
@@ -307,22 +420,17 @@ public class InheritedCacheCompiler implements CacheCompiler {
         inheritedBlockBodyCount++;
     }
 
-    public void cacheClosure19(BaseBodyCompiler method, String closureMethod, int arity, StaticScope scope, boolean hasMultipleArgsHead, NodeType argsNodeId, ASTInspector inspector) {
-        // build scope names string
-        StringBuffer scopeNames = new StringBuffer();
-        for (int i = 0; i < scope.getVariables().length; i++) {
-            if (i != 0) scopeNames.append(';');
-            scopeNames.append(scope.getVariables()[i]);
-        }
-
-        // build descriptor string
-        String descriptor =
-                closureMethod + ',' +
-                arity + ',' +
-                scopeNames + ',' +
-                hasMultipleArgsHead + ',' +
-                BlockBody.asArgumentType(argsNodeId) + ',' +
-                !(inspector.hasClosure() || inspector.hasScopeAwareMethods());
+    public void cacheClosure19(BaseBodyCompiler method, String closureMethod, int arity, StaticScope scope, String file, int line, boolean hasMultipleArgsHead, NodeType argsNodeId, String parameterList, ASTInspector inspector) {
+        String descriptor = RuntimeHelpers.buildBlockDescriptor19(
+                closureMethod,
+                arity,
+                scope,
+                file,
+                line,
+                hasMultipleArgsHead,
+                argsNodeId,
+                parameterList,
+                inspector);
 
         method.loadThis();
         method.loadThreadContext();
@@ -355,111 +463,134 @@ public class InheritedCacheCompiler implements CacheCompiler {
         inheritedBlockCallbackCount++;
     }
 
+    public void cacheMethod(BaseBodyCompiler method, String methodName) {
+        method.loadThis();
+        method.loadThreadContext();
+        method.loadSelf();
+
+        if (inheritedMethodCount < AbstractScript.NUMBERED_METHOD_COUNT) {
+            method.method.ldc(methodName);
+            method.method.invokevirtual(scriptCompiler.getClassname(), "getMethod" + inheritedMethodCount, sig(DynamicMethod.class, ThreadContext.class, IRubyObject.class, String.class));
+        } else {
+            method.method.pushInt(inheritedMethodCount);
+            method.method.ldc(methodName);
+            method.method.invokevirtual(scriptCompiler.getClassname(), "getMethod", sig(DynamicMethod.class, ThreadContext.class, IRubyObject.class, int.class, String.class));
+        }
+
+        inheritedMethodCount++;
+    }
+
+    public void cacheMethod(BaseBodyCompiler method, String methodName, int receiverLocal) {
+        method.loadThis();
+        method.loadThreadContext();
+        method.method.aload(receiverLocal);
+
+        if (inheritedMethodCount < AbstractScript.NUMBERED_METHOD_COUNT) {
+            method.method.ldc(methodName);
+            method.method.invokevirtual(scriptCompiler.getClassname(), "getMethod" + inheritedMethodCount, sig(DynamicMethod.class, ThreadContext.class, IRubyObject.class, String.class));
+        } else {
+            method.method.pushInt(inheritedMethodCount);
+            method.method.ldc(methodName);
+            method.method.invokevirtual(scriptCompiler.getClassname(), "getMethod", sig(DynamicMethod.class, ThreadContext.class, IRubyObject.class, int.class, String.class));
+        }
+
+        inheritedMethodCount++;
+    }
+
     public void finish() {
         SkinnyMethodAdapter initMethod = scriptCompiler.getInitMethod();
 
-        // generate call sites initialization code
-        int size = callSiteList.size();
-        if (size != 0) {
-            initMethod.aload(0);
-            initMethod.pushInt(size);
-            initMethod.anewarray(p(CallSite.class));
-            
-            for (int i = size - 1; i >= 0; i--) {
+        // generate call sites portion of descriptor
+        int callSiteListSize = callSiteList.size();
+        int otherCount = scopeCount
+                + inheritedSymbolCount
+                + inheritedFixnumCount
+                + inheritedFloatCount
+                + inheritedConstantCount
+                + inheritedRegexpCount
+                + inheritedBigIntegerCount
+                + inheritedVariableReaderCount
+                + inheritedVariableWriterCount
+                + inheritedBlockBodyCount
+                + inheritedBlockCallbackCount
+                + inheritedMethodCount
+                + inheritedStringCount
+                + inheritedEncodingCount;
+        if (callSiteListSize + otherCount != 0) {
+            ensureRuntimeCacheInited(initMethod);
+
+            StringBuffer descriptor = new StringBuffer(callSiteListSize * 5 + 12); // rough guess of total size
+
+            for (int i = 0; i < callSiteListSize; i++) {
                 String name = callSiteList.get(i);
                 CallType callType = callTypeList.get(i);
-
-                initMethod.pushInt(i);
-                initMethod.ldc(name);
+                
+                if (i > 0) descriptor.append('\uFFFF');
+                
                 if (callType.equals(CallType.NORMAL)) {
-                    initMethod.invokestatic(scriptCompiler.getClassname(), "setCallSite", sig(CallSite[].class, params(CallSite[].class, int.class, String.class)));
+                    descriptor.append(name).append("\uFFFFN");
                 } else if (callType.equals(CallType.FUNCTIONAL)) {
-                    initMethod.invokestatic(scriptCompiler.getClassname(), "setFunctionalCallSite", sig(CallSite[].class, params(CallSite[].class, int.class, String.class)));
+                    descriptor.append(name).append("\uFFFFF");
                 } else if (callType.equals(CallType.VARIABLE)) {
-                    initMethod.invokestatic(scriptCompiler.getClassname(), "setVariableCallSite", sig(CallSite[].class, params(CallSite[].class, int.class, String.class)));
+                    descriptor.append(name).append("\uFFFFV");
+                } else if (callType.equals(CallType.SUPER)) {
+                    descriptor.append("super").append("\uFFFFS");
                 }
             }
-            initMethod.putfield(scriptCompiler.getClassname(), "callSites", ci(CallSite[].class));
-        }
 
-        size = scopeCount;
-        if (size != 0) {
+            // generate "others" part of descriptor
+            descriptor.append('\uFFFF');
+            descriptor.append((char)scopeCount);
+            descriptor.append((char)inheritedSymbolCount);
+            descriptor.append((char)inheritedFixnumCount);
+            descriptor.append((char)inheritedFloatCount);
+            descriptor.append((char)inheritedConstantCount);
+            descriptor.append((char)inheritedRegexpCount);
+            descriptor.append((char)inheritedBigIntegerCount);
+            descriptor.append((char)inheritedVariableReaderCount);
+            descriptor.append((char)inheritedVariableWriterCount);
+            descriptor.append((char)inheritedBlockBodyCount);
+            descriptor.append((char)inheritedBlockCallbackCount);
+            descriptor.append((char)inheritedMethodCount);
+            descriptor.append((char)inheritedStringCount);
+            descriptor.append((char)inheritedEncodingCount);
+
+            // init from descriptor
             initMethod.aload(0);
-            initMethod.pushInt(size);
-            initMethod.invokevirtual(scriptCompiler.getClassname(), "initScopes", sig(void.class, params(int.class)));
-        }
-
-        // generate symbols initialization code
-        size = inheritedSymbolCount;
-        if (size != 0) {
-            initMethod.aload(0);
-            initMethod.pushInt(size);
-            initMethod.invokevirtual(scriptCompiler.getClassname(), "initSymbols", sig(void.class, params(int.class)));
-        }
-
-        // generate fixnums initialization code
-        size = inheritedFixnumCount;
-        if (size != 0) {
-            initMethod.aload(0);
-            initMethod.pushInt(size);
-            initMethod.invokevirtual(scriptCompiler.getClassname(), "initFixnums", sig(void.class, params(int.class)));
-        }
-
-        // generate constants initialization code
-        size = inheritedConstantCount;
-        if (size != 0) {
-            initMethod.aload(0);
-            initMethod.pushInt(size);
-            initMethod.invokevirtual(scriptCompiler.getClassname(), "initConstants", sig(void.class, params(int.class)));
-        }
-
-        // generate regexps initialization code
-        size = inheritedRegexpCount;
-        if (size != 0) {
-            initMethod.aload(0);
-            initMethod.pushInt(size);
-            initMethod.invokevirtual(scriptCompiler.getClassname(), "initRegexps", sig(void.class, params(int.class)));
-        }
-
-        // generate regexps initialization code
-        size = inheritedBigIntegerCount;
-        if (size != 0) {
-            initMethod.aload(0);
-            initMethod.pushInt(size);
-            initMethod.invokevirtual(scriptCompiler.getClassname(), "initBigIntegers", sig(void.class, params(int.class)));
-        }
-
-        // generate block bodies initialization code
-        size = inheritedBlockBodyCount;
-        if (size != 0) {
-            initMethod.aload(0);
-            initMethod.pushInt(size);
-            initMethod.invokevirtual(scriptCompiler.getClassname(), "initBlockBodies", sig(void.class, params(int.class)));
-        }
-
-        // generate block bodies initialization code
-        size = inheritedBlockCallbackCount;
-        if (size != 0) {
-            initMethod.aload(0);
-            initMethod.pushInt(size);
-            initMethod.invokevirtual(scriptCompiler.getClassname(), "initBlockCallbacks", sig(void.class, params(int.class)));
-        }
-
-        // generate bytelists initialization code
-        size = inheritedStringCount;
-        if (inheritedStringCount > 0) {
-            initMethod.aload(0);
-            initMethod.pushInt(size);
-            initMethod.invokevirtual(scriptCompiler.getClassname(), "initStrings", sig(ByteList[].class, params(int.class)));
-
-            for (Map.Entry<String, Integer> entry : stringIndices.entrySet()) {
-                initMethod.ldc(entry.getValue());
-                initMethod.ldc(entry.getKey());
-                initMethod.invokestatic(p(AbstractScript.class), "createByteList", sig(ByteList[].class, ByteList[].class, int.class, String.class));
-            }
+            initMethod.ldc(descriptor.toString());
+            initMethod.invokevirtual(p(AbstractScript.class), "initFromDescriptor", sig(void.class, String.class));
             
-            initMethod.pop();
-        }
+            if (inheritedEncodingCount > 0) {
+                // init all encodings
+                for (Map.Entry<String, Integer> entry : encodingIndices.entrySet()) {
+                    initMethod.aload(0);
+                    initMethod.ldc(entry.getValue());
+                    initMethod.ldc(entry.getKey());
+                    initMethod.invokevirtual(p(AbstractScript.class), "setEncoding", sig(void.class, int.class, String.class));
+                }
+            }
 
+            if (inheritedStringCount > 0) {
+                // init all strings
+                for (Map.Entry<String, Integer> entry : stringIndices.entrySet()) {
+                    initMethod.aload(0);
+                    initMethod.ldc(entry.getValue());
+                    initMethod.ldc(entry.getKey());
+                    loadEncoding(initMethod, stringEncodings.get(entry.getKey()));
+                    initMethod.invokevirtual(p(AbstractScript.class), "setByteList", sig(void.class, int.class, String.class, Encoding.class));
+                }
+            }
+        }
+    }
+
+    private void ensureRuntimeCacheInited(SkinnyMethodAdapter initMethod) {
+        if (!runtimeCacheInited) {
+            initMethod.aload(0);
+            initMethod.newobj(p(RuntimeCache.class));
+            initMethod.dup();
+            initMethod.invokespecial(p(RuntimeCache.class), "<init>", sig(void.class));
+            initMethod.putfield(p(AbstractScript.class), "runtimeCache", ci(RuntimeCache.class));
+            runtimeCacheInited = true;
+        }
     }
 }

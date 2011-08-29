@@ -40,6 +40,7 @@ import org.jruby.lexer.yacc.ISourcePosition;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.jruby.util.ByteList;
 
 /**
  * The access to a Constant.
@@ -78,11 +79,6 @@ public class ConstNode extends Node implements INameNode {
         return EMPTY_LIST;
     }
     
-    @Override
-    public String toString() {
-        return "ConstNode [" + name + "]";
-    }
-
     public void setName(String name) {
         this.name = name;
     }
@@ -93,12 +89,12 @@ public class ConstNode extends Node implements INameNode {
 
         // We can callsite cache const_missing if we want
         return value != null ? value :
-            context.getRubyClass().callMethod(context, "const_missing", runtime.fastNewSymbol(name));
+            context.getCurrentScope().getStaticScope().getModule().callMethod(context, "const_missing", runtime.fastNewSymbol(name));
     }
 
     @Override
-    public String definition(Ruby runtime, ThreadContext context, IRubyObject self, Block aBlock) {
-        return context.getConstantDefined(name) ? "constant" : null;
+    public ByteList definition(Ruby runtime, ThreadContext context, IRubyObject self, Block aBlock) {
+        return context.getConstantDefined(name) ? CONSTANT_BYTELIST : null;
     }
     
     public IRubyObject getValue(ThreadContext context) {

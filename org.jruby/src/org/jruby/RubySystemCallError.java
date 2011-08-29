@@ -7,16 +7,19 @@ import java.util.HashMap;
 
 import org.jruby.anno.JRubyMethod;
 import org.jruby.anno.JRubyClass;
+import org.jruby.platform.Platform;
 import org.jruby.runtime.Arity;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ObjectMarshal;
-import org.jruby.runtime.Visibility;
+import static org.jruby.runtime.Visibility.*;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.builtin.Variable;
 import org.jruby.runtime.component.VariableEntry;
 import org.jruby.runtime.marshal.MarshalStream;
 import org.jruby.runtime.marshal.UnmarshalStream;
+
+import com.kenai.constantine.platform.Errno;
 
 @JRubyClass(name="SystemCallError", parent="StandardError")
 public class RubySystemCallError extends RubyException {
@@ -24,6 +27,8 @@ public class RubySystemCallError extends RubyException {
 
     private final static Map<String, String> defaultMessages = new HashMap<String, String>();
     static {
+        // FIXME: these descriptions should probably be moved out,
+        // to Constantine project which deals with all platform-dependent constants.
         defaultMessages.put("Errno::EPERM", "Operation not permitted");
         defaultMessages.put("Errno::ENOENT", "No such file or directory");
         defaultMessages.put("Errno::ESRCH", "No such process");
@@ -137,11 +142,11 @@ public class RubySystemCallError extends RubyException {
             RubySystemCallError exc = (RubySystemCallError) obj;
             marshalStream.registerLinkTarget(exc);
             
-            List<Variable<IRubyObject>> attrs = exc.getVariableList();
-            attrs.add(new VariableEntry<IRubyObject>(
+            List<Variable<Object>> attrs = exc.getVariableList();
+            attrs.add(new VariableEntry<Object>(
                     "mesg", exc.message == null ? runtime.getNil() : exc.message));
-            attrs.add(new VariableEntry<IRubyObject>("errno", exc.errno));
-            attrs.add(new VariableEntry<IRubyObject>("bt", exc.getBacktrace()));
+            attrs.add(new VariableEntry<Object>("errno", exc.errno));
+            attrs.add(new VariableEntry<Object>("bt", exc.getBacktrace()));
             marshalStream.dumpVariables(attrs);
         }
 
@@ -150,6 +155,8 @@ public class RubySystemCallError extends RubyException {
             RubySystemCallError exc = (RubySystemCallError) type.allocate();
             
             unmarshalStream.registerLinkTarget(exc);
+            // FIXME: Can't just pull these off the wire directly? Or maybe we should
+            // just use real vars all the time for these?
             unmarshalStream.defaultVariablesUnmarshal(exc);
             
             exc.message = (IRubyObject)exc.removeInternalVariable("mesg");
@@ -171,44 +178,62 @@ public class RubySystemCallError extends RubyException {
         return exceptionClass;
     }
     
-    @JRubyMethod(optional = 2, required=0, frame = true, visibility = Visibility.PRIVATE)
+    @JRubyMethod(optional = 2, required=0, visibility = PRIVATE)
     public IRubyObject initialize(IRubyObject[] args, Block block) {
-        RubyClass sCallErorrClass = getRuntime().getSystemCallError();
+        Ruby runtime = getRuntime();
+        RubyClass sCallErorrClass = runtime.getSystemCallError();
         RubyClass klass = getMetaClass().getRealClass();
 
-        IRubyObject msg = getRuntime().getNil();
-        IRubyObject err = getRuntime().getNil();
-        
+        IRubyObject msg = runtime.getNil();
+        IRubyObject err = runtime.getNil();
+
         boolean isErrnoClass = !klass.equals(sCallErorrClass);
-        
+
         if (!isErrnoClass) {
             // one optional, one required args
-            Arity.checkArgumentCount(getRuntime(), args, 1, 2);
+            Arity.checkArgumentCount(runtime, args, 1, 2);
             msg = args[0];
             if (args.length == 2) {
                 err = args[1];
             }
             if (args.length == 1 && (msg instanceof RubyFixnum)) {
                 err = msg;
-                msg = getRuntime().getNil();
+                msg = runtime.getNil();
             }
         } else {
             // one optional and no required args
-            Arity.checkArgumentCount(getRuntime(), args, 0, 1);
+            Arity.checkArgumentCount(runtime, args, 0, 1);
             if (args.length == 1) {
                 msg = args[0];
             }
-            // try to get errno out of the class 
+            // try to get errno value out of the class
             err = klass.fastGetConstant("Errno");
         }
-        
+
+        String val = null;
+
         if (!err.isNil()) {
             errno = err.convertToInteger();
+            int errnoVal = RubyNumeric.num2int(errno);
+            if (Errno.valueOf(errnoVal) != Errno.__UNKNOWN_CONSTANT__) {
+                // we got a valid errno value
+                isErrnoClass = true;
+                setMetaClass(runtime.getErrno(errnoVal));
+                klass = getMetaClass().getRealClass();
+
+                // FIXME: Errno descriptions from Constantine
+                // on Windows are not useful at the moment.
+                if (!Platform.IS_WINDOWS) {
+                  val = Errno.valueOf(errnoVal).description();
+                }
+            }
         }
 
-        String val = defaultMessages.get(klass.getName());
         if (val == null) {
-            val = "Unknown error";
+            val = defaultMessages.get(klass.getName());
+            if (val == null) {
+                val = "Unknown error";
+            }
         }
 
         // MRI behavior: we don't print errno for actual Errno errors
@@ -220,7 +245,7 @@ public class RubySystemCallError extends RubyException {
             val += " - " + msg.convertToString();
         }
 
-        message = getRuntime().newString(val);        
+        message = runtime.newString(val);
         return this;
     }
 

@@ -2,14 +2,15 @@
 package org.jruby.ext.ffi.jffi;
 
 import com.kenai.jffi.Function;
+import org.jruby.RubyBoolean;
+import org.jruby.RubyHash;
 import org.jruby.RubyModule;
 import org.jruby.RubyNumeric;
-import org.jruby.RubyString;
-import org.jruby.ext.ffi.BasePointer;
-import org.jruby.ext.ffi.NativeParam;
+import org.jruby.ext.ffi.MappedType;
 import org.jruby.ext.ffi.NativeType;
-import org.jruby.ext.ffi.NullMemoryIO;
 import org.jruby.ext.ffi.Platform;
+import org.jruby.ext.ffi.Pointer;
+import org.jruby.ext.ffi.Type;
 import org.jruby.ext.ffi.Util;
 import org.jruby.internal.runtime.methods.DynamicMethod;
 import org.jruby.runtime.ThreadContext;
@@ -23,59 +24,79 @@ public class FastLongMethodFactory {
     public static final FastLongMethodFactory getFactory() {
         return SingletonHolder.INSTANCE;
     }
-    final boolean isFastLongMethod(NativeType returnType, NativeParam[] parameterTypes) {
+    
+    final boolean isFastLongMethod(Type returnType, Type[] parameterTypes) {
         for (int i = 0; i < parameterTypes.length; ++i) {
             if (!isFastLongParam(parameterTypes[i])) {
                 return false;
             }
         }
-        return parameterTypes.length <= 3 && isFastLongResult(returnType);
+        return parameterTypes.length <= 3 && isFastLongResult(returnType)
+                && Platform.getPlatform().getCPU() == Platform.CPU.X86_64;
     }
-    final boolean isFastLongResult(NativeType type) {
-        switch (type) {
-            case VOID:
-            case INT8:
-            case UINT8:
-            case INT16:
-            case UINT16:
-            case INT32:
-            case UINT32:
-            case INT64:
-            case UINT64:
-            case POINTER:
-            case STRING:
-            case LONG:
-            case ULONG:
-                return true;
-            default:
-                return false;
-        }
-    }
-    final boolean isFastLongParam(NativeParam paramType) {
-        if (paramType instanceof NativeType) {
-            switch ((NativeType) paramType) {
-                case INT8:
-                case UINT8:
-                case INT16:
-                case UINT16:
-                case INT32:
-                case UINT32:
-                case INT64:
-                case UINT64:
+    
+    
+    final boolean isFastLongResult(Type type) {
+        if (type instanceof Type.Builtin) {
+            switch (type.getNativeType()) {
+                case VOID:
+                case BOOL:
+                case CHAR:
+                case UCHAR:
+                case SHORT:
+                case USHORT:
+                case INT:
+                case UINT:
+                case LONG_LONG:
+                case ULONG_LONG:
+                case POINTER:
+                case STRING:
                 case LONG:
                 case ULONG:
                     return true;
             }
+
+        } else if (type instanceof MappedType) {
+            MappedType mt = (MappedType) type;
+            return isFastLongResult(mt.getRealType()) && !mt.isReferenceRequired() && !mt.isPostInvokeRequired();
+
+
         }
         return false;
     }
+    
+    final boolean isFastLongParam(Type paramType) {
+        if (paramType instanceof Type.Builtin) {
+            switch (paramType.getNativeType()) {
+                case BOOL:
+                case CHAR:
+                case UCHAR:
+                case SHORT:
+                case USHORT:
+                case INT:
+                case UINT:
+                case LONG_LONG:
+                case ULONG_LONG:
+                case LONG:
+                case ULONG:
+                    return true;
+            }
+
+        } else if (paramType instanceof MappedType) {
+            return isFastLongParam(((MappedType) paramType).getRealType());
+
+        }
+        return false;
+    }
+
     DynamicMethod createMethod(RubyModule module, Function function,
-            NativeType returnType, NativeParam[] parameterTypes) {
-        FastLongMethodFactory factory = this;
+            Type returnType, Type[] parameterTypes, IRubyObject enums) {
+
         LongParameterConverter[] parameterConverters = new LongParameterConverter[parameterTypes.length];
-        LongResultConverter resultConverter = factory.getLongResultConverter(returnType);
+        LongResultConverter resultConverter = getLongResultConverter(returnType);
+
         for (int i = 0; i < parameterConverters.length; ++i) {
-            parameterConverters[i] = factory.getLongParameterConverter(parameterTypes[i]);
+            parameterConverters[i] = getLongParameterConverter(parameterTypes[i], enums);
         }
 
         switch (parameterTypes.length) {
@@ -91,18 +112,37 @@ public class FastLongMethodFactory {
                 throw module.getRuntime().newRuntimeError("Arity " + parameterTypes.length + " not implemented");
         }
     }
-    final LongParameterConverter getLongParameterConverter(NativeParam type) {
-        switch ((NativeType) type) {
-            case INT8: return Signed8ParameterConverter.INSTANCE;
-            case UINT8: return Unsigned8ParameterConverter.INSTANCE;
-            case INT16: return Signed16ParameterConverter.INSTANCE;
-            case UINT16: return Unsigned16ParameterConverter.INSTANCE;
-            case INT32: return Signed32ParameterConverter.INSTANCE;
-            case UINT32: return Unsigned32ParameterConverter.INSTANCE;
-            case INT64: return Signed64ParameterConverter.INSTANCE;
-            case UINT64: return Unsigned64ParameterConverter.INSTANCE;
-            case FLOAT32: return Float32ParameterConverter.INSTANCE;
-            case FLOAT64: return Float64ParameterConverter.INSTANCE;
+
+
+    final LongParameterConverter getLongParameterConverter(Type type, IRubyObject enums) {
+        if (type instanceof Type.Builtin) {
+            return getLongParameterConverter(type.getNativeType(), enums);
+
+        } else if (type instanceof MappedType) {
+            MappedType mtype = (MappedType) type;
+            return new MappedParameterConverter(getLongParameterConverter(mtype.getRealType(), enums), mtype);
+        
+        } else {
+            throw new IllegalArgumentException("Unknown type " + type);
+        }
+    }
+
+
+    final LongParameterConverter getLongParameterConverter(NativeType type, IRubyObject enums) {
+        switch (type) {
+            case BOOL: return BooleanParameterConverter.INSTANCE;
+            case CHAR: return Signed8ParameterConverter.INSTANCE;
+            case UCHAR: return Unsigned8ParameterConverter.INSTANCE;
+            case SHORT: return Signed16ParameterConverter.INSTANCE;
+            case USHORT: return Unsigned16ParameterConverter.INSTANCE;
+            case INT: return enums instanceof RubyHash
+                    ? new IntOrEnumParameterConverter((RubyHash) enums)
+                    : Signed32ParameterConverter.INSTANCE;
+            case UINT: return Unsigned32ParameterConverter.INSTANCE;
+            case LONG_LONG: return Signed64ParameterConverter.INSTANCE;
+            case ULONG_LONG: return Unsigned64ParameterConverter.INSTANCE;
+            case FLOAT: return Float32ParameterConverter.INSTANCE;
+            case DOUBLE: return Float64ParameterConverter.INSTANCE;
             case LONG:
                 if (Platform.getPlatform().longSize() == 32) {
                     return Signed32ParameterConverter.INSTANCE;
@@ -119,19 +159,34 @@ public class FastLongMethodFactory {
                 throw new IllegalArgumentException("Unknown type " + type);
         }
     }
+
+    final LongResultConverter getLongResultConverter(Type type) {
+        if (type instanceof Type.Builtin) {
+            return getLongResultConverter(type.getNativeType());
+
+        } else if (type instanceof MappedType) {
+            MappedType mtype = (MappedType) type;
+            return new MappedResultConverter(getLongResultConverter(mtype.getRealType()), mtype);
+        
+        } else {
+            throw new IllegalArgumentException("unsupported return type " + type);
+        }
+
+    }
     final LongResultConverter getLongResultConverter(NativeType type) {
         switch (type) {
             case VOID: return VoidResultConverter.INSTANCE;
-            case INT8: return Signed8ResultConverter.INSTANCE;
-            case UINT8: return Unsigned8ResultConverter.INSTANCE;
-            case INT16: return Signed16ResultConverter.INSTANCE;
-            case UINT16: return Unsigned16ResultConverter.INSTANCE;
-            case INT32: return Signed32ResultConverter.INSTANCE;
-            case UINT32: return Unsigned32ResultConverter.INSTANCE;
-            case INT64: return Signed64ResultConverter.INSTANCE;
-            case UINT64: return Unsigned64ResultConverter.INSTANCE;
-            case FLOAT32: return Float32ResultConverter.INSTANCE;
-            case FLOAT64: return Float64ResultConverter.INSTANCE;
+            case BOOL: return BooleanResultConverter.INSTANCE;
+            case CHAR: return Signed8ResultConverter.INSTANCE;
+            case UCHAR: return Unsigned8ResultConverter.INSTANCE;
+            case SHORT: return Signed16ResultConverter.INSTANCE;
+            case USHORT: return Unsigned16ResultConverter.INSTANCE;
+            case INT: return Signed32ResultConverter.INSTANCE;
+            case UINT: return Unsigned32ResultConverter.INSTANCE;
+            case LONG_LONG: return Signed64ResultConverter.INSTANCE;
+            case ULONG_LONG: return Unsigned64ResultConverter.INSTANCE;
+            case FLOAT: return Float32ResultConverter.INSTANCE;
+            case DOUBLE: return Float64ResultConverter.INSTANCE;
             case LONG:
                 return Platform.getPlatform().longSize() == 32
                     ? Signed32ResultConverter.INSTANCE
@@ -144,6 +199,7 @@ public class FastLongMethodFactory {
                 return PointerResultConverter.INSTANCE;
             case STRING:
                 return StringResultConverter.INSTANCE;
+
             default:
                 throw new IllegalArgumentException("Unknown type " + type);
         }
@@ -154,6 +210,14 @@ public class FastLongMethodFactory {
             return context.getRuntime().getNil();
         }
     }
+
+    static final class BooleanResultConverter implements LongResultConverter {
+        public static final LongResultConverter INSTANCE = new Signed8ResultConverter();
+        public final IRubyObject fromNative(ThreadContext context, long value) {
+            return context.getRuntime().newBoolean(value != 0);
+        }
+    }
+
     static final class Signed8ResultConverter implements LongResultConverter {
         public static final LongResultConverter INSTANCE = new Signed8ResultConverter();
         public final IRubyObject fromNative(ThreadContext context, long value) {
@@ -214,14 +278,29 @@ public class FastLongMethodFactory {
             return context.getRuntime().newFloat(Double.longBitsToDouble(value));
         }
     }
+
     static final class PointerResultConverter implements LongResultConverter {
         static final long ADDRESS_MASK = Platform.getPlatform().addressSize() == 32
                 ? 0xffffffffL : 0xffffffffffffffffL;
         public static final LongResultConverter INSTANCE = new PointerResultConverter();
         public final IRubyObject fromNative(ThreadContext context, long value) {
             final long address = ((long) value) & ADDRESS_MASK;
-            return new BasePointer(context.getRuntime(),
-                    address != 0 ? new NativeMemoryIO(address) : new NullMemoryIO(context.getRuntime()));
+            return new Pointer(context.getRuntime(),
+                    NativeMemoryIO.wrap(context.getRuntime(), address));
+        }
+    }
+
+    static final class MappedResultConverter implements LongResultConverter {
+        private final LongResultConverter longConverter;
+        private final MappedType mappedType;
+
+        public MappedResultConverter(LongResultConverter longConverter, MappedType mappedType) {
+            this.longConverter = longConverter;
+            this.mappedType = mappedType;
+        }
+
+        public final IRubyObject fromNative(ThreadContext context, long value) {
+            return mappedType.fromNative(context, longConverter.fromNative(context, value));
         }
     }
 
@@ -230,24 +309,23 @@ public class FastLongMethodFactory {
         public static final LongResultConverter INSTANCE = new StringResultConverter();
         public final IRubyObject fromNative(ThreadContext context, long value) {
             long address = value & PointerResultConverter.ADDRESS_MASK;
-            if (address == 0) {
-                return context.getRuntime().getNil();
-            }
-            int len = (int) IO.getStringLength(address);
-            if (len == 0) {
-                return RubyString.newEmptyString(context.getRuntime());
-            }
-            byte[] bytes = new byte[len];
-            IO.getByteArray(address, bytes, 0, len);
-
-            RubyString s =  RubyString.newStringShared(context.getRuntime(), bytes);
-            s.setTaint(true);
-            return s;
+            return FFIUtil.getString(context.getRuntime(), address);
         }
     }
+
     static abstract class BaseParameterConverter implements LongParameterConverter {
         static final com.kenai.jffi.MemoryIO IO = com.kenai.jffi.MemoryIO.getInstance();
     }
+    static final class BooleanParameterConverter extends BaseParameterConverter {
+        public static final LongParameterConverter INSTANCE = new BooleanParameterConverter();
+        public final long longValue(ThreadContext context, IRubyObject obj) {
+            if (!(obj instanceof RubyBoolean)) {
+                throw context.getRuntime().newTypeError("wrong argument type.  Expected true or false");
+            }
+            return obj.isTrue() ? 1 : 0;
+        }
+    }
+
     static final class Signed8ParameterConverter extends BaseParameterConverter {
         public static final LongParameterConverter INSTANCE = new Signed8ParameterConverter();
         public final long longValue(ThreadContext context, IRubyObject obj) {
@@ -306,6 +384,33 @@ public class FastLongMethodFactory {
         public static final LongParameterConverter INSTANCE = new Float64ParameterConverter();
         public final long longValue(ThreadContext context, IRubyObject obj) {
             return Double.doubleToRawLongBits(RubyNumeric.num2dbl(obj));
+        }
+    }
+
+    static final class IntOrEnumParameterConverter extends BaseParameterConverter {
+        private final RubyHash enums;
+
+        public IntOrEnumParameterConverter(RubyHash enums) {
+            this.enums = enums;
+        }
+
+        public final long longValue(ThreadContext context, IRubyObject parameter) {
+            return Util.intValue(parameter, enums);
+        }
+    }
+
+
+    static final class MappedParameterConverter extends BaseParameterConverter {
+        private final LongParameterConverter longConverter;
+        private final MappedType mappedType;
+
+        public MappedParameterConverter(LongParameterConverter longConverter, MappedType mappedType) {
+            this.longConverter = longConverter;
+            this.mappedType = mappedType;
+        }
+
+        public final long longValue(ThreadContext context, IRubyObject obj) {
+            return longConverter.longValue(context, mappedType.toNative(context, obj));
         }
     }
 }

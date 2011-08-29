@@ -25,6 +25,11 @@
  ***** END LICENSE BLOCK *****/
 package org.jruby;
 
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CharsetEncoder;
 import org.jcodings.Encoding;
 import org.jcodings.EncodingDB.Entry;
 import org.jcodings.specific.ASCIIEncoding;
@@ -41,14 +46,19 @@ import org.jruby.runtime.encoding.EncodingCapable;
 import org.jruby.runtime.encoding.EncodingService;
 import org.jruby.util.ByteList;
 import org.jruby.util.StringSupport;
+import static org.jruby.CompatVersion.*;
 
 @JRubyClass(name="Encoding")
 public class RubyEncoding extends RubyObject {
+    public static final Charset UTF8 = Charset.forName("UTF-8");
+    public static final ByteList LOCALE = ByteList.create("locale");
+    public static final ByteList EXTERNAL = ByteList.create("external");
 
     public static RubyClass createEncodingClass(Ruby runtime) {
         RubyClass encodingc = runtime.defineClass("Encoding", runtime.getObject(), ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR);
         runtime.setEncoding(encodingc);
         encodingc.index = ClassIndex.ENCODING;
+        encodingc.setReifiedClass(RubyEncoding.class);
         encodingc.kindOf = new RubyModule.KindOf() {
             @Override
             public boolean isKindOf(IRubyObject obj, RubyModule type) {
@@ -91,20 +101,25 @@ public class RubyEncoding extends RubyObject {
         return new RubyEncoding(runtime, name, isDummy);
     }
 
+    public static RubyEncoding newEncoding(Ruby runtime, Encoding encoding) {
+        return new RubyEncoding(runtime, encoding);
+    }
+
     public final Encoding getEncoding() {
         // TODO: make threadsafe
         if (encoding == null) encoding = getRuntime().getEncodingService().loadEncoding(name);
         return encoding;
     }
 
-    public static final Encoding areCompatible(IRubyObject obj1, IRubyObject obj2) {
+    public static Encoding areCompatible(IRubyObject obj1, IRubyObject obj2) {
         if (obj1 instanceof EncodingCapable && obj2 instanceof EncodingCapable) {
             Encoding enc1 = ((EncodingCapable)obj1).getEncoding();
             Encoding enc2 = ((EncodingCapable)obj2).getEncoding();
+
             if (enc1 == enc2) return enc1;
 
-            if (obj2 instanceof RubyString && ((RubyString)obj2).getByteList().realSize == 0) return enc1; 
-            if (obj1 instanceof RubyString && ((RubyString)obj1).getByteList().realSize == 0) return enc2;
+            if (obj2 instanceof RubyString && ((RubyString) obj2).getByteList().getRealSize() == 0) return enc1;
+            if (obj1 instanceof RubyString && ((RubyString) obj1).getByteList().getRealSize() == 0) return enc2;
 
             if (!enc1.isAsciiCompatible() || !enc2.isAsciiCompatible()) return null;
 
@@ -147,10 +162,118 @@ public class RubyEncoding extends RubyObject {
         return null;
     }
 
+    public static byte[] encodeUTF8(CharSequence cs) {
+        return UTF8_CODER.get().encode(cs);
+    }
+
+    public static byte[] encodeUTF8(String str) {
+        return UTF8_CODER.get().encode(str);
+    }
+
+    public static byte[] encode(CharSequence cs, Charset charset) {
+        ByteBuffer buffer = charset.encode(cs.toString());
+        byte[] bytes = new byte[buffer.limit()];
+        buffer.get(bytes);
+        return bytes;
+    }
+
+    public static byte[] encode(String str, Charset charset) {
+        ByteBuffer buffer = charset.encode(str);
+        byte[] bytes = new byte[buffer.limit()];
+        buffer.get(bytes);
+        return bytes;
+    }
+
+    public static String decodeUTF8(byte[] bytes, int start, int length) {
+        return UTF8_CODER.get().decode(bytes, start, length);
+    }
+
+    public static String decodeUTF8(byte[] bytes) {
+        return UTF8_CODER.get().decode(bytes);
+    }
+
+    public static String decode(byte[] bytes, int start, int length, Charset charset) {
+        return charset.decode(ByteBuffer.wrap(bytes, start, length)).toString();
+    }
+
+    public static String decode(byte[] bytes, Charset charset) {
+        return charset.decode(ByteBuffer.wrap(bytes)).toString();
+    }
+    
+    private static class UTF8Coder {
+        private final CharsetEncoder encoder = UTF8.newEncoder();
+        private final CharsetDecoder decoder = UTF8.newDecoder();
+        /** The maximum number of characters we can encode/decode in our cached buffers */
+        private static final int CHAR_THRESHOLD = 1024;
+        /** The resulting encode/decode buffer sized by the max number of
+         * characters (using 4 bytes per char possible for utf-8) */
+        private static final int BUF_SIZE = CHAR_THRESHOLD * 4;
+        private final ByteBuffer byteBuffer = ByteBuffer.allocate(BUF_SIZE);
+        private final CharBuffer charBuffer = CharBuffer.allocate(BUF_SIZE);
+
+        public byte[] encode(CharSequence cs) {
+            ByteBuffer buffer;
+            if (cs.length() > CHAR_THRESHOLD) {
+                buffer = UTF8.encode(cs.toString());
+            } else {
+                buffer = byteBuffer;
+                CharBuffer cbuffer = charBuffer;
+                buffer.clear();
+                cbuffer.clear();
+                cbuffer.put(cs.toString());
+                cbuffer.flip();
+                encoder.encode(cbuffer, buffer, true);
+                buffer.flip();
+            }
+            
+            byte[] bytes = new byte[buffer.limit()];
+            buffer.get(bytes);
+            return bytes;
+        }
+        
+        public String decode(byte[] bytes, int start, int length) {
+            CharBuffer cbuffer;
+            if (length > CHAR_THRESHOLD) {
+                cbuffer = UTF8.decode(ByteBuffer.wrap(bytes, start, length));
+            } else {
+                cbuffer = charBuffer;
+                ByteBuffer buffer = byteBuffer;
+                cbuffer.clear();
+                buffer.clear();
+                buffer.put(bytes, start, length);
+                buffer.flip();
+                decoder.decode(buffer, cbuffer, true);
+                cbuffer.flip();
+            }
+            
+            return cbuffer.toString();
+        }
+        
+        public String decode(byte[] bytes) {
+            return decode(bytes, 0, bytes.length);
+        }
+    }
+    
+    private static final ThreadLocal<UTF8Coder> UTF8_CODER = new ThreadLocal<UTF8Coder>() {
+        @Override
+        protected UTF8Coder initialValue() {
+            return new UTF8Coder();
+        }
+    };
+
     @JRubyMethod(name = "list", meta = true)
     public static IRubyObject list(ThreadContext context, IRubyObject recv) {
         Ruby runtime = context.getRuntime();
         return RubyArray.newArrayNoCopy(runtime, runtime.getEncodingService().getEncodingList(), 0);
+    }
+
+    @JRubyMethod(name = "locale_charmap", meta = true)
+    public static IRubyObject locale_charmap(ThreadContext context, IRubyObject recv) {
+        Ruby runtime = context.getRuntime();
+        EncodingService service = runtime.getEncodingService();
+        ByteList name = new ByteList(service.getLocaleEncoding().getName());
+        
+        return RubyString.newUsAsciiStringNoCopy(runtime, name);
     }
 
     @SuppressWarnings("unchecked")
@@ -173,6 +296,10 @@ public class RubyEncoding extends RubyObject {
                 ((CaseInsensitiveBytesHash.CaseInsensitiveBytesHashEntry<Entry>)i.next());
             result.append(RubyString.newUsAsciiStringShared(runtime, e.bytes, e.p, e.end - e.p).freeze(context));
         }
+
+        result.append(runtime.newString(EXTERNAL));
+        result.append(runtime.newString(LOCALE));
+        
         return result;
     }
 
@@ -194,30 +321,35 @@ public class RubyEncoding extends RubyObject {
                                 ((RubyEncoding)list[e.value.getIndex()]).name).freeze(context);
             result.fastASet(alias, name);
         }
+
+        result.fastASet(runtime.newString(EXTERNAL),
+                runtime.newString(new ByteList(runtime.getDefaultExternalEncoding().getName())));
+        result.fastASet(runtime.newString(LOCALE),
+                runtime.newString(new ByteList(service.getLocaleEncoding().getName())));
+
         return result;
     }
 
     @JRubyMethod(name = "find", meta = true)
     public static IRubyObject find(ThreadContext context, IRubyObject recv, IRubyObject str) {
         Ruby runtime = context.getRuntime();
-        EncodingService service = runtime.getEncodingService();
-        // TODO: check for ascii string
-        ByteList name = str.convertToString().getByteList();
-        Entry e = service.findEncodingOrAliasEntry(name);
 
-        if (e == null) throw context.getRuntime().newArgumentError("unknown encoding name - " + name);
-
-        return service.getEncodingList()[e.getIndex()];
+        return runtime.getEncodingService().rubyEncodingFromObject(str);
     }
 
     @JRubyMethod(name = "_dump")
-    public IRubyObject _dump(ThreadContext context) {
+    public IRubyObject _dump(ThreadContext context, IRubyObject arg) {
         return to_s(context);
     }
 
     @JRubyMethod(name = "_load", meta = true)
     public static IRubyObject _load(ThreadContext context, IRubyObject recv, IRubyObject str) {
         return find(context, recv, str);
+    }
+
+    @JRubyMethod(name = "ascii_compatible?")
+    public IRubyObject asciiCompatible_p(ThreadContext context) {
+        return context.getRuntime().newBoolean(getEncoding().isAsciiCompatible());
     }
 
     @JRubyMethod(name = {"to_s", "name"})
@@ -261,6 +393,9 @@ public class RubyEncoding extends RubyObject {
                 result.append(RubyString.newUsAsciiStringShared(runtime, e.bytes, e.p, e.end - e.p).freeze(context));
             }
         }
+        result.append(runtime.newString(EXTERNAL));
+        result.append(runtime.newString(LOCALE));
+        
         return result;
     }
 
@@ -274,6 +409,56 @@ public class RubyEncoding extends RubyObject {
         Ruby runtime = context.getRuntime();
         Encoding enc = areCompatible(first, second);
 
-        return enc == null ? runtime.getNil() : new RubyEncoding(runtime, enc);
+        return enc == null ? runtime.getNil() : runtime.getEncodingService().getEncoding(enc);
     }
-}
+
+    @JRubyMethod(name = "default_external", meta = true, compat = RUBY1_9)
+    public static IRubyObject getDefaultExternal(IRubyObject recv) {
+        return recv.getRuntime().getEncodingService().getDefaultExternal();
+    }
+
+    @JRubyMethod(name = "default_external=", meta = true, compat = RUBY1_9)
+    public static void setDefaultExternal(IRubyObject recv, IRubyObject encoding) {
+        Ruby runtime = recv.getRuntime();
+        EncodingService service = runtime.getEncodingService();
+        if (encoding.isNil()) {
+            throw recv.getRuntime().newArgumentError("default_external can not be nil");
+        }
+        runtime.setDefaultExternalEncoding(service.getEncodingFromObject(encoding));
+    }
+
+    @JRubyMethod(name = "default_internal", meta = true, compat = RUBY1_9)
+    public static IRubyObject getDefaultInternal(IRubyObject recv) {
+        return recv.getRuntime().getEncodingService().getDefaultInternal();
+    }
+
+    @JRubyMethod(name = "default_internal=", required = 1, meta = true, compat = RUBY1_9)
+    public static void setDefaultInternal(IRubyObject recv, IRubyObject encoding) {
+        Ruby runtime = recv.getRuntime();
+        EncodingService service = runtime.getEncodingService();
+        if (encoding.isNil()) {
+            recv.getRuntime().newArgumentError("default_internal can not be nil");
+        }
+        recv.getRuntime().setDefaultInternalEncoding(service.getEncodingFromObject(encoding));
+    }
+
+    @Deprecated
+    public static IRubyObject getDefaultExternal(Ruby runtime) {
+        return runtime.getEncodingService().getDefaultExternal();
+    }
+
+    @Deprecated
+    public static IRubyObject getDefaultInternal(Ruby runtime) {
+        return runtime.getEncodingService().getDefaultInternal();
+    }
+
+    @Deprecated
+    public static IRubyObject convertEncodingToRubyEncoding(Ruby runtime, Encoding defaultEncoding) {
+        return runtime.getEncodingService().convertEncodingToRubyEncoding(defaultEncoding);
+    }
+
+    @Deprecated
+    public static Encoding getEncodingFromObject(Ruby runtime, IRubyObject arg) {
+        return runtime.getEncodingService().getEncodingFromObject(arg);
+    }
+    }

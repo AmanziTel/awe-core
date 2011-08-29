@@ -35,6 +35,8 @@ package org.jruby.ast;
 import java.util.List;
 
 import org.jruby.Ruby;
+import org.jruby.RubyClass;
+import org.jruby.RubyClass.VariableAccessor;
 import org.jruby.ast.types.INameNode;
 import org.jruby.ast.visitor.NodeVisitor;
 import org.jruby.lexer.yacc.ISourcePosition;
@@ -47,6 +49,7 @@ import org.jruby.runtime.builtin.IRubyObject;
  */
 public class InstAsgnNode extends AssignableNode implements INameNode {
     private String name;
+    private VariableAccessor accessor = VariableAccessor.DUMMY_ACCESSOR;
 
     /**
      * @param name the name of the instance variable
@@ -88,14 +91,25 @@ public class InstAsgnNode extends AssignableNode implements INameNode {
     
     @Override
     public IRubyObject interpret(Ruby runtime, ThreadContext context, IRubyObject self, Block aBlock) {
-        return self.getInstanceVariables().fastSetInstanceVariable(name,
-                getValueNode().interpret(runtime, context, self, aBlock));
+        RubyClass cls = self.getMetaClass().getRealClass();
+        IRubyObject value = getValueNode().interpret(runtime, context, self, aBlock);
+        verifyAccessor(cls).set(self, value);   
+        return value;
     }
     
     @Override
     public IRubyObject assign(Ruby runtime, ThreadContext context, IRubyObject self, IRubyObject value, Block block, boolean checkArity) {
-        self.getInstanceVariables().fastSetInstanceVariable(name, value);
-                
+        RubyClass cls = self.getMetaClass().getRealClass();
+        verifyAccessor(cls).set(self, value);                
         return runtime.getNil();
+    }
+
+    private VariableAccessor verifyAccessor(RubyClass cls) {
+        VariableAccessor localAccessor = accessor;
+        if (localAccessor.getClassId() != cls.hashCode()) {
+            localAccessor = cls.getVariableAccessorForWrite(name);
+            accessor = localAccessor;
+        }
+        return localAccessor;
     }
 }

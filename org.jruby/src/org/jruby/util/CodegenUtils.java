@@ -10,6 +10,9 @@
 package org.jruby.util;
 
 import java.util.Arrays;
+import java.util.Map;
+import org.objectweb.asm.AnnotationVisitor;
+import org.objectweb.asm.Type;
 
 /**
  *
@@ -102,6 +105,16 @@ public class CodegenUtils {
         return sigParams(params) + ci(retval);
     }
     
+    public static String sig(Class[] retvalParams) {
+        Class[] justParams = new Class[retvalParams.length - 1];
+        System.arraycopy(retvalParams, 1, justParams, 0, justParams.length);
+        return sigParams(justParams) + ci(retvalParams[0]);
+    }
+
+    public static String sig(Class retval, String descriptor, Class... params) {
+        return sigParams(descriptor, params) + ci(retval);
+    }
+
     public static String sigParams(Class... params) {
         StringBuilder signature = new StringBuilder("(");
         
@@ -111,6 +124,20 @@ public class CodegenUtils {
         
         signature.append(")");
         
+        return signature.toString();
+    }
+
+    public static String sigParams(String descriptor, Class... params) {
+        StringBuilder signature = new StringBuilder("(");
+
+        signature.append(descriptor);
+        
+        for (int i = 0; i < params.length; i++) {
+            signature.append(ci(params[i]));
+        }
+
+        signature.append(")");
+
         return signature.toString();
     }
     
@@ -147,15 +174,72 @@ public class CodegenUtils {
         classes[0] = cls1;
         return classes;
     }
+
+    public static Class[] params(Class cls1, Class cls2, Class clsFill, int times) {
+        Class[] classes = new Class[times + 2];
+        Arrays.fill(classes, clsFill);
+        classes[0] = cls1;
+        classes[1] = cls2;
+        return classes;
+    }
+
+    public static Class[] params(Class cls1, Class clsFill, int times, Class clsTail) {
+        Class[] classes = new Class[times + 2];
+        Arrays.fill(classes, clsFill);
+        classes[0] = cls1;
+        classes[times + 1] = clsTail;
+        return classes;
+    }
     
     public static String getAnnotatedBindingClassName(String javaMethodName, String typeName, boolean isStatic, int required, int optional, boolean multi, boolean framed) {
         String commonClassSuffix;
-        String marker = framed ? "$RUBYFRAMEDINVOKER$" : "$RUBYINVOKER$";
         if (multi) {
-            commonClassSuffix = (isStatic ? "$s" : "$i" ) + "_method_multi" + marker + javaMethodName;
+            commonClassSuffix = (isStatic ? "$s$" : "$i$" ) + javaMethodName;
         } else {
-            commonClassSuffix = (isStatic ? "$s" : "$i" ) + "_method_" + required + "_" + optional + marker + javaMethodName;
+            commonClassSuffix = (isStatic ? "$s$" : "$i$" ) + required + "$" + optional + "$" + javaMethodName;
         }
         return typeName + commonClassSuffix;
+    }
+
+    public static void visitAnnotationFields(AnnotationVisitor visitor, Map<String, Object> fields) {
+        for (Map.Entry<String, Object> fieldEntry : fields.entrySet()) {
+            Object value = fieldEntry.getValue();
+            if (value.getClass().isArray()) {
+                Object[] values = (Object[]) value;
+                AnnotationVisitor arrayV = visitor.visitArray(fieldEntry.getKey());
+                for (int i = 0; i < values.length; i++) {
+                    arrayV.visit(null, values[i]);
+                }
+                arrayV.visitEnd();
+            } else if (value.getClass().isEnum()) {
+                visitor.visitEnum(fieldEntry.getKey(), ci(value.getClass()), value.toString());
+            } else if (value instanceof Class) {
+                visitor.visit(fieldEntry.getKey(), Type.getType((Class)value));
+            } else {
+                visitor.visit(fieldEntry.getKey(), value);
+            }
+        }
+    }
+
+    public static Class getBoxType(Class type) {
+        if (type == int.class) {
+            return Integer.class;
+        } else if (type == byte.class) {
+            return Byte.class;
+        } else if (type == short.class) {
+            return Short.class;
+        } else if (type == char.class) {
+            return Character.class;
+        } else if (type == long.class) {
+            return Long.class;
+        } else if (type == float.class) {
+            return Float.class;
+        } else if (type == double.class) {
+            return Double.class;
+        } else if (type == boolean.class) {
+            return Boolean.class;
+        } else {
+            throw new RuntimeException("Not a native type: " + type);
+        }
     }
 }

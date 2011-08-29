@@ -81,20 +81,24 @@ public class HashNode extends Node {
     public IRubyObject interpret(Ruby runtime, ThreadContext context, IRubyObject self, Block aBlock) {
         RubyHash hash = RubyHash.newHash(runtime);
         
-        ListNode listNode = this.listNode;
-        if (listNode != null) {
-            int size = listNode.size();
+        ListNode list = this.listNode;
+        if (list != null) {
+            int size = list.size();
    
             for (int i = 0; i < size;) {
                 // insert all nodes in sequence, hash them in the final instruction
                 // KEY
-                IRubyObject key = listNode.get(i++).interpret(runtime, context, self, aBlock);
-                IRubyObject value = listNode.get(i++).interpret(runtime, context, self, aBlock);
+                IRubyObject key = list.get(i++).interpret(runtime, context, self, aBlock);
+                IRubyObject value = list.get(i++).interpret(runtime, context, self, aBlock);
    
-                hash.fastASet(key, value);
+                aset(runtime, hash, key, value);
             }
         }
       
         return hash;
+    }
+    
+    protected void aset(Ruby runtime, RubyHash hash, IRubyObject key, IRubyObject value) {
+        hash.fastASetCheckString(runtime, key, value);
     }
 }

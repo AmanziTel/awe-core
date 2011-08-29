@@ -59,7 +59,6 @@ public class IRBConsole extends JFrame {
             setInput(tar.getInputStream());
             setOutput(new PrintStream(tar.getOutputStream()));
             setError(new PrintStream(tar.getOutputStream()));
-            setObjectSpaceEnabled(true); // useful for code completion inside the IRB
             setArgv(args);
         }};
         final Ruby runtime = Ruby.newInstance(config);
@@ -72,7 +71,10 @@ public class IRBConsole extends JFrame {
         Thread t2 = new Thread() {
             public void run() {
                 console.setVisible(true);
-                runtime.evalScriptlet("require 'irb'; require 'irb/completion'; IRB.start");
+                runtime.evalScriptlet(
+                        "ARGV << '--readline' << '--prompt' << 'inf-ruby';"
+                        + "require 'irb'; require 'irb/completion';"
+                        + "IRB.start");
             }
         };
         t2.start();
@@ -96,8 +98,9 @@ public class IRBConsole extends JFrame {
                 break;
             }
         }
-        if (font == null)
+        if (font == null) {
             font = new Font(otherwise, style, size);
+        }
         return font;
     }
 

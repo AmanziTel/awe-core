@@ -1,9 +1,6 @@
-require 'net/http'
-require 'stringio'
-require 'time'
-require 'uri'
-
 require 'rubygems'
+require 'rubygems/user_interaction'
+require 'uri'
 
 ##
 # RemoteFetcher handles the details of fetching gems and gem information from
@@ -55,7 +52,12 @@ class Gem::RemoteFetcher
   #        HTTP_PROXY_PASS)
   # * <tt>:no_proxy</tt>: ignore environment variables and _don't_ use a proxy
 
-  def initialize(proxy)
+  def initialize(proxy = nil)
+    require 'net/http'
+    require 'stringio'
+    require 'time'
+    require 'uri'
+
     Socket.do_not_reverse_lookup = true
 
     @connections = {}
@@ -75,18 +77,31 @@ class Gem::RemoteFetcher
   # always replaced.
 
   def download(spec, source_uri, install_dir = Gem.dir)
+    Gem.ensure_gem_subdirectories(install_dir) rescue nil
+
     if File.writable?(install_dir)
       cache_dir = File.join install_dir, 'cache'
     else
       cache_dir = File.join(Gem.user_dir, 'cache')
     end
 
-    gem_file_name = "#{spec.full_name}.gem"
+    gem_file_name = spec.file_name
     local_gem_path = File.join cache_dir, gem_file_name
 
     FileUtils.mkdir_p cache_dir rescue nil unless File.exist? cache_dir
 
-    source_uri = URI.parse source_uri unless URI::Generic === source_uri
+   # Always escape URI's to deal with potential spaces and such
+    unless URI::Generic === source_uri
+      source_uri = URI.parse(URI.const_defined?(:DEFAULT_PARSER) ?
+                             URI::DEFAULT_PARSER.escape(source_uri) :
+                             URI.escape(source_uri))
+    end
+
+    # if it's a maven artifact, use maven to fetch it
+    if maven_spec? spec.name, source_uri
+      return download_maven(spec, local_gem_path)
+    end
+
     scheme = source_uri.scheme
 
     # URI.parse gets confused by MS Windows paths with forward slashes.
@@ -101,7 +116,7 @@ class Gem::RemoteFetcher
 
           remote_gem_path = source_uri + "gems/#{gem_file_name}"
 
-          gem = Gem::RemoteFetcher.fetcher.fetch_path remote_gem_path
+          gem = self.fetch_path remote_gem_path
         rescue Gem::RemoteFetcher::FetchError
           raise if spec.original_platform == spec.platform
 
@@ -112,16 +127,40 @@ class Gem::RemoteFetcher
 
           remote_gem_path = source_uri + "gems/#{alternate_name}"
 
-          gem = Gem::RemoteFetcher.fetcher.fetch_path remote_gem_path
+          gem = self.fetch_path remote_gem_path
         end
 
         File.open local_gem_path, 'wb' do |fp|
           fp.write gem
         end
       end
-    when nil, 'file' then # TODO test for local overriding cache
+    when 'file' then
       begin
-        FileUtils.cp source_uri.to_s, local_gem_path
+        path = source_uri.path
+        path = File.dirname(path) if File.extname(path) == '.gem'
+
+        remote_gem_path = File.join(path, 'gems', gem_file_name)
+
+        FileUtils.cp(remote_gem_path, local_gem_path)
+      rescue Errno::EACCES
+        local_gem_path = source_uri.to_s
+      end
+
+      say "Using local gem #{local_gem_path}" if
+        Gem.configuration.really_verbose
+    when nil then # TODO test for local overriding cache
+      source_path = if Gem.win_platform? && source_uri.scheme &&
+                       !source_uri.path.include?(':') then
+                      "#{source_uri.scheme}:#{source_uri.path}"
+                    else
+                      source_uri.path
+                    end
+
+      source_path = unescape source_path
+
+      begin
+        FileUtils.cp source_path, local_gem_path unless
+          File.expand_path(source_path) == File.expand_path(local_gem_path)
       rescue Errno::EACCES
         local_gem_path = source_uri.to_s
       end
@@ -161,12 +200,20 @@ class Gem::RemoteFetcher
 
   def escape(str)
     return unless str
-    URI.escape(str)
+    @uri_parser ||= uri_escaper
+    @uri_parser.escape str
   end
 
   def unescape(str)
     return unless str
-    URI.unescape(str)
+    @uri_parser ||= uri_escaper
+    @uri_parser.unescape str
+  end
+
+  def uri_escaper
+    URI::Parser.new
+  rescue NameError
+    URI
   end
 
   ##
@@ -177,7 +224,7 @@ class Gem::RemoteFetcher
 
     return nil if env_proxy.nil? or env_proxy.empty?
 
-    uri = URI.parse env_proxy
+    uri = URI.parse(normalize_uri(env_proxy))
 
     if uri and uri.user.nil? and uri.password.nil? then
       # Probably we have http_proxy_* variables?
@@ -211,7 +258,7 @@ class Gem::RemoteFetcher
       ]
     end
 
-    connection_id = net_http_args.join ':'
+    connection_id = [Thread.current.object_id, *net_http_args].join ':'
     @connections[connection_id] ||= Net::HTTP.new(*net_http_args)
     connection = @connections[connection_id]
 
@@ -224,6 +271,8 @@ class Gem::RemoteFetcher
     connection.start unless connection.started?
 
     connection
+  rescue Errno::EHOSTDOWN => e
+    raise FetchError.new(e.message, uri)
   end
 
   ##
@@ -233,10 +282,25 @@ class Gem::RemoteFetcher
   def open_uri_or_path(uri, last_modified = nil, head = false, depth = 0)
     raise "block is dead" if block_given?
 
-    return open(get_file_uri_path(uri)) if file_uri? uri
-
     uri = URI.parse uri unless URI::Generic === uri
-    raise ArgumentError, 'uri is not an HTTP URI' unless URI::HTTP === uri
+
+    # This check is redundant unless Gem::RemoteFetcher is likely
+    # to be used directly, since the scheme is checked elsewhere.
+    # - Daniel Berger
+    unless ['http', 'https', 'file'].include?(uri.scheme)
+     raise ArgumentError, 'uri scheme is invalid'
+    end
+
+    if uri.scheme == 'file'
+      path = uri.path
+
+      # Deal with leading slash on Windows paths
+      if path[0].chr == '/' && path[1].chr =~ /[a-zA-Z]/ && path[2].chr == ':'
+         path = path[1..-1]
+      end
+
+      return Gem.read_binary(path)
+    end
 
     fetch_type = head ? Net::HTTP::Head : Net::HTTP::Get
     response   = request uri, fetch_type, last_modified
@@ -266,7 +330,7 @@ class Gem::RemoteFetcher
       request.basic_auth uri.user, uri.password
     end
 
-    ua = "RubyGems/#{Gem::RubyGemsVersion} #{Gem::Platform.local}"
+    ua = "RubyGems/#{Gem::VERSION} #{Gem::Platform.local}"
     ua << " Ruby/#{RUBY_VERSION} (#{RUBY_RELEASE_DATE}"
     ua << " patchlevel #{RUBY_PATCHLEVEL}" if defined? RUBY_PATCHLEVEL
     ua << ")"
@@ -280,6 +344,8 @@ class Gem::RemoteFetcher
       request.add_field 'If-Modified-Since', last_modified.rfc2822
     end
 
+    yield request if block_given?
+
     connection = connection_for uri
 
     retried = false
@@ -287,10 +353,43 @@ class Gem::RemoteFetcher
 
     begin
       @requests[connection.object_id] += 1
-      response = connection.request request
-      say "#{request.method} #{response.code} #{response.message}: #{uri}" if
+
+      say "#{request.method} #{uri}" if
         Gem.configuration.really_verbose
+
+      file_name = File.basename(uri.path)
+      # perform download progress reporter only for gems
+      if request.response_body_permitted? && file_name =~ /\.gem$/
+        reporter = ui.download_reporter
+        response = connection.request(request) do |incomplete_response|
+          if Net::HTTPOK === incomplete_response
+            reporter.fetch(file_name, incomplete_response.content_length)
+            downloaded = 0
+            data = ''
+
+            incomplete_response.read_body do |segment|
+              data << segment
+              downloaded += segment.length
+              reporter.update(downloaded)
+            end
+            reporter.done
+            if incomplete_response.respond_to? :body=
+              incomplete_response.body = data
+            else
+              incomplete_response.instance_variable_set(:@body, data)
+            end
+          end
+        end
+      else
+        response = connection.request request
+      end
+
+      say "#{response.code} #{response.message}" if
+        Gem.configuration.really_verbose
+
     rescue Net::HTTPBadResponse
+      say "bad response" if Gem.configuration.really_verbose
+
       reset connection
 
       raise FetchError.new('too many bad responses', uri) if bad_response
@@ -300,7 +399,9 @@ class Gem::RemoteFetcher
     # HACK work around EOFError bug in Net::HTTP
     # NOTE Errno::ECONNABORTED raised a lot on Windows, and make impossible
     # to install gems.
-    rescue EOFError, Errno::ECONNABORTED, Errno::ECONNRESET
+    rescue EOFError, Timeout::Error,
+           Errno::ECONNABORTED, Errno::ECONNRESET, Errno::EPIPE
+
       requests = @requests[connection.object_id]
       say "connection reset after #{requests} requests, retrying" if
         Gem.configuration.really_verbose
@@ -324,20 +425,6 @@ class Gem::RemoteFetcher
 
     connection.finish
     connection.start
-  end
-
-  ##
-  # Checks if the provided string is a file:// URI.
-
-  def file_uri?(uri)
-    uri =~ %r{\Afile://}
-  end
-
-  ##
-  # Given a file:// URI, returns its local path.
-
-  def get_file_uri_path(uri)
-    uri.sub(%r{\Afile://}, '')
   end
 
 end

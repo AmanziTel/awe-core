@@ -39,7 +39,6 @@ import org.jruby.ast.util.ArgsUtil;
 import org.jruby.ast.visitor.NodeVisitor;
 import org.jruby.evaluator.ASTInterpreter;
 import org.jruby.evaluator.AssignmentVisitor;
-import org.jruby.javasupport.util.RuntimeHelpers;
 import org.jruby.lexer.yacc.ISourcePosition;
 import org.jruby.runtime.Arity;
 import org.jruby.runtime.Block;
@@ -47,13 +46,13 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
 public class MultipleAsgnNode extends AssignableNode {
-    private final ListNode headNode;
-    private final Node argsNode;
+    private final ListNode pre;
+    private final Node rest;
     
-    public MultipleAsgnNode(ISourcePosition position, ListNode headNode, Node argsNode) {
+    public MultipleAsgnNode(ISourcePosition position, ListNode pre, Node rest) {
         super(position);
-        this.headNode = headNode;
-        this.argsNode = argsNode;
+        this.pre = pre;
+        this.rest = rest;
     }
 
     public NodeType getNodeType() {
@@ -67,21 +66,33 @@ public class MultipleAsgnNode extends AssignableNode {
     public Object accept(NodeVisitor iVisitor) {
         return iVisitor.visitMultipleAsgnNode(this);
     }
+
+    /**
+     * Gets the headNode.
+     * @return Returns a ListNode
+     */
+    public ListNode getHeadNode() {
+        return pre;
+    }
+
+    public ListNode getPre() {
+        return pre;
+    }
+
+    public int getPreCount() {
+        return pre == null ? 0 : pre.size();
+    }
     
     /**
      * Gets the argsNode.
      * @return Returns a INode
      */
     public Node getArgsNode() {
-        return argsNode;
+        return rest;
     }
-    
-    /**
-     * Gets the headNode.
-     * @return Returns a ListNode
-     */
-    public ListNode getHeadNode() {
-        return headNode;
+
+    public Node getRest() {
+        return rest;
     }
     
     /**
@@ -89,15 +100,15 @@ public class MultipleAsgnNode extends AssignableNode {
      */
     @Override
     public Arity getArity() {
-        if (argsNode != null) {
-            return Arity.required(headNode == null ? 0 : headNode.size());
+        if (rest != null) {
+            return Arity.required(pre == null ? 0 : pre.size());
         }
         
-        return Arity.fixed(headNode.size());
+        return Arity.fixed(pre.size());
     }
     
     public List<Node> childNodes() {
-        return Node.createList(headNode, argsNode, getValueNode());
+        return Node.createList(pre, rest, getValueNode());
     }
     
     @Override
@@ -109,7 +120,7 @@ public class MultipleAsgnNode extends AssignableNode {
         }
         case SPLATNODE: {
             SplatNode splatNode = (SplatNode) getValueNode();
-            RubyArray rubyArray = RuntimeHelpers.splatValue(splatNode.getValue().interpret(runtime, context, self, aBlock));
+            RubyArray rubyArray = (RubyArray) splatNode.interpret(runtime, context, self, aBlock);
             return AssignmentVisitor.multiAssign(runtime, context, self, this, rubyArray, false);
         }
         default:
@@ -126,7 +137,7 @@ public class MultipleAsgnNode extends AssignableNode {
     @Override
     public IRubyObject assign(Ruby runtime, ThreadContext context, IRubyObject self, IRubyObject value, Block block, boolean checkArity) {
         if (!(value instanceof RubyArray)) {
-            value = ArgsUtil.convertToRubyArray(runtime, value, headNode != null);
+            value = ArgsUtil.convertToRubyArray(runtime, value, pre != null);
         }
         
         return AssignmentVisitor.multiAssign(runtime, context, self, this, (RubyArray) value, checkArity);

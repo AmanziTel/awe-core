@@ -28,25 +28,28 @@
 
 package org.jruby.ext.ffi;
 
+import org.jruby.runtime.builtin.IRubyObject;
+
 /**
  * Native types
  */
 public enum NativeType implements NativeParam {
     VOID,
-    INT8,
-    UINT8,
-    INT16,
-    UINT16,
-    INT32,
-    UINT32,
-    INT64,
-    UINT64,
+    BOOL,
+    CHAR,
+    UCHAR,
+    SHORT,
+    USHORT,
+    INT,
+    UINT,
+    LONG_LONG,
+    ULONG_LONG,
     /** A C long type */
     LONG,
     /** A C unsigned long */
     ULONG,
-    FLOAT32,
-    FLOAT64,
+    FLOAT,
+    DOUBLE,
     POINTER,
     BUFFER_IN,
     BUFFER_OUT,
@@ -59,15 +62,38 @@ public enum NativeType implements NativeParam {
     STRING,
     /** A Rubinus :string arg - copies data both ways, and nul terminates */
     RBXSTRING,
-    VARARGS;
-    public int intValue() {
+
+    VARARGS,
+    // ARRAY and STRUCT are only used internally
+    ARRAY,
+    STRUCT,
+
+    /* map from one type to another */
+    MAPPED;
+    
+    public final int intValue() {
         return ordinal();
     }
+
+    public final NativeType getNativeType() {
+        return this;
+    }
+
     public static final NativeType valueOf(int type) {
         NativeType[] values = NativeType.values();
         if (type < 0 || type >= values.length) {
             return NativeType.VOID;
         }
         return values[type];
+    }
+    
+    public static final NativeType valueOf(IRubyObject type) {
+        if (type instanceof Type.Builtin) {
+            return ((Type.Builtin) type).getNativeType();
+        } else if (type instanceof NativeParam) {
+            return ((NativeParam) type).getNativeType();
+        } else {
+            return NativeType.VOID;
+        }
     }
 }

@@ -2,7 +2,6 @@ package org.jruby.runtime.scope;
 
 import org.jruby.RubyArray;
 import org.jruby.javasupport.util.RuntimeHelpers;
-import org.jruby.parser.BlockStaticScope;
 import org.jruby.parser.StaticScope;
 import org.jruby.runtime.DynamicScope;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -27,9 +26,7 @@ public class FourVarDynamicScope extends ThreeVarDynamicScope {
     
     @Override
     public void growIfNeeded() {
-        if (staticScope.getNumberOfVariables() != SIZE) {
-            throw new RuntimeException(GROW_ERROR);
-        }
+        growIfNeeded(SIZE, GROW_ERROR);
     }
     
     @Override
@@ -189,17 +186,60 @@ public class FourVarDynamicScope extends ThreeVarDynamicScope {
 
     @Override
     public void setEndArgValues(IRubyObject[] values, int index, int size) {
-        assert size <= 2 : "FourVarDynamicScope only supports scopes with four variables, not " + size;
+        assert size <= 3 : "FourVarDynamicScope only supports scopes with four variables, not " + size;
+        assert index + size <= 4 : "FourVarDynamicScope only supports scopes with four variables, not " + (index + size);
+        
+        int start = values.length - size;
 
-        switch (size) {
-         case 4:
-            variableValueZero = values[values.length - 4];
-        case 3:
-            variableValueOne = values[values.length - 3];
-        case 2:
-            variableValueTwo = values[values.length - 2];
-        case 1:
-            variableValueThree = values[values.length - 1];
+        switch (index) {
+            case 0:
+                switch (size) {
+                    case 4:
+                        variableValueThree = values[start + 3];
+                    case 3:
+                        variableValueTwo = values[start + 2];
+                    case 2:
+                        variableValueOne = values[start + 1];
+                    case 1:
+                        variableValueZero = values[start];
+                }
+                break;
+            case 1:
+                switch (size) {
+                    case 4:
+                        // should never happen
+                    case 3:
+                        variableValueThree = values[start + 2];
+                    case 2:
+                        variableValueTwo = values[start + 1];
+                    case 1:
+                        variableValueOne = values[start];
+                        break;
+                }
+                break;
+            case 2:
+                switch (size) {
+                    case 4:
+                    case 3:
+                        // should never happen
+                    case 2:
+                        variableValueThree = values[start + 1];
+                    case 1:
+                        variableValueTwo = values[start];
+                        break;
+                }
+                break;
+            case 3:
+                switch (size) {
+                    case 4:
+                    case 3:
+                    case 2:
+                        // should never happen
+                    case 1:
+                        variableValueThree = values[start];
+                        break;
+                }
+                break;
         }
     }
 
@@ -268,52 +308,5 @@ public class FourVarDynamicScope extends ThreeVarDynamicScope {
             
             return argValues;
         }
-    }
-
-    @Override
-    public String toString(StringBuffer buf, String indent) {
-        buf.append(indent).append("Static Type[" + hashCode() + "]: " + 
-                (staticScope instanceof BlockStaticScope ? "block" : "local")+" [");
-        
-        String names[] = staticScope.getVariables();
-        buf.append(names[0]).append("=");
-
-        if (variableValueZero == null) {
-            buf.append("null");
-        } else {
-            buf.append(variableValueZero);
-        }
-        
-        buf.append(",");
-
-        if (variableValueOne == null) {
-            buf.append("null");
-        } else {
-            buf.append(variableValueOne);
-        }
-        
-        buf.append(",");
-
-        if (variableValueTwo == null) {
-            buf.append("null");
-        } else {
-            buf.append(variableValueTwo);
-        }
-        
-        buf.append(",");
-
-        if (variableValueThree == null) {
-            buf.append("null");
-        } else {
-            buf.append(variableValueThree);
-        }
-        
-        buf.append("]");
-        if (parent != null) {
-            buf.append("\n");
-            parent.toString(buf, indent + "  ");
-        }
-        
-        return buf.toString();
     }
 }

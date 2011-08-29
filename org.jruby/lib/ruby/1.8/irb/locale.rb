@@ -1,8 +1,8 @@
 #
 #   irb/locale.rb - internationalization module
 #   	$Release Version: 0.9.5$
-#   	$Revision: 5479 $
-#   	$Date: 2008-01-03 15:39:44 -0600 (Thu, 03 Jan 2008) $
+#   	$Revision$
+#   	$Date$
 #   	by Keiju ISHITSUKA(keiju@ruby-lang.org)
 #
 # --
@@ -14,7 +14,7 @@ autoload :Kconv, "kconv"
 
 module IRB
   class Locale
-    @RCS_ID='-$Id: locale.rb 5479 2008-01-03 21:39:44Z headius $-'
+    @RCS_ID='-$Id$-'
 
     JPDefaultLocale = "ja"
     LOCALE_DIR = "/lc/"

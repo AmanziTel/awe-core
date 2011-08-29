@@ -1,8 +1,8 @@
 #--
 #   finalizer.rb - 
 #   	$Release Version: 0.3$
-#   	$Revision: 8696 $
-#   	$Date: 2009-01-10 15:17:58 -0600 (Sat, 10 Jan 2009) $
+#   	$Revision: 1.4 $
+#   	$Date: 1998/02/27 05:34:33 $
 #   	by Keiju ISHITSUKA
 #++
 #
@@ -49,7 +49,7 @@
 #
 
 module Finalizer
-  RCS_ID='-$Id: finalize.rb 8696 2009-01-10 21:17:58Z headius $-'
+  RCS_ID='-$Id: finalize.rb,v 1.4 1998/02/27 05:34:33 keiju Exp keiju $-'
 
   class <<self
     # @dependency: {id => [[dependant, method, *opt], ...], ...}
@@ -164,14 +164,14 @@ module Finalizer
 
     # method to call finalize_* safely.
     def safe
-      # Monitor, since this may need to be reentrant
-      @monitor.synchronize do
-        ObjectSpace.remove_finalizer(@proc)
-        begin
-         yield
-        ensure
-         ObjectSpace.add_finalizer(@proc)
-        end
+      old_status = Thread.critical
+      Thread.critical = true
+      ObjectSpace.remove_finalizer(@proc)
+      begin
+	yield
+      ensure
+	ObjectSpace.add_finalizer(@proc)
+	Thread.critical = old_status
       end
     end
 
@@ -187,7 +187,6 @@ module Finalizer
     end
 
   end
-  @monitor = Monitor.new
   @dependency = Hash.new
   @proc = proc{|id| final_of(id)}
   ObjectSpace.add_finalizer(@proc)

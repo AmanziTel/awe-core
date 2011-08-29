@@ -36,7 +36,8 @@ package org.jruby;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.Binding;
-import org.jruby.runtime.Frame;
+import org.jruby.runtime.Block;
+import org.jruby.runtime.ClassIndex;
 import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.Visibility;
@@ -70,6 +71,9 @@ public class RubyBinding extends RubyObject {
     public static RubyClass createBindingClass(Ruby runtime) {
         RubyClass bindingClass = runtime.defineClass("Binding", runtime.getObject(), BINDING_ALLOCATOR);
         runtime.setBinding(bindingClass);
+
+        bindingClass.index = ClassIndex.BINDING;
+        bindingClass.setReifiedClass(RubyBinding.class);
         
         bindingClass.defineAnnotatedMethods(RubyBinding.class);
         bindingClass.getSingletonClass().undefineMethod("new");
@@ -112,5 +116,21 @@ public class RubyBinding extends RubyObject {
         binding = otherBinding.binding;
         
         return this;
+    }
+
+    // c: bind_eval
+    @JRubyMethod(name = "eval", required=1, optional=2)
+    public IRubyObject eval(ThreadContext context, IRubyObject[] args) {
+        IRubyObject[] newArgs = new IRubyObject[args.length+1];
+        newArgs[0] = args[0];
+        newArgs[1] = this;
+        if(args.length>1) {
+            newArgs[2] = args[1];
+            if(args.length>2) {
+                newArgs[3] = args[2];
+            }
+        }
+
+        return RubyKernel.eval(context, this, newArgs, Block.NULL_BLOCK);
     }
 }

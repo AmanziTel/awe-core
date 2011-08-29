@@ -122,13 +122,12 @@ public final class Arity implements Serializable {
     }
     
     private static Arity newArity(int value) {
-        Integer integerValue = new Integer(value);
         Arity result;
         synchronized (arities) {
-            result = arities.get(integerValue);
+            result = arities.get(value);
             if (result == null) {
                 result = new Arity(value);
-                arities.put(integerValue, result);
+                arities.put(value, result);
             }
         }
         return result;
@@ -186,11 +185,11 @@ public final class Arity implements Serializable {
     public void checkArity(Ruby runtime, IRubyObject[] args) {
         if (isFixed()) {
             if (args.length != required()) {
-                throw runtime.newArgumentError("wrong number of arguments(" + args.length + " for " + required() + ")");
+                throw runtime.newArgumentError("wrong number of arguments (" + args.length + " for " + required() + ")");
             }
         } else {
             if (args.length < required()) {
-                throw runtime.newArgumentError("wrong number of arguments(" + args.length + " for " + required() + ")");
+                throw runtime.newArgumentError("wrong number of arguments (" + args.length + " for " + required() + ")");
             }
         }
     }
@@ -198,11 +197,11 @@ public final class Arity implements Serializable {
     public void checkArity(Ruby runtime, int length) {
         if (isFixed()) {
             if (length != required()) {
-                throw runtime.newArgumentError("wrong number of arguments(" + length + " for " + required() + ")");
+                throw runtime.newArgumentError("wrong number of arguments (" + length + " for " + required() + ")");
             }
         } else {
             if (length < required()) {
-                throw runtime.newArgumentError("wrong number of arguments(" + length + " for " + required() + ")");
+                throw runtime.newArgumentError("wrong number of arguments (" + length + " for " + required() + ")");
             }
         }
     }

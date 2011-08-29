@@ -1,8 +1,8 @@
 #
 #   shell/command-controller.rb - 
 #   	$Release Version: 0.6.0 $
-#   	$Revision: 2062 $
-#   	$Date: 2006-06-10 14:14:15 -0500 (Sat, 10 Jun 2006) $
+#   	$Revision$
+#   	$Date$
 #   	by Keiju ISHITSUKA(Nippon Rational Inc.)
 #
 # --
@@ -155,6 +155,7 @@ class Shell
     #	  sh[:exists?, "foo"]
     #	  sh["exists?", "foo"]
     #	  
+    alias top_level_test test
     def test(command, file1, file2=nil)
       file1 = expand_path(file1)
       file2 = expand_path(file2) if file2
@@ -162,7 +163,11 @@ class Shell
 
       case command
       when Integer
-	top_level_test(command, file1, file2)
+	if file2
+	  top_level_test(command, file1, file2)
+	else
+	  top_level_test(command, file1)
+	end
       when String
 	if command.size == 1
 	  if file2

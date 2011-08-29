@@ -32,6 +32,7 @@
 package org.jruby.ast;
 
 import java.util.List;
+import org.jcodings.Encoding;
 
 import org.jruby.Ruby;
 import org.jruby.RubyRegexp;
@@ -42,6 +43,7 @@ import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.util.ByteList;
+import org.jruby.util.RegexpOptions;
 
 /** 
  * Represents a simple regular expression literal.
@@ -49,13 +51,17 @@ import org.jruby.util.ByteList;
 public class RegexpNode extends Node implements ILiteralNode {
     private RubyRegexp pattern;
     private final ByteList value;
-    private final int options;
+    private final RegexpOptions options;
 
-    public RegexpNode(ISourcePosition position, ByteList value, int options) {
+    public RegexpNode(ISourcePosition position, ByteList value, RegexpOptions options) {
         super(position);
 
         this.value = value;
         this.options = options;
+    }
+
+    public Encoding getEncoding() {
+        return value.getEncoding();
     }
 
     public NodeType getNodeType() {
@@ -70,7 +76,7 @@ public class RegexpNode extends Node implements ILiteralNode {
      * Gets the options.
      * @return Returns a int
      */
-    public int getOptions() {
+    public RegexpOptions getOptions() {
         return options;
     }
 
@@ -80,6 +86,15 @@ public class RegexpNode extends Node implements ILiteralNode {
      */
     public ByteList getValue() {
         return value;
+    }
+
+    public RubyRegexp loadPattern(Ruby runtime) {
+        // FIXME: 1.9 should care about internal or external encoding and not kcode.
+        if (pattern == null || runtime.getKCode() != pattern.getKCode()) {
+            setPattern(RubyRegexp.newRegexp(runtime, value, options));
+        }
+
+        return pattern;
     }
 
     public void setPattern(RubyRegexp p) {
@@ -97,10 +112,6 @@ public class RegexpNode extends Node implements ILiteralNode {
 
     @Override
     public IRubyObject interpret(Ruby runtime, ThreadContext context, IRubyObject self, Block aBlock) {
-        if(pattern == null) {
-            setPattern(RubyRegexp.newRegexp(runtime, value, options));
-        }
-
-        return pattern;
+        return loadPattern(runtime);
     }
 }

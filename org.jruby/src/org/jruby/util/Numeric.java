@@ -33,8 +33,12 @@ import org.jruby.Ruby;
 import org.jruby.RubyBignum;
 import org.jruby.RubyFixnum;
 import org.jruby.RubyFloat;
+import org.jruby.RubyInteger;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+
+import static org.jruby.javasupport.util.RuntimeHelpers.invokedynamic;
+import static org.jruby.runtime.MethodIndex.OP_CMP;
 
 public class Numeric {
     public static final boolean CANON = true;
@@ -61,7 +65,7 @@ public class Numeric {
             }
             return RubyFixnum.zero(context.getRuntime());
         }
-        return x.callMethod(context, "<=>", y);
+        return invokedynamic(context, x, OP_CMP, y);
     }
 
     /** f_div
@@ -270,14 +274,18 @@ public class Numeric {
         return x.callMethod(context, "truncate");
     }
     
-    /** f_equal_p
+    /** f_equal
+     *
+     * Note: This may not return a value which is a boolean.  other.== can
+     * return non-boolean (which unless it is nil it will be isTrue()).
      * 
      */
-    public static boolean f_equal_p(ThreadContext context, IRubyObject x, IRubyObject y) {
+    public static IRubyObject f_equal(ThreadContext context, IRubyObject x, IRubyObject y) {
         if (x instanceof RubyFixnum && y instanceof RubyFixnum) {
-            return ((RubyFixnum)x).getLongValue() == ((RubyFixnum)y).getLongValue();
+            return context.getRuntime().newBoolean(((RubyFixnum)x).getLongValue() == ((RubyFixnum)y).getLongValue());
         }
-        return x.callMethod(context, "==", y).isTrue();
+
+        return x.callMethod(context, "==", y);
     }
 
     /** f_expt
@@ -417,6 +425,10 @@ public class Numeric {
         short sign = 1;
         long exponent = 0;
 
+        if (Double.isInfinite(mantissa) || Double.isNaN(mantissa)) {
+            return mantissa;
+        }
+
         if (mantissa != 0.0) {
             if (mantissa < 0) {
                 mantissa = -mantissa;
@@ -453,7 +465,7 @@ public class Numeric {
             while (y % 2 == 0) {
                 if (!fitSqrtLong(x)) {
                     IRubyObject v = RubyBignum.newBignum(runtime, RubyBignum.fix2big(RubyFixnum.newFixnum(runtime, x))).op_pow(context, RubyFixnum.newFixnum(runtime, y));
-                    if (z != 1) v = RubyBignum.newBignum(runtime, RubyBignum.fix2big(RubyFixnum.newFixnum(runtime, neg ? -z : z))).op_mul(context, v);
+                    if (z != 1) v = RubyBignum.newBignum(runtime, RubyBignum.fix2big(RubyFixnum.newFixnum(runtime, neg ? -z : z))).op_mul19(context, v);
                     return v;
                 }
                 x *= x;
@@ -463,7 +475,7 @@ public class Numeric {
             long xz = x * x;
             if (xz  / x != z) {
                 IRubyObject v = RubyBignum.newBignum(runtime, RubyBignum.fix2big(RubyFixnum.newFixnum(runtime, x))).op_pow(context, RubyFixnum.newFixnum(runtime, y));
-                if (z != 1) v = RubyBignum.newBignum(runtime, RubyBignum.fix2big(RubyFixnum.newFixnum(runtime, neg ? -z : z))).op_mul(context, v);
+                if (z != 1) v = RubyBignum.newBignum(runtime, RubyBignum.fix2big(RubyFixnum.newFixnum(runtime, neg ? -z : z))).op_mul19(context, v);
                 return v;
             }
             z = xz;
@@ -510,6 +522,106 @@ public class Numeric {
             rat_pat = new Regex(PATTERN.getBytes(), 0, PATTERN.length(), 0, ASCIIEncoding.INSTANCE);
             an_e_pat = new Regex("[Ee]".getBytes(), 0, 4, 0, ASCIIEncoding.INSTANCE);
             a_dot_pat = new Regex("\\.".getBytes(), 0, 2, 0, ASCIIEncoding.INSTANCE);            
+        }
+    }
+
+    /*
+    The algorithm here is the method described in CLISP.  Bruno Haible has
+    graciously given permission to use this algorithm.  He says, "You can use
+    it, if you present the following explanation of the algorithm."
+
+    Algorithm (recursively presented):
+        If x is a rational number, return x.
+        If x = 0.0, return 0.
+        If x < 0.0, return (- (rationalize (- x))).
+        If x > 0.0:
+        Call (integer-decode-float x). It returns a m,e,s=1 (mantissa,
+        exponent, sign).
+        If m = 0 or e >= 0: return x = m*2^e.
+        Search a rational number between a = (m-1/2)*2^e and b = (m+1/2)*2^e
+        with smallest possible numerator and denominator.
+        Note 1: If m is a power of 2, we ought to take a = (m-1/4)*2^e.
+            But in this case the result will be x itself anyway, regardless of
+            the choice of a. Therefore we can simply ignore this case.
+        Note 2: At first, we need to consider the closed interval [a,b].
+            but since a and b have the denominator 2^(|e|+1) whereas x itself
+            has a denominator <= 2^|e|, we can restrict the search to the open
+            interval (a,b).
+        So, for given a and b (0 < a < b) we are searching a rational number
+        y with a <= y <= b.
+        Recursive algorithm fraction_between(a,b):
+            c := (ceiling a)
+            if c < b
+                then return c       ; because a <= c < b, c integer
+                else
+                    ; a is not integer (otherwise we would have had c = a < b)
+                    k := c-1          ; k = floor(a), k < a < b <= k+1
+                    return y = k + 1/fraction_between(1/(b-k), 1/(a-k))
+                                      ; note 1 <= 1/(b-k) < 1/(a-k)
+
+    You can see that we are actually computing a continued fraction expansion.
+
+    Algorithm (iterative):
+        If x is rational, return x.
+        Call (integer-decode-float x). It returns a m,e,s (mantissa,
+            exponent, sign).
+        If m = 0 or e >= 0, return m*2^e*s. (This includes the case x = 0.0.)
+        Create rational numbers a := (2*m-1)*2^(e-1) and b := (2*m+1)*2^(e-1)
+        (positive and already in lowest terms because the denominator is a
+        power of two and the numerator is odd).
+        Start a continued fraction expansion
+            p[-1] := 0, p[0] := 1, q[-1] := 1, q[0] := 0, i := 0.
+        Loop
+            c := (ceiling a)
+            if c >= b
+                then k := c-1, partial_quotient(k), (a,b) := (1/(b-k),1/(a-k)),
+                    goto Loop
+        finally partial_quotient(c).
+        Here partial_quotient(c) denotes the iteration
+            i := i+1, p[i] := c*p[i-1]+p[i-2], q[i] := c*q[i-1]+q[i-2].
+        At the end, return s * (p[i]/q[i]).
+        This rational number is already in lowest terms because
+        p[i]*q[i-1]-p[i-1]*q[i] = (-1)^i.
+*/
+    public static IRubyObject[] nurat_rationalize_internal(ThreadContext context, IRubyObject[] ary) {
+        IRubyObject a, b, p, q;
+        a = ary[0];
+        b = ary[1];
+        IRubyObject c, k, t, p0, p1, p2, q0, q1, q2;
+
+        RubyFixnum zero = RubyFixnum.zero(context.getRuntime());
+        RubyFixnum one = RubyFixnum.one(context.getRuntime());
+
+        p0 = q1 = zero;
+        p1 = q0 = one;
+
+        while (true) {
+            c = a.callMethod(context, "ceil");
+            if (f_lt_p(context, c, b).isTrue()) {
+                break;
+            }
+            k = f_sub(context, c, one);
+            p2 = f_add(context, f_mul(context, k, p1), p0);
+            q2 = f_add(context, f_mul(context, k, q1), q0);
+            t = f_quo(context, one, f_sub(context, b, k));
+            b = f_quo(context, one, f_sub(context, a, k));
+            a = t;
+            p0 = p1;
+            q0 = q1;
+            p1 = p2;
+            q1 = q2;
+        }
+        p = f_add(context, f_mul(context, c, p1), p0);
+        q = f_add(context, f_mul(context, c, q1), q0);
+
+        IRubyObject[] v = new IRubyObject[]{p, q};
+        return v;
+
+    }
+
+    public static void checkInteger(ThreadContext context, IRubyObject obj) {
+        if (!(obj instanceof RubyInteger)) {
+            throw context.getRuntime().newTypeError("not an integer");
         }
     }
 }

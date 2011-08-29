@@ -11,7 +11,7 @@
  * implied. See the License for the specific language governing
  * rights and limitations under the License.
  *
- * Copyright (C) 2008 JRuby project
+ * Copyright (C) 2008, 2009 JRuby project
  * 
  * Alternatively, the contents of this file may be used under the terms of
  * either of the GNU General Public License Version 2 or later (the "GPL"),
@@ -31,8 +31,8 @@ package org.jruby.ext.ffi;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyClass;
+import org.jruby.RubyHash;
 import org.jruby.RubyModule;
-import org.jruby.RubyObject;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.Arity;
@@ -43,53 +43,108 @@ import org.jruby.runtime.builtin.IRubyObject;
 /**
  * Defines a C callback's parameters and return type.
  */
-@JRubyClass(name = "FFI::CallbackInfo", parent = "Object")
-public class CallbackInfo extends RubyObject implements NativeParam {
+@JRubyClass(name = "FFI::CallbackInfo", parent = "FFI::Type")
+public class CallbackInfo extends Type implements NativeParam {
     public static final String CLASS_NAME = "CallbackInfo";
     
-    /**
-     * The arity of this function.
-     */
+    /** The arity of this function. */
     protected final Arity arity;
 
-    protected final NativeParam[] parameterTypes;
-    protected final NativeType returnType;
-    
+    protected final Type[] parameterTypes;
+    protected final Type returnType;
+    protected final boolean stdcall;
+
+    private volatile Object providerCallbackInfo;
+
+    /**
+     * Creates a CallbackInfo class for a ruby runtime
+     *
+     * @param runtime The runtime to create the class for
+     * @param module The module to place the class in
+     *
+     * @return The newly created ruby class
+     */
     public static RubyClass createCallbackInfoClass(Ruby runtime, RubyModule module) {
         RubyClass result = module.defineClassUnder(CLASS_NAME,
-                runtime.getObject(),
+                module.fastGetClass("Type"),
                 ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR);
         result.defineAnnotatedMethods(CallbackInfo.class);
         result.defineAnnotatedConstants(CallbackInfo.class);
 
+        module.fastGetClass("Type").fastSetConstant("Function", result);
         return result;
     }
     
     /**
      * Creates a new <tt>CallbackInfo</tt> instance.
-     * @param arity
+     *
+     * @param runtime The runtime to create the instance for
+     * @param klazz The ruby class of the CallbackInfo instance
+     * @param returnType The return type of the callback
+     * @param paramTypes The parameter types of the callback
      */
-    public CallbackInfo(Ruby runtime, RubyClass klazz, NativeType returnType, NativeParam[] paramTypes) {
-        super(runtime, klazz);
+    public CallbackInfo(Ruby runtime, RubyClass klazz, Type returnType, Type[] paramTypes, boolean stdcall) {
+        super(runtime, klazz, NativeType.POINTER);
         this.arity = Arity.fixed(paramTypes.length);
         this.parameterTypes = paramTypes;
         this.returnType = returnType;
+        this.stdcall = stdcall;
     }
-    @JRubyMethod(name = "new", meta = true)
-    public static final IRubyObject newCallbackInfo(ThreadContext context, IRubyObject self, IRubyObject returnType, IRubyObject _paramTypes)
+
+    /**
+     * CallbackInfo.new
+     *
+     * @param context The current ruby thread context
+     * @param klass The ruby class of the CallbackInfo instance
+     * @param returnType The ruby return type
+     * @param _paramTypes An array containing the ruby parameter types
+     *
+     * @return A new CallbackInfo instance
+     */
+    @JRubyMethod(name = "new", meta = true, required = 2, optional = 1)
+    public static final IRubyObject newCallbackInfo(ThreadContext context, IRubyObject klass,
+            IRubyObject[] args)
     {
-        RubyArray paramTypes = (RubyArray) _paramTypes;
-        NativeParam[] nativeParamTypes = new NativeParam[paramTypes.size()];
-        for (int i = 0; i < paramTypes.size(); ++i) {
-            nativeParamTypes[i] = NativeType.valueOf(Util.int32Value((IRubyObject) paramTypes.entry(i)));
+        IRubyObject returnType = args[0], paramTypes = args[1];
+
+        if (!(returnType instanceof Type)) {
+            throw context.getRuntime().newTypeError("wrong argument type "
+                    + returnType.getMetaClass().getName() + " (expected FFI::Type)");
         }
+
+        if (!(paramTypes instanceof RubyArray)) {
+            throw context.getRuntime().newTypeError("wrong argument type "
+                    + paramTypes.getMetaClass().getName() + " (expected Array)");
+        }
+
+        Type[] nativeParamTypes = new Type[((RubyArray)paramTypes).size()];
+        for (int i = 0; i < nativeParamTypes.length; ++i) {
+            IRubyObject obj = ((RubyArray) paramTypes).entry(i);
+            if (!(obj instanceof Type)) {
+                throw context.getRuntime().newTypeError("wrong argument type "
+                        + obj.getMetaClass().getName() + " (expected array of FFI::Type)");
+            }
+            nativeParamTypes[i] = (Type) obj;
+        }
+
+        boolean stdcall = false;
+        if (args.length > 2) {
+            if (!(args[2] instanceof RubyHash)) {
+                throw context.getRuntime().newTypeError("wrong argument type "
+                        + args[3].getMetaClass().getName() + " (expected Hash)");
+            }
+            RubyHash hash = (RubyHash) args[2];
+            stdcall = "stdcall".equals(hash.get(context.getRuntime().newSymbol("convention")));
+        }
+        
         try {
-            return new CallbackInfo(context.getRuntime(), (RubyClass) self,
-                    NativeType.valueOf(Util.int32Value(returnType)), nativeParamTypes);
+            return new CallbackInfo(context.getRuntime(), (RubyClass) klass,
+                    (Type) returnType, nativeParamTypes, stdcall);
         } catch (UnsatisfiedLinkError ex) {
             return context.getRuntime().getNil();
         }
     }
+    
     /**
      * Returns the {@link org.jruby.runtime.Arity} of this function.
      * 
@@ -99,10 +154,70 @@ public class CallbackInfo extends RubyObject implements NativeParam {
         return arity;
     }
 
-    public final NativeType getReturnType() {
+    /**
+     * Gets the native return type the callback should return
+     *
+     * @return The native return type
+     */
+    public final Type getReturnType() {
         return returnType;
     }
-    public final NativeParam[] getParameterTypes() {
+
+    /**
+     * Gets the ruby parameter types of the callback
+     *
+     * @return An array of the parameter types
+     */
+    public final Type[] getParameterTypes() {
         return parameterTypes;
+    }
+
+    public final boolean isStdcall() {
+        return stdcall;
+    }
+
+    public final Object getProviderCallbackInfo() {
+        return providerCallbackInfo;
+    }
+
+    public final void setProviderCallbackInfo(Object info) {
+        this.providerCallbackInfo = info;
+    }
+
+    @JRubyMethod(name = "to_s")
+    public final IRubyObject to_s(ThreadContext context) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("#<FFI::CallbackInfo [ ");
+        for (int i = 0; i < parameterTypes.length; ++i) {
+            sb.append(parameterTypes[i].toString().toLowerCase());
+            if (i < (parameterTypes.length - 1)) {
+                sb.append(", ");
+            }
+        }
+        sb.append(" ], " + returnType.toString().toLowerCase() + ">");
+        return context.getRuntime().newString(sb.toString());
+    }
+    @Override
+    public final String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("CallbackInfo[parameters=[");
+        for (int i = 0; i < parameterTypes.length; ++i) {
+            sb.append(parameterTypes[i].toString().toLowerCase());
+            if (i < (parameterTypes.length - 1)) {
+                sb.append(", ");
+            }
+        }
+        sb.append("] return=" + returnType.toString().toLowerCase() + "]");
+        return sb.toString();
+    }
+
+    @JRubyMethod
+    public final IRubyObject result_type(ThreadContext context) {
+        return returnType;
+    }
+
+    @JRubyMethod
+    public final IRubyObject param_types(ThreadContext context) {
+        return RubyArray.newArray(context.getRuntime(), parameterTypes);
     }
 }

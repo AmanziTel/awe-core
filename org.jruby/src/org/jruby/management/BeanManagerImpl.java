@@ -17,11 +17,9 @@ import org.jruby.compiler.JITCompilerMBean;
 public class BeanManagerImpl implements BeanManager {
     public final String base;
     
-    private final Ruby ruby;
     private final boolean managementEnabled;
     
     public BeanManagerImpl(Ruby ruby, boolean managementEnabled) {
-        this.ruby = ruby;
         this.managementEnabled = managementEnabled;
         this.base = "org.jruby:type=Runtime,name=" + ruby.hashCode() + ",";
     }
@@ -45,6 +43,10 @@ public class BeanManagerImpl implements BeanManager {
     public void register(ClassCacheMBean classCache) {
         if (managementEnabled) register(base + "service=ClassCache", classCache);
     }
+    
+    public void register(Runtime runtime) {
+        if (managementEnabled) register(base + "service=Runtime", runtime);
+    }
 
     public void unregisterCompiler() {
         if (managementEnabled) unregister(base + "service=JITCompiler");
@@ -60,6 +62,9 @@ public class BeanManagerImpl implements BeanManager {
     }
     public void unregisterMethodCache() {
         if (managementEnabled) unregister(base + "service=MethodCache");
+    }
+    public void unregisterRuntime() {
+        if (managementEnabled) unregister(base + "service=Runtime");
     }
 
     private void register(String name, Object bean) {
@@ -84,6 +89,10 @@ public class BeanManagerImpl implements BeanManager {
         } catch (SecurityException ex) {
             // ignore...bean doesn't get registered
             // TODO: Why does that bother me?
+        } catch (Error e) {
+            // all errors, just info; do not prevent loading
+            // IKVM does not support JMX, and throws an error
+            Logger.getLogger(BeanManagerImpl.class.getName()).log(Level.FINE, null, e);
         }
     }
 
@@ -106,6 +115,10 @@ public class BeanManagerImpl implements BeanManager {
         } catch (SecurityException ex) {
             // ignore...bean doesn't get registered
             // TODO: Why does that bother me?
+        } catch (Error e) {
+            // all errors, just info; do not prevent unloading
+            // IKVM does not support JMX, and throws an error
+            Logger.getLogger(BeanManagerImpl.class.getName()).log(Level.FINE, null, e);
         }
     }
 }

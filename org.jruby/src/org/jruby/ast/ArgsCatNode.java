@@ -34,6 +34,7 @@ package org.jruby.ast;
 import java.util.List;
 
 import org.jruby.Ruby;
+import org.jruby.RubyArray;
 import org.jruby.ast.visitor.NodeVisitor;
 import org.jruby.javasupport.util.RuntimeHelpers;
 import org.jruby.lexer.yacc.ISourcePosition;
@@ -74,12 +75,12 @@ public class ArgsCatNode extends Node {
     public List<Node> childNodes() {
         return Node.createList(firstNode, secondNode);
     }
-    
+
     @Override
     public IRubyObject interpret(Ruby runtime, ThreadContext context, IRubyObject self, Block aBlock) {
         IRubyObject args = firstNode.interpret(runtime, context, self, aBlock);
-        IRubyObject secondArgs = RuntimeHelpers.splatValue(secondNode.interpret(runtime, context, self, aBlock));
-   
-        return RuntimeHelpers.ensureRubyArray(runtime, args).concat(secondArgs);    
+        IRubyObject secondInterpret = secondNode.interpret(runtime, context, self, aBlock);
+
+        return RuntimeHelpers.argsCat(args, secondInterpret);
     }
 }

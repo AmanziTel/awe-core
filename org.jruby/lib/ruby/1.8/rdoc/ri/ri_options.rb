@@ -22,6 +22,9 @@ module RI
     # should we just display a class list and exit
     attr_reader :list_classes
 
+    # should we look for java classes instead of ruby rdoc
+    attr_reader :java_classes
+
     # should we display a list of all names
     attr_reader :list_names
 
@@ -44,6 +47,9 @@ module RI
           "Display the names of classes and modules we\n" +
           "know about"],
 
+        [ "--java",      "-j",   nil,
+          "Interpret arguments as the names of Java classes\n"],
+
         [ "--doc-dir",      "-d",   "<dirname>",
           "A directory to search for documentation. If not\n" +
           "specified, we search the standard rdoc/ri directories.\n" +
@@ -62,10 +68,11 @@ module RI
           (RI::Paths::HOMEDIR || "No ~/.rdoc found") ],
 
         [ "--gems",         nil,    nil,
-          "Include documentation from Rubygems:\n  " +
-          (RI::Paths::GEMDIRS ? "#{Gem.path}/doc/*/ri" :
-                                "No Rubygems ri found.") ],
-                                                           
+          "Include documentation from RubyGems:\n" +
+          (RI::Paths::GEMDIRS ?
+           Gem.path.map { |dir| "  #{dir}/doc/*/ri" }.join("\n") :
+           "No Rubygems ri found.") ],
+
         [ "--format",       "-f",   "<name>",
           "Format to use when displaying output:\n" +
           "   " + RI::TextFormatter.list + "\n" +
@@ -78,7 +85,7 @@ module RI
           "List all the names known to RDoc, one per line"
         ],
 
-        [ "--no-pager",      "-T",   false,
+        [ "--no-pager",      "-T",   nil,
           "Send output directly to stdout." 
         ],
 
@@ -116,7 +123,8 @@ module RI
       def OptionList.error(msg)
         $stderr.puts
         $stderr.puts msg
-        $stderr.puts "\nFor help on options, try 'ri --help'\n\n"
+        name = File.basename $PROGRAM_NAME
+        $stderr.puts "\nFor help on options, try '#{name} --help'\n\n"
         exit 1
       end
       
@@ -136,7 +144,11 @@ module RI
           RI::Paths::HOMEDIR
         ]
 
-        directories << "#{Gem.path}/doc/*/ri" if RI::Paths::GEMDIRS
+        if RI::Paths::GEMDIRS then
+          Gem.path.each do |dir|
+            directories << "#{dir}/doc/*/ri"
+          end
+        end
 
         directories = directories.join("\n    ")
 
@@ -157,16 +169,16 @@ module RI
 
           For example:
 
-              ri  File
-              ri  File.new
-              ri  F.n
-              ri  zip
+              #{name}  File
+              #{name}  File.new
+              #{name}  F.n
+              #{name}  zip
 
           Note that shell quoting may be required for method names
           containing punctuation:
 
-              ri 'Array.[]'
-              ri compact\\!
+              #{name} 'Array.[]'
+              #{name} compact\\!
 
           By default ri searches for documentation in the following
           directories:
@@ -180,8 +192,8 @@ module RI
         EOT
 
         if short_form
-          puts "For help on options, type 'ri -h'"
-          puts "For a list of classes I know about, type 'ri -c'"
+          puts "For help on options, type '#{name} -h'"
+          puts "For a list of classes I know about, type '#{name} -c'"
         else
           puts "Options:\n\n"
           OPTION_LIST.each do|long, short, arg, desc|
@@ -217,11 +229,11 @@ module RI
     end
 
     def initialize
-      # JRUBY-3413: ri/rdoc do not page correctly
-      @use_stdout   = true #!STDOUT.tty?
+      @use_stdout   = !STDOUT.tty?
       @width        = 72
       @formatter    = RI::TextFormatter.for("plain") 
       @list_classes = false
+      @java_classes = false
       @list_names   = false
 
       # By default all paths are used.  If any of these are true, only those
@@ -253,6 +265,7 @@ module RI
           when "--list-names" then @list_names = true
           when "--no-pager"   then @use_stdout = true
           when "--classes"    then @list_classes = true
+          when "--java"    then @java_classes = true
 
           when "--system"     then @use_system = true
           when "--site"       then @use_site = true

@@ -4,9 +4,9 @@ import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.RubyModule;
 import org.jruby.internal.runtime.methods.DynamicMethod;
-import org.jruby.javasupport.JavaObject;
-import org.jruby.javasupport.util.RuntimeHelpers;
 import org.jruby.runtime.Block;
+import org.jruby.runtime.CallSite;
+import org.jruby.runtime.MethodIndex;
 import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.Visibility;
@@ -27,175 +27,159 @@ public class ConcreteJavaProxy extends JavaProxy {
                 return new ConcreteJavaProxy(runtime, klazz);
             }
         });
-        
-        RubyClass singleton = concreteJavaProxy.getSingletonClass();
-        
-        final DynamicMethod oldNew = singleton.searchMethod("new");
-        
-        singleton.addMethod("new", new ConcreteNewMethod(singleton, Visibility.PUBLIC, oldNew));
-        
+        initialize(concreteJavaProxy);
+        return concreteJavaProxy;
+    }
+
+    protected static void initialize(RubyClass concreteJavaProxy) {
         concreteJavaProxy.addMethod("initialize", new org.jruby.internal.runtime.methods.JavaMethod(concreteJavaProxy, Visibility.PUBLIC) {
+            private final CallSite jcreateSite = MethodIndex.getFunctionalCallSite("__jcreate!");
             @Override
             public IRubyObject call(ThreadContext context, IRubyObject self, RubyModule clazz, String name, IRubyObject[] args, Block block) {
-                return RuntimeHelpers.invoke(context, self, "__jcreate!", args, block);
+                return jcreateSite.call(context, self, self, args, block);
             }
             @Override
             public IRubyObject call(ThreadContext context, IRubyObject self, RubyModule clazz, String name, Block block) {
-                return RuntimeHelpers.invoke(context, self, "__jcreate!", block);
+                return jcreateSite.call(context, self, self, block);
             }
             @Override
             public IRubyObject call(ThreadContext context, IRubyObject self, RubyModule clazz, String name, IRubyObject arg0, Block block) {
-                return RuntimeHelpers.invoke(context, self, "__jcreate!", arg0, block);
+                return jcreateSite.call(context, self, self, arg0, block);
             }
             @Override
             public IRubyObject call(ThreadContext context, IRubyObject self, RubyModule clazz, String name, IRubyObject arg0, IRubyObject arg1, Block block) {
-                return RuntimeHelpers.invoke(context, self, "__jcreate!", arg0, arg1, block);
+                return jcreateSite.call(context, self, self, arg0, arg1, block);
             }
             @Override
             public IRubyObject call(ThreadContext context, IRubyObject self, RubyModule clazz, String name, IRubyObject arg0, IRubyObject arg1, IRubyObject arg2, Block block) {
-                return RuntimeHelpers.invoke(context, self, "__jcreate!", arg0, arg1, arg2, block);
+                return jcreateSite.call(context, self, self, arg0, arg1, arg2, block);
             }
             @Override
             public IRubyObject call(ThreadContext context, IRubyObject self, RubyModule clazz, String name, IRubyObject[] args) {
-                return RuntimeHelpers.invoke(context, self, "__jcreate!", args);
+                return jcreateSite.call(context, self, self, args);
             }
             @Override
             public IRubyObject call(ThreadContext context, IRubyObject self, RubyModule clazz, String name) {
-                return RuntimeHelpers.invoke(context, self, "__jcreate!");
+                return jcreateSite.call(context, self, self);
             }
             @Override
             public IRubyObject call(ThreadContext context, IRubyObject self, RubyModule clazz, String name, IRubyObject arg0) {
-                return RuntimeHelpers.invoke(context, self, "__jcreate!", arg0);
+                return jcreateSite.call(context, self, self, arg0);
             }
             @Override
             public IRubyObject call(ThreadContext context, IRubyObject self, RubyModule clazz, String name, IRubyObject arg0, IRubyObject arg1) {
-                return RuntimeHelpers.invoke(context, self, "__jcreate!", arg0, arg1);
+                return jcreateSite.call(context, self, self, arg0, arg1);
             }
             @Override
             public IRubyObject call(ThreadContext context, IRubyObject self, RubyModule clazz, String name, IRubyObject arg0, IRubyObject arg1, IRubyObject arg2) {
-                return RuntimeHelpers.invoke(context, self, "__jcreate!", arg0, arg1, arg2);
+                return jcreateSite.call(context, self, self, arg0, arg1, arg2);
             }
         });
-        
-        return concreteJavaProxy;
+
+        // We define a custom "new" method to ensure that __jcreate! is getting called,
+        // so that if the user doesn't call super in their subclasses, the object will
+        // still get set up properly. See JRUBY-4704.
+        RubyClass singleton = concreteJavaProxy.getSingletonClass();
+        final DynamicMethod oldNew = singleton.searchMethod("new");
+        singleton.addMethod("new", new org.jruby.internal.runtime.methods.JavaMethod(singleton, Visibility.PUBLIC) {
+            private final CallSite jcreateSite = MethodIndex.getFunctionalCallSite("__jcreate!");
+
+            private boolean needsCreate(IRubyObject recv) {
+                return ((JavaProxy)recv).object == null;
+            }
+
+            @Override
+            public IRubyObject call(ThreadContext context, IRubyObject self, RubyModule clazz, String name, IRubyObject[] args, Block block) {
+                IRubyObject proxy = oldNew.call(context, self, clazz, "new_proxy", args, block);
+                if (needsCreate(proxy)) jcreateSite.call(context, proxy, proxy, args, block);
+                return proxy;
+            }
+
+            @Override
+            public IRubyObject call(ThreadContext context, IRubyObject self, RubyModule clazz, String name, Block block) {
+                IRubyObject proxy = oldNew.call(context, self, clazz, "new_proxy", block);
+                if (needsCreate(proxy)) jcreateSite.call(context, proxy, proxy, block);
+                return proxy;
+            }
+
+            @Override
+            public IRubyObject call(ThreadContext context, IRubyObject self, RubyModule clazz, String name, IRubyObject arg0, Block block) {
+                IRubyObject proxy = oldNew.call(context, self, clazz, "new_proxy", arg0, block);
+                if (needsCreate(proxy)) jcreateSite.call(context, proxy, proxy, arg0, block);
+
+                return proxy;
+            }
+
+            @Override
+            public IRubyObject call(ThreadContext context, IRubyObject self, RubyModule clazz, String name, IRubyObject arg0, IRubyObject arg1, Block block) {
+                IRubyObject proxy = oldNew.call(context, self, clazz, "new_proxy", arg0, arg1, block);
+                if (needsCreate(proxy)) jcreateSite.call(context, proxy, proxy, arg0, arg1, block);
+                return proxy;
+            }
+
+            @Override
+            public IRubyObject call(ThreadContext context, IRubyObject self, RubyModule clazz, String name, IRubyObject arg0, IRubyObject arg1, IRubyObject arg2, Block block) {
+                IRubyObject proxy = oldNew.call(context, self, clazz, "new_proxy", arg0, arg1, arg2, block);
+                if (needsCreate(proxy)) jcreateSite.call(context, proxy, proxy, arg0, arg1, arg2, block);
+                return proxy;
+            }
+
+            @Override
+            public IRubyObject call(ThreadContext context, IRubyObject self, RubyModule clazz, String name, IRubyObject[] args) {
+                IRubyObject proxy = oldNew.call(context, self, clazz, "new_proxy", args);
+                if (needsCreate(proxy)) jcreateSite.call(context, proxy, proxy, args);
+                return proxy;
+            }
+
+            @Override
+            public IRubyObject call(ThreadContext context, IRubyObject self, RubyModule clazz, String name) {
+                IRubyObject proxy = oldNew.call(context, self, clazz, "new_proxy");
+                if (needsCreate(proxy)) jcreateSite.call(context, proxy, proxy);
+                return proxy;
+            }
+
+            @Override
+            public IRubyObject call(ThreadContext context, IRubyObject self, RubyModule clazz, String name, IRubyObject arg0) {
+                IRubyObject proxy = oldNew.call(context, self, clazz, "new_proxy", arg0);
+                if (needsCreate(proxy)) jcreateSite.call(context, proxy, proxy, arg0);
+                return proxy;
+            }
+
+            @Override
+            public IRubyObject call(ThreadContext context, IRubyObject self, RubyModule clazz, String name, IRubyObject arg0, IRubyObject arg1) {
+                IRubyObject proxy = oldNew.call(context, self, clazz, "new_proxy", arg0, arg1);
+                if (needsCreate(proxy)) jcreateSite.call(context, proxy, proxy, arg0, arg1);
+                return proxy;
+            }
+
+            @Override
+            public IRubyObject call(ThreadContext context, IRubyObject self, RubyModule clazz, String name, IRubyObject arg0, IRubyObject arg1, IRubyObject arg2) {
+                IRubyObject proxy = oldNew.call(context, self, clazz, "new_proxy", arg0, arg1, arg2);
+                if (needsCreate(proxy)) jcreateSite.call(context, proxy, proxy, arg0, arg1, arg2);
+                return proxy;
+            }
+        });
     }
-    
-    public static class ConcreteNewMethod extends org.jruby.internal.runtime.methods.JavaMethod {
-        private DynamicMethod oldNew;
-            
-        public ConcreteNewMethod(RubyModule implClass, Visibility visibility, DynamicMethod oldNew) {
-            super(implClass, visibility);
-            this.oldNew = oldNew;
-        }
-        
-        @Override
-        public IRubyObject call(ThreadContext context, IRubyObject self, RubyModule clazz, String name, IRubyObject[] args, Block block) {
-            IRubyObject proxy = oldNew.call(context, self, clazz, "new_proxy", args, block);
 
-            if (!(proxy.dataGetStruct() instanceof JavaObject)) { // Need to initialize
-                RuntimeHelpers.invoke(context, proxy, "__jcreate!", args, block);
-            }
+    // This alternate ivar logic is disabled because it can cause self-referencing
+    // chains to keep the original object alive. See JRUBY-4832.
+//    @Override
+//    public Object getVariable(int index) {
+//        return getRuntime().getJavaSupport().getJavaObjectVariable(this, index);
+//    }
+//
+//    @Override
+//    public void setVariable(int index, Object value) {
+//        getRuntime().getJavaSupport().setJavaObjectVariable(this, index, value);
+//    }
 
-            return proxy;
-        }
-        
-        @Override
-        public IRubyObject call(ThreadContext context, IRubyObject self, RubyModule clazz, String name, Block block) {
-            IRubyObject proxy = oldNew.call(context, self, clazz, "new_proxy", block);
-
-            if (!(proxy.dataGetStruct() instanceof JavaObject)) { // Need to initialize
-                RuntimeHelpers.invoke(context, proxy, "__jcreate!", block);
-            }
-
-            return proxy;
-        }
-        
-        @Override
-        public IRubyObject call(ThreadContext context, IRubyObject self, RubyModule clazz, String name, IRubyObject arg0, Block block) {
-            IRubyObject proxy = oldNew.call(context, self, clazz, "new_proxy", arg0, block);
-
-            if (!(proxy.dataGetStruct() instanceof JavaObject)) { // Need to initialize
-                RuntimeHelpers.invoke(context, proxy, "__jcreate!", arg0, block);
-            }
-
-            return proxy;
-        }
-        
-        @Override
-        public IRubyObject call(ThreadContext context, IRubyObject self, RubyModule clazz, String name, IRubyObject arg0, IRubyObject arg1, Block block) {
-            IRubyObject proxy = oldNew.call(context, self, clazz, "new_proxy", arg0, arg1, block);
-
-            if (!(proxy.dataGetStruct() instanceof JavaObject)) { // Need to initialize
-                RuntimeHelpers.invoke(context, proxy, "__jcreate!", arg0, arg1, block);
-            }
-
-            return proxy;
-        }
-        
-        @Override
-        public IRubyObject call(ThreadContext context, IRubyObject self, RubyModule clazz, String name, IRubyObject arg0, IRubyObject arg1, IRubyObject arg2, Block block) {
-            IRubyObject proxy = oldNew.call(context, self, clazz, "new_proxy", arg0, arg1, arg2, block);
-            
-            if (!(proxy.dataGetStruct() instanceof JavaObject)) { // Need to initialize
-                RuntimeHelpers.invoke(context, proxy, "__jcreate!", arg0, arg1, arg2, block);
-            }
-
-            return proxy;
-        }
-        
-        @Override
-        public IRubyObject call(ThreadContext context, IRubyObject self, RubyModule clazz, String name, IRubyObject[] args) {
-            IRubyObject proxy = oldNew.call(context, self, clazz, "new_proxy", args);
-
-            if (!(proxy.dataGetStruct() instanceof JavaObject)) { // Need to initialize
-                RuntimeHelpers.invoke(context, proxy, "__jcreate!", args);
-            }
-
-            return proxy;
-        }
-        
-        @Override
-        public IRubyObject call(ThreadContext context, IRubyObject self, RubyModule clazz, String name) {
-            IRubyObject proxy = oldNew.call(context, self, clazz, "new_proxy");
-
-            if (!(proxy.dataGetStruct() instanceof JavaObject)) { // Need to initialize
-                RuntimeHelpers.invoke(context, proxy, "__jcreate!");
-            }
-
-            return proxy;
-        }
-        
-        @Override
-        public IRubyObject call(ThreadContext context, IRubyObject self, RubyModule clazz, String name, IRubyObject arg0) {
-            IRubyObject proxy = oldNew.call(context, self, clazz, "new_proxy", arg0);
-
-            if (!(proxy.dataGetStruct() instanceof JavaObject)) { // Need to initialize
-                RuntimeHelpers.invoke(context, proxy, "__jcreate!", arg0);
-            }
-
-            return proxy;
-        }
-        
-        @Override
-        public IRubyObject call(ThreadContext context, IRubyObject self, RubyModule clazz, String name, IRubyObject arg0, IRubyObject arg1) {
-            IRubyObject proxy = oldNew.call(context, self, clazz, "new_proxy", arg0, arg1);
-
-            if (!(proxy.dataGetStruct() instanceof JavaObject)) { // Need to initialize
-                RuntimeHelpers.invoke(context, proxy, "__jcreate!", arg0, arg1);
-            }
-
-            return proxy;
-        }
-        
-        @Override
-        public IRubyObject call(ThreadContext context, IRubyObject self, RubyModule clazz, String name, IRubyObject arg0, IRubyObject arg1, IRubyObject arg2) {
-            IRubyObject proxy = oldNew.call(context, self, clazz, "new_proxy", arg0, arg1, arg2);
-
-            if (!(proxy.dataGetStruct() instanceof JavaObject)) { // Need to initialize
-                RuntimeHelpers.invoke(context, proxy, "__jcreate!", arg0, arg1, arg2);
-            }
-
-            return proxy;
-        }
+    /**
+     * Because we can't physically associate an ID with a Java object, we can
+     * only use the identity hashcode here.
+     *
+     * @return The identity hashcode for the Java object.
+     */
+    public IRubyObject id() {
+        return getRuntime().newFixnum(System.identityHashCode(getObject()));
     }
 }

@@ -21,14 +21,16 @@ final class DefaultMethodOneArg extends DefaultMethod {
             IRubyObject arg1) {
         HeapInvocationBuffer buffer = new HeapInvocationBuffer(function);
         if (needsInvocationSession) {
-            Invocation invocation = new Invocation(context);
-            m1.marshal(invocation, buffer, arg1);
-            IRubyObject retVal = functionInvoker.invoke(context.getRuntime(), function, buffer);
-            invocation.finish();
-            return retVal;
+            Invocation invocation = new Invocation(context, postInvokeCount, referenceCount);
+            try {
+                m1.marshal(invocation, buffer, arg1);
+                return functionInvoker.invoke(context, function, buffer);
+            } finally {
+                invocation.finish();
+            }
         } else {
             m1.marshal(context, buffer, arg1);
-            return functionInvoker.invoke(context.getRuntime(), function, buffer);
+            return functionInvoker.invoke(context, function, buffer);
         }
         
     }

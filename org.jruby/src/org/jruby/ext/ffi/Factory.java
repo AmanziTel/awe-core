@@ -28,15 +28,11 @@
 
 package org.jruby.ext.ffi;
 
-import java.io.IOException;
-import java.nio.channels.ByteChannel;
 import java.util.ArrayList;
 import java.util.List;
 import org.jruby.Ruby;
-import org.jruby.RubyInstanceConfig;
 import org.jruby.RubyModule;
 import org.jruby.ext.ffi.io.FileDescriptorIO;
-import org.jruby.runtime.load.Library;
 
 /**
  * A factory that can create a FFI Provider
@@ -51,44 +47,35 @@ public abstract class Factory {
             final String providerName = System.getProperty("ffi.factory");
             Factory factory = null;
             List<String> providerNames = new ArrayList<String>();
+            List<Throwable> errors = new ArrayList<Throwable>();
+
             if (providerName != null) {
                 providerNames.add(providerName);
             }
-            final String prefix = FFIProvider.class.getPackage().getName();
+            final String prefix = Factory.class.getPackage().getName();
             providerNames.add(prefix + ".jffi.Factory");
-            providerNames.add(prefix + ".jna.Factory");
             for (String className : providerNames) {
                 try {
                     factory = (Factory) Class.forName(className, true, Ruby.getClassLoader()).newInstance();
                     break;
                 } catch (Throwable ex) {
+                    errors.add(ex);
                 }
             }
 
             if (factory == null) {
-                throw new RuntimeException("Could not load FFI provider");
+                StringBuilder sb = new StringBuilder();
+                for (Throwable t : errors) {
+                    sb.append(t.getLocalizedMessage()).append('\n');
+                }
+
+                factory = new NoImplFactory(sb.toString());
             }
             return factory;
         }
     }
 
     protected Factory() {
-    }
-
-    public static class Service implements Library {
-
-        public void load(final Ruby runtime, boolean wrap) throws IOException {
-            if (!RubyInstanceConfig.nativeEnabled) {
-                throw runtime.newLoadError("Native API access is disabled");
-            }
-            if (!Platform.getPlatform().isSupported()) {
-                throw runtime.newLoadError("Unsupported platform: " + Platform.getPlatform().getName());
-            }
-
-            RubyModule ffi = runtime.defineModule("FFI");
-            Factory factory = Factory.getInstance();
-            factory.init(runtime, ffi);
-        }
     }
 
     /**
@@ -107,12 +94,11 @@ public abstract class Factory {
      */
     public void init(Ruby runtime, RubyModule ffi) {
         synchronized (ffi) {
-            if (ffi.fastGetClass(FFIProvider.CLASS_NAME) == null) {
-                FFIProvider.createProviderClass(runtime, ffi);
+            if (ffi.fastGetClass("Type") == null) {
+                Type.createTypeClass(runtime, ffi);
             }
-            if (ffi.fastGetClass(AbstractInvoker.CLASS_NAME) == null) {
-                AbstractInvoker.createAbstractInvokerClass(runtime, ffi);
-            }
+            DataConverter.createDataConverterModule(runtime, ffi);
+
             if (ffi.fastGetClass(AbstractMemory.ABSTRACT_MEMORY_RUBY_CLASS) == null) {
                 AbstractMemory.createAbstractMemoryClass(runtime, ffi);
             }
@@ -125,63 +111,59 @@ public abstract class Factory {
             if (ffi.fastGetClass("AutoPointer") == null) {
                 AutoPointer.createAutoPointerClass(runtime, ffi);
             }
-            if (ffi.fastGetClass("BasePointer") == null) {
-                BasePointer.createBasePointerClass(runtime, ffi);
-            }
             if (ffi.fastGetClass("MemoryPointer") == null) {
                 MemoryPointer.createMemoryPointerClass(runtime, ffi);
             }
             if (ffi.fastGetClass("Struct") == null) {
                 Struct.createStructClass(runtime, ffi);
             }
-            if (ffi.fastGetClass(CallbackInfo.CLASS_NAME) == null) {
-                CallbackInfo.createCallbackInfoClass(runtime, ffi);
-            }
             if (ffi.fastGetClass(StructLayout.CLASS_NAME) == null) {
                 StructLayout.createStructLayoutClass(runtime, ffi);
             }
-            if (ffi.fastGetClass(StructLayoutBuilder.CLASS_NAME) == null) {
-                StructLayoutBuilder.createStructLayoutBuilderClass(runtime, ffi);
+            if (ffi.fastGetClass("StructByValue") == null) {
+                StructByValue.createStructByValueClass(runtime, ffi);
+            }
+            if (ffi.fastGetClass(AbstractInvoker.CLASS_NAME) == null) {
+                AbstractInvoker.createAbstractInvokerClass(runtime, ffi);
+            }
+            if (ffi.fastGetClass(CallbackInfo.CLASS_NAME) == null) {
+                CallbackInfo.createCallbackInfoClass(runtime, ffi);
+            }
+            if (ffi.fastGetClass("Enum") == null) {
+                Enum.createEnumClass(runtime, ffi);
+            }
+            if (ffi.fastGetClass("Type").fastGetClass("Mapped") == null) {
+                MappedType.createConverterTypeClass(runtime, ffi);
             }
             if (ffi.fastGetClass(FileDescriptorIO.CLASS_NAME) == null) {
                 FileDescriptorIO.createFileDescriptorIOClass(runtime, ffi);
             }
-            FFIProvider provider = newProvider(runtime);
-            ffi.defineConstant("InvokerFactory", provider);
-            ffi.defineConstant("LastError", provider);
-            RubyModule nativeType = ffi.defineModuleUnder("NativeType");
-            for (NativeType type : NativeType.values()) {
-                nativeType.defineConstant(type.name(), runtime.newFixnum(type.ordinal()));
-            }
+            
             Platform.createPlatformModule(runtime, ffi);
+            IOModule.createIOModule(runtime, ffi);
+            
+            StructByReference.createStructByReferenceClass(runtime, ffi);
         }
     }
-    
-    protected abstract FFIProvider newProvider(Ruby runtime);
-    
-    /**
-     * Loads a native library.
-     *
-     * @param <T>
-     * @param libraryName The name of the library to load.
-     * @param libraryClass The interface class to map to the library functions.
-     * @return A new instance of <tt>libraryClass</tt> that an access the library.
-     */
-    public abstract <T> T loadLibrary(String libraryName, Class<T> libraryClass);
-
-    /**
-     * Wraps a {@link java.nio.ByteChannel} around a native file descriptor
-     */
-    public abstract ByteChannel newByteChannel(int fd);
     
     /**
      * Allocates memory on the native C heap and wraps it in a <tt>MemoryIO</tt> accessor.
      *
      * @param size The number of bytes to allocate.
      * @param clear If the memory should be cleared.
-     * @return A new <tt>MemoryIO</tt>.
+     * @return A new <tt>AllocatedDirectMemoryIO</tt>.
      */
-    public abstract AllocatedDirectMemoryIO allocateDirectMemory(int size, boolean clear);
+    public abstract AllocatedDirectMemoryIO allocateDirectMemory(Ruby runtime, int size, boolean clear);
+
+    /**
+     * Allocates memory on the native C heap and wraps it in a <tt>MemoryIO</tt> accessor.
+     *
+     * @param size The number of bytes to allocate.
+     * @param align The minimum alignment of the memory
+     * @param clear If the memory should be cleared.
+     * @return A new <tt>AllocatedDirectMemoryIO</tt>.
+     */
+    public abstract AllocatedDirectMemoryIO allocateDirectMemory(Ruby runtime, int size, int align, boolean clear);
 
     /**
      * Wraps a  native C memory address in a <tt>MemoryIO</tt> accessor.
@@ -190,8 +172,13 @@ public abstract class Factory {
      * 
      * @return A new <tt>MemoryIO</tt>.
      */
-    public abstract DirectMemoryIO wrapDirectMemory(long address);
+    public abstract DirectMemoryIO wrapDirectMemory(Ruby runtime, long address);
 
 
     public abstract CallbackManager getCallbackManager();
+
+    public abstract AbstractInvoker newFunction(Ruby runtime, Pointer address, CallbackInfo cbInfo);
+
+    public abstract int sizeOf(NativeType type);
+    public abstract int alignmentOf(NativeType type);
 }

@@ -33,18 +33,40 @@
 package org.jruby.runtime;
 
 import org.jruby.Ruby;
-import org.jruby.RubyArray;
 import org.jruby.RubyModule;
 import org.jruby.ast.IterNode;
+import org.jruby.ast.ListNode;
 import org.jruby.ast.MultipleAsgnNode;
 import org.jruby.ast.NilImplicitNode;
 import org.jruby.ast.Node;
 import org.jruby.ast.NodeType;
-import org.jruby.ast.util.ArgsUtil;
-import org.jruby.common.IRubyWarnings.ID;
-import org.jruby.evaluator.AssignmentVisitor;
+import org.jruby.ast.ZeroArgNode;
+import org.jruby.evaluator.ASTInterpreter;
 import org.jruby.exceptions.JumpException;
-import org.jruby.parser.StaticScope;
+import org.jruby.lexer.yacc.ISourcePosition;
+import org.jruby.runtime.assigner.Assigner;
+import org.jruby.runtime.assigner.Pre0Rest0Post0Assigner;
+import org.jruby.runtime.assigner.Pre0Rest0Post0BlockAssigner;
+import org.jruby.runtime.assigner.Pre0Rest1Post0Assigner;
+import org.jruby.runtime.assigner.Pre0Rest1Post0BlockAssigner;
+import org.jruby.runtime.assigner.Pre1ExpandedRest0Post0Assigner;
+import org.jruby.runtime.assigner.Pre1ExpandedRest0Post0BlockAssigner;
+import org.jruby.runtime.assigner.Pre1Rest0Post0Assigner;
+import org.jruby.runtime.assigner.Pre1Rest0Post0BlockAssigner;
+import org.jruby.runtime.assigner.Pre1Rest1Post0Assigner;
+import org.jruby.runtime.assigner.Pre1Rest1Post0BlockAssigner;
+import org.jruby.runtime.assigner.Pre2Rest0Post0Assigner;
+import org.jruby.runtime.assigner.Pre2Rest0Post0BlockAssigner;
+import org.jruby.runtime.assigner.Pre2Rest1Post0Assigner;
+import org.jruby.runtime.assigner.Pre2Rest1Post0BlockAssigner;
+import org.jruby.runtime.assigner.Pre3Rest0Post0Assigner;
+import org.jruby.runtime.assigner.Pre3Rest0Post0BlockAssigner;
+import org.jruby.runtime.assigner.Pre3Rest1Post0Assigner;
+import org.jruby.runtime.assigner.Pre3Rest1Post0BlockAssigner;
+import org.jruby.runtime.assigner.PreManyRest0Post0Assigner;
+import org.jruby.runtime.assigner.PreManyRest0Post0BlockAssigner;
+import org.jruby.runtime.assigner.PreManyRest1Post0Assigner;
+import org.jruby.runtime.assigner.PreManyRest1Post0BlockAssigner;
 import org.jruby.runtime.builtin.IRubyObject;
 
 /**
@@ -55,24 +77,26 @@ import org.jruby.runtime.builtin.IRubyObject;
  * 
  * @see SharedScopeBlock, CompiledBlock
  */
-public class InterpretedBlock extends BlockBody {
-    /** The node wrapping the body and parameter list for this block */
-    private final IterNode iterNode;
-    
-    /** Whether this block has an argument list or not */
-    private final boolean hasVarNode;
-    
-    /** The argument list, pulled out of iterNode */
-    private final Node varNode;
-    
+public class InterpretedBlock extends ContextAwareBlockBody {
+    /** This block has no arguments at all (simple secondary optimization @see assignerFor for an
+     * explanation).
+     */
+    private boolean noargblock;
+
+    /** The position for the block */
+    private final ISourcePosition position;
+
+    /** Filename from position */
+    private final String file;
+
+    /** Line from position */
+    private final int line;
+
     /** The body of the block, pulled out of bodyNode */
     private final Node bodyNode;
     
-    /** The static scope for the block body */
-    private final StaticScope scope;
-    
-    /** The arity of the block */
-    private final Arity arity;
+    /** Logic for assigning the blocks local variables */
+    protected Assigner assigner;
 
     public static Block newInterpretedClosure(ThreadContext context, IterNode iterNode, IRubyObject self) {
         Binding binding = context.currentBinding(self);
@@ -90,57 +114,237 @@ public class InterpretedBlock extends BlockBody {
         return new Block(body, binding);
     }
 
+    public static BlockBody newBlockBody(IterNode iter, Arity arity, int argumentType) {
+        return new InterpretedBlock(iter, arity, argumentType);
+    }
+
+    /*
+     * Determine what sort of assigner should be used for the provided 'iter' (e.g. block).
+     * Assigner provides just the right logic for assigning values to local parameters of the
+     * block.
+     *
+     * This method also has a second optimization which is to set 'noargblock' in the case that
+     * the block is a block which accepts no arguments.  The primary reason for this second
+     * optimization is that in the case of a yield with a RubyArray we will bypass some logic
+     * processing the RubyArray into a proper form (only to then not do anythign with it).  A
+     * secondary benefit is that a simple boolean seems to optimize by hotspot much faster
+     * than the zero arg assigner.
+     */
+    private void assignerFor(IterNode iter) {
+        Node varNode = iter.getVarNode();
+        Node block = iter.getBlockVarNode();
+        boolean hasBlock = block != null;
+
+        if (varNode == null || varNode instanceof ZeroArgNode) { // No argument blocks
+            noargblock = !hasBlock;
+            assigner = hasBlock ? new Pre0Rest0Post0BlockAssigner(block) :
+                new Pre0Rest0Post0Assigner();
+        } else if (varNode instanceof MultipleAsgnNode) {
+            MultipleAsgnNode masgn = (MultipleAsgnNode) varNode;
+            int preCount = masgn.getPreCount();
+            boolean isRest = masgn.getRest() != null;
+            Node rest = masgn.getRest();
+            ListNode pre = masgn.getPre();
+            noargblock = false;
+
+            switch(preCount) {
+                case 0:  // Not sure if this is actually possible, but better safe than sorry
+                    if (isRest) {
+                        assigner = hasBlock ? new Pre0Rest1Post0BlockAssigner(rest, block) :
+                            new Pre0Rest1Post0Assigner(rest);
+                    } else if (hasBlock) {
+                        assigner = new Pre0Rest0Post0BlockAssigner(block);
+                    } else {
+                        noargblock = true;
+                        assigner = new Pre0Rest0Post0Assigner();
+                    }
+                    break;
+                case 1:
+                    if (isRest) {
+                        assigner = hasBlock ? new Pre1Rest1Post0BlockAssigner(pre.get(0), rest, block) :
+                            new Pre1Rest1Post0Assigner(pre.get(0), rest);
+                    } else if (hasBlock) {
+                        assigner = new Pre1Rest0Post0BlockAssigner(pre.get(0), block);
+                    } else {
+                        assigner = new Pre1Rest0Post0Assigner(pre.get(0));
+                    }
+                    break;
+                case 2:
+                    if (isRest) {
+                        assigner = hasBlock ? new Pre2Rest1Post0BlockAssigner(pre.get(0), pre.get(1), rest, block) :
+                            new Pre2Rest1Post0Assigner(pre.get(0), pre.get(1), rest);
+                    } else if (hasBlock) {
+                        assigner = new Pre2Rest0Post0BlockAssigner(pre.get(0), pre.get(1), block);
+                    } else {
+                        assigner = new Pre2Rest0Post0Assigner(pre.get(0), pre.get(1));
+                    }
+                    break;
+                case 3:
+                    if (isRest) {
+                        assigner = hasBlock ? new Pre3Rest1Post0BlockAssigner(pre.get(0), pre.get(1), pre.get(2), rest, block) :
+                            new Pre3Rest1Post0Assigner(pre.get(0), pre.get(1), pre.get(2), rest);
+                    } else if (hasBlock) {
+                        assigner = new Pre3Rest0Post0BlockAssigner(pre.get(0), pre.get(1), pre.get(2), block);
+                    } else {
+                        assigner = new Pre3Rest0Post0Assigner(pre.get(0), pre.get(1), pre.get(2));
+                    }
+                    break;
+                default:
+                    if (isRest) {
+                        assigner = hasBlock ? new PreManyRest1Post0BlockAssigner(pre, preCount, rest, block) :
+                            new PreManyRest1Post0Assigner(pre, preCount, rest);
+                    } else if (hasBlock) {
+                        assigner = new PreManyRest0Post0BlockAssigner(pre, preCount, block);
+                    } else {
+                        assigner = new PreManyRest0Post0Assigner(pre, preCount);
+                    }
+                    break;
+            }
+        } else {
+            assigner = hasBlock ? new Pre1ExpandedRest0Post0BlockAssigner(varNode, block) :
+                 new Pre1ExpandedRest0Post0Assigner(varNode);
+        }
+    }
+
     public InterpretedBlock(IterNode iterNode, int argumentType) {
         this(iterNode, Arity.procArityOf(iterNode == null ? null : iterNode.getVarNode()), argumentType);
     }
     
     public InterpretedBlock(IterNode iterNode, Arity arity, int argumentType) {
-        super(argumentType);
-        this.iterNode = iterNode;
-        this.arity = arity;
-        this.hasVarNode = iterNode.getVarNode() != null;
-        this.varNode = iterNode.getVarNode();
+        super(iterNode.getScope(), arity, argumentType);
+        
         this.bodyNode = iterNode.getBodyNode() == null ? NilImplicitNode.NIL : iterNode.getBodyNode();
         this.scope = iterNode.getScope();
-    }
-    
-    protected Frame pre(ThreadContext context, RubyModule klass, Binding binding) {
-        return context.preYieldSpecificBlock(binding, iterNode.getScope(), klass);
-    }
-    
-    protected void post(ThreadContext context, Binding binding, Visibility vis, Frame lastFrame) {
-        binding.getFrame().setVisibility(vis);
-        context.postYield(binding, lastFrame);
+        this.position = iterNode.getPosition();
+
+        // precache these
+        this.file = position.getFile();
+        this.line = position.getLine();
+
+        assignerFor(iterNode);
     }
 
+    @Override
     public IRubyObject yieldSpecific(ThreadContext context, Binding binding, Block.Type type) {
-        return yield(context, null, binding, type);
+        return yield(context, binding, type);
     }
 
+    @Override
     public IRubyObject yieldSpecific(ThreadContext context, IRubyObject arg0, Binding binding, Block.Type type) {
-        return yield(context, arg0, binding, type);
-    }
-
-    public IRubyObject yieldSpecific(ThreadContext context, IRubyObject arg0, IRubyObject arg1, Binding binding, Block.Type type) {
-        return yield(context, context.getRuntime().newArrayNoCopyLight(arg0, arg1), null, null, true, binding, type);
-    }
-
-    public IRubyObject yieldSpecific(ThreadContext context, IRubyObject arg0, IRubyObject arg1, IRubyObject arg2, Binding binding, Block.Type type) {
-        return yield(context, context.getRuntime().newArrayNoCopyLight(arg0, arg1, arg2), null, null, true, binding, type);
-    }
-    
-    public IRubyObject yield(ThreadContext context, IRubyObject value, Binding binding, Block.Type type) {
+        Visibility oldVis = binding.getFrame().getVisibility();
+        Frame lastFrame = pre(context, null, binding);
         IRubyObject self = prepareSelf(binding);
-        
+
+        try {
+            if (!noargblock) assigner.assign(context.getRuntime(), context, self, arg0, Block.NULL_BLOCK);
+
+            // This while loop is for restarting the block call in case a 'redo' fires.
+            return evalBlockBody(context, binding, self);
+        } catch (JumpException.NextJump nj) {
+            return handleNextJump(context, nj, type);
+        } finally {
+            post(context, binding, oldVis, lastFrame);
+        }
+    }
+
+    @Override
+    public IRubyObject yieldSpecific(ThreadContext context, IRubyObject arg0, IRubyObject arg1, Binding binding, Block.Type type) {
+        Visibility oldVis = binding.getFrame().getVisibility();
+        Frame lastFrame = pre(context, null, binding);
+        IRubyObject self = prepareSelf(binding);
+
+        try {
+            if (!noargblock) assigner.assign(context.getRuntime(), context, self, arg0, arg1, Block.NULL_BLOCK);
+
+            // This while loop is for restarting the block call in case a 'redo' fires.
+            return evalBlockBody(context, binding, self);
+        } catch (JumpException.NextJump nj) {
+            return handleNextJump(context, nj, type);
+        } finally {
+            post(context, binding, oldVis, lastFrame);
+        }
+    }
+
+    @Override
+    public IRubyObject yieldSpecific(ThreadContext context, IRubyObject arg0, IRubyObject arg1, IRubyObject arg2, Binding binding, Block.Type type) {
+        Visibility oldVis = binding.getFrame().getVisibility();
+        Frame lastFrame = pre(context, null, binding);
+        IRubyObject self = prepareSelf(binding);
+
+        try {
+            if (!noargblock) assigner.assign(context.getRuntime(), context, self, arg0, arg1, arg2, Block.NULL_BLOCK);
+
+            // This while loop is for restarting the block call in case a 'redo' fires.
+            return evalBlockBody(context, binding, self);
+        } catch (JumpException.NextJump nj) {
+            return handleNextJump(context, nj, type);
+        } finally {
+            post(context, binding, oldVis, lastFrame);
+        }
+    }
+
+    public IRubyObject yield(ThreadContext context, Binding binding, Block.Type type) {
+        IRubyObject self = prepareSelf(binding);
+
         Visibility oldVis = binding.getFrame().getVisibility();
         Frame lastFrame = pre(context, null, binding);
 
         try {
-            if (hasVarNode) {
-                setupBlockArg(context, varNode, value, self);
+            if (!noargblock) assigner.assign(context.getRuntime(), context, self, Block.NULL_BLOCK);
+
+            return evalBlockBody(context, binding, self);
+        } catch (JumpException.NextJump nj) {
+            return handleNextJump(context, nj, type);
+        } finally {
+            post(context, binding, oldVis, lastFrame);
+        }
+    }
+
+    public IRubyObject yield(ThreadContext context, IRubyObject value, Binding binding, Block.Type type) {
+        return yield(context, value, binding, type, Block.NULL_BLOCK);
+
+    }
+
+    @Override
+    public IRubyObject yield(ThreadContext context, IRubyObject value, IRubyObject self,
+            RubyModule klass, boolean alreadyArray, Binding binding, Block.Type type, Block block) {
+        if (klass == null) {
+            self = prepareSelf(binding);
+        }
+
+        Visibility oldVis = binding.getFrame().getVisibility();
+        Frame lastFrame = pre(context, klass, binding);
+        Ruby runtime = context.getRuntime();
+
+        try {
+            if (!noargblock) {
+                value = alreadyArray ? assigner.convertIfAlreadyArray(runtime, value) :
+                    assigner.convertToArray(runtime, value);
+
+                assigner.assignArray(runtime, context, self, value, block);
             }
-            
-            return evalBlockBody(context, self);
+
+            // This while loop is for restarting the block call in case a 'redo' fires.
+            return evalBlockBody(context, binding, self);
+        } catch (JumpException.NextJump nj) {
+            return handleNextJump(context, nj, type);
+        } finally {
+            post(context, binding, oldVis, lastFrame);
+        }
+    }
+
+    @Override
+    public IRubyObject yield(ThreadContext context, IRubyObject value,
+            Binding binding, Block.Type type, Block block) {
+        IRubyObject self = prepareSelf(binding);
+        Visibility oldVis = binding.getFrame().getVisibility();
+        Frame lastFrame = pre(context, null, binding);
+
+        try {
+            if (!noargblock) assigner.assignArray(context.getRuntime(), context, self,
+                    assigner.convertToArray(context.getRuntime(), value), block);
+
+            return evalBlockBody(context, binding, self);
         } catch (JumpException.NextJump nj) {
             return handleNextJump(context, nj, type);
         } finally {
@@ -155,41 +359,19 @@ public class InterpretedBlock extends BlockBody {
      * @param value The value to yield, either a single value or an array of values
      * @param self The current self
      * @param klass
-     * @param aValue Should value be arrayified or not?
-     * @return
+     * @param alreadyArray do we need an array or should we assume it already is one?
+     * @return result of block invocation
      */
     public IRubyObject yield(ThreadContext context, IRubyObject value, IRubyObject self, 
-            RubyModule klass, boolean aValue, Binding binding, Block.Type type) {
-        if (klass == null) {
-            self = prepareSelf(binding);
-        }
-        
-        Visibility oldVis = binding.getFrame().getVisibility();
-        Frame lastFrame = pre(context, klass, binding);
-
-        try {
-            if (hasVarNode) {
-                if (aValue) {
-                    setupBlockArgs(context, varNode, value, self);
-                } else {
-                    setupBlockArg(context, varNode, value, self);
-                }
-            }
-            
-            // This while loop is for restarting the block call in case a 'redo' fires.
-            return evalBlockBody(context, self);
-        } catch (JumpException.NextJump nj) {
-            return handleNextJump(context, nj, type);
-        } finally {
-            post(context, binding, oldVis, lastFrame);
-        }
+            RubyModule klass, boolean alreadyArray, Binding binding, Block.Type type) {
+        return yield(context, value, self, klass, alreadyArray, binding, type, Block.NULL_BLOCK);
     }
     
-    private IRubyObject evalBlockBody(ThreadContext context, IRubyObject self) {
+    private IRubyObject evalBlockBody(ThreadContext context, Binding binding, IRubyObject self) {
         // This while loop is for restarting the block call in case a 'redo' fires.
         while (true) {
             try {
-                return bodyNode.interpret(context.getRuntime(), context, self, Block.NULL_BLOCK);
+                return ASTInterpreter.INTERPRET_BLOCK(context.getRuntime(), context, file, line, bodyNode, binding.getMethod(), self, Block.NULL_BLOCK);
             } catch (JumpException.RedoJump rj) {
                 context.pollThreadEvents();
                 // do nothing, allow loop to redo
@@ -210,81 +392,15 @@ public class InterpretedBlock extends BlockBody {
         return nj.getValue() == null ? context.getRuntime().getNil() : (IRubyObject)nj.getValue();
     }
 
-    private void setupBlockArgs(ThreadContext context, Node varNode, IRubyObject value, IRubyObject self) {
-        Ruby runtime = context.getRuntime();
-        
-        switch (varNode.getNodeType()) {
-        case ZEROARGNODE:
-            break;
-        case MULTIPLEASGNNODE:
-            value = AssignmentVisitor.multiAssign(runtime, context, self, (MultipleAsgnNode)varNode, (RubyArray)value, false);
-            break;
-        default:
-            defaultArgsLogic(context, runtime, self, value);
-        }
+    public Node getBodyNode() {
+        return bodyNode;
     }
 
-    private void setupBlockArg(ThreadContext context, Node varNode, IRubyObject value, IRubyObject self) {
-        Ruby runtime = context.getRuntime();
-        
-        switch (varNode.getNodeType()) {
-        case ZEROARGNODE:
-            return;
-        case MULTIPLEASGNNODE:
-            value = AssignmentVisitor.multiAssign(runtime, context, self, (MultipleAsgnNode)varNode,
-                    ArgsUtil.convertToRubyArray(runtime, value, ((MultipleAsgnNode)varNode).getHeadNode() != null), false);
-            break;
-        default:
-            defaultArgLogic(context, runtime, self, value);
-        }
-    }
-    
-    private final void defaultArgsLogic(ThreadContext context, Ruby ruby, IRubyObject self, IRubyObject value) {
-        int length = ArgsUtil.arrayLength(value);
-        switch (length) {
-        case 0:
-            value = ruby.getNil();
-            break;
-        case 1:
-            value = ((RubyArray)value).eltInternal(0);
-            break;
-        default:
-            ruby.getWarnings().warn(ID.MULTIPLE_VALUES_FOR_BLOCK, "multiple values for a block parameter (" + length + " for 1)");
-        }
-        
-        varNode.assign(ruby, context, self, value, Block.NULL_BLOCK, false);
-    }
-    
-    private final void defaultArgLogic(ThreadContext context, Ruby ruby, IRubyObject self, IRubyObject value) {
-        if (value == null) {
-            ruby.getWarnings().warn(ID.MULTIPLE_VALUES_FOR_BLOCK, "multiple values for a block parameter (0 for 1)");
-        }
-        varNode.assign(ruby, context, self, value, Block.NULL_BLOCK, false);
-    }
-    
-    public StaticScope getStaticScope() {
-        return scope;
+    public String getFile() {
+        return position.getFile();
     }
 
-    public Block cloneBlock(Binding binding) {
-        // We clone dynamic scope because this will be a new instance of a block.  Any previously
-        // captured instances of this block may still be around and we do not want to start
-        // overwriting those values when we create a new one.
-        // ENEBO: Once we make self, lastClass, and lastMethod immutable we can remove duplicate
-        binding = binding.clone();
-        return new Block(this, binding);
-    }
-
-    public IterNode getIterNode() {
-        return iterNode;
-    }
-
-    /**
-     * What is the arity of this block?
-     * 
-     * @return the arity
-     */
-    public Arity arity() {
-        return arity;
+    public int getLine() {
+        return position.getLine();
     }
 }

@@ -41,11 +41,9 @@ import org.jruby.runtime.builtin.IRubyObject;
  * rather than with an ICallable. For lightweight block logic within
  * Java code.
  */
-public class CompiledBlock extends BlockBody {
+public class CompiledBlock extends ContextAwareBlockBody {
     protected final CompiledBlockCallback callback;
     protected final boolean hasMultipleArgsHead;
-    protected final Arity arity;
-    protected final StaticScope scope;
     
     public static Block newCompiledClosure(ThreadContext context, IRubyObject self, Arity arity,
             StaticScope scope, CompiledBlockCallback callback, boolean hasMultipleArgsHead, int argumentType) {
@@ -66,9 +64,8 @@ public class CompiledBlock extends BlockBody {
     }
 
     protected CompiledBlock(Arity arity, StaticScope scope, CompiledBlockCallback callback, boolean hasMultipleArgsHead, int argumentType) {
-        super(argumentType);
-        this.arity = arity;
-        this.scope = scope;
+        super(scope, arity, argumentType);
+        
         this.callback = callback;
         this.hasMultipleArgsHead = hasMultipleArgsHead;
     }
@@ -78,28 +75,41 @@ public class CompiledBlock extends BlockBody {
         return yield(context, null, binding, type);
     }
 
+    @Override
     public IRubyObject yieldSpecific(ThreadContext context, IRubyObject arg0, Binding binding, Block.Type type) {
         return yield(context, arg0, binding, type);
     }
 
+    @Override
     public IRubyObject yieldSpecific(ThreadContext context, IRubyObject arg0, IRubyObject arg1, Binding binding, Block.Type type) {
         return yield(context, context.getRuntime().newArrayNoCopyLight(arg0, arg1), null, null, true, binding, type);
     }
 
+    @Override
     public IRubyObject yieldSpecific(ThreadContext context, IRubyObject arg0, IRubyObject arg1, IRubyObject arg2, Binding binding, Block.Type type) {
         return yield(context, context.getRuntime().newArrayNoCopyLight(arg0, arg1, arg2), null, null, true, binding, type);
     }
 
     @Override
     public IRubyObject yield(ThreadContext context, IRubyObject value, Binding binding, Block.Type type) {
+        return yield(context, value, binding, type, Block.NULL_BLOCK);
+    }
+    
+    public IRubyObject yield(ThreadContext context, IRubyObject args, IRubyObject self, RubyModule klass, boolean aValue, Binding binding, Block.Type type) {
+        return yield(context, args, self, klass, aValue, binding, type, Block.NULL_BLOCK);
+    }
+
+    // FIXME: These two duplicate overrides should go away
+    @Override
+    public IRubyObject yield(ThreadContext context, IRubyObject value, Binding binding, Block.Type type, Block block) {
         IRubyObject self = prepareSelf(binding);
 
-        IRubyObject realArg = setupBlockArg(context.getRuntime(), value, self); 
+        IRubyObject realArg = setupBlockArg(context.getRuntime(), value, self);
         Visibility oldVis = binding.getFrame().getVisibility();
         Frame lastFrame = pre(context, null, binding);
-        
+
         try {
-            return callback.call(context, self, realArg);
+            return callback.call(context, self, realArg, block);
         } catch (JumpException.NextJump nj) {
             // A 'next' is like a local return from the block, ending this call or yield.
             return handleNextJump(context, nj, type);
@@ -107,19 +117,20 @@ public class CompiledBlock extends BlockBody {
             post(context, binding, oldVis, lastFrame);
         }
     }
-    
-    public IRubyObject yield(ThreadContext context, IRubyObject args, IRubyObject self, RubyModule klass, boolean aValue, Binding binding, Block.Type type) {
+
+    @Override
+    public IRubyObject yield(ThreadContext context, IRubyObject args, IRubyObject self, RubyModule klass, boolean aValue, Binding binding, Block.Type type, Block block) {
         if (klass == null) {
             self = prepareSelf(binding);
         }
 
-        IRubyObject realArg = aValue ? 
-                setupBlockArgs(context, args, self) : setupBlockArg(context.getRuntime(), args, self); 
+        IRubyObject realArg = aValue ?
+                setupBlockArgs(context, args, self) : setupBlockArg(context.getRuntime(), args, self);
         Visibility oldVis = binding.getFrame().getVisibility();
         Frame lastFrame = pre(context, klass, binding);
-        
+
         try {
-            return callback.call(context, self, realArg);
+            return callback.call(context, self, realArg, block);
         } catch (JumpException.NextJump nj) {
             // A 'next' is like a local return from the block, ending this call or yield.
             return handleNextJump(context, nj, type);
@@ -137,15 +148,6 @@ public class CompiledBlock extends BlockBody {
 
     private IRubyObject handleNextJump(ThreadContext context, JumpException.NextJump nj, Block.Type type) {
         return nj.getValue() == null ? context.getRuntime().getNil() : (IRubyObject)nj.getValue();
-    }
-    
-    protected Frame pre(ThreadContext context, RubyModule klass, Binding binding) {
-        return context.preYieldSpecificBlock(binding, scope, klass);
-    }
-    
-    protected void post(ThreadContext context, Binding binding, Visibility vis, Frame lastFrame) {
-        binding.getFrame().setVisibility(vis);
-        context.postYield(binding, lastFrame);
     }
 
     protected IRubyObject setupBlockArgs(ThreadContext context, IRubyObject value, IRubyObject self) {
@@ -196,20 +198,13 @@ public class CompiledBlock extends BlockBody {
         }
         return value;
     }
-    
-    public StaticScope getStaticScope() {
-        return scope;
+
+    public String getFile() {
+        return callback.getFile();
     }
 
-    public Block cloneBlock(Binding binding) {
-        binding = binding.clone();
-        
-        return new Block(this, binding);
-    }
-
-    @Override
-    public Arity arity() {
-        return arity;
+    public int getLine() {
+        return callback.getLine();
     }
 
     private IRubyObject warnMultiReturnNil(Ruby ruby) {

@@ -31,6 +31,8 @@
  ***** END LICENSE BLOCK *****/
 package org.jruby;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import static org.jruby.RubyEnumerator.enumeratorize;
 
 import java.util.Iterator;
@@ -39,8 +41,9 @@ import org.jruby.anno.JRubyMethod;
 import org.jruby.anno.JRubyModule;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
-import org.jruby.runtime.Visibility;
+import static org.jruby.runtime.Visibility.*;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.jruby.util.func.Function1;
 
 @JRubyModule(name="ObjectSpace")
 public class RubyObjectSpace {
@@ -57,7 +60,7 @@ public class RubyObjectSpace {
         return objectSpaceModule;
     }
 
-    @JRubyMethod(name = "define_finalizer", required = 1, optional = 1, frame = true, module = true, visibility = Visibility.PRIVATE)
+    @JRubyMethod(required = 1, optional = 1, module = true, visibility = PRIVATE)
     public static IRubyObject define_finalizer(IRubyObject recv, IRubyObject[] args, Block block) {
         Ruby runtime = recv.getRuntime();
         IRubyObject finalizer = null;
@@ -75,13 +78,13 @@ public class RubyObjectSpace {
         return runtime.newArray(runtime.newFixnum(runtime.getSafeLevel()), finalizer);
     }
 
-    @JRubyMethod(name = "undefine_finalizer", required = 1, frame = true, module = true, visibility = Visibility.PRIVATE)
+    @JRubyMethod(required = 1, module = true, visibility = PRIVATE)
     public static IRubyObject undefine_finalizer(IRubyObject recv, IRubyObject arg1, Block block) {
         recv.getRuntime().getObjectSpace().removeFinalizers(RubyNumeric.fix2long(arg1.id()));
         return recv;
     }
 
-    @JRubyMethod(name = "_id2ref", required = 1, module = true, visibility = Visibility.PRIVATE)
+    @JRubyMethod(name = "_id2ref", required = 1, module = true, visibility = PRIVATE)
     public static IRubyObject id2ref(IRubyObject recv, IRubyObject id) {
         Ruby runtime = id.getRuntime();
         if (!(id instanceof RubyFixnum)) {
@@ -99,58 +102,73 @@ public class RubyObjectSpace {
             // odd
             return runtime.newFixnum((longId - 1) / 2);
         } else {
-            IRubyObject object = runtime.getObjectSpace().id2ref(longId);
-            if (object == null) {
+            if (runtime.isObjectSpaceEnabled()) {
+                IRubyObject object = runtime.getObjectSpace().id2ref(longId);
+                if (object == null) {
+                    return runtime.getNil();
+                }
+                return object;
+            } else {
+                runtime.getWarnings().warn("ObjectSpace is disabled; _id2ref only supports immediates, pass -X+O to enable");
                 return runtime.getNil();
             }
-            return object;
         }
     }
     
-    @JRubyMethod(name = "each_object", optional = 1, frame = true, module = true, visibility = Visibility.PRIVATE)
-    public static IRubyObject each_object(ThreadContext context, IRubyObject recv, IRubyObject[] args, Block block) {
-        RubyModule rubyClass;
+    public static IRubyObject each_objectInternal(final ThreadContext context, IRubyObject recv, IRubyObject[] args, final Block block) {
+        RubyModule tmpClass;
         if (args.length == 0) {
-            rubyClass = recv.getRuntime().getObject();
+            tmpClass = recv.getRuntime().getObject();
         } else {
             if (!(args[0] instanceof RubyModule)) throw recv.getRuntime().newTypeError("class or module required");
-            rubyClass = (RubyModule) args[0];
+            tmpClass = (RubyModule) args[0];
         }
+        final RubyModule rubyClass = tmpClass;
         Ruby runtime = recv.getRuntime();
-        int count = 0;
-        if (rubyClass != runtime.getClassClass()) {
+        final int[] count = {0};
+        if (rubyClass == runtime.getClassClass() ||
+                rubyClass == runtime.getModule()) {
+            final Collection<IRubyObject> modules = new ArrayList<IRubyObject>();
+            runtime.eachModule(new Function1<Object, IRubyObject>() {
+                public Object apply(IRubyObject arg1) {
+                    if (rubyClass.isInstance(arg1)) {
+                        if (arg1 instanceof IncludedModuleWrapper ||
+                                (arg1 instanceof RubyClass && ((RubyClass)arg1).isSingleton())) {
+                            // do nothing for included wrappers or singleton classes
+                        } else {
+                            count[0]++;
+                            modules.add(arg1); // store the module to avoid concurrent modification exceptions
+                        }
+                    }
+                    return null;
+                }
+            });
+
+            for (IRubyObject arg : modules) {
+                block.yield(context, arg);
+            }
+        } else {
             if (!runtime.isObjectSpaceEnabled()) {
                 throw runtime.newRuntimeError("ObjectSpace is disabled; each_object will only work with Class, pass -X+O to enable");
             }
             Iterator iter = recv.getRuntime().getObjectSpace().iterator(rubyClass);
-            
+
             IRubyObject obj = null;
             while ((obj = (IRubyObject)iter.next()) != null) {
-                count++;
-                block.yield(context, obj);
-            }
-        } else {
-            Iterator iter = runtime.getObject().subclasses(true).iterator();
-            
-            while (iter.hasNext()) {
-                IRubyObject obj = (IRubyObject)iter.next();
-                if (obj instanceof RubyClass && ((RubyClass)obj).isIncluded()) {
-                    continue;
-                }
-                count++;
+                count[0]++;
                 block.yield(context, obj);
             }
         }
-        return recv.getRuntime().newFixnum(count);
+        return recv.getRuntime().newFixnum(count[0]);
     }
 
-    @JRubyMethod(name = "each_object", optional = 1, frame = true, module = true, visibility = Visibility.PRIVATE, compat = CompatVersion.RUBY1_9)
-    public static IRubyObject each_object19(ThreadContext context, IRubyObject recv, IRubyObject[] args, Block block) {
-        return block.isGiven() ? each_object(context, recv, args, block) : enumeratorize(context.getRuntime(), recv, "each_object", args);
+    @JRubyMethod(name = "each_object", optional = 1, module = true, visibility = PRIVATE)
+    public static IRubyObject each_object(ThreadContext context, IRubyObject recv, IRubyObject[] args, Block block) {
+        return block.isGiven() ? each_objectInternal(context, recv, args, block) : enumeratorize(context.getRuntime(), recv, "each_object", args);
     }
 
-    @JRubyMethod(name = "garbage_collect", module = true, visibility = Visibility.PRIVATE)
-    public static IRubyObject garbage_collect(IRubyObject recv) {
-        return RubyGC.start(recv);
+    @JRubyMethod(name = "garbage_collect", module = true, visibility = PRIVATE)
+    public static IRubyObject garbage_collect(ThreadContext context, IRubyObject recv) {
+        return RubyGC.start(context, recv);
     }
 }

@@ -93,4 +93,12 @@ public class WrapperMethod extends DynamicMethod {
     public DynamicMethod dup() {
         return new WrapperMethod(getImplementationClass(), method, getVisibility());
     }
+
+    public long getSerialNumber() {
+        return method.getSerialNumber();
+    }
+    
+    public DynamicMethod getRealMethod() {
+        return method;
+    }
 }

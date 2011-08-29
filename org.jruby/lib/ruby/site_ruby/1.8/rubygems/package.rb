@@ -1,23 +1,19 @@
-#++
-# Copyright (C) 2004 Mauricio Julio Fern·ndez Pradier
-# See LICENSE.txt for additional licensing information.
+# -*- coding: utf-8 -*-
 #--
+# Copyright (C) 2004 Mauricio Julio Fern√°ndez Pradier
+# See LICENSE.txt for additional licensing information.
+#++
 
-require 'fileutils'
-require 'find'
-require 'stringio'
-require 'yaml'
-require 'zlib'
-
-require 'rubygems/digest/md5'
-require 'rubygems/security'
 require 'rubygems/specification'
 
+##
 # Wrapper for FileUtils meant to provide logging and additional operations if
 # needed.
+
 class Gem::FileOperations
 
   def initialize(logger = nil)
+    require 'fileutils'
     @logger = logger
   end
 
@@ -43,7 +39,23 @@ module Gem::Package
   class ClosedIO < Error; end
   class BadCheckSum < Error; end
   class TooLongFileName < Error; end
-  class FormatError < Error; end
+  class FormatError < Error
+    attr_reader :path
+
+    def initialize message, path = nil
+      @path = path
+
+      message << " in #{path}" if path
+
+      super message
+    end
+
+  end
+
+  ##
+  # Raised when a tar file is corrupt
+
+  class TarInvalidError < Error; end
 
   def self.open(io, mode = "r", signer = nil, &block)
     tar_type = case mode

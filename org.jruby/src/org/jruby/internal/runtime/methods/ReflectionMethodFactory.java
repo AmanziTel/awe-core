@@ -29,6 +29,7 @@
  ***** END LICENSE BLOCK *****/
 package org.jruby.internal.runtime.methods;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
@@ -37,10 +38,17 @@ import java.util.List;
 import org.jruby.RubyModule;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.anno.JavaMethodDescriptor;
+import org.jruby.anno.TypePopulator;
+import org.jruby.lexer.yacc.ISourcePosition;
 import org.jruby.parser.StaticScope;
 import org.jruby.runtime.Arity;
+import org.jruby.runtime.Block;
+import org.jruby.runtime.CompiledBlockCallback;
+import org.jruby.runtime.CompiledBlockCallback19;
 import org.jruby.runtime.MethodFactory;
+import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.Visibility;
+import org.jruby.runtime.builtin.IRubyObject;
 
 /**
  * This MethodFactory uses reflection to provide method handles. Reflection is
@@ -57,8 +65,19 @@ public class ReflectionMethodFactory extends MethodFactory {
      */
     public DynamicMethod getCompiledMethodLazily(RubyModule implementationClass,
             String methodName, Arity arity, Visibility visibility, 
-            StaticScope scope, Object scriptObject, CallConfiguration callConfig) {
-        return getCompiledMethod(implementationClass, methodName, arity, visibility, scope, scriptObject, callConfig);
+            StaticScope scope, Object scriptObject, CallConfiguration callConfig,
+            ISourcePosition position, String parameterDesc) {
+
+        return getCompiledMethod(
+                implementationClass,
+                methodName,
+                arity,
+                visibility,
+                scope,
+                scriptObject,
+                callConfig,
+                position,
+                parameterDesc);
     }
     
     /**
@@ -68,10 +87,21 @@ public class ReflectionMethodFactory extends MethodFactory {
      */
     public DynamicMethod getCompiledMethod(RubyModule implementationClass,
             String methodName, Arity arity, Visibility visibility, 
-            StaticScope scope, Object scriptObject, CallConfiguration callConfig) {
+            StaticScope scope, Object scriptObject, CallConfiguration callConfig,
+            ISourcePosition position, String parameterDesc) {
         try {
-            Method method = scriptObject.getClass().getMethod(methodName, COMPILED_METHOD_PARAMS);
-            return new ReflectedCompiledMethod(implementationClass, arity, visibility, scope, scriptObject, method, callConfig);
+            Class scriptClass = scriptObject.getClass();
+            Method method = scriptClass.getMethod(methodName, scriptClass, ThreadContext.class, IRubyObject.class, IRubyObject[].class, Block.class);
+            return new ReflectedCompiledMethod(
+                    implementationClass,
+                    arity,
+                    visibility,
+                    scope,
+                    scriptObject,
+                    method,
+                    callConfig,
+                    position,
+                    parameterDesc);
         } catch (NoSuchMethodException nsme) {
             throw new RuntimeException("No method with name " + methodName + " found in " + scriptObject.getClass());
         }
@@ -85,12 +115,21 @@ public class ReflectionMethodFactory extends MethodFactory {
      */
     public DynamicMethod getAnnotatedMethod(RubyModule implementationClass, JavaMethodDescriptor desc) {
         try {
+            if (!Modifier.isPublic(desc.getDeclaringClass().getModifiers())) {
+                System.err.println("warning: binding non-public class" + desc.declaringClassName + "; reflected handles won't work");
+            }
+
             Method method = desc.getDeclaringClass().getDeclaredMethod(desc.name, desc.getParameterClasses());
             JavaMethod ic = new ReflectedJavaMethod(implementationClass, method, desc.anno);
 
-            ic.setJavaName(method.getName());
-            ic.setSingleton(Modifier.isStatic(method.getModifiers()));
-            ic.setCallConfig(CallConfiguration.getCallConfigByAnno(desc.anno));
+            TypePopulator.populateMethod(
+                    ic,
+                    ic.getArity().getValue(),
+                    method.getName(),
+                    Modifier.isStatic(method.getModifiers()),
+                    CallConfiguration.getCallConfigByAnno(desc.anno),
+                    desc.anno.notImplemented());
+                
             return ic;
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -105,6 +144,10 @@ public class ReflectionMethodFactory extends MethodFactory {
      */
     public DynamicMethod getAnnotatedMethod(RubyModule implementationClass, List<JavaMethodDescriptor> descs) {
         try {
+            if (!Modifier.isPublic(descs.get(0).getDeclaringClass().getModifiers())) {
+                System.err.println("warning: binding non-public class" + descs.get(0).declaringClassName + "; reflected handles won't work");
+            }
+            
             List<Method> methods = new ArrayList();
             List<JRubyMethod> annotations = new ArrayList();
             
@@ -117,13 +160,90 @@ public class ReflectionMethodFactory extends MethodFactory {
             
             JavaMethod ic = new ReflectedJavaMultiMethod(implementationClass, methods, annotations);
 
-            ic.setJavaName(method0.getName());
-            ic.setSingleton(Modifier.isStatic(method0.getModifiers()));
-            ic.setCallConfig(CallConfiguration.getCallConfigByAnno(anno0));
+            TypePopulator.populateMethod(
+                    ic,
+                    ic.getArity().getValue(),
+                    method0.getName(),
+                    Modifier.isStatic(method0.getModifiers()),
+                    CallConfiguration.getCallConfigByAnno(anno0),
+                    anno0.notImplemented());
             return ic;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
+    public CompiledBlockCallback getBlockCallback(String method, final String file, final int line, final Object scriptObject) {
+        try {
+            Class scriptClass = scriptObject.getClass();
+            final Method blockMethod = scriptClass.getMethod(method, scriptClass, ThreadContext.class, IRubyObject.class, IRubyObject.class, Block.class);
+            return new CompiledBlockCallback() {
+                public IRubyObject call(ThreadContext context, IRubyObject self, IRubyObject args, Block block) {
+                    try {
+                        return (IRubyObject)blockMethod.invoke(null, scriptObject, context, self, args, block);
+                    } catch (IllegalAccessException ex) {
+                        throw new RuntimeException(ex);
+                    } catch (IllegalArgumentException ex) {
+                        throw new RuntimeException(ex);
+                    } catch (InvocationTargetException ex) {
+                        Throwable cause = ex.getCause();
+                        if (cause instanceof RuntimeException) {
+                            throw (RuntimeException) cause;
+                        } else if (cause instanceof Error) {
+                            throw (Error) cause;
+                        } else {
+                            throw new RuntimeException(ex);
+                        }
+                    }
+                }
+
+                public String getFile() {
+                    return file;
+                }
+
+                public int getLine() {
+                    return line;
+                }
+            };
+        } catch (NoSuchMethodException nsme) {
+            throw new RuntimeException(nsme);
+        }
+    }
+
+    public CompiledBlockCallback19 getBlockCallback19(String method, final String file, final int line, final Object scriptObject) {
+        try {
+            Class scriptClass = scriptObject.getClass();
+            final Method blockMethod = scriptClass.getMethod(method, scriptClass, ThreadContext.class, IRubyObject.class, IRubyObject[].class, Block.class);
+            return new CompiledBlockCallback19() {
+                public IRubyObject call(ThreadContext context, IRubyObject self, IRubyObject[] args, Block block) {
+                    try {
+                        return (IRubyObject)blockMethod.invoke(null, scriptObject, context, self, args, block);
+                    } catch (IllegalAccessException ex) {
+                        throw new RuntimeException(ex);
+                    } catch (IllegalArgumentException ex) {
+                        throw new RuntimeException(ex);
+                    } catch (InvocationTargetException ex) {
+                        Throwable cause = ex.getCause();
+                        if (cause instanceof RuntimeException) {
+                            throw (RuntimeException) cause;
+                        } else if (cause instanceof Error) {
+                            throw (Error) cause;
+                        } else {
+                            throw new RuntimeException(ex);
+                        }
+                    }
+                }
+
+                public String getFile() {
+                    return file;
+                }
+
+                public int getLine() {
+                    return line;
+                }
+            };
+        } catch (NoSuchMethodException nsme) {
+            throw new RuntimeException(nsme);
+        }
+    }
 }

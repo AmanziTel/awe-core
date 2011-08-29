@@ -2,7 +2,7 @@
 #
 # benchmark.rb - a performance benchmarking library 
 # 
-# $Id: benchmark.rb 8696 2009-01-10 21:17:58Z headius $
+# $Id$
 # 
 # Created by Gotoken (gotoken@notwork.org). 
 #
@@ -334,7 +334,7 @@ module Benchmark
     #
     def item(label = "", &blk) # :yield:
       raise ArgumentError, "no block" unless block_given?
-      label.concat ' '
+      label += ' '
       w = label.length
       @width = w if @width < w
       @list.push [label, blk]

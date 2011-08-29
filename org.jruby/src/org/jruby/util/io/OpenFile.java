@@ -35,7 +35,13 @@ public class OpenFile {
         return mainStream;
     }
 
-    public synchronized void setMainStream(Stream mainStream) {
+    public Stream getMainStreamSafe() throws BadDescriptorException {
+        Stream stream = mainStream;
+        if (stream == null) throw new BadDescriptorException();
+        return stream;
+    }
+
+    public void setMainStream(Stream mainStream) {
         this.mainStream = mainStream;
     }
 
@@ -43,12 +49,24 @@ public class OpenFile {
         return pipeStream;
     }
 
-    public synchronized void setPipeStream(Stream pipeStream) {
+    public Stream getPipeStreamSafe() throws BadDescriptorException {
+        Stream stream = pipeStream;
+        if (stream == null) throw new BadDescriptorException();
+        return stream;
+    }
+
+    public void setPipeStream(Stream pipeStream) {
         this.pipeStream = pipeStream;
     }
 
     public Stream getWriteStream() {
         return pipeStream == null ? mainStream : pipeStream;
+    }
+
+    public Stream getWriteStreamSafe() throws BadDescriptorException {
+        Stream stream = pipeStream == null ? mainStream : pipeStream;
+        if (stream == null) throw new BadDescriptorException();
+        return stream;
     }
 
     public int getMode() {
@@ -86,18 +104,20 @@ public class OpenFile {
         return null;
     }
 
-    public void checkReadable(Ruby runtime) throws IOException, BadDescriptorException, PipeException, InvalidValueException {
+    public void checkReadable(Ruby runtime) throws IOException, BadDescriptorException, InvalidValueException {
         checkClosed(runtime);
 
         if ((mode & READABLE) == 0) {
             throw runtime.newIOError("not opened for reading");
         }
 
-        if (((mode & WBUF) != 0 || (mode & (SYNCWRITE | RBUF)) == SYNCWRITE)
-                && !mainStream.feof() && pipeStream == null) {
+        if (((mode & WBUF) != 0 || (mode & (SYNCWRITE | RBUF)) == SYNCWRITE) &&
+                !mainStream.feof() && pipeStream == null) {
             try {
                 // seek to force underlying buffer to flush
                 seek(0, Stream.SEEK_CUR);
+            } catch (PipeException p) {
+                // ignore unseekable streams for purposes of checking readability
             } catch (IOException ioe) {
                 // MRI ignores seek errors, presumably for unseekable files like
                 // serial ports (JRUBY-2979), so we shall too.
@@ -106,14 +126,20 @@ public class OpenFile {
     }
 
     public void seek(long offset, int whence) throws IOException, InvalidValueException, PipeException, BadDescriptorException {
-        flushBeforeSeek();
+        Stream stream = getWriteStreamSafe();
 
-        getWriteStream().lseek(offset, whence);
+        seekInternal(stream, offset, whence);
     }
 
-    private void flushBeforeSeek() throws BadDescriptorException, IOException {
+    private void seekInternal(Stream stream, long offset, int whence) throws IOException, InvalidValueException, PipeException, BadDescriptorException {
+        flushBeforeSeek(stream);
+
+        stream.lseek(offset, whence);
+    }
+
+    private void flushBeforeSeek(Stream stream) throws BadDescriptorException, IOException {
         if ((mode & WBUF) != 0) {
-            fflush(getWriteStream());
+            fflush(stream);
         }
     }
 
@@ -127,7 +153,7 @@ public class OpenFile {
         mode &= ~WBUF;
     }
 
-    public void checkWritable(Ruby runtime) throws IOException, BadDescriptorException, InvalidValueException, PipeException {
+    public void checkWritable(Ruby runtime) throws IOException, BadDescriptorException, InvalidValueException {
         checkClosed(runtime);
         if ((mode & WRITABLE) == 0) {
             throw runtime.newIOError("not opened for writing");
@@ -136,6 +162,8 @@ public class OpenFile {
             try {
                 // seek to force read buffer to invalidate
                 seek(0, Stream.SEEK_CUR);
+            } catch (PipeException p) {
+                // ignore unseekable streams for purposes of checking readability
             } catch (IOException ioe) {
                 // MRI ignores seek errors, presumably for unseekable files like
                 // serial ports (JRUBY-2979), so we shall too.
@@ -149,6 +177,17 @@ public class OpenFile {
     public void checkClosed(Ruby runtime) {
         if (mainStream == null && pipeStream == null) {
             throw runtime.newIOError("closed stream");
+        }
+    }
+
+    public boolean isBinmode() {
+        return (mode & BINMODE) != 0;
+    }
+
+    public void setBinmode() {
+        mode |= BINMODE;
+        if (mainStream != null) {
+            mainStream.setBinmode();
         }
     }
 
@@ -228,6 +267,20 @@ public class OpenFile {
         this.path = path;
     }
 
+    public boolean isAutoclose() {
+        boolean autoclose = true;
+        Stream myMain, myPipe;
+        if ((myMain = mainStream) != null) autoclose &= myMain.isAutoclose();
+        if ((myPipe = pipeStream) != null) autoclose &= myPipe.isAutoclose();
+        return autoclose;
+    }
+
+    public void setAutoclose(boolean autoclose) {
+        Stream myMain, myPipe;
+        if ((myMain = mainStream) != null) myMain.setAutoclose(autoclose);
+        if ((myPipe = pipeStream) != null) myPipe.setAutoclose(autoclose);
+    }
+
     public Finalizer getFinalizer() {
         return finalizer;
     }
@@ -261,7 +314,6 @@ public class OpenFile {
                     } finally {
                         // make sure the pipe stream is set to null
                         pipeStream = null;
-                        runtime.unregisterDescriptor(pipe.getFileno());
                     }
                 }
                 Stream ms = mainStream;
@@ -281,7 +333,6 @@ public class OpenFile {
                     } finally {
                         // make sure the main stream is set to null
                         mainStream = null;
-                        runtime.unregisterDescriptor(main.getFileno());
                     }
                 }
             }

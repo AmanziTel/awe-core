@@ -40,8 +40,11 @@ import org.jruby.evaluator.ASTInterpreter;
 import org.jruby.javasupport.util.RuntimeHelpers;
 import org.jruby.lexer.yacc.ISourcePosition;
 import org.jruby.runtime.Block;
+import org.jruby.runtime.CallSite;
+import org.jruby.runtime.MethodIndex;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.jruby.util.ByteList;
 
 /**
  * A call to super(...) with arguments to a method.
@@ -49,6 +52,7 @@ import org.jruby.runtime.builtin.IRubyObject;
 public class SuperNode extends Node implements BlockAcceptingNode {
     private final Node argsNode;
     private Node iterNode;
+    private final CallSite callSite;
 
     public SuperNode(ISourcePosition position, Node argsNode) {
         this(position, argsNode, null);
@@ -58,6 +62,10 @@ public class SuperNode extends Node implements BlockAcceptingNode {
         super(position);
         this.argsNode = argsNode;
         this.iterNode = iterNode;
+        if (argsNode instanceof ArrayNode) {
+            ((ArrayNode)argsNode).setLightweight(true);
+        }
+        this.callSite = MethodIndex.getSuperCallSite();
     }
 
     public NodeType getNodeType() {
@@ -96,24 +104,25 @@ public class SuperNode extends Node implements BlockAcceptingNode {
 
     @Override
     public IRubyObject interpret(Ruby runtime, ThreadContext context, IRubyObject self, Block aBlock) {
-        RuntimeHelpers.checkSuperDisabledOrOutOfMethod(context);
-
         IRubyObject[] args = ASTInterpreter.setupArgs(runtime, context, argsNode, self, aBlock);
         Block block = ASTInterpreter.getBlock(runtime, context, self, aBlock, iterNode);
         
         // If no explicit block passed to super, then use the one passed in, unless it's explicitly cleared with nil
         if (iterNode == null && !block.isGiven()) block = aBlock;
-        
-        return RuntimeHelpers.invokeSuper(context, self, args, block);
+
+        // dispatch as varargs, so incoming args are used to decide arity path
+        return callSite.callVarargs(context, self, self, args, block);
     }
     
     @Override
-    public String definition(Ruby runtime, ThreadContext context, IRubyObject self, Block aBlock) {
+    public ByteList definition(Ruby runtime, ThreadContext context, IRubyObject self, Block aBlock) {
         String name = context.getFrameName();
         RubyModule klazz = context.getFrameKlazz();
-        
-        if (name != null && klazz != null && klazz.getSuperClass().isMethodBound(name, false)) {
-            return ASTInterpreter.getArgumentDefinition(runtime, context, argsNode, "super", self, aBlock);
+
+        if (name != null &&
+                klazz != null &&
+                RuntimeHelpers.findImplementerIfNecessary(self.getMetaClass(), klazz).getSuperClass().isMethodBound(name, false)) {
+            return ASTInterpreter.getArgumentDefinition(runtime, context, argsNode, SUPER_BYTELIST, self, aBlock);
         }
             
         return null;

@@ -45,6 +45,7 @@ import org.jruby.ast.util.ArgsUtil;
 import org.jruby.common.IRubyWarnings.ID;
 import org.jruby.exceptions.JumpException;
 import org.jruby.javasupport.util.RuntimeHelpers;
+import org.jruby.lexer.yacc.ISourcePosition;
 import org.jruby.parser.StaticScope;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.DynamicScope;
@@ -54,34 +55,97 @@ import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.Binding;
 import org.jruby.runtime.Frame;
 import org.jruby.runtime.InterpretedBlock;
-import org.jruby.util.TypeConverter;
+import org.jruby.util.ByteList;
 
 public class ASTInterpreter {
-    @Deprecated
-    public static IRubyObject eval(Ruby runtime, ThreadContext context, Node node, IRubyObject self, Block block) {
-        assert self != null : "self during eval must never be null";
-        
-        // TODO: Make into an assert once I get things like blockbodynodes to be implicit nil
-        if (node == null) return runtime.getNil();
-        
+    public static IRubyObject INTERPRET_METHOD(
+            Ruby runtime,
+            ThreadContext context,
+            String file,
+            int line,
+            RubyModule implClass,
+            Node node, String name,
+            IRubyObject self,
+            Block block,
+            boolean isTraceable) {
         try {
+            String className = implClass.getName();
+            ThreadContext.pushBacktrace(context, className, name, file, line);
+            if (isTraceable) methodPreTrace(runtime, context, name, implClass);
             return node.interpret(runtime, context, self, block);
-        } catch (StackOverflowError soe) {
-            throw runtime.newSystemStackError("stack level too deep", soe);
+        } finally {
+            if (isTraceable) {
+                try {methodPostTrace(runtime, context, name, implClass);}
+                finally {ThreadContext.popBacktrace(context);}
+            } else {
+                ThreadContext.popBacktrace(context);
+            }
         }
+    }
+    public static IRubyObject INTERPRET_EVAL(Ruby runtime, ThreadContext context, Node node, String name, IRubyObject self, Block block) {
+        try {
+            ThreadContext.pushBacktrace(context, self.getMetaClass().getName(), name, node.getPosition());
+            return node.interpret(runtime, context, self, block);
+        } finally {
+            ThreadContext.popBacktrace(context);
+        }
+    }
+    public static IRubyObject INTERPRET_EVAL(Ruby runtime, ThreadContext context, String file, int line, Node node, String name, IRubyObject self, Block block) {
+        try {
+            ThreadContext.pushBacktrace(context, self.getMetaClass().getName(), name, file, line);
+            return node.interpret(runtime, context, self, block);
+        } finally {
+            ThreadContext.popBacktrace(context);
+        }
+    }
+    public static IRubyObject INTERPRET_CLASS(Ruby runtime, ThreadContext context, Node node, String name, IRubyObject self, Block block) {
+        try {
+            ThreadContext.pushBacktrace(context, self.getMetaClass().getName(), name, node.getPosition());
+            return node.interpret(runtime, context, self, block);
+        } finally {
+            ThreadContext.popBacktrace(context);
+        }
+    }
+    public static IRubyObject INTERPRET_BLOCK(Ruby runtime, ThreadContext context, String file, int line, Node node, String name, IRubyObject self, Block block) {
+        try {
+            ThreadContext.pushBacktrace(context, self.getMetaClass().getName(), name, file, line);
+            return node.interpret(runtime, context, self, block);
+        } finally {
+            ThreadContext.popBacktrace(context);
+        }
+    }
+    public static IRubyObject INTERPRET_ROOT(Ruby runtime, ThreadContext context, Node node, IRubyObject self, Block block) {
+        try {
+            ThreadContext.pushBacktrace(context, self.getMetaClass().getName(), "(root)", node.getPosition());
+            return node.interpret(runtime, context, self, block);
+        } finally {
+            ThreadContext.popBacktrace(context);
+        }
+    }
+
+    private static void methodPreTrace(Ruby runtime, ThreadContext context, String name, RubyModule implClass) {
+        if (runtime.hasEventHooks()) context.trace(RubyEvent.CALL, name, implClass);
+    }
+
+    private static void methodPostTrace(Ruby runtime, ThreadContext context, String name, RubyModule implClass) {
+        if (runtime.hasEventHooks()) context.trace(RubyEvent.RETURN, name, implClass);
+    }
+
+    @Deprecated
+    public static IRubyObject evalWithBinding(ThreadContext context, IRubyObject src, Binding binding) {
+        return evalWithBinding(context, binding.getSelf(), src, binding);
     }
     
     /**
      * Evaluate the given string under the specified binding object. If the binding is not a Proc or Binding object
      * (RubyProc or RubyBinding) throw an appropriate type error.
-     * @param context TODO
-     * @param evalString The string containing the text to be evaluated
+     * @param context the thread context for the current thread
+     * @param self the self against which eval was called; used as self in the eval in 1.9 mode
+     * @param src The string containing the text to be evaluated
      * @param binding The binding object under which to perform the evaluation
-     * @param file The filename to use when reporting errors during the evaluation
-     * @param lineNumber is the line number to pretend we are starting from
      * @return An IRubyObject result from the evaluation
      */
-    public static IRubyObject evalWithBinding(ThreadContext context, IRubyObject src, Binding binding) {
+    public static IRubyObject evalWithBinding(ThreadContext context, IRubyObject self, IRubyObject src, Binding binding) {
         Ruby runtime = src.getRuntime();
         DynamicScope evalScope = binding.getDynamicScope().getEvalScope();
         
@@ -91,11 +155,10 @@ public class ASTInterpreter {
         Frame lastFrame = context.preEvalWithBinding(binding);
         try {
             // Binding provided for scope, use it
-            IRubyObject newSelf = binding.getSelf();
             RubyString source = src.convertToString();
             Node node = runtime.parseEval(source.getByteList(), binding.getFile(), evalScope, binding.getLine());
 
-            return node.interpret(runtime, context, newSelf, binding.getFrame().getBlock());
+            return INTERPRET_EVAL(runtime, context, binding.getFile(), binding.getLine(), node, binding.getMethod(), self, binding.getFrame().getBlock());
         } catch (JumpException.BreakJump bj) {
             throw runtime.newLocalJumpError(RubyLocalJumpError.Reason.BREAK, (IRubyObject)bj.getValue(), "unexpected break");
         } catch (JumpException.RedoJump rj) {
@@ -105,20 +168,6 @@ public class ASTInterpreter {
         } finally {
             context.postEvalWithBinding(binding, lastFrame);
         }
-    }
-
-    /**
-     * Evaluate the given string.
-     * @param context TODO
-     * @param evalString The string containing the text to be evaluated
-     * @param file The filename to use when reporting errors during the evaluation
-     * @param lineNumber that the eval supposedly starts from
-     * @return An IRubyObject result from the evaluation
-     * @deprecated Call with a RubyString now.
-     */
-    public static IRubyObject evalSimple(ThreadContext context, IRubyObject self, IRubyObject src, String file, int lineNumber) {
-        RubyString source = src.convertToString();
-        return evalSimple(context, self, source, file, lineNumber);
     }
 
     /**
@@ -145,8 +194,8 @@ public class ASTInterpreter {
         
         try {
             Node node = runtime.parseEval(source.getByteList(), file, evalScope, lineNumber);
-            
-            return node.interpret(runtime, context, self, Block.NULL_BLOCK);
+
+            return INTERPRET_EVAL(runtime, context, file, lineNumber, node, "(eval)", self, Block.NULL_BLOCK);
         } catch (JumpException.BreakJump bj) {
             throw runtime.newLocalJumpError(RubyLocalJumpError.Reason.BREAK, (IRubyObject)bj.getValue(), "unexpected break");
         } catch (StackOverflowError soe) {
@@ -193,17 +242,29 @@ public class ASTInterpreter {
             }
 
             if (bodyNode == null) return runtime.getNil();
-            return bodyNode.interpret(runtime, context, type, block);
-        } finally {
-            if (runtime.hasEventHooks()) {
-                callTraceFunction(runtime, context, RubyEvent.END);
+            String name = type.getBaseName();
+            if (name == null) {
+                if (type.isSingleton()) {
+                    name = "__singleton__";
+                } else if (type.isModule()) { // can these two happen?
+                    name = "<anonymous module>";
+                } else {
+                    name = "<anonymous class>";
+                }
             }
-            
-            context.postClassEval();
+            return INTERPRET_CLASS(runtime, context, bodyNode, name, type, block);
+        } finally {
+            try {
+                if (runtime.hasEventHooks()) {
+                    callTraceFunction(runtime, context, RubyEvent.END);
+                }
+            } finally {
+                context.postClassEval();
+            }
         }
     }
 
-    public static String getArgumentDefinition(Ruby runtime, ThreadContext context, Node node, String type, IRubyObject self, Block block) {
+    public static ByteList getArgumentDefinition(Ruby runtime, ThreadContext context, Node node, ByteList type, IRubyObject self, Block block) {
         if (node == null) return type;
             
         if (node instanceof ArrayNode) {
@@ -261,7 +322,10 @@ public class ASTInterpreter {
     public static RubyModule getClassVariableBase(ThreadContext context, Ruby runtime) {
         StaticScope scope = context.getCurrentScope().getStaticScope();
         RubyModule rubyClass = scope.getModule();
-        if (rubyClass.isSingleton() || rubyClass == runtime.getDummy()) {
+        while (rubyClass.isSingleton() || rubyClass == runtime.getDummy()) {
+            // We ran out of scopes to check
+            if (scope == null) return null;
+
             scope = scope.getPreviousCRefScope();
             rubyClass = scope.getModule();
             if (scope.getPreviousCRefScope() == null) {
@@ -269,16 +333,6 @@ public class ASTInterpreter {
             }            
         }
         return rubyClass;
-    }
-
-    @Deprecated
-    public static String getDefinition(Ruby runtime, ThreadContext context, Node node, IRubyObject self, Block aBlock) {
-        try {
-            context.setWithinDefined(true);
-            return node.definition(runtime, context, self, aBlock);
-        } finally {
-            context.setWithinDefined(false);
-        }
     }
 
     public static IRubyObject[] setupArgs(Ruby runtime, ThreadContext context, Node node, IRubyObject self, Block aBlock) {
@@ -302,68 +356,5 @@ public class ASTInterpreter {
         }
 
         return ArgsUtil.convertToJavaArray(node.interpret(runtime,context, self, aBlock));
-    }
-
-    @Deprecated
-    public static IRubyObject aValueSplat(Ruby runtime, IRubyObject value) {
-        if (!(value instanceof RubyArray) || ((RubyArray) value).length().getLongValue() == 0) {
-            return runtime.getNil();
-        }
-
-        RubyArray array = (RubyArray) value;
-
-        return array.getLength() == 1 ? array.first(IRubyObject.NULL_ARRAY) : array;
-    }
-
-    @Deprecated
-    public static RubyArray arrayValue(Ruby runtime, IRubyObject value) {
-        IRubyObject tmp = value.checkArrayType();
-
-        if (tmp.isNil()) {
-            // Object#to_a is obsolete.  We match Ruby's hack until to_a goes away.  Then we can 
-            // remove this hack too.
-            if (value.getMetaClass().searchMethod("to_a").getImplementationClass() != runtime.getKernel()) {
-                value = value.callMethod(runtime.getCurrentContext(), "to_a");
-                if (!(value instanceof RubyArray)) throw runtime.newTypeError("`to_a' did not return Array");
-                return (RubyArray)value;
-            } else {
-                return runtime.newArray(value);
-            }
-        }
-        return (RubyArray)tmp;
-    }
-
-    @Deprecated
-    public static IRubyObject aryToAry(Ruby runtime, IRubyObject value) {
-        if (value instanceof RubyArray) return value;
-
-        if (value.respondsTo("to_ary")) {
-            return TypeConverter.convertToType(value, runtime.getArray(), "to_ary", false);
-        }
-
-        return runtime.newArray(value);
-    }
-
-    @Deprecated
-    public static RubyArray splatValue(Ruby runtime, IRubyObject value) {
-        if (value.isNil()) {
-            return runtime.newArray(value);
-        }
-
-        return arrayValue(runtime, value);
-    }
-
-    // Used by the compiler to simplify arg processing
-    @Deprecated
-    public static RubyArray splatValue(IRubyObject value, Ruby runtime) {
-        return splatValue(runtime, value);
-    }
-    @Deprecated
-    public static IRubyObject aValueSplat(IRubyObject value, Ruby runtime) {
-        return aValueSplat(runtime, value);
-    }
-    @Deprecated
-    public static IRubyObject aryToAry(IRubyObject value, Ruby runtime) {
-        return aryToAry(runtime, value);
     }
 }

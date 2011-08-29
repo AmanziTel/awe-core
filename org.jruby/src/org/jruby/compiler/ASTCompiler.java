@@ -34,11 +34,18 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import org.jcodings.Encoding;
+import org.jruby.RubyClass;
 import org.jruby.RubyFixnum;
+import org.jruby.RubyFloat;
 import org.jruby.RubyInstanceConfig;
+import org.jruby.RubyMatchData;
 import org.jruby.ast.AliasNode;
 import org.jruby.ast.AndNode;
+import org.jruby.ast.ArgsCatNode;
 import org.jruby.ast.ArgsNode;
+import org.jruby.ast.ArgsPushNode;
 import org.jruby.ast.ArrayNode;
 import org.jruby.ast.AttrAssignNode;
 import org.jruby.ast.BackRefNode;
@@ -46,25 +53,38 @@ import org.jruby.ast.BeginNode;
 import org.jruby.ast.BignumNode;
 import org.jruby.ast.BinaryOperatorNode;
 import org.jruby.ast.BlockNode;
+import org.jruby.ast.BlockPassNode;
 import org.jruby.ast.BreakNode;
 import org.jruby.ast.CallNode;
+import org.jruby.ast.CaseNode;
+import org.jruby.ast.ClassNode;
 import org.jruby.ast.ClassVarAsgnNode;
+import org.jruby.ast.ClassVarDeclNode;
 import org.jruby.ast.ClassVarNode;
+import org.jruby.ast.Colon2ConstNode;
+import org.jruby.ast.Colon2MethodNode;
 import org.jruby.ast.Colon2Node;
 import org.jruby.ast.Colon3Node;
 import org.jruby.ast.ConstDeclNode;
 import org.jruby.ast.ConstNode;
 import org.jruby.ast.DAsgnNode;
+import org.jruby.ast.DRegexpNode;
 import org.jruby.ast.DStrNode;
+import org.jruby.ast.DSymbolNode;
 import org.jruby.ast.DVarNode;
+import org.jruby.ast.DXStrNode;
 import org.jruby.ast.DefinedNode;
 import org.jruby.ast.DefnNode;
+import org.jruby.ast.DefsNode;
 import org.jruby.ast.DotNode;
 import org.jruby.ast.EnsureNode;
 import org.jruby.ast.EvStrNode;
 import org.jruby.ast.FCallNode;
+import org.jruby.ast.FileNode;
 import org.jruby.ast.FixnumNode;
+import org.jruby.ast.FlipNode;
 import org.jruby.ast.FloatNode;
+import org.jruby.ast.ForNode;
 import org.jruby.ast.GlobalAsgnNode;
 import org.jruby.ast.GlobalVarNode;
 import org.jruby.ast.HashNode;
@@ -73,70 +93,68 @@ import org.jruby.ast.InstAsgnNode;
 import org.jruby.ast.InstVarNode;
 import org.jruby.ast.IterNode;
 import org.jruby.ast.ListNode;
+import org.jruby.ast.LiteralNode;
 import org.jruby.ast.LocalAsgnNode;
 import org.jruby.ast.LocalVarNode;
 import org.jruby.ast.Match2Node;
 import org.jruby.ast.Match3Node;
 import org.jruby.ast.MatchNode;
+import org.jruby.ast.ModuleNode;
+import org.jruby.ast.MultipleAsgnNode;
 import org.jruby.ast.NewlineNode;
 import org.jruby.ast.NextNode;
+import org.jruby.ast.NilNode;
 import org.jruby.ast.Node;
 import org.jruby.ast.NodeType;
 import org.jruby.ast.NotNode;
 import org.jruby.ast.NthRefNode;
-import org.jruby.ast.OpAsgnOrNode;
 import org.jruby.ast.OpAsgnNode;
+import org.jruby.ast.OpAsgnOrNode;
+import org.jruby.ast.OpElementAsgnNode;
 import org.jruby.ast.OrNode;
+import org.jruby.ast.PostExeNode;
+import org.jruby.ast.PreExeNode;
 import org.jruby.ast.RegexpNode;
 import org.jruby.ast.RescueBodyNode;
 import org.jruby.ast.RescueNode;
 import org.jruby.ast.ReturnNode;
 import org.jruby.ast.RootNode;
+import org.jruby.ast.SClassNode;
 import org.jruby.ast.SValueNode;
+import org.jruby.ast.SelfNode;
+import org.jruby.ast.SpecialArgs;
 import org.jruby.ast.SplatNode;
+import org.jruby.ast.StarNode;
 import org.jruby.ast.StrNode;
 import org.jruby.ast.SuperNode;
 import org.jruby.ast.SymbolNode;
-import org.jruby.ast.VCallNode;
-import org.jruby.ast.WhileNode;
-import org.jruby.ast.YieldNode;
-import org.jruby.runtime.Arity;
-import org.jruby.runtime.CallType;
-import org.jruby.exceptions.JumpException;
-import org.jruby.RubyMatchData;
-import org.jruby.RubyString;
-import org.jruby.ast.ArgsCatNode;
-import org.jruby.ast.ArgsPushNode;
-import org.jruby.ast.BlockPassNode;
-import org.jruby.ast.CaseNode;
-import org.jruby.ast.ClassNode;
-import org.jruby.ast.ClassVarDeclNode;
-import org.jruby.ast.Colon2ConstNode;
-import org.jruby.ast.Colon2MethodNode;
-import org.jruby.ast.DRegexpNode;
-import org.jruby.ast.DSymbolNode;
-import org.jruby.ast.DXStrNode;
-import org.jruby.ast.DefsNode;
-import org.jruby.ast.FileNode;
-import org.jruby.ast.FlipNode;
-import org.jruby.ast.ForNode;
-import org.jruby.ast.ModuleNode;
-import org.jruby.ast.MultipleAsgnNode;
-import org.jruby.ast.OpElementAsgnNode;
-import org.jruby.ast.PostExeNode;
-import org.jruby.ast.PreExeNode;
-import org.jruby.ast.SClassNode;
-import org.jruby.ast.StarNode;
 import org.jruby.ast.ToAryNode;
 import org.jruby.ast.UndefNode;
 import org.jruby.ast.UntilNode;
 import org.jruby.ast.VAliasNode;
+import org.jruby.ast.VCallNode;
 import org.jruby.ast.WhenNode;
 import org.jruby.ast.WhenOneArgNode;
+import org.jruby.ast.WhileNode;
 import org.jruby.ast.XStrNode;
+import org.jruby.ast.YieldNode;
 import org.jruby.ast.ZSuperNode;
+import org.jruby.exceptions.JumpException;
+import org.jruby.internal.runtime.methods.DefaultMethod;
+import org.jruby.internal.runtime.methods.DynamicMethod;
+import org.jruby.internal.runtime.methods.DynamicMethod.NativeCall;
+import org.jruby.internal.runtime.methods.InterpretedMethod;
+import org.jruby.internal.runtime.methods.JittedMethod;
+import org.jruby.javasupport.util.RuntimeHelpers;
 import org.jruby.parser.StaticScope;
+import org.jruby.runtime.Arity;
 import org.jruby.runtime.BlockBody;
+import org.jruby.runtime.CallType;
+import org.jruby.runtime.MethodIndex;
+import org.jruby.runtime.callsite.CacheEntry;
+import org.jruby.runtime.callsite.CachingCallSite;
+import org.jruby.util.ByteList;
+import org.jruby.util.StringSupport;
 
 /**
  *
@@ -144,6 +162,13 @@ import org.jruby.runtime.BlockBody;
  */
 public class ASTCompiler {
     private boolean isAtRoot = true;
+
+    public void compileBody(Node node, BodyCompiler context, boolean expr) {
+        Node oldBodyNode = currentBodyNode;
+        currentBodyNode = node;
+        compile(node, context, expr);
+        currentBodyNode = oldBodyNode;
+    }
     
     public void compile(Node node, BodyCompiler context, boolean expr) {
         if (node == null) {
@@ -152,7 +177,7 @@ public class ASTCompiler {
         }
         switch (node.getNodeType()) {
             case ALIASNODE:
-                compileAlias(node, context, expr);
+                compileAlias((AliasNode) node, context, expr);
                 break;
             case ANDNODE:
                 compileAnd(node, context, expr);
@@ -289,6 +314,9 @@ public class ASTCompiler {
             case ITERNODE:
                 compileIter(node, context);
                 break;
+            case LITERALNODE:
+                compileLiteral((LiteralNode) node, context);
+                break;
             case LOCALASGNNODE:
                 compileLocalAsgn(node, context, expr);
                 break;
@@ -393,7 +421,7 @@ public class ASTCompiler {
                 compileTrue(node, context, expr);
                 break;
             case UNDEFNODE:
-                compileUndef(node, context, expr);
+                compileUndef((UndefNode) node, context, expr);
                 break;
             case UNTILNODE:
                 compileUntil(node, context, expr);
@@ -559,20 +587,23 @@ public class ASTCompiler {
                 compileMultipleAsgnAssignment(node, context, expr);
                 break;
             case ZEROARGNODE:
-                throw new NotCompilableException("Shouldn't get here; zeroarg does not do assignment: " + node);
+                context.consumeCurrentValue();;
+                break;
             default:
                 throw new NotCompilableException("Can't compile assignment node: " + node);
         }
     }
 
-    public static YARVNodesCompiler getYARVCompiler() {
-        return new YARVNodesCompiler();
-    }
+    public void compileAlias(final AliasNode alias, BodyCompiler context, boolean expr) {
+        CompilerCallback args = new CompilerCallback() {
+            public void call(BodyCompiler context) {
+                compile(alias.getNewName(), context, true);
+                compile(alias.getOldName(), context, true);
+            }
+        };
 
-    public void compileAlias(Node node, BodyCompiler context, boolean expr) {
-        final AliasNode alias = (AliasNode) node;
-
-        context.defineAlias(alias.getNewName(), alias.getOldName());
+        context.defineAlias(args);
+        
         // TODO: don't require pop
         if (!expr) context.consumeCurrentValue();
     }
@@ -602,38 +633,77 @@ public class ASTCompiler {
 
     public void compileArray(Node node, BodyCompiler context, boolean expr) {
         ArrayNode arrayNode = (ArrayNode) node;
-
-        boolean doit = expr || !RubyInstanceConfig.PEEPHOLE_OPTZ;
-        boolean popit = !RubyInstanceConfig.PEEPHOLE_OPTZ && !expr;
         
-        if (doit) {
+        if (expr) {
             ArrayCallback callback = new ArrayCallback() {
+                public void nextValue(BodyCompiler context, Object sourceArray, int index) {
+                    Node node = (Node) ((Object[]) sourceArray)[index];
+                    compile(node, context, true);
+                }
+            };
 
-                        public void nextValue(BodyCompiler context, Object sourceArray, int index) {
-                            Node node = (Node) ((Object[]) sourceArray)[index];
-                            compile(node, context, true);
-                        }
-                    };
+            List<Node> childNodes = arrayNode.childNodes();
 
-            context.createNewArray(arrayNode.childNodes().toArray(), callback, arrayNode.isLightweight());
-
-            if (popit) context.consumeCurrentValue();
+            if (isListAllLiterals(arrayNode)) {
+                context.createNewLiteralArray(childNodes.toArray(), callback, arrayNode.isLightweight());
+            } else {
+                context.createNewArray(childNodes.toArray(), callback, arrayNode.isLightweight());
+            }
         } else {
-            for (Iterator<Node> iter = arrayNode.childNodes().iterator(); iter.hasNext();) {
-                Node nextNode = iter.next();
-                compile(nextNode, context, false);
+            if (isListAllLiterals(arrayNode)) {
+                // do nothing, no observable effect
+            } else {
+                for (Iterator<Node> iter = arrayNode.childNodes().iterator(); iter.hasNext();) {
+                    Node nextNode = iter.next();
+                    compile(nextNode, context, false);
+                }
             }
         }
+    }
+
+    private boolean isListAllLiterals(ListNode listNode) {
+        for (int i = 0; i < listNode.size(); i++) {
+            switch (listNode.get(i).getNodeType()) {
+            case STRNODE:
+            case FLOATNODE:
+            case FIXNUMNODE:
+            case BIGNUMNODE:
+            case REGEXPNODE:
+            case ZARRAYNODE:
+            case SYMBOLNODE:
+            case NILNODE:
+                // simple literals, continue
+                continue;
+            case ARRAYNODE:
+                // scan contained array
+                if (isListAllLiterals((ArrayNode)listNode.get(i))) {
+                    continue;
+                } else {
+                    return false;
+                }
+            case HASHNODE:
+                // scan contained hash
+                if (isListAllLiterals(((HashNode)listNode.get(i)).getListNode())) {
+                    continue;
+                } else {
+                    return false;
+                }
+            default:
+                return false;
+            }
+        }
+
+        // all good!
+        return true;
     }
 
     public void compileArgsCat(Node node, BodyCompiler context, boolean expr) {
         ArgsCatNode argsCatNode = (ArgsCatNode) node;
 
         compile(argsCatNode.getFirstNode(), context,true);
-        context.ensureRubyArray();
         compile(argsCatNode.getSecondNode(), context,true);
-        context.splatCurrentValue();
-        context.concatArrays();
+        context.argsCat();
+
         // TODO: don't require pop
         if (!expr) context.consumeCurrentValue();
     }
@@ -688,12 +758,7 @@ public class ASTCompiler {
     }
 
     public void compileBignum(Node node, BodyCompiler context, boolean expr) {
-        if (RubyInstanceConfig.PEEPHOLE_OPTZ) {
-            if (expr) context.createNewBignum(((BignumNode) node).getValue());
-        } else {
-            context.createNewBignum(((BignumNode) node).getValue());
-            if (!expr) context.consumeCurrentValue();
-        }
+        if (expr) context.createNewBignum(((BignumNode) node).getValue());
     }
 
     public void compileBlock(Node node, BodyCompiler context, boolean expr) {
@@ -740,6 +805,53 @@ public class ASTCompiler {
         String name = callNode.getName();
         CallType callType = CallType.NORMAL;
 
+        DYNOPT: if (RubyInstanceConfig.DYNOPT_COMPILE_ENABLED) {
+            // dynopt does not handle non-local block flow control yet, so we bail out
+            // if there's a closure.
+            if (callNode.getIterNode() != null) break DYNOPT;
+            if (callNode.callAdapter instanceof CachingCallSite) {
+                CachingCallSite cacheSite = (CachingCallSite)callNode.callAdapter;
+                if (cacheSite.isOptimizable()) {
+                    CacheEntry entry = cacheSite.getCache();
+                    if (entry.method.getNativeCall() != null) {
+                        NativeCall nativeCall = entry.method.getNativeCall();
+
+                        // only do direct calls for specific arity
+                        if (argsCallback == null || argsCallback.getArity() >= 0 && argsCallback.getArity() <= 3) {
+                            if (compileIntrinsic(context, callNode, cacheSite.methodName, entry.token, entry.method, receiverCallback, argsCallback, closureArg)) {
+                                // intrinsic compilation worked, hooray!
+                                return;
+                            } else {
+                                // otherwise, normal straight-through native call
+                                context.getInvocationCompiler().invokeNative(
+                                        name, nativeCall, entry.token, receiverCallback,
+                                        argsCallback, closureArg, CallType.NORMAL,
+                                        callNode.getIterNode() instanceof IterNode);
+                                return;
+                            }
+                        }
+                    }
+
+                    // check for a recursive call
+                    if (callNode.getReceiverNode() instanceof SelfNode) {
+                        // recursive calls
+                        if (compileRecursiveCall(callNode.getName(), entry.token, CallType.NORMAL, callNode.getIterNode() instanceof IterNode, entry.method, context, argsCallback, closureArg, expr)) return;
+                    }
+                }
+            }
+        }
+
+        if (argsCallback != null && argsCallback.getArity() == 1) {
+            Node argument = callNode.getArgsNode().childNodes().get(0);
+            if (MethodIndex.hasFastOps(name)) {
+                if (argument instanceof FixnumNode) {
+                    context.getInvocationCompiler().invokeBinaryFixnumRHS(name, receiverCallback, ((FixnumNode)argument).getValue());
+                    if (!expr) context.consumeCurrentValue();
+                    return;
+                }
+            }
+        }
+
         // if __send__ with a literal symbol, compile it as a direct fcall
         if (RubyInstanceConfig.FASTSEND_COMPILE_ENABLED) {
             String literalSend = getLiteralSend(callNode);
@@ -749,12 +861,163 @@ public class ASTCompiler {
             }
         }
         
-        context.getInvocationCompiler().invokeDynamic(
-                name, receiverCallback, argsCallback,
-                callType, closureArg, callNode.getIterNode() instanceof IterNode);
+        if (callNode instanceof SpecialArgs) {
+            context.getInvocationCompiler().invokeDynamicVarargs(
+                    name, receiverCallback, argsCallback,
+                    callType, closureArg, callNode.getIterNode() instanceof IterNode);
+        } else {
+            context.getInvocationCompiler().invokeDynamic(
+                    name, receiverCallback, argsCallback,
+                    callType, closureArg, callNode.getIterNode() instanceof IterNode);
+        }
         
         // TODO: don't require pop
         if (!expr) context.consumeCurrentValue();
+    }
+
+    private static final Map<Class, Map<Class, Map<String, String>>> Intrinsics;
+    static {
+        Intrinsics = new HashMap();
+
+        Map<Class, Map<String, String>> fixnumIntrinsics = new HashMap();
+        Intrinsics.put(RubyFixnum.class, fixnumIntrinsics);
+
+        Map<String, String> fixnumLongIntrinsics = new HashMap();
+        fixnumIntrinsics.put(FixnumNode.class, fixnumLongIntrinsics);
+        
+        fixnumLongIntrinsics.put("+", "op_plus");
+        fixnumLongIntrinsics.put("-", "op_minus");
+        fixnumLongIntrinsics.put("/", "op_div");
+        fixnumLongIntrinsics.put("*", "op_plus");
+        fixnumLongIntrinsics.put("**", "op_pow");
+        fixnumLongIntrinsics.put("<", "op_lt");
+        fixnumLongIntrinsics.put("<=", "op_le");
+        fixnumLongIntrinsics.put(">", "op_gt");
+        fixnumLongIntrinsics.put(">=", "op_ge");
+        fixnumLongIntrinsics.put("==", "op_equal");
+        fixnumLongIntrinsics.put("<=>", "op_cmp");
+
+        Map<Class, Map<String, String>> floatIntrinsics = new HashMap();
+        Intrinsics.put(RubyFloat.class, floatIntrinsics);
+
+        Map<String, String>floatDoubleIntrinsics = new HashMap();
+        floatIntrinsics.put(FloatNode.class, floatDoubleIntrinsics);
+        
+        floatDoubleIntrinsics.put("+", "op_plus");
+        floatDoubleIntrinsics.put("-", "op_minus");
+        floatDoubleIntrinsics.put("/", "op_fdiv");
+        floatDoubleIntrinsics.put("*", "op_plus");
+        floatDoubleIntrinsics.put("**", "op_pow");
+        floatDoubleIntrinsics.put("<", "op_lt");
+        floatDoubleIntrinsics.put("<=", "op_le");
+        floatDoubleIntrinsics.put(">", "op_gt");
+        floatDoubleIntrinsics.put(">=", "op_ge");
+        floatDoubleIntrinsics.put("==", "op_equal");
+        floatDoubleIntrinsics.put("<=>", "op_cmp");
+    }
+
+    private boolean compileRecursiveCall(String name, int generation, CallType callType, boolean iterator, DynamicMethod method, BodyCompiler context, ArgumentsCallback argsCallback, CompilerCallback closure, boolean expr) {
+        if (currentBodyNode != null && context.isSimpleRoot()) {
+            if (method instanceof InterpretedMethod) {
+                InterpretedMethod target = (InterpretedMethod)method;
+                if (target.getBodyNode() == currentBodyNode) {
+                    context.getInvocationCompiler().invokeRecursive(name, generation, argsCallback, closure, callType, iterator);
+                    if (!expr) context.consumeCurrentValue();
+                    return true;
+                }
+            }
+            if (method instanceof DefaultMethod) {
+                DefaultMethod target = (DefaultMethod)method;
+                if (target.getBodyNode() == currentBodyNode) {
+                    context.getInvocationCompiler().invokeRecursive(name, generation, argsCallback, closure, callType, iterator);
+                    if (!expr) context.consumeCurrentValue();
+                    return true;
+                }
+            }
+
+            if (method instanceof JittedMethod) {
+                DefaultMethod target = (DefaultMethod)((JittedMethod)method).getRealMethod();
+                if (target.getBodyNode() == currentBodyNode) {
+                    context.getInvocationCompiler().invokeRecursive(name, generation, argsCallback, closure, callType, iterator);
+                    if (!expr) context.consumeCurrentValue();
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean compileTrivialCall(String name, DynamicMethod method, int generation, BodyCompiler context, boolean expr) {
+        Node simpleBody = null;
+        if (method instanceof InterpretedMethod) {
+            InterpretedMethod target = (InterpretedMethod)method;
+            simpleBody = target.getBodyNode();
+            while (simpleBody instanceof NewlineNode) simpleBody = ((NewlineNode)simpleBody).getNextNode();
+        }
+
+        if (method instanceof DefaultMethod) {
+            DefaultMethod target = (DefaultMethod)method;
+            simpleBody = target.getBodyNode();
+            while (simpleBody instanceof NewlineNode) simpleBody = ((NewlineNode)simpleBody).getNextNode();
+        }
+
+        if (method instanceof JittedMethod) {
+            DefaultMethod target = (DefaultMethod)((JittedMethod)method).getRealMethod();
+            simpleBody = target.getBodyNode();
+            while (simpleBody instanceof NewlineNode) simpleBody = ((NewlineNode)simpleBody).getNextNode();
+        }
+
+        if (simpleBody != null) {
+            switch (simpleBody.getNodeType()) {
+            case SELFNODE:
+            case INSTVARNODE:
+            case NILNODE:
+            case FIXNUMNODE:
+            case FLOATNODE:
+            case STRNODE:
+            case BIGNUMNODE:
+            case FALSENODE:
+            case TRUENODE:
+            case SYMBOLNODE:
+            case XSTRNODE:
+                final Node simpleBodyFinal = simpleBody;
+                context.getInvocationCompiler().invokeTrivial(name, generation, new CompilerCallback() {
+                    public void call(BodyCompiler context) {
+                        compile(simpleBodyFinal, context, true);
+                    }
+                });
+                if (!expr) context.consumeCurrentValue();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean compileIntrinsic(BodyCompiler context, CallNode callNode, String name, int generation, DynamicMethod method, CompilerCallback receiverCallback, ArgumentsCallback argsCallback, CompilerCallback closureCallback) {
+        if (!(method.getImplementationClass() instanceof RubyClass)) return false;
+
+        RubyClass implClass = (RubyClass)method.getImplementationClass();
+        Map<Class, Map<String, String>> typeIntrinsics = Intrinsics.get(implClass.getReifiedClass());
+        if (typeIntrinsics != null) {
+            if (argsCallback != null && argsCallback.getArity() == 1) {
+                Node argument = callNode.getArgsNode().childNodes().get(0);
+                if (argument instanceof FixnumNode) {
+                    Map<String, String> typeLongIntrinsics = typeIntrinsics.get(FixnumNode.class);
+                    if (typeLongIntrinsics != null && typeLongIntrinsics.containsKey(name)) {
+                        context.getInvocationCompiler().invokeFixnumLong(name, generation, receiverCallback, typeLongIntrinsics.get(name), ((FixnumNode)argument).getValue());
+                        return true;
+                    }
+                }
+                if (argument instanceof FloatNode) {
+                    Map<String, String> typeDoubleIntrinsics = typeIntrinsics.get(FloatNode.class);
+                    if (typeDoubleIntrinsics != null && typeDoubleIntrinsics.containsKey(name)) {
+                        context.getInvocationCompiler().invokeFloatDouble(name, generation, receiverCallback, typeDoubleIntrinsics.get(name), ((FloatNode)argument).getValue());
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     private String getLiteralSend(CallNode callNode) {
@@ -863,20 +1126,20 @@ public class ASTCompiler {
         List<CompilerCallback> bodies = new ArrayList<CompilerCallback>();
         Map<CompilerCallback, int[]> switchCases = null;
         FastSwitchType switchType = getHomogeneousSwitchType(whenNodes);
-        if (switchType != null) {
+        if (switchType != null && !RubyInstanceConfig.FULL_TRACE_ENABLED) {
             // NOTE: Currently this optimization is limited to the following situations:
-            // * All expressions must be int-ranged literal fixnums
-            // It also still emits the code for the "safe" when logic, which is rather
-            // wasteful (since it essentially doubles each code body). As such it is
-            // normally disabled, but it serves as an example of how this optimization
-            // could be done. Ideally, it should be combined with the when processing
-            // to improve code reuse before it's generally available.
+            // * All expressions are int-ranged literal fixnums
+            // * All expressions are literal symbols
+            // * All expressions are literal strings
+            // If the case value is not of the same type as the when values, the
+            // default === logic applies.
             switchCases = new HashMap<CompilerCallback, int[]>();
         }
         for (Node node : whenNodes) {
             final WhenNode whenNode = (WhenNode)node;
             CompilerCallback body = new CompilerCallback() {
                 public void call(BodyCompiler context) {
+                    if (RubyInstanceConfig.FULL_TRACE_ENABLED) context.traceLine();
                     compile(whenNode.getBodyNode(), context, expr);
                 }
             };
@@ -995,7 +1258,11 @@ public class ASTCompiler {
                         if (cpathNode instanceof Colon2Node) {
                             Node leftNode = ((Colon2Node) cpathNode).getLeftNode();
                             if (leftNode != null) {
-                                compile(leftNode, context, true);
+                                if (leftNode instanceof NilNode) {
+                                    context.raiseTypeError("No outer class");
+                                } else {
+                                    compile(leftNode, context, true);
+                                }
                             } else {
                                 context.loadNil();
                             }
@@ -1108,8 +1375,8 @@ public class ASTCompiler {
 
             context.assignConstantInCurrent(constDeclNode.getName());
         } else if (constNode.getNodeType() == NodeType.COLON2NODE) {
-            compile(((Colon2Node) constNode).getLeftNode(), context,true);
             compile(constDeclNode.getValueNode(), context,true);
+            compile(((Colon2Node) constNode).getLeftNode(), context,true);
 
             context.assignConstantInModule(constDeclNode.getName());
         } else {// colon3, assign in Object
@@ -1207,8 +1474,14 @@ public class ASTCompiler {
         case CONSTNODE:
         case FCALLNODE:
         case CLASSVARNODE:
+        case COLON2NODE:
+        case COLON3NODE:
+        case CALLNODE:
             // these are all simple cases that don't require the heavier defined logic
             compileGetDefinition(node, context);
+            break;
+        case NEWLINENODE:
+            compileGetDefinitionBase(((NewlineNode)node).getNextNode(), context);
             break;
         default:
             BranchCallback reg = new BranchCallback() {
@@ -1224,26 +1497,20 @@ public class ASTCompiler {
                             context.outDefined();
                         }
                     };
-            context.protect(reg, out, String.class);
+            context.protect(reg, out, ByteList.class);
         }
     }
 
     public void compileDefined(final Node node, BodyCompiler context, boolean expr) {
-        if (RubyInstanceConfig.PEEPHOLE_OPTZ) {
-            if (expr) {
-                compileGetDefinitionBase(((DefinedNode) node).getExpressionNode(), context);
-                context.stringOrNil();
-            }
-        } else {
+        if (expr) {
             compileGetDefinitionBase(((DefinedNode) node).getExpressionNode(), context);
             context.stringOrNil();
-            if (!expr) context.consumeCurrentValue();
         }
     }
 
     public void compileGetArgumentDefinition(final Node node, BodyCompiler context, String type) {
         if (node == null) {
-            context.pushString(type);
+            context.pushByteList(ByteList.create(type));
         } else if (node instanceof ArrayNode) {
             Object endToken = context.getNewEnding();
             for (int i = 0; i < ((ArrayNode) node).size(); i++) {
@@ -1251,7 +1518,7 @@ public class ASTCompiler {
                 compileGetDefinition(iterNode, context);
                 context.ifNull(endToken);
             }
-            context.pushString(type);
+            context.pushByteList(ByteList.create(type));
             Object realToken = context.getNewEnding();
             context.go(realToken);
             context.setEnding(endToken);
@@ -1261,7 +1528,7 @@ public class ASTCompiler {
             compileGetDefinition(node, context);
             Object endToken = context.getNewEnding();
             context.ifNull(endToken);
-            context.pushString(type);
+            context.pushByteList(ByteList.create(type));
             Object realToken = context.getNewEnding();
             context.go(realToken);
             context.setEnding(endToken);
@@ -1279,62 +1546,65 @@ public class ASTCompiler {
             case GLOBALASGNNODE:
             case LOCALASGNNODE:
             case MULTIPLEASGNNODE:
+            case MULTIPLEASGN19NODE:
             case OPASGNNODE:
+            case OPASGNANDNODE:
+            case OPASGNORNODE:
             case OPELEMENTASGNNODE:
-                context.pushString("assignment");
+            case INSTASGNNODE: // simple assignment cases
+                context.pushByteList(Node.ASSIGNMENT_BYTELIST);
                 break;
+            case ANDNODE: // all these just evaluate and then do expression if there's no error
+            case ORNODE:
+            case DSTRNODE:
+            case DREGEXPNODE:
+                compileDefinedAndOrDStrDRegexp(node, context);
+                break;
+            case NOTNODE: // evaluates, and under 1.9 flips to "method" if result is nonnull
+                {
+                    context.rescue(new BranchCallback() {
+
+                                public void branch(BodyCompiler context) {
+                                    compile(node, context, false);
+                                    context.pushByteList(Node.EXPRESSION_BYTELIST);
+                                }
+                            }, JumpException.class,
+                            new BranchCallback() {
+
+                                public void branch(BodyCompiler context) {
+                                    context.pushNull();
+                                }
+                            }, ByteList.class);
+                    context.definedNot();
+                    break;
+                }
             case BACKREFNODE:
-                context.backref();
-                context.isInstanceOf(RubyMatchData.class,
-                        new BranchCallback() {
-
-                            public void branch(BodyCompiler context) {
-                                context.pushString("$" + ((BackRefNode) node).getType());
-                            }
-                        },
-                        new BranchCallback() {
-
-                            public void branch(BodyCompiler context) {
-                                context.pushNull();
-                            }
-                        });
+                compileDefinedBackref(node, context);
                 break;
             case DVARNODE:
-                context.pushString("local-variable(in-block)");
+                compileDefinedDVar(node, context);
                 break;
             case FALSENODE:
-                context.pushString("false");
+                context.pushByteList(Node.FALSE_BYTELIST);
                 break;
             case TRUENODE:
-                context.pushString("true");
+                context.pushByteList(Node.TRUE_BYTELIST);
                 break;
             case LOCALVARNODE:
-                context.pushString("local-variable");
+                context.pushByteList(Node.LOCAL_VARIABLE_BYTELIST);
                 break;
             case MATCH2NODE:
             case MATCH3NODE:
-                context.pushString("method");
+                context.pushByteList(Node.METHOD_BYTELIST);
                 break;
             case NILNODE:
-                context.pushString("nil");
+                context.pushByteList(Node.NIL_BYTELIST);
                 break;
             case NTHREFNODE:
-                context.isCaptured(((NthRefNode) node).getMatchNumber(),
-                        new BranchCallback() {
-
-                            public void branch(BodyCompiler context) {
-                                context.pushString("$" + ((NthRefNode) node).getMatchNumber());
-                            }
-                        },
-                        new BranchCallback() {
-
-                            public void branch(BodyCompiler context) {
-                                context.pushNull();
-                            }
-                        });
+                compileDefinedNthref(node, context);
                 break;
             case SELFNODE:
-                context.pushString("self");
+                context.pushByteList(Node.SELF_BYTELIST);
                 break;
             case VCALLNODE:
                 context.loadSelf();
@@ -1342,7 +1612,7 @@ public class ASTCompiler {
                         new BranchCallback() {
 
                             public void branch(BodyCompiler context) {
-                                context.pushString("method");
+                                context.pushByteList(Node.METHOD_BYTELIST);
                             }
                         },
                         new BranchCallback() {
@@ -1356,7 +1626,7 @@ public class ASTCompiler {
                 context.hasBlock(new BranchCallback() {
 
                             public void branch(BodyCompiler context) {
-                                context.pushString("yield");
+                                context.pushByteList(Node.YIELD_BYTELIST);
                             }
                         },
                         new BranchCallback() {
@@ -1371,7 +1641,7 @@ public class ASTCompiler {
                         new BranchCallback() {
 
                             public void branch(BodyCompiler context) {
-                                context.pushString("global-variable");
+                                context.pushByteList(Node.GLOBAL_VARIABLE_BYTELIST);
                             }
                         },
                         new BranchCallback() {
@@ -1386,7 +1656,7 @@ public class ASTCompiler {
                         new BranchCallback() {
 
                             public void branch(BodyCompiler context) {
-                                context.pushString("instance-variable");
+                                context.pushByteList(Node.INSTANCE_VARIABLE_BYTELIST);
                             }
                         },
                         new BranchCallback() {
@@ -1401,7 +1671,7 @@ public class ASTCompiler {
                         new BranchCallback() {
 
                             public void branch(BodyCompiler context) {
-                                context.pushString("constant");
+                                context.pushByteList(Node.CONSTANT_BYTELIST);
                             }
                         },
                         new BranchCallback() {
@@ -1445,87 +1715,12 @@ public class ASTCompiler {
                                     }
                                 }
                             };
-                    BranchCallback isConstant = new BranchCallback() {
-
-                                public void branch(BodyCompiler context) {
-                                    context.pushString("constant");
-                                }
-                            };
-                    BranchCallback isMethod = new BranchCallback() {
-
-                                public void branch(BodyCompiler context) {
-                                    context.pushString("method");
-                                }
-                            };
-                    BranchCallback none = new BranchCallback() {
-
-                                public void branch(BodyCompiler context) {
-                                    context.pushNull();
-                                }
-                            };
-                    context.isConstantBranch(setup, isConstant, isMethod, none, name);
+                    context.isConstantBranch(setup, name);
                     break;
                 }
             case CALLNODE:
-                {
-                    final CallNode iVisited = (CallNode) node;
-                    Object isnull = context.getNewEnding();
-                    Object ending = context.getNewEnding();
-                    compileGetDefinition(iVisited.getReceiverNode(), context);
-                    context.ifNull(isnull);
-
-                    context.rescue(new BranchCallback() {
-
-                                public void branch(BodyCompiler context) {
-                                    compile(iVisited.getReceiverNode(), context,true); //[IRubyObject]
-                                    context.duplicateCurrentValue(); //[IRubyObject, IRubyObject]
-                                    context.metaclass(); //[IRubyObject, RubyClass]
-                                    context.duplicateCurrentValue(); //[IRubyObject, RubyClass, RubyClass]
-                                    context.getVisibilityFor(iVisited.getName()); //[IRubyObject, RubyClass, Visibility]
-                                    context.duplicateCurrentValue(); //[IRubyObject, RubyClass, Visibility, Visibility]
-                                    final Object isfalse = context.getNewEnding();
-                                    Object isreal = context.getNewEnding();
-                                    Object ending = context.getNewEnding();
-                                    context.isPrivate(isfalse, 3); //[IRubyObject, RubyClass, Visibility]
-                                    context.isNotProtected(isreal, 1); //[IRubyObject, RubyClass]
-                                    context.selfIsKindOf(isreal); //[IRubyObject]
-                                    context.consumeCurrentValue();
-                                    context.go(isfalse);
-                                    context.setEnding(isreal); //[]
-
-                                    context.isMethodBound(iVisited.getName(), new BranchCallback() {
-
-                                                public void branch(BodyCompiler context) {
-                                                    compileGetArgumentDefinition(iVisited.getArgsNode(), context, "method");
-                                                }
-                                            },
-                                            new BranchCallback() {
-
-                                                public void branch(BodyCompiler context) {
-                                                    context.go(isfalse);
-                                                }
-                                            });
-                                    context.go(ending);
-                                    context.setEnding(isfalse);
-                                    context.pushNull();
-                                    context.setEnding(ending);
-                                }
-                            }, JumpException.class,
-                            new BranchCallback() {
-
-                                public void branch(BodyCompiler context) {
-                                    context.pushNull();
-                                }
-                            }, String.class);
-
-                    //          context.swapValues();
-            //context.consumeCurrentValue();
-                    context.go(ending);
-                    context.setEnding(isnull);
-                    context.pushNull();
-                    context.setEnding(ending);
-                    break;
-                }
+                compileDefinedCall(node, context);
+                break;
             case CLASSVARNODE:
                 {
                     ClassVarNode iVisited = (ClassVarNode) node;
@@ -1547,7 +1742,7 @@ public class ASTCompiler {
 
                                 public void branch(BodyCompiler context) {
                                     context.consumeCurrentValue();
-                                    context.pushString("class variable");
+                                    context.pushByteList(Node.CLASS_VARIABLE_BYTELIST);
                                     context.go(ending);
                                 }
                             },
@@ -1563,7 +1758,7 @@ public class ASTCompiler {
 
                                 public void branch(BodyCompiler context) {
                                     context.consumeCurrentValue();
-                                    context.pushString("class variable");
+                                    context.pushByteList(Node.CLASS_VARIABLE_BYTELIST);
                                     context.go(ending);
                                 }
                             },
@@ -1580,7 +1775,7 @@ public class ASTCompiler {
                     context.setEnding(singleton);
                     context.attached();//[RubyClass]
                     context.notIsModuleAndClassVarDefined(iVisited.getName(), failure); //[]
-                    context.pushString("class variable");
+                    context.pushByteList(Node.CLASS_VARIABLE_BYTELIST);
                     context.go(ending);
                     context.setEnding(failure);
                     context.pushNull();
@@ -1603,7 +1798,7 @@ public class ASTCompiler {
                     context.superClass();
                     context.ifNotSuperMethodBound(fail_easy);
 
-                    context.pushString("super");
+                    context.pushByteList(Node.SUPER_BYTELIST);
                     context.go(ending);
 
                     context.setEnding(fail2);
@@ -1693,7 +1888,7 @@ public class ASTCompiler {
                                 public void branch(BodyCompiler context) {
                                     context.pushNull();
                                 }
-                            }, String.class);
+                            }, ByteList.class);
 
                     context.go(ending);
                     context.setEnding(isnull);
@@ -1715,10 +1910,92 @@ public class ASTCompiler {
                             public void branch(BodyCompiler context) {
                                 context.pushNull();
                             }
-                        }, String.class);
+                        }, ByteList.class);
                 context.consumeCurrentValue();
-                context.pushString("expression");
+                context.pushByteList(Node.EXPRESSION_BYTELIST);
         }
+    }
+
+    protected void compileDefinedAndOrDStrDRegexp(final Node node, BodyCompiler context) {
+        context.rescue(new BranchCallback() {
+
+                    public void branch(BodyCompiler context) {
+                        compile(node, context, false);
+                        context.pushByteList(Node.EXPRESSION_BYTELIST);
+                    }
+                }, JumpException.class,
+                new BranchCallback() {
+
+                    public void branch(BodyCompiler context) {
+                        context.pushNull();
+                    }
+                }, ByteList.class);
+    }
+
+    protected void compileDefinedCall(final Node node, BodyCompiler context) {
+            final CallNode iVisited = (CallNode) node;
+            Object isnull = context.getNewEnding();
+            Object ending = context.getNewEnding();
+            compileGetDefinition(iVisited.getReceiverNode(), context);
+            context.ifNull(isnull);
+
+            context.rescue(new BranchCallback() {
+
+                        public void branch(BodyCompiler context) {
+                            compile(iVisited.getReceiverNode(), context, true); //[IRubyObject]
+                            context.definedCall(iVisited.getName());
+                        }
+                    }, JumpException.class,
+                    new BranchCallback() {
+
+                        public void branch(BodyCompiler context) {
+                            context.pushNull();
+                        }
+                    }, ByteList.class);
+
+            //          context.swapValues();
+    //context.consumeCurrentValue();
+            context.go(ending);
+            context.setEnding(isnull);
+            context.pushNull();
+            context.setEnding(ending);
+    }
+
+    protected void compileDefinedDVar(final Node node, BodyCompiler context) {
+        context.pushByteList(Node.LOCAL_VARIABLE_IN_BLOCK_BYTELIST);
+    }
+
+    protected void compileDefinedBackref(final Node node, BodyCompiler context) {
+        context.backref();
+        context.isInstanceOf(RubyMatchData.class,
+                new BranchCallback() {
+
+                    public void branch(BodyCompiler context) {
+                        context.pushByteList(ByteList.create("$" + ((BackRefNode) node).getType()));
+                    }
+                },
+                new BranchCallback() {
+
+                    public void branch(BodyCompiler context) {
+                        context.pushNull();
+                    }
+                });
+    }
+
+    protected void compileDefinedNthref(final Node node, BodyCompiler context) {
+        context.isCaptured(((NthRefNode) node).getMatchNumber(),
+                new BranchCallback() {
+
+                    public void branch(BodyCompiler context) {
+                        context.pushByteList(ByteList.create("$" + ((NthRefNode) node).getMatchNumber()));
+                    }
+                },
+                new BranchCallback() {
+
+                    public void branch(BodyCompiler context) {
+                        context.pushNull();
+                    }
+                });
     }
 
     public void compileDAsgn(Node node, BodyCompiler context, boolean expr) {
@@ -1739,6 +2016,8 @@ public class ASTCompiler {
         context.getVariableCompiler().assignLocalVariable(dasgnNode.getIndex(), dasgnNode.getDepth(), expr);
     }
 
+    private Node currentBodyNode;
+
     public void compileDefn(Node node, BodyCompiler context, boolean expr) {
         final DefnNode defnNode = (DefnNode) node;
         final ArgsNode argsNode = defnNode.getArgsNode();
@@ -1747,12 +2026,15 @@ public class ASTCompiler {
 
                     public void call(BodyCompiler context) {
                         if (defnNode.getBodyNode() != null) {
+                            Node oldBodyNode = currentBodyNode;
+                            currentBodyNode = defnNode.getBodyNode();
                             if (defnNode.getBodyNode() instanceof RescueNode) {
                                 // if root of method is rescue, compile as a light rescue
                                 compileRescueInternal(defnNode.getBodyNode(), context, true);
                             } else {
                                 compile(defnNode.getBodyNode(), context, true);
                             }
+                            currentBodyNode = oldBodyNode;
                         } else {
                             context.loadNil();
                         }
@@ -1782,7 +2064,11 @@ public class ASTCompiler {
             inspector.inspect(defnNode.getBodyNode());
         }
 
-        context.defineNewMethod(defnNode.getName(), defnNode.getArgsNode().getArity().getValue(), defnNode.getScope(), body, args, null, inspector, isAtRoot);
+        context.defineNewMethod(
+                defnNode.getName(), defnNode.getArgsNode().getArity().getValue(),
+                defnNode.getScope(), body, args, null, inspector, isAtRoot,
+                defnNode.getPosition().getFile(), defnNode.getPosition().getStartLine(),
+                RuntimeHelpers.encodeParameterList(argsNode));
         // TODO: don't require pop
         if (!expr) context.consumeCurrentValue();
     }
@@ -1836,7 +2122,11 @@ public class ASTCompiler {
             inspector.inspect(defsNode.getBodyNode());
         }
 
-        context.defineNewMethod(defsNode.getName(), defsNode.getArgsNode().getArity().getValue(), defsNode.getScope(), body, args, receiver, inspector, false);
+        context.defineNewMethod(
+                defsNode.getName(), defsNode.getArgsNode().getArity().getValue(),
+                defsNode.getScope(), body, args, receiver, inspector, false,
+                defsNode.getPosition().getFile(), defsNode.getPosition().getStartLine(),
+                RuntimeHelpers.encodeParameterList(argsNode));
         // TODO: don't require pop
         if (!expr) context.consumeCurrentValue();
     }
@@ -1870,8 +2160,7 @@ public class ASTCompiler {
                         public void nextValue(BodyCompiler context, Object object, int index) {
                             Node optArg = ((ListNode) object).get(index);
 
-                            compileAssignment(optArg, context,true);
-                            context.consumeCurrentValue();
+                            compileAssignment(optArg, context, false);
                         }
                     };
             optionalNotGiven = new ArrayCallback() {
@@ -1879,8 +2168,7 @@ public class ASTCompiler {
                         public void nextValue(BodyCompiler context, Object object, int index) {
                             Node optArg = ((ListNode) object).get(index);
 
-                            compile(optArg, context,true);
-                            context.consumeCurrentValue();
+                            compile(optArg, context, false);
                         }
                     };
         }
@@ -1920,10 +2208,7 @@ public class ASTCompiler {
     public void compileDot(Node node, BodyCompiler context, boolean expr) {
         final DotNode dotNode = (DotNode) node;
 
-        boolean doit = expr || !RubyInstanceConfig.PEEPHOLE_OPTZ;
-        boolean popit = !RubyInstanceConfig.PEEPHOLE_OPTZ && !expr;
-
-        if (doit) {
+        if (expr) {
             CompilerCallback beginEndCallback = new CompilerCallback() {
                 public void call(BodyCompiler context) {
                     compile(dotNode.getBeginNode(), context, true);
@@ -1933,7 +2218,6 @@ public class ASTCompiler {
 
             context.createNewRange(beginEndCallback, dotNode.isExclusive());
         }
-        if (popit) context.consumeCurrentValue();
     }
 
     public void compileDRegexp(Node node, BodyCompiler context, boolean expr) {
@@ -1949,16 +2233,17 @@ public class ASTCompiler {
                                         compile(dregexpNode.get(index), context, true);
                                     }
                                 };
-                        context.createNewString(dstrCallback, dregexpNode.size());
+                        Encoding enc = null;
+                        if (dregexpNode.is19()) {
+                            enc = dregexpNode.getEncoding();
+                        }
+
+                        context.createNewString(dstrCallback, dregexpNode.size(), enc);
                     }
                 };
 
-        boolean doit = expr || !RubyInstanceConfig.PEEPHOLE_OPTZ;
-        boolean popit = !RubyInstanceConfig.PEEPHOLE_OPTZ && !expr;
-
-        if (doit) {
-            context.createNewRegexp(createStringCallback, dregexpNode.getOptions());
-            if (popit) context.consumeCurrentValue();
+        if (expr) {
+            context.createNewRegexp(createStringCallback, dregexpNode.getOptions().toEmbeddedOptions());
         } else {
             // not an expression, only compile the elements
             for (Node nextNode : dregexpNode.childNodes()) {
@@ -1978,12 +2263,13 @@ public class ASTCompiler {
                     }
                 };
 
-        boolean doit = expr || !RubyInstanceConfig.PEEPHOLE_OPTZ;
-        boolean popit = !RubyInstanceConfig.PEEPHOLE_OPTZ && !expr;
+        if (expr) {
+            Encoding enc = null;
+            if (dstrNode.is19()) {
+                enc = dstrNode.getEncoding();
+            }
 
-        if (doit) {
-            context.createNewString(dstrCallback, dstrNode.size());
-            if (popit) context.consumeCurrentValue();
+            context.createNewString(dstrCallback, dstrNode.size(), enc);
         } else {
             // not an expression, only compile the elements
             for (Node nextNode : dstrNode.childNodes()) {
@@ -2003,12 +2289,12 @@ public class ASTCompiler {
                     }
                 };
 
-        boolean doit = expr || !RubyInstanceConfig.PEEPHOLE_OPTZ;
-        boolean popit = !RubyInstanceConfig.PEEPHOLE_OPTZ && !expr;
-
-        if (doit) {
-            context.createNewSymbol(dstrCallback, dsymbolNode.size());
-            if (popit) context.consumeCurrentValue();
+        if (expr) {
+            Encoding enc = null;
+            if (dsymbolNode.is19()) {
+                enc = dsymbolNode.getEncoding();
+            }
+            context.createNewSymbol(dstrCallback, dsymbolNode.size(), enc);
         } else {
             // not an expression, only compile the elements
             for (Node nextNode : dsymbolNode.childNodes()) {
@@ -2020,12 +2306,7 @@ public class ASTCompiler {
     public void compileDVar(Node node, BodyCompiler context, boolean expr) {
         DVarNode dvarNode = (DVarNode) node;
 
-        if (RubyInstanceConfig.PEEPHOLE_OPTZ) {
-            if (expr) context.getVariableCompiler().retrieveLocalVariable(dvarNode.getIndex(), dvarNode.getDepth());
-        } else {
-            context.getVariableCompiler().retrieveLocalVariable(dvarNode.getIndex(), dvarNode.getDepth());
-            if (!expr) context.consumeCurrentValue();
-        }
+        if (expr) context.getVariableCompiler().retrieveLocalVariable(dvarNode.getIndex(), dvarNode.getDepth());
     }
 
     public void compileDXStr(Node node, BodyCompiler context, boolean expr) {
@@ -2043,9 +2324,13 @@ public class ASTCompiler {
                     public int getArity() {
                         return 1;
                     }
-                    
+
                     public void call(BodyCompiler context) {
-                        context.createNewString(dstrCallback, dxstrNode.size());
+                        Encoding enc = null;
+                        if (dxstrNode.is19()) {
+                            enc = dxstrNode.getEncoding();
+                        }
+                        context.createNewString(dstrCallback, dxstrNode.size(), enc);
                     }
                 };
 
@@ -2095,15 +2380,9 @@ public class ASTCompiler {
     }
 
     public void compileFalse(Node node, BodyCompiler context, boolean expr) {
-        if (RubyInstanceConfig.PEEPHOLE_OPTZ) {
-            if (expr) {
-                context.loadFalse();
-                context.pollThreadEvents();
-            }
-        } else {
+        if (expr) {
             context.loadFalse();
             context.pollThreadEvents();
-            if (!expr) context.consumeCurrentValue();
         }
     }
 
@@ -2114,7 +2393,33 @@ public class ASTCompiler {
         
         CompilerCallback closureArg = getBlock(fcallNode.getIterNode());
 
-        context.getInvocationCompiler().invokeDynamic(fcallNode.getName(), null, argsCallback, CallType.FUNCTIONAL, closureArg, fcallNode.getIterNode() instanceof IterNode);
+        DYNOPT: if (RubyInstanceConfig.DYNOPT_COMPILE_ENABLED) {
+            // dynopt does not handle non-local block flow control yet, so we bail out
+            if (fcallNode.getIterNode() != null) break DYNOPT;
+            if (fcallNode.callAdapter instanceof CachingCallSite) {
+                CachingCallSite cacheSite = (CachingCallSite)fcallNode.callAdapter;
+                if (cacheSite.isOptimizable()) {
+                    CacheEntry entry = cacheSite.getCache();
+
+                    if (closureArg == null && (argsCallback == null || (argsCallback.getArity() >= 0 && argsCallback.getArity() <= 3))) {
+                        // recursive calls
+                        if (compileRecursiveCall(fcallNode.getName(), entry.token, CallType.FUNCTIONAL, fcallNode.getIterNode() instanceof IterNode, entry.method, context, argsCallback, closureArg, expr)) return;
+
+                        // peephole inlining for trivial targets
+                        if (closureArg == null &&
+                                argsCallback == null &&
+                                compileTrivialCall(fcallNode.getName(), entry.method, entry.token, context, expr)) return;
+                    }
+                }
+            }
+        }
+
+        if (fcallNode instanceof SpecialArgs) {
+            context.getInvocationCompiler().invokeDynamicVarargs(fcallNode.getName(), null, argsCallback, CallType.FUNCTIONAL, closureArg, fcallNode.getIterNode() instanceof IterNode);
+        } else {
+            context.getInvocationCompiler().invokeDynamic(fcallNode.getName(), null, argsCallback, CallType.FUNCTIONAL, closureArg, fcallNode.getIterNode() instanceof IterNode);
+        }
+        
         // TODO: don't require pop
         if (!expr) context.consumeCurrentValue();
     }
@@ -2152,12 +2457,7 @@ public class ASTCompiler {
     public void compileFixnum(Node node, BodyCompiler context, boolean expr) {
         FixnumNode fixnumNode = (FixnumNode) node;
 
-        if (RubyInstanceConfig.PEEPHOLE_OPTZ) {
-            if (expr) context.createNewFixnum(fixnumNode.getValue());
-        } else {
-            context.createNewFixnum(fixnumNode.getValue());
-            if (!expr) context.consumeCurrentValue();
-        }
+        if (expr) context.createNewFixnum(fixnumNode.getValue());
     }
 
     public void compileFlip(Node node, BodyCompiler context, boolean expr) {
@@ -2265,12 +2565,7 @@ public class ASTCompiler {
     public void compileFloat(Node node, BodyCompiler context, boolean expr) {
         FloatNode floatNode = (FloatNode) node;
 
-        if (RubyInstanceConfig.PEEPHOLE_OPTZ) {
-            if (expr) context.createNewFloat(floatNode.getValue());
-        } else {
-            context.createNewFloat(floatNode.getValue());
-            if (!expr) context.consumeCurrentValue();
-        }
+        if (expr) context.createNewFloat(floatNode.getValue());
     }
 
     public void compileFor(Node node, BodyCompiler context, boolean expr) {
@@ -2316,6 +2611,9 @@ public class ASTCompiler {
                     public void call(BodyCompiler context) {
                         if (forNode.getVarNode() != null) {
                             compileAssignment(forNode.getVarNode(), context, false);
+
+                            // consume the block, since for loops can't receive block
+                            context.consumeCurrentValue();
                         }
                     }
                 };
@@ -2335,16 +2633,10 @@ public class ASTCompiler {
         inspector.inspect(forNode.getVarNode());
 
         // force heap-scope behavior, since it uses parent's scope
-        inspector.setFlag(ASTInspector.CLOSURE);
+        inspector.setFlag(forNode, ASTInspector.CLOSURE);
 
-        if (argsNodeId == null) {
-            // no args, do not pass args processor
-            context.createNewForLoop(Arity.procArityOf(forNode.getVarNode()).getValue(),
-                    closureBody, null, hasMultipleArgsHead, argsNodeId, inspector);
-        } else {
-            context.createNewForLoop(Arity.procArityOf(forNode.getVarNode()).getValue(),
-                    closureBody, closureArgs, hasMultipleArgsHead, argsNodeId, inspector);
-        }
+        context.createNewForLoop(Arity.procArityOf(forNode.getVarNode()).getValue(),
+                closureBody, closureArgs, hasMultipleArgsHead, argsNodeId, inspector);
     }
 
     public void compileGlobalAsgn(Node node, BodyCompiler context, boolean expr) {
@@ -2399,11 +2691,8 @@ public class ASTCompiler {
 
     public void compileGlobalVar(Node node, BodyCompiler context, boolean expr) {
         GlobalVarNode globalVarNode = (GlobalVarNode) node;
-
-        boolean doit = expr || !RubyInstanceConfig.PEEPHOLE_OPTZ;
-        boolean popit = !RubyInstanceConfig.PEEPHOLE_OPTZ && !expr;
         
-        if (doit) {
+        if (expr) {
             if (globalVarNode.getName().length() == 2) {
                 switch (globalVarNode.getName().charAt(1)) {
                 case '_':
@@ -2419,40 +2708,43 @@ public class ASTCompiler {
                 context.retrieveGlobalVariable(globalVarNode.getName());
             }
         }
-        
-        if (popit) context.consumeCurrentValue();
     }
 
     public void compileHash(Node node, BodyCompiler context, boolean expr) {
-        HashNode hashNode = (HashNode) node;
-
-        boolean doit = expr || !RubyInstanceConfig.PEEPHOLE_OPTZ;
-        boolean popit = !RubyInstanceConfig.PEEPHOLE_OPTZ && !expr;
-
-        if (doit) {
+        compileHashCommon((HashNode) node, context, expr);
+    }
+    
+    protected void compileHashCommon(HashNode hashNode, BodyCompiler context, boolean expr) {
+        if (expr) {
             if (hashNode.getListNode() == null || hashNode.getListNode().size() == 0) {
                 context.createEmptyHash();
                 return;
             }
 
             ArrayCallback hashCallback = new ArrayCallback() {
+                public void nextValue(BodyCompiler context, Object sourceArray,
+                        int index) {
+                    ListNode listNode = (ListNode) sourceArray;
+                    int keyIndex = index * 2;
+                    compile(listNode.get(keyIndex), context, true);
+                    compile(listNode.get(keyIndex + 1), context, true);
+                }
+            };
 
-                        public void nextValue(BodyCompiler context, Object sourceArray,
-                                int index) {
-                            ListNode listNode = (ListNode) sourceArray;
-                            int keyIndex = index * 2;
-                            compile(listNode.get(keyIndex), context, true);
-                            compile(listNode.get(keyIndex + 1), context, true);
-                        }
-                    };
-
-            context.createNewHash(hashNode.getListNode(), hashCallback, hashNode.getListNode().size() / 2);
-            if (popit) context.consumeCurrentValue();
+            if (isListAllLiterals(hashNode.getListNode())) {
+                context.createNewLiteralHash(hashNode.getListNode(), hashCallback, hashNode.getListNode().size() / 2);
+            } else {
+                context.createNewHash(hashNode.getListNode(), hashCallback, hashNode.getListNode().size() / 2);
+            }
         } else {
             for (Node nextNode : hashNode.getListNode().childNodes()) {
                 compile(nextNode, context, false);
             }
         }
+    }
+    
+    protected void createNewHash(BodyCompiler context, HashNode hashNode, ArrayCallback hashCallback) {
+        context.createNewHash(hashNode.getListNode(), hashCallback, hashNode.getListNode().size() / 2);
     }
 
     public void compileIf(Node node, BodyCompiler context, final boolean expr) {
@@ -2522,12 +2814,7 @@ public class ASTCompiler {
     public void compileInstVar(Node node, BodyCompiler context, boolean expr) {
         InstVarNode instVarNode = (InstVarNode) node;
 
-        if (RubyInstanceConfig.PEEPHOLE_OPTZ) {
-            if (expr) context.retrieveInstanceVariable(instVarNode.getName());
-        } else {
-            context.retrieveInstanceVariable(instVarNode.getName());
-            if (!expr) context.consumeCurrentValue();
-        }
+        if (expr) context.retrieveInstanceVariable(instVarNode.getName());
     }
 
     public void compileIter(Node node, BodyCompiler context) {
@@ -2547,13 +2834,20 @@ public class ASTCompiler {
 
         // create the closure class and instantiate it
         final CompilerCallback closureArgs = new CompilerCallback() {
+            public void call(BodyCompiler context) {
+                if (iterNode.getVarNode() != null) {
+                    compileAssignment(iterNode.getVarNode(), context, false);
+                } else {
+                    context.consumeCurrentValue();
+                }
 
-                    public void call(BodyCompiler context) {
-                        if (iterNode.getVarNode() != null) {
-                            compileAssignment(iterNode.getVarNode(), context, false);
-                        }
-                    }
-                };
+                if (iterNode.getBlockVarNode() != null) {
+                    compileAssignment(iterNode.getBlockVarNode(), context, false);
+                } else {
+                    context.consumeCurrentValue();
+                }
+            }
+        };
 
         boolean hasMultipleArgsHead = false;
         if (iterNode.getVarNode() instanceof MultipleAsgnNode) {
@@ -2566,14 +2860,12 @@ public class ASTCompiler {
         inspector.inspect(iterNode.getBodyNode());
         inspector.inspect(iterNode.getVarNode());
         
-        if (argsNodeId == null) {
-            // no args, do not pass args processor
-            context.createNewClosure(iterNode.getPosition().getStartLine(), iterNode.getScope(), Arity.procArityOf(iterNode.getVarNode()).getValue(),
-                    closureBody, null, hasMultipleArgsHead, argsNodeId, inspector);
-        } else {
-            context.createNewClosure(iterNode.getPosition().getStartLine(), iterNode.getScope(), Arity.procArityOf(iterNode.getVarNode()).getValue(),
-                    closureBody, closureArgs, hasMultipleArgsHead, argsNodeId, inspector);
-        }
+        context.createNewClosure(iterNode.getPosition().getFile(), iterNode.getPosition().getStartLine(), iterNode.getScope(), Arity.procArityOf(iterNode.getVarNode()).getValue(),
+                closureBody, closureArgs, hasMultipleArgsHead, argsNodeId, inspector);
+    }
+
+    public void compileLiteral(LiteralNode literal, BodyCompiler context) {
+        context.literal(literal.getName());
     }
 
     public void compileLocalAsgn(Node node, BodyCompiler context, boolean expr) {
@@ -2603,12 +2895,7 @@ public class ASTCompiler {
     public void compileLocalVar(Node node, BodyCompiler context, boolean expr) {
         LocalVarNode localVarNode = (LocalVarNode) node;
 
-        if (RubyInstanceConfig.PEEPHOLE_OPTZ) {
-            if (expr) context.getVariableCompiler().retrieveLocalVariable(localVarNode.getIndex(), localVarNode.getDepth());
-        } else {
-            context.getVariableCompiler().retrieveLocalVariable(localVarNode.getIndex(), localVarNode.getDepth());
-            if (!expr) context.consumeCurrentValue();
-        }
+        if (expr) context.getVariableCompiler().retrieveLocalVariable(localVarNode.getIndex(), localVarNode.getDepth());
     }
 
     public void compileMatch(Node node, BodyCompiler context, boolean expr) {
@@ -2717,7 +3004,7 @@ public class ASTCompiler {
                     }
                     
                     if (normalAssigns) {
-                        // only supports simple parallel assignment of up to 4 values to the same number of assignees
+                        // only supports simple parallel assignment of up to 10 values to the same number of assignees
                         int size = multipleAsgnNode.getHeadNode().size();
                         if (size >= 2 && size <= 10) {
                             ArrayNode values = (ArrayNode)multipleAsgnNode.getValueNode();
@@ -2732,6 +3019,28 @@ public class ASTCompiler {
                         }
                     }
                 }
+            }
+        } else {
+            // special case for x, *y = whatever
+            if (multipleAsgnNode.getHeadNode() != null &&
+                    multipleAsgnNode.getHeadNode().size() == 1 &&
+                    multipleAsgnNode.getValueNode() instanceof ToAryNode &&
+                    multipleAsgnNode.getArgsNode() != null) {
+                // emit the value
+                compile(multipleAsgnNode.getValueNode().childNodes().get(0), context, true);
+                if (multipleAsgnNode.getArgsNode() instanceof StarNode) {
+                    // slice puts on stack in reverse order
+                    context.preMultiAssign(1, false);
+                    // assign
+                    compileAssignment(multipleAsgnNode.getHeadNode().childNodes().get(0), context, false);
+                } else {
+                    // slice puts on stack in reverse order
+                    context.preMultiAssign(1, true);
+                    // assign
+                    compileAssignment(multipleAsgnNode.getHeadNode().childNodes().get(0), context, false);
+                    compileAssignment(multipleAsgnNode.getArgsNode(), context, false);
+                }
+                return;
             }
         }
 
@@ -2801,10 +3110,11 @@ public class ASTCompiler {
     }
 
     public void compileNewline(Node node, BodyCompiler context, boolean expr) {
-        // TODO: add trace call?
         context.lineNumber(node.getPosition());
 
         context.setLinePosition(node.getPosition());
+
+        if (RubyInstanceConfig.FULL_TRACE_ENABLED) context.traceLine();
 
         NewlineNode newlineNode = (NewlineNode) node;
 
@@ -2834,24 +3144,12 @@ public class ASTCompiler {
     public void compileNthRef(Node node, BodyCompiler context, boolean expr) {
         NthRefNode nthRefNode = (NthRefNode) node;
 
-        if (RubyInstanceConfig.PEEPHOLE_OPTZ) {
-            if (expr) context.nthRef(nthRefNode.getMatchNumber());
-        } else {
-            context.nthRef(nthRefNode.getMatchNumber());
-            if (!expr) context.consumeCurrentValue();
-        }
+        if (expr) context.nthRef(nthRefNode.getMatchNumber());
     }
 
     public void compileNil(Node node, BodyCompiler context, boolean expr) {
-        if (RubyInstanceConfig.PEEPHOLE_OPTZ) {
-            if (expr) {
-                context.loadNil();
-                context.pollThreadEvents();
-            }
-        } else {
+        if (expr) {
             context.loadNil();
-            context.pollThreadEvents();
-            if (!expr) context.consumeCurrentValue();
         }
     }
 
@@ -3235,12 +3533,7 @@ public class ASTCompiler {
     public void compileRegexp(Node node, BodyCompiler context, boolean expr) {
         RegexpNode reNode = (RegexpNode) node;
 
-        if (RubyInstanceConfig.PEEPHOLE_OPTZ) {
-            if (expr) context.createNewRegexp(reNode.getValue(), reNode.getOptions());
-        } else {
-            context.createNewRegexp(reNode.getValue(), reNode.getOptions());
-            if (!expr) context.consumeCurrentValue();
-        }
+        if (expr) context.createNewRegexp(reNode.getValue(), reNode.getOptions().toEmbeddedOptions());
     }
 
     public void compileRescue(Node node, BodyCompiler context, boolean expr) {
@@ -3260,13 +3553,18 @@ public class ASTCompiler {
                 } else {
                     context.loadNil();
                 }
+            }
+        };
 
-                if (rescueNode.getElseNode() != null) {
+        BranchCallback elseBody = null;
+        if (rescueNode.getElseNode() != null) {
+            elseBody = new BranchCallback() {
+                public void branch(BodyCompiler context) {
                     context.consumeCurrentValue();
                     compile(rescueNode.getElseNode(), context, true);
                 }
-            }
-        };
+            };
+        }
 
         BranchCallback rubyHandler = new BranchCallback() {
             public void branch(BodyCompiler context) {
@@ -3277,9 +3575,9 @@ public class ASTCompiler {
         ASTInspector rescueInspector = new ASTInspector();
         rescueInspector.inspect(rescueNode.getRescueNode());
         if (light) {
-            context.performRescueLight(body, rubyHandler, rescueInspector.getFlag(ASTInspector.RETRY));
+            context.performRescueLight(body, rubyHandler, elseBody, rescueInspector.getFlag(ASTInspector.RETRY));
         } else {
-            context.performRescue(body, rubyHandler, rescueInspector.getFlag(ASTInspector.RETRY));
+            context.performRescue(body, rubyHandler, elseBody, rescueInspector.getFlag(ASTInspector.RETRY));
         }
     }
 
@@ -3381,7 +3679,7 @@ public class ASTCompiler {
         staticScope.setRestArg(-2);
 
         // create method for toplevel of script
-        BodyCompiler methodCompiler = context.startRoot("__file__", "__file__", staticScope, inspector);
+        BodyCompiler methodCompiler = context.startFileMethod(null, staticScope, inspector);
 
         Node nextNode = rootNode.getBodyNode();
         if (nextNode != null) {
@@ -3409,12 +3707,7 @@ public class ASTCompiler {
     }
 
     public void compileSelf(Node node, BodyCompiler context, boolean expr) {
-        if (RubyInstanceConfig.PEEPHOLE_OPTZ) {
-            if (expr) context.retrieveSelf();
-        } else {
-            context.retrieveSelf();
-            if (!expr) context.consumeCurrentValue();
-        }
+        if (expr) context.retrieveSelf();
     }
 
     public void compileSplat(Node node, BodyCompiler context, boolean expr) {
@@ -3422,54 +3715,41 @@ public class ASTCompiler {
 
         compile(splatNode.getValue(), context, true);
 
-        context.splatCurrentValue();
+        splatCurrentValue(context);
         // TODO: don't require pop
         if (!expr) context.consumeCurrentValue();
+    }
+
+    protected void splatCurrentValue(BodyCompiler context) {
+        context.splatCurrentValue("splatValue");
     }
 
     public void compileStr(Node node, BodyCompiler context, boolean expr) {
         StrNode strNode = (StrNode) node;
 
-        boolean doit = expr || !RubyInstanceConfig.PEEPHOLE_OPTZ;
-        boolean popit = !RubyInstanceConfig.PEEPHOLE_OPTZ && !expr;
-
-        if (doit) {
+        if (expr) {
             if (strNode instanceof FileNode) {
                 context.loadFilename();
             } else {
-                context.createNewString(strNode.getValue());
+                context.createNewString(strNode.getValue(), strNode.getCodeRange());
             }
         }
-        if (popit) context.consumeCurrentValue();
     }
 
     public void compileSuper(Node node, BodyCompiler context, boolean expr) {
         final SuperNode superNode = (SuperNode) node;
 
-        CompilerCallback argsCallback = new CompilerCallback() {
+        ArgumentsCallback argsCallback = getArgsCallback(superNode.getArgsNode());
 
-                    public void call(BodyCompiler context) {
-                        compileArguments(superNode.getArgsNode(), context);
-                    }
-                };
+        CompilerCallback closureArg = getBlock(superNode.getIterNode());
 
-
-        if (superNode.getIterNode() == null) {
-            // no block, go for simple version
-            if (superNode.getArgsNode() != null) {
-                context.getInvocationCompiler().invokeSuper(argsCallback, null);
-            } else {
-                context.getInvocationCompiler().invokeSuper(null, null);
-            }
+        // this is a hacky check; would prefer arity-split Super nodes like Call and FCall
+        if (superNode.getArgsNode() instanceof ArgsCatNode) {
+            context.getInvocationCompiler().invokeDynamicVarargs(null, null, argsCallback, CallType.SUPER, closureArg, superNode.getIterNode() instanceof IterNode);
         } else {
-            CompilerCallback closureArg = getBlock(superNode.getIterNode());
-
-            if (superNode.getArgsNode() != null) {
-                context.getInvocationCompiler().invokeSuper(argsCallback, closureArg);
-            } else {
-                context.getInvocationCompiler().invokeSuper(null, closureArg);
-            }
+            context.getInvocationCompiler().invokeDynamic(null, null, argsCallback, CallType.SUPER, closureArg, superNode.getIterNode() instanceof IterNode);
         }
+        
         // TODO: don't require pop
         if (!expr) context.consumeCurrentValue();
     }
@@ -3501,20 +3781,19 @@ public class ASTCompiler {
     }
 
     public void compileTrue(Node node, BodyCompiler context, boolean expr) {
-        if (RubyInstanceConfig.PEEPHOLE_OPTZ) {
-            if (expr) {
-                context.loadTrue();
-                context.pollThreadEvents();
-            }
-        } else {
+        if (expr) {
             context.loadTrue();
             context.pollThreadEvents();
-            if (!expr) context.consumeCurrentValue();
         }
     }
 
-    public void compileUndef(Node node, BodyCompiler context, boolean expr) {
-        context.undefMethod(((UndefNode) node).getName());
+    public void compileUndef(final UndefNode undef, BodyCompiler context, boolean expr) {
+        CompilerCallback nameArg = new CompilerCallback() {
+            public void call(BodyCompiler context) {
+                compile(undef.getName(), context, true);
+            }
+        };
+        context.undefMethod(nameArg);
         // TODO: don't require pop
         if (!expr) context.consumeCurrentValue();
     }
@@ -3567,7 +3846,21 @@ public class ASTCompiler {
 
     public void compileVCall(Node node, BodyCompiler context, boolean expr) {
         VCallNode vcallNode = (VCallNode) node;
-        
+        if (RubyInstanceConfig.DYNOPT_COMPILE_ENABLED) {
+            if (vcallNode.callAdapter instanceof CachingCallSite) {
+                CachingCallSite cacheSite = (CachingCallSite)vcallNode.callAdapter;
+                if (cacheSite.isOptimizable()) {
+                    CacheEntry entry = cacheSite.getCache();
+
+                    // recursive calls
+                    if (compileRecursiveCall(vcallNode.getName(), entry.token, CallType.VARIABLE, false, entry.method, context, null, null, expr)) return;
+
+                    // peephole inlining for trivial targets
+                    if (compileTrivialCall(vcallNode.getName(), entry.method, entry.token, context, expr)) return;
+                }
+            }
+        }
+
         context.getInvocationCompiler().invokeDynamic(vcallNode.getName(), null, null, CallType.VARIABLE, null, false);
         // TODO: don't require pop
         if (!expr) context.consumeCurrentValue();
@@ -3618,7 +3911,8 @@ public class ASTCompiler {
             }
 
             public void call(BodyCompiler context) {
-                context.createNewString(xstrNode.getValue());
+                // FIXME: shouldn't this have codeRange like StrNode?
+                context.createNewString(xstrNode.getValue(), StringSupport.CR_UNKNOWN);
             }
         };
         context.getInvocationCompiler().invokeDynamic("`", null, argsCallback, CallType.FUNCTIONAL, null, false);
@@ -3654,7 +3948,9 @@ public class ASTCompiler {
     }
 
     public void compileZArray(Node node, BodyCompiler context, boolean expr) {
-        context.createEmptyArray();
+        if (expr) {
+            context.createEmptyArray();
+        }
     }
 
     public void compileZSuper(Node node, BodyCompiler context, boolean expr) {
@@ -3675,7 +3971,7 @@ public class ASTCompiler {
         // FIXME: as a result, this is NOT efficient, since it creates and then later unwraps an array
         context.createNewArray(true);
         compile(argsCatNode.getSecondNode(), context,true);
-        context.splatCurrentValue();
+        splatCurrentValue(context);
         context.concatArrays();
         context.convertToJavaArray();
         // TODO: don't require pop
@@ -3714,7 +4010,7 @@ public class ASTCompiler {
         SplatNode splatNode = (SplatNode) node;
 
         compile(splatNode.getValue(), context,true);
-        context.splatCurrentValue();
+        splatCurrentValue(context);
         context.convertToJavaArray();
         // TODO: don't require pop
         if (!expr) context.consumeCurrentValue();

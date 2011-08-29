@@ -30,6 +30,9 @@ See the 'docs' directory for more information.
 
 interprets the file 'rubyfile.rb'.
 
+If you checked out from the repository or downloaded the source distribution,
+see the next section to build JRuby first.
+
 == Compiling from source
 
 You will need:
@@ -52,7 +55,7 @@ See 'docs/README.test' for more information.
 
 == More Information
 
-Visit http://jruby.codehaus.org for more information.
+Visit http://jruby.org for more information.
 
 == License
 

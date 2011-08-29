@@ -1,8 +1,8 @@
 #
 #   e2mmap.rb - for ruby 1.1
 #   	$Release Version: 2.0$
-#   	$Revision: 8696 $
-#   	$Date: 2009-01-10 15:17:58 -0600 (Sat, 10 Jan 2009) $
+#   	$Revision: 1.10 $
+#   	$Date: 1999/02/17 12:33:17 $
 #   	by Keiju ISHITSUKA
 #
 # --
@@ -51,7 +51,7 @@
 fail "Use Ruby 1.1" if VERSION < "1.1"
 
 module Exception2MessageMapper
-  @RCS_ID='-$Id: e2mmap.rb 8696 2009-01-10 21:17:58Z headius $-'
+  @RCS_ID='-$Id: e2mmap.rb,v 1.10 1999/02/17 12:33:17 keiju Exp keiju $-'
 
   E2MM = Exception2MessageMapper
 

@@ -40,7 +40,7 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
 public class SplatNode extends Node {
-    private final Node node;
+    protected final Node node;
 
     public SplatNode(ISourcePosition position, Node node) {
         super(position);

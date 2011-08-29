@@ -28,28 +28,13 @@
  ***** END LICENSE BLOCK *****/
 package org.jruby.lexer.yacc;
 
-import java.util.Collection;
-
-import org.jruby.ast.CommentNode;
-import org.jruby.ast.Node;
-
 public class SimpleSourcePosition implements ISourcePosition {
-    String filename;
-    int line;
+    final String filename;
+    final int line;
 
     public SimpleSourcePosition(String filename, int line) {
         this.filename = filename;
         this.line = line;
-    }
-
-    public void adjustStartOffset(int relativeValue) {}
-
-    public int getEndLine() {
-        return line;
-    }
-
-    public int getEndOffset() {
-        return 0;
     }
 
     public String getFile() {
@@ -60,23 +45,12 @@ public class SimpleSourcePosition implements ISourcePosition {
         return line;
     }
 
-    public int getStartOffset() {
-        return 0;
+    public int getLine() {
+        return line;
     }
 
-    public ISourcePosition union(ISourcePosition other) {
-        return this;
-    }
-
+    @Override
     public String toString() {
-        return getFile() + ":" + getStartLine();
-    }
-
-    public Collection<CommentNode> getComments() {
-        return Node.EMPTY_COMMENT_LIST;
-    }
-
-    public void setComments(Collection<CommentNode> comments) {
-        // do nothing
+        return getFile() + ":" + (getStartLine() + 1);
     }
 }

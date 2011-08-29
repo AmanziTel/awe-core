@@ -19,17 +19,17 @@ import static org.objectweb.asm.Opcodes.*;
 public abstract class RootScopedBodyCompiler extends BaseBodyCompiler {
     private boolean specificArity;
 
-    protected RootScopedBodyCompiler(StandardASMCompiler scriptCompiler, String friendlyName, ASTInspector inspector, StaticScope scope) {
-        super(scriptCompiler, friendlyName, inspector, scope);
+    protected RootScopedBodyCompiler(StandardASMCompiler scriptCompiler, String friendlyName, String rubyName, ASTInspector inspector, StaticScope scope) {
+        super(scriptCompiler, friendlyName, rubyName, inspector, scope);
     }
 
-    protected String getSignature() {
+    public String getSignature() {
         if (shouldUseBoxedArgs(scope)) {
             specificArity = false;
-            return StandardASMCompiler.METHOD_SIGNATURES[4];
+            return StandardASMCompiler.getStaticMethodSignature(script.getClassname(), 4);
         } else {
             specificArity = true;
-            return StandardASMCompiler.METHOD_SIGNATURES[scope.getRequiredArgs()];
+            return StandardASMCompiler.getStaticMethodSignature(script.getClassname(), scope.getRequiredArgs());
         }
     }
 
@@ -46,16 +46,6 @@ public abstract class RootScopedBodyCompiler extends BaseBodyCompiler {
     public void beginMethod(CompilerCallback args, StaticScope scope) {
         method.start();
 
-        // set up a local Ruby variable
-        method.aload(StandardASMCompiler.THREADCONTEXT_INDEX);
-        invokeThreadContext("getRuntime", sig(Ruby.class));
-        method.astore(getRuntimeIndex());
-
-        // grab nil for local variables
-        method.aload(getRuntimeIndex());
-        invokeRuby("getNil", sig(IRubyObject.class));
-        method.astore(getNilIndex());
-
         variableCompiler.beginMethod(args, scope);
 
         // visit a label to start scoping for local vars in this method
@@ -71,10 +61,10 @@ public abstract class RootScopedBodyCompiler extends BaseBodyCompiler {
             method.aload(i);
         }
         // we append an index to ensure two identical method names will not conflict
-        methodName = methodName + "_" + script.getAndIncrementMethodIndex();
-        method.invokevirtual(script.getClassname(), methodName, getSignature());
+        methodName = "chained_" + script.getAndIncrementMethodIndex() + "_" + methodName;
+        method.invokestatic(script.getClassname(), methodName, getSignature());
 
-        ChainedRootBodyCompiler methodCompiler = new ChainedRootBodyCompiler(script, methodName, inspector, scope, this);
+        ChainedRootBodyCompiler methodCompiler = new ChainedRootBodyCompiler(script, methodName, rubyName, inspector, scope, this);
 
         methodCompiler.beginChainedMethod();
 
@@ -93,7 +83,7 @@ public abstract class RootScopedBodyCompiler extends BaseBodyCompiler {
 
         method.end();
         if (specificArity) {
-            method = new SkinnyMethodAdapter(script.getClassVisitor().visitMethod(ACC_PUBLIC, methodName, StandardASMCompiler.METHOD_SIGNATURES[4], null, null));
+            method = new SkinnyMethodAdapter(script.getClassVisitor(), ACC_PUBLIC | ACC_STATIC, methodName, StandardASMCompiler.getStaticMethodSignature(script.getClassname(), 4), null, null);
             method.start();
 
             // check arity in the variable-arity version
@@ -116,7 +106,7 @@ public abstract class RootScopedBodyCompiler extends BaseBodyCompiler {
             }
             method.aload(StandardASMCompiler.ARGS_INDEX + 1);
             // load block from [] version of method
-            method.invokevirtual(script.getClassname(), methodName, getSignature());
+            method.invokestatic(script.getClassname(), methodName, getSignature());
             method.areturn();
             method.end();
         }

@@ -33,6 +33,7 @@
  ***** END LICENSE BLOCK *****/
 package org.jruby.javasupport;
 
+import java.lang.reflect.Member;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -41,11 +42,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.RubyModule;
-import org.jruby.RubyProc;
 import org.jruby.exceptions.RaiseException;
+import org.jruby.exceptions.Unrescuable;
 import org.jruby.javasupport.util.ObjectProxyCache;
 import org.jruby.runtime.builtin.IRubyObject;
-import org.jruby.runtime.callback.Callback;
+import org.jruby.util.WeakIdentityHashMap;
 
 public class JavaSupport {
     private static final Map<String,Class> PRIMITIVE_CLASSES = new HashMap<String,Class>();
@@ -65,8 +66,6 @@ public class JavaSupport {
     }
 
     private final Ruby runtime;
-
-    private final Map<String, RubyProc> exceptionHandlers = new HashMap<String, RubyProc>();
     
     private final ObjectProxyCache<IRubyObject,RubyClass> objectProxyCache = 
         // TODO: specifying soft refs, may want to compare memory consumption,
@@ -74,13 +73,7 @@ public class JavaSupport {
         new ObjectProxyCache<IRubyObject,RubyClass>(ObjectProxyCache.ReferenceType.WEAK) {
 
         public IRubyObject allocateProxy(Object javaObject, RubyClass clazz) {
-            IRubyObject proxy = clazz.allocate();
-            JavaObject wrappedObject = JavaObject.wrap(clazz.getRuntime(), javaObject);
-            proxy.getInstanceVariables().fastSetInstanceVariable("@java_object",
-                   wrappedObject);
-            proxy.dataWrapStruct(wrappedObject);
-            
-            return proxy;
+            return Java.allocateProxy(javaObject, clazz);
         }
     };
     
@@ -98,8 +91,6 @@ public class JavaSupport {
     // FIXME: needs to be rethought
     private final Map matchCache = Collections.synchronizedMap(new HashMap(128));
 
-    private Callback concreteProxyCallback;
-
     private RubyModule javaModule;
     private RubyModule javaUtilitiesModule;
     private RubyModule javaArrayUtilitiesModule;
@@ -108,6 +99,7 @@ public class JavaSupport {
     private RubyClass javaClassClass;
     private RubyClass javaArrayClass;
     private RubyClass javaProxyClass;
+    private RubyClass arrayJavaProxyCreatorClass;
     private RubyClass javaFieldClass;
     private RubyClass javaMethodClass;
     private RubyClass javaConstructorClass;
@@ -115,21 +107,14 @@ public class JavaSupport {
     private RubyModule packageModuleTemplate;
     private RubyClass arrayProxyClass;
     private RubyClass concreteProxyClass;
+    private RubyClass mapJavaProxy;
     
     private final Map<String, JavaClass> nameClassMap = new HashMap<String, JavaClass>();
+
+    private final Map<Object, Object[]> javaObjectVariables = new WeakIdentityHashMap();
     
     public JavaSupport(Ruby ruby) {
         this.runtime = ruby;
-    }
-
-    final synchronized void setConcreteProxyCallback(Callback concreteProxyCallback) {
-        if (this.concreteProxyCallback == null) {
-            this.concreteProxyCallback = concreteProxyCallback;
-        }
-    }
-    
-    final Callback getConcreteProxyCallback() {
-        return concreteProxyCallback;
     }
     
     final Map getMatchCache() {
@@ -165,7 +150,8 @@ public class JavaSupport {
         } catch (LinkageError le) {
             throw runtime.newNameError("cannot link Java class " + className + ", probable missing dependency: " + le.getLocalizedMessage(), className, le);
         } catch (SecurityException se) {
-            throw runtime.newNameError("security exception loading Java class " + className, className, se);
+            if (runtime.isVerbose()) se.printStackTrace(runtime.getErrorStream());
+            throw runtime.newSecurityError(se.getLocalizedMessage());
         }
     }
     
@@ -179,7 +165,7 @@ public class JavaSupport {
         } catch (LinkageError le) {
             throw runtime.newNameError("cannot link Java class " + className, className, le, false);
         } catch (SecurityException se) {
-            throw runtime.newNameError("security: cannot load Java class " + className, className, se, false);
+            throw runtime.newSecurityError(se.getLocalizedMessage());
         }
     }
 
@@ -190,32 +176,24 @@ public class JavaSupport {
     public void putJavaClassIntoCache(JavaClass clazz) {
         javaClassCache.put(clazz.javaClass(), clazz);
     }
-    
-    public void defineExceptionHandler(String exceptionClass, RubyProc handler) {
-        exceptionHandlers.put(exceptionClass, handler);
-    }
 
-    public void handleNativeException(Throwable exception) {
+    public void handleNativeException(Throwable exception, Member target) {
         if (exception instanceof RaiseException) {
+            // allow RaiseExceptions to propagate
             throw (RaiseException) exception;
+        } else if (exception instanceof Unrescuable) {
+            // allow "unrescuable" flow-control exceptions to propagate
+            if (exception instanceof Error) {
+                throw (Error)exception;
+            } else if (exception instanceof RuntimeException) {
+                throw (RuntimeException)exception;
+            }
         }
-        Class excptnClass = exception.getClass();
-        RubyProc handler = exceptionHandlers.get(excptnClass.getName());
-        while (handler == null &&
-               excptnClass != Throwable.class) {
-            excptnClass = excptnClass.getSuperclass();
-        }
-        if (handler != null) {
-            handler.call(runtime.getCurrentContext(), new IRubyObject[]{JavaUtil.convertJavaToRuby(runtime, exception)});
-        } else {
-            throw createRaiseException(exception);
-        }
+        throw createRaiseException(exception, target);
     }
 
-    private RaiseException createRaiseException(Throwable exception) {
-        RaiseException re = RaiseException.createNativeRaiseException(runtime, exception);
-        
-        return re;
+    private RaiseException createRaiseException(Throwable exception, Member target) {
+        return RaiseException.createNativeRaiseException(runtime, exception, target);
     }
 
     public ObjectProxyCache<IRubyObject,RubyClass> getObjectProxyCache() {
@@ -230,6 +208,32 @@ public class JavaSupport {
     
     public Map<String, JavaClass> getNameClassMap() {
         return nameClassMap;
+    }
+
+    public void setJavaObjectVariable(Object o, int i, Object v) {
+        synchronized (javaObjectVariables) {
+            Object[] vars = javaObjectVariables.get(o);
+            if (vars == null) {
+                vars = new Object[i + 1];
+                javaObjectVariables.put(o, vars);
+            } else if (vars.length <= i) {
+                Object[] newVars = new Object[i + 1];
+                System.arraycopy(vars, 0, newVars, 0, vars.length);
+                javaObjectVariables.put(o, newVars);
+                vars = newVars;
+            }
+            vars[i] = v;
+        }
+    }
+    
+    public Object getJavaObjectVariable(Object o, int i) {
+        if (i == -1) return null;
+        
+        synchronized (javaObjectVariables) {
+            Object[] vars = javaObjectVariables.get(o);
+            if (vars == null || vars.length <= i) return null;
+            return vars[i];
+        }
     }
     
     public RubyModule getJavaModule() {
@@ -275,13 +279,13 @@ public class JavaSupport {
         if ((clazz = javaClassClass) != null) return clazz;
         return javaClassClass = getJavaModule().fastGetClass("JavaClass");
     }
-    
+
     public RubyModule getJavaInterfaceTemplate() {
         RubyModule module;
         if ((module = javaInterfaceTemplate) != null) return module;
         return javaInterfaceTemplate = runtime.fastGetModule("JavaInterfaceTemplate");
     }
-    
+
     public RubyModule getPackageModuleTemplate() {
         RubyModule module;
         if ((module = packageModuleTemplate) != null) return module;
@@ -293,11 +297,23 @@ public class JavaSupport {
         if ((clazz = javaProxyClass) != null) return clazz;
         return javaProxyClass = runtime.fastGetClass("JavaProxy");
     }
+
+    public RubyClass getArrayJavaProxyCreatorClass() {
+        RubyClass clazz;
+        if ((clazz = arrayJavaProxyCreatorClass) != null) return clazz;
+        return arrayJavaProxyCreatorClass = runtime.fastGetClass("ArrayJavaProxyCreator");
+    }
     
     public RubyClass getConcreteProxyClass() {
         RubyClass clazz;
         if ((clazz = concreteProxyClass) != null) return clazz;
         return concreteProxyClass = runtime.fastGetClass("ConcreteJavaProxy");
+    }
+
+    public RubyClass getMapJavaProxyClass() {
+        RubyClass clazz;
+        if ((clazz = mapJavaProxy) != null) return clazz;
+        return mapJavaProxy = runtime.fastGetClass("MapJavaProxy");
     }
     
     public RubyClass getArrayProxyClass() {

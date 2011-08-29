@@ -50,7 +50,8 @@ public class IOInputStream extends InputStream {
     private final IRubyObject io;
     private final InputStream in;
     private final IRubyObject numOne;
-    private final CallSite readAdapter = MethodIndex.getFunctionalCallSite("read");
+    private static final CallSite readAdapter = MethodIndex.getFunctionalCallSite("read");
+    private static final CallSite closeAdapter = MethodIndex.getFunctionalCallSite("close");
 
     /**
      * Creates a new InputStream with the object provided.
@@ -62,7 +63,8 @@ public class IOInputStream extends InputStream {
             throw new IllegalArgumentException("Object: " + io + " is not a legal argument to this wrapper, cause it doesn't respond to \"read\".");
         }
         this.io = io;
-        this.in = io instanceof RubyIO ? ((RubyIO)io).getInStream() : null;
+        this.in = ((io instanceof RubyIO) && !((RubyIO)io).isClosed() && ((RubyIO)io).isBuiltin("read"))
+                ? ((RubyIO)io).getInStream() : null;
         this.numOne = RubyFixnum.one(this.io.getRuntime());
     }
 
@@ -70,6 +72,8 @@ public class IOInputStream extends InputStream {
     public void close() throws IOException {
         if (in != null) {
             in.close();
+        } else if (io.respondsTo("close")) {
+            closeAdapter.call(io.getRuntime().getCurrentContext(), io, io);
         }
     }
 
@@ -85,6 +89,9 @@ public class IOInputStream extends InputStream {
     }
     
     public int read() throws IOException {
+        if (in != null) {
+            return in.read();
+        }
         IRubyObject readValue = readAdapter.call(io.getRuntime().getCurrentContext(), io, io, numOne);
         int returnValue = -1;
         if (!readValue.isNil()) {
@@ -93,24 +100,32 @@ public class IOInputStream extends InputStream {
         return returnValue;
     }
 
+    @Override
     public int read(byte[] b) throws IOException {
+        if (in != null) {
+            return in.read(b, 0, b.length);
+        }
         IRubyObject readValue = readAdapter.call(io.getRuntime().getCurrentContext(), io, io, io.getRuntime().newFixnum(b.length));
         int returnValue = -1;
         if (!readValue.isNil()) {
             ByteList str = ((RubyString)readValue).getByteList();
-            System.arraycopy(str.bytes, str.begin, b, 0, str.realSize);
-            returnValue = str.realSize;
+            System.arraycopy(str.getUnsafeBytes(), str.getBegin(), b, 0, str.getRealSize());
+            returnValue = str.getRealSize();
         }
         return returnValue;
     }
 
+    @Override
     public int read(byte[] b, int off, int len) throws IOException {
+        if (in != null) {
+            return in.read(b, off, len);
+        }
         IRubyObject readValue = readAdapter.call(io.getRuntime().getCurrentContext(), io, io, io.getRuntime().newFixnum(len));
         int returnValue = -1;
         if (!readValue.isNil()) {
             ByteList str = ((RubyString)readValue).getByteList();
-            System.arraycopy(str.bytes, str.begin, b, off, str.realSize);
-            returnValue = str.realSize;
+            System.arraycopy(str.getUnsafeBytes(), str.getBegin(), b, off, str.getRealSize());
+            returnValue = str.getRealSize();
         }
         return returnValue;
      }

@@ -36,15 +36,21 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.jruby.CompatVersion;
 
 import org.jruby.Ruby;
 import org.jruby.RubyHash;
 import org.jruby.RubyModule;
+import org.jruby.anno.JRubyMethod;
 import org.jruby.ext.posix.util.Platform;
 import org.jruby.runtime.Constants;
 import org.jruby.runtime.load.Library;
 import org.jruby.util.NormalizedFile;
+import org.jruby.util.SafePropertyAccessor;
 import org.jruby.anno.JRubyModule;
+import org.jruby.javasupport.util.RuntimeHelpers;
+import org.jruby.runtime.ThreadContext;
+import org.jruby.runtime.builtin.IRubyObject;
 
 @JRubyModule(name="Config")
 public class RbConfigLibrary implements Library {
@@ -55,6 +61,8 @@ public class RbConfigLibrary implements Library {
     private static final String RUBY_SOLARIS = "solaris";
     private static final String RUBY_FREEBSD = "freebsd";
     private static final String RUBY_AIX = "aix";
+   
+    private static String normalizedHome;
     
     /** This is a map from Java's "friendly" OS names to those used by Ruby */
     public static final Map<String, String> RUBY_OS_NAMES = new HashMap<String, String>();
@@ -72,16 +80,29 @@ public class RbConfigLibrary implements Library {
         RUBY_OS_NAMES.put("Windows XP", RUBY_WIN32);
         RUBY_OS_NAMES.put("Windows 2003", RUBY_WIN32);
         RUBY_OS_NAMES.put("Windows Vista", RUBY_WIN32);
+        RUBY_OS_NAMES.put("Windows 7", RUBY_WIN32);
+        RUBY_OS_NAMES.put("Windows Server 2008", RUBY_WIN32);
         RUBY_OS_NAMES.put("Solaris", RUBY_SOLARIS);
         RUBY_OS_NAMES.put("FreeBSD", RUBY_FREEBSD);
         RUBY_OS_NAMES.put("AIX", RUBY_AIX);
     }
     
     public static String getOSName() {
+        if (Platform.IS_WINDOWS) {
+            return RUBY_WIN32;
+        }
+        
         String OSName = Platform.getOSName();
         String theOSName = RUBY_OS_NAMES.get(OSName);
         
         return theOSName == null ? OSName : theOSName;
+    }
+
+    public static String getArchitecture() {
+        String architecture = Platform.ARCH;
+        if (architecture == null) architecture = "unknown";
+        
+        return architecture;
     }
     /**
      * Just enough configuration settings (most don't make sense in Java) to run the rubytests
@@ -97,7 +118,13 @@ public class RbConfigLibrary implements Library {
         configModule.defineConstant("CONFIG", configHash);
         runtime.getObject().defineConstant("RbConfig", configModule);
 
-        String[] versionParts = Constants.RUBY_VERSION.split("\\.");
+        String[] versionParts;
+        if (runtime.is1_9()) {
+            versionParts = Constants.RUBY1_9_VERSION.split("\\.");
+        } else {
+            versionParts = Constants.RUBY_VERSION.split("\\.");
+        }
+        
         setConfig(configHash, "MAJOR", versionParts[0]);
         setConfig(configHash, "MINOR", versionParts[1]);
         setConfig(configHash, "TEENY", versionParts[2]);
@@ -106,13 +133,18 @@ public class RbConfigLibrary implements Library {
         //setConfig(configHash, "arch", System.getProperty("os.arch") + "-java" + System.getProperty("java.specification.version"));
         setConfig(configHash, "arch", "universal-java" + System.getProperty("java.specification.version"));
 
-        String normalizedHome;
-        if (Ruby.isSecurityRestricted()) {
+        normalizedHome = runtime.getJRubyHome();
+        if ((normalizedHome == null) && Ruby.isSecurityRestricted()) {
             normalizedHome = "SECURITY RESTRICTED";
-        } else {
-            normalizedHome = runtime.getJRubyHome();
         }
-        setConfig(configHash, "bindir", new NormalizedFile(normalizedHome, "bin").getPath());
+
+        // Use property for binDir if available, otherwise fall back to common bin default
+        String binDir = SafePropertyAccessor.getProperty("jruby.bindir");
+        if (binDir == null) {
+            binDir = new NormalizedFile(normalizedHome, "bin").getPath();
+        }
+        setConfig(configHash, "bindir", binDir);
+
         setConfig(configHash, "RUBY_INSTALL_NAME", jrubyScript());
         setConfig(configHash, "ruby_install_name", jrubyScript());
         setConfig(configHash, "SHELL", jrubyShell());
@@ -121,16 +153,16 @@ public class RbConfigLibrary implements Library {
 
         setConfig(configHash, "host_os", getOSName());
         setConfig(configHash, "host_vendor", System.getProperty("java.vendor"));
-        setConfig(configHash, "host_cpu", Platform.ARCH);
+        setConfig(configHash, "host_cpu", getArchitecture());
         
         setConfig(configHash, "target_os", getOSName());
         
-        setConfig(configHash, "target_cpu", Platform.ARCH);
+        setConfig(configHash, "target_cpu", getArchitecture());
         
         String jrubyJarFile = "jruby.jar";
-        URL jrubyPropertiesUrl = Ruby.getClassLoader().getResource(Constants.JRUBY_PROPERTIES);
+        URL jrubyPropertiesUrl = Ruby.getClassLoader().getResource("/org/jruby/Ruby.class");
         if (jrubyPropertiesUrl != null) {
-            Pattern jarFile = Pattern.compile("jar:file:.*?([a-zA-Z0-9.\\-]+\\.jar)!" + Constants.JRUBY_PROPERTIES);
+            Pattern jarFile = Pattern.compile("jar:file:.*?([a-zA-Z0-9.\\-]+\\.jar)!" + "/org/jruby/Ruby.class");
             Matcher jarMatcher = jarFile.matcher(jrubyPropertiesUrl.toString());
             jarMatcher.find();
             if (jarMatcher.matches()) {
@@ -139,11 +171,13 @@ public class RbConfigLibrary implements Library {
         }
         setConfig(configHash, "LIBRUBY", jrubyJarFile);
         setConfig(configHash, "LIBRUBY_SO", jrubyJarFile);
+        setConfig(configHash, "LIBRUBY_SO", jrubyJarFile);
+        setConfig(configHash, "LIBRUBY_ALIASES", jrubyJarFile);
         
         setConfig(configHash, "build", Constants.BUILD);
         setConfig(configHash, "target", Constants.TARGET);
         
-        String libdir = System.getProperty("jruby.lib");
+        String libdir = SafePropertyAccessor.getProperty("jruby.lib");
         if (libdir == null) {
             libdir = new NormalizedFile(normalizedHome, "lib").getPath();
         } else {
@@ -161,16 +195,21 @@ public class RbConfigLibrary implements Library {
         String siteLibDir = new NormalizedFile(libdir, "ruby/site_ruby/1.8").getPath();
         String siteArchDir = new NormalizedFile(libdir, "ruby/site_ruby/1.8/java").getPath();
         String archDir = new NormalizedFile(libdir, "ruby/1.8/java").getPath();
+        String shareDir = new NormalizedFile(normalizedHome, "share").getPath();
+        String includeDir = new NormalizedFile(normalizedHome, "lib/native/" + getOSName()).getPath();
 
         setConfig(configHash, "libdir", libdir);
+        if (runtime.is1_9()) setConfig(configHash, "rubylibprefix",     libdir + "/ruby");
         setConfig(configHash, "rubylibdir",     rubyLibDir);
         setConfig(configHash, "sitedir",        siteDir);
         setConfig(configHash, "sitelibdir",     siteLibDir);
+        setConfig(configHash, "sitearch", "java");
         setConfig(configHash, "sitearchdir",    siteArchDir);
         setConfig(configHash, "archdir",   archDir);
         setConfig(configHash, "topdir",   archDir);
+        setConfig(configHash, "includedir",   includeDir);
         setConfig(configHash, "configure_args", "");
-        setConfig(configHash, "datadir", new NormalizedFile(normalizedHome, "share").getPath());
+        setConfig(configHash, "datadir", shareDir);
         setConfig(configHash, "mandir", new NormalizedFile(normalizedHome, "man").getPath());
         setConfig(configHash, "sysconfdir", new NormalizedFile(normalizedHome, "etc").getPath());
         setConfig(configHash, "localstatedir", new NormalizedFile(normalizedHome, "var").getPath());
@@ -181,6 +220,19 @@ public class RbConfigLibrary implements Library {
         } else {
             setConfig(configHash, "EXEEXT", "");
         }
+
+        if (runtime.is1_9()) {
+            setConfig(configHash, "ridir", new NormalizedFile(shareDir, "ri").getPath());
+        }
+
+        // These will be used as jruby defaults for rubygems if found
+        String gemhome = SafePropertyAccessor.getProperty("jruby.gem.home");
+        String gempath = SafePropertyAccessor.getProperty("jruby.gem.path");
+        if (gemhome != null) setConfig(configHash, "default_gem_home", gemhome);
+        if (gempath != null) setConfig(configHash, "default_gem_path", gempath);
+        
+        setConfig(configHash, "joda-time.version", Constants.JODA_TIME_VERSION);
+        setConfig(configHash, "tzdata.version",    Constants.TZDATA_VERSION);
         
         RubyHash mkmfHash = RubyHash.newHash(runtime);
         
@@ -205,36 +257,61 @@ public class RbConfigLibrary implements Library {
     
     private static void setupMakefileConfig(RubyModule configModule, RubyHash mkmfHash) {
         Ruby ruby = configModule.getRuntime();
-        
-        String jflags = " -fno-omit-frame-pointer -fno-strict-aliasing -DNDEBUG ";
-        String oflags = " -O2 " + jflags;
-        String wflags = " -W -Werror -Wall -Wno-unused -Wno-parentheses ";
-        String picflags = true ? "" : " -fPIC -pthread ";
-        
-        String iflags = " -I\"$(JDK_HOME)/include\" -I\"$(JDK_HOME)/include/$(OS)\" -I\"$(BUILD_DIR)\" ";
-        
-        String cflags = "";
-        String soflags = true ? "" : " -shared -static-libgcc -mimpure-text -Wl,-O1 ";
-        String ldflags = soflags;
-        
-        
-        String archflags = " -arch i386 -arch ppc -arch x86_64 ";
-        
-        cflags += archflags;
 
-        // this set is only for darwin
-        cflags += " -isysroot /Developer/SDKs/MacOSX10.4u.sdk -DTARGET_RT_MAC_CFM=0 ";
-        cflags += " -arch i386 -arch ppc -arch x86_64 ";
-        ldflags += " -arch i386 -arch ppc -arch x86_64 -bundle -framework JavaVM -Wl,-syslibroot,$(SDKROOT) -mmacosx-version-min=10.4 -undefined dynamic_lookup ";
+        RubyHash envHash = (RubyHash) ruby.getObject().fastFetchConstant("ENV".intern());
+        String cc = getRubyEnv(envHash, "CC", "cc");
+        String cpp = getRubyEnv(envHash, "CPP", "cc -E");
+        String cxx = getRubyEnv(envHash, "CXX", "c++");
+
+        String jflags = " -fno-omit-frame-pointer -fno-strict-aliasing ";
+        // String oflags = " -O2  -DNDEBUG";
+        // String wflags = " -W -Werror -Wall -Wno-unused -Wno-parentheses ";
+        // String picflags = true ? "" : " -fPIC -pthread ";
+        // String iflags = " -I\"$(JDK_HOME)/include\" -I\"$(JDK_HOME)/include/$(OS)\" -I\"$(BUILD_DIR)\" ";
+        // String soflags = true ? "" : " -shared -static-libgcc -mimpure-text -Wl,-O1 ";
+
+        String cflags = jflags + " -fexceptions" /* + picflags */ + " $(cflags)";
+        String cppflags = " $(DEFS) $(cppflags)";
+        String cxxflags = cflags + " $(cxxflags)";
+        String ldflags = ""; // + soflags;
+        String dldflags = "";
+        String ldsharedflags = " -shared ";
+
+        String archflags = " -m" + (Platform.IS_64_BIT ? "64" : "32");
+
+        String hdr_dir = new NormalizedFile(normalizedHome, "lib/native/include/").getPath();
+
+        // A few platform specific values
+        if (Platform.IS_WINDOWS) {
+            ldflags += " -L" + new NormalizedFile(normalizedHome, "lib/native/" + (Platform.IS_64_BIT ? "x86_64" : "i386") + "-Windows").getPath();
+            ldflags += " -ljruby-cext";
+            ldsharedflags += " $(if $(filter-out -g -g0,$(debugflags)),,-s)";
+            dldflags = "-Wl,--enable-auto-image-base,--enable-auto-import $(DEFFILE)";
+            archflags += " -march=native -mtune=native";
+            setConfig(mkmfHash, "DLEXT", "dll");
+        } else if (Platform.IS_MAC) {
+            ldsharedflags = " -dynamic -bundle -undefined dynamic_lookup ";
+            cflags = " -fPIC -DTARGET_RT_MAC_CFM=0 " + cflags;
+            ldflags += " -bundle -framework JavaVM -Wl,-syslibroot,$(SDKROOT) -mmacosx-version-min=10.4 ";
+            archflags = " -arch " + Platform.ARCH;
+            cppflags = " -D_XOPEN_SOURCE -D_DARWIN_C_SOURCE " + cppflags;
+            setConfig(mkmfHash, "DLEXT", "bundle");
+        } else {
+            cflags = " -fPIC " + cflags;
+            setConfig(mkmfHash, "DLEXT", "so");
+        }
+
         String libext = "a";
         String objext = "o";
         
         setConfig(mkmfHash, "configure_args", "");
         setConfig(mkmfHash, "CFLAGS", cflags);
-        setConfig(mkmfHash, "CPPFLAGS", "");
-        setConfig(mkmfHash, "ARCH_FLAG", "");
+        setConfig(mkmfHash, "CPPFLAGS", cppflags);
+        setConfig(mkmfHash, "CXXFLAGS", cxxflags);
+        setConfig(mkmfHash, "ARCH_FLAG", archflags);
         setConfig(mkmfHash, "LDFLAGS", ldflags);
-        setConfig(mkmfHash, "DLDFLAGS", "");
+        setConfig(mkmfHash, "DLDFLAGS", dldflags);
+        setConfig(mkmfHash, "DEFS", "");
         setConfig(mkmfHash, "LIBEXT", libext);
         setConfig(mkmfHash, "OBJEXT", objext);
         setConfig(mkmfHash, "LIBRUBYARG_STATIC", "");
@@ -245,35 +322,58 @@ public class RbConfigLibrary implements Library {
         setConfig(mkmfHash, "LIBRUBY", "");
         setConfig(mkmfHash, "LIBRUBY_A", "");
         setConfig(mkmfHash, "LIBRUBYARG", "");
-        setConfig(mkmfHash, "prefix", "");
+        setConfig(mkmfHash, "prefix", " "); // This must not be empty for some extconf.rb's to work
         setConfig(mkmfHash, "ruby_install_name", jrubyScript());
-        setConfig(mkmfHash, "DLEXT", "bundle");
-        setConfig(mkmfHash, "CC", "cc ");
-        setConfig(mkmfHash, "LDSHARED", "cc ");
+        setConfig(mkmfHash, "LDSHARED", cc + ldsharedflags);
+        setConfig(mkmfHash, "LDSHAREDXX", cxx + ldsharedflags);
+        setConfig(mkmfHash, "RUBY_PLATFORM", getOSName());
+        setConfig(mkmfHash, "CC", cc);
+        setConfig(mkmfHash, "CPP", cpp);
+        setConfig(mkmfHash, "CXX", cxx);
         setConfig(mkmfHash, "OUTFLAG", "-o ");
+        setConfig(mkmfHash, "COMMON_HEADERS", "ruby.h");
         setConfig(mkmfHash, "PATH_SEPARATOR", ":");
         setConfig(mkmfHash, "INSTALL", "install -c ");
         setConfig(mkmfHash, "RM", "rm -f");
         setConfig(mkmfHash, "CP", "cp ");
         setConfig(mkmfHash, "MAKEDIRS", "mkdir -p ");
+        setConfig(mkmfHash, "includedir", hdr_dir);
+        setConfig(mkmfHash, "rubyhdrdir", hdr_dir);
+        setConfig(mkmfHash, "archdir", hdr_dir);
         
         ruby.getObject().defineConstant("CROSS_COMPILING", ruby.getNil());
         
         configModule.defineConstant("MAKEFILE_CONFIG", mkmfHash);
     }
 
-    private static void setConfig(RubyHash mkmfHash, String key, String value) {
-        Ruby runtime = mkmfHash.getRuntime();
-        mkmfHash.op_aset(runtime.getCurrentContext(), runtime.newString(key), runtime.newString(value));
+    private static void setConfig(RubyHash hash, String key, String value) {
+        Ruby runtime = hash.getRuntime();
+        hash.op_aset(runtime.getCurrentContext(), runtime.newString(key), runtime.newString(value));
     }
 
     public static String jrubyScript() {
-        return System.getProperty("jruby.script", Platform.IS_WINDOWS ? "jruby.bat" : "jruby").replace('\\', '/');
+        return SafePropertyAccessor.getProperty("jruby.script", "jruby").replace('\\', '/');
     }
 
     // TODO: note lack of command.com support for Win 9x...
     public static String jrubyShell() {
-        return System.getProperty("jruby.shell", Platform.IS_WINDOWS ? "cmd.exe" : "/bin/sh").replace('\\', '/');
+        return SafePropertyAccessor.getProperty("jruby.shell", Platform.IS_WINDOWS ? "cmd.exe" : "/bin/sh").replace('\\', '/');
     }
 
+    @JRubyMethod(name = "ruby", module = true, compat = CompatVersion.RUBY1_9)
+    public static IRubyObject ruby(ThreadContext context, IRubyObject recv) {
+        Ruby runtime = context.getRuntime();
+        RubyHash configHash = (RubyHash) runtime.getModule("Config").getConstant("CONFIG");
+
+        IRubyObject bindir            = configHash.op_aref(context, runtime.newString("bindir"));
+        IRubyObject ruby_install_name = configHash.op_aref(context, runtime.newString("ruby_install_name"));
+        IRubyObject exeext            = configHash.op_aref(context, runtime.newString("EXEEXT"));
+
+        return RuntimeHelpers.invoke(context, runtime.getClass("File"), "join", bindir, ruby_install_name.callMethod(context, "+", exeext));
+    }
+
+    private static String getRubyEnv(RubyHash envHash, String var, String default_value) {
+        var = (String) envHash.get(var);
+        return var == null ? default_value : var;
+    }
 }

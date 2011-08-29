@@ -11,7 +11,8 @@ import org.jruby.Ruby;
 import org.jruby.RubyHash;
 import org.jruby.common.IRubyWarnings.ID;
 import org.jruby.ext.posix.POSIXHandler;
-import org.jruby.ext.posix.POSIX.ERRORS;
+
+import com.kenai.constantine.platform.Errno;
 
 public class JRubyPOSIXHandler implements POSIXHandler {
     private final Ruby runtime;
@@ -28,15 +29,12 @@ public class JRubyPOSIXHandler implements POSIXHandler {
         this.isVerbose = verbose;
     }
 
-    public void error(ERRORS error, String extraData) {
-        switch (error) {
-        case ENOENT:
-            throw runtime.newErrnoENOENTError("No such file or directory - " + extraData);
-        }
+    public void error(Errno error, String extraData) {
+        throw runtime.newErrnoFromInt(error.value(), extraData);
     }
 
     public void unimplementedError(String method) {
-        throw runtime.newNotImplementedError(method + " unsupported on this platform");
+        throw runtime.newNotImplementedError(method + " unsupported or native support failed to load");
     }
 
     public void warn(WARNING_ID id, String message, Object... data) {
@@ -46,7 +44,7 @@ public class JRubyPOSIXHandler implements POSIXHandler {
         } else {
             ourID = ID.MISCELLANEOUS;
         }
-        runtime.getWarnings().warn(ourID, message, data);
+        runtime.getWarnings().warn(ourID, message);
     }
     
     public boolean isVerbose() {

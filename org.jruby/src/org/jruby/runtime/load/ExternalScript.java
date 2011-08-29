@@ -30,10 +30,12 @@
  ***** END LICENSE BLOCK *****/
 package org.jruby.runtime.load;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import org.jruby.Ruby;
+
+import static org.jruby.util.JRubyFile.normalizeSeps;
+import static org.jruby.RubyFile.canonicalize;
 
 public class ExternalScript implements Library {
     private final LoadServiceResource resource;
@@ -43,24 +45,37 @@ public class ExternalScript implements Library {
     }
 
     public void load(Ruby runtime, boolean wrap) {
+        InputStream in = null;
         try {
-            InputStream in = new BufferedInputStream(resource.getURL().openStream(), 8192);
-
-            String name = resource.getName();
-            try {
-                name = java.net.URLDecoder.decode(name, "ISO-8859-1");
-            } catch(Exception ignored) {
-            }
+            in = resource.getInputStream();
+            String name = normalizeSeps(resource.getName());
 
             if (runtime.getInstanceConfig().getCompileMode().shouldPrecompileAll()) {
                 runtime.compileAndLoadFile(name, in, wrap);
             } else {
+                java.io.File path = resource.getPath();
+
+                if(path != null && !resource.isAbsolute()) {
+                    // Note: We use RubyFile's canonicalize rather than Java's,
+                    // because Java's will follow symlinks and result in __FILE__
+                    // being set to the target of the symlink rather than the
+                    // filename provided.
+                    name = normalizeSeps(canonicalize(path.getPath()));
+                }
+
                 runtime.loadFile(name, in, wrap);
             }
-            // FIXME: This should be in finally
-            in.close();
+
+
         } catch (IOException e) {
             throw runtime.newIOErrorFromException(e);
+        } finally {
+            try { in.close(); } catch (Exception ex) {}
         }
+    }
+
+    @Override
+    public String toString() {
+        return "ExternalScript: " + resource.getName();
     }
 }

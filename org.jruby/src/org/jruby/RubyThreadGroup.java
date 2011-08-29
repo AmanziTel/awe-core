@@ -29,11 +29,13 @@
  ***** END LICENSE BLOCK *****/
 package org.jruby;
 
+import java.util.Collections;
 import java.util.Set;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.anno.JRubyClass;
 
 import org.jruby.runtime.Block;
+import org.jruby.runtime.ClassIndex;
 import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.util.collections.WeakHashSet;
@@ -47,13 +49,15 @@ import org.jruby.util.collections.WeakHashSet;
  */
 @JRubyClass(name="ThreadGroup")
 public class RubyThreadGroup extends RubyObject {
-    private Set<RubyThread> rubyThreadList = new WeakHashSet<RubyThread>();
+    private final Set<RubyThread> rubyThreadList = Collections.synchronizedSet(new WeakHashSet<RubyThread>());
     private boolean enclosed = false;
 
     // ENEBO: Can these be fast?
     public static RubyClass createThreadGroupClass(Ruby runtime) {
         RubyClass threadGroupClass = runtime.defineClass("ThreadGroup", runtime.getObject(), ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR);
         runtime.setThreadGroup(threadGroupClass);
+
+        threadGroupClass.index = ClassIndex.THREADGROUP;
         
         threadGroupClass.defineAnnotatedMethods(RubyThreadGroup.class);
         
@@ -65,13 +69,13 @@ public class RubyThreadGroup extends RubyObject {
         return threadGroupClass;
     }
     
-    @JRubyMethod(name = "new", frame = true, meta = true)
+    @JRubyMethod(name = "new", meta = true)
     public static IRubyObject newInstance(IRubyObject recv, Block block) {
         return new RubyThreadGroup(recv.getRuntime(), (RubyClass)recv);
     }
 
-    @JRubyMethod(name = "add", required = 1, frame = true)
-    public synchronized IRubyObject add(IRubyObject rubyThread, Block block) {
+    @JRubyMethod(name = "add", required = 1)
+    public IRubyObject add(IRubyObject rubyThread, Block block) {
         if (!(rubyThread instanceof RubyThread)) throw getRuntime().newTypeError(rubyThread, getRuntime().getThread());
         
         // synchronize on the RubyThread for threadgroup updates
@@ -92,7 +96,7 @@ public class RubyThreadGroup extends RubyObject {
     void addDirectly(RubyThread rubyThread) {
         synchronized (rubyThread) {
             IRubyObject oldGroup = rubyThread.group();
-            if (oldGroup != getRuntime().getNil()) {
+            if (!oldGroup.isNil()) {
                 RubyThreadGroup threadGroup = (RubyThreadGroup) oldGroup;
                 threadGroup.rubyThreadList.remove(rubyThread);
             }
@@ -102,26 +106,28 @@ public class RubyThreadGroup extends RubyObject {
         }
     }
     
-    public synchronized void remove(RubyThread rubyThread) {
-        rubyThread.setThreadGroup(null);
-        rubyThreadList.remove(rubyThread);
+    public void remove(RubyThread rubyThread) {
+        synchronized (rubyThread) {
+            rubyThread.setThreadGroup(null);
+            rubyThreadList.remove(rubyThread);
+        }
     }
     
-    @JRubyMethod(name = "enclose", frame = true)
+    @JRubyMethod
     public IRubyObject enclose(Block block) {
         enclosed = true;
 
         return this;
     }
     
-    @JRubyMethod(name = "enclosed?", frame = true)
+    @JRubyMethod(name = "enclosed?")
     public IRubyObject enclosed_p(Block block) {
-        return new RubyBoolean(getRuntime(), enclosed);
+        return getRuntime().newBoolean(enclosed);
     }
 
-    @JRubyMethod(name = "list", frame = true)
-    public synchronized IRubyObject list(Block block) {
-        return getRuntime().newArrayNoCopy((IRubyObject[]) rubyThreadList.toArray(new IRubyObject[rubyThreadList.size()]));
+    @JRubyMethod
+    public IRubyObject list(Block block) {
+        return RubyArray.newArray(getRuntime(), rubyThreadList);
     }
 
     private RubyThreadGroup(Ruby runtime, RubyClass type) {

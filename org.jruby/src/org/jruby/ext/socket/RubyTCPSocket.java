@@ -31,7 +31,6 @@ package org.jruby.ext.socket;
 
 import static com.kenai.constantine.platform.AddressFamily.*;
 
-import java.io.FileDescriptor;
 import java.io.IOException;
 
 import java.net.ConnectException;
@@ -39,14 +38,16 @@ import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.NoRouteToHostException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+import java.nio.channels.ClosedChannelException;
+import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
-import org.jruby.RubyIO;
 import org.jruby.RubyNumeric;
 import org.jruby.RubyString;
 import org.jruby.anno.JRubyMethod;
@@ -82,8 +83,12 @@ public class RubyTCPSocket extends RubyIPSocket {
     }
     
     private int getPortFrom(Ruby runtime, IRubyObject arg) {
-        return RubyNumeric.fix2int(arg instanceof RubyString ? 
-                RubyNumeric.str2inum(runtime, (RubyString) arg, 0, true) : arg);
+        if (arg instanceof RubyString) {
+            jnr.netdb.Service service = jnr.netdb.Service.getServiceByName(arg.asJavaString(), "tcp");
+            return service != null ?
+                service.getPort() : RubyNumeric.fix2int(RubyNumeric.str2inum(runtime, (RubyString) arg, 0, true));
+        }
+        return RubyNumeric.fix2int(arg);
     }
 
     @JRubyMethod(required = 2, optional = 2, visibility = Visibility.PRIVATE, backtrace = true)
@@ -92,30 +97,41 @@ public class RubyTCPSocket extends RubyIPSocket {
 
         String remoteHost = args[0].isNil()? "localhost" : args[0].convertToString().toString();
         int remotePort = getPortFrom(context.getRuntime(), args[1]);
-        String localHost = args.length >= 3 ? args[2].convertToString().toString() : null;
+        String localHost = args.length >= 3 && !args[2].isNil() ? args[2].convertToString().toString() : null;
         int localPort = args.length == 4 ? getPortFrom(context.getRuntime(), args[3]) : 0;
 
         try {
-            SocketChannel channel = null;
-            if(localHost == null) {
-                InetSocketAddress addr = new InetSocketAddress(InetAddress.getByName(remoteHost), remotePort);
-                channel = SocketChannel.open(addr);
-                channel.finishConnect();
-            } else {
-                Socket socket = new Socket();
-                socket.bind(new InetSocketAddress(InetAddress.getByName(localHost), localPort));
-                socket.connect(new InetSocketAddress(InetAddress.getByName(remoteHost), remotePort));
-                channel = socket.getChannel();
+            // This is a bit convoluted because (1) SocketChannel.bind is only in jdk 7 and
+            // (2) Socket.getChannel() seems to return null in some cases
+            final SocketChannel channel = SocketChannel.open();
+            final Socket socket = channel.socket();
+            if (localHost != null) {
+                socket.bind( new InetSocketAddress(InetAddress.getByName(localHost), localPort) );
             }
-            initSocket(context.getRuntime(), new ChannelDescriptor(channel, RubyIO.getNewFileno(), new ModeFlags(ModeFlags.RDWR), new FileDescriptor()));
+            boolean success = false;
+            try {
+                channel.configureBlocking(false);
+                channel.connect( new InetSocketAddress(InetAddress.getByName(remoteHost), remotePort) );
+                context.getThread().select(channel, this, SelectionKey.OP_CONNECT);
+                channel.finishConnect();
+                success = true;
+            } catch (NoRouteToHostException nrthe) {
+                throw context.getRuntime().newErrnoEHOSTUNREACHError("SocketChannel.connect");
+            } catch(ConnectException e) {
+                throw context.getRuntime().newErrnoECONNREFUSEDError();
+            } catch(UnknownHostException e) {
+                throw sockerr(context.getRuntime(), "initialize: name or service not known");
+            } finally {
+                // only try to set blocking back if we succeeded to finish connecting
+                if (success) channel.configureBlocking(true);
+            }
+            initSocket(context.getRuntime(), new ChannelDescriptor(channel, new ModeFlags(ModeFlags.RDWR)));
         } catch (InvalidValueException ex) {
             throw context.getRuntime().newErrnoEINVALError();
-        } catch(ConnectException e) {
+        } catch (ClosedChannelException cce) {
             throw context.getRuntime().newErrnoECONNREFUSEDError();
-        } catch(UnknownHostException e) {
-            throw sockerr(context.getRuntime(), "initialize: name or service not known");
         } catch(IOException e) {
-            throw sockerr(context.getRuntime(), "initialize: name or service not known");
+            throw sockerr(context.getRuntime(), e.getLocalizedMessage());
         } catch (IllegalArgumentException iae) {
             throw sockerr(context.getRuntime(), iae.getMessage());
         }
@@ -126,7 +142,7 @@ public class RubyTCPSocket extends RubyIPSocket {
     public static IRubyObject open(IRubyObject recv, IRubyObject[] args, Block block) {
         return open(recv.getRuntime().getCurrentContext(), recv, args, block);
     }
-    @JRubyMethod(frame = true, rest = true, meta = true)
+    @JRubyMethod(rest = true, meta = true)
     public static IRubyObject open(ThreadContext context, IRubyObject recv, IRubyObject[] args, Block block) {
         RubyTCPSocket sock = (RubyTCPSocket)recv.callMethod(context,"new",args);
         if (!block.isGiven()) return sock;
@@ -152,7 +168,7 @@ public class RubyTCPSocket extends RubyIPSocket {
             String hostString = hostname.convertToString().toString();
             addr = InetAddress.getByName(hostString);
             
-            ret[0] = r.newString(addr.getCanonicalHostName());
+            ret[0] = r.newString(do_not_reverse_lookup(recv).isTrue() ? addr.getHostAddress() : addr.getCanonicalHostName());
             ret[1] = r.newArray();
             ret[3] = r.newString(addr.getHostAddress());
             

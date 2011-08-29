@@ -15,24 +15,25 @@ import java.util.regex.Pattern;
  */
 public class JavaNameMangler {
     public static final Pattern PATH_SPLIT = Pattern.compile("[/\\\\]");
-    
+
     public static String mangledFilenameForStartupClasspath(String filename) {
         if (filename.equals("-e")) {
             return "ruby/__dash_e__";
         }
-        
-        return mangleFilenameForClasspath(filename, null, "", false);
+
+        return mangleFilenameForClasspath(filename, null, "", false, false);
     }
-    
+
     public static String mangleFilenameForClasspath(String filename) {
         return mangleFilenameForClasspath(filename, null, "ruby");
     }
-    
+
     public static String mangleFilenameForClasspath(String filename, String parent, String prefix) {
-        return mangleFilenameForClasspath(filename, parent, prefix, true);
+        return mangleFilenameForClasspath(filename, parent, prefix, true, false);
     }
-    
-    public static String mangleFilenameForClasspath(String filename, String parent, String prefix, boolean canonicalize) {
+
+    public static String mangleFilenameForClasspath(String filename, String parent, String prefix, boolean canonicalize,
+          boolean preserveIdentifiers) {
         try {
             String classPath = "";
             if(filename.indexOf("!") != -1) {
@@ -74,25 +75,30 @@ public class JavaNameMangler {
                 int parentLength = parentPath.length();
                 classPath = classPath.substring(parentLength);
             }
-            
+
             String[] pathElements = PATH_SPLIT.split(classPath);
             StringBuilder newPath = new StringBuilder(prefix);
-            
+
             for (String element : pathElements) {
                 if (element.length() <= 0) {
                     continue;
                 }
-                
+
                 if (newPath.length() > 0) {
                     newPath.append("/");
                 }
-                
+
                 if (!Character.isJavaIdentifierStart(element.charAt(0))) {
                     newPath.append("$");
                 }
-                newPath.append(mangleStringForCleanJavaIdentifier(element));
+
+                String pathId = element;
+                if (!preserveIdentifiers) {
+                    pathId = mangleStringForCleanJavaIdentifier(element);
+                }
+                newPath.append(pathId);
             }
-            
+
             // strip off "_dot_rb" for .rb files
             int dotRbIndex = newPath.indexOf("_dot_rb");
             if (dotRbIndex != -1 && dotRbIndex == newPath.length() - 7) {
@@ -105,7 +111,7 @@ public class JavaNameMangler {
             throw new RuntimeException(ioe);
         }
     }
-    
+
     public static String mangleStringForCleanJavaIdentifier(String name) {
         char[] characters = name.toCharArray();
         StringBuilder cleanBuffer = new StringBuilder();
@@ -171,5 +177,64 @@ public class JavaNameMangler {
             }
         }
         return cleanBuffer.toString();
+    }
+
+    private static final String DANGEROUS_CHARS = "\\/.;:$[]<>";
+    private static final String REPLACEMENT_CHARS = "-|,?!%{}^_";
+    private static final char ESCAPE_C = '\\';
+    private static final char NULL_ESCAPE_C = '=';
+    private static final String NULL_ESCAPE = ESCAPE_C+""+NULL_ESCAPE_C;
+
+    public static String mangleMethodName(String name) {
+        // scan for characters that need escaping
+        StringBuilder builder = null; // lazy
+        for (int i = 0; i < name.length(); i++) {
+            char candidate = name.charAt(i);
+            int escape = escapeChar(candidate);
+            if (escape != -1) {
+                if (builder == null) {
+                    builder = new StringBuilder();
+                    // start mangled with '='
+                    builder.append(NULL_ESCAPE);
+                    builder.append(name.substring(0, i));
+                }
+                builder.append(ESCAPE_C).append((char)escape);
+            } else if (builder != null) builder.append(candidate);
+        }
+
+        if (builder != null) return builder.toString();
+
+        return name;
+    }
+
+    public static String demangleMethodName(String name) {
+        if (!name.startsWith(NULL_ESCAPE)) return name;
+
+        StringBuilder builder = new StringBuilder();
+        for (int i = 2; i < name.length(); i++) {
+            char candidate = name.charAt(i);
+            if (candidate == ESCAPE_C) {
+                i++;
+                char escaped = name.charAt(i);
+                char unescape = unescapeChar(escaped);
+                builder.append(unescape);
+            } else builder.append(candidate);
+        }
+
+        return builder.toString();
+    }
+
+    public static String unmangleMethodName(String name) {
+        return name.replaceAll("\\", "/");
+    }
+
+    private static int escapeChar(char character) {
+        int index = DANGEROUS_CHARS.indexOf(character);
+        if (index == -1) return -1;
+        return REPLACEMENT_CHARS.charAt(index);
+    }
+
+    private static char unescapeChar(char character) {
+        return DANGEROUS_CHARS.charAt(REPLACEMENT_CHARS.indexOf(character));
     }
 }

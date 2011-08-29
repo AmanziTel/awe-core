@@ -66,6 +66,18 @@ end
   }
 }
 
+puts "Measure ArrayList.set(fixnum, string), String leaving Ruby"
+5.times {
+  puts Benchmark.measure {
+    str = "foo"
+    alist = java.util.ArrayList.new(1)
+    alist << str
+    1000000.times {
+      alist.set(0, str)
+    }
+  }
+}
+
 puts "Measure Fixnum#to_s, String being constructed"
 5.times {
   puts Benchmark.measure {
@@ -76,7 +88,6 @@ puts "Measure Fixnum#to_s, String being constructed"
   }
 }
 
-
 puts "Measure Integer.valueOf, overloaded call with a primitive"
 5.times {
   puts Benchmark.measure {
@@ -84,6 +95,26 @@ puts "Measure Integer.valueOf, overloaded call with a primitive"
     x = 1
     1000000.times {
       integer.valueOf(x)
+    }
+  }
+}
+    
+puts "Measure ArrayList<Object>.get, non-coercible type entering Ruby"
+5.times {
+  puts Benchmark.measure {
+    list = java.util.ArrayList.new
+    list.add(java.lang.Object.new)
+    1000000.times {
+      list.get(0)
+    }
+  }
+}
+    
+puts "Measure java.lang.Object.new"
+5.times {
+  puts Benchmark.measure {
+    1000000.times {
+      Object.new
     }
   }
 }

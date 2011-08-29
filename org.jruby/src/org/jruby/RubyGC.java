@@ -30,22 +30,32 @@
  ***** END LICENSE BLOCK *****/
 package org.jruby;
 
+import java.lang.management.GarbageCollectorMXBean;
+import java.lang.management.ManagementFactory;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.anno.JRubyModule;
 import org.jruby.common.IRubyWarnings.ID;
-import org.jruby.runtime.Visibility;
+import org.jruby.runtime.ThreadContext;
+import static org.jruby.runtime.Visibility.*;
+import static org.jruby.CompatVersion.*;
 import org.jruby.runtime.builtin.IRubyObject;
 
 /**
  * GC (Garbage Collection) Module
  *
  * Note: Since we rely on Java's memory model we can't provide the
- * kind of control over garbage collection that MRI provides.
+ * kind of control over garbage collection that MRI provides.  Also note
+ * that since all Ruby libraries make GC assumptions based on MRI's GC
+ * that we decided to no-op explicit collection through these APIs.
+ * You can use Java Integration in your libraries to force a Java
+ * GC (assuming you really want to).
  *
- * @author Anders
  */
 @JRubyModule(name="GC")
 public class RubyGC {
+    private static volatile boolean gcDisabled = false;
+    private static volatile boolean stress = false;
+
     public static RubyModule createGCModule(Ruby runtime) {
         RubyModule result = runtime.defineModule("GC");
         runtime.setGC(result);
@@ -55,27 +65,62 @@ public class RubyGC {
         return result;        
     }
 
-    @JRubyMethod(module = true, visibility = Visibility.PRIVATE)
-    public static IRubyObject start(IRubyObject recv) {
-        System.gc();
-        return recv.getRuntime().getNil();
+    @JRubyMethod(module = true, visibility = PRIVATE)
+    public static IRubyObject start(ThreadContext context, IRubyObject recv) {
+        return context.getRuntime().getNil();
     }
 
     @JRubyMethod
-    public static IRubyObject garbage_collect(IRubyObject recv) {
-        System.gc();
-        return recv.getRuntime().getNil();
+    public static IRubyObject garbage_collect(ThreadContext context, IRubyObject recv) {
+        return context.getRuntime().getNil();
     }
 
-    @JRubyMethod(module = true, visibility = Visibility.PRIVATE)
-    public static IRubyObject enable(IRubyObject recv) {
-        recv.getRuntime().getWarnings().warn(ID.EMPTY_IMPLEMENTATION, "GC.enable will not work on JRuby", "GC.enable");
-        return recv.getRuntime().getNil();
+    @JRubyMethod(module = true, visibility = PRIVATE)
+    public static IRubyObject enable(ThreadContext context, IRubyObject recv) {
+        Ruby runtime = context.getRuntime();
+        emptyImplementationWarning(runtime, "GC.enable");
+        boolean old = gcDisabled;
+        gcDisabled = false;
+        return runtime.newBoolean(old);
     }
 
-    @JRubyMethod(module = true, visibility = Visibility.PRIVATE)
-    public static IRubyObject disable(IRubyObject recv) {
-        recv.getRuntime().getWarnings().warn(ID.EMPTY_IMPLEMENTATION, "GC.disable will not work on JRuby", "GC.disable");
-        return recv.getRuntime().getNil();
+    @JRubyMethod(module = true, visibility = PRIVATE)
+    public static IRubyObject disable(ThreadContext context, IRubyObject recv) {
+        Ruby runtime = context.getRuntime();
+        emptyImplementationWarning(runtime, "GC.disable");
+        boolean old = gcDisabled;
+        gcDisabled = true;
+        return runtime.newBoolean(old);
+    }
+
+    @JRubyMethod(module = true, visibility = PRIVATE)
+    public static IRubyObject stress(ThreadContext context, IRubyObject recv) {
+        return context.getRuntime().newBoolean(stress);
+    }
+
+    @JRubyMethod(name = "stress=", module = true, visibility = PRIVATE)
+    public static IRubyObject stress_set(ThreadContext context, IRubyObject recv, IRubyObject arg) {
+        Ruby runtime = context.getRuntime();
+        emptyImplementationWarning(runtime, "GC.stress=");
+        stress = arg.isTrue();
+        return runtime.newBoolean(stress);
+    }
+    
+    @JRubyMethod(module = true, visibility = PRIVATE, compat = RUBY1_9)
+    public static IRubyObject count(ThreadContext context, IRubyObject recv) {
+        try {
+            int count = 0;
+            for (GarbageCollectorMXBean bean : ManagementFactory.getGarbageCollectorMXBeans()) {
+                count += bean.getCollectionCount();
+            }
+            return context.runtime.newFixnum(count);
+        } catch (Throwable t) {
+            return RubyFixnum.minus_one(context.runtime);
+        }
+    }
+
+    private static void emptyImplementationWarning(Ruby runtime, String name) {
+        runtime.getWarnings().warn(ID.EMPTY_IMPLEMENTATION,
+                name + " does nothing on JRuby");
     }
 }

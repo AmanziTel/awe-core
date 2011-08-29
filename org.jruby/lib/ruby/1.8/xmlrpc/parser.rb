@@ -3,7 +3,7 @@
 # 
 # Copyright (C) 2001, 2002, 2003 by Michael Neumann (mneumann@ntecs.de)
 #
-# $Id: parser.rb 2062 2006-06-10 19:14:15Z headius $
+# $Id$
 #
 
 
@@ -92,7 +92,7 @@ module XMLRPC
         if $7
           ofs = $8.to_i*3600 + $9.to_i*60
           ofs = -ofs if $7=='+'
-          utc = Time.utc(a.reverse) + ofs
+          utc = Time.utc(*a) + ofs
           a = [ utc.year, utc.month, utc.day, utc.hour, utc.min, utc.sec ]
         end
         XMLRPC::DateTime.new(*a)
@@ -106,7 +106,7 @@ module XMLRPC
         if $7
           ofs = $8.to_i*3600 + $9.to_i*60
           ofs = -ofs if $7=='+'
-          utc = Time.utc(a.reverse) + ofs
+          utc = Time.utc(*a) + ofs
           a = [ utc.year, utc.month, utc.day, utc.hour, utc.min, utc.sec ]
         end
         XMLRPC::DateTime.new(*a)

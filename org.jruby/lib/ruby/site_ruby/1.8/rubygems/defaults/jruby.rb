@@ -1,29 +1,24 @@
 require 'rubygems/config_file'
-require 'etc'
+require 'rubygems/maven_gemify' # Maven support
+require 'rbconfig'
 
 module Gem
 
-  ConfigFile::PLATFORM_DEFAULTS['install'] = '--env-shebang'
-  ConfigFile::PLATFORM_DEFAULTS['update']  = '--env-shebang'
+  ConfigFile::PLATFORM_DEFAULTS['install'] = '--no-rdoc --no-ri --env-shebang'
+  ConfigFile::PLATFORM_DEFAULTS['update']  = '--no-rdoc --no-ri --env-shebang'
 
   class << self
-    alias_method :original_ensure_gem_subdirectories, :ensure_gem_subdirectories
-    def ensure_gem_subdirectories(gemdir)
-      original_ensure_gem_subdirectories(gemdir) if writable_path? gemdir
+    alias_method :original_ruby, :ruby
+    def ruby
+      ruby_path = original_ruby
+      if jarred_path?(ruby_path)
+        ruby_path = "java -jar #{ruby_path.sub(/^file:/,"").sub(/!.*/,"")}"
+      end
+      ruby_path
     end
 
-    alias_method :original_set_paths, :set_paths
-    def set_paths(gpaths)
-      original_set_paths(gpaths)
-      @gem_path.reject! {|p| !readable_path? p }
-    end
-
-    def readable_path?(p)
-      p =~ /^file:/ || File.exists?(p)
-    end
-
-    def writable_path?(p)
-      p !~ /^file:/ && File.exists?(p)
+    def jarred_path?(p)
+      p =~ /^file:/
     end
   end
 
@@ -33,23 +28,9 @@ module Gem
   # JRuby: We don't want gems installed in lib/jruby/gems, but rather
   # to preserve the old location: lib/ruby/gems.
   def self.default_dir
-    # TODO: use ~/.gems as the default dir when running under the complete jar, so the user can install gems?
-    File.join ConfigMap[:libdir], 'ruby', 'gems', ConfigMap[:ruby_version]
-  end
-
-  ##
-  # The path to the running Ruby interpreter.
-  #
-  # JRuby: Don't append ConfigMap[:EXEEXT] to @jruby, since that would
-  # make it jruby.bat.bat on Windows.
-  def self.ruby
-    if @ruby.nil? then
-      @ruby = File.join(ConfigMap[:bindir],
-                        ConfigMap[:ruby_install_name])
-      # @ruby << ConfigMap[:EXEEXT]
-    end
-
-    @ruby
+    dir = RbConfig::CONFIG["default_gem_home"]
+    dir ||= File.join(ConfigMap[:libdir], 'ruby', 'gems', '1.8')
+    dir
   end
 
   ##
@@ -82,8 +63,8 @@ class Gem::SourceIndex
     end
 
     def spec_directories_from_classpath
-      require 'jruby'
-      JRuby.runtime.getJRubyClassLoader.getResources("specifications").map {|u| u.getFile }
+      require 'jruby/util'
+      stuff = JRuby::Util.classloader_resources("specifications")
     end
   end
 end
@@ -97,3 +78,10 @@ if (Gem::win_platform?)
   end
 end
 
+# Check for jruby_native and load it if present. jruby_native
+# indicates the native launcher is installed and will override
+# env-shebang and possibly other options.
+begin
+  require 'rubygems/defaults/jruby_native'
+rescue LoadError
+end

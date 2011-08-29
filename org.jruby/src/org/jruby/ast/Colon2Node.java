@@ -79,18 +79,13 @@ public abstract class Colon2Node extends Colon3Node implements INameNode {
     public List<Node> childNodes() {
         return Node.createList(leftNode);
     }
-    
-    @Override
-    public String toString() {
-        String result = "Colon2Node [";
-        if (leftNode != null) result += leftNode;
-        result += getName();
-        return result + "]";
-    }
 
     /** Get parent module/class that this module represents */
     @Override
     public RubyModule getEnclosingModule(Ruby runtime, ThreadContext context, IRubyObject self, Block aBlock) {
+    	if (leftNode != null && leftNode instanceof NilNode) {
+            throw context.getRuntime().newTypeError("no outer class/module");
+        }
         return RuntimeHelpers.prepareClassNamespace(context, leftNode.interpret(runtime, context, self, aBlock));
     }
  }

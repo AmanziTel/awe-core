@@ -1,8 +1,8 @@
 #
 #               getopts.rb - 
 #                       $Release Version: $
-#                       $Revision: 5479 $
-#                       $Date: 2008-01-03 15:39:44 -0600 (Thu, 03 Jan 2008) $
+#                       $Revision$
+#                       $Date$
 #                       by Yasuo OHBA(SHL Japan Inc. Technology Dept.)
 #
 # --

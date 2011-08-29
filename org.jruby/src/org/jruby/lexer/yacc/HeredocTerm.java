@@ -72,14 +72,17 @@ public class HeredocTerm extends StrTerm {
 
         // Found end marker for this heredoc
         if (src.lastWasBeginOfLine() && src.matchMarker(marker, indent, true)) {
+            ISourcePosition position = lexer.getPosition();
+            
             // Put back lastLine for any elements past start of heredoc marker
             src.unreadMany(lastLine);
             
-            lexer.yaccValue = new Token(marker, lexer.getPosition());
+            lexer.yaccValue = new Token(marker, position);
             return Tokens.tSTRING_END;
         }
 
         ByteList str = new ByteList();
+        str.setEncoding(lexer.getEncoding());
         ISourcePosition position;
         
         if ((flags & RubyYaccLexer.STR_FUNC_EXPAND) == 0) {
@@ -115,7 +118,7 @@ public class HeredocTerm extends StrTerm {
                     syntaxError(src);
                 }
                 if (c != '\n') {
-                    lexer.yaccValue = new StrNode(lexer.getPosition(), str);
+                    lexer.yaccValue = lexer.createStrNode(lexer.getPosition(), str, 0);
                     return Tokens.tSTRING_CONTENT;
                 }
                 str.append(src.read());
@@ -127,12 +130,12 @@ public class HeredocTerm extends StrTerm {
 
         src.unreadMany(lastLine);
         lexer.setStrTerm(new StringTerm(-1, '\0', '\0'));
-        lexer.yaccValue = new StrNode(position, str);
+        lexer.yaccValue = lexer.createStrNode(position, str, 0);
         return Tokens.tSTRING_CONTENT;
     }
     
     private void syntaxError(LexerSource src) {
-        throw new SyntaxException(PID.STRING_MARKER_MISSING, src.getPosition(), "can't find string \"" + marker
-                + "\" anywhere before EOF", marker);
+        throw new SyntaxException(PID.STRING_MARKER_MISSING, src.getPosition(), src.getCurrentLine(), 
+                "can't find string \"" + marker + "\" anywhere before EOF", marker);
     }
 }

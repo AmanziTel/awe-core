@@ -25,92 +25,131 @@
  ***** END LICENSE BLOCK *****/
 package org.jruby.util;
 
+import java.math.BigInteger;
+import java.util.Arrays;
+
 public class Random {
-    private static int N            = 624;
-    private static int M            = 397;
-    private static int MATRIX_A     = 0x9908b0df;  /* constant vector a */
-    private static int UMASK        = 0x80000000;  /* most significant w-r bits */
-    private static int LMASK        = 0x7fffffff;  /* least significant r bits */
+    private static int N = 624;
+    private static int M = 397;
+    private static int MATRIX_A = 0x9908b0df; /* constant vector a */
+    private static int UMASK = 0x80000000; /* most significant w-r bits */
+    private static int LMASK = 0x7fffffff; /* least significant r bits */
 
     private static int MIXBITS(int u, int v) {
         return (u & UMASK) | (v & LMASK);
     }
-    
-    private static int TWIST(int u,int v) {
+
+    private static int TWIST(int u, int v) {
         return (MIXBITS(u, v) >>> 1) ^ (((v & 1) != 0) ? MATRIX_A : 0);
     }
-    
-    private final int []state = new int[N];
+
+    private final int[] state = new int[N];
     private int left = 1;
-    private boolean initf = false;
-    private int next;
-    
-    public Random() {
-    }
 
-    private void init(int s) {
-        state[0] = s & 0xffffffff;
-        for (int j=1; j<N; j++) {
-            state[j] = (1812433253 * (state[j-1] ^ (state[j-1] >>> 30)) + j); 
-            // state[j] &= 0xffffffffL;
+    public static void main(String[] args) {
+        Random mt = new Random(1);
+        for (int idx = 0; idx < 1; ++idx) {
+            System.err.println(mt.genrandReal2());
         }
-        left = 1; initf = true;
-        
     }
 
-    private void init(int[]initKey) {
-        init(19650218);
+    public Random(int s) {
+        initGenrand(s);
+    }
+
+    public Random(int[] initKey) {
+        initByArray(initKey);
+    }
+
+    public Random(Random orig) {
+        System.arraycopy(orig.state, 0, this.state, 0, this.state.length);
+        this.left = orig.left;
+    }
+
+    public Random(int[] state, int left) {
+        if (state.length != this.state.length) {
+            throw new IllegalStateException("wrong state length: " + state.length);
+        }
+        System.arraycopy(state, 0, this.state, 0, this.state.length);
+        this.left = left;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        } else if (!(obj instanceof Random)) {
+            return false;
+        }
+        Random rhs = (Random) obj;
+        return (left == rhs.left) && Arrays.equals(state, rhs.state);
+    }
+
+    @Override
+    public int hashCode() {
+        // Using 17 as the initializer, 37 as the multiplier.
+        return (629 + left) * 37 + state.hashCode();
+    }
+    
+    private void initGenrand(int s) {
+        state[0] = s;
+        for (int j = 1; j < N; j++) {
+            state[j] = (1812433253 * (state[j - 1] ^ (state[j - 1] >>> 30)) + j);
+        }
+        left = 1;
+    }
+
+    private void initByArray(int[] initKey) {
+        initGenrand(19650218);
+        int len = initKey.length;
         int i = 1;
         int j = 0;
-        for (int k = initKey.length > 0 ? N : initKey.length; k > 0; k--) {
-            state[i] = (state[i] ^ ((state[i-1] ^ (state[i-1] >>> 30)) * 1664525)) + initKey[j] + j;
-            // state[i] &= 0xffffffffL;
+        int k = N > len ? N : len;
+        for (; k > 0; k--) {
+            state[i] = (state[i] ^ ((state[i - 1] ^ (state[i - 1] >>> 30)) * 1664525)) + initKey[j]
+                    + j;
             i++;
             j++;
             if (i >= N) {
-                state[0] = state[N-1];
+                state[0] = state[N - 1];
                 i = 1;
             }
-            if (j >= initKey.length) j=0;
-        }
-        for (int k= N - 1; k > 0; k--) {
-            state[i] = (state[i] ^ ((state[i-1] ^ (state[i-1] >>> 30)) * 1566083941)) - i;
-            // state[i] &= 0xffffffffL;
-            i++;
-            if (i>=N) {
-                state[0] = state[N-1];
-                i=1;
+            if (j >= len) {
+                j = 0;
             }
         }
-
-        state[0] = 0x80000000; /* MSB is 1; assuring non-zero initial array */ 
-        left = 1;
-        initf = true;
+        for (k = N - 1; k > 0; k--) {
+            state[i] = (state[i] ^ ((state[i - 1] ^ (state[i - 1] >>> 30)) * 1566083941)) - i;
+            i++;
+            if (i >= N) {
+                state[0] = state[N - 1];
+                i = 1;
+            }
+        }
+        state[0] = 0x80000000;
     }
-    
+
     private void nextState() {
         int p = 0;
 
-        if (initf == false) init(5489);
-
         left = N;
-        next = 0;
 
-        for (int j= N - M + 1; --j != 0; p++) { 
+        for (int j = N - M + 1; --j > 0; p++) {
             state[p] = state[p + M] ^ TWIST(state[p + 0], state[p + 1]);
         }
 
-        for (int j = M; --j != 0; p++) { 
+        for (int j = M; --j > 0; p++) {
             state[p] = state[p + M - N] ^ TWIST(state[p + 0], state[p + 1]);
         }
 
-        state[p] = state[p + M - N] ^ TWIST(state[p], state[0]);
+        state[p] = state[p + M - N] ^ TWIST(state[p + 0], state[0]);
     }
 
-    public int nextInt32() {
-        if (--left == 0) nextState();
-        
-        int y = state[next++];
+    public int genrandInt32() {
+        if (--left <= 0)
+            nextState();
+
+        int y = state[N - left];
 
         /* Tempering */
         y ^= (y >>> 11);
@@ -120,10 +159,36 @@ public class Random {
 
         return y;
     }
-    
-    public double nextReal() {
-        int a = nextInt32() >>> 5;
-        int b = nextInt32() >>> 6;
-        return(a * 67108864.0 + b) * (1.0/9007199254740992.0);
+
+    public double genrandReal() {
+        int a = genrandInt32() >>> 5;
+        int b = genrandInt32() >>> 6;
+        return (a * 67108864.0 + b) * (1.0 / 9007199254740992.0);
+    }
+
+    public double genrandReal2() {
+        int a = genrandInt32();
+        int b = genrandInt32();
+        return intPairToRealInclusive(a, b);
+    }
+
+    private static final BigInteger INTPAIR_CONST = BigInteger.valueOf((1L << 53) + 1);
+    private static final double LDEXP_CONST = Math.pow(2.0, -53);
+
+    // c: ldexp((a<< 32)|b) * ((1<<53)+1) >> 64, -53)
+    // TODO: not enough prec...
+    private double intPairToRealInclusive(int a, int b) {
+        BigInteger c = BigInteger.valueOf(a & 0xffffffffL);
+        BigInteger d = BigInteger.valueOf(b & 0xffffffffL);
+        return c.shiftLeft(32).or(d).multiply(INTPAIR_CONST).shiftRight(64).doubleValue()
+                * LDEXP_CONST;
+    }
+
+    public int[] getState() {
+        return state;
+    }
+
+    public int getLeft() {
+        return left;
     }
 }

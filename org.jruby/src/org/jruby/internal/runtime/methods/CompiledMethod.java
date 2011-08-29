@@ -28,7 +28,7 @@
 package org.jruby.internal.runtime.methods;
 
 import org.jruby.RubyModule;
-import org.jruby.internal.runtime.JumpTarget;
+import org.jruby.lexer.yacc.ISourcePosition;
 import org.jruby.parser.StaticScope;
 import org.jruby.runtime.Arity;
 import org.jruby.runtime.CallType;
@@ -37,31 +37,50 @@ import org.jruby.runtime.Visibility;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.MethodFactory;
+import org.jruby.runtime.PositionAware;
 
-public abstract class CompiledMethod extends JavaMethod implements JumpTarget, Cloneable {
+public abstract class CompiledMethod extends JavaMethod implements Cloneable, PositionAware, MethodArgs2 {
     protected Object $scriptObject;
+    protected ISourcePosition position;
+    protected String[] parameterList;
     
-    public static class LazyCompiledMethod extends DynamicMethod implements JumpTarget, Cloneable {
+    public static class LazyCompiledMethod extends DynamicMethod implements Cloneable, PositionAware, MethodArgs2 {
         private final String method;
         private final Arity arity;
         private final StaticScope scope;
         private final Object scriptObject;
         private MethodFactory factory;
         private DynamicMethod compiledMethod;
+        private final ISourcePosition position;
+        private final String parameterDesc;
+        private final String[] parameterList;
     
-        public LazyCompiledMethod(RubyModule implementationClass, String method, Arity arity, 
-            Visibility visibility, StaticScope scope, Object scriptObject, CallConfiguration callConfig, MethodFactory factory) {
+        public LazyCompiledMethod(
+                RubyModule implementationClass,
+                String method,
+                Arity arity,
+                Visibility visibility,
+                StaticScope scope,
+                Object scriptObject,
+                CallConfiguration callConfig,
+                ISourcePosition position,
+                String parameterDesc,
+                MethodFactory factory) {
+            
             super(implementationClass, visibility, callConfig);
             this.method = method;
             this.arity = arity;
             this.scope = scope;
             this.scriptObject = scriptObject;
             this.factory = factory;
+            this.position = position;
+            this.parameterDesc = parameterDesc;
+            this.parameterList = parameterDesc.split(";");
         }
         
         private synchronized void initializeMethod() {
             if (compiledMethod != null) return;
-            compiledMethod = factory.getCompiledMethod(implementationClass, method, arity, visibility, scope, scriptObject, callConfig);
+            compiledMethod = factory.getCompiledMethod(implementationClass, method, arity, visibility, scope, scriptObject, callConfig, position, parameterDesc);
             factory = null;
         }
         
@@ -196,13 +215,38 @@ public abstract class CompiledMethod extends JavaMethod implements JumpTarget, C
             if (compiledMethod == null) initializeMethod();
             return compiledMethod.dup();
         }
+
+        public String getFile() {
+            if (compiledMethod == null) initializeMethod();
+            return position.getFile();
+        }
+
+        public int getLine() {
+            if (compiledMethod == null) initializeMethod();
+            return position.getStartLine();
+        }
+
+        public String[] getParameterList() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
         
     }
     
     protected CompiledMethod() {}
     
-    protected void init(RubyModule implementationClass, Arity arity, Visibility visibility, StaticScope staticScope, Object scriptObject, CallConfiguration callConfig) {
+    protected void init(
+            RubyModule implementationClass,
+            Arity arity,
+            Visibility visibility,
+            StaticScope staticScope,
+            Object scriptObject,
+            CallConfiguration callConfig,
+            ISourcePosition position,
+            String parameterDesc) {
+        
         this.$scriptObject = scriptObject;
+        this.position = position;
+        this.parameterList = parameterDesc.split(";");
         super.init(implementationClass, arity, visibility, staticScope, callConfig);
     }
         
@@ -239,5 +283,21 @@ public abstract class CompiledMethod extends JavaMethod implements JumpTarget, C
     @Override
     public boolean isNative() {
         return false;
+    }
+
+    public String getFile() {
+        return position.getFile();
+    }
+
+    public int getLine() {
+        return position.getStartLine();
+    }
+
+    public String[] getParameterList() {
+        return parameterList;
+    }
+
+    public Object getScriptObject() {
+        return $scriptObject;
     }
 }// SimpleInvocationMethod

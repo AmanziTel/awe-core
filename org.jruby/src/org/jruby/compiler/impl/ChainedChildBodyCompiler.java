@@ -5,8 +5,6 @@ import org.jruby.parser.StaticScope;
 import org.objectweb.asm.Label;
 
 public class ChainedChildBodyCompiler extends ChildScopedBodyCompiler {
-    ChildScopedBodyCompiler parent;
-
     @Override
     public void endBody() {
         // return last value from execution
@@ -17,9 +15,8 @@ public class ChainedChildBodyCompiler extends ChildScopedBodyCompiler {
         method.end();
     }
 
-    public ChainedChildBodyCompiler(StandardASMCompiler scriptCompiler, String methodName, ASTInspector inspector, StaticScope scope, ChildScopedBodyCompiler parent) {
-        super(scriptCompiler, methodName, inspector, scope);
-        this.parent = parent;
+    public ChainedChildBodyCompiler(StandardASMCompiler scriptCompiler, String methodName, String rubyName, ASTInspector inspector, StaticScope scope, ChildScopedBodyCompiler parent) {
+        super(scriptCompiler, methodName, rubyName, inspector, scope);
         this.inNestedMethod = true;
     }
 }

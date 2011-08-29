@@ -32,6 +32,8 @@ import org.jcodings.ascii.AsciiTables;
 import org.jcodings.specific.ASCIIEncoding;
 import org.jruby.Ruby;
 import org.jruby.RubyObject;
+import org.jruby.RubyString;
+import org.jruby.runtime.builtin.IRubyObject;
 
 import sun.misc.Unsafe;
 
@@ -80,7 +82,7 @@ public final class StringSupport {
     }
 
     public static int searchNonAscii(ByteList bytes) { 
-        return searchNonAscii(bytes.bytes, bytes.begin, bytes.begin + bytes.realSize);
+        return searchNonAscii(bytes.getUnsafeBytes(), bytes.getBegin(), bytes.getBegin() + bytes.getRealSize());
     }
 
     public static int codeRangeScan(Encoding enc, byte[]bytes, int p, int len) {
@@ -121,7 +123,7 @@ public final class StringSupport {
     }
 
     public static int codeRangeScan(Encoding enc, ByteList bytes) {
-        return codeRangeScan(enc, bytes.bytes, bytes.begin, bytes.realSize);
+        return codeRangeScan(enc, bytes.getUnsafeBytes(), bytes.getBegin(), bytes.getRealSize());
     }
 
     public static long codeRangeScanRestartable(Encoding enc, byte[]bytes, int s, int end, int cr) { 
@@ -191,7 +193,7 @@ public final class StringSupport {
     }
 
     public static int utf8Length(ByteList bytes) {
-        return utf8Length(bytes.bytes, bytes.begin, bytes.begin + bytes.realSize);
+        return utf8Length(bytes.getUnsafeBytes(), bytes.getBegin(), bytes.getBegin() + bytes.getRealSize());
     }
 
     public static int strLength(Encoding enc, byte[]bytes, int p, int end) {
@@ -218,7 +220,7 @@ public final class StringSupport {
     }
 
     public static int strLength(ByteList bytes) { 
-        return strLength(bytes.encoding, bytes.bytes, bytes.begin, bytes.begin + bytes.realSize);
+        return strLength(bytes.getEncoding(), bytes.getUnsafeBytes(), bytes.getBegin(), bytes.getBegin() + bytes.getRealSize());
     }
 
     public static long strLengthWithCodeRange(Encoding enc, byte[]bytes, int p, int end) {
@@ -269,11 +271,11 @@ public final class StringSupport {
     }
 
     public static long strLengthWithCodeRange(ByteList bytes) { 
-        return strLengthWithCodeRange(bytes.encoding, bytes.bytes, bytes.begin, bytes.begin + bytes.realSize);
+        return strLengthWithCodeRange(bytes.getEncoding(), bytes.getUnsafeBytes(), bytes.getBegin(), bytes.getBegin() + bytes.getRealSize());
     }
 
     public static long strLengthWithCodeRange(ByteList bytes, Encoding enc) { 
-        return strLengthWithCodeRange(enc, bytes.bytes, bytes.begin, bytes.begin + bytes.realSize);
+        return strLengthWithCodeRange(enc, bytes.getUnsafeBytes(), bytes.getBegin(), bytes.getBegin() + bytes.getRealSize());
     }
 
     // arg cannot be negative
@@ -410,7 +412,7 @@ public final class StringSupport {
 
     public static int caseCmp(byte[]bytes1, int p1, byte[]bytes2, int p2, int len) {
         int i = -1;
-        for (; ++i < len && bytes1[p1 + i] == bytes2[p2 + i];);
+        for (; ++i < len && bytes1[p1 + i] == bytes2[p2 + i];) {}
         if (i < len) return (bytes1[p1 + i] & 0xff) > (bytes2[p2 + i] & 0xff) ? 1 : -1;
         return 0;        
     }
@@ -460,5 +462,26 @@ public final class StringSupport {
         int c;
         while (len-- > 0 && enc.isDigit(c = bytes[p++] & 0xff) && c < '8') olen++;
         return olen;
+    }
+
+    /**
+     * Check whether input object's string value contains a null byte, and if so
+     * throw SecurityError.
+     * @param runtime
+     * @param value 
+     */
+    public static final void checkStringSafety(Ruby runtime, IRubyObject value) {
+        RubyString s = value.asString();
+        if (runtime.getSafeLevel() > 0 && s.isTaint()) {
+            throw runtime.newSecurityError("Unsafe string parameter");
+        }
+        ByteList bl = s.getByteList();
+        final byte[] array = bl.getUnsafeBytes();
+        final int end = bl.length();
+        for (int i = bl.begin(); i < end; ++i) {
+            if (array[i] == (byte) 0) {
+                throw runtime.newSecurityError("string contains null byte");
+            }
+        }
     }
 }

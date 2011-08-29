@@ -51,27 +51,39 @@ import org.jruby.runtime.builtin.IRubyObject;
 public class IterNode extends Node {
     private final Node varNode;
     private final Node bodyNode;
+    private final Node blockVarNode; // This is only for 1.8 blocks
     
     // What static scoping relationship exists when it comes into being.
     private StaticScope scope;
     private BlockBody blockBody;
     
-    public IterNode(ISourcePosition position, Node varNode, StaticScope scope, Node bodyNode) {
+    public IterNode(ISourcePosition position, Node args, StaticScope scope, Node body) {
         super(position);
-        this.varNode = varNode;
+
+        if (args instanceof BlockArg18Node) {
+            this.varNode = ((BlockArg18Node) args).getArgs();
+            this.blockVarNode = ((BlockArg18Node) args).getBlockArg();
+        } else {
+            this.varNode = args;
+            this.blockVarNode = null;
+        }
         this.scope = scope;
-        this.bodyNode = bodyNode;
-        NodeType argsNodeId = BlockBody.getArgumentTypeWackyHack(this);
-        this.blockBody = new InterpretedBlock(this, Arity.procArityOf(varNode), BlockBody.asArgumentType(argsNodeId));
+        this.bodyNode = body;
+        this.blockBody = InterpretedBlock.newBlockBody(this, Arity.procArityOf(varNode), getArgumentType());
     }
 
     public IterNode(ISourcePosition position, ArgsNode args, Node body, StaticScope scope) {
         super(position);
 
         this.varNode = args;
+        this.blockVarNode = null; // This is only for 1.8 blocks
         this.bodyNode = body;
         this.scope = scope;
-        this.blockBody = new Interpreted19Block(this);
+        this.blockBody = Interpreted19Block.newBlockBody(this);
+    }
+
+    public final int getArgumentType() {
+        return BlockBody.asArgumentType(BlockBody.getArgumentTypeWackyHack(this));
     }
 
     public NodeType getNodeType() {
@@ -85,7 +97,11 @@ public class IterNode extends Node {
     public Object accept(NodeVisitor iVisitor) {
         return iVisitor.visitIterNode(this);
     }
-    
+
+    public Node getBlockVarNode() {
+        return blockVarNode;
+    }
+
     public StaticScope getScope() {
         return scope;
     }
@@ -111,7 +127,7 @@ public class IterNode extends Node {
     }
     
     public List<Node> childNodes() {
-        return Node.createList(varNode, bodyNode);
+        return Node.createList(varNode, blockVarNode, bodyNode);
     }
     
     @Override

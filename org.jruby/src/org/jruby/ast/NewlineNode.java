@@ -42,6 +42,7 @@ import org.jruby.runtime.Block;
 import org.jruby.runtime.RubyEvent;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.jruby.util.ByteList;
 
 /**
  * A new (logical) source code line.
@@ -93,8 +94,7 @@ public class NewlineNode extends Node {
     public IRubyObject interpret(Ruby runtime, ThreadContext context, IRubyObject self, Block aBlock) {
         ISourcePosition position = getPosition();
         // something in here is used to build up ruby stack trace...
-        context.setFile(position.getFile());
-        context.setLine(position.getStartLine());
+        context.setLine(position.getLine());
 
         if (runtime.hasEventHooks()) {
             ASTInterpreter.callTraceFunction(runtime, context, RubyEvent.LINE);
@@ -104,8 +104,7 @@ public class NewlineNode extends Node {
         return nextNode.interpret(runtime, context, self, aBlock);
     }
 
-    @Override
-    public String toString() {
-        return "NewlineNode\n  " + getNextNode().toString();
+    public ByteList definition(Ruby runtime, ThreadContext context, IRubyObject self, Block aBlock) {
+        return nextNode.definition(runtime, context, self, aBlock);
     }
 }

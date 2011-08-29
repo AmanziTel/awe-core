@@ -1,5 +1,11 @@
+require 'rbconfig'
+
 module JRuby
   module PathHelper
+
+    WINDOWS = Config::CONFIG['host_os'] =~ /mswin/
+    WINDOWS_EXE_SUFFIXES = [".exe", ".com", ".bat" , ".cmd"]
+
     # This function does a semi-smart split of a space-separated command line.
     # It is aware of single- and double-quotes as word delimiters, and use of backslash
     # as an escape character.
@@ -7,34 +13,72 @@ module JRuby
       parts = [""]
       in_quote = nil
       escape = false
-      cmd.each_byte do |c|
+      # this needed to handle weird cases of empty quoted strings,
+      # like jrubyc -p "" blah.rb
+      were_quotes = false
+      cmd.each_char do |c|
         if escape
-          parts.last << c
+          # escaped quote -- add as is
+          if (c == "\"" || c == "'")
+            parts.last << c
+          else
+            # bare slash, not escaping quotes, add it back
+            parts.last << "\\" << c
+          end
           escape = false
         else
           case c
-          when ?\\
+          when "\\"
             escape = true
-          when ?", ?'
+          when "\"", "'"
             if in_quote && in_quote == c
               in_quote = nil
+              were_quotes = true
             elsif in_quote.nil?
               in_quote = c
             else
               parts.last << c
             end
-          when 32 # space
+          when " " # space
             if in_quote
               parts.last << c
             else
-              parts << "" unless parts.last.empty?
+              if (!parts.last.empty?)
+                parts << ""
+              elsif (were_quotes)
+                if (parts.last.empty?)
+                  # to workaround issue with launching jrubyc -p "",
+                  # or java launching code would eat "".
+                  parts.last << '""'
+                end
+                parts << ""
+              end
+              were_quotes = false
             end
           else
             parts.last << c
           end
         end
       end
+      if (were_quotes && parts.last.empty?)
+          parts.last << '""'
+      end
       parts
+    end
+
+    def self.find_file(exe)
+      # puts "FindFile: looking for #{exe}"
+      if (WINDOWS && exe !~ /\.(exe|com|cmd|bat)$/i)
+        WINDOWS_EXE_SUFFIXES.each do |sfx|
+          if find_file(exe + sfx)
+            return true
+          end
+        end
+      end
+      # TODO: should we find files like 'foo' on Windows,
+      # or should we only deal with .EXE/.BAT, etc.?
+      
+      File.exist?(exe) && !File.directory?(exe)
     end
 
     # Split the command string into parts, but also check if the first argument
@@ -49,15 +93,17 @@ module JRuby
     def self.smart_split_command(cmd)
       orig_parts = quote_sensitive_split(cmd.strip)
       parts = orig_parts.dup
-      exe = parts.shift
-      if exe =~ %r{^([a-zA-Z]:)?[/\\]} && !File.exist?(exe)
-        until parts.empty? || File.exist?(exe)
+      exe = parts.shift.dup
+      if exe =~ %r{^([a-zA-Z]:)?[/\\]} && (!(found = find_file(exe)))
+        until (found)
+          break if parts.empty?
           exe << " #{parts.shift}"
+          found = find_file(exe)
         end
-        if parts.empty?
-          orig_parts
-        else
+        if found
           [exe, *parts]
+        else
+          orig_parts
         end
       else
         orig_parts

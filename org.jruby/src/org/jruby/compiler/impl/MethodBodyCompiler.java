@@ -1,13 +1,11 @@
 package org.jruby.compiler.impl;
 
 import org.jruby.Ruby;
-import org.jruby.RubyInstanceConfig;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.compiler.ASTInspector;
 import org.jruby.compiler.CompilerCallback;
 import org.jruby.exceptions.JumpException;
 import org.jruby.parser.StaticScope;
-import org.jruby.runtime.Arity;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.objectweb.asm.AnnotationVisitor;
@@ -19,21 +17,23 @@ import static org.objectweb.asm.Opcodes.*;
  */
 public class MethodBodyCompiler extends RootScopedBodyCompiler {
     protected boolean specificArity;
-    protected String rubyName;
 
     public MethodBodyCompiler(StandardASMCompiler scriptCompiler, String rubyName, String javaName, ASTInspector inspector, StaticScope scope) {
-        super(scriptCompiler, javaName, inspector, scope);
-        this.rubyName = rubyName;
+        super(scriptCompiler, javaName, rubyName, inspector, scope);
+    }
+
+    public boolean isSpecificArity() {
+        return specificArity;
     }
 
     @Override
-    protected String getSignature() {
+    public String getSignature() {
         if (shouldUseBoxedArgs(scope)) {
             specificArity = false;
-            return StandardASMCompiler.METHOD_SIGNATURES[4];
+            return StandardASMCompiler.getStaticMethodSignature(script.getClassname(), 4);
         } else {
             specificArity = true;
-            return StandardASMCompiler.METHOD_SIGNATURES[scope.getRequiredArgs()];
+            return StandardASMCompiler.getStaticMethodSignature(script.getClassname(), scope.getRequiredArgs());
         }
     }
 
@@ -51,16 +51,6 @@ public class MethodBodyCompiler extends RootScopedBodyCompiler {
     @Override
     public void beginMethod(CompilerCallback args, StaticScope scope) {
         method.start();
-
-        // set up a local IRuby variable
-        method.aload(StandardASMCompiler.THREADCONTEXT_INDEX);
-        invokeThreadContext("getRuntime", sig(Ruby.class));
-        method.dup();
-        method.astore(getRuntimeIndex());
-
-        // grab nil for local variables
-        invokeRuby("getNil", sig(IRubyObject.class));
-        method.astore(getNilIndex());
 
         variableCompiler.beginMethod(args, scope);
 
@@ -93,22 +83,24 @@ public class MethodBodyCompiler extends RootScopedBodyCompiler {
         method.end();
         if (specificArity) {
             
-            method = new SkinnyMethodAdapter(script.getClassVisitor().visitMethod(ACC_PUBLIC, methodName, StandardASMCompiler.METHOD_SIGNATURES[4], null, null));
+            method = new SkinnyMethodAdapter(
+                    script.getClassVisitor(),
+                    ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC,
+                    methodName,
+                    StandardASMCompiler.getStaticMethodSignature(script.getClassname(), 4),
+                    null,
+                    null);
             method.start();
 
             // check arity in the variable-arity version
             method.aload(1);
-            method.invokevirtual(p(ThreadContext.class), "getRuntime", sig(Ruby.class));
             method.aload(3);
             method.pushInt(scope.getRequiredArgs());
-            method.pushInt(scope.getRequiredArgs());
-            method.invokestatic(p(Arity.class), "checkArgumentCount", sig(int.class, Ruby.class, IRubyObject[].class, int.class, int.class));
-            method.pop();
+            invokeUtilityMethod("checkArgumentCount", sig(void.class, ThreadContext.class, IRubyObject[].class, int.class));
 
             loadThis();
             loadThreadContext();
             loadSelf();
-            // FIXME: missing arity check
             for (int i = 0; i < scope.getRequiredArgs(); i++) {
                 method.aload(StandardASMCompiler.ARGS_INDEX);
                 method.ldc(i);
@@ -116,7 +108,7 @@ public class MethodBodyCompiler extends RootScopedBodyCompiler {
             }
             method.aload(StandardASMCompiler.ARGS_INDEX + 1);
             // load block from [] version of method
-            method.invokevirtual(script.getClassname(), methodName, getSignature());
+            method.invokestatic(script.getClassname(), methodName, getSignature());
             method.areturn();
             method.end();
         }
@@ -181,5 +173,9 @@ public class MethodBodyCompiler extends RootScopedBodyCompiler {
             loadRuntime();
             invokeUtilityMethod("redoLocalJumpError", sig(IRubyObject.class, Ruby.class));
         }
+    }
+
+    public boolean isSimpleRoot() {
+        return !inNestedMethod;
     }
 }

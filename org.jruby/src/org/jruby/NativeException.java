@@ -29,10 +29,10 @@ package org.jruby;
 
 import java.io.PrintStream;
 
+import java.lang.reflect.Member;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.javasupport.Java;
-import org.jruby.javasupport.JavaObject;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -45,9 +45,10 @@ public class NativeException extends RubyException {
     private final Ruby runtime;
 
     public NativeException(Ruby runtime, RubyClass rubyClass, Throwable cause) {
-        super(runtime, rubyClass, cause.getClass().getName() + ": " + cause.getMessage());
+        super(runtime, rubyClass);
         this.runtime = runtime;
         this.cause = cause;
+        this.message = runtime.newString(cause.getClass().getName() + ": " + searchStackMessage(cause));
     }
 
     public static RubyClass createClass(Ruby runtime, RubyClass baseClass) {
@@ -60,9 +61,9 @@ public class NativeException extends RubyException {
         return exceptionClass;
     }
 
-    @JRubyMethod(frame = true)
+    @JRubyMethod
     public IRubyObject cause(Block unusedBlock) {
-        return Java.wrap(getRuntime(), JavaObject.wrap(getRuntime(), cause));
+        return Java.getInstance(getRuntime(), cause);
     }
 
     public IRubyObject backtrace() {
@@ -94,13 +95,66 @@ public class NativeException extends RubyException {
         return array;
     }
 
+    public void trimStackTrace(Member target) {
+        Throwable t = new Throwable();
+        StackTraceElement[] origStackTrace = cause.getStackTrace();
+        StackTraceElement[] currentStackTrace = t.getStackTrace();
+        int skip = 0;
+        for (int i = 1;
+                i <= origStackTrace.length && i <= currentStackTrace.length;
+                ++i) {
+            StackTraceElement a = origStackTrace[origStackTrace.length - i];
+            StackTraceElement b = currentStackTrace[currentStackTrace.length - i];
+            if (a.equals(b)) {
+                skip += 1;
+            } else {
+                break;
+            }
+        }
+        // If we know what method was being called, strip everything
+        // before the call. This hides the JRuby and reflection internals.
+        if (target != null) {
+            String className = target.getDeclaringClass().getName();
+            String methodName = target.getName();
+            for (int i = origStackTrace.length - skip - 1; i >= 0; --i) {
+                StackTraceElement frame = origStackTrace[i];
+                if (frame.getClassName().equals(className) &&
+                    frame.getMethodName().equals(methodName)) {
+                    skip = origStackTrace.length - i - 1;
+                    break;
+                }
+            }
+        }
+        if (skip > 0) {
+            StackTraceElement[] newStackTrace =
+                    new StackTraceElement[origStackTrace.length - skip];
+            for (int i = 0; i < newStackTrace.length; ++i) {
+                newStackTrace[i] = origStackTrace[i];
+            }
+            cause.setStackTrace(newStackTrace);
+        }
+    }
+
     public void printBacktrace(PrintStream errorStream) {
         super.printBacktrace(errorStream);
-        errorStream.println("Complete Java stackTrace");
-        cause.printStackTrace(errorStream);
+        if (getRuntime().getDebug().isTrue()) {
+            errorStream.println("Complete Java stackTrace");
+            cause.printStackTrace(errorStream);
+        }
     }
 
     public Throwable getCause() {
         return cause;
+    }
+
+    private String searchStackMessage(Throwable cause) {
+        String message = null;
+
+        do {
+            message = cause.getMessage();
+            cause = cause.getCause();
+        } while (message == null && cause != null);
+
+        return message;
     }
 }

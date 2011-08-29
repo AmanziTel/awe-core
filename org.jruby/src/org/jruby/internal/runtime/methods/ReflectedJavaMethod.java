@@ -33,12 +33,11 @@ import java.lang.reflect.Modifier;
 
 import org.jruby.Ruby;
 import org.jruby.RubyModule;
+import org.jruby.RubyString;
 import org.jruby.anno.JRubyMethod;
-import org.jruby.exceptions.JumpException;
 import org.jruby.exceptions.RaiseException;
 import org.jruby.runtime.Arity;
 import org.jruby.runtime.Block;
-import org.jruby.runtime.EventHook;
 import org.jruby.runtime.RubyEvent;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -90,7 +89,7 @@ public class ReflectedJavaMethod extends JavaMethod {
         Ruby runtime = context.getRuntime();
         Arity.checkArgumentCount(runtime, args, required, max);
         
-        callConfig.pre(context, self, getImplementationClass(), name, block, null, this);
+        callConfig.pre(context, self, getImplementationClass(), name, block, null);
         
         try {
             if (! isStatic && ! method.getDeclaringClass().isAssignableFrom(self.getClass())) {
@@ -122,9 +121,13 @@ public class ReflectedJavaMethod extends JavaMethod {
                 if (isStatic) {
                     params[offset++] = self;
                 }
-                if (optional == 0 && !rest) {
+                if (required < 4 && optional == 0 && !rest) {
                     for (int i = 0; i < args.length; i++) {
-                        params[offset++] = args[i];
+                        if (method.getParameterTypes()[offset] == RubyString.class) {
+                            params[offset++] = args[i].convertToString();
+                        } else {
+                            params[offset++] = args[i];
+                        }
                     }
                 } else {
                     params[offset++] = args;
@@ -137,12 +140,15 @@ public class ReflectedJavaMethod extends JavaMethod {
                 try {
                     if (isTrace) {
                         runtime.callEventHooks(context, RubyEvent.C_CALL, context.getFile(), context.getLine(), name, getImplementationClass());
-                    }  
-                    if (isStatic) {
-                        return (IRubyObject)method.invoke(null, params);
-                    } else {
-                        return (IRubyObject)method.invoke(self, params);
                     }
+                    IRubyObject result;
+                    if (isStatic) {
+                        result = (IRubyObject)method.invoke(null, params);
+                    } else {
+                        result = (IRubyObject)method.invoke(self, params);
+                    }
+
+                    return result == null ? runtime.getNil() : result;
                 } finally {
                     if (isTrace) {
                         runtime.callEventHooks(context, RubyEvent.C_RETURN, context.getFile(), context.getLine(), name, getImplementationClass());
@@ -150,9 +156,9 @@ public class ReflectedJavaMethod extends JavaMethod {
                 }
             }
         } catch (IllegalArgumentException e) {
-            throw RaiseException.createNativeRaiseException(runtime, e);
+            throw RaiseException.createNativeRaiseException(runtime, e, method);
         } catch (IllegalAccessException e) {
-            throw RaiseException.createNativeRaiseException(runtime, e);
+            throw RaiseException.createNativeRaiseException(runtime, e, method);
         } catch (InvocationTargetException e) {
             Throwable cause = e.getCause();
             if (cause instanceof RuntimeException) {
@@ -160,7 +166,7 @@ public class ReflectedJavaMethod extends JavaMethod {
             } else if (cause instanceof Error) {
                 throw (Error)cause;
             } else {
-                throw RaiseException.createNativeRaiseException(runtime, cause);
+                throw RaiseException.createNativeRaiseException(runtime, cause, method);
             }
         } finally {
             callConfig.post(context);
@@ -177,7 +183,7 @@ public class ReflectedJavaMethod extends JavaMethod {
         if (isStatic) {
             argsLength++;
         }
-        if (optional == 0 && !rest) {
+        if (required < 4 && optional == 0 && !rest) {
             argsLength += required;
         } else {
             argsLength++;

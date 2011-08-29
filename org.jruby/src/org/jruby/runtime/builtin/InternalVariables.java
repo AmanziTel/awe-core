@@ -5,8 +5,6 @@
 
 package org.jruby.runtime.builtin;
 
-import java.util.List;
-
 /**
  * Interface that gives access to the internal variables of a Ruby
  * object.
@@ -79,9 +77,4 @@ public interface InternalVariables {
      * @return the value of the remove variable, if present; else null
      */
     Object removeInternalVariable(String name);
-
-    /**
-     * @return only internal variables (NOT ivar/cvar/constant)
-     */
-    List<Variable<Object>> getInternalVariableList();
 }

@@ -27,11 +27,17 @@
 
 package org.jruby.compiler.impl;
 
-import org.jruby.RubyArray;
+import org.jruby.RubyClass;
+import org.jruby.RubyFixnum;
+import org.jruby.RubyFloat;
+import org.jruby.RubyInstanceConfig;
+import org.jruby.RubyModule;
 import org.jruby.compiler.ArgumentsCallback;
+import org.jruby.compiler.BodyCompiler;
 import org.jruby.compiler.CompilerCallback;
 import org.jruby.compiler.InvocationCompiler;
 import org.jruby.compiler.NotCompilableException;
+import org.jruby.internal.runtime.methods.DynamicMethod;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.CallSite;
 import org.jruby.runtime.CallType;
@@ -62,76 +68,79 @@ public class StandardInvocationCompiler implements InvocationCompiler {
     }
 
     public void invokeAttrAssignMasgn(String name, CompilerCallback receiverCallback, ArgumentsCallback argsCallback) {
-        // value is already on stack, evaluate receiver and args and call helper
+        // value is already on stack, save it for later
+        int temp = methodCompiler.getVariableCompiler().grabTempLocal();
+        methodCompiler.getVariableCompiler().setTempLocal(temp);
+        
+        // receiver first, so we know which call site to use
         receiverCallback.call(methodCompiler);
 
-        String signature;
+        // select appropriate call site
+        method.dup(); // dup receiver
+        methodCompiler.loadSelf(); // load self
+        methodCompiler.getScriptCompiler().getCacheCompiler().cacheCallSite(methodCompiler, name, CallType.NORMAL);
+        methodCompiler.getScriptCompiler().getCacheCompiler().cacheCallSite(methodCompiler, name, CallType.VARIABLE);
+        methodCompiler.invokeUtilityMethod("selectAttrAsgnCallSite", sig(CallSite.class, IRubyObject.class, IRubyObject.class, CallSite.class, CallSite.class));
+
+        String signature = null;
         if (argsCallback == null) {
             signature = sig(IRubyObject.class,
-                    IRubyObject.class /*value*/,
                     IRubyObject.class /*receiver*/,
+                    CallSite.class,
+                    IRubyObject.class /*value*/,
                     ThreadContext.class,
-                    IRubyObject.class, /*self*/
-                    CallSite.class);
+                    IRubyObject.class /*self*/);
         } else {
             switch (argsCallback.getArity()) {
-                case 0:
-                    signature = sig(IRubyObject.class,
-                            IRubyObject.class /*value*/,
-                            IRubyObject.class /*receiver*/,
-                            ThreadContext.class,
-                            IRubyObject.class, /*self*/
-                            CallSite.class);
-                    break;
-                case 1:
-                    argsCallback.call(methodCompiler);
-                    signature = sig(IRubyObject.class,
-                            IRubyObject.class /*value*/,
-                            IRubyObject.class /*receiver*/,
-                            IRubyObject.class /*arg0*/,
-                            ThreadContext.class,
-                            IRubyObject.class, /*self*/
-                            CallSite.class);
-                    break;
-                case 2:
-                    argsCallback.call(methodCompiler);
-                    signature = sig(IRubyObject.class,
-                            IRubyObject.class /*value*/,
-                            IRubyObject.class /*receiver*/,
-                            IRubyObject.class /*arg0*/,
-                            IRubyObject.class /*arg1*/,
-                            ThreadContext.class,
-                            IRubyObject.class, /*self*/
-                            CallSite.class);
-                    break;
-                case 3:
-                    argsCallback.call(methodCompiler);
-                    signature = sig(IRubyObject.class,
-                            IRubyObject.class /*value*/,
-                            IRubyObject.class /*receiver*/,
-                            IRubyObject.class /*arg0*/,
-                            IRubyObject.class /*arg1*/,
-                            IRubyObject.class /*arg2*/,
-                            ThreadContext.class,
-                            IRubyObject.class, /*self*/
-                            CallSite.class);
-                    break;
-                default:
-                    argsCallback.call(methodCompiler);
-                    signature = sig(IRubyObject.class,
-                            IRubyObject.class /*value*/,
-                            IRubyObject.class /*receiver*/,
-                            IRubyObject[].class /*args*/,
-                            ThreadContext.class,
-                            IRubyObject.class, /*self*/
-                            CallSite.class);
-                    break;
+            case 1:
+                argsCallback.call(methodCompiler);
+                signature = sig(IRubyObject.class,
+                        IRubyObject.class, /*receiver*/
+                        CallSite.class,
+                        IRubyObject.class, /*arg0*/
+                        IRubyObject.class, /*value*/
+                        ThreadContext.class,
+                        IRubyObject.class /*self*/);
+                break;
+            case 2:
+                argsCallback.call(methodCompiler);
+                signature = sig(IRubyObject.class,
+                        IRubyObject.class, /*receiver*/
+                        CallSite.class,
+                        IRubyObject.class, /*arg0*/
+                        IRubyObject.class, /*arg1*/
+                        IRubyObject.class, /*value*/
+                        ThreadContext.class,
+                        IRubyObject.class /*self*/);
+                break;
+            case 3:
+                argsCallback.call(methodCompiler);
+                signature = sig(IRubyObject.class,
+                        IRubyObject.class, /*receiver*/
+                        CallSite.class,
+                        IRubyObject.class, /*arg0*/
+                        IRubyObject.class, /*arg1*/
+                        IRubyObject.class, /*arg2*/
+                        IRubyObject.class, /*value*/
+                        ThreadContext.class,
+                        IRubyObject.class /*self*/);
+                break;
+            default:
+                argsCallback.call(methodCompiler);
+                signature = sig(IRubyObject.class,
+                        IRubyObject.class, /*receiver*/
+                        CallSite.class,
+                        IRubyObject[].class, /*args*/
+                        IRubyObject.class, /*value*/
+                        ThreadContext.class,
+                        IRubyObject.class /*self*/);
             }
         }
-        
+
+        methodCompiler.getVariableCompiler().getTempLocal(temp);
+        methodCompiler.getVariableCompiler().releaseTempLocal();
         methodCompiler.loadThreadContext();
         methodCompiler.loadSelf();
-        methodCompiler.getScriptCompiler().getCacheCompiler().cacheCallSite(methodCompiler, name, CallType.NORMAL);
 
         methodCompiler.invokeUtilityMethod("doAttrAsgn", signature);
     }
@@ -370,41 +379,348 @@ public class StandardInvocationCompiler implements InvocationCompiler {
         }
     }
 
-    public void invokeSuper(CompilerCallback argsCallback, CompilerCallback closureArg) {
-        methodCompiler.loadThreadContext();
-        methodCompiler.invokeUtilityMethod("checkSuperDisabledOrOutOfMethod", sig(void.class, ThreadContext.class));
-        
+    public void invokeBinaryFixnumRHS(String name, CompilerCallback receiverCallback, long fixnum) {
+        methodCompiler.getScriptCompiler().getCacheCompiler().cacheCallSite(methodCompiler, name, CallType.NORMAL);
+        methodCompiler.loadThreadContext(); // [adapter, tc]
+
+        // for visibility checking without requiring frame self
+        // TODO: don't bother passing when fcall or vcall, and adjust callsite appropriately
         methodCompiler.loadSelf();
 
-        methodCompiler.loadThreadContext(); // [self, tc]
-        
-        // args
-        if (argsCallback == null) {
-            method.getstatic(p(IRubyObject.class), "NULL_ARRAY", ci(IRubyObject[].class));
-            // block
-            if (closureArg == null) {
-                // no args, no block
-                methodCompiler.loadBlock();
-            } else {
-                // no args, with block
-                closureArg.call(methodCompiler);
-            }
+        if (receiverCallback != null) {
+            receiverCallback.call(methodCompiler);
         } else {
-            argsCallback.call(methodCompiler);
-            // block
-            if (closureArg == null) {
-                // with args, no block
-                methodCompiler.loadBlock();
-            } else {
-                // with args, with block
-                closureArg.call(methodCompiler);
-            }
+            methodCompiler.loadSelf();
         }
-        
-        method.invokeinterface(p(IRubyObject.class), "callSuper", sig(IRubyObject.class, ThreadContext.class, IRubyObject[].class, Block.class));
+
+        method.ldc(fixnum);
+
+        String signature = sig(IRubyObject.class, params(ThreadContext.class, IRubyObject.class, IRubyObject.class, long.class));
+        String callSiteMethod = "call";
+
+        method.invokevirtual(p(CallSite.class), callSiteMethod, signature);
     }
 
+    public void invokeBinaryFloatRHS(String name, CompilerCallback receiverCallback, double flote) {
+        methodCompiler.getScriptCompiler().getCacheCompiler().cacheCallSite(methodCompiler, name, CallType.NORMAL);
+        methodCompiler.loadThreadContext(); // [adapter, tc]
+
+        // for visibility checking without requiring frame self
+        // TODO: don't bother passing when fcall or vcall, and adjust callsite appropriately
+        methodCompiler.loadSelf();
+
+        if (receiverCallback != null) {
+            receiverCallback.call(methodCompiler);
+        } else {
+            methodCompiler.loadSelf();
+        }
+
+        method.ldc(flote);
+
+        String signature = sig(IRubyObject.class, params(ThreadContext.class, IRubyObject.class, IRubyObject.class, double.class));
+        String callSiteMethod = "call";
+
+        method.invokevirtual(p(CallSite.class), callSiteMethod, signature);
+    }
+
+    public void invokeFixnumLong(String rubyName, int moduleGeneration, CompilerCallback receiverCallback, String methodName, long fixnum) {
+        receiverCallback.call(methodCompiler);
+        final int tmp = methodCompiler.getVariableCompiler().grabTempLocal();
+        method.astore(tmp);
+
+        Label slow = new Label();
+        Label after = new Label();
+        if (!RubyInstanceConfig.NOGUARDS_COMPILE_ENABLED) {
+            method.aload(tmp);
+            method.ldc(moduleGeneration);
+            methodCompiler.invokeUtilityMethod("isGenerationEqual", sig(boolean.class, IRubyObject.class, int.class));
+
+            method.ifeq(slow);
+        }
+
+        method.aload(tmp);
+        method.checkcast(p(RubyFixnum.class));
+        methodCompiler.loadThreadContext();
+        method.ldc(fixnum);
+
+        method.invokevirtual(p(RubyFixnum.class), methodName, sig(IRubyObject.class, ThreadContext.class, long.class));
+
+        if (!RubyInstanceConfig.NOGUARDS_COMPILE_ENABLED) {
+            method.go_to(after);
+            method.label(slow);
+
+            invokeBinaryFixnumRHS(rubyName, new CompilerCallback() {
+                public void call(BodyCompiler context) {
+                    method.aload(tmp);
+                }
+            }, fixnum);
+
+            method.label(after);
+        }
+        methodCompiler.getVariableCompiler().releaseTempLocal();
+    }
+
+    public void invokeFloatDouble(String rubyName, int moduleGeneration, CompilerCallback receiverCallback, String methodName, double flote) {
+        receiverCallback.call(methodCompiler);
+        final int tmp = methodCompiler.getVariableCompiler().grabTempLocal();
+        method.astore(tmp);
+        
+        Label slow = new Label();
+        Label after = new Label();
+        if (!RubyInstanceConfig.NOGUARDS_COMPILE_ENABLED) {
+            method.aload(tmp);
+            method.ldc(moduleGeneration);
+            methodCompiler.invokeUtilityMethod("isGenerationEqual", sig(boolean.class, IRubyObject.class, int.class));
+
+            method.ifeq(slow);
+        }
+
+        method.aload(tmp);
+        method.checkcast(p(RubyFloat.class));
+        methodCompiler.loadThreadContext();
+        method.ldc(flote);
+
+        method.invokevirtual(p(RubyFloat.class), methodName, sig(IRubyObject.class, ThreadContext.class, double.class));
+
+        if (!RubyInstanceConfig.NOGUARDS_COMPILE_ENABLED) {
+            method.go_to(after);
+            method.label(slow);
+
+            invokeBinaryFloatRHS(rubyName, new CompilerCallback() {
+                public void call(BodyCompiler context) {
+                    method.aload(tmp);
+                }
+            }, flote);
+
+            method.label(after);
+        }
+        methodCompiler.getVariableCompiler().releaseTempLocal();
+    }
+
+    public void invokeRecursive(String name, int moduleGeneration, ArgumentsCallback argsCallback, CompilerCallback closure, CallType callType, boolean iterator) {
+        if (methodCompiler.getVariableCompiler().isHeap()) {
+            // direct recursive invocation doesn't work with heap-based scopes yet
+            invokeDynamic(name, null, argsCallback, callType, closure, iterator);
+        } else {
+            Label slow = new Label();
+            Label after = new Label();
+            if (!RubyInstanceConfig.NOGUARDS_COMPILE_ENABLED) {
+                methodCompiler.loadSelf();
+                method.ldc(moduleGeneration);
+                methodCompiler.invokeUtilityMethod("isGenerationEqual", sig(boolean.class, IRubyObject.class, int.class));
+
+                method.ifeq(slow);
+            }
+
+            method.aload(0);
+            methodCompiler.loadThreadContext();
+            methodCompiler.loadSelf();
+            if (argsCallback != null) {
+                argsCallback.call(methodCompiler);
+            }
+            method.aconst_null();
+
+            method.invokestatic(methodCompiler.getScriptCompiler().getClassname(), methodCompiler.getNativeMethodName(), methodCompiler.getSignature());
+
+            if (!RubyInstanceConfig.NOGUARDS_COMPILE_ENABLED) {
+                method.go_to(after);
+                method.label(slow);
+
+                invokeDynamic(name, null, argsCallback, callType, closure, iterator);
+
+                method.label(after);
+            }
+        }
+    }
+
+    public void invokeNative(String name, DynamicMethod.NativeCall nativeCall,
+            int moduleGeneration, CompilerCallback receiver, final ArgumentsCallback args,
+            CompilerCallback closure, CallType callType, boolean iterator) {
+        Class[] nativeSignature = nativeCall.getNativeSignature();
+
+        int leadingArgs = 0;
+        receiver.call(methodCompiler);
+        final int tmp = methodCompiler.getVariableCompiler().grabTempLocal();
+        method.astore(tmp);
+
+        int[] _argTmp = null;
+        if (args != null) {
+            args.call(methodCompiler);
+            switch (args.getArity()) {
+                case 3:
+                    _argTmp = new int[3];
+                    method.astore(_argTmp[2] = methodCompiler.getVariableCompiler().grabTempLocal());
+                case 2:
+                    if (_argTmp == null) _argTmp = new int[2];
+                    method.astore(_argTmp[1] = methodCompiler.getVariableCompiler().grabTempLocal());
+                case 1:
+                default:
+                    if (_argTmp == null) _argTmp = new int[1];
+                    method.astore(_argTmp[0] = methodCompiler.getVariableCompiler().grabTempLocal());
+            }
+            leadingArgs += args.getArity();
+        }
+        final int[] argTmp = _argTmp;
+
+        // validate generation
+        Label slow = new Label();
+        Label after = new Label();
+        if (!RubyInstanceConfig.NOGUARDS_COMPILE_ENABLED) {
+            method.aload(tmp);
+            method.ldc(moduleGeneration);
+            methodCompiler.invokeUtilityMethod("isGenerationEqual", sig(boolean.class, IRubyObject.class, int.class));
+
+            method.ifeq(slow);
+        }
+
+        if (nativeCall.isStatic()) {
+            if (nativeSignature.length > 0 && nativeSignature[0] == ThreadContext.class) {
+                methodCompiler.loadThreadContext();
+                leadingArgs++;
+            }
+            method.aload(tmp);
+            leadingArgs++;
+        } else {
+            method.aload(tmp);
+            method.checkcast(p(nativeCall.getNativeTarget()));
+            if (nativeSignature.length > 0 && nativeSignature[0] == ThreadContext.class) {
+                methodCompiler.loadThreadContext();
+                leadingArgs++;
+            }
+        }
+
+        if (args != null) {
+            switch (args.getArity()) {
+                case 1:
+                default:
+                    method.aload(argTmp[0]);
+                    break;
+                case 2:
+                    method.aload(argTmp[0]);
+                    method.aload(argTmp[1]);
+                    break;
+                case 3:
+                    method.aload(argTmp[0]);
+                    method.aload(argTmp[1]);
+                    method.aload(argTmp[2]);
+                    break;
+            }
+        }
+
+        if (closure != null) {
+            closure.call(methodCompiler);
+            if (nativeSignature.length == leadingArgs + 1 && nativeSignature[leadingArgs] == Block.class) {
+                // ok, pass the block
+            } else {
+                // doesn't receive block, drop it
+                // note: have to evaluate it because it could be a & block arg
+                // with side effects
+                method.pop();
+            }
+        } else {
+            if (nativeSignature.length == leadingArgs + 1 && nativeSignature[leadingArgs] == Block.class) {
+                // needs a block
+                method.getstatic(p(Block.class), "NULL_BLOCK", ci(Block.class));
+            } else {
+                // ok with no block
+            }
+        }
+
+        if (nativeCall.isStatic()) {
+            method.invokestatic(p(nativeCall.getNativeTarget()), nativeCall.getNativeName(), sig(nativeCall.getNativeReturn(), nativeSignature));
+        } else {
+            method.invokevirtual(p(nativeCall.getNativeTarget()), nativeCall.getNativeName(), sig(nativeCall.getNativeReturn(), nativeSignature));
+        }
+
+        if (!RubyInstanceConfig.NOGUARDS_COMPILE_ENABLED) {
+            method.go_to(after);
+            method.label(slow);
+
+            ArgumentsCallback newArgs = null;
+            if (args != null) {
+                newArgs = new ArgumentsCallback() {
+                    public int getArity() {
+                        return args.getArity();
+                    }
+
+                    public void call(BodyCompiler context) {
+                        switch (args.getArity()) {
+                            case 1:
+                            default:
+                                method.aload(argTmp[0]);
+                                break;
+                            case 2:
+                                method.aload(argTmp[0]);
+                                method.aload(argTmp[1]);
+                                break;
+                            case 3:
+                                method.aload(argTmp[0]);
+                                method.aload(argTmp[1]);
+                                method.aload(argTmp[2]);
+                                break;
+                        }
+                    }
+                };
+            }
+            invokeDynamic(name, new CompilerCallback() {
+                public void call(BodyCompiler context) {
+                    method.aload(tmp);
+                }
+            }, newArgs, callType, closure, iterator);
+
+            method.label(after);
+        }
+
+        methodCompiler.getVariableCompiler().releaseTempLocal();
+        if (argTmp != null) {
+            for (int i : argTmp) methodCompiler.getVariableCompiler().releaseTempLocal();
+        }
+    }
+
+    public void invokeTrivial(String name, int moduleGeneration, CompilerCallback body) {
+        // validate generation
+        Label slow = new Label();
+        Label after = new Label();
+        if (!RubyInstanceConfig.NOGUARDS_COMPILE_ENABLED) {
+            methodCompiler.loadSelf();
+            method.ldc(moduleGeneration);
+            methodCompiler.invokeUtilityMethod("isGenerationEqual", sig(boolean.class, IRubyObject.class, int.class));
+
+            method.iffalse(slow);
+        }
+
+        body.call(methodCompiler);
+
+        if (!RubyInstanceConfig.NOGUARDS_COMPILE_ENABLED) {
+            method.go_to(after);
+            method.label(slow);
+            
+            invokeDynamic(name, null, null, CallType.FUNCTIONAL, null, false);
+
+            method.label(after);
+        }
+    }
+    
     public void invokeDynamic(String name, CompilerCallback receiverCallback, ArgumentsCallback argsCallback, CallType callType, CompilerCallback closureArg, boolean iterator) {
+        if (RubyInstanceConfig.INLINE_DYNCALL_ENABLED && closureArg == null) {
+            if (callType == CallType.FUNCTIONAL || callType == CallType.VARIABLE) {
+                if (argsCallback == null) {
+                    invokeDynamicSelfNoBlockZero(name);
+                    return;
+                } else if (argsCallback.getArity() >= 1 && argsCallback.getArity() <= 3) {
+                    invokeDynamicSelfNoBlockSpecificArity(name, argsCallback);
+                    return;
+                }
+//            } else if (callType == CallType.NORMAL) {
+//                if (argsCallback == null) {
+//                    invokeDynamicNoBlockZero(name, receiverCallback);
+//                    return;
+//                } else if (argsCallback.getArity() >= 1 && argsCallback.getArity() <= 3) {
+//                    invokeDynamicNoBlockSpecificArity(name, receiverCallback, argsCallback);
+//                    return;
+//                }
+            }
+        }
         methodCompiler.getScriptCompiler().getCacheCompiler().cacheCallSite(methodCompiler, name, callType);
 
         methodCompiler.loadThreadContext(); // [adapter, tc]
@@ -417,6 +733,15 @@ public class StandardInvocationCompiler implements InvocationCompiler {
             receiverCallback.call(methodCompiler);
         } else {
             methodCompiler.loadSelf();
+        }
+
+        // super uses current block if none given
+        if (callType == CallType.SUPER && closureArg == null) {
+            closureArg = new CompilerCallback() {
+                public void call(BodyCompiler context) {
+                    methodCompiler.loadBlock();
+                }
+            };
         }
         
         String signature;
@@ -475,6 +800,120 @@ public class StandardInvocationCompiler implements InvocationCompiler {
         // adapter, tc, recv, args{0,1}, block{0,1}]
 
         method.invokevirtual(p(CallSite.class), callSiteMethod, signature);
+    }
+    
+    public void invokeDynamicVarargs(String name, CompilerCallback receiverCallback, ArgumentsCallback argsCallback, CallType callType, CompilerCallback closureArg, boolean iterator) {
+        assert argsCallback.getArity() == -1;
+        
+        methodCompiler.getScriptCompiler().getCacheCompiler().cacheCallSite(methodCompiler, name, callType);
+
+        methodCompiler.loadThreadContext(); // [adapter, tc]
+
+        // for visibility checking without requiring frame self
+        // TODO: don't bother passing when fcall or vcall, and adjust callsite appropriately
+        methodCompiler.loadSelf();
+        
+        if (receiverCallback != null) {
+            receiverCallback.call(methodCompiler);
+        } else {
+            methodCompiler.loadSelf();
+        }
+
+        // super uses current block if none given
+        if (callType == CallType.SUPER && closureArg == null) {
+            closureArg = new CompilerCallback() {
+                public void call(BodyCompiler context) {
+                    methodCompiler.loadBlock();
+                }
+            };
+        }
+        
+        String signature;
+        String callSiteMethod = "callVarargs";
+        
+        argsCallback.call(methodCompiler);
+        
+        // block
+        if (closureArg == null) {
+            signature = sig(IRubyObject.class, params(ThreadContext.class, IRubyObject.class, IRubyObject.class, IRubyObject[].class));
+        } else {
+            if (iterator) callSiteMethod = "callVarargsIter";
+            closureArg.call(methodCompiler);
+
+            signature = sig(IRubyObject.class, params(ThreadContext.class, IRubyObject.class, IRubyObject.class, IRubyObject[].class, Block.class));
+        }
+
+        method.invokevirtual(p(CallSite.class), callSiteMethod, signature);
+    }
+
+    public void invokeDynamicSelfNoBlockZero(String name) {
+        methodCompiler.getScriptCompiler().getCacheCompiler().cacheMethod(methodCompiler, name);
+        methodCompiler.loadThreadContext();
+        methodCompiler.loadSelf();
+        method.dup();
+        method.invokeinterface(p(IRubyObject.class), "getMetaClass", sig(RubyClass.class));
+        method.ldc(name);
+        method.invokevirtual(p(DynamicMethod.class), "call", sig(IRubyObject.class, ThreadContext.class, IRubyObject.class, RubyModule.class, String.class));
+    }
+
+    public void invokeDynamicSelfNoBlockSpecificArity(String name, ArgumentsCallback argsCallback) {
+        methodCompiler.getScriptCompiler().getCacheCompiler().cacheMethod(methodCompiler, name);
+        methodCompiler.loadThreadContext();
+        methodCompiler.loadSelf();
+        method.dup();
+        method.invokeinterface(p(IRubyObject.class), "getMetaClass", sig(RubyClass.class));
+        method.ldc(name);
+        argsCallback.call(methodCompiler);
+        switch (argsCallback.getArity()) {
+        case 1:
+            method.invokevirtual(p(DynamicMethod.class), "call", sig(IRubyObject.class, ThreadContext.class, IRubyObject.class, RubyModule.class, String.class, IRubyObject.class));
+            break;
+        case 2:
+            method.invokevirtual(p(DynamicMethod.class), "call", sig(IRubyObject.class, ThreadContext.class, IRubyObject.class, RubyModule.class, String.class, IRubyObject.class, IRubyObject.class));
+            break;
+        case 3:
+            method.invokevirtual(p(DynamicMethod.class), "call", sig(IRubyObject.class, ThreadContext.class, IRubyObject.class, RubyModule.class, String.class, IRubyObject.class, IRubyObject.class, IRubyObject.class));
+            break;
+        }
+    }
+
+    public void invokeDynamicNoBlockZero(String name, CompilerCallback receiverCallback) {
+        receiverCallback.call(methodCompiler);
+        int recv = methodCompiler.getVariableCompiler().grabTempLocal();
+        method.astore(recv);
+        methodCompiler.getScriptCompiler().getCacheCompiler().cacheMethod(methodCompiler, name, recv);
+        methodCompiler.loadThreadContext();
+        method.aload(recv);
+        methodCompiler.getVariableCompiler().releaseTempLocal();
+        method.dup();
+        method.invokeinterface(p(IRubyObject.class), "getMetaClass", sig(RubyClass.class));
+        method.ldc(name);
+        method.invokevirtual(p(DynamicMethod.class), "call", sig(IRubyObject.class, ThreadContext.class, IRubyObject.class, RubyModule.class, String.class));
+    }
+
+    public void invokeDynamicNoBlockSpecificArity(String name, CompilerCallback receiverCallback, ArgumentsCallback argsCallback) {
+        receiverCallback.call(methodCompiler);
+        int recv = methodCompiler.getVariableCompiler().grabTempLocal();
+        method.astore(recv);
+        methodCompiler.getScriptCompiler().getCacheCompiler().cacheMethod(methodCompiler, name, recv);
+        methodCompiler.loadThreadContext();
+        method.aload(recv);
+        methodCompiler.getVariableCompiler().releaseTempLocal();
+        method.dup();
+        method.invokeinterface(p(IRubyObject.class), "getMetaClass", sig(RubyClass.class));
+        method.ldc(name);
+        argsCallback.call(methodCompiler);
+        switch (argsCallback.getArity()) {
+        case 1:
+            method.invokevirtual(p(DynamicMethod.class), "call", sig(IRubyObject.class, ThreadContext.class, IRubyObject.class, RubyModule.class, String.class, IRubyObject.class));
+            break;
+        case 2:
+            method.invokevirtual(p(DynamicMethod.class), "call", sig(IRubyObject.class, ThreadContext.class, IRubyObject.class, RubyModule.class, String.class, IRubyObject.class, IRubyObject.class));
+            break;
+        case 3:
+            method.invokevirtual(p(DynamicMethod.class), "call", sig(IRubyObject.class, ThreadContext.class, IRubyObject.class, RubyModule.class, String.class, IRubyObject.class, IRubyObject.class, IRubyObject.class));
+            break;
+        }
     }
 
     public void invokeOpAsgnWithOr(String attrName, String attrAsgnName, CompilerCallback receiverCallback, ArgumentsCallback argsCallback) {
@@ -573,16 +1012,19 @@ public class StandardInvocationCompiler implements InvocationCompiler {
         methodCompiler.loadBlock();
         methodCompiler.loadThreadContext();
 
-        String signature;
         if (argsCallback != null) {
             argsCallback.call(methodCompiler);
-            signature = sig(IRubyObject.class, ThreadContext.class, IRubyObject.class, boolean.class);
         } else {
-            signature = sig(IRubyObject.class, ThreadContext.class, boolean.class);
+            method.aconst_null();
         }
-        method.ldc(unwrap);
 
-        method.invokevirtual(p(Block.class), "yield", signature);
+        if (unwrap) {
+            method.aconst_null();
+            method.aconst_null();
+            method.invokevirtual(p(Block.class), "yieldArray", sig(IRubyObject.class, ThreadContext.class, IRubyObject.class, IRubyObject.class, RubyModule.class));
+        } else {
+            method.invokevirtual(p(Block.class), "yield", sig(IRubyObject.class, ThreadContext.class, IRubyObject.class));
+        }
     }
 
     public void yieldSpecific(ArgumentsCallback argsCallback) {

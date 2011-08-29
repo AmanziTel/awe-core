@@ -1,22 +1,34 @@
 
 package org.jruby.ext.ffi.jffi;
 
+import java.nio.ByteOrder;
+import org.jruby.Ruby;
 import org.jruby.ext.ffi.DirectMemoryIO;
 import org.jruby.ext.ffi.MemoryIO;
+import org.jruby.ext.ffi.NullMemoryIO;
 import org.jruby.ext.ffi.Platform;
 
 class NativeMemoryIO implements MemoryIO, DirectMemoryIO {
     protected static final com.kenai.jffi.MemoryIO IO = com.kenai.jffi.MemoryIO.getInstance();
     final NativeMemoryIO parent; // keep a reference to avoid the memory being freed
     final long address;
+    private final Ruby runtime;
 
-    NativeMemoryIO(long address) {
+    static final DirectMemoryIO wrap(Ruby runtime, long address) {
+        return address != 0
+                ? new NativeMemoryIO(runtime, address)
+                : new NullMemoryIO(runtime);
+    }
+
+    NativeMemoryIO(Ruby runtime, long address) {
+        this.runtime = runtime;
         this.address = address;
         this.parent = null;
     }
     private NativeMemoryIO(NativeMemoryIO parent, long offset) {
         this.parent = parent;
         this.address = parent.address + offset;
+        this.runtime = parent.runtime;
     }
 
     public final long getAddress() {
@@ -26,9 +38,22 @@ class NativeMemoryIO implements MemoryIO, DirectMemoryIO {
     public NativeMemoryIO slice(long offset) {
         return offset == 0 ? this :new NativeMemoryIO(this, offset);
     }
+
+    public DirectMemoryIO slice(long offset, long size) {
+        return new BoundedNativeMemoryIO(runtime, this, offset, size);
+    }
+    
+    public MemoryIO dup() {
+        throw runtime.newNotImplementedError("cannot duplicate unbounded memory area");
+    }
+
+    public final java.nio.ByteBuffer asByteBuffer() {
+        return IO.newDirectByteBuffer(address, Integer.MAX_VALUE);
+    }
+
     @Override
     public final boolean equals(Object obj) {
-        return (obj instanceof NativeMemoryIO) && ((NativeMemoryIO) obj).address == address;
+        return (obj instanceof DirectMemoryIO) && ((DirectMemoryIO) obj).getAddress() == address;
     }
 
     @Override
@@ -44,6 +69,10 @@ class NativeMemoryIO implements MemoryIO, DirectMemoryIO {
     
     public final boolean isDirect() {
         return true;
+    }
+
+    public final ByteOrder order() {
+        return ByteOrder.nativeOrder();
     }
 
     public final byte getByte(long offset) {
@@ -81,8 +110,7 @@ class NativeMemoryIO implements MemoryIO, DirectMemoryIO {
     }
 
     public final DirectMemoryIO getMemoryIO(long offset) {
-        final long ptr = IO.getAddress(address + offset);
-        return ptr != 0 ? new NativeMemoryIO(ptr) : null;
+        return wrap(runtime, IO.getAddress(address + offset));
     }
 
     public final void putByte(long offset, byte value) {
@@ -184,4 +212,17 @@ class NativeMemoryIO implements MemoryIO, DirectMemoryIO {
     public final void setMemory(long offset, long size, byte value) {
         IO.setMemory(address + offset, size, value);
     }
+
+    public final byte[] getZeroTerminatedByteArray(long offset) {
+        return FFIUtil.getZeroTerminatedByteArray(address + offset);
+    }
+
+    public final byte[] getZeroTerminatedByteArray(long offset, int maxlen) {
+        return FFIUtil.getZeroTerminatedByteArray(address + offset, maxlen);
+    }
+
+    public void putZeroTerminatedByteArray(long offset, byte[] bytes, int off, int len) {
+        FFIUtil.putZeroTerminatedByteArray(address + offset, bytes, off, len);
+    }
+
 }

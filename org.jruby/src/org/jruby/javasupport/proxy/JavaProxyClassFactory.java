@@ -255,7 +255,7 @@ public class JavaProxyClassFactory {
         try {
             return (Class) defineClass_method
                     .invoke(loader, new Object[] { className, data,
-                            new Integer(0), new Integer(data.length), JavaProxyClassFactory.class.getProtectionDomain() });
+                            Integer.valueOf(0), Integer.valueOf(data.length), JavaProxyClassFactory.class.getProtectionDomain() });
         } catch (IllegalArgumentException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -342,7 +342,10 @@ public class JavaProxyClassFactory {
         for (int i = 0; i < cons.length; i++) {
             Constructor constructor = cons[i];
 
-            // We generate all constructors and let some fail during invocation later
+            // if the constructor is private, pretend it doesn't exist
+            if (Modifier.isPrivate(constructor.getModifiers())) continue;
+
+            // otherwise, define everything and let some of them fail at invocation
             generateConstructor(selfType, constructor, cw);
         }
     }
@@ -691,6 +694,7 @@ public class JavaProxyClassFactory {
             this.arguments = m.getParameterTypes();
         }
 
+        @Override
         public boolean equals(Object obj) {
             if (obj instanceof MethodKey) {
                 MethodKey key = (MethodKey) obj;
@@ -702,6 +706,7 @@ public class JavaProxyClassFactory {
             return false;
         }
 
+        @Override
         public int hashCode() {
             return name.hashCode();
         }
@@ -778,11 +783,6 @@ public class JavaProxyClassFactory {
                 throw runtime.newTypeError("package " + p + " is sealed");
             }
         }
-    }
-
-    private static String packageName(Class clazz) {
-        String clazzName = clazz.getName();
-        return packageName(clazzName);
     }
 
     private static String packageName(String clazzName) {

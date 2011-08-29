@@ -30,8 +30,6 @@ package org.jruby.runtime;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyModule;
-import org.jruby.ast.util.ArgsUtil;
-import org.jruby.common.IRubyWarnings.ID;
 import org.jruby.exceptions.JumpException;
 import org.jruby.parser.StaticScope;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -41,16 +39,15 @@ import org.jruby.runtime.builtin.IRubyObject;
  * rather than with an ICallable. For lightweight block logic within
  * Java code.
  */
-public class CompiledBlock19 extends BlockBody {
+public class CompiledBlock19 extends ContextAwareBlockBody {
     protected final CompiledBlockCallback19 callback;
     protected final boolean hasMultipleArgsHead;
-    protected final Arity arity;
-    protected final StaticScope scope;
+    protected final String[] parameterList;
     
     public static Block newCompiledClosure(ThreadContext context, IRubyObject self, Arity arity,
             StaticScope scope, CompiledBlockCallback19 callback, boolean hasMultipleArgsHead, int argumentType) {
         Binding binding = context.currentBinding(self, Visibility.PUBLIC);
-        BlockBody body = new CompiledBlock19(arity, scope, callback, hasMultipleArgsHead, argumentType);
+        BlockBody body = new CompiledBlock19(arity, scope, callback, hasMultipleArgsHead, argumentType, EMPTY_PARAMETER_LIST);
 
         return new Block(body, binding);
     }
@@ -61,16 +58,16 @@ public class CompiledBlock19 extends BlockBody {
     }
     
     public static BlockBody newCompiledBlock(Arity arity,
-            StaticScope scope, CompiledBlockCallback19 callback, boolean hasMultipleArgsHead, int argumentType) {
-        return new CompiledBlock19(arity, scope, callback, hasMultipleArgsHead, argumentType);
+            StaticScope scope, CompiledBlockCallback19 callback, boolean hasMultipleArgsHead, int argumentType, String[] parameterList) {
+        return new CompiledBlock19(arity, scope, callback, hasMultipleArgsHead, argumentType, parameterList);
     }
 
-    protected CompiledBlock19(Arity arity, StaticScope scope, CompiledBlockCallback19 callback, boolean hasMultipleArgsHead, int argumentType) {
-        super(argumentType);
-        this.arity = arity;
-        this.scope = scope;
+    protected CompiledBlock19(Arity arity, StaticScope scope, CompiledBlockCallback19 callback, boolean hasMultipleArgsHead, int argumentType, String[] parameterList) {
+        super(scope, arity, argumentType);
+        
         this.callback = callback;
         this.hasMultipleArgsHead = hasMultipleArgsHead;
+        this.parameterList = parameterList;
     }
 
     @Override
@@ -82,9 +79,7 @@ public class CompiledBlock19 extends BlockBody {
 
     @Override
     public IRubyObject call(ThreadContext context, IRubyObject[] args, Binding binding, Block.Type type, Block block) {
-        IRubyObject value = args.length == 1 ? args[0] : context.getRuntime().newArrayNoCopy(args);
-
-        return yield(context, value, null, null, true, binding, type, block);
+        return yield(context, context.getRuntime().newArrayNoCopy(args), null, null, true, binding, type, block);
     }
 
     @Override
@@ -92,14 +87,17 @@ public class CompiledBlock19 extends BlockBody {
         return yieldSpecificInternal(context, IRubyObject.NULL_ARRAY, binding, type);
     }
 
+    @Override
     public IRubyObject yieldSpecific(ThreadContext context, IRubyObject arg0, Binding binding, Block.Type type) {
-        return yieldSpecificInternal(context, new IRubyObject[] {arg0}, binding, type);
+        return yield(context, arg0, binding, type);
     }
 
+    @Override
     public IRubyObject yieldSpecific(ThreadContext context, IRubyObject arg0, IRubyObject arg1, Binding binding, Block.Type type) {
         return yieldSpecificInternal(context, new IRubyObject[] {arg0, arg1}, binding, type);
     }
 
+    @Override
     public IRubyObject yieldSpecific(ThreadContext context, IRubyObject arg0, IRubyObject arg1, IRubyObject arg2, Binding binding, Block.Type type) {
         return yieldSpecificInternal(context, new IRubyObject[] {arg0, arg1, arg2}, binding, type);
     }
@@ -124,11 +122,11 @@ public class CompiledBlock19 extends BlockBody {
     public IRubyObject yield(ThreadContext context, IRubyObject value, Binding binding, Block.Type type) {
         IRubyObject self = prepareSelf(binding);
 
-        IRubyObject[] realArgs = setupBlockArg(context.getRuntime(), value, self);
         Visibility oldVis = binding.getFrame().getVisibility();
         Frame lastFrame = pre(context, null, binding);
         
         try {
+            IRubyObject[] realArgs = setupBlockArg(context.getRuntime(), value, self);
             return callback.call(context, self, realArgs, Block.NULL_BLOCK);
         } catch (JumpException.NextJump nj) {
             // A 'next' is like a local return from the block, ending this call or yield.
@@ -142,16 +140,17 @@ public class CompiledBlock19 extends BlockBody {
         return yield(context, args, self, klass, aValue, binding, type, Block.NULL_BLOCK);
     }
     
+    @Override
     public IRubyObject yield(ThreadContext context, IRubyObject args, IRubyObject self, RubyModule klass, boolean aValue, Binding binding, Block.Type type, Block block) {
         if (klass == null) {
             self = prepareSelf(binding);
         }
 
-        IRubyObject[] realArgs = setupBlockArgs(args);
         Visibility oldVis = binding.getFrame().getVisibility();
         Frame lastFrame = pre(context, klass, binding);
         
         try {
+            IRubyObject[] realArgs = setupBlockArgs(args, aValue);
             return callback.call(context, self, realArgs, block);
         } catch (JumpException.NextJump nj) {
             // A 'next' is like a local return from the block, ending this call or yield.
@@ -171,90 +170,49 @@ public class CompiledBlock19 extends BlockBody {
     private IRubyObject handleNextJump(ThreadContext context, JumpException.NextJump nj, Block.Type type) {
         return nj.getValue() == null ? context.getRuntime().getNil() : (IRubyObject)nj.getValue();
     }
-    
-    protected Frame pre(ThreadContext context, RubyModule klass, Binding binding) {
-        return context.preYieldSpecificBlock(binding, scope, klass);
-    }
-    
-    protected void post(ThreadContext context, Binding binding, Visibility vis, Frame lastFrame) {
-        binding.getFrame().setVisibility(vis);
-        context.postYield(binding, lastFrame);
-    }
 
-    private IRubyObject[] setupBlockArgs(IRubyObject value) {
+    private IRubyObject[] setupBlockArgs(IRubyObject value, boolean alreadyArray) {
+        Arity arity = arity();
+        int requiredCount = arity.required();
+        boolean isRest = !arity.isFixed();
+        
         IRubyObject[] parameters;
-
-        if (value instanceof RubyArray) {// && args.getMaxArgumentsCount() != 1) {
+        if (value == null) {
+            parameters = IRubyObject.NULL_ARRAY;
+        } else if (value instanceof RubyArray && (alreadyArray || (isRest && requiredCount > 0))) {
             parameters = ((RubyArray) value).toJavaArray();
         } else {
             parameters = new IRubyObject[] { value };
         }
 
         return parameters;
-//        if (!(args instanceof ArgsNoArgNode)) {
-//            Ruby runtime = context.getRuntime();
-//
-//            // FIXME: This needs to happen for lambdas
-////            args.checkArgCount(runtime, parameters.length);
-//            args.prepare(context, runtime, self, parameters, block);
-//        }
-    }
-    
-    private IRubyObject defaultArgsLogic(Ruby ruby, IRubyObject value) {
-        int length = ArgsUtil.arrayLength(value);
-        switch (length) {
-        case 0:
-            return ruby.getNil();
-        case 1:
-            return ((RubyArray)value).eltInternal(0);
-        default:
-            blockArgWarning(ruby, length);
-        }
-        return value;
-    }
-    
-    private void blockArgWarning(Ruby ruby, int length) {
-        ruby.getWarnings().warn(ID.MULTIPLE_VALUES_FOR_BLOCK, "multiple values for a block parameter (" +
-                    length + " for 1)");
     }
 
     protected IRubyObject[] setupBlockArg(Ruby ruby, IRubyObject value, IRubyObject self) {
-        switch (argumentType) {
-        case ZERO_ARGS:
-            return null;
-        case MULTIPLE_ASSIGNMENT:
-        case SINGLE_RESTARG:
-            return ArgsUtil.convertToRubyArray(ruby, value, hasMultipleArgsHead).toJavaArray();
-        default:
-            return defaultArgLogic(ruby, value);
-        }
-    }
-    
-    private IRubyObject[] defaultArgLogic(Ruby ruby, IRubyObject value) {
+        Arity arity = arity();
+        int requiredCount = arity.required();
+        boolean isRest = !arity.isFixed();
+
+        IRubyObject[] parameters;
         if (value == null) {
-//            return warnMultiReturnNil(ruby);
-            return new IRubyObject[] {ruby.getNil()};
+            parameters = IRubyObject.NULL_ARRAY;
+        } else if (value instanceof RubyArray && ((isRest && requiredCount > 0) || (!isRest && requiredCount > 1))) {
+            parameters = ((RubyArray) value).toJavaArray();
+        } else {
+            parameters = new IRubyObject[] { value };
         }
-        return new IRubyObject[] {value};
+        return parameters;
     }
 
-    private IRubyObject[] warnMultiReturnNil(Ruby ruby) {
-        ruby.getWarnings().warn(ID.MULTIPLE_VALUES_FOR_BLOCK, "multiple values for a block parameter (0 for 1)");
-        return IRubyObject.NULL_ARRAY;
-    }
-    
-    public StaticScope getStaticScope() {
-        return scope;
+    public String getFile() {
+        return callback.getFile();
     }
 
-    public Block cloneBlock(Binding binding) {
-        binding = binding.clone();
-        
-        return new Block(this, binding);
+    public int getLine() {
+        return callback.getLine();
     }
 
-    @Override
-    public Arity arity() {
-        return arity;
+    public String[] getParameterList() {
+        return parameterList;
     }
 }

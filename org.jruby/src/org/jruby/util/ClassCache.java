@@ -2,12 +2,11 @@ package org.jruby.util;
 
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.security.ProtectionDomain;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.jruby.RubyInstanceConfig;
 
 /**
  * A Simple cache which maintains a collection of classes that can potentially be shared among
@@ -38,6 +37,7 @@ public class ClassCache<T> {
     }
     
     public interface ClassGenerator {
+        void generate();
         byte[] bytecode();
         String name();
     }
@@ -56,7 +56,7 @@ public class ClassCache<T> {
         }
     }
     
-    public static class OneShotClassLoader extends ClassLoader {
+    public static class OneShotClassLoader extends ClassLoader implements ClassDefiningClassLoader {
         private final static ProtectionDomain DEFAULT_DOMAIN = 
             JRubyClassLoader.class.getProtectionDomain();
         
@@ -80,23 +80,49 @@ public class ClassCache<T> {
     
     public Class<T> cacheClassByKey(Object key, ClassGenerator classGenerator) 
         throws ClassNotFoundException {
-        WeakReference<Class<T>> weakRef = cache.get(key);
         Class<T> contents = null;
-        if (weakRef != null) contents = weakRef.get();
-        
-        if (weakRef == null || contents == null) {
-            if (isFull()) return null;
-            
-            OneShotClassLoader oneShotCL = new OneShotClassLoader(getClassLoader());
-            contents = (Class<T>)oneShotCL.defineClass(classGenerator.name(), classGenerator.bytecode());
-            classLoadCount.incrementAndGet();
-            
-            cleanup();
-            cache.put(key, new KeyedClassReference(key, contents, referenceQueue));
+        if (RubyInstanceConfig.JIT_CACHE_ENABLED) {
+            WeakReference<Class<T>> weakRef = cache.get(key);
+            if (weakRef != null) contents = weakRef.get();
+
+            if (weakRef == null || contents == null) {
+                if (isFull()) return null;
+
+                contents = defineClass(classGenerator);
+
+                cleanup();
+
+                cache.put(key, new KeyedClassReference(key, contents, referenceQueue));
+            } else {
+                classReuseCount.incrementAndGet();
+            }
         } else {
-            classReuseCount.incrementAndGet();
+            contents = defineClass(classGenerator);
         }
         
+        return contents;
+    }
+
+    protected Class<T> defineClass(ClassGenerator classGenerator) {
+        // attempt to load from classloaders
+        String className = classGenerator.name();
+        Class contents = null;
+        try {
+            contents = getClassLoader().loadClass(className);
+            if (RubyInstanceConfig.JIT_LOADING_DEBUG) {
+                System.err.println("found jitted code in classloader: " + className);
+            }
+        } catch (ClassNotFoundException cnfe) {
+            if (RubyInstanceConfig.JIT_LOADING_DEBUG) {
+                System.err.println("no jitted code in classloader for method " + classGenerator + " at class: " + className);
+            }
+            // proceed to define in-memory
+        }
+        OneShotClassLoader oneShotCL = new OneShotClassLoader(getClassLoader());
+        classGenerator.generate();
+        contents = oneShotCL.defineClass(classGenerator.name(), classGenerator.bytecode());
+        classLoadCount.incrementAndGet();
+
         return contents;
     }
     

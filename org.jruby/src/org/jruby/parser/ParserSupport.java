@@ -35,6 +35,12 @@
  ***** END LICENSE BLOCK *****/
 package org.jruby.parser;
 
+import java.math.BigInteger;
+import org.jcodings.Encoding;
+import org.jruby.CompatVersion;
+import org.jruby.RubyBignum;
+import org.jruby.RubyRegexp;
+import org.jruby.ast.AliasNode;
 import org.jruby.ast.AndNode;
 import org.jruby.ast.ArgsPreOneArgNode;
 import org.jruby.ast.ArgsPreTwoArgNode;
@@ -52,10 +58,11 @@ import org.jruby.ast.AttrAssignTwoArgNode;
 import org.jruby.ast.BackRefNode;
 import org.jruby.ast.BeginNode;
 import org.jruby.ast.BignumNode;
+import org.jruby.ast.BinaryOperatorNode;
+import org.jruby.ast.BlockArg18Node;
 import org.jruby.ast.BlockArgNode;
 import org.jruby.ast.BlockNode;
 import org.jruby.ast.BlockPassNode;
-import org.jruby.ast.BreakNode;
 import org.jruby.ast.CallManyArgsBlockNode;
 import org.jruby.ast.CallManyArgsBlockPassNode;
 import org.jruby.ast.CallManyArgsNode;
@@ -66,6 +73,7 @@ import org.jruby.ast.CallNode;
 import org.jruby.ast.CallOneArgNode;
 import org.jruby.ast.CallOneArgBlockNode;
 import org.jruby.ast.CallOneArgBlockPassNode;
+import org.jruby.ast.CallOneArgFixnumNode;
 import org.jruby.ast.CallSpecialArgNode;
 import org.jruby.ast.CallSpecialArgBlockNode;
 import org.jruby.ast.CallSpecialArgBlockPassNode;
@@ -90,6 +98,7 @@ import org.jruby.ast.DAsgnNode;
 import org.jruby.ast.DRegexpNode;
 import org.jruby.ast.DStrNode;
 import org.jruby.ast.DotNode;
+import org.jruby.ast.EncodingNode;
 import org.jruby.ast.EvStrNode;
 import org.jruby.ast.FCallManyArgsBlockNode;
 import org.jruby.ast.FCallManyArgsBlockPassNode;
@@ -100,7 +109,6 @@ import org.jruby.ast.FCallNoArgNode;
 import org.jruby.ast.FCallOneArgBlockNode;
 import org.jruby.ast.FCallOneArgBlockPassNode;
 import org.jruby.ast.FCallOneArgNode;
-import org.jruby.ast.FCallSpecialArgBlockNode;
 import org.jruby.ast.FCallSpecialArgBlockPassNode;
 import org.jruby.ast.FCallSpecialArgNode;
 import org.jruby.ast.FCallThreeArgBlockNode;
@@ -147,22 +155,28 @@ import org.jruby.ast.StrNode;
 import org.jruby.ast.SuperNode;
 import org.jruby.ast.SymbolNode;
 import org.jruby.ast.TrueNode;
+import org.jruby.ast.UndefNode;
 import org.jruby.ast.WhenNode;
 import org.jruby.ast.WhenOneArgNode;
 import org.jruby.ast.YieldNode;
+import org.jruby.ast.YieldOneNode;
+import org.jruby.ast.YieldThreeNode;
+import org.jruby.ast.YieldTwoNode;
+import org.jruby.ast.ZYieldNode;
 import org.jruby.ast.types.ILiteralNode;
 import org.jruby.ast.types.INameNode;
 import org.jruby.common.IRubyWarnings;
 import org.jruby.common.IRubyWarnings.ID;
 import org.jruby.lexer.yacc.ISourcePosition;
 import org.jruby.lexer.yacc.ISourcePositionHolder;
-import org.jruby.lexer.yacc.IDESourcePosition;
+import org.jruby.lexer.yacc.RubyYaccLexer;
 import org.jruby.lexer.yacc.SyntaxException;
 import org.jruby.lexer.yacc.Token;
 import org.jruby.lexer.yacc.SyntaxException.PID;
 import org.jruby.runtime.DynamicScope;
 import org.jruby.util.ByteList;
 import org.jruby.util.IdUtil;
+import org.jruby.util.RegexpOptions;
 
 /** 
  *
@@ -170,6 +184,8 @@ import org.jruby.util.IdUtil;
 public class ParserSupport {
     // Parser states:
     protected StaticScope currentScope;
+
+    protected RubyYaccLexer lexer;
     
     // Is the parser current within a singleton (value is number of nested singletons)
     private int inSingleton;
@@ -179,7 +195,7 @@ public class ParserSupport {
 
     protected IRubyWarnings warnings;
 
-    private ParserConfiguration configuration;
+    protected ParserConfiguration configuration;
     private RubyParserResult result;
 
     public void reset() {
@@ -189,7 +205,8 @@ public class ParserSupport {
     
     public void allowDubyExtension(ISourcePosition position) {
         if (!configuration.isDubyExtensionsEnabled()) {
-            throw new SyntaxException(PID.DUBY_EXTENSIONS_OFF, position, "Duby extensions not configured");
+            throw new SyntaxException(PID.DUBY_EXTENSIONS_OFF, position,
+                    lexer.getCurrentLine(), "Duby extensions not configured");
         }
     }
     
@@ -237,7 +254,7 @@ public class ParserSupport {
         case LOCALASGNNODE:
             return currentScope.declare(node.getPosition(), ((INameNode) node).getName());
         case CONSTDECLNODE: // CONSTANT
-            return currentScope.declare(node.getPosition(), ((INameNode) node).getName());
+            return new ConstNode(node.getPosition(), ((INameNode) node).getName());
         case INSTASGNNODE: // INSTANCE VARIABLE
             return new InstVarNode(node.getPosition(), ((INameNode) node).getName());
         case CLASSVARDECLNODE:
@@ -246,7 +263,7 @@ public class ParserSupport {
         case GLOBALASGNNODE:
             return new GlobalVarNode(node.getPosition(), ((INameNode) node).getName());
         }
-        
+
         getterIdentifierError(node.getPosition(), ((INameNode) node).getName());
         return null;
     }
@@ -268,13 +285,12 @@ public class ParserSupport {
         case Tokens.kFALSE:
             return new FalseNode(token.getPosition());
         case Tokens.k__FILE__:
-            return new FileNode(token.getPosition(), ByteList.create(token.getPosition().getFile()));
+            return new FileNode(token.getPosition(), new ByteList(token.getPosition().getFile().getBytes(),
+                    getConfiguration().getRuntime().getEncodingService().getLocaleEncoding()));
         case Tokens.k__LINE__:
-            return new FixnumNode(token.getPosition(), token.getPosition().getEndLine()+1);
+            return new FixnumNode(token.getPosition(), token.getPosition().getStartLine()+1);
         case Tokens.k__ENCODING__:
-            // ENEBO: 1.8 will never see this, but 1.9 can
-            // TODO: Replace with proper encoding support
-            return new FixnumNode(token.getPosition(), token.getPosition().getEndLine()+1);            
+            return new EncodingNode(token.getPosition(), lexer.getEncoding());
         case Tokens.tIDENTIFIER:
             return currentScope.declare(token.getPosition(), (String) token.getValue());
         case Tokens.tCONSTANT:
@@ -292,8 +308,8 @@ public class ParserSupport {
     }
     
     protected void getterIdentifierError(ISourcePosition position, String identifier) {
-        throw new SyntaxException(PID.BAD_IDENTIFIER, position, "identifier " +
-                identifier + " is not valid", identifier);
+        throw new SyntaxException(PID.BAD_IDENTIFIER, position, lexer.getCurrentLine(),
+                "identifier " + identifier + " is not valid", identifier);
     }
     
     public AssignableNode assignable(Token lhs, Node value) {
@@ -301,22 +317,29 @@ public class ParserSupport {
 
         switch (lhs.getType()) {
             case Tokens.kSELF:
-                throw new SyntaxException(PID.CANNOT_CHANGE_SELF, lhs.getPosition(), "Can't change the value of self");
+                throw new SyntaxException(PID.CANNOT_CHANGE_SELF, lhs.getPosition(),
+                        lexer.getCurrentLine(), "Can't change the value of self");
             case Tokens.kNIL:
-                throw new SyntaxException(PID.INVALID_ASSIGNMENT, lhs.getPosition(), "Can't assign to nil", "nil");
+                throw new SyntaxException(PID.INVALID_ASSIGNMENT, lhs.getPosition(),
+                        lexer.getCurrentLine(), "Can't assign to nil", "nil");
             case Tokens.kTRUE:
-                throw new SyntaxException(PID.INVALID_ASSIGNMENT, lhs.getPosition(), "Can't assign to true", "true");
+                throw new SyntaxException(PID.INVALID_ASSIGNMENT, lhs.getPosition(),
+                        lexer.getCurrentLine(), "Can't assign to true", "true");
             case Tokens.kFALSE:
-                throw new SyntaxException(PID.INVALID_ASSIGNMENT, lhs.getPosition(), "Can't assign to false", "false");
+                throw new SyntaxException(PID.INVALID_ASSIGNMENT, lhs.getPosition(),
+                        lexer.getCurrentLine(), "Can't assign to false", "false");
             case Tokens.k__FILE__:
-                throw new SyntaxException(PID.INVALID_ASSIGNMENT, lhs.getPosition(), "Can't assign to __FILE__", "__FILE__");
+                throw new SyntaxException(PID.INVALID_ASSIGNMENT, lhs.getPosition(),
+                        lexer.getCurrentLine(), "Can't assign to __FILE__", "__FILE__");
             case Tokens.k__LINE__:
-                throw new SyntaxException(PID.INVALID_ASSIGNMENT, lhs.getPosition(), "Can't assign to __LINE__", "__LINE__");
+                throw new SyntaxException(PID.INVALID_ASSIGNMENT, lhs.getPosition(),
+                        lexer.getCurrentLine(), "Can't assign to __LINE__", "__LINE__");
             case Tokens.tIDENTIFIER:
-                return currentScope.assign(value != NilImplicitNode.NIL ? union(lhs, value) : lhs.getPosition(), (String) lhs.getValue(), makeNullNil(value));
+                return currentScope.assign(lhs.getPosition(), (String) lhs.getValue(), makeNullNil(value));
             case Tokens.tCONSTANT:
                 if (isInDef() || isInSingle()) {
-                    throw new SyntaxException(PID.DYNAMIC_CONSTANT_ASSIGNMENT, lhs.getPosition(), "dynamic constant assignment");
+                    throw new SyntaxException(PID.DYNAMIC_CONSTANT_ASSIGNMENT, lhs.getPosition(),
+                            lexer.getCurrentLine(), "dynamic constant assignment");
                 }
                 return new ConstDeclNode(lhs.getPosition(), (String) lhs.getValue(), null, value);
             case Tokens.tIVAR:
@@ -330,8 +353,8 @@ public class ParserSupport {
                 return new GlobalAsgnNode(lhs.getPosition(), (String) lhs.getValue(), value);
         }
 
-        throw new SyntaxException(PID.BAD_IDENTIFIER, lhs.getPosition(), "identifier " + 
-                (String) lhs.getValue() + " is not valid", lhs.getValue());
+        throw new SyntaxException(PID.BAD_IDENTIFIER, lhs.getPosition(), lexer.getCurrentLine(),
+                "identifier " + (String) lhs.getValue() + " is not valid", lhs.getValue());
     }
 
     /**
@@ -346,31 +369,10 @@ public class ParserSupport {
         return node instanceof NewlineNode ? node : new NewlineNode(position, node); 
     }
     
-    public ISourcePosition union(ISourcePositionHolder first, ISourcePositionHolder second) {
-        while (first instanceof NewlineNode) {
-            first = ((NewlineNode) first).getNextNode();
-        }
-
-        while (second instanceof NewlineNode) {
-            second = ((NewlineNode) second).getNextNode();
-        }
-        
-        if (second == null) return first.getPosition();
-        if (first == null) return second.getPosition();
-        
-        return first.getPosition().union(second.getPosition());
-    }
-    
-    public ISourcePosition union(ISourcePosition first, ISourcePosition second) {
-		if (first.getStartOffset() < second.getStartOffset()) return first.union(second); 
-
-		return second.union(first);
-	}
-    
     public Node addRootNode(Node topOfAST, ISourcePosition position) {
         position = topOfAST != null ? topOfAST.getPosition() : position;
 
-        if (result.getBeginNodes().size() == 0) {
+        if (result.getBeginNodes().isEmpty()) {
             if (topOfAST == null) topOfAST = NilImplicitNode.NIL;
             
             return new RootNode(position, result.getScope(), topOfAST);
@@ -407,7 +409,6 @@ public class ParserSupport {
 
         // Assumption: tail is never a list node
         ((ListNode) head).addAll(tail);
-        head.setPosition(union(head, tail));
         return head;
     }
 
@@ -429,8 +430,9 @@ public class ParserSupport {
         
         checkExpression(firstNode);
         checkExpression(secondNode);
-        
-        return new CallOneArgNode(union(firstNode.getPosition(), secondNode.getPosition()), firstNode, operator, new ArrayNode(secondNode.getPosition(), secondNode));
+
+        return new_call_one_arg(firstNode.getPosition(), firstNode, operator, secondNode);
+//        return new CallOneArgNode(firstNode.getPosition(), firstNode, operator, new ArrayNode(secondNode.getPosition(), secondNode));
     }
 
     public Node getMatchNode(Node firstNode, Node secondNode) {
@@ -504,7 +506,6 @@ public class ParserSupport {
         checkExpression(rhs);
         if (lhs instanceof AssignableNode) {
     	    ((AssignableNode) lhs).setValueNode(rhs);
-    	    lhs.setPosition(union(lhs, rhs));
         } else if (lhs instanceof IArgumentNode) {
             IArgumentNode invokableNode = (IArgumentNode) lhs;
             
@@ -517,11 +518,12 @@ public class ParserSupport {
     public Node ret_args(Node node, ISourcePosition position) {
         if (node != null) {
             if (node instanceof BlockPassNode) {
-                throw new SyntaxException(PID.DYNAMIC_CONSTANT_ASSIGNMENT, position, "Dynamic constant assignment.");
+                throw new SyntaxException(PID.DYNAMIC_CONSTANT_ASSIGNMENT, position,
+                        lexer.getCurrentLine(), "Dynamic constant assignment.");
             } else if (node instanceof ArrayNode && ((ArrayNode)node).size() == 1) {
                 node = ((ArrayNode)node).get(0);
             } else if (node instanceof SplatNode) {
-                node = new SValueNode(position, node);
+                node = newSValueNode(position, node);
             }
         }
         
@@ -563,17 +565,6 @@ public class ParserSupport {
         }
     }
 
-    /**
-     * Does this node represent an expression?
-     * @param node to be checked
-     * @return true if an expression, false otherwise
-     */
-    public void checkExpression(Node node) {
-        if (warnings.isVerbose() && !isExpression(node)) {
-            warnings.warning(ID.VOID_VALUE_EXPRESSION, node.getPosition(), "void value expression");
-        }
-    }
-
     private Node compactNewlines(Node head) {
         while (head instanceof NewlineNode) {
             Node nextNode = ((NewlineNode) head).getNextNode();
@@ -585,34 +576,48 @@ public class ParserSupport {
         }
         return head;
     }
-    
-    private boolean isExpression(Node node) {
-        do {
-            if (node == null) return true;
-            
+
+    // logical equivalent to value_expr in MRI
+    public boolean checkExpression(Node node) {
+        boolean conditional = false;
+
+        while (node != null) {
             switch (node.getNodeType()) {
-            case BEGINNODE:
-                node = ((BeginNode) node).getBodyNode();
-                break;
+            case DEFNNODE: case DEFSNODE:
+                warnings.warning(ID.VOID_VALUE_EXPRESSION, node.getPosition(),
+                        "void value expression");
+                return false;
+            case RETURNNODE: case BREAKNODE: case NEXTNODE: case REDONODE:
+            case RETRYNODE:
+                if (!conditional) {
+                    throw new SyntaxException(PID.VOID_VALUE_EXPRESSION,
+                            node.getPosition(), lexer.getCurrentLine(),
+                            "void value expression");
+                }
+                return false;
             case BLOCKNODE:
                 node = ((BlockNode) node).getLast();
                 break;
-            case BREAKNODE:
-                node = ((BreakNode) node).getValueNode();
+            case BEGINNODE:
+                node = ((BeginNode) node).getBodyNode();
                 break;
-            case CLASSNODE: case DEFNNODE: case DEFSNODE: case MODULENODE: case NEXTNODE: 
-            case REDONODE: case RETRYNODE: case RETURNNODE: case UNTILNODE: case WHILENODE:
-                return false;
             case IFNODE:
-                return isExpression(((IfNode) node).getThenBody()) &&
-                  isExpression(((IfNode) node).getElseBody());
+                if (!checkExpression(((IfNode) node).getThenBody())) return false;
+                node = ((IfNode) node).getElseBody();
+                break;
+            case ANDNODE: case ORNODE:
+                conditional = true;
+                node = ((BinaryOperatorNode) node).getSecondNode();
+                break;
             case NEWLINENODE:
                 node = ((NewlineNode) node).getNextNode();
                 break;
             default: // Node
                 return true;
             }
-        } while (true);
+        }
+
+        return true;
     }
     
     /**
@@ -626,12 +631,11 @@ public class ParserSupport {
     public boolean isLiteral(Node node) {
         return node != null && (node instanceof FixnumNode || node instanceof BignumNode || 
                 node instanceof FloatNode || node instanceof SymbolNode || 
-                (node instanceof RegexpNode && 
-                        (((RegexpNode) node).getOptions() & ~ReOptions.RE_OPTION_ONCE) == 0));
+                (node instanceof RegexpNode && ((RegexpNode) node).getOptions().toJoniOptions() == 0));
     }
 
     private void handleUselessWarn(Node node, String useless) {
-        warnings.warn(ID.USELESS_EXPRESSION, node.getPosition(), "Useless use of " + useless + " in void context.", useless);
+        warnings.warn(ID.USELESS_EXPRESSION, node.getPosition(), "Useless use of " + useless + " in void context.");
     }
 
     /**
@@ -640,7 +644,7 @@ public class ParserSupport {
      * @param node to be checked.
      */
     public void checkUselessStatement(Node node) {
-        if (!warnings.isVerbose()) return;
+        if (!warnings.isVerbose() || (!configuration.isInlineSource() && configuration.isEvalParse())) return;
         
         uselessLoop: do {
             if (node == null) return;
@@ -716,7 +720,8 @@ public class ParserSupport {
 	 **/
     private boolean checkAssignmentInCondition(Node node) {
         if (node instanceof MultipleAsgnNode) {
-            throw new SyntaxException(PID.MULTIPLE_ASSIGNMENT_IN_CONDITIONAL, node.getPosition(), "Multiple assignment in conditional.");
+            throw new SyntaxException(PID.MULTIPLE_ASSIGNMENT_IN_CONDITIONAL, node.getPosition(),
+                    lexer.getCurrentLine(), "Multiple assignment in conditional.");
         } else if (node instanceof LocalAsgnNode || node instanceof DAsgnNode || node instanceof GlobalAsgnNode || node instanceof InstAsgnNode) {
             Node valueNode = ((AssignableNode) node).getValueNode();
             if (valueNode instanceof ILiteralNode || valueNode instanceof NilNode || valueNode instanceof TrueNode || valueNode instanceof FalseNode) {
@@ -772,7 +777,7 @@ public class ParserSupport {
             warningUnlessEOption(ID.REGEXP_LITERAL_IN_CONDITION, node, "regex literal in condition");
             
             return new MatchNode(node.getPosition(), node);
-        } 
+        }
 
         return node;
     }
@@ -802,6 +807,10 @@ public class ParserSupport {
 
         return node;
     }
+
+    public SValueNode newSValueNode(ISourcePosition position, Node node) {
+        return new SValueNode(position, node);
+    }
     
     public SplatNode newSplatNode(ISourcePosition position, Node node) {
         return new SplatNode(position, makeNullNil(node));
@@ -811,12 +820,16 @@ public class ParserSupport {
         return new ArrayNode(position, makeNullNil(firstNode));
     }
 
+    public ISourcePosition position(ISourcePositionHolder one, ISourcePositionHolder two) {
+        return one == null ? two.getPosition() : one.getPosition();
+    }
+
     public AndNode newAndNode(ISourcePosition position, Node left, Node right) {
         checkExpression(left);
         
         if (left == null && right == null) return new AndNode(position, makeNullNil(left), makeNullNil(right));
         
-        return new AndNode(union(left, right), makeNullNil(left), makeNullNil(right));
+        return new AndNode(position(left, right), makeNullNil(left), makeNullNil(right));
     }
 
     public OrNode newOrNode(ISourcePosition position, Node left, Node right) {
@@ -824,7 +837,7 @@ public class ParserSupport {
 
         if (left == null && right == null) return new OrNode(position, makeNullNil(left), makeNullNil(right));
         
-        return new OrNode(union(left, right), makeNullNil(left), makeNullNil(right));
+        return new OrNode(position(left, right), makeNullNil(left), makeNullNil(right));
     }
 
     /**
@@ -914,7 +927,8 @@ public class ParserSupport {
         if (node instanceof ArrayNode && ((ArrayNode) node).size() == 1) { 
             return ((ListNode) node).get(0);
         } else if (node instanceof BlockPassNode) {
-            throw new SyntaxException(PID.BLOCK_ARG_UNEXPECTED, node.getPosition(), "Block argument should not be given.");
+            throw new SyntaxException(PID.BLOCK_ARG_UNEXPECTED, node.getPosition(),
+                    lexer.getCurrentLine(), "Block argument should not be given.");
         }
         return node;
     }
@@ -954,7 +968,7 @@ public class ParserSupport {
     }
     
     private Node new_call_noargs(Node receiver, Token name, IterNode iter) {
-        ISourcePosition position = union(receiver, name);
+        ISourcePosition position = position(receiver, name);
         
         if (receiver == null) receiver = NilImplicitNode.NIL;
         
@@ -967,19 +981,20 @@ public class ParserSupport {
         if (args instanceof BlockPassNode) {
             // Block and block pass passed in at same time....uh oh
             if (iter != null) {
-                throw new SyntaxException(PID.BLOCK_ARG_AND_BLOCK_GIVEN, iter.getPosition(), "Both block arg and actual block given.");
+                throw new SyntaxException(PID.BLOCK_ARG_AND_BLOCK_GIVEN, iter.getPosition(),
+                        lexer.getCurrentLine(), "Both block arg and actual block given.");
             }
 
             return new_call_blockpass(receiver, name, (BlockPassNode) args);
         }
 
-        if (iter != null) return new CallSpecialArgBlockNode(union(receiver, args), receiver,(String) name.getValue(), args, (IterNode) iter);
+        if (iter != null) return new CallSpecialArgBlockNode(position(receiver, args), receiver,(String) name.getValue(), args, (IterNode) iter);
 
-        return new CallSpecialArgNode(union(receiver, args), receiver, (String) name.getValue(), args);
+        return new CallSpecialArgNode(position(receiver, args), receiver, (String) name.getValue(), args);
     }
     
     private Node new_call_blockpass(Node receiver, Token operation, BlockPassNode blockPass) {
-        ISourcePosition position = union(receiver, blockPass);
+        ISourcePosition position = position(receiver, blockPass);
         String name = (String) operation.getValue();
         Node args = blockPass.getArgsNode();
         
@@ -999,6 +1014,33 @@ public class ParserSupport {
                 return new CallManyArgsBlockPassNode(position, receiver, name, args, blockPass);
         } 
     }
+    
+    private boolean isNumericOperator(String name) {
+        if (name.length() == 1) {
+            switch (name.charAt(0)) {
+                case '+': case '-': case '*': case '/': case '<': case '>':
+                    return true;
+            }
+        } else if (name.length() == 2) {
+            switch (name.charAt(0)) {
+            case '<': case '>': case '=':
+                switch (name.charAt(1)) {
+                case '=': case '<':
+                    return true;
+                }
+            }
+        }
+        
+        return false;
+    }
+
+    private Node new_call_one_arg(ISourcePosition position, Node receiver, String name, Node first) {
+        if (first instanceof FixnumNode && isNumericOperator(name)) {
+            return new CallOneArgFixnumNode(position, receiver, name, new ArrayNode(position, first));
+        }
+
+        return new CallOneArgNode(position, receiver, name, new ArrayNode(position, first));
+    }
 
     public Node new_call(Node receiver, Token name, Node argsNode, Node iter) {
         if (argsNode == null) return new_call_noargs(receiver, name, (IterNode) iter);
@@ -1008,26 +1050,37 @@ public class ParserSupport {
 
         switch (args.size()) {
             case 0:
-                if (iter != null) return new CallNoArgBlockNode(union(receiver, args), receiver, (String) name.getValue(), args, (IterNode) iter);
+                if (iter != null) return new CallNoArgBlockNode(position(receiver, args), receiver, (String) name.getValue(), args, (IterNode) iter);
                     
-                return new CallNoArgNode(union(receiver, args), receiver, args, (String) name.getValue());
+                return new CallNoArgNode(position(receiver, args), receiver, args, (String) name.getValue());
             case 1:
-                if (iter != null) return new CallOneArgBlockNode(union(receiver, args), receiver, (String) name.getValue(), args, (IterNode) iter);
-                
-                return new CallOneArgNode(union(receiver, args), receiver, (String) name.getValue(), args);
-            case 2:
-                if (iter != null) return new CallTwoArgBlockNode(union(receiver, args), receiver, (String) name.getValue(), args, (IterNode) iter);
-                
-                return new CallTwoArgNode(union(receiver, args), receiver, (String) name.getValue(), args);
-            case 3:
-                if (iter != null) return new CallThreeArgBlockNode(union(receiver, args), receiver, (String) name.getValue(), args, (IterNode) iter);
-                
-                return new CallThreeArgNode(union(receiver, args), receiver, (String) name.getValue(), args);
-            default:
-                if (iter != null) return new CallManyArgsBlockNode(union(receiver, args), receiver, (String) name.getValue(), args, (IterNode) iter);
+                if (iter != null) return new CallOneArgBlockNode(position(receiver, args), receiver, (String) name.getValue(), args, (IterNode) iter);
 
-                return new CallManyArgsNode(union(receiver, args), receiver, (String) name.getValue(), args);
+                return new CallOneArgNode(position(receiver, args), receiver, (String) name.getValue(), args);
+            case 2:
+                if (iter != null) return new CallTwoArgBlockNode(position(receiver, args), receiver, (String) name.getValue(), args, (IterNode) iter);
+                
+                return new CallTwoArgNode(position(receiver, args), receiver, (String) name.getValue(), args);
+            case 3:
+                if (iter != null) return new CallThreeArgBlockNode(position(receiver, args), receiver, (String) name.getValue(), args, (IterNode) iter);
+                
+                return new CallThreeArgNode(position(receiver, args), receiver, (String) name.getValue(), args);
+            default:
+                if (iter != null) return new CallManyArgsBlockNode(position(receiver, args), receiver, (String) name.getValue(), args, (IterNode) iter);
+
+                return new CallManyArgsNode(position(receiver, args), receiver, (String) name.getValue(), args);
         }
+    }
+
+    public Node new_aref(Node receiver, Token name, Node argsNode) {
+        if (argsNode instanceof ArrayNode) {
+            ArrayNode args = (ArrayNode) argsNode;
+
+            if (args.size() == 1 && args.get(0) instanceof FixnumNode) {
+                return new CallOneArgFixnumNode(position(receiver, args), receiver, "[]", args);
+            }
+        }
+        return new_call(receiver, name, argsNode, null);
     }
 
     public Colon2Node new_colon2(ISourcePosition position, Node leftNode, String name) {
@@ -1051,33 +1104,34 @@ public class ParserSupport {
     
     private Node new_fcall_simpleargs(Token operation, ArrayNode args, Node iter) {
         String name = (String) operation.getValue();
+        ISourcePosition position = position(operation, args);
             
         switch (args.size()) {
             case 0:  // foo()
-                if (iter != null) return new FCallNoArgBlockNode(union(operation, args), name, args, (IterNode) iter);
+                if (iter != null) return new FCallNoArgBlockNode(position, name, args, (IterNode) iter);
                     
-                return new FCallNoArgNode(union(operation, args), args, name);
+                return new FCallNoArgNode(position, args, name);
             case 1:
-                if (iter != null) return new FCallOneArgBlockNode(union(operation, args), name, args, (IterNode) iter);
+                if (iter != null) return new FCallOneArgBlockNode(position, name, args, (IterNode) iter);
                 
-                return new FCallOneArgNode(union(operation, args), name, args);
+                return new FCallOneArgNode(position, name, args);
             case 2:
-                if (iter != null) return new FCallTwoArgBlockNode(union(operation, args), name, args, (IterNode) iter);
+                if (iter != null) return new FCallTwoArgBlockNode(position, name, args, (IterNode) iter);
                 
-                return new FCallTwoArgNode(union(operation, args), name, args);
+                return new FCallTwoArgNode(position, name, args);
             case 3:
-                if (iter != null) return new FCallThreeArgBlockNode(union(operation, args), name, args, (IterNode) iter);
+                if (iter != null) return new FCallThreeArgBlockNode(position, name, args, (IterNode) iter);
                 
-                return new FCallThreeArgNode(union(operation, args), name, args);
+                return new FCallThreeArgNode(position, name, args);
             default:
-                if (iter != null) return new FCallManyArgsBlockNode(union(operation, args), name, args, (IterNode) iter);
+                if (iter != null) return new FCallManyArgsBlockNode(position, name, args, (IterNode) iter);
 
-                return new FCallManyArgsNode(union(operation, args), name, args);
+                return new FCallManyArgsNode(position, name, args);
         }
     }
     
     private Node new_fcall_blockpass(Token operation, BlockPassNode blockPass) {
-        ISourcePosition position = union(operation, blockPass);
+        ISourcePosition position = position(operation, blockPass);
         String name = (String) operation.getValue();
         Node args = blockPass.getArgsNode();
         
@@ -1104,16 +1158,16 @@ public class ParserSupport {
         if (args instanceof BlockPassNode) {
             if (iter == null) return new_fcall_blockpass(operation, (BlockPassNode) args);
 
-            throw new SyntaxException(PID.BLOCK_ARG_AND_BLOCK_GIVEN, iter.getPosition(), "Both block arg and actual block given.");
+            throw new SyntaxException(PID.BLOCK_ARG_AND_BLOCK_GIVEN, iter.getPosition(),
+                    lexer.getCurrentLine(), "Both block arg and actual block given.");
         }
 
-        if (iter != null) new FCallSpecialArgBlockNode(union(operation, args), (String) operation.getValue(), args, (IterNode) iter);
-        return new FCallSpecialArgNode(union(operation, args), (String) operation.getValue(), args);
+        return new FCallSpecialArgNode(position(operation, args), (String) operation.getValue(), args);
     }
 
     public Node new_super(Node args, Token operation) {
         if (args != null && args instanceof BlockPassNode) {
-            return new SuperNode(union(operation, args), ((BlockPassNode) args).getArgsNode(), args);
+            return new SuperNode(position(operation, args), ((BlockPassNode) args).getArgsNode(), args);
         }
         return new SuperNode(operation.getPosition(), args);
     }
@@ -1184,20 +1238,35 @@ public class ParserSupport {
     public void setWarnings(IRubyWarnings warnings) {
         this.warnings = warnings;
     }
+
+    public void setLexer(RubyYaccLexer lexer) {
+        this.lexer = lexer;
+    }
+
+    public DStrNode createDStrNode(ISourcePosition position) {
+        return new DStrNode(position);
+    }
     
     public Node literal_concat(ISourcePosition position, Node head, Node tail) { 
         if (head == null) return tail;
         if (tail == null) return head;
         
         if (head instanceof EvStrNode) {
-            head = new DStrNode(union(head.getPosition(), position)).add(head);
+            head = createDStrNode(head.getPosition()).add(head);
         } 
 
         if (tail instanceof StrNode) {
             if (head instanceof StrNode) {
-        	    return new StrNode(union(head, tail), (StrNode) head, (StrNode) tail);
+                StrNode front = (StrNode) head;
+                // string_contents always makes an empty strnode...which is sometimes valid but
+                // never if it ever is in literal_concat.
+                if (front.getValue().getRealSize() > 0) {
+                    return new StrNode(head.getPosition(), front, (StrNode) tail);
+                } else {
+                    return tail;
+                }
             } 
-            head.setPosition(union(head, tail));
+            head.setPosition(head.getPosition());
             return ((ListNode) head).add(tail);
         	
         } else if (tail instanceof DStrNode) {
@@ -1214,11 +1283,9 @@ public class ParserSupport {
         	
             //Do not add an empty string node
             if(((StrNode) head).getValue().length() == 0) {
-                head = new DStrNode(head.getPosition());
+                head = createDStrNode(head.getPosition());
             } else {
-                // All first element StrNode's do not include syntacical sugar.
-                head.getPosition().adjustStartOffset(-1);
-                head = new DStrNode(head.getPosition()).add(head);
+                head = createDStrNode(head.getPosition()).add(head);
             }
         }
         return ((DStrNode) head).add(tail);
@@ -1240,17 +1307,27 @@ public class ParserSupport {
         
         return new EvStrNode(position, head);
     }
+
+    public IterNode new_iter(ISourcePosition position, Node vars, 
+            StaticScope scope, Node body) {
+        if (vars != null && vars instanceof BlockPassNode) {
+            vars = ((BlockPassNode)vars).getArgsNode();
+        }
+        
+        return new IterNode(position, vars, scope, body);
+    }
     
     public Node new_yield(ISourcePosition position, Node node) {
         boolean state = true;
         
         if (node != null) {
             if (node instanceof BlockPassNode) {
-                throw new SyntaxException(PID.BLOCK_ARG_UNEXPECTED, node.getPosition(), "Block argument should not be given.");
+                throw new SyntaxException(PID.BLOCK_ARG_UNEXPECTED, node.getPosition(),
+                        lexer.getCurrentLine(), "Block argument should not be given.");
             }
 
-            // FIXME: This does not seem to be in 1.9
-            if (node instanceof ArrayNode && ((ArrayNode)node).size() == 1) {
+            if (node instanceof ArrayNode && configuration.getVersion() == CompatVersion.RUBY1_8 &&
+                    ((ArrayNode)node).size() == 1) {
                 node = ((ArrayNode)node).get(0);
                 state = false;
             }
@@ -1259,9 +1336,28 @@ public class ParserSupport {
                 state = true;
             }
         } else {
-            state = false;
+            return new ZYieldNode(position);
         }
-        
+
+        if (state && node instanceof ArrayNode) {
+            ArrayNode args = (ArrayNode) node;
+
+            switch (args.size()) {
+                case 0:
+                    return new ZYieldNode(position);
+                case 1:
+                    return new YieldOneNode(position, args);
+                case 2:
+                    return new YieldTwoNode(position, args);
+                case 3:
+                    return new YieldThreeNode(position, args);
+            }
+        }
+
+        if (node instanceof FixnumNode) {
+            return new YieldOneNode(position, (FixnumNode) node);
+        }
+
         return new YieldNode(position, node, state);
     }
     
@@ -1273,8 +1369,15 @@ public class ParserSupport {
             return fixnumNode;
         } else if (integerNode instanceof BignumNode) {
             BignumNode bignumNode = (BignumNode) integerNode;
+
+            BigInteger value = bignumNode.getValue().negate();
+
+            // Negating a bignum will make the last negative value of our bignum
+            if (value.compareTo(RubyBignum.LONG_MIN) >= 0) {
+                return new FixnumNode(bignumNode.getPosition(), value.longValue());
+            }
             
-            bignumNode.setValue(bignumNode.getValue().negate());
+            bignumNode.setValue(value);
         }
         
         return integerNode;
@@ -1285,9 +1388,10 @@ public class ParserSupport {
         
         return floatNode;
     }
-    
+
+    // FIXME: Remove this from grammars.
     public ISourcePosition createEmptyArgsNodePosition(ISourcePosition pos) {
-        return new IDESourcePosition(pos.getFile(), pos.getStartLine(), pos.getEndLine(), pos.getEndOffset() - 1, pos.getEndOffset() - 1);
+        return pos;
     }
     
     public Node unwrapNewlineNode(Node node) {
@@ -1301,25 +1405,231 @@ public class ParserSupport {
         return (node == null) ? new NilNode(defaultPosition) : node; 
     }
 
-    public ArgumentNode getRestArgNode(Token token) {
-        int index = ((Integer) token.getValue()).intValue();
-        if(index < 0) {
-            return null;
-        }
-        String name = getCurrentScope().getLocalScope().getVariables()[index];
-        // FIXME: We should not need to specify IDESourcePosition here...
-        ISourcePosition position = new IDESourcePosition(token.getPosition().getFile(), token.getPosition().getStartLine(), token.getPosition().getEndLine(), token.getPosition().getStartOffset(), token.getPosition().getEndOffset() + name.length());
-        return new ArgumentNode(position, name);
-    }
-
     public Node new_args(ISourcePosition position, ListNode pre, ListNode optional, RestArgNode rest,
             ListNode post, BlockArgNode block) {
         // Zero-Argument declaration
         if (optional == null && rest == null && post == null && block == null) {
             if (pre == null || pre.size() == 0) return new ArgsNoArgNode(position);
-            if (pre.size() == 1) return new ArgsPreOneArgNode(position, pre);
-            if (pre.size() == 2) return new ArgsPreTwoArgNode(position, pre);
+            if (pre.size() == 1 && !hasAssignableArgs(pre)) return new ArgsPreOneArgNode(position, pre);
+            if (pre.size() == 2 && !hasAssignableArgs(pre)) return new ArgsPreTwoArgNode(position, pre);
         }
         return new ArgsNode(position, pre, optional, rest, post, block);
+    }
+
+    private boolean hasAssignableArgs(ListNode list) {
+        for (Node node : list.childNodes()) {
+            if (node instanceof AssignableNode) return true;
+        }
+        return false;
+    }
+
+    public Node newAlias(ISourcePosition position, Node newNode, Node oldNode) {
+        return new AliasNode(position, newNode, oldNode);
+    }
+
+    public Node newUndef(ISourcePosition position, Node nameNode) {
+        return new UndefNode(position, nameNode);
+    }
+
+    public BlockArg18Node newBlockArg18(ISourcePosition position, Node blockValue, Node args) {
+        return new BlockArg18Node(position, blockValue, args);
+    }
+
+    public BlockArgNode newBlockArg(ISourcePosition position, Token nameToken) {
+        String identifier = (String) nameToken.getValue();
+
+        if (getCurrentScope().getLocalScope().isDefined(identifier) >= 0) {
+            throw new SyntaxException(PID.BAD_IDENTIFIER, position, lexer.getCurrentLine(),
+                    "duplicate block argument name");
+        }
+
+        return new BlockArgNode(position, getCurrentScope().getLocalScope().addVariable(identifier), identifier);
+    }
+
+    /**
+     * generate parsing error
+     */
+    public void yyerror(String message) {
+        throw new SyntaxException(PID.GRAMMAR_ERROR, lexer.getPosition(), lexer.getCurrentLine(), message);
+    }
+
+    /**
+     * generate parsing error
+     * @param message text to be displayed.
+     * @param expected list of acceptable tokens, if available.
+     */
+    public void yyerror(String message, String[] expected, String found) {
+        String text = message + ", unexpected " + found + "\n";
+        throw new SyntaxException(PID.GRAMMAR_ERROR, lexer.getPosition(), lexer.getCurrentLine(), text, found);
+    }
+
+    public ISourcePosition getPosition(ISourcePositionHolder start) {
+        return start != null ? lexer.getPosition(start.getPosition()) : lexer.getPosition();
+    }
+
+    public void warn(ID id, ISourcePosition position, String message, Object... data) {
+        warnings.warn(id, position, message);
+    }
+
+    public void warning(ID id, ISourcePosition position, String message, Object... data) {
+        if (warnings.isVerbose()) {
+            warnings.warning(id, position, message);
+        }
+    }
+
+    // ENEBO: Totally weird naming (in MRI is not allocated and is a local var name) [1.9]
+    public boolean is_local_id(Token identifier) {
+        String name = (String) identifier.getValue();
+
+        return lexer.isIdentifierChar(name.charAt(0));
+    }
+
+    // 1.9
+    public ListNode list_append(Node list, Node item) {
+        if (list == null) return new ArrayNode(item.getPosition(), item);
+        if (!(list instanceof ListNode)) return new ArrayNode(list.getPosition(), list).add(item);
+
+        return ((ListNode) list).add(item);
+    }
+
+    // 1.9
+    public Node new_bv(Token identifier) {
+        if (!is_local_id(identifier)) {
+            getterIdentifierError(identifier.getPosition(), (String) identifier.getValue());
+        }
+        shadowing_lvar(identifier);
+        
+        return arg_var(identifier);
+    }
+
+    // 1.9
+    public ArgumentNode arg_var(Token identifier) {
+        String name = (String) identifier.getValue();
+        StaticScope current = getCurrentScope();
+
+        // Multiple _ arguments are allowed.  To not screw with tons of arity
+        // issues in our runtime we will allocate unnamed bogus vars so things
+        // still work. MRI does not use name as intern'd value so they don't
+        // have this issue.
+        if (name == "_") {
+            int count = 0;
+            while (current.exists(name) >= 0) {
+                name = "_$" + count++;
+            }
+        }
+        return new ArgumentNode(identifier.getPosition(), name,
+                getCurrentScope().addVariableThisScope(name));
+    }
+
+    public Token formal_argument(Token identifier) {
+        if (!is_local_id(identifier)) yyerror("formal argument must be local variable");
+
+        return shadowing_lvar(identifier);
+    }
+
+    // 1.9
+    public Token shadowing_lvar(Token identifier) {
+        String name = (String) identifier.getValue();
+
+        if (name == "_") return identifier;
+
+        StaticScope current = getCurrentScope();
+        if (current instanceof BlockStaticScope) {
+            if (current.exists(name) >= 0) yyerror("duplicated argument name");
+
+            if (warnings.isVerbose() && current.isDefined(name) >= 0) {
+                warnings.warning(ID.STATEMENT_NOT_REACHED, identifier.getPosition(),
+                        "shadowing outer local variable - " + name);
+            }
+        } else if (current.exists(name) >= 0) {
+            yyerror("duplicated argument name");
+        }
+
+        return identifier;
+    }
+
+    // 1.9
+    public ListNode list_concat(Node first, Node second) {
+        if (first instanceof ListNode) {
+            if (second instanceof ListNode) {
+                return ((ListNode) first).addAll((ListNode) second);
+            } else {
+                return ((ListNode) first).addAll(second);
+            }
+        }
+
+        return new ArrayNode(first.getPosition(), first).add(second);
+    }
+
+    // 1.9
+    /**
+     * If node is a splat and it is splatting a literal array then return the literal array.
+     * Otherwise return null.  This allows grammar to not splat into a Ruby Array if splatting
+     * a literal array.
+     */
+    public Node splat_array(Node node) {
+        if (node instanceof SplatNode) node = ((SplatNode) node).getValue();
+        if (node instanceof ArrayNode) return node;
+        return null;
+    }
+
+    // 1.9
+    public Node arg_append(Node node1, Node node2) {
+        if (node1 == null) return new ArrayNode(node2.getPosition(), node2);
+        if (node1 instanceof ListNode) return ((ListNode) node1).add(node2);
+        if (node1 instanceof BlockPassNode) return arg_append(((BlockPassNode) node1).getBodyNode(), node2);
+        if (node1 instanceof ArgsPushNode) {
+            ArgsPushNode pushNode = (ArgsPushNode) node1;
+            Node body = pushNode.getSecondNode();
+
+            return new ArgsCatNode(pushNode.getPosition(), pushNode.getFirstNode(),
+                    new ArrayNode(body.getPosition(), body).add(node2));
+        }
+
+        return new ArgsPushNode(position(node1, node2), node1, node2);
+    }
+
+    public void regexpFragmentCheck(RegexpNode end, ByteList value) {
+        // 1.9 mode overrides to do extra checking...
+    }
+
+    protected void checkRegexpSyntax(ByteList value, RegexpOptions options) {
+        RubyRegexp.newRegexp(getConfiguration().getRuntime(), value, options);
+    }
+
+    public Node newRegexpNode(ISourcePosition position, Node contents, RegexpNode end) {
+        RegexpOptions options = end.getOptions();
+        Encoding encoding = null;
+        if (!lexer.isOneEight()) {
+            encoding = lexer.getEncoding();
+        }
+
+        if (contents == null) {
+            ByteList newValue = ByteList.create("");
+            if (encoding != null) {
+                newValue.setEncoding(encoding);
+            }
+
+            regexpFragmentCheck(end, newValue);
+            return new RegexpNode(position, newValue, options.withoutOnce());
+        } else if (contents instanceof StrNode) {
+            ByteList meat = (ByteList) ((StrNode) contents).getValue().clone();
+            regexpFragmentCheck(end, meat);
+            checkRegexpSyntax(meat, options.withoutOnce());
+            return new RegexpNode(contents.getPosition(), meat, options.withoutOnce());
+        } else if (contents instanceof DStrNode) {
+            DStrNode dStrNode = (DStrNode) contents;
+
+            for (Node fragment: dStrNode.childNodes()) {
+                if (fragment instanceof StrNode) {
+                    regexpFragmentCheck(end, ((StrNode) fragment).getValue());
+                }
+            }
+
+            return new DRegexpNode(position, options, encoding).addAll((DStrNode) contents);
+        }
+
+        // EvStrNode: #{val}: no fragment check stuff for this
+        return new DRegexpNode(position, options, encoding).add(contents);
     }
 }

@@ -37,25 +37,36 @@ import java.io.IOException;
 
 import org.jruby.Ruby;
 
+import org.jruby.ext.posix.JavaSecuredFile;
+import org.jruby.platform.Platform;
+
 /**
  * <p>This file acts as an alternative to NormalizedFile, due to the problems with current working 
  * directory.</p>
  *
  */
-public class JRubyFile extends File {
+public class JRubyFile extends JavaSecuredFile {
     private static final long serialVersionUID = 435364547567567L;
 
     public static JRubyFile create(String cwd, String pathname) {
         return createNoUnicodeConversion(cwd, pathname);
     }
 
+    public static String normalizeSeps(String path) {
+        if (Platform.IS_WINDOWS) {
+            return path.replace(File.separatorChar, '/');
+        } else {
+            return path;
+        }
+    }
+
     private static JRubyFile createNoUnicodeConversion(String cwd, String pathname) {
         if (pathname == null || pathname.equals("") || Ruby.isSecurityRestricted()) {
             return JRubyNonExistentFile.NOT_EXIST;
         }
-        File internal = new File(pathname);
+        File internal = new JavaSecuredFile(pathname);
         if(!internal.isAbsolute()) {
-            internal = new File(cwd,pathname);
+            internal = new JavaSecuredFile(cwd, pathname);
             if(!internal.isAbsolute()) {
                 throw new IllegalArgumentException("Neither current working directory ("+cwd+") nor pathname ("+pathname+") led to an absolute path");
             }
@@ -64,9 +75,7 @@ public class JRubyFile extends File {
     }
 
     public static String getFileProperty(String property) {
-        String value = SafePropertyAccessor.getProperty(property, "/");
-        
-        return value.replace(File.separatorChar, '/');
+        return normalizeSeps(SafePropertyAccessor.getProperty(property, "/"));
     }
 
     private JRubyFile(File file) {
@@ -79,29 +88,28 @@ public class JRubyFile extends File {
 
     @Override
     public String getAbsolutePath() {
-        return new File(super.getPath()).getAbsolutePath().replace(File.separatorChar, '/'); 
+        return normalizeSeps(new File(super.getPath()).getAbsolutePath());
     }
 
     @Override
     public String getCanonicalPath() throws IOException {
-        String canonicalPath = super.getCanonicalPath().replace(File.separatorChar, '/');
-        
-        // Java 1.4 canonicalPath does not strip off '.'
-        if (canonicalPath.endsWith("/.")) {
-            canonicalPath = canonicalPath.substring(0, canonicalPath.length() - 1);
+        try {
+            return normalizeSeps(super.getCanonicalPath());
+        } catch (IOException e) {
+            // usually IOExceptions don't tell us anything about the path,
+            // so add an extra wrapper to give more debugging help.
+            throw (IOException) new IOException("Unable to canonicalize path: " + getAbsolutePath()).initCause(e);
         }
-        
-        return canonicalPath;
     }
 
     @Override
     public String getPath() {
-        return super.getPath().replace(File.separatorChar, '/');
+        return normalizeSeps(super.getPath());
     }
 
     @Override
     public String toString() {
-        return super.toString().replace(File.separatorChar, '/');
+        return normalizeSeps(super.toString());
     }
 
     @Override
@@ -118,7 +126,7 @@ public class JRubyFile extends File {
     public String getParent() {
         String par = super.getParent();
         if (par != null) {
-            par = par.replace(File.separatorChar, '/');
+            par = normalizeSeps(par);
         }
         return par;
     }
@@ -159,7 +167,7 @@ public class JRubyFile extends File {
         
         String[] smartFiles = new String[files.length];
         for (int i = 0; i < files.length; i++) {
-            smartFiles[i] = files[i].replace(File.separatorChar, '/');
+            smartFiles[i] = normalizeSeps(files[i]);
         }
         return smartFiles;
     }

@@ -34,18 +34,18 @@
 package org.jruby.ast;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.jruby.Ruby;
+import org.jruby.ast.types.INameNode;
 import org.jruby.ast.visitor.NodeVisitor;
 import org.jruby.exceptions.JumpException;
 import org.jruby.lexer.yacc.ISourcePosition;
 import org.jruby.lexer.yacc.ISourcePositionHolder;
-import org.jruby.lexer.yacc.IDESourcePosition;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.jruby.util.ByteList;
 
 /**
  * Base class for all Nodes in the AST
@@ -53,7 +53,23 @@ import org.jruby.runtime.builtin.IRubyObject;
 public abstract class Node implements ISourcePositionHolder {    
     // We define an actual list to get around bug in java integration (1387115)
     static final List<Node> EMPTY_LIST = new ArrayList<Node>();
-    public static final List<CommentNode> EMPTY_COMMENT_LIST = new ArrayList<CommentNode>();
+    
+    // defined? results
+    public static final ByteList EXPRESSION_BYTELIST = ByteList.create("expression");
+    public static final ByteList ASSIGNMENT_BYTELIST = ByteList.create("assignment");
+    public static final ByteList GLOBAL_VARIABLE_BYTELIST = ByteList.create("global-variable");
+    public static final ByteList METHOD_BYTELIST = ByteList.create("method");
+    public static final ByteList CLASS_VARIABLE_BYTELIST = ByteList.create("class variable");
+    public static final ByteList CONSTANT_BYTELIST = ByteList.create("constant");
+    public static final ByteList LOCAL_VARIABLE_BYTELIST = ByteList.create("local-variable");
+    public static final ByteList LOCAL_VARIABLE_IN_BLOCK_BYTELIST = ByteList.create("local-variable(in-block)");
+    public static final ByteList FALSE_BYTELIST = ByteList.create("false");
+    public static final ByteList INSTANCE_VARIABLE_BYTELIST = ByteList.create("instance-variable");
+    public static final ByteList NIL_BYTELIST = ByteList.create("nil");
+    public static final ByteList SELF_BYTELIST = ByteList.create("self");
+    public static final ByteList SUPER_BYTELIST = ByteList.create("super");
+    public static final ByteList TRUE_BYTELIST = ByteList.create("true");
+    public static final ByteList YIELD_BYTELIST = ByteList.create("yield");
     
     private ISourcePosition position;
 
@@ -86,8 +102,26 @@ public abstract class Node implements ISourcePositionHolder {
         return list;
     }
 
+    @Override
     public String toString() {
-        return getNodeName() + "[]";
+        if (this instanceof InvisibleNode) return "";
+        
+        StringBuilder builder = new StringBuilder(60);
+
+        builder.append("(").append(getNodeName());
+
+        if (this instanceof INameNode) {
+            builder.append(":").append(((INameNode) this).getName());
+        }
+
+        builder.append(" ").append(getPosition().getStartLine());
+
+        for (Node child: childNodes()) {
+            builder.append(", ").append(child);
+        }
+        builder.append(")");
+
+        return builder.toString();
     }
 
     protected String getNodeName() {
@@ -95,55 +129,6 @@ public abstract class Node implements ISourcePositionHolder {
         int i = name.lastIndexOf('.');
         String nodeType = name.substring(i + 1);
         return nodeType;
-    }
-    
-    public void addComment(CommentNode comment) {
-        Collection<CommentNode> comments = position.getComments();
-        if (comments == null) {
-            comments = new ArrayList<CommentNode>();
-            position.setComments(comments);
-        }
-
-        comments.add(comment);
-    }
-    
-    public void addComments(Collection<CommentNode> moreComments) {
-        Collection<CommentNode> comments = position.getComments();
-        if (comments == EMPTY_COMMENT_LIST) {
-            comments = new ArrayList<CommentNode>();
-            position.setComments(comments);
-        }
-
-        comments.addAll(moreComments);
-    }
-    
-    public Collection<CommentNode> getComments() {
-        return position.getComments();
-    }
-    
-    public boolean hasComments() {
-        return getComments() != EMPTY_COMMENT_LIST;
-    }
-    
-    public ISourcePosition getPositionIncludingComments() {
-        if (!hasComments()) return position;
-        
-        String fileName = position.getFile();
-        int startOffset = position.getStartOffset();
-        int endOffset = position.getEndOffset();
-        int startLine = position.getStartLine();
-        int endLine = position.getEndLine();
-        
-        // Since this is only used for IDEs this is safe code, but there is an obvious abstraction issue here.
-        ISourcePosition commentIncludingPos = 
-            new IDESourcePosition(fileName, startLine, endLine, startOffset, endOffset);
-        
-        for (CommentNode comment: getComments()) {
-            commentIncludingPos = 
-                IDESourcePosition.combinePosition(commentIncludingPos, comment.getPosition());
-        }       
-
-        return commentIncludingPos;
     }
 
     /**
@@ -162,10 +147,10 @@ public abstract class Node implements ISourcePositionHolder {
         throw new RuntimeException("Invalid node encountered in interpreter: \"" + getClass().getName() + "\", please report this at www.jruby.org");
     }
     
-    public String definition(Ruby runtime, ThreadContext context, IRubyObject self, Block aBlock) {
+    public ByteList definition(Ruby runtime, ThreadContext context, IRubyObject self, Block aBlock) {
         try {
             interpret(runtime, context, self, aBlock);
-            return "expression";
+            return EXPRESSION_BYTELIST;
         } catch (JumpException jumpExcptn) {
         }
         

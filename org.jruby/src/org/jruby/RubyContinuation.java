@@ -29,7 +29,9 @@ package org.jruby;
 
 import org.jruby.anno.JRubyMethod;
 import org.jruby.anno.JRubyClass;
+import org.jruby.exceptions.Unrescuable;
 import org.jruby.runtime.Block;
+import org.jruby.runtime.ClassIndex;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
@@ -40,8 +42,13 @@ import org.jruby.runtime.builtin.IRubyObject;
  */
 @JRubyClass(name="Continuation")
 public class RubyContinuation extends RubyObject {
-    public static class Continuation extends Error {
-        public IRubyObject[] args;
+    public static class Continuation extends Error implements Unrescuable {
+        public Continuation() {tag = null;}
+        public Continuation(IRubyObject tag) {
+            this.tag = tag;
+        }
+        public IRubyObject[] args = IRubyObject.NULL_ARRAY;
+        public final IRubyObject tag;
         
         @Override
         public synchronized Throwable fillInStackTrace() {
@@ -54,6 +61,10 @@ public class RubyContinuation extends RubyObject {
     
     public static void createContinuation(Ruby runtime) {
         RubyClass cContinuation = runtime.defineClass("Continuation",runtime.getObject(),runtime.getObject().getAllocator());
+
+        cContinuation.index = ClassIndex.CONTINUATION;
+        cContinuation.setReifiedClass(RubyContinuation.class);
+        
         cContinuation.defineAnnotatedMethods(RubyContinuation.class);
         cContinuation.getSingletonClass().undefineMethod("new");
         
@@ -65,7 +76,22 @@ public class RubyContinuation extends RubyObject {
         this.continuation = new Continuation();
     }
 
-    @JRubyMethod(name = {"call", "[]"}, rest = true, frame = true)
+    /**
+     * A RubyContinuation used for catch/throw, which have a tag associated
+     *
+     * @param runtime Current JRuby runtime
+     * @param tag The tag to use
+     */
+    public RubyContinuation(Ruby runtime, IRubyObject tag) {
+        super(runtime, runtime.getContinuation());
+        this.continuation = new Continuation(tag);
+    }
+
+    public Continuation getContinuation() {
+        return continuation;
+    }
+
+    @JRubyMethod(name = {"call", "[]"}, rest = true)
     public IRubyObject call(ThreadContext context, IRubyObject[] args) {
         if (disabled) {
             throw context.getRuntime().newLocalJumpError(
@@ -75,9 +101,9 @@ public class RubyContinuation extends RubyObject {
         throw continuation;
     }
 
-    public IRubyObject enter(ThreadContext context, Block block) {
+    public IRubyObject enter(ThreadContext context, IRubyObject yielded, Block block) {
         try {
-            return block.yield(context, this);
+            return block.yield(context, yielded);
         } catch (Continuation c) {
             if (c == continuation) {
                 if (continuation.args.length == 0) {

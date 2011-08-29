@@ -1,6 +1,8 @@
 require 'ffi'
 require 'java'
 
+MemoryPointer = FFI::MemoryPointer
+
 describe "MemoryPointer#total" do
   it "MemoryPointer.new(:char, 1).total == 1" do
     MemoryPointer.new(:char, 1).total.should == 1
@@ -31,6 +33,7 @@ end
 describe "MemoryPointer argument" do
   module Ptr
     extend FFI::Library
+    ffi_lib FFI::Platform::LIBC
     attach_function :memset, [ :pointer, :int, :ulong ], :pointer
     attach_function :memcpy, [ :pointer, :pointer, :ulong ], :pointer
   end
@@ -50,6 +53,7 @@ end
 describe "MemoryPointer return value" do
   module Stdio
     extend FFI::Library
+    ffi_lib FFI::Platform::LIBC
     attach_function :fopen, [ :string, :string ], :pointer
     attach_function :fclose, [ :pointer ], :int
     attach_function :fwrite, [ :pointer, :ulong, :ulong, :string ], :ulong
@@ -57,6 +61,6 @@ describe "MemoryPointer return value" do
   it "fopen returns non-nil" do
     fp = Stdio.fopen("/dev/null", "w")
     fp.should_not be_nil
-    Stdio.fclose(fp).should == 0
+    Stdio.fclose(fp).should == 0 unless fp.nil? or fp.null? 
   end
 end

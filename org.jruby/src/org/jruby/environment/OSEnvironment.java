@@ -28,56 +28,11 @@
 
 package org.jruby.environment;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+/**
+ * TODO: Remove for 1.7 release
+ * @deprecated see org.jruby.util.OSEnvironment
+ */
+@Deprecated
+public class OSEnvironment extends org.jruby.util.OSEnvironment {
 
-import org.jruby.Ruby;
-
-public class OSEnvironment {
-    /**
-     * Returns the environment as a hash of Ruby strings.
-     *
-     * @param runtime
-     */
-    public Map getEnvironmentVariableMap(Ruby runtime) {
-        Map envs = null;
-
-        if (runtime.getInstanceConfig().getEnvironment() != null) {
-            return getAsMapOfRubyStrings(runtime, runtime.getInstanceConfig().getEnvironment().entrySet());
-        }
-
-        // fall back on empty env when security disallows environment var access (like in an applet)
-        if (Ruby.isSecurityRestricted())
-            envs = new HashMap();
-        else {
-            Map variables = System.getenv();
-            envs = getAsMapOfRubyStrings(runtime,  variables.entrySet());
-        }
-
-        return envs;
-
-    }
-
-    /**
-    * Returns java system properties as a Map<RubyString,RubyString>.
-     * @param runtime
-     * @return the java system properties as a Map<RubyString,RubyString>.
-     */
-    public Map getSystemPropertiesMap(Ruby runtime) {
-        if (Ruby.isSecurityRestricted())
-           return new HashMap();
-       else
-           return getAsMapOfRubyStrings(runtime, System.getProperties().entrySet());
-    }
-    
-	private static Map getAsMapOfRubyStrings(Ruby runtime, Set entrySet) {
-		Map envs = new HashMap();
-		for (Iterator iter = entrySet.iterator(); iter.hasNext();) {
-			Map.Entry entry  = (Map.Entry) iter.next();
-            envs.put(runtime.newString(entry.getKey().toString()),runtime.newString(entry.getValue().toString()));
-		}
-		return envs;
-	}
 }

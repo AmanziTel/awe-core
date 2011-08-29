@@ -51,7 +51,6 @@ import org.jruby.runtime.builtin.IRubyObject;
 @JRubyClass(name="Java::JavaConstructor")
 public class JavaConstructor extends JavaCallable {
     private final Constructor<?> constructor;
-    private final Class<?>[] parameterTypes;
     private final JavaUtil.JavaConverter objectConverter;
 
     public Object getValue() {
@@ -73,9 +72,8 @@ public class JavaConstructor extends JavaCallable {
     }
 
     public JavaConstructor(Ruby runtime, Constructor<?> constructor) {
-        super(runtime, runtime.getJavaSupport().getJavaConstructorClass());
+        super(runtime, runtime.getJavaSupport().getJavaConstructorClass(), constructor.getParameterTypes());
         this.constructor = constructor;
-        this.parameterTypes = constructor.getParameterTypes();
         
         this.objectConverter = JavaUtil.getJavaConverter(constructor.getDeclaringClass());
     }
@@ -196,7 +194,7 @@ public class JavaConstructor extends JavaCallable {
         }
         Object[] constructorArguments = new Object[length];
         for (int i = length; --i >= 0; ) {
-            constructorArguments[i] = JavaUtil.convertArgument(getRuntime(), args[i], types[i]);
+            constructorArguments[i] = args[i].toJava(types[i]);
         }
         try {
             Object result = constructor.newInstance(constructorArguments);
@@ -208,7 +206,7 @@ public class JavaConstructor extends JavaCallable {
         } catch (IllegalAccessException iae) {
             throw getRuntime().newTypeError("illegal access");
         } catch (InvocationTargetException ite) {
-            getRuntime().getJavaSupport().handleNativeException(ite.getTargetException());
+            getRuntime().getJavaSupport().handleNativeException(ite.getTargetException(), constructor);
             // not reached
             assert false;
             return null;
@@ -218,9 +216,7 @@ public class JavaConstructor extends JavaCallable {
     }
 
     public IRubyObject new_instance(Object[] arguments) {
-        if (arguments.length != getArity()) {
-            throw getRuntime().newArgumentError(arguments.length, getArity());
-        }
+        checkArity(arguments.length);
 
         try {
             Object result = constructor.newInstance(arguments);
@@ -231,7 +227,7 @@ public class JavaConstructor extends JavaCallable {
         } catch (IllegalAccessException iae) {
             throw getRuntime().newTypeError("illegal access");
         } catch (InvocationTargetException ite) {
-            getRuntime().getJavaSupport().handleNativeException(ite.getTargetException());
+            getRuntime().getJavaSupport().handleNativeException(ite.getTargetException(), constructor);
             // not reached
             assert false;
             return null;
@@ -239,5 +235,116 @@ public class JavaConstructor extends JavaCallable {
             throw getRuntime().newTypeError("can't make instance of " + constructor.getDeclaringClass().getName());
         }
     }
-    
+
+    public Object newInstanceDirect(Object... arguments) {
+        checkArity(arguments.length);
+
+        try {
+            return constructor.newInstance(arguments);
+        } catch (IllegalArgumentException iae) {
+            return handlelIllegalArgumentEx(iae, arguments);
+        } catch (IllegalAccessException iae) {
+            return handleIllegalAccessEx(iae);
+        } catch (InvocationTargetException ite) {
+            return handleInvocationTargetEx(ite, constructor);
+        } catch (Throwable t) {
+            return handleThrowable(t, constructor);
+        }
+    }
+
+    public Object newInstanceDirect() {
+        checkArity(0);
+
+        try {
+            return constructor.newInstance();
+        } catch (IllegalArgumentException iae) {
+            return handlelIllegalArgumentEx(iae);
+        } catch (IllegalAccessException iae) {
+            return handleIllegalAccessEx(iae);
+        } catch (InvocationTargetException ite) {
+            return handleInvocationTargetEx(ite, constructor);
+        } catch (Throwable t) {
+            return handleThrowable(t, constructor);
+        }
+    }
+
+    public Object newInstanceDirect(Object arg0) {
+        checkArity(1);
+
+        try {
+            return constructor.newInstance(arg0);
+        } catch (IllegalArgumentException iae) {
+            return handlelIllegalArgumentEx(iae, arg0);
+        } catch (IllegalAccessException iae) {
+            return handleIllegalAccessEx(iae);
+        } catch (InvocationTargetException ite) {
+            return handleInvocationTargetEx(ite, constructor);
+        } catch (Throwable t) {
+            return handleThrowable(t, constructor);
+        }
+    }
+
+    public Object newInstanceDirect(Object arg0, Object arg1) {
+        checkArity(2);
+
+        try {
+            return constructor.newInstance(arg0, arg1);
+        } catch (IllegalArgumentException iae) {
+            return handlelIllegalArgumentEx(iae, arg0, arg1);
+        } catch (IllegalAccessException iae) {
+            return handleIllegalAccessEx(iae);
+        } catch (InvocationTargetException ite) {
+            return handleInvocationTargetEx(ite, constructor);
+        } catch (Throwable t) {
+            return handleThrowable(t, constructor);
+        }
+    }
+
+    public Object newInstanceDirect(Object arg0, Object arg1, Object arg2) {
+        checkArity(3);
+
+        try {
+            return constructor.newInstance(arg0, arg1, arg2);
+        } catch (IllegalArgumentException iae) {
+            return handlelIllegalArgumentEx(iae, arg0, arg1, arg2);
+        } catch (IllegalAccessException iae) {
+            return handleIllegalAccessEx(iae);
+        } catch (InvocationTargetException ite) {
+            return handleInvocationTargetEx(ite, constructor);
+        } catch (Throwable t) {
+            return handleThrowable(t, constructor);
+        }
+    }
+
+    public Object newInstanceDirect(Object arg0, Object arg1, Object arg2, Object arg3) {
+        checkArity(4);
+
+        try {
+            return constructor.newInstance(arg0, arg1, arg2, arg3);
+        } catch (IllegalArgumentException iae) {
+            return handlelIllegalArgumentEx(iae, arg0, arg1, arg2, arg3);
+        } catch (IllegalAccessException iae) {
+            return handleIllegalAccessEx(iae);
+        } catch (InvocationTargetException ite) {
+            return handleInvocationTargetEx(ite, constructor);
+        } catch (Throwable t) {
+            return handleThrowable(t, constructor);
+        }
+    }
+
+    private IRubyObject handleIllegalAccessEx(IllegalAccessException iae) {
+        throw getRuntime().newTypeError("illegal access on constructor for type " + constructor.getDeclaringClass().getSimpleName() + ": " + iae.getMessage());
+    }
+
+    private IRubyObject handlelIllegalArgumentEx(IllegalArgumentException iae, Object... arguments) {
+        throw getRuntime().newTypeError(
+                "for constructor of type " +
+                constructor.getDeclaringClass().getSimpleName() +
+                " expected " +
+                argument_types().inspect() +
+                "; got: " +
+                dumpArgTypes(arguments) +
+                "; error: " +
+                iae.getMessage());
+    }
 }

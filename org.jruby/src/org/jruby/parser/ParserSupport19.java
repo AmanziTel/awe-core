@@ -28,24 +28,32 @@
  ***** END LICENSE BLOCK *****/
 package org.jruby.parser;
 
-import org.jruby.ast.ArgsCatNode;
-import org.jruby.ast.ArgsPushNode;
-import org.jruby.ast.ArrayNode;
+import org.jcodings.Encoding;
+import org.jruby.RubyRegexp;
 import org.jruby.ast.AssignableNode;
-import org.jruby.ast.BlockPassNode;
 import org.jruby.ast.ClassVarAsgnNode;
 import org.jruby.ast.ConstDeclNode;
+import org.jruby.ast.DRegexpNode;
+import org.jruby.ast.DStrNode;
 import org.jruby.ast.GlobalAsgnNode;
 import org.jruby.ast.InstAsgnNode;
-import org.jruby.ast.ListNode;
-import org.jruby.ast.NilImplicitNode;
+import org.jruby.ast.Match2CaptureNode;
+import org.jruby.ast.Match2Node;
+import org.jruby.ast.Match3Node;
 import org.jruby.ast.Node;
+import org.jruby.ast.RegexpNode;
+import org.jruby.ast.SValue19Node;
+import org.jruby.ast.SValueNode;
+import org.jruby.ast.Splat19Node;
 import org.jruby.ast.SplatNode;
-import org.jruby.common.IRubyWarnings.ID;
 import org.jruby.lexer.yacc.ISourcePosition;
+import org.jruby.lexer.yacc.RubyYaccLexer;
 import org.jruby.lexer.yacc.SyntaxException;
 import org.jruby.lexer.yacc.SyntaxException.PID;
 import org.jruby.lexer.yacc.Token;
+import org.jruby.util.ByteList;
+import org.jruby.util.RegexpOptions;
+import org.jruby.util.StringSupport;
 
 public class ParserSupport19 extends ParserSupport {
     @Override
@@ -54,25 +62,33 @@ public class ParserSupport19 extends ParserSupport {
 
         switch (lhs.getType()) {
             case Tokens.kSELF:
-                throw new SyntaxException(PID.CANNOT_CHANGE_SELF, lhs.getPosition(), "Can't change the value of self");
+                throw new SyntaxException(PID.CANNOT_CHANGE_SELF, lhs.getPosition(),
+                        lexer.getCurrentLine(), "Can't change the value of self");
             case Tokens.kNIL:
-                throw new SyntaxException(PID.INVALID_ASSIGNMENT, lhs.getPosition(), "Can't assign to nil", "nil");
+                throw new SyntaxException(PID.INVALID_ASSIGNMENT, lhs.getPosition(),
+                        lexer.getCurrentLine(), "Can't assign to nil", "nil");
             case Tokens.kTRUE:
-                throw new SyntaxException(PID.INVALID_ASSIGNMENT, lhs.getPosition(), "Can't assign to true", "true");
+                throw new SyntaxException(PID.INVALID_ASSIGNMENT, lhs.getPosition(),
+                        lexer.getCurrentLine(), "Can't assign to true", "true");
             case Tokens.kFALSE:
-                throw new SyntaxException(PID.INVALID_ASSIGNMENT, lhs.getPosition(), "Can't assign to false", "false");
+                throw new SyntaxException(PID.INVALID_ASSIGNMENT, lhs.getPosition(),
+                        lexer.getCurrentLine(), "Can't assign to false", "false");
             case Tokens.k__FILE__:
-                throw new SyntaxException(PID.INVALID_ASSIGNMENT, lhs.getPosition(), "Can't assign to __FILE__", "__FILE__");
+                throw new SyntaxException(PID.INVALID_ASSIGNMENT, lhs.getPosition(),
+                        lexer.getCurrentLine(), "Can't assign to __FILE__", "__FILE__");
             case Tokens.k__LINE__:
-                throw new SyntaxException(PID.INVALID_ASSIGNMENT, lhs.getPosition(), "Can't assign to __LINE__", "__LINE__");
+                throw new SyntaxException(PID.INVALID_ASSIGNMENT, lhs.getPosition(),
+                        lexer.getCurrentLine(), "Can't assign to __LINE__", "__LINE__");
             case Tokens.k__ENCODING__:
-                throw new SyntaxException(PID.INVALID_ASSIGNMENT, lhs.getPosition(), "Can't assign to __ENCODING__", "__ENCODING__");
+                throw new SyntaxException(PID.INVALID_ASSIGNMENT, lhs.getPosition(),
+                        lexer.getCurrentLine(), "Can't assign to __ENCODING__", "__ENCODING__");
             case Tokens.tIDENTIFIER:
                 // ENEBO: 1.9 has CURR nodes for local/block variables.  We don't.  I believe we follow proper logic
-                return currentScope.assign(value != NilImplicitNode.NIL ? union(lhs, value) : lhs.getPosition(), (String) lhs.getValue(), makeNullNil(value));
+                return currentScope.assign(lhs.getPosition(), (String) lhs.getValue(), makeNullNil(value));
             case Tokens.tCONSTANT:
                 if (isInDef() || isInSingle()) {
-                    throw new SyntaxException(PID.DYNAMIC_CONSTANT_ASSIGNMENT, lhs.getPosition(), "dynamic constant assignment");
+                    throw new SyntaxException(PID.DYNAMIC_CONSTANT_ASSIGNMENT, lhs.getPosition(),
+                            lexer.getCurrentLine(), "dynamic constant assignment");
                 }
                 return new ConstDeclNode(lhs.getPosition(), (String) lhs.getValue(), null, value);
             case Tokens.tIVAR:
@@ -83,8 +99,13 @@ public class ParserSupport19 extends ParserSupport {
                 return new GlobalAsgnNode(lhs.getPosition(), (String) lhs.getValue(), value);
         }
 
-        throw new SyntaxException(PID.BAD_IDENTIFIER, lhs.getPosition(), "identifier " + 
-                (String) lhs.getValue() + " is not valid to set", lhs.getValue());
+        throw new SyntaxException(PID.BAD_IDENTIFIER, lhs.getPosition(), lexer.getCurrentLine(),
+                "identifier " + (String) lhs.getValue() + " is not valid to set", lhs.getValue());
+    }
+
+    @Override
+    public DStrNode createDStrNode(ISourcePosition position) {
+        return new DStrNode(position, lexer.getEncoding());
     }
 
     @Override
@@ -93,77 +114,105 @@ public class ParserSupport19 extends ParserSupport {
                 identifier + " is not valid to get", identifier);
     }
 
-    /**
-     * If node is a splat and it is splatting a literal array then return the literal array.
-     * Otherwise return null.  This allows grammar to not splat into a Ruby Array if splatting
-     * a literal array.
-     */
-    public Node splat_array(Node node) {
-        if (node instanceof SplatNode) node = ((SplatNode) node).getValue();
-        if (node instanceof ArrayNode) return node;
-        return null;
+    @Override
+    public SplatNode newSplatNode(ISourcePosition position, Node node) {
+        return new Splat19Node(position, makeNullNil(node));
     }
 
-    public Node arg_append(Node node1, Node node2) {
-        if (node1 == null) return new ArrayNode(node2.getPosition(), node2);
-        if (node1 instanceof ListNode) return ((ListNode) node1).add(node2);
-        if (node1 instanceof BlockPassNode) return arg_append(((BlockPassNode) node1).getBodyNode(), node2);
-        if (node1 instanceof ArgsPushNode) {
-            ArgsPushNode pushNode = (ArgsPushNode) node1;
-            Node body = pushNode.getSecondNode();
-
-            return new ArgsCatNode(pushNode.getPosition(), pushNode.getFirstNode(),
-                    new ArrayNode(body.getPosition(), body).add(node2));
-        }
-
-        return new ArgsPushNode(union(node1, node2), node1, node2);
+    @Override
+    public SValueNode newSValueNode(ISourcePosition position, Node node) {
+        return new SValue19Node(position, node);
     }
 
-    // ENEBO: Totally weird naming (in MRI is not allocated and is a local var name)
-    public boolean is_local_id(Token identifier) {
-        String name = (String) identifier.getValue();
-        
-        return getCurrentScope().getLocalScope().isDefined(name) < 0;
-    }
+    private int[] allocateNamedLocals(RegexpNode regexpNode) {
+        String[] names = regexpNode.loadPattern(configuration.getRuntime()).getNames();
+        int length = names.length;
+        int[] locals = new int[length];
+        StaticScope scope = getCurrentScope();
 
-    public ListNode list_append(Node list, Node item) {
-        if (list == null) return new ArrayNode(item.getPosition(), item);
-        if (!(list instanceof ListNode)) return new ArrayNode(list.getPosition(), list).add(item);
+        for (int i = 0; i < length; i++) {
+            // TODO: Pass by non-local-varnamed things but make sure consistent with list we get from regexp
 
-        return ((ListNode) list).add(item);
-    }
-
-    public Node new_bv(Token identifier) {
-        if (!is_local_id(identifier)) {
-            getterIdentifierError(identifier.getPosition(), (String) identifier.getValue());
-        }
-        shadowing_lvar(identifier);
-        arg_var(identifier);
-
-        return null;
-    }
-
-    public int arg_var(Token identifier) {
-        return getCurrentScope().addVariable((String) identifier.getValue());
-    }
-    
-    public void shadowing_lvar(Token identifier) {
-        String name = (String) identifier.getValue();
-
-        if (getCurrentScope().isDefined(name) > 0) {
-            if (warnings.isVerbose()) warnings.warning(ID.STATEMENT_NOT_REACHED, identifier.getPosition(), "shadowing outer local variable - " + name);
-        }
-    }
-
-    public ListNode list_concat(Node first, Node second) {
-        if (first instanceof ListNode) {
-            if (second instanceof ListNode) {
-                return ((ListNode) first).addAll((ListNode) second);
+            int slot = scope.isDefined(names[i]);
+            if (slot >= 0) {
+                locals[i] = slot;
             } else {
-                return ((ListNode) first).addAll(second);
+                locals[i] = getCurrentScope().addVariableThisScope(names[i]);
             }
         }
 
-        return new ArrayNode(first.getPosition(), first).add(second);
+        return locals;
     }
+
+    private boolean is7BitASCII(ByteList value) {
+        return StringSupport.codeRangeScan(value.getEncoding(), value) == StringSupport.CR_7BIT;
+    }
+
+    public void setRegexpEncoding(RegexpNode end, ByteList value) {
+        RegexpOptions options = end.getOptions();
+        Encoding optionsEncoding = options.setup19(configuration.getRuntime()) ;
+
+        // Change encoding to one specified by regexp options as long as the string is compatible.
+        if (optionsEncoding != null) {
+            if (optionsEncoding != value.getEncoding() && !is7BitASCII(value)) {
+                compileError(optionsEncoding, value.getEncoding());
+            }
+
+            value.setEncoding(optionsEncoding);
+        } else if (options.isEncodingNone()) {
+            if (value.getEncoding() == RubyYaccLexer.ASCII8BIT_ENCODING && !is7BitASCII(value)) {
+                compileError(optionsEncoding, value.getEncoding());
+            }
+            value.setEncoding(RubyYaccLexer.ASCII8BIT_ENCODING);
+        } else if (lexer.getEncoding() == RubyYaccLexer.USASCII_ENCODING) {
+            if (!is7BitASCII(value)) {
+                value.setEncoding(RubyYaccLexer.USASCII_ENCODING); // This will raise later
+            } else {
+                value.setEncoding(RubyYaccLexer.ASCII8BIT_ENCODING);
+            }
+        }
+    }
+
+
+    // TODO: Put somewhere more consolidated (similiar
+    private char optionsEncodingChar(Encoding optionEncoding) {
+        if (optionEncoding == RubyYaccLexer.USASCII_ENCODING) return 'n';
+        if (optionEncoding == org.jcodings.specific.EUCJPEncoding.INSTANCE) return 'e';
+        if (optionEncoding == org.jcodings.specific.SJISEncoding.INSTANCE) return 's';
+        if (optionEncoding == RubyYaccLexer.UTF8_ENCODING) return 'u';
+
+        return ' ';
+    }
+
+    protected void compileError(Encoding optionEncoding, Encoding encoding) {
+        throw new SyntaxException(PID.REGEXP_ENCODING_MISMATCH, lexer.getPosition(), lexer.getCurrentLine(),
+                "regexp encoding option '" + optionsEncodingChar(optionEncoding) +
+                "' differs from source encoding '" + encoding + "'");
+    }
+
+    @Override
+    public void regexpFragmentCheck(RegexpNode end, ByteList value) {
+        setRegexpEncoding(end, value);
+        RubyRegexp.preprocessCheck(configuration.getRuntime(), value);
+    }
+
+    @Override
+    public Node getMatchNode(Node firstNode, Node secondNode) {
+        if (firstNode instanceof DRegexpNode) {
+            return new Match2Node(firstNode.getPosition(), firstNode, secondNode);
+        } else if (firstNode instanceof RegexpNode) {
+            int[] locals = allocateNamedLocals((RegexpNode) firstNode);
+
+            if (locals.length > 0) {
+                return new Match2CaptureNode(firstNode.getPosition(), firstNode, secondNode, locals);
+            } else {
+                return new Match2Node(firstNode.getPosition(), firstNode, secondNode);
+            }
+        } else if (secondNode instanceof DRegexpNode || secondNode instanceof RegexpNode) {
+            return new Match3Node(firstNode.getPosition(), secondNode, firstNode);
+        }
+
+        return getOperatorCallNode(firstNode, "=~", secondNode);
+    }
+
 }

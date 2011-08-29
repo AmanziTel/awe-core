@@ -30,6 +30,7 @@ package org.jruby.compiler;
 import org.jruby.runtime.CallType;
 
 import org.jruby.compiler.impl.SkinnyMethodAdapter;
+import org.jruby.internal.runtime.methods.DynamicMethod.NativeCall;
 
 /**
  *
@@ -38,6 +39,7 @@ import org.jruby.compiler.impl.SkinnyMethodAdapter;
 public interface InvocationCompiler {
     public SkinnyMethodAdapter getMethodAdapter();
     public void setMethodAdapter(SkinnyMethodAdapter sma);
+    
     /**
      * Invoke the named method as a "function", i.e. as a method on the current "self"
      * object, using the specified argument count. It is expected that previous calls
@@ -46,11 +48,15 @@ public interface InvocationCompiler {
      */
     public void invokeDynamic(String name, CompilerCallback receiverCallback, ArgumentsCallback argsCallback, CallType callType, CompilerCallback closureArg, boolean iterator);
     
+    /**
+     * Same as invokeDynamic, but uses incoming IRubyObject[] arg count to dispatch
+     * to the proper-arity path.
+     */
+    public void invokeDynamicVarargs(String name, CompilerCallback receiverCallback, ArgumentsCallback argsCallback, CallType callType, CompilerCallback closureArg, boolean iterator);
+    
     public void invokeOpAsgnWithOr(String attrName, String attrAsgnName, CompilerCallback receiverCallback, ArgumentsCallback argsCallback);
     public void invokeOpAsgnWithAnd(String attrName, String attrAsgnName, CompilerCallback receiverCallback, ArgumentsCallback argsCallback);
     public void invokeOpAsgnWithMethod(String opName, String attrName, String attrAsgnName, CompilerCallback receiverCallback, ArgumentsCallback argsCallback);
-    
-    public void invokeSuper(CompilerCallback argsCallback, CompilerCallback closureCallback);
     
     /**
      * Attr assign calls have slightly different semantics that normal calls, so this method handles those additional semantics.
@@ -90,4 +96,16 @@ public interface InvocationCompiler {
      * Used for when nodes with a case; assumes stack is ..., case_value, when_cond_array
      */
     public void invokeEqq(ArgumentsCallback receivers, CompilerCallback argument);
+
+    public void invokeBinaryFixnumRHS(String name, CompilerCallback receiverCallback, long fixnum);
+    public void invokeBinaryFloatRHS(String name, CompilerCallback receiverCallback, double flote);
+
+    public void invokeFixnumLong(String rubyName, int moduleGeneration, CompilerCallback receiverCallback, String methodName, long fixnum);
+    public void invokeFloatDouble(String rubyName, int moduleGeneration, CompilerCallback receiverCallback, String methodName, double flote);
+
+    public void invokeRecursive(String name, int moduleGeneration, ArgumentsCallback argsCallback, CompilerCallback closure, CallType callType, boolean iterator);
+
+    public void invokeNative(String name, NativeCall nativeCall, int generation, CompilerCallback receiver, ArgumentsCallback args, CompilerCallback closure, CallType callType, boolean iterator);
+
+    public void invokeTrivial(String name, int generation, CompilerCallback body);
 }

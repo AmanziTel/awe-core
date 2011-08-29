@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.jruby.RubyModule;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -57,10 +58,22 @@ public class ObjectSpace {
     private ReferenceQueue deadIdentityReferences = new ReferenceQueue();
     private final Map identities = new HashMap();
     private final Map identitiesByObject = new WeakIdentityHashMap();
+    private static final AtomicLong maxId = new AtomicLong(1000);
 
-    private long maxId = 4; // Highest reserved id
+    public void registerObjectId(long id, IRubyObject object) {
+        synchronized (identities) {
+            cleanIdentities();
+            identities.put(id, new IdReference(object, id, deadIdentityReferences));
+            identitiesByObject.put(object, id);
+        }
+    }
 
-    public long idOf(IRubyObject rubyObject) {
+    public static long calculateObjectId(Object object) {
+        // Fixnums get all the odd IDs, so we use identityHashCode * 2
+        return maxId.getAndIncrement() * 2;
+    }
+    
+    public long createAndRegisterObjectId(IRubyObject rubyObject) {
         synchronized (identities) {
             Long longId = (Long) identitiesByObject.get(rubyObject);
             if (longId == null) {
@@ -70,21 +83,19 @@ public class ObjectSpace {
         }
     }
 
-    private Long createId(IRubyObject object) {
-        cleanIdentities();
-        maxId += 2; // id must always be even
-        Long longMaxId = new Long(maxId);
-        identities.put(longMaxId, new IdReference(object, maxId, deadIdentityReferences));
-        identitiesByObject.put(object, longMaxId);
-        return longMaxId;
+    private long createId(IRubyObject object) {
+        long id = calculateObjectId(object);
+        registerObjectId(id, object);
+        return id;
     }
 
     public IRubyObject id2ref(long id) {
         synchronized (identities) {
             cleanIdentities();
-            IdReference reference = (IdReference) identities.get(new Long(id));
-            if (reference == null)
+            IdReference reference = (IdReference) identities.get(Long.valueOf(id));
+            if (reference == null) {
                 return null;
+            }
             return (IRubyObject) reference.get();
         }
     }
@@ -92,7 +103,12 @@ public class ObjectSpace {
     private void cleanIdentities() {
         IdReference ref;
         while ((ref = (IdReference) deadIdentityReferences.poll()) != null)
-            identities.remove(new Long(ref.id()));
+            identities.remove(Long.valueOf(ref.id()));
+    }
+
+    @Deprecated
+    public long idOf(IRubyObject rubyObject) {
+        return createAndRegisterObjectId(rubyObject);
     }
     
     public void addFinalizer(IRubyObject object, IRubyObject proc) {

@@ -1,8 +1,11 @@
 package org.jruby.javasupport.util;
 
+import java.util.ArrayList;
+import java.util.StringTokenizer;
 import org.jruby.MetaClass;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
+import org.jruby.RubyBasicObject;
 import org.jruby.RubyBoolean;
 import org.jruby.RubyClass;
 import org.jruby.RubyException;
@@ -17,19 +20,33 @@ import org.jruby.RubyProc;
 import org.jruby.RubyRegexp;
 import org.jruby.RubyString;
 import org.jruby.RubySymbol;
+import org.jruby.ast.ArgsNode;
+import org.jruby.ast.ArgumentNode;
+import org.jruby.ast.DAsgnNode;
+import org.jruby.ast.DSymbolNode;
 import org.jruby.ast.IterNode;
+import org.jruby.ast.LiteralNode;
+import org.jruby.ast.LocalAsgnNode;
+import org.jruby.ast.MultipleAsgn19Node;
 import org.jruby.ast.Node;
+import org.jruby.ast.NodeType;
+import org.jruby.ast.OptArgNode;
+import org.jruby.ast.UnnamedRestArgNode;
 import org.jruby.ast.util.ArgsUtil;
 import org.jruby.common.IRubyWarnings.ID;
+import org.jruby.compiler.ASTInspector;
 import org.jruby.evaluator.ASTInterpreter;
 import org.jruby.exceptions.JumpException;
 import org.jruby.exceptions.RaiseException;
+import org.jruby.exceptions.Unrescuable;
 import org.jruby.internal.runtime.methods.CallConfiguration;
 import org.jruby.internal.runtime.methods.DynamicMethod;
 import org.jruby.internal.runtime.methods.UndefinedMethod;
 import org.jruby.internal.runtime.methods.WrapperMethod;
 import org.jruby.javasupport.JavaClass;
 import org.jruby.javasupport.JavaUtil;
+import org.jruby.lexer.yacc.ISourcePosition;
+import org.jruby.lexer.yacc.SimpleSourcePosition;
 import org.jruby.parser.BlockStaticScope;
 import org.jruby.parser.LocalStaticScope;
 import org.jruby.parser.StaticScope;
@@ -38,7 +55,7 @@ import org.jruby.runtime.Block;
 import org.jruby.runtime.BlockBody;
 import org.jruby.runtime.CallSite;
 import org.jruby.runtime.CallType;
-import org.jruby.runtime.CallbackFactory;
+import org.jruby.runtime.ClassIndex;
 import org.jruby.runtime.CompiledBlock;
 import org.jruby.runtime.CompiledBlock19;
 import org.jruby.runtime.CompiledBlockCallback;
@@ -50,11 +67,16 @@ import org.jruby.runtime.DynamicScope;
 import org.jruby.runtime.Interpreted19Block;
 import org.jruby.runtime.InterpretedBlock;
 import org.jruby.runtime.MethodFactory;
+import org.jruby.runtime.MethodIndex;
+import org.jruby.runtime.RubyEvent;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.Visibility;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.util.ByteList;
 import org.jruby.util.TypeConverter;
+import org.jruby.util.unsafe.UnsafeFactory;
+
+import static org.jruby.runtime.MethodIndex.OP_EQUAL;
 
 /**
  * Helper methods which are called by the compiler.  Note: These will show no consumers, but
@@ -65,26 +87,6 @@ public class RuntimeHelpers {
     public static CallSite selectAttrAsgnCallSite(IRubyObject receiver, IRubyObject self, CallSite normalSite, CallSite variableSite) {
         if (receiver == self) return variableSite;
         return normalSite;
-    }
-    public static IRubyObject doAttrAsgn(IRubyObject value, IRubyObject receiver, ThreadContext context, IRubyObject caller, CallSite callSite) {
-        callSite.call(context, caller, receiver, value);
-        return value;
-    }
-    public static IRubyObject doAttrAsgn(IRubyObject value, IRubyObject receiver, IRubyObject arg0, ThreadContext context, IRubyObject caller, CallSite callSite) {
-        callSite.call(context, caller, receiver, arg0, value);
-        return value;
-    }
-    public static IRubyObject doAttrAsgn(IRubyObject value, IRubyObject receiver, IRubyObject arg0, IRubyObject arg1, ThreadContext context, IRubyObject caller, CallSite callSite) {
-        callSite.call(context, caller, receiver, arg0, arg1, value);
-        return value;
-    }
-    public static IRubyObject doAttrAsgn(IRubyObject value, IRubyObject receiver, IRubyObject arg0, IRubyObject arg1, IRubyObject arg2, ThreadContext context, IRubyObject caller, CallSite callSite) {
-        callSite.call(context, caller, receiver, arg0, arg1, arg2, value);
-        return value;
-    }
-    public static IRubyObject doAttrAsgn(IRubyObject value, IRubyObject receiver, IRubyObject[] args, ThreadContext context, IRubyObject caller, CallSite callSite) {
-        callSite.call(context, caller, receiver, appendToObjectArray(args, value));
-        return value;
     }
     public static IRubyObject doAttrAsgn(IRubyObject receiver, CallSite callSite, IRubyObject value, ThreadContext context, IRubyObject caller) {
         callSite.call(context, caller, receiver, value);
@@ -98,9 +100,20 @@ public class RuntimeHelpers {
         callSite.call(context, caller, receiver, arg0, arg1, value);
         return value;
     }
+    public static IRubyObject doAttrAsgn(IRubyObject receiver, CallSite callSite, IRubyObject arg0, IRubyObject arg1, IRubyObject arg2, IRubyObject value, ThreadContext context, IRubyObject caller) {
+        callSite.call(context, caller, receiver, arg0, arg1, arg2, value);
+        return value;
+    }
     public static IRubyObject doAttrAsgn(IRubyObject receiver, CallSite callSite, IRubyObject[] args, ThreadContext context, IRubyObject caller) {
         callSite.call(context, caller, receiver, args);
         return args[args.length - 1];
+    }
+    public static IRubyObject doAttrAsgn(IRubyObject receiver, CallSite callSite, IRubyObject[] args, IRubyObject value, ThreadContext context, IRubyObject caller) {
+        IRubyObject[] newArgs = new IRubyObject[args.length + 1];
+        System.arraycopy(args, 0, newArgs, 0, args.length);
+        newArgs[args.length] = value;
+        callSite.call(context, caller, receiver, newArgs);
+        return value;
     }
 
     public static boolean invokeEqqForCaseWhen(CallSite callSite, ThreadContext context, IRubyObject caller, IRubyObject arg, IRubyObject[] receivers) {
@@ -148,24 +161,103 @@ public class RuntimeHelpers {
         return receiver0.isTrue() || receiver1.isTrue() || receiver2.isTrue();
     }
     
-    public static CompiledBlockCallback createBlockCallback(Ruby runtime, Object scriptObject, String closureMethod) {
+    public static CompiledBlockCallback createBlockCallback(Ruby runtime, Object scriptObject, String closureMethod, String file, int line) {
         Class scriptClass = scriptObject.getClass();
         ClassLoader scriptClassLoader = scriptClass.getClassLoader();
-        CallbackFactory factory = CallbackFactory.createFactory(runtime, scriptClass, scriptClassLoader);
+        MethodFactory factory = MethodFactory.createFactory(scriptClassLoader);
         
-        return factory.getBlockCallback(closureMethod, scriptObject);
+        return factory.getBlockCallback(closureMethod, file, line, scriptObject);
     }
 
-    public static CompiledBlockCallback19 createBlockCallback19(Ruby runtime, Object scriptObject, String closureMethod) {
+    public static CompiledBlockCallback19 createBlockCallback19(Ruby runtime, Object scriptObject, String closureMethod, String file, int line) {
         Class scriptClass = scriptObject.getClass();
         ClassLoader scriptClassLoader = scriptClass.getClassLoader();
-        CallbackFactory factory = CallbackFactory.createFactory(runtime, scriptClass, scriptClassLoader);
+        MethodFactory factory = MethodFactory.createFactory(scriptClassLoader);
 
-        return factory.getBlockCallback19(closureMethod, scriptObject);
+        return factory.getBlockCallback19(closureMethod, file, line, scriptObject);
+    }
+
+    public static byte[] createBlockCallbackOffline(String classPath, String closureMethod, String file, int line) {
+        MethodFactory factory = MethodFactory.createFactory(RuntimeHelpers.class.getClassLoader());
+
+        return factory.getBlockCallbackOffline(closureMethod, file, line, classPath);
+    }
+
+    public static byte[] createBlockCallback19Offline(String classPath, String closureMethod, String file, int line) {
+        MethodFactory factory = MethodFactory.createFactory(RuntimeHelpers.class.getClassLoader());
+
+        return factory.getBlockCallback19Offline(closureMethod, file, line, classPath);
+    }
+
+    public static String buildBlockDescriptor19(
+            String closureMethod,
+            int arity,
+            StaticScope scope,
+            String file,
+            int line,
+            boolean hasMultipleArgsHead,
+            NodeType argsNodeId,
+            String parameterList,
+            ASTInspector inspector) {
+        return buildBlockDescriptor(closureMethod, arity, scope, file, line, hasMultipleArgsHead, argsNodeId, inspector) +
+                "," + parameterList;
+    }
+
+    public static String buildBlockDescriptor(
+            String closureMethod,
+            int arity,
+            StaticScope scope,
+            String file,
+            int line,
+            boolean hasMultipleArgsHead,
+            NodeType argsNodeId,
+            ASTInspector inspector) {
+        
+        // build scope names string
+        StringBuffer scopeNames = new StringBuffer();
+        for (int i = 0; i < scope.getVariables().length; i++) {
+            if (i != 0) scopeNames.append(';');
+            scopeNames.append(scope.getVariables()[i]);
+        }
+
+        // build descriptor string
+        String descriptor =
+                closureMethod + ',' +
+                arity + ',' +
+                scopeNames + ',' +
+                hasMultipleArgsHead + ',' +
+                BlockBody.asArgumentType(argsNodeId) + ',' +
+                file + ',' +
+                line + ',' +
+                !(inspector.hasClosure() || inspector.hasScopeAwareMethods());
+
+        return descriptor;
+    }
+    
+    public static String[][] parseBlockDescriptor(String descriptor) {
+        String[] firstSplit = descriptor.split(",");
+        String[] secondSplit;
+        if (firstSplit[2].length() == 0) {
+            secondSplit = new String[0];
+        } else {
+            secondSplit = firstSplit[2].split(";");
+            // FIXME: Big fat hack here, because scope names are expected to be interned strings by the parser
+            for (int i = 0; i < secondSplit.length; i++) {
+                secondSplit[i] = secondSplit[i].intern();
+            }
+        }
+        return new String[][] {firstSplit, secondSplit};
+    }
+
+    public static BlockBody createCompiledBlockBody(ThreadContext context, Object scriptObject, String descriptor) {
+        String[][] splitDesc = parseBlockDescriptor(descriptor);
+        String[] firstSplit = splitDesc[0];
+        String[] secondSplit = splitDesc[1];
+        return createCompiledBlockBody(context, scriptObject, firstSplit[0], Integer.parseInt(firstSplit[1]), secondSplit, Boolean.valueOf(firstSplit[3]), Integer.parseInt(firstSplit[4]), firstSplit[5], Integer.parseInt(firstSplit[6]), Boolean.valueOf(firstSplit[7]));
     }
     
     public static BlockBody createCompiledBlockBody(ThreadContext context, Object scriptObject, String closureMethod, int arity, 
-            String[] staticScopeNames, boolean hasMultipleArgsHead, int argsNodeType, boolean light) {
+            String[] staticScopeNames, boolean hasMultipleArgsHead, int argsNodeType, String file, int line, boolean light) {
         StaticScope staticScope = 
             new BlockStaticScope(context.getCurrentScope().getStaticScope(), staticScopeNames);
         staticScope.determineModule();
@@ -173,18 +265,25 @@ public class RuntimeHelpers {
         if (light) {
             return CompiledBlockLight.newCompiledBlockLight(
                     Arity.createArity(arity), staticScope,
-                    createBlockCallback(context.getRuntime(), scriptObject, closureMethod),
+                    createBlockCallback(context.getRuntime(), scriptObject, closureMethod, file, line),
                     hasMultipleArgsHead, argsNodeType);
         } else {
             return CompiledBlock.newCompiledBlock(
                     Arity.createArity(arity), staticScope,
-                    createBlockCallback(context.getRuntime(), scriptObject, closureMethod),
+                    createBlockCallback(context.getRuntime(), scriptObject, closureMethod, file, line),
                     hasMultipleArgsHead, argsNodeType);
         }
     }
 
+    public static BlockBody createCompiledBlockBody19(ThreadContext context, Object scriptObject, String descriptor) {
+        String[][] splitDesc = parseBlockDescriptor(descriptor);
+        String[] firstSplit = splitDesc[0];
+        String[] secondSplit = splitDesc[1];
+        return createCompiledBlockBody19(context, scriptObject, firstSplit[0], Integer.parseInt(firstSplit[1]), secondSplit, Boolean.valueOf(firstSplit[3]), Integer.parseInt(firstSplit[4]), firstSplit[5], Integer.parseInt(firstSplit[6]), Boolean.valueOf(firstSplit[7]), firstSplit[8]);
+    }
+
     public static BlockBody createCompiledBlockBody19(ThreadContext context, Object scriptObject, String closureMethod, int arity,
-            String[] staticScopeNames, boolean hasMultipleArgsHead, int argsNodeType, boolean light) {
+            String[] staticScopeNames, boolean hasMultipleArgsHead, int argsNodeType, String file, int line, boolean light, String parameterList) {
         StaticScope staticScope =
             new BlockStaticScope(context.getCurrentScope().getStaticScope(), staticScopeNames);
         staticScope.determineModule();
@@ -192,13 +291,13 @@ public class RuntimeHelpers {
         if (light) {
             return CompiledBlockLight19.newCompiledBlockLight(
                     Arity.createArity(arity), staticScope,
-                    createBlockCallback19(context.getRuntime(), scriptObject, closureMethod),
-                    hasMultipleArgsHead, argsNodeType);
+                    createBlockCallback19(context.getRuntime(), scriptObject, closureMethod, file, line),
+                    hasMultipleArgsHead, argsNodeType, parameterList.split(";"));
         } else {
             return CompiledBlock19.newCompiledBlock(
                     Arity.createArity(arity), staticScope,
-                    createBlockCallback19(context.getRuntime(), scriptObject, closureMethod),
-                    hasMultipleArgsHead, argsNodeType);
+                    createBlockCallback19(context.getRuntime(), scriptObject, closureMethod, file, line),
+                    hasMultipleArgsHead, argsNodeType, parameterList.split(";"));
         }
     }
     
@@ -216,9 +315,8 @@ public class RuntimeHelpers {
                 body);
     }
     
-    public static IRubyObject runBeginBlock(ThreadContext context, IRubyObject self, String[] staticScopeNames, CompiledBlockCallback callback) {
-        StaticScope staticScope = 
-            new BlockStaticScope(context.getCurrentScope().getStaticScope(), staticScopeNames);
+    public static IRubyObject runBeginBlock(ThreadContext context, IRubyObject self, String scopeString, CompiledBlockCallback callback) {
+        StaticScope staticScope = decodeBlockScope(context, scopeString);
         staticScope.determineModule();
         
         context.preScopedBody(DynamicScope.newDynamicScope(staticScope, context.getCurrentScope()));
@@ -241,8 +339,8 @@ public class RuntimeHelpers {
                 context.getCurrentScope(), callback, hasMultipleArgsHead, argsNodeType);
     }
     
-    public static IRubyObject def(ThreadContext context, IRubyObject self, Object scriptObject, String name, String javaName, String[] scopeNames,
-            int arity, int required, int optional, int rest, CallConfiguration callConfig) {
+    public static IRubyObject def(ThreadContext context, IRubyObject self, Object scriptObject, String name, String javaName, String scopeString,
+            int arity, String filename, int line, CallConfiguration callConfig, String parameterDesc) {
         Class compiledClass = scriptObject.getClass();
         Ruby runtime = context.getRuntime();
         
@@ -250,34 +348,48 @@ public class RuntimeHelpers {
         Visibility visibility = context.getCurrentVisibility();
         
         performNormalMethodChecks(containingClass, runtime, name);
-        
-        StaticScope scope = creatScopeForClass(context, scopeNames, required, optional, rest);
+
+        StaticScope scope = createScopeForClass(context, scopeString);
         
         MethodFactory factory = MethodFactory.createFactory(compiledClass.getClassLoader());
-        DynamicMethod method = constructNormalMethod(name, visibility, factory, containingClass, javaName, arity, scope, scriptObject, callConfig);
+        DynamicMethod method = constructNormalMethod(
+                factory, javaName,
+                name, containingClass, new SimpleSourcePosition(filename, line), arity, scope, visibility, scriptObject,
+                callConfig,
+                parameterDesc);
         
         addInstanceMethod(containingClass, name, method, visibility,context, runtime);
         
         return runtime.getNil();
     }
     
-    public static IRubyObject defs(ThreadContext context, IRubyObject self, IRubyObject receiver, Object scriptObject, String name, String javaName, String[] scopeNames,
-            int arity, int required, int optional, int rest, CallConfiguration callConfig) {
+    public static IRubyObject defs(ThreadContext context, IRubyObject self, IRubyObject receiver, Object scriptObject, String name, String javaName, String scopeString,
+            int arity, String filename, int line, CallConfiguration callConfig, String parameterDesc) {
         Class compiledClass = scriptObject.getClass();
         Ruby runtime = context.getRuntime();
 
         RubyClass rubyClass = performSingletonMethodChecks(runtime, receiver, name);
         
-        StaticScope scope = creatScopeForClass(context, scopeNames, required, optional, rest);
+        StaticScope scope = createScopeForClass(context, scopeString);
         
         MethodFactory factory = MethodFactory.createFactory(compiledClass.getClassLoader());
-        DynamicMethod method = constructSingletonMethod(factory, rubyClass, javaName, arity, scope,scriptObject, callConfig);
+        DynamicMethod method = constructSingletonMethod(
+                factory, javaName, rubyClass,
+                new SimpleSourcePosition(filename, line), arity, scope,
+                scriptObject, callConfig, parameterDesc);
         
         rubyClass.addMethod(name, method);
         
         callSingletonMethodHook(receiver,context, runtime.fastNewSymbol(name));
         
         return runtime.getNil();
+    }
+
+    public static byte[] defOffline(String name, String classPath, String invokerName, Arity arity, StaticScope scope, CallConfiguration callConfig, String filename, int line) {
+        MethodFactory factory = MethodFactory.createFactory(RuntimeHelpers.class.getClassLoader());
+        byte[] methodBytes = factory.getCompiledMethodOffline(name, classPath, invokerName, arity, scope, callConfig, filename, line);
+
+        return methodBytes;
     }
     
     public static RubyClass getSingletonClass(Ruby runtime, IRubyObject receiver) {
@@ -299,7 +411,7 @@ public class RuntimeHelpers {
         // store call information so method_missing impl can use it
         context.setLastCallStatusAndVisibility(CallType.FUNCTIONAL, Visibility.PUBLIC);
 
-        if (name == "method_missing") {
+        if (name.equals("method_missing")) {
             return RubyKernel.method_missing(context, receiver, args, Block.NULL_BLOCK);
         }
 
@@ -308,57 +420,101 @@ public class RuntimeHelpers {
         return invoke(context, receiver, "method_missing", newArgs, Block.NULL_BLOCK);
     }
 
-    public static IRubyObject callMethodMissing(ThreadContext context, IRubyObject receiver, DynamicMethod method, String name, 
-                                                IRubyObject[] args, CallType callType, Block block) {
-        context.setLastCallStatusAndVisibility(callType, method.getVisibility());
-        return callMethodMissingInternal(context, receiver, name, args, block);
+    public static IRubyObject callMethodMissing(ThreadContext context, IRubyObject receiver, Visibility visibility, String name, CallType callType, IRubyObject[] args, Block block) {
+        return selectMethodMissing(context, receiver, visibility, name, callType).call(context, receiver, receiver.getMetaClass(), name, args, block);
     }
-    public static IRubyObject callMethodMissing(ThreadContext context, IRubyObject receiver, DynamicMethod method, String name, 
-                                                IRubyObject arg, CallType callType, Block block) {
-        context.setLastCallStatusAndVisibility(callType, method.getVisibility());
-        return callMethodMissingInternal(context, receiver, name, arg, block);
+
+    public static IRubyObject callMethodMissing(ThreadContext context, IRubyObject receiver, Visibility visibility, String name, CallType callType, IRubyObject arg0, Block block) {
+        return selectMethodMissing(context, receiver, visibility, name, callType).call(context, receiver, receiver.getMetaClass(), name, arg0, block);
     }
-    public static IRubyObject callMethodMissing(ThreadContext context, IRubyObject receiver, DynamicMethod method, String name, 
-                                                IRubyObject arg0, IRubyObject arg1, CallType callType, Block block) {
-        context.setLastCallStatusAndVisibility(callType, method.getVisibility());
-        return callMethodMissingInternal(context, receiver, name, arg0, arg1, block);
+
+    public static IRubyObject callMethodMissing(ThreadContext context, IRubyObject receiver, Visibility visibility, String name, CallType callType, IRubyObject arg0, IRubyObject arg1, Block block) {
+        return selectMethodMissing(context, receiver, visibility, name, callType).call(context, receiver, receiver.getMetaClass(), name, arg0, arg1, block);
     }
-    public static IRubyObject callMethodMissing(ThreadContext context, IRubyObject receiver, DynamicMethod method, String name, 
-                                                IRubyObject arg0, IRubyObject arg1, IRubyObject arg2, CallType callType, Block block) {
-        context.setLastCallStatusAndVisibility(callType, method.getVisibility());
-        return callMethodMissingInternal(context, receiver, name, arg0, arg1, arg2, block);
+
+    public static IRubyObject callMethodMissing(ThreadContext context, IRubyObject receiver, Visibility visibility, String name, CallType callType, IRubyObject arg0, IRubyObject arg1, IRubyObject arg2, Block block) {
+        return selectMethodMissing(context, receiver, visibility, name, callType).call(context, receiver, receiver.getMetaClass(), name, arg0, arg1, arg2, block);
     }
-    public static IRubyObject callMethodMissing(ThreadContext context, IRubyObject receiver, DynamicMethod method, String name, 
-                                                CallType callType, Block block) {
-        context.setLastCallStatusAndVisibility(callType, method.getVisibility());
-        return callMethodMissingInternal(context, receiver, name, block);
+
+    public static IRubyObject callMethodMissing(ThreadContext context, IRubyObject receiver, Visibility visibility, String name, CallType callType, Block block) {
+        return selectMethodMissing(context, receiver, visibility, name, callType).call(context, receiver, receiver.getMetaClass(), name, block);
     }
-    
-    private static IRubyObject callMethodMissingInternal(ThreadContext context, IRubyObject receiver, String name, 
-                                                IRubyObject[] args, Block block) {
-        if (name.equals("method_missing")) return RubyKernel.method_missing(context, receiver, args, block);
-        IRubyObject[] newArgs = prepareMethodMissingArgs(args, context, name);
-        return invoke(context, receiver, "method_missing", newArgs, block);
+
+    public static DynamicMethod selectMethodMissing(ThreadContext context, IRubyObject receiver, Visibility visibility, String name, CallType callType) {
+        Ruby runtime = context.getRuntime();
+
+        if (name.equals("method_missing")) {
+            return selectInternalMM(runtime, visibility, callType);
+        }
+
+        DynamicMethod methodMissing = receiver.getMetaClass().searchMethod("method_missing");
+        if (methodMissing.isUndefined() || methodMissing == runtime.getDefaultMethodMissing()) {
+            return selectInternalMM(runtime, visibility, callType);
+        }
+        return new MethodMissingMethod(methodMissing, callType);
     }
-    private static IRubyObject callMethodMissingInternal(ThreadContext context, IRubyObject receiver, String name, 
-                                                Block block) {
-        if (name.equals("method_missing")) return RubyKernel.method_missing(context, receiver, IRubyObject.NULL_ARRAY, block);
-        return invoke(context, receiver, "method_missing", context.getRuntime().newSymbol(name), block);
+
+    public static DynamicMethod selectMethodMissing(ThreadContext context, RubyClass selfClass, Visibility visibility, String name, CallType callType) {
+        Ruby runtime = context.getRuntime();
+
+        if (name.equals("method_missing")) {
+            return selectInternalMM(runtime, visibility, callType);
+        }
+
+        DynamicMethod methodMissing = selfClass.searchMethod("method_missing");
+        if (methodMissing.isUndefined() || methodMissing == runtime.getDefaultMethodMissing()) {
+            return selectInternalMM(runtime, visibility, callType);
+        }
+        return new MethodMissingMethod(methodMissing, callType);
     }
-    private static IRubyObject callMethodMissingInternal(ThreadContext context, IRubyObject receiver, String name, 
-                                                IRubyObject arg0, Block block) {
-        if (name.equals("method_missing")) return RubyKernel.method_missing(context, receiver, constructObjectArray(arg0), block);
-        return invoke(context, receiver, "method_missing", context.getRuntime().newSymbol(name), arg0, block);
+
+    public static DynamicMethod selectMethodMissing(RubyClass selfClass, Visibility visibility, String name, CallType callType) {
+        Ruby runtime = selfClass.getClassRuntime();
+
+        if (name.equals("method_missing")) {
+            return selectInternalMM(runtime, visibility, callType);
+        }
+
+        DynamicMethod methodMissing = selfClass.searchMethod("method_missing");
+        if (methodMissing.isUndefined() || methodMissing == runtime.getDefaultMethodMissing()) {
+            return selectInternalMM(runtime, visibility, callType);
+        }
+        return new MethodMissingMethod(methodMissing, callType);
     }
-    private static IRubyObject callMethodMissingInternal(ThreadContext context, IRubyObject receiver, String name, 
-                                                IRubyObject arg0, IRubyObject arg1, Block block) {
-        if (name.equals("method_missing")) return RubyKernel.method_missing(context, receiver, constructObjectArray(arg0,arg1), block);
-        return invoke(context, receiver, "method_missing", context.getRuntime().newSymbol(name), arg0, arg1, block);
+
+    private static class MethodMissingMethod extends DynamicMethod {
+        private final DynamicMethod delegate;
+        private final CallType lastCallStatus;
+
+        public MethodMissingMethod(DynamicMethod delegate, CallType lastCallStatus) {
+            this.delegate = delegate;
+            this.lastCallStatus = lastCallStatus;
+        }
+
+        @Override
+        public IRubyObject call(ThreadContext context, IRubyObject self, RubyModule clazz, String name, IRubyObject[] args, Block block) {
+            context.setLastCallStatus(lastCallStatus);
+            return this.delegate.call(context, self, clazz, "method_missing", prepareMethodMissingArgs(args, context, name), block);
+        }
+
+        @Override
+        public DynamicMethod dup() {
+            return this;
+        }
     }
-    private static IRubyObject callMethodMissingInternal(ThreadContext context, IRubyObject receiver, String name, 
-                                                IRubyObject arg0, IRubyObject arg1, IRubyObject arg2, Block block) {
-        if (name.equals("method_missing")) return RubyKernel.method_missing(context, receiver, constructObjectArray(arg0,arg1,arg2), block);
-        return invoke(context, receiver, "method_missing", constructObjectArray(context.getRuntime().newSymbol(name), arg0, arg1, arg2), block);
+
+    private static DynamicMethod selectInternalMM(Ruby runtime, Visibility visibility, CallType callType) {
+        if (visibility == Visibility.PRIVATE) {
+            return runtime.getPrivateMethodMissing();
+        } else if (visibility == Visibility.PROTECTED) {
+            return runtime.getProtectedMethodMissing();
+        } else if (callType == CallType.VARIABLE) {
+            return runtime.getVariableMethodMissing();
+        } else if (callType == CallType.SUPER) {
+            return runtime.getSuperMethodMissing();
+        } else {
+            return runtime.getNormalMethodMissing();
+        }
     }
 
     private static IRubyObject[] prepareMethodMissingArgs(IRubyObject[] args, ThreadContext context, String name) {
@@ -397,7 +553,7 @@ public class RuntimeHelpers {
     public static IRubyObject invoke(ThreadContext context, IRubyObject self, String name, IRubyObject arg0, IRubyObject arg1, IRubyObject arg2) {
         return self.getMetaClass().finvoke(context, self, name, arg0, arg1, arg2);
     }
-    public static IRubyObject invoke(ThreadContext context, IRubyObject self, String name, IRubyObject[] args) {
+    public static IRubyObject invoke(ThreadContext context, IRubyObject self, String name, IRubyObject... args) {
         return self.getMetaClass().finvoke(context, self, name, args);
     }
     
@@ -432,6 +588,10 @@ public class RuntimeHelpers {
         return asClass.finvoke(context, self, name, arg0, arg1, arg2, block);
     }
 
+    public static IRubyObject invokeChecked(ThreadContext context, IRubyObject self, String name) {
+        return self.getMetaClass().finvokeChecked(context, self, name);
+    }
+
     /**
      * The protocol for super method invocation is a bit complicated
      * in Ruby. In real terms it involves first finding the real
@@ -449,7 +609,7 @@ public class RuntimeHelpers {
         DynamicMethod method = superClass != null ? superClass.searchMethod(name) : UndefinedMethod.INSTANCE;
         
         if (method.isUndefined()) {
-            return callMethodMissing(context, self, method, name, args, CallType.SUPER, block);
+            return callMethodMissing(context, self, method.getVisibility(), name, CallType.SUPER, args, block);
         }
         return method.call(context, self, superClass, name, args, block);
     }
@@ -463,7 +623,7 @@ public class RuntimeHelpers {
         DynamicMethod method = superClass != null ? superClass.searchMethod(name) : UndefinedMethod.INSTANCE;
 
         if (method.isUndefined()) {
-            return callMethodMissing(context, self, method, name, CallType.SUPER, block);
+            return callMethodMissing(context, self, method.getVisibility(), name, CallType.SUPER, block);
         }
         return method.call(context, self, superClass, name, block);
     }
@@ -477,7 +637,7 @@ public class RuntimeHelpers {
         DynamicMethod method = superClass != null ? superClass.searchMethod(name) : UndefinedMethod.INSTANCE;
 
         if (method.isUndefined()) {
-            return callMethodMissing(context, self, method, name, arg0, CallType.SUPER, block);
+            return callMethodMissing(context, self, method.getVisibility(), name, CallType.SUPER, arg0, block);
         }
         return method.call(context, self, superClass, name, arg0, block);
     }
@@ -491,7 +651,7 @@ public class RuntimeHelpers {
         DynamicMethod method = superClass != null ? superClass.searchMethod(name) : UndefinedMethod.INSTANCE;
 
         if (method.isUndefined()) {
-            return callMethodMissing(context, self, method, name, arg0, arg1, CallType.SUPER, block);
+            return callMethodMissing(context, self, method.getVisibility(), name, CallType.SUPER, arg0, arg1, block);
         }
         return method.call(context, self, superClass, name, arg0, arg1, block);
     }
@@ -505,7 +665,7 @@ public class RuntimeHelpers {
         DynamicMethod method = superClass != null ? superClass.searchMethod(name) : UndefinedMethod.INSTANCE;
 
         if (method.isUndefined()) {
-            return callMethodMissing(context, self, method, name, arg0, arg1, arg2, CallType.SUPER, block);
+            return callMethodMissing(context, self, method.getVisibility(), name, CallType.SUPER, arg0, arg1, arg2, block);
         }
         return method.call(context, self, superClass, name, arg0, arg1, arg2, block);
     }
@@ -559,7 +719,7 @@ public class RuntimeHelpers {
     }
     
     public static RubyModule prepareClassNamespace(ThreadContext context, IRubyObject rubyModule) {
-        if (rubyModule == null || rubyModule.isNil()) { // the isNil check should go away since class nil::Foo;end is not supposed be correct
+        if (rubyModule == null || rubyModule.isNil()) {
             rubyModule = context.getCurrentScope().getStaticScope().getModule();
 
             if (rubyModule == null) {
@@ -623,26 +783,26 @@ public class RuntimeHelpers {
             if (rest < 0) {
                 // no opt, no rest, exact match
                 if (given != required) {
-                    throw runtime.newArgumentError("wrong # of arguments(" + given + " for " + required + ")");
+                    throw runtime.newArgumentError("wrong number of arguments (" + given + " for " + required + ")");
                 }
             } else {
                 // only rest, must be at least required
                 if (given < required) {
-                    throw runtime.newArgumentError("wrong # of arguments(" + given + " for " + required + ")");
+                    throw runtime.newArgumentError("wrong number of arguments (" + given + " for " + required + ")");
                 }
             }
         } else {
             if (rest < 0) {
                 // opt but no rest, must be at least required and no more than required + opt
                 if (given < required) {
-                    throw runtime.newArgumentError("wrong # of arguments(" + given + " for " + required + ")");
+                    throw runtime.newArgumentError("wrong number of arguments (" + given + " for " + required + ")");
                 } else if (given > (required + opt)) {
-                    throw runtime.newArgumentError("wrong # of arguments(" + given + " for " + (required + opt) + ")");
+                    throw runtime.newArgumentError("wrong number of arguments (" + given + " for " + (required + opt) + ")");
                 }
             } else {
                 // opt and rest, must be at least required
                 if (given < required) {
-                    throw runtime.newArgumentError("wrong # of arguments(" + given + " for " + required + ")");
+                    throw runtime.newArgumentError("wrong number of arguments (" + given + " for " + required + ")");
                 }
             }
         }
@@ -747,7 +907,7 @@ public class RuntimeHelpers {
     }
     
     public static IRubyObject backref(ThreadContext context) {
-        IRubyObject backref = context.getCurrentFrame().getBackRef();
+        IRubyObject backref = context.getCurrentScope().getBackRef(context.getRuntime());
         
         if(backref instanceof RubyMatchData) {
             ((RubyMatchData)backref).use();
@@ -756,27 +916,31 @@ public class RuntimeHelpers {
     }
     
     public static IRubyObject backrefLastMatch(ThreadContext context) {
-        IRubyObject backref = context.getCurrentFrame().getBackRef();
+        IRubyObject backref = context.getCurrentScope().getBackRef(context.getRuntime());
         
         return RubyRegexp.last_match(backref);
     }
     
     public static IRubyObject backrefMatchPre(ThreadContext context) {
-        IRubyObject backref = context.getCurrentFrame().getBackRef();
+        IRubyObject backref = context.getCurrentScope().getBackRef(context.getRuntime());
         
         return RubyRegexp.match_pre(backref);
     }
     
     public static IRubyObject backrefMatchPost(ThreadContext context) {
-        IRubyObject backref = context.getCurrentFrame().getBackRef();
+        IRubyObject backref = context.getCurrentScope().getBackRef(context.getRuntime());
         
         return RubyRegexp.match_post(backref);
     }
     
     public static IRubyObject backrefMatchLast(ThreadContext context) {
-        IRubyObject backref = context.getCurrentFrame().getBackRef();
+        IRubyObject backref = context.getCurrentScope().getBackRef(context.getRuntime());
         
         return RubyRegexp.match_last(backref);
+    }
+
+    public static IRubyObject[] getArgValues(ThreadContext context) {
+        return context.getCurrentScope().getArgValues();
     }
     
     public static IRubyObject callZSuper(Ruby runtime, ThreadContext context, Block block, IRubyObject self) {
@@ -830,6 +994,10 @@ public class RuntimeHelpers {
     }
 
     public static IRubyObject isExceptionHandled(RubyException currentException, IRubyObject exception, ThreadContext context) {
+        return isExceptionHandled((IRubyObject)currentException, exception, context);
+    }
+
+    public static IRubyObject isExceptionHandled(IRubyObject currentException, IRubyObject exception, ThreadContext context) {
         Ruby runtime = context.getRuntime();
         if (!runtime.getModule().isInstance(exception)) {
             throw runtime.newTypeError("class or module required for rescue clause");
@@ -851,13 +1019,21 @@ public class RuntimeHelpers {
         return isExceptionHandled(currentException, exception1, exception2, context);
     }
 
-    private static boolean checkJavaException(Exception currentException, IRubyObject exception) {
-        if (exception instanceof RubyClass) {
-            RubyClass rubyClass = (RubyClass)exception;
+    private static boolean checkJavaException(Throwable throwable, IRubyObject catchable, ThreadContext context) {
+        if (context.getRuntime().getException().op_ge(catchable).isTrue() ||
+                context.getRuntime().getObject() == catchable) {
+            if (throwable instanceof RaiseException) {
+                return isExceptionHandled(((RaiseException)throwable).getException(), catchable, context).isTrue();
+            }
+            // let Ruby exceptions decide if they handle it
+            return isExceptionHandled(JavaUtil.convertJavaToUsableRubyObject(context.getRuntime(), throwable), catchable, context).isTrue();
+        }
+        if (catchable instanceof RubyClass && catchable.getInstanceVariables().hasInstanceVariable("@java_class")) {
+            RubyClass rubyClass = (RubyClass)catchable;
             JavaClass javaClass = (JavaClass)rubyClass.fastGetInstanceVariable("@java_class");
             if (javaClass != null) {
                 Class cls = javaClass.javaClass();
-                if (cls.isInstance(currentException)) {
+                if (cls.isInstance(throwable)) {
                     return true;
                 }
             }
@@ -865,12 +1041,16 @@ public class RuntimeHelpers {
         return false;
     }
     
-    public static IRubyObject isJavaExceptionHandled(Exception currentException, IRubyObject[] exceptions, ThreadContext context) {
-        if (currentException instanceof RaiseException) {
-            return isExceptionHandled(((RaiseException)currentException).getException(), exceptions, context);
+    public static IRubyObject isJavaExceptionHandled(Throwable currentThrowable, IRubyObject[] throwables, ThreadContext context) {
+        if (currentThrowable instanceof Unrescuable) {
+            UnsafeFactory.getUnsafe().throwException(currentThrowable);
+        }
+
+        if (currentThrowable instanceof RaiseException) {
+            return isExceptionHandled(((RaiseException)currentThrowable).getException(), throwables, context);
         } else {
-            for (int i = 0; i < exceptions.length; i++) {
-                if (checkJavaException(currentException, exceptions[0])) {
+            for (int i = 0; i < throwables.length; i++) {
+                if (checkJavaException(currentThrowable, throwables[0], context)) {
                     return context.getRuntime().getTrue();
                 }
             }
@@ -879,11 +1059,15 @@ public class RuntimeHelpers {
         }
     }
 
-    public static IRubyObject isJavaExceptionHandled(Exception currentException, IRubyObject exception, ThreadContext context) {
-        if (currentException instanceof RaiseException) {
-            return isExceptionHandled(((RaiseException)currentException).getException(), exception, context);
+    public static IRubyObject isJavaExceptionHandled(Throwable currentThrowable, IRubyObject throwable, ThreadContext context) {
+        if (currentThrowable instanceof Unrescuable) {
+            UnsafeFactory.getUnsafe().throwException(currentThrowable);
+        }
+
+        if (currentThrowable instanceof RaiseException) {
+            return isExceptionHandled(((RaiseException)currentThrowable).getException(), throwable, context);
         } else {
-            if (checkJavaException(currentException, exception)) {
+            if (checkJavaException(currentThrowable, throwable, context)) {
                 return context.getRuntime().getTrue();
             }
 
@@ -891,14 +1075,18 @@ public class RuntimeHelpers {
         }
     }
 
-    public static IRubyObject isJavaExceptionHandled(Exception currentException, IRubyObject exception0, IRubyObject exception1, ThreadContext context) {
-        if (currentException instanceof RaiseException) {
-            return isExceptionHandled(((RaiseException)currentException).getException(), exception0, exception1, context);
+    public static IRubyObject isJavaExceptionHandled(Throwable currentThrowable, IRubyObject throwable0, IRubyObject throwable1, ThreadContext context) {
+        if (currentThrowable instanceof Unrescuable) {
+            UnsafeFactory.getUnsafe().throwException(currentThrowable);
+        }
+
+        if (currentThrowable instanceof RaiseException) {
+            return isExceptionHandled(((RaiseException)currentThrowable).getException(), throwable0, throwable1, context);
         } else {
-            if (checkJavaException(currentException, exception0)) {
+            if (checkJavaException(currentThrowable, throwable0, context)) {
                 return context.getRuntime().getTrue();
             }
-            if (checkJavaException(currentException, exception1)) {
+            if (checkJavaException(currentThrowable, throwable1, context)) {
                 return context.getRuntime().getTrue();
             }
 
@@ -906,17 +1094,21 @@ public class RuntimeHelpers {
         }
     }
 
-    public static IRubyObject isJavaExceptionHandled(Exception currentException, IRubyObject exception0, IRubyObject exception1, IRubyObject exception2, ThreadContext context) {
-        if (currentException instanceof RaiseException) {
-            return isExceptionHandled(((RaiseException)currentException).getException(), exception0, exception1, exception2, context);
+    public static IRubyObject isJavaExceptionHandled(Throwable currentThrowable, IRubyObject throwable0, IRubyObject throwable1, IRubyObject throwable2, ThreadContext context) {
+        if (currentThrowable instanceof Unrescuable) {
+            UnsafeFactory.getUnsafe().throwException(currentThrowable);
+        }
+        
+        if (currentThrowable instanceof RaiseException) {
+            return isExceptionHandled(((RaiseException)currentThrowable).getException(), throwable0, throwable1, throwable2, context);
         } else {
-            if (checkJavaException(currentException, exception0)) {
+            if (checkJavaException(currentThrowable, throwable0, context)) {
                 return context.getRuntime().getTrue();
             }
-            if (checkJavaException(currentException, exception1)) {
+            if (checkJavaException(currentThrowable, throwable1, context)) {
                 return context.getRuntime().getTrue();
             }
-            if (checkJavaException(currentException, exception2)) {
+            if (checkJavaException(currentThrowable, throwable2, context)) {
                 return context.getRuntime().getTrue();
             }
 
@@ -924,12 +1116,12 @@ public class RuntimeHelpers {
         }
     }
 
-    public static void storeExceptionInErrorInfo(Exception currentException, ThreadContext context) {
+    public static void storeExceptionInErrorInfo(Throwable currentThrowable, ThreadContext context) {
         IRubyObject exception = null;
-        if (currentException instanceof RaiseException) {
-            exception = ((RaiseException)currentException).getException();
+        if (currentThrowable instanceof RaiseException) {
+            exception = ((RaiseException)currentThrowable).getException();
         } else {
-            exception = JavaUtil.convertJavaToUsableRubyObject(context.getRuntime(), currentException);
+            exception = JavaUtil.convertJavaToUsableRubyObject(context.getRuntime(), currentThrowable);
         }
         context.setErrorInfo(exception);
     }
@@ -969,6 +1161,10 @@ public class RuntimeHelpers {
     public static RubyArray createSubarray(RubyArray input, int start) {
         return (RubyArray)input.subseqLight(start, input.size() - start);
     }
+
+    public static RubyArray createSubarray(RubyArray input, int start, int post) {
+        return (RubyArray)input.subseqLight(start, input.size() - post - start);
+    }
     
     public static RubyArray createSubarray(IRubyObject[] input, Ruby runtime, int start) {
         if (start >= input.length) {
@@ -995,11 +1191,28 @@ public class RuntimeHelpers {
         }
     }
 
+    public static IRubyObject optElementOrNull(IRubyObject[] input, int element, int postCount) {
+        if (element + postCount >= input.length) {
+            return null;
+        } else {
+            return input[element];
+        }
+    }
+
     public static IRubyObject elementOrNil(IRubyObject[] input, int element, IRubyObject nil) {
         if (element >= input.length) {
             return nil;
         } else {
             return input[element];
+        }
+    }
+
+    public static IRubyObject postElementOrNil(IRubyObject[] input, int postCount, int postIndex, IRubyObject nil) {
+        int aryIndex = input.length - postCount + postIndex;
+        if (aryIndex >= input.length || aryIndex < 0) {
+            return nil;
+        } else {
+            return input[aryIndex];
         }
     }
     
@@ -1008,9 +1221,8 @@ public class RuntimeHelpers {
         for (int j = 0,k = expressions.getLength(); j < k; j++) {
             IRubyObject condition = expressions.eltInternal(j);
 
-            if ((expression != null && condition.callMethod(context, "===", expression)
-                    .isTrue())
-                    || (expression == null && condition.isTrue())) {
+            if ((expression != null && condition.callMethod(context, "===", expression).isTrue()) ||
+                    (expression == null && condition.isTrue())) {
                 return context.getRuntime().getTrue();
             }
         }
@@ -1018,7 +1230,7 @@ public class RuntimeHelpers {
         return context.getRuntime().getFalse();
     }
     
-    public static IRubyObject setConstantInModule(IRubyObject module, IRubyObject value, String name, ThreadContext context) {
+    public static IRubyObject setConstantInModule(IRubyObject value, IRubyObject module, String name, ThreadContext context) {
         return context.setConstantInModule(name, module, value);
     }
 
@@ -1047,6 +1259,105 @@ public class RuntimeHelpers {
     }
     
     public static final int MAX_SPECIFIC_ARITY_OBJECT_ARRAY = 5;
+    
+    public static IRubyObject[] anewarrayIRubyObjects(int size) {
+        return new IRubyObject[size];
+    }
+    
+    public static IRubyObject[] aastoreIRubyObjects(IRubyObject[] ary, IRubyObject one, int start) {
+        ary[start] = one;
+        return ary;
+    }
+    
+    public static IRubyObject[] aastoreIRubyObjects(IRubyObject[] ary, IRubyObject one, IRubyObject two, int start) {
+        ary[start] = one;
+        ary[start+1] = two;
+        return ary;
+    }
+    
+    public static IRubyObject[] aastoreIRubyObjects(IRubyObject[] ary, IRubyObject one, IRubyObject two, IRubyObject three, int start) {
+        ary[start] = one;
+        ary[start+1] = two;
+        ary[start+2] = three;
+        return ary;
+    }
+    
+    public static IRubyObject[] aastoreIRubyObjects(IRubyObject[] ary, IRubyObject one, IRubyObject two, IRubyObject three, IRubyObject four, int start) {
+        ary[start] = one;
+        ary[start+1] = two;
+        ary[start+2] = three;
+        ary[start+3] = four;
+        return ary;
+    }
+    
+    public static IRubyObject[] aastoreIRubyObjects(IRubyObject[] ary, IRubyObject one, IRubyObject two, IRubyObject three, IRubyObject four, IRubyObject five, int start) {
+        ary[start] = one;
+        ary[start+1] = two;
+        ary[start+2] = three;
+        ary[start+3] = four;
+        ary[start+4] = five;
+        return ary;
+    }
+    
+    public static IRubyObject[] aastoreIRubyObjects(IRubyObject[] ary, IRubyObject one, IRubyObject two, IRubyObject three, IRubyObject four, IRubyObject five, IRubyObject six, int start) {
+        ary[start] = one;
+        ary[start+1] = two;
+        ary[start+2] = three;
+        ary[start+3] = four;
+        ary[start+4] = five;
+        ary[start+5] = six;
+        return ary;
+    }
+    
+    public static IRubyObject[] aastoreIRubyObjects(IRubyObject[] ary, IRubyObject one, IRubyObject two, IRubyObject three, IRubyObject four, IRubyObject five, IRubyObject six, IRubyObject seven, int start) {
+        ary[start] = one;
+        ary[start+1] = two;
+        ary[start+2] = three;
+        ary[start+3] = four;
+        ary[start+4] = five;
+        ary[start+5] = six;
+        ary[start+6] = seven;
+        return ary;
+    }
+    
+    public static IRubyObject[] aastoreIRubyObjects(IRubyObject[] ary, IRubyObject one, IRubyObject two, IRubyObject three, IRubyObject four, IRubyObject five, IRubyObject six, IRubyObject seven, IRubyObject eight, int start) {
+        ary[start] = one;
+        ary[start+1] = two;
+        ary[start+2] = three;
+        ary[start+3] = four;
+        ary[start+4] = five;
+        ary[start+5] = six;
+        ary[start+6] = seven;
+        ary[start+7] = eight;
+        return ary;
+    }
+    
+    public static IRubyObject[] aastoreIRubyObjects(IRubyObject[] ary, IRubyObject one, IRubyObject two, IRubyObject three, IRubyObject four, IRubyObject five, IRubyObject six, IRubyObject seven, IRubyObject eight, IRubyObject nine, int start) {
+        ary[start] = one;
+        ary[start+1] = two;
+        ary[start+2] = three;
+        ary[start+3] = four;
+        ary[start+4] = five;
+        ary[start+5] = six;
+        ary[start+6] = seven;
+        ary[start+7] = eight;
+        ary[start+8] = nine;
+        return ary;
+    }
+    
+    public static IRubyObject[] aastoreIRubyObjects(IRubyObject[] ary, IRubyObject one, IRubyObject two, IRubyObject three, IRubyObject four, IRubyObject five, IRubyObject six, IRubyObject seven, IRubyObject eight, IRubyObject nine, IRubyObject ten, int start) {
+        ary[start] = one;
+        ary[start+1] = two;
+        ary[start+2] = three;
+        ary[start+3] = four;
+        ary[start+4] = five;
+        ary[start+5] = six;
+        ary[start+6] = seven;
+        ary[start+7] = eight;
+        ary[start+8] = nine;
+        ary[start+9] = ten;
+        return ary;
+    }
     
     public static IRubyObject[] constructObjectArray(IRubyObject one) {
         return new IRubyObject[] {one};
@@ -1132,31 +1443,74 @@ public class RuntimeHelpers {
     
     public static RubyHash constructHash(Ruby runtime, IRubyObject key1, IRubyObject value1) {
         RubyHash hash = RubyHash.newHash(runtime);
-        hash.fastASet(key1, value1);
+        hash.fastASetCheckString(runtime, key1, value1);
         return hash;
     }
     
     public static RubyHash constructHash(Ruby runtime, IRubyObject key1, IRubyObject value1, IRubyObject key2, IRubyObject value2) {
         RubyHash hash = RubyHash.newHash(runtime);
-        hash.fastASet(key1, value1);
-        hash.fastASet(key2, value2);
+        hash.fastASetCheckString(runtime, key1, value1);
+        hash.fastASetCheckString(runtime, key2, value2);
         return hash;
     }
     
     public static RubyHash constructHash(Ruby runtime, IRubyObject key1, IRubyObject value1, IRubyObject key2, IRubyObject value2, IRubyObject key3, IRubyObject value3) {
         RubyHash hash = RubyHash.newHash(runtime);
-        hash.fastASet(key1, value1);
-        hash.fastASet(key2, value2);
-        hash.fastASet(key3, value3);
+        hash.fastASetCheckString(runtime, key1, value1);
+        hash.fastASetCheckString(runtime, key2, value2);
+        hash.fastASetCheckString(runtime, key3, value3);
         return hash;
     }
     
-    public static IRubyObject defineAlias(ThreadContext context, String newName, String oldName) {
+    public static RubyHash constructHash19(Ruby runtime, IRubyObject key1, IRubyObject value1) {
+        RubyHash hash = RubyHash.newHash(runtime);
+        hash.fastASetCheckString19(runtime, key1, value1);
+        return hash;
+    }
+    
+    public static RubyHash constructHash19(Ruby runtime, IRubyObject key1, IRubyObject value1, IRubyObject key2, IRubyObject value2) {
+        RubyHash hash = RubyHash.newHash(runtime);
+        hash.fastASetCheckString19(runtime, key1, value1);
+        hash.fastASetCheckString19(runtime, key2, value2);
+        return hash;
+    }
+    
+    public static RubyHash constructHash19(Ruby runtime, IRubyObject key1, IRubyObject value1, IRubyObject key2, IRubyObject value2, IRubyObject key3, IRubyObject value3) {
+        RubyHash hash = RubyHash.newHash(runtime);
+        hash.fastASetCheckString19(runtime, key1, value1);
+        hash.fastASetCheckString19(runtime, key2, value2);
+        hash.fastASetCheckString19(runtime, key3, value3);
+        return hash;
+    }
+
+    public static IRubyObject undefMethod(ThreadContext context, Object nameArg) {
+        RubyModule module = context.getRubyClass();
+
+        String name = (nameArg instanceof String) ?
+            (String) nameArg : nameArg.toString();
+
+        if (module == null) {
+            throw context.getRuntime().newTypeError("No class to undef method '" + name + "'.");
+        }
+
+        module.undef(context, name);
+
+        return context.getRuntime().getNil();
+    }
+    
+    public static IRubyObject defineAlias(ThreadContext context, IRubyObject self, Object newNameArg, Object oldNameArg) {
         Ruby runtime = context.getRuntime();
         RubyModule module = context.getRubyClass();
    
-        if (module == null) throw runtime.newTypeError("no class to make alias");
-   
+        if (module == null || self instanceof RubyFixnum || self instanceof RubySymbol){
+            throw runtime.newTypeError("no class to make alias");
+        }
+
+        String newName = (newNameArg instanceof String) ?
+            (String) newNameArg : newNameArg.toString();
+        String oldName = (oldNameArg instanceof String) ? 
+            (String) oldNameArg : oldNameArg.toString();
+
         module.defineAlias(newName, oldName);
         module.callMethod(context, "method_added", runtime.newSymbol(newName));
    
@@ -1168,21 +1522,38 @@ public class RuntimeHelpers {
         return runtime.getTrue();
     }
     
-    public static IRubyObject stringOrNil(String value, Ruby runtime, IRubyObject nil) {
-        if (value == null) return nil;
-        return RubyString.newString(runtime, value);
+    public static IRubyObject stringOrNil(ByteList value, ThreadContext context) {
+        if (value == null) return context.nil;
+        return RubyString.newStringShared(context.runtime, value);
     }
     
     public static void preLoad(ThreadContext context, String[] varNames) {
         StaticScope staticScope = new LocalStaticScope(null, varNames);
-        staticScope.setModule(context.getRuntime().getObject());
+        preLoadCommon(context, staticScope, false);
+    }
+
+    public static void preLoad(ThreadContext context, String scopeString, boolean wrap) {
+        StaticScope staticScope = decodeRootScope(context, scopeString);
+        preLoadCommon(context, staticScope, wrap);
+    }
+
+    private static void preLoadCommon(ThreadContext context, StaticScope staticScope, boolean wrap) {
+        RubyClass objectClass = context.getRuntime().getObject();
+        IRubyObject topLevel = context.getRuntime().getTopSelf();
+        if (wrap) {
+            staticScope.setModule(RubyModule.newModule(context.runtime));
+        } else {
+            staticScope.setModule(objectClass);
+        }
         DynamicScope scope = DynamicScope.newDynamicScope(staticScope);
-        
+
         // Each root node has a top-level scope that we need to push
         context.preScopedBody(scope);
+        context.preNodeEval(objectClass, topLevel);
     }
     
     public static void postLoad(ThreadContext context) {
+        context.postNodeEval();
         context.postScopedBody();
     }
     
@@ -1207,20 +1578,20 @@ public class RuntimeHelpers {
     }
 
     public static IRubyObject setLastLine(Ruby runtime, ThreadContext context, IRubyObject value) {
-        return context.getCurrentFrame().setLastLine(value);
+        return context.getCurrentScope().setLastLine(value);
     }
 
     public static IRubyObject getLastLine(Ruby runtime, ThreadContext context) {
-        return context.getCurrentFrame().getLastLine();
+        return context.getCurrentScope().getLastLine(runtime);
     }
 
     public static IRubyObject setBackref(Ruby runtime, ThreadContext context, IRubyObject value) {
         if (!value.isNil() && !(value instanceof RubyMatchData)) throw runtime.newTypeError(value, runtime.getMatchData());
-        return context.getCurrentFrame().setBackRef(value);
+        return context.getCurrentScope().setBackRef(value);
     }
 
     public static IRubyObject getBackref(Ruby runtime, ThreadContext context) {
-        IRubyObject backref = context.getCurrentFrame().getBackRef();
+        IRubyObject backref = context.getCurrentScope().getBackRef(runtime);
         if (backref instanceof RubyMatchData) ((RubyMatchData)backref).use();
         return backref;
     }
@@ -1307,17 +1678,27 @@ public class RuntimeHelpers {
     }
 
     public static RubyArray arrayValue(IRubyObject value) {
+        Ruby runtime = value.getRuntime();
+        return arrayValue(runtime.getCurrentContext(), runtime, value);
+    }
+
+    public static RubyArray arrayValue(ThreadContext context, Ruby runtime, IRubyObject value) {
         IRubyObject tmp = value.checkArrayType();
 
         if (tmp.isNil()) {
-            // Object#to_a is obsolete.  We match Ruby's hack until to_a goes away.  Then we can 
+            // Object#to_a is obsolete.  We match Ruby's hack until to_a goes away.  Then we can
             // remove this hack too.
-            Ruby runtime = value.getRuntime();
-            
-            if (value.getMetaClass().searchMethod("to_a").getImplementationClass() != runtime.getKernel()) {
-                value = value.callMethod(runtime.getCurrentContext(), "to_a");
-                if (!(value instanceof RubyArray)) throw runtime.newTypeError("`to_a' did not return Array");
-                return (RubyArray)value;
+
+            if (value.respondsTo("to_a") && value.getMetaClass().searchMethod("to_a").getImplementationClass() != runtime.getKernel()) {
+                IRubyObject avalue = value.callMethod(context, "to_a");
+                if (!(avalue instanceof RubyArray)) {
+                    if (runtime.is1_9() && avalue.isNil()) {
+                        return runtime.newArray(value);
+                    } else {
+                        throw runtime.newTypeError("`to_a' did not return Array");
+                    }
+                }
+                return (RubyArray)avalue;
             } else {
                 return runtime.newArray(value);
             }
@@ -1345,9 +1726,25 @@ public class RuntimeHelpers {
         return array.getLength() == 1 ? array.first() : array;
     }
 
+    public static IRubyObject aValueSplat19(IRubyObject value) {
+        if (!(value instanceof RubyArray)) {
+            return value.getRuntime().getNil();
+        }
+
+        return (RubyArray) value;
+    }
+
     public static RubyArray splatValue(IRubyObject value) {
         if (value.isNil()) {
             return value.getRuntime().newArray(value);
+        }
+
+        return arrayValue(value);
+    }
+
+    public static RubyArray splatValue19(IRubyObject value) {
+        if (value.isNil()) {
+            return value.getRuntime().newEmptyArray();
         }
 
         return arrayValue(value);
@@ -1382,7 +1779,19 @@ public class RuntimeHelpers {
         receiver.callMethod(context, "singleton_method_added", name);
     }
 
-    private static DynamicMethod constructNormalMethod(String name, Visibility visibility, MethodFactory factory, RubyModule containingClass, String javaName, int arity, StaticScope scope, Object scriptObject, CallConfiguration callConfig) {
+    private static DynamicMethod constructNormalMethod(
+            MethodFactory factory,
+            String javaName,
+            String name,
+            RubyModule containingClass,
+            ISourcePosition position,
+            int arity,
+            StaticScope scope,
+            Visibility visibility,
+            Object scriptObject,
+            CallConfiguration callConfig,
+            String parameterDesc) {
+        
         DynamicMethod method;
 
         if (name.equals("initialize") || name.equals("initialize_copy") || visibility == Visibility.MODULE_FUNCTION) {
@@ -1390,23 +1799,122 @@ public class RuntimeHelpers {
         }
         
         if (RubyInstanceConfig.LAZYHANDLES_COMPILE) {
-            method = factory.getCompiledMethodLazily(containingClass, javaName, Arity.createArity(arity), visibility, scope, scriptObject, callConfig);
+            method = factory.getCompiledMethodLazily(
+                    containingClass,
+                    javaName,
+                    Arity.createArity(arity),
+                    visibility,
+                    scope,
+                    scriptObject,
+                    callConfig,
+                    position,
+                    parameterDesc);
         } else {
-            method = factory.getCompiledMethod(containingClass, javaName, Arity.createArity(arity), visibility, scope, scriptObject, callConfig);
+            method = factory.getCompiledMethod(
+                    containingClass,
+                    javaName,
+                    Arity.createArity(arity),
+                    visibility,
+                    scope,
+                    scriptObject,
+                    callConfig,
+                    position,
+                    parameterDesc);
         }
 
         return method;
     }
 
-    private static DynamicMethod constructSingletonMethod(MethodFactory factory, RubyClass rubyClass, String javaName, int arity, StaticScope scope, Object scriptObject, CallConfiguration callConfig) {
-        return factory.getCompiledMethodLazily(rubyClass, javaName, Arity.createArity(arity), Visibility.PUBLIC, scope, scriptObject, callConfig);
+    private static DynamicMethod constructSingletonMethod(
+            MethodFactory factory,
+            String javaName,
+            RubyClass rubyClass,
+            ISourcePosition position,
+            int arity,
+            StaticScope scope,
+            Object scriptObject,
+            CallConfiguration callConfig,
+            String parameterDesc) {
+        
+        if (RubyInstanceConfig.LAZYHANDLES_COMPILE) {
+            return factory.getCompiledMethodLazily(
+                    rubyClass,
+                    javaName,
+                    Arity.createArity(arity),
+                    Visibility.PUBLIC,
+                    scope,
+                    scriptObject,
+                    callConfig,
+                    position,
+                    parameterDesc);
+        } else {
+            return factory.getCompiledMethod(
+                    rubyClass,
+                    javaName,
+                    Arity.createArity(arity),
+                    Visibility.PUBLIC,
+                    scope,
+                    scriptObject,
+                    callConfig,
+                    position,
+                    parameterDesc);
+        }
     }
 
-    private static StaticScope creatScopeForClass(ThreadContext context, String[] scopeNames, int required, int optional, int rest) {
+    public static String encodeScope(StaticScope scope) {
+        StringBuilder namesBuilder = new StringBuilder();
 
-        StaticScope scope = new LocalStaticScope(context.getCurrentScope().getStaticScope(), scopeNames);
+        boolean first = true;
+        for (String name : scope.getVariables()) {
+            if (!first) namesBuilder.append(';');
+            first = false;
+            namesBuilder.append(name);
+        }
+        namesBuilder
+                .append(',')
+                .append(scope.getRequiredArgs())
+                .append(',')
+                .append(scope.getOptionalArgs())
+                .append(',')
+                .append(scope.getRestArg());
+
+        return namesBuilder.toString();
+    }
+
+    public static LocalStaticScope decodeRootScope(ThreadContext context, String scopeString) {
+        String[][] decodedScope = decodeScopeDescriptor(scopeString);
+        LocalStaticScope scope = new LocalStaticScope(null, decodedScope[1]);
+        setAritiesFromDecodedScope(scope, decodedScope[0]);
+        return scope;
+    }
+
+    public static LocalStaticScope decodeLocalScope(ThreadContext context, String scopeString) {
+        String[][] decodedScope = decodeScopeDescriptor(scopeString);
+        LocalStaticScope scope = new LocalStaticScope(context.getCurrentScope().getStaticScope(), decodedScope[1]);
+        setAritiesFromDecodedScope(scope, decodedScope[0]);
+        return scope;
+    }
+
+    public static BlockStaticScope decodeBlockScope(ThreadContext context, String scopeString) {
+        String[][] decodedScope = decodeScopeDescriptor(scopeString);
+        BlockStaticScope scope = new BlockStaticScope(context.getCurrentScope().getStaticScope(), decodedScope[1]);
+        setAritiesFromDecodedScope(scope, decodedScope[0]);
+        return scope;
+    }
+
+    private static String[][] decodeScopeDescriptor(String scopeString) {
+        String[] scopeElements = scopeString.split(",");
+        String[] scopeNames = scopeElements[0].length() == 0 ? new String[0] : getScopeNames(scopeElements[0]);
+        return new String[][] {scopeElements, scopeNames};
+    }
+
+    private static void setAritiesFromDecodedScope(StaticScope scope, String[] scopeElements) {
+        scope.setArities(Integer.parseInt(scopeElements[1]), Integer.parseInt(scopeElements[2]), Integer.parseInt(scopeElements[3]));
+    }
+
+    private static StaticScope createScopeForClass(ThreadContext context, String scopeString) {
+        StaticScope scope = decodeLocalScope(context, scopeString);
         scope.determineModule();
-        scope.setArities(required, optional, rest);
 
         return scope;
     }
@@ -1418,11 +1926,11 @@ public class RuntimeHelpers {
         }
 
         if (containingClass == runtime.getObject() && name.equals("initialize")) {
-            runtime.getWarnings().warn(ID.REDEFINING_DANGEROUS, "redefining Object#initialize may cause infinite loop", "Object#initialize");
+            runtime.getWarnings().warn(ID.REDEFINING_DANGEROUS, "redefining Object#initialize may cause infinite loop");
         }
 
         if (name.equals("__id__") || name.equals("__send__")) {
-            runtime.getWarnings().warn(ID.REDEFINING_DANGEROUS, "redefining `" + name + "' may cause serious problem", name);
+            runtime.getWarnings().warn(ID.REDEFINING_DANGEROUS, "redefining `" + name + "' may cause serious problem");
         }
     }
 
@@ -1480,10 +1988,58 @@ public class RuntimeHelpers {
             return array.getRuntime().getNil();
         }
     }
+
+    public static IRubyObject arrayPostOrNil(RubyArray array, int pre, int post, int index) {
+        if (pre + post < array.getLength()) {
+            return array.eltInternal(array.getLength() - post + index);
+        } else if (pre + index < array.getLength()) {
+            return array.eltInternal(pre + index);
+        } else {
+            return array.getRuntime().getNil();
+        }
+    }
+
+    public static IRubyObject arrayPostOrNilZero(RubyArray array, int pre, int post) {
+        if (pre + post < array.getLength()) {
+            return array.eltInternal(array.getLength() - post + 0);
+        } else if (pre + 0 < array.getLength()) {
+            return array.eltInternal(pre + 0);
+        } else {
+            return array.getRuntime().getNil();
+        }
+    }
+
+    public static IRubyObject arrayPostOrNilOne(RubyArray array, int pre, int post) {
+        if (pre + post < array.getLength()) {
+            return array.eltInternal(array.getLength() - post + 1);
+        } else if (pre + 1 < array.getLength()) {
+            return array.eltInternal(pre + 1);
+        } else {
+            return array.getRuntime().getNil();
+        }
+    }
+
+    public static IRubyObject arrayPostOrNilTwo(RubyArray array, int pre, int post) {
+        if (pre + post < array.getLength()) {
+            return array.eltInternal(array.getLength() - post + 2);
+        } else if (pre + 2 < array.getLength()) {
+            return array.eltInternal(pre + 2);
+        } else {
+            return array.getRuntime().getNil();
+        }
+    }
     
     public static RubyArray subarrayOrEmpty(RubyArray array, Ruby runtime, int index) {
         if (index < array.getLength()) {
             return createSubarray(array, index);
+        } else {
+            return RubyArray.newEmptyArray(runtime);
+        }
+    }
+
+    public static RubyArray subarrayOrEmpty(RubyArray array, Ruby runtime, int index, int post) {
+        if (index + post < array.getLength()) {
+            return createSubarray(array, index, post);
         } else {
             return RubyArray.newEmptyArray(runtime);
         }
@@ -1587,5 +2143,378 @@ public class RuntimeHelpers {
 
     public static Block getBlock(Ruby runtime, ThreadContext context, IRubyObject self, Node node, Block aBlock) {
         return RuntimeHelpers.getBlockFromBlockPassBody(runtime, node.interpret(runtime, context, self, aBlock), aBlock);
+    }
+
+    /**
+     * Equivalent to rb_equal in MRI
+     *
+     * @param context
+     * @param a
+     * @param b
+     * @return
+     */
+    public static RubyBoolean rbEqual(ThreadContext context, IRubyObject a, IRubyObject b) {
+        Ruby runtime = context.getRuntime();
+        if (a == b) return runtime.getTrue();
+        IRubyObject res = invokedynamic(context, a, OP_EQUAL, b);
+        return runtime.newBoolean(res.isTrue());
+    }
+
+    public static void traceLine(ThreadContext context) {
+        String name = context.getFrameName();
+        RubyModule type = context.getFrameKlazz();
+        context.getRuntime().callEventHooks(context, RubyEvent.LINE, context.getFile(), context.getLine(), name, type);
+    }
+
+    public static void traceClass(ThreadContext context) {
+        String name = context.getFrameName();
+        RubyModule type = context.getFrameKlazz();
+        context.getRuntime().callEventHooks(context, RubyEvent.CLASS, context.getFile(), context.getLine(), name, type);
+    }
+
+    public static void traceEnd(ThreadContext context) {
+        String name = context.getFrameName();
+        RubyModule type = context.getFrameKlazz();
+        context.getRuntime().callEventHooks(context, RubyEvent.END, context.getFile(), context.getLine(), name, type);
+    }
+
+    /**
+     * Some of this code looks scary.  All names for an alias or undef is a
+     * fitem in 1.8/1.9 grammars.  This means it is guaranteed to be either
+     * a LiteralNode of a DSymbolNode.  Nothing else is possible.  Also
+     * Interpreting a DSymbolNode will always yield a RubySymbol.
+     */
+    public static String interpretAliasUndefName(Node nameNode, Ruby runtime,
+            ThreadContext context, IRubyObject self, Block aBlock) {
+        String name;
+
+        if (nameNode instanceof LiteralNode) {
+            name = ((LiteralNode) nameNode).getName();
+        } else {
+            assert nameNode instanceof DSymbolNode: "Alias or Undef not literal or dsym";
+            name = ((RubySymbol) nameNode.interpret(runtime, context, self, aBlock)).asJavaString();
+        }
+
+        return name;
+    }
+
+    /**
+     * Used by the compiler to simplify arg checking in variable-arity paths
+     *
+     * @param context thread context
+     * @param args arguments array
+     * @param min minimum required
+     * @param max maximum allowed
+     */
+    public static void checkArgumentCount(ThreadContext context, IRubyObject[] args, int min, int max) {
+        checkArgumentCount(context, args.length, min, max);
+    }
+
+    /**
+     * Used by the compiler to simplify arg checking in variable-arity paths
+     *
+     * @param context thread context
+     * @param args arguments array
+     * @param req required number
+     */
+    public static void checkArgumentCount(ThreadContext context, IRubyObject[] args, int req) {
+        checkArgumentCount(context, args.length, req, req);
+    }
+    
+    public static void checkArgumentCount(ThreadContext context, int length, int min, int max) {
+        int expected = 0;
+        if (length < min) {
+            expected = min;
+        } else if (max > -1 && length > max) {
+            expected = max;
+        } else {
+            return;
+        }
+        throw context.getRuntime().newArgumentError(length, expected);
+    }
+
+    public static boolean isModuleAndHasConstant(IRubyObject left, String name) {
+        return left instanceof RubyModule && ((RubyModule) left).fastGetConstantFromNoConstMissing(name) != null;
+    }
+
+    public static ByteList getDefinedConstantOrBoundMethod(IRubyObject left, String name) {
+        if (isModuleAndHasConstant(left, name)) return Node.CONSTANT_BYTELIST;
+        if (left.getMetaClass().isMethodBound(name, true)) return Node.METHOD_BYTELIST;
+        return null;
+    }
+
+    public static RubyModule getSuperClassForDefined(Ruby runtime, RubyModule klazz) {
+        RubyModule superklazz = klazz.getSuperClass();
+
+        if (superklazz == null && klazz.isModule()) superklazz = runtime.getObject();
+
+        return superklazz;
+    }
+
+    public static boolean isGenerationEqual(IRubyObject object, int generation) {
+        RubyClass metaClass;
+        if (object instanceof RubyBasicObject) {
+            metaClass = ((RubyBasicObject)object).getMetaClass();
+        } else {
+            metaClass = object.getMetaClass();
+        }
+        return metaClass.getCacheToken() == generation;
+    }
+
+    public static String[] getScopeNames(String scopeNames) {
+        StringTokenizer toker = new StringTokenizer(scopeNames, ";");
+        ArrayList list = new ArrayList(10);
+        while (toker.hasMoreTokens()) {
+            list.add(toker.nextToken().intern());
+        }
+        return (String[])list.toArray(new String[list.size()]);
+    }
+
+    public static IRubyObject[] arraySlice1N(IRubyObject arrayish) {
+        arrayish = aryToAry(arrayish);
+        RubyArray arrayish2 = ensureMultipleAssignableRubyArray(arrayish, arrayish.getRuntime(), true);
+        return new IRubyObject[] {arrayEntryOrNilZero(arrayish2), subarrayOrEmpty(arrayish2, arrayish2.getRuntime(), 1)};
+    }
+
+    public static IRubyObject arraySlice1(IRubyObject arrayish) {
+        arrayish = aryToAry(arrayish);
+        RubyArray arrayish2 = ensureMultipleAssignableRubyArray(arrayish, arrayish.getRuntime(), true);
+        return arrayEntryOrNilZero(arrayish2);
+    }
+
+    public static RubyClass metaclass(IRubyObject object) {
+        return object instanceof RubyBasicObject ?
+            ((RubyBasicObject)object).getMetaClass() :
+            object.getMetaClass();
+    }
+
+    public static String rawBytesToString(byte[] bytes) {
+        // stuff bytes into chars
+        char[] chars = new char[bytes.length];
+        for (int i = 0; i < bytes.length; i++) chars[i] = (char)bytes[i];
+        return new String(chars);
+    }
+
+    public static byte[] stringToRawBytes(String string) {
+        char[] chars = string.toCharArray();
+        byte[] bytes = new byte[chars.length];
+        for (int i = 0; i < chars.length; i++) bytes[i] = (byte)chars[i];
+        return bytes;
+    }
+
+    public static String encodeCaptureOffsets(int[] scopeOffsets) {
+        char[] encoded = new char[scopeOffsets.length * 2];
+        for (int i = 0; i < scopeOffsets.length; i++) {
+            int offDepth = scopeOffsets[i];
+            char off = (char)(offDepth & 0xFFFF);
+            char depth = (char)(offDepth >> 16);
+            encoded[2 * i] = off;
+            encoded[2 * i + 1] = depth;
+        }
+        return new String(encoded);
+    }
+
+    public static int[] decodeCaptureOffsets(String encoded) {
+        char[] chars = encoded.toCharArray();
+        int[] scopeOffsets = new int[chars.length / 2];
+        for (int i = 0; i < scopeOffsets.length; i++) {
+            char off = chars[2 * i];
+            char depth = chars[2 * i + 1];
+            scopeOffsets[i] = (((int)depth) << 16) | (int)off;
+        }
+        return scopeOffsets;
+    }
+
+    public static IRubyObject match2AndUpdateScope(IRubyObject receiver, ThreadContext context, IRubyObject value, String scopeOffsets) {
+        DynamicScope scope = context.getCurrentScope();
+        IRubyObject match = ((RubyRegexp)receiver).op_match(context, value);
+        updateScopeWithCaptures(context, scope, decodeCaptureOffsets(scopeOffsets), value);
+        return match;
+    }
+
+    public static void updateScopeWithCaptures(ThreadContext context, DynamicScope scope, int[] scopeOffsets, IRubyObject result) {
+        Ruby runtime = context.runtime;
+        if (result.isNil()) { // match2 directly calls match so we know we can count on result
+            IRubyObject nil = runtime.getNil();
+
+            for (int i = 0; i < scopeOffsets.length; i++) {
+                scope.setValue(nil, scopeOffsets[i], 0);
+            }
+        } else {
+            RubyMatchData matchData = (RubyMatchData)scope.getBackRef(runtime);
+            // FIXME: Mass assignment is possible since we know they are all locals in the same
+            //   scope that are also contiguous
+            IRubyObject[] namedValues = matchData.getNamedBackrefValues(runtime);
+
+            for (int i = 0; i < scopeOffsets.length; i++) {
+                scope.setValue(namedValues[i], scopeOffsets[i] & 0xffff, scopeOffsets[i] >> 16);
+            }
+        }
+    }
+
+    public static RubyArray argsPush(RubyArray first, IRubyObject second) {
+        return ((RubyArray)first.dup()).append(second);
+    }
+
+    public static RubyArray argsCat(IRubyObject first, IRubyObject second) {
+        Ruby runtime = first.getRuntime();
+        IRubyObject secondArgs;
+        if (runtime.is1_9()) {
+            secondArgs = RuntimeHelpers.splatValue19(second);
+        } else {
+            secondArgs = RuntimeHelpers.splatValue(second);
+        }
+
+        return ((RubyArray)RuntimeHelpers.ensureRubyArray(runtime, first).dup()).concat(secondArgs);
+    }
+
+    public static String encodeParameterList(ArgsNode argsNode) {
+        StringBuilder builder = new StringBuilder();
+        
+        boolean added = false;
+        if (argsNode.getPre() != null) {
+            for (Node preNode : argsNode.getPre().childNodes()) {
+                if (added) builder.append(';');
+                added = true;
+                if (preNode instanceof MultipleAsgn19Node) {
+                    builder.append("nil");
+                } else {
+                    builder.append("q").append(((ArgumentNode)preNode).getName());
+                }
+            }
+        }
+
+        if (argsNode.getOptArgs() != null) {
+            for (Node optNode : argsNode.getOptArgs().childNodes()) {
+                if (added) builder.append(';');
+                added = true;
+                builder.append("o");
+                if (optNode instanceof OptArgNode) {
+                    builder.append(((OptArgNode)optNode).getName());
+                } else if (optNode instanceof LocalAsgnNode) {
+                    builder.append(((LocalAsgnNode)optNode).getName());
+                } else if (optNode instanceof DAsgnNode) {
+                    builder.append(((DAsgnNode)optNode).getName());
+                }
+            }
+        }
+
+        if (argsNode.getRestArg() >= 0) {
+            if (added) builder.append(';');
+            added = true;
+            if (argsNode.getRestArgNode() instanceof UnnamedRestArgNode) {
+                if (((UnnamedRestArgNode) argsNode.getRestArgNode()).isStar()) builder.append("R");
+            } else {
+                builder.append("r").append(argsNode.getRestArgNode().getName());
+            }
+        }
+
+        if (argsNode.getPost() != null) {
+            for (Node postNode : argsNode.getPost().childNodes()) {
+                if (added) builder.append(';');
+                added = true;
+                if (postNode instanceof MultipleAsgn19Node) {
+                    builder.append("nil");
+                } else {
+                    builder.append("q").append(((ArgumentNode)postNode).getName());
+                }
+            }
+        }
+
+        if (argsNode.getBlock() != null) {
+            if (added) builder.append(';');
+            added = true;
+            builder.append("b").append(argsNode.getBlock().getName());
+        }
+
+        if (!added) builder.append("NONE");
+
+        return builder.toString();
+    }
+
+    public static RubyArray parameterListToParameters(Ruby runtime, String[] parameterList, boolean isLambda) {
+        RubyArray parms = RubyArray.newEmptyArray(runtime);
+
+        for (String param : parameterList) {
+            if (param.equals("NONE")) break;
+
+            RubyArray elem = RubyArray.newEmptyArray(runtime);
+            if (param.equals("nil")) {
+                // marker for masgn args (the parens in "a, b, (c, d)"
+                elem.add(RubySymbol.newSymbol(runtime, isLambda ? "req" : "opt"));
+                parms.add(elem);
+                continue;
+            }
+
+            if (param.charAt(0) == 'q') {
+                // required/normal arg
+                elem.add(RubySymbol.newSymbol(runtime, isLambda ? "req" : "opt"));
+            } else if (param.charAt(0) == 'r') {
+                // named rest arg
+                elem.add(RubySymbol.newSymbol(runtime, "rest"));
+            } else if (param.charAt(0) == 'R') {
+                // unnamed rest arg (star)
+                elem.add(RubySymbol.newSymbol(runtime, "rest"));
+                parms.add(elem);
+                continue;
+            } else if (param.charAt(0) == 'o') {
+                // optional arg
+                elem.add(RubySymbol.newSymbol(runtime, "opt"));
+                if (param.length() == 1) {
+                    // no name; continue
+                    parms.add(elem);
+                    continue;
+                }
+            } else if (param.charAt(0) == 'b') {
+                // block arg
+                elem.add(RubySymbol.newSymbol(runtime, "block"));
+            }
+            elem.add(RubySymbol.newSymbol(runtime, param.substring(1)));
+            parms.add(elem);
+        }
+
+        return parms;
+    }
+
+    public static ByteList getDefinedCall(ThreadContext context, IRubyObject self, IRubyObject receiver, String name) {
+        RubyClass metaClass = receiver.getMetaClass();
+        DynamicMethod method = metaClass.searchMethod(name);
+        Visibility visibility = method.getVisibility();
+
+        if (visibility != Visibility.PRIVATE &&
+                (visibility != Visibility.PROTECTED || metaClass.getRealClass().isInstance(self)) && !method.isUndefined()) {
+            return Node.METHOD_BYTELIST;
+        }
+
+        if (context.getRuntime().is1_9() && receiver.callMethod(context, "respond_to_missing?",
+            new IRubyObject[]{context.getRuntime().newSymbol(name), context.getRuntime().getFalse()}).isTrue()) {
+            return Node.METHOD_BYTELIST;
+        }
+        return null;
+    }
+
+    public static ByteList getDefinedNot(Ruby runtime, ByteList definition) {
+        if (definition != null && runtime.is1_9()) {
+            definition = Node.METHOD_BYTELIST;
+        }
+
+        return definition;
+    }
+    
+    public static IRubyObject invokedynamic(ThreadContext context, IRubyObject self, int index) {
+        RubyClass metaclass = self.getMetaClass();
+        String name = MethodIndex.METHOD_NAMES[index];
+        return getMethodCached(context, metaclass, index, name).call(context, self, metaclass, name);
+    }
+    
+    public static IRubyObject invokedynamic(ThreadContext context, IRubyObject self, int index, IRubyObject arg0) {
+        RubyClass metaclass = self.getMetaClass();
+        String name = MethodIndex.METHOD_NAMES[index];
+        return getMethodCached(context, metaclass, index, name).call(context, self, metaclass, name, arg0);
+    }
+    
+    private static DynamicMethod getMethodCached(ThreadContext context, RubyClass metaclass, int index, String name) {
+        if (metaclass.index >= ClassIndex.MAX_CLASSES) return metaclass.searchMethod(name);
+        return context.runtimeCache.getMethod(context, metaclass, metaclass.index * (index + 1), name);
     }
 }

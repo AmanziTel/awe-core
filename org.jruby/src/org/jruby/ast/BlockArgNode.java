@@ -38,7 +38,7 @@ import org.jruby.ast.visitor.NodeVisitor;
 import org.jruby.lexer.yacc.ISourcePosition;
 
 /**
- *	An explicit block argument (&amp;my_block).
+ *	An explicit block argument (&amp;my_block) in parameter list.
  */
 public class BlockArgNode extends Node implements INameNode {
     private final int count;
@@ -48,6 +48,10 @@ public class BlockArgNode extends Node implements INameNode {
         super(position);
         this.count = count;
         this.name = name;
+    }
+
+    public BlockArgNode(ArgumentNode argNode) {
+        this(argNode.getPosition(), argNode.getIndex(), argNode.getName());
     }
 
     public NodeType getNodeType() {

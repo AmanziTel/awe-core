@@ -49,7 +49,7 @@ import org.jruby.runtime.builtin.IRubyObject;
 public class GlobalVariables {
     private Ruby runtime;
     private Map<String, GlobalVariable> globalVariables = new ConcurrentHashMap<String, GlobalVariable>();
-
+    
     public GlobalVariables(Ruby runtime) {
         this.runtime = runtime;
     }
@@ -111,7 +111,7 @@ public class GlobalVariables {
 	    if (variable != null) return variable.getAccessor().getValue();
 
 	    if (runtime.isVerbose()) {
-	        runtime.getWarnings().warning(ID.GLOBAL_NOT_INITIALIZED, "global variable `" + name + "' not initialized", name);
+	        runtime.getWarnings().warning(ID.GLOBAL_NOT_INITIALIZED, "global variable `" + name + "' not initialized");
 	    }
 		return runtime.getNil();
 	}
@@ -129,7 +129,11 @@ public class GlobalVariables {
         variable.trace(value);
         return result;
     }
-    
+
+    public IRubyObject clear(String name) {
+        return set(name, runtime.getNil());
+    }
+
     public void setTraceVar(String name, RubyProc proc) {
         assert name != null;
         assert name.startsWith("$");

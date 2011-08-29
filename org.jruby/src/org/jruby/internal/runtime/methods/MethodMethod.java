@@ -31,7 +31,6 @@ package org.jruby.internal.runtime.methods;
 
 import org.jruby.RubyModule;
 import org.jruby.RubyUnboundMethod;
-import org.jruby.internal.runtime.JumpTarget;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.Visibility;
@@ -41,7 +40,7 @@ import org.jruby.runtime.builtin.IRubyObject;
  * 
  * @author jpetersen
  */
-public class MethodMethod extends DynamicMethod implements JumpTarget {
+public class MethodMethod extends DynamicMethod {
     private RubyUnboundMethod method;
 
     /**
@@ -58,10 +57,15 @@ public class MethodMethod extends DynamicMethod implements JumpTarget {
      * @see org.jruby.runtime.ICallable#call(Ruby, IRubyObject, String, IRubyObject[], boolean)
      */
     public IRubyObject call(ThreadContext context, IRubyObject self, RubyModule klazz, String name, IRubyObject[] args, Block block) {
-        return method.bind(context, self, block).call(context, args, block);
+        return method.bind(context, self).call(context, args, block);
     }
     
     public DynamicMethod dup() {
         return new MethodMethod(getImplementationClass(), method, getVisibility());
+    }
+
+    @Override
+    public DynamicMethod getRealMethod() {
+        return method.getMethod();
     }
 }

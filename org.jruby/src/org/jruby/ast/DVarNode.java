@@ -40,6 +40,7 @@ import org.jruby.lexer.yacc.ISourcePosition;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.jruby.util.ByteList;
 
 /**
  * Access a dynamic variable (e.g. block scope local variable).
@@ -117,9 +118,13 @@ public class DVarNode extends Node implements INameNode {
         // FIXME: null check is removable once we figure out how to assign to unset named block args
         return obj == null ? runtime.getNil() : obj;
     }
-    
+
     @Override
-    public String definition(Ruby runtime, ThreadContext context, IRubyObject self, Block aBlock) {
-        return "local-variable(in-block)";
+    public ByteList definition(Ruby runtime, ThreadContext context, IRubyObject self, Block aBlock) {
+        ByteList definition = LOCAL_VARIABLE_BYTELIST;
+        if (!context.getRuntime().is1_9()) {
+            definition = LOCAL_VARIABLE_IN_BLOCK_BYTELIST;
+        }
+        return definition;
     }
 }

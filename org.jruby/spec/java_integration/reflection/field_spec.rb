@@ -1,10 +1,10 @@
 require File.dirname(__FILE__) + "/../spec_helper"
 
-import java.lang.reflect.Field
-import "java_integration.fixtures.PrivateField"
-import "java_integration.fixtures.ProtectedField"
-import "java_integration.fixtures.PublicField"
-import "java_integration.fixtures.PackageField"
+java_import java.lang.reflect.Field
+java_import "java_integration.fixtures.PrivateField"
+java_import "java_integration.fixtures.ProtectedField"
+java_import "java_integration.fixtures.PublicField"
+java_import "java_integration.fixtures.PackageField"
 
 describe "A JavaClass" do
   it "should provide a look up for fields using a Java formatted name" do
@@ -37,8 +37,8 @@ describe "A JavaField" do
       end
 
       it "should set Java values" do
-        lambda { @field.set_value @obj.java_object, Java.ruby_to_java("42") }.should_not raise_error
-        lambda { @field.set_value @obj.java_object, Java.ruby_to_java(nil) }.should_not raise_error
+        lambda { @field.set_value @obj.java_object, "42".to_java }.should_not raise_error
+        lambda { @field.set_value @obj.java_object, nil.to_java }.should_not raise_error
       end
 
       it "should get Ruby values" do 
@@ -63,8 +63,8 @@ describe "A JavaField" do
       end
 
       it "should set Java values" do
-        lambda { @field.set_value @obj.java_object, Java.ruby_to_java("42") }.should_not raise_error
-        lambda { @field.set_value @obj.java_object, Java.ruby_to_java(nil) }.should_not raise_error
+        lambda { @field.set_value @obj.java_object, "42".to_java }.should_not raise_error
+        lambda { @field.set_value @obj.java_object, nil.to_java }.should_not raise_error
       end
 
       it "should get Ruby values" do 
@@ -88,8 +88,8 @@ describe "A JavaField" do
       end
 
       it "should set Java values" do
-        lambda { @field.set_value @obj.java_object, Java.ruby_to_java("42") }.should_not raise_error
-        lambda { @field.set_value @obj.java_object, Java.ruby_to_java(nil) }.should_not raise_error
+        lambda { @field.set_value @obj.java_object, "42".to_java }.should_not raise_error
+        lambda { @field.set_value @obj.java_object, nil.to_java }.should_not raise_error
       end
 
 
@@ -115,8 +115,8 @@ describe "A JavaField" do
       end
 
       it "should set Java values" do
-        lambda { @field.set_value @obj.java_object, Java.ruby_to_java("42") }.should_not raise_error
-        lambda { @field.set_value @obj.java_object, Java.ruby_to_java(nil) }.should_not raise_error
+        lambda { @field.set_value @obj.java_object, "42".to_java }.should_not raise_error
+        lambda { @field.set_value @obj.java_object, nil.to_java }.should_not raise_error
       end
 
       it "should get Ruby values" do 
@@ -143,8 +143,8 @@ describe "A JavaField" do
       end
 
       it "should set Java values" do
-        lambda { @field.set_value @obj, Java.ruby_to_java("42") }.should_not raise_error
-        lambda { @field.set_value @obj, Java.ruby_to_java(nil) }.should_not raise_error
+        lambda { @field.set_value @obj, "42".to_java }.should_not raise_error
+        lambda { @field.set_value @obj, nil.to_java }.should_not raise_error
       end
 
       it "should get Ruby values" do 
@@ -169,8 +169,8 @@ describe "A JavaField" do
       end
 
       it "should set Java values" do
-        lambda { @field.set_value @obj, Java.ruby_to_java("42") }.should_not raise_error
-        lambda { @field.set_value @obj, Java.ruby_to_java(nil) }.should_not raise_error
+        lambda { @field.set_value @obj, "42".to_java }.should_not raise_error
+        lambda { @field.set_value @obj, nil.to_java }.should_not raise_error
       end
 
       it "should get Ruby values" do 
@@ -194,8 +194,8 @@ describe "A JavaField" do
       end
 
       it "should set Java values" do
-        lambda { @field.set_value @obj, Java.ruby_to_java("42") }.should_not raise_error
-        lambda { @field.set_value @obj, Java.ruby_to_java(nil) }.should_not raise_error
+        lambda { @field.set_value @obj, "42".to_java }.should_not raise_error
+        lambda { @field.set_value @obj, nil.to_java }.should_not raise_error
       end
 
       it "should get Ruby values" do 
@@ -220,8 +220,8 @@ describe "A JavaField" do
       end
 
       it "should set Java values" do
-        lambda { @field.set_value @obj, Java.ruby_to_java("42") }.should_not raise_error
-        lambda { @field.set_value @obj, Java.ruby_to_java(nil) }.should_not raise_error
+        lambda { @field.set_value @obj, "42".to_java }.should_not raise_error
+        lambda { @field.set_value @obj, nil.to_java }.should_not raise_error
       end
 
       it "should get Ruby values" do 

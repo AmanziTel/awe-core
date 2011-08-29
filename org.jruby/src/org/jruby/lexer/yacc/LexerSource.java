@@ -34,6 +34,7 @@ package org.jruby.lexer.yacc;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import org.jcodings.Encoding;
 
 import org.jruby.parser.ParserConfiguration;
 import org.jruby.util.ByteList;
@@ -49,7 +50,7 @@ import org.jruby.util.ByteList;
  */
 public abstract class LexerSource {
 	// Where we get new positions from.
-	private ISourcePositionFactory positionFactory;
+	private SimplePositionFactory positionFactory;
 	
     // The name of this source (e.g. a filename: foo.rb)
     private final String sourceName;
@@ -66,26 +67,24 @@ public abstract class LexerSource {
     // For 'list' and only populated if list is not null.
     private StringBuilder lineBuffer;
 
+    // Last full line read.
+    private StringBuilder sourceLine;
+
     /**
      * Create our food-source for the lexer
      * 
      * @param sourceName is the file we are reading
      * @param reader is what represents the contents of file sourceName
      * @param line starting line number for source (used by eval)
-     * @param extraPositionInformation will gives us extra information that an IDE may want
+     * @param extraPositionInformation will gives us extra information that an IDE may want (deprecated)
      */
     protected LexerSource(String sourceName, List<String> list, int line, boolean extraPositionInformation) {
         this.sourceName = sourceName;
         this.line = line;
-
-        if (extraPositionInformation) {
-            positionFactory = new IDESourcePositionFactory(this, line);
-        } else {
-            positionFactory = new SimplePositionFactory(this, line);
-        }
-
+        positionFactory = new SimplePositionFactory(this, line);
         this.list = list;
-        lineBuffer = new StringBuilder();
+        lineBuffer = new StringBuilder(160);
+        sourceLine = new StringBuilder(160);
     }
 
     /**
@@ -118,8 +117,8 @@ public abstract class LexerSource {
      * 
      * @return the current position
      */
-    public ISourcePosition getPosition(ISourcePosition startPosition, boolean inclusive) {
-    	return positionFactory.getPosition(startPosition, inclusive);
+    public ISourcePosition getPosition(ISourcePosition startPosition) {
+    	return positionFactory.getPosition(startPosition);
     }
     
     /**
@@ -128,11 +127,7 @@ public abstract class LexerSource {
      * @return the current position
      */
     public ISourcePosition getPosition() {
-    	return positionFactory.getPosition(null, false);
-    }
-    
-    public ISourcePositionFactory getPositionFactory() {
-        return positionFactory;
+    	return positionFactory.getPosition(null);
     }
 
     /**
@@ -148,18 +143,98 @@ public abstract class LexerSource {
                 configuration.hasExtraPositionInformation());
     }
 
-    protected void captureFeature(int c) {
+    public static LexerSource getSource(String name, byte[] content, List<String> list,
+            ParserConfiguration configuration) {
+        return new ByteArrayLexerSource(name, content, list, configuration.getLineNumber(),
+                configuration.hasExtraPositionInformation());
+    }
+
+    private void captureFeatureNewline() {
+        StringBuilder temp = sourceLine;
+        // Save sourceLine for error reporting to display line where error occurred
+        sourceLine = lineBuffer;
+
+
         // Ruby's OMG capture all source in a Hash feature
-        if (list != null) {
-            // Only append real characters (EOF does not count). 
-            if (c != -1) lineBuffer.append((char) c);
-        
-            // Add each line to buffer when encountering newline or EOF for first time.
-            if (c == '\n' || (c == -1 && lineBuffer.length() > 0)) {
-                list.add(lineBuffer.toString());
-                lineBuffer.setLength(0);
+        // Add each line to buffer when encountering newline or EOF for first time.
+        if (list != null && lineBuffer.length() > 0) list.add(sourceLine.toString());
+
+        temp.setLength(0);
+        lineBuffer = temp;
+    }
+
+    protected void captureFeature(int c) {
+        switch(c) {
+            case '\n':
+                lineBuffer.append((char) c);
+            case -1:
+                captureFeatureNewline();
+                break;
+            default:
+                lineBuffer.append((char) c);
+                break;
+        }
+    }
+
+    protected void uncaptureFeature(int c) {
+        int end = lineBuffer.length() - 1;
+        if (end >= 0 && lineBuffer.charAt(end) == c) {
+            lineBuffer.deleteCharAt(end);
+        } else if (c == '\n' && list != null && !list.isEmpty()) {
+            lineBuffer = new StringBuilder(list.remove(list.size() - 1));
+            end = lineBuffer.length() - 1;
+            if (lineBuffer.charAt(end) == '\n') {
+                lineBuffer.deleteCharAt(end);
             }
         }
+    }
+
+    public String getCurrentLine() {
+        int errorLocation = lineBuffer.length() - 1;
+
+        // Get rest of line. lineBuffer filled as side-effect...
+        try { readLineBytes(); } catch (IOException e) {}
+
+
+        return sourceLine.toString() + makePointer(errorLocation);
+    }
+
+    protected String makePointer(int length) {
+        StringBuilder buf = new StringBuilder();
+
+        for (int i = 0; i < length; i++) {
+            buf.append(' ');
+        }
+        buf.append('^');
+
+        return buf.toString();
+    }
+
+    // Super slow codepoint reader when we detect non-asci chars
+    public int readCodepoint(int first, Encoding encoding) throws IOException {
+        int count = 0;
+        byte[] value = new byte[6];
+
+        // We know this will never be EOF
+        value[0] = (byte) first;
+
+        for (count = 1; count < 6; count++) {
+            int c = read();
+            if (c == RubyYaccLexer.EOF) break; // Maybe we have enough bytes read to mbc at EOF.
+            value[count] = (byte) c;
+        }
+
+        int length = encoding.length(value, 0, count);
+        if (length < 0) {
+            return -2; // TODO: Hack
+        }
+
+        int codepoint = encoding.mbcToCode(value, 0, length);
+        for (int i = count - 1; i >= length; i--) {
+            unread(value[i]);
+        }
+
+        return codepoint;
     }
 
     /**
@@ -183,4 +258,5 @@ public abstract class LexerSource {
     public abstract boolean peek(int c) throws IOException;
     public abstract boolean lastWasBeginOfLine();
     public abstract boolean wasBeginOfLine();
+    public abstract InputStream getRemainingAsStream() throws IOException;
 }

@@ -6,17 +6,13 @@
 package org.jruby.java.proxies;
 
 import org.jruby.Ruby;
-import org.jruby.RubyArray;
 import org.jruby.RubyClass;
-import org.jruby.RubyModule;
-import org.jruby.internal.runtime.methods.JavaMethod;
-import org.jruby.javasupport.Java;
+import org.jruby.RubyProc;
+import org.jruby.anno.JRubyMethod;
 import org.jruby.javasupport.JavaClass;
-import org.jruby.javasupport.util.RuntimeHelpers;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
-import org.jruby.runtime.Visibility;
 import org.jruby.runtime.builtin.IRubyObject;
 
 /**
@@ -39,29 +35,28 @@ public class InterfaceJavaProxy extends JavaProxy {
             }
         });
 
-        RubyClass singleton = ifcJavaProxy.getSingletonClass();
-
-        singleton.addMethod("new", new JavaMethod(singleton, Visibility.PUBLIC) {
-            @Override
-            public IRubyObject call(ThreadContext context, IRubyObject self, RubyModule clazz, String name, IRubyObject[] args, Block block) {
-                assert self instanceof RubyClass : "InterfaceJavaProxy.new defined on non-class ";
-                RubyClass rubyClass = (RubyClass)self;
-
-                IRubyObject proxy = rubyClass.allocate();
-                JavaClass javaClass = (JavaClass)RuntimeHelpers.invoke(context, proxy.getMetaClass(), "java_class");
-                IRubyObject proxyInstance = Java.new_proxy_instance2(
-                        self,
-                        self,
-                        RubyArray.newArray(context.getRuntime(), javaClass),
-                        block);
-                Java.JavaUtilities.set_java_object(proxy, proxy, proxyInstance);
-
-                RuntimeHelpers.invoke(context, self, "initialize", args, block);
-
-                return proxy;
-            }
-        });
+        RubyClass javaIfcExtender = runtime.defineClass(
+                "JavaInterfaceExtender", runtime.getObject(), runtime.getObject().getAllocator());
+        javaIfcExtender.defineAnnotatedMethods(JavaInterfaceExtender.class);
 
         return ifcJavaProxy;
+    }
+
+    public static class JavaInterfaceExtender {
+        @JRubyMethod(backtrace = true)
+        public static IRubyObject initialize(ThreadContext context, IRubyObject self, IRubyObject javaClassName, Block block) {
+            Ruby runtime = context.getRuntime();
+            
+            self.getInstanceVariables().setInstanceVariable("@java_class", JavaClass.forNameVerbose(runtime, javaClassName.asJavaString()));
+            self.getInstanceVariables().setInstanceVariable("@block", RubyProc.newProc(runtime, block, Block.Type.PROC));
+
+            return runtime.getNil();
+        }
+
+        @JRubyMethod(backtrace = true)
+        public static IRubyObject extend_proxy(ThreadContext context, IRubyObject self, IRubyObject proxyClass) {
+            return proxyClass.callMethod(context, "class_eval", IRubyObject.NULL_ARRAY,
+                    ((RubyProc)self.getInstanceVariables().getInstanceVariable("@block")).getBlock());
+        }
     }
 }

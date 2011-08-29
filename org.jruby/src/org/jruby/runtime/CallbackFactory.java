@@ -32,7 +32,7 @@
 package org.jruby.runtime;
 
 import org.jruby.Ruby;
-import org.jruby.RubyClass;
+import org.jruby.RubyInstanceConfig;
 import org.jruby.runtime.callback.Callback;
 import org.jruby.runtime.callback.ReflectionCallbackFactory;
 import org.jruby.runtime.callback.InvocationCallbackFactory;
@@ -46,7 +46,7 @@ import org.jruby.util.SafePropertyAccessor;
  * will need to be explicitly created.
  **/
 public abstract class CallbackFactory {
-
+    @Deprecated
     public static final Class[] NULL_CLASS_ARRAY = new Class[0];
 
     /**
@@ -191,10 +191,13 @@ public abstract class CallbackFactory {
      **/
     public abstract Callback getFastSingletonMethod(String method, Class arg1, Class arg2, Class arg3);
 
+    @Deprecated
     public abstract Callback getBlockMethod(String method);
 
+    @Deprecated
     public abstract CompiledBlockCallback getBlockCallback(String method, Object scriptObject);
 
+    @Deprecated
     public abstract CompiledBlockCallback19 getBlockCallback19(String method, Object scriptObject);
 
     /**
@@ -240,9 +243,7 @@ public abstract class CallbackFactory {
         if (Ruby.isSecurityRestricted()) {
             reflection_ = true;
         } else {
-            if (SafePropertyAccessor.getProperty("jruby.reflection") != null && SafePropertyAccessor.getBoolean("jruby.reflection")) {
-                reflection_ = true;
-            }
+            reflection_ = RubyInstanceConfig.REFLECTED_HANDLES;
             if (SafePropertyAccessor.getProperty("jruby.dump_invocations") != null) {
                 dumping_ = true;
             }

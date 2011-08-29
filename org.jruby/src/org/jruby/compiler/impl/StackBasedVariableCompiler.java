@@ -28,9 +28,11 @@
 
 package org.jruby.compiler.impl;
 
+import org.jruby.Ruby;
 import org.jruby.compiler.CompilerCallback;
 import org.jruby.compiler.NotCompilableException;
 import org.jruby.parser.StaticScope;
+import org.jruby.runtime.Block;
 import org.jruby.runtime.DynamicScope;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.objectweb.asm.Label;
@@ -61,10 +63,13 @@ public class StackBasedVariableCompiler extends AbstractVariableCompiler {
             // this is for crap like def foo(a = (b = true; 1)) which numbers b before a
             // FIXME: only starting after required args, since opt args may access others
             // and rest args conflicts with compileRoot using "0" to indicate [] signature.
-            int start = scope.getRequiredArgs();
-            for (int i = start; i < scope.getNumberOfVariables(); i++) {
+            if (scope.getRequiredArgs() < scope.getNumberOfVariables()) {
+                int start = scope.getRequiredArgs();
                 methodCompiler.loadNil();
-                assignLocalVariable(i, false);
+                for (int i = start; i < scope.getNumberOfVariables(); i++) {
+                    if (i + 1 < scope.getNumberOfVariables()) methodCompiler.method.dup();
+                    assignLocalVariable(i, false);
+                }
             }
 
             // temp locals must start after last real local
@@ -120,9 +125,14 @@ public class StackBasedVariableCompiler extends AbstractVariableCompiler {
             // temp locals must start after last real local
             tempVariableIndex += scope.getNumberOfVariables();
         }
-        
+
         if (argsCallback != null) {
-            // load args[0] which will be the IRubyObject representing block args
+            // load block
+            methodCompiler.loadRuntime();
+            method.aload(methodCompiler.getClosureIndex());
+            methodCompiler.invokeUtilityMethod("processBlockArgument", sig(IRubyObject.class, params(Ruby.class, Block.class)));
+
+            // load args (the IRubyObject representing incoming normal args)
             method.aload(argsIndex);
             argsCallback.call(methodCompiler);
         }

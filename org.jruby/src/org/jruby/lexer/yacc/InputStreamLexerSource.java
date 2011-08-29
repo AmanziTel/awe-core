@@ -2,11 +2,11 @@
 
 package org.jruby.lexer.yacc;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-import org.jruby.parser.ParserConfiguration;
 import org.jruby.util.ByteList;
 
 public class InputStreamLexerSource extends LexerSource {
@@ -154,19 +154,6 @@ public class InputStreamLexerSource extends LexerSource {
 
         return c;
     }
-    
-    /**
-     * Create a source.
-     * 
-     * @param name the name of the source (e.g a filename: foo.rb)
-     * @param content the data of the source
-     * @return the new source
-     */
-    public static LexerSource getSource(String name, InputStream content, List<String> list,
-            ParserConfiguration configuration) {
-        return new InputStreamLexerSource(name, content, list, configuration.getLineNumber(), 
-                configuration.hasExtraPositionInformation());
-    }
 
     @Override
     public ByteList readLineBytes() throws IOException {
@@ -180,12 +167,13 @@ public class InputStreamLexerSource extends LexerSource {
     }
     
     @Override
-    public int skipUntil(int c) throws IOException {
-        for (c = read(); c != '\n' && c != RubyYaccLexer.EOF; c = read()) {}
-        
+    public int skipUntil(int marker) throws IOException {
+        int c;
+        for (c = read(); c != marker && c != RubyYaccLexer.EOF; c = read()) {}
         return c;
     }
 
+    @Override
     public void unreadMany(CharSequence buffer) {
         int length = buffer.length();
         for (int i = length - 1; i >= 0; i--) {
@@ -252,10 +240,12 @@ public class InputStreamLexerSource extends LexerSource {
      * 
      * @return true if so
      */
+    @Override
     public boolean wasBeginOfLine() {
         return twoAgo == '\n';
     }
 
+    @Override
     public boolean lastWasBeginOfLine() {
         return oneAgo == '\n';
     }
@@ -299,5 +289,24 @@ public class InputStreamLexerSource extends LexerSource {
         unread(c);
         
         return list;
+    }
+
+    @Override
+    public InputStream getRemainingAsStream() throws IOException {
+        return bufferEntireStream(in);
+    }
+
+    private InputStream bufferEntireStream(InputStream stream) throws IOException {
+        byte[] allBytes = new byte[0];
+        byte[] b = new byte[1024];
+        int bytesRead = 0;
+        while ((bytesRead = stream.read(b)) != -1) {
+            byte[] newbuf = new byte[allBytes.length + bytesRead];
+            System.arraycopy(allBytes, 0, newbuf, 0, allBytes.length);
+            System.arraycopy(b, 0, newbuf, allBytes.length, bytesRead);
+            allBytes = newbuf;
+        }
+
+        return new ByteArrayInputStream(allBytes);
     }
 }

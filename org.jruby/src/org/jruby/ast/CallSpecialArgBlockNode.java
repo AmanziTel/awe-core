@@ -43,7 +43,7 @@ import org.jruby.runtime.builtin.IRubyObject;
 /**
  * A method or operator call.
  */
-public final class CallSpecialArgBlockNode extends CallNode {
+public final class CallSpecialArgBlockNode extends CallNode implements SpecialArgs {
     public CallSpecialArgBlockNode(ISourcePosition position, Node receiverNode, String name, Node args, IterNode iter) {
         super(position, receiverNode, name, args, iter);
     }
@@ -59,18 +59,18 @@ public final class CallSpecialArgBlockNode extends CallNode {
 
             switch (nodes.size()) {
                 case 0:
-                    return callAdapter.call(context, self, receiver, block);
+                    return callAdapter.callIter(context, self, receiver, block);
                 case 1:
-                    return callAdapter.call(context, self, receiver, nodes.eltInternal(0), block);
+                    return callAdapter.callIter(context, self, receiver, nodes.eltInternal(0), block);
                 case 2:
-                    return callAdapter.call(context, self, receiver, nodes.eltInternal(0), nodes.eltInternal(1), block);
+                    return callAdapter.callIter(context, self, receiver, nodes.eltInternal(0), nodes.eltInternal(1), block);
                 case 3:
-                    return callAdapter.call(context, self, receiver, nodes.eltInternal(0), nodes.eltInternal(1), nodes.eltInternal(2), block);
+                    return callAdapter.callIter(context, self, receiver, nodes.eltInternal(0), nodes.eltInternal(1), nodes.eltInternal(2), block);
                 default:
-                    return callAdapter.call(context, self, receiver, nodes.toJavaArrayMaybeUnsafe(), block);
+                    return callAdapter.callIter(context, self, receiver, nodes.toJavaArrayMaybeUnsafe(), block);
             }
         }
 
-        return callAdapter.call(context, self, receiver, arg, block);
+        return callAdapter.callIter(context, self, receiver, arg, block);
     }
 }

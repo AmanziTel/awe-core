@@ -11,10 +11,11 @@ public enum RubyEvent {
     CLASS    ("class", 1),
     END      ("end", 1),
     CALL     ("call", 1),
-    RETURN   ("return", 2),
+    RETURN   ("return", 1),
     C_CALL   ("c-call", 1),
     C_RETURN ("c-return", 1),
-    RAISE    ("raise", 1);
+    RAISE    ("raise", 1),
+    COVERAGE ("coverage", 1);
 
     private final String event_name;
     private final int line_number_offset;

@@ -43,12 +43,12 @@ import org.jruby.runtime.builtin.IRubyObject;
 
 @JRubyClass(name="Java::JavaArray", parent="Java::JavaObject")
 public class JavaArray extends JavaObject {
-    private JavaUtil.RubyConverter rubyConverter;
+    private JavaUtil.JavaConverter javaConverter;
     
     public JavaArray(Ruby runtime, Object array) {
         super(runtime, runtime.getJavaSupport().getJavaArrayClass(), array);
         assert array.getClass().isArray();
-        rubyConverter = JavaUtil.getArrayConverter(array.getClass().getComponentType());
+        javaConverter = JavaUtil.getJavaConverter(array.getClass().getComponentType());
     }
 
     public static RubyClass createJavaArrayClass(Ruby runtime, RubyModule javaModule) {
@@ -59,10 +59,6 @@ public class JavaArray extends JavaObject {
     
     public Class getComponentType() {
         return getValue().getClass().getComponentType();
-    }
-    
-    public JavaUtil.RubyConverter getRubyConverter() {
-        return rubyConverter;
     }
 
     public RubyFixnum length() {
@@ -77,7 +73,8 @@ public class JavaArray extends JavaObject {
         return other instanceof JavaArray &&
             this.getValue() == ((JavaArray)other).getValue();
     }
-    
+
+    @Deprecated
     public IRubyObject aref(IRubyObject index) {
         if (! (index instanceof RubyInteger)) {
             throw getRuntime().newTypeError(index, getRuntime().getInteger());
@@ -94,7 +91,22 @@ public class JavaArray extends JavaObject {
         }
         return JavaObject.wrap(getRuntime(), result);
     }
-    
+
+    public IRubyObject arefDirect(int intIndex) {
+        return arefDirect(getRuntime(), javaConverter, getValue(), intIndex);
+    }
+
+    public static IRubyObject arefDirect(Ruby runtime, JavaUtil.JavaConverter converter, Object array, int intIndex) {
+        int length = Array.getLength(array);
+        if (intIndex < 0 || intIndex >= length) {
+            throw runtime.newArgumentError(
+                                    "index out of bounds for java array (" + intIndex +
+                                    " for length " + length + ")");
+        }
+        return JavaUtil.convertJavaArrayElementToRuby(runtime, converter, array, intIndex);
+    }
+
+    @Deprecated
     public IRubyObject at(int index) {
         Object result = Array.get(getValue(), index);
         if (result == null) {
@@ -124,9 +136,13 @@ public class JavaArray extends JavaObject {
                                     "index out of bounds for java array (" + intIndex +
                                     " for length " + getLength() + ")");
         } catch (ArrayStoreException e) {
+            throw getRuntime().newTypeError(
+                                    "wrong element type " + javaObject.getClass() + "(array contains " +
+                                    getValue().getClass().getComponentType().getName() + ")");
+        } catch (IllegalArgumentException iae) {
             throw getRuntime().newArgumentError(
-                                    "wrong element type " + javaObject.getClass() + "(array is " +
-                                    getValue().getClass() + ")");
+                                    "wrong element type " + javaObject.getClass() + "(array contains " +
+                                    getValue().getClass().getComponentType().getName() + ")");
         }
     }
 

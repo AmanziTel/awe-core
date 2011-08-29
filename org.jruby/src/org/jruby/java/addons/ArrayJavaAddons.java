@@ -1,16 +1,11 @@
 package org.jruby.java.addons;
 
+import java.lang.reflect.Array;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyFixnum;
-import org.jruby.RubyModule;
-import org.jruby.RubyString;
-import org.jruby.RubySymbol;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.javasupport.JavaArray;
-import org.jruby.javasupport.JavaClass;
-import org.jruby.javasupport.JavaUtil;
-import org.jruby.javasupport.util.RuntimeHelpers;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
@@ -23,10 +18,9 @@ public class ArrayJavaAddons {
         Object fillJavaObject = null;
         int javaLength = (int)javaArrayJavaObj.length().getLongValue();
         Class targetType = javaArrayJavaObj.getComponentType();
-        JavaUtil.RubyConverter converter = JavaUtil.getArrayConverter(targetType);
         
         if (!fillValue.isNil()) {
-            fillJavaObject = converter.convert(context, fillValue);
+            fillJavaObject = fillValue.toJava(targetType);
         }
         
         RubyArray array = null;
@@ -36,12 +30,12 @@ public class ArrayJavaAddons {
             rubyLength = ((RubyArray)rubyArray).getLength();
         } else {
             rubyLength = 0;
-            fillJavaObject = converter.convert(context, rubyArray);
+            fillJavaObject = rubyArray.toJava(targetType);
         }
         
         int i = 0;
         for (; i < rubyLength && i < javaLength; i++) {
-            javaArrayJavaObj.setWithExceptionHandling(i, converter.convert(context, array.entry(i)));
+            javaArrayJavaObj.setWithExceptionHandling(i, array.entry(i).toJava(targetType));
         }
         
         if (i < javaLength && fillJavaObject != null) {
@@ -62,62 +56,41 @@ public class ArrayJavaAddons {
         return to;
     }
     
-    @JRubyMethod(frame = true)
-    public static IRubyObject to_java(ThreadContext context, IRubyObject fromArray) {
-        return context.getRuntime().getJavaSupport().getObjectJavaClass().javaArrayFromRubyArray(context, fromArray);
-    }
-    @JRubyMethod(frame = true)
-    public static IRubyObject to_java(ThreadContext context, IRubyObject fromArray, IRubyObject type) {
-        if (type.isNil()) {
-            return to_java(context, fromArray);
-        }
-        
-        Ruby runtime = context.getRuntime();
-        
-        JavaClass targetType = getTargetType(context, runtime, type);
-        
-        return targetType.javaArrayFromRubyArray(context, fromArray);
-    }
-    
-    private static JavaClass getTargetType(ThreadContext context, Ruby runtime, IRubyObject type) {
-        JavaClass targetType;
-
-        if (type instanceof RubyString || type instanceof RubySymbol) {
-            targetType = runtime.getJavaSupport().getNameClassMap().get(type.asJavaString());
-            if (targetType == null) targetType = JavaClass.forNameVerbose(runtime, type.asJavaString());
-        } else if (type instanceof RubyModule && type.respondsTo("java_class")) {
-            targetType = (JavaClass)RuntimeHelpers.invoke(context, type, "java_class");
-        } else {
-            throw runtime.newTypeError("unable to convert array to type: " + type);
-        }
-        
-        return targetType;
-    }
-    
     public static void copyDataToJavaArray(
             ThreadContext context, RubyArray rubyArray, JavaArray javaArray) {
         int javaLength = (int)javaArray.length().getLongValue();
         Class targetType = javaArray.getComponentType();
-        JavaUtil.RubyConverter converter = JavaUtil.getArrayConverter(targetType);
         
         int rubyLength = rubyArray.getLength();
         
         int i = 0;
         for (; i < rubyLength && i < javaLength; i++) {
-            javaArray.setWithExceptionHandling(i, converter.convert(context, rubyArray.entry(i)));
+            javaArray.setWithExceptionHandling(i, rubyArray.entry(i).toJava(targetType));
+        }
+    }
+
+    public static void copyDataToJavaArrayDirect(
+            ThreadContext context, RubyArray rubyArray, Object javaArray) {
+        int javaLength = Array.getLength(javaArray);
+        Class targetType = javaArray.getClass().getComponentType();
+
+        int rubyLength = rubyArray.getLength();
+
+        int i = 0;
+        for (; i < rubyLength && i < javaLength; i++) {
+            Array.set(javaArray, i, rubyArray.entry(i).toJava(targetType));
         }
     }
     
     public static void copyDataToJavaArray(
             ThreadContext context, RubyArray rubyArray, int src, JavaArray javaArray, int dest, int length) {
         Class targetType = javaArray.getComponentType();
-        JavaUtil.RubyConverter converter = JavaUtil.getArrayConverter(targetType);
         
         int destLength = (int)javaArray.length().getLongValue();
         int srcLength = rubyArray.getLength();
         
         for (int i = 0; src + i < srcLength && dest + i < destLength && i < length; i++) {
-            javaArray.setWithExceptionHandling(dest + i, converter.convert(context, rubyArray.entry(src + i)));
+            javaArray.setWithExceptionHandling(dest + i, rubyArray.entry(src + i).toJava(targetType));
         }
     }
     

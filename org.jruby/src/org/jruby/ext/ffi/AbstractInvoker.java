@@ -28,12 +28,12 @@
 
 package org.jruby.ext.ffi;
 
+import java.util.Collections;
+import java.util.Map;
+import java.util.WeakHashMap;
 import org.jruby.Ruby;
-import org.jruby.RubyArray;
 import org.jruby.RubyClass;
-import org.jruby.RubyInteger;
 import org.jruby.RubyModule;
-import org.jruby.RubyObject;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.internal.runtime.methods.DynamicMethod;
@@ -46,8 +46,15 @@ import org.jruby.runtime.builtin.IRubyObject;
  * A native function invoker
  */
 @JRubyClass(name = "FFI::" + AbstractInvoker.CLASS_NAME, parent = "Object")
-public abstract class AbstractInvoker extends RubyObject {
+public abstract class AbstractInvoker extends Pointer {
     static final String CLASS_NAME = "AbstractInvoker";
+
+    /**
+     * Reference map to keep libraries open for as long as there is a method mapped
+     * to that library.
+     */
+    private static final Map<DynamicMethod, AbstractInvoker> refmap
+            = Collections.synchronizedMap(new WeakHashMap<DynamicMethod, AbstractInvoker>());
     
     /**
      * The arity of this function.
@@ -56,28 +63,20 @@ public abstract class AbstractInvoker extends RubyObject {
     
     public static RubyClass createAbstractInvokerClass(Ruby runtime, RubyModule module) {
         RubyClass result = module.defineClassUnder(CLASS_NAME,
-                runtime.getObject(), 
+                module.fastGetClass("Pointer"),
                 ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR);
         result.defineAnnotatedMethods(AbstractInvoker.class);
         result.defineAnnotatedConstants(AbstractInvoker.class);
 
         return result;
     }
-
+    
     /**
-     * Creates a new <tt>Invoker</tt> instance.
+     * Creates a new <tt>AbstractInvoker</tt> instance.
      * @param arity
      */
-    protected AbstractInvoker(Ruby runtime, int arity) {
-        this(runtime, FFIProvider.getModule(runtime).fastGetClass(CLASS_NAME), arity);
-    }
-
-    /**
-     * Creates a new <tt>Invoker</tt> instance.
-     * @param arity
-     */
-    protected AbstractInvoker(Ruby runtime, RubyClass klass, int arity) {
-        super(runtime, klass);
+    protected AbstractInvoker(Ruby runtime, RubyClass klass, int arity, DirectMemoryIO io) {
+        super(runtime, klass, io, 0);
         this.arity = Arity.fixed(arity);
     }
 
@@ -88,12 +87,15 @@ public abstract class AbstractInvoker extends RubyObject {
      * @param methodName The ruby name to attach the function as.
      */
     @JRubyMethod(name="attach")
-    public IRubyObject attach(ThreadContext context, IRubyObject module, IRubyObject methodName) {
-        if (!(module instanceof RubyModule)) {
-            throw context.getRuntime().newTypeError(module, context.getRuntime().getModule());
+    public IRubyObject attach(ThreadContext context, IRubyObject obj, IRubyObject methodName) {
+        
+        DynamicMethod m = createDynamicMethod(obj.getSingletonClass());
+        obj.getSingletonClass().addMethod(methodName.asJavaString(), m);
+        if (obj instanceof RubyModule) {
+            ((RubyModule) obj).addMethod(methodName.asJavaString(), m);
         }
-        DynamicMethod m = createDynamicMethod((RubyModule) module);
-        ((RubyModule) module).addModuleFunction(methodName.asJavaString(), m);
+        refmap.put(m, this);
+        
         return this;
     }
     protected abstract DynamicMethod createDynamicMethod(RubyModule module);
@@ -105,19 +107,5 @@ public abstract class AbstractInvoker extends RubyObject {
      */
     public final Arity getArity() {
         return arity;
-    }
-    protected static final NativeParam[] getNativeParameterTypes(Ruby runtime, RubyArray paramTypes) {
-        NativeParam[] nativeParamTypes = new NativeParam[paramTypes.size()];
-        for (int i = 0; i < paramTypes.size(); ++i) {
-            IRubyObject obj = (IRubyObject) paramTypes.entry(i);
-            if (obj instanceof NativeParam) {
-                nativeParamTypes[i] = (NativeParam) obj;
-            } else if (obj instanceof RubyInteger) {
-                nativeParamTypes[i] = NativeType.valueOf(Util.int32Value(obj));
-            } else {
-                runtime.newArgumentError("Invalid parameter type");
-            }
-        }
-        return nativeParamTypes;
     }
 }
