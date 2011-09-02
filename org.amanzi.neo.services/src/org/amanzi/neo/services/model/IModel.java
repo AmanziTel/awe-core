@@ -25,6 +25,21 @@ import org.neo4j.graphdb.Node;
  * @since 1.0.0
  */
 public interface IModel {
+ 
+    // constants
+    public final static String DRIVE_TYPE = "drive_type";
+    public final static String TIMESTAMP = "timestamp";
+    public final static String LATITUDE = "lat";
+    public final static String LONGITUDE = "lon";
+    public final static String PATH = "path";
+    public final static String COUNT = "count";
+    public final static String PRIMARY_TYPE = "primary_type";
+    public final static String MIN_TIMESTAMP = "min_timestamp";
+    public final static String MAX_TIMESTAMP = "max_timestamp";
+    public final static String MIN_LATITUDE = "min_latitude";
+    public final static String MIN_LONGITUDE = "min_longitude";
+    public final static String MAX_LATITUDE = "max_latitude";
+    public final static String MAX_LONGITUDE = "max_longitude";
 
     /**
      * The name of a model is usually the value of NAME property of the model root node.

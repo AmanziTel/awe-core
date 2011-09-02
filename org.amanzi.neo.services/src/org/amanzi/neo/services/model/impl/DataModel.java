@@ -13,9 +13,13 @@
 
 package org.amanzi.neo.services.model.impl;
 
+import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDataModel;
+import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -28,10 +32,24 @@ import org.neo4j.graphdb.Node;
  */
 public abstract class DataModel extends AbstractModel implements IDataModel {
 
+    private static Logger LOGGER = Logger.getLogger(DataModel.class);
+
+    private NewDatasetService dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
+
     protected void addChild(Node parent, Node child) {
+        try {
+            dsServ.addChild(parent, child);
+        } catch (DatabaseException e) {
+            LOGGER.error("Could not add child.", e);
+        }
     }
 
     protected void addChild(Node parent, Node child, Node lastChild) {
+        try {
+            dsServ.addChild(parent, child, lastChild);
+        } catch (DatabaseException e) {
+            LOGGER.error("Could not add child.", e);
+        }
     }
 
     @Override

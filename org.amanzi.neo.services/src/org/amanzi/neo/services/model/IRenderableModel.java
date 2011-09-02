@@ -25,7 +25,7 @@ import org.geotools.referencing.CRS;
  */
 public interface IRenderableModel {
 
-    public void updateBounds(double latitude, double longitude);
+    public void updateBounds(double latitude, double longitude) throws Exception;
 
     public double getMinLatitude();
 

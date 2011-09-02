@@ -13,14 +13,27 @@
 
 package org.amanzi.neo.services.model;
 
+import org.neo4j.graphdb.Node;
+
 /**
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author grigoreva_a
  * @since 1.0.0
  */
 public interface ICorrelationModel extends IModel {
 
+    public Node getNetwork();
+
+    public Node getDataset();
+
+    public Iterable<Node> getSectors();
+
+    public Iterable<Node> getMeasurements();
+
+    public Iterable<Node> getCorrelatedNodes(Node sector);
+
+    public Node getCorrelatedSector(Node measurement);
 }

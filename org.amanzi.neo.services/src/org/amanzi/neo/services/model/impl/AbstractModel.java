@@ -27,9 +27,9 @@ import org.neo4j.graphdb.Node;
  */
 public abstract class AbstractModel implements IModel {
 
-    private String name;
-    private Node rootNode;
-    private INodeType nodeType;
+    protected String name;
+    protected Node rootNode;
+    protected INodeType nodeType;
 
     @Override
     public String getName() {

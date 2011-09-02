@@ -13,6 +13,8 @@
 
 package org.amanzi.neo.services.model;
 
+import org.amanzi.neo.services.enums.IDriveType;
+
 /**
  * TODO Purpose of 
  * <p>

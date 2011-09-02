@@ -49,7 +49,7 @@ public class DriveModelTest extends AbstractAWETest {
 	private static Node project, dataset;
 	private static String dsName;
 	private static int count = 0;
-	private static String filename = "c:\\dev\\file.txt";
+	private static String filename = "." + File.separator + "file.txt";
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -262,7 +262,7 @@ public class DriveModelTest extends AbstractAWETest {
 			fail();
 		}
 
-		DriveModel virtual = dm.findVirtualDataset("name");
+		IDriveModel virtual = dm.findVirtualDataset("name");
 		// DM returned not null
 		Assert.assertNotNull(virtual);
 		// name is correct
@@ -289,7 +289,7 @@ public class DriveModelTest extends AbstractAWETest {
 			fail();
 		}
 
-		DriveModel virtual = dm.findVirtualDataset("name");
+		IDriveModel virtual = dm.findVirtualDataset("name");
 		// DM returned null
 		Assert.assertNull(virtual);
 	}
@@ -313,7 +313,7 @@ public class DriveModelTest extends AbstractAWETest {
 			fail();
 		}
 
-		DriveModel virtual = null;
+		IDriveModel virtual = null;
 		try {
 			virtual = dm.getVirtualDataset("name", DriveTypes.values()[0]);
 		} catch (AWEException e) {
@@ -346,7 +346,7 @@ public class DriveModelTest extends AbstractAWETest {
 			fail();
 		}
 
-		DriveModel virtual = null;
+		IDriveModel virtual = null;
 		try {
 			virtual = dm.getVirtualDataset("name", DriveTypes.values()[0]);
 		} catch (AWEException e) {
@@ -388,11 +388,11 @@ public class DriveModelTest extends AbstractAWETest {
 				fail();
 			}
 		}
-		Iterable<DriveModel> it = dm.getVirtualDatasets();
+		Iterable<IDriveModel> it = dm.getVirtualDatasets();
 		// traverser is not null
 		Assert.assertNotNull(it);
 		// check that all virtual datasets are returned
-		for (DriveModel drm : it) {
+		for (IDriveModel drm : it) {
 			Assert.assertTrue(dss.contains(drm.getRootNode()));
 		}
 	}
@@ -408,7 +408,7 @@ public class DriveModelTest extends AbstractAWETest {
 			LOGGER.error("Could not create drive model", e);
 			fail();
 		}
-		Iterable<DriveModel> it = dm.getVirtualDatasets();
+		Iterable<IDriveModel> it = dm.getVirtualDatasets();
 		// traverser is not null
 		Assert.assertNotNull(it);
 		// no nodes retured

@@ -27,5 +27,5 @@ public interface ITimelineModel extends IDriveInquirerableModel {
 
     public long getMaxTimestamp();
 
-    public void updateTimestamp(long timestamp);
+    public void updateTimestamp(long timestamp) throws Exception;
 }

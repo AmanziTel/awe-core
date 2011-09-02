@@ -11,16 +11,16 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.services.model;
+package org.amanzi.neo.services.model.impl;
 
 /**
- * TODO Purpose of
+ * TODO Purpose of 
  * <p>
+ *
  * </p>
- * 
  * @author grigoreva_a
  * @since 1.0.0
  */
-public interface IDriveType {
+public class RenderableModel extends AbstractIndexedModel {
 
 }

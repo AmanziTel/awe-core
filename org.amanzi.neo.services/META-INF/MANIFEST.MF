@@ -5,7 +5,8 @@ Bundle-SymbolicName: org.amanzi.neo.services
 Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.amanzi.neo.db;bundle-version="1.0.0";visibility:=reexport,
- net.refractions.udig.libs;bundle-version="1.1.1"
+ net.refractions.udig.libs;bundle-version="1.1.1",
+ org.apache.log4j;bundle-version="1.0.0"
 Export-Package: org.amanzi.neo.services,
  org.amanzi.neo.services.correlation,
  org.amanzi.neo.services.enums,
