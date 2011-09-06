@@ -60,6 +60,7 @@
       <module>org.amanzi.gef</module>
       <module>org.amanzi.integrator.awe</module>
       <module>org.amanzi.integrator.rdt</module>
+      <module>org.amanzi.log4j</module>
       <module>org.amanzi.neo.core</module>
       <module>org.amanzi.neo.db</module>
       <module>org.amanzi.neo.loader</module>
@@ -74,7 +75,6 @@
       <module>org.amanzi.splash</module>
       <module>org.amanzi.splash-feature</module>
       <module>org.amanzi.splash.extras-feature</module>
-      <module>org.apache.log4j</module>
       <module>org.epic.regexp</module>
       <module>org.jfree</module>
       <module>org.jruby</module>
@@ -184,6 +184,7 @@
       <module>org.amanzi.gef</module>
       <module>org.amanzi.integrator.awe</module>
       <module>org.amanzi.integrator.rdt</module>
+      <module>org.amanzi.log4j</module>
       <module>org.amanzi.neo.core</module>
       <module>org.amanzi.neo.loader</module>
       <module>org.amanzi.rdt.launching</module>
@@ -194,7 +195,6 @@
       <module>org.amanzi.splash</module>
       <module>org.amanzi.splash-feature</module>
       <module>org.amanzi.splash.extras-feature</module>
-      <module>org.apache.log4j</module>
       <module>org.epic.regexp</module>
       <module>org.jfree</module>
       <module>org.jruby</module>
@@ -336,7 +336,7 @@
       <module>org.amanzi.splash</module>
       <module>org.amanzi.splash-feature</module>
       <module>org.amanzi.splash.extras-feature</module>
-      <module>org.apache.log4j</module>
+      <module>org.amanzi.log4j</module>
       <module>org.epic.regexp</module>
       <module>org.jfree</module>
       <module>org.jruby</module>
