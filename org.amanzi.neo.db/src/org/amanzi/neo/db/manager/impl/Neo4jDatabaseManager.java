@@ -18,7 +18,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.amanzi.neo.db.manager.IDatabaseManager;
+import org.apache.log4j.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.kernel.EmbeddedGraphDatabase;
+import org.neo4j.kernel.EmbeddedReadOnlyGraphDatabase;
 
 /**
  * Database manager that give access directly to Neo4j without Neoclipse layer
@@ -27,6 +30,8 @@ import org.neo4j.graphdb.GraphDatabaseService;
  * @since 1.0.0
  */
 public class Neo4jDatabaseManager implements IDatabaseManager {
+    
+    private final static Logger LOGGER = Logger.getLogger(Neo4jDatabaseManager.class);
 	
 	/**
 	 * Default Memory Mapping - empty map
@@ -56,6 +61,11 @@ public class Neo4jDatabaseManager implements IDatabaseManager {
 	 */
 	private Map<String, String> memoryMapping;
 	
+	/*
+	 * Graph Database Service
+	 */
+	private GraphDatabaseService dbService;
+	
 	/**
 	 * Full constructor - need on input all parameters of Database
 	 * 
@@ -67,6 +77,10 @@ public class Neo4jDatabaseManager implements IDatabaseManager {
 		this.databaseLocation = databaseLocation;
 		this.accessType = accessType;
 		this.memoryMapping = memoryMapping;
+		
+		LOGGER.info("Neo4j Database Manager was created with parameters: " +
+				"databaseLocation = <" + databaseLocation + ">, " +
+				"accessType = <" + accessType + ">");
 	}
 	
 	/**
@@ -137,7 +151,8 @@ public class Neo4jDatabaseManager implements IDatabaseManager {
 
     @Override
     public GraphDatabaseService getDatabaseService() {
-        return null;
+        initializeDb();
+        return dbService;
     }
 
     @Override
@@ -165,8 +180,9 @@ public class Neo4jDatabaseManager implements IDatabaseManager {
 
 	@Override
 	public void setDatabaseService(GraphDatabaseService service) {
-		// TODO Auto-generated method stub
-		
+	    shutdown();
+	    
+	    dbService = service;
 	}
 	
 	/**
@@ -186,5 +202,29 @@ public class Neo4jDatabaseManager implements IDatabaseManager {
 		
 		return databaseDirectory.getAbsolutePath();
 	}
+	
+	private void initializeDb() {
+	    if (dbService == null) {
+	        LOGGER.info("Initializing Neo4j Database Manager with parameters: " +
+	                "databaseLocation = <" + databaseLocation + ">, " +
+	                "accessType = <" + accessType + ">");
+	        
+	        switch (accessType) {
+	        case READ_ONLY:
+	            dbService = new EmbeddedReadOnlyGraphDatabase(databaseLocation, memoryMapping);
+	            break;
+	        case READ_WRITE: 
+	            dbService = new EmbeddedGraphDatabase(databaseLocation, memoryMapping);
+	            break;
+	        }
+	        
+	        //TODO: listeners???????
+	    }
+	}
+
+    @Override
+    public void shutdown() {
+        dbService = null;
+    }
 
 }

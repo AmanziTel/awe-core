@@ -25,6 +25,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.neo4j.kernel.EmbeddedGraphDatabase;
+import org.neo4j.kernel.EmbeddedReadOnlyGraphDatabase;
 
 /**
  * Tests on DatabaseManager Test
@@ -54,6 +56,7 @@ public class Neo4jDatabaseManagerTest {
     @Before
     public void setUp() throws Exception {
         clearDbLocation(new File(getDirectoryLocation(TEST_DIRECTORIES)));
+        clearDbLocation(new File(getDirectoryLocation(NEO4J_DEFAULT_DIRECTORIES)));
     }
 
     /**
@@ -62,6 +65,7 @@ public class Neo4jDatabaseManagerTest {
     @After
     public void tearDown() throws Exception {
         clearDbLocation(new File(getDirectoryLocation(TEST_DIRECTORIES)));
+        clearDbLocation(new File(getDirectoryLocation(NEO4J_DEFAULT_DIRECTORIES)));
     }
 
     private static String getDirectoryLocation(String[] subDirectories) {
@@ -204,6 +208,36 @@ public class Neo4jDatabaseManagerTest {
         Assert.assertEquals("Incorrect Database location", getDefaultNeo4jDatabaseLocation(), dbManager.getLocation());
         Assert.assertEquals("Incorrect Access Type", AccessType.READ_WRITE, dbManager.getAccessType());
         Assert.assertEquals("Incorrect Memory Mapping", Neo4jDatabaseManager.DEFAULT_MEMORY_MAPPING, dbManager.getMemoryMapping());
+    }
+    
+    @Test
+    public void checkGraphDatabaseService() {
+        Neo4jDatabaseManager dbManager = new Neo4jDatabaseManager();
+        
+        Assert.assertNotNull("Graph DB Service should not be null", dbManager.getDatabaseService());
+    }
+    
+    @Test
+    public void checkReadOnlyDatabaseService() {
+        Neo4jDatabaseManager dbManager = new Neo4jDatabaseManager(AccessType.READ_ONLY);
+        
+        Assert.assertEquals("Type of Graph DB Service incorrect", EmbeddedReadOnlyGraphDatabase.class, dbManager.getDatabaseService().getClass());
+    }
+    
+    @Test
+    public void checkReadWriteDatabaseService() {
+        Neo4jDatabaseManager dbManager = new Neo4jDatabaseManager(AccessType.READ_WRITE);
+        
+        Assert.assertEquals("Type of Graph DB Service incorrect", EmbeddedGraphDatabase.class, dbManager.getDatabaseService().getClass());
+    }
+    
+    @Test
+    public void checkDatabaseLocationOfService() {
+        String dbLocation = getDefaultDatabaseLocation();
+        
+        Neo4jDatabaseManager dbManager = new Neo4jDatabaseManager(dbLocation);
+        
+        Assert.assertTrue("Location of Service incorrect", dbManager.getDatabaseService().toString().contains(dbLocation));
     }
 
 }

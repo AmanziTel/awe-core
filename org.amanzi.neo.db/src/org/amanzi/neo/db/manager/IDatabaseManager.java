@@ -97,6 +97,12 @@ public interface IDatabaseManager {
      * @param service new graph database service
      */
     public void setDatabaseService(GraphDatabaseService service);
+    
+    /**
+     * Finish up connection to Database
+     * 
+     */
+    public void shutdown();
 
 }
 

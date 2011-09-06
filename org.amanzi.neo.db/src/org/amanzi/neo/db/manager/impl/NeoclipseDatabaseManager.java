@@ -60,4 +60,8 @@ public class NeoclipseDatabaseManager implements IDatabaseManager {
 		
 	}
 
+    @Override
+    public void shutdown() {
+    }
+
 }
