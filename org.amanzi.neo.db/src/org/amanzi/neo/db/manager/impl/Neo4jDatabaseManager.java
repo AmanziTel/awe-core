@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.db.manager.impl;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,7 +28,18 @@ import org.neo4j.graphdb.GraphDatabaseService;
  */
 public class Neo4jDatabaseManager implements IDatabaseManager {
 	
-	/*package*/ static final Map<String, String> DEFAULT_MEMORY_MAPPING = new HashMap<String, String>(0);
+	/**
+	 * Default Memory Mapping - empty map
+	 * 
+	 */
+	public static final Map<String, String> DEFAULT_MEMORY_MAPPING = new HashMap<String, String>(0);
+	
+	/**
+	 * Default Database Location
+	 * 
+	 * "user.home"/.amanzi/neo
+	 */
+	private static final String[] DEFAULT_DATABASE_LOCATION = new String[] {".amanzi", "neo"};
 	
 	/*
 	 * Location of database 
@@ -111,7 +123,7 @@ public class Neo4jDatabaseManager implements IDatabaseManager {
 	 * @param memoryMapping memory mapping parameters
 	 */
 	public Neo4jDatabaseManager(Map<String, String> memoryMapping) {
-		this(getDefaultDatabaseLocation(), AccessType.getDefaulAccessType());
+		this(getDefaultDatabaseLocation(), AccessType.getDefaulAccessType(), memoryMapping);
 	}
 	
 	/**
@@ -157,8 +169,22 @@ public class Neo4jDatabaseManager implements IDatabaseManager {
 		
 	}
 	
-	/*package*/ static String getDefaultDatabaseLocation() {
-		return null;
+	/**
+	 * Creates default location for database and returns it's path 
+	 * 
+	 * @return default path to database location
+	 */
+	public static String getDefaultDatabaseLocation() {
+		String userHome = System.getProperty("user.home");
+		
+		File databaseDirectory = new File(userHome);
+		for (String subDirectory : DEFAULT_DATABASE_LOCATION) {
+			databaseDirectory = new File(databaseDirectory, subDirectory);
+		}
+		
+		databaseDirectory.mkdirs();
+		
+		return databaseDirectory.getAbsolutePath();
 	}
 
 }
