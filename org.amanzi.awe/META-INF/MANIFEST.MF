@@ -5,8 +5,7 @@ Bundle-SymbolicName: org.amanzi.awe;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.amanzi.awe.Activator
 Bundle-Vendor: amanzi.org
-Require-Bundle: org.eclipse.core.runtime,
- net.refractions.udig.ui,
+Require-Bundle: net.refractions.udig.ui,
  net.refractions.udig.catalog
 Bundle-ActivationPolicy: lazy
 Export-Package: org.amanzi.awe

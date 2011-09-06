@@ -25,8 +25,8 @@ import org.neo4j.graphdb.GraphDatabaseService;
  * @since 1.0.0
  */
 public class NeoclipseDatabaseManager implements IDatabaseManager {
-
-    @Override
+	
+	@Override
     public GraphDatabaseService getDatabaseService() {
         return null;
     }
@@ -53,5 +53,11 @@ public class NeoclipseDatabaseManager implements IDatabaseManager {
     public AccessType getAccessType() {
         return null;
     }
+
+	@Override
+	public void setDatabaseService(GraphDatabaseService service) {
+		// TODO Auto-generated method stub
+		
+	}
 
 }

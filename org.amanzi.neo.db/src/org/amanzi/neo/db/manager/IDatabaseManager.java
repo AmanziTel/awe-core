@@ -18,16 +18,38 @@ import java.util.Map;
 import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
- * Intereface that represents methods for access to Database
+ * Interface that represents methods for access to Database
  * 
  * @author gerzog
  * @since 1.0.0
  */
 public interface IDatabaseManager {
     
+	/**
+	 * Access Type of database connection
+	 * 
+	 * @author gerzog
+	 *
+	 */
     public static enum AccessType {
+    	/*
+    	 * Read-only access
+    	 */
         READ_ONLY,
+        
+        /*
+         * Read-write access
+         */
         READ_WRITE;
+        
+        /**
+         * Returns default Access Type
+         * 
+         * @return READ_WRITE as default AccessType
+         */
+        public static AccessType getDefaulAccessType() {
+        	return READ_WRITE;
+        }
     }
     
     /**
@@ -68,6 +90,13 @@ public interface IDatabaseManager {
      * @return
      */
     public AccessType getAccessType();
+    
+    /**
+     * Set a Graph Database Service to manager
+     * 
+     * @param service new graph database service
+     */
+    public void setDatabaseService(GraphDatabaseService service);
 
 }
 
