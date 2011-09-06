@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Testing
+Bundle-SymbolicName: org.amanzi.neo.db.testing
+Bundle-Version: 1.1.0.qualifier
+Fragment-Host: org.amanzi.neo.db;bundle-version="1.0.0"
+Require-Bundle: org.junit
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
