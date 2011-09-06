@@ -40,7 +40,6 @@
       <module>org.amanzi.awe.console</module>
       <module>org.amanzi.awe.l3messages</module>
       <module>org.amanzi.awe.neostyle</module>
-      <module>org.amanzi.awe.project</module>
       <module>org.amanzi.awe.render.drive</module>
       <module>org.amanzi.awe.render.network</module>
       <module>org.amanzi.awe.report</module>
