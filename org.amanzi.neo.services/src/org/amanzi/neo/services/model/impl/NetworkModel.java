@@ -13,11 +13,16 @@
 
 package org.amanzi.neo.services.model.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.ICorrelationModel;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.INetworkType;
 import org.geotools.referencing.CRS;
+import org.neo4j.graphdb.Node;
 
 /**
  * TODO Purpose of
@@ -60,13 +65,20 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     }
 
     @Override
-    public ICorrelationModel getCorrelationModel() {
+    public INetworkType getNetworkType() {
         return null;
     }
 
     @Override
-    public INetworkType getNetworkType() {
-        return null;
+    public Iterable<ICorrelationModel> getCorrelationModels() {
+        Node network = getRootNode();
+        List<ICorrelationModel> result = new ArrayList<ICorrelationModel>();
+        for (Node dataset : NeoServiceFactory.getInstance().getNewCorrelationService().getCorrelatedDatasets(network)) {
+            result.add(new CorrelationModel(network, dataset));
+        }
+
+        return result;
+
     }
 
 }

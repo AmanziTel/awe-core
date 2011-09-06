@@ -23,7 +23,7 @@ package org.amanzi.neo.services.model;
  */
 public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IRenderableModel {
 
-    public ICorrelationModel getCorrelationModel();
+    public Iterable<ICorrelationModel> getCorrelationModels();
 
     public INetworkType getNetworkType();
 }
