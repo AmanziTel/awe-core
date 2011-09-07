@@ -11,12 +11,13 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.db.manager;
+package org.amanzi.neo.db.manager.impl;
 
-import org.amanzi.neo.db.manager.impl.Neo4jDatabaseManager;
-import org.amanzi.neo.db.manager.impl.NeoclipseDatabaseManager;
-import org.eclipse.core.runtime.Platform;
+import static org.junit.Assert.*;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * TODO Purpose of 
@@ -26,13 +27,27 @@ import org.eclipse.core.runtime.Platform;
  * @author gerzog
  * @since 1.0.0
  */
-public class DatabaseManagerFactory {
-    
-    public static IDatabaseManager getDatabaseManager() {
-        if (Platform.getBundle("org.neo4j.neoclipse") == null) {
-            return new Neo4jDatabaseManager();
-        }
-        return new NeoclipseDatabaseManager();
+public class NeoclipseDatabaseManagerTest {
+
+    /**
+     *
+     * @throws java.lang.Exception
+     */
+    @Before
+    public void setUp() throws Exception {
+    }
+
+    /**
+     *
+     * @throws java.lang.Exception
+     */
+    @After
+    public void tearDown() throws Exception {
+    }
+
+    @Test
+    public void test() {
+        fail("Not yet implemented");
     }
 
 }

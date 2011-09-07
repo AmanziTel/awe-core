@@ -18,6 +18,9 @@ import java.util.Map;
 import org.amanzi.neo.db.manager.IDatabaseManager;
 import org.amanzi.neo.db.manager.events.IDatabaseEventListener;
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.neoclipse.Activator;
+import org.neo4j.neoclipse.graphdb.GraphDbServiceManager;
+import org.neo4j.neoclipse.graphdb.GraphRunnable;
 
 /**
  * Database Manager that give access to Neo4j using Neoclipse
@@ -26,10 +29,46 @@ import org.neo4j.graphdb.GraphDatabaseService;
  * @since 1.0.0
  */
 public class NeoclipseDatabaseManager implements IDatabaseManager {
+    
+    /**
+     * Neoclipse Task to get Database Service
+     * 
+     * @author gerzog
+     * @since 1.0.0
+     */
+    private class GetDatabaseTask implements GraphRunnable {
+
+        @Override
+        public void run(GraphDatabaseService graphDb) {
+            databaseService = graphDb;
+        }
+        
+    }
+    
+    /*
+     * Neoclipse Database manager
+     */
+    private GraphDbServiceManager neoclipseManager;
+    
+    /*
+     * Graph Database Service
+     */
+    private GraphDatabaseService databaseService;
+    
+    /*
+     * Constructor for Database Manager
+     */
+    public NeoclipseDatabaseManager() {
+        neoclipseManager = Activator.getDefault().getGraphDbServiceManager();
+    }
 	
 	@Override
     public GraphDatabaseService getDatabaseService() {
-        return null;
+        if (databaseService == null) {
+            neoclipseManager.executeTask(new GetDatabaseTask(), "Get Database Service");
+        }
+        
+        return databaseService;
     }
 
     @Override
@@ -44,10 +83,12 @@ public class NeoclipseDatabaseManager implements IDatabaseManager {
 
     @Override
     public void commit() {
+        neoclipseManager.commit();
     }
 
     @Override
     public void rollback() {
+        neoclipseManager.rollback();
     }
 
     @Override
@@ -57,12 +98,12 @@ public class NeoclipseDatabaseManager implements IDatabaseManager {
 
 	@Override
 	public void setDatabaseService(GraphDatabaseService service) {
-		// TODO Auto-generated method stub
-		
+	    throw new UnsupportedOperationException("Neoclipse Database Manager have not possibility to set Graph Database Service");
 	}
 
     @Override
     public void shutdown() {
+        neoclipseManager.shutdownGraphDbService();
     }
 
     @Override

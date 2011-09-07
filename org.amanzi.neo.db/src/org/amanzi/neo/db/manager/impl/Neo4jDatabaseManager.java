@@ -169,6 +169,8 @@ public class Neo4jDatabaseManager implements IDatabaseManager {
 
     @Override
     public void commit() {
+        LOGGER.info("Commit with Database Manager");
+        
         fireEvent(EventType.BEFORE_FULL_COMMIT);
         // do nothing - Neo4jDatabaseManager have no main transaction.
         // Handling on transaction should be controlled by user
@@ -177,6 +179,8 @@ public class Neo4jDatabaseManager implements IDatabaseManager {
 
     @Override
     public void rollback() {
+        LOGGER.info("Commit with Database Manager");
+        
         fireEvent(EventType.BEFORE_FULL_ROLLBACK);
         // do nothing - Neo4jDatabaseManager have no main transaction.
         // Handling on transaction should be controlled by user
@@ -240,6 +244,8 @@ public class Neo4jDatabaseManager implements IDatabaseManager {
     @Override
     public void shutdown() {
         if (dbService != null) {
+            LOGGER.info("Database shutted down");
+            
             fireEvent(EventType.BEFORE_SHUTDOWN);
             
             dbService.shutdown();
