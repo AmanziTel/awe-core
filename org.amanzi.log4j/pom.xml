@@ -8,7 +8,7 @@
     <version>0.0.1-SNAPSHOT</version>
   </parent>
   <groupId>AWE_build</groupId>
-  <artifactId>org.apache.log4j</artifactId>
-  <version>1.0.0.qualifier</version>
+  <artifactId>org.amanzi.log4j</artifactId>
+  <version>1.2.12</version>
   <packaging>eclipse-plugin</packaging>
 </project>

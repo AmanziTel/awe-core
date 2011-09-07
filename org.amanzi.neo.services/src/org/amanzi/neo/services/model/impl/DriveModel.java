@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.services.model;
+package org.amanzi.neo.services.model.impl;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -29,7 +29,10 @@ import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
+import org.amanzi.neo.services.model.ICorrelationModel;
+import org.amanzi.neo.services.model.IDriveModel;
 import org.apache.log4j.Logger;
+import org.geotools.referencing.CRS;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -49,30 +52,19 @@ import org.neo4j.kernel.Traversal;
  * @author Ana Gr.
  * @since 1.0.0
  */
-public class DriveModel {
+public class DriveModel extends RenderableModel implements IDriveModel {
 
     private static Logger LOGGER = Logger.getLogger(DriveModel.class);
-
-    // constants
-    public final static String DRIVE_TYPE = "drive_type";
-    public final static String TIMESTAMP = "timestamp";
-    public final static String LATITUDE = "lat";
-    public final static String LONGITUDE = "lon";
-    public final static String PATH = "path";
-    public final static String COUNT = "count";
-    public final static String PRIMARY_TYPE = "primary_type";
-    public final static String MIN_TIMESTAMP = "min_timestamp";
-    public final static String MAX_TIMESTAMP = "max_timestamp";
 
     // private members
     private GraphDatabaseService graphDb;
     private Transaction tx;
     private Index<Node> files;
-    private Node root;
     private String name;
     private long min_tst = Long.MAX_VALUE;
     private long max_tst = 0;
     private int count = 0;
+    private INodeType primaryType = DriveNodeTypes.M;
 
     private NewDatasetService dsServ;
 
@@ -122,7 +114,7 @@ public class DriveModel {
             graphDb = rootNode.getGraphDatabase();
             dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
 
-            this.root = rootNode;
+            this.rootNode = rootNode;
             this.name = (String)rootNode.getProperty(NewAbstractService.NAME, null);
         } else {
             // validate params
@@ -132,8 +124,27 @@ public class DriveModel {
 
             graphDb = parent.getGraphDatabase();
             dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
-            root = dsServ.getDataset(parent, name, DatasetTypes.DRIVE, type);
+            rootNode = dsServ.getDataset(parent, name, DatasetTypes.DRIVE, type);
             this.name = name;
+        }
+    }
+
+    /**
+     * This constructor additionally sets the primary type of current DriveModel measurements. By
+     * default it is <code>{@link DriveNodeTypes#M}</code>. See also
+     * {@link DriveModel#DriveModel(Node, Node, String, IDriveType)}.
+     * 
+     * @param parent
+     * @param rootNode
+     * @param name
+     * @param type
+     * @param primaryType
+     * @throws AWEException
+     */
+    public DriveModel(Node parent, Node rootNode, String name, IDriveType type, INodeType primaryType) throws AWEException {
+        this(parent, rootNode, name, type);
+        if (primaryType != null) {
+            this.primaryType = primaryType;
         }
     }
 
@@ -148,7 +159,7 @@ public class DriveModel {
      * @return the root node
      */
     public Node getRootNode() {
-        return root;
+        return rootNode;
     }
 
     /**
@@ -180,7 +191,7 @@ public class DriveModel {
         try {
             virtual.setProperty(NewAbstractService.NAME, name);
             virtual.setProperty(DRIVE_TYPE, driveType.getId());
-            root.createRelationshipTo(virtual, DriveRelationshipTypes.VIRTUAL_DATASET);
+            rootNode.createRelationshipTo(virtual, DriveRelationshipTypes.VIRTUAL_DATASET);
             tx.success();
         } finally {
             tx.finish();
@@ -196,11 +207,11 @@ public class DriveModel {
      * @param name the name of virtual dataset node
      * @return DriveModel based on the found node or null if search failed
      */
-    public DriveModel findVirtualDataset(String name) {
+    public IDriveModel findVirtualDataset(String name) {
         LOGGER.debug("start findVirtualDataset(String name)");
 
-        DriveModel result = null;
-        for (DriveModel dm : getVirtualDatasets()) {
+        IDriveModel result = null;
+        for (IDriveModel dm : getVirtualDatasets()) {
             if (dm.getName().equals(name)) {
                 result = dm;
                 break;
@@ -218,10 +229,10 @@ public class DriveModel {
      * @return a DriveModel based on found or created virtual dataset node
      * @throws AWEException if errors occurred during creation of new node
      */
-    public DriveModel getVirtualDataset(String name, IDriveType driveType) throws AWEException {
+    public IDriveModel getVirtualDataset(String name, IDriveType driveType) throws AWEException {
         LOGGER.debug("start getVirtualDataset(String name, IDriveType driveType)");
 
-        DriveModel result = findVirtualDataset(name);
+        IDriveModel result = findVirtualDataset(name);
         if (result == null) {
             result = addVirtualDataset(name, driveType);
         }
@@ -232,11 +243,11 @@ public class DriveModel {
      * @return a List<Node> containing DriveModels created on base of virtual dataset nodes in
      *         current DriveModel
      */
-    public Iterable<DriveModel> getVirtualDatasets() {
+    public Iterable<IDriveModel> getVirtualDatasets() {
         LOGGER.debug("start getVirtualDatasets()");
 
-        List<DriveModel> result = new ArrayList<DriveModel>();
-        for (Node node : getVirtualDatasetsTraversalDescription().traverse(root).nodes()) {
+        List<IDriveModel> result = new ArrayList<IDriveModel>();
+        for (Node node : getVirtualDatasetsTraversalDescription().traverse(rootNode).nodes()) {
             try {
                 result.add(new DriveModel(null, node, null, null));
             } catch (AWEException e) {
@@ -278,12 +289,12 @@ public class DriveModel {
         }
         tx = graphDb.beginTx();
 
-        Node fileNode = dsServ.addChild(root, dsServ.createNode(DriveNodeTypes.FILE), null);
+        Node fileNode = dsServ.addChild(rootNode, dsServ.createNode(DriveNodeTypes.FILE), null);
         try {
             fileNode.setProperty(NewAbstractService.NAME, file.getName());
             fileNode.setProperty(PATH, file.getPath());
             if (files == null) {
-                files = graphDb.index().forNodes(dsServ.getIndexKey(root, DriveNodeTypes.FILE));
+                files = graphDb.index().forNodes(NewAbstractService.getIndexKey(rootNode, DriveNodeTypes.FILE));
             }
             files.add(fileNode, NewAbstractService.NAME, file.getName());
             tx.success();
@@ -323,7 +334,7 @@ public class DriveModel {
             throw new IllegalArgumentException("File node " + filename + " not found.");
         }
         tx = graphDb.beginTx();
-        Node m = dsServ.createNode(DriveNodeTypes.M);
+        Node m = dsServ.createNode(primaryType);
         dsServ.addChild(fileNode, m, null);
         try {
             Long lat = (Long)params.get(LATITUDE);
@@ -338,11 +349,11 @@ public class DriveModel {
             if ((tst != null) && (tst != 0)) {
                 if (min_tst > tst) {
                     min_tst = tst;
-                    root.setProperty(MIN_TIMESTAMP, min_tst);
+                    rootNode.setProperty(MIN_TIMESTAMP, min_tst);
                 }
                 if (max_tst < tst) {
                     max_tst = tst;
-                    root.setProperty(MAX_TIMESTAMP, max_tst);
+                    rootNode.setProperty(MAX_TIMESTAMP, max_tst);
                 }
             }
             for (String key : params.keySet()) {
@@ -351,9 +362,9 @@ public class DriveModel {
                     m.setProperty(key, value);
                 }
             }
-            root.setProperty(PRIMARY_TYPE, DriveNodeTypes.M.getId());
+            rootNode.setProperty(PRIMARY_TYPE, primaryType.getId());
             count++;
-            root.setProperty(COUNT, count);
+            rootNode.setProperty(COUNT, count);
             tx.success();
         } finally {
             tx.finish();
@@ -411,7 +422,7 @@ public class DriveModel {
             throw new IllegalArgumentException("Name is null or empty");
         }
         if (files == null) {
-            files = graphDb.index().forNodes(dsServ.getIndexKey(root, DriveNodeTypes.FILE));
+            files = graphDb.index().forNodes(NewAbstractService.getIndexKey(rootNode, DriveNodeTypes.FILE));
         }
 
         Node fileNode = files.get(NewAbstractService.NAME, name).getSingle();
@@ -451,6 +462,67 @@ public class DriveModel {
      * @return an iterator over FILE nodes
      */
     public Iterable<Node> getFiles() {
-        return dsServ.getChildrenChainTraverser(root);
+        return dsServ.getChildrenChainTraverser(rootNode);
     }
+
+    @Override
+    public IDriveType getDriveType() {
+        return null;
+    }
+
+    @Override
+    public CRS getCRS() {
+        return null;
+    }
+
+    @Override
+    public Iterable<ICorrelationModel> getCorrelatedModels() {
+        return null;
+    }
+
+    @Override
+    public ICorrelationModel getCorrelatedModel(String correlationModelName) {
+        return null;
+    }
+
+    @Override
+    public void updateBounds(double latitude, double longitude) throws DatabaseException {
+        super.updateLocationBounds(latitude, longitude);
+    }
+
+    @Override
+    public double getMinLatitude() {
+        return super.getMinLatitude();
+    }
+
+    @Override
+    public double getMaxLatitude() {
+        return super.getMaxLatitude();
+    }
+
+    @Override
+    public double getMinLongitude() {
+        return super.getMinLongitude();
+    }
+
+    @Override
+    public double getMaxLongitude() {
+        return super.getMaxLongitude();
+    }
+
+    @Override
+    public void updateTimestamp(long timestamp) throws DatabaseException {
+        super.updateTimestamp(timestamp);
+    }
+
+    @Override
+    public long getMaxTimestamp() {
+        return super.getMaxTimestamp();
+    }
+
+    @Override
+    public long getMinTimestamp() {
+        return super.getMinTimestamp();
+    }
+
 }

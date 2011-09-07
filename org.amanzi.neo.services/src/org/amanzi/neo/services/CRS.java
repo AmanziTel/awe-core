@@ -11,6 +11,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @author craig
  */
 public class CRS {
+    
     protected String type = null;
     protected String epsg = null;
     protected String wkt = null;

@@ -104,7 +104,7 @@ public abstract class NewAbstractService {
      * @param nodeType type of nodes
      * @return a string specifying index name
      */
-    public String getIndexKey(Node root, INodeType nodeType) {
+    public static String getIndexKey(Node root, INodeType nodeType) {
         // validate parameters
         if (root == null) {
             throw new IllegalArgumentException("Root cannot be null");

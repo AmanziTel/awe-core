@@ -42,6 +42,7 @@ public class NeoServiceFactory {
     private NewNetworkService newNetworkService = null;
     private NewStatisticsService newStatisticsService = null;
     private ProjectService newProjectService = null;
+    private org.amanzi.neo.services.CorrelationService newCorrelationService = null;
 
     public static NeoServiceFactory getInstance() {
         return instance;
@@ -166,6 +167,20 @@ public class NeoServiceFactory {
             }
         }
         return newProjectService;
+    }
+
+    /**
+     * @return
+     */
+    public org.amanzi.neo.services.CorrelationService getNewCorrelationService() {
+        if (newCorrelationService == null) {
+            synchronized (datasetMon) {
+                if (newCorrelationService == null) {
+                    newCorrelationService = new org.amanzi.neo.services.CorrelationService();
+                }
+            }
+        }
+        return newCorrelationService;
     }
 
 }
