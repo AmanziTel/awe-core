@@ -14,10 +14,14 @@
 package org.amanzi.neo.db.manager.impl;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.amanzi.neo.db.manager.IDatabaseManager;
+import org.amanzi.neo.db.manager.events.DatabaseEvent.EventType;
+import org.amanzi.neo.db.manager.events.DatabaseEvent;
+import org.amanzi.neo.db.manager.events.IDatabaseEventListener;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
@@ -62,6 +66,11 @@ public class Neo4jDatabaseManager implements IDatabaseManager {
      * Graph Database Service
      */
     private GraphDatabaseService dbService;
+    
+    /*
+     * Listeners for Database Events       
+     */
+    private ArrayList<IDatabaseEventListener> listeners = new ArrayList<IDatabaseEventListener>();
 
     /**
      * Full constructor - need on input all parameters of Database
@@ -160,14 +169,18 @@ public class Neo4jDatabaseManager implements IDatabaseManager {
 
     @Override
     public void commit() {
+        fireEvent(EventType.BEFORE_FULL_COMMIT);
         // do nothing - Neo4jDatabaseManager have no main transaction.
         // Handling on transaction should be controlled by user
+        fireEvent(EventType.AFTER_FULL_COMMIT);
     }
 
     @Override
     public void rollback() {
+        fireEvent(EventType.BEFORE_FULL_ROLLBACK);
         // do nothing - Neo4jDatabaseManager have no main transaction.
         // Handling on transaction should be controlled by user
+        fireEvent(EventType.AFTER_FULL_ROLLBACK);
     }
 
     @Override
@@ -206,6 +219,8 @@ public class Neo4jDatabaseManager implements IDatabaseManager {
     private void initializeDb() {
         if (dbService == null) {
             LOGGER.info("Initializing Neo4j Database Manager with parameters: " + "databaseLocation = <" + databaseLocation + ">, " + "accessType = <" + accessType + ">");
+            
+            fireEvent(EventType.BEFORE_STARTUP);
 
             switch (accessType) {
             case READ_ONLY:
@@ -215,6 +230,8 @@ public class Neo4jDatabaseManager implements IDatabaseManager {
                 dbService = new EmbeddedGraphDatabase(databaseLocation, memoryMapping);
                 break;
             }
+            
+            fireEvent(EventType.AFTER_STARTUP);
 
             // TODO: listeners???????
         }
@@ -223,10 +240,37 @@ public class Neo4jDatabaseManager implements IDatabaseManager {
     @Override
     public void shutdown() {
         if (dbService != null) {
+            fireEvent(EventType.BEFORE_SHUTDOWN);
+            
             dbService.shutdown();
+            
+            fireEvent(EventType.AFTER_SHUTDOWN);
         }
 
+        listeners.clear();
         dbService = null;
+    }
+
+    @Override
+    public void addDatabaseEventListener(IDatabaseEventListener listener) {
+        listeners.add(listener);
+    }
+
+    @Override
+    public void removeDatabaseEventListener(IDatabaseEventListener listener) {
+        listeners.remove(listener);
+    }
+    
+    /**
+     * Fires database event for listeners
+     *
+     * @param eventType type of event
+     */
+    private void fireEvent(EventType eventType) {
+        DatabaseEvent event = new DatabaseEvent(eventType);
+        for (IDatabaseEventListener listener : listeners) {
+            listener.onDatabaseEvent(event);
+        }
     }
 
 }

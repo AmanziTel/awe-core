@@ -20,11 +20,17 @@ import java.util.Random;
 
 import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.db.manager.IDatabaseManager.AccessType;
+import org.amanzi.neo.db.manager.events.DatabaseEvent;
+import org.amanzi.neo.db.manager.events.DatabaseEvent.EventType;
+import org.amanzi.neo.db.manager.events.IDatabaseEventListener;
+import org.jmock.Expectations;
+import org.jmock.Mockery;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
 import org.neo4j.kernel.EmbeddedReadOnlyGraphDatabase;
 
@@ -43,6 +49,21 @@ public class Neo4jDatabaseManagerTest {
     private final static String[] NEO4J_DEFAULT_DIRECTORIES = new String[] {".amanzi", "neo"};
 
     private final static String DATABASE_DIRECTORY = "neo";
+    
+    private final Mockery context = new Mockery();
+    
+    /**
+     * Type of Event Actions
+     * 
+     * @author gerzog
+     * @since 1.0.0
+     */
+    private static enum EventActionType {
+        SHUTDOWN,
+        STARTUP,
+        FULL_COMMIT,
+        FULL_ROLLBACK;
+    }
 
     @BeforeClass
     public static void setUpTest() {
@@ -243,6 +264,16 @@ public class Neo4jDatabaseManagerTest {
     }
     
     @Test
+    public void checkBeforeAndAfterStartupEvent() {
+        Neo4jDatabaseManager dbManager = new Neo4jDatabaseManager();
+        dbManager.addDatabaseEventListener(getDatabaseListener(EventType.BEFORE_STARTUP, EventType.AFTER_STARTUP));
+        
+        dbManager.getDatabaseService();
+        
+        context.assertIsSatisfied();
+    }
+    
+    @Test
     public void checkReadOnlyDatabaseService() {
         //for read only we need to have already created DB
         Neo4jDatabaseManager dbManager = new Neo4jDatabaseManager();
@@ -256,5 +287,80 @@ public class Neo4jDatabaseManagerTest {
         //shutdown db
         dbManager.shutdown();
     }
+    
+    @Test
+    public void checkBeforeAndAfterShutdownEvent() {
+        Neo4jDatabaseManager dbManager = getMockDbManagerForEvents(EventActionType.SHUTDOWN, EventType.BEFORE_SHUTDOWN, EventType.AFTER_SHUTDOWN);
+        
+        dbManager.shutdown();
+        
+        context.assertIsSatisfied();
+    }
+    
+    @Test
+    public void checkBeforeAndAfterFullCommitEvent() {
+        Neo4jDatabaseManager dbManager = getMockDbManagerForEvents(EventActionType.FULL_COMMIT, EventType.BEFORE_FULL_COMMIT, EventType.AFTER_FULL_COMMIT);
+        
+        dbManager.commit();
+        
+        context.assertIsSatisfied();
+    }
+    
+    @Test
+    public void checkBeforeAndAfterFullRollbackEvent() {
+        Neo4jDatabaseManager dbManager = getMockDbManagerForEvents(EventActionType.FULL_ROLLBACK, EventType.BEFORE_FULL_ROLLBACK, EventType.AFTER_FULL_ROLLBACK);
+        
+        dbManager.rollback();
+        
+        context.assertIsSatisfied();
+    }
+    
+    /**
+     * Creates Mock for Event testing
+     *
+     * @param eventType type of event to test
+     * @return Neo4jDatabaseManager configured with corresponding mocks
+     */
+    private Neo4jDatabaseManager getMockDbManagerForEvents(EventActionType actionType, EventType ... eventTypes) {
+        Neo4jDatabaseManager dbManager = new Neo4jDatabaseManager();
+        dbManager.setDatabaseService(getGraphDbServiceMock(actionType));
+        
+        IDatabaseEventListener listener = getDatabaseListener(eventTypes);
+        dbManager.addDatabaseEventListener(listener);
+        
+        return dbManager;
+    }
+    
+    /**
+     * Returns a Mock for Graph DB Service
+     *
+     * @return
+     */
+    private GraphDatabaseService getGraphDbServiceMock(EventActionType actionType) {
+        final GraphDatabaseService service = context.mock(GraphDatabaseService.class);
+        
+        switch (actionType) {
+        case SHUTDOWN:
+            context.checking(new Expectations() {{
+                oneOf(service).shutdown();
+            }});
+            break;
+        }
+        
+        return service;
+    }
+    
+    private IDatabaseEventListener getDatabaseListener(final EventType ... eventTypes) {
+        final IDatabaseEventListener eventListener = context.mock(IDatabaseEventListener.class);
+        
+        for (final EventType eventType : eventTypes) {
+            context.checking(new Expectations() {{
+                oneOf(eventListener).onDatabaseEvent(with(equal(new DatabaseEvent(eventType))));
+            }});
+        }
+        
+        return eventListener;
+    }
 
 }
+ 

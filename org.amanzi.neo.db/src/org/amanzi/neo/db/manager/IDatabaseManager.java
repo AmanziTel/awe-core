@@ -15,6 +15,7 @@ package org.amanzi.neo.db.manager;
 
 import java.util.Map;
 
+import org.amanzi.neo.db.manager.events.IDatabaseEventListener;
 import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
@@ -103,6 +104,16 @@ public interface IDatabaseManager {
      * 
      */
     public void shutdown();
+    
+    /**
+     * Add new database event listener
+     */
+    public void addDatabaseEventListener(IDatabaseEventListener listener);
+    
+    /**
+     * Removes new database event listener
+     */
+    public void removeDatabaseEventListener(IDatabaseEventListener listener);
 
 }
 

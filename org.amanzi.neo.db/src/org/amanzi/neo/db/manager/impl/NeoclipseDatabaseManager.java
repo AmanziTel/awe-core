@@ -16,6 +16,7 @@ package org.amanzi.neo.db.manager.impl;
 import java.util.Map;
 
 import org.amanzi.neo.db.manager.IDatabaseManager;
+import org.amanzi.neo.db.manager.events.IDatabaseEventListener;
 import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
@@ -62,6 +63,14 @@ public class NeoclipseDatabaseManager implements IDatabaseManager {
 
     @Override
     public void shutdown() {
+    }
+
+    @Override
+    public void addDatabaseEventListener(IDatabaseEventListener listener) {
+    }
+
+    @Override
+    public void removeDatabaseEventListener(IDatabaseEventListener listener) {
     }
 
 }
