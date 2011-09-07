@@ -16,6 +16,7 @@ package org.amanzi.neo.services.statistic.internal;
 import java.util.Collection;
 import java.util.Set;
 
+import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.services.statistic.ChangeClassRule;
 import org.amanzi.neo.services.statistic.ISinglePropertyStat;
 import org.amanzi.neo.services.statistic.IStatistic;
