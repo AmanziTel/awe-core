@@ -215,13 +215,9 @@ public class Neo4jDatabaseManagerTest {
         Neo4jDatabaseManager dbManager = new Neo4jDatabaseManager();
         
         Assert.assertNotNull("Graph DB Service should not be null", dbManager.getDatabaseService());
-    }
-    
-    @Test
-    public void checkReadOnlyDatabaseService() {
-        Neo4jDatabaseManager dbManager = new Neo4jDatabaseManager(AccessType.READ_ONLY);
         
-        Assert.assertEquals("Type of Graph DB Service incorrect", EmbeddedReadOnlyGraphDatabase.class, dbManager.getDatabaseService().getClass());
+        //shutdown db
+        dbManager.shutdown();
     }
     
     @Test
@@ -229,6 +225,9 @@ public class Neo4jDatabaseManagerTest {
         Neo4jDatabaseManager dbManager = new Neo4jDatabaseManager(AccessType.READ_WRITE);
         
         Assert.assertEquals("Type of Graph DB Service incorrect", EmbeddedGraphDatabase.class, dbManager.getDatabaseService().getClass());
+        
+        //shutdown db
+        dbManager.shutdown();
     }
     
     @Test
@@ -238,6 +237,24 @@ public class Neo4jDatabaseManagerTest {
         Neo4jDatabaseManager dbManager = new Neo4jDatabaseManager(dbLocation);
         
         Assert.assertTrue("Location of Service incorrect", dbManager.getDatabaseService().toString().contains(dbLocation));
+        
+        //shutdown db
+        dbManager.shutdown();
+    }
+    
+    @Test
+    public void checkReadOnlyDatabaseService() {
+        //for read only we need to have already created DB
+        Neo4jDatabaseManager dbManager = new Neo4jDatabaseManager();
+        dbManager.getDatabaseService();
+        dbManager.shutdown();
+        
+        dbManager = new Neo4jDatabaseManager(AccessType.READ_ONLY);
+        
+        Assert.assertEquals("Type of Graph DB Service incorrect", EmbeddedReadOnlyGraphDatabase.class, dbManager.getDatabaseService().getClass());
+        
+        //shutdown db
+        dbManager.shutdown();
     }
 
 }
