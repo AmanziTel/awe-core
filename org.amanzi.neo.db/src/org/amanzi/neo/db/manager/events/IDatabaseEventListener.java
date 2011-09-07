@@ -11,23 +11,21 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.db.manager;
-
-import org.amanzi.neo.db.manager.impl.Neo4jDatabaseManager;
-
+package org.amanzi.neo.db.manager.events;
 
 /**
- * TODO Purpose of 
- * <p>
- *
- * </p>
+ * Interface that represents listener of Database Events
+ * 
  * @author gerzog
  * @since 1.0.0
  */
-public class DatabaseManagerFactory {
+public interface IDatabaseEventListener {
     
-    public static IDatabaseManager getDatabaseManager() {
-        return new Neo4jDatabaseManager();
-    }
+    /**
+     * Handles Database Event
+     *
+     * @param event database event
+     */
+    public void onDatabaseEvent(DatabaseEvent event);
 
 }
