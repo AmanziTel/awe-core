@@ -13,13 +13,18 @@
 
 package org.amanzi.neo.services.statistic;
 
-import java.util.List;
+import java.util.Map;
 
+import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.exceptions.FailedParseValueException;
+import org.amanzi.neo.services.exceptions.IndexPropertyException;
+import org.amanzi.neo.services.exceptions.InvalidStatisticsParameterException;
+import org.amanzi.neo.services.exceptions.UnsupportedClassException;
 import org.amanzi.neo.services.statistic.internal.NewPropertyStatistics;
 
 /**
- * TODO Purpose of
  * <p>
+ * interface for vault classes
  * </p>
  * 
  * @author Kruglik_A
@@ -32,7 +37,7 @@ public interface IVault {
      * 
      * @return List<IVault> subVaults
      */
-    public List<IVault> getSubVaults();
+    public Map<String, IVault> getSubVaults();
 
     /**
      * this method get count
@@ -71,23 +76,43 @@ public interface IVault {
 
     /**
      * this method get list of propertyStatistics
+     * 
      * @return List<NewPropertyStatistics> propertyStatisticsList
      */
-    public List<NewPropertyStatistics> getPropertyStatisticsList();
+    public Map<String, NewPropertyStatistics> getPropertyStatisticsMap();
 
     /**
      * add propertyStatistics to propertyStatisticsList
+     * 
      * @param propStat
      */
     public void addPropertyStatistics(NewPropertyStatistics propStat);
 
     /**
+     * * this method index property in PropertyStatistics and update counts in vaults
+     * 
+     * @param nodeType
+     * @param propName
+     * @param propValue
+     * @throws IndexPropertyException - method throw this exception if type of given propValue is
+     *         wrong
+     * @throws InvalidStatisticsParameterException - method throw this exception if some parameter =
+     *         null
      * 
      */
-    public void index();
+    public void indexProperty(String nodeType, String propName, Object propValue) throws IndexPropertyException,
+            InvalidStatisticsParameterException;
 
-    /**
-     * 
-     */
-    public void parse();
+   /**
+    * this method defines type of property value and return this value
+    *
+    * @param nodeType - type of vault
+    * @param propertyName - property name
+    * @param propertyValue - String property value
+    * @return Object property value
+ * @throws UnsupportedClassException 
+ * @throws AWEException 
+    */
+    public Object parse(String nodeType, String propertyName, String propertyValue) throws InvalidStatisticsParameterException, FailedParseValueException, UnsupportedClassException, AWEException ;
+
 }

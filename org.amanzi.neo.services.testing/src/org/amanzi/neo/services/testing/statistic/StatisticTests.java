@@ -43,6 +43,7 @@ public class StatisticTests extends AbstractAWETest{
   
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
+    	    	
         startTimestamp = System.currentTimeMillis();
         LOGGER.info("Set up Statistic Test");
 
@@ -370,7 +371,7 @@ public class StatisticTests extends AbstractAWETest{
             Assert.assertTrue("collection of propertyName is wrong", col.equals(datasetStatistic.getPropertyNameCollection(ROOT_KEY, NODE_TYPE_1,  new Comparable<Class<?>>() {
 
                 @Override
-                public int compareTo(Class<?> o) {
+                public int compareTo(Class o) {
                     return Comparable.class.isAssignableFrom(o) ? 0 : -1;
                 }
             })));
@@ -398,7 +399,7 @@ public class StatisticTests extends AbstractAWETest{
             Assert.assertFalse("collection of propertyName is wrong", col.equals(datasetStatistic.getPropertyNameCollection(ROOT_KEY, NODE_TYPE_1,  new Comparable<Class<?>>() {
 
                 @Override
-                public int compareTo(Class<?> o) {
+                public int compareTo(Class o) {
                     return Comparable.class.isAssignableFrom(o) ? 0 : -1;
                 }
             })));
