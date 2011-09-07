@@ -144,7 +144,6 @@
     <profile>
     <id>test_build</id>
     <modules>
-      <module>org.amanzi.awe.project</module>
       <module>com.lowagie.itext</module>
       <module>net.refractions.udig.awe</module>
       <module>net.refractions.udig.awe-feature</module>
@@ -283,7 +282,6 @@
       <activeByDefault>true</activeByDefault>
     </activation>
     <modules>
-      <module>org.amanzi.awe.project</module>
       <module>com.lowagie.itext</module>
       <module>net.refractions.udig.awe</module>
       <module>net.refractions.udig.awe-feature</module>
