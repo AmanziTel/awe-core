@@ -55,6 +55,7 @@ import org.neo4j.graphdb.Traverser;
  * @author NiCK
  * @since 1.0.0
  */
+@SuppressWarnings("deprecation")
 public class DatasetImportUrlWizardPage extends WizardPage {
 
     /** The c dataset. */

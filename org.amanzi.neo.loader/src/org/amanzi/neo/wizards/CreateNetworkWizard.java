@@ -55,15 +55,11 @@ import org.neo4j.graphdb.Node;
  */
 public class CreateNetworkWizard extends Wizard implements INewWizard {
 
-    private IWorkbench workbench;
-    private IStructuredSelection selection;
     private Map<INodeType, EditPropertiesPage> pages = new HashMap<INodeType, EditPropertiesPage>();
     private CreateNetworkMainPage mainPage;
 
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
-        this.workbench = workbench;
-        this.selection = selection;
         setWindowTitle("Create network");
         setForcePreviousAndNextButtons(true);
         pages.clear();

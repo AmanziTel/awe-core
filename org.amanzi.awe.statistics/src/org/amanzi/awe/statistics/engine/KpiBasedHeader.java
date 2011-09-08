@@ -13,10 +13,6 @@
 
 package org.amanzi.awe.statistics.engine;
 
-import org.jruby.Ruby;
-import org.jruby.RubyNumeric;
-import org.jruby.RubyString;
-import org.jruby.runtime.builtin.IRubyObject;
 import org.neo4j.graphdb.Node;
 
 /**

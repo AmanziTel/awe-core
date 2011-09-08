@@ -67,7 +67,6 @@ import org.jfree.data.general.Dataset;
 import org.jfree.data.general.DefaultPieDataset;
 import org.jfree.data.general.ValueDataset;
 import org.jfree.data.time.TimeSeriesCollection;
-import org.jfree.data.xy.IntervalXYDataset;
 import org.jfree.data.xy.XYBarDataset;
 import org.jfree.ui.GradientPaintTransformType;
 import org.jfree.ui.StandardGradientPaintTransformer;
@@ -84,10 +83,7 @@ import org.neo4j.graphdb.Node;
 public class Charts {
     private static final String FACTORY_ID = Charts.class.getName();
     /** Color COLOR_LEFT_PROPERTY field */
-    private static final Color COLOR_LEFT_PROPERTY = Color.black;
-    /** Color COLOR_RIGHT_PROPERTY field */
-    private static final Color COLOR_RIGHT_PROPERTY = Color.red;
-
+    
     public static IEditorPart getActiveEditor() {
         IWorkbenchPage activePage = PlatformUI.getWorkbench().getWorkbenchWindows()[0].getActivePage();
         return activePage.getActiveEditor();

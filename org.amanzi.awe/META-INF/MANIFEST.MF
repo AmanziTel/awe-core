@@ -7,15 +7,12 @@ Bundle-Activator: org.amanzi.awe.Activator
 Bundle-Vendor: amanzi.org
 Require-Bundle: org.eclipse.core.runtime,
  net.refractions.udig.ui,
- net.refractions.udig.browser,
- net.refractions.udig.tool.select,
  org.eclipse.ui.ide,
  org.rubypeople.rdt.ui,
  org.eclipse.debug.ui,
- org.amanzi.integrator.awe,
- org.amanzi.awe.views.network,
  org.amanzi.neo.core,
  org.amanzi.splash;bundle-version="1.0.0",
  net.refractions.udig.catalog
 Eclipse-LazyStart: true
 Export-Package: org.amanzi.awe
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6

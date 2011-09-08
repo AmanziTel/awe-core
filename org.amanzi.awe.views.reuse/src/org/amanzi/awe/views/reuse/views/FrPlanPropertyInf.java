@@ -50,7 +50,6 @@ import org.neo4j.kernel.Uniqueness;
  */
 public class FrPlanPropertyInf implements IPropertyInformation {
 
-    private final IStatistic statistic;
     private final Node networkNode;
     private final FrequencyPlanModel model;
 
@@ -76,7 +75,6 @@ public class FrPlanPropertyInf implements IPropertyInformation {
      */
     public FrPlanPropertyInf(IStatistic statistic, Node networkNode, FrequencyPlanModel model, String propertyName, String sector,
             String ncc, String bcc, TRXTYPE trxtype) {
-        this.statistic = statistic;
         this.networkNode = networkNode;
         this.model = model;
         this.propertyName = propertyName;

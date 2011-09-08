@@ -141,8 +141,6 @@ public class CompareResult {
      */
     public static class CompareNodes {
         // TODO add relation comparing!
-        private final Node netNode;
-        private final Node etalonNode;
         private final boolean equals;
         private final Set<CompareProperties> difProp;
 
@@ -155,8 +153,6 @@ public class CompareResult {
         public CompareNodes(Node netNode, Node etalonNode) {
             super();
             difProp = new HashSet<CompareProperties>();
-            this.netNode = netNode;
-            this.etalonNode = etalonNode;
             Set<String> keys = new HashSet<String>();
             for (String key : etalonNode.getPropertyKeys()) {
                 keys.add(key);

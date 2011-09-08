@@ -305,7 +305,7 @@ public class Vault {
     }
 
 
-    public Collection<String> getPropertyNameCollection(String nodeTypeId, Comparable<Class> comparable) {
+    public Collection<String> getPropertyNameCollection(String nodeTypeId, Comparable<Class<?>> comparable) {
         NodeTypeVault vault=propertyMap.get(nodeTypeId);
         if (vault==null){
             return new ArrayList<String>();

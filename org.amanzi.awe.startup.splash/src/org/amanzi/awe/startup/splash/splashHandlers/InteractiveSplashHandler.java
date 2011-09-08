@@ -29,6 +29,7 @@ import org.eclipse.ui.splash.BasicSplashHandler;
 /**
  * @since 1.0.0
  */
+@SuppressWarnings("restriction")
 public class InteractiveSplashHandler extends BasicSplashHandler {
     public void init(Shell splash) {
         super.init(splash);

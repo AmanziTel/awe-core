@@ -1,11 +1,5 @@
 package org.amanzi.awe.statistics;
 
-import java.io.IOException;
-import java.net.URL;
-
-import org.amanzi.awe.views.kpi.KPIPlugin;
-import org.amanzi.scripting.jruby.ScriptUtils;
-import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
@@ -33,24 +27,8 @@ public class StatisticPlugin extends AbstractUIPlugin {
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
-//		initializeRuby();
+		
 	}
-
-	private void initializeRuby() {
-        try {
-            URL statPluginPath = FileLocator.resolve(StatisticPlugin.getDefault().getBundle().getEntry("/"));
-            System.out.println("Path to statistics plugin: "+statPluginPath.getFile());
-            KPIPlugin.getDefault().getRubyRuntime().evalScriptlet("$LOAD_PATH<<\""+statPluginPath.getFile()+"\";puts $LOAD_PATH.join(\"\n\")");
-            System.out.println("Path added");
-            URL fileURL = FileLocator.toFileURL(StatisticPlugin.getDefault().getBundle().getEntry("ruby/builder.rb"));
-            System.out.println("Path to builder file: "+fileURL.getPath());
-            KPIPlugin.getDefault().getRubyRuntime().evalScriptlet(ScriptUtils.getScriptContent(fileURL.getPath()));
-            System.out.println("Builder is initialized");
-        } catch (Exception e) {
-            // TODO Handle IOException
-            e.printStackTrace();
-        }
-    }
 
     /*
 	 * (non-Javadoc)

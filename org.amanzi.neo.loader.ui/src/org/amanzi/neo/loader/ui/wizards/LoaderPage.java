@@ -78,6 +78,7 @@ public abstract class LoaderPage<T extends IConfigurationData> extends WizardPag
         ((AbstractLoaderWizard<?>)getWizard()).setAccessType(batchMode?DatabaseManager.DatabaseAccessType.BATCH:DatabaseAccessType.EMBEDDED);
     }
     
+    @SuppressWarnings("unchecked")
     protected ILoader< ? extends IDataElement, T> autodefine(T data) {
         ILoader< ? extends IDataElement, T> loader = getSelectedLoader();
         ILoader< ? extends IDataElement, T> candidate=null;
@@ -182,6 +183,7 @@ public abstract class LoaderPage<T extends IConfigurationData> extends WizardPag
      * 
      * @return the loaders descriptions
      */
+    @SuppressWarnings("unchecked")
     protected String[] getLoadersDescriptions() {
         if (loaders.isEmpty()) {
             AbstractLoaderWizard<T> wizard = (AbstractLoaderWizard<T>)getWizard();
@@ -212,6 +214,7 @@ public abstract class LoaderPage<T extends IConfigurationData> extends WizardPag
         }
         setSelectedLoader(loader);
     }
+    @SuppressWarnings("unchecked")
     protected int setSelectedLoader(ILoader< ? extends IDataElement, T> loader) {
         AbstractLoaderWizard<T> wizard = (AbstractLoaderWizard<T>)getWizard();
         wizard.setSelectedLoader(loader);
@@ -224,6 +227,7 @@ public abstract class LoaderPage<T extends IConfigurationData> extends WizardPag
      * 
      * @return the selected loader
      */
+    @SuppressWarnings("unchecked")
     protected ILoader< ? extends IDataElement, T> getSelectedLoader() {
         AbstractLoaderWizard<T> wizard = (AbstractLoaderWizard<T>)getWizard();
         return wizard.getSelectedLoader();
@@ -234,6 +238,7 @@ public abstract class LoaderPage<T extends IConfigurationData> extends WizardPag
      * 
      * @return the configuration data
      */
+    @SuppressWarnings("unchecked")
     public T getConfigurationData() {
         IWizard wizard = getWizard();
         return ((AbstractLoaderWizard<T>)wizard).getConfigurationData();

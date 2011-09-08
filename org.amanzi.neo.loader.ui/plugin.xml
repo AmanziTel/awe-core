@@ -278,12 +278,6 @@
             category="org.amanzi.neo.loader.ui.preferences.SynonymsPreferencePage">
       </page>
       <page
-            class="org.amanzi.neo.loader.ui.preferences.ProbeLoaderPreferencePage"
-            id="org.amanzi.neo.loader.ui.preferences.ProbeLoaderPreferencePage"
-            name="Probe data"
-            category="org.amanzi.neo.loader.ui.preferences.SynonymsPreferencePage">
-      </page>
-      <page
             class="org.amanzi.neo.loader.ui.preferences.TransmissionLoaderPreferencePage"
             id="org.amanzi.neo.loader.ui.preferences.TransmissionLoaderPreferencePage"
             name="Transmission lists"
@@ -295,8 +289,5 @@
       <initializer
             class="org.amanzi.neo.loader.ui.preferences.DataLoadPreferenceInitializer">
       </initializer>
-   </extension>
-   <extension
-         point="org.amanzi.neo.loader.ui.loaders">
    </extension>
 </plugin>

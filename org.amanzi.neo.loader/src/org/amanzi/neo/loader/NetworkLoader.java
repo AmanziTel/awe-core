@@ -102,9 +102,6 @@ public class NetworkLoader extends AbstractLoader {
     /** The main headers. */
     private final ArrayList<String> mainHeaders = new ArrayList<String>();
     
-    /** The identity headers. */
-    private final ArrayList<String> identityHeaders = new ArrayList<String>();
-    
     /** The short lines. */
     public ArrayList<String> shortLines = new ArrayList<String>();
     
@@ -820,23 +817,10 @@ public class NetworkLoader extends AbstractLoader {
             band = band.substring(spaceIndex).trim();
         }
         
-        //try to get BCCH frequency
-        Object frequency = propertyMap.get("bcch");
-        if (frequency != null) {
-            Integer iFrequency = (Integer)frequency;
-            
-
-            // Utils.createBCCHCarrier(sector, band, new int[] {iFrequency}, neo);
-        }
-        
         //try to get other frequencies
         ArrayList<String> propertiesToRemove = new ArrayList<String>();
         for (String key : propertyMap.keySet()) {
             if (key.startsWith("trx")) {
-                String trxIndex = key.substring(key.indexOf("trx") + 3);
-                Integer trxId = Integer.parseInt(trxIndex);
-                
-                Integer arfcn = (Integer)propertyMap.get(key);
                 propertiesToRemove.add(key);
                 // Utils.createCarrier(sector, trxId, band, new int[] {arfcn}, neo);
             }

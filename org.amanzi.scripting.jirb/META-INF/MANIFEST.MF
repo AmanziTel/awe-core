@@ -5,10 +5,8 @@ Bundle-SymbolicName: org.amanzi.scripting.jirb;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: amanzi.org
 Require-Bundle: org.amanzi.scripting.jruby;visibility:=reexport,
- org.eclipse.swt,
  org.eclipse.core.runtime,
  org.jruby,
- org.eclipse.jface;bundle-version="3.3.1",
  org.eclipse.ui;bundle-version="3.3.1"
 Export-Package: org.amanzi.scripting.jirb
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6

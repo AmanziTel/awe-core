@@ -24,12 +24,10 @@ import org.amanzi.awe.statistics.engine.IHierarchyLevel;
  * @since 1.0.0
  */
 public class TimeLevel implements IHierarchyLevel {
-    private TimeLevel parent;
     private TimeLevel underlying;
     private String name;
 
-    public TimeLevel(String name, TimeLevel parent, TimeLevel underlying) {
-        this.parent = parent;
+    public TimeLevel(String name, TimeLevel underlying) {
         this.underlying = underlying;
         this.name = name;
     }

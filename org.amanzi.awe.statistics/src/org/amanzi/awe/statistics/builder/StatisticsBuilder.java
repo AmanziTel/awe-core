@@ -35,18 +35,15 @@ import org.amanzi.awe.statistics.database.entity.StatisticsGroup;
 import org.amanzi.awe.statistics.database.entity.StatisticsRow;
 import org.amanzi.awe.statistics.engine.IDatasetService;
 import org.amanzi.awe.statistics.engine.KpiBasedHeader;
-import org.amanzi.awe.statistics.exceptions.IncorrectInputException;
 import org.amanzi.awe.statistics.template.Condition;
 import org.amanzi.awe.statistics.template.Template;
 import org.amanzi.awe.statistics.template.TemplateColumn;
 import org.amanzi.awe.statistics.template.Threshold;
-import org.amanzi.awe.statistics.template.Template.DataType;
 import org.amanzi.awe.views.kpi.KPIPlugin;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.CorrelationRelationshipTypes;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
-import org.amanzi.neo.services.enums.OssType;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -177,60 +174,12 @@ public class StatisticsBuilder {
 	}
 
 	private IDatasetService getDatasetService(Node dataset) {
-		String type = (String) dataset
-				.getProperty(INeoConstants.PROPERTY_TYPE_NAME);
 		if (dataset.hasProperty(INeoConstants.DRIVE_TYPE)
 				&& dataset.getProperty(INeoConstants.DRIVE_TYPE)
 						.equals("romes")) {
 			return new RomesService(neo, dataset);
 		}
 		return new IDENService(neo, dataset);
-	}
-
-	/**
-	 * Validates if a dataset matches a template
-	 * 
-	 * @param dataset
-	 *            the dataset to be validated
-	 * @param template
-	 *            the template
-	 * @throws IncorrectInputException
-	 *             if input dataset does not match template
-	 */
-	private void validate(Node dataset, Template template)
-			throws IncorrectInputException {
-		DataType type = template.getType();
-		String typeName = type.getTypeName();
-		switch (type) {
-		case NEMO1:
-		case NEMO2:
-		case ROMES:
-		case TEMS:
-			String driveType = dataset.getProperty(INeoConstants.DRIVE_TYPE)
-					.toString();
-			checkTypes(typeName, driveType);
-			break;
-		case RNC_COUNTERS:
-		case PERFORMANCE_COUNTERS:
-			String ossType = dataset.getProperty(OssType.PROPERTY_NAME)
-					.toString();
-			checkTypes(typeName, ossType);
-			break;
-		}
-	}
-
-	/**
-	 * @param templateType
-	 * @param driveType
-	 * @throws IncorrectInputException
-	 */
-	private void checkTypes(String templateType, String driveType)
-			throws IncorrectInputException {
-		if (!templateType.equalsIgnoreCase(driveType)) {
-			throw new IncorrectInputException("The dataset type ('" + driveType
-					+ "') does not match the template type ('"
-					+ templateType.toLowerCase() + "')");
-		}
 	}
 
 	private DatasetStatistics findOrCreateStatisticsRoot(Node dataset,
@@ -371,7 +320,6 @@ public class StatisticsBuilder {
 				// break;
 				// }
 
-				long t = System.currentTimeMillis();
 				Collection<Node> nodes = dsService.getNodes(currentStartTime,
 						nextStartTime);
 				nodesCount = nodes.size();
@@ -696,13 +644,6 @@ public class StatisticsBuilder {
 			group.addRow(row);
 		}
 		return row;
-	}
-
-	private StatisticsRow findRow(StatisticsGroup group, long startDate,
-			CallTimePeriods period) {
-		String periodName = NeoUtils.getFormatDateStringForSrow(startDate,
-				period.addPeriod(startDate), "HH:mm", period.getId());
-		return group.getRowByKey(periodName);
 	}
 
 	private Level findOrCreateLevel(String levelKey, Dimension dimension) {

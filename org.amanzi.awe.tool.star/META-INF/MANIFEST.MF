@@ -4,14 +4,8 @@ Bundle-Name: Star tool
 Bundle-SymbolicName: org.amanzi.awe.tool.star;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: amanzi.org
-Require-Bundle: org.eclipse.ui,
- org.eclipse.core.runtime,
- net.refractions.udig.project;bundle-version="1.1.1",
+Require-Bundle: org.eclipse.core.runtime,
  net.refractions.udig.project.ui;bundle-version="1.1.1",
- net.refractions.udig.tool.default;bundle-version="1.1.1",
- org.amanzi.neo.core;bundle-version="1.0.0",
- org.neo4j,
- org.neo4j.neoclipse;bundle-version="0.4.0",
- org.amanzi.gef;bundle-version="1.0.0"
+ org.amanzi.neo.core;bundle-version="1.0.0"
 Eclipse-LazyStart: false
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6

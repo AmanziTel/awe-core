@@ -14,7 +14,6 @@
 package org.amanzi.awe.statistics.database;
 
 import java.util.Collection;
-import java.util.List;
 
 import org.amanzi.awe.statistics.engine.IDatasetService;
 import org.amanzi.neo.services.INeoConstants;

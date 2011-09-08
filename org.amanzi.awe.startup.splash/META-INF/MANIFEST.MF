@@ -5,10 +5,7 @@ Bundle-SymbolicName: org.amanzi.awe.startup.splash;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.amanzi.awe.startup.splash.Activator
 Require-Bundle: org.eclipse.ui,
- org.eclipse.core.runtime,
- org.eclipse.swt,
- org.eclipse.jface,
- org.eclipse.ui.workbench
+ org.eclipse.core.runtime
 Eclipse-LazyStart: true
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: org.amanzi.awe.startup.splash,

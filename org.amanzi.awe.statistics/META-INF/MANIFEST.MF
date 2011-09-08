@@ -7,8 +7,6 @@ Bundle-Activator: org.amanzi.awe.statistics.StatisticPlugin
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.amanzi.neo.core;bundle-version="1.0.0",
- org.neo4j;bundle-version="1.0.0",
- org.jruby,
  org.amanzi.awe.views.kpi,
  org.jfree,
  org.amanzi.scripting.jruby,

@@ -123,7 +123,7 @@ public class DatasetStatistic implements IStatistic {
     }
 
     @Override
-    public Collection<String> getPropertyNameCollection(String key, String nodeTypeId, Comparable<Class> comparable) {
+    public Collection<String> getPropertyNameCollection(String key, String nodeTypeId, Comparable<Class<?>> comparable) {
         return handler.getPropertyNameCollection(key, nodeTypeId, comparable);
     }
 

@@ -86,11 +86,6 @@ public class PerformanceCountersLoader extends AbstractLoader {
 //        addKnownHeader(1, "time", ".*time.*", false);
 //        useMapper(1, "time", new LongDateMapper("HH:mm:ss"));
 
-        final String date = "date";
-//        addKnownHeader(1, date, new String[]{".*date.*","DATE"}, false);
-//        useMapper(1, date, new LongDateMapper("dd.MM.yy"));
-//        useMapper(1, "DATE", new LongDateMapper("dd.MM.yy"));
-
         try {
             addIndex(NodeTypes.M.getId(), NeoUtils.getTimeIndexProperty(basename));
         } catch (IOException e) {

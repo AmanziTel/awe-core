@@ -58,7 +58,8 @@ public class NeoNodeImpl implements INeoNode,IAdaptable {
         return node;
     }
 
-    @Override
+    @SuppressWarnings("rawtypes")
+	@Override
     public Object getAdapter(Class adapter) {
         if (adapter==Node.class){
             return node;

@@ -37,124 +37,135 @@ import org.eclipse.jface.util.PropertyChangeEvent;
 
 /**
  * <p>
- *Model for work with filters
+ * Model for work with filters
  * </p>
+ * 
  * @author tsinkel_a
  * @since 1.0.0
  */
 public class FilterModel implements IPropertyChangeListener {
-    public static final String PROPERTY="FILTER_MAP";
-    private static final Logger LOG =Logger.getLogger(FilterModel.class);
-//    private static final FilterModel instance=new FilterModel();
-//    public static FilterModel getInstance(){
-//        return instance;
-//    }
-    private HashMap<String, IFilterWrapper>filters=new HashMap<String, IFilterWrapper>();
-    public FilterModel(){
-//        getPreferencesStore().addPropertyChangeListener(this);
-        clear();
-        String value = getPreferencesStore().getString(PROPERTY);
-        if (!StringUtils.isEmpty(value)){
-            restoreFromString(value);
-        }
-    }
-    public IPreferenceStore getPreferencesStore(){
-        return NeoStylePlugin.getDefault().getPreferenceStore();
-    }
-    public void dispose(){
-        clear();
-    }
-    public void clear(){
-        filters.clear();
-    }
-    public void store(){
-        String value=storeToString();
-        getPreferencesStore().setValue(PROPERTY, value);
-    }
-    public void restoreFromString(String output){
-        clear();
-        if (!output.isEmpty()) {
-            ByteArrayInputStream bin = new ByteArrayInputStream(output.getBytes());
-            ObjectInputStream in;
-            try {
-                in = new ObjectInputStream(new BufferedInputStream(bin));
-                Object object = in.readObject();
-                in.close();
-                filters.putAll((Map< ? extends String, ? extends IFilterWrapper>)object);
-            } catch (IOException e) {
-                throw (RuntimeException)new RuntimeException().initCause(e);
-            } catch (ClassNotFoundException e) {
-                throw (RuntimeException)new RuntimeException().initCause(e);
-            }
-        }
-    }
-   public String storeToString(){
-       ByteArrayOutputStream bout = new ByteArrayOutputStream();
+	public static final String PROPERTY = "FILTER_MAP";
+	private static final Logger LOG = Logger.getLogger(FilterModel.class);
+	// private static final FilterModel instance=new FilterModel();
+	// public static FilterModel getInstance(){
+	// return instance;
+	// }
+	private HashMap<String, IFilterWrapper> filters = new HashMap<String, IFilterWrapper>();
 
-       ObjectOutputStream out;
-       try {
-           out = new ObjectOutputStream(new BufferedOutputStream(bout));
-           out.writeObject(filters);
-           out.close();
-       } catch (IOException e) {
-           throw (RuntimeException)new RuntimeException().initCause(e);
-       }
+	public FilterModel() {
+		// getPreferencesStore().addPropertyChangeListener(this);
+		clear();
+		String value = getPreferencesStore().getString(PROPERTY);
+		if (!StringUtils.isEmpty(value)) {
+			restoreFromString(value);
+		}
+	}
 
-       String value = new String(bout.toByteArray());
-       LOG.debug("Store size " + value.length());
-       return value;
-   }
-   
-@Override
-public void propertyChange(PropertyChangeEvent event) {
-    if (PROPERTY.equals(event.getProperty())){
-//        String newValue=
-    }
-}
-public void addFilter(String filterName,  IFilterWrapper wrapper){
-    Assert.isTrue(!filters.containsKey(filterName));
-   filters.put(filterName, wrapper); 
-}
+	public IPreferenceStore getPreferencesStore() {
+		return NeoStylePlugin.getDefault().getPreferenceStore();
+	}
 
-public Map<String,  IFilterWrapper> formsMapByName(Collection<String> filterNames) {
-    Map<String, IFilterWrapper> result=new HashMap<String, IFilterWrapper>();
-    for (String name:filterNames){
-        IFilterWrapper wr = filters.get(name);
-        if (wr!=null){
-           result.put(name, wr); 
-        }
-        
-    }
-    return result;
-}
+	public void dispose() {
+		clear();
+	}
 
-public Collection<String> getFilterNames() {
-    return Collections.unmodifiableCollection(filters.keySet());
-}
+	public void clear() {
+		filters.clear();
+	}
 
-public IFilterWrapper getWrapperByName(String name) {
-    return filters.get(name);
-}
-/**
- *
- * @param class1
- * @return
- */
-public Iterable<String> getFilterNames(Class<? extends BaseNeoStyle> clazz) {
-    List<String> result=new ArrayList<String>();
-    for (Entry<String, IFilterWrapper> entry:filters.entrySet()){
-        if (clazz.isAssignableFrom(entry.getValue().getStyle().getClass())){
-            result.add(entry.getKey());
-        }
-        
-    }
-    return result;
-}
+	public void store() {
+		String value = storeToString();
+		getPreferencesStore().setValue(PROPERTY, value);
+	}
 
-public void removeFilter(String name) {
-    filters.remove(name);
-}
+	@SuppressWarnings("unchecked")
+	public void restoreFromString(String output) {
+		clear();
+		if (!output.isEmpty()) {
+			ByteArrayInputStream bin = new ByteArrayInputStream(
+					output.getBytes());
+			ObjectInputStream in;
+			try {
+				in = new ObjectInputStream(new BufferedInputStream(bin));
+				Object object = in.readObject();
+				in.close();
+				filters.putAll((Map<? extends String, ? extends IFilterWrapper>) object);
+			} catch (IOException e) {
+				throw (RuntimeException) new RuntimeException().initCause(e);
+			} catch (ClassNotFoundException e) {
+				throw (RuntimeException) new RuntimeException().initCause(e);
+			}
+		}
+	}
 
+	public String storeToString() {
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 
+		ObjectOutputStream out;
+		try {
+			out = new ObjectOutputStream(new BufferedOutputStream(bout));
+			out.writeObject(filters);
+			out.close();
+		} catch (IOException e) {
+			throw (RuntimeException) new RuntimeException().initCause(e);
+		}
+
+		String value = new String(bout.toByteArray());
+		LOG.debug("Store size " + value.length());
+		return value;
+	}
+
+	@Override
+	public void propertyChange(PropertyChangeEvent event) {
+		if (PROPERTY.equals(event.getProperty())) {
+			// String newValue=
+		}
+	}
+
+	public void addFilter(String filterName, IFilterWrapper wrapper) {
+		Assert.isTrue(!filters.containsKey(filterName));
+		filters.put(filterName, wrapper);
+	}
+
+	public Map<String, IFilterWrapper> formsMapByName(
+			Collection<String> filterNames) {
+		Map<String, IFilterWrapper> result = new HashMap<String, IFilterWrapper>();
+		for (String name : filterNames) {
+			IFilterWrapper wr = filters.get(name);
+			if (wr != null) {
+				result.put(name, wr);
+			}
+
+		}
+		return result;
+	}
+
+	public Collection<String> getFilterNames() {
+		return Collections.unmodifiableCollection(filters.keySet());
+	}
+
+	public IFilterWrapper getWrapperByName(String name) {
+		return filters.get(name);
+	}
+
+	/**
+	 * 
+	 * @param class1
+	 * @return
+	 */
+	public Iterable<String> getFilterNames(Class<? extends BaseNeoStyle> clazz) {
+		List<String> result = new ArrayList<String>();
+		for (Entry<String, IFilterWrapper> entry : filters.entrySet()) {
+			if (clazz.isAssignableFrom(entry.getValue().getStyle().getClass())) {
+				result.add(entry.getKey());
+			}
+
+		}
+		return result;
+	}
+
+	public void removeFilter(String name) {
+		filters.remove(name);
+	}
 
 }

@@ -6,7 +6,7 @@ import java.util.Arrays;
 import org.amanzi.neo.loader.core.parser.BaseTransferData;
 import org.amanzi.neo.loader.core.saver.ISaver;
 import org.amanzi.neo.loader.core.saver.MetaData;
-import org.amanzi.neo.services.model.DriveModel;
+import org.amanzi.neo.services.model.impl.DriveModel;
 
 public class RomesDriveModelSaver<T extends BaseTransferData> implements
 		ISaver<T> {

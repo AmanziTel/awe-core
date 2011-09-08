@@ -121,7 +121,8 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.helpers.Predicate;
+import org.neo4j.graphdb.traversal.Evaluation;
+import org.neo4j.graphdb.traversal.Evaluator;
 import org.neo4j.neoclipse.property.NodeTypes;
 import org.rubypeople.rdt.core.IRubyProject;
 import org.rubypeople.rdt.internal.ui.wizards.NewRubyElementCreationWizard;
@@ -166,7 +167,6 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
     private static final String COUNT_AXIS = Messages.ReuseAnalayserView_FIELD_COUNT_AXIS;
     /** String VALUES_DOMAIN field */
     private static final String VALUES_DOMAIN = Messages.ReuseAnalayserView_FIELD_VALUES_DOMAIN;
-    private static final String ROW_KEY = Messages.ReuseAnalayserView_ROW_KEY;
     private static final String COLOR_LABEL = Messages.ReuseAnalayserView_COLOR_LABEL;
     private static final String REPORT_LABEL = Messages.ReuseAnalayserView_REPORT_LABEL;
 
@@ -435,7 +435,7 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
             public void chartMouseMoved(ChartMouseEvent chartmouseevent) {
             }
 
-            @SuppressWarnings("unchecked")
+            @SuppressWarnings({"rawtypes"})
             @Override
             public void chartMouseClicked(ChartMouseEvent chartmouseevent) {
                 Comparable columnKey = null;
@@ -1466,11 +1466,13 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
                 propertyList.add(INeoConstants.PROPERTY_ALL_CHANNELS_NAME);
             }
 
-            Predicate<org.neo4j.graphdb.Path> propertyReturnableEvalvator = new Predicate<org.neo4j.graphdb.Path>() {
-
+            Evaluator propertyReturnableEvalvator = new Evaluator() {
+                
                 @Override
-                public boolean accept(org.neo4j.graphdb.Path item) {
-                    return item.endNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(nodeTypeId);
+                public Evaluation evaluate(org.neo4j.graphdb.Path arg0) {
+                    boolean includes = arg0.endNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(nodeTypeId);
+                    
+                    return Evaluation.of(includes, true);
                 }
             };
 
@@ -1494,7 +1496,6 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
      * @return the node type id
      */
     private String getNodeTypeId(Node node) {
-        GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
         String result = NeoUtils.getPrimaryType(node);
         if (result==null){
             String typeid = NeoServiceFactory.getInstance().getDatasetService().getTypeId(node);

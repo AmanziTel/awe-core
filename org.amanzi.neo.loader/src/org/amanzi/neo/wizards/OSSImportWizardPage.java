@@ -48,6 +48,7 @@ import org.neo4j.graphdb.Node;
  * @author Cinkel_A
  * @since 1.0.0
  */
+@SuppressWarnings("deprecation")
 public class OSSImportWizardPage extends WizardPage {
     private boolean manualDatasetEdit;
     private Combo dataset;

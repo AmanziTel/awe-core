@@ -14,16 +14,10 @@
 package org.amanzi.awe.report.wizards;
 
 import org.eclipse.jface.preference.DirectoryFieldEditor;
-import org.eclipse.jface.preference.FileFieldEditor;
 import org.eclipse.jface.wizard.WizardPage;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
 
 /**
  * Page for GeOptima Report Wizard

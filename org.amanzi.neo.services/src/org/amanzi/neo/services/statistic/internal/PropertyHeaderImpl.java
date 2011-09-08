@@ -102,10 +102,10 @@ public class PropertyHeaderImpl implements IPropertyHeader {
             }
         }
 
-        Collection<String> result = stat.getPropertyNameCollection(key, nodeTypeId, new Comparable<Class>() {
+        Collection<String> result = stat.getPropertyNameCollection(key, nodeTypeId, new Comparable<Class<?>>() {
 
             @Override
-            public int compareTo(Class o) {
+            public int compareTo(Class<?> o) {
                 return Number.class.isAssignableFrom(o) ? 0 : -1;
             }
         });
@@ -123,10 +123,10 @@ public class PropertyHeaderImpl implements IPropertyHeader {
             }
         }
 
-        Collection<String> result = stat.getPropertyNameCollection(key, nodeTypeId, new Comparable<Class>() {
+        Collection<String> result = stat.getPropertyNameCollection(key, nodeTypeId, new Comparable<Class<?>>() {
 
             @Override
-            public int compareTo(Class o) {
+            public int compareTo(Class<?> o) {
                 return 0;
             }
         });

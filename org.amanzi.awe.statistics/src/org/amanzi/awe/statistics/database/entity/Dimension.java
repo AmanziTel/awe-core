@@ -13,12 +13,10 @@
 
 package org.amanzi.awe.statistics.database.entity;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.amanzi.awe.statistics.database.StatisticsLevelIterator;
-import org.amanzi.awe.statistics.database.StatisticsRowIterator;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.neo4j.graphdb.Node;
@@ -34,7 +32,6 @@ import org.neo4j.graphdb.Node;
 public class Dimension {
     private Node node;
     private Map<String, Level> levels;
-    private Level lastLevel;
     private DatasetStatistics datasetStatistics;
 
     public Dimension(Node node, DatasetStatistics datasetStatistics) {
@@ -76,7 +73,6 @@ public class Dimension {
         levels = new LinkedHashMap<String, Level>();
         for (Level level : new StatisticsLevelIterator(node,datasetStatistics)) {
             levels.put(level.getName(), level);
-            lastLevel = level;
         }
     }
 }

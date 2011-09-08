@@ -216,7 +216,9 @@ public class NetworkLoaderTest1 extends AbstractLoaderTest{
                 }
             }, childRel, Direction.OUTGOING, nextRel, Direction.OUTGOING);
             int size = 0;
-            for (Node node : traverse) {
+            iterator = traverse.iterator();
+            while (iterator.hasNext()) {
+                iterator.next();
                 size++;
             }
             assertEquals("Wrong count of sectors by key <"+aTestKey+">.",

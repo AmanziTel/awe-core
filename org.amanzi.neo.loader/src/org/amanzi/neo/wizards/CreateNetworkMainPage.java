@@ -104,7 +104,6 @@ public class CreateNetworkMainPage extends WizardPage {
 
     /** The main. */
     private Group main;
-    private Button addOnMapBtn;
     protected boolean addOnMap;
 
     /**
@@ -553,16 +552,6 @@ public class CreateNetworkMainPage extends WizardPage {
         if (getContainer().getCurrentPage() != null) {
             getContainer().updateButtons();
         }
-    }
-
-    /**
-     * Removes the page.
-     * 
-     * @param type the type
-     */
-    private void removePage(INodeType type) {
-        ((CreateNetworkWizard)getWizard()).removePage(type);
-        getContainer().updateButtons();
     }
 
     /**

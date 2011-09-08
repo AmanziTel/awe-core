@@ -15,7 +15,6 @@ package org.amanzi.awe.statistics;
 
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.ui.NeoUtils;
-import org.apache.log4j.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
@@ -29,7 +28,7 @@ import org.neo4j.graphdb.Transaction;
  * @since 1.0.0
  */
 public class TimePeriodStructureCreator {
-    private static final Logger LOGGER=Logger.getLogger(TimePeriodStructureCreator.class);
+    
     private Node rootNode;
     private final Long startTime;
     private final Long endTime;

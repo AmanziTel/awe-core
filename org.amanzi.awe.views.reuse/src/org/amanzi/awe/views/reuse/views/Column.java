@@ -18,9 +18,7 @@ import java.math.RoundingMode;
 
 import org.amanzi.awe.views.reuse.Distribute;
 import org.amanzi.awe.views.reuse.range.Bar;
-import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.INeoConstants;
-import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
@@ -57,9 +55,8 @@ public class Column implements Comparable<Column> {
     /** The property value. */
     private Object propertyValue;
 
+    @SuppressWarnings("rawtypes")
     private Comparable compValue = null;
-
-    private Bar bar = null;
 
     /**
      * Constructor.
@@ -81,8 +78,6 @@ public class Column implements Comparable<Column> {
      * @param prevCol the prev col
      */
     public void merge(Column prevCol,GraphDatabaseService service) {
-        DatasetService ds = NeoServiceFactory.getInstance().getDatasetService();
-        
         minValue = prevCol.minValue;
         range += prevCol.range;
         node.setProperty(INeoConstants.PROPERTY_NAME_MIN_VALUE, minValue);
@@ -196,7 +191,6 @@ public class Column implements Comparable<Column> {
 
     public Column(Node aggrNode, Node lastNode, Bar bar,GraphDatabaseService service) {
         this(bar.getRange().getMaximum(), 1);
-        this.bar = bar;
         this.distribute = null;
         this.propertyValue = null;
         node = service.createNode();
@@ -271,6 +265,7 @@ public class Column implements Comparable<Column> {
      * @param o the o
      * @return the int
      */
+    @SuppressWarnings("unchecked")
     @Override
     public int compareTo(Column o) {
         return compValue == null ? minValue.compareTo(o.minValue) : compValue.compareTo(o.compValue);
@@ -408,6 +403,7 @@ public class Column implements Comparable<Column> {
     /**
      * @param property
      */
+    @SuppressWarnings("rawtypes")
     public void setComparableValue(Comparable property) {
         compValue = property;
     }

@@ -15,7 +15,6 @@ package org.amanzi.awe.statistics.database;
 
 import java.util.Iterator;
 
-import org.amanzi.awe.statistics.database.entity.StatisticsGroup;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;

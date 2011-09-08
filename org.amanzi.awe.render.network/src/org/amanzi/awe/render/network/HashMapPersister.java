@@ -37,7 +37,8 @@ public class HashMapPersister extends IPersister<HashMap<Long, Point>> {
     /** String POINT_PARAM field */
     private static final String POINT_PARAM = "point";
 
-    @Override
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+	@Override
     public Class getPersistee() {
         return HashMap.class;
     }

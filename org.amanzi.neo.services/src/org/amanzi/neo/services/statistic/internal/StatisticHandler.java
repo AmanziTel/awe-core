@@ -242,7 +242,7 @@ public class StatisticHandler {
     }
 
 
-    public Collection<String> getPropertyNameCollection(String key, String nodeTypeId, @SuppressWarnings("rawtypes") Comparable<Class> comparable) {
+    public Collection<String> getPropertyNameCollection(String key, String nodeTypeId, @SuppressWarnings("rawtypes") Comparable<Class<?>> comparable) {
         Vault vault=vaults.get(key);
         if (vault==null){
             return new ArrayList<String>();

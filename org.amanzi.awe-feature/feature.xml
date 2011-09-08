@@ -63,13 +63,6 @@ PURPOSE.
          unpack="false"/>
 
    <plugin
-         id="org.amanzi.awe.script"
-         download-size="0"
-         install-size="0"
-         version="1.0.0.qualifier"
-         unpack="false"/>
-
-   <plugin
          id="org.amanzi.awe.script.jirb"
          download-size="0"
          install-size="0"
@@ -292,13 +285,6 @@ PURPOSE.
          unpack="false"/>
 
    <plugin
-         id="org.amanzi.awe.filters"
-         download-size="0"
-         install-size="0"
-         version="1.0.0.qualifier"
-         unpack="false"/>
-
-   <plugin
          id="org.amanzi.awe.report"
          download-size="0"
          install-size="0"
@@ -307,13 +293,6 @@ PURPOSE.
 
    <plugin
          id="org.amanzi.awe.l3messages"
-         download-size="0"
-         install-size="0"
-         version="1.0.0.qualifier"
-         unpack="false"/>
-
-   <plugin
-         id="org.apache.log4j"
          download-size="0"
          install-size="0"
          version="1.0.0.qualifier"
@@ -396,6 +375,18 @@ PURPOSE.
          version="1.0.0.qualifier"
          unpack="false"/>
 
-  
+   <plugin
+         id="org.amanzi.awe.views.neighbours"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.amanzi.log4j"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
 
 </feature>

@@ -51,7 +51,6 @@ import org.amanzi.awe.catalog.neo.upd_layers.events.ChangeSelectionEvent;
 import org.amanzi.awe.catalog.neo.upd_layers.events.UpdateLayerEventTypes;
 import org.amanzi.awe.ui.AweUiPlugin;
 import org.amanzi.awe.ui.IGraphModel;
-
 import org.amanzi.awe.views.neighbours.NeighboursPlugin;
 import org.amanzi.awe.views.neighbours.PreferenceInitializer;
 import org.amanzi.awe.views.neighbours.legend.LegendRelations;
@@ -87,7 +86,6 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
-import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -177,8 +175,7 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
     private Button returnFullList;
     private Text textToSearch;
     private String searchingSector = "";
-    /** String SEARCH field */
-    private static final String SEARCH = "Search";
+    
     private static final String GR_MODE = "group by TRX";
 
     protected DatasetService ds;
@@ -188,7 +185,7 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
     private Map<String, NodeToNodeRelationModel> modelMap = new HashMap<String, NodeToNodeRelationModel>();
     private ISelectionInformation information;
     private ArrayList<String> propertys;
-    private ArrayList<Class> propertyClass = new ArrayList<Class>();
+    private ArrayList<Class<?>> propertyClass = new ArrayList<Class<?>>();
     private INode2NodeFilter filter;
     private CountedIteratorWr createdIter;
     protected boolean drawLines;
@@ -514,7 +511,7 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
         while (index < table.getItemCount()) {
             boolean visible = false;
             final TableItem item = table.getItem(index);
-            for (int i = 0; i < 2; i++) {
+            for (int i = 0; i < 2; ) {
                 Rectangle rect = item.getBounds(i);
                     column = i;
 
@@ -578,7 +575,7 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
         if (index<2){
             isNumber=false;
         }else{
-            Class klass = propertyClass.get(index-2);
+            Class<?> klass = propertyClass.get(index-2);
             isNumber=Number.class.isAssignableFrom(klass);
         }
         Collections.sort(rows, new Comparator<Wrapper>(){
@@ -627,18 +624,7 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
         formCollumns();
         fireModel(null);
     }
-    @Deprecated //TODO remove ater debug
-    private void hookContextMenu() {
-        MenuManager menuMgr = new MenuManager("#PopupMenu");
-        menuMgr.setRemoveAllWhenShown(true);
-        menuMgr.addMenuListener(new IMenuListener() {
-            public void menuAboutToShow(IMenuManager manager) {
-                fillContextMenu(manager);
-            }
-        });
-        Menu menu = menuMgr.createContextMenu(table);
-        table.setMenu(menu);
-    }
+    
     private void hookContextMenu2() {
         final Menu menu = new Menu (mainC.getShell(), SWT.POP_UP);
         table.setMenu(menu);
@@ -851,7 +837,8 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
         }
 
     }
-    private void removeLegend() {
+    @SuppressWarnings("deprecation")
+	private void removeLegend() {
     	net.refractions.udig.project.internal.Map map = ApplicationGISInternal.getActiveMap();
         if (map == ApplicationGIS.NO_MAP)
             return;
@@ -1343,7 +1330,6 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
         } else {
             Node networkNode = n2nModel.getNetworkNode();
             statistic = StatisticManager.getStatistic(networkNode);
-            String key = n2nModel.getName();
             String nodeTypeId = NodeTypes.NODE_NODE_RELATIONS.getId();
             information = new Node2NodeSelectionInformation(networkNode, statistic, n2nModel, nodeTypeId, n2nModel.getDescription());
             Set<String> propertyNames = information.getPropertySet();
@@ -1383,7 +1369,7 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
                 String propertyName = propertys.get(i - 2);
                 TableColumn tableColumn = columns.get(i);
                 tableColumn.setText(propertyName);
-                Class type = information.getPropertyInformation(propertyName).getStatistic().getType();
+                Class<?> type = information.getPropertyInformation(propertyName).getStatistic().getType();
                 propertyClass.add(type);
                 tableColumn.setToolTipText("Type " + type.getName());
 
@@ -1697,7 +1683,6 @@ public class Node2NodeViews extends ViewPart implements IPropertyChangeListener 
             int start = index / PAGE_SIZE * PAGE_SIZE;
             int end = Math.min(start + PAGE_SIZE, table.getItemCount());
             // TODO not correct search- need refactor.
-            int k = 0;
             int ind;
             for (int i = start; i < end; i++) {
                 PropertyContainer cont = getElement(i);

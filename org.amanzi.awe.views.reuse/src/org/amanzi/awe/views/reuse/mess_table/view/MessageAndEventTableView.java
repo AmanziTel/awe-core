@@ -581,8 +581,8 @@ public class MessageAndEventTableView extends ViewPart {
     /**
      * This is how the framework determines which interfaces we implement.
      */
+    @SuppressWarnings("rawtypes")
     @Override
-    @SuppressWarnings("unchecked")
     public Object getAdapter(final Class key) {
         if (key.equals(IPropertySheetPage.class)) {
             return getPropertySheetPage();
@@ -719,8 +719,6 @@ public class MessageAndEventTableView extends ViewPart {
      * @return
      */
     private HashMap<String, DatasetInfo> initDatasetsInfo(){
-        GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
-//        Transaction tx = service.beginTx();
         HashMap<String, DatasetInfo> result = new HashMap<String, DatasetInfo>();
         for (Node root:ds.getAllRootNodes().nodes()){
             result.putAll(formDatasetInfo(root));
@@ -849,10 +847,10 @@ public class MessageAndEventTableView extends ViewPart {
 
             String name = ds.getNodeName(networkRoot);
             IStatistic stat = StatisticManager.getStatistic(networkRoot);
-            final Comparable<Class> comparable = new Comparable<Class>() {
+            final Comparable<Class<?>> comparable = new Comparable<Class<?>>() {
 
                 @Override
-                public int compareTo(Class o) {
+                public int compareTo(Class<?> o) {
                     return 0;
                 }
             };
@@ -1143,9 +1141,8 @@ public class MessageAndEventTableView extends ViewPart {
         	Job updateJob = new Job("Upload data to table job") {            
         		@Override
         		protected IStatus run(IProgressMonitor monitor) { 
-//        			rows.clear();
+
         		    LinkedHashSet<TableRowWrapper> result = new LinkedHashSet<TableRowWrapper>();
-                    int start = 0;
                     for (Node filterNode:nodes){
                         result.addAll(filterChildsFromRow(filterNode)); 
                     }
@@ -1400,58 +1397,6 @@ public class MessageAndEventTableView extends ViewPart {
                GeoNeoRelationshipTypes.NEXT,Direction.OUTGOING).iterator();
             return result;
         }
-        
-        private Iterator<Node> getNodesByFilter(GraphDatabaseService service, NodeTypes childType, List<Node> nodes){
-        	
-        	Iterator<Node> iter = nodes.iterator();
-        	Node currentNode;
-        	List<Node> returnList = new ArrayList<Node>();
-        	while (iter.hasNext()){
-        		currentNode = iter.next();
-        		if (filterProperty(service, childType, currentNode))        			
-        			returnList.add(currentNode);        			
-        	}
-        	
-        	
-        	return returnList.iterator();
-            
-        }
-        private boolean filterProperty(GraphDatabaseService service, NodeTypes childType,Node currentNode){
-        	DatasetInfo datasetInfo = datasets.get(dataset);
-        	NodeTypes type = NodeTypes.getNodeType(currentNode, service);
-            if(type==null || !type.equals(childType)){
-                return false;
-            }
-            if(property==null){
-                return true;
-            }
-            Object objValue;
-            if (datasetInfo.model!=null){
-                if ("sector".equals(property)){
-                    Node node = currentNode.getSingleRelationship(GeoNeoRelationshipTypes.CHILD, Direction.INCOMING).getOtherNode(currentNode);
-                    objValue=node.getProperty(INeoConstants.PROPERTY_NAME_NAME, null);
-                }    else  if ("trx".equals(property)){
-                    objValue=currentNode.getProperty(INeoConstants.PROPERTY_NAME_NAME, null);
-                }else  if (datasetInfo.trxProp.contains(property)){
-                    objValue= currentNode.getProperty(property, null);
-                }else{
-                    Node node = datasetInfo.model.findPlanNode(currentNode);
-                    objValue=node==null?null:node.getProperty(property, null);
-                }
-            }else{
-                objValue= currentNode.getProperty(property, null);
-            }
-            String realValue = objValue==null?null:objValue.toString();
-            if(expression.equals(EXPRESSION_EMPTY)){
-                return realValue==null;
-            }
-            if(expression.equals(EXPRESSION_NOT_EMPTY)){
-                return realValue!=null;
-            }
-            return isGoodValue(realValue);
-        }
-        
-        
         
         /**
          * Is property correct.

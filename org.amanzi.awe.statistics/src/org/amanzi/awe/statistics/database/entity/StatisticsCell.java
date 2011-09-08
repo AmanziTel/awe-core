@@ -16,11 +16,7 @@ package org.amanzi.awe.statistics.database.entity;
 import java.util.Collection;
 
 import org.amanzi.awe.statistics.engine.IAggregationFunction;
-import org.amanzi.awe.statistics.engine.IDatasetService;
-import org.amanzi.awe.statistics.engine.IStatisticsHeader;
 import org.amanzi.awe.statistics.exceptions.CellIsNotEditableException;
-import org.amanzi.awe.statistics.exceptions.IncorrectInputException;
-import org.amanzi.awe.statistics.functions.AggregationFunctions;
 import org.amanzi.awe.statistics.template.TemplateColumn;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
@@ -39,16 +35,13 @@ import org.neo4j.graphdb.Traverser.Order;
  * @since 1.0.0
  */
 public class StatisticsCell {
-    private IStatisticsHeader header;
     private IAggregationFunction function;
     private Node node;
     private StatisticsRow parent;
     private boolean isReadOnly;
-    private boolean isFlagged;
 
     public StatisticsCell(Node node, StatisticsRow parent, TemplateColumn column) {
         this.parent = parent;
-        this.header = column.getHeader();
         this.function = column.getFunction().newFunction();
         this.node = node;
         this.isReadOnly = false;

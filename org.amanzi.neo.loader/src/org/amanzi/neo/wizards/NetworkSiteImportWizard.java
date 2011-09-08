@@ -22,7 +22,6 @@ import org.amanzi.neo.loader.NeighbourLoader;
 import org.amanzi.neo.loader.NetworkLoader;
 import org.amanzi.neo.loader.NetworkSiteLoader;
 import org.amanzi.neo.loader.NokiaTopologyLoader;
-
 import org.amanzi.neo.loader.TransmissionLoader;
 import org.amanzi.neo.loader.UTRANLoader;
 import org.amanzi.neo.loader.internal.NeoLoaderPluginMessages;
@@ -50,6 +49,7 @@ import org.neo4j.graphdb.Node;
  * @author tsinkel_a
  * @since 1.0.0
  */
+@SuppressWarnings("deprecation")
 public class NetworkSiteImportWizard extends Wizard implements IImportWizard {
 
     /** The Constant PAGE_TITLE. */

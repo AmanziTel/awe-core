@@ -15,13 +15,12 @@ package org.amanzi.awe.statistics.utils;
 
 import java.util.ArrayList;
 
-import org.amanzi.awe.statistics.engine.IAggregationFunction;
 import org.amanzi.awe.statistics.engine.KpiBasedHeader;
 import org.amanzi.awe.statistics.functions.AggregationFunctions;
 import org.amanzi.awe.statistics.template.Condition;
 import org.amanzi.awe.statistics.template.Template;
-import org.amanzi.awe.statistics.template.Threshold;
 import org.amanzi.awe.statistics.template.Template.DataType;
+import org.amanzi.awe.statistics.template.Threshold;
 import org.amanzi.awe.views.kpi.KPIPlugin;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
@@ -60,7 +59,6 @@ public class ScriptUtils {
         System.out.println("kpis found: " + kpis);
         for (String kpi : kpis) {
             String kpiDisplayName = kpi;
-            String kpiUnit = "";
             Number threshold = null;
             AggregationFunctions function= null;
             final String fullKpiName = module + "."+kpi;
@@ -73,9 +71,6 @@ public class ScriptUtils {
                     String strResult = result.get(key).toString();
                     if ("name".equalsIgnoreCase(strKey)) {
                         kpiDisplayName = strResult;
-                    }
-                    if ("unit".equalsIgnoreCase(strKey)) {
-                        kpiUnit = strResult;
                     }
                     if ("threshold".equalsIgnoreCase(strKey)) {
                         threshold = Double.parseDouble(strResult);

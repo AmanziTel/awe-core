@@ -58,10 +58,10 @@ public class Node2NodeSelectionInformation implements ISelectionInformation {
         this.name=model.getName();
         this.root = root;
         this.nodeType = nodeType;
-        Collection<String> col = statistic.getPropertyNameCollection(name, nodeType, new Comparable<Class>() {
+        Collection<String> col = statistic.getPropertyNameCollection(name, nodeType, new Comparable<Class<?>>() {
 
             @Override
-            public int compareTo(Class o) {
+            public int compareTo(Class<?> o) {
                 return Comparable.class.isAssignableFrom(o) ? 0 : -1;
             }
         });

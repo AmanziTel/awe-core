@@ -94,6 +94,7 @@ import org.neo4j.kernel.impl.nioneo.store.PropertyStore;
  * 
  * @author Lagutko_N
  */
+@SuppressWarnings("deprecation")
 public class DriveDialog {
     /** String ASC_PAT_FILE field */
     private static final String ASC_PAT_FILE = ".*_(\\d{6})_.*";

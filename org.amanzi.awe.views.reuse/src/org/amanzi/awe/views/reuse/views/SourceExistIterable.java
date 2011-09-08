@@ -37,7 +37,7 @@ public class SourceExistIterable implements Iterable<ISource> {
     private final String name;
     private final ISourceFinder finder;
     private String nameArr = null;
-    private Iterator arrIter = null;
+    private Iterator<?> arrIter = null;
     private Node arrNode = null;
     private Node nextNode = null;
 
@@ -86,9 +86,8 @@ public class SourceExistIterable implements Iterable<ISource> {
                         if (it.hasNext()) {
                             nextNode = it.next();
                             if (nextNode.hasProperty(nameArr)) {
-                                Node source = finder.getSource(nextNode);
                                 Object arr = nextNode.getProperty(nameArr);
-                                List l = new ArrayList();
+                                List<Object> l = new ArrayList<Object>();
                                 len = Array.getLength(arr);
                                 for (int i = 0; i < len; i++) {
                                     l.add(Array.get(arr, i));

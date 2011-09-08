@@ -215,7 +215,6 @@ public class DistributionPreferences extends PreferencePage implements IWorkbenc
         if (!model.isChanged()) {
             return;
         }
-        String name = model.getName();
         formRangeList();
         viewer.setInput(model);
         // TODO select last model

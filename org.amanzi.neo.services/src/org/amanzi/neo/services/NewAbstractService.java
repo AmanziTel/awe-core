@@ -14,10 +14,12 @@
 package org.amanzi.neo.services;
 
 import org.amanzi.neo.db.manager.NeoServiceProvider;
+import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.apache.log4j.Logger;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
@@ -25,6 +27,8 @@ import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.traversal.Evaluation;
 import org.neo4j.graphdb.traversal.Evaluator;
+import org.neo4j.graphdb.traversal.TraversalDescription;
+import org.neo4j.kernel.Traversal;
 
 /**
  * <p>
@@ -100,7 +104,7 @@ public abstract class NewAbstractService {
      * @param nodeType type of nodes
      * @return a string specifying index name
      */
-    public String getIndexKey(Node root, INodeType nodeType) {
+    public static String getIndexKey(Node root, INodeType nodeType) {
         // validate parameters
         if (root == null) {
             throw new IllegalArgumentException("Root cannot be null");
@@ -197,6 +201,11 @@ public abstract class NewAbstractService {
             return Evaluation.EXCLUDE_AND_CONTINUE;
 
         }
+    }
+    
+    protected TraversalDescription getChildElementTraversalDescription() {
+        LOGGER.debug("start getNetworkElementTraversalDescription()");
+        return Traversal.description().depthFirst().relationships(DatasetRelationTypes.CHILD, Direction.OUTGOING);
     }
 
     /**

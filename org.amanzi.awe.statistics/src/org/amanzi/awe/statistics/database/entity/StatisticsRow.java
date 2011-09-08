@@ -13,23 +13,14 @@
 
 package org.amanzi.awe.statistics.database.entity;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.amanzi.awe.statistics.database.StatisticsCellIterator;
-import org.amanzi.awe.statistics.database.StatisticsRowIterator;
-import org.amanzi.awe.statistics.engine.IStatisticsHeader;
-import org.amanzi.awe.statistics.template.TemplateColumn;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
-import org.amanzi.neo.services.enums.NodeTypes;
-import org.amanzi.neo.services.ui.NeoUtils;
-import org.jfree.data.statistics.StatisticalCategoryDataset;
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Transaction;
 
 /**
  * TODO Purpose of

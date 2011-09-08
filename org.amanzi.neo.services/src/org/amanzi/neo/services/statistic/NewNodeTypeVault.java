@@ -13,8 +13,8 @@
 
 package org.amanzi.neo.services.statistic;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.amanzi.neo.services.statistic.internal.NewPropertyStatistics;
 
@@ -27,10 +27,10 @@ import org.amanzi.neo.services.statistic.internal.NewPropertyStatistics;
  * @since 1.0.0
  */
 public class NewNodeTypeVault implements IVault {
-    private List<IVault> subVaults;
+    private Map<String, IVault> subVaults = new HashMap<String, IVault>();
     private int count;
     private String type;
-    private List<NewPropertyStatistics> propertyStatisticsList = new ArrayList<NewPropertyStatistics>();
+    private Map<String, NewPropertyStatistics> propertyStatisticsList = new HashMap<String, NewPropertyStatistics>();
 
     /**
      * constructor
@@ -39,10 +39,11 @@ public class NewNodeTypeVault implements IVault {
         super();
         this.count = 0;
         this.type = "";
+
     }
 
     @Override
-    public List<IVault> getSubVaults() {
+    public Map<String, IVault> getSubVaults() {
         return subVaults;
     }
 
@@ -57,16 +58,17 @@ public class NewNodeTypeVault implements IVault {
     }
 
     @Override
-    public void index() {
+    public void indexProperty(String nodeType, String propName, Object propValue) {
     }
 
     @Override
-    public void parse() {
+    public Object parse(String nodeType, String propertyName, String propertyValue) {
+        return null;
     }
 
     @Override
     public void addSubVault(IVault vault) {
-        this.subVaults.add(vault);
+        this.subVaults.put(vault.getType(), vault);
     }
 
     @Override
@@ -80,13 +82,13 @@ public class NewNodeTypeVault implements IVault {
     }
 
     @Override
-    public List<NewPropertyStatistics> getPropertyStatisticsList() {
+    public Map<String, NewPropertyStatistics> getPropertyStatisticsMap() {
         return this.propertyStatisticsList;
     }
 
     @Override
     public void addPropertyStatistics(NewPropertyStatistics propStat) {
-        this.propertyStatisticsList.add(propStat);
+        this.propertyStatisticsList.put(propStat.getName(), propStat);
     }
 
 }

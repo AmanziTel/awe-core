@@ -64,10 +64,10 @@ public class BaseNetworkSelectionInformation implements ISelectionInformation {
         this.root = root;
         this.name = name;
         this.nodeType = nodeType;
-        Collection<String> col = statistic.getPropertyNameCollection(name, nodeType, new Comparable<Class>() {
+        Collection<String> col = statistic.getPropertyNameCollection(name, nodeType, new Comparable<Class<?>>() {
 
             @Override
-            public int compareTo(Class o) {
+            public int compareTo(Class<?> o) {
                 return Comparable.class.isAssignableFrom(o) ? 0 : -1;
             }
         });

@@ -59,6 +59,7 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.traversal.Evaluation;
 import org.neo4j.graphdb.traversal.Evaluator;
+import org.neo4j.graphdb.traversal.Evaluators;
 import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.graphdb.traversal.Traverser;
 import org.neo4j.kernel.Traversal;
@@ -430,8 +431,9 @@ public class ExportNetworkWizardColumnsConfigPage extends WizardPage {
         
         // Collect all existed properties
         LinkedHashMap<String, Collection<String>> propertyMap = new LinkedHashMap<String, Collection<String>>();
-        TraversalDescription descr = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING)
-        .filter(Traversal.returnAllButStartNode());
+        TraversalDescription descr = Traversal.description().depthFirst().uniqueness(Uniqueness.NONE).
+        		relationships(GeoNeoRelationshipTypes.CHILD, Direction.OUTGOING).
+        		evaluator(Evaluators.fromDepth(2));
         ArrayList<String> properties = new ArrayList<String>();
         Collection<String> coll = new ArrayList<String>();
 
@@ -548,7 +550,7 @@ public class ExportNetworkWizardColumnsConfigPage extends WizardPage {
                         return Evaluation.INCLUDE_AND_CONTINUE;
                     }
                 });
-                for (Node servNode : traverser.nodes()) {
+                if (traverser.nodes().iterator().hasNext()) {
                     isExistOneProperty = true;
                     break;
                 }
