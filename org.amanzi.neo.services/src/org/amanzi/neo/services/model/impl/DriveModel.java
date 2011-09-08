@@ -19,6 +19,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.amanzi.neo.services.CorrelationService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService;
@@ -67,6 +68,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     private INodeType primaryType = DriveNodeTypes.M;
 
     private NewDatasetService dsServ;
+    private CorrelationService crServ = NeoServiceFactory.getInstance().getNewCorrelationService();
 
     /**
      * <p>
@@ -124,7 +126,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
 
             graphDb = parent.getGraphDatabase();
             dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
-            rootNode = dsServ.getDataset(parent, name, DatasetTypes.DRIVE, type);
+            this.rootNode = dsServ.getDataset(parent, name, DatasetTypes.DRIVE, type);
             this.name = name;
         }
     }
@@ -329,7 +331,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
             throw new IllegalArgumentException("Parameters map is null.");
         }
 
-        Node fileNode = findFile(filename);
+        Node fileNode = findFile(new File(filename).getName());
         if (fileNode == null) {
             throw new IllegalArgumentException("File node " + filename + " not found.");
         }
@@ -455,7 +457,12 @@ public class DriveModel extends RenderableModel implements IDriveModel {
      * @return and iterator over measurement nodes
      */
     public Iterable<Node> getMeasurements(String filename) {
-        return dsServ.getChildrenChainTraverser(files.get(NewAbstractService.NAME, filename).getSingle());
+        // validate
+        if ((filename == null) || (filename.equals(""))) {
+            throw new IllegalArgumentException("Filename is null or empty.");
+        }
+
+        return dsServ.getChildrenChainTraverser(files.get(NewAbstractService.NAME, new File(filename).getName()).getSingle());
     }
 
     /**
@@ -477,12 +484,23 @@ public class DriveModel extends RenderableModel implements IDriveModel {
 
     @Override
     public Iterable<ICorrelationModel> getCorrelatedModels() {
-        return null;
+        List<ICorrelationModel> result = new ArrayList<ICorrelationModel>();
+        for (Node network : crServ.getCorrelatedNetworks(getRootNode())) {
+            result.add(new CorrelationModel(network, getRootNode()));
+        }
+        return result;
     }
 
     @Override
     public ICorrelationModel getCorrelatedModel(String correlationModelName) {
-        return null;
+        ICorrelationModel result = null;
+        for (Node network : crServ.getCorrelatedNetworks(getRootNode())) {
+            if (network.getProperty(NewAbstractService.NAME, "").equals(correlationModelName)) {
+                result = new CorrelationModel(network, getRootNode());
+                break;
+            }
+        }
+        return result;
     }
 
     @Override

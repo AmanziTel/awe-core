@@ -74,7 +74,7 @@ public class CorrelationServiceTest extends AbstractAWETest {
 		try {
 			count++;
 			project = prServ.createProject("project" + count);
-			network = dsServ.createDataset(project, "dataset",
+			network = dsServ.createDataset(project, "network",
 					DatasetTypes.NETWORK);
 			dataset = dsServ.createDataset(project, "dataset",
 					DatasetTypes.DRIVE, DriveTypes.ROMES);
@@ -469,10 +469,65 @@ public class CorrelationServiceTest extends AbstractAWETest {
 		// iterator returned
 		Iterable<Node> it = correlationServ.getCorrelatedDatasets(network);
 		Assert.assertNotNull(it);
+		Assert.assertTrue(it.iterator().hasNext());
 		// all nodes returned
 		for (Node node : it) {
 			Assert.assertNotNull(node);
 			Assert.assertTrue("" + node.getId(), dss.contains(node));
+		}
+	}
+
+	@Test
+	public void testGetCorrelatedNetworks() {
+		Node ds1 = null, ds2 = null;
+		List<Node> nws = new ArrayList<Node>();
+		try {
+			ds1 = dsServ.createDataset(project, "dataset1", DatasetTypes.DRIVE,
+					DriveTypes.ROMES);
+
+			ds2 = dsServ.createDataset(project, "dataset2", DatasetTypes.DRIVE,
+					DriveTypes.ROMES);
+
+			// create correlations
+			correlationServ.createCorrelation(network, ds1);
+			correlationServ.createCorrelation(network, ds2);
+
+			Node network1 = dsServ.createDataset(project, "network 1",
+					DatasetTypes.NETWORK);
+			// create correlations
+			correlationServ.createCorrelation(network1, ds2);
+
+			nws.add(network);
+			nws.add(network1);
+
+			tx.success();
+			tx.finish();
+		} catch (AWEException e) {
+			LOGGER.error("Could not create dataset.", e);
+			fail();
+		}
+
+		tx = graphDatabaseService.beginTx();
+		// iterator returned
+		Iterable<Node> it = correlationServ.getCorrelatedNetworks(ds1);
+		Assert.assertNotNull(it);
+		Assert.assertTrue(it.iterator().hasNext());
+		// all nodes returned
+		for (Node node : it) {
+			Assert.assertNotNull(node);
+			Assert.assertEquals(network, node);
+			System.out.println(node.getId());
+		}
+
+		// iterator returned
+		it = correlationServ.getCorrelatedNetworks(ds2);
+		Assert.assertNotNull(it);
+		Assert.assertTrue(it.iterator().hasNext());
+		// all nodes returned
+		for (Node node : it) {
+			Assert.assertNotNull(node);
+			Assert.assertTrue(nws.contains(node));
+			System.out.println(node.getId());
 		}
 	}
 

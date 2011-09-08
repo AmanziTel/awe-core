@@ -23,4 +23,5 @@ package org.amanzi.neo.services.model;
  */
 public interface IDataElement {
 
+    public Object get(String header);
 }

@@ -29,7 +29,7 @@ public interface IDataModel extends IModel {
 
     public Iterable<IDataElement> getChildren(IDataElement parent);
 
-    public IDataElement[] getAllElementsByType(INodeType elementType);
+    public Iterable<IDataElement> getAllElementsByType(INodeType elementType);
 
     public void finishUp();
 }

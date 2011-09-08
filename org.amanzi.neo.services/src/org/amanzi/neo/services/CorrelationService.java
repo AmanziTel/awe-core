@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;
+import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.apache.log4j.Logger;
@@ -92,6 +93,8 @@ public class CorrelationService extends NewAbstractService {
             try {
                 result = getCorrelationRoot(network);
                 Node dsRoot = getCorrelationRoot(dataset);
+                Relationship rel = dsRoot.getSingleRelationship(Correlations.CORRELATION, Direction.INCOMING);
+                rel.setProperty(NETWORK_ID, network.getId());
                 result.createRelationshipTo(dsRoot, Correlations.CORRELATED);
                 tx.success();
             } catch (Exception e) {
@@ -331,15 +334,18 @@ public class CorrelationService extends NewAbstractService {
         }
         LOGGER.info("getCorrelatedDatasets(" + network.getId() + ")");
 
-        return getCorrelatedDatasetsTraversalDescription().traverse(getCorrelationRoot(network)).nodes();
+        return getCorrelatedDatasetsTraversalDescription()
+                .evaluator(
+                        new HasRelationshipPropertyValueEvaluator(NETWORK_ID, network.getId(), Correlations.CORRELATION,
+                                Direction.OUTGOING)).traverse(getCorrelationRoot(network)).nodes();
     }
 
     protected TraversalDescription getCorrelatedDatasetsTraversalDescription() {
         LOGGER.info("getCorrelatedDatasetsTraversalDescription()");
-        return Traversal.description().breadthFirst().relationships(Correlations.CORRELATION, Direction.OUTGOING)
-                .evaluator(Evaluators.excludeStartPosition());
+        return Traversal.description().breadthFirst().relationships(Correlations.CORRELATED, Direction.OUTGOING)
+                .relationships(Correlations.CORRELATION, Direction.INCOMING);
     }
-    
+
     public Iterable<Node> getCorrelatedNetworks(Node dataset) {
         // validate
         if (dataset == null) {
@@ -347,13 +353,9 @@ public class CorrelationService extends NewAbstractService {
         }
         LOGGER.info("getCorrelatedNetworks(" + dataset.getId() + ")");
 
-        return getCorrelatedNetworksTraversalDescription().traverse(getCorrelationRoot(dataset)).nodes();
-    }
-
-    protected TraversalDescription getCorrelatedNetworksTraversalDescription() {
-        LOGGER.info("getCorrelatedDatasetsTraversalDescription()");
-        return Traversal.description().breadthFirst().relationships(Correlations.CORRELATION, Direction.OUTGOING)
-                .evaluator(Evaluators.excludeStartPosition());
+        return getCorrelatedDatasetsTraversalDescription().relationships(Correlations.CORRELATED, Direction.INCOMING)
+                .evaluator(new FilterNodesByType(DatasetTypes.NETWORK)).evaluator(Evaluators.atDepth(2))
+                .traverse(getCorrelationRoot(dataset)).nodes();
     }
 
     /**
