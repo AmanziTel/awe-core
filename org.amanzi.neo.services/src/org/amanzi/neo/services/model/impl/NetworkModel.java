@@ -17,15 +17,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.NewDatasetService;
+import org.amanzi.neo.services.NewNetworkService;
+import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.ICorrelationModel;
+import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.INetworkType;
+import org.apache.log4j.Logger;
 import org.geotools.referencing.CRS;
 import org.neo4j.graphdb.Node;
 
 /**
- * TODO Purpose of
  * <p>
  * </p>
  * 
@@ -34,8 +38,14 @@ import org.neo4j.graphdb.Node;
  */
 public class NetworkModel extends RenderableModel implements INetworkModel {
 
+    private static Logger LOGGER = Logger.getLogger(NetworkModel.class);
+
+    private NewNetworkService nwServ = NeoServiceFactory.getInstance().getNewNetworkService();
+    private NewDatasetService dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
+
     @Override
-    public void updateBounds(double latitude, double longitude) throws DatabaseException {
+    public void updateBounds(double latitude, double longitude) {
+        LOGGER.info("updateBounds(" + latitude + ", " + longitude + ")");
         super.updateLocationBounds(latitude, longitude);
     }
 
@@ -71,6 +81,8 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
 
     @Override
     public Iterable<ICorrelationModel> getCorrelationModels() {
+        LOGGER.info("getCorrelationModels()");
+
         Node network = getRootNode();
         List<ICorrelationModel> result = new ArrayList<ICorrelationModel>();
         for (Node dataset : NeoServiceFactory.getInstance().getNewCorrelationService().getCorrelatedDatasets(network)) {
@@ -79,6 +91,36 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
 
         return result;
 
+    }
+
+    @Override
+    public Iterable<IDataElement> getChildren(IDataElement parent) {
+        // validate
+        if (parent == null) {
+            throw new IllegalArgumentException("Parent is null.");
+        }
+        LOGGER.info("getChildren(" + parent.toString() + ")");
+
+        Node parentNode = ((DataElement)parent).getNode();
+        if (parentNode == null) {
+            throw new IllegalArgumentException("Parent node is null.");
+        }
+
+        return new DataElementIterable(dsServ.getChildrenTraverser(parentNode));
+    }
+
+    /**
+     * Traverses only over CHILD relationships.
+     */
+    @Override
+    public Iterable<IDataElement> getAllElementsByType(INodeType elementType) {
+        // validate
+        if (elementType == null) {
+            throw new IllegalArgumentException("Element type is null.");
+        }
+        LOGGER.info("getAllElementsByType(" + elementType.getId() + ")");
+
+        return new DataElementIterable(nwServ.findAllNetworkElements(getRootNode(), elementType));
     }
 
 }

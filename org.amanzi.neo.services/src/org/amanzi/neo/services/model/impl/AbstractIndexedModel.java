@@ -19,21 +19,19 @@ import java.util.List;
 import java.util.Map;
 
 import org.amanzi.neo.db.manager.NeoServiceProvider;
+import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.enums.INodeType;
-import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.indexes.MultiPropertyIndex;
 import org.amanzi.neo.services.indexes.MultiPropertyIndex.MultiDoubleConverter;
 import org.amanzi.neo.services.indexes.MultiPropertyIndex.MultiTimeIndexConverter;
-import org.amanzi.neo.services.utils.Utils;
 import org.apache.log4j.Logger;
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Transaction;
 
 /**
- * TODO Purpose of
  * <p>
+ * This class contains methods that handle node indexing with MultiPropertyIndex'es, and some
+ * implementations of methods, used in descendants.
  * </p>
  * 
  * @author grigoreva_a
@@ -51,9 +49,13 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
     private double max_longitude = -Double.MAX_VALUE;
 
     private Map<String, List<MultiPropertyIndex< ? >>> indexes;
-    private Transaction tx = null;
-    private GraphDatabaseService graphDb = NeoServiceProvider.getProvider().getService();
 
+    /**
+     * Creates and stores a location index for the defined node type.
+     * 
+     * @param nodeType
+     * @throws IOException if was unable to create an index in the database.
+     */
     protected void addLocationIndex(INodeType nodeType) throws IOException {
         LOGGER.debug("addLocationIndex(" + nodeType + ")");
 
@@ -75,6 +77,12 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
         }
     }
 
+    /**
+     * Creates and stores a timestamp index for the defined node type.
+     * 
+     * @param nodeType
+     * @throws IOException if was unable to create an index in the database.
+     */
     protected void addTimestampIndex(INodeType nodeType) throws IOException {
         LOGGER.debug("addTimestampIndex(" + nodeType + ")");
 
@@ -96,6 +104,11 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
         }
     }
 
+    /**
+     * Adds node to all the indexes that exist for its type.
+     * 
+     * @param node the node to index
+     */
     protected void indexNode(Node node) {
         LOGGER.debug("indexNode(" + node + ")");
 
@@ -117,6 +130,9 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
         }
     }
 
+    /**
+     * Runs over all the indexes to create the index structure in the database.
+     */
     protected void flushIndexes() {
         LOGGER.debug("flushIndexes()");
 
@@ -143,7 +159,12 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
         return result;
     }
 
-    protected void updateTimestamp(long timestamp) throws DatabaseException {
+    /**
+     * Updates the stored values of minimum and maximum timestamp.
+     * 
+     * @param timestamp the new value of timestamp
+     */
+    protected void updateTimestamp(long timestamp) {
         if (timestamp < min_timestamp) {
             min_timestamp = timestamp;
         }
@@ -152,7 +173,13 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
         }
     }
 
-    protected void updateLocationBounds(double latitude, double longitude) throws DatabaseException {
+    /**
+     * Updates the stored values of minimum and maximum latitude and longitude.
+     * 
+     * @param latitude
+     * @param longitude
+     */
+    protected void updateLocationBounds(double latitude, double longitude) {
 
         // update latitude
         if (latitude > max_latitude) {
@@ -196,19 +223,23 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
         return max_timestamp;
     }
 
+    /**
+     * Writes the stored values of timestamp, latitude and longitude to database.
+     */
     @Override
     public void finishUp() {
-        super.finishUp();
 
         Node rootNode = getRootNode();
         rootNode.setProperty(DriveModel.MIN_TIMESTAMP, min_timestamp);
         rootNode.setProperty(DriveModel.MAX_TIMESTAMP, max_timestamp);
 
         // TODO: approve code
-        Node gis = Utils.getGisNodeByDataset(rootNode);
-        gis.setProperty(DriveModel.MIN_LATITUDE, min_latitude);
-        gis.setProperty(DriveModel.MIN_LONGITUDE, min_longitude);
-        gis.setProperty(DriveModel.MAX_LATITUDE, max_latitude);
-        gis.setProperty(DriveModel.MAX_LONGITUDE, max_longitude);
+        Node gis = NeoServiceFactory.getInstance().getNewDatasetService().getGisNodeByDataset(rootNode);
+        if (gis != null) {
+            gis.setProperty(DriveModel.MIN_LATITUDE, min_latitude);
+            gis.setProperty(DriveModel.MIN_LONGITUDE, min_longitude);
+            gis.setProperty(DriveModel.MAX_LATITUDE, max_latitude);
+            gis.setProperty(DriveModel.MAX_LONGITUDE, max_longitude);
+        }
     }
 }

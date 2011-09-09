@@ -16,12 +16,13 @@ package org.amanzi.neo.services.model.impl;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.model.IDataElement;
 import org.neo4j.graphdb.Node;
 
 /**
- * TODO Purpose of
  * <p>
+ * Implementation of {@link IDataElement}.
  * </p>
  * 
  * @author grigoreva_a
@@ -32,18 +33,35 @@ public class DataElement extends HashMap<String, Object> implements IDataElement
     private static final long serialVersionUID = -5368114834697417654L;
     private Node node;
 
+    /**
+     * Creates a <code>DataElement</code> with an underlying <code>Node</code> object.
+     * 
+     * @param node the node to wrap
+     */
     public DataElement(Node node) {
         this.node = node;
     }
 
+    /**
+     * Creates a <code>DataElement</code> without an underlying <code>Node</code> object, but with a
+     * bunch of preset parameters.
+     * 
+     * @param params
+     */
     public DataElement(Map< ? extends String, ? extends Object> params) {
         this.putAll(params);
     }
 
+    /**
+     * @return the underlying node
+     */
     public Node getNode() {
         return node;
     }
 
+    /**
+     * Searches for a property value first in a stored map, and then in the underlying node.
+     */
     @Override
     public Object get(String header) {
         Object result = super.get(header);
@@ -52,6 +70,11 @@ public class DataElement extends HashMap<String, Object> implements IDataElement
             this.put(header, result);
         }
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return node == null ? this.get(NewAbstractService.NAME).toString() : "" + node.getId();
     }
 
 }

@@ -16,8 +16,8 @@ package org.amanzi.neo.services.model;
 import org.geotools.referencing.CRS;
 
 /**
- * TODO Purpose of
  * <p>
+ * Describes methods specific for models, that can be displayed in GUI.
  * </p>
  * 
  * @author grigoreva_a
@@ -25,7 +25,13 @@ import org.geotools.referencing.CRS;
  */
 public interface IRenderableModel {
 
-    public void updateBounds(double latitude, double longitude) throws Exception;
+    /**
+     * Update the minimum and maximum values of latitude and longitude.
+     * 
+     * @param latitude
+     * @param longitude
+     */
+    public void updateBounds(double latitude, double longitude);
 
     public double getMinLatitude();
 

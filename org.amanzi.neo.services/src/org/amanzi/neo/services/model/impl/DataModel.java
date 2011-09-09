@@ -38,7 +38,6 @@ public abstract class DataModel extends AbstractModel implements IDataModel {
     private static Logger LOGGER = Logger.getLogger(DataModel.class);
 
     private NewDatasetService dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
-    private NewNetworkService nwServ = NeoServiceFactory.getInstance().getNewNetworkService();
 
     protected void addChild(Node parent, Node child) {
         try {
@@ -77,38 +76,8 @@ public abstract class DataModel extends AbstractModel implements IDataModel {
         return result;
     }
 
-    @Override
-    public Iterable<IDataElement> getChildren(IDataElement parent) {
-        // validate
-        if (parent == null) {
-            throw new IllegalArgumentException("Parent is null.");
-        }
-        Node parentNode = ((DataElement)parent).getNode();
-        if (parentNode == null) {
-            throw new IllegalArgumentException("Parent node is null.");
-        }
 
-        return new DataElementIterable(dsServ.getChildrenTraverser(parentNode));
-    }
-
-    /**
-     * Traverses only over CHILD relationships.
-     */
-    @Override
-    public Iterable<IDataElement> getAllElementsByType(INodeType elementType) {
-        // validate
-        if (elementType == null) {
-            throw new IllegalArgumentException("Element type is null.");
-        }
-
-        return new DataElementIterable(nwServ.findAllNetworkElements(getRootNode(), elementType));
-    }
-
-    @Override
-    public void finishUp() {
-    }
-
-    private class DataElementIterable implements Iterable<IDataElement> {
+    public class DataElementIterable implements Iterable<IDataElement> {
         private class DataElementIterator implements Iterator<IDataElement> {
 
             private Iterator<Node> it;

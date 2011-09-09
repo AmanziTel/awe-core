@@ -31,7 +31,9 @@ import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.model.ICorrelationModel;
+import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDriveModel;
+import org.amanzi.neo.services.model.impl.DataModel.DataElementIterable;
 import org.apache.log4j.Logger;
 import org.geotools.referencing.CRS;
 import org.neo4j.graphdb.Direction;
@@ -504,7 +506,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     }
 
     @Override
-    public void updateBounds(double latitude, double longitude) throws DatabaseException {
+    public void updateBounds(double latitude, double longitude) {
         super.updateLocationBounds(latitude, longitude);
     }
 
@@ -529,7 +531,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     }
 
     @Override
-    public void updateTimestamp(long timestamp) throws DatabaseException {
+    public void updateTimestamp(long timestamp) {
         super.updateTimestamp(timestamp);
     }
 
@@ -543,4 +545,35 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         return super.getMinTimestamp();
     }
 
+    @Override
+    public Iterable<IDataElement> getChildren(IDataElement parent) {
+        // validate
+        if (parent == null) {
+            throw new IllegalArgumentException("Parent is null.");
+        }
+        LOGGER.info("getChildren(" + parent.toString() + ")");
+
+        Node parentNode = ((DataElement)parent).getNode();
+        if (parentNode == null) {
+            throw new IllegalArgumentException("Parent node is null.");
+        }
+
+        return new DataElementIterable(dsServ.getChildrenChainTraverser(parentNode));
+    }
+
+    @Override
+    public IDataElement getParentElement(IDataElement childElement) {
+        return super.getParentElement(childElement);
+    }
+
+    @Override
+    public Iterable<IDataElement> getAllElementsByType(INodeType elementType) {
+        // validate
+        if (elementType == null) {
+            throw new IllegalArgumentException("Element type is null.");
+        }
+        LOGGER.info("getAllElementsByType(" + elementType.getId() + ")");
+
+        return new DataElementIterable(dsServ.findAllDatasetElements(getRootNode(), elementType));
+    }
 }

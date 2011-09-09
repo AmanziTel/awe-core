@@ -14,14 +14,20 @@
 package org.amanzi.neo.services.model;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ * This interface represents a 'proxy' object between view and database layers.
  * </p>
+ * 
  * @author grigoreva_a
  * @since 1.0.0
  */
 public interface IDataElement {
 
+    /**
+     * Gets a property value.
+     * 
+     * @param header the property name
+     * @return property value or <code>null</code>.
+     */
     public Object get(String header);
 }

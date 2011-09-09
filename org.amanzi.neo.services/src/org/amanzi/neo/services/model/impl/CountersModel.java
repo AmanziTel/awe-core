@@ -19,10 +19,12 @@ import java.util.List;
 import org.amanzi.neo.services.CorrelationService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewAbstractService;
+import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.ICorrelationModel;
 import org.amanzi.neo.services.model.ICountersModel;
 import org.amanzi.neo.services.model.ICountersType;
+import org.amanzi.neo.services.model.IDataElement;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -59,7 +61,7 @@ public class CountersModel extends AbstractIndexedModel implements ICountersMode
     }
 
     @Override
-    public void updateTimestamp(long timestamp) throws DatabaseException {
+    public void updateTimestamp(long timestamp) {
         super.updateTimestamp(timestamp);
     }
 
@@ -76,6 +78,16 @@ public class CountersModel extends AbstractIndexedModel implements ICountersMode
     @Override
     public long getMinTimestamp() {
         return super.getMinTimestamp();
+    }
+
+    @Override
+    public Iterable<IDataElement> getChildren(IDataElement parent) {
+        return null;
+    }
+
+    @Override
+    public Iterable<IDataElement> getAllElementsByType(INodeType elementType) {
+        return null;
     }
 
 }
