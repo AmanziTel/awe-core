@@ -17,17 +17,13 @@ import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.NewDatasetService.DriveTypes;
-import org.amanzi.neo.services.NewNetworkService;
-import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
-import org.amanzi.neo.services.NewNetworkServiceTest;
 import org.amanzi.neo.services.ProjectService;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
-import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
-import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
 import org.amanzi.neo.services.model.impl.CorrelationModel;
+import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.DriveModel;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveRelationshipTypes;
@@ -40,8 +36,6 @@ import org.junit.Test;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.Transaction;
-import org.neo4j.kernel.EmbeddedGraphDatabase;
 
 public class DriveModelTest extends AbstractAWETest {
 
@@ -432,7 +426,7 @@ public class DriveModelTest extends AbstractAWETest {
 		File f = new File(filename);
 		Node fileNode = null;
 		try {
-			fileNode = dm.addFile(f);
+			fileNode = ((DataElement) dm.addFile(f)).getNode();
 		} catch (DatabaseException e) {
 			LOGGER.error("Could not add file node", e);
 			fail();
@@ -494,7 +488,7 @@ public class DriveModelTest extends AbstractAWETest {
 		}
 		Node f = null;
 		try {
-			f = dm.addFile(new File(filename));
+			f = ((DataElement) dm.addFile(new File(filename))).getNode();
 		} catch (DatabaseException e) {
 			LOGGER.error("Could not add file node", e);
 			fail();
@@ -507,8 +501,10 @@ public class DriveModelTest extends AbstractAWETest {
 		params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
 		Node m = null;
 		try {
-			m = dm.addMeasurement(
-					filename.substring(filename.lastIndexOf('\\') + 1), params);
+			m = ((DataElement) dm.addMeasurement(
+					filename.substring(filename.lastIndexOf('\\') + 1), params))
+					.getNode();
+			dm.finishUp();
 		} catch (DatabaseException e) {
 			LOGGER.error("Could not add measurement", e);
 			fail();
@@ -569,14 +565,16 @@ public class DriveModelTest extends AbstractAWETest {
 			m.put(DriveModel.TIMESTAMP, tst);
 			Node me = null;
 			try {
-				me = dm.addMeasurement(
-						filename.substring(filename.lastIndexOf('\\') + 1), m);
+				me = ((DataElement) dm.addMeasurement(
+						filename.substring(filename.lastIndexOf('\\') + 1), m))
+						.getNode();
 			} catch (DatabaseException e) {
 				LOGGER.error("Could not add measurement", e);
 				fail();
 			}
 			ms.put(me, m);
 		}
+		dm.finishUp();
 
 		// root params updated correctly
 		Node root = dm.getRootNode();
@@ -620,14 +618,15 @@ public class DriveModelTest extends AbstractAWETest {
 		params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
 		Node m = null;
 		try {
-			m = dm.addMeasurement(
-					filename.substring(filename.lastIndexOf('\\') + 1), params);
+			m = ((DataElement) dm.addMeasurement(
+					filename.substring(filename.lastIndexOf('\\') + 1), params))
+					.getNode();
 		} catch (DatabaseException e) {
 			LOGGER.error("Could not add measurement", e);
 			fail();
 		}
 
-		Node l = dm.getLocation(m);
+		Node l = ((DataElement) dm.getLocation(m)).getNode();
 		// location node created
 		Assert.assertNotNull(l);
 		// location node properties correct
@@ -667,14 +666,15 @@ public class DriveModelTest extends AbstractAWETest {
 		params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
 		Node m = null;
 		try {
-			m = dm.addMeasurement(
-					filename.substring(filename.lastIndexOf('\\') + 1), params);
+			m = ((DataElement) dm.addMeasurement(
+					filename.substring(filename.lastIndexOf('\\') + 1), params))
+					.getNode();
 		} catch (DatabaseException e) {
 			LOGGER.error("Could not add measurement", e);
 			fail();
 		}
 
-		Node l = dm.getLocation(m);
+		IDataElement l = dm.getLocation(m);
 		// location node not created
 		Assert.assertNull(l);
 	}
@@ -706,14 +706,15 @@ public class DriveModelTest extends AbstractAWETest {
 		params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
 		Node m = null;
 		try {
-			m = dm.addMeasurement(
-					filename.substring(filename.lastIndexOf('\\') + 1), params);
+			m = ((DataElement) dm.addMeasurement(
+					filename.substring(filename.lastIndexOf('\\') + 1), params))
+					.getNode();
 		} catch (DatabaseException e) {
 			LOGGER.error("Could not add measurement", e);
 			fail();
 		}
 
-		Node l = dm.getLocation(m);
+		IDataElement l = dm.getLocation(m);
 		// location node not created
 		Assert.assertNull(l);
 	}
@@ -826,7 +827,9 @@ public class DriveModelTest extends AbstractAWETest {
 		for (int i = 0; i < 7; i++) {
 
 			try {
-				fileNodes.add(dm.addFile(new File(filename + i)));
+				fileNodes
+						.add(((DataElement) dm.addFile(new File(filename + i)))
+								.getNode());
 			} catch (DatabaseException e) {
 				LOGGER.error("Could not add file node", e);
 				fail();
@@ -836,14 +839,14 @@ public class DriveModelTest extends AbstractAWETest {
 			}
 		}
 
-		Iterable<Node> it = dm.getFiles();
+		Iterable<IDataElement> it = dm.getFiles();
 		// the object returned is not null
 		Assert.assertNotNull(it);
 		// iterator has next
 		Assert.assertTrue(it.iterator().hasNext());
-		for (Node node : it) {
+		for (IDataElement node : it) {
 			// node correct
-			Assert.assertTrue(fileNodes.contains(node));
+			Assert.assertTrue(fileNodes.contains(((DataElement) node).getNode()));
 		}
 	}
 
@@ -877,7 +880,9 @@ public class DriveModelTest extends AbstractAWETest {
 				params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
 
 				try {
-					fms.get(fname).add(dm.addMeasurement(fname, params));
+					fms.get(fname).add(
+							((DataElement) dm.addMeasurement(fname, params))
+									.getNode());
 				} catch (DatabaseException e) {
 					LOGGER.error("Could not add measurement", e);
 					fail();
@@ -886,14 +891,15 @@ public class DriveModelTest extends AbstractAWETest {
 		}
 
 		for (String fname : fms.keySet()) {
-			Iterable<Node> it = dm.getMeasurements(fname);
+			Iterable<IDataElement> it = dm.getMeasurements(fname);
 			// object not null
 			Assert.assertNotNull(it);
 			// has next
 			Assert.assertTrue(it.iterator().hasNext());
-			for (Node node : it) {
+			for (IDataElement node : it) {
 				// node correct
-				Assert.assertTrue(fms.get(fname).contains(node));
+				Assert.assertTrue(fms.get(fname).contains(
+						((DataElement) node).getNode()));
 			}
 		}
 	}
