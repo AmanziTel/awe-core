@@ -72,6 +72,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     private NewDatasetService dsServ;
     private CorrelationService crServ = NeoServiceFactory.getInstance().getNewCorrelationService();
 
+    
     /**
      * <p>
      * This enum describes node types that are present in drive model.
