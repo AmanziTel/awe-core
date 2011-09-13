@@ -13,10 +13,13 @@
 
 package org.amanzi.neo.services;
 
+import java.util.Map;
+
 import org.amanzi.neo.db.manager.NeoServiceProvider;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
+import org.amanzi.neo.services.model.impl.DataElement;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -228,4 +231,31 @@ public abstract class NewAbstractService {
         }
 
     }
+
+    /**
+     * @param node
+     * @param element
+     * @throws DatabaseException
+     */
+    public void setProperties(Node node, Map<String, Object> element) throws DatabaseException {
+        // validate
+        if (node == null) {
+            throw new IllegalArgumentException("Node is null.");
+        }
+        if (element == null) {
+            throw new IllegalArgumentException("Data element is null.");
+        }
+        tx = graphDb.beginTx();
+        try {
+            for (String key : ((DataElement)element).keySet()) {
+                node.setProperty(key, element.get(key));
+            }
+            tx.success();
+        } catch (Exception e) {
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
+    }
+
 }

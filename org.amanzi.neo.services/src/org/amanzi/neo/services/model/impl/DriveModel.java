@@ -168,7 +168,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
 
     /**
      * Adds a new node of type DRIVE, creates VIRTUAL_DATASET relationship from root node of current
-     * DM, and creaates and returns a new DM on base of newly created node.
+     * DM, and creates and returns a new DM on base of newly created node.
      * 
      * @param name the name of new virtual dataset
      * @param driveType the drive type of new virtual dataset (NB! not TYPE, TYPE is set to DRIVE)
@@ -225,7 +225,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     }
 
     /**
-     * Looks for a virtual dataset node or created a new one if nothing found. returns a new
+     * Looks for a virtual dataset node or creates a new one if nothing found. returns a new
      * DriveModel based on resulting node.
      * 
      * @param name
@@ -377,7 +377,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     }
 
     /**
-     * Created a node, sets its LATITUDE and LONGITUDE properties, and created a LOCATION
+     * Creates a node, sets its LATITUDE and LONGITUDE properties, and created a LOCATION
      * relationship from parent node.
      * 
      * @param parent
@@ -434,7 +434,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     }
 
     /**
-     * Find or creates a file with the defined name.
+     * Finds or creates a file with the defined name.
      * 
      * @param name
      * @return FILE node
