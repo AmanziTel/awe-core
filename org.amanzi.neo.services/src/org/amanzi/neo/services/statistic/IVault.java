@@ -33,37 +33,95 @@ import org.amanzi.neo.services.statistic.internal.NewPropertyStatistics;
 public interface IVault {
 
     /**
-     * this method get subVaults of vault
+     * Method return subvaults of this vault
      * 
-     * @return List<IVault> subVaults
+     * @return Return map of subvaults of this vault
      */
     public Map<String, IVault> getSubVaults();
 
     /**
-     * this method get count
+     * Method return count of properties in node
      * 
-     * @return int count
+     * @return Count of all properties
      */
     public int getCount();
+    
+    /**
+     * Method return count of properties in node with certain node type
+     *
+     * @param nodeType Type of node
+     * @return Count of all properties in node with certain node type
+     */
+    public int getNodeCount(String nodeType);
+    
+    /**
+     * Method return count of properties in node with certain node type and 
+     * certain property name
+     *
+     * @param nodeType Type of node
+     * @param propertyName Name of property
+     * @return Count of property with certain property name
+     */
+    public int getPropertyCount(String nodeType, String propertyName);
+    
+    /**
+     * Method find all properties in all vaults
+     *
+     * @return All properties from statistics
+     */
+    public Map<Object, Integer> getAllProperties();
+    
+    /**
+     * Method find properties with certain node type
+     *
+     * @param nodeType Type of node
+     * @return All properties from statistics with certain node type
+     */
+    public Map<Object, Integer> getAllProperties(String nodeType);
+    
+    /**
+     * Method find properties with certain type of Class
+     *
+     * @param klass Type of Class
+     * @return All properties from statistics with certain type of Class
+     */
+    public Map<Object, Integer> getAllProperties(Class<?> klass);
 
     /**
-     * this method get type of vault
+     * Method find properties with certain node type and certain property name
+     *
+     * @param nodeType Type of node
+     * @param propertyName Name of property
+     * @return All properties from statistics with certain node type and certain property name
+     */
+    public Map<Object, Integer> getAllProperties(String nodeType, String propertyName);
+    
+    /**
+    * Method find properties with certain name of property
+    *
+    * @param propertyName Name of property
+    * @return All properties from statistics with certain name of property
+    */
+    public Map<Object, Integer> getAllPropertiesWithName(String propertyName);
+   
+    /**
+     * Method return node type of vault
      * 
-     * @return String type
+     * @return Type of vault
      */
     public String getType();
 
     /**
-     * add subVault to vault
+     * Add subVault to this vault
      * 
-     * @param vault - subVault
+     * @param vault Subvault to this vault
      */
     public void addSubVault(IVault vault);
 
     /**
-     * this method set count to vault
+     * This method set count to vault
      * 
-     * @param count
+     * @param count Count of properties in vault
      */
     public void setCount(int count);
 

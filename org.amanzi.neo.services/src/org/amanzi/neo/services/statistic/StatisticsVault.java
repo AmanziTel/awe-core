@@ -17,6 +17,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.IndexPropertyException;
@@ -37,7 +38,8 @@ public class StatisticsVault implements IVault {
     private int count;
     private String type;
     private Map<String, NewPropertyStatistics> propertyStatisticsMap = new HashMap<String, NewPropertyStatistics>();
-
+    private Map<Object, Integer> allProperties = new HashMap<Object, Integer>();
+    
     private static Logger LOGGER = Logger.getLogger(StatisticsVault.class);
 
     private static final String TRUE = "true";
@@ -268,5 +270,204 @@ public class StatisticsVault implements IVault {
             return propertyValue;
         }
 
+    }
+
+    @Override
+    public int getNodeCount(String nodeType) {
+        if (this.type.equals(nodeType)) {
+            return this.count;
+        }
+        else {
+            for (String type : this.subVaults.keySet()) {
+                if (type.equals(nodeType)) {
+                    return this.subVaults.get(type).getCount();
+                }
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public int getPropertyCount(String nodeType, String propertyName) {
+        getAllProperties(nodeType, propertyName);
+        return allProperties.size();
+    }
+    
+    @Override
+    public Map<Object, Integer> getAllProperties() {
+        allProperties = new HashMap<Object, Integer>();
+        return getAllProperties(this);
+    }
+    
+    private Map<Object, Integer> getAllProperties(IVault subVault) {
+        
+        if (subVault.getSubVaults().values().size() != 0) {
+            for (String nameOfSubVault : subVault.getSubVaults().keySet()) {
+                IVault subV = subVault.getSubVaults().get(nameOfSubVault);
+                if (subV.getSubVaults().values().size() == 0) {
+                    Map<String, NewPropertyStatistics> propertyStatisticMap = subV.getPropertyStatisticsMap();
+                    for (String property : propertyStatisticMap.keySet()) {
+                        NewPropertyStatistics newPropertyStatistic = propertyStatisticMap.get(property);
+                        allProperties.putAll(newPropertyStatistic.getPropertyMap());
+                    }
+                }
+                else {
+                    getAllProperties(subV);
+                }
+            }
+        }
+        else {
+            Map<String, NewPropertyStatistics> propertyStatisticMap = subVault.getPropertyStatisticsMap();
+            for (String property : propertyStatisticMap.keySet()) {
+                NewPropertyStatistics newPropertyStatistic = propertyStatisticMap.get(property);
+                allProperties.putAll(newPropertyStatistic.getPropertyMap());
+            }
+        }
+        
+        return allProperties;
+    }
+    
+    @Override
+    public Map<Object, Integer> getAllProperties(String nodeType) {
+        allProperties = new HashMap<Object, Integer>();
+        return getAllProperties(this, nodeType);
+    }
+    
+    private Map<Object, Integer> getAllProperties(IVault subVault, String nodeType) {
+        if (subVault.getSubVaults().size() != 0) {
+            for (String nameOfSubVault : subVault.getSubVaults().keySet()) {
+                IVault subV = subVault.getSubVaults().get(nameOfSubVault);
+                if (subV.getType().equals(nodeType)) {
+                    getAllProperties(subV);
+                }
+                else {
+                    getAllProperties(subV, nodeType);
+                }
+            }
+        }
+        else {
+            for (IVault subSubVault : subVault.getSubVaults().values()) {
+                if (subSubVault.getType().equals(nodeType)) {
+                    getAllProperties(subSubVault);
+                }
+            }
+        }
+        
+        return allProperties;
+    }
+    
+    @Override
+    public Map<Object, Integer> getAllProperties(String nodeType, String propertyName) {
+        allProperties = new HashMap<Object, Integer>();
+        return getAllProperties(this, nodeType, propertyName);
+    }
+    
+    private Map<Object, Integer> getAllProperties(IVault subVault, String nodeType, String propertyName) {
+        if (subVault.getSubVaults().size() != 0) {
+            for (String nameOfSubVault : subVault.getSubVaults().keySet()) {
+                IVault subV = subVault.getSubVaults().get(nameOfSubVault);
+                if (subV.getType().equals(nodeType)) {
+                    getAllPropertiesWithName(subV, propertyName);
+                }
+                else {
+                    getAllProperties(subV, nodeType, propertyName);
+                }
+            }
+        }
+        else {
+            for (IVault subSubVault : subVault.getSubVaults().values()) {
+                if (subSubVault.getType().equals(nodeType)) {
+                    getAllPropertiesWithName(subSubVault, propertyName);
+                }
+            }
+        }
+        
+        return allProperties;
+    }
+
+    @Override
+    public Map<Object, Integer> getAllPropertiesWithName(String propertyName) {
+        allProperties = new HashMap<Object, Integer>();
+        return getAllPropertiesWithName(this, propertyName);
+    }
+    
+    private Map<Object, Integer> getAllPropertiesWithName(IVault subVault, String propertyName) {
+        if (subVault.getSubVaults().values().size() != 0) {
+            for (String nameOfSubVault : subVault.getSubVaults().keySet()) {
+                IVault subV = subVault.getSubVaults().get(nameOfSubVault);
+                if (subV.getSubVaults().values().size() == 0) {
+                    Map<String, NewPropertyStatistics> propertyStatisticMap = subV.getPropertyStatisticsMap();
+                    for (String property : propertyStatisticMap.keySet()) {
+                        if (property.equals(propertyName)) {
+                            NewPropertyStatistics newPropertyStatistic = propertyStatisticMap.get(property);
+                            Map<Object, Integer> propertyMap = newPropertyStatistic.getPropertyMap();
+                            for (Object key : propertyMap.keySet()) {
+                                allProperties.put(key, propertyMap.get(key));
+                            }
+                        }
+                    }
+                }
+                else {
+                    getAllPropertiesWithName(subV, propertyName);
+                }
+            }
+        }
+        else {
+            Map<String, NewPropertyStatistics> propertyStatisticMap = subVault.getPropertyStatisticsMap();
+            for (String property : propertyStatisticMap.keySet()) {
+                if (property.equals(propertyName)) {
+                    NewPropertyStatistics newPropertyStatistic = propertyStatisticMap.get(property);
+                    Map<Object, Integer> propertyMap = newPropertyStatistic.getPropertyMap();
+                    for (Object key : propertyMap.keySet()) {
+                        allProperties.put(key, propertyMap.get(key));
+                    }
+                }
+            }
+        }
+        
+        return allProperties;
+    }
+    
+    @Override
+    public Map<Object, Integer> getAllProperties(Class< ? > klass) {
+        allProperties = new HashMap<Object, Integer>();
+        return getAllProperties(this, klass);
+    }
+    
+    private Map<Object, Integer> getAllProperties(IVault subVault, Class< ? > klass) {
+        if (subVault.getSubVaults().values().size() != 0) {
+            for (String nameOfSubVault : subVault.getSubVaults().keySet()) {
+                IVault subV = subVault.getSubVaults().get(nameOfSubVault);
+                if (subV.getSubVaults().values().size() == 0) {
+                    Map<String, NewPropertyStatistics> propertyStatisticMap = subV.getPropertyStatisticsMap();
+                    for (String property : propertyStatisticMap.keySet()) {
+                        NewPropertyStatistics newPropertyStatistic = propertyStatisticMap.get(property);
+                        if (newPropertyStatistic.getKlass().equals(klass)) {
+                            Map<Object, Integer> propertyMap = newPropertyStatistic.getPropertyMap();
+                            for (Object key : propertyMap.keySet()) {
+                                allProperties.put(key, propertyMap.get(key));
+                            }
+                        }
+                    }
+                }
+                else {
+                    getAllProperties(subV, klass);
+                }
+            }
+        }
+        else {
+            Map<String, NewPropertyStatistics> propertyStatisticMap = subVault.getPropertyStatisticsMap();
+            for (String property : propertyStatisticMap.keySet()) {
+                NewPropertyStatistics newPropertyStatistic = propertyStatisticMap.get(property);
+                if (newPropertyStatistic.getKlass().equals(klass)) {
+                    Map<Object, Integer> propertyMap = newPropertyStatistic.getPropertyMap();
+                    for (Object key : propertyMap.keySet()) {
+                        allProperties.put(key, propertyMap.get(key));
+                    }
+                }
+            }
+        }
+        
+        return allProperties;
     }
 }
