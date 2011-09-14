@@ -124,7 +124,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
 
             graphDb = parent.getGraphDatabase();
             dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
-            rootNode = dsServ.getDataset(parent, name, DatasetTypes.DRIVE, type);
+            this.rootNode = dsServ.getDataset(parent, name, DatasetTypes.DRIVE, type);
             this.name = name;
         }
     }

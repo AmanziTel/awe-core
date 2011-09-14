@@ -240,7 +240,7 @@ public class AMSXMLSaver implements ISaver<IModel, IData, IConfiguration> {
         propertyMap.put(CallProperties.CALL_TYPE.getId(), itsiAtt.getCallType().toString());
 
         propertyMap.put(CallProperties.CALL_DURATION.getId(), itsiAtt.getCallDuration());
-        createCallNode(currentNode, propertyMap);
+        Node lastNode = addMeasurmentToModel(callsModel, fileName, propertyMap);
     }
 
     /**
@@ -259,7 +259,7 @@ public class AMSXMLSaver implements ISaver<IModel, IData, IConfiguration> {
         propertyMap.put(CallProperties.CALL_TYPE.getId(), reselection.getCallType().toString());
 
         propertyMap.put(CallProperties.CC_RESELECTION_TIME.getId(), reselection.getCellReselection());
-        createCallNode(currentNode, propertyMap);
+        Node lastNode = addMeasurmentToModel(callsModel, fileName, propertyMap);
     }
 
     /**
@@ -279,7 +279,7 @@ public class AMSXMLSaver implements ISaver<IModel, IData, IConfiguration> {
         propertyMap.put(CallProperties.NAME.getId(), handover.getId());
 
         propertyMap.put(CallProperties.CC_HANDOVER_TIME.getId(), handover.getHandoverTime());
-        createCallNode(currentNode, propertyMap);
+        Node lastNode = addMeasurmentToModel(callsModel, fileName, propertyMap);
     }
 
     /**
@@ -301,7 +301,7 @@ public class AMSXMLSaver implements ISaver<IModel, IData, IConfiguration> {
         propertyMap.put(CallProperties.MESS_ACKNOWLEDGE_TIME.getId(), messageCall.getMessageAcnowledgeTime());
         propertyMap.put(CallProperties.MESS_RECEIVE_TIME.getId(), messageCall.getMessageRecievedTime());
 
-        createCallNode(currentNode, propertyMap);
+        Node lastNode = addMeasurmentToModel(callsModel, fileName, propertyMap);
     }
 
     /**
@@ -337,10 +337,16 @@ public class AMSXMLSaver implements ISaver<IModel, IData, IConfiguration> {
         propertyMap.put(CallProperties.TERMINATION_DURATION.getId(), realCall.getTerminationDuration());
         propertyMap.put(CallProperties.TIMESTAMP.getId(), realCall.getTimestamp());
         Node lastNode = addMeasurmentToModel(callsModel, fileName, propertyMap);
-        Node pesqNode = buildPesqModelStructure(lastNode, realCall.getTocPesqList(), realCall.getTtcPesqList(),
-                realCall.getCallType());
-        // Node ntpq = buildNtpqStructure(lastNode, collector.getNtpq(), realCall.getCallType());
-
+        try {
+            Node pesqNode = buildPesqModelStructure(lastNode, realCall.getTocPesqList(), realCall.getTtcPesqList(),
+                    realCall.getCallType());
+            // Node ntpq = buildNtpqStructure(lastNode, collector.getNtpq(),
+            // realCall.getCallType());
+            // Node tocTTc = attachTocTtc(lastNode, realCall.getTocTtcList(), ntpq,
+            // realCall.getCallType());
+        } catch (Exception e) {
+            LOGGER.error("Error while saving call", e);
+        }
     }
 
     /**
@@ -382,8 +388,9 @@ public class AMSXMLSaver implements ISaver<IModel, IData, IConfiguration> {
             propertyMap.put(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.M.getId());
             propertyMap.put(CallProperties.CALL_TYPE.getId(), ChildTypes.TOC.toString());
             propertyMap.put(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.M.getId());
-            callNode.createRelationshipTo(lastPesqNode, ProbeCallRelationshipType.CALL_M);
             lastPesqNode = addMeasurmentToModel(pesqModel, fileName, propertyMap);
+            callNode.createRelationshipTo(lastPesqNode, ProbeCallRelationshipType.CALL_M);
+           
         }
         for (PESQResultElement pesqToc : ttcPesqList) {
             propertyMap.put(LoaderConstants.DELAY, pesqToc.getDelay());
@@ -395,8 +402,9 @@ public class AMSXMLSaver implements ISaver<IModel, IData, IConfiguration> {
             propertyMap.put(PROBE_TYPE, ChildTypes.TTC.getId());
             propertyMap.put(CallProperties.CALL_TYPE.getId(), ChildTypes.TTC.toString());
             propertyMap.put(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.M.getId());
-            callNode.createRelationshipTo(lastPesqNode, ProbeCallRelationshipType.CALL_M);
             lastPesqNode = addMeasurmentToModel(pesqModel, fileName, propertyMap);
+            callNode.createRelationshipTo(lastPesqNode, ProbeCallRelationshipType.CALL_M);
+            
         }
         return lastPesqNode;
     }
@@ -454,11 +462,11 @@ public class AMSXMLSaver implements ISaver<IModel, IData, IConfiguration> {
     /**
      * attach toc and ttc node to call node
      * 
-     * @param currentNode2
+     * @param callNode
      * @param tocTtcList
      * @param callType
      */
-    private Node attachTocTtc(Node currentNode2, List<AbstractTOCTTC> tocTtcList, Node lastNtpq, CallType callType) {
+    private Node attachTocTtc(Node callNode, List<AbstractTOCTTC> tocTtcList, Node lastNtpq, CallType callType) {
         if (tocTtcList.isEmpty()) {
             return null;
         }
@@ -584,7 +592,6 @@ public class AMSXMLSaver implements ISaver<IModel, IData, IConfiguration> {
         projectNode = datasetService.findOrCreateAweProject(datasetNames.get("Project"));
         try {
             tocTTCModel = new DriveModel(projectNode, null, datasetNames.get("Dataset"), DriveTypes.AMS);
-
             mainDatasetNode = tocTTCModel.getRootNode();
             callsModel = tocTTCModel.addVirtualDataset(datasetNames.get("Calls"), DriveTypes.AMS_CALLS);
             callDatasetNode = callsModel.getRootNode();

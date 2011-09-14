@@ -158,6 +158,9 @@ public class CallCollector implements IData {
         messageCalls = new LinkedList<MessageCall>();
         handovers = new LinkedList<HandoverCall>();
         cellResels = new LinkedList<CellReselCall>();
+        groupAttach = new LinkedList<GroupAttach>();
+        ntpq = new LinkedList<Ntpq>();
+        gpsData = new LinkedList<CompleteGpsDataList>();
     }
 
     public List<RealCall> getHelpCalls() {

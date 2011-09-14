@@ -79,6 +79,9 @@ public class ConfigurationDataImpl implements IConfiguration {
      * @return
      */
     private List<File> getRootsFiles(File root) {
+        if (!filelist.isEmpty()) {
+            return filelist;
+        }
         File[] rootList = root.listFiles();
         if (rootList != null) {
             for (int i = 0; i < rootList.length; i++) {
