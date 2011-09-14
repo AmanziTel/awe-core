@@ -17,40 +17,58 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.amanzi.neo.loader.core.CommonConfigData;
+import org.amanzi.neo.loader.core.IConfiguration;
+import org.amanzi.neo.loader.core.ILoaderNew;
+import org.amanzi.neo.loader.core.newsaver.IData;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
+import org.amanzi.neo.loader.ui.wizards.AbstractLoaderWizard.LoaderInfo;
+import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.ui.IWorkbench;
 
-
 /**
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author tsinkel_a
  * @since 1.0.0
  */
 public class OssImportWizard extends AbstractLoaderWizard<CommonConfigData> {
-    CommonConfigData data=null;
+    CommonConfigData data = null;
+
     @Override
     protected List<IWizardPage> getMainPagesList() {
-        List<IWizardPage> result=new ArrayList<IWizardPage>();
+        List<IWizardPage> result = new ArrayList<IWizardPage>();
         result.add(new LoadOssMainPage());
         return result;
     }
 
     @Override
     public CommonConfigData getConfigurationData() {
-        if (data==null){
-            data=new CommonConfigData();
+        if (data == null) {
+            data = new CommonConfigData();
         }
         return data;
     }
-@Override
-public void init(IWorkbench workbench, IStructuredSelection selection) {
-    super.init(workbench, selection);
-    setWindowTitle(NeoLoaderPluginMessages.GpehWindowTitle);
 
-}
+    @Override
+    public void init(IWorkbench workbench, IStructuredSelection selection) {
+        super.init(workbench, selection);
+        setWindowTitle(NeoLoaderPluginMessages.GpehWindowTitle);
+
+    }
+
+    @Override
+    public void addNewLoader(ILoaderNew<IData, IConfiguration> loader, IConfigurationElement[] pageConfigElements) {
+        LoaderInfo<CommonConfigData> info = new LoaderInfo<CommonConfigData>();
+        info.setAdditionalPages(pageConfigElements);
+        newloaders.put(loader, info);
+    }
+
+    @Override
+    public IConfiguration getNewConfigurationData() {
+        return null;
+    }
 }

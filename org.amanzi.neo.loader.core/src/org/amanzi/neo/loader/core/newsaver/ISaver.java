@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.loader.core.newsaver;
 
+import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.services.networkModel.IModel;
 
 /**
@@ -36,5 +37,8 @@ public interface ISaver<M extends IModel, D extends IData, C extends IConfigurat
      */
     void saveElement(D dataElement);
 
+    /**
+     * common finishing actions
+     */
     void finishUp();
 }

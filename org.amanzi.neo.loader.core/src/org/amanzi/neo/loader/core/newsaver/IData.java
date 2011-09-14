@@ -13,6 +13,8 @@
 
 package org.amanzi.neo.loader.core.newsaver;
 
+import org.amanzi.neo.loader.core.parser.IDataElement;
+
 /**
  * TODO Purpose of
  * <p>
@@ -21,6 +23,6 @@ package org.amanzi.neo.loader.core.newsaver;
  * @author Kondratenko_Vladislav
  * @since 1.0.0
  */
-public interface IData {
+public interface IData extends IDataElement {
 
 }

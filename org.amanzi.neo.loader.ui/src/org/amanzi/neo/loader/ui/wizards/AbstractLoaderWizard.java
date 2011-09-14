@@ -24,9 +24,12 @@ import java.util.Set;
 import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.db.manager.DatabaseManager.DatabaseAccessType;
+import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.ILoader;
+import org.amanzi.neo.loader.core.ILoaderNew;
 import org.amanzi.neo.loader.core.ILoaderProgressListener;
 import org.amanzi.neo.loader.core.IProgressEvent;
+import org.amanzi.neo.loader.core.newsaver.IData;
 import org.amanzi.neo.loader.core.parser.IConfigurationData;
 import org.amanzi.neo.loader.core.parser.IDataElement;
 import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
@@ -44,6 +47,7 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
 
+//TODO refactoring for new loader architect
 /**
  * <p>
  * Abstract class for wizard for loaders
@@ -54,18 +58,26 @@ import org.eclipse.ui.IWorkbench;
  * @author tsinkel_a
  * @since 1.0.0
  */
-public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends Wizard implements IGraphicInterfaceForLoaders<T>, IImportWizard {
+public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends Wizard
+        implements
+            IGraphicInterfaceForLoaders<T>,
+            IImportWizard {
 
     /** The pages. */
     protected List<IWizardPage> pages = new ArrayList<IWizardPage>();
     /** The loaders. */
     protected LinkedHashMap<ILoader< ? extends IDataElement, T>, LoaderInfo<T>> loaders = new LinkedHashMap<ILoader< ? extends IDataElement, T>, LoaderInfo<T>>();
 
+    /**
+     * new loaders
+     */
+    protected LinkedHashMap<ILoaderNew<IData, IConfiguration>, LoaderInfo<T>> newloaders = new LinkedHashMap<ILoaderNew<IData, IConfiguration>, LoaderInfo<T>>();
     /** The max main page id. */
     protected int maxMainPageId;
     /** The batch mode. */
-    
+    private DatabaseAccessType accessType = DatabaseAccessType.EMBEDDED;
     private ILoader< ? extends IDataElement, T> selectedLoader;
+    private ILoaderNew< ? extends IData, IConfiguration> newSelectedLoader;
 
     /**
      * Gets the access type.
@@ -73,8 +85,8 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
      * @return the access type
      */
     public DatabaseAccessType getAccessType() {
-//        return accessType;
-        //NOW BATCH DATABASE ACCESS DO NOT SUPPORT 
+        // return accessType;
+        // NOW BATCH DATABASE ACCESS DO NOT SUPPORT
         return DatabaseAccessType.EMBEDDED;
     }
 
@@ -88,19 +100,28 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
     }
 
     /**
+     * Gets new loaders.
+     * 
+     * @return the loaders
+     */
+    public Set<ILoaderNew<IData, IConfiguration>> getNewLoaders() {
+        return newloaders.keySet();
+    }
+
+    /**
      * Sets the access type.
      * 
      * @param accessType the new access type
      */
     public void setAccessType(DatabaseAccessType accessType) {
-        
+        this.accessType = accessType;
     }
 
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
-        //init pref store in not initialized before
+        // init pref store in not initialized before
         NeoLoaderPlugin.getDefault().getPreferenceStore().getString("init");
-        
+
         setNeedsProgressMonitor(true);
         maxMainPageId = -1;
         List<IWizardPage> mainPages = getMainPagesList();
@@ -109,6 +130,22 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
             maxMainPageId++;
         }
         for (Map.Entry<ILoader< ? extends IDataElement, T>, LoaderInfo<T>> loaderEntry : loaders.entrySet()) {
+            LoaderInfo<T> info = loaderEntry.getValue();
+            int idPage = 0;
+            for (IConfigurationElement pageClass : info.getPages()) {
+                ILoaderPage<T> page = createAdditionalPage(pageClass);
+                // for this comparing for pages should be implement correct equals and hashCode
+                // methods (not necessary)
+                int id = pages.indexOf(pageClass);
+                if (id == -1) {
+                    addPage(page);
+                    id = pages.size() - 1;
+                }
+                info.setPage(idPage, id);
+                idPage++;
+            }
+        }
+        for (Map.Entry<ILoaderNew<IData, IConfiguration>, LoaderInfo<T>> loaderEntry : newloaders.entrySet()) {
             LoaderInfo<T> info = loaderEntry.getValue();
             int idPage = 0;
             for (IConfigurationElement pageClass : info.getPages()) {
@@ -134,16 +171,19 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
             }
         }
         ILoader< ? extends IDataElement, T> loader = getSelectedLoader();
-        if (loader == null) {
+        ILoaderNew< ? extends IData, IConfiguration> loadernew = getNewSelectedLoader();
+        if (loader == null && loadernew == null) {
             return false;
         }
-        LoaderInfo<T> info = loaders.get(loader);
-        if (info.pageId.length == 0) {
-            return true;
-        }
-        for (int i = 0; i < info.pageId.length; i++) {
-            if (!pages.get(info.pageId[i]).isPageComplete()) {
-                return false;
+        if (loader != null) {
+            LoaderInfo<T> info = loaders.get(loader);
+            if (info.pageId.length == 0) {
+                return true;
+            }
+            for (int i = 0; i < info.pageId.length; i++) {
+                if (!pages.get(info.pageId[i]).isPageComplete()) {
+                    return false;
+                }
             }
         }
         return true;
@@ -240,9 +280,10 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
     public boolean performFinish() {
         final DatabaseAccessType accessType = getAccessType();
         final T data = getConfigurationData();
+        final IConfiguration newdata = getNewConfigurationData();
         final ILoader< ? extends IDataElement, T> loader = getSelectedLoader();
-
-        if (data == null || loader == null) {
+        final ILoaderNew< ? extends IData, IConfiguration> newloader = getNewSelectedLoader();
+        if ((data == null || loader == null)&&(newdata == null || newloader == null)) {
             return false;
         }
         if (accessType != DatabaseAccessType.EMBEDDED) {
@@ -258,11 +299,14 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
                         }
                     }, false);
                     try {
-                        load(accessType, data, loader, monitor);
-                    }catch (Exception e) {
+                        if (loader != null) {
+                            load(accessType, data, loader, monitor);
+                        } else {
+                            newload(accessType, newdata, newloader, monitor);
+                        }
+                    } catch (Exception e) {
                         e.printStackTrace();
-                    }
-                    finally {
+                    } finally {
                         ActionUtil.getInstance().runTask(new Runnable() {
 
                             @Override
@@ -287,7 +331,11 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
 
                 @Override
                 protected IStatus run(IProgressMonitor monitor) {
-                    load(accessType, data, loader, monitor);
+                    if (loader != null) {
+                        load(accessType, data, loader, monitor);
+                    } else {
+                        newload(accessType, newdata, newloader, monitor);
+                    }
                     return Status.OK_STATUS;
                 }
             };
@@ -304,13 +352,29 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
      * @param loader the loader
      * @param monitor the monitor
      */
-    protected void load(final DatabaseAccessType accessType, final T data, final ILoader< ? extends IDataElement, T> loader, IProgressMonitor monitor) {
+    protected void load(final DatabaseAccessType accessType, final T data, final ILoader< ? extends IDataElement, T> loader,
+            IProgressMonitor monitor) {
         assignMonitorToProgressLoader(monitor, loader);
         loader.setup(accessType, data);
-        if (accessType==DatabaseAccessType.EMBEDDED){
+        if (accessType == DatabaseAccessType.EMBEDDED) {
             loader.setPrintStream(new PrintStream(AweConsolePlugin.getDefault().getPrintStream()));
         }
         loader.load();
+    }
+
+    /**
+     * Load.
+     * 
+     * @param accessType the batch mode
+     * @param data the data
+     * @param loader the loader
+     * @param monitor the monitor
+     */
+    protected void newload(final DatabaseAccessType accessType, final IConfiguration data,
+            final ILoaderNew< ? extends IData, IConfiguration> loader, IProgressMonitor monitor) {
+        assignMonitorToProgressLoader(monitor, loader);
+        loader.init(data);
+        loader.run();
     }
 
     /**
@@ -330,11 +394,35 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
                 int jobDone = (int)(event.getPercentage() * 1000);
                 monitor.worked(jobDone - jobCount);
                 jobCount = jobDone;
-                if (monitor.isCanceled()){
+                if (monitor.isCanceled()) {
                     event.cancelProcess();
                 }
             }
         });
+    }
+
+    /**
+     * Assign monitor to progress loader.
+     * 
+     * @param monitor the monitor
+     * @param loader the loader
+     */
+    protected void assignMonitorToProgressLoader(final IProgressMonitor monitor, ILoaderNew< ? extends IData, IConfiguration> loader) {
+        monitor.beginTask("ololo", 1000);
+        // loader.addProgressListener(new ILoaderProgressListener() {
+        // int jobCount = 0;
+        //
+        // @Override
+        // public void updateProgress(IProgressEvent event) {
+        // monitor.subTask(event.getProcessName());
+        // int jobDone = (int)(event.getPercentage() * 1000);
+        // monitor.worked(jobDone - jobCount);
+        // jobCount = jobDone;
+        // if (monitor.isCanceled()) {
+        // event.cancelProcess();
+        // }
+        // }
+        // });
     }
 
     /**
@@ -358,6 +446,13 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
     public abstract T getConfigurationData();
 
     /**
+     * get the new configuration data ;
+     * 
+     * @return
+     */
+    public abstract IConfiguration getNewConfigurationData();
+
+    /**
      * Gets the selected loader.
      * 
      * @return the selected loader
@@ -367,12 +462,30 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
     }
 
     /**
+     * Gets the selected loader.
+     * 
+     * @return the selected loader
+     */
+    public ILoaderNew< ? extends IData, IConfiguration> getNewSelectedLoader() {
+        return newSelectedLoader;
+    }
+
+    /**
      * Sets the selected loader.
      * 
      * @param selectedLoader the selected loader
      */
     public void setSelectedLoader(ILoader< ? extends IDataElement, T> selectedLoader) {
         this.selectedLoader = selectedLoader;
+    }
+
+    /**
+     * Sets new selected loader.
+     * 
+     * @param selectedLoader the selected loader
+     */
+    public void setSelectedLoaderNew(ILoaderNew< ? extends IData, IConfiguration> selectedLoader) {
+        this.newSelectedLoader = selectedLoader;
     }
 
     /**

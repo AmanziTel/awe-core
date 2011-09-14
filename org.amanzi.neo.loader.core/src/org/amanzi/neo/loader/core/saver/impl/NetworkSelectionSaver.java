@@ -19,6 +19,7 @@ import org.amanzi.neo.loader.core.saver.MetaData;
 import org.amanzi.neo.services.GisProperties;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.network.NetworkModel;
+import org.amanzi.neo.services.networkselection.NetworkSelectionModel;
 import org.amanzi.neo.services.networkselection.SelectionModel;
 import org.neo4j.graphdb.Node;
 
@@ -31,6 +32,9 @@ import org.neo4j.graphdb.Node;
  * @since 1.0.0
  */
 public class NetworkSelectionSaver extends AbstractHeaderSaver<LineTransferData> {
+    private Node selectionNode;
+    private int skippedCount;
+    
     private boolean headerNotHandled = true;
     
     private SelectionModel selectionModel;
@@ -68,6 +72,7 @@ public class NetworkSelectionSaver extends AbstractHeaderSaver<LineTransferData>
         Node sector = findSector(sectorName);
         if (sector == null) {
             getPrintStream().println(String.format("Sector with name '%s' is not found in network '%s'.", sectorName, rootname));
+            skippedCount++;
             return;
         }
         if (!selectionModel.addToSelection(sector)) {

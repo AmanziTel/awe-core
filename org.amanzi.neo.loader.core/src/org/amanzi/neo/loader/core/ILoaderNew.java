@@ -14,12 +14,8 @@
 package org.amanzi.neo.loader.core;
 
 import org.amanzi.neo.loader.core.newparser.IParser;
-import org.amanzi.neo.loader.core.newsaver.IConfiguration;
 import org.amanzi.neo.loader.core.newsaver.IData;
 import org.amanzi.neo.loader.core.newsaver.ISaver;
-import org.amanzi.neo.loader.core.parser.IConfigurationData;
-import org.amanzi.neo.loader.core.parser.IDataElement;
-import org.amanzi.neo.services.networkModel.IModel;
 
 /**
  * <p>
@@ -53,20 +49,36 @@ public interface ILoaderNew<T extends IData, T2 extends IConfiguration> {
 
     /**
      * set validator for selected loader
+     * 
      * @param validator
      */
     void setValidator(IValidator validator);
 
     /**
      * configure loader
+     * 
      * @param config
      */
     void init(T2 config);
 
     /**
      * get validator for current loader;
+     * 
      * @return validator
      */
     IValidator getValidator();
 
+    /**
+     * get loader info
+     * 
+     * @return
+     */
+    ILoaderInfo getLoaderInfo();
+
+    /**
+     * set loader info
+     * 
+     * @return
+     */
+    void setLoaderInfo(ILoaderInfo info);
 }

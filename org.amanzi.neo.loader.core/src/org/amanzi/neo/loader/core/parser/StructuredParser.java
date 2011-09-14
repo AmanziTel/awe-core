@@ -49,7 +49,7 @@ public abstract class StructuredParser<S extends IStructuredElement, T extends I
         return 1d;
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({"unchecked"})
     @Override
     public void parce() {
         percentage = 0;

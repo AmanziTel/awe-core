@@ -53,7 +53,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @author tsinkel_a
  * @since 1.0.0
  */
-@SuppressWarnings("deprecation")
 public class NetworkSaver extends AbstractHeaderSaver<BaseTransferData> {
 
     private boolean headerNotHandled;

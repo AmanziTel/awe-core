@@ -11,12 +11,16 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.core;
+package org.amanzi.neo.loader.ui.loaders;
 
+import org.amanzi.neo.loader.core.IConfiguration;
+import org.amanzi.neo.loader.core.ILoaderInfo;
+import org.amanzi.neo.loader.core.ILoaderNew;
+import org.amanzi.neo.loader.core.IValidator;
 import org.amanzi.neo.loader.core.newparser.IParser;
-import org.amanzi.neo.loader.core.newsaver.IConfiguration;
 import org.amanzi.neo.loader.core.newsaver.IData;
 import org.amanzi.neo.loader.core.newsaver.ISaver;
+import org.amanzi.neo.loader.ui.validators.AMSXMLDataValidator;
 
 /**
  * <p>
@@ -27,11 +31,27 @@ import org.amanzi.neo.loader.core.newsaver.ISaver;
  * @since 1.0.0
  */
 public class LoaderNew implements ILoaderNew<IData, IConfiguration> {
-
+    /**
+     * contain some information about loader such as 
+     * loader name 
+     * loader type
+     * and loader datatype
+     */
+    ILoaderInfo info;
     @SuppressWarnings("rawtypes")
+    /**
+     * saver for current Loader
+     */
     ISaver saver;
     @SuppressWarnings("rawtypes")
+    /**
+     * parser for current Loader
+     */
     IParser parser;
+    /**
+     * validator for currentLoader;
+     */
+    IValidator validator;
 
     @SuppressWarnings("rawtypes")
     @Override
@@ -52,6 +72,9 @@ public class LoaderNew implements ILoaderNew<IData, IConfiguration> {
 
     @Override
     public void setValidator(IValidator validator) {
+        if (validator == null) {
+            this.validator = new AMSXMLDataValidator();
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -63,7 +86,17 @@ public class LoaderNew implements ILoaderNew<IData, IConfiguration> {
 
     @Override
     public IValidator getValidator() {
-        return null;
+        return validator;
+    }
+
+    @Override
+    public ILoaderInfo getLoaderInfo() {
+        return info;
+    }
+
+    @Override
+    public void setLoaderInfo(ILoaderInfo info) {
+        this.info = info;
     }
 
 }

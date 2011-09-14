@@ -14,6 +14,7 @@
 package org.amanzi.neo.loader.core;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * <p>
@@ -23,7 +24,7 @@ import java.io.File;
  * @author Kondratenko_Vladislav
  * @since 1.0.0
  */
-public interface IValidator {
+public interface IValidator extends IValidateResult {
     /**
      * check files for appropriate to loader
      * 
@@ -38,5 +39,5 @@ public interface IValidator {
      * @param fileToLoad
      * @return
      */
-    boolean isValid(File[] fileToLoad);
+    Result isValid(List<File> fileToLoad);
 }

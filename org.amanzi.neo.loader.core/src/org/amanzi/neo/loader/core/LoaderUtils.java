@@ -273,12 +273,13 @@ public class LoaderUtils {
         Set<MetaData> result = new LinkedHashSet<MetaData>();
         IExtensionRegistry reg = Platform.getExtensionRegistry();
         IConfigurationElement[] extensions = reg.getConfigurationElementsFor("org.amanzi.loader.core.saver");
+        List<IConfigurationElement> saversEl = new LinkedList<IConfigurationElement>();
         for (int i = 0; i < extensions.length; i++) {
             try {
                 IConfigurationElement element = extensions[i];
                 String localGuiId = element.getAttribute("class");
                 if (localGuiId != null) {
-                    ISaver<?> saver = (ISaver<?>)element.createExecutableExtension("class");
+                    ISaver<?> saver = (ISaver)element.createExecutableExtension("class");
                     Iterable<MetaData> metaDataIt = saver.getMetaData();
                     for (MetaData metadata : metaDataIt) {
                         result.add(metadata);
