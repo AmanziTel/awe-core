@@ -14,7 +14,6 @@
 package org.amanzi.awe.cassidian.saver;
 
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +30,9 @@ import org.amanzi.awe.cassidian.enums.CallProperties;
 import org.amanzi.awe.cassidian.enums.CallProperties.CallType;
 import org.amanzi.awe.cassidian.enums.ProbeCallRelationshipType;
 import org.amanzi.awe.cassidian.structure.AbstractTOCTTC;
+import org.amanzi.awe.cassidian.structure.Attachment;
+import org.amanzi.awe.cassidian.structure.GroupAttach;
+import org.amanzi.awe.cassidian.structure.ItsiAttach;
 import org.amanzi.awe.cassidian.structure.Ntpq;
 import org.amanzi.awe.cassidian.structure.PESQResultElement;
 import org.amanzi.awe.cassidian.structure.TOCElement;
@@ -42,7 +44,6 @@ import org.amanzi.neo.loader.core.newsaver.ISaver;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.DriveTypes;
-import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.exceptions.AWEException;
@@ -53,7 +54,6 @@ import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 
 /**
@@ -66,55 +66,90 @@ import org.neo4j.graphdb.Transaction;
  */
 public class AMSXMLSaver implements ISaver<IModel, IData, IConfiguration> {
     private static Logger LOGGER = Logger.getLogger(AMSXMLSaver.class);
+    /**
+     * toc ttc dataset node
+     */
     private Node mainDatasetNode;
+    /**
+     * calls dataset node
+     */
     private Node callDatasetNode;
+    /**
+     * toc ttc drive model
+     */
     private DriveModel tocTTCModel;
+    /**
+     * calls drive model
+     */
     private DriveModel callsModel;
-    private String fileName;
+    /**
+     * pesq drive model
+     */
     private DriveModel pesqModel;
+    /**
+     * current processing file name
+     */
+    private String fileName;
+    /**
+     * current procesing collector
+     */
     private CallCollector collector;
+    /**
+     * project node
+     */
     private Node projectNode;
+    /**
+     * dataset service instance
+     */
     private static DatasetService datasetService;
-    private Node currentNode;
+    /**
+     * Node property map collector
+     */
     private Map<String, Object> propertyMap;
+    /**
+     * graph database instance
+     */
     private GraphDatabaseService graphDb;
+    /**
+     * average delay
+     */
     private float delay;
+    /**
+     * average listening quality (pesq)
+     */
     private float lq;
+    /**
+     * last created measured node in toc Ttc Model
+     */
+    private Node lastMeasuredTocTtcModelNode;
+    /**
+     * last created call node
+     */
+    private Node lastCallNode;
+    /**
+     * configuration instance
+     */
+    private IConfiguration configuration;
+    /**
+     * processing call type;
+     */
+    private CallType type;
     private final static String PESQ_NAME = "pesq";
     private final static String NTPQ_NAME = "ntpq";
     private final static String TOC_NAME = "Toc";
     private final static String TTC_NAME = "Ttc";
     private final static String PROBE_TYPE = "probe_type";
-
-    private IConfiguration configuration;
-
     /**
-     * initialize required variables;
-     * 
-     * @param projectName
-     * @param gisName
+     * ntpq cache
      */
-    public AMSXMLSaver(String projectName, String gisname) {
-        super();
-        graphDb = NeoServiceProvider.getProvider().getService();
-
-        getDatasetService();
-        projectNode = datasetService.findOrCreateAweProject(projectName);
-        mainDatasetNode = findOrCreateDatasetNodes(projectNode, gisname);
-        try {
-            callDatasetNode = findOrCreateVirtualDataset(mainDatasetNode, gisname + " Calls");
-            currentNode = callDatasetNode;
-        } catch (Exception e) {
-            LOGGER.error("Error in saver initialization", e);
-        } finally {
-        }
-    }
+    Map<String, Node> ntpqNodeMap;
 
     /**
      * 
      */
     public AMSXMLSaver() {
         super();
+        getDatasetService();
     }
 
     /**
@@ -129,77 +164,12 @@ public class AMSXMLSaver implements ISaver<IModel, IData, IConfiguration> {
     }
 
     /**
-     * find or create gisNode
-     */
-    private Node findOrCreateDatasetNodes(Node root, String name) {
-        Node dataset = null;
-        dataset = datasetService.findChildByName(root, name);
-        if (dataset == null) {
-            dataset = datasetService.createNode(NodeTypes.DATASET, name);
-            root.createRelationshipTo(dataset, NetworkRelationshipTypes.CHILD);
-        }
-        return dataset;
-    }
-
-    /**
-     * find virtual dataset from current dataset
-     * 
-     * @param root -current dataset
-     * @param name- required virtual dataset name
-     * @return dataset
-     */
-    private Node findOrCreateVirtualDataset(Node root, String name) {
-        Node dataset = null;
-        dataset = findVirtualDataset(root, name);
-        if (dataset == null) {
-            dataset = datasetService.createNode(NodeTypes.DATASET, name);
-            root.createRelationshipTo(dataset, GeoNeoRelationshipTypes.VIRTUAL_DATASET);
-        }
-        return dataset;
-    }
-
-    /**
-     * find required virtual dataset from current dataset
-     * 
-     * @param root -current dataset;
-     * @param name - required name
-     * @return dataset node if founded,else null
-     */
-    private Node findVirtualDataset(Node root, String name) {
-        for (Relationship rel : root.getRelationships(GeoNeoRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING)) {
-            if (rel.getEndNode().getProperty(INeoConstants.PROPERTY_NAME_NAME, "").equals(name))
-                return rel.getEndNode();
-        }
-        return null;
-    }
-
-    /**
-     * extract calls from collector and save them to db;
-     * 
-     * @param collector
-     */
-    public void saveCallColection(CallCollector collector) {
-        Transaction tx = graphDb.beginTx();
-        try {
-            Map<String, AbstractCall> collection = collector.getCallsCache();
-            for (String key : collection.keySet()) {
-                saveCall(collection.get(key));
-            }
-            tx.success();
-        } catch (Exception e) {
-            tx.failure();
-            LOGGER.error("Error while saving call ", e);
-        } finally {
-            tx.finish();
-        }
-    }
-
-    /**
      * save calls
      * 
      * @param abstractCall
      */
     private void saveCall(AbstractCall abstractCall) {
+        type = abstractCall.getCallType();
         switch (abstractCall.getCallType()) {
         case INDIVIDUAL:
         case GROUP:
@@ -240,7 +210,34 @@ public class AMSXMLSaver implements ISaver<IModel, IData, IConfiguration> {
         propertyMap.put(CallProperties.CALL_TYPE.getId(), itsiAtt.getCallType().toString());
 
         propertyMap.put(CallProperties.CALL_DURATION.getId(), itsiAtt.getCallDuration());
-        Node lastNode = addMeasurmentToModel(callsModel, fileName, propertyMap);
+        lastCallNode = addMeasurmentToModel(callsModel, fileName, propertyMap);
+        attachCalltoNTP(itsiAtt.getId().substring(0, itsiAtt.getId().lastIndexOf('_')), itsiAtt.getCallType(), lastCallNode);
+        lastMeasuredTocTtcModelNode = buildItsiAttachInTocTtcModel(lastCallNode, itsiAtt.getItsiAttachList());
+    }
+
+    /**
+     * save itsi attach node in toc ttc model
+     * 
+     * @param itsiAtt list of itsi Attach Element
+     * @return lastAddedItsiAttach
+     */
+    private Node buildItsiAttachInTocTtcModel(Node lastCallNode, List<ItsiAttach> itsiAtt) {
+        Node lastNode = null;
+        for (ItsiAttach itsiAttach : itsiAtt) {
+            propertyMap = new HashMap<String, Object>();
+            propertyMap.put(LoaderConstants.ITSI_ATT_ACCEPT, itsiAttach.getItsiAccept().getTimeInMillis());
+            propertyMap.put(LoaderConstants.ITSI_ATT_REQ, itsiAttach.getItsiAttReq().getTimeInMillis());
+            propertyMap.put(LoaderConstants.LOCATION_AREA_AFTER, itsiAttach.getLocationAreaAfter());
+            propertyMap.put(LoaderConstants.LOCATION_AREA_BEFORE, itsiAttach.getLocationAreaBefore());
+            propertyMap.put(LoaderConstants.PROBE_ID, itsiAttach.getProbeId());
+            propertyMap.put(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.M.getId());
+            propertyMap.put(CallProperties.CALL_TYPE.getId(), ChildTypes.ITSI_ATTACH.toString());
+            propertyMap.put(INeoConstants.PROPERTY_NAME_NAME, ChildTypes.ITSI_ATTACH.getId());
+            lastNode = addMeasurmentToModel(tocTTCModel, fileName, propertyMap);
+            lastCallNode.createRelationshipTo(lastNode, ProbeCallRelationshipType.CALL_M);
+
+        }
+        return lastNode;
     }
 
     /**
@@ -256,10 +253,11 @@ public class AMSXMLSaver implements ISaver<IModel, IData, IConfiguration> {
         propertyMap.put(CallProperties.NAME.getId(), reselection.getId());
         propertyMap.put(CallProperties.DATASET_ID.getId(), callDatasetNode.getId());
         propertyMap.put(CallProperties.IS_INCONCLUSIVE.getId(), reselection.isInconclusive());
-        propertyMap.put(CallProperties.CALL_TYPE.getId(), reselection.getCallType().toString());
-
+        propertyMap.put(CallProperties.CALL_TYPE.getId(), type.toString());
         propertyMap.put(CallProperties.CC_RESELECTION_TIME.getId(), reselection.getCellReselection());
-        Node lastNode = addMeasurmentToModel(callsModel, fileName, propertyMap);
+        lastCallNode = addMeasurmentToModel(callsModel, fileName, propertyMap);
+        attachCalltoNTP(reselection.getId().substring(0, reselection.getId().lastIndexOf('_')), reselection.getCallType(),
+                lastCallNode);
     }
 
     /**
@@ -275,11 +273,12 @@ public class AMSXMLSaver implements ISaver<IModel, IData, IConfiguration> {
         propertyMap.put(CallProperties.NAME.getId(), handover.getId());
         propertyMap.put(CallProperties.DATASET_ID.getId(), callDatasetNode.getId());
         propertyMap.put(CallProperties.IS_INCONCLUSIVE.getId(), handover.isInconclusive());
-        propertyMap.put(CallProperties.CALL_TYPE.getId(), handover.getCallType().toString());
+        propertyMap.put(CallProperties.CALL_TYPE.getId(), type.toString());
         propertyMap.put(CallProperties.NAME.getId(), handover.getId());
 
         propertyMap.put(CallProperties.CC_HANDOVER_TIME.getId(), handover.getHandoverTime());
-        Node lastNode = addMeasurmentToModel(callsModel, fileName, propertyMap);
+        lastCallNode = addMeasurmentToModel(callsModel, fileName, propertyMap);
+        attachCalltoNTP(handover.getId().substring(0, handover.getId().lastIndexOf('_')), handover.getCallType(), lastCallNode);
     }
 
     /**
@@ -295,13 +294,13 @@ public class AMSXMLSaver implements ISaver<IModel, IData, IConfiguration> {
         propertyMap.put(CallProperties.NAME.getId(), messageCall.getId());
         propertyMap.put(CallProperties.DATASET_ID.getId(), callDatasetNode.getId());
         propertyMap.put(CallProperties.IS_INCONCLUSIVE.getId(), messageCall.isInconclusive());
-        propertyMap.put(CallProperties.CALL_TYPE.getId(), messageCall.getCallType().toString());
+        propertyMap.put(CallProperties.CALL_TYPE.getId(), type.toString());
         propertyMap.put(CallProperties.NAME.getId(), messageCall.getId());
 
         propertyMap.put(CallProperties.MESS_ACKNOWLEDGE_TIME.getId(), messageCall.getMessageAcnowledgeTime());
         propertyMap.put(CallProperties.MESS_RECEIVE_TIME.getId(), messageCall.getMessageRecievedTime());
 
-        Node lastNode = addMeasurmentToModel(callsModel, fileName, propertyMap);
+        lastCallNode = addMeasurmentToModel(callsModel, fileName, propertyMap);
     }
 
     /**
@@ -313,7 +312,8 @@ public class AMSXMLSaver implements ISaver<IModel, IData, IConfiguration> {
         RealCall realCall;
         propertyMap = new HashMap<String, Object>();
         realCall = (RealCall)abstractCall;
-        propertyMap.put(CallProperties.CALL_TYPE.getId(), realCall.getCallType().toString());
+
+        propertyMap.put(CallProperties.CALL_TYPE.getId(), type.toString());
         propertyMap.put(CallProperties.DELAY.getId(), realCall.getDelay());
         propertyMap.put(CallProperties.AVERAGE_DELAY.getId(), realCall.getAverageDelay());
         propertyMap.put(CallProperties.AVERAGE_LQ.getId(), realCall.getAverageLQ());
@@ -336,16 +336,15 @@ public class AMSXMLSaver implements ISaver<IModel, IData, IConfiguration> {
         propertyMap.put(CallProperties.MAXIMUM_LQ.getId(), realCall.getMaxLq());
         propertyMap.put(CallProperties.TERMINATION_DURATION.getId(), realCall.getTerminationDuration());
         propertyMap.put(CallProperties.TIMESTAMP.getId(), realCall.getTimestamp());
-        Node lastNode = addMeasurmentToModel(callsModel, fileName, propertyMap);
+        lastCallNode = addMeasurmentToModel(callsModel, fileName, propertyMap);
+        attachCalltoNTP(realCall.getId().substring(0, realCall.getId().lastIndexOf('_')), realCall.getCallType(), lastCallNode);
         try {
-            Node pesqNode = buildPesqModelStructure(lastNode, realCall.getTocPesqList(), realCall.getTtcPesqList(),
-                    realCall.getCallType());
-            // Node ntpq = buildNtpqStructure(lastNode, collector.getNtpq(),
+            buildPesqModelStructure(lastCallNode, realCall.getTocPesqList(), realCall.getTtcPesqList(), realCall.getCallType());
+            // lastMeasuredTocTtcModelNode = buildNtpqStructure(lastCallNode, collector.getNtpq(),
             // realCall.getCallType());
-            // Node tocTTc = attachTocTtc(lastNode, realCall.getTocTtcList(), ntpq,
-            // realCall.getCallType());
+            lastMeasuredTocTtcModelNode = attachTocTtc(lastCallNode, realCall.getTocTtcList(), lastMeasuredTocTtcModelNode, type);
         } catch (Exception e) {
-            LOGGER.error("Error while saving call", e);
+            LOGGER.error("Error while saving real call ", e);
         }
     }
 
@@ -390,7 +389,7 @@ public class AMSXMLSaver implements ISaver<IModel, IData, IConfiguration> {
             propertyMap.put(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.M.getId());
             lastPesqNode = addMeasurmentToModel(pesqModel, fileName, propertyMap);
             callNode.createRelationshipTo(lastPesqNode, ProbeCallRelationshipType.CALL_M);
-           
+
         }
         for (PESQResultElement pesqToc : ttcPesqList) {
             propertyMap.put(LoaderConstants.DELAY, pesqToc.getDelay());
@@ -404,30 +403,9 @@ public class AMSXMLSaver implements ISaver<IModel, IData, IConfiguration> {
             propertyMap.put(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.M.getId());
             lastPesqNode = addMeasurmentToModel(pesqModel, fileName, propertyMap);
             callNode.createRelationshipTo(lastPesqNode, ProbeCallRelationshipType.CALL_M);
-            
+
         }
         return lastPesqNode;
-    }
-
-    /**
-     * build structure of ntpqs and return last ntpq node id;
-     * 
-     * @param currentNode datasetNode
-     * @param ntpq
-     */
-    private Node buildNtpqStructure(Node datasetNode, List<Ntpq> ntpq, CallType type) {
-        Map<String, List<Ntpq>> ntpqMap = new HashMap<String, List<Ntpq>>();
-        for (Ntpq ntpqMember : ntpq) {
-            if (ntpqMap.containsKey(ntpqMember.getProbeId())) {
-                ntpqMap.get(ntpqMember.getProbeId()).add(ntpqMember);
-            } else {
-                ntpqMap.put(ntpqMember.getProbeId(), new LinkedList<Ntpq>());
-                ntpqMap.get(ntpqMember.getProbeId()).add(ntpqMember);
-            }
-
-        }
-        Node lastNode = buildMainAndInnerNtpq(tocTTCModel, datasetNode, ntpqMap, type);
-        return lastNode;
     }
 
     /**
@@ -435,28 +413,50 @@ public class AMSXMLSaver implements ISaver<IModel, IData, IConfiguration> {
      * 
      * @param callNode data
      * @param ntpq
-     * @return
      */
-    private Node buildMainAndInnerNtpq(DriveModel model, Node callNode, Map<String, List<Ntpq>> ntpqMap, CallType type) {
-        Node maggrNode = null;
+    private void buildNTPNode(DriveModel model, Map<String, List<Ntpq>> ntpqMap) {
         for (String key : ntpqMap.keySet()) {
             propertyMap = new HashMap<String, Object>();
-            propertyMap.put(INeoConstants.PROPERTY_NAME_NAME, key);
+            propertyMap.put(INeoConstants.PROPERTY_NAME_NAME, "NTP " + key);
             propertyMap.put(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.M_AGGR.getId());
-            addMeasurmentToModel(model, fileName, propertyMap);
-            for (Ntpq ntpq : ntpqMap.get(key)) {
-                propertyMap.put(LoaderConstants.JITTER, ntpq.getJitter());
-                propertyMap.put(LoaderConstants.NTPQ_TIME, ntpq.getNtpqTime().getTimeInMillis());
-                propertyMap.put(LoaderConstants.OFFSET, ntpq.getOffset());
-                propertyMap.put(CallProperties.CALL_TYPE.getId(), type.toString());
-                propertyMap.put(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.M.getId());
-                propertyMap.put(INeoConstants.PROPERTY_NAME_NAME, NTPQ_NAME);
-                propertyMap.put(LoaderConstants.PROBE_ID, ntpq.getProbeId());
-                addMeasurmentToModel(model, fileName, propertyMap);
-                callNode.createRelationshipTo(maggrNode, ProbeCallRelationshipType.CALL_M);
-            }
+            lastMeasuredTocTtcModelNode = addMeasurmentToModel(model, fileName, propertyMap);
+            ntpqNodeMap.put(key, lastMeasuredTocTtcModelNode);
+            buildNTPQNode(lastMeasuredTocTtcModelNode, ntpqMap.get(key), type);
         }
-        return maggrNode;
+    }
+
+    /**
+     * create ntpq node and link created node with call node and ntpNode
+     * 
+     * @param callNode call node
+     * @param ntp ntp node
+     * @param list list of ntpqs
+     * @param type call type;
+     */
+    private void buildNTPQNode(Node ntp, List<Ntpq> list, CallType type) {
+        Node ntpqNode = null;
+        Node tempNode;
+        for (Ntpq ntpq : list) {
+            propertyMap = new HashMap<String, Object>();
+            propertyMap.put(LoaderConstants.JITTER, ntpq.getJitter());
+            propertyMap.put(LoaderConstants.NTPQ_TIME, ntpq.getNtpqTime().getTimeInMillis());
+            propertyMap.put(LoaderConstants.OFFSET, ntpq.getOffset());
+            propertyMap.put(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.M.getId());
+            // propertyMap.put(INeoConstants.PROPERTY_NAME_NAME, NTPQ_NAME);
+            propertyMap.put(LoaderConstants.PROBE_ID, ntpq.getProbeId());
+            tempNode = datasetService.createNode(NodeTypes.M, NTPQ_NAME);
+            for (String property : propertyMap.keySet()) {
+                tempNode.setProperty(property, propertyMap.get(property));
+            }
+            if (!ntp.hasRelationship(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                ntpqNode = tempNode;
+                ntp.createRelationshipTo(ntpqNode, NetworkRelationshipTypes.CHILD);
+            } else {
+                ntpqNode.createRelationshipTo(tempNode, NetworkRelationshipTypes.NEXT);
+                ntpqNode = tempNode;
+            }
+
+        }
     }
 
     /**
@@ -466,16 +466,16 @@ public class AMSXMLSaver implements ISaver<IModel, IData, IConfiguration> {
      * @param tocTtcList
      * @param callType
      */
-    private Node attachTocTtc(Node callNode, List<AbstractTOCTTC> tocTtcList, Node lastNtpq, CallType callType) {
+    private Node attachTocTtc(Node callNode, List<AbstractTOCTTC> tocTtcList, Node lastMeasuredNode, CallType callType) {
         if (tocTtcList.isEmpty()) {
             return null;
         }
         Node tocTtc = null;
         for (AbstractTOCTTC tocttc : tocTtcList) {
             if (tocttc instanceof TOCElement) {
-                tocTtc = findOrCreateTocNodes(currentNode, (TOCElement)tocttc, callType);
+                tocTtc = buildTocNode(callNode, (TOCElement)tocttc, callType);
             } else {
-                tocTtc = findOrCreateTtcNodes(currentNode, (TTCElement)tocttc, callType);
+                tocTtc = buildTTCNodes(callNode, (TTCElement)tocttc, callType);
             }
         }
         return tocTtc;
@@ -483,12 +483,12 @@ public class AMSXMLSaver implements ISaver<IModel, IData, IConfiguration> {
     }
 
     /**
-     * create and attach ttc nodes
+     * create ttc node in tocTTCmodel and link it with call in callModel
      * 
-     * @param currentCallNode
+     * @param callNode
      * @param ttcList
      */
-    private Node findOrCreateTtcNodes(Node currentCallNode, TTCElement ttc, CallType callType) {
+    private Node buildTTCNodes(Node callNode, TTCElement ttc, CallType callType) {
         propertyMap = new HashMap<String, Object>();
         propertyMap.put(CallProperties.CALL_TYPE.getId(), callType.toString());
         propertyMap.put(LoaderConstants.CALLING_NUMBER, ttc.getCallingNumber());
@@ -505,17 +505,17 @@ public class AMSXMLSaver implements ISaver<IModel, IData, IConfiguration> {
         propertyMap.put(INeoConstants.PROPERTY_TTC_LISTENING_QUALITY, lq);
         propertyMap.put(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.M.getId());
         Node ttcNode = addMeasurmentToModel(tocTTCModel, fileName, propertyMap);
-        currentCallNode.createRelationshipTo(ttcNode, ProbeCallRelationshipType.CALL_M);
+        callNode.createRelationshipTo(ttcNode, ProbeCallRelationshipType.CALL_M);
         return ttcNode;
     }
 
     /**
-     * create and attach toc nodes from currentNode callNode
+     * create toc node in tocTTCmodel and link it with call in callModel
      * 
-     * @param currentCallNode
+     * @param callNode
      * @param tocList
      */
-    private Node findOrCreateTocNodes(Node currentCallNode, TOCElement toc, CallType callType) {
+    private Node buildTocNode(Node callNode, TOCElement toc, CallType callType) {
 
         propertyMap = new HashMap<String, Object>();
         propertyMap.put(CallProperties.CALL_TYPE.getId(), callType.toString());
@@ -538,7 +538,7 @@ public class AMSXMLSaver implements ISaver<IModel, IData, IConfiguration> {
         propertyMap.put(INeoConstants.PROPERTY_TOC_LISTENING_QUALITY, lq);
         propertyMap.put(INeoConstants.PROPERTY_TYPE_NAME, NodeTypes.M.getId());
         Node tocNode = addMeasurmentToModel(tocTTCModel, fileName, propertyMap);
-        currentCallNode.createRelationshipTo(tocNode, ProbeCallRelationshipType.CALL_M);
+        callNode.createRelationshipTo(tocNode, ProbeCallRelationshipType.CALL_M);
         return tocNode;
     }
 
@@ -558,29 +558,6 @@ public class AMSXMLSaver implements ISaver<IModel, IData, IConfiguration> {
         }
     }
 
-    /**
-     * create node from properties map,and attach it to child-next structure
-     * 
-     * @param parentNode
-     * @param propertyMap
-     */
-    private void createCallNode(Node parentNode, Map<String, Object> propertyMap) {
-        if (propertyMap.isEmpty()) {
-            return;
-        }
-        Node newNode = graphDb.createNode();
-        for (String key : propertyMap.keySet()) {
-            newNode.setProperty(key, propertyMap.get(key));
-        }
-        newNode.setProperty(INeoConstants.PROPERTY_TYPE_NAME, "call");
-        if (parentNode.equals(callDatasetNode)) {
-            parentNode.createRelationshipTo(newNode, NetworkRelationshipTypes.CHILD);
-        } else {
-            parentNode.createRelationshipTo(newNode, NetworkRelationshipTypes.NEXT);
-        }
-        currentNode = newNode;
-    }
-
     @Override
     public void init(IConfiguration configuration, IData dataElement) {
 
@@ -595,8 +572,6 @@ public class AMSXMLSaver implements ISaver<IModel, IData, IConfiguration> {
             mainDatasetNode = tocTTCModel.getRootNode();
             callsModel = tocTTCModel.addVirtualDataset(datasetNames.get("Calls"), DriveTypes.AMS_CALLS);
             callDatasetNode = callsModel.getRootNode();
-            currentNode = callDatasetNode;
-
             pesqModel = tocTTCModel.addVirtualDataset(datasetNames.get("Pesq"), DriveTypes.AMS_PESQ);
         } catch (AWEException e) {
             // TODO Handle AWEException
@@ -616,19 +591,94 @@ public class AMSXMLSaver implements ISaver<IModel, IData, IConfiguration> {
                 pesqModel.addFile(collector.getFile());
                 callsModel.addFile(collector.getFile());
                 fileName = collector.getFile().getName();
+                buildNTPNode(tocTTCModel, collector.getNtpqCache());
                 for (String key : collector.getCallsCache().keySet()) {
                     saveCall(collector.getCallsCache().get(key));
                 }
-            }
 
+                buildGroupAttach(collector.getGroupAttach());
+            }
             tx.success();
         } catch (Exception e) {
+            e.printStackTrace();
             tx.failure();
         } finally {
             tx.finish();
         }
     }
 
+    /**
+     * save groupAttach in Toc Ttc model
+     * 
+     * @param groupAttach
+     */
+    private void buildGroupAttach(List<GroupAttach> groupAttach) {
+        for (GroupAttach grAttach : groupAttach) {
+            propertyMap = new HashMap<String, Object>();
+            propertyMap.put(LoaderConstants.GROUP_ATTACH_TIME, grAttach.getGroupAttachTime().getTimeInMillis());
+            propertyMap.put(INeoConstants.PROPERTY_TIMESTAMP_NAME, grAttach.getGroupAttachTime().getTimeInMillis());
+            propertyMap.put(LoaderConstants.PROBE_ID, grAttach.getProbeId());
+            propertyMap.put(INeoConstants.PROPERTY_NAME_NAME, ChildTypes.GROUP_ATTACH.getId());
+            lastMeasuredTocTtcModelNode = addMeasurmentToModel(tocTTCModel, fileName, propertyMap);
+            if (!grAttach.getAttachment().isEmpty()) {
+                Node lastAttachNode = lastMeasuredTocTtcModelNode;
+                for (Attachment att : grAttach.getAttachment()) {
+                    lastAttachNode = buildAttachment(lastMeasuredTocTtcModelNode, lastAttachNode, att);
+                    lastMeasuredTocTtcModelNode.setProperty(INeoConstants.LAST_CHILD_ID, lastAttachNode.getId());
+                }
+            }
+        }
+    }
+
+    /**
+     * <b>Attach callNode to NTPnode</b>
+     * <p>
+     * search NTP Node in cache by probe id and link it to callNode if founded.
+     * </p>
+     * 
+     * @param probeId
+     * @param callNode
+     */
+    private void attachCalltoNTP(String probeId, CallType type, Node callNode) {
+        if (ntpqNodeMap.containsKey(probeId)) {
+            callNode.createRelationshipTo(ntpqNodeMap.get(probeId), ProbeCallRelationshipType.CALL_M);
+            Node ntpqNode;
+            if (ntpqNodeMap.get(probeId).hasRelationship(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)) {
+                ntpqNode = ntpqNodeMap.get(probeId).getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.OUTGOING)
+                        .getEndNode();
+                while (ntpqNode.hasRelationship(NetworkRelationshipTypes.NEXT, Direction.OUTGOING)) {
+                    ntpqNode.setProperty(CallProperties.CALL_TYPE.toString(), type.toString());
+                    ntpqNode = ntpqNodeMap.get(probeId).getSingleRelationship(NetworkRelationshipTypes.NEXT, Direction.OUTGOING)
+                            .getEndNode();
+                }
+            }
+        }
+    }
+
+    /**
+     * save attachment node;
+     * 
+     * @param groupNode
+     * @param lastAttachNode
+     * @param att
+     * @return
+     */
+    private Node buildAttachment(Node groupNode, Node lastAttachNode, Attachment att) {
+        Node attachmentNode = datasetService.createNode(NodeTypes.MM, ChildTypes.ATTACHMENT.getId());
+        propertyMap = new HashMap<String, Object>();
+        propertyMap.put(LoaderConstants.GSSI, att.getGssi());
+        propertyMap.put(LoaderConstants.GROUP_TYPE, att.getGroupType());
+        for (String key : propertyMap.keySet()) {
+            attachmentNode.setProperty(key, propertyMap.get(key));
+        }
+        if (lastAttachNode != groupNode) {
+            lastAttachNode.createRelationshipTo(attachmentNode, NetworkRelationshipTypes.NEXT);
+        } else {
+            lastAttachNode.createRelationshipTo(attachmentNode, NetworkRelationshipTypes.CHILD);
+        }
+        return attachmentNode;
+    }
+    
     @Override
     public void finishUp() {
     }

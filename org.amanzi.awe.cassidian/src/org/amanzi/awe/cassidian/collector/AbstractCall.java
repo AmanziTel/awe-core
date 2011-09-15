@@ -45,7 +45,7 @@ import org.apache.log4j.Logger;
  */
 public abstract class AbstractCall implements ICall {
     private static Logger LOGGER = Logger.getLogger(AbstractCall.class);
-   
+
     private CallResult callResult;
     protected boolean isInconclusive = false;
     protected long timestamp = 0l;
@@ -74,6 +74,7 @@ public abstract class AbstractCall implements ICall {
     private long handoverTime;
     private Long updateTime;
     private CallType type;
+    private List<ItsiAttach> itsiAttachList = new LinkedList<ItsiAttach>();
     /**
      * listening quality based on pesq
      */
@@ -335,7 +336,7 @@ public abstract class AbstractCall implements ICall {
                 if (event.getItsiAttach() instanceof ItsiAttach) {
                     timestamp = ((ItsiAttach)event.getItsiAttach()).getItsiAttReq().getTimeInMillis();
                     Long beginTime = timestamp;
-
+                    itsiAttachList.add((ItsiAttach)event.getItsiAttach());
                     if (beginTime != null) {
                         callSetupBeginTime = beginTime;
                         callSetupEndTime = beginTime;
@@ -562,8 +563,6 @@ public abstract class AbstractCall implements ICall {
         return inconclusiveCode;
     }
 
-   
-
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -592,7 +591,7 @@ public abstract class AbstractCall implements ICall {
         } else if (!eventsCollector.equals(other.eventsCollector)) {
             return false;
         }
-        
+
         if (id == null) {
             if (other.id != null) {
                 return false;
@@ -600,7 +599,7 @@ public abstract class AbstractCall implements ICall {
         } else if (!id.equals(other.id)) {
             return false;
         }
-      
+
         return true;
     }
 
@@ -674,4 +673,10 @@ public abstract class AbstractCall implements ICall {
         this.errCode = errCode;
     }
 
+    /**
+     * @return Returns the itsiAttachList.
+     */
+    protected List<ItsiAttach> getItsiAttachList() {
+        return itsiAttachList;
+    }
 }

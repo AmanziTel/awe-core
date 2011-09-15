@@ -90,7 +90,8 @@ public class AMSXMLParser implements IParser<ISaver<IModel, IData, IConfiguratio
         for (File f : config.getFilesToLoad()) {
             TNSElement tns = parse(f);
             if (tns != null) {
-                collector = callPreparator.extractCallsFromEvents(tns.getCtd().get(0).getProbeIdNumberMap(),tns.getEvents(), tns.getGps(), tns.getCtd().get(0).getNtpq());
+                collector = callPreparator.extractCallsFromEvents(tns.getCtd().get(0).getProbeIdNumberMap(),tns.getEvents(), tns.getGps());
+                collector.prepareNTPMap(tns.getCtd().get(0).getNtpq());
                 collector.setFile(f);
                 saver.saveElement(collector);
             }

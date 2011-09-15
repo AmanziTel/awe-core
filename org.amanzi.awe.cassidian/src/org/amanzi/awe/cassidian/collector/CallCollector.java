@@ -24,6 +24,7 @@ import org.amanzi.awe.cassidian.structure.CompleteGpsDataList;
 import org.amanzi.awe.cassidian.structure.GroupAttach;
 import org.amanzi.awe.cassidian.structure.Ntpq;
 import org.amanzi.neo.loader.core.newsaver.IData;
+import org.neo4j.graphdb.Node;
 
 /**
  * contains parsed calls collection
@@ -34,6 +35,13 @@ import org.amanzi.neo.loader.core.newsaver.IData;
  * @since 1.0.0
  */
 public class CallCollector implements IData {
+    /**
+     * @return Returns the ntpqCache.
+     */
+    public Map<String, List<Ntpq>> getNtpqCache() {
+        return ntpqCache;
+    }
+
     /**
      * group individual help calls collection;
      */
@@ -56,9 +64,27 @@ public class CallCollector implements IData {
     private List<CellReselCall> cellResels;
     private File file;
     protected List<CompleteGpsDataList> gpsData;
-    protected List<Ntpq> ntpq;
     protected List<GroupAttach> groupAttach;
     private Map<String, AbstractCall> callsCache;
+    private Map<String, List<Ntpq>> ntpqCache;
+
+    /**
+     * build structure of ntpqs and return last ntpq node id;
+     * 
+     * @param currentNode datasetNode
+     * @param ntpq
+     */
+    public void prepareNTPMap(List<Ntpq> ntpq) {
+        for (Ntpq ntpqMember : ntpq) {
+            if (ntpqCache.containsKey(ntpqMember.getProbeId())) {
+                ntpqCache.get(ntpqMember.getProbeId()).add(ntpqMember);
+            } else {
+                ntpqCache.put(ntpqMember.getProbeId(), new LinkedList<Ntpq>());
+                ntpqCache.get(ntpqMember.getProbeId()).add(ntpqMember);
+            }
+
+        }
+    }
 
     public List<RealCall> getRealCalls() {
         return realCall;
@@ -159,8 +185,8 @@ public class CallCollector implements IData {
         handovers = new LinkedList<HandoverCall>();
         cellResels = new LinkedList<CellReselCall>();
         groupAttach = new LinkedList<GroupAttach>();
-        ntpq = new LinkedList<Ntpq>();
         gpsData = new LinkedList<CompleteGpsDataList>();
+        ntpqCache= new HashMap<String, List<Ntpq>>();
     }
 
     public List<RealCall> getHelpCalls() {
@@ -255,19 +281,6 @@ public class CallCollector implements IData {
         this.gpsData = gpsData;
     }
 
-    /**
-     * @return Returns the ntpq.
-     */
-    public List<Ntpq> getNtpq() {
-        return ntpq;
-    }
-
-    /**
-     * @param ntpq The ntpq to set.
-     */
-    public void setNtpq(List<Ntpq> ntpq) {
-        this.ntpq = ntpq;
-    }
 
     /**
      * @return Returns the groupAttach.

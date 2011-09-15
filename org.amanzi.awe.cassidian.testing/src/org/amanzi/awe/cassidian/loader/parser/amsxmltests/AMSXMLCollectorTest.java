@@ -321,7 +321,8 @@ public class AMSXMLCollectorTest {
         for (File currentFile : files) {
             tns2 = parser.parse(currentFile);
             if (tns2 != null) {
-                CallCollector collector = preparator.extractCallsFromEvents(tns.getCtd().get(0).getProbeIdNumberMap(),tns2.getEvents(), tns2.getGps(), tns2.getCtd().get(0).getNtpq());
+                CallCollector collector = preparator.extractCallsFromEvents(tns.getCtd().get(0).getProbeIdNumberMap(),
+                        tns2.getEvents(), tns2.getGps());
                 Assert.assertEquals("Unexpected collector size", expectedIndividualCallCount, collector.getIndividualCalls().size());
                 Assert.assertEquals("Unexpected collector size", expectedOthersCount, collector.getHelpCalls().size());
                 Assert.assertEquals("Unexpected collector size", expectedOthersCount, collector.getGroupCalls().size());
@@ -426,8 +427,8 @@ public class AMSXMLCollectorTest {
         TNSElement tns2 = parser.parse(DIRECTORY_PATH + FILE_NAME + INDIVIDUAL_NAME + "#" + xmlWriter.getTime() + XML_EXTENSION);
         CallPreparator preparator = new CallPreparator();
 
-        CallCollector collector = preparator
-                .extractCallsFromEvents(tns.getCtd().get(0).getProbeIdNumberMap(),tns2.getEvents(), tns2.getGps(), tns2.getCtd().get(0).getNtpq());
+        CallCollector collector = preparator.extractCallsFromEvents(tns.getCtd().get(0).getProbeIdNumberMap(), tns2.getEvents(),
+                tns2.getGps());
 
         Assert.assertEquals("Unexpected collector size", expectedIndividualCallCount, collector.getRealCalls().size());
         Assert.assertEquals("Unexpected event size", expectedEventsCount, collector.getRealCalls().get(0).getEventsCollector()
@@ -462,8 +463,8 @@ public class AMSXMLCollectorTest {
         TNSElement tns2 = parser.parse(DIRECTORY_PATH + FILE_NAME + SDS_NAME + "#" + xmlWriter.getTime() + XML_EXTENSION);
         CallPreparator preparator = new CallPreparator();
 
-        CallCollector collector = preparator
-                .extractCallsFromEvents(tns.getCtd().get(0).getProbeIdNumberMap(),tns2.getEvents(), tns2.getGps(), tns2.getCtd().get(0).getNtpq());
+        CallCollector collector = preparator.extractCallsFromEvents(tns.getCtd().get(0).getProbeIdNumberMap(), tns2.getEvents(),
+                tns2.getGps());
 
         Assert.assertEquals("Unexpected collector size", expectedSDSCallCount, collector.getSDSCalls().size());
         Assert.assertEquals("Unexpected event size", expectedEventsCount, collector.getSDSCalls().get(0).getEventsCollector()
@@ -496,8 +497,8 @@ public class AMSXMLCollectorTest {
         TNSElement tns2 = parser.parse(DIRECTORY_PATH + FILE_NAME + HANDOVER_NAME + "#" + xmlWriter.getTime() + XML_EXTENSION);
         CallPreparator preparator = new CallPreparator();
 
-        CallCollector collector = preparator
-                .extractCallsFromEvents(tns.getCtd().get(0).getProbeIdNumberMap(),tns2.getEvents(), tns2.getGps(), tns2.getCtd().get(0).getNtpq());
+        CallCollector collector = preparator.extractCallsFromEvents(tns.getCtd().get(0).getProbeIdNumberMap(), tns2.getEvents(),
+                tns2.getGps());
 
         Assert.assertEquals("Unexpected collector size", expectedHandoverCallCount, collector.getHandovers().size());
         Assert.assertEquals("Unexpected event size", expectedEventsCount, collector.getHandovers().get(0).getEventsCollector()
@@ -530,8 +531,8 @@ public class AMSXMLCollectorTest {
         TNSElement tns2 = parser.parse(DIRECTORY_PATH + FILE_NAME + ITSI_ATTACH_NAME + "#" + xmlWriter.getTime() + XML_EXTENSION);
         CallPreparator preparator = new CallPreparator();
 
-        CallCollector collector = preparator
-                .extractCallsFromEvents(tns.getCtd().get(0).getProbeIdNumberMap(),tns2.getEvents(), tns2.getGps(), tns2.getCtd().get(0).getNtpq());
+        CallCollector collector = preparator.extractCallsFromEvents(tns.getCtd().get(0).getProbeIdNumberMap(), tns2.getEvents(),
+                tns2.getGps());
 
         Assert.assertTrue("Unexpected value", EXPECTED_UPDATE_TIME == collector.getItsiAttachCalls().get(0).getCallDuration());
         LOGGER.info("testEventCollectorResel finished in " + (System.currentTimeMillis() - begin));
@@ -560,51 +561,54 @@ public class AMSXMLCollectorTest {
         TNSElement tns2 = parser.parse(DIRECTORY_PATH + FILE_NAME + CELL_RESELECTION_NAME + "#" + xmlWriter.getTime()
                 + XML_EXTENSION);
         CallPreparator preparator = new CallPreparator();
-        CallCollector collector = preparator
-                .extractCallsFromEvents(tns.getCtd().get(0).getProbeIdNumberMap(),tns2.getEvents(), tns2.getGps(), tns2.getCtd().get(0).getNtpq());
+        CallCollector collector = preparator.extractCallsFromEvents(tns.getCtd().get(0).getProbeIdNumberMap(), tns2.getEvents(),
+                tns2.getGps());
 
         Assert.assertTrue("Unexpected value", EXPECTED_RESELECTION_TIME == collector.getCellResels().get(0).getCellReselection());
         LOGGER.info("testEventCollectorResel finished in " + (System.currentTimeMillis() - begin));
 
     }
-
-    /**
-     * check collector SAVER of Individual Call;
-     */
-    @Test
-    public void testEventCollectorSaverIndividual() {
-        long begin = System.currentTimeMillis();
-
-        xmlWriter = new AMSXMLWriter(DIRECTORY_PATH, FILE_NAME + SAVER_NAME);
-        TNSElement tns = generateFile();
-        tns.addMembertoEventsList(generateEventIndividual());
-        EventsElement event = dg.generateEventsElement();
-        TTCElement ttc = dg.generateTTCElement();
-        ttc.setPesqResult(generatePredefinedPesq());
-        event.setTocttc(ttc);
-        tns.addMembertoEventsList(event);
-        event = dg.generateEventsElement();
-        event.setTocttc(dg.generateTTCElement());
-        tns.addMembertoEventsList(event);
-        tns.addMembertoCommonTestList(generateCommonTestData());
-        tns.addMembertoGPSList(generateGpsData());
-
-        xmlWriter.buildTree(tns);
-        xmlWriter.saveFile();
-        List<File> files = fileloader.getRootsFiles(root);
-        AMSXMLParser parser = new AMSXMLParser();
-        TNSElement tns2;
-
-        AMSXMLSaver saver = new AMSXMLSaver("project", root.getName());
-        CallPreparator preparator = new CallPreparator();
-        CallCollector collector;
-        for (File currentFile : files) {
-            tns2 = parser.parse(currentFile);
-            if (tns2 != null) {
-                collector = preparator.extractCallsFromEvents(tns.getCtd().get(0).getProbeIdNumberMap(),tns2.getEvents(), tns2.getGps(), tns2.getCtd().get(0).getNtpq());
-                saver.saveCallColection(collector);
-            }
-        }
-        LOGGER.info("testEventCollectorSaverIndividual finished in " + (System.currentTimeMillis() - begin));
-    }
+    //
+    // /**
+    // * check collector SAVER of Individual Call;
+    // */
+    // @Test
+    // public void testEventCollectorSaverIndividual() {
+    // long begin = System.currentTimeMillis();
+    //
+    // xmlWriter = new AMSXMLWriter(DIRECTORY_PATH, FILE_NAME + SAVER_NAME);
+    // TNSElement tns = generateFile();
+    // tns.addMembertoEventsList(generateEventIndividual());
+    // EventsElement event = dg.generateEventsElement();
+    // TTCElement ttc = dg.generateTTCElement();
+    // ttc.setPesqResult(generatePredefinedPesq());
+    // event.setTocttc(ttc);
+    // tns.addMembertoEventsList(event);
+    // event = dg.generateEventsElement();
+    // event.setTocttc(dg.generateTTCElement());
+    // tns.addMembertoEventsList(event);
+    // tns.addMembertoCommonTestList(generateCommonTestData());
+    // tns.addMembertoGPSList(generateGpsData());
+    //
+    // xmlWriter.buildTree(tns);
+    // xmlWriter.saveFile();
+    // List<File> files = fileloader.getRootsFiles(root);
+    // AMSXMLParser parser = new AMSXMLParser();
+    // TNSElement tns2;
+    //
+    // AMSXMLSaver saver = new AMSXMLSaver("project", root.getName());
+    // CallPreparator preparator = new CallPreparator();
+    // CallCollector collector;
+    // for (File currentFile : files) {
+    // tns2 = parser.parse(currentFile);
+    // if (tns2 != null) {
+    // collector =
+    // preparator.extractCallsFromEvents(tns.getCtd().get(0).getProbeIdNumberMap(),tns2.getEvents(),
+    // tns2.getGps(), tns2.getCtd().get(0).getNtpq());
+    // saver.saveCallColection(collector);
+    // }
+    // }
+    // LOGGER.info("testEventCollectorSaverIndividual finished in " + (System.currentTimeMillis() -
+    // begin));
+    // }
 }

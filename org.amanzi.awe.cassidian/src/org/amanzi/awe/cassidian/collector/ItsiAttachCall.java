@@ -13,7 +13,10 @@
 
 package org.amanzi.awe.cassidian.collector;
 
+import java.util.List;
+
 import org.amanzi.awe.cassidian.enums.CallProperties.CallType;
+import org.amanzi.awe.cassidian.structure.ItsiAttach;
 
 /**
  * TODO Purpose of
@@ -48,6 +51,13 @@ public class ItsiAttachCall extends AbstractCall {
 
     public long getCallSetupEnd() {
         return super.getCallSetupEndTime();
+    }
+
+    /**
+     * @return Returns the itsiAttachList.
+     */
+    public List<ItsiAttach> getItsiAttachList() {
+        return super.getItsiAttachList();
     }
 
 }

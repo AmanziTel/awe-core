@@ -71,7 +71,7 @@ public class CallPreparator {
      * extract calls from parsed file
      */
     public CallCollector extractCallsFromEvents(List<ProbeIDNumberMap> probeList, List<EventsElement> eventList,
-            List<GPSData> gpsDatas, List<Ntpq> ntpqs) {
+            List<GPSData> gpsDatas) {
         List<EventsElement> eventsCollector;
         String prevCallId = "";
         String phoneNumber = "";
@@ -158,9 +158,7 @@ public class CallPreparator {
                 if (!gpsDatas.isEmpty()) {
                     collector.setGpsData(gpsDatas.get(0).getCompleteGpsDataList());
                 }
-                if (ntpqs != null) {
-                    collector.setNtpq(ntpqs);
-                }
+                
                 call.setPhoneNumber(phoneNumber);
                 eventsCollector = collector.findInCacheOrCreate(call).getEventsCollector();
                 if (!eventsCollector.isEmpty()) {

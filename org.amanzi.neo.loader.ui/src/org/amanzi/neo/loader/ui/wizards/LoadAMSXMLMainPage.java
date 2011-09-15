@@ -123,21 +123,12 @@ public class LoadAMSXMLMainPage extends LoaderPage<CommonConfigData> {
         editor.getTextControl(main).addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
                 ILoaderNew< ? extends IData, IConfiguration> loader = setFileName(editor.getStringValue());
-                if (networkName == null || networkName.trim().isEmpty()) {
                     networkName = new java.io.File(getFileName()).getName();
                     datasetName = networkName;
                     network.setText(networkName + " Probes");
                     dataset.setText(datasetName);
                     changeNetworkName();
                     changeDatasetName();
-
-                } else {
-                    if (network.getItemCount() > 0) {
-                        network.select(0);
-                        changeNetworkName();
-                        changeDatasetName();
-                    }
-                }
 
             }
 
@@ -209,6 +200,8 @@ public class LoadAMSXMLMainPage extends LoaderPage<CommonConfigData> {
             return null;
         }
         this.fileName = fileName;
+        networkName = new java.io.File(getFileName()).getName();
+        datasetName = networkName;
         // CommonConfigData configurationData = getConfigurationData();
         getNewConfigurationData().setSourceFile(new File(fileName));
 
@@ -295,7 +288,7 @@ public class LoadAMSXMLMainPage extends LoaderPage<CommonConfigData> {
         // DialogPage.ERROR);
         // return false;
         // }
-
+        networkName = file.getName();
         configurationData.setProjectName(LoaderUiUtils.getAweProjectName());
         configurationData.setDbRootName(networkName);
         configurationData.setRoot(file);

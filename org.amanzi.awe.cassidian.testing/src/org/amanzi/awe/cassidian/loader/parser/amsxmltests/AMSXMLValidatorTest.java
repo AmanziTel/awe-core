@@ -276,8 +276,7 @@ public class AMSXMLValidatorTest {
         for (File currentFile : files) {
             tns2 = parser.parse(currentFile);
             if (tns2 != null) {
-                CallCollector collector = preparator.extractCallsFromEvents(tns.getCtd().get(0).getProbeIdNumberMap(),tns2.getEvents(), tns2.getGps(), tns2.getCtd().get(0)
-                        .getNtpq());
+                CallCollector collector = preparator.extractCallsFromEvents(tns.getCtd().get(0).getProbeIdNumberMap(),tns2.getEvents(), tns2.getGps());
                 Assert.assertEquals("Unexpected collector size", expectedIndividualCallCount, collector.getIndividualCalls().size());
                 Assert.assertEquals("Unexpected collector size", expectedOthersCount, collector.getHelpCalls().size());
                 Assert.assertEquals("Unexpected collector size", expectedOthersCount, collector.getGroupCalls().size());
