@@ -89,7 +89,7 @@ public class NetworkModelTest extends AbstractAWETest {
 			if (lat < min) {
 				min = lat;
 			}
-			model.updateBounds(lat, 0);
+			model.updateLocationBounds(lat, 0);
 		}
 
 		assertEquals(min, model.getMinLatitude());
@@ -104,7 +104,7 @@ public class NetworkModelTest extends AbstractAWETest {
 			if (lat > max) {
 				max = lat;
 			}
-			model.updateBounds(lat, 0);
+			model.updateLocationBounds(lat, 0);
 		}
 
 		assertEquals(max, model.getMaxLatitude());
@@ -119,7 +119,7 @@ public class NetworkModelTest extends AbstractAWETest {
 			if (lon < min) {
 				min = lon;
 			}
-			model.updateBounds(0, lon);
+			model.updateLocationBounds(0, lon);
 		}
 
 		assertEquals(min, model.getMinLongitude());
@@ -134,7 +134,7 @@ public class NetworkModelTest extends AbstractAWETest {
 			if (lon > max) {
 				max = lon;
 			}
-			model.updateBounds(0, lon);
+			model.updateLocationBounds(0, lon);
 		}
 
 		assertEquals(max, model.getMaxLongitude());

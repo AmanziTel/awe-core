@@ -18,10 +18,7 @@ import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.NewDatasetService.DriveTypes;
 import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
-import org.amanzi.neo.services.exceptions.DatabaseException;
-import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
-import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
-import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
+import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.DriveModel;
 import org.amanzi.testing.AbstractAWETest;
 import org.apache.log4j.Logger;
@@ -178,8 +175,8 @@ public class CorrelationServiceTest extends AbstractAWETest {
 			for (int i = 0; i < 6; i++) {
 				params.put("fake", "param");
 				params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
-				Node m = dm
-						.addMeasurement(new File(filename).getName(), params);
+				Node m = ((DataElement) dm.addMeasurement(
+						new File(filename).getName(), params)).getNode();
 				ms.add(m);
 
 				// create correlation
@@ -242,7 +239,8 @@ public class CorrelationServiceTest extends AbstractAWETest {
 
 			params.put("fake", "param");
 			params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
-			m = dm.addMeasurement(new File(filename).getName(), params);
+			m = ((DataElement) dm.addMeasurement(new File(filename).getName(),
+					params)).getNode();
 
 			// create correlation
 			correlationServ.addCorrelationNodes(network, sector, dataset, m);
@@ -279,7 +277,8 @@ public class CorrelationServiceTest extends AbstractAWETest {
 
 			params.put("fake", "param");
 			params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
-			m = dm.addMeasurement(new File(filename).getName(), params);
+			m = ((DataElement) dm.addMeasurement(new File(filename).getName(),
+					params)).getNode();
 		} catch (AWEException e) {
 			LOGGER.error("Could not get correlated sector", e);
 			fail();
@@ -323,8 +322,8 @@ public class CorrelationServiceTest extends AbstractAWETest {
 			for (int i = 0; i < 6; i++) {
 				params.put("fake", "param");
 				params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
-				Node m = dm
-						.addMeasurement(new File(filename).getName(), params);
+				Node m = ((DataElement) dm.addMeasurement(
+						new File(filename).getName(), params)).getNode();
 				// create correlations
 				correlationServ
 						.addCorrelationNodes(network, sector, dataset, m);
@@ -390,14 +389,14 @@ public class CorrelationServiceTest extends AbstractAWETest {
 
 			// create measurement
 			DriveModel dm = new DriveModel(null, dataset, null, null);
-			file = dm.addFile(new File(filename));
+			file = ((DataElement) dm.addFile(new File(filename))).getNode();
 
 			Map<String, Object> params = new HashMap<String, Object>();
 			for (int i = 0; i < 6; i++) {
 				params.put("fake", "param");
 				params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
-				Node m = dm
-						.addMeasurement(new File(filename).getName(), params);
+				Node m = ((DataElement) dm.addMeasurement(
+						new File(filename).getName(), params)).getNode();
 				// create correlations
 				correlationServ
 						.addCorrelationNodes(network, sector, dataset, m);
@@ -406,8 +405,8 @@ public class CorrelationServiceTest extends AbstractAWETest {
 			for (int i = 0; i < 6; i++) {
 				params.put("fake", "param");
 				params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
-				Node m = dm
-						.addMeasurement(new File(filename).getName(), params);
+				Node m = ((DataElement) dm.addMeasurement(
+						new File(filename).getName(), params)).getNode();
 				// don't create correlations
 				mms.add(m);
 			}

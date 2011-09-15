@@ -31,7 +31,7 @@ public interface IRenderableModel {
      * @param latitude
      * @param longitude
      */
-    public void updateBounds(double latitude, double longitude);
+    public void updateLocationBounds(double latitude, double longitude);
 
     public double getMinLatitude();
 

@@ -257,7 +257,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     }
 
     @Override
-    public void updateBounds(double latitude, double longitude) {
+    public void updateLocationBounds(double latitude, double longitude) {
         LOGGER.info("updateBounds(" + latitude + ", " + longitude + ")");
         super.updateLocationBounds(latitude, longitude);
     }

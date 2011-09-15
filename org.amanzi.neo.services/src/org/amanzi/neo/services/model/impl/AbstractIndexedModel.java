@@ -27,6 +27,7 @@ import org.amanzi.neo.services.indexes.MultiPropertyIndex.MultiDoubleConverter;
 import org.amanzi.neo.services.indexes.MultiPropertyIndex.MultiTimeIndexConverter;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
 
 /**
  * <p>
@@ -41,12 +42,12 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
 
     private static Logger LOGGER = Logger.getLogger(AbstractIndexedModel.class);
 
-    private long min_timestamp = Long.MAX_VALUE;
-    private long max_timestamp = 0;
-    private double min_latitude = Double.MAX_VALUE;
-    private double max_latitude = -Double.MAX_VALUE;
-    private double min_longitude = Double.MAX_VALUE;
-    private double max_longitude = -Double.MAX_VALUE;
+    protected long min_timestamp = Long.MAX_VALUE;
+    protected long max_timestamp = 0;
+    protected double min_latitude = Double.MAX_VALUE;
+    protected double max_latitude = -Double.MAX_VALUE;
+    protected double min_longitude = Double.MAX_VALUE;
+    protected double max_longitude = -Double.MAX_VALUE;
 
     private Map<String, List<MultiPropertyIndex< ? >>> indexes;
 
@@ -229,17 +230,27 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
     @Override
     public void finishUp() {
 
-        Node rootNode = getRootNode();
-        rootNode.setProperty(DriveModel.MIN_TIMESTAMP, min_timestamp);
-        rootNode.setProperty(DriveModel.MAX_TIMESTAMP, max_timestamp);
+        Transaction tx = NeoServiceProvider.getProvider().getService().beginTx();
+        try {
 
-        // TODO: approve code
-        Node gis = NeoServiceFactory.getInstance().getNewDatasetService().getGisNodeByDataset(rootNode);
-        if (gis != null) {
-            gis.setProperty(DriveModel.MIN_LATITUDE, min_latitude);
-            gis.setProperty(DriveModel.MIN_LONGITUDE, min_longitude);
-            gis.setProperty(DriveModel.MAX_LATITUDE, max_latitude);
-            gis.setProperty(DriveModel.MAX_LONGITUDE, max_longitude);
+            Node rootNode = getRootNode();
+            rootNode.setProperty(DriveModel.MIN_TIMESTAMP, min_timestamp);
+            rootNode.setProperty(DriveModel.MAX_TIMESTAMP, max_timestamp);
+
+            // TODO: approve code
+            // Node gis =
+            // NeoServiceFactory.getInstance().getNewDatasetService().getGisNodeByDataset(rootNode);
+            // if (gis != null) {
+            // gis.setProperty(DriveModel.MIN_LATITUDE, min_latitude);
+            // gis.setProperty(DriveModel.MIN_LONGITUDE, min_longitude);
+            // gis.setProperty(DriveModel.MAX_LATITUDE, max_latitude);
+            // gis.setProperty(DriveModel.MAX_LONGITUDE, max_longitude);
+            // }
+            tx.success();
+        } catch (Exception e) {
+            // TODO: handle exception
+        } finally {
+            tx.finish();
         }
     }
 }
