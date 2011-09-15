@@ -13,8 +13,11 @@
 
 package org.amanzi.neo.services.model.impl;
 
+import java.util.Iterator;
+
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewDatasetService;
+import org.amanzi.neo.services.NewNetworkService;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataElement;
@@ -54,21 +57,62 @@ public abstract class DataModel extends AbstractModel implements IDataModel {
 
     @Override
     public IDataElement getParentElement(IDataElement childElement) {
-        return null;
+        // validate
+        if (childElement == null) {
+            throw new IllegalArgumentException("childElement is null");
+        }
+
+        Node child = ((DataElement)childElement).getNode();
+
+        Node parent = null;
+        if (child != null) {
+            try {
+                parent = dsServ.getParent(child, false);
+            } catch (DatabaseException e) {
+                LOGGER.error("Could not get parent element.", e);
+            }
+        }
+        IDataElement result = parent == null ? null : new DataElement(parent);
+        return result;
     }
 
-    @Override
-    public Iterable<IDataElement> getChildren(IDataElement parent) {
-        return null;
-    }
 
-    @Override
-    public IDataElement[] getAllElementsByType(INodeType elementType) {
-        return null;
-    }
+    public class DataElementIterable implements Iterable<IDataElement> {
+        private class DataElementIterator implements Iterator<IDataElement> {
 
-    @Override
-    public void finishUp() {
+            private Iterator<Node> it;
+
+            public DataElementIterator(Iterable<Node> nodeTraverse) {
+                this.it = nodeTraverse.iterator();
+            }
+
+            @Override
+            public boolean hasNext() {
+                return it.hasNext();
+            }
+
+            @Override
+            public IDataElement next() {
+                return new DataElement(it.next());
+            }
+
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+
+        }
+
+        private Iterable<Node> nodeTraverse;
+
+        public DataElementIterable(Iterable<Node> nodeTraverse) {
+            this.nodeTraverse = nodeTraverse;
+        }
+
+        @Override
+        public Iterator<IDataElement> iterator() {
+            return new DataElementIterator(nodeTraverse);
+        }
     }
 
 }

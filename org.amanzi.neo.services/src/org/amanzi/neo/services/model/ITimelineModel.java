@@ -14,8 +14,8 @@
 package org.amanzi.neo.services.model;
 
 /**
- * TODO Purpose of
  * <p>
+ * This interface encapsulates methods for working with timestamp data.
  * </p>
  * 
  * @author grigoreva_a
@@ -27,5 +27,10 @@ public interface ITimelineModel extends IDriveInquirerableModel {
 
     public long getMaxTimestamp();
 
-    public void updateTimestamp(long timestamp) throws Exception;
+    /**
+     * Update the minimum and maximum timestamp values.
+     * 
+     * @param timestamp the new value of timestamp
+     */
+    public void updateTimestamp(long timestamp);
 }

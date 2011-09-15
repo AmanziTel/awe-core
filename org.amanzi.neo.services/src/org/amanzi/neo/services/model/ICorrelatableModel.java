@@ -14,8 +14,9 @@
 package org.amanzi.neo.services.model;
 
 /**
- * TODO Purpose of
  * <p>
+ * The interface describes model that can be correlated with other models (basically network
+ * models).
  * </p>
  * 
  * @author grigoreva_a
@@ -23,7 +24,17 @@ package org.amanzi.neo.services.model;
  */
 public interface ICorrelatableModel {
 
+    /**
+     * Returns a list of models, describing relations that involve the current model.
+     * 
+     * @return
+     */
     public Iterable<ICorrelationModel> getCorrelatedModels();
 
+    /**
+     * @param correlationModelName the name of correlation model to find
+     * @return a correlation model describing relations of current model with some other, or
+     *         <code>null</code>.
+     */
     public ICorrelationModel getCorrelatedModel(String correlationModelName);
 }

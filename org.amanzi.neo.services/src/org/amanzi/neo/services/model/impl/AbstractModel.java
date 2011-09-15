@@ -18,8 +18,8 @@ import org.amanzi.neo.services.model.IModel;
 import org.neo4j.graphdb.Node;
 
 /**
- * TODO Purpose of
  * <p>
+ * Implements the basic methods of all the models.
  * </p>
  * 
  * @author grigoreva_a

@@ -18,10 +18,7 @@ import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.NewDatasetService.DriveTypes;
 import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
-import org.amanzi.neo.services.exceptions.DatabaseException;
-import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
-import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
-import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
+import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.DriveModel;
 import org.amanzi.testing.AbstractAWETest;
 import org.apache.log4j.Logger;
@@ -74,7 +71,7 @@ public class CorrelationServiceTest extends AbstractAWETest {
 		try {
 			count++;
 			project = prServ.createProject("project" + count);
-			network = dsServ.createDataset(project, "dataset",
+			network = dsServ.createDataset(project, "network",
 					DatasetTypes.NETWORK);
 			dataset = dsServ.createDataset(project, "dataset",
 					DatasetTypes.DRIVE, DriveTypes.ROMES);
@@ -178,8 +175,8 @@ public class CorrelationServiceTest extends AbstractAWETest {
 			for (int i = 0; i < 6; i++) {
 				params.put("fake", "param");
 				params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
-				Node m = dm
-						.addMeasurement(new File(filename).getName(), params);
+				Node m = ((DataElement) dm.addMeasurement(
+						new File(filename).getName(), params)).getNode();
 				ms.add(m);
 
 				// create correlation
@@ -242,7 +239,8 @@ public class CorrelationServiceTest extends AbstractAWETest {
 
 			params.put("fake", "param");
 			params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
-			m = dm.addMeasurement(new File(filename).getName(), params);
+			m = ((DataElement) dm.addMeasurement(new File(filename).getName(),
+					params)).getNode();
 
 			// create correlation
 			correlationServ.addCorrelationNodes(network, sector, dataset, m);
@@ -279,7 +277,8 @@ public class CorrelationServiceTest extends AbstractAWETest {
 
 			params.put("fake", "param");
 			params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
-			m = dm.addMeasurement(new File(filename).getName(), params);
+			m = ((DataElement) dm.addMeasurement(new File(filename).getName(),
+					params)).getNode();
 		} catch (AWEException e) {
 			LOGGER.error("Could not get correlated sector", e);
 			fail();
@@ -323,8 +322,8 @@ public class CorrelationServiceTest extends AbstractAWETest {
 			for (int i = 0; i < 6; i++) {
 				params.put("fake", "param");
 				params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
-				Node m = dm
-						.addMeasurement(new File(filename).getName(), params);
+				Node m = ((DataElement) dm.addMeasurement(
+						new File(filename).getName(), params)).getNode();
 				// create correlations
 				correlationServ
 						.addCorrelationNodes(network, sector, dataset, m);
@@ -390,14 +389,14 @@ public class CorrelationServiceTest extends AbstractAWETest {
 
 			// create measurement
 			DriveModel dm = new DriveModel(null, dataset, null, null);
-			file = dm.addFile(new File(filename));
+			file = ((DataElement) dm.addFile(new File(filename))).getNode();
 
 			Map<String, Object> params = new HashMap<String, Object>();
 			for (int i = 0; i < 6; i++) {
 				params.put("fake", "param");
 				params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
-				Node m = dm
-						.addMeasurement(new File(filename).getName(), params);
+				Node m = ((DataElement) dm.addMeasurement(
+						new File(filename).getName(), params)).getNode();
 				// create correlations
 				correlationServ
 						.addCorrelationNodes(network, sector, dataset, m);
@@ -406,8 +405,8 @@ public class CorrelationServiceTest extends AbstractAWETest {
 			for (int i = 0; i < 6; i++) {
 				params.put("fake", "param");
 				params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
-				Node m = dm
-						.addMeasurement(new File(filename).getName(), params);
+				Node m = ((DataElement) dm.addMeasurement(
+						new File(filename).getName(), params)).getNode();
 				// don't create correlations
 				mms.add(m);
 			}
@@ -469,10 +468,65 @@ public class CorrelationServiceTest extends AbstractAWETest {
 		// iterator returned
 		Iterable<Node> it = correlationServ.getCorrelatedDatasets(network);
 		Assert.assertNotNull(it);
+		Assert.assertTrue(it.iterator().hasNext());
 		// all nodes returned
 		for (Node node : it) {
 			Assert.assertNotNull(node);
 			Assert.assertTrue("" + node.getId(), dss.contains(node));
+		}
+	}
+
+	@Test
+	public void testGetCorrelatedNetworks() {
+		Node ds1 = null, ds2 = null;
+		List<Node> nws = new ArrayList<Node>();
+		try {
+			ds1 = dsServ.createDataset(project, "dataset1", DatasetTypes.DRIVE,
+					DriveTypes.ROMES);
+
+			ds2 = dsServ.createDataset(project, "dataset2", DatasetTypes.DRIVE,
+					DriveTypes.ROMES);
+
+			// create correlations
+			correlationServ.createCorrelation(network, ds1);
+			correlationServ.createCorrelation(network, ds2);
+
+			Node network1 = dsServ.createDataset(project, "network 1",
+					DatasetTypes.NETWORK);
+			// create correlations
+			correlationServ.createCorrelation(network1, ds2);
+
+			nws.add(network);
+			nws.add(network1);
+
+			tx.success();
+			tx.finish();
+		} catch (AWEException e) {
+			LOGGER.error("Could not create dataset.", e);
+			fail();
+		}
+
+		tx = graphDatabaseService.beginTx();
+		// iterator returned
+		Iterable<Node> it = correlationServ.getCorrelatedNetworks(ds1);
+		Assert.assertNotNull(it);
+		Assert.assertTrue(it.iterator().hasNext());
+		// all nodes returned
+		for (Node node : it) {
+			Assert.assertNotNull(node);
+			Assert.assertEquals(network, node);
+			System.out.println(node.getId());
+		}
+
+		// iterator returned
+		it = correlationServ.getCorrelatedNetworks(ds2);
+		Assert.assertNotNull(it);
+		Assert.assertTrue(it.iterator().hasNext());
+		// all nodes returned
+		for (Node node : it) {
+			Assert.assertNotNull(node);
+			Assert.assertTrue(nws.contains(node));
+			System.out.println(node.getId());
 		}
 	}
 

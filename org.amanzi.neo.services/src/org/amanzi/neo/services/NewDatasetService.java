@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.amanzi.neo.services.NewAbstractService.FilterNodesByType;
+import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.IDriveType;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
@@ -939,6 +941,52 @@ public class NewDatasetService extends NewAbstractService {
         }
 
         return result;
+    }
+
+    /**
+     * <Fully taken from old code> Gets the gis node by dataset.
+     * 
+     * @param dataset the dataset
+     * @return the gis node by dataset
+     */
+    public Node getGisNodeByDataset(Node dataset) {
+        return dataset.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING).getStartNode();
+    }
+
+    /**
+     * <Fully taken from old code> Gets the gis node by dataset.
+     * 
+     * @param dataset the dataset
+     * @return the gis node by dataset
+     */
+    public Node createGisNodeByDataset(Node dataset) {
+        // TODO: temporary solution
+        return dataset.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING).getStartNode();
+    }
+
+    /**
+     * Traverses database to find all network elements of defined type
+     * 
+     * @param elementType
+     * @return an <code>Iterable</code> over found nodes
+     */
+    public Iterable<Node> findAllDatasetElements(Node parent, INodeType elementType) {
+        LOGGER.debug("start findAllNetworkElements(Node parent, INodeType elementType)");
+        // validate parameters
+        if (parent == null) {
+            throw new IllegalArgumentException("Parent is null.");
+        }
+        if (elementType == null) {
+            throw new IllegalArgumentException("Element type is null.");
+        }
+
+        return getDatasetElementTraversalDescription().evaluator(new FilterNodesByType(elementType)).traverse(parent).nodes();
+    }
+
+    protected TraversalDescription getDatasetElementTraversalDescription() {
+        LOGGER.debug("start getNetworkElementTraversalDescription()");
+        return Traversal.description().depthFirst().relationships(DatasetRelationTypes.CHILD, Direction.OUTGOING)
+                .relationships(DatasetRelationTypes.NEXT, Direction.OUTGOING);
     }
 
 }

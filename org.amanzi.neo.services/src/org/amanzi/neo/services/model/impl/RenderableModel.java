@@ -13,14 +13,27 @@
 
 package org.amanzi.neo.services.model.impl;
 
+import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.model.IDataElement;
+
 /**
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author grigoreva_a
  * @since 1.0.0
  */
 public class RenderableModel extends AbstractIndexedModel {
+    // TODO: make it abstract?
+    @Override
+    public Iterable<IDataElement> getChildren(IDataElement parent) {
+        return null;
+    }
+
+    @Override
+    public Iterable<IDataElement> getAllElementsByType(INodeType elementType) {
+        return null;
+    }
 
 }
