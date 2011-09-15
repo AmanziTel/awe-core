@@ -39,7 +39,7 @@ public abstract class DataModel extends AbstractModel implements IDataModel {
 
     private NewDatasetService dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
 
-    protected void addChild(Node parent, Node child) {
+    public void addChild(Node parent, Node child) {
         try {
             dsServ.addChild(parent, child);
         } catch (DatabaseException e) {
@@ -47,7 +47,7 @@ public abstract class DataModel extends AbstractModel implements IDataModel {
         }
     }
 
-    protected void addChild(Node parent, Node child, Node lastChild) {
+    public void addChild(Node parent, Node child, Node lastChild) {
         try {
             dsServ.addChild(parent, child, lastChild);
         } catch (DatabaseException e) {
@@ -75,7 +75,6 @@ public abstract class DataModel extends AbstractModel implements IDataModel {
         IDataElement result = parent == null ? null : new DataElement(parent);
         return result;
     }
-
 
     public class DataElementIterable implements Iterable<IDataElement> {
         private class DataElementIterator implements Iterator<IDataElement> {
