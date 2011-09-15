@@ -135,6 +135,31 @@ public abstract class NewAbstractService {
         return result;
     }
 
+    public void createRelationship(Node parent, Node child, RelationshipType relType) throws DatabaseException {
+        // validate parameters
+        if (parent == null) {
+            throw new IllegalArgumentException("Parent is null.");
+        }
+        if (child == null) {
+            throw new IllegalArgumentException("Child is null.");
+        }
+        if (relType == null) {
+            throw new IllegalArgumentException("Relationship type is null.");
+        }
+
+        tx = graphDb.beginTx();
+        try {
+            parent.createRelationshipTo(child, relType);
+            tx.success();
+        } catch (Exception e) {
+            LOGGER.error("Could not create node.", e);
+            tx.failure();
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
+    }
+
     /**
      * This method generates a string identifier for index for a specific network and a specific
      * type of nodes
@@ -259,7 +284,7 @@ public abstract class NewAbstractService {
 
         }
     }
-    
+
     protected TraversalDescription getChildElementTraversalDescription() {
         LOGGER.debug("start getNetworkElementTraversalDescription()");
         return Traversal.description().depthFirst().relationships(DatasetRelationTypes.CHILD, Direction.OUTGOING);
