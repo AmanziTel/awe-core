@@ -67,7 +67,7 @@ public class NodeTypeManager {
         }
 
         public T convert(String source) {
-            return (T)Enum.valueOf(this.enumType, source.trim());
+            return (T)Enum.valueOf(this.enumType, source.trim().toUpperCase());
         }
     }
 
