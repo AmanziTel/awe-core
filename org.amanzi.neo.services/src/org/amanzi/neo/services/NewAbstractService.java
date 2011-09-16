@@ -100,6 +100,13 @@ public abstract class NewAbstractService {
         return result;
     }
 
+    public Node createNode(Map<String, Object> params) throws DatabaseException {
+        INodeType type = NodeTypeManager.getType(params.get(TYPE).toString());
+        Node result = createNode(type);
+        setProperties(result, params);
+        return result;
+    }
+
     /**
      * Creates a node of the defined <code>nodeType</code>, creates a relationship of type
      * <code>relType</code> from <code>parent</code> to the resulting node.
