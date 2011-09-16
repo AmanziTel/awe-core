@@ -83,7 +83,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
 
         @Override
         public String getId() {
-            return name();
+            return name().toLowerCase();
         }
 
     }

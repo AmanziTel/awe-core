@@ -13,6 +13,8 @@ import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.NewDatasetService.DriveTypes;
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.model.IDataElement;
+import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.DriveModel;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
 import org.amanzi.testing.AbstractAWETest;
@@ -152,8 +154,8 @@ public class RomesDriveModelSaverTest extends AbstractAWETest {
 		saver.save(data);
 		// a measurement is created
 		DriveModel dm = saver.getDriveModel();
-		Iterable<Node> ms = dm.getMeasurements(filename);
-		Node m = ms.iterator().next();
+		Iterable<IDataElement> ms = dm.getMeasurements(filename);
+		Node m = ((DataElement) ms.iterator().next()).getNode();
 		// node not null
 		Assert.assertNotNull(m);
 		// properties set correctly
@@ -162,7 +164,7 @@ public class RomesDriveModelSaverTest extends AbstractAWETest {
 		Assert.assertEquals(map.get("some"), m.getProperty("some", null));
 		Assert.assertEquals(map.get("para"), m.getProperty("para", null));
 		// Location node created
-		Node l = dm.getLocation(m);
+		Node l = ((DataElement) dm.getLocation(m)).getNode();
 		Assert.assertNotNull(l);
 		Assert.assertEquals(map.get(DriveModel.LATITUDE),
 				l.getProperty(DriveModel.LATITUDE, null));

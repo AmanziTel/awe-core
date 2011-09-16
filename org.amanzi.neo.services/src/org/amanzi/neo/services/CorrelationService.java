@@ -59,7 +59,7 @@ public class CorrelationService extends NewAbstractService {
         CORRELATION, PROXY;
         @Override
         public String getId() {
-            return name();
+            return name().toLowerCase();
         }
     }
 
