@@ -312,7 +312,7 @@ public abstract class NewAbstractService {
          * @param type - nodes type
          */
         public FilterNodesByType(INodeType type) {
-            this.type = type;
+            this.type = type; 
         }
 
         private INodeType type;
