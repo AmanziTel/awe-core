@@ -83,7 +83,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
 
         @Override
         public String getId() {
-            return name();
+            return name().toLowerCase();
         }
 
     }
@@ -97,7 +97,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
      * @since 1.0.0
      */
     public enum DriveRelationshipTypes implements RelationshipType {
-        VIRTUAL_DATASET, LOCATION;
+        VIRTUAL_DATASET, LOCATION, CALL_M;
     }
 
     /**
@@ -290,7 +290,8 @@ public class DriveModel extends RenderableModel implements IDriveModel {
 
     /**
      * Adds a measurement node to a file node with defined filename. If params map contains lat and
-     * lon properties, also creates a location node.
+     * lon properties, also creates a location node. Use this method if you want to create a
+     * measurement with default type.
      * 
      * @param filename the name of file
      * @param params a map containing parameters of the new measurement
@@ -298,6 +299,21 @@ public class DriveModel extends RenderableModel implements IDriveModel {
      * @throws DatabaseException if errors occur in database
      */
     public IDataElement addMeasurement(String filename, Map<String, Object> params) throws DatabaseException {
+        return addMeasurement(filename, params, primaryType);
+    }
+
+    /**
+     * Adds a measurement node to a file node with defined filename. If params map contains lat and
+     * lon properties, also creates a location node. Use this method if you want to create a
+     * measurement with type, that is different from drive model primary type.
+     * 
+     * @param filename the name of file
+     * @param params a map containing parameters of the new measurement
+     * @param nodeType the type of node to create
+     * @return the newly created node
+     * @throws DatabaseException if errors occur in database
+     */
+    public IDataElement addMeasurement(String filename, Map<String, Object> params, INodeType nodeType) throws DatabaseException {
         LOGGER.debug("start addMeasurement(String filename, Map<String, Object> params)");
 
         // measurements are added as c-n-n o file nodes
@@ -310,15 +326,16 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         if (params == null) {
             throw new IllegalArgumentException("Parameters map is null.");
         }
+        if (nodeType == null) {
+            throw new IllegalArgumentException("Node type is null.");
+        }
 
         Node fileNode = ((DataElement)findFile(new File(filename).getName())).getNode();
         if (fileNode == null) {
             throw new IllegalArgumentException("File node " + filename + " not found.");
         }
-        // tx = graphDb.beginTx();
-        Node m = dsServ.createNode(primaryType);
+        Node m = dsServ.createNode(nodeType);
         dsServ.addChild(fileNode, m, null);
-        // try {
         Long lat = (Long)params.get(LATITUDE);
         Long lon = (Long)params.get(LONGITUDE);
         Long tst = (Long)params.get(TIMESTAMP);
@@ -331,25 +348,51 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         if ((tst != null) && (tst != 0)) {
             updateTimestamp(tst);
         }
-        // for (String key : params.keySet()) {
-        // Object value = params.get(key);
-        // if (value != null) {
-        // m.setProperty(key, value);
-        // }
-        // }
+        params.put(NewAbstractService.DATASET_ID, this.name);
         dsServ.setProperties(m, params);
 
         count++;
         Map<String, Object> prop = new HashMap<String, Object>();
-        prop.put(PRIMARY_TYPE, primaryType.getId());
+        prop.put(PRIMARY_TYPE, primaryType.getId());// TODO: ?????????????
         prop.put(COUNT, count);
         dsServ.setProperties(rootNode, prop);
 
-        // tx.success();
-        // } finally {
-        // tx.finish();
-        // }
         return new DataElement(m);
+    }
+
+    /**
+     * The method creates CALL_M relationships between <code>parent</code> node and
+     * <code>source</code> nodes.
+     * 
+     * @param parent a <code>DataElement</code>, that contains parent node.
+     * @param source list of <code>DataElement</code>s, containing <code>Node</code> objects.
+     * @throws DatabaseException if problems occur in database
+     */
+    public void linkNode(IDataElement parent, Iterable<IDataElement> source) throws DatabaseException {
+        // validate
+        if (parent == null) {
+            throw new IllegalArgumentException("Parent is null.");
+        }
+        Node parentNode = ((DataElement)parent).getNode();
+        if (parentNode == null) {
+            throw new IllegalArgumentException("Parent node is null.");
+        }
+        // TODO: do we really need source dataset here?
+        // if (sourceDataset == null) {
+        // throw new IllegalArgumentException("Source dataset is null.");
+        // }
+        if (source == null) {
+            throw new IllegalArgumentException("List of nodes is null.");
+        }
+
+        for (IDataElement element : source) {
+            Node node = ((DataElement)element).getNode();
+            if (node == null) {
+                throw new IllegalArgumentException("Source data element must contain nodes.");
+            }
+            dsServ.createRelationship(parentNode, node, DriveRelationshipTypes.CALL_M);
+        }
+
     }
 
     /**

@@ -44,9 +44,6 @@ import org.neo4j.kernel.Traversal;
  */
 public class CorrelationService extends NewAbstractService {
 
-    public static final String DATASET_ID = "dataset";
-    public static final String NETWORK_ID = "network";
-
     private static Logger LOGGER = Logger.getLogger(CorrelationService.class);
 
     private Transaction tx;
@@ -59,7 +56,7 @@ public class CorrelationService extends NewAbstractService {
         CORRELATION, PROXY;
         @Override
         public String getId() {
-            return name();
+            return name().toLowerCase();
         }
     }
 

@@ -45,6 +45,8 @@ import org.neo4j.kernel.Traversal;
 public abstract class NewAbstractService {
     public final static String TYPE = "type";
     public final static String NAME = "name";
+    public static final String DATASET_ID = "dataset";
+    public static final String NETWORK_ID = "network";
 
     private static Logger LOGGER = Logger.getLogger(NewAbstractService.class);
 
@@ -100,6 +102,13 @@ public abstract class NewAbstractService {
         return result;
     }
 
+    public Node createNode(Map<String, Object> params) throws DatabaseException {
+        INodeType type = NodeTypeManager.getType(params.get(TYPE).toString());
+        Node result = createNode(type);
+        setProperties(result, params);
+        return result;
+    }
+
     /**
      * Creates a node of the defined <code>nodeType</code>, creates a relationship of type
      * <code>relType</code> from <code>parent</code> to the resulting node.
@@ -133,6 +142,31 @@ public abstract class NewAbstractService {
             tx.finish();
         }
         return result;
+    }
+
+    public void createRelationship(Node parent, Node child, RelationshipType relType) throws DatabaseException {
+        // validate parameters
+        if (parent == null) {
+            throw new IllegalArgumentException("Parent is null.");
+        }
+        if (child == null) {
+            throw new IllegalArgumentException("Child is null.");
+        }
+        if (relType == null) {
+            throw new IllegalArgumentException("Relationship type is null.");
+        }
+
+        tx = graphDb.beginTx();
+        try {
+            parent.createRelationshipTo(child, relType);
+            tx.success();
+        } catch (Exception e) {
+            LOGGER.error("Could not create node.", e);
+            tx.failure();
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
     }
 
     /**
@@ -259,7 +293,7 @@ public abstract class NewAbstractService {
 
         }
     }
-    
+
     protected TraversalDescription getChildElementTraversalDescription() {
         LOGGER.debug("start getNetworkElementTraversalDescription()");
         return Traversal.description().depthFirst().relationships(DatasetRelationTypes.CHILD, Direction.OUTGOING);

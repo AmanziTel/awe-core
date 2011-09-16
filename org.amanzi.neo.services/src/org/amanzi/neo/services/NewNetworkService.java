@@ -57,7 +57,7 @@ public class NewNetworkService extends NewAbstractService {
         NETWORK, BSC, SITE, SECTOR;
         @Override
         public String getId() {
-            return name();
+            return name().toLowerCase();
         }
 
     }
