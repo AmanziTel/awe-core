@@ -86,7 +86,7 @@ public class NewDatasetService extends NewAbstractService {
 
         @Override
         public String getId() {
-            return name();
+            return name().toLowerCase();
         }
     }
 
