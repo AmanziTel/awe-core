@@ -27,6 +27,7 @@ import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
  * @author grigoreva_a
  * @since 1.0.0
  */
+@SuppressWarnings({"unchecked", "rawtypes"})
 public class NodeTypeManager {
 
     private static List<Class< ? >> registeredNodeTypes = new ArrayList<Class< ? >>();
