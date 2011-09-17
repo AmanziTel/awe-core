@@ -13,7 +13,6 @@
 
 package org.amanzi.neo.services.statistic;
 
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,8 +26,8 @@ import org.amanzi.neo.services.statistic.internal.NewPropertyStatistics;
  * @author Kruglik_A
  * @since 1.0.0
  */
-public class StatisticsVault implements IVault {
-    private List<IVault> subVaults = new ArrayList<IVault>();
+public class NewNodeTypeVault implements IVault {
+    private List<IVault> subVaults;
     private int count;
     private String type;
     private List<NewPropertyStatistics> propertyStatisticsList = new ArrayList<NewPropertyStatistics>();
@@ -36,25 +35,10 @@ public class StatisticsVault implements IVault {
     /**
      * constructor
      */
-    public StatisticsVault() {
+    public NewNodeTypeVault() {
         super();
         this.count = 0;
-        this.type ="";
-    }
-
-    /**
-     * constructor with type of vault
-     * 
-     * @param type
-     */
-    public StatisticsVault(String type) {
-        this.type = type;
-        this.count = 0;
-    }
-
-    @Override
-    public void addSubVault(IVault subVault) {
-        subVaults.add(subVault);
+        this.type = "";
     }
 
     @Override
@@ -71,15 +55,20 @@ public class StatisticsVault implements IVault {
     public String getType() {
         return type;
     }
+
     @Override
-    public List<NewPropertyStatistics> getPropertyStatisticsList(){
-        return this.propertyStatisticsList;
+    public void index() {
     }
+
     @Override
-    public void addPropertyStatistics(NewPropertyStatistics propStat){
-        this.propertyStatisticsList.add(propStat);
+    public void parse() {
     }
-    
+
+    @Override
+    public void addSubVault(IVault vault) {
+        this.subVaults.add(vault);
+    }
+
     @Override
     public void setCount(int count) {
         this.count = count;
@@ -89,12 +78,15 @@ public class StatisticsVault implements IVault {
     public void setType(String type) {
         this.type = type;
     }
-    
+
     @Override
-    public void index() {
+    public List<NewPropertyStatistics> getPropertyStatisticsList() {
+        return this.propertyStatisticsList;
     }
 
     @Override
-    public void parse() {
+    public void addPropertyStatistics(NewPropertyStatistics propStat) {
+        this.propertyStatisticsList.add(propStat);
     }
+
 }

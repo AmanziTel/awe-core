@@ -45,6 +45,8 @@ import org.neo4j.kernel.Traversal;
 public abstract class NewAbstractService {
     public final static String TYPE = "type";
     public final static String NAME = "name";
+    public static final String DATASET_ID = "dataset";
+    public static final String NETWORK_ID = "network";
 
     private static Logger LOGGER = Logger.getLogger(NewAbstractService.class);
 

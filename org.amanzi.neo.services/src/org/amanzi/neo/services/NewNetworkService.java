@@ -294,8 +294,11 @@ public class NewNetworkService extends NewAbstractService {
             throw new IllegalArgumentException("Element type is null.");
         }
 
-        return getChildElementTraversalDescription().evaluator(new FilterNodesByType(elementType)).traverse(parent).nodes();
+        return getNetworkElementTraversalDescription().evaluator(new FilterNodesByType(elementType)).traverse(parent).nodes();
     }
 
-   
+    protected TraversalDescription getNetworkElementTraversalDescription() {
+        LOGGER.debug("start getNetworkElementTraversalDescription()");
+        return Traversal.description().depthFirst().relationships(DatasetRelationTypes.CHILD, Direction.OUTGOING);
+    }
 }

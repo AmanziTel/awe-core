@@ -17,18 +17,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Set;
 
-import org.amanzi.neo.db.manager.INeoDbService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.StatisticService;
 import org.amanzi.neo.services.statistic.ChangeClassRule;
-import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Path;
-import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.Transaction;
 
 
 // TODO: Auto-generated Javadoc
@@ -242,7 +236,7 @@ public class StatisticHandler {
     }
 
 
-    public Collection<String> getPropertyNameCollection(String key, String nodeTypeId, @SuppressWarnings("rawtypes") Comparable<Class<?>> comparable) {
+    public Collection<String> getPropertyNameCollection(String key, String nodeTypeId, Comparable<Class<?>> comparable) {
         Vault vault=vaults.get(key);
         if (vault==null){
             return new ArrayList<String>();

@@ -2,10 +2,7 @@ package org.amanzi.neo.services;
 
 import java.util.Iterator;
 import java.util.Map;
-
 import junit.framework.Assert;
-
-import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.NewStatisticsService.StatisticsNodeTypes;
 import org.amanzi.neo.services.NewStatisticsService.StatisticsRelationships;
 import org.amanzi.neo.services.exceptions.DatabaseException;
@@ -23,11 +20,12 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
+import org.mockito.Mockito;
+import org.mockito.internal.verification.Times;
 
 public class NewStatisticsServiceTest extends AbstractAWETest {
 
@@ -310,9 +308,9 @@ public class NewStatisticsServiceTest extends AbstractAWETest {
 				(Node) Mockito.any());
 
 		checkVault(vault, StatisticsVault.class, 0, PROPERTIES, 1);
-		IVault subVault = vault.getSubVaults().get(NEIGHBOURS);
+		IVault subVault = vault.getSubVaults().iterator().next();
 		checkVault(subVault, StatisticsVault.class, 0, NEIGHBOURS, 1);
-		subVault = subVault.getSubVaults().get(NETWORK);
+		subVault = subVault.getSubVaults().iterator().next();
 		checkVault(subVault, StatisticsVault.class, 0, NETWORK, 0);
 		LOGGER.debug("finish loadVaultPositiveTest()");
 
@@ -400,10 +398,10 @@ public class NewStatisticsServiceTest extends AbstractAWETest {
 		service.savePropertyStatistics(propStat, referenceNode);
 
 		Node propStatNode = referenceNode.getSingleRelationship(
-				DatasetRelationTypes.CHILD, Direction.OUTGOING).getEndNode();
+				StatisticsRelationships.CHILD, Direction.OUTGOING).getEndNode();
 
 		boolean hasChildRelationship = propStatNode.hasRelationship(
-				DatasetRelationTypes.CHILD, Direction.INCOMING);
+				StatisticsRelationships.CHILD, Direction.INCOMING);
 		Assert.assertTrue("not create StatisticsRelationships.CHILD",
 				hasChildRelationship);
 

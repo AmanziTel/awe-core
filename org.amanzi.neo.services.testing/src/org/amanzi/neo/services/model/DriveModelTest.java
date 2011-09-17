@@ -17,6 +17,7 @@ import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.NewDatasetService.DriveTypes;
+import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.ProjectService;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
@@ -515,6 +516,9 @@ public class DriveModelTest extends AbstractAWETest {
 		for (String key : params.keySet()) {
 			Assert.assertEquals(params.get(key), m.getProperty(key, null));
 		}
+		// dataset id set
+		Assert.assertEquals(dsName,
+				m.getProperty(NewAbstractService.DATASET_ID, null));
 		// type correct
 		Assert.assertEquals(DriveNodeTypes.M.getId(),
 				m.getProperty(NewAbstractService.TYPE, null));
@@ -937,7 +941,7 @@ public class DriveModelTest extends AbstractAWETest {
 				.getGraphDatabase()
 				.index()
 				.forNodes(
-						dsServ.getIndexKey(parent, DriveNodeTypes.valueOf(node
+						dsServ.getIndexKey(parent, NodeTypeManager.getType(node
 								.getProperty(NewAbstractService.TYPE, "")
 								.toString()))).get(name, value).getSingle();
 		return n.equals(node);

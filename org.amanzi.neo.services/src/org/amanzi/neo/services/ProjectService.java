@@ -176,6 +176,14 @@ public class ProjectService extends NewAbstractService {
         return getProjectTraversalDescription().traverse(graphDb.getReferenceNode()).nodes();
     }
 
+    /**
+     *Finds or creates a project node by name.
+     *
+     * @param name
+     * @return
+     * @throws IllegalNodeDataException
+     * @throws DuplicateNodeNameException if more than one project found
+     */
     public Node getProject(String name) throws IllegalNodeDataException, DuplicateNodeNameException {
         LOGGER.debug("Started getProject '" + name + "'");
         Node result = findProject(name);

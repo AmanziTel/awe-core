@@ -13,10 +13,10 @@
 
 package org.amanzi.neo.services;
 
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateStatisticsException;
@@ -33,8 +33,10 @@ import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.traversal.Evaluators;
 import org.neo4j.graphdb.traversal.TraversalDescription;
+import org.neo4j.kernel.Traversal;
 
 /**
+ * 
  * <p>
  * service to work with statistics
  * </p>
@@ -49,24 +51,15 @@ public class NewStatisticsService extends NewAbstractService {
     public static final String CLASS = "class";
     public static final String COUNT = "count";
     public static final String NUMBER = "number";
-    
-    private static final String VALUE_NAME = "v";
-    private static final String COUNT_NAME = "c";
-    
-    private static final String EMPTY_STRING = "";
-    private static final String PROP_STAT_NODE = "propertyStatisticsNode";
-    private static final String VAULT_NODE = "vaultNode";
-    private static final String PROP_STAT = "propStat";
-    private static final String ROOT_NODE = "rootNode";
-    private static final String VAULT = "vault";
 
-    private static Logger LOGGER = Logger.getLogger(NewStatisticsService.class);
+    private static Logger LOGGER = Logger.getLogger(NewAbstractService.class);
+    private Transaction tx;
     /**
      * TraversalDescription for child nodes
      */
-    private TraversalDescription childNodes = getChildElementTraversalDescription().evaluator(Evaluators.atDepth(1));
+    public TraversalDescription childNodes = Traversal.description()
+            .relationships(StatisticsRelationships.CHILD, Direction.OUTGOING).evaluator(Evaluators.atDepth(1));
 
-    
     /**
      * <p>
      * Relationship types for statistics nodes
@@ -76,7 +69,7 @@ public class NewStatisticsService extends NewAbstractService {
      * @since 1.0.0
      */
     public enum StatisticsRelationships implements RelationshipType {
-        STATISTICS;
+        STATISTICS, CHILD;
     }
 
     /**
@@ -113,8 +106,8 @@ public class NewStatisticsService extends NewAbstractService {
             result = klass.newInstance();
 
             result.setCount((Integer)vaultNode.getProperty(COUNT, null));
-            result.setType((String)vaultNode.getProperty(NAME, EMPTY_STRING));
-            for (Node propStatNode : getPropertyStatisticsNodes(vaultNode)) {
+            result.setType((String)vaultNode.getProperty(NAME, ""));
+            for (Node propStatNode : getPropertyStatisticsNodes(vaultNode)){
                 result.addPropertyStatistics(loadPropertyStatistics(propStatNode));
             }
             for (Node subVauldNode : getSubVaultNodes(vaultNode)) {
@@ -165,34 +158,31 @@ public class NewStatisticsService extends NewAbstractService {
         LOGGER.debug("start method saveVault(Node rootNode, IVault vault)");
         if (rootNode == null) {
             LOGGER.error("InvalidStatisticsParameterException: parameter rootNode = null");
-            throw new InvalidStatisticsParameterException(ROOT_NODE, rootNode);
+            throw new InvalidStatisticsParameterException("rootNode", rootNode);
         }
         if (vault == null) {
             LOGGER.error("InvalidStatisticsParameterException: parameter vault = null");
-            throw new InvalidStatisticsParameterException(VAULT, vault);
+            throw new InvalidStatisticsParameterException("vault", vault);
         }
         if (rootNode.getRelationships(StatisticsRelationships.STATISTICS, Direction.OUTGOING).iterator().hasNext()) {
             LOGGER.error("DuplicateStatisticsException: for this rootNode already exists statistics");
             throw new DuplicateStatisticsException("for this rootNode already exists statistics");
         }
-        Transaction tx = graphDb.beginTx();
-        Node vaultNode = null;
-        try {
-            vaultNode = createNode(StatisticsNodeTypes.VAULT);
+        Node vaultNode = createNode(StatisticsNodeTypes.VAULT);
 
+        tx = graphDb.beginTx();
+
+        try {
             if (StatisticsNodeTypes.VAULT.getId().equals(getNodeType(rootNode))) {
-                rootNode.createRelationshipTo(vaultNode, DatasetRelationTypes.CHILD);
+                rootNode.createRelationshipTo(vaultNode, StatisticsRelationships.CHILD);
             } else {
                 rootNode.createRelationshipTo(vaultNode, StatisticsRelationships.STATISTICS);
             }
             vaultNode.setProperty(NAME, vault.getType());
             vaultNode.setProperty(COUNT, vault.getCount());
             vaultNode.setProperty(CLASS, vault.getClass().getCanonicalName());
-            for (NewPropertyStatistics propStat : vault.getPropertyStatisticsMap().values()) {
+            for (NewPropertyStatistics propStat : vault.getPropertyStatisticsList()) {
                 savePropertyStatistics(propStat, vaultNode);
-            }
-            for (IVault subVault : vault.getSubVaults().values()) {
-                saveVault(vaultNode, subVault);
             }
             tx.success();
         } catch (Exception e) {
@@ -205,6 +195,9 @@ public class NewStatisticsService extends NewAbstractService {
 
         }
 
+        for (IVault subVault : vault.getSubVaults()) {
+            saveVault(vaultNode, subVault);
+        }
         LOGGER.debug("finish method saveVault(Node rootNode, IVault vault)");
     }
 
@@ -221,7 +214,7 @@ public class NewStatisticsService extends NewAbstractService {
     public IVault loadVault(Node rootNode) throws InvalidStatisticsParameterException, LoadVaultException {
         LOGGER.debug("start method loadVault(Node rootNode)");
         if (rootNode == null) {
-            throw new InvalidStatisticsParameterException(ROOT_NODE, rootNode);
+            throw new InvalidStatisticsParameterException("rootNode", rootNode);
         }
 
         IVault result;
@@ -251,14 +244,12 @@ public class NewStatisticsService extends NewAbstractService {
      */
     public void savePropertyStatistics(NewPropertyStatistics propStat, Node vaultNode) throws DatabaseException,
             InvalidStatisticsParameterException {
-        LOGGER.debug("start method savePropertyStatistics(NewPropertyStatistics propStat, Node vaultNode)" );
+
         if (propStat == null) {
-            LOGGER.error("InvalidStatisticsParameterException: parameter propStat is null");
-            throw new InvalidStatisticsParameterException(PROP_STAT, propStat);
+            throw new InvalidStatisticsParameterException("propStat", propStat);
         }
         if (vaultNode == null) {
-            LOGGER.error("InvalidStatisticsParameterException: parameter vaultNode is null");
-            throw new InvalidStatisticsParameterException(VAULT_NODE, vaultNode);
+            throw new InvalidStatisticsParameterException("vaultNode", vaultNode);
         }
 
         String name = propStat.getName();
@@ -268,27 +259,27 @@ public class NewStatisticsService extends NewAbstractService {
         Transaction tx = graphDb.beginTx();
         try {
             Node propStatNode = createNode(StatisticsNodeTypes.PROPERTY_STATISTICS);
-            vaultNode.createRelationshipTo(propStatNode, DatasetRelationTypes.CHILD);
+            vaultNode.createRelationshipTo(propStatNode, StatisticsRelationships.CHILD);
             propStatNode.setProperty(NAME, name);
             propStatNode.setProperty(NUMBER, number);
             propStatNode.setProperty(CLASS, className);
-    
+            Iterator<Entry<Object, Integer>> iter = propMap.entrySet().iterator();
+            String valueName = "v";
+            String countName = "c";
             int count = 0;
-            for (Entry<Object, Integer> entry : propMap.entrySet()) {
+            while (iter.hasNext()) {
                 count++;
-                propStatNode.setProperty(VALUE_NAME + count, entry.getKey());
-                propStatNode.setProperty(COUNT_NAME + count, entry.getValue());
+                Entry<Object, Integer> entry = iter.next();
+                propStatNode.setProperty(valueName + count, entry.getKey());
+                propStatNode.setProperty(countName + count, entry.getValue());
             }
-
             tx.success();
 
         } catch (Exception e) {
             tx.failure();
-            LOGGER.error("DatabaseException: " + e.getMessage());
             throw new DatabaseException(e);
         } finally {
             tx.finish();
-            LOGGER.debug("finish method savePropertyStatistics(NewPropertyStatistics propStat, Node vaultNode)" );
         }
 
     }
@@ -306,17 +297,13 @@ public class NewStatisticsService extends NewAbstractService {
      */
     public NewPropertyStatistics loadPropertyStatistics(Node propertyStatisticsNode) throws InvalidPropertyStatisticsNodeException,
             LoadVaultException, InvalidStatisticsParameterException {
-        LOGGER.debug("start method loadPropertyStatistics(Node propertyStatisticsNode)");
         if (propertyStatisticsNode == null) {
-            LOGGER.error("InvalidStatisticsParameterException: parameter propertyStatisticsNode is null");
-            throw new InvalidStatisticsParameterException(PROP_STAT_NODE, propertyStatisticsNode);
+            throw new InvalidStatisticsParameterException("propertyStatisticsNode", propertyStatisticsNode);
         }
-        if (((String)propertyStatisticsNode.getProperty(NAME, EMPTY_STRING)).isEmpty()) {
-            LOGGER.error("InvalidPropertyStatisticsNodeException: propertyStatisticsNode has not name property");
+        if (((String)propertyStatisticsNode.getProperty(NAME, "")).isEmpty()) {
             throw new InvalidPropertyStatisticsNodeException(NAME);
         }
         if (!propertyStatisticsNode.hasProperty(CLASS)) {
-            LOGGER.error("InvalidPropertyStatisticsNodeException: propertyStatisticsNode has not class property");
             throw new InvalidPropertyStatisticsNodeException(CLASS);
         }
         NewPropertyStatistics result = null;
@@ -327,16 +314,15 @@ public class NewStatisticsService extends NewAbstractService {
             Integer number = (Integer)propertyStatisticsNode.getProperty(NUMBER, 0);
 
             for (int i = 1; i <= number; i++) {
-                Object value = propertyStatisticsNode.getProperty(VALUE_NAME + i);
-                Integer count = (Integer)propertyStatisticsNode.getProperty(COUNT_NAME + i);
+                Object value = propertyStatisticsNode.getProperty("v" + i);
+                Integer count = (Integer)propertyStatisticsNode.getProperty("c" + i);
                 result.updatePropertyMap(value, count);
             }
 
         } catch (Exception e) {
-            LOGGER.error("LoadVaultException: " + e.getMessage());
             throw new LoadVaultException(e);
         }
-        LOGGER.debug("finish method loadPropertyStatistics(Node propertyStatisticsNode)");
+
         return result;
     }
 

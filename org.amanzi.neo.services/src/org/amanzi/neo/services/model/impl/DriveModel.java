@@ -79,7 +79,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
      * @since 1.0.0
      */
     public enum DriveNodeTypes implements INodeType {
-        FILE, M, MP;
+        FILE, M, MP, M_AGGR, MM;
 
         @Override
         public String getId() {
