@@ -348,6 +348,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         if ((tst != null) && (tst != 0)) {
             updateTimestamp(tst);
         }
+        params.put(NewAbstractService.DATASET_ID, this.name);
         dsServ.setProperties(m, params);
 
         count++;
