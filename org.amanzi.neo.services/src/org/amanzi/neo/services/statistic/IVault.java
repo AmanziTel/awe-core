@@ -105,6 +105,49 @@ public interface IVault {
     public Map<Object, Integer> getAllPropertiesWithName(String propertyName);
    
     /**
+     * Method to delete all properties with certain type of node
+     *
+     * @param nodeType Type of node
+     */
+    public void deletePropertiesWithNodeType(String nodeType);
+    
+    /**
+     * Method to delete all properties with certain name of property
+     *
+     * @param propertyName Name of property
+     */
+    public void deletePropertiesWithPropertyName(String propertyName);
+    
+    /**
+     * Method to delete all properties with certain type of node and certain name of property
+     *
+     * @param nodeType Type of node
+     * @param propertyName Name of property
+     */
+    public void deletePropertiesWithNodeTypeAndPropertyName(String nodeType, String propertyName);
+    
+    /**
+     * Method to delete all properties with certain type of node and 
+     * certain name of property and
+     * certain value of property
+     *
+     * @param nodeType Type of node
+     * @param propertyName Name of property
+     * @param propertyValue Value of property
+     */
+    public void deletePropertiesWithNodeTypeAndPropertyNameAndPropertyValue(String nodeType, String propertyName, String propertyValue);
+    
+    /**
+     * Method to update count of propertyValue by certain count of propertyValue
+     *
+     * @param nodeType Type of node
+     * @param propertyName Name of property
+     * @param propertyValue Value of property
+     * @param newCount New count of propertyValue
+     */
+    public void updatePropertiesCount(String nodeType, String propertyName, String propertyValue, int newCount);
+    
+    /**
      * Method return node type of vault
      * 
      * @return Type of vault
