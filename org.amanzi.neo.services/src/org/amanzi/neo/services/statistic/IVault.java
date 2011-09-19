@@ -168,8 +168,8 @@ public interface IVault {
     * @param propertyName - property name
     * @param propertyValue - String property value
     * @return Object property value
- * @throws UnsupportedClassException 
- * @throws AWEException 
+    * @throws UnsupportedClassException 
+    * @throws AWEException 
     */
     public Object parse(String nodeType, String propertyName, String propertyValue) throws InvalidStatisticsParameterException, FailedParseValueException, UnsupportedClassException, AWEException ;
 
