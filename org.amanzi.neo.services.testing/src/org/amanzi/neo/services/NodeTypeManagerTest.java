@@ -26,4 +26,10 @@ public class NodeTypeManagerTest {
 		}
 	}
 
+	@Test
+	public void testRegisterNodeTypeTwice() {
+		NodeTypeManager.registerNodeType(DatasetTypes.class);
+		NodeTypeManager.registerNodeType(DatasetTypes.class);
+	}
+
 }

@@ -103,7 +103,8 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     }
 
     /**
-     * Create a new network element based on <code>IDataElement</code> object.
+     * Create a new network element based on <code>IDataElement element</code> object. MUST set NAME
+     * and TYPE.
      * 
      * @param parent
      * @param element
@@ -122,13 +123,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
             throw new IllegalArgumentException("Element is null.");
         }
 
-        // TODO: something wrong here
-        INodeType type = null;
-        try {
-            type = NodeTypeManager.getType(element.get(NewAbstractService.TYPE).toString());
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Element type is incorrect.");
-        }
+        INodeType type = NodeTypeManager.getType(element.get(NewAbstractService.TYPE).toString());
         Node node = null;
         try {
 
@@ -137,20 +132,19 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
             if (type != null) {
 
                 if (type.equals(NetworkElementNodeType.SECTOR)) {
-                    node = nwServ.createSector(parentNode, getIndexName(type), element.get(NewAbstractService.NAME).toString(),
-                            element.get(NewNetworkService.CELL_INDEX).toString(), element.get(NewNetworkService.LOCATION_AREA_CODE)
-                                    .toString());
+                    Object elName = element.get(NewAbstractService.NAME);
+                    Object elCI = element.get(NewNetworkService.CELL_INDEX);
+                    Object elLAC = element.get(NewNetworkService.LOCATION_AREA_CODE);
+                    node = nwServ.createSector(parentNode, getIndexName(type), elName == null ? null : elName.toString(),
+                            elCI == null ? null : elCI.toString(), elLAC == null ? null : elLAC.toString());
                 } else {
                     node = nwServ.createNetworkElement(parentNode, getIndexName(type), element.get(NewAbstractService.NAME)
                             .toString(), type);
                 }
             }
             nwServ.setProperties(node, (DataElement)element);
-        } catch (IllegalNodeDataException e) {
+        } catch (AWEException e) {
             // TODO Handle IllegalNodeDataException
-            throw (RuntimeException)new RuntimeException().initCause(e);
-        } catch (DatabaseException e) {
-            // TODO Handle DatabaseException
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
 
@@ -174,12 +168,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
             throw new IllegalArgumentException("Element is null.");
         }
 
-        INodeType type = null;
-        try {
-            type = NodeTypeManager.getType(element.get(NewAbstractService.TYPE).toString());
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Element type is incorrect.");
-        }
+        INodeType type = NodeTypeManager.getType(element.get(NewAbstractService.TYPE).toString());
         Node node = null;
 
         // TODO:validate network structure and save it in root node
@@ -187,9 +176,11 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         if (type != null) {
 
             if (type.equals(NetworkElementNodeType.SECTOR)) {
-                node = nwServ.findSector(getIndexName(type), element.get(NewAbstractService.NAME).toString(),
-                        element.get(NewNetworkService.CELL_INDEX).toString(), element.get(NewNetworkService.LOCATION_AREA_CODE)
-                                .toString());
+                Object elName = element.get(NewAbstractService.NAME);
+                Object elCI = element.get(NewNetworkService.CELL_INDEX);
+                Object elLAC = element.get(NewNetworkService.LOCATION_AREA_CODE);
+                node = nwServ.findSector(getIndexName(type), elName == null ? null : elName.toString(),
+                        elCI == null ? null : elCI.toString(), elLAC == null ? null : elLAC.toString());
             } else {
                 node = nwServ.findNetworkElement(getIndexName(type), element.get(NewAbstractService.NAME).toString());
             }
