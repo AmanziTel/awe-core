@@ -2,7 +2,10 @@ package org.amanzi.neo.services;
 
 import java.util.Iterator;
 import java.util.Map;
+
 import junit.framework.Assert;
+
+import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.NewStatisticsService.StatisticsNodeTypes;
 import org.amanzi.neo.services.NewStatisticsService.StatisticsRelationships;
 import org.amanzi.neo.services.exceptions.DatabaseException;
@@ -12,7 +15,6 @@ import org.amanzi.neo.services.exceptions.InvalidStatisticsParameterException;
 import org.amanzi.neo.services.exceptions.LoadVaultException;
 import org.amanzi.neo.services.statistic.IVault;
 import org.amanzi.neo.services.statistic.StatisticsVault;
-import org.amanzi.neo.services.statistic.internal.NewPropertyStatistics;
 import org.amanzi.testing.AbstractAWETest;
 import org.apache.log4j.Logger;
 import org.junit.After;
@@ -20,12 +22,11 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
-import org.mockito.Mockito;
-import org.mockito.internal.verification.Times;
 
 public class NewStatisticsServiceTest extends AbstractAWETest {
 
@@ -308,9 +309,9 @@ public class NewStatisticsServiceTest extends AbstractAWETest {
 				(Node) Mockito.any());
 
 		checkVault(vault, StatisticsVault.class, 0, PROPERTIES, 1);
-		IVault subVault = vault.getSubVaults().iterator().next();
+		IVault subVault = vault.getSubVaults().get(NEIGHBOURS);
 		checkVault(subVault, StatisticsVault.class, 0, NEIGHBOURS, 1);
-		subVault = subVault.getSubVaults().iterator().next();
+		subVault = subVault.getSubVaults().get(NETWORK);
 		checkVault(subVault, StatisticsVault.class, 0, NETWORK, 0);
 		LOGGER.debug("finish loadVaultPositiveTest()");
 
@@ -398,10 +399,10 @@ public class NewStatisticsServiceTest extends AbstractAWETest {
 		service.savePropertyStatistics(propStat, referenceNode);
 
 		Node propStatNode = referenceNode.getSingleRelationship(
-				StatisticsRelationships.CHILD, Direction.OUTGOING).getEndNode();
+				DatasetRelationTypes.CHILD, Direction.OUTGOING).getEndNode();
 
 		boolean hasChildRelationship = propStatNode.hasRelationship(
-				StatisticsRelationships.CHILD, Direction.INCOMING);
+				DatasetRelationTypes.CHILD, Direction.INCOMING);
 		Assert.assertTrue("not create StatisticsRelationships.CHILD",
 				hasChildRelationship);
 

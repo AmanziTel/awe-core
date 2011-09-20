@@ -9,11 +9,11 @@ import junit.framework.Assert;
 import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.NewDatasetService.DriveTypes;
-import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
+import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
 import org.amanzi.testing.AbstractAWETest;
 import org.apache.log4j.Logger;
 import org.junit.After;
@@ -1546,9 +1546,8 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 	@Test(expected = IllegalArgumentException.class)
 	public void testGetParentNull() {
 		// child is null: exception
-		Node node = null;
 		try {
-			node = service.getParent(null, true);
+			service.getParent(null, true);
 		} catch (DatabaseException e) {
 			LOGGER.error("could not get parent", e);
 			Assert.fail();
@@ -1635,9 +1634,8 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 	@Test(expected = IllegalArgumentException.class)
 	public void testGetLastChildNull() {
 		// parent is null: exception
-		Node node = null;
 		try {
-			node = service.getLastChild(null);
+			service.getLastChild(null);
 		} catch (DatabaseException e) {
 			LOGGER.error("could not get last child", e);
 			Assert.fail();
@@ -1647,9 +1645,11 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 	// +
 	@Test
 	public void testGetChildrenChainTraverser() {
+
 		Iterable<Node> traverser = service.getChildrenChainTraverser(parent);
 		// traverser not null,
 		Assert.assertNotNull(traverser);
+		Assert.assertTrue(traverser.iterator().hasNext());
 		Node prevNode = null;
 		for (Node node : traverser) {
 
@@ -1702,7 +1702,7 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 	@Test(expected = IllegalArgumentException.class)
 	public void testGetChildrenChainTraverserNull() {
 		// project is null: exception
-		Iterable<Node> traverser = service.getChildrenChainTraverser(null);
+		service.getChildrenChainTraverser(null);
 	}
 
 	// +
@@ -1815,7 +1815,7 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 		}
 		// check that a relationship is created
 		for (Relationship rel : parent.getRelationships(
-				DatasetRelationshipTypes.CHILD, Direction.OUTGOING)) {
+				DatasetRelationTypes.CHILD, Direction.OUTGOING)) {
 			Assert.assertTrue(children.contains(rel.getOtherNode(parent)));
 		}
 	}
@@ -1873,7 +1873,7 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 	@Test(expected = IllegalArgumentException.class)
 	public void testGetChildrenTraverserNull() {
 		// parent is null: exception
-		Iterable<Node> traverser = service.getChildrenChainTraverser(null);
+		service.getChildrenChainTraverser(null);
 	}
 
 	// +
@@ -1899,6 +1899,89 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 				LOGGER.error("could not get parent", e);
 				Assert.fail();
 			}
+		}
+	}
+
+	// +
+	@Test
+	public void testGetElementByType() {
+		parent = getNewChild();
+		Node[][] nodes = getComplexChain(parent);
+
+		List<Node> files = new ArrayList<Node>();
+		List<Node> ms = new ArrayList<Node>();
+		List<Node> mps = new ArrayList<Node>();
+
+		tx = graphDatabaseService.beginTx();
+		try {
+			for (Node[] nodds : nodes) {
+				for (Node node : nodds) {
+					DriveNodeTypes type = getRandomType();
+					node.setProperty(NewAbstractService.TYPE, type.getId());
+					switch (type) {
+					case FILE:
+						files.add(node);
+						break;
+					case M:
+						ms.add(node);
+						break;
+					case MP:
+						mps.add(node);
+						break;
+					}
+				}
+			}
+			tx.success();
+		} catch (Exception e) {
+			LOGGER.error("Could not set node types.", e);
+		} finally {
+			tx.finish();
+		}
+
+		for (DriveNodeTypes type : DriveNodeTypes.values()) {
+
+			Iterable<Node> traverser = service.findAllDatasetElements(parent,
+					type);
+
+			// traverser not null,
+			Assert.assertNotNull(traverser);
+			Assert.assertTrue(traverser.iterator().hasNext());
+
+			for (Node node : traverser) {
+				DriveNodeTypes testType = DriveNodeTypes.valueOf(node
+						.getProperty(NewAbstractService.TYPE, null).toString());
+				// type correct
+				Assert.assertEquals(type, testType);
+				// node correct
+				switch (testType) {
+				case FILE:
+					Assert.assertTrue(files.contains(node));
+					break;
+				case M:
+					Assert.assertTrue(ms.contains(node));
+					break;
+				case MP:
+					Assert.assertTrue(mps.contains(node));
+					break;
+				default:
+					Assert.fail("A node of a wrong type returned");
+					break;
+				}
+
+			}
+		}
+	}
+
+	private DriveNodeTypes getRandomType() {
+		int sw = (int) (Math.random() * 3);
+
+		switch (sw) {
+		case 0:
+			return DriveNodeTypes.FILE;
+		case 1:
+			return DriveNodeTypes.MP;
+		default:
+			return DriveNodeTypes.M;
 		}
 	}
 

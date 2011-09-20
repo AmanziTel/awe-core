@@ -25,7 +25,12 @@ import org.junit.runners.Suite.SuiteClasses;
  * @since 1.0.0
  */
 @RunWith(Suite.class)
-@SuiteClasses({org.amanzi.neo.services.DatasetServiceTest.class})
+@SuiteClasses({org.amanzi.neo.services.NewDatasetServiceTest.class,
+               org.amanzi.neo.services.NewNetworkServiceTest.class,
+               org.amanzi.neo.services.NewStatisticsServiceTest.class,
+               org.amanzi.neo.services.ProjectServiceTest.class,
+               org.amanzi.neo.services.model.DriveModelTest.class,
+               org.amanzi.neo.services.filters.FilterTest.class})
 
 public class NeoServiceSuite {
 

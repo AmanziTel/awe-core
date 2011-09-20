@@ -12,7 +12,6 @@
  */
 package org.amanzi.neo.services;
 
-import org.amanzi.neo.services.enums.NodeTypes;
 
 
 /**
@@ -87,7 +86,7 @@ public interface INeoConstants {
     public static final String PROPERTY_VALUE_NAME = "value";
     public static final String PROPERTY_DISTRIBUTE_NAME = "distribute";
     public static final String PROPERTY_SELECT_NAME = "select";
-    public static final String COUNT_TYPE_NAME = NodeTypes.COUNT.getId();//Constant used not only as a node type.
+    public static final String COUNT_TYPE_NAME = "count";//Constant used not only as a node type.
     /*
      * Which is the current or most recent selected aggregation for a gis node.
      * Used by the reuse analyser for saving state, and by the star analysis for
@@ -142,7 +141,7 @@ public interface INeoConstants {
     public static final String COLOR_RIGHT = "color right";
     public static final String COLOR_MIDDLE = "color middle";
     public static final String MIDDLE_RANGE = "MIDDLE_RANGE";
-    public static final String ROOT_SECTOR_DRIVE = NodeTypes.ROOT_SECTOR_DRIVE.getId();//Constant used not only as a node type.
+    public static final String ROOT_SECTOR_DRIVE = "root_sector_drive";//Constant used not only as a node type.
     public static final String PROPERTY_TYPE_EVENT = "event_type";
     public static final String PROPERTY_DRIVE_TYPE_EVENT = "event_drive_type";
     

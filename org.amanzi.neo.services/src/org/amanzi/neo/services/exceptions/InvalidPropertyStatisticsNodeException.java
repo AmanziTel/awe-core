@@ -23,6 +23,9 @@ package org.amanzi.neo.services.exceptions;
  */
 public class InvalidPropertyStatisticsNodeException extends AWEException{
     
+    /** long serialVersionUID field */
+    private static final long serialVersionUID = 1L;
+    
     private static final String defMessage = "InvalidPropertyStatisticsNodeException: propertyStatisticsNode has not mandatory '%s' property";
 
     public InvalidPropertyStatisticsNodeException(String propertyName){

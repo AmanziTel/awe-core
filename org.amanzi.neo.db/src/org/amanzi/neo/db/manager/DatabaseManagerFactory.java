@@ -17,22 +17,28 @@ import org.amanzi.neo.db.manager.impl.Neo4jDatabaseManager;
 import org.amanzi.neo.db.manager.impl.NeoclipseDatabaseManager;
 import org.eclipse.core.runtime.Platform;
 
-
 /**
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author gerzog
  * @since 1.0.0
  */
 public class DatabaseManagerFactory {
-    
+
+    private static IDatabaseManager dbManager = null;
+
     public static IDatabaseManager getDatabaseManager() {
-        if (Platform.getBundle("org.neo4j.neoclipse") == null) {
-            return new Neo4jDatabaseManager();
+        if (dbManager == null) {
+            if (Platform.getBundle("org.neo4j.neoclipse") == null) {
+                dbManager = new Neo4jDatabaseManager();
+            } else {
+                dbManager = new NeoclipseDatabaseManager();
+            }
         }
-        return new NeoclipseDatabaseManager();
+
+        return dbManager;
     }
 
 }

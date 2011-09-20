@@ -9,7 +9,6 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
-import org.amanzi.neo.db.manager.NeoServiceProvider;
 import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.enums.INodeType;
@@ -22,11 +21,9 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
-import org.neo4j.kernel.EmbeddedGraphDatabase;
 
 public class NewNetworkServiceTest extends AbstractAWETest {
 	private static Logger LOGGER = Logger
@@ -57,7 +54,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 		parent = getNewNE();
 		// the string returned is valid for every type of network element
 		for (INodeType type : NetworkElementNodeType.values()) {
-			String key = networkService.getIndexKey(parent, type);
+			String key = NewAbstractService.getIndexKey(parent, type);
 			Assert.assertEquals(
 					String.valueOf(parent.getId()) + "@" + type.getId(), key);
 		}
@@ -67,13 +64,14 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 	@Test(expected = IllegalArgumentException.class)
 	public void testGetIndexKeyRootNull() {
 		// exception
-		networkService.getIndexKey(null, NetworkElementNodeType.values()[0]);
+		NewAbstractService
+				.getIndexKey(null, NetworkElementNodeType.values()[0]);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testGetIndexKeyTypeNull() {
 		// exception
-		networkService.getIndexKey(parent, null);
+		NewAbstractService.getIndexKey(parent, null);
 	}
 
 	// // tests for methods of NewNetworkService class
@@ -86,7 +84,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 				continue;
 			}
 
-			String indexName = networkService.getIndexKey(parent, type);
+			String indexName = NewAbstractService.getIndexKey(parent, type);
 			try {
 				Node node = networkService.createNetworkElement(parent,
 						indexName, type.getId(), type);
@@ -125,7 +123,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 	public void testCreateNEParentNull() throws AWEException {
 		// exception
 		INodeType type = NetworkElementNodeType.values()[0];
-		String indexName = networkService.getIndexKey(parent, type);
+		String indexName = NewAbstractService.getIndexKey(parent, type);
 		try {
 			networkService.createNetworkElement(null, indexName, "name", type);
 		} catch (DatabaseException e) {
@@ -162,7 +160,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 	public void testCreateNENameNull() throws AWEException {
 		// exception
 		INodeType type = NetworkElementNodeType.values()[0];
-		String indexName = networkService.getIndexKey(parent, type);
+		String indexName = NewAbstractService.getIndexKey(parent, type);
 		try {
 			networkService.createNetworkElement(parent, indexName, null, type);
 		} catch (DatabaseException e) {
@@ -175,7 +173,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 	public void testCreateNENameEmpty() throws AWEException {
 		// exception
 		INodeType type = NetworkElementNodeType.values()[0];
-		String indexName = networkService.getIndexKey(parent, type);
+		String indexName = NewAbstractService.getIndexKey(parent, type);
 		try {
 			networkService.createNetworkElement(parent, indexName, "", type);
 		} catch (DatabaseException e) {
@@ -188,7 +186,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 	public void testCreateNETypeNull() {
 		// exception
 		INodeType type = NetworkElementNodeType.values()[0];
-		String indexName = networkService.getIndexKey(parent, type);
+		String indexName = NewAbstractService.getIndexKey(parent, type);
 		try {
 			networkService
 					.createNetworkElement(parent, indexName, "name", null);
@@ -202,7 +200,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 	public void testCreateNETypeSector() throws AWEException {
 		// exception
 		INodeType type = NetworkElementNodeType.SECTOR;
-		String indexName = networkService.getIndexKey(parent, type);
+		String indexName = NewAbstractService.getIndexKey(parent, type);
 		try {
 			networkService
 					.createNetworkElement(parent, indexName, "name", type);
@@ -221,7 +219,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 			if (type.equals(NetworkElementNodeType.SECTOR)) {
 				continue;
 			}
-			String indexName = networkService.getIndexKey(parent, type);
+			String indexName = NewAbstractService.getIndexKey(parent, type);
 			try {
 				Node node = networkService.createNetworkElement(parent,
 						indexName, type.getId(), type);
@@ -236,7 +234,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 			if (type.equals(NetworkElementNodeType.SECTOR)) {
 				continue;
 			}
-			String indexName = networkService.getIndexKey(parent, type);
+			String indexName = NewAbstractService.getIndexKey(parent, type);
 			Node node = networkService.findNetworkElement(indexName,
 					type.getId());
 
@@ -259,7 +257,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 	@Test
 	public void testFindNetworkElementNotFound() {
 		parent = getNewNE();
-		String indexName = networkService.getIndexKey(parent,
+		String indexName = NewAbstractService.getIndexKey(parent,
 				NetworkElementNodeType.values()[0]);
 		String name = "elementNOTfound";
 		// the element does not exist
@@ -298,7 +296,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 	public void testGetNetworkElement() {
 		parent = getNewNE();
 		INodeType type = NetworkElementNodeType.values()[0];
-		String indexName = networkService.getIndexKey(parent, type);
+		String indexName = NewAbstractService.getIndexKey(parent, type);
 		Node node = null;
 		try {
 			node = networkService.createNetworkElement(parent, indexName,
@@ -335,7 +333,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 	public void testGetNetworkElementParamsNull() {
 		parent = getNewNE();
 		INodeType type = NetworkElementNodeType.values()[0];
-		String indexName = networkService.getIndexKey(parent, type);
+		String indexName = NewAbstractService.getIndexKey(parent, type);
 		Node node = null;
 		try {
 			node = networkService.createNetworkElement(parent, indexName,
@@ -372,7 +370,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 	public void testGetNetworkElementNoElement() {
 		parent = getNewNE();
 		INodeType type = NetworkElementNodeType.values()[0];
-		String indexName = networkService.getIndexKey(parent, type);
+		String indexName = NewAbstractService.getIndexKey(parent, type);
 		// element does not exist
 		try {
 			Node node = networkService.getNetworkElement(parent, indexName,
@@ -408,7 +406,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 	public void testGetNEParentNull() {
 		parent = getNewNE();
 		INodeType type = NetworkElementNodeType.values()[0];
-		String indexName = networkService.getIndexKey(parent, type);
+		String indexName = NewAbstractService.getIndexKey(parent, type);
 		// element does not exist, parent is null
 		try {
 			networkService.getNetworkElement(null, indexName, type.getId(),
@@ -424,7 +422,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 	public void testGetNETypeNull() {
 		parent = getNewNE();
 		INodeType type = NetworkElementNodeType.values()[0];
-		String indexName = networkService.getIndexKey(parent, type);
+		String indexName = NewAbstractService.getIndexKey(parent, type);
 		// element does not exist, type is null
 		try {
 			networkService.getNetworkElement(parent, indexName, type.getId(),
@@ -440,7 +438,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 	public void testGetNENameNull() {
 		parent = getNewNE();
 		INodeType type = NetworkElementNodeType.values()[0];
-		String indexName = networkService.getIndexKey(parent, type);
+		String indexName = NewAbstractService.getIndexKey(parent, type);
 		// name is null
 		try {
 			networkService.getNetworkElement(parent, indexName, null, type);
@@ -469,7 +467,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 	public void testGetNENameEmpty() {
 		parent = getNewNE();
 		INodeType type = NetworkElementNodeType.values()[0];
-		String indexName = networkService.getIndexKey(parent, type);
+		String indexName = NewAbstractService.getIndexKey(parent, type);
 		// name is ""
 		try {
 			networkService.getNetworkElement(parent, indexName, "", type);
@@ -505,7 +503,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 			parent = getNewNE();
 			parent.setProperty(NewNetworkService.TYPE,
 					NetworkElementNodeType.SITE.getId());
-			String indexName = networkService.getIndexKey(parent,
+			String indexName = NewAbstractService.getIndexKey(parent,
 					NetworkElementNodeType.SECTOR);
 			sector = networkService.createSector(parent, indexName, "name",
 					"ci", "lac");
@@ -536,7 +534,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 						.getOtherNode(sector));
 		// sector is indexed
 		Index<Node> index = graphDatabaseService.index().forNodes(
-				networkService.getIndexKey(parent,
+				NewAbstractService.getIndexKey(parent,
 						NetworkElementNodeType.SECTOR));
 		Assert.assertEquals(sector, index.get(NewNetworkService.NAME, "name")
 				.getSingle());
@@ -556,7 +554,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 			parent = getNewNE();
 			parent.setProperty(NewNetworkService.TYPE,
 					NetworkElementNodeType.SITE.getId());
-			String indexName = networkService.getIndexKey(parent,
+			String indexName = NewAbstractService.getIndexKey(parent,
 					NetworkElementNodeType.SECTOR);
 			sector = networkService.createSector(parent, indexName, "name",
 					null, null);
@@ -583,7 +581,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 						.getOtherNode(sector));
 		// sector is indexed
 		Index<Node> index = graphDatabaseService.index().forNodes(
-				networkService.getIndexKey(parent,
+				NewAbstractService.getIndexKey(parent,
 						NetworkElementNodeType.SECTOR));
 		Assert.assertEquals(sector, index.get(NewNetworkService.NAME, "name")
 				.getSingle());
@@ -598,7 +596,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 			parent = getNewNE();
 			parent.setProperty(NewNetworkService.TYPE,
 					NetworkElementNodeType.SITE.getId());
-			String indexName = networkService.getIndexKey(parent,
+			String indexName = NewAbstractService.getIndexKey(parent,
 					NetworkElementNodeType.SECTOR);
 			sector = networkService.createSector(parent, indexName, null, "ci",
 					"lac");
@@ -627,7 +625,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 						.getOtherNode(sector));
 		// sector is indexed
 		Index<Node> index = graphDatabaseService.index().forNodes(
-				networkService.getIndexKey(parent,
+				NewAbstractService.getIndexKey(parent,
 						NetworkElementNodeType.SECTOR));
 		Assert.assertEquals(sector,
 				index.get(NewNetworkService.LOCATION_AREA_CODE, "lac")
@@ -645,7 +643,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 			parent = getNewNE();
 			parent.setProperty(NewNetworkService.TYPE,
 					NetworkElementNodeType.SITE.getId());
-			String indexName = networkService.getIndexKey(parent,
+			String indexName = NewAbstractService.getIndexKey(parent,
 					NetworkElementNodeType.SECTOR);
 			networkService.createSector(parent, indexName, null, null, null);
 
@@ -667,7 +665,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 			parent = getNewNE();
 			parent.setProperty(NewNetworkService.TYPE,
 					NetworkElementNodeType.SITE.getId());
-			String indexName = networkService.getIndexKey(parent,
+			String indexName = NewAbstractService.getIndexKey(parent,
 					NetworkElementNodeType.SECTOR);
 			networkService.createSector(parent, indexName, null, "ci", null);
 
@@ -689,7 +687,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 			parent = getNewNE();
 			parent.setProperty(NewNetworkService.TYPE,
 					NetworkElementNodeType.SITE.getId());
-			String indexName = networkService.getIndexKey(parent,
+			String indexName = NewAbstractService.getIndexKey(parent,
 					NetworkElementNodeType.SECTOR);
 			networkService.createSector(parent, indexName, null, null, "lac");
 
@@ -709,7 +707,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 		tx = graphDatabaseService.beginTx();
 		try {
 			parent = getNewNE();
-			String indexName = networkService.getIndexKey(parent,
+			String indexName = NewAbstractService.getIndexKey(parent,
 					NetworkElementNodeType.SECTOR);
 			networkService.createSector(parent, indexName, "name", "ci", "lac");
 
@@ -729,7 +727,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 		tx = graphDatabaseService.beginTx();
 		try {
 			parent = getNewNE();
-			String indexName = networkService.getIndexKey(parent,
+			String indexName = NewAbstractService.getIndexKey(parent,
 					NetworkElementNodeType.SECTOR);
 			networkService.createSector(null, indexName, "name", "ci", "lac");
 
@@ -794,7 +792,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 			parent = getNewNE();
 			parent.setProperty(NewNetworkService.TYPE,
 					NetworkElementNodeType.SITE.getId());
-			indexName = networkService.getIndexKey(parent,
+			indexName = NewAbstractService.getIndexKey(parent,
 					NetworkElementNodeType.SECTOR);
 			sector = networkService.createSector(parent, indexName, "name",
 					"ci", "lac");
@@ -838,7 +836,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 			parent = getNewNE();
 			parent.setProperty(NewNetworkService.TYPE,
 					NetworkElementNodeType.SITE.getId());
-			indexName = networkService.getIndexKey(parent,
+			indexName = NewAbstractService.getIndexKey(parent,
 					NetworkElementNodeType.SECTOR);
 			sector = networkService.createSector(parent, indexName, "name",
 					"ci", "lac");
@@ -878,7 +876,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 			parent = getNewNE();
 			parent.setProperty(NewNetworkService.TYPE,
 					NetworkElementNodeType.SITE.getId());
-			indexName = networkService.getIndexKey(parent,
+			indexName = NewAbstractService.getIndexKey(parent,
 					NetworkElementNodeType.SECTOR);
 			sector = networkService.createSector(parent, indexName, "name",
 					"ci", "lac");
@@ -913,7 +911,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 	public void testFindSectorNotFound() {
 		// sector is not there, all set
 		parent = getNewNE();
-		String indexName = networkService.getIndexKey(parent,
+		String indexName = NewAbstractService.getIndexKey(parent,
 				NetworkElementNodeType.SECTOR);
 
 		Node testNode = networkService.findSector(indexName, "name", "ci",
@@ -933,7 +931,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 			parent = getNewNE();
 			parent.setProperty(NewNetworkService.TYPE,
 					NetworkElementNodeType.SITE.getId());
-			indexName = networkService.getIndexKey(parent,
+			indexName = NewAbstractService.getIndexKey(parent,
 					NetworkElementNodeType.SECTOR);
 			networkService.createSector(parent, indexName, "name", "ci", "lac");
 
@@ -959,7 +957,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 			parent = getNewNE();
 			parent.setProperty(NewNetworkService.TYPE,
 					NetworkElementNodeType.SITE.getId());
-			indexName = networkService.getIndexKey(parent,
+			indexName = NewAbstractService.getIndexKey(parent,
 					NetworkElementNodeType.SECTOR);
 			networkService.createSector(parent, indexName, "name", "ci", "lac");
 
@@ -984,7 +982,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 			parent = getNewNE();
 			parent.setProperty(NewNetworkService.TYPE,
 					NetworkElementNodeType.SITE.getId());
-			indexName = networkService.getIndexKey(parent,
+			indexName = NewAbstractService.getIndexKey(parent,
 					NetworkElementNodeType.SECTOR);
 			networkService.createSector(parent, indexName, "name", "ci", "lac");
 
@@ -1009,7 +1007,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 			parent = getNewNE();
 			parent.setProperty(NewNetworkService.TYPE,
 					NetworkElementNodeType.SITE.getId());
-			indexName = networkService.getIndexKey(parent,
+			indexName = NewAbstractService.getIndexKey(parent,
 					NetworkElementNodeType.SECTOR);
 			networkService.createSector(parent, indexName, "name", "ci", "lac");
 
@@ -1034,7 +1032,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 			parent = getNewNE();
 			parent.setProperty(NewNetworkService.TYPE,
 					NetworkElementNodeType.SITE.getId());
-			indexName = networkService.getIndexKey(parent,
+			indexName = NewAbstractService.getIndexKey(parent,
 					NetworkElementNodeType.SECTOR);
 			networkService.createSector(parent, indexName, "name", "ci", "lac");
 
@@ -1048,7 +1046,6 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 
 		networkService.findSector("", "name", "ci", "lac");
 		// exception
-		fail("Not yet implemented"); // TODO
 	}
 
 	// +
@@ -1062,7 +1059,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 			parent = getNewNE();
 			parent.setProperty(NewNetworkService.TYPE,
 					NetworkElementNodeType.SITE.getId());
-			indexName = networkService.getIndexKey(parent,
+			indexName = NewAbstractService.getIndexKey(parent,
 					NetworkElementNodeType.SECTOR);
 			sector = networkService.createSector(parent, indexName, "name",
 					"ci", "lac");
@@ -1112,7 +1109,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 			parent = getNewNE();
 			parent.setProperty(NewNetworkService.TYPE,
 					NetworkElementNodeType.SITE.getId());
-			indexName = networkService.getIndexKey(parent,
+			indexName = NewAbstractService.getIndexKey(parent,
 					NetworkElementNodeType.SECTOR);
 			sector = networkService.createSector(parent, indexName, "name",
 					"ci", "lac");
@@ -1161,7 +1158,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 			parent = getNewNE();
 			parent.setProperty(NewNetworkService.TYPE,
 					NetworkElementNodeType.SITE.getId());
-			indexName = networkService.getIndexKey(parent,
+			indexName = NewAbstractService.getIndexKey(parent,
 					NetworkElementNodeType.SECTOR);
 
 			tx.success();
@@ -1192,7 +1189,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 							.getOtherNode(testNode));
 			// sector is indexed
 			Index<Node> index = graphDatabaseService.index().forNodes(
-					networkService.getIndexKey(parent,
+					NewAbstractService.getIndexKey(parent,
 							NetworkElementNodeType.SECTOR));
 			Assert.assertEquals(testNode,
 					index.get(NewNetworkService.NAME, "name").getSingle());
@@ -1217,25 +1214,25 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 		try {
 			for (int i = 0; i < 4; i++) {
 				Node network = networkService.createNetworkElement(parent,
-						networkService.getIndexKey(parent,
+						NewAbstractService.getIndexKey(parent,
 								NetworkElementNodeType.NETWORK), "" + i,
 						NetworkElementNodeType.NETWORK);
 				nodes.get(NetworkElementNodeType.NETWORK).add(network);
 				for (int j = 0; j < 4; j++) {
 					Node bsc = networkService.createNetworkElement(network,
-							networkService.getIndexKey(network,
+							NewAbstractService.getIndexKey(network,
 									NetworkElementNodeType.BSC), "" + j,
 							NetworkElementNodeType.BSC);
 					nodes.get(NetworkElementNodeType.BSC).add(bsc);
 					for (int k = 0; k < 4; k++) {
 						Node site = networkService.createNetworkElement(bsc,
-								networkService.getIndexKey(bsc,
+								NewAbstractService.getIndexKey(bsc,
 										NetworkElementNodeType.SITE), "" + k,
 								NetworkElementNodeType.SITE);
 						nodes.get(NetworkElementNodeType.SITE).add(site);
 						for (int l = 0; l < 4; l++) {
 							Node sector = networkService.createSector(site,
-									networkService.getIndexKey(site,
+									NewAbstractService.getIndexKey(site,
 											NetworkElementNodeType.SECTOR), ""
 											+ l, "" + l, "" + l);
 							nodes.get(NetworkElementNodeType.SECTOR)

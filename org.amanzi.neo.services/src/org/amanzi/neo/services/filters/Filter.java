@@ -15,8 +15,9 @@ package org.amanzi.neo.services.filters;
 
 import java.io.Serializable;
 
-import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.NewDatasetService;
+import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.filters.exceptions.FilterTypeException;
 import org.amanzi.neo.services.filters.exceptions.NotComparebleException;
@@ -94,8 +95,9 @@ public class Filter implements IFilter {
         boolean result = false;
         boolean supportedType = true;
         
-        DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
-        INodeType currentType = datasetService.getNodeType(node);
+        NewDatasetService datasetService = NeoServiceFactory.getInstance().getNewDatasetService();
+        String sCurrentType = datasetService.getNodeType(node);
+        INodeType currentType = NodeTypeManager.getType(sCurrentType);
         
         if ((currentType != null) && (nodeType != null) &&
                 (!currentType.equals(nodeType))) {
@@ -240,9 +242,4 @@ public class Filter implements IFilter {
     public IFilter getUnderlyingFilter() {
         return underlyingFilter;
     }
-public static void main(String[] args) {
-    Integer f=1;
-    Comparable  e=2.0;
-    System.out.println(e.compareTo(f));
-}
 }

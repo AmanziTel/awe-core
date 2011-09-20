@@ -13,18 +13,27 @@
 
 package org.amanzi.neo.services;
 
-import org.amanzi.neo.db.manager.NeoServiceProvider;
+import java.util.Map;
+
+import org.amanzi.neo.db.manager.DatabaseManagerFactory;
+import org.amanzi.neo.db.manager.events.DatabaseEvent;
+import org.amanzi.neo.db.manager.events.IDatabaseEventListener;
+import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.apache.log4j.Logger;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
+import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.traversal.Evaluation;
 import org.neo4j.graphdb.traversal.Evaluator;
+import org.neo4j.graphdb.traversal.TraversalDescription;
+import org.neo4j.kernel.Traversal;
 
 /**
  * <p>
@@ -34,9 +43,11 @@ import org.neo4j.graphdb.traversal.Evaluator;
  * @author grigoreva_a
  * @since 1.0.0
  */
-public abstract class NewAbstractService {
+public abstract class NewAbstractService implements IDatabaseEventListener {
     public final static String TYPE = "type";
     public final static String NAME = "name";
+    public static final String DATASET_ID = "dataset";
+    public static final String NETWORK_ID = "network";
 
     private static Logger LOGGER = Logger.getLogger(NewAbstractService.class);
 
@@ -47,8 +58,27 @@ public abstract class NewAbstractService {
      * Sets service to use default <code>GraphDatabaseService</code> of the running application
      */
     public NewAbstractService() {
-        // TODO: get database service
-        graphDb = NeoServiceProvider.getProvider().getService();
+        initDatabase();
+    }
+    
+    private void initDatabase() {
+        graphDb = DatabaseManagerFactory.getDatabaseManager().getDatabaseService();
+        DatabaseManagerFactory.getDatabaseManager().addDatabaseEventListener(this);
+    }
+    
+    private void shutdownDatabase() {
+        graphDb = null;
+    }
+    
+    public void onDatabaseEvent(DatabaseEvent event) {
+        switch (event.getEventType()) {
+        case BEFORE_SHUTDOWN:
+            shutdownDatabase();
+            break;
+        case AFTER_STARTUP:
+            initDatabase();
+            break;
+        }
     }
 
     /**
@@ -92,6 +122,73 @@ public abstract class NewAbstractService {
         return result;
     }
 
+    public Node createNode(Map<String, Object> params) throws DatabaseException {
+        INodeType type = NodeTypeManager.getType(params.get(TYPE).toString());
+        Node result = createNode(type);
+        setProperties(result, params);
+        return result;
+    }
+
+    /**
+     * Creates a node of the defined <code>nodeType</code>, creates a relationship of type
+     * <code>relType</code> from <code>parent</code> to the resulting node.
+     * 
+     * @param parent
+     * @param relType
+     * @param nodeType
+     * @return the new node
+     * @throws DatabaseException
+     */
+    public Node createNode(Node parent, RelationshipType relType, INodeType nodeType) throws DatabaseException {
+        // TODO:test
+        // validate parameters
+        if (relType == null) {
+            throw new IllegalArgumentException("Relationship type is null.");
+        }
+        if (parent == null) {
+            throw new IllegalArgumentException("Parent is null.");
+        }
+
+        Node result = createNode(nodeType);
+        tx = graphDb.beginTx();
+        try {
+            parent.createRelationshipTo(result, relType);
+            tx.success();
+        } catch (Exception e) {
+            LOGGER.error("Could not create node.", e);
+            tx.failure();
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
+        return result;
+    }
+
+    public void createRelationship(Node parent, Node child, RelationshipType relType) throws DatabaseException {
+        // validate parameters
+        if (parent == null) {
+            throw new IllegalArgumentException("Parent is null.");
+        }
+        if (child == null) {
+            throw new IllegalArgumentException("Child is null.");
+        }
+        if (relType == null) {
+            throw new IllegalArgumentException("Relationship type is null.");
+        }
+
+        tx = graphDb.beginTx();
+        try {
+            parent.createRelationshipTo(child, relType);
+            tx.success();
+        } catch (Exception e) {
+            LOGGER.error("Could not create node.", e);
+            tx.failure();
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
+    }
+
     /**
      * This method generates a string identifier for index for a specific network and a specific
      * type of nodes
@@ -100,7 +197,7 @@ public abstract class NewAbstractService {
      * @param nodeType type of nodes
      * @return a string specifying index name
      */
-    public String getIndexKey(Node root, INodeType nodeType) {
+    public static String getIndexKey(Node root, INodeType nodeType) {
         // validate parameters
         if (root == null) {
             throw new IllegalArgumentException("Root cannot be null");
@@ -148,10 +245,12 @@ public abstract class NewAbstractService {
      * @param propertyValue
      * @throws DatabaseException if something went wrong
      */
-    protected void addNodeToIndex(Node node, String indexName, String propertyName, Object propertyValue) throws DatabaseException {
+    public Index<Node> addNodeToIndex(Node node, String indexName, String propertyName, Object propertyValue)
+            throws DatabaseException {
+        Index<Node> index = null;
         tx = graphDb.beginTx();
         try {
-            Index<Node> index = graphDb.index().forNodes(indexName);
+            index = graphDb.index().forNodes(indexName);
             index.add(node, propertyName, propertyValue);
             tx.success();
         } catch (Exception e) {
@@ -160,6 +259,22 @@ public abstract class NewAbstractService {
         } finally {
             tx.finish();
         }
+        return index;
+    }
+
+    public Index<Node> addNodeToIndex(Node node, Index<Node> index, String propertyName, Object propertyValue)
+            throws DatabaseException {
+        tx = graphDb.beginTx();
+        try {
+            index.add(node, propertyName, propertyValue);
+            tx.success();
+        } catch (Exception e) {
+            LOGGER.error("Could not index node", e);
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
+        return index;
     }
 
     /**
@@ -198,6 +313,11 @@ public abstract class NewAbstractService {
 
         }
     }
+    
+    protected TraversalDescription getChildElementTraversalDescription() {
+        LOGGER.debug("start getNetworkElementTraversalDescription()");
+        return Traversal.description().depthFirst().relationships(DatasetRelationTypes.CHILD, Direction.OUTGOING);
+    }
 
     /**
      * <p>
@@ -228,4 +348,40 @@ public abstract class NewAbstractService {
         }
 
     }
+
+    /**
+     * Sets the <code>node</code> properties, using keys and values from <code>params</code> map.
+     * Property is not set, if its value is <code>null</code>. Property values should be of types,
+     * that are accepted by the database (primitives or <code>String</code>).
+     * 
+     * @param node the object to set properties
+     * @param params notice that you may also pass a <code>DataElement</code> object.
+     * @throws DatabaseException
+     */
+    public void setProperties(Node node, Map<String, Object> params) throws DatabaseException {
+        // validate
+        if (node == null) {
+            throw new IllegalArgumentException("Node is null.");
+        }
+        if (params == null) {
+            throw new IllegalArgumentException("Data element is null.");
+        }
+        tx = graphDb.beginTx();
+        try {
+            for (String key : params.keySet()) {
+                Object value = params.get(key);
+                if (value != null) {
+                    node.setProperty(key, value);
+                }
+            }
+            tx.success();
+        } catch (Exception e) {
+            LOGGER.error("Could not set node properties.", e);
+            tx.failure();
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
+    }
+
 }

@@ -17,7 +17,8 @@ Bundle-ClassPath: lib/jmock-2.5.1/bsh-core-2.0b4.jar,
  lib/jmock-2.5.1/jmock-script-2.5.1.jar,
  lib/jmock-2.5.1/objenesis-1.0.jar,
  .
-Export-Package: org.jmock,
+Export-Package: org.amanzi.testing,
+ org.jmock,
  org.jmock.api,
  org.jmock.integration.junit3,
  org.jmock.integration.junit4,
@@ -30,3 +31,5 @@ Export-Package: org.jmock,
  org.jmock.lib.legacy,
  org.jmock.lib.script,
  org.jmock.syntax
+Require-Bundle: org.amanzi.neo.db;bundle-version="1.1.0";visibility:=reexport,
+ org.junit;bundle-version="4.8.2";visibility:=reexport

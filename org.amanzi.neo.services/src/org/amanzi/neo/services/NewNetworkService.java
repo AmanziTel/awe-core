@@ -13,19 +13,15 @@
 
 package org.amanzi.neo.services;
 
-import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.apache.log4j.Logger;
-import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.index.IndexHits;
-import org.neo4j.graphdb.traversal.TraversalDescription;
-import org.neo4j.kernel.Traversal;
 
 /**
  * <p>
@@ -37,8 +33,8 @@ import org.neo4j.kernel.Traversal;
  */
 public class NewNetworkService extends NewAbstractService {
 
-    protected final static String CELL_INDEX = "ci";
-    protected final static String LOCATION_AREA_CODE = "lac";
+    public final static String CELL_INDEX = "ci";
+    public final static String LOCATION_AREA_CODE = "lac";
 
     private static Logger LOGGER = Logger.getLogger(NewNetworkService.class);
 
@@ -47,7 +43,7 @@ public class NewNetworkService extends NewAbstractService {
 
     /**
      * <p>
-     * This enum describes types of netork elements.
+     * This enum describes types of network elements.
      * </p>
      * 
      * @author grigoreva_a
@@ -57,7 +53,7 @@ public class NewNetworkService extends NewAbstractService {
         NETWORK, BSC, SITE, SECTOR;
         @Override
         public String getId() {
-            return name();
+            return name().toLowerCase();
         }
 
     }
@@ -165,7 +161,7 @@ public class NewNetworkService extends NewAbstractService {
     }
 
     /**
-     * Create a sector node with specified parameters, attaches it with CHILD relationship to
+     * Creates a sector node with specified parameters, attaches it with CHILD relationship to
      * <code>parent</code>, sets its properties, and adds it to index
      * 
      * @param parent
@@ -260,7 +256,7 @@ public class NewNetworkService extends NewAbstractService {
 
     /**
      * Looks up for a sector by the defined parameters, creates a new one if nothing was found,
-     * indexes its properties and attaches it o <code>parent</code>
+     * indexes its properties and attaches it to <code>parent</code>
      * 
      * @param used only if sector was not found
      * @param name the value of NAME property
@@ -294,11 +290,8 @@ public class NewNetworkService extends NewAbstractService {
             throw new IllegalArgumentException("Element type is null.");
         }
 
-        return getNetworkElementTraversalDescription().evaluator(new FilterNodesByType(elementType)).traverse(parent).nodes();
+        return getChildElementTraversalDescription().evaluator(new FilterNodesByType(elementType)).traverse(parent).nodes();
     }
 
-    protected TraversalDescription getNetworkElementTraversalDescription() {
-        LOGGER.debug("start getNetworkElementTraversalDescription()");
-        return Traversal.description().depthFirst().relationships(DatasetRelationTypes.CHILD, Direction.OUTGOING);
-    }
+   
 }

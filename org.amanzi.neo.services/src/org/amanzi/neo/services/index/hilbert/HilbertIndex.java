@@ -15,7 +15,7 @@ package org.amanzi.neo.services.index.hilbert;
 
 import java.util.ArrayList;
 
-import org.amanzi.neo.db.manager.NeoServiceProvider;
+import org.amanzi.neo.db.manager.DatabaseManagerFactory;
 import org.amanzi.neo.services.utils.Pair;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -88,7 +88,7 @@ public class HilbertIndex {
      * @param reference root node of indexes (if null than it's a referenced node of database)
      */
     public void initialize(Node reference) {
-        GraphDatabaseService service = NeoServiceProvider.getProvider().getService();
+        GraphDatabaseService service = DatabaseManagerFactory.getDatabaseManager().getDatabaseService();
         if (reference == null) {
             reference = service.getReferenceNode();
         }
