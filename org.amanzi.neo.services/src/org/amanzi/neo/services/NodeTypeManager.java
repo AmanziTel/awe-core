@@ -16,6 +16,7 @@ package org.amanzi.neo.services;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
 
@@ -34,6 +35,7 @@ public class NodeTypeManager {
 
     static {
         registerNodeType(DriveNodeTypes.class);
+        registerNodeType(NetworkElementNodeType.class);
     }
 
     public static void registerNodeType(Class< ? extends INodeType> nodeType) {
