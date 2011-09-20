@@ -146,7 +146,7 @@ public class NewNetworkSaver implements ISaver {
     }
 
     /**
-     * close the chain with creation of sector
+     * close the chain with creation of sector if sector was found - pass to next line
      * 
      * @param findedElement site node
      * @param row
