@@ -24,6 +24,7 @@ import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.NewNetworkService;
 import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
+import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
@@ -132,9 +133,10 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
             throw new IllegalArgumentException("Element is null.");
         }
 
-        NetworkElementNodeType type = null;
+        // TODO: something wrong here
+        INodeType type = null;
         try {
-            type = NetworkElementNodeType.valueOf(element.get(NewAbstractService.TYPE).toString());
+            type = NodeTypeManager.getType(element.get(NewAbstractService.TYPE).toString());
         } catch (Exception e) {
             throw new IllegalArgumentException("Element type is incorrect.");
         }
@@ -144,24 +146,14 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
             // TODO:validate network structure and save it in root node
 
             if (type != null) {
-                switch (type) {
-                case BSC:
-                    node = nwServ.createNetworkElement(parentNode, getIndexName(type), element.get(NewAbstractService.NAME)
-                            .toString(), type);
-                    break;
-                case SITE:
-                    node = nwServ.createNetworkElement(parentNode, getIndexName(type), element.get(NewAbstractService.NAME)
-                            .toString(), type);
-                    break;
-                case SECTOR:
+
+                if (type.equals(NetworkElementNodeType.SECTOR)) {
                     node = nwServ.createSector(parentNode, getIndexName(type), element.get(NewAbstractService.NAME).toString(),
                             element.get(NewNetworkService.CELL_INDEX).toString(), element.get(NewNetworkService.LOCATION_AREA_CODE)
                                     .toString());
-                    break;
-
-                default:
-                    throw new IllegalArgumentException("Trying to ruin the network structure.");
-
+                } else {
+                    node = nwServ.createNetworkElement(parentNode, getIndexName(type), element.get(NewAbstractService.NAME)
+                            .toString(), type);
                 }
             }
             nwServ.setProperties(node, (DataElement)element);
@@ -247,7 +239,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
      * @param type the type of node to index
      * @return the index name
      */
-    protected String getIndexName(NetworkElementNodeType type) {
+    protected String getIndexName(INodeType type) {
         String result = indexNames.get(type.getId());
         if (result == null) {
             result = NewAbstractService.getIndexKey(getRootNode(), type);
@@ -335,6 +327,11 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         LOGGER.info("getAllElementsByType(" + elementType.getId() + ")");
 
         return new DataElementIterable(nwServ.findAllNetworkElements(getRootNode(), elementType));
+    }
+
+    @Override
+    public void finishUp() {
+        super.finishUp();
     }
 
 }
