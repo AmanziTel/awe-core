@@ -26,11 +26,9 @@ import org.amanzi.neo.services.NewNetworkService;
 import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
-import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
-import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
-import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
 import org.amanzi.neo.services.model.ICorrelationModel;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
@@ -95,17 +93,8 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
             try {
                 network = dsServ.createDataset((Node)rootElement.get("project"), rootElement.get(NewAbstractService.NAME)
                         .toString(), DatasetTypes.NETWORK);
-            } catch (InvalidDatasetParameterException e) {
+            } catch (AWEException e) {
                 // TODO Handle InvalidDatasetParameterException
-                throw (RuntimeException)new RuntimeException().initCause(e);
-            } catch (DatasetTypeParameterException e) {
-                // TODO Handle DatasetTypeParameterException
-                throw (RuntimeException)new RuntimeException().initCause(e);
-            } catch (DuplicateNodeNameException e) {
-                // TODO Handle DuplicateNodeNameException
-                throw (RuntimeException)new RuntimeException().initCause(e);
-            } catch (DatabaseException e) {
-                // TODO Handle DatabaseException
                 throw (RuntimeException)new RuntimeException().initCause(e);
             }
         }
@@ -185,9 +174,9 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
             throw new IllegalArgumentException("Element is null.");
         }
 
-        NetworkElementNodeType type = null;
+        INodeType type = null;
         try {
-            type = NetworkElementNodeType.valueOf(element.get(NewAbstractService.TYPE).toString());
+            type = NodeTypeManager.getType(element.get(NewAbstractService.TYPE).toString());
         } catch (Exception e) {
             throw new IllegalArgumentException("Element type is incorrect.");
         }
@@ -196,17 +185,13 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         // TODO:validate network structure and save it in root node
 
         if (type != null) {
-            switch (type) {
-            case SECTOR:
+
+            if (type.equals(NetworkElementNodeType.SECTOR)) {
                 node = nwServ.findSector(getIndexName(type), element.get(NewAbstractService.NAME).toString(),
                         element.get(NewNetworkService.CELL_INDEX).toString(), element.get(NewNetworkService.LOCATION_AREA_CODE)
                                 .toString());
-
-                break;
-
-            default:
+            } else {
                 node = nwServ.findNetworkElement(getIndexName(type), element.get(NewAbstractService.NAME).toString());
-
             }
         }
 
