@@ -604,4 +604,12 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         super.finishUp();
 
     }
+
+    /**
+     * returns current primary node type
+     */
+    @Override
+    public INodeType getType() {
+        return primaryType;
+    }
 }

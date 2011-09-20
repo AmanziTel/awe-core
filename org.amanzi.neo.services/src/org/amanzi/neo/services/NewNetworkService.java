@@ -183,7 +183,7 @@ public class NewNetworkService extends NewAbstractService {
         if (parent == null) {
             throw new IllegalArgumentException("Parent is null.");
         }
-        if (parent.getProperty(TYPE, null) != NetworkElementNodeType.SITE.getId()) {
+        if (!NetworkElementNodeType.SITE.getId().equals(parent.getProperty(TYPE, null))) {
             throw new IllegalArgumentException("Parent node must be of type SITE.");
         }
         if ((indexName == null) || (indexName.equals(""))) {

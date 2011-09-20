@@ -67,7 +67,9 @@ public class DataElement extends HashMap<String, Object> implements IDataElement
         Object result = super.get(header);
         if (result == null) {
             result = node != null ? node.getProperty(header, null) : null;
-            this.put(header, result);
+            if (result != null) {
+                this.put(header, result);
+            }
         }
         return result;
     }
