@@ -31,7 +31,7 @@ public interface IValidator extends IValidateResult {
      * @param fileToLoad
      * @return
      */
-    boolean isAppropriate(File[] fileToLoad);
+    public boolean isAppropriate(File[] fileToLoad);
 
     /**
      * check files for validation
@@ -39,5 +39,5 @@ public interface IValidator extends IValidateResult {
      * @param fileToLoad
      * @return
      */
-    Result isValid(List<File> fileToLoad);
+    public Result isValid(List<File> fileToLoad);
 }

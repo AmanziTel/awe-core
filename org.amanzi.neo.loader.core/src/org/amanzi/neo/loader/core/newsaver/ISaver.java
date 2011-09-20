@@ -28,17 +28,17 @@ public interface ISaver<M extends IModel, D extends IData, C extends IConfigurat
      * @param configuration
      * @param dataElement
      */
-    void init(C configuration, D dataElement);
+    public void init(C configuration, D dataElement);
 
     /**
      * save dataElement to database;
      * 
      * @param dataElement
      */
-    void saveElement(D dataElement);
+    public void saveElement(D dataElement);
 
     /**
      * common finishing actions
      */
-    void finishUp();
+    public void finishUp();
 }

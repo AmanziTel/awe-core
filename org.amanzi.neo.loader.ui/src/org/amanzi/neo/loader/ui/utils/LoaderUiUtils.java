@@ -36,7 +36,9 @@ import net.refractions.udig.project.ui.internal.actions.ZoomToLayer;
 
 import org.amanzi.awe.ui.AweUiPlugin;
 import org.amanzi.neo.loader.core.LoaderUtils;
+import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceManager;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
+import org.amanzi.neo.loader.core.preferences.PreferenceStore;
 import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.amanzi.neo.services.INeoConstants;
@@ -159,7 +161,8 @@ public class LoaderUiUtils extends LoaderUtils{
      * @return array of possible headers
      */
     public static String[] getPossibleHeaders(String key) {
-        String text = NeoLoaderPlugin.getDefault().getPreferenceStore().getString(key);
+        DataLoadPreferenceManager dataLoad = new DataLoadPreferenceManager();
+        String text = PreferenceStore.getPreferenceStore().getValue(key);
         if (text == null) {
             return new String[0];
         }

@@ -32,7 +32,7 @@ public interface ILoaderNew<T extends IData, T2 extends IConfiguration> {
      * @param saver
      */
     @SuppressWarnings("rawtypes")
-    void setSaver(ISaver saver);
+    public void setSaver(ISaver saver);
 
     /**
      * set parser for selected loader;
@@ -40,45 +40,45 @@ public interface ILoaderNew<T extends IData, T2 extends IConfiguration> {
      * @param parser
      */
     @SuppressWarnings("rawtypes")
-    void setParser(IParser parser);
+    public void setParser(IParser parser);
 
     /**
      * run loader
      */
-    void run();
+    public void run();
 
     /**
      * set validator for selected loader
      * 
      * @param validator
      */
-    void setValidator(IValidator validator);
+    public void setValidator(IValidator validator);
 
     /**
      * configure loader
      * 
      * @param config
      */
-    void init(T2 config);
+    public void init(T2 config);
 
     /**
      * get validator for current loader;
      * 
      * @return validator
      */
-    IValidator getValidator();
+    public IValidator getValidator();
 
     /**
      * get loader info
      * 
      * @return
      */
-    ILoaderInfo getLoaderInfo();
+    public ILoaderInfo getLoaderInfo();
 
     /**
      * set loader info
      * 
      * @return
      */
-    void setLoaderInfo(ILoaderInfo info);
+    public void setLoaderInfo(ILoaderInfo info);
 }

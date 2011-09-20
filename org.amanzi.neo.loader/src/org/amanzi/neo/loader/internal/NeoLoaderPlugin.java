@@ -16,6 +16,7 @@ import java.io.IOException;
 
 import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
+import org.amanzi.neo.loader.core.preferences.PreferenceStore;
 import org.eclipse.core.runtime.Plugin;
 import org.eclipse.jface.preference.IPersistentPreferenceStore;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -166,6 +167,6 @@ public class NeoLoaderPlugin extends Plugin {
     }
 
     public static String getPossibleHeaders(String key) {
-        return getDefault() != null ? getDefault().getPreferenceStore().getString(key) : null;
+        return getDefault() != null ? PreferenceStore.getPreferenceStore().getValue(key).toString() : null;
     }
 }

@@ -38,6 +38,8 @@ import net.refractions.udig.catalog.ICatalog;
 import net.refractions.udig.catalog.IService;
 
 import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
+import org.amanzi.neo.loader.core.preferences.PreferenceStore;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.loader.ui.preferences.CommonCRSPreferencePage;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
@@ -1040,7 +1042,7 @@ public abstract class AbstractLoader {
         }
 
         CountingFileInputStream is = new CountingFileInputStream(new File(filename));
-        String characterSet = NeoLoaderPlugin.getCharacterSet();
+        String characterSet = PreferenceStore.getPreferenceStore().getValue(DataLoadPreferences.DEFAULT_CHARSET);
         BufferedReader reader = new BufferedReader(new InputStreamReader(is, characterSet));
         mainTx = neo.beginTx();
         NeoUtils.addTransactionLog(mainTx, Thread.currentThread(), "AbstractLoader");

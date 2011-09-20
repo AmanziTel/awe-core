@@ -31,6 +31,7 @@ import net.refractions.udig.project.IMap;
 import org.amanzi.awe.views.network.view.NetworkTreeView;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
+import org.amanzi.neo.loader.core.preferences.PreferenceStore;
 import org.amanzi.neo.loader.internal.NeoLoaderPlugin;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.GisProperties;
@@ -281,7 +282,7 @@ public class NetworkLoader extends AbstractLoader {
      */
     public boolean setup() {
         try {
-            trimSectorName = NeoLoaderPlugin.getDefault().getPreferenceStore().getBoolean(DataLoadPreferences.REMOVE_SITE_NAME);
+            trimSectorName = PreferenceStore.getPreferenceStore().getValue(DataLoadPreferences.REMOVE_SITE_NAME);
         } catch (Exception e) {
         }
         Node node = findOrCreateGISNode(basename, GisTypes.NETWORK.getHeader(), NetworkTypes.RADIO);

@@ -30,11 +30,11 @@ public interface IParser<T1 extends ISaver<IModel, T3, T2>, T2 extends IConfigur
      * @param configuration common configuration data
      * @param saver which saver use for saving data to database
      */
-    void init(T2 configuration, T1 saver);
+    public void init(T2 configuration, T1 saver);
 
     /**
      * run parser and save parsed files in database. For saving data parser use saver which it was
      * initialize in <B>init</B> method;
      */
-    void run();
+    public void run();
 }
