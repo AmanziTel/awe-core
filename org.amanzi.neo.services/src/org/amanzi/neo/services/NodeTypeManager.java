@@ -13,16 +13,16 @@
 
 package org.amanzi.neo.services;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
 
 /**
- * TODO Purpose of
  * <p>
+ * 
  * </p>
  * 
  * @author grigoreva_a
@@ -31,7 +31,7 @@ import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class NodeTypeManager {
 
-    private static List<Class< ? >> registeredNodeTypes = new ArrayList<Class< ? >>();
+    private static Set<Class< ? >> registeredNodeTypes = new HashSet<Class< ? >>();
 
     static {
         registerNodeType(DriveNodeTypes.class);
@@ -55,7 +55,7 @@ public class NodeTypeManager {
                 result = (INodeType)conv.convert(typeID);
 
                 break;
-            } finally {
+            } catch (IllegalArgumentException e) {
             }
         }
         return result;
