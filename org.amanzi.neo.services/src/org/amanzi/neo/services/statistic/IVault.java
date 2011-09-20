@@ -116,7 +116,7 @@ public interface IVault {
      *
      * @param propertyName Name of property
      */
-    public void deletePropertiesWithPropertyName(String propertyName);
+    public void deleteProperties(String propertyName);
     
     /**
      * Method to delete all properties with certain type of node and certain name of property
@@ -124,7 +124,7 @@ public interface IVault {
      * @param nodeType Type of node
      * @param propertyName Name of property
      */
-    public void deletePropertiesWithNodeTypeAndPropertyName(String nodeType, String propertyName);
+    public void deleteProperties(String nodeType, String propertyName);
     
     /**
      * Method to delete all properties with certain type of node and 
@@ -135,7 +135,7 @@ public interface IVault {
      * @param propertyName Name of property
      * @param propertyValue Value of property
      */
-    public void deletePropertiesWithNodeTypeAndPropertyNameAndPropertyValue(String nodeType, String propertyName, String propertyValue);
+    public void deleteProperties(String nodeType, String propertyName, Object propertyValue);
     
     /**
      * Method to update count of propertyValue by certain count of propertyValue
