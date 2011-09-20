@@ -26,6 +26,7 @@ import org.amanzi.neo.services.NewNetworkService;
 import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
@@ -91,21 +92,12 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
 
         Node network = ((DataElement)rootElement).getNode();
         if (network == null) {
-            // TODO: i think it sucks
+            // TODO: i think it sucks 
             try {
                 network = dsServ.createDataset((Node)rootElement.get("project"), rootElement.get(NewAbstractService.NAME)
                         .toString(), DatasetTypes.NETWORK);
-            } catch (InvalidDatasetParameterException e) {
+            } catch (AWEException e) {
                 // TODO Handle InvalidDatasetParameterException
-                throw (RuntimeException)new RuntimeException().initCause(e);
-            } catch (DatasetTypeParameterException e) {
-                // TODO Handle DatasetTypeParameterException
-                throw (RuntimeException)new RuntimeException().initCause(e);
-            } catch (DuplicateNodeNameException e) {
-                // TODO Handle DuplicateNodeNameException
-                throw (RuntimeException)new RuntimeException().initCause(e);
-            } catch (DatabaseException e) {
-                // TODO Handle DatabaseException
                 throw (RuntimeException)new RuntimeException().initCause(e);
             }
         }
