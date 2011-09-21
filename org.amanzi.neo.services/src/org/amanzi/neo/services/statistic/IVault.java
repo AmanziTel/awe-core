@@ -65,6 +65,17 @@ public interface IVault {
     public int getPropertyCount(String nodeType, String propertyName);
     
     /**
+     * Method return count of properties in node with certain node type and
+     * certain property name and property value
+     *
+     * @param nodeType Type of node
+     * @param propertyName Name of property
+     * @param propertyValue Value of property
+     * @return Count of property with certain property name and property value
+     */
+    public int getPropertyValueCount(String nodeType, String propertyName, Object propertyValue);
+    
+    /**
      * Method find all properties in all vaults
      *
      * @return All properties from statistics
@@ -145,7 +156,7 @@ public interface IVault {
      * @param propertyValue Value of property
      * @param newCount New count of propertyValue
      */
-    public void updatePropertiesCount(String nodeType, String propertyName, String propertyValue, int newCount);
+    public void updatePropertiesCount(String nodeType, String propertyName, Object propertyValue, int newCount);
     
     /**
      * Method return node type of vault

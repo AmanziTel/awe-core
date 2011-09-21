@@ -293,6 +293,19 @@ public class StatisticsVault implements IVault {
     }
     
     @Override
+    public int getPropertyValueCount(String nodeType, String propertyName, Object propertyValue)
+    {
+        int countOfPropertyValue = 0;
+        getAllProperties(nodeType, propertyName);
+        for (Object propValue : allProperties.keySet()) {
+            if (propValue.toString().equals(propertyValue.toString())) {
+                countOfPropertyValue += allProperties.get(propValue);
+            }
+        }
+        return countOfPropertyValue;
+    }
+    
+    @Override
     public Map<Object, Integer> getAllProperties() {
         allProperties = new HashMap<Object, Integer>();
         return getAllProperties(this);
@@ -611,7 +624,53 @@ public class StatisticsVault implements IVault {
     }
 
     @Override
-    public void updatePropertiesCount(String nodeType, String propertyName, String propertyValue, int newCount) {
+    public void updatePropertiesCount(String nodeType, String propertyName, Object propertyValue, int newCount) {
+        updatePropertiesCount(this, nodeType, propertyName, propertyValue, newCount);
+    }
+    
+    private void updatePropertiesCount(IVault vault, String nodeType, String propertyName, Object propertyValue, int newCount) {
+        if (vault.getSubVaults().values().size() == 0) {
+            if (vault.getType().equals(nodeType)) {
+                for (String property : vault.getPropertyStatisticsMap().keySet()) {
+                    if (propertyName.equals(property)) {
+                        NewPropertyStatistics propertyStatistics = vault.getPropertyStatisticsMap().get(property);
+                        Map<Object, Integer> propertyMap = propertyStatistics.getPropertyMap();
+                        for (Object propValue : propertyMap.keySet()) {
+                            if (propValue.toString().equals(propertyValue.toString())) {
+                                propertyMap.remove(propValue);
+                                propertyMap.put(propertyValue, newCount);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        else {
+            for (String tempNodeType : vault.getSubVaults().keySet()) {
+                IVault subVault = vault.getSubVaults().get(tempNodeType);
+                if (subVault.getSubVaults().values().size() == 0) {
+                    if (subVault.getType().equals(nodeType)) {
+                        for (String property : subVault.getPropertyStatisticsMap().keySet()) {
+                            if (propertyName.equals(property)) {
+                                NewPropertyStatistics propertyStatistics = subVault.getPropertyStatisticsMap().get(property);
+                                Map<Object, Integer> propertyMap = propertyStatistics.getPropertyMap();
+                                for (Object propValue : propertyMap.keySet()) {
+                                    if (propValue.toString().equals(propertyValue.toString())) {
+                                        propertyMap.remove(propValue);
+                                        propertyMap.put(propertyValue, newCount);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                else {
+                    updatePropertiesCount(subVault, nodeType, propertyName, propertyValue, newCount);
+                }
+            }
+        }
     }
     
     
