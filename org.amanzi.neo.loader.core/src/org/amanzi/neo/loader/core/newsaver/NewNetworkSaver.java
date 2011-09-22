@@ -220,7 +220,7 @@ public class NewNetworkSaver implements ISaver {
         if (dataElement instanceof NetworkRowContainer) {
             NetworkRowContainer container = ((NetworkRowContainer)dataElement);
             if (fileSynonyms.isEmpty()) {
-                headers = container.getHeader();
+                headers = container.getHeaders();
                 makeAppropriationWithSynonyms(headers);
                 lineCounter++;
             } else {

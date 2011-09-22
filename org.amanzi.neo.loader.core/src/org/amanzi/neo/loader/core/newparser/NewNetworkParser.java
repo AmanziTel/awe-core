@@ -87,7 +87,7 @@ public class NewNetworkParser implements IParser {
                 CountingFileInputStream is = new CountingFileInputStream(file);
                 String charSetName = Charset.defaultCharset().name();
                 reader = new BufferedReader(new InputStreamReader(is, charSetName));
-                container.setHeader(parseHeaders(file, is));
+                container.setHeaders(parseHeaders(file, is));
                 saver.saveElement(container);
                 String lineStr;
                 try {

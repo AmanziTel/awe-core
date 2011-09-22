@@ -15,6 +15,8 @@ package org.amanzi.neo.loader.core.saver.impl.testing;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
@@ -49,8 +51,6 @@ public class NewNetworkTesting {
 
     private HashMap<String, Object> hashMap = null;
     private GraphDatabaseService graphDatabaseService = null;
-    private String projectName = "projectName";
-    private int partOfProjectName = 0;
 
     @SuppressWarnings("deprecation")
     @Before
@@ -78,21 +78,24 @@ public class NewNetworkTesting {
 
     }
 
-    private String[] prepareString(Collection< ? extends Object> headers) {
-        String str = "";
-        for (Object header : headers) {
-            str += header + "%";
+    private List<String> prepareValues(HashMap<String, Object> map) {
+        List<String> values = new LinkedList<String>();
+        for (String key : map.keySet()) {
+            values.add(map.get(key).toString());
         }
-        return str.split("%");
+        return values;
     }
 
     @Test
     public void testSaver() {
         saver.init(config, null);
         NetworkRowContainer rowContainer = new NetworkRowContainer(MINIMAL_COLUMN_SIZE);
-        rowContainer.setHeaders(prepareString(hashMap.keySet()));
+        List<String> header = new LinkedList<String>(hashMap.keySet());
+        rowContainer.setHeaders(header);
         saver.saveElement(rowContainer);
-        rowContainer.setValues(prepareString(hashMap.values()));
+        List<String> values = prepareValues(hashMap);
+        rowContainer.setValues(values);
+        saver.saveElement(rowContainer);
         try {
             saver.saveElement(rowContainer);
         } catch (Exception e) {

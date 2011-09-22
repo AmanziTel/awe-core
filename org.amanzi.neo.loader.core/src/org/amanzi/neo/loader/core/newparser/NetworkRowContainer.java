@@ -31,7 +31,7 @@ public class NetworkRowContainer implements IData {
     /**
      * contain header values;
      */
-    private List<String> header;
+    private List<String> headers;
     /**
      * Minimal values count
      */
@@ -56,7 +56,7 @@ public class NetworkRowContainer implements IData {
         if (row.size() < MINIMAL_SIZE) {
             return;
         }
-        if (row.size() != header.size()) {
+        if (row.size() != headers.size()) {
             return;
         }
         this.row = row;
@@ -65,14 +65,14 @@ public class NetworkRowContainer implements IData {
     /**
      * @return Returns the header.
      */
-    public List<String> getHeader() {
-        return header;
+    public List<String> getHeaders() {
+        return headers;
     }
 
     /**
      * @param header The header to set.
      */
-    public void setHeader(List<String> header) {
-        this.header = header;
+    public void setHeaders(List<String> header) {
+        this.headers = header;
     }
 }
