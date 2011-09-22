@@ -67,6 +67,8 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 
 public class LoaderUiUtils extends LoaderUtils {
+    private static DataLoadPreferenceManager dataLoad = new DataLoadPreferenceManager();
+
     /**
      * return AWE project name of active map
      * 
@@ -157,7 +159,7 @@ public class LoaderUiUtils extends LoaderUtils {
      * @return array of possible headers
      */
     public static String[] getPossibleHeaders(String key) {
-        DataLoadPreferenceManager dataLoad = new DataLoadPreferenceManager();
+
         String text = PreferenceStore.getPreferenceStore().getValue(key);
         if (text == null) {
             return new String[0];
@@ -298,7 +300,7 @@ public class LoaderUiUtils extends LoaderUtils {
      */
 
     public static void setDefaultDirectory(String newDirectory) {
-       PreferenceStore.getPreferenceStore().setDefault(DataLoadPreferences.DEFAULT_DIRRECTORY_LOADER, newDirectory);
+        PreferenceStore.getPreferenceStore().setDefault(DataLoadPreferences.DEFAULT_DIRRECTORY_LOADER, newDirectory);
     }
 
     public static ILayer findLayerByNode(IMap map, Node gisNode) {
@@ -389,7 +391,7 @@ public class LoaderUiUtils extends LoaderUtils {
             st.append(DataLoadPreferences.CRS_DELIMETERS).append(selNode.getId());
         }
         String value = st.length() < 1 ? "" : st.substring(DataLoadPreferences.CRS_DELIMETERS.length());
-       PreferenceStore.getPreferenceStore().setDefault(DataLoadPreferences.SELECTED_DATA, value);
+        PreferenceStore.getPreferenceStore().setDefault(DataLoadPreferences.SELECTED_DATA, value);
     }
 
 }

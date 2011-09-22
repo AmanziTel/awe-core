@@ -143,6 +143,7 @@ public class DataLoadPreferenceInitializer extends AbstractPreferenceInitializer
     @Override
     public void initializeDefaultPreferences() {
         StoreWrapper pref = new StoreWrapper();
+        pref.setDefault(DataLoadPreferences.DEFAULT_DIRRECTORY_LOADER, "");
         pref.setDefault(DataLoadPreferences.REMOVE_SITE_NAME, false);
         pref.setDefault(DataLoadPreferences.NETWORK_COMBINED_CALCULATION, true);
         pref.setDefault(DataLoadPreferences.ZOOM_TO_LAYER, true);

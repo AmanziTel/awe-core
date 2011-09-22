@@ -109,9 +109,6 @@ public class ConfigurationDataImpl implements IConfiguration {
         return datasetNames;
     }
 
-    private void setFilelist(List<File> filelist) {
-        this.filelist = filelist;
-    }
 
     @Override
     public void setSourceFile(File sourceFile) {
