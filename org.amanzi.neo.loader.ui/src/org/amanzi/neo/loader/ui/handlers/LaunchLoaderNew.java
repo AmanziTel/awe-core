@@ -16,7 +16,6 @@ package org.amanzi.neo.loader.ui.handlers;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.ILoaderInfo;
 import org.amanzi.neo.loader.core.ILoaderNew;
@@ -27,7 +26,7 @@ import org.amanzi.neo.loader.core.newsaver.IData;
 import org.amanzi.neo.loader.core.newsaver.ISaver;
 import org.amanzi.neo.loader.ui.loaders.LoaderNew;
 import org.amanzi.neo.loader.ui.wizards.IGraphicInterfaceForLoaders;
-import org.amanzi.neo.services.networkModel.IModel;
+import org.amanzi.neo.services.model.IModel;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;

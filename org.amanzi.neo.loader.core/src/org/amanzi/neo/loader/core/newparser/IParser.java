@@ -16,14 +16,14 @@ package org.amanzi.neo.loader.core.newparser;
 import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.newsaver.IData;
 import org.amanzi.neo.loader.core.newsaver.ISaver;
-import org.amanzi.neo.services.networkModel.IModel;
+import org.amanzi.neo.services.model.IModel;
 
 /**
  * common parser interface
  * 
  * @author Kondratenko_Vladislav
  */
-public interface IParser<T1 extends ISaver<IModel, T3, T2>, T2 extends IConfiguration, T3 extends IData> {
+public interface IParser<T1 extends ISaver<? extends IModel, T3, T2>, T2 extends IConfiguration, T3 extends IData> {
     /**
      * initialize required parser data;
      * 
