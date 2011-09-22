@@ -32,10 +32,7 @@ import org.amanzi.neo.loader.ui.validators.AMSXMLDataValidator;
  */
 public class LoaderNew implements ILoaderNew<IData, IConfiguration> {
     /**
-     * contain some information about loader such as 
-     * loader name 
-     * loader type
-     * and loader datatype
+     * contain some information about loader such as loader name loader type and loader datatype
      */
     ILoaderInfo info;
     @SuppressWarnings("rawtypes")
@@ -72,9 +69,7 @@ public class LoaderNew implements ILoaderNew<IData, IConfiguration> {
 
     @Override
     public void setValidator(IValidator validator) {
-        if (validator == null) {
-            this.validator = new AMSXMLDataValidator();
-        }
+        this.validator = validator;
     }
 
     @SuppressWarnings("unchecked")

@@ -20,10 +20,13 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.amanzi.neo.loader.core.CommonConfigData;
+import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.ILoader;
 import org.amanzi.neo.loader.core.ILoaderConfig;
+import org.amanzi.neo.loader.core.ILoaderNew;
 import org.amanzi.neo.loader.core.IValidateResult;
 import org.amanzi.neo.loader.core.IValidateResult.Result;
+import org.amanzi.neo.loader.core.newsaver.IData;
 import org.amanzi.neo.loader.core.parser.IDataElement;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
@@ -54,8 +57,8 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * <p>
- *
  * </p>
+ * 
  * @author TsAr
  * @since 1.0.0
  */
@@ -63,35 +66,26 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
     /*
      * Names of supported files for Network
      */
-    public static final String[] NETWORK_FILE_NAMES = {
-        "All supported (*.*)",
-        "Comma Separated Values Files (*.csv)",
-        "Plain Text Files (*.txt)",
-        "OpenOffice.org Spreadsheet Files (*.sxc)",
-        "Microsoft Excel Spreadsheet Files (*.xls)",
-        "eXtensible Markup Language Files (*.xml)"};
-    
+    public static final String[] NETWORK_FILE_NAMES = {"All supported (*.*)", "Comma Separated Values Files (*.csv)",
+            "Plain Text Files (*.txt)", "OpenOffice.org Spreadsheet Files (*.sxc)", "Microsoft Excel Spreadsheet Files (*.xls)",
+            "eXtensible Markup Language Files (*.xml)"};
+
     /*
      * Extensions of supported files for Network
      */
-    public static final String[] NETWORK_FILE_EXTENSIONS = {"*.*","*.csv", "*.txt", "*.sxc", "*.xls", "*.xml"};
+    public static final String[] NETWORK_FILE_EXTENSIONS = {"*.*", "*.csv", "*.txt", "*.sxc", "*.xls", "*.xml"};
 
-    
     /** The Constant PAGE_DESCR. */
     private String fileName;
     private Composite main;
     protected Combo network;
     private FileFieldEditorExt editor;
     private HashMap<String, Node> members;
-    private final Set<String> restrictedNames=new HashSet<String>();
+    private final Set<String> restrictedNames = new HashSet<String>();
     protected Node networkNode;
     private Label labNetworkDescr;
     private Combo networkType;
-    protected String networkName=""; //$NON-NLS-1$
-    
-
-    private Button selectCRS;
-
+    protected String networkName = ""; //$NON-NLS-1$
 
 
     /**
@@ -103,7 +97,6 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
         networkNode = null;
     }
 
-
     @Override
     public void createControl(Composite parent) {
         main = new Group(parent, SWT.NULL);
@@ -112,8 +105,8 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
         label.setText(NeoLoaderPluginMessages.NetworkSiteImportWizard_NETWORK);
         label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
         network = new Combo(main, SWT.DROP_DOWN);
-        network.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        network.setItems(getRootItems());        
+        network.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
+        network.setItems(getRootItems());
         network.addModifyListener(new ModifyListener() {
 
             @Override
@@ -133,63 +126,35 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
                 widgetSelected(e);
             }
         });
-        selectCRS = new Button(main, SWT.FILL | SWT.PUSH);
-        selectCRS.setAlignment(SWT.LEFT);
-        GridData selCrsData = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
-        selCrsData.widthHint=150;
-        selectCRS.setLayoutData(selCrsData);
-        selectCRS.addSelectionListener(new SelectionListener() {
 
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                selectCRS();
-            }
-
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-                widgetSelected(e);
-            }
-        });
-        
         editor = new FileFieldEditorExt("fileSelectNeighb", NeoLoaderPluginMessages.NetworkSiteImportWizard_FILE, main); // NON-NLS-1 //$NON-NLS-1$
         editor.setDefaulDirectory(LoaderUiUtils.getDefaultDirectory());
 
         editor.getTextControl(main).addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
-                ILoader<? extends IDataElement, CommonConfigData> loader = setFileName(editor.getStringValue());
-                
-                if (loader.isAllowCreate()) {
-                    if (networkName==null ||networkName.trim().isEmpty()) {
-                        networkName=new java.io.File(getFileName()).getName(); 
-                        network.setText(networkName);
-                        changeNetworkName();
-                    }                 
-                }
-                else {
-                    if (network.getItemCount() > 0) {
-                        network.select(0);
-                        changeNetworkName();
-                    }
-                }
-                updateCRS();
+                ILoaderNew< ? extends IData, IConfiguration> loader = setFileName(editor.getStringValue());
+                networkName = new java.io.File(getFileName()).getName();
+                network.setText(networkName);
+                changeNetworkName();
+                // updateCRS();
                 update();
             }
         });
-        
+
         editor.setFileExtensions(NETWORK_FILE_EXTENSIONS);
         editor.setFileExtensionNames(NETWORK_FILE_NAMES);
         label = new Label(main, SWT.LEFT);
         label.setText(NeoLoaderPluginMessages.NetworkSiteImportWizard_DATA_TYPE);
-        label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
+        label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 3));
         networkType = new Combo(main, SWT.DROP_DOWN | SWT.READ_ONLY);
-        networkType.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
-        networkType.setItems(getLoadersDescriptions());
+        networkType.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 3));
+        networkType.setItems(getNewLoadersDescriptions());
         networkType.addSelectionListener(new SelectionListener() {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                selectLoader(networkType.getSelectionIndex());
-                updateCRS();
+                selectNewLoader(networkType.getSelectionIndex());
+                // updateCRS();
                 update();
             }
 
@@ -198,8 +163,8 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
                 widgetSelected(e);
             }
         });
-        new Label(main,SWT.NONE);
-        //LN, 28.02.2011, batch mode removed
+        new Label(main, SWT.NONE);
+        // LN, 28.02.2011, batch mode removed
         labNetworkDescr = new Label(main, SWT.LEFT);
         GridData layoutData = new GridData(GridData.FILL_HORIZONTAL, SWT.CENTER, true, false, 3, 1);
         layoutData.minimumWidth = 150;
@@ -208,40 +173,13 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
         update();
     }
 
-    /**
-     *
-     */
-    protected boolean updateCRS() {
-        if (selectCRS.isEnabled()) {
-            ILoader< ? extends IDataElement, CommonConfigData> selectedLoader = getSelectedLoader();
-
-            if (selectedLoader != null && selectedLoader.isAllowCreate()) {
-                ILoaderConfig config = selectedLoader.getConfig();
-                if (config != null && selectedLoader.getValidator().accept(getConfigurationData()).getResult() != Result.FAIL) {
-                    CoordinateReferenceSystem crs = config.getCRS(getConfigurationData().getRoot());
-                    if (crs != null) {
-                        setSelectedCRS(crs);
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
+   
 
     @Override
     protected void update() {
-        updateButtonLabel();
         super.update();
     }
-    /**
-     * Update button label.
-     */
-    private void updateButtonLabel() {
-        CoordinateReferenceSystem crs = getSelectedCRS();
-        selectCRS.setText(String.format("CRS: %s", crs.getName().toString()));
-    }
- 
+
 
     /**
      *
@@ -263,28 +201,28 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
      * @param fileName file name
      * @return configured loader or null if there was an error
      */
-    protected ILoader<? extends IDataElement, CommonConfigData> setFileName(String fileName) {
-        if (this.fileName!=null&&this.fileName.equals(fileName)){
+    protected ILoaderNew< ? extends IData, IConfiguration> setFileName(String fileName) {
+        if (this.fileName != null && this.fileName.equals(fileName)) {
             return null;
         }
         this.fileName = fileName;
-        CommonConfigData configurationData = getConfigurationData();
-        configurationData.setRoot(new File(fileName));
-        ILoader< ? extends IDataElement, CommonConfigData> loader = autodefine(configurationData);
-        int id=setSelectedLoader(loader);
-        if (id>=0){
+        networkName = new java.io.File(getFileName()).getName();
+        // CommonConfigData configurationData = getConfigurationData();
+        getNewConfigurationData().setSourceFile(new File(fileName));
+
+        // config.getFilesToLoad()
+        // configurationData.setRoot(new File(fileName));
+        ILoaderNew< ? extends IData, IConfiguration> loader = autodefineNew(getNewConfigurationData());
+        int id = setSelectedLoaderNew(loader);
+        if (id >= 0) {
             networkType.select(id);
         }
         update();
         // editor.store();
         LoaderUiUtils.setDefaultDirectory(editor.getDefaulDirectory());
-        
+
         return loader;
     }
-
-
-
-
 
     /**
      * Forms list of GIS nodes
@@ -292,7 +230,7 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
      * @return array of GIS nodes
      */
     private String[] getRootItems() {
-        final String  projectName = LoaderUiUtils.getAweProjectName();
+        final String projectName = LoaderUiUtils.getAweProjectName();
         TraversalDescription td = Utils.getTDRootNodesOfProject(projectName, null);
         Node refNode = NeoServiceProviderUi.getProvider().getService().getReferenceNode();
         restrictedNames.clear();
@@ -332,70 +270,57 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
         return networkName;
     }
 
-
     @Override
     protected boolean validateConfigData(CommonConfigData configurationData) {
-        //TODO must be refactoring after change loaders
-        if (fileName==null){
-            setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_FILE,DialogPage.ERROR); 
+        // TODO must be refactoring after change loaders
+        if (fileName == null) {
+            setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_FILE, DialogPage.ERROR);
             return false;
         }
         File file = new File(fileName);
-        if (!(file.isAbsolute() && file.exists())){
-            setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_FILE,DialogPage.ERROR); 
-            return false;         
-        }
-        if ( StringUtils.isEmpty(networkName)){
-            setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_NETWORK,DialogPage.ERROR); 
+        if (!(file.isAbsolute() && file.exists())) {
+            setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_FILE, DialogPage.ERROR);
             return false;
         }
-        if (restrictedNames.contains(networkName)){
-            setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_RESTRICTED_NETWORK_NAME,DialogPage.ERROR);  
+        if (StringUtils.isEmpty(networkName)) {
+            setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_NETWORK, DialogPage.ERROR);
             return false;
         }
-        if (getSelectedLoader() == null){
-            setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_TYPE,DialogPage.ERROR); 
-            return false;           
+        if (restrictedNames.contains(networkName)) {
+            setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_RESTRICTED_NETWORK_NAME, DialogPage.ERROR);
+            return false;
         }
+        if (getNewSelectedLoader() == null) {
+            setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_TYPE, DialogPage.ERROR);
+            return false;
+        }
+        getNewConfigurationData().getDatasetNames().put("Network", networkName);
+        getNewConfigurationData().getDatasetNames().put("Project", LoaderUiUtils.getAweProjectName());
+        getNewConfigurationData().setSourceFile(file);
         configurationData.setProjectName(LoaderUiUtils.getAweProjectName());
         configurationData.setCrs(getSelectedCRS());
         configurationData.setDbRootName(networkName);
         configurationData.setRoot(file);
-        IValidateResult result = getSelectedLoader().getValidator().validate(configurationData);
-        if (result.getResult()==Result.FAIL){
-            setMessage(String.format(result.getMessages(), getSelectedLoader().getDescription()),DialogPage.ERROR); 
-            return false;          
-        }else if (result.getResult()==Result.UNKNOWN){
-            setMessage(String.format(result.getMessages(), getSelectedLoader().getDescription()),DialogPage.WARNING); 
-        }else{
+        IValidateResult.Result result = getNewSelectedLoader().getValidator().isValid(getNewConfigurationData().getFilesToLoad());
+        if (result == Result.FAIL) {
+            setMessage(String.format(getNewSelectedLoader().getValidator().getMessages(), getNewSelectedLoader().getLoaderInfo()
+                    .getName()), DialogPage.ERROR);
+            return false;
+        } else if (result == Result.UNKNOWN) {
+            setMessage(String.format(getNewSelectedLoader().getValidator().getMessages(), getNewSelectedLoader().getLoaderInfo()
+                    .getName()), DialogPage.WARNING);
+        } else {
             setMessage(""); //$NON-NLS-1$
         }
         return true;
     }
 
-
     protected void changeNetworkName() {
         networkName = network.getText();
         networkNode = members.get(networkName);
-        if (networkNode!=null){
-            Node gis = NeoServiceFactory.getInstance().getDatasetService().findGisNode(networkNode);
-            if (gis!=null){
-                CoordinateReferenceSystem crs = NeoUtils.getCRS(gis, null);
-                if (crs!=null){
-                    selectCRS.setEnabled(false);
-                    setSelectedCRS(crs);
-                }else{
-                    selectCRS.setEnabled(true);
-                    updateCRS();
-                }
-            }else{
-                selectCRS.setEnabled(true);
-                updateCRS();
-            }
-        }else{
-            selectCRS.setEnabled(true);
-            updateCRS();
-        }
+
+        getNewConfigurationData().getDatasetNames().put("Network", networkName);
+        getNewConfigurationData().getDatasetNames().put("Project", LoaderUiUtils.getAweProjectName());
         getConfigurationData().setProjectName(LoaderUiUtils.getAweProjectName());
         getConfigurationData().setDbRootName(networkName);
         updateLabelNetwDescr();

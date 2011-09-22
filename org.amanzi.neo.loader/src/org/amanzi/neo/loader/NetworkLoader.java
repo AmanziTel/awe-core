@@ -323,7 +323,6 @@ public class NetworkLoader extends AbstractLoader {
             network.setProperty(INeoConstants.PROPERTY_STRUCTURE_NAME, getLevelsFound());
             
             saveFileStructure();
-            
             transaction.success();
         } finally {
             transaction.finish();
@@ -365,7 +364,6 @@ public class NetworkLoader extends AbstractLoader {
             	propertyKey = INeoConstants.PROPERTY_NAME_NAME;
                 prefix = INeoConstants.CITY_PROPERTY_NAME_PREFIX;
             }
-            
 
             headers.put(prefix + propertyKey, propOriginalName);
 		}

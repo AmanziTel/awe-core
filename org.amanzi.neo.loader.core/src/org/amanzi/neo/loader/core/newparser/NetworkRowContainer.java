@@ -13,8 +13,8 @@
 
 package org.amanzi.neo.loader.core.newparser;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.amanzi.neo.loader.core.newsaver.IData;
 
@@ -25,59 +25,54 @@ import org.amanzi.neo.loader.core.newsaver.IData;
  */
 public class NetworkRowContainer implements IData {
     /**
-     * contain pair: K- string header , V- header value;
+     * contain rows values;
      */
-    private Map<String, Object> headerMap;
+    private List<String> row = new LinkedList<String>();
     /**
-     * headers name;
+     * contain header values;
      */
-    private String[] headers;
+    private List<String> headers;
+    /**
+     * Minimal values count
+     */
     private int MINIMAL_SIZE;
 
     public NetworkRowContainer(int minimalLength) {
         super();
-        headerMap=new HashMap<String, Object>();
         MINIMAL_SIZE = minimalLength;
     }
 
     /**
-     * set necessary headers names;
-     * 
-     * @param headers
+     * @return Returns the row.
      */
-    public void setHeaders(String[] headers) {
-        this.headers=headers;
-        for (String head : headers) {
-            headerMap.put(head, null);
-            
-        }
+    public List<String> getValues() {
+        return row;
     }
 
     /**
-     * set values that matched to header
-     * 
-     * @param values
+     * @param row The row to set.
      */
-    public void setValues(String[] values) {
-        if (values.length < MINIMAL_SIZE) {
+    public void setValues(List<String> row) {
+        if (row.size() < MINIMAL_SIZE) {
             return;
         }
-        if (values.length < headerMap.size()) {
+        if (row.size() != headers.size()) {
             return;
         }
-        int columnNumber = 0;
-        for (Object element : values) {
-            headerMap.put(headers[columnNumber], element);
-            columnNumber++;
-        }
+        this.row = row;
     }
 
     /**
-     * get header and Appropriated row values;
-     * 
-     * @return Returns the headerMap.
+     * @return Returns the header.
      */
-    public Map<String, Object> getHeaderMap() {
-        return headerMap;
+    public List<String> getHeaders() {
+        return headers;
+    }
+
+    /**
+     * @param header The header to set.
+     */
+    public void setHeaders(List<String> header) {
+        this.headers = header;
     }
 }

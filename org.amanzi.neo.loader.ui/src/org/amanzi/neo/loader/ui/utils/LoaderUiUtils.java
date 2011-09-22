@@ -66,7 +66,9 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 
-public class LoaderUiUtils extends LoaderUtils{
+public class LoaderUiUtils extends LoaderUtils {
+    private static DataLoadPreferenceManager dataLoad = new DataLoadPreferenceManager();
+
     /**
      * return AWE project name of active map
      * 
@@ -75,10 +77,6 @@ public class LoaderUiUtils extends LoaderUtils{
     public static String getAweProjectName() {
         return AweUiPlugin.getDefault().getUiService().getActiveProjectName();
     }
-
-
-
-
 
     /**
      * get type of network files
@@ -91,10 +89,10 @@ public class LoaderUiUtils extends LoaderUtils{
         try {
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(fileName)));
             String line;
-            if (getFileExtension(fileName).equalsIgnoreCase(".xml")){
-                int c=0;
-                while ((line = reader.readLine()) != null && c<5) {
-                    if (line.contains("configData")){
+            if (getFileExtension(fileName).equalsIgnoreCase(".xml")) {
+                int c = 0;
+                while ((line = reader.readLine()) != null && c < 5) {
+                    if (line.contains("configData")) {
                         reader.close();
                         return new Pair<NetworkFileType, Exception>(NetworkFileType.UTRAN, null);
                     }
@@ -121,7 +119,7 @@ public class LoaderUiUtils extends LoaderUtils{
             }
             CSVParser parser = new CSVParser(fieldSepRegex.charAt(0));
             List<String> headers = parser.parse(line);
-            
+
             for (String header : getPossibleHeaders(DataLoadPreferences.NE_NBR_NAME)) {
                 if (headers.contains(header)) {
                     return new Pair<NetworkFileType, Exception>(header.matches(".*nterfer.*") ? NetworkFileType.INTERFERENCE
@@ -138,7 +136,7 @@ public class LoaderUiUtils extends LoaderUtils{
                     return new Pair<NetworkFileType, Exception>(NetworkFileType.RADIO_SITE, null);
                 }
             }
-            List<String>possibleHeaders=new LinkedList<String>();
+            List<String> possibleHeaders = new LinkedList<String>();
             possibleHeaders.addAll(Arrays.asList(getPossibleHeaders(DataLoadPreferences.TR_SITE_ID_SERV)));
             possibleHeaders.addAll(Arrays.asList(getPossibleHeaders(DataLoadPreferences.TR_SITE_NO_SERV)));
             possibleHeaders.addAll(Arrays.asList(getPossibleHeaders(DataLoadPreferences.TR_ITEM_NAME_SERV)));
@@ -161,7 +159,7 @@ public class LoaderUiUtils extends LoaderUtils{
      * @return array of possible headers
      */
     public static String[] getPossibleHeaders(String key) {
-        DataLoadPreferenceManager dataLoad = new DataLoadPreferenceManager();
+
         String text = PreferenceStore.getPreferenceStore().getValue(key);
         if (text == null) {
             return new String[0];
@@ -185,11 +183,11 @@ public class LoaderUiUtils extends LoaderUtils{
      * @return true or false
      */
     public static boolean confirmAddToMap(final IMap map, final String fileName) {
-    
+
         final IPreferenceStore preferenceStore = NeoLoaderPlugin.getDefault().getPreferenceStore();
         return (Integer)ActionUtil.getInstance().runTaskWithResult(new RunnableWithResult<Integer>() {
             int result;
-    
+
             @Override
             public void run() {
                 boolean boolean1 = preferenceStore.getBoolean(DataLoadPreferences.ZOOM_TO_LAYER);
@@ -202,15 +200,15 @@ public class LoaderUiUtils extends LoaderUtils{
                 // SWT.YES | SWT.NO);
                 // msg.setText(NeoLoaderPluginMessages.ADD_LAYER_TITLE);
                 // msg.setMessage(message);
-                MessageDialogWithToggle dialog = MessageDialogWithToggle.openYesNoQuestion(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
-                        NeoLoaderPluginMessages.ADD_LAYER_TITLE, message, NeoLoaderPluginMessages.TOGLE_MESSAGE, boolean1, preferenceStore,
-                        DataLoadPreferences.ZOOM_TO_LAYER);
+                MessageDialogWithToggle dialog = MessageDialogWithToggle.openYesNoQuestion(PlatformUI.getWorkbench()
+                        .getActiveWorkbenchWindow().getShell(), NeoLoaderPluginMessages.ADD_LAYER_TITLE, message,
+                        NeoLoaderPluginMessages.TOGLE_MESSAGE, boolean1, preferenceStore, DataLoadPreferences.ZOOM_TO_LAYER);
                 result = dialog.getReturnCode();
                 if (result == IDialogConstants.YES_ID) {
                     preferenceStore.putValue(DataLoadPreferences.ZOOM_TO_LAYER, String.valueOf(dialog.getToggleState()));
                 }
             }
-    
+
             @Override
             public Integer getValue() {
                 return result;
@@ -231,12 +229,12 @@ public class LoaderUiUtils extends LoaderUtils{
                 for (Node gis : gisNodes) {
                     map = ApplicationGIS.getActiveMap();
                     IGeoResource iGeoResource = getResourceForGis(curService, map, gis);
-                    if (iGeoResource!=null){
+                    if (iGeoResource != null) {
                         listGeoRes.add(iGeoResource);
                     }
                 }
                 layerList.addAll(ApplicationGIS.addLayersToMap(map, listGeoRes, 0));
-    
+
                 IPreferenceStore preferenceStore = NeoLoaderPlugin.getDefault().getPreferenceStore();
                 if (preferenceStore.getBoolean(DataLoadPreferences.ZOOM_TO_LAYER)) {
                     LoaderUiUtils.zoomToLayer(layerList);
@@ -246,7 +244,7 @@ public class LoaderUiUtils extends LoaderUtils{
             NeoLoaderPlugin.exception(e);
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
-    
+
     }
 
     public static IService getMapService() throws MalformedURLException {
@@ -271,9 +269,8 @@ public class LoaderUiUtils extends LoaderUtils{
             }
         }, true);
     }
-    
-  
-    public static IGeoResource getResourceForGis(IService service, IMap map, Node gis) throws IOException{
+
+    public static IGeoResource getResourceForGis(IService service, IMap map, Node gis) throws IOException {
         if (service != null && findLayerByNode(map, gis) == null) {
             for (IGeoResource iGeoResource : service.resources(null)) {
                 if (iGeoResource.canResolve(Node.class)) {
@@ -285,25 +282,27 @@ public class LoaderUiUtils extends LoaderUtils{
         }
         return null;
     }
+
     /**
      * Returns Default Directory path for file dialogs in DriveLoad and NetworkLoad
      * 
      * @return default directory
      */
-    
+
     public static String getDefaultDirectory() {
-        return NeoLoaderPlugin.getDefault().getPluginPreferences().getString(DataLoadPreferences.DEFAULT_DIRRECTORY_LOADER);
+        return PreferenceStore.getPreferenceStore().getValue(DataLoadPreferences.DEFAULT_DIRRECTORY_LOADER);
     }
-    
+
     /**
      * Sets Default Directory path for file dialogs in DriveLoad and NetworkLoad
      * 
      * @param newDirectory new default directory
      */
-    
+
     public static void setDefaultDirectory(String newDirectory) {
-        NeoLoaderPlugin.getDefault().getPluginPreferences().setValue(DataLoadPreferences.DEFAULT_DIRRECTORY_LOADER, newDirectory);
+        PreferenceStore.getPreferenceStore().setDefault(DataLoadPreferences.DEFAULT_DIRRECTORY_LOADER, newDirectory);
     }
+
     public static ILayer findLayerByNode(IMap map, Node gisNode) {
         try {
             for (ILayer layer : map.getMapLayers()) {
@@ -318,15 +317,15 @@ public class LoaderUiUtils extends LoaderUtils{
             e.printStackTrace();
             return null;
         }
-    }  
+    }
 
     /**
-     *find or create OSS node
+     * find or create OSS node
      * 
      * @return
      */
     @Deprecated
-    public static Node findOrCreateOSSNode(OssType ossType,String ossName,GraphDatabaseService neo) {
+    public static Node findOrCreateOSSNode(OssType ossType, String ossName, GraphDatabaseService neo) {
         Node oss;
         Transaction tx = neo.beginTx();
         try {
@@ -338,7 +337,7 @@ public class LoaderUiUtils extends LoaderUtils{
                 ossType.setOssType(oss, neo);
                 String aweProjectName = LoaderUiUtils.getAweProjectName();
                 NeoServiceFactory.getInstance().getProjectService().addDataNodeToProject(aweProjectName, oss);
-                //TODO remove this relation!
+                // TODO remove this relation!
                 neo.getReferenceNode().createRelationshipTo(oss, GeoNeoRelationshipTypes.CHILD);
             }
             assert NodeTypes.OSS.checkNode(oss);
@@ -349,15 +348,13 @@ public class LoaderUiUtils extends LoaderUtils{
         return oss;
     }
 
-    
-    
     /**
      * Gets the selected nodes.
-     *
+     * 
      * @param service the service
      * @return the selected nodes
      */
-    public static LinkedHashSet<Node>getSelectedNodes(GraphDatabaseService service){
+    public static LinkedHashSet<Node> getSelectedNodes(GraphDatabaseService service) {
         LinkedHashSet<Node> selectedNode = new LinkedHashSet<Node>();
         String storedId = NeoLoaderPlugin.getDefault().getPreferenceStore().getString(DataLoadPreferences.SELECTED_DATA);
         if (!StringUtil.isEmpty(storedId)) {
@@ -374,7 +371,7 @@ public class LoaderUiUtils extends LoaderUtils{
                     } catch (Exception e) {
                         Logger.getLogger(LoaderUiUtils.class).error("not loaded id " + nodeId, e);
                     }
-                    
+
                 }
             } finally {
                 tx.finish();
@@ -382,19 +379,19 @@ public class LoaderUiUtils extends LoaderUtils{
         }
         return selectedNode;
     }
-    
+
     /**
      * Store selected nodes.
-     *
+     * 
      * @param selectedNodes the selected nodes
      */
-    public static void storeSelectedNodes(Set<Node>selectedNodes){
+    public static void storeSelectedNodes(Set<Node> selectedNodes) {
         StringBuilder st = new StringBuilder();
         for (Node selNode : selectedNodes) {
             st.append(DataLoadPreferences.CRS_DELIMETERS).append(selNode.getId());
         }
         String value = st.length() < 1 ? "" : st.substring(DataLoadPreferences.CRS_DELIMETERS.length());
-        NeoLoaderPlugin.getDefault().getPreferenceStore().setValue(DataLoadPreferences.SELECTED_DATA, value);
+        PreferenceStore.getPreferenceStore().setDefault(DataLoadPreferences.SELECTED_DATA, value);
     }
-    
+
 }

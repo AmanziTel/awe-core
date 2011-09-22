@@ -82,7 +82,13 @@ public class ConfigurationDataImpl implements IConfiguration {
         if (!filelist.isEmpty()) {
             return filelist;
         }
-        File[] rootList = root.listFiles();
+        File[] rootList;
+        if (root.isDirectory()) {
+            rootList = root.listFiles();
+        } else {
+            rootList = new File[1];
+            rootList[0] = root;
+        }
         if (rootList != null) {
             for (int i = 0; i < rootList.length; i++) {
                 if (rootList[i].isFile()) {
@@ -103,9 +109,6 @@ public class ConfigurationDataImpl implements IConfiguration {
         return datasetNames;
     }
 
-    private void setFilelist(List<File> filelist) {
-        this.filelist = filelist;
-    }
 
     @Override
     public void setSourceFile(File sourceFile) {

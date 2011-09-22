@@ -17,10 +17,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.amanzi.neo.loader.core.CommonConfigData;
+import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.ILoaderNew;
 import org.amanzi.neo.loader.core.newsaver.IData;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
+import org.amanzi.neo.loader.core.preferences.PreferenceStore;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.amanzi.neo.services.events.UpdateDatabaseEvent;
 import org.amanzi.neo.services.events.UpdateViewEventType;
@@ -41,6 +43,7 @@ import org.eclipse.ui.IWorkbench;
 public class NetworkImportWizard extends AbstractLoaderWizard<CommonConfigData> {
 
     private CommonConfigData data;
+    private ConfigurationDataImpl configData;
 
     @Override
     protected List<IWizardPage> getMainPagesList() {
@@ -68,8 +71,8 @@ public class NetworkImportWizard extends AbstractLoaderWizard<CommonConfigData> 
         if (getConfigurationData().getCharsetName() == null) {
             String characterSet = null;
             try {
-                characterSet = org.amanzi.neo.loader.ui.NeoLoaderPlugin.getDefault().getPreferenceStore()
-                        .getString(DataLoadPreferences.DEFAULT_CHARSET);
+                characterSet = PreferenceStore.getPreferenceStore()
+                        .getValue(DataLoadPreferences.DEFAULT_CHARSET);
             } catch (Exception e) {
                 characterSet = null;
             }
@@ -93,6 +96,9 @@ public class NetworkImportWizard extends AbstractLoaderWizard<CommonConfigData> 
 
     @Override
     public IConfiguration getNewConfigurationData() {
-        return null;
+        if (configData == null) {
+            configData = new ConfigurationDataImpl();
+        }
+        return configData;
     }
 }

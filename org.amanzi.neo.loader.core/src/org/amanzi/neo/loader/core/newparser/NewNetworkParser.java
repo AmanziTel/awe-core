@@ -20,10 +20,15 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.amanzi.neo.loader.core.CountingFileInputStream;
 import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.LoaderUtils;
+import org.amanzi.neo.loader.core.newsaver.IData;
 import org.amanzi.neo.loader.core.newsaver.ISaver;
 import org.apache.log4j.Logger;
 
@@ -51,18 +56,19 @@ public class NewNetworkParser implements IParser {
      * @param is
      * @return
      */
-    private String[] parseHeaders(File file, CountingFileInputStream is) {
+    private List<String> parseHeaders(File file, CountingFileInputStream is) {
         char delim = getDelimiters(file);
         parser = new CSVParser(delim, quoteCharacter, '\\', false, true);
         String lineStr;
-        String[] header = null;
+        ArrayList<String> header = new ArrayList<String>();
         try {
             while ((lineStr = reader.readLine()) != null) {
                 if (lineStr != null) {
-                    header = parser.parseLine(lineStr);
+                    header.addAll(Arrays.asList(parser.parseLine(lineStr)));
                     break;
                 }
             }
+
             return header;
         } catch (IOException e) {
             // TODO Handle IOException
@@ -73,6 +79,7 @@ public class NewNetworkParser implements IParser {
     @SuppressWarnings("unchecked")
     @Override
     public void run() {
+        long startTime = System.currentTimeMillis();
         NetworkRowContainer container = null;
         for (File file : config.getFilesToLoad()) {
             try {
@@ -81,12 +88,14 @@ public class NewNetworkParser implements IParser {
                 String charSetName = Charset.defaultCharset().name();
                 reader = new BufferedReader(new InputStreamReader(is, charSetName));
                 container.setHeaders(parseHeaders(file, is));
+                saver.saveElement(container);
                 String lineStr;
                 try {
                     while ((lineStr = reader.readLine()) != null) {
                         if (lineStr != null) {
                             String[] line = parser.parseLine(lineStr);
-                            container.setValues(line);
+                            container.setValues(new LinkedList<String>(Arrays.asList(line)));
+                            saver.saveElement(container);
                         }
                     }
                 } catch (IOException e) {
@@ -99,8 +108,9 @@ public class NewNetworkParser implements IParser {
                 LOGGER.error(String.format("FILE %s not found", file.getName()));
                 throw (RuntimeException)new RuntimeException().initCause(e);
             }
+            LOGGER.info("Saving network data finishing in: " + (System.currentTimeMillis() - startTime) + ": file "
+                    + file.getName());
 
-            saver.saveElement(container);
         }
 
     }
