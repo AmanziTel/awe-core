@@ -231,6 +231,23 @@ public abstract class LoaderPage<T extends IConfigurationData> extends WizardPag
         return result;
     }
 
+    /**
+     * Gets the loaders descriptions.
+     * 
+     * @return the loaders descriptions
+     */
+    protected String[] getNewLoadersDescriptions() {
+        if (newloaders.isEmpty()) {
+            AbstractLoaderWizard<T> wizard = (AbstractLoaderWizard<T>)getWizard();
+            newloaders.addAll(wizard.getNewLoaders());
+        }
+        String[] result = new String[newloaders.size()];
+        for (int i = 0; i < result.length; i++) {
+            result[i] = newloaders.get(i).getLoaderInfo().getType();
+        }
+        return result;
+    }
+
     @Override
     public void setWizard(IWizard newWizard) {
         if (newWizard instanceof AbstractLoaderWizard) {

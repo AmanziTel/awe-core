@@ -14,6 +14,8 @@
 package org.amanzi.neo.loader.core.newparser;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import org.amanzi.neo.loader.core.newsaver.IData;
@@ -29,6 +31,14 @@ public class NetworkRowContainer implements IData {
      */
     private Map<String, Object> headerMap;
     /**
+     * contain rows values;
+     */
+    private List<String> row = new LinkedList<String>();
+    /**
+     * contain header values;
+     */
+    private List<String> header;
+    /**
      * headers name;
      */
     private String[] headers;
@@ -36,7 +46,7 @@ public class NetworkRowContainer implements IData {
 
     public NetworkRowContainer(int minimalLength) {
         super();
-        headerMap=new HashMap<String, Object>();
+        headerMap = new HashMap<String, Object>();
         MINIMAL_SIZE = minimalLength;
     }
 
@@ -46,10 +56,10 @@ public class NetworkRowContainer implements IData {
      * @param headers
      */
     public void setHeaders(String[] headers) {
-        this.headers=headers;
+        this.headers = headers;
         for (String head : headers) {
             headerMap.put(head, null);
-            
+
         }
     }
 
@@ -62,12 +72,14 @@ public class NetworkRowContainer implements IData {
         if (values.length < MINIMAL_SIZE) {
             return;
         }
-        if (values.length < headerMap.size()) {
+        if (values.length < headerMap.size() || headerMap.size() < values.length - 1) {
             return;
         }
         int columnNumber = 0;
         for (Object element : values) {
-            headerMap.put(headers[columnNumber], element);
+            if (columnNumber <= headers.length - 1) {
+                headerMap.put(headers[columnNumber], element);
+            }
             columnNumber++;
         }
     }
@@ -79,5 +91,33 @@ public class NetworkRowContainer implements IData {
      */
     public Map<String, Object> getHeaderMap() {
         return headerMap;
+    }
+
+    /**
+     * @return Returns the row.
+     */
+    public List<String> getRow() {
+        return row;
+    }
+
+    /**
+     * @param row The row to set.
+     */
+    public void setRow(List<String> row) {
+        this.row = row;
+    }
+
+    /**
+     * @return Returns the header.
+     */
+    public List<String> getHeader() {
+        return header;
+    }
+
+    /**
+     * @param header The header to set.
+     */
+    public void setHeader(List<String> header) {
+        this.header = header;
     }
 }

@@ -138,7 +138,7 @@ public class LaunchLoaderNew extends AbstractHandler {
             ILoaderInfo loaderInfo = null;
             if (loaderClass != null) {
                 String loaderType = element.getAttribute("loader_type");
-                String loaderName = element.getAttribute("loader_Name");
+                String loaderName = element.getAttribute("loader_name");
                 String loaderDataType = element.getAttribute("loader_data_type");
                 loaderInfo = new LoaderInfoImpl(loaderName, loaderType, loaderDataType);
                 loader = (ILoaderNew)element.createExecutableExtension("loader_class");

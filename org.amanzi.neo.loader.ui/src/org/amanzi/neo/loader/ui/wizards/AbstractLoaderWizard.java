@@ -32,6 +32,7 @@ import org.amanzi.neo.loader.core.IProgressEvent;
 import org.amanzi.neo.loader.core.newsaver.IData;
 import org.amanzi.neo.loader.core.parser.IConfigurationData;
 import org.amanzi.neo.loader.core.parser.IDataElement;
+import org.amanzi.neo.loader.core.preferences.PreferenceStore;
 import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
 import org.amanzi.neo.services.ui.utils.ActionUtil;
 import org.eclipse.core.runtime.CoreException;
@@ -120,7 +121,7 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         // init pref store in not initialized before
-        NeoLoaderPlugin.getDefault().getPreferenceStore().getString("init");
+        PreferenceStore.getPreferenceStore().getValue("init");
 
         setNeedsProgressMonitor(true);
         maxMainPageId = -1;
@@ -283,7 +284,7 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
         final IConfiguration newdata = getNewConfigurationData();
         final ILoader< ? extends IDataElement, T> loader = getSelectedLoader();
         final ILoaderNew< ? extends IData, IConfiguration> newloader = getNewSelectedLoader();
-        if ((data == null || loader == null)&&(newdata == null || newloader == null)) {
+        if ((data == null || loader == null) && (newdata == null || newloader == null)) {
             return false;
         }
         if (accessType != DatabaseAccessType.EMBEDDED) {
@@ -437,6 +438,8 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
         info.setAdditionalPages(pageConfigElements);
         loaders.put(loader, info);
     }
+
+   
 
     /**
      * Gets the configuration data.

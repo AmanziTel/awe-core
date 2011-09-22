@@ -54,7 +54,7 @@ public class NewNetworkService extends NewAbstractService {
      * @since 1.0.0
      */
     public enum NetworkElementNodeType implements INodeType {
-        NETWORK, BSC, SITE, SECTOR;
+        NETWORK, BSC, SITE, SECTOR, CITY, MSC;
         @Override
         public String getId() {
             return name().toLowerCase();
@@ -297,5 +297,4 @@ public class NewNetworkService extends NewAbstractService {
         return getChildElementTraversalDescription().evaluator(new FilterNodesByType(elementType)).traverse(parent).nodes();
     }
 
-   
 }

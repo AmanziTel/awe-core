@@ -5,8 +5,25 @@
    <extension-point id="org.amanzi.loader.core.saver" name="Extension for Saver" schema="schema/org.amanzi.loader.core.saver.exsd"/>
    <extension-point id="org.amanzi.loader.core.newparser" name="Extension for new Parsers" schema="schema/org.amanzi.loader.core.newparser.exsd"/>
    <extension-point id="org.amanzi.loader.core.newsaver" name="Extension for new Saver" schema="schema/org.amanzi.loader.core.newsaver.exsd"/>
+   
+    <extension
+         point="org.amanzi.loader.core.newparser">
+      <newparser
+            class="org.amanzi.neo.loader.core.newparser.NewNetworkParser"
+            id="org.amanzi.neo.loader.core.newparser.NewNetworkParser">
+      </newparser>
+   </extension>
+   <extension
+         point="org.amanzi.loader.core.newsaver">
+       <newsaver
+            class="org.amanzi.neo.loader.core.newsaver.NewNetworkSaver"
+            id="org.amanzi.neo.loader.core.newsaver.NewNetworkSaver">
+      </newsaver>
+   </extension>
    <extension
          point="org.amanzi.loader.core.parser">
+    
+      
       <parser
             class="org.amanzi.neo.loader.core.parser.CSVParser"
             id="org.amanzi.neo.loader.core.parser.CSVParser">
@@ -78,6 +95,8 @@
             class="org.amanzi.neo.loader.core.saver.network.TrxSaver"
             id="org.amanzi.neo.loader.core.saver.network.TrxSaver">
       </saver>
+   
+      
    </extension>
 
 </plugin>

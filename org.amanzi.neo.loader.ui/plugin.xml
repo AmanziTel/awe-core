@@ -70,6 +70,16 @@
                       value="org.amanzi.neo.loader.ui.wizards.AMSXMLLoaderWizard">
                 </parameter>
              </command>
+              <command
+                   commandId="org.amanzi.neo.loader.ui.commands.LaunchLoaderNew"
+                   icon="icons/16/network.png"
+                   id="org.amanzi.neo.loader.ui.commands.LaunchLoaderNew"
+                   tooltip="Load Network Data">
+                <parameter
+                      name="org.amanzi.neo.loader.ui.commands.guiId"
+                      value="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard">
+                </parameter>
+             </command>
              <command
                    commandId="org.amanzi.neo.loader.ui.commands.LaunchLoader"
                    icon="icons/16/dataset.png"
@@ -154,7 +164,7 @@
              saver="org.amanzi.neo.loader.core.saver.impl.NetworkSaver"
              validator="org.amanzi.neo.loader.ui.validators.NetworkSectorDataValidator">
        </loader>
-       <loader
+    <!--   <loader
              description="Network Site Data"
              gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
              loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
@@ -164,6 +174,7 @@
              renderable="true"
              allowCreate="true">
        </loader>
+       -->
        <loader
              description="Neighbour Loader"
              gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
@@ -324,13 +335,25 @@
          point="org.amanzi.neo.loader.ui.newloaders">
       <newloader
             gui="org.amanzi.neo.loader.ui.wizards.AMSXMLLoaderWizard"
+            id="AMSXMLLoader"
             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoaderNew"
             loader_data_type="AMS"
             loader_name="AMSXMLLoader"
             loader_type="XML"
             parser="org.amanzi.awe.cassidian.loader.parser.AMSXMLParser"
-            saver="org.amanzi.awe.cassidian.saver.AMSXMLSaver">
-         <page></page>
+            saver="org.amanzi.awe.cassidian.saver.AMSXMLSaver"
+            validator="org.amanzi.neo.loader.ui.validators.AMSXMLDataValidator">
+      </newloader>
+       <newloader
+             gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
+             id="NewNetworkLoader"
+             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoaderNew"
+             loader_data_type="Network"
+             loader_name="NewNetworkLoader"
+             loader_type="CSV"
+             parser="org.amanzi.neo.loader.core.newparser.NewNetworkParser"
+             saver="org.amanzi.neo.loader.core.newsaver.NewNetworkSaver"
+             validator="org.amanzi.neo.loader.ui.validators.NetworkValidator">
       </newloader>
    </extension>
 
