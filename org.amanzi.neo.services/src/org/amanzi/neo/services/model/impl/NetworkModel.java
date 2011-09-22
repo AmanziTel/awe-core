@@ -310,4 +310,18 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         super.finishUp();
     }
 
+    /**
+     * @param dsServ The dsServ to set.
+     */
+    public void setDatasetService(NewDatasetService dsServ) {
+        this.dsServ = dsServ;
+    }
+
+    /**
+     * @param nwServ The nwServ to set.
+     */
+    public void setNetworkService(NewNetworkService nwServ) {
+        this.nwServ = nwServ;
+    }
+
 }

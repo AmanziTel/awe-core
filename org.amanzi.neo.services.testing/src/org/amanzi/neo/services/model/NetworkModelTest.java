@@ -1,21 +1,37 @@
 package org.amanzi.neo.services.model;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import junit.framework.Assert;
 
 import org.amanzi.neo.services.CorrelationService;
 import org.amanzi.neo.services.CorrelationServiceTest;
+import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
+import org.amanzi.neo.services.NewDatasetService.DriveTypes;
 import org.amanzi.neo.services.NewNetworkService;
+import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.ProjectService;
+import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.model.impl.CorrelationModel;
 import org.amanzi.neo.services.model.impl.DataElement;
+import org.amanzi.neo.services.model.impl.DriveModel;
 import org.amanzi.neo.services.model.impl.NetworkModel;
 import org.amanzi.testing.AbstractAWETest;
 import org.apache.log4j.Logger;
+import org.jmock.Expectations;
+import org.jmock.Mockery;
+import org.jmock.lib.legacy.ClassImposteriser;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -81,63 +97,35 @@ public class NetworkModelTest extends AbstractAWETest {
 	}
 
 	@Test
-	public void testGetMinLatitude() {
-		double min = Double.MAX_VALUE;
+	public void testUpdateBounds() {
+		double min_lat = Double.MAX_VALUE;
+		double max_lat = 0;
+		double min_lon = Double.MAX_VALUE;
+		double max_lon = 0;
 
 		for (int i = 0; i < 10; i++) {
 			double lat = Math.random() * Double.MAX_VALUE;
-			if (lat < min) {
-				min = lat;
+			if (lat < min_lat) {
+				min_lat = lat;
 			}
-			model.updateLocationBounds(lat, 0);
-		}
-
-		assertEquals(min, model.getMinLatitude());
-	}
-
-	@Test
-	public void testGetMaxLatitude() {
-		double max = 0;
-
-		for (int i = 0; i < 10; i++) {
-			double lat = Math.random() * Double.MAX_VALUE;
-			if (lat > max) {
-				max = lat;
+			if (lat > max_lat) {
+				max_lat = lat;
 			}
-			model.updateLocationBounds(lat, 0);
-		}
-
-		assertEquals(max, model.getMaxLatitude());
-	}
-
-	@Test
-	public void testGetMinLongitude() {
-		double min = Double.MAX_VALUE;
-
-		for (int i = 0; i < 10; i++) {
 			double lon = Math.random() * Double.MAX_VALUE;
-			if (lon < min) {
-				min = lon;
+			if (lon < min_lon) {
+				min_lon = lon;
 			}
-			model.updateLocationBounds(0, lon);
+			if (lon > max_lon) {
+				max_lon = lon;
+			}
+			model.updateLocationBounds(lat, lon);
 		}
 
-		assertEquals(min, model.getMinLongitude());
-	}
-
-	@Test
-	public void testGetMaxLongitude() {
-		double max = 0;
-
-		for (int i = 0; i < 10; i++) {
-			double lon = Math.random() * Double.MAX_VALUE;
-			if (lon > max) {
-				max = lon;
-			}
-			model.updateLocationBounds(0, lon);
-		}
-
-		assertEquals(max, model.getMaxLongitude());
+		// min and max values are valid
+		assertEquals(min_lat, model.getMinLatitude());
+		assertEquals(max_lat, model.getMaxLatitude());
+		assertEquals(min_lon, model.getMinLongitude());
+		assertEquals(max_lon, model.getMinLongitude());
 	}
 
 	@Test
@@ -148,29 +136,117 @@ public class NetworkModelTest extends AbstractAWETest {
 		NetworkModel nm = new NetworkModel(root);
 
 		// object created not null
+		assertNotNull(nm);
 		// root node correct
+		assertEquals(network, nm.getRootNode());
 		// name correct
-		fail("Not yet implemented"); // TODO
+		assertEquals(network.getProperty(NewAbstractService.NAME, null),
+				nm.getName());
 	}
 
 	@Test
 	public void testCreateElement() {
-		fail("Not yet implemented"); // TODO
+		IDataElement parentElement = new DataElement(network);
+		for (INodeType type : NetworkElementNodeType.values()) {
+			Map<String, Object> params = new HashMap<String, Object>();
+			params.put(NewAbstractService.TYPE, type.getId());
+			params.put(NewAbstractService.NAME, type.getId());
+			params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
+			DataElement element = new DataElement(params);
+
+			IDataElement testElement = model.createElement(parentElement,
+					element);
+			// object returned not null
+			assertNotNull(testElement);
+			// underlying node not null
+			assertNotNull(((DataElement) testElement).getNode());
+			// properties set
+			for (String key : params.keySet()) {
+				assertEquals(params.get(key), testElement.get(key));
+			}
+			parentElement = testElement;
+		}
 	}
 
 	@Test
 	public void testFindElement() {
-		fail("Not yet implemented"); // TODO
+		IDataElement parentElement = new DataElement(network);
+		for (INodeType type : NetworkElementNodeType.values()) {
+
+			Map<String, Object> params = new HashMap<String, Object>();
+			params.put(NewAbstractService.TYPE, type.getId());
+			params.put(NewAbstractService.NAME, type.getId());
+			params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
+			DataElement element = new DataElement(params);
+
+			IDataElement newElement = model.createElement(parentElement,
+					element);
+			parentElement = newElement;
+		}
+
+		for (INodeType type : NetworkElementNodeType.values()) {
+
+			Map<String, Object> params = new HashMap<String, Object>();
+			params.put(NewAbstractService.TYPE, type.getId());
+			params.put(NewAbstractService.NAME, type.getId());
+			IDataElement testElement = model
+					.findElement(new DataElement(params));
+			// object returned not null
+			assertNotNull(testElement);
+			// underlying node not null
+			assertNotNull(((DataElement) testElement).getNode());
+
+		}
 	}
 
 	@Test
 	public void testGetElement() {
-		fail("Not yet implemented"); // TODO
+		IDataElement parentElement = new DataElement(network);
+		for (INodeType type : NetworkElementNodeType.values()) {
+
+			Map<String, Object> params = new HashMap<String, Object>();
+			params.put(NewAbstractService.TYPE, type.getId());
+			params.put(NewAbstractService.NAME, type.getId());
+			params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
+			DataElement element = new DataElement(params);
+
+			IDataElement newElement = model.createElement(parentElement,
+					element);
+			parentElement = newElement;
+		}
+
+		parentElement = new DataElement(network);
+		for (INodeType type : NetworkElementNodeType.values()) {
+			Map<String, Object> params = new HashMap<String, Object>();
+			params.put(NewAbstractService.TYPE, type.getId());
+			params.put(NewAbstractService.NAME, type.getId());
+			IDataElement testElement = model.getElement(parentElement,
+					new DataElement(params));
+			// object returned not null
+			assertNotNull(testElement);
+			// underlying node not null
+			assertNotNull(((DataElement) testElement).getNode());
+
+			parentElement = testElement;
+		}
 	}
 
 	@Test
-	public void testUpdateBounds() {
-		fail("Not yet implemented"); // TODO
+	public void testGetElementNoElement() {
+		IDataElement parentElement = new DataElement(network);
+		for (INodeType type : NetworkElementNodeType.values()) {
+			Map<String, Object> params = new HashMap<String, Object>();
+			params.put(NewAbstractService.TYPE, type.getId());
+			params.put(NewAbstractService.NAME, type.getId());
+			IDataElement testElement = model.getElement(parentElement,
+					new DataElement(params));
+			// object returned not null
+			assertNotNull(testElement);
+			// underlying node not null
+			assertNotNull(((DataElement) testElement).getNode());
+
+			parentElement = testElement;
+		}
 	}
 
 	@Ignore
@@ -187,16 +263,82 @@ public class NetworkModelTest extends AbstractAWETest {
 
 	@Test
 	public void testGetCorrelationModels() {
-		fail("Not yet implemented"); // TODO
+		List<Node> datasets = new ArrayList<Node>();
+		try {
+			for (int i = 0; i < 4; i++) {
+				Node dataset = dsServ.createDataset(project, "network" + i,
+						DatasetTypes.DRIVE, DriveTypes.values()[0]);
+				datasets.add(dataset);
+				new CorrelationModel(network, dataset);
+			}
+		} catch (AWEException e) {
+			LOGGER.error("Could not create drive model", e);
+			fail();
+		}
+
+		Iterable<ICorrelationModel> it = model.getCorrelationModels();
+		Assert.assertNotNull(it);
+		Assert.assertTrue(it.iterator().hasNext());
+		for (ICorrelationModel mod : model.getCorrelationModels()) {
+			Assert.assertTrue(datasets.contains(mod.getDataset()));
+			Assert.assertEquals(network, mod.getNetwork());
+		}
 	}
 
 	@Test
 	public void testGetChildren() {
-		fail("Not yet implemented"); // TODO
+		Mockery context = new Mockery() {
+			{
+				setImposteriser(ClassImposteriser.INSTANCE);
+			}
+		};
+
+		final NewDatasetService dsS = context.mock(NewDatasetService.class);
+
+		// expectations
+		context.checking(new Expectations() {
+			{
+				atLeast(1).of(dsS).getChildrenTraverser(network);
+			}
+		});
+
+		// execute
+		model.setDatasetService(dsS);
+		DataElement de = new DataElement(network);
+		model.getChildren(de);
+
+		// verify
+		context.assertIsSatisfied();
 	}
 
 	@Test
 	public void testGetAllElementsByType() {
-		fail("Not yet implemented"); // TODO
+		Mockery context = new Mockery() {
+			{
+				setImposteriser(ClassImposteriser.INSTANCE);
+			}
+		};
+
+		final NewNetworkService nwS = context.mock(NewNetworkService.class);
+
+		for (final NetworkElementNodeType type : NetworkElementNodeType
+				.values()) {
+			// expectations
+			context.checking(new Expectations() {
+				{
+					atLeast(1).of(nwS).findAllNetworkElements(network, type);
+				}
+			});
+		}
+
+		// execute
+		model.setNetworkService(nwS);
+
+		for (NetworkElementNodeType type : NetworkElementNodeType.values()) {
+			model.getAllElementsByType(type);
+		}
+
+		// verify
+		context.assertIsSatisfied();
 	}
 }
