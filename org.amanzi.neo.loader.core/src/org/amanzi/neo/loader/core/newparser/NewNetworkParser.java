@@ -94,7 +94,7 @@ public class NewNetworkParser implements IParser {
                     while ((lineStr = reader.readLine()) != null) {
                         if (lineStr != null) {
                             String[] line = parser.parseLine(lineStr);
-                            container.setRow(new LinkedList<String>(Arrays.asList(line)));
+                            container.setValues(new LinkedList<String>(Arrays.asList(line)));
                             saver.saveElement(container);
                         }
                     }

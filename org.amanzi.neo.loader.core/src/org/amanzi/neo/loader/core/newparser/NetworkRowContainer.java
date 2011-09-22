@@ -13,10 +13,8 @@
 
 package org.amanzi.neo.loader.core.newparser;
 
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.amanzi.neo.loader.core.newsaver.IData;
 
@@ -27,10 +25,6 @@ import org.amanzi.neo.loader.core.newsaver.IData;
  */
 public class NetworkRowContainer implements IData {
     /**
-     * contain pair: K- string header , V- header value;
-     */
-    private Map<String, Object> headerMap;
-    /**
      * contain rows values;
      */
     private List<String> row = new LinkedList<String>();
@@ -39,71 +33,32 @@ public class NetworkRowContainer implements IData {
      */
     private List<String> header;
     /**
-     * headers name;
+     * Minimal values count
      */
-    private String[] headers;
     private int MINIMAL_SIZE;
 
     public NetworkRowContainer(int minimalLength) {
         super();
-        headerMap = new HashMap<String, Object>();
         MINIMAL_SIZE = minimalLength;
-    }
-
-    /**
-     * set necessary headers names;
-     * 
-     * @param headers
-     */
-    public void setHeaders(String[] headers) {
-        this.headers = headers;
-        for (String head : headers) {
-            headerMap.put(head, null);
-
-        }
-    }
-
-    /**
-     * set values that matched to header
-     * 
-     * @param values
-     */
-    public void setValues(String[] values) {
-        if (values.length < MINIMAL_SIZE) {
-            return;
-        }
-        if (values.length < headerMap.size() || headerMap.size() < values.length - 1) {
-            return;
-        }
-        int columnNumber = 0;
-        for (Object element : values) {
-            if (columnNumber <= headers.length - 1) {
-                headerMap.put(headers[columnNumber], element);
-            }
-            columnNumber++;
-        }
-    }
-
-    /**
-     * get header and Appropriated row values;
-     * 
-     * @return Returns the headerMap.
-     */
-    public Map<String, Object> getHeaderMap() {
-        return headerMap;
     }
 
     /**
      * @return Returns the row.
      */
-    public List<String> getRow() {
+    public List<String> getValues() {
         return row;
     }
 
     /**
      * @param row The row to set.
      */
-    public void setRow(List<String> row) {
+    public void setValues(List<String> row) {
+        if (row.size() < MINIMAL_SIZE) {
+            return;
+        }
+        if (row.size() != header.size()) {
+            return;
+        }
         this.row = row;
     }
 

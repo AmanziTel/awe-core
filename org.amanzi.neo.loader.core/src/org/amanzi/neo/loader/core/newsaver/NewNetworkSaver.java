@@ -225,7 +225,7 @@ public class NewNetworkSaver implements ISaver {
                 lineCounter++;
             } else {
                 lineCounter++;
-                List<String> value = container.getRow();
+                List<String> value = container.getValues();
                 createBSC(value);
                 System.out.println("!!!!!!!!!!!!!!!!! line number " + lineCounter);
             }
