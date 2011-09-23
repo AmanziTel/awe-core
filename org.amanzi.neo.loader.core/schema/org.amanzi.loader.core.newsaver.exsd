@@ -18,7 +18,7 @@
       </annotation>
       <complexType>
          <sequence minOccurs="1" maxOccurs="unbounded">
-            <element ref="new saver"/>
+            <element ref="newsaver"/>
          </sequence>
          <attribute name="point" type="string" use="required">
             <annotation>
@@ -30,7 +30,7 @@
          <attribute name="id" type="string">
             <annotation>
                <documentation>
-                  	saver id
+                  saver id
                </documentation>
             </annotation>
          </attribute>
@@ -47,7 +47,7 @@
       </complexType>
    </element>
 
-   <element name="new saver">
+   <element name="newsaver">
       <complexType>
          <attribute name="id" type="string" use="required">
             <annotation>

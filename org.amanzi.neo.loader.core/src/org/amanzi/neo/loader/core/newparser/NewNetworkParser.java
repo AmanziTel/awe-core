@@ -30,6 +30,7 @@ import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.LoaderUtils;
 import org.amanzi.neo.loader.core.newsaver.IData;
 import org.amanzi.neo.loader.core.newsaver.ISaver;
+import org.amanzi.neo.services.networkModel.IModel;
 import org.apache.log4j.Logger;
 
 import au.com.bytecode.opencsv.CSVParser;
@@ -37,11 +38,12 @@ import au.com.bytecode.opencsv.CSVParser;
 /**
  * @author Kondratenko_Vladislav
  */
-@SuppressWarnings("rawtypes")
-public class NewNetworkParser implements IParser {
+public class NewNetworkParser<T1 extends ISaver<IModel, T3, T2>, T2 extends IConfiguration, T3 extends IData>
+        implements
+            IParser<T1, T2, T3> {
     private static Logger LOGGER = Logger.getLogger(NewNetworkParser.class);
-    private IConfiguration config;
-    private ISaver saver;
+    private T2 config;
+    private List<T1> saver;
     private CSVParser parser;
     private final static int MINIMAL_SIZE = 2;
     protected Character delimeters;
@@ -76,11 +78,10 @@ public class NewNetworkParser implements IParser {
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public void run() {
         long startTime = System.currentTimeMillis();
-        NetworkRowContainer container = null;
+        NetworkRowContainer container;
         for (File file : config.getFilesToLoad()) {
             try {
                 container = new NetworkRowContainer(MINIMAL_SIZE);
@@ -88,14 +89,14 @@ public class NewNetworkParser implements IParser {
                 String charSetName = Charset.defaultCharset().name();
                 reader = new BufferedReader(new InputStreamReader(is, charSetName));
                 container.setHeaders(parseHeaders(file, is));
-                saver.saveElement(container);
+                saveInAllSavers((T3)container);
                 String lineStr;
                 try {
                     while ((lineStr = reader.readLine()) != null) {
                         if (lineStr != null) {
                             String[] line = parser.parseLine(lineStr);
                             container.setValues(new LinkedList<String>(Arrays.asList(line)));
-                            saver.saveElement(container);
+                            saveInAllSavers((T3)container);
                         }
                     }
                 } catch (IOException e) {
@@ -115,10 +116,10 @@ public class NewNetworkParser implements IParser {
 
     }
 
-    @Override
-    public void init(IConfiguration configuration, ISaver saver) {
-        config = configuration;
-        this.saver = saver;
+    private void saveInAllSavers(T3 data) {
+        for (T1 saverMember : saver) {
+            saverMember.saveElement(data);
+        }
     }
 
     /**
@@ -135,4 +136,12 @@ public class NewNetworkParser implements IParser {
         }
         return delimeters;
     }
+
+    @Override
+    public void init(T2 configuration, List<T1> saver) {
+        this.config=configuration;
+        this.saver = saver;
+
+    }
+
 }

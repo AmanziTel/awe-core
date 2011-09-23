@@ -79,9 +79,7 @@ public class ConfigurationDataImpl implements IConfiguration {
      * @return
      */
     private List<File> getRootsFiles(File root) {
-        if (!filelist.isEmpty()) {
-            return filelist;
-        }
+        filelist.clear();
         File[] rootList;
         if (root.isDirectory()) {
             rootList = root.listFiles();
@@ -108,7 +106,6 @@ public class ConfigurationDataImpl implements IConfiguration {
         }
         return datasetNames;
     }
-
 
     @Override
     public void setSourceFile(File sourceFile) {

@@ -26,6 +26,7 @@ import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.NetworkModel;
+import org.amanzi.neo.services.networkModel.IModel;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -34,11 +35,10 @@ import org.apache.log4j.Logger;
  * 
  * @author Kondratenko_Vladislav
  */
-@SuppressWarnings("rawtypes")
-public class NewNetworkSaver implements ISaver {
+public class NewNetworkSaver<M extends IModel, D extends IData, C extends IConfiguration> implements ISaver<M, D, C> {
     private Long lineCounter = 0l;
     private NetworkModel model;
-    private DataLoadPreferenceManager preferenceManager;
+    private DataLoadPreferenceManager preferenceManager=new DataLoadPreferenceManager();
     private String CI_LAC = "CI_LAC";
     /**
      * contains appropriation of header synonyms and name inDB</br> <b>key</b>- name in db ,
@@ -97,7 +97,7 @@ public class NewNetworkSaver implements ISaver {
                 return;
             } else {
                 createSite(root, row);
-               
+
                 return;
             }
         }
@@ -119,7 +119,7 @@ public class NewNetworkSaver implements ISaver {
         }
         LOGGER.info("<-- CITY find and create time: " + (System.currentTimeMillis() - time));
         row.set(getHeaderId(fileSynonyms.get(DataLoadPreferenceManager.CITY)), null);
-        
+
         createSite(findedElement, row);
     }
 
@@ -149,7 +149,7 @@ public class NewNetworkSaver implements ISaver {
         time = System.currentTimeMillis();
         IDataElement findedElement = model.findElement(siteElement);
 
-        if (findedElement == null ) {
+        if (findedElement == null) {
             findedElement = model.createElement(root, siteElement);
         }
         LOGGER.info("<-- SITE find and create time: " + (System.currentTimeMillis() - time));
@@ -205,9 +205,7 @@ public class NewNetworkSaver implements ISaver {
 
     @Override
     public void init(IConfiguration configuration, IData dataElement) {
-        preferenceManager = new DataLoadPreferenceManager();
         Map<String, Object> rootElement = new HashMap<String, Object>();
-
         rootElement.put("project", new DatasetService().findOrCreateAweProject(configuration.getDatasetNames().get("Project")));
         rootElement.put(INeoConstants.PROPERTY_NAME_NAME, configuration.getDatasetNames().get("Network"));
         rootElement.put(INeoConstants.PROPERTY_TYPE_NAME, DatasetTypes.NETWORK.getId());
@@ -216,7 +214,6 @@ public class NewNetworkSaver implements ISaver {
 
     @Override
     public void saveElement(IData dataElement) {
-
         if (dataElement instanceof NetworkRowContainer) {
             NetworkRowContainer container = ((NetworkRowContainer)dataElement);
             if (fileSynonyms.isEmpty()) {

@@ -13,10 +13,12 @@
 
 package org.amanzi.neo.loader.core.newparser;
 
+import java.util.List;
+
 import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.newsaver.IData;
 import org.amanzi.neo.loader.core.newsaver.ISaver;
-import org.amanzi.neo.services.model.IModel;
+import org.amanzi.neo.services.networkModel.IModel;
 
 /**
  * common parser interface
@@ -30,7 +32,7 @@ public interface IParser<T1 extends ISaver<? extends IModel, T3, T2>, T2 extends
      * @param configuration common configuration data
      * @param saver which saver use for saving data to database
      */
-    public void init(T2 configuration, T1 saver);
+    public void init(T2 configuration, List<T1> saver);
 
     /**
      * run parser and save parsed files in database. For saving data parser use saver which it was

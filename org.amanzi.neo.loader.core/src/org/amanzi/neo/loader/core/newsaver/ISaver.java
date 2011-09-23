@@ -14,7 +14,7 @@
 package org.amanzi.neo.loader.core.newsaver;
 
 import org.amanzi.neo.loader.core.IConfiguration;
-import org.amanzi.neo.services.model.IModel;
+import org.amanzi.neo.services.networkModel.IModel;
 
 /**
  * common saver Interface

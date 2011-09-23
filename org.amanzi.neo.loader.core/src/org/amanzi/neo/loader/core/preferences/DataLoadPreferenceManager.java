@@ -33,7 +33,7 @@ public class DataLoadPreferenceManager {
     public final static String SECTOR = "sector";
     public final static String SITE = "site";
 
-    public void intializeDefault() {
+    public static void intializeDefault() {
         if (preferenceInitializer == null) {
             preferenceInitializer=new DataLoadPreferenceInitializer();
         }
