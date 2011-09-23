@@ -164,6 +164,13 @@ public interface IVault {
      * @return Type of vault
      */
     public String getType();
+    
+    /**
+     * Method return whether to statistics changed
+     *
+     * @return True if statistics is changed, false if statistics not change.
+     */
+    public boolean getIsStatisticsChanged();
 
     /**
      * Add subVault to this vault
@@ -185,6 +192,13 @@ public interface IVault {
      * @param type
      */
     public void setType(String type);
+    
+    /**
+     * Set state of statistics
+     *
+     * @param isStatisticsChanged State of statictics 
+     */
+    public void setIsStatisticsChanged(boolean isStatisticsChanged);
 
     /**
      * this method get list of propertyStatistics

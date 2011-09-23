@@ -35,23 +35,26 @@ import org.neo4j.graphdb.traversal.TraversalDescription;
  * @author Kruglik_A
  * @since 1.0.0
  */
-public class StatisticService extends AbstractService{
+public class StatisticService extends AbstractService {
     
-    public Node findStatRoot(Node root){
+    public Node findStatRoot(Node root) {
         Node statRoot;
-        Relationship rel = root.getSingleRelationship(StatisticRelationshipTypes.STATISTIC_PROP,Direction.OUTGOING);
-        if (rel==null)
+        Relationship rel = root.getSingleRelationship(StatisticRelationshipTypes.STATISTIC_PROP, Direction.OUTGOING);
+        if (rel == null) {
             statRoot = null;
-        else statRoot=rel.getEndNode();
+        }
+        else {
+            statRoot=rel.getEndNode();
+        }
         return statRoot;
     }
     
-    public Node findOrCreateStatRoot(Node root){
+    public Node findOrCreateStatRoot(Node root) {
         Node statRoot = findStatRoot(root);
-        if (statRoot == null){
+        if (statRoot == null) {
             Transaction tx = databaseService.beginTx();
             try {
-                statRoot=databaseService.createNode();
+                statRoot = databaseService.createNode();
                 statRoot.setProperty(StatisticProperties.KEY, "PROPERTIES");
                 root.createRelationshipTo(statRoot, StatisticRelationshipTypes.STATISTIC_PROP);
                 tx.success();
@@ -62,31 +65,33 @@ public class StatisticService extends AbstractService{
         return statRoot;
     }
     
-    public void saveStatistic(Node statRoot, Node root, long totalCount, TraversalDescription trDisc, HashMap<String,Vault>vaults){
-
-
+    public void saveStatistic(Node statRoot, Node root, long totalCount, 
+            TraversalDescription traversalDescription, HashMap<String, Vault> vaults) {
+        
         Transaction tx = databaseService.beginTx();
         try {
             statRoot = findOrCreateStatRoot(root);
 
             statRoot.setProperty(StatisticProperties.COUNT, totalCount);
-            HashSet<Node>treeToDelete=new HashSet<Node>();
-            HashSet<Vault>savedVault=new HashSet<Vault>();
-            for (Path path:trDisc.traverse(statRoot)){
-                String key= (String)path.endNode().getProperty(StatisticProperties.KEY);
-                Vault vault=vaults.get(key);
-                if (vault==null){
+            HashSet<Node> treeToDelete = new HashSet<Node>();
+            HashSet<Vault> savedVault = new HashSet<Vault>();
+            
+            for (Path path : traversalDescription.traverse(statRoot)) {
+                String key = (String)path.endNode().getProperty(StatisticProperties.KEY);
+                Vault vault = vaults.get(key);
+                if (vault == null) {
                     treeToDelete.add(path.endNode());
-                }else {
+                }
+                else {
                     vault.saveVault((INeoDbService)databaseService,statRoot,path.endNode());
                     savedVault.add(vault);
                 }
             }   
-            for (Node node:treeToDelete){
+            for (Node node:treeToDelete) {
                 NeoServiceFactory.getInstance().getDatasetService().deleteTree((INeoDbService)databaseService, node);
             }
-            for (Vault vault:vaults.values()){
-                if (!savedVault.contains(vault)){
+            for (Vault vault:vaults.values()) {
+                if (!savedVault.contains(vault)) {
                     vault.saveVault((INeoDbService)databaseService,statRoot, null);
                 }
             }
