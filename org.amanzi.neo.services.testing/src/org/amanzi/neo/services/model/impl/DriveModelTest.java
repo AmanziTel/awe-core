@@ -1,4 +1,4 @@
-package org.amanzi.neo.services.model;
+package org.amanzi.neo.services.model.impl;
 
 import static org.junit.Assert.fail;
 
@@ -23,6 +23,9 @@ import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
+import org.amanzi.neo.services.model.ICorrelationModel;
+import org.amanzi.neo.services.model.IDataElement;
+import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.impl.CorrelationModel;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.DriveModel;

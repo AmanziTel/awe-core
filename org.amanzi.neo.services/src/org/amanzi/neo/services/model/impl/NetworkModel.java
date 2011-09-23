@@ -27,8 +27,6 @@ import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
-import org.amanzi.neo.services.exceptions.DatabaseException;
-import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.model.ICorrelationModel;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
@@ -94,8 +92,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
                 network = dsServ.createDataset((Node)rootElement.get("project"), rootElement.get(NewAbstractService.NAME)
                         .toString(), DatasetTypes.NETWORK);
             } catch (AWEException e) {
-                // TODO Handle InvalidDatasetParameterException
-                throw (RuntimeException)new RuntimeException().initCause(e);
+                LOGGER.error("Could not create network root.", e);
             }
         }
         this.rootNode = network;
@@ -144,8 +141,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
             }
             nwServ.setProperties(node, (DataElement)element);
         } catch (AWEException e) {
-            // TODO Handle IllegalNodeDataException
-            throw (RuntimeException)new RuntimeException().initCause(e);
+            LOGGER.error("Could not create network element.", e);
         }
 
         return node == null ? null : new DataElement(node);
@@ -313,14 +309,14 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     /**
      * @param dsServ The dsServ to set.
      */
-    public void setDatasetService(NewDatasetService dsServ) {
+    void setDatasetService(NewDatasetService dsServ) {
         this.dsServ = dsServ;
     }
 
     /**
      * @param nwServ The nwServ to set.
      */
-    public void setNetworkService(NewNetworkService nwServ) {
+    void setNetworkService(NewNetworkService nwServ) {
         this.nwServ = nwServ;
     }
 

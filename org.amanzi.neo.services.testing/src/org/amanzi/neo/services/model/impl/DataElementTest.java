@@ -1,4 +1,4 @@
-package org.amanzi.neo.services.model;
+package org.amanzi.neo.services.model.impl;
 
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.testing.AbstractAWETest;

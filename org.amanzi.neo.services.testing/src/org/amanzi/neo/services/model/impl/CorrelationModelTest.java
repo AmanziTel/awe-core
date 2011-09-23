@@ -1,4 +1,4 @@
-package org.amanzi.neo.services.model;
+package org.amanzi.neo.services.model.impl;
 
 import static org.junit.Assert.fail;
 

@@ -25,6 +25,7 @@ import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
+import org.amanzi.neo.services.NewDatasetService.DriveTypes;
 import org.amanzi.neo.services.enums.IDriveType;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
@@ -65,7 +66,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     private Index<Node> files;
     private int count = 0;
     private INodeType primaryType = DriveNodeTypes.M;
-    private IDriveType type;
+    private IDriveType driveType;
 
     private NewDatasetService dsServ;
     private CorrelationService crServ = NeoServiceFactory.getInstance().getNewCorrelationService();
@@ -118,7 +119,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
 
             this.rootNode = rootNode;
             this.name = (String)rootNode.getProperty(NewAbstractService.NAME, null);
-            // this.type = TODO:
+            this.driveType = DriveTypes.valueOf(rootNode.getProperty(NewDatasetService.DRIVE_TYPE, "").toString().toUpperCase());
         } else {
             // validate params
             if (parent == null) {
@@ -129,7 +130,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
             dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
             this.rootNode = dsServ.getDataset(parent, name, DatasetTypes.DRIVE, type);
             this.name = name;
-            this.type = type;
+            this.driveType = type;
         }
     }
 
@@ -498,7 +499,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
 
     @Override
     public IDriveType getDriveType() {
-        return type;
+        return driveType;
     }
 
     @Override
