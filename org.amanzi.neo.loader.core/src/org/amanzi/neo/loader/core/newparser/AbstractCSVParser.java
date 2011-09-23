@@ -30,7 +30,7 @@ import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.LoaderUtils;
 import org.amanzi.neo.loader.core.newsaver.IData;
 import org.amanzi.neo.loader.core.newsaver.ISaver;
-import org.amanzi.neo.services.networkModel.IModel;
+import org.amanzi.neo.services.model.IModel;
 import org.apache.log4j.Logger;
 
 import au.com.bytecode.opencsv.CSVParser;
