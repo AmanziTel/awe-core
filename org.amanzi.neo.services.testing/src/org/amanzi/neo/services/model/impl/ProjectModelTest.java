@@ -1,6 +1,5 @@
 package org.amanzi.neo.services.model.impl;
 
-import static org.junit.Assert.fail;
 import junit.framework.Assert;
 
 import org.amanzi.neo.services.NewAbstractService;
@@ -8,7 +7,6 @@ import org.amanzi.neo.services.NewDatasetService.DriveTypes;
 import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.INetworkModel;
-import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
 import org.amanzi.testing.AbstractAWETest;
 import org.apache.log4j.Logger;
 import org.junit.After;
@@ -23,10 +21,6 @@ public class ProjectModelTest extends AbstractAWETest {
 	private static Logger LOGGER = Logger.getLogger(ProjectModelTest.class);
 
 	private Transaction tx;
-	// private static CorrelationService correlationServ;
-	// private static NewDatasetService dsServ;
-	// private static NewNetworkService nwServ;
-	// private static ProjectService prServ;
 	private static int count = 0;
 
 	private ProjectModel model;
@@ -35,11 +29,6 @@ public class ProjectModelTest extends AbstractAWETest {
 	public static void setUpBeforeClass() throws Exception {
 		clearDb();
 		initializeDb();
-
-		// correlationServ = new CorrelationService(graphDatabaseService);
-		// dsServ = new NewDatasetService(graphDatabaseService);
-		// nwServ = new NewNetworkService(graphDatabaseService);
-		// prServ = new ProjectService(graphDatabaseService);
 	}
 
 	@AfterClass
@@ -63,6 +52,7 @@ public class ProjectModelTest extends AbstractAWETest {
 
 	@Test
 	public void testProjectModel() {
+		LOGGER.debug("start testProjectModel()");
 		model = new ProjectModel("project");
 		// object returned not null
 		Assert.assertNotNull(model);
@@ -76,12 +66,14 @@ public class ProjectModelTest extends AbstractAWETest {
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testProjectModelNameNull() {
+		LOGGER.debug("start testProjectModelNameNull()");
 		model = new ProjectModel(null);
 		// exception
 	}
 
 	@Test
 	public void testCreateDatasetStringIDriveType() {
+		LOGGER.debug("start testCreateDatasetStringIDriveType()");
 
 		IDriveModel dm = model.createDataset("dataset", DriveTypes.values()[0]);
 
@@ -96,6 +88,7 @@ public class ProjectModelTest extends AbstractAWETest {
 
 	@Test
 	public void testCreateDatasetStringIDriveTypeINodeType() {
+		LOGGER.debug("start testCreateDatasetStringIDriveTypeINodeType()");
 
 		IDriveModel dm = model.createDataset("dataset", DriveTypes.values()[0],
 				NetworkElementNodeType.values()[0]);
@@ -113,6 +106,7 @@ public class ProjectModelTest extends AbstractAWETest {
 
 	@Test
 	public void testFindDataset() {
+		LOGGER.debug("start testFindDataset()");
 		model.createDataset("dataset", DriveTypes.values()[0]);
 
 		IDriveModel dm = model.findDataset("dataset", DriveTypes.values()[0]);
@@ -127,6 +121,7 @@ public class ProjectModelTest extends AbstractAWETest {
 
 	@Test
 	public void testFindDatasetNoDataset() {
+		LOGGER.debug("start testFindDatasetNoDataset()");
 		IDriveModel dm = model.findDataset("dataset", DriveTypes.values()[0]);
 		// object returned is null
 		Assert.assertNull(dm);
@@ -134,6 +129,7 @@ public class ProjectModelTest extends AbstractAWETest {
 
 	@Test
 	public void testGetDatasetStringIDriveType() {
+		LOGGER.debug("start testGetDatasetStringIDriveType()");
 		// dataset exists
 		model.createDataset("dataset", DriveTypes.values()[0]);
 
@@ -149,6 +145,7 @@ public class ProjectModelTest extends AbstractAWETest {
 
 	@Test
 	public void testGetDatasetStringIDriveTypeNoDataset() {
+		LOGGER.debug("start testGetDatasetStringIDriveTypeNoDataset()");
 		// dataset !exists
 
 		IDriveModel dm = model.getDataset("dataset", DriveTypes.values()[0]);
@@ -163,6 +160,7 @@ public class ProjectModelTest extends AbstractAWETest {
 
 	@Test
 	public void testGetDatasetStringIDriveTypeINodeType() {
+		LOGGER.debug("start testGetDatasetStringIDriveTypeINodeType()");
 		// dataset exists
 		model.createDataset("dataset", DriveTypes.values()[0],
 				NetworkElementNodeType.values()[0]);
@@ -182,6 +180,7 @@ public class ProjectModelTest extends AbstractAWETest {
 
 	@Test
 	public void testGetDatasetStringIDriveTypeINodeTypeNoDataset() {
+		LOGGER.debug("start testGetDatasetStringIDriveTypeINodeTypeNoDataset()");
 		// dataset !exists
 
 		IDriveModel dm = model.getDataset("dataset", DriveTypes.values()[0],
@@ -199,6 +198,7 @@ public class ProjectModelTest extends AbstractAWETest {
 
 	@Test
 	public void testCreateNetwork() {
+		LOGGER.debug("start testCreateNetwork()");
 		INetworkModel nm = model.createNetwork("network");
 
 		// object returned not null
@@ -210,6 +210,7 @@ public class ProjectModelTest extends AbstractAWETest {
 
 	@Test
 	public void testFindNetwork() {
+		LOGGER.debug("start testFindNetwork()");
 		model.createNetwork("network");
 
 		INetworkModel nm = model.findNetwork("network");
@@ -222,6 +223,7 @@ public class ProjectModelTest extends AbstractAWETest {
 
 	@Test
 	public void testFindNetworkNoNetwork() {
+		LOGGER.debug("start testFindNetworkNoNetwork()");
 		INetworkModel nm = model.findNetwork("network");
 		// object returned is null
 		Assert.assertNull(nm);
@@ -229,6 +231,7 @@ public class ProjectModelTest extends AbstractAWETest {
 
 	@Test
 	public void testGetNetwork() {
+		LOGGER.debug("start testGetNetwork()");
 		// network exists
 		model.createNetwork("network");
 
@@ -242,6 +245,7 @@ public class ProjectModelTest extends AbstractAWETest {
 
 	@Test
 	public void testGetNetworkNoNetwork() {
+		LOGGER.debug("start testGetNetworkNoNetwork()");
 		// network !exists
 		INetworkModel nm = model.getNetwork("network");
 		// object returned not null
