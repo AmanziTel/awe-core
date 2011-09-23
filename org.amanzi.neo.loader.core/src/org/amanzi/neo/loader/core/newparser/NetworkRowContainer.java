@@ -19,7 +19,7 @@ import java.util.List;
 import org.amanzi.neo.loader.core.newsaver.IData;
 
 /**
- * common row container contains temporary collection of network information
+ * common row container contains temporary <b>HEADERS</b> and <b>ROW</b> information
  * 
  * @author Kondratenko_Vladislav
  */
