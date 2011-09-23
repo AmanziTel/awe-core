@@ -49,8 +49,9 @@
 
    <element name="newloader">
       <complexType>
-         <sequence>
+         <sequence minOccurs="1" maxOccurs="unbounded">
             <element ref="pages" minOccurs="0" maxOccurs="unbounded"/>
+            <element ref="saver" minOccurs="1" maxOccurs="unbounded"/>
          </sequence>
          <attribute name="id" type="string">
             <annotation>
@@ -73,16 +74,6 @@
             </annotation>
          </attribute>
          <attribute name="parser" type="string" use="required">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-               <appInfo>
-                  <meta.attribute kind="identifier"/>
-               </appInfo>
-            </annotation>
-         </attribute>
-         <attribute name="saver" type="string" use="required">
             <annotation>
                <documentation>
                   
@@ -145,6 +136,31 @@
                </documentation>
                <appInfo>
                   <meta.attribute kind="java" basedOn=":org.amanzi.neo.loader.ui.wizards.ILoaderPage"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="saver">
+      <complexType>
+         <attribute name="class" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="java" basedOn=":org.amanzi.neo.loader.core.newsaver.ISaver"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="id" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="identifier"/>
                </appInfo>
             </annotation>
          </attribute>

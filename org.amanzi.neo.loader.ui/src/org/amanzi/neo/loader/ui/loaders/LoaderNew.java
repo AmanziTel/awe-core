@@ -13,6 +13,8 @@
 
 package org.amanzi.neo.loader.ui.loaders;
 
+import java.util.List;
+
 import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.ILoaderInfo;
 import org.amanzi.neo.loader.core.ILoaderNew;
@@ -20,7 +22,6 @@ import org.amanzi.neo.loader.core.IValidator;
 import org.amanzi.neo.loader.core.newparser.IParser;
 import org.amanzi.neo.loader.core.newsaver.IData;
 import org.amanzi.neo.loader.core.newsaver.ISaver;
-import org.amanzi.neo.loader.ui.validators.AMSXMLDataValidator;
 
 /**
  * <p>
@@ -39,7 +40,7 @@ public class LoaderNew implements ILoaderNew<IData, IConfiguration> {
     /**
      * saver for current Loader
      */
-    ISaver saver;
+    List<ISaver> saver;
     @SuppressWarnings("rawtypes")
     /**
      * parser for current Loader
@@ -52,7 +53,7 @@ public class LoaderNew implements ILoaderNew<IData, IConfiguration> {
 
     @SuppressWarnings("rawtypes")
     @Override
-    public void setSaver(ISaver saver) {
+    public void setSaver(List<ISaver> saver) {
         this.saver = saver;
     }
 
@@ -72,10 +73,12 @@ public class LoaderNew implements ILoaderNew<IData, IConfiguration> {
         this.validator = validator;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public void init(IConfiguration config) {
-        saver.init(config, null);
+        for (ISaver saverMem : saver) {
+            saverMem.init(config, null);
+        }
         parser.init(config, saver);
     }
 

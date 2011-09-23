@@ -341,8 +341,12 @@
             loader_name="AMSXMLLoader"
             loader_type="XML"
             parser="org.amanzi.awe.cassidian.loader.parser.AMSXMLParser"
-            saver="org.amanzi.awe.cassidian.saver.AMSXMLSaver"
             validator="org.amanzi.neo.loader.ui.validators.AMSXMLDataValidator">
+                <saver 
+                id="org.amanzi.awe.cassidian.saver.AMSXMLSaver"
+            	class="org.amanzi.awe.cassidian.saver.AMSXMLSaver"
+            />
+            
       </newloader>
        <newloader
              gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
@@ -352,8 +356,11 @@
              loader_name="NewNetworkLoader"
              loader_type="CSV"
              parser="org.amanzi.neo.loader.core.newparser.NewNetworkParser"
-             saver="org.amanzi.neo.loader.core.newsaver.NewNetworkSaver"
              validator="org.amanzi.neo.loader.ui.validators.NetworkValidator">
+               <saver 
+               id="org.amanzi.neo.loader.core.newsaver.NewNetworkSaver"
+            	class="org.amanzi.neo.loader.core.newsaver.NewNetworkSaver"
+            />
       </newloader>
    </extension>
 

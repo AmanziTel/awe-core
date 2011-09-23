@@ -26,7 +26,7 @@ import org.amanzi.neo.loader.core.newsaver.IData;
 import org.amanzi.neo.loader.core.newsaver.ISaver;
 import org.amanzi.neo.loader.ui.loaders.LoaderNew;
 import org.amanzi.neo.loader.ui.wizards.IGraphicInterfaceForLoaders;
-import org.amanzi.neo.services.model.IModel;
+import org.amanzi.neo.services.networkModel.IModel;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -133,6 +133,7 @@ public class LaunchLoaderNew extends AbstractHandler {
     private ILoaderNew<IData, IConfiguration> defineLoader(IConfigurationElement element) {
         try {
             String loaderClass = element.getAttribute("loader_class");
+
             ILoaderNew loader = null;
             ILoaderInfo loaderInfo = null;
             if (loaderClass != null) {
@@ -147,7 +148,7 @@ public class LaunchLoaderNew extends AbstractHandler {
                 loader = (ILoaderNew)cl.newInstance();
             }
             IParser<ISaver<IModel, IData, IConfiguration>, IConfiguration, IData> parser = defineParser(element);
-            ISaver<IModel, IData, IConfiguration> saver = defineSaver(element);
+            List<ISaver<IModel, IData, IConfiguration>> saver = defineSaver(element);
             if (parser != null && saver != null) {
                 loader.setParser(parser);
                 loader.setSaver(saver);
@@ -197,23 +198,36 @@ public class LaunchLoaderNew extends AbstractHandler {
      * @return the i saver<? extends i data element>
      */
     @SuppressWarnings("unchecked")
-    private ISaver<IModel, IData, IConfiguration> defineSaver(IConfigurationElement element) {
-        String saverId = element.getAttribute("saver");
+    private List<ISaver<IModel, IData, IConfiguration>> defineSaver(IConfigurationElement element) {
+        List<IConfigurationElement> saverElements = new LinkedList<IConfigurationElement>();
+        for (IConfigurationElement innerElement : element.getChildren()) {
+            if (innerElement.getName().equals("saver")) {
+                saverElements.add(innerElement);
+            }
+        }
         IExtensionRegistry reg = Platform.getExtensionRegistry();
         IConfigurationElement[] extensions = reg.getConfigurationElementsFor("org.amanzi.loader.core.newsaver");
+        List<ISaver<IModel, IData, IConfiguration>> saverList = new LinkedList<ISaver<IModel, IData, IConfiguration>>();
         for (int i = 0; i < extensions.length; i++) {
             IConfigurationElement elementSaver = extensions[i];
-            if (saverId.equals(elementSaver.getAttribute("id"))) {
-                try {
-                    return (ISaver<IModel, IData, IConfiguration>)elementSaver.createExecutableExtension("class");
-                } catch (CoreException e) {
-                    // TODO Handle CoreException
-                    e.printStackTrace();
-                    return null;
+            for (IConfigurationElement saver : saverElements) {
+                String saverId = saver.getAttribute("id");
+                if (saverId.equals(elementSaver.getAttribute("id"))) {
+                    try {
+                        saverList.add((ISaver<IModel, IData, IConfiguration>)elementSaver.createExecutableExtension("class"));
+                    } catch (CoreException e) {
+                        // TODO Handle CoreException
+                        e.printStackTrace();
+                        return null;
+                    }
                 }
             }
         }
-        return null;
+        if (saverList.isEmpty()) {
+            return null;
+        } else {
+            return saverList;
+        }
     }
 
     /**
