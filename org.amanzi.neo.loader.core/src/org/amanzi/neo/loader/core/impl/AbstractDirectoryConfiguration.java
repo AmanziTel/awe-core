@@ -14,6 +14,8 @@
 package org.amanzi.neo.loader.core.impl;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.amanzi.neo.loader.core.IConfiguration;
 
@@ -39,6 +41,23 @@ public abstract class AbstractDirectoryConfiguration implements IConfiguration {
         directory = file;
     }
     
+    @Override
+    public List<File> getFilesToLoad() {
+        return getFilesToLoad(directory);
+    }
     
+    private List<File> getFilesToLoad(File directory) {
+        List<File> result = new ArrayList<File>();
+        
+        for (File subFile : directory.listFiles()) {
+            if (subFile.isDirectory()) {
+                result.addAll(getFilesToLoad(subFile));
+            } else {
+                result.add(subFile);
+            }
+        }
+        
+        return result;
+    }
 
 }
