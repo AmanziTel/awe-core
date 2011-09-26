@@ -21,7 +21,7 @@ import java.util.List;
 import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.IConfiguration;
-import org.amanzi.neo.loader.core.newparser.NetworkRowContainer;
+import org.amanzi.neo.loader.core.newparser.CSVContainer;
 import org.amanzi.neo.loader.core.newsaver.NewNetworkSaver;
 import org.amanzi.neo.loader.core.parser.BaseTransferData;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceInitializer;
@@ -89,7 +89,7 @@ public class NewNetworkTesting {
     @Test
     public void testSaver() {
         saver.init(config, null);
-        NetworkRowContainer rowContainer = new NetworkRowContainer(MINIMAL_COLUMN_SIZE);
+        CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
         saver.saveElement(rowContainer);

@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.amanzi.neo.loader.core.IConfiguration;
-import org.amanzi.neo.loader.core.newparser.NetworkRowContainer;
+import org.amanzi.neo.loader.core.newparser.CSVContainer;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
@@ -28,7 +28,7 @@ import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
 import org.amanzi.neo.services.model.ISelectionModel;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.SelectionModel;
-import org.amanzi.neo.services.networkModel.IModel;
+import org.amanzi.neo.services.model.IModel;
 
 /**
  * @author Kondratenko_Vladislav
@@ -36,7 +36,7 @@ import org.amanzi.neo.services.networkModel.IModel;
 public class SectorSelectionSaver<M extends IModel, D extends IData, C extends IConfiguration> implements ISaver<M, D, C> {
     private ISelectionModel model;
     private List<String> headers;
-    private NetworkRowContainer container;
+    private CSVContainer container;
 
     @Override
     public void init(C configuration, D dataElement) {
@@ -60,8 +60,8 @@ public class SectorSelectionSaver<M extends IModel, D extends IData, C extends I
 
     @Override
     public void saveElement(D dataElement) {
-        if (dataElement instanceof NetworkRowContainer) {
-            container = (NetworkRowContainer)dataElement;
+        if (dataElement instanceof CSVContainer) {
+            container = (CSVContainer)dataElement;
             if (headers == null) {
                 headers = container.getHeaders();
             } else {

@@ -29,6 +29,20 @@ import org.amanzi.neo.loader.core.newsaver.ISaver;
  */
 public interface ILoaderNew<T extends IData, T2 extends IConfiguration> {
     /**
+     * set progress bar to loader
+     * 
+     * @param listener
+     */
+    void addProgressListener(ILoaderProgressListener listener);
+
+    /**
+     * remove progress Monitor
+     * 
+     * @param listener
+     */
+    void removeProgressListener(ILoaderProgressListener listener);
+
+    /**
      * set saver for selected loader
      * 
      * @param saver

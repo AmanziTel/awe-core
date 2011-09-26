@@ -609,7 +609,8 @@ public enum NodeTypes implements INodeType{
     ROOT_PROXY("root_proxy"),
     PROXY("proxy"), TRX("carrier"), FREQ("freq"),
     FREQUENCY_PLAN("frequency_plan"),SY_GROUP("sy_group"),FREQUENCY_ROOT("frq_root"), FR_SPECTRUM("fr_spectrum"), 
-    SELECTION_LIST("selection_list");
+    SELECTION_LIST("selection_list"),
+    DRIVE("drive");
     
     
     private final String id;

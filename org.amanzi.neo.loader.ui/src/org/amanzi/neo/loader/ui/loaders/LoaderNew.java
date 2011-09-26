@@ -18,6 +18,7 @@ import java.util.List;
 import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.ILoaderInfo;
 import org.amanzi.neo.loader.core.ILoaderNew;
+import org.amanzi.neo.loader.core.ILoaderProgressListener;
 import org.amanzi.neo.loader.core.IValidator;
 import org.amanzi.neo.loader.core.newparser.IParser;
 import org.amanzi.neo.loader.core.newsaver.IData;
@@ -95,6 +96,16 @@ public class LoaderNew implements ILoaderNew<IData, IConfiguration> {
     @Override
     public void setLoaderInfo(ILoaderInfo info) {
         this.info = info;
+    }
+
+    @Override
+    public void addProgressListener(ILoaderProgressListener listener) {
+        parser.addProgressListener(listener);
+    }
+
+    @Override
+    public void removeProgressListener(ILoaderProgressListener listener) {
+        parser.removeProgressListener(listener);
     }
 
 }

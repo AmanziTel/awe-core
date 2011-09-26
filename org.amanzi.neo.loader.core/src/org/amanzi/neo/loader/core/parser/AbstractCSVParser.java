@@ -83,7 +83,7 @@ public abstract class AbstractCSVParser<T extends BaseTransferData> extends Comm
 
             CSVParser parser = new CSVParser(delim, quoteCharacter, '\\', false, true);
 
-            header = parseHeader(reader,parser);
+            header = parseHeader(reader, parser);
             if (header == null) {
                 error("Header for element " + element.getFile().getName() + " is not found");
                 return false;
@@ -95,17 +95,20 @@ public abstract class AbstractCSVParser<T extends BaseTransferData> extends Comm
                     lineNumber++;
 
                     if (header.length != nextLine.length) {
-                        error(String.format("File %s, line %s:incorrect data: Header length=%s,data length=%s. Data was skipped", element.getFile().getName(), lineNumber, header.length, nextLine.length));
+                        error(String.format("File %s, line %s:incorrect data: Header length=%s,data length=%s. Data was skipped",
+                                element.getFile().getName(), lineNumber, header.length, nextLine.length));
                         continue;
                     }
-                    
+
                     T data = createTransferData(element, header, nextLine, lineNumber);
                     getSaver().save(data);
                 } finally {
                     int persentage = is.percentage();
                     if (persentage - persentageOld > PERCENTAGE_FIRE) {
                         persentageOld = persentage;
-                        if (fireSubProgressEvent(element, new ProgressEventImpl(String.format(getDescriptionFormat(), element.getFile().getName()), persentage / 100d))) {
+                        if (fireSubProgressEvent(element,
+                                new ProgressEventImpl(String.format(getDescriptionFormat(), element.getFile().getName()),
+                                        persentage / 100d))) {
                             return true;
                         }
                     }
@@ -122,7 +125,7 @@ public abstract class AbstractCSVParser<T extends BaseTransferData> extends Comm
 
     /**
      * Parses the header.
-     *
+     * 
      * @param reader the reader
      * @param parser the parser
      * @return the header or null if header is not found
@@ -175,7 +178,8 @@ public abstract class AbstractCSVParser<T extends BaseTransferData> extends Comm
     }
 
     private final static String cleanHeader(String header) {
-        return header.replaceAll("[\\s\\-\\[\\]\\(\\)\\/\\.\\\\\\:\\#]+", "_").replaceAll("[^\\w]+", "_").replaceAll("_+", "_").replaceAll("\\_$", "").toLowerCase();
+        return header.replaceAll("[\\s\\-\\[\\]\\(\\)\\/\\.\\\\\\:\\#]+", "_").replaceAll("[^\\w]+", "_").replaceAll("_+", "_")
+                .replaceAll("\\_$", "").toLowerCase();
     }
 
     /**

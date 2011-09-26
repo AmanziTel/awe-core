@@ -23,7 +23,7 @@ import org.amanzi.neo.loader.core.newsaver.IData;
  * 
  * @author Kondratenko_Vladislav
  */
-public class NetworkRowContainer implements IData {
+public class CSVContainer implements IData {
     /**
      * contain rows values;
      */
@@ -32,14 +32,9 @@ public class NetworkRowContainer implements IData {
      * contain header values;
      */
     private List<String> headers;
-    /**
-     * Minimal values count
-     */
-    private int MINIMAL_SIZE;
 
-    public NetworkRowContainer(int minimalLength) {
+    public CSVContainer(int minimalLength) {
         super();
-        MINIMAL_SIZE = minimalLength;
     }
 
     /**
@@ -53,9 +48,6 @@ public class NetworkRowContainer implements IData {
      * @param row The row to set.
      */
     public void setValues(List<String> row) {
-        if (row.size() < MINIMAL_SIZE) {
-            return;
-        }
         
         this.row = row;
     }

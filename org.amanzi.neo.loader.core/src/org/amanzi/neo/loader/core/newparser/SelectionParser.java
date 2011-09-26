@@ -14,18 +14,17 @@
 package org.amanzi.neo.loader.core.newparser;
 
 import org.amanzi.neo.loader.core.IConfiguration;
-import org.amanzi.neo.loader.core.newsaver.IData;
 import org.amanzi.neo.loader.core.newsaver.ISaver;
-import org.amanzi.neo.loader.core.newparser.AbstractCSVParser;
-import org.amanzi.neo.services.networkModel.IModel;
+import org.amanzi.neo.services.model.IModel;
 import org.apache.log4j.Logger;
 
 /**
  * @author Kondratenko_Vladislav
  */
-public class SelectionParser<T1 extends ISaver<IModel, T3, T2>, T2 extends IConfiguration, T3 extends IData>
+public class SelectionParser<T1 extends ISaver<IModel, CSVContainer, T2>, T2 extends IConfiguration>
         extends
-            AbstractCSVParser<T1, T2, T3> {
+            AbstractCSVParser<T1, T2> {
+
     /**
      * initialize necessary parser variables
      */

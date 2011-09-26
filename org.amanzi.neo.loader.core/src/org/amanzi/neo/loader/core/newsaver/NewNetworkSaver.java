@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.amanzi.neo.loader.core.IConfiguration;
-import org.amanzi.neo.loader.core.newparser.NetworkRowContainer;
+import org.amanzi.neo.loader.core.newparser.CSVContainer;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceManager;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.INeoConstants;
@@ -214,8 +214,8 @@ public class NewNetworkSaver<M extends IModel, D extends IData, C extends IConfi
 
     @Override
     public void saveElement(IData dataElement) {
-        if (dataElement instanceof NetworkRowContainer) {
-            NetworkRowContainer container = ((NetworkRowContainer)dataElement);
+        if (dataElement instanceof CSVContainer) {
+            CSVContainer container = ((CSVContainer)dataElement);
             if (fileSynonyms.isEmpty()) {
                 headers = container.getHeaders();
                 makeAppropriationWithSynonyms(headers);

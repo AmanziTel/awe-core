@@ -127,7 +127,6 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
         editor.getTextControl(main).addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
                 ILoaderNew< ? extends IData, IConfiguration> loader = setFileName(editor.getStringValue());
-                networkName = new java.io.File(getFileName()).getName();
                 network.setText(networkName);
                 changeNetworkName();
                 // updateCRS();
@@ -198,6 +197,7 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
         }
         this.fileName = fileName;
         networkName = new java.io.File(getFileName()).getName();
+        networkName = networkName.substring(0, networkName.lastIndexOf('.'));
         // CommonConfigData configurationData = getConfigurationData();
         getNewConfigurationData().setSourceFile(new File(fileName));
 
@@ -283,10 +283,6 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
             setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_NETWORK, DialogPage.ERROR);
             return false;
         }
-        if (restrictedNames.contains(networkName)) {
-            setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_RESTRICTED_NETWORK_NAME, DialogPage.ERROR);
-            return false;
-        }
         if (getNewSelectedLoader() == null) {
             setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_TYPE, DialogPage.ERROR);
             return false;
@@ -338,10 +334,6 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
         }
         if (StringUtils.isEmpty(networkName)) {
             setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_NETWORK, DialogPage.ERROR);
-            return false;
-        }
-        if (restrictedNames.contains(networkName)) {
-            setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_RESTRICTED_NETWORK_NAME, DialogPage.ERROR);
             return false;
         }
         if (getNewSelectedLoader() == null) {

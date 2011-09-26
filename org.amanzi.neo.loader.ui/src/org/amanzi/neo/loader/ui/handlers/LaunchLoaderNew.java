@@ -147,8 +147,8 @@ public class LaunchLoaderNew extends AbstractHandler {
                 Class cl = LoaderNew.class;
                 loader = (ILoaderNew)cl.newInstance();
             }
-            IParser<ISaver<IModel, IData, IConfiguration>, IConfiguration, IData> parser = defineParser(element);
-            List<ISaver<IModel, IData, IConfiguration>> saver = defineSaver(element);
+            IParser<ISaver<IModel,? extends IData, IConfiguration>, IConfiguration,? extends IData> parser = defineParser(element);
+            List<ISaver<IModel, ? extends IData, IConfiguration>> saver = defineSaver(element);
             if (parser != null && saver != null) {
                 loader.setParser(parser);
                 loader.setSaver(saver);
@@ -198,7 +198,7 @@ public class LaunchLoaderNew extends AbstractHandler {
      * @return the i saver<? extends i data element>
      */
     @SuppressWarnings("unchecked")
-    private List<ISaver<IModel, IData, IConfiguration>> defineSaver(IConfigurationElement element) {
+    private List<ISaver<IModel, ? extends IData, IConfiguration>> defineSaver(IConfigurationElement element) {
         List<IConfigurationElement> saverElements = new LinkedList<IConfigurationElement>();
         for (IConfigurationElement innerElement : element.getChildren()) {
             if (innerElement.getName().equals("saver")) {
@@ -207,7 +207,7 @@ public class LaunchLoaderNew extends AbstractHandler {
         }
         IExtensionRegistry reg = Platform.getExtensionRegistry();
         IConfigurationElement[] extensions = reg.getConfigurationElementsFor("org.amanzi.loader.core.newsaver");
-        List<ISaver<IModel, IData, IConfiguration>> saverList = new LinkedList<ISaver<IModel, IData, IConfiguration>>();
+        List<ISaver<IModel, ? extends IData, IConfiguration>> saverList = new LinkedList<ISaver<IModel, ? extends IData, IConfiguration>>();
         for (int i = 0; i < extensions.length; i++) {
             IConfigurationElement elementSaver = extensions[i];
             for (IConfigurationElement saver : saverElements) {
@@ -237,7 +237,7 @@ public class LaunchLoaderNew extends AbstractHandler {
      * @return the i parser<? extends i data element,? extends i configuration data>
      */
     @SuppressWarnings("unchecked")
-    private IParser<ISaver<IModel, IData, IConfiguration>, IConfiguration, IData> defineParser(IConfigurationElement element) {
+    private IParser<ISaver<IModel, ? extends IData, IConfiguration>, IConfiguration, ? extends IData> defineParser(IConfigurationElement element) {
         String parserId = element.getAttribute("parser");
         IExtensionRegistry reg = Platform.getExtensionRegistry();
         IConfigurationElement[] extensions = reg.getConfigurationElementsFor("org.amanzi.loader.core.newparser");
@@ -245,7 +245,7 @@ public class LaunchLoaderNew extends AbstractHandler {
             IConfigurationElement elementParser = extensions[i];
             if (parserId.equals(elementParser.getAttribute("id"))) {
                 try {
-                    return (IParser<ISaver<IModel, IData, IConfiguration>, IConfiguration, IData>)elementParser
+                    return (IParser<ISaver<IModel, ? extends IData, IConfiguration>, IConfiguration,? extends IData>)elementParser
                             .createExecutableExtension("class");
                 } catch (Exception e) {
                     // TODO Handle CoreException

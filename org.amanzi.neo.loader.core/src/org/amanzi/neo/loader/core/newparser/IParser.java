@@ -16,6 +16,8 @@ package org.amanzi.neo.loader.core.newparser;
 import java.util.List;
 
 import org.amanzi.neo.loader.core.IConfiguration;
+import org.amanzi.neo.loader.core.ILoaderProgressListener;
+import org.amanzi.neo.loader.core.IProgressEvent;
 import org.amanzi.neo.loader.core.newsaver.IData;
 import org.amanzi.neo.loader.core.newsaver.ISaver;
 import org.amanzi.neo.services.model.IModel;
@@ -25,7 +27,7 @@ import org.amanzi.neo.services.model.IModel;
  * 
  * @author Kondratenko_Vladislav
  */
-public interface IParser<T1 extends ISaver<? extends IModel, T3, T2>, T2 extends IConfiguration, T3 extends IData> {
+public interface IParser<T1 extends ISaver< ? extends IModel, T3, T2>, T2 extends IConfiguration, T3 extends IData> {
     /**
      * initialize required parser data;
      * 
@@ -39,4 +41,26 @@ public interface IParser<T1 extends ISaver<? extends IModel, T3, T2>, T2 extends
      * initialize in <B>init</B> method;
      */
     public void run();
+
+    /**
+     * set progress bar to loader
+     * 
+     * @param listener
+     */
+    void addProgressListener(ILoaderProgressListener listener);
+
+    /**
+     * remove progress Monitor
+     * 
+     * @param listener
+     */
+    void removeProgressListener(ILoaderProgressListener listener);
+
+    /**
+     * update progress monitor
+     * 
+     * @param event
+     * @return
+     */
+    boolean fireProgressEvent(IProgressEvent event);
 }

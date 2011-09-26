@@ -409,21 +409,21 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
      * @param loader the loader
      */
     protected void assignMonitorToProgressLoader(final IProgressMonitor monitor, ILoaderNew< ? extends IData, IConfiguration> loader) {
-        monitor.beginTask("ololo", 1000);
-        // loader.addProgressListener(new ILoaderProgressListener() {
-        // int jobCount = 0;
-        //
-        // @Override
-        // public void updateProgress(IProgressEvent event) {
-        // monitor.subTask(event.getProcessName());
-        // int jobDone = (int)(event.getPercentage() * 1000);
-        // monitor.worked(jobDone - jobCount);
-        // jobCount = jobDone;
-        // if (monitor.isCanceled()) {
-        // event.cancelProcess();
-        // }
-        // }
-        // });
+        monitor.beginTask(loader.getLoaderInfo().getName(), 1000);
+        loader.addProgressListener(new ILoaderProgressListener() {
+            int jobCount = 0;
+
+            @Override
+            public void updateProgress(IProgressEvent event) {
+                monitor.subTask(event.getProcessName());
+                int jobDone = (int)(event.getPercentage() * 1000);
+                monitor.worked(jobDone - jobCount);
+                jobCount = jobDone;
+                if (monitor.isCanceled()) {
+                    event.cancelProcess();
+                }
+            }
+        });
     }
 
     /**
@@ -438,8 +438,6 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
         info.setAdditionalPages(pageConfigElements);
         loaders.put(loader, info);
     }
-
-   
 
     /**
      * Gets the configuration data.

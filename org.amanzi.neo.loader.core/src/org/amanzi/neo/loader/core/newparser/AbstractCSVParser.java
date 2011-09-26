@@ -28,10 +28,9 @@ import java.util.List;
 import org.amanzi.neo.loader.core.CountingFileInputStream;
 import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.LoaderUtils;
-import org.amanzi.neo.loader.core.newsaver.IData;
+import org.amanzi.neo.loader.core.ProgressEventImpl;
 import org.amanzi.neo.loader.core.newsaver.ISaver;
 import org.amanzi.neo.services.model.IModel;
-import org.apache.log4j.Logger;
 
 import au.com.bytecode.opencsv.CSVParser;
 
@@ -40,19 +39,43 @@ import au.com.bytecode.opencsv.CSVParser;
  * 
  * @author Kondratenko_Vladislav
  */
-public abstract class AbstractCSVParser<T1 extends ISaver<IModel, T3, T2>, T2 extends IConfiguration, T3 extends IData>
-        implements
-            IParser<T1, T2, T3> {
+public abstract class AbstractCSVParser<T1 extends ISaver<IModel, CSVContainer, T2>, T2 extends IConfiguration>
+        extends
+            AbstractParser<T1, T2, CSVContainer> {
 
-    protected static Logger LOGGER;
-    protected T2 config;
-    protected List<T1> saver;
     protected CSVParser parser;
     protected int MINIMAL_SIZE = 2;
     protected Character delimeters;
     protected String[] possibleFieldSepRegexes = new String[] {"\t", ",", ";"};
     protected Character quoteCharacter = 0;
+    private CSVContainer container;
+    private CountingFileInputStream is;
+    private String charSetName = Charset.defaultCharset().name();
     protected BufferedReader reader;
+    private File tempFile;
+    private int percentage = 0;
+    private int persentageOld = 0;
+
+    /**
+     * 
+     */
+    public AbstractCSVParser() {
+        super();
+        try {
+            container = new CSVContainer(MINIMAL_SIZE);
+            if (currentFile != null) {
+                is = new CountingFileInputStream(currentFile);
+                reader = new BufferedReader(new InputStreamReader(is, charSetName));
+            }
+        } catch (FileNotFoundException e) {
+            // TODO Handle FileNotFoundException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        } catch (UnsupportedEncodingException e) {
+            // TODO Handle UnsupportedEncodingException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+
+    }
 
     /**
      * parse csv file headers
@@ -73,7 +96,6 @@ public abstract class AbstractCSVParser<T1 extends ISaver<IModel, T3, T2>, T2 ex
                     break;
                 }
             }
-
             return header;
         } catch (IOException e) {
             // TODO Handle IOException
@@ -81,53 +103,45 @@ public abstract class AbstractCSVParser<T1 extends ISaver<IModel, T3, T2>, T2 ex
         }
     }
 
-    /**
-     * parse file by string than put some data to the NetworkRowContainer which implements necessary
-     * interfaces ,after that send formed container for saving.
-     */
-    @SuppressWarnings("unchecked")
     @Override
-    public void run() {
-        long startTime = System.currentTimeMillis();
-        NetworkRowContainer container;
-        for (File file : config.getFilesToLoad()) {
+    protected CSVContainer parseElement() {
+
+        if (tempFile == null || tempFile != currentFile) {
             try {
-                container = new NetworkRowContainer(MINIMAL_SIZE);
-                CountingFileInputStream is = new CountingFileInputStream(file);
-                String charSetName = Charset.defaultCharset().name();
+                is = new CountingFileInputStream(currentFile);
                 reader = new BufferedReader(new InputStreamReader(is, charSetName));
-                container.setHeaders(parseHeaders(file, is));
-                saveInAllSavers((T3)container);
-                String lineStr;
-                try {
-                    while ((lineStr = reader.readLine()) != null) {
-                        if (lineStr != null) {
-                            String[] line = parser.parseLine(lineStr);
-                            container.setValues(new LinkedList<String>(Arrays.asList(line)));
-                            saveInAllSavers((T3)container);
-                        }
-                    }
-                } catch (IOException e) {
-                    throw (RuntimeException)new RuntimeException().initCause(e);
-                }
-            } catch (UnsupportedEncodingException e) {
-                LOGGER.error(String.format("UnsupportedEncodingException %s ", file.getName()), e);
-                throw (RuntimeException)new RuntimeException().initCause(e);
+                tempFile = currentFile;
             } catch (FileNotFoundException e) {
-                LOGGER.error(String.format("FILE %s not found", file.getName()));
+                // TODO Handle FileNotFoundException
+                throw (RuntimeException)new RuntimeException().initCause(e);
+            } catch (UnsupportedEncodingException e) {
+                // TODO Handle UnsupportedEncodingException
                 throw (RuntimeException)new RuntimeException().initCause(e);
             }
-            LOGGER.info("Saving network data finishing in: " + (System.currentTimeMillis() - startTime) + ": file "
-                    + file.getName());
-
         }
-
-    }
-
-    private void saveInAllSavers(T3 data) {
-        for (T1 saverMember : saver) {
-            saverMember.saveElement(data);
+        if (container.getHeaders() == null) {
+            container.setHeaders(parseHeaders(currentFile, is));
+            return container;
         }
+        try {
+            String lineStr;
+            if ((lineStr = reader.readLine()) != null) {
+                if (lineStr != null) {
+                    String[] line = parser.parseLine(lineStr);
+                    container.setValues(new LinkedList<String>(Arrays.asList(line)));
+                    return container;
+                }
+            }
+        } catch (IOException e) {
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        } finally {
+            int persentage = is.percentage();
+            if (persentage - persentageOld > PERCENTAGE_FIRE) {
+                persentageOld = persentage;
+                fireSubProgressEvent(currentFile, new ProgressEventImpl(String.format(currentFile.getName()), persentage / 100d));
+            }
+        }
+        return null;
     }
 
     /**
@@ -138,18 +152,10 @@ public abstract class AbstractCSVParser<T1 extends ISaver<IModel, T3, T2>, T2 ex
      */
     private char getDelimiters(File file) {
         if (delimeters == null) {
-
             String fieldSepRegex = LoaderUtils.defineDelimeters(file, MINIMAL_SIZE, possibleFieldSepRegexes);
             delimeters = fieldSepRegex.charAt(0);
         }
         return delimeters;
-    }
-
-    @Override
-    public void init(T2 configuration, List<T1> saver) {
-        this.config = configuration;
-        this.saver = saver;
-
     }
 
 }

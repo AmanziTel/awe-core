@@ -24,8 +24,12 @@ import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.IValidator;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
-import org.amanzi.neo.services.enums.NodeTypes;
-import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
+import org.amanzi.neo.services.NewDatasetService;
+import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
+import org.amanzi.neo.services.enums.DriveTypes;
+import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
+import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
+import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -58,8 +62,8 @@ public class AMSXMLDataValidator implements IValidator {
 
     @Override
     public Result isAppropriate(List<File> fileToLoad) {
-        if (fileToLoad == null) {
-            message = "select correct directory";
+        if (fileToLoad == null || fileToLoad.size() < 1) {
+            message = "there is no fail founded";
             result = Result.FAIL;
             return Result.FAIL;
         }
@@ -76,15 +80,45 @@ public class AMSXMLDataValidator implements IValidator {
 
     @Override
     public Result isValid(IConfiguration config) {
-        if (result == Result.SUCCESS) {
-            DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
-            Node root = datasetService.findRoot(config.getDatasetNames().get("Project"), config.getDatasetNames().get("Network"));
-            if (root == null || datasetService.getNodeType(root) != NodeTypes.NETWORK) {
-                result = Result.SUCCESS;
-                return result;
-            }
+        if (config.getDatasetNames().get("Project") == null) {
+            return Result.FAIL;
         }
-        message = String.format("Network '%s' is not found. ", config.getDatasetNames().get("Network"));
+        if (result == Result.SUCCESS) {
+            NewDatasetService newDatasetService = NeoServiceFactory.getInstance().getNewDatasetService();
+            DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
+            Node network;
+            Node dataset;
+            try {
+                network = newDatasetService.findDataset(datasetService.findOrCreateAweProject(config.getDatasetNames().get(
+                        "Project")), config.getDatasetNames().get("Network"), DatasetTypes.NETWORK);
+                dataset = newDatasetService.findDataset(datasetService.findOrCreateAweProject(config.getDatasetNames().get(
+                        "Project")), config.getDatasetNames().get("Dataset"), DatasetTypes.DRIVE, DriveTypes.AMS);
+                if (network == null && dataset != null) {
+                    message = String.format("Drive node %s is already exists in db ", config.getDatasetNames().get("Dataset"));
+                    return Result.FAIL;
+                } else if (dataset == null && network != null) {
+                    message = String.format("Network node %s is already exists in db ", config.getDatasetNames().get("Network"));
+                    return Result.FAIL;
+                } else if (dataset != null && network != null) {
+                    message = String.format("Network and Dataset nodes  is already exists in db ");
+                    return Result.FAIL;
+                } else {
+                    message = "";
+                    result = Result.SUCCESS;
+                    return result;
+                }
+            } catch (InvalidDatasetParameterException e) {
+                // TODO Handle InvalidDatasetParameterException
+                throw (RuntimeException)new RuntimeException().initCause(e);
+            } catch (DatasetTypeParameterException e) {
+                // TODO Handle DatasetTypeParameterException
+                throw (RuntimeException)new RuntimeException().initCause(e);
+            } catch (DuplicateNodeNameException e) {
+                // TODO Handle DuplicateNodeNameException
+                throw (RuntimeException)new RuntimeException().initCause(e);
+            }
+
+        }
         return Result.FAIL;
     }
 
