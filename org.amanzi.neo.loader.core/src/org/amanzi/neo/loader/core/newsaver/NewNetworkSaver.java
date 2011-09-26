@@ -38,7 +38,7 @@ import org.apache.log4j.Logger;
 public class NewNetworkSaver<M extends IModel, D extends IData, C extends IConfiguration> implements ISaver<M, D, C> {
     private Long lineCounter = 0l;
     private NetworkModel model;
-    private DataLoadPreferenceManager preferenceManager=new DataLoadPreferenceManager();
+    private DataLoadPreferenceManager preferenceManager = new DataLoadPreferenceManager();
     private String CI_LAC = "CI_LAC";
     /**
      * contains appropriation of header synonyms and name inDB</br> <b>key</b>- name in db ,
@@ -206,7 +206,7 @@ public class NewNetworkSaver<M extends IModel, D extends IData, C extends IConfi
     @Override
     public void init(IConfiguration configuration, IData dataElement) {
         Map<String, Object> rootElement = new HashMap<String, Object>();
-        rootElement.put("project", new DatasetService().findOrCreateAweProject(configuration.getDatasetNames().get("Project")));
+        rootElement.put("project", new DatasetService().findAweProject(configuration.getDatasetNames().get("Project")));
         rootElement.put(INeoConstants.PROPERTY_NAME_NAME, configuration.getDatasetNames().get("Network"));
         rootElement.put(INeoConstants.PROPERTY_TYPE_NAME, DatasetTypes.NETWORK.getId());
         model = new NetworkModel(new DataElement(rootElement));

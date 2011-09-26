@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.amanzi.neo.db.manager.NeoServiceProvider;
 import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.ILoaderNew;
@@ -221,12 +222,19 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
      * @return array of GIS nodes
      */
     private String[] getRootItems() {
+
         NewDatasetService datasetService = NeoServiceFactory.getInstance().getNewDatasetService();
         final String projectName = LoaderUiUtils.getAweProjectName();
         DatasetService ds = NeoServiceFactory.getInstance().getDatasetService();
         List<Node> networkNodes;
+        Node projectNode = ds.findAweProject(projectName);
+        if (projectNode == null) {
+            projectNode = ds.findOrCreateAweProject(projectName);
+            NeoServiceProvider.getProvider().commit();
+            return new String[0];
+        }
         try {
-            networkNodes = datasetService.findAllDatasets(ds.findAweProject(projectName));
+            networkNodes = datasetService.findAllDatasets(projectNode);
         } catch (InvalidDatasetParameterException e) {
             // TODO Handle InvalidDatasetParameterException
             throw (RuntimeException)new RuntimeException().initCause(e);
@@ -287,13 +295,6 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
             setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_TYPE, DialogPage.ERROR);
             return false;
         }
-        getNewConfigurationData().getDatasetNames().put("Network", networkName);
-        getNewConfigurationData().getDatasetNames().put("Project", LoaderUiUtils.getAweProjectName());
-        getNewConfigurationData().setSourceFile(file);
-        configurationData.setProjectName(LoaderUiUtils.getAweProjectName());
-        configurationData.setCrs(getSelectedCRS());
-        configurationData.setDbRootName(networkName);
-        configurationData.setRoot(file);
         IValidateResult.Result result = getNewSelectedLoader().getValidator().isValid(getNewConfigurationData());
         if (result == Result.FAIL) {
             setMessage(String.format(getNewSelectedLoader().getValidator().getMessages(), getNewSelectedLoader().getLoaderInfo()
@@ -310,8 +311,9 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
 
     protected void changeNetworkName() {
         networkName = network.getText();
-        networkNode = members.get(networkName);
-
+        if (members != null && !members.isEmpty()) {
+            networkNode = members.get(networkName);
+        }
         getNewConfigurationData().getDatasetNames().put("Network", networkName);
         getNewConfigurationData().getDatasetNames().put("Project", LoaderUiUtils.getAweProjectName());
         getConfigurationData().setProjectName(LoaderUiUtils.getAweProjectName());
@@ -351,6 +353,14 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
         } else {
             setMessage(""); //$NON-NLS-1$
         }
+        getNewConfigurationData().getDatasetNames().put("Network", networkName);
+        getNewConfigurationData().getDatasetNames().put("Project", LoaderUiUtils.getAweProjectName());
+        getNewConfigurationData().setSourceFile(file);
+        // configurationData.setProjectName(LoaderUiUtils.getAweProjectName());
+        // configurationData.setCrs(getSelectedCRS());
+        // configurationData.setDbRootName(networkName);
+        // configurationData.setRoot(file);
+
         return true;
     }
 

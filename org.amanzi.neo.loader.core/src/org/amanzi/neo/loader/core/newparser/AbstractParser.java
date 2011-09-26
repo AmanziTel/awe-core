@@ -99,7 +99,7 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
             for (ISaver< ? , T3, T2> saver : savers) {
                 saver.saveElement(element);
             }
-            LOGGER.info("Saving data finishing in: " + (System.currentTimeMillis() - startTime) + ": file " + currentFile.getName());
+            LOGGER.info("Saving data finished in: " + (System.currentTimeMillis() - startTime) + ": file " + currentFile.getName());
             element = parseElement();
         }
     }
@@ -132,7 +132,6 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
                 public void run() throws Exception {
                     singleListener.updateProgress(event);
                 }
-
                 @Override
                 public void handleException(Throwable exception) {
                 }

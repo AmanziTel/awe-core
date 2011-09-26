@@ -28,7 +28,9 @@ import org.amanzi.neo.loader.core.saver.IStructuredSaver;
  * @author TsAr
  * @since 1.0.0
  */
-public abstract class StructuredParser<S extends IStructuredElement, T extends IDataElement, C extends IConfigurationData> extends AbstractParser<T, C> {
+public abstract class StructuredParser<S extends IStructuredElement, T extends IDataElement, C extends IConfigurationData>
+        extends
+            AbstractParser<T, C> {
     protected double percentage;
     protected double percentageParser;
 
@@ -102,7 +104,9 @@ public abstract class StructuredParser<S extends IStructuredElement, T extends I
      * @param event the event
      */
     protected boolean fireSubProgressEvent(S element, final IProgressEvent event) {
-        return fireProgressEvent(new ProgressEventImpl(event.getProcessName(), percentage + event.getPercentage() * element.getSize() / totalLen * percentageParser));
+        return true;
+        // return fireProgressEvent(new ProgressEventImpl(event.getProcessName(), percentage +
+        // event.getPercentage() * element.getSize() / totalLen * percentageParser));
     }
 
     /**
@@ -135,10 +139,9 @@ public abstract class StructuredParser<S extends IStructuredElement, T extends I
      */
     protected abstract T getFinishData();
 
-
     /**
      * Parses the element.
-     *
+     * 
      * @param element the element
      * @return true, if loading must be breacked. false if next element can be loaded
      */

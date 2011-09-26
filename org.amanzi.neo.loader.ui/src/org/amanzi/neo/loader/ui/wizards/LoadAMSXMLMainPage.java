@@ -228,7 +228,7 @@ public class LoadAMSXMLMainPage extends LoaderPage<CommonConfigData> {
         DatasetService ds = NeoServiceFactory.getInstance().getDatasetService();
         List<Node> networkNodes;
         try {
-            networkNodes = datasetService.findAllDatasets(ds.findAweProject(projectName));
+            networkNodes = datasetService.findAllDatasets(ds.findOrCreateAweProject(projectName));
         } catch (InvalidDatasetParameterException e) {
             // TODO Handle InvalidDatasetParameterException
             throw (RuntimeException)new RuntimeException().initCause(e);

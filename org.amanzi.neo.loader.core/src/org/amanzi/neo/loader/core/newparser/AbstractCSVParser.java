@@ -53,7 +53,6 @@ public abstract class AbstractCSVParser<T1 extends ISaver<IModel, CSVContainer, 
     private String charSetName = Charset.defaultCharset().name();
     protected BufferedReader reader;
     private File tempFile;
-    private int percentage = 0;
     private int persentageOld = 0;
 
     /**
@@ -84,7 +83,7 @@ public abstract class AbstractCSVParser<T1 extends ISaver<IModel, CSVContainer, 
      * @param is
      * @return
      */
-    private List<String> parseHeaders(File file, CountingFileInputStream is) {
+    private List<String> parseHeaders(File file) {
         char delim = getDelimiters(file);
         parser = new CSVParser(delim, quoteCharacter, '\\', false, true);
         String lineStr;
@@ -120,7 +119,7 @@ public abstract class AbstractCSVParser<T1 extends ISaver<IModel, CSVContainer, 
             }
         }
         if (container.getHeaders() == null) {
-            container.setHeaders(parseHeaders(currentFile, is));
+            container.setHeaders(parseHeaders(currentFile));
             return container;
         }
         try {

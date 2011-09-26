@@ -23,6 +23,7 @@ import org.amanzi.neo.loader.core.ILoaderNew;
 import org.amanzi.neo.loader.core.newsaver.IData;
 import org.amanzi.neo.loader.core.parser.IConfigurationData;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
+import org.amanzi.neo.loader.core.preferences.PreferenceStore;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.amanzi.neo.services.events.UpdateDatabaseEvent;
 import org.amanzi.neo.services.events.UpdateViewEventType;
@@ -75,8 +76,7 @@ public class AMSXMLLoaderWizard extends AbstractLoaderWizard<IConfigurationData>
         if (getConfigurationData().getCharsetName() == null) {
             String characterSet = null;
             try {
-                characterSet = org.amanzi.neo.loader.ui.NeoLoaderPlugin.getDefault().getPreferenceStore()
-                        .getString(DataLoadPreferences.DEFAULT_CHARSET);
+                characterSet = PreferenceStore.getPreferenceStore().getValue(DataLoadPreferences.DEFAULT_CHARSET);
             } catch (Exception e) {
                 characterSet = null;
             }
