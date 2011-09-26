@@ -36,6 +36,7 @@ public class StatisticsVault implements IVault {
     private Map<String, IVault> subVaults = new HashMap<String, IVault>();
     private int count;
     private String type;
+    private boolean isStatisticsChanged = false;
     private Map<String, NewPropertyStatistics> propertyStatisticsMap = new HashMap<String, NewPropertyStatistics>();
     private Map<Object, Integer> allProperties = new HashMap<Object, Integer>();
     
@@ -671,6 +672,16 @@ public class StatisticsVault implements IVault {
                 }
             }
         }
+    }
+
+    @Override
+    public boolean getIsStatisticsChanged() {
+        return isStatisticsChanged;
+    }
+
+    @Override
+    public void setIsStatisticsChanged(boolean isStatisticsChanged) {
+        this.isStatisticsChanged = isStatisticsChanged;
     }
     
     
