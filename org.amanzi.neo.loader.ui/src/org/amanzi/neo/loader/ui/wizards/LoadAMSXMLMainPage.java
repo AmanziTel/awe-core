@@ -123,12 +123,12 @@ public class LoadAMSXMLMainPage extends LoaderPage<CommonConfigData> {
         editor.getTextControl(main).addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
                 ILoaderNew< ? extends IData, IConfiguration> loader = setFileName(editor.getStringValue());
-                    networkName = new java.io.File(getFileName()).getName();
-                    datasetName = networkName;
-                    network.setText(networkName + " Probes");
-                    dataset.setText(datasetName);
-                    changeNetworkName();
-                    changeDatasetName();
+                networkName = new java.io.File(getFileName()).getName();
+                datasetName = networkName;
+                network.setText(networkName + " Probes");
+                dataset.setText(datasetName);
+                changeNetworkName();
+                changeDatasetName();
 
             }
 
@@ -172,7 +172,7 @@ public class LoadAMSXMLMainPage extends LoaderPage<CommonConfigData> {
 
     @Override
     protected void update() {
-        super.update();
+        super.updateNew();
     }
 
     /**
@@ -204,7 +204,8 @@ public class LoadAMSXMLMainPage extends LoaderPage<CommonConfigData> {
         datasetName = networkName;
         // CommonConfigData configurationData = getConfigurationData();
         getNewConfigurationData().setSourceFile(new File(fileName));
-
+        getNewConfigurationData().getDatasetNames().put("Network", networkName+" Probes");
+        getNewConfigurationData().getDatasetNames().put("Dataset", networkName);
         // config.getFilesToLoad()
         // configurationData.setRoot(new File(fileName));
         ILoaderNew< ? extends IData, IConfiguration> loader = autodefineNew(getNewConfigurationData());
@@ -289,11 +290,11 @@ public class LoadAMSXMLMainPage extends LoaderPage<CommonConfigData> {
         // return false;
         // }
         networkName = file.getName();
-        configurationData.setProjectName(LoaderUiUtils.getAweProjectName());
-        configurationData.setDbRootName(networkName);
-        configurationData.setRoot(file);
+        // configurationData.setProjectName(LoaderUiUtils.getAweProjectName());
+        // configurationData.setDbRootName(networkName);
+        // configurationData.setRoot(file);
         // IConfiguration config=new Con
-        IValidateResult.Result result = getNewSelectedLoader().getValidator().isValid(getNewConfigurationData().getFilesToLoad());
+        IValidateResult.Result result = getNewSelectedLoader().getValidator().isValid(getNewConfigurationData());
         if (result == Result.FAIL) {
             setMessage(String.format(getNewSelectedLoader().getValidator().getMessages()), DialogPage.ERROR);
             return false;
@@ -319,5 +320,38 @@ public class LoadAMSXMLMainPage extends LoaderPage<CommonConfigData> {
         getNewConfigurationData().getDatasetNames().put("Calls", datasetName + " Calls");
         getNewConfigurationData().getDatasetNames().put("Pesq", datasetName + " Pesq");
         update();
+    }
+
+    @Override
+    protected boolean validateConfigData(IConfiguration configurationData) {
+        // TODO must be refactoring after change loaders
+        if (fileName == null) {
+            setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_FILE, DialogPage.ERROR);
+            return false;
+        }
+        File file = new File(fileName);
+        if (!(file.isAbsolute() && file.exists())) {
+            setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_FILE, DialogPage.ERROR);
+            return false;
+        }
+        if (StringUtils.isEmpty(networkName)) {
+            setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_NETWORK, DialogPage.ERROR);
+            return false;
+        }
+        if (restrictedNames.contains(networkName)) {
+            setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_RESTRICTED_NETWORK_NAME, DialogPage.ERROR);
+            return false;
+        }
+        networkName = file.getName();
+        IValidateResult.Result result = getNewSelectedLoader().getValidator().isValid(configurationData);
+        if (result == Result.FAIL) {
+            setMessage(String.format(getNewSelectedLoader().getValidator().getMessages()), DialogPage.ERROR);
+            return false;
+        } else if (result == Result.UNKNOWN) {
+            setMessage(String.format(getNewSelectedLoader().getValidator().getMessages()), DialogPage.WARNING);
+        } else {
+            setMessage(""); //$NON-NLS-1$
+        }
+        return true;
     }
 }

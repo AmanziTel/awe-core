@@ -12,12 +12,20 @@
             class="org.amanzi.neo.loader.core.newparser.NewNetworkParser"
             id="org.amanzi.neo.loader.core.newparser.NewNetworkParser">
       </newparser>
+      <newparser
+            class="org.amanzi.neo.loader.core.newparser.SelectionParser"
+            id="org.amanzi.neo.loader.core.newparser.SelectionParser">
+      </newparser>
    </extension>
    <extension
          point="org.amanzi.loader.core.newsaver">
        <newsaver
             class="org.amanzi.neo.loader.core.newsaver.NewNetworkSaver"
             id="org.amanzi.neo.loader.core.newsaver.NewNetworkSaver">
+      </newsaver>
+       <newsaver
+            class="org.amanzi.neo.loader.core.newsaver.SectorSelectionSaver"
+            id="org.amanzi.neo.loader.core.newsaver.SectorSelectionSaver">
       </newsaver>
    </extension>
    <extension

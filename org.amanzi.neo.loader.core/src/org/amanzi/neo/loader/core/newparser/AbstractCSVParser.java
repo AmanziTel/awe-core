@@ -48,7 +48,7 @@ public abstract class AbstractCSVParser<T1 extends ISaver<IModel, T3, T2>, T2 ex
     protected T2 config;
     protected List<T1> saver;
     protected CSVParser parser;
-    protected final static int MINIMAL_SIZE = 2;
+    protected int MINIMAL_SIZE = 2;
     protected Character delimeters;
     protected String[] possibleFieldSepRegexes = new String[] {"\t", ",", ";"};
     protected Character quoteCharacter = 0;

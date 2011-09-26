@@ -115,7 +115,7 @@ public abstract class LoaderPage<T extends IConfigurationData> extends WizardPag
         ILoaderNew< ? extends IData, IConfiguration> loader = getNewSelectedLoader();
         ILoaderNew< ? extends IData, IConfiguration> candidate = null;
         if (loader != null) {
-            Result validateResult = loader.getValidator().isValid(data.getFilesToLoad());
+            Result validateResult = loader.getValidator().isAppropriate(data.getFilesToLoad());
             if (validateResult == Result.SUCCESS) {
                 return loader;
             } else if (validateResult == Result.UNKNOWN) {
@@ -127,7 +127,7 @@ public abstract class LoaderPage<T extends IConfigurationData> extends WizardPag
             newloaders.addAll(wizard.getNewLoaders());
         }
         for (ILoaderNew<IData, IConfiguration> loadr : newloaders) {
-            Result validateResult = loadr.getValidator().isValid(data.getFilesToLoad());
+            Result validateResult = loadr.getValidator().isAppropriate(data.getFilesToLoad());
             if (validateResult == Result.SUCCESS) {
                 return loadr;
             } else if (candidate == null && validateResult == Result.UNKNOWN) {
@@ -212,6 +212,10 @@ public abstract class LoaderPage<T extends IConfigurationData> extends WizardPag
      */
     protected void update() {
         setPageComplete(validateConfigData(getConfigurationData()));
+    }
+
+    protected void updateNew() {
+        setPageComplete(validateConfigData(getNewConfigurationData()));
     }
 
     /**
@@ -331,5 +335,7 @@ public abstract class LoaderPage<T extends IConfigurationData> extends WizardPag
      * @return true, if successful
      */
     protected abstract boolean validateConfigData(T configurationData);
+
+    protected abstract boolean validateConfigData(IConfiguration configurationData);
 
 }

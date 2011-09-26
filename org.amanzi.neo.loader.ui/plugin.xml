@@ -354,12 +354,26 @@
              loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoaderNew"
              loader_data_type="Network"
              loader_name="NewNetworkLoader"
-             loader_type="CSV"
+             loader_type="site sector loader"
              parser="org.amanzi.neo.loader.core.newparser.NewNetworkParser"
              validator="org.amanzi.neo.loader.ui.validators.NetworkValidator">
                <saver 
                id="org.amanzi.neo.loader.core.newsaver.NewNetworkSaver"
             	class="org.amanzi.neo.loader.core.newsaver.NewNetworkSaver"
+            />
+      </newloader>
+    <newloader
+             gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
+             id="NewNetworkLoader"
+             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoaderNew"
+             loader_data_type="Selection"
+             loader_name="SelectionDataLoader"
+             loader_type="sector selection loader"
+             parser="org.amanzi.neo.loader.core.newparser.SelectionParser"
+             validator="org.amanzi.neo.loader.ui.validators.SectorSelectionDataValidator">
+               <saver 
+                id="org.amanzi.neo.loader.core.newsaver.SectorSelectionSaver"
+            	class="org.amanzi.neo.loader.core.newsaver.SectorSelectionSaver"
             />
       </newloader>
    </extension>

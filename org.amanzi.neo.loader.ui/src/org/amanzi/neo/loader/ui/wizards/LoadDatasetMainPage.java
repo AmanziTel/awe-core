@@ -25,6 +25,7 @@ import java.util.Set;
 
 import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.loader.core.CommonConfigData;
+import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.IValidateResult;
 import org.amanzi.neo.loader.core.IValidateResult.Result;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
@@ -687,5 +688,10 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
         folderFiles.remove(name);
         folderFilesList.remove(name);
         addFileToLoad(name, path, false);
+    }
+
+    @Override
+    protected boolean validateConfigData(IConfiguration configurationData) {
+        return false;
     }
 }

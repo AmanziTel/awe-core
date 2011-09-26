@@ -56,9 +56,7 @@ public class NetworkRowContainer implements IData {
         if (row.size() < MINIMAL_SIZE) {
             return;
         }
-        if (row.size() - 1 < headers.size() || row.size() - 1 > headers.size()) {
-            return;
-        }
+        
         this.row = row;
     }
 

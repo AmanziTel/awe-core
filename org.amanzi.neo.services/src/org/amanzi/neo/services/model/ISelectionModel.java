@@ -11,33 +11,27 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.core;
+package org.amanzi.neo.services.model;
 
-import java.io.File;
-import java.util.List;
+import java.util.Iterator;
+import java.util.Map;
+
+import org.neo4j.graphdb.Node;
 
 /**
+ * TODO Purpose of
  * <p>
- * common validator interface;
  * </p>
  * 
- * @author Kondratenko_Vladislav
+ * @author Kondratneko_Vladislav
  * @since 1.0.0
  */
-public interface IValidator extends IValidateResult {
-    /**
-     * check files for appropriate to loader
-     * 
-     * @param fileToLoad
-     * @return
-     */
-    public Result isAppropriate(List<File> fileToLoad);
+public interface ISelectionModel extends IDataModel, IPropertyStatisticalModel, IRenderableModel {
 
     /**
-     * check files for validation
+     * find sector by name and create relation ship from rootNode to each node from iterator
      * 
-     * @param fileToLoad
-     * @return
+     * @param sectorElement
      */
-    public Result isValid(IConfiguration config);
+    public void linkToSector(String name);
 }

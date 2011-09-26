@@ -20,7 +20,13 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.IValidator;
+import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
+import org.neo4j.graphdb.Node;
 
 /**
  * IValidator implementation contain methods for validation ams xml data
@@ -28,8 +34,8 @@ import org.amanzi.neo.loader.core.IValidator;
  * @author Kondratenko_Vladislav
  */
 public class AMSXMLDataValidator implements IValidator {
-    Result result;
-    String message;
+    Result result = Result.FAIL;
+    String message = "";
 
     /**
      * check correct file extension
@@ -51,24 +57,35 @@ public class AMSXMLDataValidator implements IValidator {
     }
 
     @Override
-    public boolean isAppropriate(File[] fileToLoad) {
-        return false;
-    }
-
-    @Override
-    public Result isValid(List<File> fileToLoad) {
+    public Result isAppropriate(List<File> fileToLoad) {
         if (fileToLoad == null) {
             message = "select correct directory";
-
+            result = Result.FAIL;
             return Result.FAIL;
         }
         checkFileExtension(fileToLoad, ".xml");
         checkFileContent(fileToLoad);
         if (fileToLoad.size() > 0) {
+            result = Result.SUCCESS;
             return Result.SUCCESS;
         } else {
+            result = Result.FAIL;
             return Result.FAIL;
         }
+    }
+
+    @Override
+    public Result isValid(IConfiguration config) {
+        if (result == Result.SUCCESS) {
+            DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
+            Node root = datasetService.findRoot(config.getDatasetNames().get("Project"), config.getDatasetNames().get("Network"));
+            if (root == null || datasetService.getNodeType(root) != NodeTypes.NETWORK) {
+                result = Result.SUCCESS;
+                return result;
+            }
+        }
+        message = String.format("Network '%s' is not found. ", config.getDatasetNames().get("Network"));
+        return Result.FAIL;
     }
 
     /**

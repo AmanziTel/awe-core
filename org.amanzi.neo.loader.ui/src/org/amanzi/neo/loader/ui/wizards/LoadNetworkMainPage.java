@@ -17,26 +17,24 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.core.IConfiguration;
-import org.amanzi.neo.loader.core.ILoader;
-import org.amanzi.neo.loader.core.ILoaderConfig;
 import org.amanzi.neo.loader.core.ILoaderNew;
 import org.amanzi.neo.loader.core.IValidateResult;
 import org.amanzi.neo.loader.core.IValidateResult.Result;
 import org.amanzi.neo.loader.core.newsaver.IData;
-import org.amanzi.neo.loader.core.parser.IDataElement;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
+import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.enums.NetworkTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
-import org.amanzi.neo.services.ui.NeoServiceProviderUi;
-import org.amanzi.neo.services.ui.NeoUtils;
-import org.amanzi.neo.services.utils.Utils;
+import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.swt.SWT;
@@ -46,14 +44,11 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.traversal.TraversalDescription;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * <p>
@@ -86,7 +81,6 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
     private Label labNetworkDescr;
     private Combo networkType;
     protected String networkName = ""; //$NON-NLS-1$
-
 
     /**
      * Instantiates a new load network main page.
@@ -173,13 +167,10 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
         update();
     }
 
-   
-
     @Override
     protected void update() {
-        super.update();
+        super.updateNew();
     }
-
 
     /**
      *
@@ -230,12 +221,18 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
      * @return array of GIS nodes
      */
     private String[] getRootItems() {
+        NewDatasetService datasetService = NeoServiceFactory.getInstance().getNewDatasetService();
         final String projectName = LoaderUiUtils.getAweProjectName();
-        TraversalDescription td = Utils.getTDRootNodesOfProject(projectName, null);
-        Node refNode = NeoServiceProviderUi.getProvider().getService().getReferenceNode();
-        restrictedNames.clear();
+        DatasetService ds = NeoServiceFactory.getInstance().getDatasetService();
+        List<Node> networkNodes;
+        try {
+            networkNodes = datasetService.findAllDatasets(ds.findAweProject(projectName));
+        } catch (InvalidDatasetParameterException e) {
+            // TODO Handle InvalidDatasetParameterException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
         members = new HashMap<String, Node>();
-        for (Node node : td.traverse(refNode).nodes()) {
+        for (Node node : networkNodes) {
             String id = node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
             if (NodeTypes.NETWORK.checkNode(node)) { //$NON-NLS-1$
                 members.put(id, node);
@@ -301,7 +298,7 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
         configurationData.setCrs(getSelectedCRS());
         configurationData.setDbRootName(networkName);
         configurationData.setRoot(file);
-        IValidateResult.Result result = getNewSelectedLoader().getValidator().isValid(getNewConfigurationData().getFilesToLoad());
+        IValidateResult.Result result = getNewSelectedLoader().getValidator().isValid(getNewConfigurationData());
         if (result == Result.FAIL) {
             setMessage(String.format(getNewSelectedLoader().getValidator().getMessages(), getNewSelectedLoader().getLoaderInfo()
                     .getName()), DialogPage.ERROR);
@@ -325,6 +322,44 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
         getConfigurationData().setDbRootName(networkName);
         updateLabelNetwDescr();
         update();
+    }
+
+    @Override
+    protected boolean validateConfigData(IConfiguration configurationData) {
+        // TODO must be refactoring after change loaders
+        if (fileName == null) {
+            setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_FILE, DialogPage.ERROR);
+            return false;
+        }
+        File file = new File(fileName);
+        if (!(file.isAbsolute() && file.exists())) {
+            setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_FILE, DialogPage.ERROR);
+            return false;
+        }
+        if (StringUtils.isEmpty(networkName)) {
+            setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_NETWORK, DialogPage.ERROR);
+            return false;
+        }
+        if (restrictedNames.contains(networkName)) {
+            setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_RESTRICTED_NETWORK_NAME, DialogPage.ERROR);
+            return false;
+        }
+        if (getNewSelectedLoader() == null) {
+            setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_TYPE, DialogPage.ERROR);
+            return false;
+        }
+        IValidateResult.Result result = getNewSelectedLoader().getValidator().isValid(configurationData);
+        if (result == Result.FAIL) {
+            setMessage(String.format(getNewSelectedLoader().getValidator().getMessages(), getNewSelectedLoader().getLoaderInfo()
+                    .getName()), DialogPage.ERROR);
+            return false;
+        } else if (result == Result.UNKNOWN) {
+            setMessage(String.format(getNewSelectedLoader().getValidator().getMessages(), getNewSelectedLoader().getLoaderInfo()
+                    .getName()), DialogPage.WARNING);
+        } else {
+            setMessage(""); //$NON-NLS-1$
+        }
+        return true;
     }
 
 }
