@@ -20,12 +20,13 @@ import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
-import org.amanzi.neo.services.model.impl.DataElement;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
+import org.neo4j.graphdb.PropertyContainer;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
@@ -144,7 +145,7 @@ public abstract class NewAbstractService {
         return result;
     }
 
-    public void createRelationship(Node parent, Node child, RelationshipType relType) throws DatabaseException {
+    public Relationship createRelationship(Node parent, Node child, RelationshipType relType) throws DatabaseException {
         // validate parameters
         if (parent == null) {
             throw new IllegalArgumentException("Parent is null.");
@@ -155,10 +156,10 @@ public abstract class NewAbstractService {
         if (relType == null) {
             throw new IllegalArgumentException("Relationship type is null.");
         }
-
+        Relationship result = null;
         tx = graphDb.beginTx();
         try {
-            parent.createRelationshipTo(child, relType);
+            result = parent.createRelationshipTo(child, relType);
             tx.success();
         } catch (Exception e) {
             LOGGER.error("Could not create node.", e);
@@ -167,6 +168,7 @@ public abstract class NewAbstractService {
         } finally {
             tx.finish();
         }
+        return result;
     }
 
     /**
@@ -334,13 +336,14 @@ public abstract class NewAbstractService {
      * Property is not set, if its value is <code>null</code>. Property values should be of types,
      * that are accepted by the database (primitives or <code>String</code>).
      * 
-     * @param node the object to set properties
+     * @param dbElement the object to set properties (<code>Node</code> or <code>Relationship</code>
+     *        )
      * @param params notice that you may also pass a <code>DataElement</code> object.
      * @throws DatabaseException
      */
-    public void setProperties(Node node, Map<String, Object> params) throws DatabaseException {
+    public void setProperties(PropertyContainer dbElement, Map<String, Object> params) throws DatabaseException {
         // validate
-        if (node == null) {
+        if (dbElement == null) {
             throw new IllegalArgumentException("Node is null.");
         }
         if (params == null) {
@@ -351,7 +354,7 @@ public abstract class NewAbstractService {
             for (String key : params.keySet()) {
                 Object value = params.get(key);
                 if (value != null) {
-                    node.setProperty(key, value);
+                    dbElement.setProperty(key, value);
                 }
             }
             tx.success();
@@ -362,6 +365,42 @@ public abstract class NewAbstractService {
         } finally {
             tx.finish();
         }
+    }
+
+    /**
+     * This method looks through <code>Direction.OUTGOING</code> relationships with TYPE
+     * <code>relType</code> of <code>parent</code>, to find a node with the defined NAME and TYPE.
+     * 
+     * @param parent
+     * @param relType
+     * @param name
+     * @param nodeType
+     * @return the found node or <code>null</code>
+     */
+    public Node findNode(Node parent, RelationshipType relType, String name, INodeType nodeType) {
+        // validate parameters
+        if (parent == null) {
+            throw new IllegalArgumentException("Parent is null.");
+        }
+        if (relType == null) {
+            throw new IllegalArgumentException("Relationship type is null.");
+        }
+        if ((name == null) || (name.equals(""))) {
+            throw new IllegalArgumentException("Name is null or empty.");
+        }
+        if (nodeType == null) {
+            throw new IllegalArgumentException("Node type is null.");
+        }
+
+        Node result = null;
+        for (Relationship rel : parent.getRelationships(relType, Direction.OUTGOING)) {
+            Node node = rel.getEndNode();
+            if ((name.equals(node.getProperty(NAME, null))) && (nodeType.getId().equals(node.getProperty(TYPE, null)))) {
+                result = node;
+                break;
+            }
+        }
+        return result;
     }
 
 }

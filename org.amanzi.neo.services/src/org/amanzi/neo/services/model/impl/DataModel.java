@@ -130,7 +130,7 @@ public abstract class DataModel extends AbstractModel implements IDataModel {
         return result;
     }
 
-    public class DataElementIterable implements Iterable<IDataElement> {
+    public static class DataElementIterable implements Iterable<IDataElement> {
         private class DataElementIterator implements Iterator<IDataElement> {
 
             private Iterator<Node> it;

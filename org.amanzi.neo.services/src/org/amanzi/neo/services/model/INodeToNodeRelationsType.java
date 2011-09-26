@@ -13,14 +13,16 @@
 
 package org.amanzi.neo.services.model;
 
+import org.neo4j.graphdb.RelationshipType;
+
 /**
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author grigoreva_a
  * @since 1.0.0
  */
-public interface INodeToNodeRelationsType {
-
+public interface INodeToNodeRelationsType extends RelationshipType {
+    public String getId();
 }

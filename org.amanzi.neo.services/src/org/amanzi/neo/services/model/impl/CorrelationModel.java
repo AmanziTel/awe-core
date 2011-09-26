@@ -15,10 +15,7 @@ package org.amanzi.neo.services.model.impl;
 
 import org.amanzi.neo.services.CorrelationService;
 import org.amanzi.neo.services.NeoServiceFactory;
-import org.amanzi.neo.services.model.ICorrelatableModel;
 import org.amanzi.neo.services.model.ICorrelationModel;
-import org.amanzi.neo.services.model.IDataModel;
-import org.amanzi.neo.services.model.INetworkModel;
 import org.neo4j.graphdb.Node;
 
 /**

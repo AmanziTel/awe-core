@@ -49,7 +49,9 @@ public class DataElement extends HashMap<String, Object> implements IDataElement
      * @param params
      */
     public DataElement(Map< ? extends String, ? extends Object> params) {
-        this.putAll(params);
+        if (params != null) {
+            this.putAll(params);
+        }
     }
 
     /**
