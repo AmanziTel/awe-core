@@ -17,7 +17,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.amanzi.neo.loader.core.IConfiguration;
+import org.amanzi.neo.db.manager.NeoServiceProvider;
+import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceManager;
 import org.amanzi.neo.services.DatasetService;
@@ -25,17 +26,19 @@ import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.impl.DataElement;
+import org.amanzi.neo.services.model.impl.DriveModel;
 import org.amanzi.neo.services.model.impl.NetworkModel;
-import org.amanzi.neo.services.model.IModel;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Transaction;
 
 /**
  * network saver
  * 
  * @author Kondratenko_Vladislav
  */
-public class NewNetworkSaver<M extends IModel, D extends IData, C extends IConfiguration> implements ISaver<M, D, C> {
+public class NewNetworkSaver implements ISaver<DriveModel, CSVContainer, ConfigurationDataImpl> {
     private Long lineCounter = 0l;
     private NetworkModel model;
     private DataLoadPreferenceManager preferenceManager = new DataLoadPreferenceManager();
@@ -50,6 +53,18 @@ public class NewNetworkSaver<M extends IModel, D extends IData, C extends IConfi
      */
     private List<String> headers;
     private static Logger LOGGER = Logger.getLogger(NewNetworkSaver.class);
+    /**
+     * graph database instance
+     */
+    private GraphDatabaseService database;
+    /**
+     * top level trasnaction
+     */
+    private Transaction tx;
+    /**
+     * transactions count
+     */
+    private int txCounter;
 
     /**
      * find or create BSC node from row properties and pass the action down the chain, for creation
@@ -204,8 +219,9 @@ public class NewNetworkSaver<M extends IModel, D extends IData, C extends IConfi
     }
 
     @Override
-    public void init(IConfiguration configuration, IData dataElement) {
+    public void init(ConfigurationDataImpl configuration, CSVContainer dataElement) {
         Map<String, Object> rootElement = new HashMap<String, Object>();
+        database = NeoServiceProvider.getProvider().getService();
         rootElement.put("project", new DatasetService().findAweProject(configuration.getDatasetNames().get("Project")));
         rootElement.put(INeoConstants.PROPERTY_NAME_NAME, configuration.getDatasetNames().get("Network"));
         rootElement.put(INeoConstants.PROPERTY_TYPE_NAME, DatasetTypes.NETWORK.getId());
@@ -213,9 +229,16 @@ public class NewNetworkSaver<M extends IModel, D extends IData, C extends IConfi
     }
 
     @Override
-    public void saveElement(IData dataElement) {
-        if (dataElement instanceof CSVContainer) {
-            CSVContainer container = ((CSVContainer)dataElement);
+    public void saveElement(CSVContainer dataElement) {
+        if (tx == null) {
+            tx = database.beginTx();
+        } else if (txCounter > 2000) {
+            finishUp();
+            tx = database.beginTx();
+        }
+        try {
+            CSVContainer container = dataElement;
+
             if (fileSynonyms.isEmpty()) {
                 headers = container.getHeaders();
                 makeAppropriationWithSynonyms(headers);
@@ -226,6 +249,10 @@ public class NewNetworkSaver<M extends IModel, D extends IData, C extends IConfi
                 createBSC(value);
                 System.out.println("!!!!!!!!!!!!!!!!! line number " + lineCounter);
             }
+            txCounter++;
+            tx.success();
+        } catch (Exception e) {
+            tx.failure();
         }
 
     }
@@ -256,6 +283,8 @@ public class NewNetworkSaver<M extends IModel, D extends IData, C extends IConfi
 
     @Override
     public void finishUp() {
+        NeoServiceProvider.getProvider().commit();
+        txCounter = 0;
     }
 
 }

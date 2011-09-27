@@ -73,10 +73,10 @@ public class LoadAMSXMLMainPage extends LoaderPage<CommonConfigData> {
     private DirectoryEditor editor;
     private HashMap<String, Node> members;
     private final Set<String> restrictedNames = new HashSet<String>();
-    protected Node mainDatasetNode;
+    protected Node networkNode;
     private Label labelMainDatasetDescription;
     private Combo dataset;
-    protected String mainDatasetName = ""; //$NON-NLS-1$
+    protected String networkName = ""; //$NON-NLS-1$
     protected String datasetName = "";
 
     /**
@@ -85,7 +85,7 @@ public class LoadAMSXMLMainPage extends LoaderPage<CommonConfigData> {
     public LoadAMSXMLMainPage() {
         super("mainAmsXmlPage");
         setTitle(NeoLoaderPluginMessages.AMSImport_page_title);
-        mainDatasetNode = null;
+        networkNode = null;
     }
 
     @Override
@@ -123,9 +123,9 @@ public class LoadAMSXMLMainPage extends LoaderPage<CommonConfigData> {
         editor.getTextControl(main).addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
                 ILoaderNew< ? extends IData, IConfiguration> loader = setFileName(editor.getStringValue());
-                mainDatasetName = new java.io.File(getFileName()).getName();
-                datasetName = mainDatasetName;
-                network.setText(mainDatasetName + " Probes");
+                networkName = new java.io.File(getFileName()).getName();
+                datasetName = networkName;
+                network.setText(networkName + " Probes");
                 dataset.setText(datasetName);
                 changeNetworkName();
                 changeDatasetName();
@@ -179,8 +179,8 @@ public class LoadAMSXMLMainPage extends LoaderPage<CommonConfigData> {
     */
     protected void updateLabelNetwDescr() {
         String text = ""; //$NON-NLS-1$
-        if (mainDatasetNode != null) {
-            NetworkTypes type = NetworkTypes.getNodeType(mainDatasetNode);
+        if (networkNode != null) {
+            NetworkTypes type = NetworkTypes.getNodeType(networkNode);
             if (type != null) {
                 text = "Network type: " + type.getId(); //$NON-NLS-1$
             }
@@ -199,12 +199,12 @@ public class LoadAMSXMLMainPage extends LoaderPage<CommonConfigData> {
             return null;
         }
         this.fileName = fileName;
-        mainDatasetName = new java.io.File(getFileName()).getName();
-        datasetName = mainDatasetName;
+        networkName = new java.io.File(getFileName()).getName();
+        datasetName = networkName;
         // CommonConfigData configurationData = getConfigurationData();
         getNewConfigurationData().setSourceFile(new File(fileName));
-        getNewConfigurationData().getDatasetNames().put("Network", mainDatasetName + " Probes");
-        getNewConfigurationData().getDatasetNames().put("Dataset", mainDatasetName);
+        getNewConfigurationData().getDatasetNames().put("Network", networkName + " Probes");
+        getNewConfigurationData().getDatasetNames().put("Dataset", networkName);
         // config.getFilesToLoad()
         // configurationData.setRoot(new File(fileName));
         ILoaderNew< ? extends IData, IConfiguration> loader = autodefineNew(getNewConfigurationData());
@@ -259,14 +259,14 @@ public class LoadAMSXMLMainPage extends LoaderPage<CommonConfigData> {
      * @return Returns the networkNode.
      */
     public Node getNetworkNode() {
-        return mainDatasetNode;
+        return networkNode;
     }
 
     /**
      * @return Returns the networkName.
      */
     public String getNetworkName() {
-        return mainDatasetName;
+        return networkName;
     }
 
     @Override
@@ -281,7 +281,7 @@ public class LoadAMSXMLMainPage extends LoaderPage<CommonConfigData> {
             setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_FILE, DialogPage.ERROR);
             return false;
         }
-        if (StringUtils.isEmpty(mainDatasetName)) {
+        if (StringUtils.isEmpty(networkName)) {
             setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_NETWORK, DialogPage.ERROR);
             return false;
         }
@@ -290,7 +290,7 @@ public class LoadAMSXMLMainPage extends LoaderPage<CommonConfigData> {
         // DialogPage.ERROR);
         // return false;
         // }
-        mainDatasetName = file.getName();
+        networkName = file.getName();
         // configurationData.setProjectName(LoaderUiUtils.getAweProjectName());
         // configurationData.setDbRootName(networkName);
         // configurationData.setRoot(file);
@@ -311,10 +311,10 @@ public class LoadAMSXMLMainPage extends LoaderPage<CommonConfigData> {
      * call when network name field is changed;
      */
     protected void changeNetworkName() {
-        mainDatasetName = network.getText();
-        mainDatasetNode = members.get(mainDatasetName);
+        networkName = network.getText();
+        networkNode = members.get(networkName);
         getNewConfigurationData().getDatasetNames().put("Project", LoaderUiUtils.getAweProjectName());
-        getNewConfigurationData().getDatasetNames().put("Network", mainDatasetName);
+        getNewConfigurationData().getDatasetNames().put("Network", networkName);
         update();
     }
 
@@ -341,11 +341,11 @@ public class LoadAMSXMLMainPage extends LoaderPage<CommonConfigData> {
             setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_FILE, DialogPage.ERROR);
             return false;
         }
-        if (StringUtils.isEmpty(mainDatasetName)) {
+        if (StringUtils.isEmpty(networkName)) {
             setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_NETWORK, DialogPage.ERROR);
             return false;
         }
-        mainDatasetName = file.getName();
+        networkName = file.getName();
         IValidateResult.Result result = getNewSelectedLoader().getValidator().isValid(configurationData);
         if (result == Result.FAIL) {
             setMessage(String.format(getNewSelectedLoader().getValidator().getMessages()), DialogPage.ERROR);

@@ -99,8 +99,11 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
             for (ISaver< ? , T3, T2> saver : savers) {
                 saver.saveElement(element);
             }
-            LOGGER.info("Saving data finished in: " + (System.currentTimeMillis() - startTime) + ": file " + currentFile.getName());
             element = parseElement();
+        }
+        for (ISaver< ? , T3, T2> saver : savers) {
+            saver.finishUp();
+            LOGGER.info("Saving data finished in: " + (System.currentTimeMillis() - startTime) + ": file " + currentFile.getName());
         }
     }
 
@@ -111,8 +114,8 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
      * @param event the event
      */
     protected boolean fireSubProgressEvent(File element, final IProgressEvent event) {
-        return fireProgressEvent(new ProgressEventImpl(event.getProcessName(), percentage + event.getPercentage()
-                * element.length() / element.length() * event.getPercentage()));
+        return fireProgressEvent(new ProgressEventImpl(event.getProcessName(), ((percentage + event.getPercentage()) / 100)
+                / config.getFilesToLoad().size()));
     }
 
     @Override
@@ -127,16 +130,19 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
         Object[] allListeners = getListeners().getListeners();
         for (Object listener : allListeners) {
             final ILoaderProgressListener singleListener = (ILoaderProgressListener)listener;
+
             SafeRunner.run(new ISafeRunnable() {
                 @Override
                 public void run() throws Exception {
                     singleListener.updateProgress(event);
                 }
+
                 @Override
                 public void handleException(Throwable exception) {
                 }
             });
         }
+
         return event.isCanseled();
     }
 }

@@ -33,10 +33,6 @@ public class ConfigurationDataImpl implements IConfiguration {
     }
 
     /**
-     * collection of all files in directory and subdirectories
-     */
-    private List<File> filelist = new ArrayList<File>();
-    /**
      * selected directory
      */
     private File sourceFile;
@@ -79,7 +75,7 @@ public class ConfigurationDataImpl implements IConfiguration {
      * @return
      */
     private List<File> getRootsFiles(File root) {
-        filelist.clear();
+        List<File> filelist = new ArrayList<File>();
         File[] rootList;
         if (root.isDirectory()) {
             rootList = root.listFiles();

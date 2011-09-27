@@ -17,7 +17,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.amanzi.neo.loader.core.IConfiguration;
+import org.amanzi.neo.db.manager.NeoServiceProvider;
+import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
@@ -27,19 +28,34 @@ import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
 import org.amanzi.neo.services.model.ISelectionModel;
 import org.amanzi.neo.services.model.impl.DataElement;
+import org.amanzi.neo.services.model.impl.DriveModel;
 import org.amanzi.neo.services.model.impl.SelectionModel;
-import org.amanzi.neo.services.model.IModel;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Transaction;
 
 /**
  * @author Kondratenko_Vladislav
  */
-public class SectorSelectionSaver<M extends IModel, D extends IData, C extends IConfiguration> implements ISaver<M, D, C> {
+public class SectorSelectionSaver implements ISaver<DriveModel, CSVContainer, ConfigurationDataImpl> {
     private ISelectionModel model;
     private List<String> headers;
     private CSVContainer container;
+    /**
+     * graph database instance
+     */
+    private GraphDatabaseService database;
+    /**
+     * top level trasnaction
+     */
+    private Transaction tx;
+    /**
+     * transactions count
+     */
+    private int txCounter;
 
     @Override
-    public void init(C configuration, D dataElement) {
+    public void init(ConfigurationDataImpl configuration, CSVContainer dataElement) {
+        database = NeoServiceProvider.getProvider().getService();
         Map<String, Object> rootElement = new HashMap<String, Object>();
         rootElement.put(INeoConstants.PROPERTY_NAME_NAME, configuration.getDatasetNames().get("Network"));
         rootElement.put(INeoConstants.PROPERTY_TYPE_NAME, DatasetTypes.NETWORK.getId());
@@ -59,9 +75,15 @@ public class SectorSelectionSaver<M extends IModel, D extends IData, C extends I
     }
 
     @Override
-    public void saveElement(D dataElement) {
-        if (dataElement instanceof CSVContainer) {
-            container = (CSVContainer)dataElement;
+    public void saveElement(CSVContainer dataElement) {
+        if (tx == null) {
+            tx = database.beginTx();
+        } else if (txCounter > 1000) {
+            finishUp();
+            tx = database.beginTx();
+        }
+        try {
+            container = dataElement;
             if (headers == null) {
                 headers = container.getHeaders();
             } else {
@@ -69,11 +91,15 @@ public class SectorSelectionSaver<M extends IModel, D extends IData, C extends I
                     model.linkToSector(value);
                 }
             }
+            tx.success();
+        } catch (Exception e) {
+            tx.failure();
         }
     }
 
     @Override
     public void finishUp() {
+        NeoServiceProvider.getProvider().commit();
+        txCounter = 0;
     }
-
 }

@@ -88,7 +88,7 @@ public class NewNetworkTesting {
 
     @Test
     public void testSaver() {
-        saver.init(config, null);
+        saver.init((ConfigurationDataImpl)config, null);
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);

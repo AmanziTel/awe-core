@@ -53,7 +53,8 @@ public abstract class AbstractCSVParser<T1 extends ISaver<IModel, CSVContainer, 
     private String charSetName = Charset.defaultCharset().name();
     protected BufferedReader reader;
     private File tempFile;
-    private int persentageOld = 0;
+    private double persentageOld = 0;
+    
 
     /**
      * 
@@ -134,10 +135,10 @@ public abstract class AbstractCSVParser<T1 extends ISaver<IModel, CSVContainer, 
         } catch (IOException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
         } finally {
-            int persentage = is.percentage();
-            if (persentage - persentageOld > PERCENTAGE_FIRE) {
-                persentageOld = persentage;
-                fireSubProgressEvent(currentFile, new ProgressEventImpl(String.format(currentFile.getName()), persentage / 100d));
+            double percentage = is.percentage();
+            if (percentage - persentageOld > PERCENTAGE_FIRE) {
+                persentageOld = percentage;
+                fireSubProgressEvent(currentFile, new ProgressEventImpl(String.format(currentFile.getName()), percentage));
             }
         }
         return null;
