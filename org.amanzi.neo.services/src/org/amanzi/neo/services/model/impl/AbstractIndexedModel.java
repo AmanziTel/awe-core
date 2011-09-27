@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.amanzi.neo.db.manager.NeoServiceProvider;
-import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.indexes.MultiPropertyIndex;
@@ -249,6 +248,7 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
             tx.success();
         } catch (Exception e) {
             // TODO: handle exception
+            //TODO: LN: handle exception :-)
         } finally {
             tx.finish();
         }

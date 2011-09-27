@@ -37,14 +37,6 @@ import org.neo4j.kernel.Traversal;
  * @author grigoreva_a
  * @since 1.0.0
  */
-/**
- * TODO Purpose of
- * <p>
- * </p>
- * 
- * @author grigoreva_a
- * @since 1.0.0
- */
 public class ProjectService extends NewAbstractService {
 
     private static Logger LOGGER = Logger.getLogger(ProjectService.class);
@@ -60,11 +52,11 @@ public class ProjectService extends NewAbstractService {
      * @since 1.0.0
      */
     protected enum ProjectNodeType implements INodeType {
-        PROJECT {
-            @Override
-            public String getId() {
-                return name();
-            }
+        PROJECT;
+        
+        @Override
+        public String getId() {
+            return name().toLowerCase();
         }
     }
 
@@ -129,6 +121,7 @@ public class ProjectService extends NewAbstractService {
             tx.success();
         } catch (DatabaseException e) {
             LOGGER.error("Could not create project '" + name + "'.", e);
+            //TODO: LN: throw exception to higher level
         } finally {
             tx.finish();
         }

@@ -227,6 +227,7 @@ public abstract class NewAbstractService {
      * @param propertyValue
      * @throws DatabaseException if something went wrong
      */
+    //TODO: LN: use Index instead of it's name 
     public Index<Node> addNodeToIndex(Node node, String indexName, String propertyName, Object propertyValue)
             throws DatabaseException {
         Index<Node> index = null;
@@ -244,6 +245,7 @@ public abstract class NewAbstractService {
         return index;
     }
 
+    //TODO: LN: use Index instead of it's name, comments
     public Index<Node> addNodeToIndex(Node node, Index<Node> index, String propertyName, Object propertyValue)
             throws DatabaseException {
         tx = graphDb.beginTx();
@@ -296,6 +298,7 @@ public abstract class NewAbstractService {
         }
     }
 
+    //TODO: comments
     protected TraversalDescription getChildElementTraversalDescription() {
         LOGGER.debug("start getNetworkElementTraversalDescription()");
         return Traversal.description().depthFirst().relationships(DatasetRelationTypes.CHILD, Direction.OUTGOING);
@@ -395,6 +398,7 @@ public abstract class NewAbstractService {
         Node result = null;
         for (Relationship rel : parent.getRelationships(relType, Direction.OUTGOING)) {
             Node node = rel.getEndNode();
+            //TODO: LN: better will be to use getProperty(NAME, "") (with empty string) to prevent NPE
             if ((name.equals(node.getProperty(NAME, null))) && (nodeType.getId().equals(node.getProperty(TYPE, null)))) {
                 result = node;
                 break;

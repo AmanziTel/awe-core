@@ -34,6 +34,7 @@ import org.neo4j.graphdb.traversal.Evaluators;
 import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.kernel.Traversal;
 
+//TODO: LN: comments!
 /**
  * TODO Purpose of
  * <p>
@@ -95,7 +96,7 @@ public class CorrelationService extends NewAbstractService {
                 result.createRelationshipTo(dsRoot, Correlations.CORRELATED);
                 tx.success();
             } catch (Exception e) {
-                // TODO:
+                // TODO: LN: handle exception
             } finally {
                 tx.finish();
             }
