@@ -85,7 +85,7 @@ public class RomesDriveModelSaver<T extends BaseTransferData> implements
 		try {
 			dm.addMeasurement(filename, params);
 			tx.success();
-		} catch (DatabaseException e) {
+		} catch (AWEException e) {
 			// TODO log
 			throw new RuntimeException(e);
 		}

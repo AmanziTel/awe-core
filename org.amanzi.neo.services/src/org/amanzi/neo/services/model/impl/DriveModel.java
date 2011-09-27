@@ -118,6 +118,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
 
             this.rootNode = rootNode;
             this.name = (String)rootNode.getProperty(NewAbstractService.NAME, null);
+            initializeStatistics();
             // this.type = TODO:
         } else {
             // validate params
@@ -296,9 +297,10 @@ public class DriveModel extends RenderableModel implements IDriveModel {
      * @param filename the name of file
      * @param params a map containing parameters of the new measurement
      * @return the newly created node
-     * @throws DatabaseException if errors occur in database
+     * @throws AWEException 
      */
-    public IDataElement addMeasurement(String filename, Map<String, Object> params) throws DatabaseException {
+    public IDataElement addMeasurement(String filename, Map<String, Object> params) 
+            throws AWEException {
         return addMeasurement(filename, params, primaryType);
     }
 
@@ -311,9 +313,10 @@ public class DriveModel extends RenderableModel implements IDriveModel {
      * @param params a map containing parameters of the new measurement
      * @param nodeType the type of node to create
      * @return the newly created node
-     * @throws DatabaseException if errors occur in database
+     * @throws AWEException 
      */
-    public IDataElement addMeasurement(String filename, Map<String, Object> params, INodeType nodeType) throws DatabaseException {
+    public IDataElement addMeasurement(String filename, Map<String, Object> params, INodeType nodeType) 
+            throws AWEException {
         LOGGER.debug("start addMeasurement(String filename, Map<String, Object> params)");
 
         // measurements are added as c-n-n o file nodes
@@ -350,12 +353,14 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         }
         params.put(NewAbstractService.DATASET_ID, this.name);
         dsServ.setProperties(m, params);
+        indexProperty(primaryType, params); // TODO: ??????????
 
         count++;
         Map<String, Object> prop = new HashMap<String, Object>();
         prop.put(PRIMARY_TYPE, primaryType.getId());// TODO: ?????????????
         prop.put(COUNT, count);
         dsServ.setProperties(rootNode, prop);
+        indexProperty(primaryType, prop); // TODO: ???????????
 
         return new DataElement(m);
     }

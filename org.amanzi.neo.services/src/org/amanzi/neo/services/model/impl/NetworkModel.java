@@ -27,8 +27,6 @@ import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
-import org.amanzi.neo.services.exceptions.DatabaseException;
-import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.model.ICorrelationModel;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
@@ -71,6 +69,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
 
         this.rootNode = networkRoot;
         this.name = rootNode.getProperty(NewAbstractService.NAME, "").toString();
+        initializeStatistics();
     }
 
     /**
@@ -143,6 +142,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
                 }
             }
             nwServ.setProperties(node, (DataElement)element);
+            indexProperty(type, (DataElement)element);
         } catch (AWEException e) {
             // TODO Handle IllegalNodeDataException
             throw (RuntimeException)new RuntimeException().initCause(e);

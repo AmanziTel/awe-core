@@ -32,4 +32,6 @@ public interface IPropertyStatisticalModel extends INodeToNodeRelationsModel {
     public String[] getAllProperties();
 
     public String[] getAllProperties(INodeType nodeType);
+    
+    public String[] getAllProperties(Class<?> nodeType);
 }

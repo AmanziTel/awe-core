@@ -506,7 +506,7 @@ public class DriveModelTest extends AbstractAWETest {
 					filename.substring(filename.lastIndexOf('\\') + 1), params))
 					.getNode();
 			dm.finishUp();
-		} catch (DatabaseException e) {
+		} catch (AWEException e) {
 			LOGGER.error("Could not add measurement", e);
 			fail();
 		}
@@ -572,7 +572,7 @@ public class DriveModelTest extends AbstractAWETest {
 				me = ((DataElement) dm.addMeasurement(
 						filename.substring(filename.lastIndexOf('\\') + 1), m))
 						.getNode();
-			} catch (DatabaseException e) {
+			} catch (AWEException e) {
 				LOGGER.error("Could not add measurement", e);
 				fail();
 			}
@@ -625,7 +625,7 @@ public class DriveModelTest extends AbstractAWETest {
 			m = ((DataElement) dm.addMeasurement(
 					filename.substring(filename.lastIndexOf('\\') + 1), params))
 					.getNode();
-		} catch (DatabaseException e) {
+		} catch (AWEException e) {
 			LOGGER.error("Could not add measurement", e);
 			fail();
 		}
@@ -673,7 +673,7 @@ public class DriveModelTest extends AbstractAWETest {
 			m = ((DataElement) dm.addMeasurement(
 					filename.substring(filename.lastIndexOf('\\') + 1), params))
 					.getNode();
-		} catch (DatabaseException e) {
+		} catch (AWEException e) {
 			LOGGER.error("Could not add measurement", e);
 			fail();
 		}
@@ -713,7 +713,7 @@ public class DriveModelTest extends AbstractAWETest {
 			m = ((DataElement) dm.addMeasurement(
 					filename.substring(filename.lastIndexOf('\\') + 1), params))
 					.getNode();
-		} catch (DatabaseException e) {
+		} catch (AWEException e) {
 			LOGGER.error("Could not add measurement", e);
 			fail();
 		}
@@ -736,7 +736,7 @@ public class DriveModelTest extends AbstractAWETest {
 		}
 		try {
 			dm.addMeasurement(null, new HashMap<String, Object>());
-		} catch (DatabaseException e) {
+		} catch (AWEException e) {
 			LOGGER.error("Could not add measurement", e);
 			fail();
 		}
@@ -756,7 +756,7 @@ public class DriveModelTest extends AbstractAWETest {
 		}
 		try {
 			dm.addMeasurement("", new HashMap<String, Object>());
-		} catch (DatabaseException e) {
+		} catch (AWEException e) {
 			LOGGER.error("Could not add measurement", e);
 			fail();
 		}
@@ -887,7 +887,7 @@ public class DriveModelTest extends AbstractAWETest {
 					fms.get(fname).add(
 							((DataElement) dm.addMeasurement(fname, params))
 									.getNode());
-				} catch (DatabaseException e) {
+				} catch (AWEException e) {
 					LOGGER.error("Could not add measurement", e);
 					fail();
 				}
