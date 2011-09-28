@@ -66,7 +66,7 @@ public class NewStatisticsService extends NewAbstractService {
     /**
      * TraversalDescription for child nodes
      */
-    private TraversalDescription childNodes = getChildElementTraversalDescription().evaluator(Evaluators.atDepth(1));
+    private TraversalDescription childNodes = childElementTraversalDescription.evaluator(Evaluators.atDepth(1));
 
     
     /**

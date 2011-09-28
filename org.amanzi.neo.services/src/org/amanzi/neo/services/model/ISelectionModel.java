@@ -26,7 +26,7 @@ import org.neo4j.graphdb.Node;
  * @author Kondratneko_Vladislav
  * @since 1.0.0
  */
-public interface ISelectionModel extends IDataModel, IPropertyStatisticalModel, IRenderableModel {
+public interface ISelectionModel {
 
     /**
      * find sector by name and create relation ship from rootNode to each node from iterator

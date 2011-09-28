@@ -19,7 +19,6 @@ import java.util.Map;
 
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
-import org.amanzi.neo.loader.core.newparser.CommonCSVParser;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
@@ -27,6 +26,7 @@ import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.ISelectionModel;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.DriveModel;
+import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.amanzi.neo.services.model.impl.SelectionModel;
 import org.apache.log4j.Logger;
 
@@ -47,10 +47,11 @@ public class SectorSelectionSaver extends AbstractSaver<DriveModel, CSVContainer
         Map<String, Object> rootElement = new HashMap<String, Object>();
         rootElement.put(INeoConstants.PROPERTY_NAME_NAME, configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK));
         rootElement.put(INeoConstants.PROPERTY_TYPE_NAME, DatasetTypes.NETWORK.getId());
+        rootElement
+                .put(PROJECT_PROPERTY, new ProjectModel(configuration.getDatasetNames().get(CONFIG_VALUE_PROJECT)).getRootNode());
+
         try {
-            model = new SelectionModel(NeoServiceFactory.getInstance().getDatasetService()
-                    .findOrCreateAweProject(configuration.getDatasetNames().get(CONFIG_VALUE_PROJECT)),
-                    new DataElement(rootElement));
+            model = new SelectionModel(new DataElement(rootElement));
         } catch (AWEException e) {
             e.printStackTrace();
             LOGGER.info("Error while create Selection Model ", e);
@@ -60,7 +61,7 @@ public class SectorSelectionSaver extends AbstractSaver<DriveModel, CSVContainer
 
     @Override
     public void saveElement(CSVContainer dataElement) {
-        openOrReopenTx();
+        txCommit();
         try {
             container = dataElement;
             if (headers == null) {
@@ -68,14 +69,13 @@ public class SectorSelectionSaver extends AbstractSaver<DriveModel, CSVContainer
             } else {
                 for (String value : container.getValues()) {
                     model.linkToSector(value);
-                    markTxAsSuccess();
                     increaseActionCount();
                 }
             }
 
         } catch (Exception e) {
             e.printStackTrace();
-            markTxAsFailure();
+            txRollBack();
         }
     }
 }

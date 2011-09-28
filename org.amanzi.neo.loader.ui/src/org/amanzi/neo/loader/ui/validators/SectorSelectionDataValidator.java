@@ -26,6 +26,7 @@ import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
+import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -64,12 +65,10 @@ public class SectorSelectionDataValidator implements IValidator {
         }
         if (result == Result.SUCCESS) {
             NewDatasetService newDatasetService = NeoServiceFactory.getInstance().getNewDatasetService();
-            DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
             Node root;
             try {
-                root = newDatasetService.findDataset(
-                        datasetService.findOrCreateAweProject(config.getDatasetNames().get("Project")), config.getDatasetNames()
-                                .get("Network"), DatasetTypes.NETWORK);
+                root = newDatasetService.findDataset(new ProjectModel(config.getDatasetNames().get("Project")).getRootNode(),
+                        config.getDatasetNames().get("Network"), DatasetTypes.NETWORK);
 
                 if (root != null) {
                     result = Result.SUCCESS;

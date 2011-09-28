@@ -51,7 +51,7 @@ public class NewNetworkService extends NewAbstractService {
      * @since 1.0.0
      */
     public enum NetworkElementNodeType implements INodeType {
-        NETWORK, BSC, SITE, SECTOR, CITY, MSC;
+        NETWORK, BSC, SITE, SECTOR, CITY, MSC, SELECTION_LIST_ROOT;
         @Override
         public String getId() {
             return name().toLowerCase();
@@ -294,6 +294,6 @@ public class NewNetworkService extends NewAbstractService {
             throw new IllegalArgumentException("Element type is null.");
         }
 
-        return getChildElementTraversalDescription().evaluator(new FilterNodesByType(elementType)).traverse(parent).nodes();
+        return childElementTraversalDescription.evaluator(new FilterNodesByType(elementType)).traverse(parent).nodes();
     }
 }

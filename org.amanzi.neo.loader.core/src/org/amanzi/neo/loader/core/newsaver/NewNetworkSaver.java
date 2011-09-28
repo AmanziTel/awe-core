@@ -22,11 +22,16 @@ import org.amanzi.neo.loader.core.newparser.CSVContainer;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceManager;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
+import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
+import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.DriveModel;
 import org.amanzi.neo.services.model.impl.NetworkModel;
+import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -182,7 +187,7 @@ public class NewNetworkSaver extends AbstractSaver<DriveModel, CSVContainer, Con
         String ci = sectorMap.containsKey("ci") ? sectorMap.get("ci").toString() : "";
         String lac = sectorMap.containsKey("lac") ? sectorMap.get("lac").toString() : "";
         if ((ci == null || StringUtils.isEmpty(ci)) || (lac == null || StringUtils.isEmpty(lac))
-                || (sectorName == null || StringUtils.isEmpty(sectorName))) {
+                && (sectorName == null || StringUtils.isEmpty(sectorName))) {
             LOGGER.info("Sector haven't Name or CI + LAC properties on line: " + lineCounter);
             return;
         }
@@ -207,8 +212,9 @@ public class NewNetworkSaver extends AbstractSaver<DriveModel, CSVContainer, Con
         columnSynonyms = new HashMap<String, Integer>();
         setDbInstance();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
-        rootElement.put(PROJECT_PROPERTY,
-                new DatasetService().findAweProject(configuration.getDatasetNames().get(CONFIG_VALUE_PROJECT)));
+        rootElement
+                .put(PROJECT_PROPERTY, new ProjectModel(configuration.getDatasetNames().get(CONFIG_VALUE_PROJECT)).getRootNode());
+
         rootElement.put(INeoConstants.PROPERTY_NAME_NAME, configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK));
 
         rootElement.put(INeoConstants.PROPERTY_TYPE_NAME, DatasetTypes.NETWORK.getId());
@@ -218,9 +224,7 @@ public class NewNetworkSaver extends AbstractSaver<DriveModel, CSVContainer, Con
 
     @Override
     public void saveElement(CSVContainer dataElement) {
-
-        openOrReopenTx();
-
+        txCommit();
         try {
             CSVContainer container = dataElement;
             if (fileSynonyms.isEmpty()) {
@@ -232,14 +236,11 @@ public class NewNetworkSaver extends AbstractSaver<DriveModel, CSVContainer, Con
                 lineCounter++;
                 List<String> value = container.getValues();
                 createBSC(value);
-
-                markTxAsSuccess();
                 increaseActionCount();
-
             }
         } catch (Exception e) {
             e.printStackTrace();
-            markTxAsFailure();
+            txRollBack();
         }
 
     }

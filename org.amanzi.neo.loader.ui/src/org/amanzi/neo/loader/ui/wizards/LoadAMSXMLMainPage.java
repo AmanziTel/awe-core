@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.amanzi.neo.db.manager.NeoServiceProvider;
 import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.ILoaderNew;
@@ -35,6 +36,7 @@ import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.enums.NetworkTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
+import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.swt.SWT;
@@ -224,11 +226,9 @@ public class LoadAMSXMLMainPage extends LoaderPage<CommonConfigData> {
      */
     private String[] getRootItems(NodeTypes type) {
         NewDatasetService datasetService = NeoServiceFactory.getInstance().getNewDatasetService();
-        final String projectName = LoaderUiUtils.getAweProjectName();
-        DatasetService ds = NeoServiceFactory.getInstance().getDatasetService();
         List<Node> networkNodes;
         try {
-            networkNodes = datasetService.findAllDatasets(ds.findOrCreateAweProject(projectName));
+            networkNodes = datasetService.findAllDatasets(new ProjectModel(LoaderUiUtils.getAweProjectName()).getRootNode());
         } catch (InvalidDatasetParameterException e) {
             // TODO Handle InvalidDatasetParameterException
             throw (RuntimeException)new RuntimeException().initCause(e);
@@ -245,6 +245,7 @@ public class LoadAMSXMLMainPage extends LoaderPage<CommonConfigData> {
 
         String[] result = members.keySet().toArray(new String[] {});
         Arrays.sort(result);
+        NeoServiceProvider.getProvider().commit();
         return result;
     }
 

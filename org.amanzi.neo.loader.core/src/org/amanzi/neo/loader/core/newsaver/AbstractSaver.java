@@ -39,7 +39,7 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
     /**
      * action threshold for commit
      */
-    private int commitTxCount;
+    private int txBeforeCommit;
     /**
      * graph database instance
      */
@@ -89,15 +89,17 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
      * @param count
      */
     protected void setTxCountToReopen(int count) {
-        commitTxCount = count;
+        txBeforeCommit = count;
     }
 
     /**
-     * if current tx==null create new instance finish current transaction if actions in current
-     * transaction more than commitTxCount and open new;
+     * if current transaction==null create new transaction instance;Also finish current transaction
+     * if actions in current transaction more than <code>txBeforeCommit</code> after closing - open
+     * new transaction;
      */
-    protected void openOrReopenTx() {
-        if (actionCount > commitTxCount) {
+    protected void txCommit() {
+        if (actionCount > txBeforeCommit) {
+            tx.success();
             tx.finish();
             tx = null;
             actionCount = 0;
@@ -108,26 +110,18 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
 
     }
 
-    protected void finishTx() {
-        tx.finish();
-    }
-
     /**
-     * mark transaction as success
+     * mark transaction as failure and finish it
      */
-    protected void markTxAsSuccess() {
-        tx.success();
-    }
-
-    /**
-     * mark tx as failure
-     */
-    protected void markTxAsFailure() {
+    protected void txRollBack() {
         tx.failure();
+        tx.finish();
+        tx = null;
     }
 
     @Override
     public void finishUp() {
+        tx.success();
         tx.finish();
         NeoServiceProvider.getProvider().commit();
         actionCount = 0;
