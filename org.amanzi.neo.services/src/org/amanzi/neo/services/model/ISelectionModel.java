@@ -13,10 +13,6 @@
 
 package org.amanzi.neo.services.model;
 
-import java.util.Iterator;
-import java.util.Map;
-
-import org.neo4j.graphdb.Node;
 
 /**
  * TODO Purpose of

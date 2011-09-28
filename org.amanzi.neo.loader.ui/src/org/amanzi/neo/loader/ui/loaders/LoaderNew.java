@@ -23,6 +23,7 @@ import org.amanzi.neo.loader.core.IValidator;
 import org.amanzi.neo.loader.core.newparser.IParser;
 import org.amanzi.neo.loader.core.newsaver.IData;
 import org.amanzi.neo.loader.core.newsaver.ISaver;
+import org.amanzi.neo.services.model.IModel;
 
 /**
  * <p>
@@ -37,12 +38,11 @@ public class LoaderNew implements ILoaderNew<IData, IConfiguration> {
      * contain some information about loader such as loader name loader type and loader datatype
      */
     ILoaderInfo info;
-    @SuppressWarnings("rawtypes")
+    
     /**
      * saver for current Loader
      */
-    List<ISaver> saver;
-    @SuppressWarnings("rawtypes")
+    List<ISaver<? extends IModel, IData, IConfiguration>> saver;
     /**
      * parser for current Loader
      */
@@ -54,7 +54,7 @@ public class LoaderNew implements ILoaderNew<IData, IConfiguration> {
 
     @SuppressWarnings("rawtypes")
     @Override
-    public void setSaver(List<ISaver> saver) {
+    public void setSaver(List<ISaver<? extends IModel, IData, IConfiguration>> saver) {
         this.saver = saver;
     }
 

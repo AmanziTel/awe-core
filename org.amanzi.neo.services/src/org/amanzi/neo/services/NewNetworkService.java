@@ -88,6 +88,7 @@ public class NewNetworkService extends NewAbstractService {
         if (parent == null) {
             throw new IllegalArgumentException("Parent is null.");
         }
+        //TODO: LN: use StringUtils.EMPTY
         if ((indexName == null) || (indexName.equals(""))) {
             throw new IllegalArgumentException("indexName is null or empty");
         }
@@ -188,6 +189,7 @@ public class NewNetworkService extends NewAbstractService {
         if ((indexName == null) || (indexName.equals(""))) {
             throw new IllegalArgumentException("indexName is null or empty");
         }
+        //TODO: LN: incorrect condition - you have now <Name> AND <CI+LAC>, but should have OR
         if (((name == null) || (name.equals(""))) && ((ci == null) || (ci.equals("")) || (lac == null) || (lac.equals("")))) {
             throw new IllegalNodeDataException("Name or CI+LAC must be set");
         }
@@ -241,6 +243,7 @@ public class NewNetworkService extends NewAbstractService {
 
         // Find element by index
         Node result = null;
+        //TODO: LN: use index instead of index name
         Index<Node> index = graphDb.index().forNodes(indexName);
 
         if (!((ci == null) || (ci.equals("")))) {

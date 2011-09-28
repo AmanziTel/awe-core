@@ -94,7 +94,7 @@ public class NewStatisticsService extends NewAbstractService {
 
         @Override
         public String getId() {
-            return name();
+            return name().toLowerCase();
         }
     }
 

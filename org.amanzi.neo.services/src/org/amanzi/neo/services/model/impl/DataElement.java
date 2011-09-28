@@ -18,6 +18,7 @@ import java.util.Map;
 
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.model.IDataElement;
+import org.apache.commons.lang.StringUtils;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -78,7 +79,7 @@ public class DataElement extends HashMap<String, Object> implements IDataElement
 
     @Override
     public String toString() {
-        return node == null ? this.get(NewAbstractService.NAME).toString() : "" + node.getId();
+        return node == null ? this.get(NewAbstractService.NAME).toString() : StringUtils.EMPTY + node.getId();
     }
 
 }

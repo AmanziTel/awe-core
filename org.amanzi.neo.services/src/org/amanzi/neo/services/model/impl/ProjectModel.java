@@ -22,6 +22,7 @@ import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.INetworkModel;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
 
@@ -47,7 +48,7 @@ public class ProjectModel extends AbstractModel {
      * @param name the name of the project.
      */
     public ProjectModel(String name) {
-        if ((name == null) || (name.equals(""))) {
+        if ((name == null) || (name.equals(StringUtils.EMPTY))) {
             throw new IllegalArgumentException("Name is null or empty.");
         }
         try {

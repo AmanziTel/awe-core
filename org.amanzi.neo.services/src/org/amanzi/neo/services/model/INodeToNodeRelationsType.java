@@ -15,6 +15,7 @@ package org.amanzi.neo.services.model;
 
 import org.neo4j.graphdb.RelationshipType;
 
+//TODO: LN: comments
 /**
  * TODO Purpose of
  * <p>

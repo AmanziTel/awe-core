@@ -19,14 +19,11 @@ import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewStatisticsService;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
-import org.amanzi.neo.services.exceptions.DatabaseException;
-import org.amanzi.neo.services.exceptions.FailedParseValueException;
 import org.amanzi.neo.services.exceptions.IndexPropertyException;
 import org.amanzi.neo.services.exceptions.InvalidStatisticsParameterException;
 import org.amanzi.neo.services.exceptions.LoadVaultException;
-import org.amanzi.neo.services.exceptions.UnsupportedClassException;
-import org.amanzi.neo.services.model.INodeToNodeRelationsType;
 import org.amanzi.neo.services.model.IPropertyStatisticalModel;
+import org.amanzi.neo.services.statistic.IVault;
 
 /**
  * TODO Purpose of
@@ -37,6 +34,8 @@ import org.amanzi.neo.services.model.IPropertyStatisticalModel;
  * @since 1.0.0
  */
 public abstract class PropertyStatisticalModel extends DataModel implements IPropertyStatisticalModel {
+    
+    protected IVault statisticsVault;
     
     protected void initializeStatistics() {
         NewStatisticsService statisticsService = NeoServiceFactory.getInstance().getNewStatisticsService();
@@ -66,11 +65,6 @@ public abstract class PropertyStatisticalModel extends DataModel implements IPro
     protected Object parse(INodeType nodeType, String propertyName, String propertyValue) 
             throws AWEException {
         return statisticsVault.parse(nodeType.getId(), propertyName, propertyValue);
-    }
-
-    @Override
-    public INodeToNodeRelationsType getNodeToNodeRelationsType() {
-        return null;
     }
 
     @Override
@@ -105,5 +99,16 @@ public abstract class PropertyStatisticalModel extends DataModel implements IPro
         String[] result = new String[allProperties.size()];
         allProperties.keySet().toArray(result);
         return result;
+    }
+    
+    @Override
+    public void finishUp()
+    {
+        NewStatisticsService statisticsService = new NewStatisticsService();
+        try {
+            statisticsService.saveVault(rootNode, statisticsVault);
+        } catch (AWEException e) {
+            //TODO: LN: error handling? 
+        }
     }
 }

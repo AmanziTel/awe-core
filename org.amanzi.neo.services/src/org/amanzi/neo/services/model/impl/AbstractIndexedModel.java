@@ -48,6 +48,7 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
     protected double min_longitude = Double.MAX_VALUE;
     protected double max_longitude = -Double.MAX_VALUE;
 
+    //TODO: LN: maybe use INodeType as key?
     private Map<String, List<MultiPropertyIndex< ? >>> indexes;
 
     /**
