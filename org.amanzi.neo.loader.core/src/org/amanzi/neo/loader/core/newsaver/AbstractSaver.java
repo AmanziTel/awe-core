@@ -1,3 +1,16 @@
+/* AWE - Amanzi Wireless Explorer
+ * http://awe.amanzi.org
+ * (C) 2008-2009, AmanziTel AB
+ *
+ * This library is provided under the terms of the Eclipse Public License
+ * as described at http://www.eclipse.org/legal/epl-v10.html. Any use,
+ * reproduction or distribution of the library constitutes recipient's
+ * acceptance of this agreement.
+ *
+ * This library is distributed WITHOUT ANY WARRANTY; without even the
+ * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ */
+
 package org.amanzi.neo.loader.core.newsaver;
 
 import org.amanzi.neo.db.manager.NeoServiceProvider;
@@ -7,6 +20,14 @@ import org.amanzi.neo.services.model.IModel;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Transaction;
 
+/**
+ * contains common methods for all savers
+ * 
+ * @author Kondratenko_Vladislav
+ * @param <T1>
+ * @param <T2>
+ * @param <T3>
+ */
 public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 extends IConfiguration> implements ISaver<T1, T2, T3> {
     public static final String CONFIG_VALUE_PROJECT = "Project";
     public static final String CONFIG_VALUE_NETWORK = "Network";
@@ -15,6 +36,9 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
     public static final String CONFIG_VALUE_CALLS = "Calls";
     public static final String CONFIG_VALUE_PESQ = "PESQ";
 
+    /**
+     * action threshold for commit
+     */
     private int commitTxCount;
     /**
      * graph database instance
@@ -27,14 +51,20 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
     /**
      * transactions count
      */
-    private int currentTxCount;
+    private int actionCount;
 
+    /**
+     * Initialize database;
+     */
     protected void setDbInstance() {
         database = NeoServiceProvider.getProvider().getService();
     }
 
-    protected void increaseTxCount() {
-        currentTxCount++;
+    /**
+     * increase action counter in current tx;
+     */
+    protected void increaseActionCount() {
+        actionCount++;
     }
 
     /**
@@ -63,14 +93,14 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
     }
 
     /**
-     * if current tx==null create new instance finish current transaction if placebo transaction
-     * count more than commitTxCount and open new;
+     * if current tx==null create new instance finish current transaction if actions in current
+     * transaction more than commitTxCount and open new;
      */
     protected void openOrReopenTx() {
-        if (currentTxCount > commitTxCount) {
+        if (actionCount > commitTxCount) {
             tx.finish();
             tx = null;
-            currentTxCount = 0;
+            actionCount = 0;
         }
         if (tx == null) {
             tx = database.beginTx();
@@ -90,7 +120,7 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
     }
 
     /**
-     * mar tx as failure
+     * mark tx as failure
      */
     protected void markTxAsFailure() {
         tx.failure();
@@ -100,6 +130,6 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
     public void finishUp() {
         tx.finish();
         NeoServiceProvider.getProvider().commit();
-        currentTxCount = 0;
+        actionCount = 0;
     }
 }

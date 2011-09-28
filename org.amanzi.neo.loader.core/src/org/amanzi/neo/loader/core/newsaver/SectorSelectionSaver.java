@@ -69,7 +69,7 @@ public class SectorSelectionSaver extends AbstractSaver<DriveModel, CSVContainer
                 for (String value : container.getValues()) {
                     model.linkToSector(value);
                     markTxAsSuccess();
-                    increaseTxCount();
+                    increaseActionCount();
                 }
             }
 
