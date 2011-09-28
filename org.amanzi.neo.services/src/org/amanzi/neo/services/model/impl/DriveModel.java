@@ -118,7 +118,6 @@ public class DriveModel extends RenderableModel implements IDriveModel {
             this.rootNode = rootNode;
             this.name = (String)rootNode.getProperty(NewAbstractService.NAME, null);
             this.driveType = DriveTypes.valueOf(rootNode.getProperty(NewDatasetService.DRIVE_TYPE, "").toString().toUpperCase());
-            initializeStatistics();
         } else {
             // validate params
             if (parent == null) {
@@ -131,6 +130,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
             this.name = name;
             this.driveType = type;
         }
+        initializeStatistics();
     }
 
     /**
@@ -150,6 +150,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         if (primaryType != null) {
             this.primaryType = primaryType;
         }
+        initializeStatistics();
     }
 
     /**
