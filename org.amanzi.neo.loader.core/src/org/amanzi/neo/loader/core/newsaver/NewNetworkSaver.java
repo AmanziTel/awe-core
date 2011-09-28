@@ -234,7 +234,7 @@ public class NewNetworkSaver extends AbstractSaver<DriveModel, CSVContainer, Con
                 createBSC(value);
 
                 markTxAsSuccess();
-                increaseTxCount();
+                increaseActionCount();
 
             }
         } catch (Exception e) {
