@@ -19,6 +19,7 @@ import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.index.IndexHits;
@@ -51,14 +52,24 @@ public class NewNetworkService extends NewAbstractService {
      * @since 1.0.0
      */
     public enum NetworkElementNodeType implements INodeType {
-        NETWORK, BSC, SITE, SECTOR, CITY, MSC;
+        NETWORK, BSC, SITE, SECTOR, CITY, MSC, SELECTION_LIST_ROOT;
         @Override
         public String getId() {
             return name().toLowerCase();
         }
 
     }
-
+    
+    /**
+     * Enum with RelationshipTypes specific for Network Structure
+     * 
+     * @author gerzog
+     * @since 1.0.0
+     */
+    public enum NetworkRelationshipTypes implements RelationshipType {
+        SELECTION_LIST;
+    }
+    
     public NewNetworkService() {
         super();
         datasetService = new NewDatasetService();

@@ -17,8 +17,10 @@ import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
+import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.testing.AbstractAWETest;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -35,6 +37,8 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 	private static final String databasePath = getDbLocation();
 	private static Transaction tx;
 	private static Node parent;
+	
+	private final static String DEFAULT_SELECTION_LIST_NAME = "Selection List";
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -1276,6 +1280,58 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 		return node;
 	}
 	
+	@Test(expected = IllegalArgumentException.class)
+	public void createSelectionModelWithoutName() throws IllegalArgumentException {
+	    Node networkNode = graphDatabaseService.createNode();
+	    
+	    networkService.createSelectionList(networkNode, null);
+	}
 	
+	@Test(expected = IllegalArgumentException.class)
+    public void createSelectionModelWithEmptyName() throws IllegalArgumentException {
+        Node networkNode = graphDatabaseService.createNode();
+        
+        networkService.createSelectionList(networkNode, StringUtils.EMPTY);
+    }
+	
+	@Test(expected = IllegalArgumentException.class)
+    public void createSelectionModelWithoutNetworkNode() throws IllegalArgumentException {
+        networkService.createSelectionList(null, DEFAULT_SELECTION_LIST_NAME);
+    }
+	
+	@Test(expected = DuplicateNodeNameException.class)
+	public void createSelectionModelWithAlreadyExistingName() throws DuplicateNodeNameException {
+	    Node networkNode = graphDatabaseService.createNode();
+	    
+	    networkService.createSelectionList(networkNode, DEFAULT_SELECTION_LIST_NAME);
+	    networkService.createSelectionList(networkNode, DEFAULT_SELECTION_LIST_NAME);
+	}
+	
+	@Test
+	public void checkCreatedSelectionListNode() {
+	    Node networkNode = graphDatabaseService.createNode();
+	    
+	    Node selectionNode = networkService.createSelectionList(networkNode, DEFAULT_SELECTION_LIST_NAME);
+	    
+	    Assert.assertNotNull(selectionNode);
+	}
+	
+	@Test
+    public void checkTypeOfCreatedSelectionListNode() {
+        Node networkNode = graphDatabaseService.createNode();
+        
+        Node selectionNode = networkService.createSelectionList(networkNode, DEFAULT_SELECTION_LIST_NAME);
+        
+        Assert.assertEquals(NetworkElementNodeType.SELECTION_LIST_ROOT, networkService.getNodeType(selectionNode));
+    }
+	
+	@Test
+    public void checkNameOfCreatedSelectionListNode() {
+        Node networkNode = graphDatabaseService.createNode();
+        
+        Node selectionNode = networkService.createSelectionList(networkNode, DEFAULT_SELECTION_LIST_NAME);
+        
+        Assert.assertEquals(DEFAULT_SELECTION_LIST_NAME, selectionNode.getProperty(NewAbstractService.NAME));
+    }
 
 }
