@@ -68,6 +68,8 @@ public abstract class AbstractCSVParser<T1 extends ISaver<IModel, CSVContainer, 
                 reader = new BufferedReader(new InputStreamReader(is, charSetName));
             }
         } catch (FileNotFoundException e) {
+            //TODO: LN: do not throw Runtime Exception! create own type
+            //or throw some existing non-Runtime
             // TODO Handle FileNotFoundException
             throw (RuntimeException)new RuntimeException().initCause(e);
         } catch (UnsupportedEncodingException e) {
@@ -92,6 +94,7 @@ public abstract class AbstractCSVParser<T1 extends ISaver<IModel, CSVContainer, 
         try {
             while ((lineStr = reader.readLine()) != null) {
                 if (lineStr != null) {
+                    //TODO: LN: use array instead of list
                     header.addAll(Arrays.asList(parser.parseLine(lineStr)));
                     break;
                 }

@@ -40,6 +40,8 @@ public class SectorSelectionSaver implements ISaver<DriveModel, CSVContainer, Co
     private ISelectionModel model;
     private List<String> headers;
     private CSVContainer container;
+    
+    //TODO: LN: make AbstractSaver to handle some general fields/methods
     /**
      * graph database instance
      */
@@ -63,6 +65,7 @@ public class SectorSelectionSaver implements ISaver<DriveModel, CSVContainer, Co
             model = new SelectionModel(NeoServiceFactory.getInstance().getDatasetService()
                     .findOrCreateAweProject(configuration.getDatasetNames().get("Project")), new DataElement(rootElement));
         } catch (InvalidDatasetParameterException e) {
+            //TODO: LN: here can be handled one general AWEException
             // TODO Handle InvalidDatasetParameterException
             throw (RuntimeException)new RuntimeException().initCause(e);
         } catch (DatasetTypeParameterException e) {

@@ -126,6 +126,7 @@ public class NewNetworkSaver implements ISaver<DriveModel, CSVContainer, Configu
         IDataElement cityElement = new DataElement(cityPropMap);
         IDataElement findedElement = model.findElement(cityElement);
         if (findedElement == null) {
+            //TODO: LN: duplicated code - why not to create DataElement (or use root) and then call createElement once? 
             if (root == null) {
                 findedElement = model.createElement(new DataElement(model.getRootNode()), cityElement);
             } else {
@@ -133,6 +134,7 @@ public class NewNetworkSaver implements ISaver<DriveModel, CSVContainer, Configu
             }
         }
         LOGGER.info("<-- CITY find and create time: " + (System.currentTimeMillis() - time));
+        //TODO: LN: getHeaderId method anyway will take some time, why not to save it's result in any variable and use it everywhere? 
         row.set(getHeaderId(fileSynonyms.get(DataLoadPreferenceManager.CITY)), null);
 
         createSite(findedElement, row);
@@ -193,6 +195,8 @@ public class NewNetworkSaver implements ISaver<DriveModel, CSVContainer, Configu
         }
         String sectorName = row.get(getHeaderId(fileSynonyms.get(DataLoadPreferenceManager.SECTOR))) != null ? row.get(
                 getHeaderId(fileSynonyms.get(DataLoadPreferenceManager.SECTOR))).toString() : "";
+                
+        //TODO: LN: hard-code! also use StringUtils.EMPTY_STRING
         String ci = sectorMap.containsKey("ci") ? sectorMap.get("ci").toString() : "";
         String lac = sectorMap.containsKey("lac") ? sectorMap.get("lac").toString() : "";
         if ((ci == null || StringUtils.isEmpty(ci)) || (lac == null || StringUtils.isEmpty(lac))
@@ -206,6 +210,7 @@ public class NewNetworkSaver implements ISaver<DriveModel, CSVContainer, Configu
         sectorMap.put(INeoConstants.PROPERTY_TYPE_NAME, DataLoadPreferenceManager.SECTOR);
 
         LOGGER.info("--> SECTOR preparation " + (System.currentTimeMillis() - time));
+        //TODO: LN: do we need next line? 
         time = System.currentTimeMillis();
         IDataElement sectorElement = new DataElement(sectorMap);
         time = System.currentTimeMillis();
@@ -222,6 +227,7 @@ public class NewNetworkSaver implements ISaver<DriveModel, CSVContainer, Configu
     public void init(ConfigurationDataImpl configuration, CSVContainer dataElement) {
         Map<String, Object> rootElement = new HashMap<String, Object>();
         database = NeoServiceProvider.getProvider().getService();
+        //TODO: LN: HARD CODE!!!!!!
         rootElement.put("project", new DatasetService().findAweProject(configuration.getDatasetNames().get("Project")));
         rootElement.put(INeoConstants.PROPERTY_NAME_NAME, configuration.getDatasetNames().get("Network"));
         rootElement.put(INeoConstants.PROPERTY_TYPE_NAME, DatasetTypes.NETWORK.getId());
@@ -230,6 +236,9 @@ public class NewNetworkSaver implements ISaver<DriveModel, CSVContainer, Configu
 
     @Override
     public void saveElement(CSVContainer dataElement) {
+        //TODO: LN: this mechanism will not work
+        //do not use finishUp
+        //move this to AbstractSaver
         if (tx == null) {
             tx = database.beginTx();
         } else if (txCounter > 2000) {
@@ -247,6 +256,7 @@ public class NewNetworkSaver implements ISaver<DriveModel, CSVContainer, Configu
                 lineCounter++;
                 List<String> value = container.getValues();
                 createBSC(value);
+                //TODO: LN: SYSTEM.OUT????
                 System.out.println("!!!!!!!!!!!!!!!!! line number " + lineCounter);
             }
             txCounter++;

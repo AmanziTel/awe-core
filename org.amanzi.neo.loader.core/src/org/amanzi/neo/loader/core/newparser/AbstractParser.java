@@ -40,6 +40,7 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
         implements
             IParser<T1, T2, T3> {
     protected static Logger LOGGER;
+    //TODO: LN: do not use ListenerList - use List of Listeners
     private final ListenerList listeners = new ListenerList();
     protected final int PERCENTAGE_FIRE = 2;
     private int percentage = 0;
@@ -54,6 +55,8 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
         listeners.remove(listener);
     }
 
+    //TODO: LN: does it make sense to have this method? 
+    //listeners used only in AbstractParser so we have direct access to this field
     protected ListenerList getListeners() {
         return listeners;
     }
@@ -103,6 +106,9 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
         }
         for (ISaver< ? , T3, T2> saver : savers) {
             saver.finishUp();
+            //TODO: LN: bad log info - "Saving data", but not mentioned that data from one file
+            //also directly methods for output of time can be organized in one method that 
+            //will be used everywhere
             LOGGER.info("Saving data finished in: " + (System.currentTimeMillis() - startTime) + ": file " + currentFile.getName());
         }
     }
@@ -120,6 +126,7 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
 
     @Override
     public void run() {
+        //TODO: LN: no time logging
         for (File file : config.getFilesToLoad()) {
             parseFile(file);
         }
@@ -139,6 +146,7 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
 
                 @Override
                 public void handleException(Throwable exception) {
+                    //TODO: LN: where is exception handling? 
                 }
             });
         }
