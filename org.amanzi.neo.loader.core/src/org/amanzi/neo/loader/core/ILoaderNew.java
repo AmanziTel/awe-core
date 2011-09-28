@@ -18,6 +18,7 @@ import java.util.List;
 import org.amanzi.neo.loader.core.newparser.IParser;
 import org.amanzi.neo.loader.core.newsaver.IData;
 import org.amanzi.neo.loader.core.newsaver.ISaver;
+import org.amanzi.neo.services.model.IModel;
 
 /**
  * <p>
@@ -47,8 +48,7 @@ public interface ILoaderNew<T extends IData, T2 extends IConfiguration> {
      * 
      * @param saver
      */
-    @SuppressWarnings("rawtypes")
-    public void setSaver(List<ISaver> saver);
+    public void setSaver(List<ISaver<? extends IModel, T, T2>> saver);
 
     /**
      * set parser for selected loader;

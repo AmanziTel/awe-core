@@ -31,6 +31,7 @@ import org.amanzi.neo.services.model.ICorrelationModel;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.INetworkType;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.geotools.referencing.CRS;
 import org.neo4j.graphdb.Node;
@@ -68,7 +69,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         }
 
         this.rootNode = networkRoot;
-        this.name = rootNode.getProperty(NewAbstractService.NAME, "").toString();
+        this.name = rootNode.getProperty(NewAbstractService.NAME, StringUtils.EMPTY).toString();
         initializeStatistics();
     }
 
@@ -89,7 +90,11 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         Node network = ((DataElement)rootElement).getNode();
         if (network == null) {
             // TODO: i think it sucks 
+            //TODO: LN: yeh, baby, remove hard-coded string and make next parameters in constructor for this action:
+            // ProjectNode (or ProjectModel) 
+            // NetworkName
             try {
+                //
                 network = dsServ.createDataset((Node)rootElement.get("project"), rootElement.get(NewAbstractService.NAME)
                         .toString(), DatasetTypes.NETWORK);
             } catch (AWEException e) {
@@ -302,11 +307,6 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         LOGGER.info("getAllElementsByType(" + elementType.getId() + ")");
 
         return new DataElementIterable(nwServ.findAllNetworkElements(getRootNode(), elementType));
-    }
-
-    @Override
-    public void finishUp() {
-        super.finishUp();
     }
 
     /**

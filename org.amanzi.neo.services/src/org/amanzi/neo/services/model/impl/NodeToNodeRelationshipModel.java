@@ -77,7 +77,7 @@ public class NodeToNodeRelationshipModel extends AbstractModel implements INodeT
 
         @Override
         public String getId() {
-            return name().toLowerCase();
+            return name();
         }
 
     }
@@ -92,6 +92,7 @@ public class NodeToNodeRelationshipModel extends AbstractModel implements INodeT
      */
     protected enum NodeToNodeTypes implements INodeType {
         NODE2NODE, PROXY;
+        
         @Override
         public String getId() {
             return name().toLowerCase();
@@ -263,11 +264,13 @@ public class NodeToNodeRelationshipModel extends AbstractModel implements INodeT
             return new DataElementIterable(getConnectedTraversalDescription().relationships(relType, Direction.OUTGOING)
                     .traverse(proxy).nodes());
         } else {
+            //TODO: LN: move TraversalDescriptions to Service and make it as Constant, not a method
             return new DataElementIterable(Traversal.description().evaluator(Evaluators.fromDepth(2))
                     .evaluator(Evaluators.toDepth(1)).traverse(sourceNode).nodes());
         }
     }
 
+    //TODO: LN: move TraversalDescriptions to Service
     protected TraversalDescription getConnectedTraversalDescription() {
         return Traversal.description().breadthFirst().relationships(N2NRelationships.N2N_REL, Direction.INCOMING)
                 .evaluator(Evaluators.excludeStartPosition()).evaluator(dsServ.new FilterNodesByType(nodeType));

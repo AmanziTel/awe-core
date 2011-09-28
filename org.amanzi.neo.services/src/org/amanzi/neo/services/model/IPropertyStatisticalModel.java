@@ -15,6 +15,7 @@ package org.amanzi.neo.services.model;
 
 import org.amanzi.neo.services.enums.INodeType;
 
+//TODO: LN: comments
 /**
  * TODO Purpose of
  * <p>
@@ -23,7 +24,7 @@ import org.amanzi.neo.services.enums.INodeType;
  * @author grigoreva_a
  * @since 1.0.0
  */
-public interface IPropertyStatisticalModel extends INodeToNodeRelationsModel {
+public interface IPropertyStatisticalModel extends IDataModel {
 
     public int getNodeCount(INodeType nodeType);
 

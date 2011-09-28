@@ -52,6 +52,8 @@ public abstract class NewAbstractService {
     private static Logger LOGGER = Logger.getLogger(NewAbstractService.class);
 
     protected GraphDatabaseService graphDb;
+    
+    //TODO: LN: do not use Transaction as a field
     private Transaction tx;
 
     /**

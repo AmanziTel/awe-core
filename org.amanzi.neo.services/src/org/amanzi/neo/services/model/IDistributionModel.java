@@ -14,15 +14,17 @@
 package org.amanzi.neo.services.model;
 
 /**
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author grigoreva_a
  * @since 1.0.0
  */
 public interface IDistributionModel extends IDistributionalModel {
-public String getPropertyName();
-public IDistribution getDistribution();
-public String getTitle();
+    public String getPropertyName();
+
+    public IDistribution getDistribution();
+
+    public String getTitle();
 }

@@ -212,6 +212,11 @@ public class NewNetworkSaver extends AbstractSaver<DriveModel, CSVContainer, Con
         rootElement.put(INeoConstants.PROPERTY_NAME_NAME, configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK));
 
         rootElement.put(INeoConstants.PROPERTY_TYPE_NAME, DatasetTypes.NETWORK.getId());
+        
+        //TODO: LN: should be used another way to create Network
+        //ProjectModel.createNetwork
+        //also it should be implemented static method ProjectModel.getCurrentProject
+        
         model = new NetworkModel(new DataElement(rootElement));
         rootDataElement = new DataElement(model.getRootNode());
     }
