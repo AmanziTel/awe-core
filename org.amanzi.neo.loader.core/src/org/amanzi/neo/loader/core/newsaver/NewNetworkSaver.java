@@ -113,12 +113,15 @@ public class NewNetworkSaver extends AbstractSaver<DriveModel, CSVContainer, Con
         IDataElement cityElement = new DataElement(cityPropMap);
         IDataElement findedElement = model.findElement(cityElement);
         if (findedElement == null) {
+            // TODO: LN: duplicated code - why not to create DataElement (or use root) and then call
+            // createElement once?
             if (root == null) {
                 findedElement = model.createElement(rootDataElement, cityElement);
             } else {
                 findedElement = model.createElement(root, cityElement);
             }
         }
+
         row.set(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.CITY)), null);
 
         createSite(findedElement, row);
@@ -172,8 +175,10 @@ public class NewNetworkSaver extends AbstractSaver<DriveModel, CSVContainer, Con
                 sectorMap.put(head.toLowerCase(), row.get(columnSynonyms.get(head)));
             }
         }
+
         String sectorName = row.get(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.SECTOR))) != null ? row.get(
                 columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.SECTOR))).toString() : "";
+
         String ci = sectorMap.containsKey("ci") ? sectorMap.get("ci").toString() : "";
         String lac = sectorMap.containsKey("lac") ? sectorMap.get("lac").toString() : "";
         if ((ci == null || StringUtils.isEmpty(ci)) || (lac == null || StringUtils.isEmpty(lac))
@@ -185,6 +190,7 @@ public class NewNetworkSaver extends AbstractSaver<DriveModel, CSVContainer, Con
             sectorMap.put(INeoConstants.PROPERTY_NAME_NAME, sectorName);
         }
         sectorMap.put(INeoConstants.PROPERTY_TYPE_NAME, DataLoadPreferenceManager.SECTOR);
+
         IDataElement sectorElement = new DataElement(sectorMap);
         IDataElement findedElement = model.findElement(sectorElement);
         if (findedElement == null) {
@@ -197,12 +203,14 @@ public class NewNetworkSaver extends AbstractSaver<DriveModel, CSVContainer, Con
     @Override
     public void init(ConfigurationDataImpl configuration, CSVContainer dataElement) {
         Map<String, Object> rootElement = new HashMap<String, Object>();
+
         columnSynonyms = new HashMap<String, Integer>();
         setDbInstance();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
         rootElement.put(PROJECT_PROPERTY,
                 new DatasetService().findAweProject(configuration.getDatasetNames().get(CONFIG_VALUE_PROJECT)));
         rootElement.put(INeoConstants.PROPERTY_NAME_NAME, configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK));
+
         rootElement.put(INeoConstants.PROPERTY_TYPE_NAME, DatasetTypes.NETWORK.getId());
         model = new NetworkModel(new DataElement(rootElement));
         rootDataElement = new DataElement(model.getRootNode());
@@ -210,7 +218,9 @@ public class NewNetworkSaver extends AbstractSaver<DriveModel, CSVContainer, Con
 
     @Override
     public void saveElement(CSVContainer dataElement) {
+
         openOrReopenTx();
+
         try {
             CSVContainer container = dataElement;
             if (fileSynonyms.isEmpty()) {
@@ -222,8 +232,10 @@ public class NewNetworkSaver extends AbstractSaver<DriveModel, CSVContainer, Con
                 lineCounter++;
                 List<String> value = container.getValues();
                 createBSC(value);
+
                 markTxAsSuccess();
                 increaseTxCount();
+
             }
         } catch (Exception e) {
             e.printStackTrace();

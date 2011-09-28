@@ -19,6 +19,7 @@ import java.util.Map;
 
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
+import org.amanzi.neo.loader.core.newparser.CommonCSVParser;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
@@ -27,6 +28,7 @@ import org.amanzi.neo.services.model.ISelectionModel;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.DriveModel;
 import org.amanzi.neo.services.model.impl.SelectionModel;
+import org.apache.log4j.Logger;
 
 /**
  * @author Kondratenko_Vladislav
@@ -35,6 +37,7 @@ public class SectorSelectionSaver extends AbstractSaver<DriveModel, CSVContainer
     private ISelectionModel model;
     private List<String> headers;
     private CSVContainer container;
+    protected static Logger LOGGER = Logger.getLogger(SectorSelectionSaver.class);
     private final int MAX_TX_BEFORE_COMMIT = 1000;
 
     @Override
@@ -49,7 +52,8 @@ public class SectorSelectionSaver extends AbstractSaver<DriveModel, CSVContainer
                     .findOrCreateAweProject(configuration.getDatasetNames().get(CONFIG_VALUE_PROJECT)),
                     new DataElement(rootElement));
         } catch (AWEException e) {
-            // TODO Handle InvalidDatasetParameterException
+            e.printStackTrace();
+            LOGGER.info("Error while create Selection Model ", e);
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
     }
@@ -70,6 +74,7 @@ public class SectorSelectionSaver extends AbstractSaver<DriveModel, CSVContainer
             }
 
         } catch (Exception e) {
+            e.printStackTrace();
             markTxAsFailure();
         }
     }
