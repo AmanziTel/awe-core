@@ -33,7 +33,6 @@ import org.neo4j.graphdb.Node;
  * @author Kasnitskij_V
  * @since 1.0.0
  */
-@SuppressWarnings("deprecation")
 public class TrxSaver extends AbstractHeaderSaver<BaseTransferData> {
 
     private static final String SECTOR = "Sector";

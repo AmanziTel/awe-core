@@ -299,13 +299,6 @@ PURPOSE.
          unpack="false"/>
 
    <plugin
-         id="org.apache.log4j"
-         download-size="0"
-         install-size="0"
-         version="1.0.0.qualifier"
-         unpack="false"/>
-
-   <plugin
          id="net.refractions.udig.mapgraphic"
          download-size="0"
          install-size="0"
@@ -384,6 +377,13 @@ PURPOSE.
 
    <plugin
          id="org.amanzi.awe.views.neighbours"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.amanzi.log4j"
          download-size="0"
          install-size="0"
          version="0.0.0"

@@ -79,6 +79,7 @@ public abstract class AbstractParser<T extends IDataElement, C extends IConfigur
         return listeners;
     }
 
+    
     @Override
     public boolean fireProgressEvent(final IProgressEvent event) {
         Object[] allListeners = getListeners().getListeners();

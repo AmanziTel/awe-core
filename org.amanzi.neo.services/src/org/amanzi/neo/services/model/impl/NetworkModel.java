@@ -69,6 +69,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
 
         this.rootNode = networkRoot;
         this.name = rootNode.getProperty(NewAbstractService.NAME, "").toString();
+        initializeStatistics();
     }
 
     /**
@@ -87,7 +88,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
 
         Node network = ((DataElement)rootElement).getNode();
         if (network == null) {
-            // TODO: i think it sucks
+            // TODO: i think it sucks 
             try {
                 network = dsServ.createDataset((Node)rootElement.get("project"), rootElement.get(NewAbstractService.NAME)
                         .toString(), DatasetTypes.NETWORK);
@@ -140,6 +141,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
                 }
             }
             nwServ.setProperties(node, (DataElement)element);
+            indexProperty(type, (DataElement)element);
         } catch (AWEException e) {
             LOGGER.error("Could not create network element.", e);
         }

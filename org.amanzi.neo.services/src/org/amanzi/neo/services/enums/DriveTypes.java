@@ -30,7 +30,7 @@ import org.neo4j.graphdb.Transaction;
  * @author Cinkel_A
  * @since 1.0.0
  */
-public enum DriveTypes {
+public enum DriveTypes implements IDriveType{
     TEMS("tems", "fmt", "TEMS Drive Test Export (*.FMT)"), ROMES("romes", "asc", "Romes drive test export (*.ASC)"), GPS("gps", "gps", "GPS truecoverage data export (*.GPS)"), NEMO2(
             "nemo2", "nmf", "Nemo drive test export (*.nmf)"), NEMO1("nemo1", "dt1", "Nemo drive test export (*.dt1)"),  DING_LI(
             "dingli", "log", "DingLi(*.LOG)"),
@@ -43,6 +43,28 @@ public enum DriveTypes {
         @Override
         public String getFullDatasetName(String datasetName) {
             return datasetName + " (measurement)";
+        }
+    },
+    AMS("ams", "log", ""), AMS_CALLS("ams calls", "", "") {
+        @Override
+        public boolean isVirtual() {
+            return true;
+        }
+
+        @Override
+        public String getFullDatasetName(String datasetName) {
+            return datasetName + " Calls";
+        }
+    },
+    AMS_PESQ("ams pesq", "", "Pesq") {
+        @Override
+        public boolean isVirtual() {
+            return true;
+        }
+
+        @Override
+        public String getFullDatasetName(String datasetName) {
+            return datasetName + " Pesq";
         }
     },
     OSS("oss", "", ""), IDEN("iden", "", "");

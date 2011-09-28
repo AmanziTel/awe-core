@@ -63,7 +63,7 @@ public abstract  class AbstractHeaderSaver<T extends BaseTransferData> extends A
     public LinkedHashMap<String, String> headers = new LinkedHashMap<String, String>();
     /** The rootname. */
     protected String rootname;
-    protected IParser<?, ?> parser;
+    protected IParser parser;
     protected double percent;
     protected double totalJob;
     protected void fire(double taskPercent,final  String message) {
@@ -380,6 +380,7 @@ public abstract  class AbstractHeaderSaver<T extends BaseTransferData> extends A
         List<String> fields = line;
         if (fields.size() < 2)
             return;
+        int index = 0;
         for (String headerName : fields) {
             String header = cleanHeader(headerName);
                 boolean added = false;
@@ -401,6 +402,7 @@ public abstract  class AbstractHeaderSaver<T extends BaseTransferData> extends A
                         headers.put(header, headerName);
                     }
                 }
+            index++;
         }
     }
 }

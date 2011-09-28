@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+   <extension
+         point="org.amanzi.loader.core.newparser">
+      <newparser
+            class="org.amanzi.awe.cassidian.loader.parser.AMSXMLParser"
+            id="org.amanzi.awe.cassidian.loader.parser.AMSXMLParser"></newparser>
+   </extension>
+   <extension
+         point="org.amanzi.loader.core.newsaver">
+      <newsaver
+            class="org.amanzi.awe.cassidian.saver.AMSXMLSaver"
+            id="org.amanzi.awe.cassidian.saver.AMSXMLSaver">
+      </newsaver>
+   </extension>
+ 
+</plugin>

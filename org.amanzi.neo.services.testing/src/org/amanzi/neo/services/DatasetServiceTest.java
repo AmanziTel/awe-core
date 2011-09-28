@@ -20,6 +20,8 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.IDatasetService;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.testing.AbstractAWETest;
 import org.junit.After;

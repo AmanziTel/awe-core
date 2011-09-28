@@ -9,6 +9,9 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
+import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.NewAbstractService;
+import org.amanzi.neo.services.NewNetworkService;
 import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.enums.INodeType;

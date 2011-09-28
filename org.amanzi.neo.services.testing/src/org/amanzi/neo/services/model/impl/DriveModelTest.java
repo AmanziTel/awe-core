@@ -512,6 +512,9 @@ public class DriveModelTest extends AbstractAWETest {
 		} catch (DatabaseException e) {
 			LOGGER.error("Could not add measurement", e);
 			fail();
+		} catch (AWEException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		// node returned is not null
 		Assert.assertNotNull(m);
@@ -578,6 +581,9 @@ public class DriveModelTest extends AbstractAWETest {
 			} catch (DatabaseException e) {
 				LOGGER.error("Could not add measurement", e);
 				fail();
+			} catch (AWEException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 			ms.put(me, m);
 		}
@@ -631,6 +637,9 @@ public class DriveModelTest extends AbstractAWETest {
 		} catch (DatabaseException e) {
 			LOGGER.error("Could not add measurement", e);
 			fail();
+		} catch (AWEException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 
 		Node l = ((DataElement) dm.getLocation(m)).getNode();
@@ -679,6 +688,9 @@ public class DriveModelTest extends AbstractAWETest {
 		} catch (DatabaseException e) {
 			LOGGER.error("Could not add measurement", e);
 			fail();
+		} catch (AWEException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 
 		IDataElement l = dm.getLocation(m);
@@ -719,6 +731,9 @@ public class DriveModelTest extends AbstractAWETest {
 		} catch (DatabaseException e) {
 			LOGGER.error("Could not add measurement", e);
 			fail();
+		} catch (AWEException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 
 		IDataElement l = dm.getLocation(m);
@@ -744,6 +759,10 @@ public class DriveModelTest extends AbstractAWETest {
 			fail();
 		}
 		// exception
+		catch (AWEException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -762,6 +781,9 @@ public class DriveModelTest extends AbstractAWETest {
 		} catch (DatabaseException e) {
 			LOGGER.error("Could not add measurement", e);
 			fail();
+		} catch (AWEException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		;
 		// exception
@@ -893,6 +915,9 @@ public class DriveModelTest extends AbstractAWETest {
 				} catch (DatabaseException e) {
 					LOGGER.error("Could not add measurement", e);
 					fail();
+				} catch (AWEException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
 			}
 		}

@@ -13,19 +13,15 @@
 
 package org.amanzi.neo.services;
 
-import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.apache.log4j.Logger;
-import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.index.IndexHits;
-import org.neo4j.graphdb.traversal.TraversalDescription;
-import org.neo4j.kernel.Traversal;
 
 /**
  * <p>
@@ -42,7 +38,7 @@ public class NewNetworkService extends NewAbstractService {
 
     private static Logger LOGGER = Logger.getLogger(NewNetworkService.class);
 
-    //TODO: LN: do not use tx as global fiels to prevent problems with Transactions
+    // TODO: LN: do not use tx as global fiels to prevent problems with Transactions
     private Transaction tx;
     private NewDatasetService datasetService;
 
@@ -55,7 +51,7 @@ public class NewNetworkService extends NewAbstractService {
      * @since 1.0.0
      */
     public enum NetworkElementNodeType implements INodeType {
-        NETWORK, BSC, SITE, SECTOR;
+        NETWORK, BSC, SITE, SECTOR, CITY, MSC;
         @Override
         public String getId() {
             return name().toLowerCase();
@@ -113,7 +109,7 @@ public class NewNetworkService extends NewAbstractService {
             setNameProperty(result, name);
             addNodeToIndex(result, indexName, NAME, name);
             tx.success();
-            //TODO: LN: where is exception handling? 
+            // TODO: LN: where is exception handling?
         } finally {
             tx.finish();
         }
@@ -140,7 +136,7 @@ public class NewNetworkService extends NewAbstractService {
         }
 
         // Find element by index
-        //TODO: LN, use Index instead of indexName
+        // TODO: LN, use Index instead of indexName
         Index<Node> index = graphDb.index().forNodes(indexName);
         Node result = index.get(NAME, name).getSingle();
         return result;
@@ -206,7 +202,7 @@ public class NewNetworkService extends NewAbstractService {
                 setNameProperty(result, name);
                 addNodeToIndex(result, indexName, NAME, name);
             }
-            //TODO: LN: use StringUtils.EMPTY_STRING constant
+            // TODO: LN: use StringUtils.EMPTY_STRING constant
             if ((ci != null) && (!ci.equals(""))) {
                 result.setProperty(CELL_INDEX, ci);
                 addNodeToIndex(result, indexName, CELL_INDEX, ci);
@@ -298,12 +294,6 @@ public class NewNetworkService extends NewAbstractService {
             throw new IllegalArgumentException("Element type is null.");
         }
 
-        return getNetworkElementTraversalDescription().evaluator(new FilterNodesByType(elementType)).traverse(parent).nodes();
-    }
-
-    //TODO: LN: comments
-    protected TraversalDescription getNetworkElementTraversalDescription() {
-        LOGGER.debug("start getNetworkElementTraversalDescription()");
-        return Traversal.description().depthFirst().relationships(DatasetRelationTypes.CHILD, Direction.OUTGOING);
+        return getChildElementTraversalDescription().evaluator(new FilterNodesByType(elementType)).traverse(parent).nodes();
     }
 }

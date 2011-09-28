@@ -14,7 +14,6 @@ package org.amanzi.neo.services;
 
 import org.amanzi.neo.services.enums.NodeTypes;
 
-
 /**
  * Constans for AWE specific Neo-Database properties
  * 
@@ -23,29 +22,28 @@ import org.amanzi.neo.services.enums.NodeTypes;
  */
 
 public interface INeoConstants {
-    
+
     /***********************************************************
-     * Properties used by the org.amanzi.neo.loader clases
-     * and the data structures in neo4j that are built by them
-     * and used by various elements in other plugins.
+     * Properties used by the org.amanzi.neo.loader clases and the data structures in neo4j that are
+     * built by them and used by various elements in other plugins.
      */
-    //Node name property
+    // Node name property
     public static final String PROPERTY_NAME_NAME = "name";
-    //Node type property
+    // Node type property
     public static final String PROPERTY_TYPE_NAME = "type";
-    //timestamp property 
+    // timestamp property
     public static final String PROPERTY_TIMESTAMP_NAME = "timestamp";
-    //location
-    //latitude
+    // location
+    // latitude
     public static final String PROPERTY_LAT_NAME = "lat";
-    //longitude
+    // longitude
     public static final String PROPERTY_LON_NAME = "lon";
     public static final String PROPERTY_DOMAIN_NAME = "domain";
     public static final String PROPERTY_SECTOR_LAC = "lac";
     public static final String PROPERTY_SECTOR_CI = "ci";
     public static final String PROPERTY_SECTOR_BSIC = "bsic";
     public static final String PROPERTY_SECTOR_ARFCN = "arfcn";
-    public static final String PROPERTY_MAL= "mal";
+    public static final String PROPERTY_MAL = "mal";
     public static final String PROPERTY_SECTOR_NAME = "name";
     public static final String PROPERTY_GIS_TYPE_NAME = "gis_type";
     public static final String PROPERTY_FILENAME_NAME = "filename";
@@ -62,7 +60,7 @@ public interface INeoConstants {
     public static final String PROPERTY_CRS_NAME = "crs";
     public static final String PROPERTY_CRS_HREF_NAME = "crs_href";
     public static final String PROPERTY_CRS_TYPE_NAME = "crs_type";
-    public static final String PROPERTY_WKT_CRS= "crs_wkt";
+    public static final String PROPERTY_WKT_CRS = "crs_wkt";
     public static final String PROPERTY_PROJECT_NAME = "project";
     public static final String PROPERTY_DESCRIPTION_NAME = "description";
     public static final String PROPERTY_DATA = "data_properties";
@@ -79,7 +77,6 @@ public interface INeoConstants {
      */
     public static final String SPLASH_TYPE_NAME = "splash";
 
-    
     /******************************************************************
      * Properties used in the Reuse analysis
      */
@@ -87,11 +84,11 @@ public interface INeoConstants {
     public static final String PROPERTY_VALUE_NAME = "value";
     public static final String PROPERTY_DISTRIBUTE_NAME = "distribute";
     public static final String PROPERTY_SELECT_NAME = "select";
-    public static final String COUNT_TYPE_NAME = NodeTypes.COUNT.getId();//Constant used not only as a node type.
+    public static final String COUNT_TYPE_NAME = NodeTypes.COUNT.getId();// Constant used not only
+                                                                         // as a node type.
     /*
-     * Which is the current or most recent selected aggregation for a gis node.
-     * Used by the reuse analyser for saving state, and by the star analysis for
-     * determining property to use.
+     * Which is the current or most recent selected aggregation for a gis node. Used by the reuse
+     * analyser for saving state, and by the star analysis for determining property to use.
      */
     public static final String PROPERTY_SELECTED_AGGREGATION = "selected_aggregation";
 
@@ -121,7 +118,7 @@ public interface INeoConstants {
     /** INeoConstants LIST_ALL_PROPERTIES field */
     public static final String LIST_ALL_PROPERTIES = "list_all_field";
     public static final String NEIGHBOUR_NUMBER = "# neighbours listname";
-    
+
     /*
      * Constants for DriveLoader data structures
      */
@@ -142,12 +139,15 @@ public interface INeoConstants {
     public static final String COLOR_RIGHT = "color right";
     public static final String COLOR_MIDDLE = "color middle";
     public static final String MIDDLE_RANGE = "MIDDLE_RANGE";
-    public static final String ROOT_SECTOR_DRIVE = NodeTypes.ROOT_SECTOR_DRIVE.getId();//Constant used not only as a node type.
+    public static final String ROOT_SECTOR_DRIVE = NodeTypes.ROOT_SECTOR_DRIVE.getId();// Constant
+                                                                                       // used not
+                                                                                       // only as a
+                                                                                       // node type.
     public static final String PROPERTY_TYPE_EVENT = "event_type";
     public static final String PROPERTY_DRIVE_TYPE_EVENT = "event_drive_type";
-    
+
     public static final String EVENTS_LUCENE_INDEX_NAME = "events";
-    
+
     public static final String SECTOR_ID_PROPERTIES = "sector_id";
     public static final String DRIVE_GIS_NAME = "drive gis name";
     public static final String NETWORK_GIS_NAME = "network gis name";
@@ -157,7 +157,7 @@ public interface INeoConstants {
     public static final String MAX_TIMESTAMP_STRING_FORMAT = "max_timestamp_string_format";
     public static final String MIN_VALUE = "min value";
     public static final String MAX_VALUE = "max value";
-    
+
     public static final String COMMAND_PROPERTY_NAME = "command";
 
     public static final String PROPERTY_SITE_NO = "site_no";
@@ -173,16 +173,16 @@ public interface INeoConstants {
     public static final String LAST_CHILD_ID = "last_child_id";
     public static final String URTAN_DATA_TYPE = "utran_data_type";
     public static final String SECTOR_TYPE = "sector_type";
-    
+
     public static final String M_EVENT_TYPE = "m_type";
 
     public static final String PRIMARY_TYPE_ID = "primary_type";
     public static final String PROPERTY_IS_INCONCLUSIVE = "is_inconclusive";
     public static final String PROPERTY_INCONCLUSIVE_STATE = "inconclusive_state";
     public static final String PROPERTY_INCONCLUSIVE_CODE = "inconclusive_code";
-    
+
     public static final String SECTOR_ID_TYPE = "sector_id_type";
-    
+
     public static final String SECTOR_COUNT = "sector_count";
     public static final String PROPERTY_COUNT_NAME = "count";
     public static final String PROPERTY_BCCH_NAME = "bcch";
@@ -195,26 +195,49 @@ public interface INeoConstants {
     public static final String PROPERTY_CI_NAME = "CI";
     public static final String PROPERTY_LATITUDE_NAME = "latitude";
     public static final String PROPERTY_LONGITUDE_NAME = "longitude";
-    
+
     public static final String PROPERTY_STRUCTURE_NAME = "structure";
     public static final String PROPERTY_SUMMARY_NAME = "summary";
-    
-	public static final String SECTOR_PROPERTY_NAME_PREFIX = "sector.property.name_";
-	public static final String SITE_PROPERTY_NAME_PREFIX = "site.property.name_";
+
+    public static final String SECTOR_PROPERTY_NAME_PREFIX = "sector.property.name_";
+    public static final String SITE_PROPERTY_NAME_PREFIX = "site.property.name_";
     public static final String BSC_PROPERTY_NAME_PREFIX = "bsc.property.name_";
     public static final String PROPERTY_NAME_PREFIX = ".property.name_";
     public static final String CITY_PROPERTY_NAME_PREFIX = "city.property.name_";
-    
+
     public static final String PROPERTY_TEMPLATE_NAME = "template";
-    
-    
-    
+
     public static final String PROPERTY_USED_NODES = "used nodes";
     public static final String PROPERTY_TOTAL_NODES = "total nodes";
     public static final String PROPERTY_FIXED_COLOR = "fixed_color";
     public static final String INDEX_REL_MULTY = "multy-aggregate";
     public static final String PROPERTY_MAIO = "maio";
+
+    public static final String PROPERTY_CALL_RESULT = "call_result";
+    public static final String PROPERTY_CALL_TYPE = "call_type";
+    public static final String PROPERTY_DATASET_ID = "dataset_id";
+    public static final String PROPERTY_IS_VALID = "is_valid";
+    public static final String PROPERTY_RESELECTION_TIME = "reselection time";
+    public static final String PROPERTY_SETUP_DURATION = "setup_duration";
+    public static final String PROPERTY_TERMINATION_DURATION = "termination_duration";
+    public static final String PROPERTY_AUDIO_DELAY = "Audio delay";
+    public static final String PROPERTY_AVERAGE_AUDIO_DELAY = "Average audio delay";
+    public static final String PROPERTY_AVERAGE_LISTENING_QUALITY = "Average listening quality";
+    public static final String PROPERTY_LISTENING_QUALITY = "Listening quality";
+    public static final String PROPERTY_MAXIMUM_DELAY = "Maximum audio delay";
+    public static final String PROPERTY_MINIMUM_DELAY = "Minimum audio delay";
+    public static final String PROPERTY_MAXIMUM_LISTENING_QUALITY = "Maximum Listening quality";
+    public static final String PROPERTY_MINIMUM_LISTENING_QUALITY = "Minimum listening quality";
+    public static final String PROPERTY_PHONENUMBER = "phoneNumber";
+    public static final String PROPERTY_CALL_DURATION = "call_duration";
+    public static final String PROPERTY_HANDOVER_TIME = "handover time";
+    public static final String PROPERTY_MESSAGE_ACKNOWLEDGE_TIME = "message acknowledge time";
+    public static final String PROPERTY_MESSAGE_RECIEVED_TIME = "message recieved time";
     
-    
+    public static final String PROPERTY_TOC_AUDIO_DELAY="TOC Audio Delay";
+    public static final String PROPERTY_TTC_AUDIO_DELAY="TTC Audio Delay";
+    public static final String PROPERTY_TOC_LISTENING_QUALITY="TOC Listening Quality";
+    public static final String PROPERTY_TTC_LISTENING_QUALITY="TTC Listening Quality";
+
 
 }

@@ -18,7 +18,9 @@ import java.util.Iterator;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.NewNetworkService;
+import org.amanzi.neo.services.NewStatisticsService;
 import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDataModel;
@@ -165,6 +167,16 @@ public abstract class DataModel extends AbstractModel implements IDataModel {
         @Override
         public Iterator<IDataElement> iterator() {
             return new DataElementIterator(nodeTraverse);
+        }
+    }
+    
+    @Override
+    public void finishUp()
+    {
+        NewStatisticsService statisticsService = new NewStatisticsService();
+        try {
+            statisticsService.saveVault(rootNode, statisticsVault);
+        } catch (AWEException e) {
         }
     }
 

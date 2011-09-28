@@ -16,7 +16,7 @@ package org.amanzi.testing;
 import java.io.File;
 
 import org.amanzi.neo.db.manager.DatabaseManager;
-import org.amanzi.neo.loader.ui.preferences.DataLoadPreferenceInitializer;
+import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceInitializer;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.DynamicRelationshipType;

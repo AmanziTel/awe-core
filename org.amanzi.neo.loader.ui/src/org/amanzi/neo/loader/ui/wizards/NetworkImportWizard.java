@@ -17,11 +17,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.amanzi.neo.loader.core.CommonConfigData;
+import org.amanzi.neo.loader.core.ConfigurationDataImpl;
+import org.amanzi.neo.loader.core.IConfiguration;
+import org.amanzi.neo.loader.core.ILoaderNew;
+import org.amanzi.neo.loader.core.newsaver.IData;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
+import org.amanzi.neo.loader.core.preferences.PreferenceStore;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.amanzi.neo.services.events.UpdateDatabaseEvent;
 import org.amanzi.neo.services.events.UpdateViewEventType;
 import org.amanzi.neo.services.ui.NeoServicesUiPlugin;
+import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.ui.IWorkbench;
@@ -37,6 +43,7 @@ import org.eclipse.ui.IWorkbench;
 public class NetworkImportWizard extends AbstractLoaderWizard<CommonConfigData> {
 
     private CommonConfigData data;
+    private ConfigurationDataImpl configData;
 
     @Override
     protected List<IWizardPage> getMainPagesList() {
@@ -52,27 +59,46 @@ public class NetworkImportWizard extends AbstractLoaderWizard<CommonConfigData> 
         }
         return data;
     }
-@Override
-public void init(IWorkbench workbench, IStructuredSelection selection) {
-    super.init(workbench, selection);
-    setWindowTitle(NeoLoaderPluginMessages.NetworkSiteImportWizard_PAGE_TITLE);
-}
+
+    @Override
+    public void init(IWorkbench workbench, IStructuredSelection selection) {
+        super.init(workbench, selection);
+        setWindowTitle(NeoLoaderPluginMessages.NetworkSiteImportWizard_PAGE_TITLE);
+    }
+
     @Override
     public boolean performFinish() {
-        if (getConfigurationData().getCharsetName()==null){
+        if (getConfigurationData().getCharsetName() == null) {
             String characterSet = null;
             try {
-                characterSet = org.amanzi.neo.loader.ui.NeoLoaderPlugin.getDefault().getPreferenceStore().getString(DataLoadPreferences.DEFAULT_CHARSET);
+                characterSet = PreferenceStore.getPreferenceStore()
+                        .getValue(DataLoadPreferences.DEFAULT_CHARSET);
             } catch (Exception e) {
-                characterSet=null;
+                characterSet = null;
             }
             getConfigurationData().setCharsetName(characterSet);
         }
         if (super.performFinish()) {
-            NeoServicesUiPlugin.getDefault().getUpdateViewManager().fireUpdateView(new UpdateDatabaseEvent(UpdateViewEventType.GIS));
+            NeoServicesUiPlugin.getDefault().getUpdateViewManager()
+                    .fireUpdateView(new UpdateDatabaseEvent(UpdateViewEventType.GIS));
             return true;
         } else {
             return false;
         }
+    }
+
+    @Override
+    public void addNewLoader(ILoaderNew<IData, IConfiguration> loader, IConfigurationElement[] pageConfigElements) {
+        LoaderInfo<CommonConfigData> info = new LoaderInfo<CommonConfigData>();
+        info.setAdditionalPages(pageConfigElements);
+        newloaders.put(loader, info);
+    }
+
+    @Override
+    public IConfiguration getNewConfigurationData() {
+        if (configData == null) {
+            configData = new ConfigurationDataImpl();
+        }
+        return configData;
     }
 }

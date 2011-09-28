@@ -11,6 +11,11 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
+import org.amanzi.neo.services.CorrelationService;
+import org.amanzi.neo.services.NewAbstractService;
+import org.amanzi.neo.services.NewDatasetService;
+import org.amanzi.neo.services.NewNetworkService;
+import org.amanzi.neo.services.ProjectService;
 import org.amanzi.neo.services.CorrelationService.CorrelationNodeTypes;
 import org.amanzi.neo.services.CorrelationService.Correlations;
 import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;

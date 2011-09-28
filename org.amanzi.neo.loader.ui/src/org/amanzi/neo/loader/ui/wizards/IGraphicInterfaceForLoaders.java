@@ -13,7 +13,10 @@
 
 package org.amanzi.neo.loader.ui.wizards;
 
+import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.ILoader;
+import org.amanzi.neo.loader.core.ILoaderNew;
+import org.amanzi.neo.loader.core.newsaver.IData;
 import org.amanzi.neo.loader.core.parser.IConfigurationData;
 import org.amanzi.neo.loader.core.parser.IDataElement;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -31,5 +34,6 @@ public interface IGraphicInterfaceForLoaders<T extends IConfigurationData> exten
 
 
     void addLoader(ILoader<? extends IDataElement,T>loader,IConfigurationElement[] pageConfigElements);
+    void addNewLoader(ILoaderNew<IData,IConfiguration> loader,IConfigurationElement[] pageConfigElements);
 
 }

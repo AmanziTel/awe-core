@@ -2,6 +2,7 @@ package org.amanzi.neo.services;
 
 import junit.framework.Assert;
 
+import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;

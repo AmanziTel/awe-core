@@ -18,6 +18,7 @@ import java.io.Serializable;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.filters.exceptions.FilterTypeException;
 import org.amanzi.neo.services.filters.exceptions.NotComparebleException;
+import org.amanzi.neo.services.filters.exceptions.NotComparebleRuntimeException;
 import org.amanzi.neo.services.filters.exceptions.NullValueException;
 import org.neo4j.graphdb.Node;
 

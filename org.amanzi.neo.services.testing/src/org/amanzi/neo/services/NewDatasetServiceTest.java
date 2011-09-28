@@ -6,6 +6,9 @@ import java.util.List;
 
 import junit.framework.Assert;
 
+import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.NewAbstractService;
+import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.NewDatasetService.DriveTypes;

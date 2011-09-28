@@ -25,6 +25,7 @@ import java.util.Set;
 
 import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.loader.core.CommonConfigData;
+import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.IValidateResult;
 import org.amanzi.neo.loader.core.IValidateResult.Result;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
@@ -34,6 +35,7 @@ import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.utils.Utils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jface.dialogs.DialogPage;
+import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -68,12 +70,36 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  */
 public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
     /** String ASC_PAT_FILE field */
+    private static final String ASC_PAT_FILE = ".*_(\\d{6})_.*";
+    private static final String FMT_PAT_FILE = ".*(\\d{4}-\\d{2}-\\d{2}).*";
+    private static final String CSV_PAT_FILE = ".*(\\d{2}/\\d{2}/\\d{4}).*";
     private final Set<String> restrictedNames = new HashSet<String>();
-    
+    /*
+     * Minimum height of Shell
+     */
+    private static final int MINIMUM_HEIGHT = 400;
+
+    /*
+     * Minimum width of Shell
+     */
+    private static final int MINIMUM_WIDTH = 600;
+
+    /*
+     * Dataset field width
+     */
+    private static final int DATASET_WIDTH = 150;
+
     /*
      * Layout for One column and Fixed Width
      */
     private final static GridLayout layoutOneColumnNotFixedWidth = new GridLayout(1, false);
+
+    private static final int MAX_NEMO_LINE_READ = 50;
+
+    /*
+     * Shell of this Dialog
+     */
+    private Shell dialogShell;
 
     /*
      * Button for FileDialog
@@ -101,6 +127,15 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
     private List filesToLoadList;
 
     /*
+     * Load button
+     */
+    private Button loadButton;
+    /**
+     * file data
+     */
+    private Calendar workData = null;
+    private boolean applyToAll = false;
+    /*
      * Maps for storing name of file and path to file
      */
     private final HashMap<String, String> folderFiles = new HashMap<String, String>();
@@ -112,11 +147,21 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
 
     private Combo cDataset;
     private String datasetName;
-    
+    /*
+     * Default directory for file dialogs
+     */
+    private static String defaultDirectory = null;
+    /**
+     * wizard page if tems dialog was created from import wizard page
+     */
+    private WizardPage wizardPage = null;
+
     private final LinkedHashMap<String, Node> dataset = new LinkedHashMap<String, Node>();
 
     private Label ldataset;
-    
+    private boolean addToSelect = false;
+
+    private Node rootNode;
     private Combo cLoaders;
     private DateTime date;
     private Button selectCRS;
@@ -124,6 +169,7 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
     public LoadDatasetMainPage() {
         super("mainDatasetPage");
         setTitle(NeoLoaderPluginMessages.TemsImportWizard_PAGE_DESCR);
+        rootNode = null;
     }
 
     @Override
@@ -642,5 +688,10 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
         folderFiles.remove(name);
         folderFilesList.remove(name);
         addFileToLoad(name, path, false);
+    }
+
+    @Override
+    protected boolean validateConfigData(IConfiguration configurationData) {
+        return false;
     }
 }

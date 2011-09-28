@@ -3,6 +3,7 @@
 <plugin>
    <extension-point id="org.amanzi.neo.loader.ui.gui" name="GUI for loaders" schema="schema/org.amanzi.neo.loader.ui.gui.exsd"/>
    <extension-point id="org.amanzi.neo.loader.ui.loaders" name="Loaders" schema="schema/org.amanzi.neo.loader.ui.loaders.exsd"/>
+   <extension-point id="org.amanzi.neo.loader.ui.newloaders" name="NewLoaders" schema="schema/org.amanzi.neo.loader.ui.newloaders.exsd"/>
       <extension
           point="org.eclipse.ui.commands">
        <category
@@ -25,7 +26,18 @@
                 name="gui id"
                 optional="false">
           </commandParameter>
+       </command>
+       <command
+             categoryId="org.amanzi.neo.loader.commands.category"
+             id="org.amanzi.neo.loader.ui.commands.LaunchLoaderNew"
+             name="LaunchLoaderNew">
+          <commandParameter
+                id="org.amanzi.neo.loader.ui.commands.guiId"
+                name="gui id"
+                optional="false">
+          </commandParameter>
        </command>   
+       
     </extension>
     <extension
           point="org.eclipse.ui.handlers">       
@@ -34,17 +46,34 @@
              commandId="org.amanzi.neo.loader.ui.commands.LaunchLoader">
        </handler>
     </extension>
-   
+   <extension
+          point="org.eclipse.ui.handlers">       
+       <handler
+             class="org.amanzi.neo.loader.ui.handlers.LaunchLoaderNew"
+             commandId="org.amanzi.neo.loader.ui.commands.LaunchLoaderNew">
+       </handler>
+    </extension>
+    
     <extension
           point="org.eclipse.ui.menus">
        <menuContribution
              locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
           <toolbar
                 id="org.amanzi.neo.loader.toolbar2">             
-             <command
-                   commandId="org.amanzi.neo.loader.ui.commands.LaunchLoader"
+            <command
+                   commandId="org.amanzi.neo.loader.ui.commands.LaunchLoaderNew"
+                   icon="icons/16/probe.png"
+                   id="org.amanzi.neo.loader.ui.commands.LaunchLoaderNew"
+                   tooltip="Load AMS XML Data">
+                <parameter
+                      name="org.amanzi.neo.loader.ui.commands.guiId"
+                      value="org.amanzi.neo.loader.ui.wizards.AMSXMLLoaderWizard">
+                </parameter>
+             </command>
+              <command
+                   commandId="org.amanzi.neo.loader.ui.commands.LaunchLoaderNew"
                    icon="icons/16/network.png"
-                   id="org.amanzi.neo.loader.ui.LoadLauncher"
+                   id="org.amanzi.neo.loader.ui.commands.LaunchLoaderNew"
                    tooltip="Load Network Data">
                 <parameter
                       name="org.amanzi.neo.loader.ui.commands.guiId"
@@ -111,12 +140,16 @@
              id="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard">
        </GUI>
        <GUI
+             class="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard"
+             id="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard">
+       </GUI>
+       <GUI
              class="org.amanzi.neo.loader.ui.wizards.NetworkConfigurationImportWizard"
              id="org.amanzi.neo.loader.ui.wizards.NetworkConfigurationImportWizard">
        </GUI>
        <GUI
-             class="org.amanzi.neo.loader.ui.wizards.NetworkMeasurementImportWizard"
-             id="org.amanzi.neo.loader.ui.wizards.NetworkMeasurementImportWizard">
+             class="org.amanzi.neo.loader.ui.wizards.AMSXMLLoaderWizard"
+             id="org.amanzi.neo.loader.ui.wizards.AMSXMLLoaderWizard">
        </GUI>
     </extension>
     <extension
@@ -131,7 +164,7 @@
              saver="org.amanzi.neo.loader.core.saver.impl.NetworkSaver"
              validator="org.amanzi.neo.loader.ui.validators.NetworkSectorDataValidator">
        </loader>
-       <loader
+    <!--   <loader
              description="Network Site Data"
              gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
              loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
@@ -141,6 +174,7 @@
              renderable="true"
              allowCreate="true">
        </loader>
+       -->
        <loader
              description="Neighbour Loader"
              gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
@@ -278,6 +312,12 @@
             category="org.amanzi.neo.loader.ui.preferences.SynonymsPreferencePage">
       </page>
       <page
+            class="org.amanzi.neo.loader.ui.preferences.ProbeLoaderPreferencePage"
+            id="org.amanzi.neo.loader.ui.preferences.ProbeLoaderPreferencePage"
+            name="Probe data"
+            category="org.amanzi.neo.loader.ui.preferences.SynonymsPreferencePage">
+      </page>
+      <page
             class="org.amanzi.neo.loader.ui.preferences.TransmissionLoaderPreferencePage"
             id="org.amanzi.neo.loader.ui.preferences.TransmissionLoaderPreferencePage"
             name="Transmission lists"
@@ -290,4 +330,52 @@
             class="org.amanzi.neo.loader.ui.preferences.DataLoadPreferenceInitializer">
       </initializer>
    </extension>
+
+   <extension
+         point="org.amanzi.neo.loader.ui.newloaders">
+      <newloader
+            gui="org.amanzi.neo.loader.ui.wizards.AMSXMLLoaderWizard"
+            id="AMSXMLLoader"
+            loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoaderNew"
+            loader_data_type="AMS"
+            loader_name="AMSXMLLoader"
+            loader_type="XML"
+            parser="org.amanzi.awe.cassidian.loader.parser.AMSXMLParser"
+            validator="org.amanzi.neo.loader.ui.validators.AMSXMLDataValidator">
+                <saver 
+                id="org.amanzi.awe.cassidian.saver.AMSXMLSaver"
+            	class="org.amanzi.awe.cassidian.saver.AMSXMLSaver"
+            />
+            
+      </newloader>
+       <newloader
+             gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
+             id="NewNetworkLoader"
+             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoaderNew"
+             loader_data_type="Network"
+             loader_name="NewNetworkLoader"
+             loader_type="site sector loader"
+             parser="org.amanzi.neo.loader.core.newparser.NewNetworkParser"
+             validator="org.amanzi.neo.loader.ui.validators.NetworkValidator">
+               <saver 
+               id="org.amanzi.neo.loader.core.newsaver.NewNetworkSaver"
+            	class="org.amanzi.neo.loader.core.newsaver.NewNetworkSaver"
+            />
+      </newloader>
+    <newloader
+             gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
+             id="NewNetworkLoader"
+             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoaderNew"
+             loader_data_type="Selection"
+             loader_name="SelectionDataLoader"
+             loader_type="sector selection loader"
+             parser="org.amanzi.neo.loader.core.newparser.SelectionParser"
+             validator="org.amanzi.neo.loader.ui.validators.SectorSelectionDataValidator">
+               <saver 
+                id="org.amanzi.neo.loader.core.newsaver.SectorSelectionSaver"
+            	class="org.amanzi.neo.loader.core.newsaver.SectorSelectionSaver"
+            />
+      </newloader>
+   </extension>
+
 </plugin>

@@ -158,7 +158,6 @@ public class RomesSaver extends DriveSaver<BaseTransferData> {
      * @param time
      * @return
      */
-    @SuppressWarnings("deprecation")
     private Long defineTimestamp(Calendar workDate, String time) {
         if (time == null) {
             return null;
