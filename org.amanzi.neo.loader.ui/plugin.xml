@@ -355,7 +355,7 @@
              loader_data_type="Network"
              loader_name="NewNetworkLoader"
              loader_type="site sector loader"
-             parser="org.amanzi.neo.loader.core.newparser.NewNetworkParser"
+             parser="org.amanzi.neo.loader.core.newparser.CommonCSVParser"
              validator="org.amanzi.neo.loader.ui.validators.NetworkValidator">
                <saver 
                id="org.amanzi.neo.loader.core.newsaver.NewNetworkSaver"
@@ -369,7 +369,7 @@
              loader_data_type="Selection"
              loader_name="SelectionDataLoader"
              loader_type="sector selection loader"
-             parser="org.amanzi.neo.loader.core.newparser.SelectionParser"
+             parser="org.amanzi.neo.loader.core.newparser.CommonCSVParser"
              validator="org.amanzi.neo.loader.ui.validators.SectorSelectionDataValidator">
                <saver 
                 id="org.amanzi.neo.loader.core.newsaver.SectorSelectionSaver"

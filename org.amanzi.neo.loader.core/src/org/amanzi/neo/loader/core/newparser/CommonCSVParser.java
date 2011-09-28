@@ -31,6 +31,7 @@ import org.amanzi.neo.loader.core.LoaderUtils;
 import org.amanzi.neo.loader.core.ProgressEventImpl;
 import org.amanzi.neo.loader.core.newsaver.ISaver;
 import org.amanzi.neo.services.model.IModel;
+import org.apache.log4j.Logger;
 
 import au.com.bytecode.opencsv.CSVParser;
 
@@ -39,7 +40,7 @@ import au.com.bytecode.opencsv.CSVParser;
  * 
  * @author Kondratenko_Vladislav
  */
-public abstract class AbstractCSVParser<T1 extends ISaver<IModel, CSVContainer, T2>, T2 extends IConfiguration>
+public class CommonCSVParser<T1 extends ISaver<IModel, CSVContainer, T2>, T2 extends IConfiguration>
         extends
             AbstractParser<T1, T2, CSVContainer> {
 
@@ -54,14 +55,14 @@ public abstract class AbstractCSVParser<T1 extends ISaver<IModel, CSVContainer, 
     protected BufferedReader reader;
     private File tempFile;
     private double persentageOld = 0;
-    
 
     /**
      * 
      */
-    public AbstractCSVParser() {
+    public CommonCSVParser() {
         super();
         try {
+            LOGGER = Logger.getLogger(CommonCSVParser.class);
             container = new CSVContainer(MINIMAL_SIZE);
             if (currentFile != null) {
                 is = new CountingFileInputStream(currentFile);

@@ -14,6 +14,7 @@
 package org.amanzi.neo.loader.core.newparser;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.amanzi.neo.loader.core.IConfiguration;
@@ -26,7 +27,6 @@ import org.amanzi.neo.services.model.IModel;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.ISafeRunnable;
 import org.eclipse.core.runtime.SafeRunner;
-import org.geotools.util.ListenerList;
 
 /**
  * TODO Purpose of
@@ -40,7 +40,7 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
         implements
             IParser<T1, T2, T3> {
     protected static Logger LOGGER;
-    private final ListenerList listeners = new ListenerList();
+    private final List<ILoaderProgressListener> listeners = new ArrayList<ILoaderProgressListener>();
     protected final int PERCENTAGE_FIRE = 2;
     private int percentage = 0;
 
@@ -52,10 +52,6 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
     @Override
     public void removeProgressListener(ILoaderProgressListener listener) {
         listeners.remove(listener);
-    }
-
-    protected ListenerList getListeners() {
-        return listeners;
     }
 
     /*
@@ -103,8 +99,12 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
         }
         for (ISaver< ? , T3, T2> saver : savers) {
             saver.finishUp();
-            LOGGER.info("Saving data finished in: " + (System.currentTimeMillis() - startTime) + ": file " + currentFile.getName());
+            LOGGER.info("File " + currentFile.getName() + "  data saving finished in: " + getOperationTime(startTime));
         }
+    }
+
+    protected long getOperationTime(long time) {
+        return System.currentTimeMillis() - time;
     }
 
     /**
@@ -120,14 +120,18 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
 
     @Override
     public void run() {
+        long globalStartTime = System.currentTimeMillis();
         for (File file : config.getFilesToLoad()) {
+            long startTime = System.currentTimeMillis();
             parseFile(file);
+            LOGGER.info("File " + currentFile.getName() + " Parsing/Saving data finished in: " + getOperationTime(startTime));
         }
+        LOGGER.info("All files Parsing/Saving finished in: " + getOperationTime(globalStartTime));
     }
 
     @Override
     public boolean fireProgressEvent(final IProgressEvent event) {
-        Object[] allListeners = getListeners().getListeners();
+        Object[] allListeners = listeners.toArray();
         for (Object listener : allListeners) {
             final ILoaderProgressListener singleListener = (ILoaderProgressListener)listener;
 
@@ -139,6 +143,7 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
 
                 @Override
                 public void handleException(Throwable exception) {
+                    LOGGER.error("Error while SafeRunner execute ", exception);
                 }
             });
         }

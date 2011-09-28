@@ -17,7 +17,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.amanzi.neo.db.manager.NeoServiceProvider;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceManager;
@@ -30,19 +29,20 @@ import org.amanzi.neo.services.model.impl.DriveModel;
 import org.amanzi.neo.services.model.impl.NetworkModel;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Transaction;
 
 /**
  * network saver
  * 
  * @author Kondratenko_Vladislav
  */
-public class NewNetworkSaver implements ISaver<DriveModel, CSVContainer, ConfigurationDataImpl> {
+public class NewNetworkSaver extends AbstractSaver<DriveModel, CSVContainer, ConfigurationDataImpl> {
     private Long lineCounter = 0l;
     private NetworkModel model;
     private DataLoadPreferenceManager preferenceManager = new DataLoadPreferenceManager();
-    private String CI_LAC = "CI_LAC";
+    private final String CI_LAC = "CI_LAC";
+    private IDataElement rootDataElement;
+    private Map<String, Integer> columnSynonyms;
+    private final int MAX_TX_BEFORE_COMMIT = 1000;
     /**
      * contains appropriation of header synonyms and name inDB</br> <b>key</b>- name in db ,
      * <b>value</b>-file header key
@@ -53,18 +53,6 @@ public class NewNetworkSaver implements ISaver<DriveModel, CSVContainer, Configu
      */
     private List<String> headers;
     private static Logger LOGGER = Logger.getLogger(NewNetworkSaver.class);
-    /**
-     * graph database instance
-     */
-    private GraphDatabaseService database;
-    /**
-     * top level trasnaction
-     */
-    private Transaction tx;
-    /**
-     * transactions count
-     */
-    private int txCounter;
 
     /**
      * find or create BSC node from row properties and pass the action down the chain, for creation
@@ -74,21 +62,22 @@ public class NewNetworkSaver implements ISaver<DriveModel, CSVContainer, Configu
      */
     private void createBSC(List<String> row) {
         Map<String, Object> bscProperty = new HashMap<String, Object>();
-        if (getHeaderId(fileSynonyms.get(DataLoadPreferenceManager.BSC)) < 0
-                || row.get(getHeaderId(fileSynonyms.get(DataLoadPreferenceManager.BSC))) == null
-                || row.get(getHeaderId(fileSynonyms.get(DataLoadPreferenceManager.BSC))).equals("")) {
+        if (fileSynonyms.get(DataLoadPreferenceManager.BSC) == null
+                || row.get(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.BSC))) == null
+                || row.get(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.BSC))).equals("")) {
             createCity(null, row);
             return;
         }
         bscProperty.put(INeoConstants.PROPERTY_TYPE_NAME, DataLoadPreferenceManager.BSC);
-        bscProperty.put(INeoConstants.PROPERTY_NAME_NAME, row.get(getHeaderId(fileSynonyms.get(DataLoadPreferenceManager.BSC))));
+        bscProperty.put(INeoConstants.PROPERTY_NAME_NAME,
+                row.get(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.BSC))));
 
         IDataElement bscElement = new DataElement(bscProperty);
         IDataElement findedElement = model.findElement(bscElement);
         if (findedElement == null) {
-            findedElement = model.createElement(new DataElement(model.getRootNode()), bscElement);
+            findedElement = model.createElement(rootDataElement, bscElement);
         }
-        row.set(getHeaderId(fileSynonyms.get(DataLoadPreferenceManager.BSC)), null);
+        row.set(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.BSC)), null);
         createCity(findedElement, row);
     }
 
@@ -103,10 +92,9 @@ public class NewNetworkSaver implements ISaver<DriveModel, CSVContainer, Configu
      * @param row
      */
     private void createCity(IDataElement root, List<String> row) {
-        long time = System.currentTimeMillis();
-        if (getHeaderId(fileSynonyms.get(DataLoadPreferenceManager.CITY)) < 0
-                || row.get(getHeaderId(fileSynonyms.get(DataLoadPreferenceManager.CITY))) == null
-                || StringUtils.isEmpty(row.get(getHeaderId(fileSynonyms.get(DataLoadPreferenceManager.CITY).toString())))) {
+        if (fileSynonyms.get(DataLoadPreferenceManager.CITY) == null
+                || row.get(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.CITY))) == null
+                || StringUtils.isEmpty(row.get(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.CITY).toString())))) {
             if (root == null) {
                 LOGGER.info("Missing city name on line:" + lineCounter);
                 return;
@@ -120,20 +108,18 @@ public class NewNetworkSaver implements ISaver<DriveModel, CSVContainer, Configu
         Map<String, Object> cityPropMap = new HashMap<String, Object>();
 
         cityPropMap.put(INeoConstants.PROPERTY_TYPE_NAME, DataLoadPreferenceManager.CITY);
-        cityPropMap.put(INeoConstants.PROPERTY_NAME_NAME, row.get(getHeaderId(fileSynonyms.get(DataLoadPreferenceManager.CITY))));
-        LOGGER.info("--> CITY preparation time: " + (System.currentTimeMillis() - time));
-        time = System.currentTimeMillis();
+        cityPropMap.put(INeoConstants.PROPERTY_NAME_NAME,
+                row.get(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.CITY))));
         IDataElement cityElement = new DataElement(cityPropMap);
         IDataElement findedElement = model.findElement(cityElement);
         if (findedElement == null) {
             if (root == null) {
-                findedElement = model.createElement(new DataElement(model.getRootNode()), cityElement);
+                findedElement = model.createElement(rootDataElement, cityElement);
             } else {
                 findedElement = model.createElement(root, cityElement);
             }
         }
-        LOGGER.info("<-- CITY find and create time: " + (System.currentTimeMillis() - time));
-        row.set(getHeaderId(fileSynonyms.get(DataLoadPreferenceManager.CITY)), null);
+        row.set(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.CITY)), null);
 
         createSite(findedElement, row);
     }
@@ -145,32 +131,28 @@ public class NewNetworkSaver implements ISaver<DriveModel, CSVContainer, Configu
      * @param row
      */
     private void createSite(IDataElement root, List<String> row) {
-        long time = System.currentTimeMillis();
-        if (getHeaderId(fileSynonyms.get(DataLoadPreferenceManager.SITE)) < 0
-                || row.get(getHeaderId(fileSynonyms.get(DataLoadPreferenceManager.SITE))) == null
-                || StringUtils.isEmpty(row.get(getHeaderId(fileSynonyms.get(DataLoadPreferenceManager.SITE).toString())))) {
+        if (fileSynonyms.get(DataLoadPreferenceManager.SITE) == null
+                || row.get(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.SITE))) == null
+                || StringUtils.isEmpty(row.get(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.SITE).toString())))) {
             LOGGER.info("Missing site name on line:" + lineCounter);
             return;
         }
 
         Map<String, Object> siteMap = new HashMap<String, Object>();
         siteMap.put(INeoConstants.PROPERTY_TYPE_NAME, DataLoadPreferenceManager.SITE);
-        siteMap.put(INeoConstants.PROPERTY_NAME_NAME, row.get(getHeaderId(fileSynonyms.get(DataLoadPreferenceManager.SITE))));
-        siteMap.put(INeoConstants.PROPERTY_LON_NAME, row.get(getHeaderId(fileSynonyms.get(INeoConstants.PROPERTY_LON_NAME))));
-        siteMap.put(INeoConstants.PROPERTY_LAT_NAME, row.get(getHeaderId(fileSynonyms.get(INeoConstants.PROPERTY_LAT_NAME))));
+        siteMap.put(INeoConstants.PROPERTY_NAME_NAME, row.get(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.SITE))));
+        siteMap.put(INeoConstants.PROPERTY_LON_NAME, row.get(columnSynonyms.get(fileSynonyms.get(INeoConstants.PROPERTY_LON_NAME))));
+        siteMap.put(INeoConstants.PROPERTY_LAT_NAME, row.get(columnSynonyms.get(fileSynonyms.get(INeoConstants.PROPERTY_LAT_NAME))));
 
         IDataElement siteElement = new DataElement(siteMap);
-        LOGGER.info("--> SITE preparation time: " + (System.currentTimeMillis() - time));
-        time = System.currentTimeMillis();
         IDataElement findedElement = model.findElement(siteElement);
 
         if (findedElement == null) {
             findedElement = model.createElement(root, siteElement);
         }
-        LOGGER.info("<-- SITE find and create time: " + (System.currentTimeMillis() - time));
-        row.set(getHeaderId(fileSynonyms.get(DataLoadPreferenceManager.SITE)), null);
-        row.set(getHeaderId(fileSynonyms.get(INeoConstants.PROPERTY_LON_NAME)), null);
-        row.set(getHeaderId(fileSynonyms.get(INeoConstants.PROPERTY_LAT_NAME)), null);
+        row.set(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.SITE)), null);
+        row.set(columnSynonyms.get(fileSynonyms.get(INeoConstants.PROPERTY_LON_NAME)), null);
+        row.set(columnSynonyms.get(fileSynonyms.get(INeoConstants.PROPERTY_LAT_NAME)), null);
         createSector(findedElement, row);
     }
 
@@ -181,18 +163,17 @@ public class NewNetworkSaver implements ISaver<DriveModel, CSVContainer, Configu
      * @param row
      */
     private void createSector(IDataElement root, List<String> row) {
-        long time = System.currentTimeMillis();
         Map<String, Object> sectorMap = new HashMap<String, Object>();
-        if (getHeaderId(fileSynonyms.get(DataLoadPreferenceManager.SECTOR)) < 0) {
+        if (fileSynonyms.get(DataLoadPreferenceManager.SECTOR) == null) {
             return;
         }
         for (String head : headers) {
-            if (row.get(getHeaderId(head)) != null && !StringUtils.isEmpty(row.get(getHeaderId(head)))) {
-                sectorMap.put(head.toLowerCase(), row.get(getHeaderId(head)));
+            if (row.get(columnSynonyms.get(head)) != null && !StringUtils.isEmpty(row.get(columnSynonyms.get(head)))) {
+                sectorMap.put(head.toLowerCase(), row.get(columnSynonyms.get(head)));
             }
         }
-        String sectorName = row.get(getHeaderId(fileSynonyms.get(DataLoadPreferenceManager.SECTOR))) != null ? row.get(
-                getHeaderId(fileSynonyms.get(DataLoadPreferenceManager.SECTOR))).toString() : "";
+        String sectorName = row.get(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.SECTOR))) != null ? row.get(
+                columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.SECTOR))).toString() : "";
         String ci = sectorMap.containsKey("ci") ? sectorMap.get("ci").toString() : "";
         String lac = sectorMap.containsKey("lac") ? sectorMap.get("lac").toString() : "";
         if ((ci == null || StringUtils.isEmpty(ci)) || (lac == null || StringUtils.isEmpty(lac))
@@ -204,57 +185,62 @@ public class NewNetworkSaver implements ISaver<DriveModel, CSVContainer, Configu
             sectorMap.put(INeoConstants.PROPERTY_NAME_NAME, sectorName);
         }
         sectorMap.put(INeoConstants.PROPERTY_TYPE_NAME, DataLoadPreferenceManager.SECTOR);
-
-        LOGGER.info("--> SECTOR preparation " + (System.currentTimeMillis() - time));
-        time = System.currentTimeMillis();
         IDataElement sectorElement = new DataElement(sectorMap);
-        time = System.currentTimeMillis();
         IDataElement findedElement = model.findElement(sectorElement);
         if (findedElement == null) {
             model.createElement(root, sectorElement);
         } else {
             LOGGER.info("sector " + sectorMap.get(CI_LAC.toLowerCase()) + " is alreade exist; line: " + lineCounter);
         }
-        LOGGER.info("<-- SECTOR find and create  " + (System.currentTimeMillis() - time));
     }
 
     @Override
     public void init(ConfigurationDataImpl configuration, CSVContainer dataElement) {
         Map<String, Object> rootElement = new HashMap<String, Object>();
-        database = NeoServiceProvider.getProvider().getService();
-        rootElement.put("project", new DatasetService().findAweProject(configuration.getDatasetNames().get("Project")));
-        rootElement.put(INeoConstants.PROPERTY_NAME_NAME, configuration.getDatasetNames().get("Network"));
+        columnSynonyms = new HashMap<String, Integer>();
+        setDbInstance();
+        setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
+        rootElement.put(PROJECT_PROPERTY,
+                new DatasetService().findAweProject(configuration.getDatasetNames().get(CONFIG_VALUE_PROJECT)));
+        rootElement.put(INeoConstants.PROPERTY_NAME_NAME, configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK));
         rootElement.put(INeoConstants.PROPERTY_TYPE_NAME, DatasetTypes.NETWORK.getId());
         model = new NetworkModel(new DataElement(rootElement));
+        rootDataElement = new DataElement(model.getRootNode());
     }
 
     @Override
     public void saveElement(CSVContainer dataElement) {
-        if (tx == null) {
-            tx = database.beginTx();
-        } else if (txCounter > 2000) {
-            finishUp();
-            tx = database.beginTx();
-        }
+        openOrReopenTx();
         try {
             CSVContainer container = dataElement;
-
             if (fileSynonyms.isEmpty()) {
                 headers = container.getHeaders();
                 makeAppropriationWithSynonyms(headers);
+                makeIndexAppropriation();
                 lineCounter++;
             } else {
                 lineCounter++;
                 List<String> value = container.getValues();
                 createBSC(value);
-                System.out.println("!!!!!!!!!!!!!!!!! line number " + lineCounter);
+                markTxAsSuccess();
+                increaseTxCount();
             }
-            txCounter++;
-            tx.success();
         } catch (Exception e) {
-            tx.failure();
+            e.printStackTrace();
+            markTxAsFailure();
         }
 
+    }
+
+    private void makeIndexAppropriation() {
+        for (String synonyms : fileSynonyms.keySet()) {
+            columnSynonyms.put(fileSynonyms.get(synonyms), getHeaderId(fileSynonyms.get(synonyms)));
+        }
+        for (String head : headers) {
+            if (!columnSynonyms.containsKey(head)) {
+                columnSynonyms.put(head, getHeaderId(head));
+            }
+        }
     }
 
     /**
@@ -279,12 +265,6 @@ public class NewNetworkSaver implements ISaver<DriveModel, CSVContainer, Configu
                 }
             }
         }
-    }
-
-    @Override
-    public void finishUp() {
-        NeoServiceProvider.getProvider().commit();
-        txCounter = 0;
     }
 
 }

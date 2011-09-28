@@ -9,12 +9,8 @@
     <extension
          point="org.amanzi.loader.core.newparser">
       <newparser
-            class="org.amanzi.neo.loader.core.newparser.NewNetworkParser"
-            id="org.amanzi.neo.loader.core.newparser.NewNetworkParser">
-      </newparser>
-      <newparser
-            class="org.amanzi.neo.loader.core.newparser.SelectionParser"
-            id="org.amanzi.neo.loader.core.newparser.SelectionParser">
+            class="org.amanzi.neo.loader.core.newparser.CommonCSVParser"
+            id="org.amanzi.neo.loader.core.newparser.CommonCSVParser">
       </newparser>
    </extension>
    <extension
