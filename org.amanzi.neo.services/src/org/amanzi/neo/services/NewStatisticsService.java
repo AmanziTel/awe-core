@@ -177,12 +177,12 @@ public class NewStatisticsService extends NewAbstractService {
         // if exist relationship and statistics not changed then
         // throw DuplicateStatisticsException
         if (rootNode.getRelationships(StatisticsRelationships.STATISTICS, Direction.OUTGOING).iterator().hasNext()
-                && vault.getIsStatisticsChanged() == false) {
+                && vault.isStatisticsChanged() == false) {
             LOGGER.error("DuplicateStatisticsException: for this rootNode already exists statistics");
             throw new DuplicateStatisticsException("for this rootNode already exists statistics");
         }
         
-        if (vault.getIsStatisticsChanged()) {
+        if (vault.isStatisticsChanged()) {
             // need delete rootVault and all subVaults and store changing rootVault
             deleteVault(rootNode);
         }
@@ -224,13 +224,13 @@ public class NewStatisticsService extends NewAbstractService {
                                 toString().equals(StatisticsNodeTypes.VAULT.getId())) {
                             deleteSubVaults(childNode);
                         }
-                        childNode.delete();
                         rel.delete();
+                        childNode.delete();
                     }
                 }
                 
-                rootStaticticsNode.delete();
                 statisticsRelationship.delete();
+                rootStaticticsNode.delete();
             }
             tx.success();
         } catch (Exception e) {

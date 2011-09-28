@@ -170,7 +170,7 @@ public interface IVault {
      *
      * @return True if statistics is changed, false if statistics not change.
      */
-    public boolean getIsStatisticsChanged();
+    public boolean isStatisticsChanged();
 
     /**
      * Add subVault to this vault

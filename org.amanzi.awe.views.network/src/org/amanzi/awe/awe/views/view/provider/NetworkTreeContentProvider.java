@@ -15,8 +15,10 @@ package org.amanzi.awe.awe.views.view.provider;
 import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.awe.views.network.proxy.Root;
 import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
+import org.amanzi.neo.services.model.impl.NetworkModel;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -74,7 +76,7 @@ public class NetworkTreeContentProvider implements IStructuredContentProvider, I
             return ((NeoNode)parentElement).getChildren();
         }
         
-        return new Object[0];
+        return new Object[0]; 
     }
    
     public Object getParent(Object element) {
@@ -92,6 +94,7 @@ public class NetworkTreeContentProvider implements IStructuredContentProvider, I
                     return null;
                 } else {
                     Root root = getRoot();
+//                    NetworkModel.findAllNetworkNodes();
                     NeoNode[] rootChildren = root.getChildren();
                     for (NeoNode neoNode : rootChildren) {
                         if (neoNode.getNode().equals(node)) {

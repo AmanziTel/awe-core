@@ -322,5 +322,9 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     void setNetworkService(NewNetworkService nwServ) {
         this.nwServ = nwServ;
     }
+    
+    public static List<Node> findAllNetworkNodes() {
+        return NeoServiceFactory.getInstance().getNetworkService().findAllNetworkNodes();
+    }
 
 }
