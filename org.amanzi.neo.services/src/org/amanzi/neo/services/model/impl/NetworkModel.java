@@ -309,5 +309,4 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     public void finishUp() {
         super.finishUp();
     }
-
 }
