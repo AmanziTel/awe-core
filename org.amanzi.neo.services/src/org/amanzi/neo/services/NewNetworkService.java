@@ -299,4 +299,26 @@ public class NewNetworkService extends NewAbstractService {
 
         return getChildElementTraversalDescription().evaluator(new FilterNodesByType(elementType)).traverse(parent).nodes();
     }
+    
+    /**
+     * Creates Node for a Selection List structure
+     *
+     * @param networkNode root Network Node
+     * @param selectionListName name of selection list
+     * @return created root node for selection list structure
+     */
+    public Node createSelectionList(Node networkNode, String selectionListName) {
+        return null;
+    }
+    
+    /**
+     * Searches for a Selection List root Node
+     *
+     * @param networkNode root Network Node
+     * @param selectionListName name of Selection List to search
+     * @return root node of selection list structure or null if it's not found 
+     */
+    public Node findSelectionList(Node networkNode, String selectionListName) {
+        return null;
+    }
 }

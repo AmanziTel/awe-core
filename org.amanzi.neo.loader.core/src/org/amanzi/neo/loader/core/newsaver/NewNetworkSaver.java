@@ -20,9 +20,7 @@ import java.util.Map;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceManager;
-import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.INeoConstants;
-import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.DriveModel;
@@ -207,18 +205,16 @@ public class NewNetworkSaver extends AbstractSaver<DriveModel, CSVContainer, Con
         columnSynonyms = new HashMap<String, Integer>();
         setDbInstance();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
-        rootElement.put(PROJECT_PROPERTY,
-                new DatasetService().findAweProject(configuration.getDatasetNames().get(CONFIG_VALUE_PROJECT)));
-        rootElement.put(INeoConstants.PROPERTY_NAME_NAME, configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK));
+        
+        try {
+            rootElement.put(INeoConstants.PROPERTY_NAME_NAME, configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK));
 
-        rootElement.put(INeoConstants.PROPERTY_TYPE_NAME, DatasetTypes.NETWORK.getId());
-        
-        //TODO: LN: should be used another way to create Network
-        //ProjectModel.createNetwork
-        //also it should be implemented static method ProjectModel.getCurrentProject
-        
-        model = new NetworkModel(new DataElement(rootElement));
-        rootDataElement = new DataElement(model.getRootNode());
+            getActiveProject().createNetwork(configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK));
+            rootDataElement = new DataElement(model.getRootNode());
+        } catch (Exception e) {
+            LOGGER.error("Exception on creating root Model", e);
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -243,6 +239,7 @@ public class NewNetworkSaver extends AbstractSaver<DriveModel, CSVContainer, Con
 
             }
         } catch (Exception e) {
+            //TODO: LN: handle exception! 
             e.printStackTrace();
             markTxAsFailure();
         }

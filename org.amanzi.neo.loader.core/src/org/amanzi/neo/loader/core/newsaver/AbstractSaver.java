@@ -16,7 +16,10 @@ package org.amanzi.neo.loader.core.newsaver;
 import org.amanzi.neo.db.manager.NeoServiceProvider;
 import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IModel;
+import org.amanzi.neo.services.model.IProjectModel;
+import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Transaction;
 
@@ -131,5 +134,9 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
         tx.finish();
         NeoServiceProvider.getProvider().commit();
         actionCount = 0;
+    }
+    
+    protected IProjectModel getActiveProject() throws AWEException {
+        return ProjectModel.getCurrentProjectModel();
     }
 }

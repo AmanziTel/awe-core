@@ -13,21 +13,14 @@
 
 package org.amanzi.neo.loader.core.newsaver;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
-import org.amanzi.neo.loader.core.newparser.CommonCSVParser;
-import org.amanzi.neo.services.INeoConstants;
-import org.amanzi.neo.services.NeoServiceFactory;
-import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.ISelectionModel;
-import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.DriveModel;
-import org.amanzi.neo.services.model.impl.SelectionModel;
 import org.apache.log4j.Logger;
 
 /**
@@ -44,16 +37,15 @@ public class SectorSelectionSaver extends AbstractSaver<DriveModel, CSVContainer
     public void init(ConfigurationDataImpl configuration, CSVContainer dataElement) {
         setDbInstance();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
-        Map<String, Object> rootElement = new HashMap<String, Object>();
-        rootElement.put(INeoConstants.PROPERTY_NAME_NAME, configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK));
-        rootElement.put(INeoConstants.PROPERTY_TYPE_NAME, DatasetTypes.NETWORK.getId());
         try {
-            model = new SelectionModel(NeoServiceFactory.getInstance().getDatasetService()
-                    .findOrCreateAweProject(configuration.getDatasetNames().get(CONFIG_VALUE_PROJECT)),
-                    new DataElement(rootElement));
+            INetworkModel network = getActiveProject().findNetwork(configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK));
+            
+            //selection data is a single file - so we can just get first element
+            String selectionName = configuration.getFilesToLoad().get(0).getName();
+            
+            model = network.getSelectionModel(selectionName);
         } catch (AWEException e) {
-            e.printStackTrace();
-            LOGGER.info("Error while create Selection Model ", e);
+            LOGGER.info("Error while creating Selection Model ", e);
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
     }

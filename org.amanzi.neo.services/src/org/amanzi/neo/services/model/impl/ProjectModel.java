@@ -14,6 +14,7 @@
 package org.amanzi.neo.services.model.impl;
 
 import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.ProjectService;
@@ -22,6 +23,7 @@ import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.INetworkModel;
+import org.amanzi.neo.services.model.IProjectModel;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
@@ -34,7 +36,7 @@ import org.neo4j.graphdb.Node;
  * @author grigoreva_a
  * @since 1.0.0
  */
-public class ProjectModel extends AbstractModel {
+public class ProjectModel extends AbstractModel implements IProjectModel {
 
     private static Logger LOGGER = Logger.getLogger(ProjectModel.class);
 
@@ -60,6 +62,20 @@ public class ProjectModel extends AbstractModel {
     }
 
     /**
+     * Constructor for internal static methods
+     * 
+     * @param projectNode node for a Project
+     */
+    private ProjectModel(Node projectNode) {
+        if (projectNode == null) {
+            throw new IllegalArgumentException("Project node is null");
+        }
+
+        this.rootNode = projectNode;
+        this.name = (String)projectNode.getProperty(NewAbstractService.NAME, StringUtils.EMPTY);
+    }
+
+    /**
      * Creates a new drive dataset with the defined <code>name</code> and <code>driveType</code>,
      * attaches it to the current project, and creates a new <code>DriveModel</code>, based on the
      * new dataset.
@@ -68,6 +84,7 @@ public class ProjectModel extends AbstractModel {
      * @param driveType drive type of the new dataset
      * @return a <code>DriveModel</code>, based on a new dataset node.
      */
+    @Override
     public IDriveModel createDataset(String name, IDriveType driveType) {
 
         try {
@@ -88,6 +105,7 @@ public class ProjectModel extends AbstractModel {
      * @param primaryType <code>DriveModel</code> primary type
      * @return a <code>DriveModel</code> object with the defined primary type
      */
+    @Override
     public IDriveModel createDataset(String name, IDriveType driveType, INodeType primaryType) {
 
         try {
@@ -106,6 +124,7 @@ public class ProjectModel extends AbstractModel {
      * @param driveType
      * @return a <code>DriveModel</code>, based on the found node, or <code>null</code>
      */
+    @Override
     public IDriveModel findDataset(String name, IDriveType driveType) {
         Node dataset = null;
         try {
@@ -147,6 +166,7 @@ public class ProjectModel extends AbstractModel {
      * @return a <code>DriveModel</code> object, based on the found or created node with the defined
      *         parameters.
      */
+    @Override
     public IDriveModel getDataset(String name, IDriveType driveType) {
         IDriveModel result = findDataset(name, driveType);
         if (result == null) {
@@ -166,6 +186,7 @@ public class ProjectModel extends AbstractModel {
      * @returna <code>DriveModel</code> object with the defined <code>primaryType</code>, based on
      *          the found or created node with the defined parameters.
      */
+    @Override
     public IDriveModel getDataset(String name, IDriveType driveType, INodeType primaryType) {
         IDriveModel result = findDataset(name, driveType, primaryType);
         if (result == null) {
@@ -182,6 +203,7 @@ public class ProjectModel extends AbstractModel {
      * @param name
      * @return a <code>NetworkModel</code>, based on the new network node
      */
+    @Override
     public INetworkModel createNetwork(String name) {
         Node networkRoot = null;
         try {
@@ -199,6 +221,7 @@ public class ProjectModel extends AbstractModel {
      * @param name
      * @return a <code>NetworkModel</code> object, based on the found node, or <code>null</code>
      */
+    @Override
     public INetworkModel findNetwork(String name) {
         Node networkRoot = null;
         try {
@@ -217,11 +240,29 @@ public class ProjectModel extends AbstractModel {
      * @param name
      * @return a <code>NetworkModel</code>, based on the found or created node.
      */
+    @Override
     public INetworkModel getNetwork(String name) {
         INetworkModel result = findNetwork(name);
         if (result == null) {
             result = createNetwork(name);
         }
         return result;
+    }
+
+    /**
+     * Returns a DB Model of currently Active Project from uDIG
+     *
+     * @return Model of active Project
+     * @throws AWEException
+     */
+    public static IProjectModel getCurrentProjectModel() throws AWEException {
+        ProjectService projectService = NeoServiceFactory.getInstance().getNewProjectService();
+        
+        //TODO: LN: since for now we can't use
+        //ApplicationGIS.getActiveProject().getName()
+        //name of active project will be hard-coded
+        Node projectNode = projectService.getProject("project");
+        
+        return new ProjectModel(projectNode);
     }
 }
