@@ -9,7 +9,8 @@ Require-Bundle: org.junit4,
  org.amanzi.testing;bundle-version="1.0.0",
  org.amanzi.neo.services.ui,
  org.amanzi.neo.loader.core,
- org.amanzi.neo.loader.ui
+ org.amanzi.neo.loader.ui,
+ org.amanzi.log4j
 Bundle-ClassPath: lib/mockito-all-1.9.0-rc1.jar,
  .
 Export-Package: org.amanzi.neo.services;x-friends:="org.amanzi.testing.sanity",
