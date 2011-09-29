@@ -13,8 +13,14 @@
 
 package org.amanzi.neo.services.model.impl;
 
+import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.NewStatisticsService;
 import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.exceptions.InvalidStatisticsParameterException;
+import org.amanzi.neo.services.exceptions.LoadVaultException;
 import org.amanzi.neo.services.model.IModel;
+import org.amanzi.neo.services.statistic.IVault;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -30,6 +36,7 @@ public abstract class AbstractModel implements IModel {
     protected String name;
     protected Node rootNode;
     protected INodeType nodeType;
+    protected IVault statisticsVault;
     
     public AbstractModel() {
         

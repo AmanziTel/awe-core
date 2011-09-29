@@ -50,10 +50,14 @@ public abstract class NewAbstractService {
     public static final String NETWORK_ID = "network";
 
     private static Logger LOGGER = Logger.getLogger(NewAbstractService.class);
-
+    /**
+     * Traversal description for child elements
+     */
+    protected final TraversalDescription CHILD_ELEMENT_TRAVERSAL_DESCRIPTION = Traversal.description().depthFirst()
+            .relationships(DatasetRelationTypes.CHILD, Direction.OUTGOING);
     protected GraphDatabaseService graphDb;
-    
-    //TODO: LN: do not use Transaction as a field
+
+    // TODO: LN: do not use Transaction as a field
     private Transaction tx;
 
     /**
@@ -229,7 +233,7 @@ public abstract class NewAbstractService {
      * @param propertyValue
      * @throws DatabaseException if something went wrong
      */
-    //TODO: LN: use Index instead of it's name 
+    // TODO: LN: use Index instead of it's name
     public Index<Node> addNodeToIndex(Node node, String indexName, String propertyName, Object propertyValue)
             throws DatabaseException {
         Index<Node> index = null;
@@ -247,7 +251,7 @@ public abstract class NewAbstractService {
         return index;
     }
 
-    //TODO: LN: use Index instead of it's name, comments
+    // TODO: LN: use Index instead of it's name, comments
     public Index<Node> addNodeToIndex(Node node, Index<Node> index, String propertyName, Object propertyValue)
             throws DatabaseException {
         tx = graphDb.beginTx();
@@ -298,12 +302,6 @@ public abstract class NewAbstractService {
             return Evaluation.EXCLUDE_AND_CONTINUE;
 
         }
-    }
-
-    //TODO: comments
-    protected TraversalDescription getChildElementTraversalDescription() {
-        LOGGER.debug("start getNetworkElementTraversalDescription()");
-        return Traversal.description().depthFirst().relationships(DatasetRelationTypes.CHILD, Direction.OUTGOING);
     }
 
     /**
@@ -400,7 +398,8 @@ public abstract class NewAbstractService {
         Node result = null;
         for (Relationship rel : parent.getRelationships(relType, Direction.OUTGOING)) {
             Node node = rel.getEndNode();
-            //TODO: LN: better will be to use getProperty(NAME, "") (with empty string) to prevent NPE
+            // TODO: LN: better will be to use getProperty(NAME, "") (with empty string) to prevent
+            // NPE
             if ((name.equals(node.getProperty(NAME, null))) && (nodeType.getId().equals(node.getProperty(TYPE, null)))) {
                 result = node;
                 break;

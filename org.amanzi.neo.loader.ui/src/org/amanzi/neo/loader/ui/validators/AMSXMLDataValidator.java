@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.IValidator;
+import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewDatasetService;
@@ -30,6 +31,7 @@ import org.amanzi.neo.services.NewDatasetService.DriveTypes;
 import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
+import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -83,16 +85,15 @@ public class AMSXMLDataValidator implements IValidator {
         if (config.getDatasetNames().get("Project") == null) {
             return Result.FAIL;
         }
+        Node projectNode = new ProjectModel(config.getDatasetNames().get("Project")).getRootNode();
         if (result == Result.SUCCESS) {
             NewDatasetService newDatasetService = NeoServiceFactory.getInstance().getNewDatasetService();
-            DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
             Node network;
             Node dataset;
             try {
-                network = newDatasetService.findDataset(datasetService.findOrCreateAweProject(config.getDatasetNames().get(
-                        "Project")), config.getDatasetNames().get("Network"), DatasetTypes.NETWORK);
-                dataset = newDatasetService.findDataset(datasetService.findOrCreateAweProject(config.getDatasetNames().get(
-                        "Project")), config.getDatasetNames().get("Dataset"), DatasetTypes.DRIVE, DriveTypes.AMS);
+                network = newDatasetService.findDataset(projectNode, config.getDatasetNames().get("Network"), DatasetTypes.NETWORK);
+                dataset = newDatasetService.findDataset(projectNode, config.getDatasetNames().get("Dataset"), DatasetTypes.DRIVE,
+                        DriveTypes.AMS);
                 if (network == null && dataset != null) {
                     message = String.format("Drive node %s is already exists in db ", config.getDatasetNames().get("Dataset"));
                     return Result.FAIL;

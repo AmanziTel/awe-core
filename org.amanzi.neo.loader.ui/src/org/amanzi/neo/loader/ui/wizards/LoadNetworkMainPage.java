@@ -29,13 +29,13 @@ import org.amanzi.neo.loader.core.IValidateResult.Result;
 import org.amanzi.neo.loader.core.newsaver.IData;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
-import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.enums.NetworkTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
+import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.swt.SWT;
@@ -224,15 +224,8 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
     private String[] getRootItems() {
 
         NewDatasetService datasetService = NeoServiceFactory.getInstance().getNewDatasetService();
-        final String projectName = LoaderUiUtils.getAweProjectName();
-        DatasetService ds = NeoServiceFactory.getInstance().getDatasetService();
         List<Node> networkNodes;
-        Node projectNode = ds.findAweProject(projectName);
-        if (projectNode == null) {
-            projectNode = ds.findOrCreateAweProject(projectName);
-            NeoServiceProvider.getProvider().commit();
-            return new String[0];
-        }
+        Node projectNode = new ProjectModel(LoaderUiUtils.getAweProjectName()).getRootNode();
         try {
             networkNodes = datasetService.findAllDatasets(projectNode);
         } catch (InvalidDatasetParameterException e) {
@@ -251,6 +244,7 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
 
         String[] result = members.keySet().toArray(new String[] {});
         Arrays.sort(result);
+        NeoServiceProvider.getProvider().commit();
         return result;
     }
 

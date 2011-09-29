@@ -58,6 +58,28 @@ public class NewDatasetService extends NewAbstractService {
     public final static String PROJECT_NODE = "project_node";
     public static final String LAST_CHILD_ID = "last_child_id";
     public static final String PARENT_ID = "parent_id";
+    /**
+     * TraversalDescription for Dataset nodes
+     */
+    private final TraversalDescription DATASET_TRAVERSAL_DESCRIPTION = Traversal.description()
+            .relationships(DatasetRelationTypes.DATASET, Direction.OUTGOING).evaluator(Evaluators.excludeStartPosition());
+    /**
+     * <code>TraversalDescription</code> to iterate over children in a chain
+     */
+    protected final TraversalDescription CHILDREN_CHAIN_TRAVERSAL_DESCRIPTION = Traversal.description().depthFirst()
+            .relationships(DatasetRelationTypes.NEXT, Direction.OUTGOING).evaluator(Evaluators.all());
+    /**
+     * <code>TraversalDescription</code> to iterate over children of a node
+     */
+    protected final TraversalDescription CHILDREN_TRAVERSAL_DESCRIPTION = Traversal.description().breadthFirst()
+            .relationships(DatasetRelationTypes.CHILD, Direction.OUTGOING).evaluator(Evaluators.excludeStartPosition())
+            .evaluator(Evaluators.atDepth(1));
+    /**
+     * <code>TraversalDescription</code> to iterate over dataset nodes
+     */
+    protected final TraversalDescription DATASET_ELEMENT_TRAVERSAL_DESCRIPTION = Traversal.description().depthFirst()
+            .relationships(DatasetRelationTypes.CHILD, Direction.OUTGOING)
+            .relationships(DatasetRelationTypes.NEXT, Direction.OUTGOING);
 
     /**
      * <p>
@@ -171,16 +193,6 @@ public class NewDatasetService extends NewAbstractService {
     }
 
     /**
-     * this method return TraversalDescription for Dataset nodes
-     * 
-     * @return TraversalDescription
-     */
-    private TraversalDescription getDatasetsTraversalDescription() {
-        return Traversal.description().relationships(DatasetRelationTypes.DATASET, Direction.OUTGOING)
-                .evaluator(Evaluators.excludeStartPosition());
-    }
-
-    /**
      * find dataset node by name and type
      * 
      * @param projectNode - node, which defines the project, within which will be implemented search
@@ -221,7 +233,7 @@ public class NewDatasetService extends NewAbstractService {
 
         }
 
-        Traverser tr = getDatasetsTraversalDescription().evaluator(new FilterDataset(name, type)).traverse(projectNode);
+        Traverser tr = DATASET_TRAVERSAL_DESCRIPTION.evaluator(new FilterDataset(name, type)).traverse(projectNode);
         Iterator<Node> iter = tr.nodes().iterator();
         LOGGER.debug("finish findDataset(Node projectNode, String name, DatasetTypes type)");
         if (iter.hasNext()) {
@@ -252,7 +264,7 @@ public class NewDatasetService extends NewAbstractService {
     public Node findDataset(Node projectNode, final String name, final DatasetTypes type, final IDriveType driveType)
             throws InvalidDatasetParameterException, DatasetTypeParameterException, DuplicateNodeNameException {
         LOGGER.debug("start findDataset(Node projectNode, String name, DatasetTypes type, DriveTypes driveType)");
-        
+
         if (name == null) {
             LOGGER.error("InvalidDatasetParameterException: parameter name = null");
             throw new InvalidDatasetParameterException(INeoConstants.PROPERTY_NAME_NAME, name);
@@ -278,7 +290,7 @@ public class NewDatasetService extends NewAbstractService {
             throw new DatasetTypeParameterException(type);
         }
 
-        Traverser tr = getDatasetsTraversalDescription().evaluator(new FilterDataset(name, type, driveType)).traverse(projectNode);
+        Traverser tr = DATASET_TRAVERSAL_DESCRIPTION.evaluator(new FilterDataset(name, type, driveType)).traverse(projectNode);
         Iterator<Node> iter = tr.nodes().iterator();
         LOGGER.debug("finish findDataset(Node projectNode, String name, DatasetTypes type, DriveTypes driveType)");
         if (iter.hasNext()) {
@@ -531,7 +543,7 @@ public class NewDatasetService extends NewAbstractService {
         TraversalDescription allProjects = NeoServiceFactory.getInstance().getNewProjectService().getProjectTraversalDescription();
 
         for (Node projectNode : allProjects.traverse(graphDb.getReferenceNode()).nodes()) {
-            Traverser tr = getDatasetsTraversalDescription().traverse(projectNode);
+            Traverser tr = DATASET_TRAVERSAL_DESCRIPTION.traverse(projectNode);
             for (Node dataset : tr.nodes()) {
                 datasetList.add(dataset);
             }
@@ -559,7 +571,7 @@ public class NewDatasetService extends NewAbstractService {
         TraversalDescription allProjects = NeoServiceFactory.getInstance().getNewProjectService().getProjectTraversalDescription();
 
         for (Node projectNode : allProjects.traverse(graphDb.getReferenceNode()).nodes()) {
-            Traverser tr = getDatasetsTraversalDescription().evaluator(new FilterNodesByType(type)).traverse(projectNode);
+            Traverser tr = DATASET_TRAVERSAL_DESCRIPTION.evaluator(new FilterNodesByType(type)).traverse(projectNode);
             for (Node dataset : tr.nodes()) {
                 datasetList.add(dataset);
             }
@@ -583,7 +595,7 @@ public class NewDatasetService extends NewAbstractService {
             throw new InvalidDatasetParameterException(PROJECT_NODE, projectNode);
         }
         List<Node> datasetList = new ArrayList<Node>();
-        Traverser tr = getDatasetsTraversalDescription().traverse(projectNode);
+        Traverser tr = DATASET_TRAVERSAL_DESCRIPTION.traverse(projectNode);
         for (Node dataset : tr.nodes()) {
             datasetList.add(dataset);
         }
@@ -613,7 +625,7 @@ public class NewDatasetService extends NewAbstractService {
         }
 
         List<Node> datasetList = new ArrayList<Node>();
-        Traverser tr = getDatasetsTraversalDescription().evaluator(new FilterNodesByType(type)).traverse(projectNode);
+        Traverser tr = DATASET_TRAVERSAL_DESCRIPTION.evaluator(new FilterNodesByType(type)).traverse(projectNode);
         for (Node dataset : tr.nodes()) {
             datasetList.add(dataset);
         }
@@ -788,8 +800,8 @@ public class NewDatasetService extends NewAbstractService {
             return graphDb.getNodeById(parent_id);
         }
         // else traverse database to find parent node
-        TraversalDescription tr = getChildrenChainTraversalDescription().relationships(DatasetRelationTypes.NEXT,
-                Direction.INCOMING).order(Traversal.postorderDepthFirst());
+        TraversalDescription tr = CHILDREN_CHAIN_TRAVERSAL_DESCRIPTION.relationships(DatasetRelationTypes.NEXT, Direction.INCOMING)
+                .order(Traversal.postorderDepthFirst());
         Iterable<Node> nodes = tr.traverse(child).nodes();
         for (Node node : nodes) {
             Node parent = getNextNode(node, DatasetRelationTypes.CHILD, Direction.INCOMING);
@@ -835,7 +847,7 @@ public class NewDatasetService extends NewAbstractService {
         if (child == null) {
             return null;
         }
-        TraversalDescription tr = getChildrenChainTraversalDescription().order(Traversal.postorderDepthFirst());
+        TraversalDescription tr = CHILDREN_CHAIN_TRAVERSAL_DESCRIPTION.order(Traversal.postorderDepthFirst());
         Iterable<Node> nodes = tr.traverse(child).nodes();
         for (Node node : nodes) {
             Transaction tx = graphDb.beginTx();
@@ -870,10 +882,10 @@ public class NewDatasetService extends NewAbstractService {
         try {
             Node firstChild = getNextNode(parent, DatasetRelationTypes.CHILD, Direction.OUTGOING);
             if (firstChild != null) {
-                return getChildrenChainTraversalDescription().traverse(firstChild).nodes();
+                return CHILDREN_CHAIN_TRAVERSAL_DESCRIPTION.traverse(firstChild).nodes();
             } else {
                 // a work-around to return an empty traverser
-                return getChildrenChainTraversalDescription().evaluator(Evaluators.atDepth(1)).evaluator(Evaluators.fromDepth(2))
+                return CHILDREN_CHAIN_TRAVERSAL_DESCRIPTION.evaluator(Evaluators.atDepth(1)).evaluator(Evaluators.fromDepth(2))
                         .traverse(parent).nodes();
             }
         } catch (DatabaseException e) {
@@ -896,26 +908,8 @@ public class NewDatasetService extends NewAbstractService {
             throw new IllegalArgumentException("parent is null");
         }
 
-        return getChildrenChainTraversalDescription().traverse(parent).nodes();
+        return CHILDREN_CHAIN_TRAVERSAL_DESCRIPTION.traverse(parent).nodes();
 
-    }
-
-    /**
-     * @return <code>TraversalDescription</code> to iterate over children in a chain
-     */
-    protected TraversalDescription getChildrenChainTraversalDescription() {
-        LOGGER.debug("start getChildrenChainTraversalDescription()");
-        return Traversal.description().depthFirst().relationships(DatasetRelationTypes.NEXT, Direction.OUTGOING)
-                .evaluator(Evaluators.all());
-    }
-
-    /**
-     * @return <code>TraversalDescription</code> to iterate over children of a node
-     */
-    protected TraversalDescription getChildrenTraversalDescription() {
-        LOGGER.debug("start getChildrenTraversalDescription()");
-        return Traversal.description().breadthFirst().relationships(DatasetRelationTypes.CHILD, Direction.OUTGOING)
-                .evaluator(Evaluators.excludeStartPosition()).evaluator(Evaluators.atDepth(1));
     }
 
     /**
@@ -980,13 +974,7 @@ public class NewDatasetService extends NewAbstractService {
             throw new IllegalArgumentException("Element type is null.");
         }
 
-        return getDatasetElementTraversalDescription().evaluator(new FilterNodesByType(elementType)).traverse(parent).nodes();
-    }
-
-    protected TraversalDescription getDatasetElementTraversalDescription() {
-        LOGGER.debug("start getNetworkElementTraversalDescription()");
-        return Traversal.description().depthFirst().relationships(DatasetRelationTypes.CHILD, Direction.OUTGOING)
-                .relationships(DatasetRelationTypes.NEXT, Direction.OUTGOING);
+        return DATASET_ELEMENT_TRAVERSAL_DESCRIPTION.evaluator(new FilterNodesByType(elementType)).traverse(parent).nodes();
     }
 
 }

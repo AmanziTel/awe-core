@@ -29,6 +29,7 @@ import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
+import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -72,9 +73,8 @@ public class NetworkValidator implements IValidator {
             DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
             Node root;
             try {
-                root = newDatasetService.findDataset(
-                        datasetService.findOrCreateAweProject(config.getDatasetNames().get("Project")), config.getDatasetNames()
-                                .get("Network"), DatasetTypes.NETWORK);
+                root = newDatasetService.findDataset(new ProjectModel(config.getDatasetNames().get("Project")).getRootNode(),
+                        config.getDatasetNames().get("Network"), DatasetTypes.NETWORK);
 
                 if (root == null) {
                     result = Result.SUCCESS;

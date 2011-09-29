@@ -22,7 +22,7 @@ package org.amanzi.neo.services.model;
  * @author Kondratneko_Vladislav
  * @since 1.0.0
  */
-public interface ISelectionModel extends IDataModel, IPropertyStatisticalModel, IRenderableModel {
+public interface ISelectionModel extends IModel {
 
     /**
      * find sector by name and create relation ship from rootNode to each node from iterator

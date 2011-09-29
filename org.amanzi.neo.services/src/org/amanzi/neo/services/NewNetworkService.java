@@ -19,6 +19,7 @@ import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.index.IndexHits;
@@ -51,14 +52,24 @@ public class NewNetworkService extends NewAbstractService {
      * @since 1.0.0
      */
     public enum NetworkElementNodeType implements INodeType {
-        NETWORK, BSC, SITE, SECTOR, CITY, MSC;
+        NETWORK, BSC, SITE, SECTOR, CITY, MSC, SELECTION_LIST_ROOT;
         @Override
         public String getId() {
             return name().toLowerCase();
         }
 
     }
-
+    
+    /**
+     * Enum with RelationshipTypes specific for Network Structure
+     * 
+     * @author gerzog
+     * @since 1.0.0
+     */
+    public enum NetworkRelationshipTypes implements RelationshipType {
+        SELECTION_LIST;
+    }
+    
     public NewNetworkService() {
         super();
         datasetService = new NewDatasetService();
@@ -297,6 +308,28 @@ public class NewNetworkService extends NewAbstractService {
             throw new IllegalArgumentException("Element type is null.");
         }
 
-        return getChildElementTraversalDescription().evaluator(new FilterNodesByType(elementType)).traverse(parent).nodes();
+        return CHILD_ELEMENT_TRAVERSAL_DESCRIPTION.evaluator(new FilterNodesByType(elementType)).traverse(parent).nodes();
+    }
+    
+    /**
+     * Creates Node for a Selection List structure
+     *
+     * @param networkNode root Network Node
+     * @param selectionListName name of selection list
+     * @return created root node for selection list structure
+     */
+    public Node createSelectionList(Node networkNode, String selectionListName) {
+        return null;
+    }
+    
+    /**
+     * Searches for a Selection List root Node
+     *
+     * @param networkNode root Network Node
+     * @param selectionListName name of Selection List to search
+     * @return root node of selection list structure or null if it's not found 
+     */
+    public Node findSelectionList(Node networkNode, String selectionListName) {
+        return null;
     }
 }
