@@ -1,16 +1,3 @@
-/* AWE - Amanzi Wireless Explorer
- * http://awe.amanzi.org
- * (C) 2008-2009, AmanziTel AB
- *
- * This library is provided under the terms of the Eclipse Public License
- * as described at http://www.eclipse.org/legal/epl-v10.html. Any use,
- * reproduction or distribution of the library constitutes recipient's
- * acceptance of this agreement.
- *
- * This library is distributed WITHOUT ANY WARRANTY; without even the
- * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- */
-
 package org.amanzi.neo.loader.core.newsaver;
 
 import java.util.HashMap;
@@ -28,12 +15,7 @@ import org.amanzi.neo.services.model.impl.NetworkModel;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-/**
- * network saver
- * 
- * @author Kondratenko_Vladislav
- */
-public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, ConfigurationDataImpl> {
+public class CNASaver extends AbstractSaver<NetworkModel, CSVContainer, ConfigurationDataImpl> {
     private Long lineCounter = 0l;
     private INetworkModel model;
     private DataLoadPreferenceManager preferenceManager = new DataLoadPreferenceManager();
@@ -50,124 +32,86 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
      * name inDB properties values
      */
     private List<String> headers;
-    private static Logger LOGGER = Logger.getLogger(NewNetworkSaver.class);
-
-    /**
-     * find or create BSC node from row properties and pass the action down the chain, for creation
-     * BSC->CITY->SITE->SECTOR structure
-     */
-    private void createMSC(List<String> row) {
-        Map<String, Object> mscProperty = new HashMap<String, Object>();
-        if (fileSynonyms.get(DataLoadPreferenceManager.MSC) == null
-                || row.get(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.MSC))) == null
-                || row.get(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.MSC))).equals("")) {
-            createBSC(null, row);
-            return;
-        }
-        mscProperty.put(INeoConstants.PROPERTY_TYPE_NAME, DataLoadPreferenceManager.MSC);
-        mscProperty.put(INeoConstants.PROPERTY_NAME_NAME,
-                row.get(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.MSC))));
-
-        IDataElement mscElement = new DataElement(mscProperty);
-        IDataElement findedElement = model.findElement(mscElement);
-        if (findedElement == null) {
-            findedElement = model.createElement(rootDataElement, mscElement);
-        }
-        row.set(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.MSC)), null);
-        createBSC(findedElement, row);
-    }
-
-    /**
-     * find or create BSC node from row properties and pass the action down the chain, for creation
-     * CITY->SITE->SECTOR structure
-     * 
-     * @param row
-     */
-    private void createBSC(IDataElement root, List<String> row) {
-        Map<String, Object> bscProperty = new HashMap<String, Object>();
-        if (fileSynonyms.get(DataLoadPreferenceManager.BSC) == null
-                || row.get(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.BSC))) == null
-                || row.get(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.BSC))).equals("")) {
-            if (root == null) {
-                createCity(null, row);
-            } else {
-                createCity(root, row);
-            }
-            return;
-        }
-        bscProperty.put(INeoConstants.PROPERTY_TYPE_NAME, DataLoadPreferenceManager.BSC);
-        bscProperty.put(INeoConstants.PROPERTY_NAME_NAME,
-                row.get(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.BSC))));
-
-        IDataElement bscElement = new DataElement(bscProperty);
-        IDataElement findedElement = model.findElement(bscElement);
-        if (findedElement == null) {
-            findedElement = model.createElement(root, bscElement);
-        }
-        row.set(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.BSC)), null);
-        createCity(findedElement, row);
-    }
+    private static Logger LOGGER = Logger.getLogger(CNASaver.class);
 
     private int getHeaderId(String header) {
         return headers.indexOf(header);
     }
 
     /**
-     * find or create city node from row properties and pass the action down the chain, for creation
-     * SITE->SECTOR nodes
+     * prepare city data element
      * 
      * @param row
+     * @return prepared city IDataElement if current rows exist, or <code>null</code>
      */
-    private void createCity(IDataElement root, List<String> row) {
+    private IDataElement collectCity(List<String> row) {
         if (fileSynonyms.get(DataLoadPreferenceManager.CITY) == null
                 || row.get(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.CITY))) == null
                 || StringUtils.isEmpty(row.get(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.CITY).toString())))) {
-            if (root == null) {
-                createSite(rootDataElement, row);
-                return;
-            } else {
-                createSite(root, row);
-                return;
-            }
+            return null;
         }
-
         Map<String, Object> cityPropMap = new HashMap<String, Object>();
-
         cityPropMap.put(INeoConstants.PROPERTY_TYPE_NAME, DataLoadPreferenceManager.CITY);
         cityPropMap.put(INeoConstants.PROPERTY_NAME_NAME,
                 row.get(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.CITY))));
-        IDataElement cityElement = new DataElement(cityPropMap);
-        IDataElement findedElement = model.findElement(cityElement);
-        if (findedElement == null) {
-            // TODO: LN: duplicated code - why not to create DataElement (or use root) and then call
-            // createElement once?
-            if (root == null) {
-                findedElement = model.createElement(rootDataElement, cityElement);
-            } else {
-                findedElement = model.createElement(root, cityElement);
-            }
-        }
-
         row.set(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.CITY)), null);
-
-        createSite(findedElement, row);
+        return new DataElement(cityPropMap);
     }
 
     /**
-     * find or create site node and pass the action down the chain for creation sector nodes.
+     * prepare bsc data element
      * 
-     * @param city node
      * @param row
+     * @return prepared BSC <code>IDataElement</code> if current rows exist, or <code>null</code>
      */
-    private void createSite(IDataElement root, List<String> row) {
+    private IDataElement collectBSC(List<String> row) {
+        if (fileSynonyms.get(DataLoadPreferenceManager.BSC) == null
+                || row.get(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.BSC))) == null
+                || row.get(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.BSC))).equals("")) {
+            return null;
+        }
+        Map<String, Object> bscProperty = new HashMap<String, Object>();
+        bscProperty.put(INeoConstants.PROPERTY_TYPE_NAME, DataLoadPreferenceManager.BSC);
+        bscProperty.put(INeoConstants.PROPERTY_NAME_NAME,
+                row.get(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.BSC))));
+        row.set(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.BSC)), null);
+        return new DataElement(bscProperty);
+    }
+
+    /**
+     * prepare MSC data element
+     * 
+     * @param row
+     * @return prepared MSC <code>IDataElement</code> if current rows exist, or <code>null</code>
+     */
+    private IDataElement collectMSC(List<String> row) {
+        if (fileSynonyms.get(DataLoadPreferenceManager.MSC) == null
+                || row.get(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.MSC))) == null
+                || row.get(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.MSC))).equals("")) {
+            return null;
+        }
+        Map<String, Object> mscProperty = new HashMap<String, Object>();
+        mscProperty.put(INeoConstants.PROPERTY_TYPE_NAME, DataLoadPreferenceManager.MSC);
+        mscProperty.put(INeoConstants.PROPERTY_NAME_NAME,
+                row.get(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.MSC))));
+        row.set(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.MSC)), null);
+        return new DataElement(mscProperty);
+    }
+
+    /**
+     * prepare Site data element
+     * 
+     * @param row
+     * @return prepared Site <code>IDataElement</code> if current rows exist, or <code>null</code>
+     */
+    private IDataElement collectSite(List<String> row) {
         if (row.get(columnSynonyms.get(fileSynonyms.get(INeoConstants.PROPERTY_LAT_NAME))) == null
                 || StringUtils.isEmpty(row.get(columnSynonyms.get(fileSynonyms.get(INeoConstants.PROPERTY_LAT_NAME).toString())))
                 || row.get(columnSynonyms.get(fileSynonyms.get(INeoConstants.PROPERTY_LON_NAME))) == null
                 || StringUtils.isEmpty(row.get(columnSynonyms.get(fileSynonyms.get(INeoConstants.PROPERTY_LON_NAME).toString())))) {
-            LOGGER.info("Missing site name on line:" + lineCounter);
-            return;
+            LOGGER.info("Missing site info name on line:" + lineCounter);
+            return null;
         }
-
         Map<String, Object> siteMap = new HashMap<String, Object>();
         siteMap.put(INeoConstants.PROPERTY_TYPE_NAME, DataLoadPreferenceManager.SITE);
         siteMap.put(INeoConstants.PROPERTY_LON_NAME, row.get(columnSynonyms.get(fileSynonyms.get(INeoConstants.PROPERTY_LON_NAME))));
@@ -181,7 +125,7 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
                 siteMap.put(INeoConstants.PROPERTY_NAME_NAME, siteName.substring(0, siteName.length() - 1));
             } else {
                 LOGGER.info("Missing site name based on SectorName on line:" + lineCounter);
-                return;
+                return null;
             }
 
         } else {
@@ -189,57 +133,78 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
                     row.get(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.SITE))));
             row.set(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.SITE)), null);
         }
-        IDataElement siteElement = new DataElement(siteMap);
-        IDataElement findedElement = model.findElement(siteElement);
-
-        if (findedElement == null) {
-
-            findedElement = model.createElement(root, siteElement);
-        }
-
         row.set(columnSynonyms.get(fileSynonyms.get(INeoConstants.PROPERTY_LON_NAME)), null);
         row.set(columnSynonyms.get(fileSynonyms.get(INeoConstants.PROPERTY_LAT_NAME)), null);
-        createSector(findedElement, row);
+        return new DataElement(siteMap);
     }
 
     /**
-     * close the chain with creation of sector if sector was found - pass to next line
+     * prepare Sector data element
      * 
-     * @param findedElement site node
      * @param row
+     * @return prepared Sector <code>IDataElement</code> if current rows exist, or <code>null</code>
      */
-    private void createSector(IDataElement root, List<String> row) {
-        Map<String, Object> sectorMap = new HashMap<String, Object>();
+    private IDataElement collectSector(List<String> row) {
+
         if (fileSynonyms.get(DataLoadPreferenceManager.SECTOR) == null) {
-            return;
+            return null;
         }
+        Map<String, Object> sectorMap = new HashMap<String, Object>();
         for (String head : headers) {
-            if (row.get(columnSynonyms.get(head)) != null && !StringUtils.isEmpty(row.get(columnSynonyms.get(head)))) {
+            if (row.get(columnSynonyms.get(head)) != null && !StringUtils.isEmpty(row.get(columnSynonyms.get(head)))
+                    && !row.get(columnSynonyms.get(head)).equals("NULL")) {
                 sectorMap.put(head.toLowerCase(), row.get(columnSynonyms.get(head)));
             }
         }
-
         String sectorName = row.get(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.SECTOR))) != null ? row.get(
                 columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.SECTOR))).toString() : "";
-
         String ci = sectorMap.containsKey("ci") ? sectorMap.get("ci").toString() : "";
         String lac = sectorMap.containsKey("lac") ? sectorMap.get("lac").toString() : "";
         if ((ci == null || StringUtils.isEmpty(ci)) || (lac == null || StringUtils.isEmpty(lac))
                 || (sectorName == null || StringUtils.isEmpty(sectorName))) {
             LOGGER.info("Sector haven't Name or CI + LAC properties on line: " + lineCounter);
-            return;
+            return null;
         }
         if (fileSynonyms.containsKey(DataLoadPreferenceManager.SECTOR)) {
             sectorMap.put(INeoConstants.PROPERTY_NAME_NAME, sectorName);
         }
         sectorMap.put(INeoConstants.PROPERTY_TYPE_NAME, DataLoadPreferenceManager.SECTOR);
+        return new DataElement(sectorMap);
+    }
 
-        IDataElement sectorElement = new DataElement(sectorMap);
-        IDataElement findedElement = model.findElement(sectorElement);
-        if (findedElement == null) {
-            model.createElement(root, sectorElement);
-        } else {
-            LOGGER.info("sector " + sectorMap.get(CI_LAC.toLowerCase()) + " is already exist; line: " + lineCounter);
+    /**
+     * find or create BSC node from row properties and pass the action down the chain, for creation
+     * BSC->CITY->SITE->SECTOR structure
+     */
+    private void createMSC(List<String> row) {
+        IDataElement msc = collectMSC(row);
+        IDataElement bsc = collectBSC(row);
+        IDataElement city = collectCity(row);
+        IDataElement site = collectSite(row);
+        IDataElement sector = collectSector(row);
+        boolean isNewCreated = false;
+        IDataElement findedMSC = findElement(msc);
+        IDataElement findedBSC = findElement(bsc);
+        IDataElement findedCity = findElement(city);
+        IDataElement findedSite = findElement(site);
+        IDataElement findedSector = findElement(sector);
+        if (findedMSC == null && msc != null) {
+            findedMSC = model.createElement(rootDataElement, msc);
+            isNewCreated = true;
+        }
+        if (findedBSC == null && msc == null && bsc != null) {
+            findedBSC = model.createElement(rootDataElement, bsc);
+            isNewCreated = true;
+        } else if (findedBSC == null && isNewCreated) {
+            findedBSC = model.createElement(findedMSC, bsc);
+            isNewCreated = true;
+        } else if (findedBSC != null && findedMSC != null && isNewCreated) {
+            // TODO change relationship
+            isNewCreated = false;
+        }
+
+        if (findedCity == null && bsc == null && msc == null && city != null) {
+            findedCity = model.createElement(rootDataElement, city);
         }
     }
 
@@ -260,11 +225,17 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
         }
     }
 
+    private IDataElement findElement(IDataElement element) {
+        if (element != null) {
+            return model.findElement(element);
+        }
+        return null;
+    }
+
     @Override
     public void saveElement(CSVContainer dataElement) {
 
         openOrReopenTx();
-
         try {
             CSVContainer container = dataElement;
             if (fileSynonyms.isEmpty()) {
@@ -282,13 +253,15 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
 
             }
         } catch (Exception e) {
-            // TODO: LN: handle exception!
-            e.printStackTrace();
+            LOGGER.error("Error while saving element ", e);
             markTxAsFailure();
         }
 
     }
 
+    /**
+     * make appropriation with synonym column and index in parsed row
+     */
     private void makeIndexAppropriation() {
         for (String synonyms : fileSynonyms.keySet()) {
             columnSynonyms.put(fileSynonyms.get(synonyms), getHeaderId(fileSynonyms.get(synonyms)));

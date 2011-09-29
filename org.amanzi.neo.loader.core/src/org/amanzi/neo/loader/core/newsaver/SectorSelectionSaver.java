@@ -20,13 +20,13 @@ import org.amanzi.neo.loader.core.newparser.CSVContainer;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.ISelectionModel;
-import org.amanzi.neo.services.model.impl.DriveModel;
+import org.amanzi.neo.services.model.impl.NetworkModel;
 import org.apache.log4j.Logger;
 
 /**
  * @author Kondratenko_Vladislav
  */
-public class SectorSelectionSaver extends AbstractSaver<DriveModel, CSVContainer, ConfigurationDataImpl> {
+public class SectorSelectionSaver extends AbstractSaver<NetworkModel, CSVContainer, ConfigurationDataImpl> {
     private ISelectionModel model;
     private List<String> headers;
     private CSVContainer container;
