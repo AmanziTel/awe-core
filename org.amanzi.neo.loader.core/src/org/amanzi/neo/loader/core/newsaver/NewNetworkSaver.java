@@ -22,9 +22,9 @@ import org.amanzi.neo.loader.core.newparser.CSVContainer;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceManager;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.model.IDataElement;
+import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.DriveModel;
-import org.amanzi.neo.services.model.impl.NetworkModel;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -35,7 +35,7 @@ import org.apache.log4j.Logger;
  */
 public class NewNetworkSaver extends AbstractSaver<DriveModel, CSVContainer, ConfigurationDataImpl> {
     private Long lineCounter = 0l;
-    private NetworkModel model;
+    private INetworkModel model;
     private DataLoadPreferenceManager preferenceManager = new DataLoadPreferenceManager();
     private final String CI_LAC = "CI_LAC";
     private IDataElement rootDataElement;
@@ -205,11 +205,9 @@ public class NewNetworkSaver extends AbstractSaver<DriveModel, CSVContainer, Con
         columnSynonyms = new HashMap<String, Integer>();
         setDbInstance();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
-        
         try {
             rootElement.put(INeoConstants.PROPERTY_NAME_NAME, configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK));
-
-            getActiveProject().createNetwork(configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK));
+            model = getActiveProject().createNetwork(configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK));
             rootDataElement = new DataElement(model.getRootNode());
         } catch (Exception e) {
             LOGGER.error("Exception on creating root Model", e);
@@ -239,7 +237,7 @@ public class NewNetworkSaver extends AbstractSaver<DriveModel, CSVContainer, Con
 
             }
         } catch (Exception e) {
-            //TODO: LN: handle exception! 
+            // TODO: LN: handle exception!
             e.printStackTrace();
             markTxAsFailure();
         }
