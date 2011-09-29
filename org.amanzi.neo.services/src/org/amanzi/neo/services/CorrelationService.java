@@ -83,7 +83,7 @@ public class CorrelationService extends NewAbstractService {
     }
 
     // createCorrealtion (Network, Dataset <Drive/Counters>)
-    public Node createCorrelation(Node network, Node dataset) {
+    public Node createCorrelation(Node network, Node dataset) throws DatabaseException {
         // validate params
         if (network == null) {
             throw new IllegalArgumentException("Network is null.");
@@ -95,7 +95,7 @@ public class CorrelationService extends NewAbstractService {
 
         Node result = findCorrelationRoot(network, dataset);
         if (result == null) {
-            // TODO: LN: do not use field for transaction!!!!!!!!
+            //TODO: LN: do not use field for transaction!!!!!!!!
             tx = graphDb.beginTx();
             try {
                 result = getCorrelationRoot(network);
@@ -325,10 +325,10 @@ public class CorrelationService extends NewAbstractService {
                 result = createNode(CorrelationNodeTypes.CORRELATION);
                 network.createRelationshipTo(result, Correlations.CORRELATION);
                 tx.success();
-            } catch (DatabaseException e) {
-                // TODO: LN: do not throw Runtime Exception
-                // TODO Handle DatabaseException
-                throw (RuntimeException)new RuntimeException().initCause(e);
+            } catch (Exception e) {
+                LOGGER.error("Error on creating root correlation node", e);
+                tx.failure();
+                throw new DatabaseException(e);
             } finally {
                 tx.finish();
             }

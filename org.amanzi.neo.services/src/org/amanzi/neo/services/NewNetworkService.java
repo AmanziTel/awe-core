@@ -14,6 +14,8 @@
 package org.amanzi.neo.services;
 
 import org.amanzi.neo.services.CorrelationService.CorrelationNodeTypes;
+import java.util.Iterator;
+
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;

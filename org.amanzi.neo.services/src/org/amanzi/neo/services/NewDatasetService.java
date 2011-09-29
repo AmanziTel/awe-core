@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.amanzi.neo.services.CorrelationService.CorrelationNodeTypes;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.IDriveType;
 import org.amanzi.neo.services.enums.INodeType;
@@ -104,13 +103,6 @@ public class NewDatasetService extends NewAbstractService {
      */
     public enum DatasetTypes implements INodeType {
         NETWORK, DRIVE, COUNTERS;
-        
-        /**
-         * The classes implementing <code>INodeType</code> must be registered in <code>NodeTypeManager</code>.
-         */
-        static {
-            NodeTypeManager.registerNodeType(DatasetTypes.class);
-        }
 
         @Override
         public String getId() {
@@ -173,7 +165,7 @@ public class NewDatasetService extends NewAbstractService {
         @Override
         public Evaluation evaluate(Path arg0) {
             if (super.evaluate(arg0).includes()) {
-                if (driveType == null || driveType.getId().equals(arg0.endNode().getProperty(DRIVE_TYPE, ""))) {
+                if (driveType == null || driveType.getId().equals(arg0.endNode().getProperty(DRIVE_TYPE, StringUtils.EMPTY))) {
                     return Evaluation.INCLUDE_AND_CONTINUE;
                 }
                 return Evaluation.EXCLUDE_AND_CONTINUE;

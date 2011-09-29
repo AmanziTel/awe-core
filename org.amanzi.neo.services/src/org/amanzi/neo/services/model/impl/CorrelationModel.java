@@ -15,6 +15,7 @@ package org.amanzi.neo.services.model.impl;
 
 import org.amanzi.neo.services.CorrelationService;
 import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.ICorrelationModel;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.impl.DataModel.DataElementIterable;
@@ -41,7 +42,7 @@ public class CorrelationModel extends AbstractModel implements ICorrelationModel
      * @param network a network root node
      * @param dataset a dataset root node
      */
-    CorrelationModel(Node network, Node dataset) {
+    CorrelationModel(Node network, Node dataset) throws AWEException {
         // validate parameters
         if (network == null) {
             throw new IllegalArgumentException("Network is null.");
@@ -96,12 +97,12 @@ public class CorrelationModel extends AbstractModel implements ICorrelationModel
     }
 
     @Override
-    public Iterable<IDataElement> getSectors() {
+    public Iterable<IDataElement> getSectors() throws AWEException {
         return new DataElementIterable(crServ.getAllCorrelatedSectors(network, dataset));
     }
 
     @Override
-    public Iterable<IDataElement> getMeasurements() {
+    public Iterable<IDataElement> getMeasurements() throws AWEException{
         return new DataElementIterable(crServ.getAllCorrelatedNodes(network, dataset));
     }
 

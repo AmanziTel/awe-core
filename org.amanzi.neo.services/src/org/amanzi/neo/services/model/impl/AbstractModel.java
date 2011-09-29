@@ -32,9 +32,9 @@ public abstract class AbstractModel implements IModel {
     protected Node rootNode;
     protected INodeType nodeType;
     protected IVault statisticsVault;
-
+    
     public AbstractModel() {
-
+        
     }
 
     @Override
