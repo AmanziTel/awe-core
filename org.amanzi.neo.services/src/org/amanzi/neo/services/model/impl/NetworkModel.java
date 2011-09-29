@@ -325,16 +325,21 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         this.nwServ = nwServ;
     }
     
-    public static List<Node> findAllNetworkNodes() {
+    public static List<INetworkModel> findAllNetworkModels() {
+        List<INetworkModel> networkModels = new ArrayList<INetworkModel>();
+
+        List<Node> allNetworkNodes = null;
         try {
-            List<Node> result1 = NeoServiceFactory.getInstance().getNewDatasetService().findAllDatasets();
-            List<Node> result2 = NeoServiceFactory.getInstance().getNewDatasetService().findAllDatasetsByType(DatasetTypes.NETWORK);
-            
-            return result1;
+            allNetworkNodes = NeoServiceFactory.getInstance().getNewDatasetService().
+                    findAllDatasetsByType(DatasetTypes.NETWORK);
         } catch (InvalidDatasetParameterException e) {
-            
+            LOGGER.error(e);
         }
-        return null;
+        for (Node networkRoot : allNetworkNodes) {
+            networkModels.add(new NetworkModel(networkRoot));
+        }
+        
+        return networkModels;
     }
 
     @Override

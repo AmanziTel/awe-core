@@ -21,6 +21,8 @@ import java.util.List;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.model.INetworkModel;
+import org.amanzi.neo.services.model.impl.NetworkModel;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.utils.Utils;
 import org.neo4j.graphdb.Direction;
@@ -100,7 +102,13 @@ public class Root extends NeoNode {
         
         Node reference = service.getReferenceNode();
         int nextNum = number+1;
-        for (Node node : Utils.getTDRootNodes(null).traverse(reference).nodes()) {
+        List<INetworkModel> networkModels = NetworkModel.findAllNetworkModels();
+        List<Node> nodes = new ArrayList<Node>();
+        for (INetworkModel nModel : networkModels) {
+        	nodes.add(nModel.getRootNode());
+        }
+//        for (Node node : Utils.getTDRootNodes(null).traverse(reference).nodes()) {
+        for (Node node : nodes) {
             if (node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(NodeTypes.NETWORK.getId())) {
                 networkNodes.add(new NeoNode(node, nextNum++));
                 for (Relationship deltaRelationship : node.getRelationships(NetworkRelationshipTypes.DELTA_REPORT, Direction.INCOMING)) {
