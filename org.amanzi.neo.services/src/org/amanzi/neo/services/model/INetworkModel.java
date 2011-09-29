@@ -60,16 +60,22 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
     public Iterable<ISelectionModel> getAllSelectionModels();
 
     /**
+     * Find a network element, based on properties set in the <code>IDataElement</code> object.
+     * Don't forget to set TYPE property.
+     * 
      * @param element
-     * @return
+     * @return <code>DataElement</code> object, created on base of the found network node, or
+     *         <code>null</code>.
      */
     public IDataElement findElement(IDataElement element);
 
     /**
-     *
+     * Create a new network element based on <code>IDataElement element</code> object. MUST set NAME
+     * and TYPE.
+     * 
      * @param parent
      * @param element
-     * @return
+     * @return <code>DataElement</code> object, created on base of the new network node.
      */
     public IDataElement createElement(IDataElement parent, IDataElement element);
 }

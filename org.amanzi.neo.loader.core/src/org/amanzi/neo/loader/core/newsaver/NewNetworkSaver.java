@@ -21,6 +21,7 @@ import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceManager;
 import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.impl.DataElement;
@@ -94,11 +95,10 @@ public class NewNetworkSaver extends AbstractSaver<DriveModel, CSVContainer, Con
                 || row.get(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.CITY))) == null
                 || StringUtils.isEmpty(row.get(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.CITY).toString())))) {
             if (root == null) {
-                LOGGER.info("Missing city name on line:" + lineCounter);
+                createSite(rootDataElement, row);
                 return;
             } else {
                 createSite(root, row);
-
                 return;
             }
         }
@@ -132,26 +132,43 @@ public class NewNetworkSaver extends AbstractSaver<DriveModel, CSVContainer, Con
      * @param row
      */
     private void createSite(IDataElement root, List<String> row) {
-        if (fileSynonyms.get(DataLoadPreferenceManager.SITE) == null
-                || row.get(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.SITE))) == null
-                || StringUtils.isEmpty(row.get(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.SITE).toString())))) {
+        if (row.get(columnSynonyms.get(fileSynonyms.get(INeoConstants.PROPERTY_LAT_NAME))) == null
+                || StringUtils.isEmpty(row.get(columnSynonyms.get(fileSynonyms.get(INeoConstants.PROPERTY_LAT_NAME).toString())))
+                || row.get(columnSynonyms.get(fileSynonyms.get(INeoConstants.PROPERTY_LON_NAME))) == null
+                || StringUtils.isEmpty(row.get(columnSynonyms.get(fileSynonyms.get(INeoConstants.PROPERTY_LON_NAME).toString())))) {
             LOGGER.info("Missing site name on line:" + lineCounter);
             return;
         }
 
         Map<String, Object> siteMap = new HashMap<String, Object>();
         siteMap.put(INeoConstants.PROPERTY_TYPE_NAME, DataLoadPreferenceManager.SITE);
-        siteMap.put(INeoConstants.PROPERTY_NAME_NAME, row.get(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.SITE))));
         siteMap.put(INeoConstants.PROPERTY_LON_NAME, row.get(columnSynonyms.get(fileSynonyms.get(INeoConstants.PROPERTY_LON_NAME))));
         siteMap.put(INeoConstants.PROPERTY_LAT_NAME, row.get(columnSynonyms.get(fileSynonyms.get(INeoConstants.PROPERTY_LAT_NAME))));
+        if (fileSynonyms.get(DataLoadPreferenceManager.SITE) == null
+                || row.get(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.SITE))).equals(StringUtils.EMPTY)) {
 
+            if (fileSynonyms.get(DataLoadPreferenceManager.SECTOR) != null
+                    && !row.get(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.SECTOR))).equals(StringUtils.EMPTY)) {
+                String siteName = row.get(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.SECTOR)));
+                siteMap.put(INeoConstants.PROPERTY_NAME_NAME, siteName.substring(0, siteName.length() - 1));
+            } else {
+                LOGGER.info("Missing site name based on SectorName on line:" + lineCounter);
+                return;
+            }
+
+        } else {
+            siteMap.put(INeoConstants.PROPERTY_NAME_NAME,
+                    row.get(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.SITE))));
+            row.set(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.SITE)), null);
+        }
         IDataElement siteElement = new DataElement(siteMap);
         IDataElement findedElement = model.findElement(siteElement);
 
         if (findedElement == null) {
+
             findedElement = model.createElement(root, siteElement);
         }
-        row.set(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.SITE)), null);
+        
         row.set(columnSynonyms.get(fileSynonyms.get(INeoConstants.PROPERTY_LON_NAME)), null);
         row.set(columnSynonyms.get(fileSynonyms.get(INeoConstants.PROPERTY_LAT_NAME)), null);
         createSector(findedElement, row);
