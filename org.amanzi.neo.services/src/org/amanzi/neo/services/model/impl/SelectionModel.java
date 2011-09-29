@@ -16,6 +16,7 @@ package org.amanzi.neo.services.model.impl;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewNetworkService;
+import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.ISelectionModel;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
@@ -38,7 +39,7 @@ public class SelectionModel extends AbstractModel implements ISelectionModel {
         LOGGER.info("Selection Model <" + name + "> created by existing node");
     }
     
-    public SelectionModel(Node networkNode, String selectionListName) {
+    public SelectionModel(Node networkNode, String selectionListName) throws AWEException {
         this.name = selectionListName;
         this.rootNode = networkService.findSelectionList(networkNode, selectionListName);
         if (rootNode == null) {

@@ -13,6 +13,8 @@
 
 package org.amanzi.neo.services.model;
 
+import org.amanzi.neo.services.exceptions.AWEException;
+
 //TODO: LN: comments
 /**
  * TODO Purpose of
@@ -34,7 +36,7 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
      * @param name name of selection model
      * @return instance of SelectionModel, or null if it's not found
      */
-    public ISelectionModel findSelectionModel(String name);
+    public ISelectionModel findSelectionModel(String name) throws AWEException;
     
     /**
      * Creates new Selection Model 
@@ -42,7 +44,7 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
      * @param name name of new Selection Model
      * @return created Selection Model
      */
-    public ISelectionModel createSelectionModel(String name);
+    public ISelectionModel createSelectionModel(String name) throws AWEException;
     
     /**
      * Try to find a Selection Model by it's name, Creates new one if it's not found
@@ -50,7 +52,7 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
      * @param name name of Selection Model
      * @return instance of Selection Model
      */
-    public ISelectionModel getSelectionModel(String name);
+    public ISelectionModel getSelectionModel(String name) throws AWEException;
     
     /**
      * Returns all selection models of this Network

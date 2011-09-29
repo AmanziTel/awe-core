@@ -24,7 +24,7 @@ import org.amanzi.neo.services.enums.INodeType;
  * @author gerzog
  * @since 1.0.0
  */
-public interface IProjectModel {
+public interface IProjectModel extends IModel {
 
     /**
      * Creates a new drive dataset with the defined <code>name</code> and <code>driveType</code>,

@@ -66,7 +66,7 @@ public class SectorSelectionSaver extends AbstractSaver<DriveModel, CSVContainer
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error(e);
             markTxAsFailure();
         }
     }
