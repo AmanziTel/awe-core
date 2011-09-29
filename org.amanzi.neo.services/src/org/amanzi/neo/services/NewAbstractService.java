@@ -20,6 +20,7 @@ import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -78,7 +79,7 @@ public abstract class NewAbstractService {
     }
 
     public String getNodeType(Node node) {
-        return (String)node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "");
+        return (String)node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, StringUtils.EMPTY);
     }
 
     /**
@@ -293,7 +294,7 @@ public abstract class NewAbstractService {
         @Override
         public Evaluation evaluate(Path path) {
             if (super.evaluate(path).includes()) {
-                if (path.endNode().getProperty(NewAbstractService.NAME, "").equals(name)) {
+                if (path.endNode().getProperty(NewAbstractService.NAME, StringUtils.EMPTY).equals(name)) {
                     return Evaluation.INCLUDE_AND_CONTINUE;
                 }
                 return Evaluation.EXCLUDE_AND_CONTINUE;

@@ -66,7 +66,7 @@ public class SectorSelectionSaver extends AbstractSaver<NetworkModel, CSVContain
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error(e);
             markTxAsFailure();
         }
     }

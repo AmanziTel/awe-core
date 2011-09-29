@@ -48,6 +48,8 @@ public class CorrelationService extends NewAbstractService {
     private static Logger LOGGER = Logger.getLogger(CorrelationService.class);
 
     private Transaction tx;
+    
+    private NewDatasetService datasetService = NeoServiceFactory.getInstance().getNewDatasetService();
 
     public enum Correlations implements RelationshipType {
         CORRELATION, CORRELATED
@@ -75,7 +77,7 @@ public class CorrelationService extends NewAbstractService {
     }
 
     // createCorrealtion (Network, Dataset <Drive/Counters>)
-    public Node createCorrelation(Node network, Node dataset) {
+    public Node createCorrelation(Node network, Node dataset) throws DatabaseException {
         // validate params
         if (network == null) {
             throw new IllegalArgumentException("Network is null.");
@@ -110,7 +112,7 @@ public class CorrelationService extends NewAbstractService {
      * @param dataset
      * @return
      */
-    protected Node findCorrelationRoot(Node network, Node dataset) {
+    protected Node findCorrelationRoot(Node network, Node dataset) throws DatabaseException {
         LOGGER.info("findCorrelationRoot(" + network.getId() + ", " + dataset.getId() + ")");
         Node result = null;
         Node root = getCorrelationRoot(network);
@@ -156,7 +158,7 @@ public class CorrelationService extends NewAbstractService {
                 if (result == null) {
                     result = createNode(CorrelationNodeTypes.PROXY);
                     sector.createRelationshipTo(result, Correlations.CORRELATED);
-                    NeoServiceFactory.getInstance().getNewDatasetService().addChild(getCorrelationRoot(network), result, null);
+                    datasetService.addChild(getCorrelationRoot(network), result, null);
                 }
                 Relationship rel = result.createRelationshipTo(measurement, Correlations.CORRELATED);
                 rel.setProperty(DATASET_ID, dataset.getId());
@@ -256,7 +258,7 @@ public class CorrelationService extends NewAbstractService {
     }
 
     // getAllCorrelatedNodes(Network, Dataset)
-    public Iterable<Node> getAllCorrelatedNodes(Node network, Node dataset) {
+    public Iterable<Node> getAllCorrelatedNodes(Node network, Node dataset) throws DatabaseException {
         LOGGER.info("getAllCorrelatedNodes(" + network.getId() + ", " + dataset.getId() + ")");
         Node corRoot = getCorrelationRoot(network);
         return getAllCorrelatedTraversalDescription()
@@ -277,7 +279,7 @@ public class CorrelationService extends NewAbstractService {
 
     //TODO: LN: do not use List - it will slow down work of this method 
     //better to return Iterator of Nodes
-    public Iterable<Node> getAllCorrelatedSectors(Node network, Node dataset) {
+    public Iterable<Node> getAllCorrelatedSectors(Node network, Node dataset) throws DatabaseException {
         LOGGER.info("getAllCorrelatedSectors(" + network.getId() + ", " + dataset.getId() + ")");
 
         Node corRoot = getCorrelationRoot(network);
@@ -300,7 +302,7 @@ public class CorrelationService extends NewAbstractService {
      * @param network
      * @return
      */
-    public Node getCorrelationRoot(Node network) {
+    public Node getCorrelationRoot(Node network) throws DatabaseException {
         // validate parameters
         if (network == null) {
             throw new IllegalArgumentException("Network is null.");
@@ -317,10 +319,10 @@ public class CorrelationService extends NewAbstractService {
                 result = createNode(CorrelationNodeTypes.CORRELATION);
                 network.createRelationshipTo(result, Correlations.CORRELATION);
                 tx.success();
-            } catch (DatabaseException e) {
-                //TODO: LN: do not throw Runtime Exception
-                // TODO Handle DatabaseException
-                throw (RuntimeException)new RuntimeException().initCause(e);
+            } catch (Exception e) {
+                LOGGER.error("Error on creating root correlation node", e);
+                tx.failure();
+                throw new DatabaseException(e);
             } finally {
                 tx.finish();
             }
@@ -329,7 +331,7 @@ public class CorrelationService extends NewAbstractService {
         return result;
     }
 
-    public Iterable<Node> getCorrelatedDatasets(Node network) {
+    public Iterable<Node> getCorrelatedDatasets(Node network) throws DatabaseException {
         // validate
         if (network == null) {
             throw new IllegalArgumentException("Network is null.");
@@ -348,7 +350,7 @@ public class CorrelationService extends NewAbstractService {
                 .relationships(Correlations.CORRELATION, Direction.INCOMING);
     }
 
-    public Iterable<Node> getCorrelatedNetworks(Node dataset) {
+    public Iterable<Node> getCorrelatedNetworks(Node dataset) throws DatabaseException {
         // validate
         if (dataset == null) {
             throw new IllegalArgumentException("Dataset is null.");
@@ -396,6 +398,13 @@ public class CorrelationService extends NewAbstractService {
             }
             return Evaluation.ofIncludes(includes);
         }
+    }
+
+    /**
+     * @param datasetService The datasetService to set.
+     */
+    public void setDatasetService(NewDatasetService datasetService) {
+        this.datasetService = datasetService;
     }
 
 }

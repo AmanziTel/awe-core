@@ -128,9 +128,6 @@ public class NewPropertyStatistics {
             if (klass.equals(Float.class)) {
                 return numberValue.floatValue();
             }
-            if (klass.equals(String.class)) {
-                return propertyValue;
-            }
             if (klass.equals(Byte.class)) {
                 return numberValue.byteValue();
             }
@@ -143,12 +140,17 @@ public class NewPropertyStatistics {
             if (klass.equals(Double.class)) {
                 return numberValue.doubleValue();
             }
-            if (klass.equals(Boolean.class)) {
-                return Boolean.valueOf(propertyValue);
-            }
             throw new UnsupportedClassException(klass);
         } catch (UnsupportedClassException e) {
             throw e;
+        } catch (ParseException e1) {
+            if (klass.equals(Boolean.class)) {
+                return Boolean.valueOf(propertyValue);
+            }
+            if (klass.equals(String.class)) {
+                return propertyValue;
+            }
+            throw new FailedParseValueException("Cannot parse <" + propertyValue + "> to type <" + klass.getSimpleName() + ">");
         } catch (Exception e2) {
             throw new FailedParseValueException();
         }

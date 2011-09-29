@@ -13,9 +13,13 @@
 
 package org.amanzi.neo.services;
 
+import java.util.Iterator;
+
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
+import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -23,6 +27,9 @@ import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.index.IndexHits;
+import org.neo4j.graphdb.traversal.Evaluators;
+import org.neo4j.graphdb.traversal.TraversalDescription;
+import org.neo4j.kernel.Traversal;
 
 /**
  * <p>
@@ -36,13 +43,15 @@ public class NewNetworkService extends NewAbstractService {
 
     public final static String CELL_INDEX = "ci";
     public final static String LOCATION_AREA_CODE = "lac";
+    
+    public final static String SELECTED_NODES_COUNT = "selected_nodes_count";
 
     private static Logger LOGGER = Logger.getLogger(NewNetworkService.class);
 
     // TODO: LN: do not use tx as global fiels to prevent problems with Transactions
     private Transaction tx;
     private NewDatasetService datasetService;
-
+    
     /**
      * <p>
      * This enum describes types of network elements.
@@ -70,14 +79,22 @@ public class NewNetworkService extends NewAbstractService {
         SELECTION_LIST;
     }
     
+    /*
+     * Traversal Description to find out all Selection List Nodes
+     */
+    protected final static TraversalDescription ALL_SELECTION_LISTS_TRAVERSER = 
+            Traversal.description().breadthFirst().
+                        relationships(NetworkRelationshipTypes.SELECTION_LIST).
+                        evaluator(Evaluators.excludeStartPosition());
+    
     public NewNetworkService() {
         super();
-        datasetService = new NewDatasetService();
+        datasetService = NeoServiceFactory.getInstance().getNewDatasetService();
     }
 
     public NewNetworkService(GraphDatabaseService graphDb) {
         super(graphDb);
-        datasetService = new NewDatasetService(graphDb);
+        datasetService = NeoServiceFactory.getInstance().getNewDatasetService();
     }
 
     /**
@@ -318,8 +335,45 @@ public class NewNetworkService extends NewAbstractService {
      * @param selectionListName name of selection list
      * @return created root node for selection list structure
      */
-    public Node createSelectionList(Node networkNode, String selectionListName) {
-        return null;
+    public Node createSelectionList(Node networkNode, String selectionListName) 
+            throws DuplicateNodeNameException, DatabaseException {
+        LOGGER.debug("start createSelectionList(<" + networkNode + ">, <" + selectionListName + ">)");
+        
+        if (networkNode == null) {
+            LOGGER.error("Network Node is null");
+            throw new IllegalArgumentException("NetworkNode is null");
+        }
+        
+        if ((selectionListName == null) ||
+            (selectionListName.equals(StringUtils.EMPTY))) {
+            LOGGER.error("SelectionListName is null");
+            throw new IllegalArgumentException("SelectionList Name is null or empty");
+        }
+        
+        if (findSelectionList(networkNode, selectionListName) != null) {
+            LOGGER.error("Seleciton List already exists");
+            throw new DuplicateNodeNameException(selectionListName, NetworkElementNodeType.SELECTION_LIST_ROOT);
+        }
+        
+        Node result = null;
+        Transaction tx = graphDb.beginTx();
+        try {
+            result = createNode(networkNode, NetworkRelationshipTypes.SELECTION_LIST, NetworkElementNodeType.SELECTION_LIST_ROOT);
+            result.setProperty(SELECTED_NODES_COUNT, 0);
+            result.setProperty(NAME, selectionListName);
+            
+            tx.success();
+        } catch (Exception e) {
+            tx.failure();
+            LOGGER.error("Error on creating SelectionNode", e);
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
+        
+        LOGGER.debug("finish createSelectionList()");
+        
+        return result;
     }
     
     /**
@@ -329,7 +383,59 @@ public class NewNetworkService extends NewAbstractService {
      * @param selectionListName name of Selection List to search
      * @return root node of selection list structure or null if it's not found 
      */
-    public Node findSelectionList(Node networkNode, String selectionListName) {
-        return null;
+    public Node findSelectionList(Node networkNode, String selectionListName) throws DuplicateNodeNameException {
+        LOGGER.debug("start findSelectionList(<" + networkNode + ">, <" + selectionListName + ">)");
+        
+        if (networkNode == null) {
+            LOGGER.error("Network Node is null");
+            throw new IllegalArgumentException("NetworkNode is null");
+        }
+        
+        if ((selectionListName == null) ||
+            (selectionListName.equals(StringUtils.EMPTY))) {
+            LOGGER.error("SelectionListName is null");
+            throw new IllegalArgumentException("SelectionList Name is null or empty");
+        }
+        
+        Iterator<Node> selectionListIterator = ALL_SELECTION_LISTS_TRAVERSER.
+                evaluator(new NameTypeEvaluator(selectionListName, NetworkElementNodeType.SELECTION_LIST_ROOT)).
+                traverse(networkNode).nodes().iterator();
+        
+        Node result = null;
+        
+        if (selectionListIterator.hasNext()) {
+            result = selectionListIterator.next();
+            
+            if (selectionListIterator.hasNext()) {
+                LOGGER.error("Problem with DB - duplicated selection lists by name <" + selectionListName + ">.");
+                throw new DuplicateNodeNameException(selectionListName, NetworkElementNodeType.SELECTION_LIST_ROOT);
+            }
+        }
+        
+        LOGGER.debug("finish findSelectionList()");
+        
+        return result;
     }
+
+    /**
+     * Returns all Selection Nodes related to Network
+     *
+     * @param networkNode Network node
+     * @return
+     */
+    public Iterable<Node> getAllSelectionModelsOfNetwork(Node networkNode) {
+        LOGGER.debug("start getAllSelectionModelsOfNetwork(<" + networkNode + ">)");
+        
+        if (networkNode == null) {
+            LOGGER.error("Network Node is null");
+            throw new IllegalArgumentException("NetworkNode is null");
+        }
+        
+        Iterable<Node> result = ALL_SELECTION_LISTS_TRAVERSER.traverse(networkNode).nodes();
+        
+        LOGGER.debug("finish getAllSelectionModelsOfNetwork()");
+        
+        return result;
+    }
+    
 }
