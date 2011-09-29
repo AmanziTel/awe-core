@@ -45,7 +45,7 @@ public interface ICorrelationModel extends IModel {
      * 
      * @return traverser over sectors
      */
-    public Iterable<IDataElement> getSectors();
+    public Iterable<Node> getSectors() throws AWEException;
 
     /**
      * Traverses database to get all the nodes of the current dataset (measurements for drive data,
@@ -53,7 +53,8 @@ public interface ICorrelationModel extends IModel {
      * 
      * @return traverser over dataset nodes
      */
-    public Iterable<IDataElement> getMeasurements();
+    //TODO: LN: use IDataElement
+    public Iterable<Node> getMeasurements() throws AWEException;
 
     /**
      * Traverses database to get the dataset nodes correlated to the defined sector node.
