@@ -41,7 +41,7 @@ public class CorrelationModel extends AbstractModel implements ICorrelationModel
      * @param network a network root node
      * @param dataset a dataset root node
      */
-    public CorrelationModel(Node network, Node dataset) {
+    CorrelationModel(Node network, Node dataset) {
         // validate parameters
         if (network == null) {
             throw new IllegalArgumentException("Network is null.");
@@ -85,14 +85,14 @@ public class CorrelationModel extends AbstractModel implements ICorrelationModel
     }
 
     @Override
-    public Node getNetwork() {
+    public IDataElement getNetwork() {
 
-        return network;
+        return new DataElement(network);
     }
 
     @Override
-    public Node getDataset() {
-        return dataset;
+    public IDataElement getDataset() {
+        return new DataElement(dataset);
     }
 
     @Override
@@ -102,17 +102,17 @@ public class CorrelationModel extends AbstractModel implements ICorrelationModel
 
     @Override
     public Iterable<IDataElement> getMeasurements() {
-        return new IDataElement(crServ.getAllCorrelatedNodes(network, dataset));
+        return new DataElementIterable(crServ.getAllCorrelatedNodes(network, dataset));
     }
 
     @Override
-    public Iterable<Node> getCorrelatedNodes(Node sector) {
-        return crServ.getCorrelatedNodes(network, sector, dataset);
+    public Iterable<IDataElement> getCorrelatedNodes(Node sector) {
+        return new DataElementIterable(crServ.getCorrelatedNodes(network, sector, dataset));
     }
 
     @Override
-    public Node getCorrelatedSector(Node measurement) {
-        return crServ.getCorrelatedSector(measurement, network);
+    public IDataElement getCorrelatedSector(Node measurement) {
+        return new DataElement(crServ.getCorrelatedSector(measurement, network));
     }
 
 }
