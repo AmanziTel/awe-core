@@ -116,6 +116,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
      * @param element
      * @return <code>DataElement</code> object, created on base of the new network node.
      */
+    @Override
     public IDataElement createElement(IDataElement parent, IDataElement element) {
         // validate
         if (parent == null) {
@@ -167,6 +168,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
      * @return <code>DataElement</code> object, created on base of the found network node, or
      *         <code>null</code>.
      */
+    @Override
     public IDataElement findElement(IDataElement element) {
         // validate
 
