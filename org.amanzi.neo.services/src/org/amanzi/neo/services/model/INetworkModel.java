@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.services.model;
 
+//TODO: LN: comments
 /**
  * TODO Purpose of
  * <p>
@@ -26,4 +27,35 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
     public Iterable<ICorrelationModel> getCorrelationModels();
 
     public INetworkType getNetworkType();
+    
+    /**
+     * Searches for a Selection Model by it's name
+     *
+     * @param name name of selection model
+     * @return instance of SelectionModel, or null if it's not found
+     */
+    public ISelectionModel findSelectionModel(String name);
+    
+    /**
+     * Creates new Selection Model 
+     *
+     * @param name name of new Selection Model
+     * @return created Selection Model
+     */
+    public ISelectionModel createSelectionModel(String name);
+    
+    /**
+     * Try to find a Selection Model by it's name, Creates new one if it's not found
+     *
+     * @param name name of Selection Model
+     * @return instance of Selection Model
+     */
+    public ISelectionModel getSelectionModel(String name);
+    
+    /**
+     * Returns all selection models of this Network
+     *
+     * @return list of Selection Models related to current network
+     */
+    public Iterable<ISelectionModel> getAllSelectionModels();
 }

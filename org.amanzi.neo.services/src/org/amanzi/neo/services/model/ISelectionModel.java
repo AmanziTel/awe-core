@@ -13,10 +13,6 @@
 
 package org.amanzi.neo.services.model;
 
-import java.util.Iterator;
-import java.util.Map;
-
-import org.neo4j.graphdb.Node;
 
 /**
  * TODO Purpose of
@@ -26,7 +22,7 @@ import org.neo4j.graphdb.Node;
  * @author Kondratneko_Vladislav
  * @since 1.0.0
  */
-public interface ISelectionModel {
+public interface ISelectionModel extends IModel {
 
     /**
      * find sector by name and create relation ship from rootNode to each node from iterator

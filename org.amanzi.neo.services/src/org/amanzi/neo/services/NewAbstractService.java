@@ -48,11 +48,16 @@ public abstract class NewAbstractService {
     public final static String NAME = "name";
     public static final String DATASET_ID = "dataset";
     public static final String NETWORK_ID = "network";
+
+    private static Logger LOGGER = Logger.getLogger(NewAbstractService.class);
+    /**
+     * Traversal description for child elements
+     */
     protected TraversalDescription childElementTraversalDescription = Traversal.description().depthFirst()
             .relationships(DatasetRelationTypes.CHILD, Direction.OUTGOING);
-    private static Logger LOGGER = Logger.getLogger(NewAbstractService.class);
-
     protected GraphDatabaseService graphDb;
+
+    // TODO: LN: do not use Transaction as a field
     private Transaction tx;
 
     /**

@@ -54,6 +54,7 @@ public class LaunchLoaderNew extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent arg0) throws ExecutionException {
+        //TODO: LN: hard code!
         guiId = arg0.getParameter("org.amanzi.neo.loader.ui.commands.guiId");
         if (StringUtils.isEmpty(guiId)) {
             // TODO add descriptions
@@ -88,7 +89,6 @@ public class LaunchLoaderNew extends AbstractHandler {
      * @param elements the elements
      * @return the wizard instance
      */
-    @SuppressWarnings({"rawtypes", "unchecked"})
     private IGraphicInterfaceForLoaders getWizardInstance(ExecutionEvent arg0, List<IConfigurationElement> elements) {
 
         Object wizard = null;
@@ -129,26 +129,25 @@ public class LaunchLoaderNew extends AbstractHandler {
      * @param element the element
      * @return the loader
      */
-    @SuppressWarnings({"rawtypes", "unchecked"})
     private ILoaderNew<IData, IConfiguration> defineLoader(IConfigurationElement element) {
         try {
             String loaderClass = element.getAttribute("loader_class");
 
-            ILoaderNew loader = null;
+            ILoaderNew<IData, IConfiguration> loader = null;
             ILoaderInfo loaderInfo = null;
             if (loaderClass != null) {
                 String loaderType = element.getAttribute("loader_type");
                 String loaderName = element.getAttribute("loader_name");
                 String loaderDataType = element.getAttribute("loader_data_type");
                 loaderInfo = new LoaderInfoImpl(loaderName, loaderType, loaderDataType);
-                loader = (ILoaderNew)element.createExecutableExtension("loader_class");
+                loader = (ILoaderNew<IData, IConfiguration>)element.createExecutableExtension("loader_class");
                 loader.setLoaderInfo(loaderInfo);
             } else {
                 Class cl = LoaderNew.class;
-                loader = (ILoaderNew)cl.newInstance();
+                loader = (ILoaderNew<IData, IConfiguration>)cl.newInstance();
             }
             IParser<ISaver<IModel,? extends IData, IConfiguration>, IConfiguration,? extends IData> parser = defineParser(element);
-            List<ISaver<IModel, ? extends IData, IConfiguration>> saver = defineSaver(element);
+            List<ISaver<? extends IModel, IData, IConfiguration>> saver = defineSaver(element);
             if (parser != null && saver != null) {
                 loader.setParser(parser);
                 loader.setSaver(saver);
@@ -158,6 +157,7 @@ public class LaunchLoaderNew extends AbstractHandler {
 
             }
         } catch (InstantiationException e) {
+            //TODO: LN: handle exceptions!!!!!
             // TODO Handle InstantiationException
             e.printStackTrace();
         } catch (IllegalAccessException e) {
@@ -198,7 +198,7 @@ public class LaunchLoaderNew extends AbstractHandler {
      * @return the i saver<? extends i data element>
      */
     @SuppressWarnings("unchecked")
-    private List<ISaver<IModel, ? extends IData, IConfiguration>> defineSaver(IConfigurationElement element) {
+    private List<ISaver<? extends IModel, IData, IConfiguration>> defineSaver(IConfigurationElement element) {
         List<IConfigurationElement> saverElements = new LinkedList<IConfigurationElement>();
         for (IConfigurationElement innerElement : element.getChildren()) {
             if (innerElement.getName().equals("saver")) {
@@ -207,7 +207,7 @@ public class LaunchLoaderNew extends AbstractHandler {
         }
         IExtensionRegistry reg = Platform.getExtensionRegistry();
         IConfigurationElement[] extensions = reg.getConfigurationElementsFor("org.amanzi.loader.core.newsaver");
-        List<ISaver<IModel, ? extends IData, IConfiguration>> saverList = new LinkedList<ISaver<IModel, ? extends IData, IConfiguration>>();
+        List<ISaver<? extends IModel, IData, IConfiguration>> saverList = new LinkedList<ISaver<? extends IModel, IData, IConfiguration>>();
         for (int i = 0; i < extensions.length; i++) {
             IConfigurationElement elementSaver = extensions[i];
             for (IConfigurationElement saver : saverElements) {

@@ -19,6 +19,7 @@ import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.index.IndexHits;
@@ -58,7 +59,17 @@ public class NewNetworkService extends NewAbstractService {
         }
 
     }
-
+    
+    /**
+     * Enum with RelationshipTypes specific for Network Structure
+     * 
+     * @author gerzog
+     * @since 1.0.0
+     */
+    public enum NetworkRelationshipTypes implements RelationshipType {
+        SELECTION_LIST;
+    }
+    
     public NewNetworkService() {
         super();
         datasetService = new NewDatasetService();
@@ -88,6 +99,7 @@ public class NewNetworkService extends NewAbstractService {
         if (parent == null) {
             throw new IllegalArgumentException("Parent is null.");
         }
+        //TODO: LN: use StringUtils.EMPTY
         if ((indexName == null) || (indexName.equals(""))) {
             throw new IllegalArgumentException("indexName is null or empty");
         }
@@ -188,6 +200,7 @@ public class NewNetworkService extends NewAbstractService {
         if ((indexName == null) || (indexName.equals(""))) {
             throw new IllegalArgumentException("indexName is null or empty");
         }
+        //TODO: LN: incorrect condition - you have now <Name> AND <CI+LAC>, but should have OR
         if (((name == null) || (name.equals(""))) && ((ci == null) || (ci.equals("")) || (lac == null) || (lac.equals("")))) {
             throw new IllegalNodeDataException("Name or CI+LAC must be set");
         }
@@ -241,6 +254,7 @@ public class NewNetworkService extends NewAbstractService {
 
         // Find element by index
         Node result = null;
+        //TODO: LN: use index instead of index name
         Index<Node> index = graphDb.index().forNodes(indexName);
 
         if (!((ci == null) || (ci.equals("")))) {
@@ -295,5 +309,27 @@ public class NewNetworkService extends NewAbstractService {
         }
 
         return childElementTraversalDescription.evaluator(new FilterNodesByType(elementType)).traverse(parent).nodes();
+    }
+    
+    /**
+     * Creates Node for a Selection List structure
+     *
+     * @param networkNode root Network Node
+     * @param selectionListName name of selection list
+     * @return created root node for selection list structure
+     */
+    public Node createSelectionList(Node networkNode, String selectionListName) {
+        return null;
+    }
+    
+    /**
+     * Searches for a Selection List root Node
+     *
+     * @param networkNode root Network Node
+     * @param selectionListName name of Selection List to search
+     * @return root node of selection list structure or null if it's not found 
+     */
+    public Node findSelectionList(Node networkNode, String selectionListName) {
+        return null;
     }
 }

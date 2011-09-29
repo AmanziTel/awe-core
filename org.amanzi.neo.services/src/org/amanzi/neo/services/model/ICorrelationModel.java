@@ -53,6 +53,7 @@ public interface ICorrelationModel extends IModel {
      * 
      * @return traverser over dataset nodes
      */
+    //TODO: LN: use IDataElement
     public Iterable<Node> getMeasurements();
 
     /**
@@ -61,6 +62,7 @@ public interface ICorrelationModel extends IModel {
      * @param sector the sector to find correlations for
      * @return traverser over dataset nodes
      */
+    //TODO: LN: use IDataElement
     public Iterable<Node> getCorrelatedNodes(Node sector);
 
     /**

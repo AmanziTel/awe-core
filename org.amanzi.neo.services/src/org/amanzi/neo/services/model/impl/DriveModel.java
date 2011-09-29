@@ -35,6 +35,7 @@ import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.model.ICorrelationModel;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDriveModel;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.geotools.referencing.CRS;
 import org.neo4j.graphdb.Direction;
@@ -60,6 +61,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     private static Logger LOGGER = Logger.getLogger(DriveModel.class);
 
     // private members
+    //TODO: LN: do not use GraphDBService in Model
     private GraphDatabaseService graphDb;
     private Index<Node> files;
     private int count = 0;
@@ -117,7 +119,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
 
             this.rootNode = rootNode;
             this.name = (String)rootNode.getProperty(NewAbstractService.NAME, null);
-            this.driveType = DriveTypes.valueOf(rootNode.getProperty(NewDatasetService.DRIVE_TYPE, "").toString().toUpperCase());
+            this.driveType = DriveTypes.valueOf(rootNode.getProperty(NewDatasetService.DRIVE_TYPE, StringUtils.EMPTY).toString().toUpperCase());
         } else {
             // validate params
             if (parent == null) {
@@ -150,7 +152,6 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         if (primaryType != null) {
             this.primaryType = primaryType;
         }
-        initializeStatistics();
     }
 
     /**
@@ -167,7 +168,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         LOGGER.debug("start addVirtualDataset(String name, IDriveType driveType)");
 
         // validate params
-        if ((name == null) || (name.equals(""))) {
+        if ((name == null) || (name.equals(StringUtils.EMPTY))) {
             throw new IllegalNodeDataException("Name is null or empty.");
         }
         if (driveType == null) {
@@ -233,6 +234,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     public Iterable<IDriveModel> getVirtualDatasets() {
         LOGGER.debug("start getVirtualDatasets()");
 
+        //TODO: LN: move this to Service
         List<IDriveModel> result = new ArrayList<IDriveModel>();
         for (Node node : getVirtualDatasetsTraversalDescription().traverse(rootNode).nodes()) {
             try {
@@ -244,6 +246,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         return result;
     }
 
+    //TODO: LN: move this to Service
     /**
      * @return TraversalDescription to iterate over virtual dataset nodes.
      */
@@ -303,6 +306,8 @@ public class DriveModel extends RenderableModel implements IDriveModel {
             throws AWEException {
         return addMeasurement(filename, params, primaryType);
     }
+    
+    //TODO: LN: maybe it make sense to add method like addMeasurerment(IDataElement.... since addFile already returns IDataElement
 
     /**
      * Adds a measurement node to a file node with defined filename. If params map contains lat and
@@ -323,7 +328,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         // lat, lon properties are stored in a location node
 
         // validate params
-        if ((filename == null) || (filename.equals(""))) {
+        if ((filename == null) || (filename.equals(StringUtils.EMPTY))) {
             throw new IllegalArgumentException("Filename is null or empty.");
         }
         if (params == null) {
@@ -448,7 +453,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
      */
     public IDataElement findFile(String name) {
         // validate parameters
-        if ((name == null) || (name.equals(""))) {
+        if ((name == null) || (name.equals(StringUtils.EMPTY))) {
             throw new IllegalArgumentException("Name is null or empty");
         }
         if (files == null) {
@@ -486,7 +491,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
      */
     public Iterable<IDataElement> getMeasurements(String filename) {
         // validate
-        if ((filename == null) || (filename.equals(""))) {
+        if ((filename == null) || (filename.equals(StringUtils.EMPTY))) {
             throw new IllegalArgumentException("Filename is null or empty.");
         }
 
@@ -524,7 +529,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     public ICorrelationModel getCorrelatedModel(String correlationModelName) {
         ICorrelationModel result = null;
         for (Node network : crServ.getCorrelatedNetworks(getRootNode())) {
-            if (network.getProperty(NewAbstractService.NAME, "").equals(correlationModelName)) {
+            if (network.getProperty(NewAbstractService.NAME, StringUtils.EMPTY).equals(correlationModelName)) {
                 result = new CorrelationModel(network, getRootNode());
                 break;
             }
@@ -602,12 +607,6 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         LOGGER.info("getAllElementsByType(" + elementType.getId() + ")");
 
         return new DataElementIterable(dsServ.findAllDatasetElements(getRootNode(), elementType));
-    }
-
-    @Override
-    public void finishUp() {
-        super.finishUp();
-
     }
 
     /**

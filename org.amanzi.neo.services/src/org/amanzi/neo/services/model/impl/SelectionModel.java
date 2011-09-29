@@ -13,23 +13,10 @@
 
 package org.amanzi.neo.services.model.impl;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
-import org.amanzi.neo.services.NewDatasetService;
-import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
+import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewNetworkService;
-import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
-import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.services.exceptions.AWEException;
-import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
-import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
-import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
-import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.ISelectionModel;
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
 
@@ -39,85 +26,31 @@ import org.neo4j.graphdb.Node;
  * @author Kondratenko_Vladislav
  * @since 1.0.0
  */
-public class SelectionModel implements ISelectionModel {
+public class SelectionModel extends AbstractModel implements ISelectionModel {
     private static Logger LOGGER = Logger.getLogger(SelectionModel.class);
-    private static NewNetworkService networkServ = NeoServiceFactory.getInstance().getNewNetworkService();
-    private static NewDatasetService datasetServ = NeoServiceFactory.getInstance().getNewDatasetService();
-    private Node networkRootNode;
-    private Node selectionRootNode;
-    private NetworkModel networkModel;
-
-    /**
-     * should to get DataElement with network Name also should get ProjectNode
-     * 
-     * @param project node
-     * @param rootElement
-     * @throws DuplicateNodeNameException
-     * @throws DatasetTypeParameterException
-     * @throws InvalidDatasetParameterException
-     */
-    public SelectionModel(IDataElement dataElement) throws InvalidDatasetParameterException, DatasetTypeParameterException,
-            DuplicateNodeNameException {
-
-        Node projectNode;
-        projectNode = (Node)dataElement.get("project");
-
-        networkModel = new NetworkModel(datasetServ.findDataset(projectNode, dataElement.get(INeoConstants.PROPERTY_NAME_NAME)
-                .toString(), DatasetTypes.NETWORK));
-        Map<String, Object> params = new HashMap<String, Object>();
-        params.put(INeoConstants.PROPERTY_NAME_NAME, " Slection Model");
-        params.put(INeoConstants.PROPERTY_TYPE_NAME, NetworkElementNodeType.SELECTION_LIST_ROOT.getId());
-        try {
-            selectionRootNode = networkServ.createNode(params);
-            networkServ.createRelationship(networkModel.getRootNode(), selectionRootNode, NetworkRelationshipTypes.SELECTION);
-        } catch (AWEException e) {
-            LOGGER.error("could not create selection model", e);
-            e.printStackTrace();
-        }
+    
+    private NewNetworkService networkService = NeoServiceFactory.getInstance().getNewNetworkService();
+    
+    public SelectionModel(Node rootSelectionList) {
+        this.rootNode = rootSelectionList;
+        this.name = (String)rootSelectionList.getProperty(NewAbstractService.NAME);
+        
+        LOGGER.info("Selection Model <" + name + "> created by existing node");
     }
-
-    /**
-     * try to find sector by name. if find- return iterator of nodes else null
-     */
-    private IDataElement findElementByName(String name) throws AWEException {
-        if (StringUtils.isEmpty(name) || name == null) {
-            throw new IllegalArgumentException("Sector name is null.");
+    
+    public SelectionModel(Node networkNode, String selectionListName) {
+        this.name = selectionListName;
+        this.rootNode = networkService.findSelectionList(networkNode, selectionListName);
+        if (rootNode == null) {
+            rootNode = networkService.createSelectionList(networkNode, selectionListName);
         }
-        Map<String, Object> sectorElement = new HashMap<String, Object>();
-        sectorElement.put(INeoConstants.PROPERTY_NAME_NAME, name);
-        sectorElement.put(INeoConstants.PROPERTY_TYPE_NAME, NetworkElementNodeType.SECTOR.getId());
-        return networkModel.findElement(new DataElement(sectorElement));
+        
+        LOGGER.info("Selection Model <" + name + "> created");
     }
 
     @Override
     public void linkToSector(String name) {
-
-        IDataElement findedNodes;
-        try {
-            findedNodes = findElementByName(name);
-        } catch (AWEException e) {
-            LOGGER.error("Error while searching sector", e);
-            return;
-        }
-        try {
-            if (findedNodes == null) {
-                LOGGER.error("There is no sector with name " + name);
-                return;
-            }
-            networkServ.createRelationship(selectionRootNode, ((DataElement)findedNodes).getNode(),
-                    NetworkRelationshipTypes.SELECTED);
-            LOGGER.info("Linking compleate for sector " + name);
-        } catch (AWEException e) {
-            e.printStackTrace();
-            LOGGER.error("Cann't make relation between selection model and sector", e);
-        }
-    }
-
-    /**
-     * @return Returns the selectionRootNode.
-     */
-    public Node getRoot() {
-        return selectionRootNode;
-    }
+        
+    }  
 
 }

@@ -20,7 +20,6 @@ import org.amanzi.neo.services.CorrelationService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.enums.INodeType;
-import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.ICorrelationModel;
 import org.amanzi.neo.services.model.ICountersModel;
 import org.amanzi.neo.services.model.ICountersType;

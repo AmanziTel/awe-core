@@ -16,7 +16,10 @@ package org.amanzi.neo.loader.core.newsaver;
 import org.amanzi.neo.db.manager.NeoServiceProvider;
 import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IModel;
+import org.amanzi.neo.services.model.IProjectModel;
+import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Transaction;
 
@@ -39,7 +42,7 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
     /**
      * action threshold for commit
      */
-    private int txBeforeCommit;
+    private int commitTxCount;
     /**
      * graph database instance
      */
@@ -89,17 +92,15 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
      * @param count
      */
     protected void setTxCountToReopen(int count) {
-        txBeforeCommit = count;
+        commitTxCount = count;
     }
 
     /**
-     * if current transaction==null create new transaction instance;Also finish current transaction
-     * if actions in current transaction more than <code>txBeforeCommit</code> after closing - open
-     * new transaction;
+     * if current tx==null create new instance finish current transaction if actions in current
+     * transaction more than commitTxCount and open new;
      */
-    protected void txCommit() {
-        if (actionCount > txBeforeCommit) {
-            tx.success();
+    protected void openOrReopenTx() {
+        if (actionCount > commitTxCount) {
             tx.finish();
             tx = null;
             actionCount = 0;
@@ -110,20 +111,32 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
 
     }
 
-    /**
-     * mark transaction as failure and finish it
-     */
-    protected void txRollBack() {
-        tx.failure();
+    protected void finishTx() {
         tx.finish();
-        tx = null;
+    }
+
+    /**
+     * mark transaction as success
+     */
+    protected void markTxAsSuccess() {
+        tx.success();
+    }
+
+    /**
+     * mark tx as failure
+     */
+    protected void markTxAsFailure() {
+        tx.failure();
     }
 
     @Override
     public void finishUp() {
-        tx.success();
         tx.finish();
         NeoServiceProvider.getProvider().commit();
         actionCount = 0;
+    }
+    
+    protected IProjectModel getActiveProject() throws AWEException {
+        return ProjectModel.getCurrentProjectModel();
     }
 }

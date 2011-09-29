@@ -20,6 +20,7 @@ import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
 
+//TODO: LN: comments!!!!!!!!!!!!!
 /**
  * <p>
  * 
