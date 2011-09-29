@@ -308,7 +308,7 @@ public class NewNetworkService extends NewAbstractService {
             throw new IllegalArgumentException("Element type is null.");
         }
 
-        return childElementTraversalDescription.evaluator(new FilterNodesByType(elementType)).traverse(parent).nodes();
+        return CHILD_ELEMENT_TRAVERSAL_DESCRIPTION.evaluator(new FilterNodesByType(elementType)).traverse(parent).nodes();
     }
     
     /**

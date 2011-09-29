@@ -53,7 +53,7 @@ public abstract class NewAbstractService {
     /**
      * Traversal description for child elements
      */
-    protected TraversalDescription childElementTraversalDescription = Traversal.description().depthFirst()
+    protected final TraversalDescription CHILD_ELEMENT_TRAVERSAL_DESCRIPTION = Traversal.description().depthFirst()
             .relationships(DatasetRelationTypes.CHILD, Direction.OUTGOING);
     protected GraphDatabaseService graphDb;
 
