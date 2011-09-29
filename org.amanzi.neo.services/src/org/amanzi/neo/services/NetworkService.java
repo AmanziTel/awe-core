@@ -1418,7 +1418,7 @@ CHANNEL_TRX,
     public List<Node> findAllNetworkNodes(Node rootNode) {
         ArrayList<Node> result = new ArrayList<Node>();
         
-        for (Node node : getAllRootTraverser(Evaluators.toDepth(2), new MultiNodeTypeFilter(true, NodeTypes.NETWORK)).
+        for (Node node : getAllRootTraverser(Evaluators.toDepth(3), new MultiNodeTypeFilter(true, NodeTypes.NETWORK)).
                          traverse(rootNode).
                          nodes()) {
             result.add(node);

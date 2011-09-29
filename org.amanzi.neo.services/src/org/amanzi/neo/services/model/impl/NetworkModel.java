@@ -27,6 +27,7 @@ import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
 import org.amanzi.neo.services.model.ICorrelationModel;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
@@ -324,7 +325,15 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     }
     
     public static List<Node> findAllNetworkNodes() {
-        return NeoServiceFactory.getInstance().getNetworkService().findAllNetworkNodes();
+        try {
+            List<Node> result1 = NeoServiceFactory.getInstance().getNewDatasetService().findAllDatasets();
+            List<Node> result2 = NeoServiceFactory.getInstance().getNewDatasetService().findAllDatasetsByType(DatasetTypes.NETWORK);
+            
+            return result1;
+        } catch (InvalidDatasetParameterException e) {
+            
+        }
+        return null;
     }
 
 }
