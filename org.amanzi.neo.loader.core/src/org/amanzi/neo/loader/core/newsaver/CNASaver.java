@@ -199,14 +199,23 @@ public class CNASaver extends AbstractSaver<NetworkModel, CSVContainer, Configur
             findedBSC = model.createElement(findedMSC, bsc);
             isNewCreated = true;
         } else if (findedBSC != null && findedMSC != null && isNewCreated) {
-            // TODO change relationship
+            // TODO change relationship from root to msc
             isNewCreated = false;
         }
 
         if (findedCity == null && bsc == null && msc == null && city != null) {
             findedCity = model.createElement(rootDataElement, city);
+        } else if (findedCity == null && bsc == null && isNewCreated) {
+            findedCity = model.createElement(findedMSC, city);
+        } else if (findedCity == null && msc == null && isNewCreated) {
+            findedCity = model.createElement(findedBSC, city);
+        } else if (findedCity == null && bsc == null && msc != null) {
+            findedCity = model.createElement(findedBSC, city);
+        } else if (findedCity != null && msc == null && isNewCreated) {
+            // TODO change relationship from root to bsc
+        } else if (findedCity != null && bsc == null && isNewCreated) {
+            // TODO change relationship from root to mscF
         }
-        //TODO
     }
 
     @Override
