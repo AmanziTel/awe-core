@@ -17,7 +17,6 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.amanzi.neo.db.manager.NeoServiceProvider;
@@ -30,13 +29,13 @@ import org.amanzi.neo.loader.core.newsaver.IData;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.amanzi.neo.services.INeoConstants;
-import org.amanzi.neo.services.NeoServiceFactory;
-import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.enums.NetworkTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
-import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
+import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.impl.ProjectModel;
+import org.amanzi.neo.services.network.NetworkModel;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -59,6 +58,7 @@ import org.neo4j.graphdb.Node;
  * @since 1.0.0
  */
 public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
+    private static Logger LOGGER = Logger.getLogger(LoadNetworkMainPage.class);
     /*
      * Names of supported files for Network
      */
@@ -222,21 +222,17 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
      * @return array of GIS nodes
      */
     private String[] getRootItems() {
-
-        NewDatasetService datasetService = NeoServiceFactory.getInstance().getNewDatasetService();
-        List<Node> networkNodes;
-        Node projectNode = new ProjectModel(LoaderUiUtils.getAweProjectName()).getRootNode();
         try {
-            networkNodes = datasetService.findAllDatasets(projectNode);
-        } catch (InvalidDatasetParameterException e) {
-            // TODO Handle InvalidDatasetParameterException
+            ProjectModel.getCurrentProjectModel();
+        } catch (AWEException e) {
+            LOGGER.error("Error while try to get Project Model", e);
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
         members = new HashMap<String, Node>();
-        for (Node node : networkNodes) {
-            String id = node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
-            if (NodeTypes.NETWORK.checkNode(node)) { //$NON-NLS-1$
-                members.put(id, node);
+        for (NetworkModel model : NetworkModel.getAllNetworkModels()) {
+            String id = model.getRootNode().getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+            if (NodeTypes.NETWORK.checkNode(model.getRootNode())) { //$NON-NLS-1$
+                members.put(id, model.getRootNode());
             } else {
                 restrictedNames.add(id);
             }

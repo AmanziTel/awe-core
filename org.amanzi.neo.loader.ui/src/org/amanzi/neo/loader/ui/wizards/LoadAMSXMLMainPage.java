@@ -17,7 +17,6 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.amanzi.neo.db.manager.NeoServiceProvider;
@@ -29,15 +28,14 @@ import org.amanzi.neo.loader.core.IValidateResult.Result;
 import org.amanzi.neo.loader.core.newsaver.IData;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
-import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.INeoConstants;
-import org.amanzi.neo.services.NeoServiceFactory;
-import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.enums.NetworkTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
-import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
+import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.impl.ProjectModel;
+import org.amanzi.neo.services.network.NetworkModel;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -60,7 +58,7 @@ import org.neo4j.graphdb.Node;
  * @author Kondratenko_Vladsialv
  */
 public class LoadAMSXMLMainPage extends LoaderPage<CommonConfigData> {
-
+    private static Logger LOGGER = Logger.getLogger(LoadAMSXMLMainPage.class);
     public static final String[] AMS_XML_FILE_NAMES = {"All supported (*.*)", "eXtensible Markup Language Files (*.xml)"};
 
     /*
@@ -225,19 +223,17 @@ public class LoadAMSXMLMainPage extends LoaderPage<CommonConfigData> {
      * @return array of GIS nodes
      */
     private String[] getRootItems(NodeTypes type) {
-        NewDatasetService datasetService = NeoServiceFactory.getInstance().getNewDatasetService();
-        List<Node> networkNodes;
         try {
-            networkNodes = datasetService.findAllDatasets(new ProjectModel(LoaderUiUtils.getAweProjectName()).getRootNode());
-        } catch (InvalidDatasetParameterException e) {
-            // TODO Handle InvalidDatasetParameterException
+            ProjectModel.getCurrentProjectModel();
+        } catch (AWEException e) {
+            LOGGER.error("Error while try to get project model", e);
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
         members = new HashMap<String, Node>();
-        for (Node node : networkNodes) {
-            String id = node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
-            if (type.checkNode(node)) { //$NON-NLS-1$
-                members.put(id, node);
+        for (NetworkModel model : NetworkModel.getAllNetworkModels()) {
+            String id = model.getRootNode().getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+            if (type.checkNode(model.getRootNode())) { //$NON-NLS-1$
+                members.put(id, model.getRootNode());
             } else {
                 restrictedNames.add(id);
             }
@@ -272,7 +268,6 @@ public class LoadAMSXMLMainPage extends LoaderPage<CommonConfigData> {
 
     @Override
     protected boolean validateConfigData(CommonConfigData configurationData) {
-        // TODO must be refactoring after change loaders
         if (fileName == null) {
             setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_FILE, DialogPage.ERROR);
             return false;
@@ -332,7 +327,6 @@ public class LoadAMSXMLMainPage extends LoaderPage<CommonConfigData> {
 
     @Override
     protected boolean validateConfigData(IConfiguration configurationData) {
-        // TODO must be refactoring after change loaders
         if (fileName == null) {
             setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_FILE, DialogPage.ERROR);
             return false;
