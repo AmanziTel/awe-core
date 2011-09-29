@@ -107,14 +107,8 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         initializeStatistics();
     }
 
-    /**
-     * Create a new network element based on <code>IDataElement element</code> object. MUST set NAME
-     * and TYPE.
-     * 
-     * @param parent
-     * @param element
-     * @return <code>DataElement</code> object, created on base of the new network node.
-     */
+   
+    @Override
     public IDataElement createElement(IDataElement parent, IDataElement element) {
         // validate
         if (parent == null) {
@@ -158,14 +152,8 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
 
     // find element
 
-    /**
-     * Find a network element, based on properties set in the <code>IDataElement</code> object.
-     * Don't forget to set TYPE property.
-     * 
-     * @param element
-     * @return <code>DataElement</code> object, created on base of the found network node, or
-     *         <code>null</code>.
-     */
+  
+    @Override
     public IDataElement findElement(IDataElement element) {
         // validate
 

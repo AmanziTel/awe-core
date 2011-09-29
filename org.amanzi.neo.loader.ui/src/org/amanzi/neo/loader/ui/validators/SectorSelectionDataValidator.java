@@ -19,15 +19,11 @@ import java.util.List;
 import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.IValidator;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
-import org.amanzi.neo.services.DatasetService;
-import org.amanzi.neo.services.NeoServiceFactory;
-import org.amanzi.neo.services.NewDatasetService;
-import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
-import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
-import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
-import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
+import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.model.INetworkModel;
+import org.amanzi.neo.services.model.IProjectModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
-import org.neo4j.graphdb.Node;
+import org.apache.log4j.Logger;
 
 /**
  * @author Kondratenko_Vladislav validate sector selection information
@@ -36,6 +32,7 @@ public class SectorSelectionDataValidator implements IValidator {
     private String[] possibleFieldSepRegexes = new String[] {"\t", ",", ";"};
     private Result result = Result.FAIL;
     private String message = "";
+    private static Logger LOGGER = Logger.getLogger(SectorSelectionDataValidator.class);
 
     @Override
     public Result getResult() {
@@ -64,24 +61,15 @@ public class SectorSelectionDataValidator implements IValidator {
             return Result.FAIL;
         }
         if (result == Result.SUCCESS) {
-            NewDatasetService newDatasetService = NeoServiceFactory.getInstance().getNewDatasetService();
-            Node root;
             try {
-                root = newDatasetService.findDataset(new ProjectModel(config.getDatasetNames().get("Project")).getRootNode(),
-                        config.getDatasetNames().get("Network"), DatasetTypes.NETWORK);
-
-                if (root != null) {
+                IProjectModel projectModel = ProjectModel.getCurrentProjectModel();
+                INetworkModel network = projectModel.findNetwork(config.getDatasetNames().get("Network"));
+                if (network != null) {
                     result = Result.SUCCESS;
                     return result;
                 }
-            } catch (InvalidDatasetParameterException e) {
-                // TODO Handle InvalidDatasetParameterException
-                throw (RuntimeException)new RuntimeException().initCause(e);
-            } catch (DatasetTypeParameterException e) {
-                // TODO Handle DatasetTypeParameterException
-                throw (RuntimeException)new RuntimeException().initCause(e);
-            } catch (DuplicateNodeNameException e) {
-                // TODO Handle DuplicateNodeNameException
+            } catch (AWEException e) {
+                LOGGER.error("Error while Sector selection data validate", e);
                 throw (RuntimeException)new RuntimeException().initCause(e);
             }
         }

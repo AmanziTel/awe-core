@@ -32,10 +32,12 @@ public class DataLoadPreferenceManager {
     public final static String MSC = "msc";
     public final static String SECTOR = "sector";
     public final static String SITE = "site";
+    public final static String AZIMUTH = "azimuth";
+    public final static String BEAMWITH = "beamwidth";
 
     public static void intializeDefault() {
         if (preferenceInitializer == null) {
-            preferenceInitializer=new DataLoadPreferenceInitializer();
+            preferenceInitializer = new DataLoadPreferenceInitializer();
         }
         preferenceInitializer.initializeDefaultPreferences();
     }
@@ -64,6 +66,8 @@ public class DataLoadPreferenceManager {
         posibleValues.put(BSC, getPossibleHeaders(DataLoadPreferences.NH_BSC));
         posibleValues.put(SITE, getPossibleHeaders(DataLoadPreferences.NH_SITE));
         posibleValues.put(SECTOR, getPossibleHeaders(DataLoadPreferences.NH_SECTOR));
+        posibleValues.put(AZIMUTH, getPossibleHeaders(DataLoadPreferences.NH_AZIMUTH));
+        posibleValues.put(BEAMWITH, getPossibleHeaders(DataLoadPreferences.NH_BEAMWIDTH));
         posibleValues.put(INeoConstants.PROPERTY_SECTOR_CI, getPossibleHeaders(DataLoadPreferences.NH_SECTOR_CI));
         posibleValues.put(INeoConstants.PROPERTY_SECTOR_LAC, getPossibleHeaders(DataLoadPreferences.NH_SECTOR_LAC));
         posibleValues.put(INeoConstants.PROPERTY_LAT_NAME, getPossibleHeaders(DataLoadPreferences.NH_LATITUDE));
