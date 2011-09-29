@@ -87,7 +87,7 @@ public class CorrelationServiceTest extends AbstractAWETest {
 
 	@After
 	public final void after() {
-		tx.success();
+		tx.failure();
 		tx.finish();
 	}
 
@@ -99,7 +99,7 @@ public class CorrelationServiceTest extends AbstractAWETest {
 	}
 
 	@Test
-	public void testCreateCorrelation() {
+	public void testCreateCorrelation() throws AWEException {
 		// create correlation
 		Node correlation = correlationServ.createCorrelation(network, dataset);
 		// node returned is not null
@@ -124,19 +124,19 @@ public class CorrelationServiceTest extends AbstractAWETest {
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void testCreateCorrelationNetworkNull() {
+	public void testCreateCorrelationNetworkNull() throws AWEException {
 		// exception
 		correlationServ.createCorrelation(null, dataset);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void testCreateCorrelationDatasetNull() {
+	public void testCreateCorrelationDatasetNull() throws AWEException {
 		// exception
 		correlationServ.createCorrelation(network, null);
 	}
 
 	@Test
-	public void testGetCorrelationRoot() {
+	public void testGetCorrelationRoot() throws AWEException {
 		// root exists
 		Node corRoot = correlationServ.createCorrelation(network, dataset);
 
@@ -148,7 +148,7 @@ public class CorrelationServiceTest extends AbstractAWETest {
 	}
 
 	@Test
-	public void testGetCorrelationRootNoRoot() {
+	public void testGetCorrelationRootNoRoot() throws AWEException {
 		// no root
 		Node testnNode = correlationServ.getCorrelationRoot(network);
 		// node returned is not null
@@ -156,7 +156,7 @@ public class CorrelationServiceTest extends AbstractAWETest {
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void testGetCorrelationRootNetworkNull() {
+	public void testGetCorrelationRootNetworkNull() throws AWEException {
 		// exception
 		correlationServ.getCorrelationRoot(null);
 	}
@@ -380,7 +380,7 @@ public class CorrelationServiceTest extends AbstractAWETest {
 	}
 
 	@Test
-	public void testGetAllCorrelatedNodes() {
+	public void testGetAllCorrelatedNodes() throws AWEException {
 		List<Node> ms = new ArrayList<Node>();
 		List<Node> mms = new ArrayList<Node>();
 		Node sector = null, file = null;
@@ -441,7 +441,7 @@ public class CorrelationServiceTest extends AbstractAWETest {
 	}
 
 	@Test
-	public void testGetAllCorrelatedNodesNoNodes() {
+	public void testGetAllCorrelatedNodesNoNodes() throws AWEException {
 		Iterable<Node> it = correlationServ.getAllCorrelatedNodes(network,
 				dataset);
 		// object returned is not null
@@ -451,7 +451,7 @@ public class CorrelationServiceTest extends AbstractAWETest {
 	}
 
 	@Test
-	public void testGetCorrelatedDatasets() {
+	public void testGetCorrelatedDatasets() throws AWEException {
 		List<Node> dss = new ArrayList<Node>();
 		for (int i = 0; i < 7; i++) {
 			try {
@@ -482,7 +482,7 @@ public class CorrelationServiceTest extends AbstractAWETest {
 	}
 
 	@Test
-	public void testGetCorrelatedNetworks() {
+	public void testGetCorrelatedNetworks() throws AWEException {
 		Node ds1 = null, ds2 = null;
 		List<Node> nws = new ArrayList<Node>();
 		try {

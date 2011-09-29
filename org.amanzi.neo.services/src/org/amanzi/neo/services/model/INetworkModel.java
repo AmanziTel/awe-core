@@ -26,7 +26,7 @@ import org.amanzi.neo.services.exceptions.AWEException;
  */
 public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IRenderableModel {
 
-    public Iterable<ICorrelationModel> getCorrelationModels();
+    public Iterable<ICorrelationModel> getCorrelationModels() throws AWEException;
 
     public INetworkType getNetworkType();
     
@@ -59,5 +59,5 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
      *
      * @return list of Selection Models related to current network
      */
-    public Iterable<ISelectionModel> getAllSelectionModels();
+    public Iterable<ISelectionModel> getAllSelectionModels() throws AWEException;
 }

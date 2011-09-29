@@ -17,6 +17,7 @@ import java.io.File;
 
 import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceInitializer;
+import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.DynamicRelationshipType;
@@ -47,6 +48,9 @@ public abstract class AbstractAWETest {
         graphDatabaseService = new EmbeddedGraphDatabase(getDbLocation());
         NeoServiceProviderUi.initProvider(graphDatabaseService, getDbLocation());
         DatabaseManager.setDatabaseAndIndexServices(graphDatabaseService, NeoServiceProviderUi.getProvider().getIndexService());
+        
+        NeoServiceFactory.getInstance().clear();
+        
         LOGGER.info("Database was successfully initialized");
     }
     

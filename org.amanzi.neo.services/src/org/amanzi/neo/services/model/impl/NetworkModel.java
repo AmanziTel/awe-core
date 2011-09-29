@@ -266,7 +266,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     }
 
     @Override
-    public Iterable<ICorrelationModel> getCorrelationModels() {
+    public Iterable<ICorrelationModel> getCorrelationModels() throws AWEException {
         LOGGER.info("getCorrelationModels()");
 
         Node network = getRootNode();
@@ -335,12 +335,13 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
 
     @Override
     public ISelectionModel createSelectionModel(String name) throws AWEException {
+        LOGGER.info("New SelectionModel <" + name + "> created for Network <" + this.name + ">");
         return new SelectionModel(rootNode, name);
     }
 
     @Override
     public ISelectionModel getSelectionModel(String name) throws AWEException {
-        LOGGER.info("Trying to get Selection model with name <" + name + ">");
+        LOGGER.debug("Trying to get Selection model with name <" + name + ">");
         
         ISelectionModel result = findSelectionModel(name);
         
@@ -352,7 +353,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     }
 
     @Override
-    public Iterable<ISelectionModel> getAllSelectionModels() {
+    public Iterable<ISelectionModel> getAllSelectionModels() throws AWEException {
         return null;
     }
 

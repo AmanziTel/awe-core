@@ -13,6 +13,8 @@
 
 package org.amanzi.neo.services.model;
 
+import org.amanzi.neo.services.exceptions.AWEException;
+
 /**
  * <p>
  * The interface describes model that can be correlated with other models (basically network
@@ -29,12 +31,12 @@ public interface ICorrelatableModel {
      * 
      * @return
      */
-    public Iterable<ICorrelationModel> getCorrelatedModels();
+    public Iterable<ICorrelationModel> getCorrelatedModels() throws AWEException;
 
     /**
      * @param correlationModelName the name of correlation model to find
      * @return a correlation model describing relations of current model with some other, or
      *         <code>null</code>.
      */
-    public ICorrelationModel getCorrelatedModel(String correlationModelName);
+    public ICorrelationModel getCorrelatedModel(String correlationModelName) throws AWEException;
 }

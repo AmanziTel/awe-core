@@ -26,9 +26,6 @@ import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.model.ICorrelationModel;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDriveModel;
-import org.amanzi.neo.services.model.impl.CorrelationModel;
-import org.amanzi.neo.services.model.impl.DataElement;
-import org.amanzi.neo.services.model.impl.DriveModel;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveRelationshipTypes;
 import org.amanzi.testing.AbstractAWETest;
@@ -56,6 +53,7 @@ public class DriveModelTest extends AbstractAWETest {
 	public static void setUpBeforeClass() throws Exception {
 		clearDb();
 		initializeDb();
+		
 		LOGGER.info("Database created in folder " + databasePath);
 		prServ = NeoServiceFactory.getInstance().getNewProjectService();
 		dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
@@ -183,15 +181,14 @@ public class DriveModelTest extends AbstractAWETest {
 			fail();
 		}
 		// add first virtual dataset
-		DriveModel virtual = null;
 		try {
-			virtual = dm.addVirtualDataset("name", DriveTypes.values()[0]);
+			dm.addVirtualDataset("name", DriveTypes.values()[0]);
 		} catch (AWEException e) {
 			LOGGER.error("Could not add virtual dataset", e);
 			fail();
 		}
 		// exception
-		virtual = dm.addVirtualDataset("name", DriveTypes.values()[0]);
+		dm.addVirtualDataset("name", DriveTypes.values()[0]);
 	}
 
 	@Test(expected = IllegalNodeDataException.class)
@@ -790,7 +787,7 @@ public class DriveModelTest extends AbstractAWETest {
 	}
 
 	@Test
-	public void testGetCorrelatedModels() {
+	public void testGetCorrelatedModels() throws AWEException {
 		DriveModel dm = null;
 		List<Node> networks = new ArrayList<Node>();
 		try {
@@ -817,7 +814,7 @@ public class DriveModelTest extends AbstractAWETest {
 	}
 
 	@Test
-	public void testGetCorrelatedModel() {
+	public void testGetCorrelatedModel() throws AWEException {
 		DriveModel dm = null;
 		List<Node> networks = new ArrayList<Node>();
 		try {

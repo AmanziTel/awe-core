@@ -86,6 +86,16 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         public String getId() {
             return name().toLowerCase();
         }
+        
+        public static DriveNodeTypes findById(String id) {
+            for (DriveNodeTypes driveNodeType : values()) {
+                if (driveNodeType.getId().equals(id)) {
+                    return driveNodeType;
+                }
+            }
+            
+            return null;
+        }
 
     }
 
@@ -472,15 +482,15 @@ public class DriveModel extends RenderableModel implements IDriveModel {
      * @throws DatabaseException if errors occur in database
      */
     public IDataElement getFile(String name) throws DatabaseException {
-        Node result = ((DataElement)findFile(name)).getNode();
+        IDataElement result = ((DataElement)findFile(name));
         if (result == null) {
             try {
-                result = ((DataElement)addFile(new File(name))).getNode();
+                result = ((DataElement)addFile(new File(name)));
             } catch (DuplicateNodeNameException e) {
                 // impossible
             }
         }
-        return new DataElement(result);
+        return result;
     }
 
     /**
@@ -517,7 +527,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     }
 
     @Override
-    public Iterable<ICorrelationModel> getCorrelatedModels() {
+    public Iterable<ICorrelationModel> getCorrelatedModels() throws AWEException {
         List<ICorrelationModel> result = new ArrayList<ICorrelationModel>();
         for (Node network : crServ.getCorrelatedNetworks(getRootNode())) {
             result.add(new CorrelationModel(network, getRootNode()));
@@ -526,7 +536,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     }
 
     @Override
-    public ICorrelationModel getCorrelatedModel(String correlationModelName) {
+    public ICorrelationModel getCorrelatedModel(String correlationModelName) throws AWEException {
         ICorrelationModel result = null;
         for (Node network : crServ.getCorrelatedNetworks(getRootNode())) {
             if (network.getProperty(NewAbstractService.NAME, StringUtils.EMPTY).equals(correlationModelName)) {
@@ -615,5 +625,5 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     @Override
     public INodeType getType() {
         return primaryType;
-    }
+    }    
 }

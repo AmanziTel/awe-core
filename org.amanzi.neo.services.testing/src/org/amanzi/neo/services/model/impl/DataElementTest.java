@@ -1,13 +1,8 @@
 package org.amanzi.neo.services.model.impl;
 
-import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.testing.AbstractAWETest;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
 

@@ -35,7 +35,7 @@ public class ProjectServiceTest extends AbstractAWETest {
 		clearDb();
 		initializeDb();
 		LOGGER.info("Database created in folder " + databasePath);
-		projectService = NeoServiceFactory.getInstance().getNewProjectService();
+		projectService = new ProjectService(graphDatabaseService);
 	}
 
 	@AfterClass

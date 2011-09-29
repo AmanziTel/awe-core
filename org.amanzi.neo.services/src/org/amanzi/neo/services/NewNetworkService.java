@@ -27,6 +27,7 @@ import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.index.IndexHits;
+import org.neo4j.graphdb.traversal.Evaluators;
 import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.kernel.Traversal;
 
@@ -82,7 +83,9 @@ public class NewNetworkService extends NewAbstractService {
      * Traversal Description to find out all Selection List Nodes
      */
     protected final static TraversalDescription ALL_SELECTION_LISTS_TRAVERSER = 
-            Traversal.description().breadthFirst().relationships(NetworkRelationshipTypes.SELECTION_LIST);
+            Traversal.description().breadthFirst().
+                        relationships(NetworkRelationshipTypes.SELECTION_LIST).
+                        evaluator(Evaluators.excludeStartPosition());
     
     public NewNetworkService() {
         super();
@@ -413,6 +416,26 @@ public class NewNetworkService extends NewAbstractService {
         
         return result;
     }
-    
+
+    /**
+     * Returns all Selection Nodes related to Network
+     *
+     * @param networkNode Network node
+     * @return
+     */
+    public Iterable<Node> getAllSelectionModelsOfNetwork(Node networkNode) {
+        LOGGER.debug("start getAllSelectionModelsOfNetwork(<" + networkNode + ">)");
+        
+        if (networkNode == null) {
+            LOGGER.error("Network Node is null");
+            throw new IllegalArgumentException("NetworkNode is null");
+        }
+        
+        Iterable<Node> result = ALL_SELECTION_LISTS_TRAVERSER.traverse(networkNode).nodes();
+        
+        LOGGER.debug("finish getAllSelectionModelsOfNetwork()");
+        
+        return result;
+    }
     
 }

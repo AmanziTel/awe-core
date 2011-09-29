@@ -1258,7 +1258,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     }
 
     @Test
-    public void checkNumberOfFoundedSelectionNodes() throws AWEException {
+    public void checkFoundedSelectionNodes() throws AWEException {
         Transaction tx = graphDatabaseService.beginTx();
         Node networkNode = graphDatabaseService.createNode();
 
@@ -1304,5 +1304,67 @@ public class NewNetworkServiceTest extends AbstractAWETest {
         network.createRelationshipTo(selectionNode, NetworkRelationshipTypes.SELECTION_LIST);
 
         return selectionNode;
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToFindAllSelectionModelsWithoutNetworkNode() throws AWEException {
+        networkService.getAllSelectionModelsOfNetwork(null);
+    }
+    
+    @Test
+    public void tryToFindAllSelectionModelsWithNetworkWithoutSelecdtionLists() throws AWEException {
+        Transaction tx = graphDatabaseService.beginTx();
+        Node networkNode = graphDatabaseService.createNode();
+        tx.success();
+        tx.finish();
+        
+        Iterable<Node> result = networkService.getAllSelectionModelsOfNetwork(networkNode);
+        
+        Assert.assertNotNull("Result of search should not be null", result);
+        Assert.assertFalse("Result should not contain any value", result.iterator().hasNext());
+    }
+    
+    @Test
+    public void checkNumberOfFoundedSelectionNodes() throws AWEException {
+        Transaction tx = graphDatabaseService.beginTx();
+        Node networkNode1 = graphDatabaseService.createNode();
+
+        Node[] selectionNodesForNetwork1 = new Node[5];
+        for (int i = 0; i < 5; i++) {
+            selectionNodesForNetwork1[i] = createSelectionNode(networkNode1, DEFAULT_SELECTION_LIST_NAME + i);
+        }
+        
+        Node networkNode2 = graphDatabaseService.createNode();
+        
+        Node[] selectionNodesForNetwork2 = new Node[10];
+        for (int i = 0; i < 10; i++) {
+            selectionNodesForNetwork2[i] = createSelectionNode(networkNode2, DEFAULT_SELECTION_LIST_NAME + i);
+        }
+
+        tx.success();
+        tx.finish();
+
+        Iterable<Node> selection1 = networkService.getAllSelectionModelsOfNetwork(networkNode1);
+        ArrayList<Node> selectionList1 = new ArrayList<Node>();
+        for (Node selectionNode : selection1) {
+            selectionList1.add(selectionNode);
+        }
+        
+        Iterable<Node> selection2 = networkService.getAllSelectionModelsOfNetwork(networkNode2);
+        ArrayList<Node> selectionList2 = new ArrayList<Node>();
+        for (Node selectionNode : selection2) {
+            selectionList2.add(selectionNode);
+        }
+        
+        Assert.assertEquals("Unexpected number of founded selection lists", 5, selectionList1.size());
+        Assert.assertEquals("Unexpected number of founded selection lists", 10, selectionList2.size());
+        
+        for (int i = 0; i < 5; i++) {
+            Assert.assertTrue("Selection list <" + DEFAULT_SELECTION_LIST_NAME + i + "> not found", selectionList1.contains(selectionNodesForNetwork1[i]));
+        }
+        
+        for (int i = 0; i < 10; i++) {
+            Assert.assertTrue("Selection list <" + DEFAULT_SELECTION_LIST_NAME + i + "> not found", selectionList2.contains(selectionNodesForNetwork2[i]));
+        }
     }
 }

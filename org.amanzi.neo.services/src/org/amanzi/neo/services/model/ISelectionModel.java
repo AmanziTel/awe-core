@@ -22,7 +22,7 @@ package org.amanzi.neo.services.model;
  * @author Kondratneko_Vladislav
  * @since 1.0.0
  */
-public interface ISelectionModel extends IModel {
+public interface ISelectionModel extends IDataModel {
 
     /**
      * find sector by name and create relation ship from rootNode to each node from iterator
@@ -30,4 +30,11 @@ public interface ISelectionModel extends IModel {
      * @param sectorElement
      */
     public void linkToSector(String name);
+    
+    /**
+     * Returns number of Nodes in current Selection Model
+     *
+     * @return
+     */
+    public int getSelectedNodesCount();
 }

@@ -165,7 +165,7 @@ public class NewDatasetService extends NewAbstractService {
         @Override
         public Evaluation evaluate(Path arg0) {
             if (super.evaluate(arg0).includes()) {
-                if (driveType == null || driveType.getId().equals(arg0.endNode().getProperty(DRIVE_TYPE, ""))) {
+                if (driveType == null || driveType.getId().equals(arg0.endNode().getProperty(DRIVE_TYPE, StringUtils.EMPTY))) {
                     return Evaluation.INCLUDE_AND_CONTINUE;
                 }
                 return Evaluation.EXCLUDE_AND_CONTINUE;
