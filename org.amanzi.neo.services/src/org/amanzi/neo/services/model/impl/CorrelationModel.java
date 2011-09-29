@@ -16,11 +16,13 @@ package org.amanzi.neo.services.model.impl;
 import org.amanzi.neo.services.CorrelationService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.model.ICorrelationModel;
+import org.amanzi.neo.services.model.IDataElement;
+import org.amanzi.neo.services.model.impl.DataModel.DataElementIterable;
 import org.neo4j.graphdb.Node;
 
 /**
- * TODO Purpose of
  * <p>
+ * Correlation model describes relationships between network elements and dataset nodes.
  * </p>
  * 
  * @author grigoreva_a
@@ -33,6 +35,12 @@ public class CorrelationModel extends AbstractModel implements ICorrelationModel
     private Node network = null;
     private Node dataset = null;
 
+    /**
+     * Creates correlation model using network and dataset nodes.
+     * 
+     * @param network a network root node
+     * @param dataset a dataset root node
+     */
     public CorrelationModel(Node network, Node dataset) {
         // validate parameters
         if (network == null) {
@@ -47,6 +55,35 @@ public class CorrelationModel extends AbstractModel implements ICorrelationModel
         this.rootNode = crServ.createCorrelation(network, dataset);
     }
 
+    /**
+     * Creates correlation model using <code>DataElement</code>s, containing network and dataset
+     * nodes.
+     * 
+     * @param networkElement <code>DataElement</code>, containing a network root node
+     * @param datasetElement <code>DataElement</code>, containing a dataset root node
+     */
+    public CorrelationModel(IDataElement networkElement, IDataElement datasetElement) {
+        // validate parameters
+        if (networkElement == null) {
+            throw new IllegalArgumentException("Network is null.");
+        }
+        Node networkNode = ((DataElement)networkElement).getNode();
+        if (networkNode == null) {
+            throw new IllegalArgumentException("Network node is null.");
+        }
+        if (datasetElement == null) {
+            throw new IllegalArgumentException("Dataset is null.");
+        }
+        Node datasetNode = ((DataElement)datasetElement).getNode();
+        if (datasetNode == null) {
+            throw new IllegalArgumentException("Dataset node is null.");
+        }
+
+        this.network = networkNode;
+        this.dataset = datasetNode;
+        this.rootNode = crServ.createCorrelation(networkNode, datasetNode);
+    }
+
     @Override
     public Node getNetwork() {
 
@@ -59,13 +96,13 @@ public class CorrelationModel extends AbstractModel implements ICorrelationModel
     }
 
     @Override
-    public Iterable<Node> getSectors() {
-        return crServ.getAllCorrelatedSectors(network, dataset);
+    public Iterable<IDataElement> getSectors() {
+        return new DataElementIterable(crServ.getAllCorrelatedSectors(network, dataset));
     }
 
     @Override
-    public Iterable<Node> getMeasurements() {
-        return crServ.getAllCorrelatedNodes(network, dataset);
+    public Iterable<IDataElement> getMeasurements() {
+        return new IDataElement(crServ.getAllCorrelatedNodes(network, dataset));
     }
 
     @Override

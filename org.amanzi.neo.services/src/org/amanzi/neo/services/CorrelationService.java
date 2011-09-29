@@ -55,6 +55,14 @@ public class CorrelationService extends NewAbstractService {
 
     public enum CorrelationNodeTypes implements INodeType {
         CORRELATION, PROXY;
+
+        /**
+         * The classes implementing <code>INodeType</code> must be registered in <code>NodeTypeManager</code>.
+         */
+        static {
+            NodeTypeManager.registerNodeType(CorrelationNodeTypes.class);
+        }
+
         @Override
         public String getId() {
             return name().toLowerCase();
@@ -87,7 +95,7 @@ public class CorrelationService extends NewAbstractService {
 
         Node result = findCorrelationRoot(network, dataset);
         if (result == null) {
-            //TODO: LN: do not use field for transaction!!!!!!!!
+            // TODO: LN: do not use field for transaction!!!!!!!!
             tx = graphDb.beginTx();
             try {
                 result = getCorrelationRoot(network);
@@ -275,8 +283,8 @@ public class CorrelationService extends NewAbstractService {
                 .relationships(Correlations.CORRELATED, Direction.OUTGOING).evaluator(Evaluators.excludeStartPosition());
     }
 
-    //TODO: LN: do not use List - it will slow down work of this method 
-    //better to return Iterator of Nodes
+    // TODO: LN: do not use List - it will slow down work of this method
+    // better to return Iterator of Nodes
     public Iterable<Node> getAllCorrelatedSectors(Node network, Node dataset) {
         LOGGER.info("getAllCorrelatedSectors(" + network.getId() + ", " + dataset.getId() + ")");
 
@@ -318,7 +326,7 @@ public class CorrelationService extends NewAbstractService {
                 network.createRelationshipTo(result, Correlations.CORRELATION);
                 tx.success();
             } catch (DatabaseException e) {
-                //TODO: LN: do not throw Runtime Exception
+                // TODO: LN: do not throw Runtime Exception
                 // TODO Handle DatabaseException
                 throw (RuntimeException)new RuntimeException().initCause(e);
             } finally {

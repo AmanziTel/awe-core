@@ -15,13 +15,23 @@ package org.amanzi.neo.services.enums;
 
 import java.io.Serializable;
 
+import org.amanzi.neo.services.NodeTypeManager;
+
 /**
  * <p>
- *Interface for node type
+ * Interface for node type The classes implementing <code>INodeType</code> must be registered in
+ * <code>NodeTypeManager</code>.
  * </p>
+ * 
+ * 
+ * Example:<br>
+ * static {<br>
+ *     NodeTypeManager.registerNodeType(ImplementNodeType.class);<br> 
+ * }
+ * 
  * @author TsAr
  * @since 1.0.0
  */
-public interface INodeType extends Serializable{
+public interface INodeType extends Serializable {
     String getId();
 }

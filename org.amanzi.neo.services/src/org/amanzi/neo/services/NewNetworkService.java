@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.services;
 
+import org.amanzi.neo.services.CorrelationService.CorrelationNodeTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
@@ -53,13 +54,22 @@ public class NewNetworkService extends NewAbstractService {
      */
     public enum NetworkElementNodeType implements INodeType {
         NETWORK, BSC, SITE, SECTOR, CITY, MSC, SELECTION_LIST_ROOT;
+
+        /**
+         * The classes implementing <code>INodeType</code> must be registered in
+         * <code>NodeTypeManager</code>.
+         */
+        static {
+            NodeTypeManager.registerNodeType(NetworkElementNodeType.class);
+        }
+
         @Override
         public String getId() {
             return name().toLowerCase();
         }
 
     }
-    
+
     /**
      * Enum with RelationshipTypes specific for Network Structure
      * 
@@ -69,7 +79,7 @@ public class NewNetworkService extends NewAbstractService {
     public enum NetworkRelationshipTypes implements RelationshipType {
         SELECTION_LIST;
     }
-    
+
     public NewNetworkService() {
         super();
         datasetService = new NewDatasetService();
@@ -99,7 +109,7 @@ public class NewNetworkService extends NewAbstractService {
         if (parent == null) {
             throw new IllegalArgumentException("Parent is null.");
         }
-        //TODO: LN: use StringUtils.EMPTY
+        // TODO: LN: use StringUtils.EMPTY
         if ((indexName == null) || (indexName.equals(""))) {
             throw new IllegalArgumentException("indexName is null or empty");
         }
@@ -200,7 +210,7 @@ public class NewNetworkService extends NewAbstractService {
         if ((indexName == null) || (indexName.equals(""))) {
             throw new IllegalArgumentException("indexName is null or empty");
         }
-        //TODO: LN: incorrect condition - you have now <Name> AND <CI+LAC>, but should have OR
+        // TODO: LN: incorrect condition - you have now <Name> AND <CI+LAC>, but should have OR
         if (((name == null) || (name.equals(""))) && ((ci == null) || (ci.equals("")) || (lac == null) || (lac.equals("")))) {
             throw new IllegalNodeDataException("Name or CI+LAC must be set");
         }
@@ -254,7 +264,7 @@ public class NewNetworkService extends NewAbstractService {
 
         // Find element by index
         Node result = null;
-        //TODO: LN: use index instead of index name
+        // TODO: LN: use index instead of index name
         Index<Node> index = graphDb.index().forNodes(indexName);
 
         if (!((ci == null) || (ci.equals("")))) {
@@ -310,10 +320,10 @@ public class NewNetworkService extends NewAbstractService {
 
         return CHILD_ELEMENT_TRAVERSAL_DESCRIPTION.evaluator(new FilterNodesByType(elementType)).traverse(parent).nodes();
     }
-    
+
     /**
      * Creates Node for a Selection List structure
-     *
+     * 
      * @param networkNode root Network Node
      * @param selectionListName name of selection list
      * @return created root node for selection list structure
@@ -321,13 +331,13 @@ public class NewNetworkService extends NewAbstractService {
     public Node createSelectionList(Node networkNode, String selectionListName) {
         return null;
     }
-    
+
     /**
      * Searches for a Selection List root Node
-     *
+     * 
      * @param networkNode root Network Node
      * @param selectionListName name of Selection List to search
-     * @return root node of selection list structure or null if it's not found 
+     * @return root node of selection list structure or null if it's not found
      */
     public Node findSelectionList(Node networkNode, String selectionListName) {
         return null;

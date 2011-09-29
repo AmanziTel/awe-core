@@ -17,8 +17,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.NewNetworkService;
+import org.amanzi.neo.services.NodeTypeManager;
+import org.amanzi.neo.services.CorrelationService.CorrelationNodeTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataElement;
@@ -53,8 +56,7 @@ public class NodeToNodeRelationshipModel extends AbstractModel implements INodeT
 
     /**
      * <p>
-     * Enum describing utility relationships in <code>NodeToNodeRelationshipModel</code> class. TODO
-     * rename?
+     * Enum describing utility relationships in <code>NodeToNodeRelationshipModel</code> class.
      * </p>
      * 
      * @author grigoreva_a
@@ -92,7 +94,15 @@ public class NodeToNodeRelationshipModel extends AbstractModel implements INodeT
      */
     protected enum NodeToNodeTypes implements INodeType {
         NODE2NODE, PROXY;
-        
+
+        /**
+         * The classes implementing <code>INodeType</code> must be registered in
+         * <code>NodeTypeManager</code>.
+         */
+        static {
+            NodeTypeManager.registerNodeType(NodeToNodeTypes.class);
+        }
+
         @Override
         public String getId() {
             return name().toLowerCase();
@@ -264,13 +274,12 @@ public class NodeToNodeRelationshipModel extends AbstractModel implements INodeT
             return new DataElementIterable(getConnectedTraversalDescription().relationships(relType, Direction.OUTGOING)
                     .traverse(proxy).nodes());
         } else {
-            //TODO: LN: move TraversalDescriptions to Service and make it as Constant, not a method
-            return new DataElementIterable(Traversal.description().evaluator(Evaluators.fromDepth(2))
-                    .evaluator(Evaluators.toDepth(1)).traverse(sourceNode).nodes());
+            // TODO: LN: move TraversalDescriptions to Service and make it as Constant, not a method
+            return new DataElementIterable(NewAbstractService.EMPTY_TRAVERSAL.traverse(sourceNode).nodes());
         }
     }
 
-    //TODO: LN: move TraversalDescriptions to Service
+    // TODO: LN: move TraversalDescriptions to Service
     protected TraversalDescription getConnectedTraversalDescription() {
         return Traversal.description().breadthFirst().relationships(N2NRelationships.N2N_REL, Direction.INCOMING)
                 .evaluator(Evaluators.excludeStartPosition()).evaluator(dsServ.new FilterNodesByType(nodeType));

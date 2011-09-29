@@ -32,6 +32,7 @@ import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.traversal.Evaluation;
 import org.neo4j.graphdb.traversal.Evaluator;
+import org.neo4j.graphdb.traversal.Evaluators;
 import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.kernel.Traversal;
 
@@ -44,6 +45,9 @@ import org.neo4j.kernel.Traversal;
  * @since 1.0.0
  */
 public abstract class NewAbstractService {
+    public static final TraversalDescription EMPTY_TRAVERSAL = Traversal.description().evaluator(Evaluators.fromDepth(2))
+            .evaluator(Evaluators.toDepth(1));
+
     public final static String TYPE = "type";
     public final static String NAME = "name";
     public static final String DATASET_ID = "dataset";
