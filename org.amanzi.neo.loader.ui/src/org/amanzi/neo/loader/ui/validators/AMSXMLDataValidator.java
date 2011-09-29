@@ -22,17 +22,13 @@ import java.util.List;
 
 import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.IValidator;
-import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
-import org.amanzi.neo.services.DatasetService;
-import org.amanzi.neo.services.NeoServiceFactory;
-import org.amanzi.neo.services.NewDatasetService;
-import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.NewDatasetService.DriveTypes;
-import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
-import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
-import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
+import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.model.IDriveModel;
+import org.amanzi.neo.services.model.INetworkModel;
+import org.amanzi.neo.services.model.IProjectModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
-import org.neo4j.graphdb.Node;
+import org.apache.log4j.Logger;
 
 /**
  * IValidator implementation contain methods for validation ams xml data
@@ -42,6 +38,7 @@ import org.neo4j.graphdb.Node;
 public class AMSXMLDataValidator implements IValidator {
     Result result = Result.FAIL;
     String message = "";
+    private static Logger LOGGER = Logger.getLogger(AMSXMLDataValidator.class);
 
     /**
      * check correct file extension
@@ -85,15 +82,14 @@ public class AMSXMLDataValidator implements IValidator {
         if (config.getDatasetNames().get("Project") == null) {
             return Result.FAIL;
         }
-        Node projectNode = new ProjectModel(config.getDatasetNames().get("Project")).getRootNode();
+
         if (result == Result.SUCCESS) {
-            NewDatasetService newDatasetService = NeoServiceFactory.getInstance().getNewDatasetService();
-            Node network;
-            Node dataset;
+            INetworkModel network;
+            IDriveModel dataset;
             try {
-                network = newDatasetService.findDataset(projectNode, config.getDatasetNames().get("Network"), DatasetTypes.NETWORK);
-                dataset = newDatasetService.findDataset(projectNode, config.getDatasetNames().get("Dataset"), DatasetTypes.DRIVE,
-                        DriveTypes.AMS);
+                IProjectModel projectModel = ProjectModel.getCurrentProjectModel();
+                network = projectModel.findNetwork(config.getDatasetNames().get("Network"));
+                dataset = projectModel.findDataset(config.getDatasetNames().get("Dataset"), DriveTypes.AMS);
                 if (network == null && dataset != null) {
                     message = String.format("Drive node %s is already exists in db ", config.getDatasetNames().get("Dataset"));
                     return Result.FAIL;
@@ -108,14 +104,8 @@ public class AMSXMLDataValidator implements IValidator {
                     result = Result.SUCCESS;
                     return result;
                 }
-            } catch (InvalidDatasetParameterException e) {
-                // TODO Handle InvalidDatasetParameterException
-                throw (RuntimeException)new RuntimeException().initCause(e);
-            } catch (DatasetTypeParameterException e) {
-                // TODO Handle DatasetTypeParameterException
-                throw (RuntimeException)new RuntimeException().initCause(e);
-            } catch (DuplicateNodeNameException e) {
-                // TODO Handle DuplicateNodeNameException
+            } catch (AWEException e) {
+                LOGGER.error("ERROR while ams xml data validate ", e);
                 throw (RuntimeException)new RuntimeException().initCause(e);
             }
 
