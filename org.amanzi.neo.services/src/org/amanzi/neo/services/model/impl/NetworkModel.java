@@ -26,6 +26,7 @@ import org.amanzi.neo.services.NewNetworkService;
 import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
 import org.amanzi.neo.services.model.ICorrelationModel;
@@ -36,6 +37,7 @@ import org.amanzi.neo.services.model.ISelectionModel;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.geotools.referencing.CRS;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -91,9 +93,10 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
 
         Node network = ((DataElement)rootElement).getNode();
         if (network == null) {
-            // TODO: i think it sucks 
-            //TODO: LN: yeh, baby, remove hard-coded string and make next parameters in constructor for this action:
-            // ProjectNode (or ProjectModel) 
+            // TODO: i think it sucks
+            // TODO: LN: yeh, baby, remove hard-coded string and make next parameters in constructor
+            // for this action:
+            // ProjectNode (or ProjectModel)
             // NetworkName
             try {
                 //
@@ -108,7 +111,6 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         initializeStatistics();
     }
 
-   
     @Override
     public IDataElement createElement(IDataElement parent, IDataElement element) {
         // validate
@@ -153,7 +155,6 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
 
     // find element
 
-  
     @Override
     public IDataElement findElement(IDataElement element) {
         // validate
@@ -312,21 +313,20 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     void setNetworkService(NewNetworkService nwServ) {
         this.nwServ = nwServ;
     }
-    
+
     public static List<INetworkModel> findAllNetworkModels() {
         List<INetworkModel> networkModels = new ArrayList<INetworkModel>();
 
         List<Node> allNetworkNodes = null;
         try {
-            allNetworkNodes = NeoServiceFactory.getInstance().getNewDatasetService().
-                    findAllDatasetsByType(DatasetTypes.NETWORK);
+            allNetworkNodes = NeoServiceFactory.getInstance().getNewDatasetService().findAllDatasetsByType(DatasetTypes.NETWORK);
         } catch (InvalidDatasetParameterException e) {
             LOGGER.error(e);
         }
         for (Node networkRoot : allNetworkNodes) {
             networkModels.add(new NetworkModel(networkRoot));
         }
-        
+
         return networkModels;
     }
 
@@ -348,13 +348,13 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     @Override
     public ISelectionModel getSelectionModel(String name) throws AWEException {
         LOGGER.debug("Trying to get Selection model with name <" + name + ">");
-        
+
         ISelectionModel result = findSelectionModel(name);
-        
+
         if (result == null) {
             result = createSelectionModel(name);
         }
-        
+
         return result;
     }
 
@@ -363,4 +363,18 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         return null;
     }
 
+    @Override
+    public void changeRelationship(IDataElement newParentElement, IDataElement currentNode) {
+        Node curentNode;
+        Node newParentNode;
+        try {
+            curentNode = ((DataElement)currentNode).getNode();
+            newParentNode = ((DataElement)newParentElement).getNode();
+        } catch (NullPointerException e) {
+            LOGGER.error("couldnt extract node from dataelement", e);
+            return;
+        }
+        curentNode.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).delete();
+        newParentNode.createRelationshipTo(curentNode, NetworkRelationshipTypes.CHILD);
+    }
 }

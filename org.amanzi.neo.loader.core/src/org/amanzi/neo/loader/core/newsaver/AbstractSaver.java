@@ -135,7 +135,7 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
         NeoServiceProvider.getProvider().commit();
         actionCount = 0;
     }
-    
+
     protected IProjectModel getActiveProject() throws AWEException {
         return ProjectModel.getCurrentProjectModel();
     }

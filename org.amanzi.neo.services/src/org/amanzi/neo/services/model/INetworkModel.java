@@ -30,13 +30,22 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
     public INetworkType getNetworkType();
 
     /**
+     * Remove current INCOMING CHILD relationship from current node and create new OUTGOING CHILD
+     * relationship from newParentElement to currentNode
+     * 
+     * @param newParentElement
+     * @param currentNode
+     */
+    public void changeRelationship(IDataElement newParentElement, IDataElement currentNode);
+
+    /**
      * Searches for a Selection Model by it's name
      * 
      * @param name name of selection model
      * @return instance of SelectionModel, or null if it's not found
      */
     public ISelectionModel findSelectionModel(String name) throws AWEException;
-    
+
     /**
      * Creates new Selection Model
      * 
@@ -44,7 +53,7 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
      * @return created Selection Model
      */
     public ISelectionModel createSelectionModel(String name) throws AWEException;
-    
+
     /**
      * Try to find a Selection Model by it's name, Creates new one if it's not found
      * 
@@ -52,7 +61,7 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
      * @return instance of Selection Model
      */
     public ISelectionModel getSelectionModel(String name) throws AWEException;
-    
+
     /**
      * Returns all selection models of this Network
      * 

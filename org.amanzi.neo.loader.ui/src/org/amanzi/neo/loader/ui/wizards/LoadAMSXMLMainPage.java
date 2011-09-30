@@ -32,8 +32,9 @@ import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.NetworkTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
-import org.amanzi.neo.services.network.NetworkModel;
+import org.amanzi.neo.services.model.impl.NetworkModel;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.DialogPage;
@@ -230,7 +231,7 @@ public class LoadAMSXMLMainPage extends LoaderPage<CommonConfigData> {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
         members = new HashMap<String, Node>();
-        for (NetworkModel model : NetworkModel.getAllNetworkModels()) {
+        for (INetworkModel model : NetworkModel.findAllNetworkModels()) {
             String id = model.getRootNode().getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
             if (type.checkNode(model.getRootNode())) { //$NON-NLS-1$
                 members.put(id, model.getRootNode());

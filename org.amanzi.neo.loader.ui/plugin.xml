@@ -376,6 +376,20 @@
             	class="org.amanzi.neo.loader.core.newsaver.SectorSelectionSaver"
             />
       </newloader>
+       <newloader
+             gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
+             id="CNAExport"
+             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoaderNew"
+             loader_data_type="CNA"
+             loader_name="Ericsson CNA export"
+             loader_type="CNA loader"
+             parser="org.amanzi.neo.loader.core.newparser.CommonCSVParser"
+             validator="org.amanzi.neo.loader.ui.validators.CNAValidator">
+               <saver 
+                id="org.amanzi.neo.loader.core.newsaver.CNASaver"
+            	class="org.amanzi.neo.loader.core.newsaver.CNASaver"
+            />
+      </newloader>
    </extension>
 
 </plugin>

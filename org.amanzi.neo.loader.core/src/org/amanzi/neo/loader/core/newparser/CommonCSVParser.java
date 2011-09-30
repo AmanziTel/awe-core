@@ -47,7 +47,7 @@ public class CommonCSVParser<T1 extends ISaver<IModel, CSVContainer, T2>, T2 ext
     protected CSVParser parser;
     protected int MINIMAL_SIZE = 2;
     protected Character delimeters;
-    protected String[] possibleFieldSepRegexes = new String[] {"\t", ",", ";"};
+    protected String[] possibleFieldSepRegexes = new String[] {"\t", ",", ";"," ","\n"};
     protected Character quoteCharacter = 0;
     private CSVContainer container;
     private CountingFileInputStream is;

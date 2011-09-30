@@ -21,6 +21,7 @@ import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceManager;
 import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.impl.DataElement;
@@ -254,7 +255,7 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
             rootElement.put(INeoConstants.PROPERTY_NAME_NAME, configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK));
             model = getActiveProject().createNetwork(configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK));
             rootDataElement = new DataElement(model.getRootNode());
-        } catch (Exception e) {
+        } catch (AWEException e) {
             LOGGER.error("Exception on creating root Model", e);
             throw new RuntimeException(e);
         }
@@ -262,29 +263,20 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
 
     @Override
     public void saveElement(CSVContainer dataElement) {
-
         openOrReopenTx();
+        CSVContainer container = dataElement;
+        if (fileSynonyms.isEmpty()) {
+            headers = container.getHeaders();
+            makeAppropriationWithSynonyms(headers);
+            makeIndexAppropriation();
+            lineCounter++;
+        } else {
+            lineCounter++;
+            List<String> value = container.getValues();
+            createMSC(value);
 
-        try {
-            CSVContainer container = dataElement;
-            if (fileSynonyms.isEmpty()) {
-                headers = container.getHeaders();
-                makeAppropriationWithSynonyms(headers);
-                makeIndexAppropriation();
-                lineCounter++;
-            } else {
-                lineCounter++;
-                List<String> value = container.getValues();
-                createMSC(value);
-
-                markTxAsSuccess();
-                increaseActionCount();
-
-            }
-        } catch (Exception e) {
-            // TODO: LN: handle exception!
-            e.printStackTrace();
-            markTxAsFailure();
+            markTxAsSuccess();
+            increaseActionCount();
         }
 
     }

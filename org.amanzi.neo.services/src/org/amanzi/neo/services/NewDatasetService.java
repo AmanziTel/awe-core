@@ -540,7 +540,7 @@ public class NewDatasetService extends NewAbstractService {
     public List<Node> findAllDatasets() {
         LOGGER.debug("start findAllDatasets()");
         List<Node> datasetList = new ArrayList<Node>();
-        TraversalDescription allProjects = NeoServiceFactory.getInstance().getNewProjectService().getProjectTraversalDescription();
+        TraversalDescription allProjects = NeoServiceFactory.getInstance().getNewProjectService().projectTraversalDescription;
 
         for (Node projectNode : allProjects.traverse(graphDb.getReferenceNode()).nodes()) {
             Traverser tr = DATASET_TRAVERSAL_DESCRIPTION.traverse(projectNode);
@@ -568,7 +568,7 @@ public class NewDatasetService extends NewAbstractService {
         }
 
         List<Node> datasetList = new ArrayList<Node>();
-        TraversalDescription allProjects = NeoServiceFactory.getInstance().getNewProjectService().getProjectTraversalDescription();
+        TraversalDescription allProjects = NeoServiceFactory.getInstance().getNewProjectService().projectTraversalDescription;
 
         for (Node projectNode : allProjects.traverse(graphDb.getReferenceNode()).nodes()) {
             Traverser tr = DATASET_TRAVERSAL_DESCRIPTION.evaluator(new FilterNodesByType(type)).traverse(projectNode);

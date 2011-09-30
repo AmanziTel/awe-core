@@ -42,6 +42,14 @@ public class ProjectService extends NewAbstractService {
     private static Logger LOGGER = Logger.getLogger(ProjectService.class);
 
     private Transaction tx;
+    /**
+     * Generates a <code>TraversalDescription</code> to fetch all project nodes. Assumed that you
+     * would start traversing from DB reference node
+     * 
+     */
+    public final TraversalDescription projectTraversalDescription = Traversal.description().breadthFirst()
+            .evaluator(Evaluators.excludeStartPosition()).evaluator(Evaluators.atDepth(1))
+            .relationships(ProjectRelationshipType.PROJECT, Direction.OUTGOING);
 
     /**
      * <p>
@@ -53,7 +61,7 @@ public class ProjectService extends NewAbstractService {
      */
     protected enum ProjectNodeType implements INodeType {
         PROJECT;
-        
+
         @Override
         public String getId() {
             return name().toLowerCase();
@@ -121,7 +129,7 @@ public class ProjectService extends NewAbstractService {
             tx.success();
         } catch (DatabaseException e) {
             LOGGER.error("Could not create project '" + name + "'.", e);
-            //TODO: LN: throw exception to higher level
+            // TODO: LN: throw exception to higher level
         } finally {
             tx.finish();
         }
@@ -146,7 +154,7 @@ public class ProjectService extends NewAbstractService {
         }
 
         Node result = null;
-        Iterator<Node> it = getProjectTraversalDescription().evaluator(new NameTypeEvaluator(name, ProjectNodeType.PROJECT))
+        Iterator<Node> it = projectTraversalDescription.evaluator(new NameTypeEvaluator(name, ProjectNodeType.PROJECT))
                 .traverse(graphDb.getReferenceNode()).nodes().iterator();
         if (it.hasNext()) {
             result = it.next();
@@ -166,12 +174,12 @@ public class ProjectService extends NewAbstractService {
      */
     public Iterable<Node> findAllProjects() {
         LOGGER.debug("Started findAllProjects");
-        return getProjectTraversalDescription().traverse(graphDb.getReferenceNode()).nodes();
+        return projectTraversalDescription.traverse(graphDb.getReferenceNode()).nodes();
     }
 
     /**
-     *Finds or creates a project node by name.
-     *
+     * Finds or creates a project node by name.
+     * 
      * @param name
      * @return
      * @throws IllegalNodeDataException
@@ -187,15 +195,4 @@ public class ProjectService extends NewAbstractService {
         return result;
     }
 
-    /**
-     * Generates a <code>TraversalDescription</code> to fetch all project nodes. Assumed that you
-     * would start traversing from DB reference node
-     * 
-     * @return
-     */
-    public TraversalDescription getProjectTraversalDescription() {
-        LOGGER.debug("Started getProjectTraversalDescription");
-        return Traversal.description().breadthFirst().evaluator(Evaluators.excludeStartPosition()).evaluator(Evaluators.atDepth(1))
-                .relationships(ProjectRelationshipType.PROJECT, Direction.OUTGOING);
-    }
 }
