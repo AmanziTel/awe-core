@@ -10,9 +10,6 @@ import java.util.Map;
 import junit.framework.Assert;
 
 import org.amanzi.log4j.LogStarter;
-import org.amanzi.neo.services.NeoServiceFactory;
-import org.amanzi.neo.services.NewAbstractService;
-import org.amanzi.neo.services.NewNetworkService;
 import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.NewNetworkService.NetworkRelationshipTypes;
@@ -21,7 +18,6 @@ import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
-import org.amanzi.testing.AbstractAWETest;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.junit.AfterClass;
@@ -33,7 +29,7 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
 
-public class NewNetworkServiceTest extends AbstractAWETest {
+public class NewNetworkServiceTest extends AbstractNeoServiceTest {
     private static Logger LOGGER = Logger.getLogger(NewNetworkServiceTest.class);
     private static NewNetworkService networkService;
     private static final String databasePath = getDbLocation();
@@ -48,6 +44,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
         initializeDb();
 
         new LogStarter().earlyStartup();
+        clearServices();
 
         LOGGER.info("Database created in folder " + databasePath);
         networkService = NeoServiceFactory.getInstance().getNewNetworkService();
@@ -58,7 +55,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
         stopDb();
         clearDb();
     }
-
+    
     // tests for methods of NewAbstractService class
     // +
     @Test

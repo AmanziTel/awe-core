@@ -1,12 +1,12 @@
 package org.amanzi.neo.services.model.impl;
 
-import org.amanzi.testing.AbstractAWETest;
+import org.amanzi.neo.services.AbstractNeoServiceTest;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
 
-public class DataElementTest extends AbstractAWETest {
+public class DataElementTest extends AbstractNeoServiceTest {
 	Mockery context = new Mockery();
 
 	/**

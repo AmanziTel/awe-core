@@ -42,8 +42,6 @@ public class RangeTests extends AbstractAWETest {
 
 		clearDb();
 		initializeDb();
-		initPreferences();
-
 	}
 
 	/**

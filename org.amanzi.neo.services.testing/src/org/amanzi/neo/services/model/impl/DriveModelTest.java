@@ -11,6 +11,8 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
+import org.amanzi.log4j.LogStarter;
+import org.amanzi.neo.services.AbstractNeoServiceTest;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService;
@@ -28,7 +30,6 @@ import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveRelationshipTypes;
-import org.amanzi.testing.AbstractAWETest;
 import org.apache.log4j.Logger;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -38,7 +39,7 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 
-public class DriveModelTest extends AbstractAWETest {
+public class DriveModelTest extends AbstractNeoServiceTest {
 
 	private static Logger LOGGER = Logger.getLogger(DriveModelTest.class);
 	private static final String databasePath = getDbLocation();
@@ -54,6 +55,9 @@ public class DriveModelTest extends AbstractAWETest {
 		clearDb();
 		initializeDb();
 		
+		new LogStarter().earlyStartup();
+        clearServices();
+		
 		LOGGER.info("Database created in folder " + databasePath);
 		prServ = NeoServiceFactory.getInstance().getNewProjectService();
 		dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
@@ -67,7 +71,7 @@ public class DriveModelTest extends AbstractAWETest {
 
 	@Before
 	public void newProject() {
-		try {
+	    try {
 			project = prServ.createProject("project" + count++);
 			dsName = "dataset" + count;
 			dataset = dsServ.createDataset(project, dsName, DatasetTypes.DRIVE,

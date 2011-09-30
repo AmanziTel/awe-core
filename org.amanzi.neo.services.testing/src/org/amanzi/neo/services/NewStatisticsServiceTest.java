@@ -5,8 +5,7 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
-import org.amanzi.neo.services.NewAbstractService;
-import org.amanzi.neo.services.NewStatisticsService;
+import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.NewStatisticsService.StatisticsNodeTypes;
 import org.amanzi.neo.services.NewStatisticsService.StatisticsRelationships;
@@ -18,11 +17,9 @@ import org.amanzi.neo.services.exceptions.LoadVaultException;
 import org.amanzi.neo.services.statistic.IVault;
 import org.amanzi.neo.services.statistic.StatisticsVault;
 import org.amanzi.neo.services.statistic.internal.NewPropertyStatistics;
-import org.amanzi.testing.AbstractAWETest;
 import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -31,7 +28,7 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 
-public class NewStatisticsServiceTest extends AbstractAWETest {
+public class NewStatisticsServiceTest extends AbstractNeoServiceTest {
 
 	private final static String PROPERTIES = "PROPERTIES";
 	private final static String NEIGHBOURS = "Neighbours";
@@ -45,6 +42,9 @@ public class NewStatisticsServiceTest extends AbstractAWETest {
 	public static final void beforeClass() {
 		clearDb();
 		initializeDb();
+		
+		new LogStarter().earlyStartup();
+        clearServices();
 	}
 
 	@AfterClass
@@ -57,10 +57,7 @@ public class NewStatisticsServiceTest extends AbstractAWETest {
 	private NewStatisticsService service = new NewStatisticsService();
 	private Node referenceNode = graphDatabaseService.getReferenceNode();
 
-	@Before
-	public final void before() {
-
-	}
+	
 
 	@After
 	public final void after() {

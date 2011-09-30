@@ -53,7 +53,6 @@ public class DistributionTests extends AbstractAWETest {
 		long after = 0;
 		clearDb();
 		initializeDb();
-		initPreferences();
 
 		Transaction tx = graphDatabaseService.beginTx();
 		try {

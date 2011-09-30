@@ -58,7 +58,6 @@ public class FilterTest extends AbstractAWETest {
 
         try {
             initializeDb();
-            initPreferences();
             
             datasetService = NeoServiceFactory.getInstance().getDatasetService();
             //afpService = AfpService.getService();
