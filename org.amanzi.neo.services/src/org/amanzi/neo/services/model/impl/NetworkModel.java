@@ -374,7 +374,6 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
             LOGGER.error("couldnt extract node from dataelement", e);
             return;
         }
-        curentNode.getSingleRelationship(NetworkRelationshipTypes.CHILD, Direction.INCOMING).delete();
-        newParentNode.createRelationshipTo(curentNode, NetworkRelationshipTypes.CHILD);
+        nwServ.changeRelationship(newParentNode, curentNode, NetworkRelationshipTypes.CHILD, Direction.INCOMING);
     }
 }
