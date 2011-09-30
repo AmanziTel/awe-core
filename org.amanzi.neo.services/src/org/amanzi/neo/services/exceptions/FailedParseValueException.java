@@ -25,5 +25,13 @@ public class FailedParseValueException extends AWEException{
 
     /** long serialVersionUID field */
     private static final long serialVersionUID = -2684767289544828413L;
+    
+    public FailedParseValueException(String message) {
+        super(message);
+    }
+    
+    public FailedParseValueException() {
+        super();
+    }
 
 }

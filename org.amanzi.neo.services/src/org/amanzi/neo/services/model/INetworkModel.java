@@ -13,7 +13,8 @@
 
 package org.amanzi.neo.services.model;
 
-//TODO: LN: comments
+import org.amanzi.neo.services.exceptions.AWEException;
+
 /**
  * TODO Purpose of
  * <p>
@@ -24,7 +25,7 @@ package org.amanzi.neo.services.model;
  */
 public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IRenderableModel {
 
-    public Iterable<ICorrelationModel> getCorrelationModels();
+    public Iterable<ICorrelationModel> getCorrelationModels() throws AWEException;
 
     public INetworkType getNetworkType();
 
@@ -34,42 +35,49 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
      * @param name name of selection model
      * @return instance of SelectionModel, or null if it's not found
      */
-    public ISelectionModel findSelectionModel(String name);
-
+    public ISelectionModel findSelectionModel(String name) throws AWEException;
+    
     /**
      * Creates new Selection Model
      * 
      * @param name name of new Selection Model
      * @return created Selection Model
      */
-    public ISelectionModel createSelectionModel(String name);
-
+    public ISelectionModel createSelectionModel(String name) throws AWEException;
+    
     /**
      * Try to find a Selection Model by it's name, Creates new one if it's not found
      * 
      * @param name name of Selection Model
      * @return instance of Selection Model
      */
-    public ISelectionModel getSelectionModel(String name);
-
+    public ISelectionModel getSelectionModel(String name) throws AWEException;
+    
     /**
      * Returns all selection models of this Network
      * 
      * @return list of Selection Models related to current network
      */
-    public Iterable<ISelectionModel> getAllSelectionModels();
+    public Iterable<ISelectionModel> getAllSelectionModels() throws AWEException;
 
     /**
+     * Find a network element, based on properties set in the <code>IDataElement</code> object.
+     * Don't forget to set TYPE property.
+     * 
      * @param element
-     * @return
+     * @return <code>DataElement</code> object, created on base of the found network node, or
+     *         <code>null</code>.
      */
     public IDataElement findElement(IDataElement element);
 
     /**
-     *
+     * Create a new network element based on <code>IDataElement element</code> object. MUST set NAME
+     * and TYPE.
+     * 
      * @param parent
      * @param element
-     * @return
+     * @return <code>DataElement</code> object, created on base of the new network node.
      */
     public IDataElement createElement(IDataElement parent, IDataElement element);
+
 }

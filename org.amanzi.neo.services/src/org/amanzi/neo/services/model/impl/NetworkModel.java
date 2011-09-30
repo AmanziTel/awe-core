@@ -108,14 +108,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         initializeStatistics();
     }
 
-    /**
-     * Create a new network element based on <code>IDataElement element</code> object. MUST set NAME
-     * and TYPE.
-     * 
-     * @param parent
-     * @param element
-     * @return <code>DataElement</code> object, created on base of the new network node.
-     */
+   
     @Override
     public IDataElement createElement(IDataElement parent, IDataElement element) {
         // validate
@@ -160,14 +153,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
 
     // find element
 
-    /**
-     * Find a network element, based on properties set in the <code>IDataElement</code> object.
-     * Don't forget to set TYPE property.
-     * 
-     * @param element
-     * @return <code>DataElement</code> object, created on base of the found network node, or
-     *         <code>null</code>.
-     */
+  
     @Override
     public IDataElement findElement(IDataElement element) {
         // validate
@@ -269,7 +255,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     }
 
     @Override
-    public Iterable<ICorrelationModel> getCorrelationModels() {
+    public Iterable<ICorrelationModel> getCorrelationModels() throws AWEException {
         LOGGER.info("getCorrelationModels()");
 
         Node network = getRootNode();
@@ -345,7 +331,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     }
 
     @Override
-    public ISelectionModel findSelectionModel(String name) {
+    public ISelectionModel findSelectionModel(String name) throws AWEException {
         Node rootSelectionNode = nwServ.findSelectionList(rootNode, name);
         if (rootSelectionNode != null) {
             return new SelectionModel(rootSelectionNode);
@@ -354,13 +340,14 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     }
 
     @Override
-    public ISelectionModel createSelectionModel(String name) {
+    public ISelectionModel createSelectionModel(String name) throws AWEException {
+        LOGGER.info("New SelectionModel <" + name + "> created for Network <" + this.name + ">");
         return new SelectionModel(rootNode, name);
     }
 
     @Override
-    public ISelectionModel getSelectionModel(String name) {
-        LOGGER.info("Trying to get Selection model with name <" + name + ">");
+    public ISelectionModel getSelectionModel(String name) throws AWEException {
+        LOGGER.debug("Trying to get Selection model with name <" + name + ">");
         
         ISelectionModel result = findSelectionModel(name);
         
@@ -372,7 +359,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     }
 
     @Override
-    public Iterable<ISelectionModel> getAllSelectionModels() {
+    public Iterable<ISelectionModel> getAllSelectionModels() throws AWEException {
         return null;
     }
 

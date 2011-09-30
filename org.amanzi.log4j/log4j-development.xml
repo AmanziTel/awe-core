@@ -9,7 +9,7 @@
     </layout>
     <filter class="org.apache.log4j.varia.LevelRangeFilter">
       <param name="LevelMin" value="ALL"/>
-      <param name="LevelMax" value="INFO"/>
+      <param name="LevelMax" value="OFF"/>
     </filter>
   </appender>
   
@@ -27,7 +27,6 @@
   <root>
     <priority value="DEBUG"/>
     <appender-ref ref="CONSOLE-DEBUG"/>
-    <appender-ref ref="LOG-FILE-APPENDER"/>
   </root>
 
 </log4j:configuration>

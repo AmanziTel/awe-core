@@ -57,7 +57,7 @@ public class NewDatasetServiceTest extends AbstractAWETest {
 
     @Before
     public final void before() {
-        service = NeoServiceFactory.getInstance().getNewDatasetService();
+        service = new NewDatasetService(graphDatabaseService);
         initProjectNode();
     }
 
@@ -84,7 +84,7 @@ public class NewDatasetServiceTest extends AbstractAWETest {
     private void setPropertyToDatasetNode(Node datasetNode, String name,
             DatasetTypes type, DriveTypes driveType) {
         datasetNode.setProperty(NewDatasetService.NAME, name);
-        datasetNode.setProperty(NewDatasetService.TYPE, type.name());
+        datasetNode.setProperty(NewDatasetService.TYPE, type.getId());
         if (driveType != null)
             datasetNode.setProperty(NewDatasetService.DRIVE_TYPE,
                     driveType.name());
@@ -453,7 +453,7 @@ public class NewDatasetServiceTest extends AbstractAWETest {
         String actualType = (String) actualDataset
                 .getProperty(NewDatasetService.TYPE);
         Assert.assertEquals("dataset has wrong type",
-                DatasetTypes.DRIVE.name(), actualType);
+                DatasetTypes.DRIVE.getId(), actualType);
 
         String actualDriveType = (String) actualDataset
                 .getProperty(NewDatasetService.DRIVE_TYPE);
@@ -592,7 +592,7 @@ public class NewDatasetServiceTest extends AbstractAWETest {
         String actualType = (String) actualDataset
                 .getProperty(NewDatasetService.TYPE);
         Assert.assertEquals("dataset has wrong type",
-                DatasetTypes.NETWORK.name(), actualType);
+                DatasetTypes.NETWORK.getId(), actualType);
     }
 
     /**
@@ -731,7 +731,7 @@ public class NewDatasetServiceTest extends AbstractAWETest {
         String actualType = (String) actualDataset
                 .getProperty(NewDatasetService.TYPE);
         Assert.assertEquals("dataset has wrong type",
-                DatasetTypes.NETWORK.name(), actualType);
+                DatasetTypes.NETWORK.getId(), actualType);
     }
 
     /**
@@ -897,7 +897,7 @@ public class NewDatasetServiceTest extends AbstractAWETest {
         String actualType = (String) actualDataset
                 .getProperty(NewDatasetService.TYPE);
         Assert.assertEquals("dataset has wrong type",
-                DatasetTypes.DRIVE.name(), actualType);
+                DatasetTypes.DRIVE.getId(), actualType);
 
         String actualDriveType = (String) actualDataset
                 .getProperty(NewDatasetService.DRIVE_TYPE);
@@ -1939,7 +1939,10 @@ public class NewDatasetServiceTest extends AbstractAWETest {
             tx.finish();
         }
 
-        for (DriveNodeTypes type : DriveNodeTypes.values()) {
+        DriveNodeTypes[] possibleDriveNodeTypes = new DriveNodeTypes[] 
+                {DriveNodeTypes.FILE, DriveNodeTypes.M, DriveNodeTypes.MP};
+        
+        for (DriveNodeTypes type : possibleDriveNodeTypes) {
 
             Iterable<Node> traverser = service.findAllDatasetElements(parent,
                     type);
@@ -1949,7 +1952,7 @@ public class NewDatasetServiceTest extends AbstractAWETest {
             Assert.assertTrue(traverser.iterator().hasNext());
 
             for (Node node : traverser) {
-                DriveNodeTypes testType = DriveNodeTypes.valueOf(node
+                DriveNodeTypes testType = DriveNodeTypes.findById(node
                         .getProperty(NewAbstractService.TYPE, null).toString());
                 // type correct
                 Assert.assertEquals(type, testType);
