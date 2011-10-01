@@ -11,6 +11,8 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
+import org.amanzi.log4j.LogStarter;
+import org.amanzi.neo.services.AbstractNeoServiceTest;
 import org.amanzi.neo.services.CorrelationServiceTest;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService;
@@ -23,7 +25,6 @@ import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.ICorrelationModel;
 import org.amanzi.neo.services.model.IDataElement;
-import org.amanzi.testing.AbstractAWETest;
 import org.apache.log4j.Logger;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
@@ -36,7 +37,7 @@ import org.junit.Test;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 
-public class NetworkModelTest extends AbstractAWETest {
+public class NetworkModelTest extends AbstractNeoServiceTest {
 
 	private static Logger LOGGER = Logger
 			.getLogger(CorrelationServiceTest.class);
@@ -62,6 +63,9 @@ public class NetworkModelTest extends AbstractAWETest {
 	public static void setUpBeforeClass() throws Exception {
 		clearDb();
 		initializeDb();
+		
+		new LogStarter().earlyStartup();
+        clearServices();
 
 		dsServ = new NewDatasetService(graphDatabaseService);
 		prServ = new ProjectService(graphDatabaseService);

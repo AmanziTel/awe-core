@@ -16,9 +16,7 @@ package org.amanzi.testing;
 import java.io.File;
 
 import org.amanzi.neo.db.manager.DatabaseManager;
-import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceInitializer;
-import org.amanzi.neo.services.NeoServiceFactory;
-import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.amanzi.neo.db.manager.NeoServiceProvider;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -46,18 +44,10 @@ public abstract class AbstractAWETest {
     protected static void initializeDb() {
         LOGGER.info("Initialize Database");
         graphDatabaseService = new EmbeddedGraphDatabase(getDbLocation());
-        NeoServiceProviderUi.initProvider(graphDatabaseService, getDbLocation());
-        DatabaseManager.setDatabaseAndIndexServices(graphDatabaseService, NeoServiceProviderUi.getProvider().getIndexService());
-        
-        NeoServiceFactory.getInstance().clear();
+        NeoServiceProvider.getProvider().init(graphDatabaseService, getDbLocation(), null);
+        DatabaseManager.setDatabaseAndIndexServices(graphDatabaseService, NeoServiceProvider.getProvider().getIndexService());
         
         LOGGER.info("Database was successfully initialized");
-    }
-    
-    protected static void initPreferences() {
-        LOGGER.info("Load Preferences");
-        DataLoadPreferenceInitializer initializer = new DataLoadPreferenceInitializer();
-        initializer.initializeDefaultPreferences();
     }
     
     protected static String getDbLocation() {
@@ -65,7 +55,7 @@ public abstract class AbstractAWETest {
     }
     
     protected static void stopDb() {
-        NeoServiceProviderUi.getProvider().getIndexService().shutdown();
+        NeoServiceProvider.getProvider().getIndexService().shutdown();
         graphDatabaseService.shutdown();        
     }
     

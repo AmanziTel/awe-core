@@ -10,6 +10,8 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
+import org.amanzi.log4j.LogStarter;
+import org.amanzi.neo.services.AbstractNeoServiceTest;
 import org.amanzi.neo.services.CorrelationService;
 import org.amanzi.neo.services.CorrelationService.Correlations;
 import org.amanzi.neo.services.CorrelationServiceTest;
@@ -20,7 +22,6 @@ import org.amanzi.neo.services.NewNetworkService;
 import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.ProjectService;
 import org.amanzi.neo.services.exceptions.AWEException;
-import org.amanzi.testing.AbstractAWETest;
 import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -32,7 +33,7 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 
-public class CorrelationModelTest extends AbstractAWETest {
+public class CorrelationModelTest extends AbstractNeoServiceTest {
 
 	private static Logger LOGGER = Logger
 			.getLogger(CorrelationServiceTest.class);
@@ -52,6 +53,9 @@ public class CorrelationModelTest extends AbstractAWETest {
 	public static void setUpBeforeClass() throws Exception {
 	    clearDb();
 		initializeDb();
+		
+		new LogStarter().earlyStartup();
+        clearServices();
 		
 		correlationServ = new CorrelationService(graphDatabaseService);
 		dsServ = new NewDatasetService(graphDatabaseService);

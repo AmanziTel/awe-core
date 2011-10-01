@@ -6,9 +6,8 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: amanzi.org
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.junit4;bundle-version="4.3.1",
- org.amanzi.neo.services.ui;bundle-version="1.0.0",
- org.amanzi.neo.loader.ui;bundle-version="1.0.0",
- org.amanzi.log4j;bundle-version="1.2.12"
+ org.amanzi.log4j;bundle-version="1.2.12",
+ org.amanzi.neo.db;bundle-version="1.0.0"
 Export-Package: bsh,
  net.sf.cglib.asm,
  net.sf.cglib.asm.attrs,
