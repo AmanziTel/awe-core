@@ -520,7 +520,9 @@ public class CorrelationModelTest extends AbstractAWETest {
 			fail();
 		}
 		for (Node m : ms) {
-			IDataElement sect = cm.getCorrelatedSector(m);
+			IDataElement sectEl = cm.getCorrelatedSector(m);
+
+			Node sect = ((DataElement) sectEl).getNode();
 
 			// the valid sector returned
 			Assert.assertNotNull(sect);

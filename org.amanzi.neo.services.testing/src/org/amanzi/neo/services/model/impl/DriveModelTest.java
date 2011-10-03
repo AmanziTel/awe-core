@@ -793,8 +793,13 @@ public class DriveModelTest extends AbstractAWETest {
 		Assert.assertTrue(it.iterator().hasNext());
 		try {
 			for (ICorrelationModel model : dm.getCorrelatedModels()) {
-				Assert.assertTrue(networks.contains(model.getNetwork()));
-				Assert.assertEquals(dataset, model.getDataset());
+				Node nwNode = ((DataElement) model.getNetwork()).getNode();
+				Assert.assertNotNull(nwNode);
+				Assert.assertTrue(networks.contains(nwNode));
+
+				Node dsNode = ((DataElement) model.getDataset()).getNode();
+				Assert.assertNotNull(dsNode);
+				Assert.assertEquals(dataset, dsNode);
 			}
 		} catch (AWEException e) {
 			LOGGER.error("Could not get correlted models.", e);
@@ -828,8 +833,14 @@ public class DriveModelTest extends AbstractAWETest {
 				LOGGER.error("Could not get correlated model by name.", e);
 				fail();
 			}
-			Assert.assertEquals(dataset, cm.getDataset());
-			Assert.assertEquals(networks.get(i), cm.getNetwork());
+			Node dsNode = ((DataElement) cm.getDataset()).getNode();
+			;
+			Assert.assertNotNull(dsNode);
+			Assert.assertEquals(dataset, dsNode);
+
+			Node nwNode = ((DataElement) cm.getNetwork()).getNode();
+			Assert.assertNotNull(nwNode);
+			Assert.assertEquals(networks.get(i), nwNode);
 		}
 	}
 

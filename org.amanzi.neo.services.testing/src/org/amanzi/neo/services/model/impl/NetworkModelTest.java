@@ -289,8 +289,13 @@ public class NetworkModelTest extends AbstractAWETest {
 		Assert.assertTrue(it.iterator().hasNext());
 		try {
 			for (ICorrelationModel mod : model.getCorrelationModels()) {
-				Assert.assertTrue(datasets.contains(mod.getDataset()));
-				Assert.assertEquals(network, mod.getNetwork());
+				Node dsNode = ((DataElement) mod.getDataset()).getNode();
+				Assert.assertNotNull(dsNode);
+				Assert.assertTrue(datasets.contains(dsNode));
+
+				Node nwNode = ((DataElement) mod.getNetwork()).getNode();
+				Assert.assertNotNull(nwNode);
+				Assert.assertEquals(network, nwNode);
 			}
 		} catch (AWEException e) {
 			LOGGER.error("Could not get correlation models.", e);
