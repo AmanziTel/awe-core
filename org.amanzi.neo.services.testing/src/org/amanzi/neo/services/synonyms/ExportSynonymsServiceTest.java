@@ -15,6 +15,7 @@ package org.amanzi.neo.services.synonyms;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.HashMap;
 import java.util.Map.Entry;
@@ -203,6 +204,29 @@ public class ExportSynonymsServiceTest extends AbstractNeoServiceTest {
         synonymsService.getGlobalExportSynonyms();
     }
     
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToGetDatasetExportySynonymsWithEmptyDatasetNode() {
+        synonymsService.getDatasetExportSynonyms(null);
+    }
+
+    @Test
+    public void checkThereAreNoExceptionOnGettingDatasetExportSynonyms() throws Exception {
+        synonymsService.getDatasetExportSynonyms(createDataset());
+    }
+    
+    @Test
+    public void checkResultOfGetDatasetExportSynonyms() throws Exception {
+        ExportSynonyms synonyms = synonymsService.getDatasetExportSynonyms(createDataset());
+        
+        assertNotNull("Dataset Export Synonyms cannot be null", synonyms);
+    }
+    
+    @Test
+    public void checkEmptyResultOfGetDatasetExportSynonyms() throws Exception {
+        ExportSynonyms synonyms = synonymsService.getDatasetExportSynonyms(createDataset());
+        
+        assertTrue("Export Synonyms should be empty", synonyms.rawSynonyms.isEmpty());
+    }
     
     /**
      * Creates Global Export Synonyms Node with some properties
@@ -235,6 +259,29 @@ public class ExportSynonymsServiceTest extends AbstractNeoServiceTest {
         }
         
         return exportSynonymsNode;
+    }
+        
+    /**
+     * Creates fake Dataset Node
+     *
+     * @return
+     * @throws Exception
+     */
+    private Node createDataset() throws Exception {
+        Transaction tx = graphDatabaseService.beginTx();
+        
+        try {
+            Node result = graphDatabaseService.createNode();
+            tx.success();
+            
+            return result;
+        } catch (Exception e) {
+            tx.failure();
+            LOGGER.error("Error on creating Fake Dataset Node", e);
+            throw e;
+        } finally {
+            tx.finish();
+        }
     }
     
     /**

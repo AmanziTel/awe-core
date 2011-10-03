@@ -223,7 +223,7 @@ public class ExportSynonymsService extends NewAbstractService {
      *
      * @return Dataset Export Synonyms
      */ 
-    public ExportSynonyms getDatasetExportSynonyms() {
+    public ExportSynonyms getDatasetExportSynonyms(Node datasetNode) {
         return null;
     }
 
