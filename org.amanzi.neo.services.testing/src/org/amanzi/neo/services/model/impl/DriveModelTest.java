@@ -26,9 +26,6 @@ import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.model.ICorrelationModel;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDriveModel;
-import org.amanzi.neo.services.model.impl.CorrelationModel;
-import org.amanzi.neo.services.model.impl.DataElement;
-import org.amanzi.neo.services.model.impl.DriveModel;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveRelationshipTypes;
 import org.amanzi.testing.AbstractAWETest;
@@ -509,12 +506,9 @@ public class DriveModelTest extends AbstractAWETest {
 					filename.substring(filename.lastIndexOf('\\') + 1), params))
 					.getNode();
 			dm.finishUp();
-		} catch (DatabaseException e) {
+		} catch (AWEException e) {
 			LOGGER.error("Could not add measurement", e);
 			fail();
-		} catch (AWEException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 		// node returned is not null
 		Assert.assertNotNull(m);
@@ -578,12 +572,9 @@ public class DriveModelTest extends AbstractAWETest {
 				me = ((DataElement) dm.addMeasurement(
 						filename.substring(filename.lastIndexOf('\\') + 1), m))
 						.getNode();
-			} catch (DatabaseException e) {
+			} catch (AWEException e) {
 				LOGGER.error("Could not add measurement", e);
 				fail();
-			} catch (AWEException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
 			ms.put(me, m);
 		}
@@ -634,12 +625,9 @@ public class DriveModelTest extends AbstractAWETest {
 			m = ((DataElement) dm.addMeasurement(
 					filename.substring(filename.lastIndexOf('\\') + 1), params))
 					.getNode();
-		} catch (DatabaseException e) {
+		} catch (AWEException e) {
 			LOGGER.error("Could not add measurement", e);
 			fail();
-		} catch (AWEException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 
 		Node l = ((DataElement) dm.getLocation(m)).getNode();
@@ -685,12 +673,9 @@ public class DriveModelTest extends AbstractAWETest {
 			m = ((DataElement) dm.addMeasurement(
 					filename.substring(filename.lastIndexOf('\\') + 1), params))
 					.getNode();
-		} catch (DatabaseException e) {
+		} catch (AWEException e) {
 			LOGGER.error("Could not add measurement", e);
 			fail();
-		} catch (AWEException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 
 		IDataElement l = dm.getLocation(m);
@@ -728,12 +713,9 @@ public class DriveModelTest extends AbstractAWETest {
 			m = ((DataElement) dm.addMeasurement(
 					filename.substring(filename.lastIndexOf('\\') + 1), params))
 					.getNode();
-		} catch (DatabaseException e) {
+		} catch (AWEException e) {
 			LOGGER.error("Could not add measurement", e);
 			fail();
-		} catch (AWEException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 
 		IDataElement l = dm.getLocation(m);
@@ -754,15 +736,11 @@ public class DriveModelTest extends AbstractAWETest {
 		}
 		try {
 			dm.addMeasurement(null, new HashMap<String, Object>());
-		} catch (DatabaseException e) {
+		} catch (AWEException e) {
 			LOGGER.error("Could not add measurement", e);
 			fail();
 		}
 		// exception
-		catch (AWEException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -778,12 +756,9 @@ public class DriveModelTest extends AbstractAWETest {
 		}
 		try {
 			dm.addMeasurement("", new HashMap<String, Object>());
-		} catch (DatabaseException e) {
+		} catch (AWEException e) {
 			LOGGER.error("Could not add measurement", e);
 			fail();
-		} catch (AWEException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 		;
 		// exception
@@ -912,12 +887,9 @@ public class DriveModelTest extends AbstractAWETest {
 					fms.get(fname).add(
 							((DataElement) dm.addMeasurement(fname, params))
 									.getNode());
-				} catch (DatabaseException e) {
+				} catch (AWEException e) {
 					LOGGER.error("Could not add measurement", e);
 					fail();
-				} catch (AWEException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
 				}
 			}
 		}
