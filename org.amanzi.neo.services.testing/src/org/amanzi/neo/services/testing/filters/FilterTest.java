@@ -592,7 +592,10 @@ public class FilterTest extends AbstractAWETest {
     		LOGGER.info("----FilterType is 'MORE' ");
     		Exception exc = null;
     		
-    		final class NotComparebleClass implements Serializable{	
+    		final class NotComparebleClass implements Serializable{
+
+                /** long serialVersionUID field */
+                private static final long serialVersionUID = 1L;	
     		}
     		
     		try{
