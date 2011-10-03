@@ -39,6 +39,7 @@ import org.apache.log4j.Logger;
 import org.geotools.referencing.CRS;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.RelationshipType;
 
 /**
  * <p>
@@ -364,16 +365,76 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     }
 
     @Override
-    public void changeRelationship(IDataElement newParentElement, IDataElement currentNode) {
+    public void replaceRelationship(IDataElement newParentElement, IDataElement currentNode) {
         Node curentNode;
         Node newParentNode;
         try {
             curentNode = ((DataElement)currentNode).getNode();
             newParentNode = ((DataElement)newParentElement).getNode();
         } catch (NullPointerException e) {
-            LOGGER.error("couldnt extract node from dataelement", e);
+            LOGGER.error("couldn't extract node from dataelement", e);
             return;
         }
-        nwServ.changeRelationship(newParentNode, curentNode, NetworkRelationshipTypes.CHILD, Direction.INCOMING);
+        nwServ.replaceRelationship(newParentNode, curentNode, NetworkRelationshipTypes.CHILD, Direction.INCOMING);
+    }
+
+    @Override
+    public IDataElement completeProperties(IDataElement existedElement, IDataElement newPropertySet, boolean isReplaceExisted) {
+        Node existedNode;
+        try {
+            existedNode = ((DataElement)existedElement).getNode();
+            nwServ.completeProperties(existedNode, ((DataElement)newPropertySet), isReplaceExisted);
+            return new DataElement(existedNode);
+        } catch (NullPointerException e) {
+            LOGGER.error("couldn't complete new properties", e);
+            return null;
+        }
+    }
+
+    @Override
+    public void createRelationship(IDataElement parent, IDataElement child, RelationshipType rel) {
+        Node parentNode;
+        Node childNode;
+        try {
+            parentNode = ((DataElement)parent).getNode();
+            childNode = ((DataElement)child).getNode();
+            nwServ.createRelationship(parentNode, childNode, rel);
+        } catch (AWEException e) {
+            LOGGER.error("couldn't create relationship ", e);
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+
+    }
+
+    @Override
+    public IDataElement createElement(IDataElement parent, IDataElement element, RelationshipType relType) {
+        if (parent == null) {
+            throw new IllegalArgumentException("Parent is null.");
+        }
+        Node parentNode = ((DataElement)parent).getNode();
+        if (parentNode == null) {
+            throw new IllegalArgumentException("Parent node is null.");
+        }
+        if (element == null) {
+            throw new IllegalArgumentException("Element is null.");
+        }
+
+        INodeType type = NodeTypeManager.getType(element.get(NewAbstractService.TYPE).toString());
+        Node node = null;
+        try {
+
+            // TODO:validate network structure and save it in root node
+
+            if (type != null) {
+                node = nwServ.createNetworkElement(parentNode, getIndexName(type), element.get(NewAbstractService.NAME).toString(),
+                        type, relType);
+            }
+            nwServ.setProperties(node, (DataElement)element);
+            indexProperty(type, (DataElement)element);
+        } catch (AWEException e) {
+            LOGGER.error("Could not create network element.", e);
+        }
+
+        return node == null ? null : new DataElement(node);
     }
 }

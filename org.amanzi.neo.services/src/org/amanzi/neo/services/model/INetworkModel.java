@@ -14,6 +14,7 @@
 package org.amanzi.neo.services.model;
 
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.neo4j.graphdb.RelationshipType;
 
 /**
  * TODO Purpose of
@@ -36,7 +37,7 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
      * @param newParentElement
      * @param currentNode
      */
-    public void changeRelationship(IDataElement newParentElement, IDataElement currentNode);
+    public void replaceRelationship(IDataElement newParentElement, IDataElement currentNode);
 
     /**
      * Searches for a Selection Model by it's name
@@ -88,5 +89,35 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
      * @return <code>DataElement</code> object, created on base of the new network node.
      */
     public IDataElement createElement(IDataElement parent, IDataElement element);
+
+    /**
+     * Create a new network element based on <code>IDataElement element</code> object. MUST set NAME
+     * and TYPE.
+     * 
+     * @param parent
+     * @param element
+     * @return <code>DataElement</code> object, created on base of the new network node.
+     */
+    public IDataElement createElement(IDataElement parent, IDataElement element, RelationshipType relType);
+
+    /**
+     * complete properties of existed element with new properties. If <code>IsreplaceExisted</code>
+     * set to <b>true</b> existed properties will be replaced with new values;
+     * 
+     * @param existedElement
+     * @param newPropertySet
+     * @return
+     */
+    public IDataElement completeProperties(IDataElement existedElement, IDataElement newPropertySet, boolean isReplaceExisted);
+
+    /**
+     * create required relationship between exists <code>parent</code> and <code>child</code>
+     * elements;
+     * 
+     * @param parent
+     * @param child
+     * @param rel
+     */
+    public void createRelationship(IDataElement parent, IDataElement child, RelationshipType rel);
 
 }
