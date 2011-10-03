@@ -11,8 +11,8 @@ import java.util.Map;
 import junit.framework.Assert;
 
 import org.amanzi.neo.services.CorrelationService;
-import org.amanzi.neo.services.CorrelationServiceTest;
 import org.amanzi.neo.services.CorrelationService.Correlations;
+import org.amanzi.neo.services.CorrelationServiceTest;
 import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.NewDatasetService.DriveTypes;
@@ -20,9 +20,8 @@ import org.amanzi.neo.services.NewNetworkService;
 import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.ProjectService;
 import org.amanzi.neo.services.exceptions.AWEException;
-import org.amanzi.neo.services.model.impl.CorrelationModel;
-import org.amanzi.neo.services.model.impl.DataElement;
-import org.amanzi.neo.services.model.impl.DriveModel;
+import org.amanzi.neo.services.exceptions.DatabaseException;
+import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.testing.AbstractAWETest;
 import org.apache.log4j.Logger;
 import org.junit.After;
@@ -91,7 +90,13 @@ public class CorrelationModelTest extends AbstractAWETest {
 
 	@Test
 	public void testCorrelationModel() {
-		CorrelationModel cm = new CorrelationModel(network, dataset);
+		CorrelationModel cm = null;
+		try {
+			cm = new CorrelationModel(network, dataset);
+		} catch (AWEException e) {
+			LOGGER.error("Could not create correlation model.", e);
+			fail();
+		}
 		// object returned is not null
 		Assert.assertNotNull(cm);
 		// relationship to network exists
@@ -114,9 +119,21 @@ public class CorrelationModelTest extends AbstractAWETest {
 	@Test
 	public void testConstructorNoRecreate() {
 		// correlation already exists
-		Node corRoot = correlationServ.createCorrelation(network, dataset);
+		Node corRoot = null;
+		try {
+			corRoot = correlationServ.createCorrelation(network, dataset);
+		} catch (DatabaseException e) {
+			LOGGER.error("Could not create correlation.", e);
+			fail();
+		}
 
-		CorrelationModel cm = new CorrelationModel(network, dataset);
+		CorrelationModel cm = null;
+		try {
+			cm = new CorrelationModel(network, dataset);
+		} catch (AWEException e) {
+			LOGGER.error("Could not create correlation model.", e);
+			fail();
+		}
 		// object returned is not null
 		Assert.assertNotNull(cm);
 		// correlation root is not recreated
@@ -140,24 +157,40 @@ public class CorrelationModelTest extends AbstractAWETest {
 
 	@Test
 	public void testGetNetwork() {
-		CorrelationModel cm = new CorrelationModel(network, dataset);
+		CorrelationModel cm = null;
+		try {
+			cm = new CorrelationModel(network, dataset);
+		} catch (AWEException e) {
+			LOGGER.error("Could not create correlation model.", e);
+			fail();
+		}
 
-		Node nw = cm.getNetwork();
-		// node returned is not null
+		IDataElement nw = cm.getNetwork();
+		// element returned is not null
 		Assert.assertNotNull(nw);
+		Node nwNode = ((DataElement) nw).getNode();
 		// node is correct
-		Assert.assertEquals(network, nw);
+		Assert.assertNotNull(nwNode);
+		Assert.assertEquals(network, nwNode);
 	}
 
 	@Test
 	public void testGetDataset() {
-		CorrelationModel cm = new CorrelationModel(network, dataset);
+		CorrelationModel cm = null;
+		try {
+			cm = new CorrelationModel(network, dataset);
+		} catch (AWEException e) {
+			LOGGER.error("Could not create correlation model.", e);
+			fail();
+		}
 
-		Node ds = cm.getDataset();
-		// node returned is not null
+		IDataElement ds = cm.getDataset();
+		// element returned is not null
 		Assert.assertNotNull(ds);
+		Node dsNode = ((DataElement) ds).getNode();
 		// node is correct
-		Assert.assertEquals(dataset, ds);
+		Assert.assertNotNull(dsNode);
+		Assert.assertEquals(dataset, dsNode);
 	}
 
 	@Test
@@ -206,27 +239,40 @@ public class CorrelationModelTest extends AbstractAWETest {
 			fail();
 		}
 
-		CorrelationModel cm = new CorrelationModel(network, dataset);
+		CorrelationModel cm = null;
+		try {
+			cm = new CorrelationModel(network, dataset);
+		} catch (AWEException e) {
+			LOGGER.error("Could not create correlation model.", e);
+			fail();
+		}
 		// all the sectors returned
-		for (Node sector : cm.getSectors()) {
-			// sector is correct
-			Assert.assertTrue(cor_sect.contains(sector));
-			Assert.assertFalse(not_cor_sect.contains(sector));
-			// sector has a proxy relationship
-			Assert.assertTrue(sector.hasRelationship(Correlations.CORRELATED,
-					Direction.OUTGOING));
-			for (Relationship rel : sector
-					.getSingleRelationship(Correlations.CORRELATED,
-							Direction.OUTGOING)
-					.getEndNode()
-					.getRelationships(Correlations.CORRELATED,
-							Direction.OUTGOING)) {
-				// relationship properties are correct
-				Assert.assertEquals(network.getId(),
-						rel.getProperty(CorrelationService.NETWORK_ID, 0L));
-				Assert.assertEquals(dataset.getId(),
-						rel.getProperty(CorrelationService.DATASET_ID, 0L));
+		try {
+			for (IDataElement sElement : cm.getSectors()) {
+				Node sector = ((DataElement) sElement).getNode();
+				Assert.assertNotNull(sector);
+				// sector is correct
+				Assert.assertTrue(cor_sect.contains(sector));
+				Assert.assertFalse(not_cor_sect.contains(sector));
+				// sector has a proxy relationship
+				Assert.assertTrue(sector.hasRelationship(
+						Correlations.CORRELATED, Direction.OUTGOING));
+				for (Relationship rel : sector
+						.getSingleRelationship(Correlations.CORRELATED,
+								Direction.OUTGOING)
+						.getEndNode()
+						.getRelationships(Correlations.CORRELATED,
+								Direction.OUTGOING)) {
+					// relationship properties are correct
+					Assert.assertEquals(network.getId(),
+							rel.getProperty(CorrelationService.NETWORK_ID, 0L));
+					Assert.assertEquals(dataset.getId(),
+							rel.getProperty(CorrelationService.DATASET_ID, 0L));
+				}
 			}
+		} catch (AWEException e) {
+			LOGGER.error("Could not get sectors.", e);
+			fail();
 		}
 	}
 
@@ -290,29 +336,42 @@ public class CorrelationModelTest extends AbstractAWETest {
 			fail();
 		}
 
-		CorrelationModel cm = new CorrelationModel(network, dataset);
+		CorrelationModel cm = null;
+		try {
+			cm = new CorrelationModel(network, dataset);
+		} catch (AWEException e) {
+			LOGGER.error("Could not create correlation model.", e);
+			fail();
+		}
 		// all the measurements returned
-		for (Node m : cm.getMeasurements()) {
-			// node correct
-			Assert.assertNotNull(m);
-			Assert.assertTrue(cor_ms.contains(m));
-			Assert.assertFalse(not_cor_ms.contains(m));
-			Relationship testRel = null;
-			for (Relationship rel : m.getRelationships(Correlations.CORRELATED,
-					Direction.INCOMING)) {
-				if (rel.getProperty(CorrelationService.NETWORK_ID, 0L).equals(
-						network.getId())) {
-					testRel = rel;
+		try {
+			for (IDataElement mElement : cm.getMeasurements()) {
+				Node m = ((DataElement) mElement).getNode();
+				Assert.assertNotNull(m);
+				// node correct
+				Assert.assertNotNull(m);
+				Assert.assertTrue(cor_ms.contains(m));
+				Assert.assertFalse(not_cor_ms.contains(m));
+				Relationship testRel = null;
+				for (Relationship rel : m.getRelationships(
+						Correlations.CORRELATED, Direction.INCOMING)) {
+					if (rel.getProperty(CorrelationService.NETWORK_ID, 0L)
+							.equals(network.getId())) {
+						testRel = rel;
+					}
 				}
-			}
-			// relationship is not null
-			Assert.assertNotNull(testRel);
-			// relationship properties are correct
-			Assert.assertEquals(network.getId(),
-					testRel.getProperty(CorrelationService.NETWORK_ID, 0L));
-			Assert.assertEquals(dataset.getId(),
-					testRel.getProperty(CorrelationService.DATASET_ID, 0L));
+				// relationship is not null
+				Assert.assertNotNull(testRel);
+				// relationship properties are correct
+				Assert.assertEquals(network.getId(),
+						testRel.getProperty(CorrelationService.NETWORK_ID, 0L));
+				Assert.assertEquals(dataset.getId(),
+						testRel.getProperty(CorrelationService.DATASET_ID, 0L));
 
+			}
+		} catch (AWEException e) {
+			LOGGER.error("Could not get measurements.", e);
+			fail();
 		}
 	}
 
@@ -372,10 +431,18 @@ public class CorrelationModelTest extends AbstractAWETest {
 			fail();
 		}
 
-		CorrelationModel cm = new CorrelationModel(network, dataset);
+		CorrelationModel cm = null;
+		try {
+			cm = new CorrelationModel(network, dataset);
+		} catch (AWEException e) {
+			LOGGER.error("Could not create correlation model.", e);
+			fail();
+		}
 		for (Node sector : sectors) {
 			// all nodes returned
-			for (Node n : cm.getCorrelatedNodes(sector)) {
+			for (IDataElement nElement : cm.getCorrelatedNodes(sector)) {
+				Node n = ((DataElement) nElement).getNode();
+				Assert.assertNotNull(n);
 				// node returned correct
 				Assert.assertFalse(not_cor_ms.contains(n));
 				// relationship to sector exists
@@ -445,9 +512,15 @@ public class CorrelationModelTest extends AbstractAWETest {
 			fail();
 		}
 
-		CorrelationModel cm = new CorrelationModel(network, dataset);
+		CorrelationModel cm = null;
+		try {
+			cm = new CorrelationModel(network, dataset);
+		} catch (AWEException e) {
+			LOGGER.error("Could not create correlation model.", e);
+			fail();
+		}
 		for (Node m : ms) {
-			Node sect = cm.getCorrelatedSector(m);
+			IDataElement sect = cm.getCorrelatedSector(m);
 
 			// the valid sector returned
 			Assert.assertNotNull(sect);
