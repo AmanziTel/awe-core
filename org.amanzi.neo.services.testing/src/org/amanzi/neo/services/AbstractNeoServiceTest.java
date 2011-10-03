@@ -29,5 +29,7 @@ public abstract class AbstractNeoServiceTest extends AbstractAWETest {
     public static void clearServices() {
         NeoServiceFactory.getInstance().clear();
     }
+    
+    
 
 }

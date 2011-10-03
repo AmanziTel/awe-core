@@ -107,7 +107,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
             }
         }
         this.rootNode = network;
-        this.name = network.getProperty(NewAbstractService.NAME, "").toString();
+        this.name = network.getProperty(NewAbstractService.NAME, StringUtils.EMPTY).toString();
         initializeStatistics();
     }
 

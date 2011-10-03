@@ -207,7 +207,7 @@ public abstract class NewAbstractService {
      */
     protected void setNameProperty(Node node, String name) throws IllegalNodeDataException, DatabaseException {
         // validate parameters
-        if ((name == null) || name.equals("")) {
+        if ((name == null) || name.equals(StringUtils.EMPTY)) {
             throw new IllegalNodeDataException("Name cannot be empty.");
         }
         if (node == null) {
@@ -389,7 +389,7 @@ public abstract class NewAbstractService {
         if (relType == null) {
             throw new IllegalArgumentException("Relationship type is null.");
         }
-        if ((name == null) || (name.equals(""))) {
+        if ((name == null) || (name.equals(StringUtils.EMPTY))) {
             throw new IllegalArgumentException("Name is null or empty.");
         }
         if (nodeType == null) {
