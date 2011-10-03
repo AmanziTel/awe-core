@@ -28,6 +28,7 @@ import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.indexes.MultiPropertyIndex;
 import org.amanzi.neo.services.indexes.MultiPropertyIndex.MultiDoubleConverter;
 import org.amanzi.neo.services.indexes.MultiPropertyIndex.MultiTimeIndexConverter;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
 
@@ -118,7 +119,7 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
             throw new IllegalArgumentException("Node is null.");
         }
 
-        INodeType type = NodeTypeManager.getType(node.getProperty(NewAbstractService.TYPE, "").toString());
+        INodeType type = NodeTypeManager.getType(node.getProperty(NewAbstractService.TYPE, StringUtils.EMPTY).toString());
         List<MultiPropertyIndex< ? >> indList = indexes.get(type);
         if (indList != null) {
             for (MultiPropertyIndex< ? > index : indList) {

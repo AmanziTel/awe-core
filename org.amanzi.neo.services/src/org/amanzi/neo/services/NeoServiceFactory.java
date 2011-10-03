@@ -182,5 +182,19 @@ public class NeoServiceFactory {
         }
         return newCorrelationService;
     }
+    
+    public void clear() {
+        datasetService = null;
+        correlationService = null;
+        projectService = null;
+        statisticService = null;
+        node2nodeRelationService = null;
+        networkService = null;
+        newDatasetService = null;
+        newNetworkService = null;
+        newStatisticsService = null;
+        newProjectService = null;
+        newCorrelationService = null;
+    }
 
 }

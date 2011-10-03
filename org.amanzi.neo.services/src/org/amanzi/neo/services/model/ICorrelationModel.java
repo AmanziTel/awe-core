@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.services.model;
 
+import org.amanzi.neo.services.exceptions.AWEException;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -45,7 +46,7 @@ public interface ICorrelationModel extends IModel {
      * 
      * @return traverser over sectors
      */
-    public Iterable<Node> getSectors() throws AWEException;
+    public Iterable<IDataElement> getSectors() throws AWEException;
 
     /**
      * Traverses database to get all the nodes of the current dataset (measurements for drive data,
@@ -53,8 +54,7 @@ public interface ICorrelationModel extends IModel {
      * 
      * @return traverser over dataset nodes
      */
-    //TODO: LN: use IDataElement
-    public Iterable<Node> getMeasurements() throws AWEException;
+    public Iterable<IDataElement> getMeasurements() throws AWEException;
 
     /**
      * Traverses database to get the dataset nodes correlated to the defined sector node.

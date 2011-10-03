@@ -24,8 +24,6 @@ import org.amanzi.neo.services.CorrelationService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService;
-import org.amanzi.neo.services.NodeTypeManager;
-import org.amanzi.neo.services.CorrelationService.CorrelationNodeTypes;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.NewDatasetService.DriveTypes;
 import org.amanzi.neo.services.enums.IDriveType;
@@ -83,13 +81,6 @@ public class DriveModel extends RenderableModel implements IDriveModel {
      */
     public enum DriveNodeTypes implements INodeType {
         FILE, M, MP,M_AGGR,MM;
-
-        /**
-         * The classes implementing <code>INodeType</code> must be registered in <code>NodeTypeManager</code>.
-         */
-        static {
-            NodeTypeManager.registerNodeType(DriveNodeTypes.class);
-        }
 
         @Override
         public String getId() {
@@ -634,5 +625,5 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     @Override
     public INodeType getType() {
         return primaryType;
-    }
+    }    
 }

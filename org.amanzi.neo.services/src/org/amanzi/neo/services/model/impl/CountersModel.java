@@ -20,10 +20,12 @@ import org.amanzi.neo.services.CorrelationService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.ICorrelationModel;
 import org.amanzi.neo.services.model.ICountersModel;
 import org.amanzi.neo.services.model.ICountersType;
 import org.amanzi.neo.services.model.IDataElement;
+import org.apache.commons.lang.StringUtils;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -39,7 +41,7 @@ public class CountersModel extends AbstractIndexedModel implements ICountersMode
     private CorrelationService crServ = NeoServiceFactory.getInstance().getNewCorrelationService();
 
     @Override
-    public Iterable<ICorrelationModel> getCorrelatedModels() {
+    public Iterable<ICorrelationModel> getCorrelatedModels() throws AWEException {
         List<ICorrelationModel> result = new ArrayList<ICorrelationModel>();
         for (Node network : crServ.getCorrelatedNetworks(getRootNode())) {
             result.add(new CorrelationModel(network, getRootNode()));
@@ -48,10 +50,10 @@ public class CountersModel extends AbstractIndexedModel implements ICountersMode
     }
 
     @Override
-    public ICorrelationModel getCorrelatedModel(String correlationModelName) {
+    public ICorrelationModel getCorrelatedModel(String correlationModelName) throws AWEException {
         ICorrelationModel result = null;
         for (Node network : crServ.getCorrelatedNetworks(getRootNode())) {
-            if (network.getProperty(NewAbstractService.NAME, "").equals(correlationModelName)) {
+            if (network.getProperty(NewAbstractService.NAME, StringUtils.EMPTY).equals(correlationModelName)) {
                 result = new CorrelationModel(network, getRootNode());
                 break;
             }

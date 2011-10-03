@@ -33,7 +33,6 @@ import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.traversal.Evaluation;
 import org.neo4j.graphdb.traversal.Evaluator;
-import org.neo4j.graphdb.traversal.Evaluators;
 import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.kernel.Traversal;
 
@@ -46,9 +45,6 @@ import org.neo4j.kernel.Traversal;
  * @since 1.0.0
  */
 public abstract class NewAbstractService {
-    public static final TraversalDescription EMPTY_TRAVERSAL = Traversal.description().evaluator(Evaluators.fromDepth(2))
-            .evaluator(Evaluators.toDepth(1));
-
     public final static String TYPE = "type";
     public final static String NAME = "name";
     public static final String DATASET_ID = "dataset";
@@ -211,7 +207,7 @@ public abstract class NewAbstractService {
      */
     protected void setNameProperty(Node node, String name) throws IllegalNodeDataException, DatabaseException {
         // validate parameters
-        if ((name == null) || name.equals("")) {
+        if ((name == null) || name.equals(StringUtils.EMPTY)) {
             throw new IllegalNodeDataException("Name cannot be empty.");
         }
         if (node == null) {
@@ -393,7 +389,7 @@ public abstract class NewAbstractService {
         if (relType == null) {
             throw new IllegalArgumentException("Relationship type is null.");
         }
-        if ((name == null) || (name.equals(""))) {
+        if ((name == null) || (name.equals(StringUtils.EMPTY))) {
             throw new IllegalArgumentException("Name is null or empty.");
         }
         if (nodeType == null) {

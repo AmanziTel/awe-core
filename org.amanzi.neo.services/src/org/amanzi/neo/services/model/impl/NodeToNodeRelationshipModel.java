@@ -17,17 +17,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.amanzi.neo.services.NeoServiceFactory;
-import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.NewNetworkService;
-import org.amanzi.neo.services.NodeTypeManager;
-import org.amanzi.neo.services.CorrelationService.CorrelationNodeTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
 import org.amanzi.neo.services.model.INodeToNodeRelationsType;
 import org.amanzi.neo.services.model.impl.DataModel.DataElementIterable;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
@@ -56,7 +54,8 @@ public class NodeToNodeRelationshipModel extends AbstractModel implements INodeT
 
     /**
      * <p>
-     * Enum describing utility relationships in <code>NodeToNodeRelationshipModel</code> class.
+     * Enum describing utility relationships in <code>NodeToNodeRelationshipModel</code> class. TODO
+     * rename?
      * </p>
      * 
      * @author grigoreva_a
@@ -95,14 +94,6 @@ public class NodeToNodeRelationshipModel extends AbstractModel implements INodeT
     protected enum NodeToNodeTypes implements INodeType {
         NODE2NODE, PROXY;
 
-        /**
-         * The classes implementing <code>INodeType</code> must be registered in
-         * <code>NodeTypeManager</code>.
-         */
-        static {
-            NodeTypeManager.registerNodeType(NodeToNodeTypes.class);
-        }
-
         @Override
         public String getId() {
             return name().toLowerCase();
@@ -130,7 +121,7 @@ public class NodeToNodeRelationshipModel extends AbstractModel implements INodeT
         if (relType == null) {
             throw new IllegalArgumentException("Relationship type is null.");
         }
-        if ((name == null) || (name.equals(""))) {
+        if ((name == null) || (name.equals(StringUtils.EMPTY))) {
             throw new IllegalArgumentException("Name is null or empty.");
         }
         if (nodeType == null) {
@@ -275,7 +266,8 @@ public class NodeToNodeRelationshipModel extends AbstractModel implements INodeT
                     .traverse(proxy).nodes());
         } else {
             // TODO: LN: move TraversalDescriptions to Service and make it as Constant, not a method
-            return new DataElementIterable(NewAbstractService.EMPTY_TRAVERSAL.traverse(sourceNode).nodes());
+            return new DataElementIterable(Traversal.description().evaluator(Evaluators.fromDepth(2))
+                    .evaluator(Evaluators.toDepth(1)).traverse(sourceNode).nodes());
         }
     }
 

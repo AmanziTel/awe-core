@@ -19,6 +19,7 @@ import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -53,7 +54,7 @@ public class ProjectService extends NewAbstractService {
      */
     protected enum ProjectNodeType implements INodeType {
         PROJECT;
-        
+
         @Override
         public String getId() {
             return name().toLowerCase();
@@ -100,11 +101,12 @@ public class ProjectService extends NewAbstractService {
      * @throws IllegalNodeDataException is thrown when <code>name</code> is null or empty
      * @throws DuplicateNodeNameException is thrown if a <i>project</i> node with the same name
      *         already exists
+     * @throws DatabaseException if errors occur in database
      */
-    public Node createProject(String name) throws IllegalNodeDataException, DuplicateNodeNameException {
+    public Node createProject(String name) throws IllegalNodeDataException, DuplicateNodeNameException, DatabaseException {
         LOGGER.debug("Started createProject '" + name + "'");
         // validate parameters
-        if ((name == null) || (name.equals(""))) {
+        if ((name == null) || (name.equals(StringUtils.EMPTY))) {
             throw new IllegalNodeDataException("Project name cannot be empty.");
         }
         if (findProject(name) != null) {
@@ -121,7 +123,8 @@ public class ProjectService extends NewAbstractService {
             tx.success();
         } catch (DatabaseException e) {
             LOGGER.error("Could not create project '" + name + "'.", e);
-            //TODO: LN: throw exception to higher level
+            tx.failure();
+            throw new DatabaseException(e);
         } finally {
             tx.finish();
         }
@@ -141,7 +144,7 @@ public class ProjectService extends NewAbstractService {
     public Node findProject(String name) throws IllegalNodeDataException, DuplicateNodeNameException {
         LOGGER.debug("Started findProject '" + name + "'");
         // validate parameters
-        if ((name == null) || (name.equals(""))) {
+        if ((name == null) || (name.equals(StringUtils.EMPTY))) {
             throw new IllegalNodeDataException("Project name cannot be empty.");
         }
 
@@ -170,14 +173,15 @@ public class ProjectService extends NewAbstractService {
     }
 
     /**
-     *Finds or creates a project node by name.
-     *
+     * Finds or creates a project node by name.
+     * 
      * @param name
      * @return
      * @throws IllegalNodeDataException
      * @throws DuplicateNodeNameException if more than one project found
+     * @throws DatabaseException if errors occur in database
      */
-    public Node getProject(String name) throws IllegalNodeDataException, DuplicateNodeNameException {
+    public Node getProject(String name) throws IllegalNodeDataException, DuplicateNodeNameException, DatabaseException {
         LOGGER.debug("Started getProject '" + name + "'");
         Node result = findProject(name);
         if (result == null) {

@@ -16,6 +16,7 @@ package org.amanzi.neo.services.model.impl;
 import org.amanzi.neo.services.CorrelationService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.ICorrelationModel;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.impl.DataModel.DataElementIterable;
@@ -62,8 +63,9 @@ public class CorrelationModel extends AbstractModel implements ICorrelationModel
      * 
      * @param networkElement <code>DataElement</code>, containing a network root node
      * @param datasetElement <code>DataElement</code>, containing a dataset root node
+     * @throws DatabaseException 
      */
-    public CorrelationModel(IDataElement networkElement, IDataElement datasetElement) {
+    public CorrelationModel(IDataElement networkElement, IDataElement datasetElement) throws DatabaseException {
         // validate parameters
         if (networkElement == null) {
             throw new IllegalArgumentException("Network is null.");

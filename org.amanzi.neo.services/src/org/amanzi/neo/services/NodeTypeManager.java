@@ -20,10 +20,15 @@ import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
 
-//TODO: LN: comments!!!!!!!!!!!!!
 /**
  * <p>
- * 
+ * Node type manager holds types, that implement {@link INodeType}.
+ * </p>
+ * <p>
+ * The class is used to register implementations of <code>INodeType </code> interface and get valid
+ * objects the registered <code>INodeType</code> implementations by id, that is stored in database
+ * nodes. Note that if enum members in different implementations repeat each other, than there's no
+ * guarantee that the result of method {@link NodeTypeManager#getType(String)} will be valid.
  * </p>
  * 
  * @author grigoreva_a
@@ -34,11 +39,11 @@ public class NodeTypeManager {
 
     private static Set<Class< ? >> registeredNodeTypes = new HashSet<Class< ? >>();
 
-    static {
-        registerNodeType(DriveNodeTypes.class);
-        registerNodeType(NetworkElementNodeType.class);
-    }
-
+    /**
+     * Adds a class, implementing <code>INodeType</code> to the collection of registered classes.
+     * 
+     * @param nodeType a class that implements INodeType interface
+     */
     public static void registerNodeType(Class< ? extends INodeType> nodeType) {
         // validate
         if (nodeType == null) {
@@ -48,6 +53,13 @@ public class NodeTypeManager {
         registeredNodeTypes.add(nodeType);
     }
 
+    /**
+     * This method registered classes, and tries to get an instance of this class by calling method
+     * <i>valueOf(String)</i> on class objects, with the specified <code>typeID</code> in parameter.
+     * 
+     * @param typeID
+     * @return
+     */
     public static INodeType getType(String typeID) {
         INodeType result = null;
         for (Class T : registeredNodeTypes) {
