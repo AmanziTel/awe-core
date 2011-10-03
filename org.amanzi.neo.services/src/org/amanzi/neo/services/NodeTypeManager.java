@@ -16,9 +16,7 @@ package org.amanzi.neo.services;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.enums.INodeType;
-import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
 
 /**
  * <p>

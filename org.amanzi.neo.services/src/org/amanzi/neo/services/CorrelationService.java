@@ -57,6 +57,11 @@ public class CorrelationService extends NewAbstractService {
 
     public enum CorrelationNodeTypes implements INodeType {
         CORRELATION, PROXY;
+        
+        static {
+            NodeTypeManager.registerNodeType(CorrelationNodeTypes.class);
+        }
+        
         @Override
         public String getId() {
             return name().toLowerCase();

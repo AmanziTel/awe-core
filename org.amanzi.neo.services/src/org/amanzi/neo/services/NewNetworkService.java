@@ -15,6 +15,7 @@ package org.amanzi.neo.services;
 
 import java.util.Iterator;
 
+import org.amanzi.neo.services.CorrelationService.CorrelationNodeTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.exceptions.DatabaseException;
@@ -64,6 +65,11 @@ public class NewNetworkService extends NewAbstractService {
      */
     public enum NetworkElementNodeType implements INodeType {
         NETWORK, BSC, SITE, SECTOR, CITY, MSC, SELECTION_LIST_ROOT;
+
+        static {
+            NodeTypeManager.registerNodeType(CorrelationNodeTypes.class);
+        }
+
         @Override
         public String getId() {
             return name().toLowerCase();

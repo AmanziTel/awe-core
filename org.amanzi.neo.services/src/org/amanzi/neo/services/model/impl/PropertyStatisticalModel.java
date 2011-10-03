@@ -24,6 +24,7 @@ import org.amanzi.neo.services.exceptions.InvalidStatisticsParameterException;
 import org.amanzi.neo.services.exceptions.LoadVaultException;
 import org.amanzi.neo.services.model.IPropertyStatisticalModel;
 import org.amanzi.neo.services.statistic.IVault;
+import org.apache.log4j.Logger;
 
 /**
  * TODO Purpose of
@@ -34,26 +35,27 @@ import org.amanzi.neo.services.statistic.IVault;
  * @since 1.0.0
  */
 public abstract class PropertyStatisticalModel extends DataModel implements IPropertyStatisticalModel {
-    
+
+    private static Logger LOGGER = Logger.getLogger(PropertyStatisticalModel.class);
+
     protected IVault statisticsVault;
-    
+
     protected void initializeStatistics() {
         NewStatisticsService statisticsService = NeoServiceFactory.getInstance().getNewStatisticsService();
         try {
             statisticsVault = statisticsService.loadVault(getRootNode());
         } catch (AWEException e) {
-            
+
         }
     }
-    
-    protected void indexProperty(INodeType nodeType, String propertyName, Object propertyValue) 
+
+    protected void indexProperty(INodeType nodeType, String propertyName, Object propertyValue)
             throws InvalidStatisticsParameterException, LoadVaultException, IndexPropertyException {
-        
+
         statisticsVault.indexProperty(nodeType.getId(), propertyName, propertyValue);
     }
-    
-    protected void indexProperty(INodeType nodeType, Map<String, Object> params) 
-            throws AWEException {
+
+    protected void indexProperty(INodeType nodeType, Map<String, Object> params) throws AWEException {
         for (String key : params.keySet()) {
             Object value = params.get(key);
             if (value != null) {
@@ -62,8 +64,7 @@ public abstract class PropertyStatisticalModel extends DataModel implements IPro
         }
     }
 
-    protected Object parse(INodeType nodeType, String propertyName, String propertyValue) 
-            throws AWEException {
+    protected Object parse(INodeType nodeType, String propertyName, String propertyValue) throws AWEException {
         return statisticsVault.parse(nodeType.getId(), propertyName, propertyValue);
     }
 
@@ -87,28 +88,27 @@ public abstract class PropertyStatisticalModel extends DataModel implements IPro
 
     @Override
     public String[] getAllProperties(INodeType nodeType) {
-        Map<Object, Integer> allProperties = statisticsVault.getAllProperties(nodeType.getId()); 
+        Map<Object, Integer> allProperties = statisticsVault.getAllProperties(nodeType.getId());
         String[] result = new String[allProperties.size()];
         allProperties.keySet().toArray(result);
         return result;
     }
-    
+
     @Override
-    public String[] getAllProperties(Class<?> klass) {
+    public String[] getAllProperties(Class< ? > klass) {
         Map<Object, Integer> allProperties = statisticsVault.getAllProperties(klass);
         String[] result = new String[allProperties.size()];
         allProperties.keySet().toArray(result);
         return result;
     }
-    
+
     @Override
-    public void finishUp()
-    {
+    public void finishUp() {
         NewStatisticsService statisticsService = new NewStatisticsService();
         try {
             statisticsService.saveVault(rootNode, statisticsVault);
         } catch (AWEException e) {
-            //TODO: LN: error handling? 
+            LOGGER.error("Could not save property statistical vault.", e);
         }
     }
 }

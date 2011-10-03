@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.amanzi.neo.services.CorrelationService.CorrelationNodeTypes;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.IDriveType;
 import org.amanzi.neo.services.enums.INodeType;
@@ -24,6 +25,8 @@ import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
+import org.amanzi.neo.services.model.impl.DataModel.DataElementIterable;
+import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelationships;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
@@ -81,6 +84,14 @@ public class NewDatasetService extends NewAbstractService {
             .relationships(DatasetRelationTypes.CHILD, Direction.OUTGOING)
             .relationships(DatasetRelationTypes.NEXT, Direction.OUTGOING);
 
+    /** <code>TraversalDescription</code> to iterate over n2n related nodes */
+    protected final TraversalDescription N2N_TRAVERSAL_DESCRIPTION = Traversal.description().breadthFirst()
+            .relationships(N2NRelationships.N2N_REL, Direction.INCOMING).evaluator(Evaluators.excludeStartPosition());
+
+    /** <code>TraversalDescription</code> for an empty iterator */
+    protected final TraversalDescription EMPTY_TRAVERSAL_DESCRIPTION = Traversal.description().evaluator(Evaluators.fromDepth(2))
+            .evaluator(Evaluators.toDepth(1));
+
     /**
      * <p>
      * enum of dataset relationships types
@@ -103,6 +114,10 @@ public class NewDatasetService extends NewAbstractService {
      */
     public enum DatasetTypes implements INodeType {
         NETWORK, DRIVE, COUNTERS;
+
+        static {
+            NodeTypeManager.registerNodeType(CorrelationNodeTypes.class);
+        }
 
         @Override
         public String getId() {
@@ -975,6 +990,44 @@ public class NewDatasetService extends NewAbstractService {
         }
 
         return DATASET_ELEMENT_TRAVERSAL_DESCRIPTION.evaluator(new FilterNodesByType(elementType)).traverse(parent).nodes();
+    }
+
+    /**
+     * @param n2nProxy
+     * @param nodeType
+     * @param relType
+     * @return
+     */
+    public Iterable<Node> findN2NRelatedNodes(Node n2nProxy, INodeType nodeType, RelationshipType relType) {
+        // validate parameters
+        if (n2nProxy == null) {
+            throw new IllegalArgumentException("N2N proxy is null.");
+        }
+        if (nodeType == null) {
+            throw new IllegalArgumentException("Node type is null.");
+        }
+        if (relType == null) {
+            throw new IllegalArgumentException("Relationship type is null.");
+        }
+
+        return N2N_TRAVERSAL_DESCRIPTION.evaluator(new FilterNodesByType(nodeType)).relationships(relType, Direction.OUTGOING)
+                .traverse(n2nProxy).nodes();
+    }
+
+    /**
+     * The method traverses database with a description, that will definitely return an empty
+     * iterator.
+     * 
+     * @param source a node to pass to {@link TraversalDescription#traverse(Node)} method, must not
+     *        be <code>null</code>
+     * @return a not-null iterable over nodes with no elements in it.
+     */
+    public Iterable<Node> emptyTraverser(Node source) {
+        // validate parameters
+        if (source == null) {
+            throw new IllegalArgumentException("Source nonde is null.");
+        }
+        return EMPTY_TRAVERSAL_DESCRIPTION.traverse(source).nodes();
     }
 
 }

@@ -19,6 +19,8 @@ import java.util.Map;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.NewNetworkService;
+import org.amanzi.neo.services.NodeTypeManager;
+import org.amanzi.neo.services.CorrelationService.CorrelationNodeTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataElement;
@@ -61,7 +63,7 @@ public class NodeToNodeRelationshipModel extends AbstractModel implements INodeT
      * @author grigoreva_a
      * @since 1.0.0
      */
-    protected enum N2NRelationships implements RelationshipType {
+    public enum N2NRelationships implements RelationshipType {
         N2N_REL;
     }
 
@@ -93,6 +95,10 @@ public class NodeToNodeRelationshipModel extends AbstractModel implements INodeT
      */
     protected enum NodeToNodeTypes implements INodeType {
         NODE2NODE, PROXY;
+
+        static {
+            NodeTypeManager.registerNodeType(CorrelationNodeTypes.class);
+        }
 
         @Override
         public String getId() {
@@ -261,20 +267,10 @@ public class NodeToNodeRelationshipModel extends AbstractModel implements INodeT
 
         Node proxy = findProxy(sourceNode);
         if (proxy != null) {
-            // add relationship property evaluator
-            return new DataElementIterable(getConnectedTraversalDescription().relationships(relType, Direction.OUTGOING)
-                    .traverse(proxy).nodes());
+            return new DataElementIterable(dsServ.findN2NRelatedNodes(proxy, nodeType, relType));
         } else {
-            // TODO: LN: move TraversalDescriptions to Service and make it as Constant, not a method
-            return new DataElementIterable(Traversal.description().evaluator(Evaluators.fromDepth(2))
-                    .evaluator(Evaluators.toDepth(1)).traverse(sourceNode).nodes());
+            return new DataElementIterable(dsServ.emptyTraverser(sourceNode));
         }
-    }
-
-    // TODO: LN: move TraversalDescriptions to Service
-    protected TraversalDescription getConnectedTraversalDescription() {
-        return Traversal.description().breadthFirst().relationships(N2NRelationships.N2N_REL, Direction.INCOMING)
-                .evaluator(Evaluators.excludeStartPosition()).evaluator(dsServ.new FilterNodesByType(nodeType));
     }
 
     @Override
