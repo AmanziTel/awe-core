@@ -13,16 +13,16 @@
 
 package org.amanzi.neo.services;
 
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 
 import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.RelationshipType;
@@ -50,8 +50,9 @@ public class NewNetworkService extends NewAbstractService {
 
     private static Logger LOGGER = Logger.getLogger(NewNetworkService.class);
 
+    // TODO: LN: do not use tx as global fiels to prevent problems with Transactions
+    private Transaction tx;
     private NewDatasetService datasetService;
-    private Map<String, Index<Node>> indexes = new HashMap<String, Index<Node>>();
 
     /**
      * <p>
@@ -115,10 +116,11 @@ public class NewNetworkService extends NewAbstractService {
         if (parent == null) {
             throw new IllegalArgumentException("Parent is null.");
         }
-        if ((indexName == null) || (indexName.equals(StringUtils.EMPTY))) {
+        // TODO: LN: use StringUtils.EMPTY
+        if ((indexName == null) || (indexName.equals(""))) {
             throw new IllegalArgumentException("indexName is null or empty");
         }
-        if ((name == null) || (name.equals(StringUtils.EMPTY))) {
+        if ((name == null) || (name.equals(""))) {
             throw new IllegalNodeDataException("Name cannot be empty");
         }
         if (elementType == null) {
@@ -128,7 +130,7 @@ public class NewNetworkService extends NewAbstractService {
             throw new IllegalArgumentException("To create a sector use method createSector()");
         }
 
-        Transaction tx = graphDb.beginTx();
+        tx = graphDb.beginTx();
         Node result = null;
         try {
             result = createNode(elementType);
@@ -136,19 +138,11 @@ public class NewNetworkService extends NewAbstractService {
             setNameProperty(result, name);
             addNodeToIndex(result, indexName, NAME, name);
             tx.success();
-        } catch (Exception e) {
-            LOGGER.error("Could not create network element.", e);
-            tx.failure();
-            throw new DatabaseException(e);
+            // TODO: LN: where is exception handling?
         } finally {
-
             tx.finish();
         }
         return result;
-    }
-
-    private void addNodeToIndex() {
-
     }
 
     /**
@@ -163,19 +157,16 @@ public class NewNetworkService extends NewAbstractService {
         LOGGER.debug("start findNetworkElement(String indexName, String name)");
 
         // validate parameters
-        if ((indexName == null) || (indexName.equals(StringUtils.EMPTY))) {
+        if ((indexName == null) || (indexName.equals(""))) {
             throw new IllegalArgumentException("indexName is null or empty");
         }
-        if ((name == null) || (name.equals(StringUtils.EMPTY))) {
+        if ((name == null) || (name.equals(""))) {
             throw new IllegalArgumentException("Name cannot be empty");
         }
 
         // Find element by index
-        Index<Node> index = indexes.get(indexName);
-        if (index == null) {
-            index = graphDb.index().forNodes(indexName);
-            indexes.put(indexName, index);
-        }
+        // TODO: LN, use Index instead of indexName
+        Index<Node> index = graphDb.index().forNodes(indexName);
         Node result = index.get(NAME, name).getSingle();
         return result;
     }
@@ -223,32 +214,30 @@ public class NewNetworkService extends NewAbstractService {
         if (!NetworkElementNodeType.SITE.getId().equals(parent.getProperty(TYPE, null))) {
             throw new IllegalArgumentException("Parent node must be of type SITE.");
         }
-        if ((indexName == null) || (indexName.equals(StringUtils.EMPTY))) {
+        if ((indexName == null) || (indexName.equals(""))) {
             throw new IllegalArgumentException("indexName is null or empty");
         }
         // TODO: LN: incorrect condition - you have now <Name> AND <CI+LAC>, but should have OR
-        // AG: !(A|B)=(!A)&(!B) exception won't be thrown if <Name> set, or <CI+LAC> set, or the
-        // three of them are set.
-        if (((name == null) || (name.equals(StringUtils.EMPTY)))
-                && ((ci == null) || (ci.equals(StringUtils.EMPTY)) || (lac == null) || (lac.equals(StringUtils.EMPTY)))) {
+        if (((name == null) || (name.equals(""))) && ((ci == null) || (ci.equals("")) || (lac == null) || (lac.equals("")))) {
             throw new IllegalNodeDataException("Name or CI+LAC must be set");
         }
 
-        Transaction tx = graphDb.beginTx();
+        tx = graphDb.beginTx();
         Node result = null;
         try {
             result = createNode(NetworkElementNodeType.SECTOR);
             datasetService.addChild(parent, result);
             // set properties and index node
-            if ((name != null) && (!name.equals(StringUtils.EMPTY))) {
+            if ((name != null) && (!name.equals(""))) {
                 setNameProperty(result, name);
                 addNodeToIndex(result, indexName, NAME, name);
             }
-            if ((ci != null) && (!ci.equals(StringUtils.EMPTY))) {
+            // TODO: LN: use StringUtils.EMPTY_STRING constant
+            if ((ci != null) && (!ci.equals(""))) {
                 result.setProperty(CELL_INDEX, ci);
                 addNodeToIndex(result, indexName, CELL_INDEX, ci);
             }
-            if ((lac != null) && (!lac.equals(StringUtils.EMPTY))) {
+            if ((lac != null) && (!lac.equals(""))) {
                 result.setProperty(LOCATION_AREA_CODE, lac);
                 addNodeToIndex(result, indexName, LOCATION_AREA_CODE, lac);
             }
@@ -273,11 +262,10 @@ public class NewNetworkService extends NewAbstractService {
     public Node findSector(String indexName, String name, String ci, String lac) {
         LOGGER.debug("start findSector(String indexName, String name, String ci, String lac)");
         // validate parameters
-        if ((indexName == null) || (indexName.equals(StringUtils.EMPTY))) {
+        if ((indexName == null) || (indexName.equals(""))) {
             throw new IllegalArgumentException("indexName is null or empty");
         }
-        if (((name == null) || (name.equals(StringUtils.EMPTY)))
-                && ((ci == null) || (ci.equals(StringUtils.EMPTY)) || (lac == null) || (lac.equals(StringUtils.EMPTY)))) {
+        if (((name == null) || (name.equals(""))) && ((ci == null) || (ci.equals("")) || (lac == null) || (lac.equals("")))) {
             throw new IllegalArgumentException("Name or CI+LAC must be set");
         }
 
@@ -286,7 +274,7 @@ public class NewNetworkService extends NewAbstractService {
         // TODO: LN: use index instead of index name
         Index<Node> index = graphDb.index().forNodes(indexName);
 
-        if (!((ci == null) || (ci.equals(StringUtils.EMPTY)))) {
+        if (!((ci == null) || (ci.equals("")))) {
             IndexHits<Node> cis = index.get(CELL_INDEX, ci);
             for (Node node : cis) {
                 if (lac.equals(node.getProperty(LOCATION_AREA_CODE, null))) {
@@ -448,4 +436,12 @@ public class NewNetworkService extends NewAbstractService {
         return result;
     }
 
+    /**
+     * @param newParentnodem
+     * @param currentNode
+     */
+    public void changeRelationship(Node newParentNode, Node curentNode, RelationshipType type, Direction direction) {
+        curentNode.getSingleRelationship(type, direction).delete();
+        newParentNode.createRelationshipTo(curentNode, type);
+    }
 }
