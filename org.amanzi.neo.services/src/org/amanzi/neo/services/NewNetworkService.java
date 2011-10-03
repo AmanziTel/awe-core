@@ -16,7 +16,6 @@ package org.amanzi.neo.services;
 import java.util.Iterator;
 
 import org.amanzi.neo.services.enums.INodeType;
-import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
@@ -64,6 +63,11 @@ public class NewNetworkService extends NewAbstractService {
      */
     public enum NetworkElementNodeType implements INodeType {
         NETWORK, BSC, SITE, SECTOR, CITY, MSC, SELECTION_LIST_ROOT;
+
+        static {
+            NodeTypeManager.registerNodeType(NetworkElementNodeType.class);
+        }
+
         @Override
         public String getId() {
             return name().toLowerCase();

@@ -26,6 +26,7 @@ import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.NewDatasetService.DriveTypes;
+import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.enums.IDriveType;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
@@ -61,7 +62,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     private static Logger LOGGER = Logger.getLogger(DriveModel.class);
 
     // private members
-    //TODO: LN: do not use GraphDBService in Model
+    // TODO: LN: do not use GraphDBService in Model
     private GraphDatabaseService graphDb;
     private Index<Node> files;
     private int count = 0;
@@ -80,21 +81,15 @@ public class DriveModel extends RenderableModel implements IDriveModel {
      * @since 1.0.0
      */
     public enum DriveNodeTypes implements INodeType {
-        FILE, M, MP,M_AGGR,MM;
+        FILE, M, MP, M_AGGR, MM;
+
+        static {
+            NodeTypeManager.registerNodeType(DriveNodeTypes.class);
+        }
 
         @Override
         public String getId() {
             return name().toLowerCase();
-        }
-        
-        public static DriveNodeTypes findById(String id) {
-            for (DriveNodeTypes driveNodeType : values()) {
-                if (driveNodeType.getId().equals(id)) {
-                    return driveNodeType;
-                }
-            }
-            
-            return null;
         }
 
     }
@@ -129,7 +124,8 @@ public class DriveModel extends RenderableModel implements IDriveModel {
 
             this.rootNode = rootNode;
             this.name = (String)rootNode.getProperty(NewAbstractService.NAME, null);
-            this.driveType = DriveTypes.valueOf(rootNode.getProperty(NewDatasetService.DRIVE_TYPE, StringUtils.EMPTY).toString().toUpperCase());
+            this.driveType = DriveTypes.valueOf(rootNode.getProperty(NewDatasetService.DRIVE_TYPE, StringUtils.EMPTY).toString()
+                    .toUpperCase());
         } else {
             // validate params
             if (parent == null) {
@@ -244,7 +240,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     public Iterable<IDriveModel> getVirtualDatasets() {
         LOGGER.debug("start getVirtualDatasets()");
 
-        //TODO: LN: move this to Service
+        // TODO: LN: move this to Service
         List<IDriveModel> result = new ArrayList<IDriveModel>();
         for (Node node : getVirtualDatasetsTraversalDescription().traverse(rootNode).nodes()) {
             try {
@@ -256,7 +252,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         return result;
     }
 
-    //TODO: LN: move this to Service
+    // TODO: LN: move this to Service
     /**
      * @return TraversalDescription to iterate over virtual dataset nodes.
      */
@@ -310,14 +306,14 @@ public class DriveModel extends RenderableModel implements IDriveModel {
      * @param filename the name of file
      * @param params a map containing parameters of the new measurement
      * @return the newly created node
-     * @throws AWEException 
+     * @throws AWEException
      */
-    public IDataElement addMeasurement(String filename, Map<String, Object> params) 
-            throws AWEException {
+    public IDataElement addMeasurement(String filename, Map<String, Object> params) throws AWEException {
         return addMeasurement(filename, params, primaryType);
     }
-    
-    //TODO: LN: maybe it make sense to add method like addMeasurerment(IDataElement.... since addFile already returns IDataElement
+
+    // TODO: LN: maybe it make sense to add method like addMeasurerment(IDataElement.... since
+    // addFile already returns IDataElement
 
     /**
      * Adds a measurement node to a file node with defined filename. If params map contains lat and
@@ -328,10 +324,9 @@ public class DriveModel extends RenderableModel implements IDriveModel {
      * @param params a map containing parameters of the new measurement
      * @param nodeType the type of node to create
      * @return the newly created node
-     * @throws AWEException 
+     * @throws AWEException
      */
-    public IDataElement addMeasurement(String filename, Map<String, Object> params, INodeType nodeType) 
-            throws AWEException {
+    public IDataElement addMeasurement(String filename, Map<String, Object> params, INodeType nodeType) throws AWEException {
         LOGGER.debug("start addMeasurement(String filename, Map<String, Object> params)");
 
         // measurements are added as c-n-n o file nodes
@@ -625,5 +620,5 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     @Override
     public INodeType getType() {
         return primaryType;
-    }    
+    }
 }
