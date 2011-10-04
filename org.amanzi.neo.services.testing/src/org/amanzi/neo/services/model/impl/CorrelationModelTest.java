@@ -33,6 +33,7 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.index.Index;
 
 public class CorrelationModelTest extends AbstractNeoServiceTest {
 
@@ -203,9 +204,11 @@ public class CorrelationModelTest extends AbstractNeoServiceTest {
 			correlationServ.createCorrelation(network, dataset);
 			for (int i = 0; i < 5; i++) {
 				// create sector
+				Index<Node> index = graphDatabaseService.index().forNodes(
+						"index");
 				Node sector = nwServ.createSector(nwServ.getNetworkElement(
-						network, "index", "site", NetworkElementNodeType.SITE),
-						"index", "name" + i, "ci" + i, "lac" + i);
+						network, index, "site", NetworkElementNodeType.SITE),
+						index, "name" + i, "ci" + i, "lac" + i);
 
 				// create measurement
 				DriveModel dm = new DriveModel(null, dataset, null, null);
@@ -227,11 +230,11 @@ public class CorrelationModelTest extends AbstractNeoServiceTest {
 			}
 			for (int i = 0; i < 5; i++) {
 				// create sector
-				Node sector = nwServ
-						.createSector(nwServ.getNetworkElement(network,
-								"index", "site", NetworkElementNodeType.SITE),
-								"index", "name" + 10 + i, "ci" + 10 + i, "lac"
-										+ 10 + i);
+				Index<Node> index = graphDatabaseService.index().forNodes(
+						"index");
+				Node sector = nwServ.createSector(nwServ.getNetworkElement(
+						network, index, "site", NetworkElementNodeType.SITE),
+						index, "name" + 10 + i, "ci" + 10 + i, "lac" + 10 + i);
 
 				not_cor_sect.add(sector);
 			}
@@ -286,9 +289,11 @@ public class CorrelationModelTest extends AbstractNeoServiceTest {
 			correlationServ.createCorrelation(network, dataset);
 			for (int i = 0; i < 5; i++) {
 				// create sector
+				Index<Node> index = graphDatabaseService.index().forNodes(
+						"index");
 				Node sector = nwServ.createSector(nwServ.getNetworkElement(
-						network, "index", "site", NetworkElementNodeType.SITE),
-						"index", "name" + i, "ci" + i, "lac" + i);
+						network, index, "site", NetworkElementNodeType.SITE),
+						index, "name" + i, "ci" + i, "lac" + i);
 
 				// create measurement
 				DriveModel dm = new DriveModel(null, dataset, null, null);
@@ -310,10 +315,11 @@ public class CorrelationModelTest extends AbstractNeoServiceTest {
 
 			}
 			// create another network structure
+			Index<Node> index = graphDatabaseService.index().forNodes("index");
 			Node n = dsServ.createDataset(project, "nw", DatasetTypes.NETWORK);
-			Node s = nwServ.createSector(nwServ.getNetworkElement(n, "index",
-					"site", NetworkElementNodeType.SITE), "index", "name",
-					"ci", "lac");
+			Node s = nwServ.createSector(nwServ.getNetworkElement(n, index,
+					"site", NetworkElementNodeType.SITE), index, "name", "ci",
+					"lac");
 
 			DriveModel dm = new DriveModel(null, dataset, null, null);
 			dm.getFile(filename);
@@ -385,9 +391,11 @@ public class CorrelationModelTest extends AbstractNeoServiceTest {
 			correlationServ.createCorrelation(network, dataset);
 			for (int i = 0; i < 5; i++) {
 				// create sector
+				Index<Node> index = graphDatabaseService.index().forNodes(
+						"index");
 				Node sector = nwServ.createSector(nwServ.getNetworkElement(
-						network, "index", "site", NetworkElementNodeType.SITE),
-						"index", "name" + i, "ci" + i, "lac" + i);
+						network, index, "site", NetworkElementNodeType.SITE),
+						index, "name" + i, "ci" + i, "lac" + i);
 
 				// create measurement
 				DriveModel dm = new DriveModel(null, dataset, null, null);
@@ -476,9 +484,11 @@ public class CorrelationModelTest extends AbstractNeoServiceTest {
 			correlationServ.createCorrelation(network, dataset);
 			for (int i = 0; i < 5; i++) {
 				// create sector
+				Index<Node> index = graphDatabaseService.index().forNodes(
+						"index");
 				Node sector = nwServ.createSector(nwServ.getNetworkElement(
-						network, "index", "site", NetworkElementNodeType.SITE),
-						"index", "name" + i, "ci" + i, "lac" + i);
+						network, index, "site", NetworkElementNodeType.SITE),
+						index, "name" + i, "ci" + i, "lac" + i);
 
 				// create measurement
 				DriveModel dm = new DriveModel(null, dataset, null, null);
@@ -500,12 +510,12 @@ public class CorrelationModelTest extends AbstractNeoServiceTest {
 
 			}
 			// create another network structure
-
+			Index<Node> index = graphDatabaseService.index().forNodes("index");
 			for (int j = 0; j < 3; j++) {
 				not_cor_sectors.add(nwServ.createSector(nwServ
-						.getNetworkElement(network, "index", "site",
-								NetworkElementNodeType.SITE), "index", "name"
-						+ j + 10, "ci", "lac"));
+						.getNetworkElement(network, index, "site",
+								NetworkElementNodeType.SITE), index, "name" + j
+						+ 10, "ci", "lac"));
 
 			}
 		} catch (AWEException e) {

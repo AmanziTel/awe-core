@@ -122,17 +122,18 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
 	@Test
 	public void testNetworkModelIDataElement() {
 
+		String name = network.getProperty(NewAbstractService.NAME).toString();
 		DataElement root = new DataElement(network);
+		DataElement parent = new DataElement(project);
 
-		NetworkModel nm = new NetworkModel(root);
+		NetworkModel nm = new NetworkModel(parent, root, name);
 
 		// object created not null
 		assertNotNull(nm);
 		// root node correct
 		assertEquals(network, nm.getRootNode());
 		// name correct
-		assertEquals(network.getProperty(NewAbstractService.NAME, null),
-				nm.getName());
+		assertEquals(name, nm.getName());
 	}
 
 	@Test

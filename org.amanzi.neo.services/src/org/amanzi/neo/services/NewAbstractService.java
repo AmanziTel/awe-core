@@ -184,7 +184,7 @@ public abstract class NewAbstractService {
      * This method generates a string identifier for index for a specific network and a specific
      * type of nodes
      * 
-     * @param root a network node
+     * @param root a model root
      * @param nodeType type of nodes
      * @return a string specifying index name
      */
@@ -198,6 +198,31 @@ public abstract class NewAbstractService {
         }
 
         return "" + root.getId() + "@" + nodeType.getId();
+    }
+
+    /**
+     * Generates a node index for the defined <code>root</code> node and <code>nodeType</code>. Your
+     * code should call this method only once for each pair of parameters, to minimize calls to
+     * database.
+     * 
+     * @param root a model root
+     * @param nodeType type of nodes
+     * @return <code>Index<Node></code> for the defined parameters
+     * @throws DatabaseException
+     */
+    public Index<Node> getIndex(Node root, INodeType nodeType) throws DatabaseException {
+        tx = graphDb.beginTx();
+        Index<Node> result = null;
+        try {
+            result = graphDb.index().forNodes(getIndexKey(root, nodeType));
+            tx.success();
+        } catch (Exception e) {
+            LOGGER.error("Could not index node", e);
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
+        return result;
     }
 
     /**
@@ -236,7 +261,6 @@ public abstract class NewAbstractService {
      * @param propertyValue
      * @throws DatabaseException if something went wrong
      */
-    // TODO: LN: use Index instead of it's name
     public Index<Node> addNodeToIndex(Node node, String indexName, String propertyName, Object propertyValue)
             throws DatabaseException {
         Index<Node> index = null;
@@ -254,7 +278,6 @@ public abstract class NewAbstractService {
         return index;
     }
 
-    // TODO: LN: use Index instead of it's name, comments
     public Index<Node> addNodeToIndex(Node node, Index<Node> index, String propertyName, Object propertyValue)
             throws DatabaseException {
         tx = graphDb.beginTx();

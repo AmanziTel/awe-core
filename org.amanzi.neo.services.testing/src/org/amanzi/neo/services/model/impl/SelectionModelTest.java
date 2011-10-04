@@ -13,9 +13,14 @@
 
 package org.amanzi.neo.services.model.impl;
 
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
 
@@ -30,6 +35,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.index.Index;
 
 /**
  * Tests for Selection Model
@@ -42,6 +49,8 @@ public class SelectionModelTest extends AbstractNeoServiceTest {
     private static final String SELECTION_LIST_NAME = "selection_list";
     
     private static final int DEFAULT_COUNT = 5;
+    
+    private static Index<Relationship> linkIndexes;
 
     /**
      *
@@ -53,6 +62,8 @@ public class SelectionModelTest extends AbstractNeoServiceTest {
         initializeDb();
         new LogStarter().earlyStartup();
         clearServices();
+        
+        linkIndexes = graphDatabaseService.index().forRelationships(SELECTION_LIST_NAME);
     }
 
     /**
@@ -153,6 +164,7 @@ public class SelectionModelTest extends AbstractNeoServiceTest {
         selectionModel.linkToSector(dataElement);
     }
     
+    @SuppressWarnings("unchecked")
     @Test
     public void checkLinkActions() throws Exception {
         Node sectorNode = getSectorNode();
@@ -166,7 +178,7 @@ public class SelectionModelTest extends AbstractNeoServiceTest {
         
         selectionModel.linkToSector(element);
         
-        verify(networkService).createSelectionLink(eq(selectionRootNode), eq(sectorNode));
+        verify(networkService).createSelectionLink(eq(selectionRootNode), eq(sectorNode), any(linkIndexes.getClass()));
     }
     
     @Test
@@ -236,7 +248,7 @@ public class SelectionModelTest extends AbstractNeoServiceTest {
         when(service.findSelectionList(any(Node.class), eq(SELECTION_LIST_NAME))).thenReturn(selectionNode);
         
         if (shouldThrow) {
-            doThrow(new DatabaseException("lalala")).when(service).createSelectionLink(any(Node.class), any(Node.class));
+            doThrow(new DatabaseException("lalala")).when(service).createSelectionLink(any(Node.class), any(Node.class), any(linkIndexes.getClass()));
         }
         
         return service;

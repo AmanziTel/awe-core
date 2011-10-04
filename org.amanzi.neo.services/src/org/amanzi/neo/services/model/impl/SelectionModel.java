@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.services.model.impl;
 
+import org.amanzi.neo.db.manager.NeoServiceProvider;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewNetworkService;
@@ -24,6 +25,8 @@ import org.amanzi.neo.services.model.ISelectionModel;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.index.Index;
 
 /**
  * Selection model
@@ -34,9 +37,18 @@ import org.neo4j.graphdb.Node;
 public class SelectionModel extends AbstractModel implements ISelectionModel {
     private static Logger LOGGER = Logger.getLogger(SelectionModel.class);
     
+    /*
+     * Key for Selection List indexes
+     */
+    private static final String SELECTION_LIST_INDEXES = "selection_list_links";
+    
     static NewNetworkService networkService = NeoServiceFactory.getInstance().getNewNetworkService();
     
+    private static Index<Relationship> selectionLinkIndex = null;
+    
     private int selectedNodesCount = 0;
+    
+    
     
     /**
      * Creates SelectionModel from existing Node
@@ -101,7 +113,7 @@ public class SelectionModel extends AbstractModel implements ISelectionModel {
         
         //create a link
         try {
-            networkService.createSelectionLink(getRootNode(), dataElement.getNode());
+            networkService.createSelectionLink(getRootNode(), dataElement.getNode(), getSelectionLinkIndexes());
             selectedNodesCount++;
         } catch (Exception e) {
             LOGGER.error("Error on creating link from SelectionList <" + this + "> to Element <" + element + ">.");
@@ -134,6 +146,14 @@ public class SelectionModel extends AbstractModel implements ISelectionModel {
     @Override
     public int getSelectedNodesCount() {
         return selectedNodesCount;
-    }  
+    }
+    
+    private static Index<Relationship> getSelectionLinkIndexes() {
+        if (selectionLinkIndex == null) {
+            selectionLinkIndex = NeoServiceProvider.getProvider().getService().index().forRelationships(SELECTION_LIST_INDEXES);
+        }
+        
+        return selectionLinkIndex;
+    }
 
 }
