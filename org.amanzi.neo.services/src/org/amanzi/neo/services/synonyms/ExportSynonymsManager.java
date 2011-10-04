@@ -14,7 +14,6 @@
 package org.amanzi.neo.services.synonyms;
 
 import org.amanzi.neo.services.enums.INodeType;
-import org.amanzi.neo.services.synonyms.ExportSynonymsService.ExportSynonyms;
 import org.apache.log4j.Logger;
 
 /**

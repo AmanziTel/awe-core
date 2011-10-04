@@ -24,10 +24,9 @@ import org.amanzi.neo.services.CorrelationService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService;
-import org.amanzi.neo.services.NodeTypeManager;
-import org.amanzi.neo.services.CorrelationService.CorrelationNodeTypes;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.NewDatasetService.DriveTypes;
+import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.enums.IDriveType;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
@@ -41,7 +40,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.geotools.referencing.CRS;
 import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
@@ -63,8 +61,6 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     private static Logger LOGGER = Logger.getLogger(DriveModel.class);
 
     // private members
-    // TODO: LN: do not use GraphDBService in Model
-    private GraphDatabaseService graphDb;
     private Index<Node> files;
     private int count = 0;
     private INodeType primaryType = DriveNodeTypes.M;
@@ -85,7 +81,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         FILE, M, MP, M_AGGR, MM;
 
         static {
-            NodeTypeManager.registerNodeType(CorrelationNodeTypes.class);
+            NodeTypeManager.registerNodeType(DriveNodeTypes.class);
         }
 
         @Override
@@ -130,20 +126,17 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     public DriveModel(Node parent, Node rootNode, String name, IDriveType type) throws AWEException {
         // if root node is null, get one by name
         if (rootNode != null) {
-            graphDb = rootNode.getGraphDatabase();
             dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
 
             this.rootNode = rootNode;
             this.name = (String)rootNode.getProperty(NewAbstractService.NAME, null);
-            this.driveType = DriveTypes.valueOf(rootNode.getProperty(NewDatasetService.DRIVE_TYPE, StringUtils.EMPTY).toString()
-                    .toUpperCase());
+            this.driveType = DriveTypes.valueOf(rootNode.getProperty(NewDatasetService.DRIVE_TYPE, StringUtils.EMPTY).toString());
         } else {
             // validate params
             if (parent == null) {
                 throw new IllegalArgumentException("Parent is null.");
             }
 
-            graphDb = parent.getGraphDatabase();
             dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
             this.rootNode = dsServ.getDataset(parent, name, DatasetTypes.DRIVE, type);
             this.name = name;
@@ -198,7 +191,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         Node virtual = dsServ.createNode(rootNode, DriveRelationshipTypes.VIRTUAL_DATASET, DatasetTypes.DRIVE);
         Map<String, Object> params = new HashMap<String, Object>();
         params.put(NewAbstractService.NAME, name);
-        params.put(DRIVE_TYPE, driveType.getId());
+        params.put(DRIVE_TYPE, driveType.name());
         dsServ.setProperties(virtual, params);
 
         DriveModel result = new DriveModel(null, virtual, name, null);
@@ -473,7 +466,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
             throw new IllegalArgumentException("Name is null or empty");
         }
         if (files == null) {
-            files = graphDb.index().forNodes(NewAbstractService.getIndexKey(rootNode, DriveNodeTypes.FILE));
+            files = dsServ.getIndexForNodes(rootNode, DriveNodeTypes.FILE);
         }
 
         Node fileNode = files.get(NewAbstractService.NAME, name).getSingle();

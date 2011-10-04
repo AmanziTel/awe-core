@@ -205,7 +205,7 @@ public class ExportSynonymsServiceTest extends AbstractNeoServiceTest {
     }
     
     @Test(expected = IllegalArgumentException.class)
-    public void tryToGetDatasetExportySynonymsWithEmptyDatasetNode() {
+    public void tryToGetDatasetExportySynonymsWithEmptyDatasetNode() throws Exception {
         synonymsService.getDatasetExportSynonyms(null);
     }
 
@@ -226,6 +226,64 @@ public class ExportSynonymsServiceTest extends AbstractNeoServiceTest {
         ExportSynonyms synonyms = synonymsService.getDatasetExportSynonyms(createDataset());
         
         assertTrue("Export Synonyms should be empty", synonyms.rawSynonyms.isEmpty());
+    }
+    
+    @Test
+    public void checkSizeOfResultForDatasetExportSynonyms() throws Exception {
+        HashMap<String, String> content = new HashMap<String, String>();
+        content.put(TEST_KEY, TEST_SYNONYM);
+        
+        Node datasetNode = createDataset();
+        
+        createDatasetExportSynonyms(datasetNode, content);
+        
+        ExportSynonyms synonyms = synonymsService.getDatasetExportSynonyms(datasetNode);
+        
+        Assert.assertFalse("ExportSynonyms cannot be empty", synonyms.rawSynonyms.isEmpty());
+        Assert.assertEquals("Size of Dataset Export Synonyms should be 1", 1, synonyms.rawSynonyms.size());
+        Assert.assertTrue("Dataset Export Synonyms should contain Default Key", synonyms.rawSynonyms.containsKey(TEST_KEY));
+        Assert.assertTrue("Dataset Export Synonyms should contain Default Synonym", synonyms.rawSynonyms.containsValue(TEST_SYNONYM));
+    }
+    
+    @Test
+    public void checkExportSynonymsForDataset() throws Exception {
+        HashMap<String, String> content = new HashMap<String, String>();
+        content.put(TEST_KEY, TEST_SYNONYM);
+        
+        Node datasetNode = createDataset();
+        
+        createDatasetExportSynonyms(datasetNode, content);
+        
+        ExportSynonyms synonyms = synonymsService.getDatasetExportSynonyms(datasetNode);
+        
+        assertNotNull("Dataset Export Synonyms should find synonym for Default Key", synonyms.getSynonym(TEST_NODE_TYPE, TEST_PROPERTY_NAME));
+        assertEquals("Incorrect Synonym for Default Key", TEST_SYNONYM, synonyms.getSynonym(TEST_NODE_TYPE, TEST_PROPERTY_NAME));
+    }
+    
+    @Test(expected = DatabaseException.class)
+    public void incorrectNodeTypeForDatasetSynonyms() throws Exception {
+        Node datasetNode = createDataset();
+        Node datasetSynonyms = createDatasetExportSynonyms(datasetNode, new HashMap<String, String>());
+     
+        Transaction tx = graphDatabaseService.beginTx();
+        datasetSynonyms.setProperty(ExportSynonymsService.TYPE, NodeTypes.CELL.getId());
+        tx.success();
+        tx.finish();
+        
+        synonymsService.getDatasetExportSynonyms(datasetNode);
+    }
+    
+    @Test(expected = DatabaseException.class)
+    public void incorrectExportSynonymsTypeForDatasetSynonyms() throws Exception {
+        Node datasetNode = createDataset();
+        Node datasetSynonyms = createDatasetExportSynonyms(datasetNode, new HashMap<String, String>());
+     
+        Transaction tx = graphDatabaseService.beginTx();
+        datasetSynonyms.setProperty(ExportSynonymsService.EXPORT_SYNONYMS_TYPE, ExportSynonymType.GLOBAL.name());
+        tx.success();
+        tx.finish();
+        
+        synonymsService.getDatasetExportSynonyms(datasetNode);
     }
     
     /**

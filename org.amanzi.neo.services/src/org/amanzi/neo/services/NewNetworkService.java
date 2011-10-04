@@ -66,7 +66,7 @@ public class NewNetworkService extends NewAbstractService {
         NETWORK, BSC, SITE, SECTOR, CITY, MSC, SELECTION_LIST_ROOT;
 
         static {
-            NodeTypeManager.registerNodeType(CorrelationNodeTypes.class);
+            NodeTypeManager.registerNodeType(NetworkElementNodeType.class);
         }
 
         @Override

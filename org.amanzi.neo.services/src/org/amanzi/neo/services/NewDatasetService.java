@@ -25,7 +25,6 @@ import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
-import org.amanzi.neo.services.model.impl.DataModel.DataElementIterable;
 import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelationships;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -134,12 +133,7 @@ public class NewDatasetService extends NewAbstractService {
      * @since 1.0.0
      */
     public enum DriveTypes implements IDriveType {
-        NEMO_V1, NEMO_V2, TEMS, ROMES, AMS_CALLS, AMS, AMS_PESQ;
-
-        @Override
-        public String getId() {
-            return name();
-        }
+        NEMO_V1, NEMO_V2, TEMS, ROMES, AMS_CALLS, AMS, AMS_PESQ;        
     }
 
     /**
@@ -180,7 +174,7 @@ public class NewDatasetService extends NewAbstractService {
         @Override
         public Evaluation evaluate(Path arg0) {
             if (super.evaluate(arg0).includes()) {
-                if (driveType == null || driveType.getId().equals(arg0.endNode().getProperty(DRIVE_TYPE, StringUtils.EMPTY))) {
+                if (driveType == null || driveType.name().equals(arg0.endNode().getProperty(DRIVE_TYPE, StringUtils.EMPTY))) {
                     return Evaluation.INCLUDE_AND_CONTINUE;
                 }
                 return Evaluation.EXCLUDE_AND_CONTINUE;
@@ -433,7 +427,7 @@ public class NewDatasetService extends NewAbstractService {
             datasetNode = createNode(type);
             projectNode.createRelationshipTo(datasetNode, DatasetRelationTypes.DATASET);
             datasetNode.setProperty(NAME, name);
-            datasetNode.setProperty(DRIVE_TYPE, driveType.getId());
+            datasetNode.setProperty(DRIVE_TYPE, driveType.name());
             tx.success();
 
         } catch (Exception e) {

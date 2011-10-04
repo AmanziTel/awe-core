@@ -177,43 +177,64 @@ public class ExportSynonymsService extends NewAbstractService {
     public ExportSynonyms getGlobalExportSynonyms() throws DatabaseException {
         LOGGER.debug("start getGlobalExportSynonyms()");
         
+        Node exportSynonymsNode = getExportSynonymsNode(graphDb.getReferenceNode(), ExportSynonymsRelationshipTypes.GLOBAL_SYNONYMS, ExportSynonymType.GLOBAL);
+        
+        LOGGER.debug("finish getGlobalExportSynonyms()");
+        return new ExportSynonyms(exportSynonymsNode);
+    }
+    
+    /**
+     * Searches for Export Synonyms Node in Database
+     * 
+     * Create new one if nothing found
+     *
+     * @param rootNode root Node of Export Synonyms
+     * @param relationshipType Relationship Type to search
+     * @param synonymType type of Synonyms
+     * @return node for Export Synonyms
+     * @throws DatabaseException
+     */
+    private Node getExportSynonymsNode(Node rootNode, ExportSynonymsRelationshipTypes relationshipType, ExportSynonymType synonymType) throws DatabaseException {
+        LOGGER.debug("start getExportSynonymsNode(<" + rootNode + ">, <" + relationshipType + ">, <" + synonymType + ">)");
+        
         Node exportSynonymsNode = null;
         
-        Relationship exportSynonymsRelationship = graphDb.getReferenceNode().getSingleRelationship(ExportSynonymsRelationshipTypes.GLOBAL_SYNONYMS, Direction.OUTGOING);
+        Relationship exportSynonymsRelationship = rootNode.getSingleRelationship(relationshipType, Direction.OUTGOING);
         if (exportSynonymsRelationship == null) {
-            LOGGER.info("No Global ExportSynonyms node, create new one");
+            LOGGER.info("No ExportSynonyms node. Create new one");
             
             Transaction tx = graphDb.beginTx();
             try {
                 exportSynonymsNode = createNode(ExportSynonymsNodeType.EXPORT_SYNONYMS);
-                exportSynonymsNode.setProperty(EXPORT_SYNONYMS_TYPE, ExportSynonymType.GLOBAL.name());
+                exportSynonymsNode.setProperty(EXPORT_SYNONYMS_TYPE, synonymType.name());
                 
                 tx.success();
             } catch (Exception e) {
                 tx.failure();
-                LOGGER.error("Error on creating new Global Export Synonyms node", e);
+                LOGGER.error("Error on creating new Export Synonyms node", e);
                 throw new DatabaseException(e);
             } finally {
                 tx.finish();
             }
         } else {
+            //check founded node            
             exportSynonymsNode = exportSynonymsRelationship.getEndNode();
             
-            //check type of founded node
             if (!getNodeType(exportSynonymsNode).equals(ExportSynonymsNodeType.EXPORT_SYNONYMS.getId())) {
                 LOGGER.error("Database Error - node by Export Synonyms link have incorrect type");
-                throw new DatabaseException("Node <" + exportSynonymsNode + "> by incoming GLOBAL_SYNONYMS link have incorrect type <" + getNodeType(exportSynonymsNode) + ">");
+                throw new DatabaseException("Node <" + exportSynonymsNode + "> by incoming " + exportSynonymsRelationship.getType() + " link have incorrect type <" + getNodeType(exportSynonymsNode) + ">");
             }
             
             //check type of Synonyms
-            if (!exportSynonymsNode.getProperty(EXPORT_SYNONYMS_TYPE, StringUtils.EMPTY).equals(ExportSynonymType.GLOBAL.name())) {
+            if (!exportSynonymsNode.getProperty(EXPORT_SYNONYMS_TYPE, StringUtils.EMPTY).equals(synonymType.name())) {
                 LOGGER.error("Database Error - Export Synonyms have incorrect Synonyms Type");
-                throw new DatabaseException("Node <" + exportSynonymsNode + "> by incoming GLOBAL_SYNONYMS link have incorrect Synonyms Type <" + exportSynonymsNode.getProperty(EXPORT_SYNONYMS_TYPE, StringUtils.EMPTY) + ">");
+                throw new DatabaseException("Node <" + exportSynonymsNode + "> by incoming " + exportSynonymsRelationship.getType() + " link have incorrect Synonyms Type <" + exportSynonymsNode.getProperty(EXPORT_SYNONYMS_TYPE, StringUtils.EMPTY) + ">");
             }
         }
         
-        LOGGER.debug("finish getGlobalExportSynonyms()");
-        return new ExportSynonyms(exportSynonymsNode);
+        LOGGER.debug("finish getExportSynonymsNode()");
+        
+        return exportSynonymsNode;
     }
     
     /**
@@ -223,8 +244,18 @@ public class ExportSynonymsService extends NewAbstractService {
      *
      * @return Dataset Export Synonyms
      */ 
-    public ExportSynonyms getDatasetExportSynonyms(Node datasetNode) {
-        return null;
+    public ExportSynonyms getDatasetExportSynonyms(Node datasetNode) throws DatabaseException {
+        LOGGER.debug("start getDatasetExportSynonyms(<" + datasetNode + ">)");
+        
+        if (datasetNode == null) {
+            LOGGER.error("datasetNode of Export Synonyms cannot be null");
+            throw new IllegalArgumentException("DatasetNode of ExportSynonyms cannot be null");
+        }
+        
+        Node exportSynonymsNode = getExportSynonymsNode(datasetNode, ExportSynonymsRelationshipTypes.DATASET_SYNONYMS, ExportSynonymType.DATASET);
+        
+        LOGGER.debug("finish getDatasetExportSynonyms()");
+        return new ExportSynonyms(exportSynonymsNode);
     }
 
 }

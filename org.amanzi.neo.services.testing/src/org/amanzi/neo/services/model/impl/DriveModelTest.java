@@ -11,7 +11,6 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
-import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.services.AbstractNeoServiceTest;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewAbstractService;
@@ -55,8 +54,7 @@ public class DriveModelTest extends AbstractNeoServiceTest {
 		clearDb();
 		initializeDb();
 		
-		new LogStarter().earlyStartup();
-        clearServices();
+		clearServices();
 		
 		LOGGER.info("Database created in folder " + databasePath);
 		prServ = NeoServiceFactory.getInstance().getNewProjectService();
@@ -71,7 +69,7 @@ public class DriveModelTest extends AbstractNeoServiceTest {
 
 	@Before
 	public void newProject() {
-	    try {
+		try {
 			project = prServ.createProject("project" + count++);
 			dsName = "dataset" + count;
 			dataset = dsServ.createDataset(project, dsName, DatasetTypes.DRIVE,
@@ -170,7 +168,7 @@ public class DriveModelTest extends AbstractNeoServiceTest {
 		// root node type is correct
 		Assert.assertEquals(DatasetTypes.DRIVE.getId(), virtual.getRootNode()
 				.getProperty(NewAbstractService.TYPE, null));
-		Assert.assertEquals(DriveTypes.values()[0].getId(), virtual
+		Assert.assertEquals(DriveTypes.values()[0].name(), virtual
 				.getRootNode().getProperty(DriveModel.DRIVE_TYPE, null));
 	}
 
@@ -769,7 +767,7 @@ public class DriveModelTest extends AbstractNeoServiceTest {
 	}
 
 	@Test
-	public void testGetCorrelatedModels() throws AWEException {
+	public void testGetCorrelatedModels() {
 		DriveModel dm = null;
 		List<Node> networks = new ArrayList<Node>();
 		try {
@@ -797,8 +795,13 @@ public class DriveModelTest extends AbstractNeoServiceTest {
 		Assert.assertTrue(it.iterator().hasNext());
 		try {
 			for (ICorrelationModel model : dm.getCorrelatedModels()) {
-				Assert.assertTrue(networks.contains(model.getNetwork()));
-				Assert.assertEquals(dataset, model.getDataset());
+				Node nwNode = ((DataElement) model.getNetwork()).getNode();
+				Assert.assertNotNull(nwNode);
+				Assert.assertTrue(networks.contains(nwNode));
+
+				Node dsNode = ((DataElement) model.getDataset()).getNode();
+				Assert.assertNotNull(dsNode);
+				Assert.assertEquals(dataset, dsNode);
 			}
 		} catch (AWEException e) {
 			LOGGER.error("Could not get correlted models.", e);
@@ -807,7 +810,7 @@ public class DriveModelTest extends AbstractNeoServiceTest {
 	}
 
 	@Test
-	public void testGetCorrelatedModel() throws AWEException {
+	public void testGetCorrelatedModel() {
 		DriveModel dm = null;
 		List<Node> networks = new ArrayList<Node>();
 		try {
@@ -832,8 +835,14 @@ public class DriveModelTest extends AbstractNeoServiceTest {
 				LOGGER.error("Could not get correlated model by name.", e);
 				fail();
 			}
-			Assert.assertEquals(dataset, cm.getDataset());
-			Assert.assertEquals(networks.get(i), cm.getNetwork());
+			Node dsNode = ((DataElement) cm.getDataset()).getNode();
+			;
+			Assert.assertNotNull(dsNode);
+			Assert.assertEquals(dataset, dsNode);
+
+			Node nwNode = ((DataElement) cm.getNetwork()).getNode();
+			Assert.assertNotNull(nwNode);
+			Assert.assertEquals(networks.get(i), nwNode);
 		}
 	}
 

@@ -20,6 +20,7 @@ import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
+import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
@@ -407,6 +408,17 @@ public abstract class NewAbstractService {
             }
         }
         return result;
+    }
+    
+    /**
+     * Creates Indexes 
+     *
+     * @param rootNode root node of indexed structure
+     * @param nodeType type of indexed node
+     * @return
+     */
+    public Index<Node> getIndexForNodes(Node rootNode, INodeType nodeType) {
+        return graphDb.index().forNodes(NewAbstractService.getIndexKey(rootNode, DriveNodeTypes.FILE));
     }
 
 }

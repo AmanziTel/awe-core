@@ -21,6 +21,8 @@ package org.amanzi.neo.services.enums;
  * @author Ana Gr.
  * @since 1.0.0
  */
-public interface IDriveType extends INodeType {
+public interface IDriveType {
+    
+    public String name();
 
 }

@@ -26,7 +26,7 @@ public abstract class AbstractNeoServiceTest extends AbstractAWETest {
     /**
      * Clean up NeoServiceFactory
      */
-    public static void clearServices() {
+    protected static void clearServices() {
         NeoServiceFactory.getInstance().clear();
     }
     

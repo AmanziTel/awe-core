@@ -4,10 +4,18 @@ import junit.framework.Assert;
 
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.model.impl.DriveModel;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class NodeTypeManagerTest {
+    
+    @BeforeClass
+    public static void beforeTest() throws Exception {
+        //LN: we need to have loaded DriveModel before test started
+        DriveModel.DriveNodeTypes.values();
+    }
 
 	@Test
 	public void testGetType() {

@@ -11,7 +11,6 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
-import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.services.AbstractNeoServiceTest;
 import org.amanzi.neo.services.CorrelationServiceTest;
 import org.amanzi.neo.services.NewAbstractService;
@@ -50,22 +49,13 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
 	private static int count = 0;
 	
 	private NetworkModel model;
-	
-	private final static NetworkElementNodeType[] POSSIBLE_ELEMENT_TYPES = new NetworkElementNodeType[]
-	        {NetworkElementNodeType.BSC,
-	         NetworkElementNodeType.MSC,
-	         NetworkElementNodeType.CITY,
-	         NetworkElementNodeType.SITE,
-	         NetworkElementNodeType.SECTOR
-	        };
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		clearDb();
 		initializeDb();
 		
-		new LogStarter().earlyStartup();
-        clearServices();
+		clearServices();
 
 		dsServ = new NewDatasetService(graphDatabaseService);
 		prServ = new ProjectService(graphDatabaseService);
@@ -148,7 +138,7 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
 	@Test
 	public void testCreateElement() {
 		IDataElement parentElement = new DataElement(network);
-		for (INodeType type : POSSIBLE_ELEMENT_TYPES) {
+		for (INodeType type : NetworkElementNodeType.values()) {
 			Map<String, Object> params = new HashMap<String, Object>();
 			params.put(NewAbstractService.TYPE, type.getId());
 			params.put(NewAbstractService.NAME, type.getId());
@@ -172,7 +162,7 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
 	@Test
 	public void testFindElement() {
 		IDataElement parentElement = new DataElement(network);
-		for (INodeType type : POSSIBLE_ELEMENT_TYPES) {
+		for (INodeType type : NetworkElementNodeType.values()) {
 
 			Map<String, Object> params = new HashMap<String, Object>();
 			params.put(NewAbstractService.TYPE, type.getId());
@@ -185,7 +175,7 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
 			parentElement = newElement;
 		}
 
-		for (INodeType type : POSSIBLE_ELEMENT_TYPES) {
+		for (INodeType type : NetworkElementNodeType.values()) {
 
 			Map<String, Object> params = new HashMap<String, Object>();
 			params.put(NewAbstractService.TYPE, type.getId());
@@ -203,7 +193,7 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
 	@Test
 	public void testGetElement() {
 		IDataElement parentElement = new DataElement(network);
-		for (INodeType type : POSSIBLE_ELEMENT_TYPES) {
+		for (INodeType type : NetworkElementNodeType.values()) {
 
 			Map<String, Object> params = new HashMap<String, Object>();
 			params.put(NewAbstractService.TYPE, type.getId());
@@ -235,7 +225,7 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
 	@Test
 	public void testGetElementNoElement() {
 		IDataElement parentElement = new DataElement(network);
-		for (INodeType type : POSSIBLE_ELEMENT_TYPES) {
+		for (INodeType type : NetworkElementNodeType.values()) {
 			Map<String, Object> params = new HashMap<String, Object>();
 			params.put(NewAbstractService.TYPE, type.getId());
 			params.put(NewAbstractService.NAME, type.getId());
@@ -251,7 +241,7 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
 	}
 
 	@Test
-	public void testGetCorrelationModels() throws AWEException {
+	public void testGetCorrelationModels() {
 		List<Node> datasets = new ArrayList<Node>();
 		try {
 			for (int i = 0; i < 4; i++) {
@@ -276,8 +266,13 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
 		Assert.assertTrue(it.iterator().hasNext());
 		try {
 			for (ICorrelationModel mod : model.getCorrelationModels()) {
-				Assert.assertTrue(datasets.contains(mod.getDataset()));
-				Assert.assertEquals(network, mod.getNetwork());
+				Node dsNode = ((DataElement) mod.getDataset()).getNode();
+				Assert.assertNotNull(dsNode);
+				Assert.assertTrue(datasets.contains(dsNode));
+
+				Node nwNode = ((DataElement) mod.getNetwork()).getNode();
+				Assert.assertNotNull(nwNode);
+				Assert.assertEquals(network, nwNode);
 			}
 		} catch (AWEException e) {
 			LOGGER.error("Could not get correlation models.", e);
@@ -321,7 +316,8 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
 
 		final NewNetworkService nwS = context.mock(NewNetworkService.class);
 
-		for (final NetworkElementNodeType type : POSSIBLE_ELEMENT_TYPES) {
+		for (final NetworkElementNodeType type : NetworkElementNodeType
+				.values()) {
 			// expectations
 			context.checking(new Expectations() {
 				{
@@ -333,7 +329,7 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
 		// execute
 		model.setNetworkService(nwS);
 
-		for (NetworkElementNodeType type : POSSIBLE_ELEMENT_TYPES) {
+		for (NetworkElementNodeType type : NetworkElementNodeType.values()) {
 			model.getAllElementsByType(type);
 		}
 
