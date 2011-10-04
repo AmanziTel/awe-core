@@ -81,33 +81,34 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
      * Use this constructor to create a new network structure. Be careful to set
      * <code>rootElement</code> NAME and PROJECT properties.
      * 
-     * @param rootElement MUST contain property ("project",<code>Node</code> project) <i>OR</i> an
+     * @param network MUST contain property ("project",<code>Node</code> project) <i>OR</i> an
      *        underlying network node.
      */
-    public NetworkModel(IDataElement rootElement) {
+    public NetworkModel(IDataElement project, IDataElement network, String name) {
         // validate
-        if (rootElement == null) {
+        if (project == null) {
+            throw new IllegalArgumentException("Parent is null.");
+        }
+        Node projectNode = ((DataElement)project).getNode();
+        if (projectNode == null) {
+            throw new IllegalArgumentException("Project node is null.");
+        }
+        if (network == null) {
             throw new IllegalArgumentException("Network root is null.");
         }
-        // TODO: approve
-
-        Node network = ((DataElement)rootElement).getNode();
-        if (network == null) {
-            // TODO: i think it sucks
-            // TODO: LN: yeh, baby, remove hard-coded string and make next parameters in constructor
-            // for this action:
-            // ProjectNode (or ProjectModel)
-            // NetworkName
+        if ((name == null) || (name.equals(StringUtils.EMPTY))) {
+            throw new IllegalArgumentException("Name is null or empty.");
+        }
+        Node networkNode = ((DataElement)network).getNode();
+        if (networkNode == null) {
             try {
-                //
-                network = dsServ.createDataset((Node)rootElement.get("project"), rootElement.get(NewAbstractService.NAME)
-                        .toString(), DatasetTypes.NETWORK);
+                networkNode = dsServ.createDataset(projectNode, name, DatasetTypes.NETWORK);
             } catch (AWEException e) {
                 LOGGER.error("Could not create network root.", e);
             }
         }
-        this.rootNode = network;
-        this.name = network.getProperty(NewAbstractService.NAME, StringUtils.EMPTY).toString();
+        this.rootNode = networkNode;
+        this.name = name;
         initializeStatistics();
     }
 
