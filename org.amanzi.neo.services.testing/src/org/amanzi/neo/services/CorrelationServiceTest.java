@@ -11,11 +11,6 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
-import org.amanzi.neo.services.CorrelationService;
-import org.amanzi.neo.services.NewAbstractService;
-import org.amanzi.neo.services.NewDatasetService;
-import org.amanzi.neo.services.NewNetworkService;
-import org.amanzi.neo.services.ProjectService;
 import org.amanzi.neo.services.CorrelationService.CorrelationNodeTypes;
 import org.amanzi.neo.services.CorrelationService.Correlations;
 import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;
@@ -37,6 +32,7 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.index.Index;
 
 public class CorrelationServiceTest extends AbstractAWETest {
 
@@ -204,12 +200,13 @@ public class CorrelationServiceTest extends AbstractAWETest {
 	public void testAddCorrelationNodes() {
 		List<Node> ms = new ArrayList<Node>();
 		try {
+			Index<Node> index = graphDatabaseService.index().forNodes("index");
 			// correlate
 			correlationServ.createCorrelation(network, dataset);
 			// create sector
 			Node sector = nwServ.createSector(nwServ.createNetworkElement(
-					network, "index", "site", NetworkElementNodeType.SITE),
-					"index", "name", "ci", "lac");
+					network, index, "site", NetworkElementNodeType.SITE),
+					index, "name", "ci", "lac");
 
 			// create measurement
 			DriveModel dm = new DriveModel(null, dataset, null, null);
@@ -268,12 +265,13 @@ public class CorrelationServiceTest extends AbstractAWETest {
 	public void testGetCorrelatedSector() {
 		Node m = null, sector = null;
 		try {
+			Index<Node> index = graphDatabaseService.index().forNodes("index");
 			// correlate
 			correlationServ.createCorrelation(network, dataset);
 			// create sector
 			sector = nwServ.createSector(nwServ.createNetworkElement(network,
-					"index", "site", NetworkElementNodeType.SITE), "index",
-					"name", "ci", "lac");
+					index, "site", NetworkElementNodeType.SITE), index, "name",
+					"ci", "lac");
 
 			// create measurement
 			DriveModel dm = new DriveModel(null, dataset, null, null);
@@ -354,9 +352,10 @@ public class CorrelationServiceTest extends AbstractAWETest {
 			// correlate
 			correlationServ.createCorrelation(network, dataset);
 			// create sector
+			Index<Node> index = graphDatabaseService.index().forNodes("index");
 			sector = nwServ.createSector(nwServ.createNetworkElement(network,
-					"index", "site", NetworkElementNodeType.SITE), "index",
-					"name", "ci", "lac");
+					index, "site", NetworkElementNodeType.SITE), index, "name",
+					"ci", "lac");
 
 			// create measurement
 			DriveModel dm = new DriveModel(null, dataset, null, null);
@@ -400,9 +399,10 @@ public class CorrelationServiceTest extends AbstractAWETest {
 		Node sector = null;
 		try {
 			// create sector
+			Index<Node> index = graphDatabaseService.index().forNodes("index");
 			sector = nwServ.createSector(nwServ.createNetworkElement(network,
-					"index", "site", NetworkElementNodeType.SITE), "index",
-					"name", "ci", "lac");
+					index, "site", NetworkElementNodeType.SITE), index, "name",
+					"ci", "lac");
 
 		} catch (AWEException e) {
 			LOGGER.error("Could not add correlation.", e);
@@ -427,9 +427,10 @@ public class CorrelationServiceTest extends AbstractAWETest {
 			// correlate
 			correlationServ.createCorrelation(network, dataset);
 			// create sector
+			Index<Node> index = graphDatabaseService.index().forNodes("index");
 			sector = nwServ.createSector(nwServ.createNetworkElement(network,
-					"index", "site", NetworkElementNodeType.SITE), "index",
-					"name", "ci", "lac");
+					index, "site", NetworkElementNodeType.SITE), index, "name",
+					"ci", "lac");
 
 			// create measurement
 			DriveModel dm = new DriveModel(null, dataset, null, null);
