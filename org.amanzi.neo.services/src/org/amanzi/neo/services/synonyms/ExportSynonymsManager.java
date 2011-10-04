@@ -13,7 +13,12 @@
 
 package org.amanzi.neo.services.synonyms;
 
+import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.exceptions.DatabaseException;
+import org.amanzi.neo.services.model.IDataModel;
+import org.amanzi.neo.services.synonyms.ExportSynonymsService.ExportSynonyms;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -30,13 +35,14 @@ public class ExportSynonymsManager {
      */
     private static ExportSynonymsManager manager = null;
     
+    private ExportSynonymsService synonymsService = null;
     
     
     /**
      * Private constructor - hide it from another classes
      */
     private ExportSynonymsManager() {
-        //do nothing
+        synonymsService = NeoServiceFactory.getInstance().getExportSynonymsService();
     }
     
     /**
@@ -53,6 +59,15 @@ public class ExportSynonymsManager {
     }
     
     /**
+     * Method to initizlied ExportSynonymsService in tests
+     *
+     * @param service
+     */
+    static void initializeService(ExportSynonymsService service) {
+        manager.synonymsService = service;
+    }
+    
+    /**
      * Returns Synonym on Export 
      * 
      * First will try to find it in DATASET synonyms, if it not found - will try to find in GLOBAL synonyms, otherwise will just return original property name
@@ -62,12 +77,44 @@ public class ExportSynonymsManager {
      * @param propertyName name of Property to export
      * @return header for export 
      */
-    public String getExportHeader(String datasetName, INodeType nodeType, String propertyName) {
-        LOGGER.debug("start getExportHeader(<" + datasetName + ">, <" + nodeType + ">, <" + propertyName + ">)");
+    public String getExportHeader(IDataModel dataModel, INodeType nodeType, String propertyName) throws DatabaseException {
+        LOGGER.debug("start getExportHeader(<" + dataModel + ">, <" + nodeType + ">, <" + propertyName + ">)");
         
-        LOGGER.info("Using original propertyName");
+        //validate input parameters
+        if (dataModel == null) {
+            LOGGER.error("Input DataModel is null");
+            throw new IllegalArgumentException("Input DataModel is null");
+        }
+        if (nodeType == null) {
+            LOGGER.error("Input NodeType is null");
+            throw new IllegalArgumentException("Input NodeType is null");
+        }
+        if ((propertyName == null) || (propertyName.equals(StringUtils.EMPTY))) {
+            LOGGER.error("PropertyName is null or empty");
+            throw new IllegalArgumentException("PropertyName is null or empty");
+        }
+        
+        ExportSynonyms synonyms = synonymsService.getDatasetExportSynonyms(dataModel.getRootNode());
+        String outputSynonym = synonyms.getSynonym(nodeType, propertyName);
+        
+        if (outputSynonym == null) {
+            LOGGER.debug("No Dataset Synonym. Trying Global Synonyms");
+            
+            synonyms = synonymsService.getGlobalExportSynonyms();
+            outputSynonym = synonyms.getSynonym(nodeType, propertyName);
+        
+            if (outputSynonym == null) {
+                LOGGER.debug("No Global Synonym. Using original propertyName");
+                outputSynonym = propertyName;
+            } else {
+                LOGGER.debug("Found in Global Synonyms");
+            }
+        } else {
+            LOGGER.debug("Found in Dataset Synonyms");
+        }
+        
         LOGGER.debug("finish getExportHeader");
-        return propertyName;
+        return outputSynonym;
     }
 
 }
