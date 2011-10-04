@@ -27,6 +27,7 @@ import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
 import org.amanzi.neo.services.model.ICorrelationModel;
 import org.amanzi.neo.services.model.IDataElement;
@@ -37,6 +38,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.geotools.referencing.CRS;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.index.Index;
 
 /**
  * <p>
@@ -50,7 +52,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
 
     private static Logger LOGGER = Logger.getLogger(NetworkModel.class);
 
-    private Map<INodeType, String> indexNames = new HashMap<INodeType, String>();
+    private Map<INodeType, Index<Node>> indexMap = new HashMap<INodeType, Index<Node>>();
 
     private NewNetworkService nwServ = NeoServiceFactory.getInstance().getNewNetworkService();
     private NewDatasetService dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
@@ -135,11 +137,11 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
                     Object elName = element.get(NewAbstractService.NAME);
                     Object elCI = element.get(NewNetworkService.CELL_INDEX);
                     Object elLAC = element.get(NewNetworkService.LOCATION_AREA_CODE);
-                    node = nwServ.createSector(parentNode, getIndexName(type), elName == null ? null : elName.toString(),
-                            elCI == null ? null : elCI.toString(), elLAC == null ? null : elLAC.toString());
+                    node = nwServ.createSector(parentNode, getIndex(type), elName == null ? null : elName.toString(), elCI == null
+                            ? null : elCI.toString(), elLAC == null ? null : elLAC.toString());
                 } else {
-                    node = nwServ.createNetworkElement(parentNode, getIndexName(type), element.get(NewAbstractService.NAME)
-                            .toString(), type);
+                    node = nwServ.createNetworkElement(parentNode, getIndex(type), element.get(NewAbstractService.NAME).toString(),
+                            type);
                 }
             }
             nwServ.setProperties(node, (DataElement)element);
@@ -168,14 +170,18 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
 
         if (type != null) {
 
-            if (type.equals(NetworkElementNodeType.SECTOR)) {
-                Object elName = element.get(NewAbstractService.NAME);
-                Object elCI = element.get(NewNetworkService.CELL_INDEX);
-                Object elLAC = element.get(NewNetworkService.LOCATION_AREA_CODE);
-                node = nwServ.findSector(getIndexName(type), elName == null ? null : elName.toString(),
-                        elCI == null ? null : elCI.toString(), elLAC == null ? null : elLAC.toString());
-            } else {
-                node = nwServ.findNetworkElement(getIndexName(type), element.get(NewAbstractService.NAME).toString());
+            try {
+                if (type.equals(NetworkElementNodeType.SECTOR)) {
+                    Object elName = element.get(NewAbstractService.NAME);
+                    Object elCI = element.get(NewNetworkService.CELL_INDEX);
+                    Object elLAC = element.get(NewNetworkService.LOCATION_AREA_CODE);
+                    node = nwServ.findSector(getIndex(type), elName == null ? null : elName.toString(),
+                            elCI == null ? null : elCI.toString(), elLAC == null ? null : elLAC.toString());
+                } else {
+                    node = nwServ.findNetworkElement(getIndex(type), element.get(NewAbstractService.NAME).toString());
+                }
+            } catch (DatabaseException e) {
+                LOGGER.error("Could not find data element.", e);
             }
         }
 
@@ -207,12 +213,15 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
      * 
      * @param type the type of node to index
      * @return the index name
+     * @throws DatabaseException
      */
-    protected String getIndexName(INodeType type) {
-        String result = indexNames.get(type.getId());
+    protected Index<Node> getIndex(INodeType type) throws DatabaseException {
+        Index<Node> result = indexMap.get(type.getId());
         if (result == null) {
-            result = NewAbstractService.getIndexKey(getRootNode(), type);
-            indexNames.put(type, result);
+            result = dsServ.getIndex(getRootNode(), type);
+            if (result != null) {
+                indexMap.put(type, result);
+            }
         }
         return result;
     }
