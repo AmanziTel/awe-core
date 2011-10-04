@@ -1,9 +1,10 @@
 package org.amanzi.neo.services;
 
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -18,6 +19,7 @@ import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.junit.AfterClass;
@@ -1364,4 +1366,58 @@ public class NewNetworkServiceTest extends AbstractNeoServiceTest {
             Assert.assertTrue("Selection list <" + DEFAULT_SELECTION_LIST_NAME + i + "> not found", selectionList2.contains(selectionNodesForNetwork2[i]));
         }
     }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void getAllSelectionNodesWithNullNetworkNode() throws Exception {
+        networkService.getAllSelectionModelsOfNetwork(null);
+    }
+    
+    @Test
+    public void checkEmptyResultForClearNetworkNode() {
+        Transaction tx = graphDatabaseService.beginTx();
+        Node networkNode = graphDatabaseService.createNode();
+        
+        tx.success();
+        tx.finish();
+        
+        Iterable<Node> selectionNodes = networkService.getAllSelectionModelsOfNetwork(networkNode);
+        
+        assertNotNull("Result cannot be null", selectionNodes);
+        
+        int count = 0;
+        Iterator<Node> selectionNodesIterator = selectionNodes.iterator();
+        while (selectionNodesIterator.hasNext()){ 
+            count++;
+            selectionNodesIterator.next();
+        }
+        assertEquals("Size of Result cannot be more than 0", 0, count);
+    }
+    
+    @Test
+    public void checkCountOfSelectedNodes() {
+        Transaction tx = graphDatabaseService.beginTx();
+        
+        Node networkNode = graphDatabaseService.createNode();
+        
+        Node[] selectionNodes = new Node[5];
+        for (int i = 0; i < 5; i++) {
+            selectionNodes[i] = createSelectionNode(networkNode, DEFAULT_SELECTION_LIST_NAME + i);
+        }
+        
+        tx.success();
+        tx.finish();
+        
+        Iterable<Node> selectionNodesIterable = networkService.getAllSelectionModelsOfNetwork(networkNode);
+     
+        int count = 0;
+        for (Node selection : selectionNodesIterable) {
+            assertNotNull("Selection Node cannot be null", selection);
+            assertTrue("Was found incorrect node", ArrayUtils.contains(selectionNodes, selection));
+            count++;
+        }
+        
+        assertEquals("Incorrect result size of founded nodes", 5, count);
+    }
+    
+    
 }

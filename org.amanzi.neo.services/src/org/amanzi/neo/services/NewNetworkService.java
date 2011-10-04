@@ -15,7 +15,6 @@ package org.amanzi.neo.services;
 
 import java.util.Iterator;
 
-import org.amanzi.neo.services.CorrelationService.CorrelationNodeTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
@@ -50,8 +49,6 @@ public class NewNetworkService extends NewAbstractService {
 
     private static Logger LOGGER = Logger.getLogger(NewNetworkService.class);
 
-    // TODO: LN: do not use tx as global fiels to prevent problems with Transactions
-    private Transaction tx;
     private NewDatasetService datasetService;
 
     /**
@@ -135,7 +132,7 @@ public class NewNetworkService extends NewAbstractService {
             throw new IllegalArgumentException("To create a sector use method createSector()");
         }
 
-        tx = graphDb.beginTx();
+        Transaction tx = graphDb.beginTx();
         Node result = null;
         try {
             result = createNode(elementType);
@@ -227,7 +224,7 @@ public class NewNetworkService extends NewAbstractService {
             throw new IllegalNodeDataException("Name or CI+LAC must be set");
         }
 
-        tx = graphDb.beginTx();
+        Transaction tx = graphDb.beginTx();
         Node result = null;
         try {
             result = createNode(NetworkElementNodeType.SECTOR);
@@ -448,5 +445,15 @@ public class NewNetworkService extends NewAbstractService {
     public void changeRelationship(Node newParentNode, Node curentNode, RelationshipType type, Direction direction) {
         curentNode.getSingleRelationship(type, direction).delete();
         newParentNode.createRelationshipTo(curentNode, type);
+    }
+    
+    /**
+     * Returns Network Node which is connected with current Selection List Root Node
+     *
+     * @param selectionListRootNode root node of Selection List DB Structure
+     * @return
+     */
+    public Node getNetworkOfSelectionListRootNode(Node selectionListRootNode) throws DatabaseException {
+        return getNextNode(selectionListRootNode, NetworkRelationshipTypes.SELECTION_LIST, Direction.INCOMING);
     }
 }

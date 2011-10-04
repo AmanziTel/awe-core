@@ -32,7 +32,6 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
-import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.traversal.Evaluation;
@@ -919,31 +918,6 @@ public class NewDatasetService extends NewAbstractService {
 
         return CHILDREN_CHAIN_TRAVERSAL_DESCRIPTION.traverse(parent).nodes();
 
-    }
-
-    /**
-     * Safely get a node that is linked to <code>startNode</code> with the defined relationship.
-     * Assumed, that <code>startNode</code> has only one relationship of that kind
-     * 
-     * @param startNode
-     * @param relationship
-     * @param direction
-     * @return the node on the other end of relationship from <code>startNode</code>
-     * @throws DatabaseException if there are more than one relationships
-     */
-    private Node getNextNode(Node startNode, RelationshipType relationship, Direction direction) throws DatabaseException {
-        Node result = null;
-
-        Iterator<Relationship> rels = startNode.getRelationships(relationship, direction).iterator();
-        if (rels.hasNext()) {
-            result = rels.next().getOtherNode(startNode);
-        }
-        if (rels.hasNext()) {
-            // result is ambiguous
-            throw new DatabaseException("Errors exist in database structure");
-        }
-
-        return result;
     }
 
     /**

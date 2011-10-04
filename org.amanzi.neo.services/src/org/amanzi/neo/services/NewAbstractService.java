@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.services;
 
+import java.util.Iterator;
 import java.util.Map;
 
 import org.amanzi.neo.db.manager.NeoServiceProvider;
@@ -419,6 +420,31 @@ public abstract class NewAbstractService {
      */
     public Index<Node> getIndexForNodes(Node rootNode, INodeType nodeType) {
         return graphDb.index().forNodes(NewAbstractService.getIndexKey(rootNode, DriveNodeTypes.FILE));
+    }
+    
+    /**
+     * Safely get a node that is linked to <code>startNode</code> with the defined relationship.
+     * Assumed, that <code>startNode</code> has only one relationship of that kind
+     * 
+     * @param startNode
+     * @param relationship
+     * @param direction
+     * @return the node on the other end of relationship from <code>startNode</code>
+     * @throws DatabaseException if there are more than one relationships
+     */
+    protected Node getNextNode(Node startNode, RelationshipType relationship, Direction direction) throws DatabaseException {
+        Node result = null;
+
+        Iterator<Relationship> rels = startNode.getRelationships(relationship, direction).iterator();
+        if (rels.hasNext()) {
+            result = rels.next().getOtherNode(startNode);
+        }
+        if (rels.hasNext()) {
+            // result is ambiguous
+            throw new DatabaseException("Errors exist in database structure");
+        }
+
+        return result;
     }
 
 }

@@ -18,8 +18,11 @@ import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewNetworkService;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataElement;
+import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.ISelectionModel;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
 
@@ -32,19 +35,30 @@ import org.neo4j.graphdb.Node;
 public class SelectionModel extends AbstractModel implements ISelectionModel {
     private static Logger LOGGER = Logger.getLogger(SelectionModel.class);
     
-    private NewNetworkService networkService = NeoServiceFactory.getInstance().getNewNetworkService();
+    static NewNetworkService networkService = NeoServiceFactory.getInstance().getNewNetworkService();
     
     private int selectedNodesCount = 0;
+    
+    private INetworkModel networkModel;
     
     /**
      * Creates SelectionModel from existing Node
      * 
      * @param rootSelectionList root node of SelectionList structure
      */
-    public SelectionModel(Node rootSelectionList) {
+    public SelectionModel(Node rootSelectionList) throws DatabaseException {
+        //check input parameters
+        if (rootSelectionList == null) {
+            LOGGER.error("Input RootSelectionList node is null");
+            throw new IllegalArgumentException("Input RootSelectionList node is null");
+        }
+        
         this.rootNode = rootSelectionList;
         this.name = (String)rootSelectionList.getProperty(NewAbstractService.NAME);
         this.selectedNodesCount = (Integer)rootSelectionList.getProperty(NewNetworkService.SELECTED_NODES_COUNT);
+        
+        this.networkModel = new NetworkModel(networkService.getNetworkOfSelectionListRootNode(rootNode));
+        
         
         LOGGER.info("Selection Model <" + name + "> created by existing node");
     }
@@ -52,16 +66,28 @@ public class SelectionModel extends AbstractModel implements ISelectionModel {
     /**
      * Creates Selection Model by it's Name
      * 
-     * @param networkNode parent Network node
+     * @param networkModel parent Network node
      * @param selectionListName name of selection list 
      * @throws AWEException
      */
-    public SelectionModel(Node networkNode, String selectionListName) throws AWEException {
-        this.name = selectionListName;
-        this.rootNode = networkService.findSelectionList(networkNode, selectionListName);
-        if (rootNode == null) {
-            rootNode = networkService.createSelectionList(networkNode, selectionListName);
+    public SelectionModel(INetworkModel networkModel, String selectionListName) throws AWEException {
+        //check input parameters
+        if (networkModel == null) {
+            LOGGER.error("Input NetworkModel is null");
+            throw new IllegalArgumentException("Input NetworkModel is null");
         }
+        if ((selectionListName == null) || (selectionListName.equals(StringUtils.EMPTY))) {
+            LOGGER.error("Input Selection List Name is null or empty");
+            throw new IllegalArgumentException("Input Selection List Name is null or empty");
+        }
+        
+        this.name = selectionListName;
+        this.rootNode = networkService.findSelectionList(networkModel.getRootNode(), selectionListName);
+        if (rootNode == null) {
+            rootNode = networkService.createSelectionList(networkModel.getRootNode(), selectionListName);
+        }
+        
+        this.networkModel = networkModel;
         
         LOGGER.info("Selection Model <" + name + "> created");
     }
