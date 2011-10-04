@@ -59,7 +59,7 @@ public class SectorSelectionSaver extends AbstractSaver<NetworkModel, CSVContain
                 headers = container.getHeaders();
             } else {
                 for (String value : container.getValues()) {
-                    model.linkToSector(value);
+//                    model.linkToSector(value);
                     markTxAsSuccess();
                     increaseActionCount();
                 }

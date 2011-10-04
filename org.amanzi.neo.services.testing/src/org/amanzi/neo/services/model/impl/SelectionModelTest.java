@@ -13,21 +13,17 @@
 
 package org.amanzi.neo.services.model.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
+
+import java.util.HashMap;
 
 import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.services.AbstractNeoServiceTest;
-import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewNetworkService;
-import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
-import org.amanzi.neo.services.model.INetworkModel;
+import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.apache.commons.lang.StringUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -44,8 +40,6 @@ import org.neo4j.graphdb.Node;
 public class SelectionModelTest extends AbstractNeoServiceTest {
     
     private static final String SELECTION_LIST_NAME = "selection_list";
-    
-    private static final String NETWORK_NAME = "network_name";
     
     private static final int DEFAULT_COUNT = 5;
 
@@ -91,17 +85,17 @@ public class SelectionModelTest extends AbstractNeoServiceTest {
     
     @Test(expected = IllegalArgumentException.class)
     public void tryToCreateSelectionModelWithoutName() throws Exception {
-        new SelectionModel(getNetworkModel(), null);
+        new SelectionModel(getNetworkNode(), null);
     }
     
     @Test(expected = IllegalArgumentException.class)
     public void tryToCreateSelectionModelWithEmptyName() throws Exception {
-        new SelectionModel(getNetworkModel(), StringUtils.EMPTY);
+        new SelectionModel(getNetworkNode(), StringUtils.EMPTY);
     }
     
     @Test
     public void checkConstructorFromNodeActions() throws Exception {
-        NewNetworkService networkService = getNetworkService(true);
+        NewNetworkService networkService = getNetworkService(true, false);
         SelectionModel.networkService = networkService;
         
         Node selectionModelNode = getSelectionModelNode();
@@ -109,7 +103,6 @@ public class SelectionModelTest extends AbstractNeoServiceTest {
         
         verify(selectionModelNode).getProperty(NewNetworkService.NAME);
         verify(selectionModelNode).getProperty(NewNetworkService.SELECTED_NODES_COUNT);
-        verify(networkService).getNetworkOfSelectionListRootNode(selectionModelNode);
     }
     
     @Test
@@ -124,24 +117,104 @@ public class SelectionModelTest extends AbstractNeoServiceTest {
     
     @Test
     public void checkConstructorThatFindNodeInDatabase() throws Exception {
-        NewNetworkService networkService = getNetworkService(true);
+        NewNetworkService networkService = getNetworkService(true, false);
         SelectionModel.networkService = networkService;
         
-        new SelectionModel(getNetworkModel(), SELECTION_LIST_NAME);
+        new SelectionModel(getNetworkNode(), SELECTION_LIST_NAME);
         
         verify(networkService).findSelectionList(any(Node.class), eq(SELECTION_LIST_NAME));
         verify(networkService, never()).createSelectionList(any(Node.class), any(String.class));
     }
     
     @Test
-    public void checkConstructoreThatCreatesNewNode() throws Exception {
-        NewNetworkService networkService = getNetworkService(false);
+    public void checkConstructorThatCreatesNewNode() throws Exception {
+        NewNetworkService networkService = getNetworkService(false, false);
         SelectionModel.networkService = networkService;
         
-        new SelectionModel(getNetworkModel(), SELECTION_LIST_NAME);
+        new SelectionModel(getNetworkNode(), SELECTION_LIST_NAME);
         
         verify(networkService).findSelectionList(any(Node.class), eq(SELECTION_LIST_NAME));
         verify(networkService).createSelectionList(any(Node.class), eq(SELECTION_LIST_NAME));
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToLinkWithoutDataElement() throws Exception {
+        SelectionModel selectionModel = getSelectionModel();
+        
+        selectionModel.linkToSector(null);
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToLinkWithEmptyDataElement() throws Exception {
+        SelectionModel selectionModel = getSelectionModel();
+        DataElement dataElement = new DataElement(new HashMap<String, String>());
+        
+        
+        selectionModel.linkToSector(dataElement);
+    }
+    
+    @Test
+    public void checkLinkActions() throws Exception {
+        Node sectorNode = getSectorNode();
+        DataElement element = new DataElement(sectorNode);
+        
+        NewNetworkService networkService = getNetworkService(true, false);
+        SelectionModel.networkService = networkService;
+        
+        Node selectionRootNode = getSelectionModelNode();
+        SelectionModel selectionModel = new SelectionModel(selectionRootNode);
+        
+        selectionModel.linkToSector(element);
+        
+        verify(networkService).createSelectionLink(eq(selectionRootNode), eq(sectorNode));
+    }
+    
+    @Test
+    public void checkCounterIncreased() throws Exception {
+        SelectionModel selectionModel = getSelectionModel();
+        
+        int initialCount = selectionModel.getSelectedNodesCount();
+        
+        for (int i = 0; i < DEFAULT_COUNT; i++) {
+            Node sectorNode = getSectorNode();
+            DataElement element = new DataElement(sectorNode);
+            
+            selectionModel.linkToSector(element);
+        }
+        
+        assertEquals("Incorret increasing of count", initialCount + DEFAULT_COUNT, selectionModel.getSelectedNodesCount());
+    }
+    
+    @Test(expected = AWEException.class)
+    public void checkUnderlyingException() throws Exception {
+        NewNetworkService networkService = getNetworkService(true, true);
+        SelectionModel.networkService = networkService;
+        
+        Node sector = getSectorNode();
+        DataElement element = new DataElement(sector);
+        
+        getSelectionModel().linkToSector(element);
+    }
+    
+    @Test
+    public void checkCounterNotIncreased() throws Exception {
+        NewNetworkService networkService = getNetworkService(true, true);
+        SelectionModel.networkService = networkService;
+        
+        Node sector = getSectorNode();
+        DataElement element = new DataElement(sector);
+        
+        SelectionModel selectionModel = getSelectionModel();
+        
+        int prevCounter = selectionModel.getSelectedNodesCount();
+        
+        try {
+            selectionModel.linkToSector(element);
+        } catch (Exception e) {
+            //do nothing
+        }
+        
+        assertEquals("Counter should not increase in case of exception", prevCounter, selectionModel.getSelectedNodesCount());
     }
     
     /**
@@ -150,7 +223,7 @@ public class SelectionModelTest extends AbstractNeoServiceTest {
      * @param shouldFind should SelectionNode exists in DB or not
      * @return
      */
-    private NewNetworkService getNetworkService(boolean shouldFind) throws AWEException {
+    private NewNetworkService getNetworkService(boolean shouldFind, boolean shouldThrow) throws AWEException {
         NewNetworkService service = mock(NewNetworkService.class);
         
         Node selectionNode = null;
@@ -162,8 +235,9 @@ public class SelectionModelTest extends AbstractNeoServiceTest {
         }
         when(service.findSelectionList(any(Node.class), eq(SELECTION_LIST_NAME))).thenReturn(selectionNode);
         
-        Node networkNode = getNetworkNode();
-        when(service.getNetworkOfSelectionListRootNode(any(Node.class))).thenReturn(networkNode);
+        if (shouldThrow) {
+            doThrow(new DatabaseException("lalala")).when(service).createSelectionLink(any(Node.class), any(Node.class));
+        }
         
         return service;
     }
@@ -173,21 +247,8 @@ public class SelectionModelTest extends AbstractNeoServiceTest {
      *
      * @return
      */
-    private INetworkModel getNetworkModel() {
-        INetworkModel result = mock(INetworkModel.class);
-        
-        Node networkNode = getNetworkNode();
-        when(result.getRootNode()).thenReturn(networkNode);
-        
-        return result;
-    }
-    
     private Node getNetworkNode() {
         Node result = mock(Node.class);
-        
-        String type = NetworkElementNodeType.NETWORK.getId();
-        when(result.getProperty(NewAbstractService.TYPE, null)).thenReturn(type);
-        when(result.getProperty(NewAbstractService.NAME, StringUtils.EMPTY)).thenReturn(NETWORK_NAME);
         
         return result;
     }
@@ -202,6 +263,26 @@ public class SelectionModelTest extends AbstractNeoServiceTest {
         
         when(result.getProperty(NewNetworkService.NAME)).thenReturn(SELECTION_LIST_NAME);
         when(result.getProperty(NewNetworkService.SELECTED_NODES_COUNT)).thenReturn(DEFAULT_COUNT);
+        
+        return result;
+    }
+    
+    /**
+     * Returns Selection Model
+     *
+     * @return
+     */
+    private SelectionModel getSelectionModel() {
+        return new SelectionModel(getSelectionModelNode());
+    }
+    
+    /**
+     * Returns mocked node for Sector
+     *
+     * @return
+     */
+    private Node getSectorNode() {
+        Node result = mock(Node.class);
         
         return result;
     }

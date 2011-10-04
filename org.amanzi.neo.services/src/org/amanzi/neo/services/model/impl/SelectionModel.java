@@ -20,7 +20,6 @@ import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataElement;
-import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.ISelectionModel;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -39,14 +38,12 @@ public class SelectionModel extends AbstractModel implements ISelectionModel {
     
     private int selectedNodesCount = 0;
     
-    private INetworkModel networkModel;
-    
     /**
      * Creates SelectionModel from existing Node
      * 
      * @param rootSelectionList root node of SelectionList structure
      */
-    public SelectionModel(Node rootSelectionList) throws DatabaseException {
+    public SelectionModel(Node rootSelectionList) {
         //check input parameters
         if (rootSelectionList == null) {
             LOGGER.error("Input RootSelectionList node is null");
@@ -57,22 +54,19 @@ public class SelectionModel extends AbstractModel implements ISelectionModel {
         this.name = (String)rootSelectionList.getProperty(NewAbstractService.NAME);
         this.selectedNodesCount = (Integer)rootSelectionList.getProperty(NewNetworkService.SELECTED_NODES_COUNT);
         
-        this.networkModel = new NetworkModel(networkService.getNetworkOfSelectionListRootNode(rootNode));
-        
-        
         LOGGER.info("Selection Model <" + name + "> created by existing node");
     }
     
     /**
      * Creates Selection Model by it's Name
      * 
-     * @param networkModel parent Network node
+     * @param networkNode parent Network node
      * @param selectionListName name of selection list 
      * @throws AWEException
      */
-    public SelectionModel(INetworkModel networkModel, String selectionListName) throws AWEException {
+    public SelectionModel(Node networkNode, String selectionListName) throws AWEException {
         //check input parameters
-        if (networkModel == null) {
+        if (networkNode == null) {
             LOGGER.error("Input NetworkModel is null");
             throw new IllegalArgumentException("Input NetworkModel is null");
         }
@@ -82,19 +76,39 @@ public class SelectionModel extends AbstractModel implements ISelectionModel {
         }
         
         this.name = selectionListName;
-        this.rootNode = networkService.findSelectionList(networkModel.getRootNode(), selectionListName);
+        this.rootNode = networkService.findSelectionList(networkNode, selectionListName);
         if (rootNode == null) {
-            rootNode = networkService.createSelectionList(networkModel.getRootNode(), selectionListName);
+            rootNode = networkService.createSelectionList(networkNode, selectionListName);
         }
-        
-        this.networkModel = networkModel;
         
         LOGGER.info("Selection Model <" + name + "> created");
     }
 
     @Override
-    public void linkToSector(String name) {
+    public void linkToSector(IDataElement element) throws AWEException {
+        LOGGER.debug("start linkToSector(<" + element + ">)");
         
+        //check input
+        if (element == null) {
+            LOGGER.error("Input element is null");
+            throw new IllegalArgumentException("Input element is null");
+        }
+        DataElement dataElement = (DataElement)element;
+        if (dataElement.getNode() == null) {
+            LOGGER.error("Underlying node in input Element is null");
+            throw new IllegalArgumentException("Underlying node in input Element is null");
+        }
+        
+        //create a link
+        try {
+            networkService.createSelectionLink(getRootNode(), dataElement.getNode());
+            selectedNodesCount++;
+        } catch (Exception e) {
+            LOGGER.error("Error on creating link from SelectionList <" + this + "> to Element <" + element + ">.");
+            throw new DatabaseException(e);
+        } 
+        
+        LOGGER.debug("finish linkToSector()");
     }
 
     @Override

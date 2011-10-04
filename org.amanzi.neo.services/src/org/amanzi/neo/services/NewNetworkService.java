@@ -16,6 +16,7 @@ package org.amanzi.neo.services;
 import java.util.Iterator;
 
 import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
@@ -448,12 +449,13 @@ public class NewNetworkService extends NewAbstractService {
     }
     
     /**
-     * Returns Network Node which is connected with current Selection List Root Node
+     * Creates Seleciton link with node
      *
-     * @param selectionListRootNode root node of Selection List DB Structure
-     * @return
+     * @param selectionRootNode root of selection structure
+     * @param selectedNode node to add in selection structure
      */
-    public Node getNetworkOfSelectionListRootNode(Node selectionListRootNode) throws DatabaseException {
-        return getNextNode(selectionListRootNode, NetworkRelationshipTypes.SELECTION_LIST, Direction.INCOMING);
+    public void createSelectionLink(Node selectionRootNode, Node selectedNode) throws AWEException {
+        
     }
+    
 }

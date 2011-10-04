@@ -342,7 +342,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     @Override
     public ISelectionModel createSelectionModel(String name) throws AWEException {
         LOGGER.info("New SelectionModel <" + name + "> created for Network <" + this.name + ">");
-        return new SelectionModel(this, name);
+        return new SelectionModel(getRootNode(), name);
     }
 
     @Override
