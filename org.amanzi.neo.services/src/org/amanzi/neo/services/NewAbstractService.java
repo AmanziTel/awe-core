@@ -60,9 +60,6 @@ public abstract class NewAbstractService {
             .relationships(DatasetRelationTypes.CHILD, Direction.OUTGOING);
     protected GraphDatabaseService graphDb;
 
-    // TODO: LN: do not use Transaction as a field
-    private Transaction tx;
-
     /**
      * Sets service to use default <code>GraphDatabaseService</code> of the running application
      */
@@ -80,7 +77,7 @@ public abstract class NewAbstractService {
         this.graphDb = graphDb;
     }
 
-    public String getNodeType(Node node) {
+    public static String getNodeType(Node node) {
         return (String)node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, StringUtils.EMPTY);
     }
 
@@ -97,7 +94,7 @@ public abstract class NewAbstractService {
         }
         // create node
         Node result = null;
-        tx = graphDb.beginTx();
+        Transaction tx = graphDb.beginTx();
         try {
             result = graphDb.createNode();
             result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, nodeType.getId());
@@ -140,7 +137,7 @@ public abstract class NewAbstractService {
         }
 
         Node result = createNode(nodeType);
-        tx = graphDb.beginTx();
+        Transaction tx = graphDb.beginTx();
         try {
             parent.createRelationshipTo(result, relType);
             tx.success();
@@ -166,7 +163,7 @@ public abstract class NewAbstractService {
             throw new IllegalArgumentException("Relationship type is null.");
         }
         Relationship result = null;
-        tx = graphDb.beginTx();
+        Transaction tx = graphDb.beginTx();
         try {
             result = parent.createRelationshipTo(child, relType);
             tx.success();
@@ -211,7 +208,7 @@ public abstract class NewAbstractService {
      * @throws DatabaseException
      */
     public Index<Node> getIndex(Node root, INodeType nodeType) throws DatabaseException {
-        tx = graphDb.beginTx();
+        Transaction tx = graphDb.beginTx();
         Index<Node> result = null;
         try {
             result = graphDb.index().forNodes(getIndexKey(root, nodeType));
@@ -240,7 +237,7 @@ public abstract class NewAbstractService {
         if (node == null) {
             throw new IllegalArgumentException("Node is null.");
         }
-        tx = graphDb.beginTx();
+        Transaction tx = graphDb.beginTx();
         try {
             node.setProperty(NAME, name);
             tx.success();
@@ -264,7 +261,7 @@ public abstract class NewAbstractService {
     public Index<Node> addNodeToIndex(Node node, String indexName, String propertyName, Object propertyValue)
             throws DatabaseException {
         Index<Node> index = null;
-        tx = graphDb.beginTx();
+        Transaction tx = graphDb.beginTx();
         try {
             index = graphDb.index().forNodes(indexName);
             index.add(node, propertyName, propertyValue);
@@ -280,7 +277,7 @@ public abstract class NewAbstractService {
 
     public Index<Node> addNodeToIndex(Node node, Index<Node> index, String propertyName, Object propertyValue)
             throws DatabaseException {
-        tx = graphDb.beginTx();
+        Transaction tx = graphDb.beginTx();
         try {
             index.add(node, propertyName, propertyValue);
             tx.success();
@@ -338,7 +335,7 @@ public abstract class NewAbstractService {
      * @author Kruglik_A
      * @since 1.0.0
      */
-    public class FilterNodesByType implements Evaluator {
+    public static class FilterNodesByType implements Evaluator {
         /**
          * constructor for filter nodes by type
          * 
@@ -378,7 +375,7 @@ public abstract class NewAbstractService {
         if (params == null) {
             throw new IllegalArgumentException("Data element is null.");
         }
-        tx = graphDb.beginTx();
+        Transaction tx = graphDb.beginTx();
         try {
             for (String key : params.keySet()) {
                 Object value = params.get(key);
@@ -424,19 +421,17 @@ public abstract class NewAbstractService {
         Node result = null;
         for (Relationship rel : parent.getRelationships(relType, Direction.OUTGOING)) {
             Node node = rel.getEndNode();
-            // TODO: LN: better will be to use getProperty(NAME, "") (with empty string) to prevent
-            // NPE
-            if ((name.equals(node.getProperty(NAME, null))) && (nodeType.getId().equals(node.getProperty(TYPE, null)))) {
+            if ((name.equals(node.getProperty(NAME, StringUtils.EMPTY))) && (nodeType.getId().equals(node.getProperty(TYPE, null)))) {
                 result = node;
                 break;
             }
         }
         return result;
     }
-    
+
     /**
-     * Creates Indexes 
-     *
+     * Creates Indexes
+     * 
      * @param rootNode root node of indexed structure
      * @param nodeType type of indexed node
      * @return
@@ -444,7 +439,7 @@ public abstract class NewAbstractService {
     public Index<Node> getIndexForNodes(Node rootNode, INodeType nodeType) {
         return graphDb.index().forNodes(NewAbstractService.getIndexKey(rootNode, DriveNodeTypes.FILE));
     }
-    
+
     /**
      * Safely get a node that is linked to <code>startNode</code> with the defined relationship.
      * Assumed, that <code>startNode</code> has only one relationship of that kind

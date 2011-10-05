@@ -19,8 +19,9 @@ import org.amanzi.neo.services.exceptions.AWEException;
 import org.neo4j.graphdb.RelationshipType;
 
 /**
- * TODO Purpose of
  * <p>
+ * The interface contains declarations of basic methods of network models, allowing manage elements,
+ * relations, and selections.
  * </p>
  * 
  * @author grigoreva_a
@@ -28,6 +29,11 @@ import org.neo4j.graphdb.RelationshipType;
  */
 public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IRenderableModel {
 
+    /**
+     * Get a list of correlation models, that describe a network and the related datasets. 
+     * @return
+     * @throws AWEException on errors in database
+     */
     public Iterable<ICorrelationModel> getCorrelationModels() throws AWEException;
 
     public INetworkType getNetworkType();

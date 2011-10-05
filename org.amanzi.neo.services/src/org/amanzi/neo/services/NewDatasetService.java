@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.amanzi.neo.services.CorrelationService.CorrelationNodeTypes;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.IDriveType;
 import org.amanzi.neo.services.enums.INodeType;
@@ -32,6 +31,7 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.traversal.Evaluation;
@@ -87,7 +87,7 @@ public class NewDatasetService extends NewAbstractService {
             .relationships(N2NRelationships.N2N_REL, Direction.INCOMING).evaluator(Evaluators.excludeStartPosition());
 
     /** <code>TraversalDescription</code> for an empty iterator */
-    protected final TraversalDescription EMPTY_TRAVERSAL_DESCRIPTION = Traversal.description().evaluator(Evaluators.fromDepth(2))
+    public static final TraversalDescription EMPTY_TRAVERSAL_DESCRIPTION = Traversal.description().evaluator(Evaluators.fromDepth(2))
             .evaluator(Evaluators.toDepth(1));
 
     /**
@@ -132,7 +132,7 @@ public class NewDatasetService extends NewAbstractService {
      * @since 1.0.0
      */
     public enum DriveTypes implements IDriveType {
-        NEMO_V1, NEMO_V2, TEMS, ROMES, AMS_CALLS, AMS, AMS_PESQ;        
+        NEMO_V1, NEMO_V2, TEMS, ROMES, AMS_CALLS, AMS, AMS_PESQ;
     }
 
     /**
@@ -931,14 +931,14 @@ public class NewDatasetService extends NewAbstractService {
     }
 
     /**
-     * <Fully taken from old code> Gets the gis node by dataset.
+     * Gets the gis node by dataset, if it exists.
      * 
      * @param dataset the dataset
-     * @return the gis node by dataset
+     * @return the gis node by dataset or null
      */
     public Node createGisNodeByDataset(Node dataset) {
-        // TODO: temporary solution
-        return dataset.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING).getStartNode();
+        Relationship rel = dataset.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING);
+        return rel == null ? null : rel.getStartNode();
     }
 
     /**
