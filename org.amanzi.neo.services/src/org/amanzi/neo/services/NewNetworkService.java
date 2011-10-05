@@ -15,6 +15,7 @@ package org.amanzi.neo.services;
 
 import java.util.Iterator;
 
+import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
@@ -117,41 +118,7 @@ public class NewNetworkService extends NewAbstractService {
      */
     public Node createNetworkElement(Node parent, Index<Node> index, String name, INodeType elementType)
             throws IllegalNodeDataException, DatabaseException {
-        LOGGER.debug("start createNetworkElement(Node parent, String indexName, String name, INodeType elementType)");
-
-        // validate parameters
-        if (parent == null) {
-            throw new IllegalArgumentException("Parent is null.");
-        }
-        if (index == null) {
-            throw new IllegalArgumentException("Index is null.");
-        }
-        if ((name == null) || (name.equals(StringUtils.EMPTY))) {
-            throw new IllegalNodeDataException("Name cannot be empty");
-        }
-        if (elementType == null) {
-            throw new IllegalArgumentException("Type cannot be null");
-        }
-        if (elementType.equals(NetworkElementNodeType.SECTOR)) {
-            throw new IllegalArgumentException("To create a sector use method createSector()");
-        }
-
-        Transaction tx = graphDb.beginTx();
-        Node result = null;
-        try {
-            result = createNode(elementType);
-            datasetService.addChild(parent, result);
-            setNameProperty(result, name);
-            addNodeToIndex(result, index, NAME, name);
-            tx.success();
-        } catch (Exception e) {
-            LOGGER.error("Could not create network element.", e);
-            tx.failure();
-            throw new DatabaseException(e);
-        } finally {
-            tx.finish();
-        }
-        return result;
+        return createNetworkElement(parent, index, name, elementType, DatasetRelationshipTypes.CHILD);
     }
 
     /**
@@ -445,15 +412,6 @@ public class NewNetworkService extends NewAbstractService {
     }
 
     /**
-     * @param newParentnodem
-     * @param currentNode
-     */
-    public void changeRelationship(Node newParentNode, Node curentNode, RelationshipType type, Direction direction) {
-        curentNode.getSingleRelationship(type, direction).delete();
-        newParentNode.createRelationshipTo(curentNode, type);
-    }
-
-    /**
      * Creates Seleciton link with node
      * 
      * @param selectionRootNode root of selection structure
@@ -514,9 +472,17 @@ public class NewNetworkService extends NewAbstractService {
      * @param currentNode
      */
     public void replaceRelationship(Node newParentNode, Node curentNode, RelationshipType type, Direction direction) {
-        curentNode.getSingleRelationship(type, direction).delete();
-        newParentNode.createRelationshipTo(curentNode, type);
-        LOGGER.debug("finish replacement");
+        Transaction tx = graphDb.beginTx();
+        try {
+            curentNode.getSingleRelationship(type, direction).delete();
+            newParentNode.createRelationshipTo(curentNode, type);
+            tx.success();
+        } catch (Exception e) {
+            tx.failure();
+        } finally {
+            LOGGER.debug("finish replacement");
+            tx.finish();
+        }
     }
 
     /**
@@ -528,13 +494,23 @@ public class NewNetworkService extends NewAbstractService {
      * @param isReplaceExisted
      */
     public void completeProperties(Node existedNode, DataElement dataElement, boolean isReplaceExisted) {
-        LOGGER.debug("Start completing properties in " + existedNode);
-        for (String mapKey : dataElement.keySet()) {
-            if (existedNode.hasProperty(mapKey) && isReplaceExisted) {
-                existedNode.setProperty(mapKey, dataElement.get(mapKey));
-            } else if (!existedNode.hasProperty(mapKey)) {
-                existedNode.setProperty(mapKey, dataElement.get(mapKey));
+        Transaction tx = graphDb.beginTx();
+        try {
+            LOGGER.debug("Start completing properties in " + existedNode);
+            for (String mapKey : dataElement.keySet()) {
+                if (existedNode.hasProperty(mapKey) && isReplaceExisted) {
+                    existedNode.setProperty(mapKey, dataElement.get(mapKey));
+                } else if (!existedNode.hasProperty(mapKey)) {
+                    existedNode.setProperty(mapKey, dataElement.get(mapKey));
+                }
             }
+            LOGGER.debug("END completing properties in " + existedNode);
+            tx.success();
+        } catch (Exception e) {
+            tx.failure();
+        } finally {
+            LOGGER.debug("finish replacement");
+            tx.finish();
         }
     }
 
