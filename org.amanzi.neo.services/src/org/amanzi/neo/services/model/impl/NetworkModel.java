@@ -117,44 +117,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
 
     @Override
     public IDataElement createElement(IDataElement parent, Map<String, Object> params) {
-        // validate
-        if (parent == null) {
-            throw new IllegalArgumentException("Parent is null.");
-        }
-        Node parentNode = ((DataElement)parent).getNode();
-        if (parentNode == null) {
-            throw new IllegalArgumentException("Parent node is null.");
-        }
-        if (params == null) {
-            throw new IllegalArgumentException("Parameters map is null.");
-        }
-
-        INodeType type = NodeTypeManager.getType(params.get(NewAbstractService.TYPE).toString());
-        Node node = null;
-        try {
-
-            // TODO:validate network structure and save it in root node
-
-            if (type != null) {
-
-                if (type.equals(NetworkElementNodeType.SECTOR)) {
-                    Object elName = params.get(NewAbstractService.NAME);
-                    Object elCI = params.get(NewNetworkService.CELL_INDEX);
-                    Object elLAC = params.get(NewNetworkService.LOCATION_AREA_CODE);
-                    node = nwServ.createSector(parentNode, getIndex(type), elName == null ? null : elName.toString(), elCI == null
-                            ? null : elCI.toString(), elLAC == null ? null : elLAC.toString());
-                } else {
-                    node = nwServ.createNetworkElement(parentNode, getIndex(type), params.get(NewAbstractService.NAME).toString(),
-                            type);
-                }
-            }
-            nwServ.setProperties(node, params);
-            indexProperty(type, params);
-        } catch (AWEException e) {
-            LOGGER.error("Could not create network element.", e);
-        }
-
-        return node == null ? null : new DataElement(node);
+        return createElement(parent, params, NetworkRelationshipTypes.CHILD);
     }
 
     // find element
@@ -381,21 +344,22 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         try {
             curentNode = ((DataElement)currentNode).getNode();
             newParentNode = ((DataElement)newParentElement).getNode();
-        } catch (NullPointerException e) {
+            nwServ.replaceRelationship(newParentNode, curentNode, NetworkRelationshipTypes.CHILD, Direction.INCOMING);
+        } catch (AWEException e) {
             LOGGER.error("couldn't extract node from dataelement", e);
             return;
         }
-        nwServ.replaceRelationship(newParentNode, curentNode, NetworkRelationshipTypes.CHILD, Direction.INCOMING);
+
     }
 
     @Override
-    public IDataElement completeProperties(IDataElement existedElement, IDataElement newPropertySet, boolean isReplaceExisted) {
+    public IDataElement completeProperties(IDataElement existedElement, Map<String, Object> newPropertySet, boolean isReplaceExisted) {
         Node existedNode;
         try {
             existedNode = ((DataElement)existedElement).getNode();
-            nwServ.completeProperties(existedNode, ((DataElement)newPropertySet), isReplaceExisted);
+            nwServ.completeProperties(existedNode, new DataElement(newPropertySet), isReplaceExisted);
             return new DataElement(existedNode);
-        } catch (NullPointerException e) {
+        } catch (AWEException e) {
             LOGGER.error("couldn't complete new properties", e);
             return null;
         }
@@ -417,8 +381,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     }
 
     @Override
-    public IDataElement createElement(IDataElement parent, IDataElement element, RelationshipType reltype) {
-        // validate
+    public IDataElement createElement(IDataElement parent, Map<String, Object> element, RelationshipType reltype) {
         if (parent == null) {
             throw new IllegalArgumentException("Parent is null.");
         }
@@ -427,7 +390,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
             throw new IllegalArgumentException("Parent node is null.");
         }
         if (element == null) {
-            throw new IllegalArgumentException("Element is null.");
+            throw new IllegalArgumentException("Parameters map is null.");
         }
 
         INodeType type = NodeTypeManager.getType(element.get(NewAbstractService.TYPE).toString());
@@ -449,8 +412,8 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
                             type, reltype);
                 }
             }
-            nwServ.setProperties(node, (DataElement)element);
-            indexProperty(type, (DataElement)element);
+            nwServ.setProperties(node, element);
+            indexProperty(type, element);
         } catch (AWEException e) {
             LOGGER.error("Could not create network element.", e);
         }

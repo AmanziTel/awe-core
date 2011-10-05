@@ -74,4 +74,15 @@ public class DataLoadPreferenceManager {
         posibleValues.put(INeoConstants.PROPERTY_LON_NAME, getPossibleHeaders(DataLoadPreferences.NH_LONGITUDE));
         return posibleValues;
     }
+
+    public Map<String, String[]> getBSMPosibleValues() {
+        Map<String, String[]> posibleValues = new HashMap<String, String[]>();
+        posibleValues.put(DataLoadPreferences.MO, getPossibleHeaders(DataLoadPreferences.MO));
+        posibleValues.put(SITE, getPossibleHeaders(DataLoadPreferences.NH_SITE));
+        posibleValues.put(SECTOR, getPossibleHeaders(DataLoadPreferences.NH_SECTOR));
+        posibleValues.put(DataLoadPreferences.CHGR, getPossibleHeaders(DataLoadPreferences.CHGR));
+        posibleValues.put(DataLoadPreferences.FHOP, getPossibleHeaders(DataLoadPreferences.FHOP));
+        return posibleValues;
+
+    }
 }

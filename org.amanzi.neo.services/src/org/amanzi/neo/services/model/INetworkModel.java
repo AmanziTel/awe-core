@@ -101,7 +101,7 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
      *        will replaced with new
      * @return
      */
-    public IDataElement completeProperties(IDataElement existedElement, IDataElement newPropertySet, boolean isReplaceExisted);
+    public IDataElement completeProperties(IDataElement existedElement, Map<String, Object> newPropertySet, boolean isReplaceExisted);
 
     /**
      * Create a new network element based on <code>IDataElement element</code> object. MUST set NAME
@@ -111,7 +111,7 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
      * @param element
      * @return <code>DataElement</code> object, created on base of the new network node.
      */
-    public IDataElement createElement(IDataElement parent, IDataElement element, RelationshipType type);
+    public IDataElement createElement(IDataElement parent, Map<String, Object> element, RelationshipType type);
 
     /**
      * create required relationship between 2 nodes
