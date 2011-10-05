@@ -13,6 +13,8 @@
 
 package org.amanzi.neo.services.model;
 
+import java.util.Map;
+
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.neo4j.graphdb.RelationshipType;
 
@@ -74,21 +76,21 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
      * Find a network element, based on properties set in the <code>IDataElement</code> object.
      * Don't forget to set TYPE property.
      * 
-     * @param element
+     * @param params
      * @return <code>DataElement</code> object, created on base of the found network node, or
      *         <code>null</code>.
      */
-    public IDataElement findElement(IDataElement element);
+    public IDataElement findElement(Map<String, Object> params);
 
     /**
      * Create a new network element based on <code>IDataElement element</code> object. MUST set NAME
      * and TYPE.
      * 
      * @param parent
-     * @param element
+     * @param params
      * @return <code>DataElement</code> object, created on base of the new network node.
      */
-    public IDataElement createElement(IDataElement parent, IDataElement element);
+    public IDataElement createElement(IDataElement parent, Map<String, Object> params);
 
     /**
      * complete existedElement with new property. if

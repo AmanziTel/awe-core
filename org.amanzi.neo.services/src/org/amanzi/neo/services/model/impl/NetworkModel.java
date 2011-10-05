@@ -116,7 +116,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     }
 
     @Override
-    public IDataElement createElement(IDataElement parent, IDataElement element) {
+    public IDataElement createElement(IDataElement parent, Map<String, Object> params) {
         // validate
         if (parent == null) {
             throw new IllegalArgumentException("Parent is null.");
@@ -125,11 +125,11 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         if (parentNode == null) {
             throw new IllegalArgumentException("Parent node is null.");
         }
-        if (element == null) {
-            throw new IllegalArgumentException("Element is null.");
+        if (params == null) {
+            throw new IllegalArgumentException("Parameters map is null.");
         }
 
-        INodeType type = NodeTypeManager.getType(element.get(NewAbstractService.TYPE).toString());
+        INodeType type = NodeTypeManager.getType(params.get(NewAbstractService.TYPE).toString());
         Node node = null;
         try {
 
@@ -138,18 +138,18 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
             if (type != null) {
 
                 if (type.equals(NetworkElementNodeType.SECTOR)) {
-                    Object elName = element.get(NewAbstractService.NAME);
-                    Object elCI = element.get(NewNetworkService.CELL_INDEX);
-                    Object elLAC = element.get(NewNetworkService.LOCATION_AREA_CODE);
+                    Object elName = params.get(NewAbstractService.NAME);
+                    Object elCI = params.get(NewNetworkService.CELL_INDEX);
+                    Object elLAC = params.get(NewNetworkService.LOCATION_AREA_CODE);
                     node = nwServ.createSector(parentNode, getIndex(type), elName == null ? null : elName.toString(), elCI == null
                             ? null : elCI.toString(), elLAC == null ? null : elLAC.toString());
                 } else {
-                    node = nwServ.createNetworkElement(parentNode, getIndex(type), element.get(NewAbstractService.NAME).toString(),
+                    node = nwServ.createNetworkElement(parentNode, getIndex(type), params.get(NewAbstractService.NAME).toString(),
                             type);
                 }
             }
-            nwServ.setProperties(node, (DataElement)element);
-            indexProperty(type, (DataElement)element);
+            nwServ.setProperties(node, params);
+            indexProperty(type, params);
         } catch (AWEException e) {
             LOGGER.error("Could not create network element.", e);
         }
@@ -160,14 +160,14 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     // find element
 
     @Override
-    public IDataElement findElement(IDataElement element) {
+    public IDataElement findElement(Map<String, Object> params) {
         // validate
 
-        if (element == null) {
+        if (params == null) {
             throw new IllegalArgumentException("Element is null.");
         }
 
-        INodeType type = NodeTypeManager.getType(element.get(NewAbstractService.TYPE).toString());
+        INodeType type = NodeTypeManager.getType(params.get(NewAbstractService.TYPE).toString());
         Node node = null;
 
         // TODO:validate network structure and save it in root node
@@ -176,13 +176,13 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
 
             try {
                 if (type.equals(NetworkElementNodeType.SECTOR)) {
-                    Object elName = element.get(NewAbstractService.NAME);
-                    Object elCI = element.get(NewNetworkService.CELL_INDEX);
-                    Object elLAC = element.get(NewNetworkService.LOCATION_AREA_CODE);
+                    Object elName = params.get(NewAbstractService.NAME);
+                    Object elCI = params.get(NewNetworkService.CELL_INDEX);
+                    Object elLAC = params.get(NewNetworkService.LOCATION_AREA_CODE);
                     node = nwServ.findSector(getIndex(type), elName == null ? null : elName.toString(),
                             elCI == null ? null : elCI.toString(), elLAC == null ? null : elLAC.toString());
                 } else {
-                    node = nwServ.findNetworkElement(getIndex(type), element.get(NewAbstractService.NAME).toString());
+                    node = nwServ.findNetworkElement(getIndex(type), params.get(NewAbstractService.NAME).toString());
                 }
             } catch (DatabaseException e) {
                 LOGGER.error("Could not find data element.", e);
@@ -198,16 +198,16 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
      * object. Don't forget to set TYPE property.
      * 
      * @param parent specify this parameter if you suppose that a new element will be created
-     * @param element
+     * @param params
      * @return<code>DataElement</code> object, created on base of the resulting network node, or
      *                                 <code>null</code>.
      */
-    public IDataElement getElement(IDataElement parent, IDataElement element) {
+    public IDataElement getElement(IDataElement parent, Map<String, Object> params) {
 
-        IDataElement result = findElement(element);
+        IDataElement result = findElement(params);
         if (result == null) {
 
-            result = createElement(parent, element);
+            result = createElement(parent, params);
         }
         return result;
     }
