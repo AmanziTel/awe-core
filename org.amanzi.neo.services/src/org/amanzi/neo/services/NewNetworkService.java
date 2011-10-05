@@ -38,7 +38,7 @@ import org.neo4j.kernel.Traversal;
 
 /**
  * <p>
- * This class manages access to network elements
+ * This class manages access to network elements.
  * </p>
  * 
  * @author grigoreva_a
@@ -192,7 +192,6 @@ public class NewNetworkService extends NewAbstractService {
             throw new IllegalArgumentException("Index is null.");
         }
 
-        // TODO: LN: incorrect condition - you have now <Name> AND <CI+LAC>, but should have OR
         // AG: !(A|B) = !(A)&!(B)
         if (((name == null) || (name.equals(StringUtils.EMPTY)))
                 && ((ci == null) || (ci.equals(StringUtils.EMPTY)) || (lac == null) || (lac.equals(StringUtils.EMPTY)))) {

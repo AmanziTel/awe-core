@@ -13,9 +13,6 @@
 
 package org.amanzi.neo.services;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
@@ -35,10 +32,9 @@ import org.neo4j.graphdb.traversal.Evaluators;
 import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.kernel.Traversal;
 
-//TODO: LN: comments!
 /**
- * TODO Purpose of
  * <p>
+ * Correlation service handles calls to database referring correlations.
  * </p>
  * 
  * @author grigoreva_a
@@ -67,8 +63,6 @@ public class CorrelationService extends NewAbstractService {
             .relationships(Correlations.CORRELATED, Direction.OUTGOING).relationships(Correlations.CORRELATION, Direction.INCOMING);
 
     private static Logger LOGGER = Logger.getLogger(CorrelationService.class);
-
-    private Transaction tx;
 
     private NewDatasetService datasetService = NeoServiceFactory.getInstance().getNewDatasetService();
 
@@ -115,8 +109,7 @@ public class CorrelationService extends NewAbstractService {
 
         Node result = findCorrelationRoot(network, dataset);
         if (result == null) {
-            // TODO: LN: do not use field for transaction!!!!!!!!
-            tx = graphDb.beginTx();
+            Transaction tx = graphDb.beginTx();
             try {
                 result = getCorrelationRoot(network);
                 Node dsRoot = getCorrelationRoot(dataset);
@@ -125,7 +118,9 @@ public class CorrelationService extends NewAbstractService {
                 result.createRelationshipTo(dsRoot, Correlations.CORRELATED);
                 tx.success();
             } catch (Exception e) {
-                // TODO: LN: handle exception
+                LOGGER.error("Could not create correlation.", e);
+                tx.failure();
+                throw new DatabaseException(e);
             } finally {
                 tx.finish();
             }
@@ -178,7 +173,7 @@ public class CorrelationService extends NewAbstractService {
         Node result = findCorrelation(sector, measurement);
 
         if (result == null) {
-            tx = graphDb.beginTx();
+            Transaction tx = graphDb.beginTx();
             try {
                 result = getSectorProxy(network, sector);
                 if (result == null) {
@@ -315,7 +310,7 @@ public class CorrelationService extends NewAbstractService {
         if (rel != null) {
             result = rel.getEndNode();
         } else {
-            tx = graphDb.beginTx();
+            Transaction tx = graphDb.beginTx();
             try {
                 result = createNode(CorrelationNodeTypes.CORRELATION);
                 network.createRelationshipTo(result, Correlations.CORRELATION);
