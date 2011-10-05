@@ -38,7 +38,7 @@ import org.neo4j.kernel.Traversal;
 
 /**
  * <p>
- * This class manages access to network elements.
+ * This class manages access to network elements
  * </p>
  * 
  * @author grigoreva_a
@@ -66,7 +66,7 @@ public class NewNetworkService extends NewAbstractService {
      * @since 1.0.0
      */
     public enum NetworkElementNodeType implements INodeType {
-        NETWORK, BSC, SITE, SECTOR, CITY, MSC, SELECTION_LIST_ROOT, TRXGROUP, TRX;
+        NETWORK, BSC, SITE, SECTOR, CITY, MSC, SELECTION_LIST_ROOT, TRXGROUP, TRX, CHANNELGROUP;
 
         static {
             NodeTypeManager.registerNodeType(NetworkElementNodeType.class);
@@ -86,7 +86,7 @@ public class NewNetworkService extends NewAbstractService {
      * @since 1.0.0
      */
     public enum NetworkRelationshipTypes implements RelationshipType {
-        SELECTION_LIST, SELECTED, TRXGROUP;
+        SELECTION_LIST, SELECTED, TRXGROUP, CHANNEL, TRX;
     }
 
     /*
@@ -192,6 +192,7 @@ public class NewNetworkService extends NewAbstractService {
             throw new IllegalArgumentException("Index is null.");
         }
 
+        // TODO: LN: incorrect condition - you have now <Name> AND <CI+LAC>, but should have OR
         // AG: !(A|B) = !(A)&!(B)
         if (((name == null) || (name.equals(StringUtils.EMPTY)))
                 && ((ci == null) || (ci.equals(StringUtils.EMPTY)) || (lac == null) || (lac.equals(StringUtils.EMPTY)))) {
@@ -469,8 +470,10 @@ public class NewNetworkService extends NewAbstractService {
      * 
      * @param newParentnodem
      * @param currentNode
+     * @throws DatabaseException
      */
-    public void replaceRelationship(Node newParentNode, Node curentNode, RelationshipType type, Direction direction) {
+    public void replaceRelationship(Node newParentNode, Node curentNode, RelationshipType type, Direction direction)
+            throws AWEException {
         Transaction tx = graphDb.beginTx();
         try {
             curentNode.getSingleRelationship(type, direction).delete();
@@ -478,8 +481,10 @@ public class NewNetworkService extends NewAbstractService {
             tx.success();
         } catch (Exception e) {
             tx.failure();
+            LOGGER.debug("end with exception");
+            throw new DatabaseException(e);
         } finally {
-            LOGGER.debug("finish replacement");
+
             tx.finish();
         }
     }
@@ -491,8 +496,9 @@ public class NewNetworkService extends NewAbstractService {
      * @param existedNode
      * @param dataElement
      * @param isReplaceExisted
+     * @throws DatabaseException 
      */
-    public void completeProperties(Node existedNode, DataElement dataElement, boolean isReplaceExisted) {
+    public void completeProperties(Node existedNode, DataElement dataElement, boolean isReplaceExisted) throws DatabaseException {
         Transaction tx = graphDb.beginTx();
         try {
             LOGGER.debug("Start completing properties in " + existedNode);
@@ -507,6 +513,8 @@ public class NewNetworkService extends NewAbstractService {
             tx.success();
         } catch (Exception e) {
             tx.failure();
+            LOGGER.debug("end with exception");
+            throw new DatabaseException(e);
         } finally {
             LOGGER.debug("finish replacement");
             tx.finish();
