@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.services;
 
+import java.util.Iterator;
 import java.util.Map;
 
 import org.amanzi.neo.db.manager.NeoServiceProvider;
@@ -20,6 +21,7 @@ import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
+import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
@@ -182,7 +184,7 @@ public abstract class NewAbstractService {
      * This method generates a string identifier for index for a specific network and a specific
      * type of nodes
      * 
-     * @param root a network node
+     * @param root a model root
      * @param nodeType type of nodes
      * @return a string specifying index name
      */
@@ -199,6 +201,31 @@ public abstract class NewAbstractService {
     }
 
     /**
+     * Generates a node index for the defined <code>root</code> node and <code>nodeType</code>. Your
+     * code should call this method only once for each pair of parameters, to minimize calls to
+     * database.
+     * 
+     * @param root a model root
+     * @param nodeType type of nodes
+     * @return <code>Index<Node></code> for the defined parameters
+     * @throws DatabaseException
+     */
+    public Index<Node> getIndex(Node root, INodeType nodeType) throws DatabaseException {
+        tx = graphDb.beginTx();
+        Index<Node> result = null;
+        try {
+            result = graphDb.index().forNodes(getIndexKey(root, nodeType));
+            tx.success();
+        } catch (Exception e) {
+            LOGGER.error("Could not index node", e);
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
+        return result;
+    }
+
+    /**
      * Sets NAME property at <code>node</code>
      * 
      * @param node
@@ -207,7 +234,7 @@ public abstract class NewAbstractService {
      */
     protected void setNameProperty(Node node, String name) throws IllegalNodeDataException, DatabaseException {
         // validate parameters
-        if ((name == null) || name.equals("")) {
+        if ((name == null) || name.equals(StringUtils.EMPTY)) {
             throw new IllegalNodeDataException("Name cannot be empty.");
         }
         if (node == null) {
@@ -234,7 +261,6 @@ public abstract class NewAbstractService {
      * @param propertyValue
      * @throws DatabaseException if something went wrong
      */
-    // TODO: LN: use Index instead of it's name
     public Index<Node> addNodeToIndex(Node node, String indexName, String propertyName, Object propertyValue)
             throws DatabaseException {
         Index<Node> index = null;
@@ -252,7 +278,6 @@ public abstract class NewAbstractService {
         return index;
     }
 
-    // TODO: LN: use Index instead of it's name, comments
     public Index<Node> addNodeToIndex(Node node, Index<Node> index, String propertyName, Object propertyValue)
             throws DatabaseException {
         tx = graphDb.beginTx();
@@ -389,7 +414,7 @@ public abstract class NewAbstractService {
         if (relType == null) {
             throw new IllegalArgumentException("Relationship type is null.");
         }
-        if ((name == null) || (name.equals(""))) {
+        if ((name == null) || (name.equals(StringUtils.EMPTY))) {
             throw new IllegalArgumentException("Name is null or empty.");
         }
         if (nodeType == null) {
@@ -406,6 +431,42 @@ public abstract class NewAbstractService {
                 break;
             }
         }
+        return result;
+    }
+    
+    /**
+     * Creates Indexes 
+     *
+     * @param rootNode root node of indexed structure
+     * @param nodeType type of indexed node
+     * @return
+     */
+    public Index<Node> getIndexForNodes(Node rootNode, INodeType nodeType) {
+        return graphDb.index().forNodes(NewAbstractService.getIndexKey(rootNode, DriveNodeTypes.FILE));
+    }
+    
+    /**
+     * Safely get a node that is linked to <code>startNode</code> with the defined relationship.
+     * Assumed, that <code>startNode</code> has only one relationship of that kind
+     * 
+     * @param startNode
+     * @param relationship
+     * @param direction
+     * @return the node on the other end of relationship from <code>startNode</code>
+     * @throws DatabaseException if there are more than one relationships
+     */
+    protected Node getNextNode(Node startNode, RelationshipType relationship, Direction direction) throws DatabaseException {
+        Node result = null;
+
+        Iterator<Relationship> rels = startNode.getRelationships(relationship, direction).iterator();
+        if (rels.hasNext()) {
+            result = rels.next().getOtherNode(startNode);
+        }
+        if (rels.hasNext()) {
+            // result is ambiguous
+            throw new DatabaseException("Errors exist in database structure");
+        }
+
         return result;
     }
 

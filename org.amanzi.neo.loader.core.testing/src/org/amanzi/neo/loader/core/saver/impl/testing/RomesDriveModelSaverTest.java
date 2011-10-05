@@ -125,8 +125,7 @@ public class RomesDriveModelSaverTest extends AbstractAWETest {
 		Assert.assertNotNull(graphDatabaseService
 				.index()
 				.forNodes(
-						NeoServiceFactory.getInstance().getNewDatasetService()
-								.getIndexKey(rootDataset, DriveNodeTypes.FILE))
+						NewAbstractService.getIndexKey(rootDataset, DriveNodeTypes.FILE))
 				.get(NewAbstractService.NAME, filename));
 	}
 
@@ -181,7 +180,7 @@ public class RomesDriveModelSaverTest extends AbstractAWETest {
 		// metadata not null
 		Assert.assertNotNull(md);
 		// metadata correct
-		Assert.assertEquals(DriveTypes.ROMES.getId().toLowerCase(),
+		Assert.assertEquals(DriveTypes.ROMES.name().toLowerCase(),
 				md.getPropertyValues(MetaData.SUB_TYPE));
 		Assert.assertEquals("dataset", md.getType());
 	}

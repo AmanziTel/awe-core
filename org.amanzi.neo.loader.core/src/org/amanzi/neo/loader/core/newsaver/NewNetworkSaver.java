@@ -21,6 +21,7 @@ import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceManager;
 import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
@@ -65,7 +66,7 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
             createBSC(null, row);
             return;
         }
-        mscProperty.put(INeoConstants.PROPERTY_TYPE_NAME, DataLoadPreferenceManager.MSC);
+        mscProperty.put(INeoConstants.PROPERTY_TYPE_NAME, NetworkElementNodeType.MSC.getId());
         mscProperty.put(INeoConstants.PROPERTY_NAME_NAME,
                 row.get(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.MSC))));
 
@@ -96,7 +97,7 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
             }
             return;
         }
-        bscProperty.put(INeoConstants.PROPERTY_TYPE_NAME, DataLoadPreferenceManager.BSC);
+        bscProperty.put(INeoConstants.PROPERTY_TYPE_NAME, NetworkElementNodeType.BSC.getId());
         bscProperty.put(INeoConstants.PROPERTY_NAME_NAME,
                 row.get(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.BSC))));
 
@@ -134,7 +135,7 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
 
         Map<String, Object> cityPropMap = new HashMap<String, Object>();
 
-        cityPropMap.put(INeoConstants.PROPERTY_TYPE_NAME, DataLoadPreferenceManager.CITY);
+        cityPropMap.put(INeoConstants.PROPERTY_TYPE_NAME, NetworkElementNodeType.CITY.getId());
         cityPropMap.put(INeoConstants.PROPERTY_NAME_NAME,
                 row.get(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.CITY))));
         IDataElement cityElement = new DataElement(cityPropMap);
@@ -170,7 +171,7 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
         }
 
         Map<String, Object> siteMap = new HashMap<String, Object>();
-        siteMap.put(INeoConstants.PROPERTY_TYPE_NAME, DataLoadPreferenceManager.SITE);
+        siteMap.put(INeoConstants.PROPERTY_TYPE_NAME, NetworkElementNodeType.SITE.getId());
         siteMap.put(INeoConstants.PROPERTY_LON_NAME, row.get(columnSynonyms.get(fileSynonyms.get(INeoConstants.PROPERTY_LON_NAME))));
         siteMap.put(INeoConstants.PROPERTY_LAT_NAME, row.get(columnSynonyms.get(fileSynonyms.get(INeoConstants.PROPERTY_LAT_NAME))));
         if (fileSynonyms.get(DataLoadPreferenceManager.SITE) == null
@@ -223,17 +224,17 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
         String sectorName = row.get(columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.SECTOR))) != null ? row.get(
                 columnSynonyms.get(fileSynonyms.get(DataLoadPreferenceManager.SECTOR))).toString() : "";
 
-//        String ci = sectorMap.containsKey("ci") ? sectorMap.get("ci").toString() : "";
-//        String lac = sectorMap.containsKey("lac") ? sectorMap.get("lac").toString() : "";
-//        if ((ci == null || StringUtils.isEmpty(ci)) || (lac == null || StringUtils.isEmpty(lac))
-//                || (sectorName == null || StringUtils.isEmpty(sectorName))) {
-//            LOGGER.info("Sector haven't Name or CI + LAC properties on line: " + lineCounter);
-//            return;
-//        }
+        // String ci = sectorMap.containsKey("ci") ? sectorMap.get("ci").toString() : "";
+        // String lac = sectorMap.containsKey("lac") ? sectorMap.get("lac").toString() : "";
+        // if ((ci == null || StringUtils.isEmpty(ci)) || (lac == null || StringUtils.isEmpty(lac))
+        // || (sectorName == null || StringUtils.isEmpty(sectorName))) {
+        // LOGGER.info("Sector haven't Name or CI + LAC properties on line: " + lineCounter);
+        // return;
+        // }
         if (fileSynonyms.containsKey(DataLoadPreferenceManager.SECTOR)) {
             sectorMap.put(INeoConstants.PROPERTY_NAME_NAME, sectorName);
         }
-        sectorMap.put(INeoConstants.PROPERTY_TYPE_NAME, DataLoadPreferenceManager.SECTOR);
+        sectorMap.put(INeoConstants.PROPERTY_TYPE_NAME, NetworkElementNodeType.SECTOR.getId());
 
         IDataElement sectorElement = new DataElement(sectorMap);
         IDataElement findedElement = model.findElement(sectorElement);
@@ -253,7 +254,7 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
         try {
             rootElement.put(INeoConstants.PROPERTY_NAME_NAME, configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK));
-            model = getActiveProject().createNetwork(configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK));
+            model = getActiveProject().getNetwork(configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK));
             rootDataElement = new DataElement(model.getRootNode());
         } catch (AWEException e) {
             LOGGER.error("Exception on creating root Model", e);

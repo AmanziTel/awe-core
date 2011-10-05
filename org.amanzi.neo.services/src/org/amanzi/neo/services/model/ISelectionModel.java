@@ -13,6 +13,8 @@
 
 package org.amanzi.neo.services.model;
 
+import org.amanzi.neo.services.exceptions.AWEException;
+
 
 /**
  * TODO Purpose of
@@ -25,11 +27,11 @@ package org.amanzi.neo.services.model;
 public interface ISelectionModel extends IDataModel {
 
     /**
-     * find sector by name and create relation ship from rootNode to each node from iterator
+     * creates link to current element
      * 
-     * @param sectorElement
+     * @param element
      */
-    public void linkToSector(String name);
+    public void linkToSector(IDataElement element) throws AWEException;
     
     /**
      * Returns number of Nodes in current Selection Model

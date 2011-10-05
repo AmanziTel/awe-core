@@ -17,11 +17,18 @@ import java.io.Serializable;
 
 /**
  * <p>
- *Interface for node type
+ * Interface for node type The classes implementing <code>INodeType</code> must be registered in
+ * <code>NodeTypeManager</code>.
  * </p>
+ * 
+ * Example:<br>
+ * static {<br>
+ *     NodeTypeManager.registerNodeType(ImplementsNodeType.class);<br> 
+ * }
+ * 
  * @author TsAr
  * @since 1.0.0
  */
-public interface INodeType extends Serializable{
+public interface INodeType extends Serializable {
     String getId();
 }

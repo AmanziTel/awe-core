@@ -18,6 +18,7 @@ import java.util.List;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.ISelectionModel;
 import org.amanzi.neo.services.model.impl.NetworkModel;
@@ -27,10 +28,26 @@ import org.apache.log4j.Logger;
  * @author Kondratenko_Vladislav
  */
 public class SectorSelectionSaver extends AbstractSaver<NetworkModel, CSVContainer, ConfigurationDataImpl> {
+    
+    protected static final Logger LOGGER = Logger.getLogger(SectorSelectionSaver.class);
+    
+    /*
+     * Selection Model to create 
+     */
     private ISelectionModel model;
+    
+    /*
+     * Network Model to get Sectors
+     */
+    private INetworkModel networkModel;
+    
+    /*
+     * List of Headers
+     */
     private List<String> headers;
+    
     private CSVContainer container;
-    protected static Logger LOGGER = Logger.getLogger(SectorSelectionSaver.class);
+    
     private final int MAX_TX_BEFORE_COMMIT = 1000;
 
     @Override
@@ -38,12 +55,12 @@ public class SectorSelectionSaver extends AbstractSaver<NetworkModel, CSVContain
         setDbInstance();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
         try {
-            INetworkModel network = getActiveProject().findNetwork(configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK));
+            networkModel = getActiveProject().findNetwork(configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK));
             
             //selection data is a single file - so we can just get first element
             String selectionName = configuration.getFilesToLoad().get(0).getName();
             
-            model = network.getSelectionModel(selectionName);
+            model = networkModel.getSelectionModel(selectionName);
         } catch (AWEException e) {
             LOGGER.info("Error while creating Selection Model ", e);
             throw (RuntimeException)new RuntimeException().initCause(e);
@@ -59,7 +76,8 @@ public class SectorSelectionSaver extends AbstractSaver<NetworkModel, CSVContain
                 headers = container.getHeaders();
             } else {
                 for (String value : container.getValues()) {
-                    model.linkToSector(value);
+//                    IDataElement sector = networkModel.findElement(element)
+                    
                     markTxAsSuccess();
                     increaseActionCount();
                 }

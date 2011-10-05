@@ -91,6 +91,17 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
     public IDataElement createElement(IDataElement parent, IDataElement element);
 
     /**
+     * complete existedElement with new property. if
+     * 
+     * @param existedElement
+     * @param newPropertySet
+     * @param isReplaceExistedis <code>replaceExisted</code> set <b>true</b> than existed property
+     *        will replaced with new
+     * @return
+     */
+    public IDataElement completeProperties(IDataElement existedElement, IDataElement newPropertySet, boolean isReplaceExisted);
+
+    /**
      * Create a new network element based on <code>IDataElement element</code> object. MUST set NAME
      * and TYPE.
      * 
@@ -98,26 +109,14 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
      * @param element
      * @return <code>DataElement</code> object, created on base of the new network node.
      */
-    public IDataElement createElement(IDataElement parent, IDataElement element, RelationshipType relType);
+    public IDataElement createElement(IDataElement parent, IDataElement element, RelationshipType type);
 
     /**
-     * complete properties of existed element with new properties. If <code>IsreplaceExisted</code>
-     * set to <b>true</b> existed properties will be replaced with new values;
-     * 
-     * @param existedElement
-     * @param newPropertySet
-     * @return
-     */
-    public IDataElement completeProperties(IDataElement existedElement, IDataElement newPropertySet, boolean isReplaceExisted);
-
-    /**
-     * create required relationship between exists <code>parent</code> and <code>child</code>
-     * elements;
+     * create required relationship between 2 nodes
      * 
      * @param parent
      * @param child
      * @param rel
      */
     public void createRelationship(IDataElement parent, IDataElement child, RelationshipType rel);
-
 }

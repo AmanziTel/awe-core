@@ -11,7 +11,6 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
-import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.services.AbstractNeoServiceTest;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewAbstractService;
@@ -55,8 +54,7 @@ public class DriveModelTest extends AbstractNeoServiceTest {
 		clearDb();
 		initializeDb();
 		
-		new LogStarter().earlyStartup();
-        clearServices();
+		clearServices();
 		
 		LOGGER.info("Database created in folder " + databasePath);
 		prServ = NeoServiceFactory.getInstance().getNewProjectService();
@@ -71,7 +69,7 @@ public class DriveModelTest extends AbstractNeoServiceTest {
 
 	@Before
 	public void newProject() {
-	    try {
+		try {
 			project = prServ.createProject("project" + count++);
 			dsName = "dataset" + count;
 			dataset = dsServ.createDataset(project, dsName, DatasetTypes.DRIVE,
@@ -170,7 +168,7 @@ public class DriveModelTest extends AbstractNeoServiceTest {
 		// root node type is correct
 		Assert.assertEquals(DatasetTypes.DRIVE.getId(), virtual.getRootNode()
 				.getProperty(NewAbstractService.TYPE, null));
-		Assert.assertEquals(DriveTypes.values()[0].getId(), virtual
+		Assert.assertEquals(DriveTypes.values()[0].name(), virtual
 				.getRootNode().getProperty(DriveModel.DRIVE_TYPE, null));
 	}
 
@@ -510,12 +508,9 @@ public class DriveModelTest extends AbstractNeoServiceTest {
 					filename.substring(filename.lastIndexOf('\\') + 1), params))
 					.getNode();
 			dm.finishUp();
-		} catch (DatabaseException e) {
+		} catch (AWEException e) {
 			LOGGER.error("Could not add measurement", e);
 			fail();
-		} catch (AWEException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 		// node returned is not null
 		Assert.assertNotNull(m);
@@ -579,12 +574,9 @@ public class DriveModelTest extends AbstractNeoServiceTest {
 				me = ((DataElement) dm.addMeasurement(
 						filename.substring(filename.lastIndexOf('\\') + 1), m))
 						.getNode();
-			} catch (DatabaseException e) {
+			} catch (AWEException e) {
 				LOGGER.error("Could not add measurement", e);
 				fail();
-			} catch (AWEException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
 			ms.put(me, m);
 		}
@@ -635,12 +627,9 @@ public class DriveModelTest extends AbstractNeoServiceTest {
 			m = ((DataElement) dm.addMeasurement(
 					filename.substring(filename.lastIndexOf('\\') + 1), params))
 					.getNode();
-		} catch (DatabaseException e) {
+		} catch (AWEException e) {
 			LOGGER.error("Could not add measurement", e);
 			fail();
-		} catch (AWEException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 
 		Node l = ((DataElement) dm.getLocation(m)).getNode();
@@ -686,12 +675,9 @@ public class DriveModelTest extends AbstractNeoServiceTest {
 			m = ((DataElement) dm.addMeasurement(
 					filename.substring(filename.lastIndexOf('\\') + 1), params))
 					.getNode();
-		} catch (DatabaseException e) {
+		} catch (AWEException e) {
 			LOGGER.error("Could not add measurement", e);
 			fail();
-		} catch (AWEException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 
 		IDataElement l = dm.getLocation(m);
@@ -729,12 +715,9 @@ public class DriveModelTest extends AbstractNeoServiceTest {
 			m = ((DataElement) dm.addMeasurement(
 					filename.substring(filename.lastIndexOf('\\') + 1), params))
 					.getNode();
-		} catch (DatabaseException e) {
+		} catch (AWEException e) {
 			LOGGER.error("Could not add measurement", e);
 			fail();
-		} catch (AWEException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 
 		IDataElement l = dm.getLocation(m);
@@ -755,15 +738,11 @@ public class DriveModelTest extends AbstractNeoServiceTest {
 		}
 		try {
 			dm.addMeasurement(null, new HashMap<String, Object>());
-		} catch (DatabaseException e) {
+		} catch (AWEException e) {
 			LOGGER.error("Could not add measurement", e);
 			fail();
 		}
 		// exception
-		catch (AWEException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -779,19 +758,16 @@ public class DriveModelTest extends AbstractNeoServiceTest {
 		}
 		try {
 			dm.addMeasurement("", new HashMap<String, Object>());
-		} catch (DatabaseException e) {
+		} catch (AWEException e) {
 			LOGGER.error("Could not add measurement", e);
 			fail();
-		} catch (AWEException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 		;
 		// exception
 	}
 
 	@Test
-	public void testGetCorrelatedModels() throws AWEException {
+	public void testGetCorrelatedModels() {
 		DriveModel dm = null;
 		List<Node> networks = new ArrayList<Node>();
 		try {
@@ -808,17 +784,33 @@ public class DriveModelTest extends AbstractNeoServiceTest {
 			fail();
 		}
 
-		Iterable<ICorrelationModel> it = dm.getCorrelatedModels();
+		Iterable<ICorrelationModel> it = null;
+		try {
+			it = dm.getCorrelatedModels();
+		} catch (AWEException e) {
+			LOGGER.error("Could not get correlated models.", e);
+			fail();
+		}
 		Assert.assertNotNull(it);
 		Assert.assertTrue(it.iterator().hasNext());
-		for (ICorrelationModel model : dm.getCorrelatedModels()) {
-			Assert.assertTrue(networks.contains(model.getNetwork()));
-			Assert.assertEquals(dataset, model.getDataset());
+		try {
+			for (ICorrelationModel model : dm.getCorrelatedModels()) {
+				Node nwNode = ((DataElement) model.getNetwork()).getNode();
+				Assert.assertNotNull(nwNode);
+				Assert.assertTrue(networks.contains(nwNode));
+
+				Node dsNode = ((DataElement) model.getDataset()).getNode();
+				Assert.assertNotNull(dsNode);
+				Assert.assertEquals(dataset, dsNode);
+			}
+		} catch (AWEException e) {
+			LOGGER.error("Could not get correlted models.", e);
+			fail();
 		}
 	}
 
 	@Test
-	public void testGetCorrelatedModel() throws AWEException {
+	public void testGetCorrelatedModel() {
 		DriveModel dm = null;
 		List<Node> networks = new ArrayList<Node>();
 		try {
@@ -836,9 +828,21 @@ public class DriveModelTest extends AbstractNeoServiceTest {
 		}
 
 		for (int i = 0; i < networks.size(); i++) {
-			ICorrelationModel cm = dm.getCorrelatedModel("network" + i);
-			Assert.assertEquals(dataset, cm.getDataset());
-			Assert.assertEquals(networks.get(i), cm.getNetwork());
+			ICorrelationModel cm = null;
+			try {
+				cm = dm.getCorrelatedModel("network" + i);
+			} catch (AWEException e) {
+				LOGGER.error("Could not get correlated model by name.", e);
+				fail();
+			}
+			Node dsNode = ((DataElement) cm.getDataset()).getNode();
+			;
+			Assert.assertNotNull(dsNode);
+			Assert.assertEquals(dataset, dsNode);
+
+			Node nwNode = ((DataElement) cm.getNetwork()).getNode();
+			Assert.assertNotNull(nwNode);
+			Assert.assertEquals(networks.get(i), nwNode);
 		}
 	}
 
@@ -913,12 +917,9 @@ public class DriveModelTest extends AbstractNeoServiceTest {
 					fms.get(fname).add(
 							((DataElement) dm.addMeasurement(fname, params))
 									.getNode());
-				} catch (DatabaseException e) {
+				} catch (AWEException e) {
 					LOGGER.error("Could not add measurement", e);
 					fail();
-				} catch (AWEException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
 				}
 			}
 		}

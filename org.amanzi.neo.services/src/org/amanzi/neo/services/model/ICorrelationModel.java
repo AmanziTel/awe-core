@@ -17,8 +17,8 @@ import org.amanzi.neo.services.exceptions.AWEException;
 import org.neo4j.graphdb.Node;
 
 /**
- * TODO Purpose of
  * <p>
+ * Correlation model describes relationships between elements of two models.
  * </p>
  * 
  * @author grigoreva_a
@@ -31,14 +31,14 @@ public interface ICorrelationModel extends IModel {
      * 
      * @return a network node
      */
-    public Node getNetwork();
+    public IDataElement getNetwork();
 
     /**
      * Returns the dataset node, involved in current relationship.
      * 
      * @return a dataset node
      */
-    public Node getDataset();
+    public IDataElement getDataset();
 
     /**
      * Traverses database to get all the sectors of current network, that have correlated dataset
@@ -46,7 +46,7 @@ public interface ICorrelationModel extends IModel {
      * 
      * @return traverser over sectors
      */
-    public Iterable<Node> getSectors() throws AWEException;
+    public Iterable<IDataElement> getSectors() throws AWEException;
 
     /**
      * Traverses database to get all the nodes of the current dataset (measurements for drive data,
@@ -54,8 +54,7 @@ public interface ICorrelationModel extends IModel {
      * 
      * @return traverser over dataset nodes
      */
-    //TODO: LN: use IDataElement
-    public Iterable<Node> getMeasurements() throws AWEException;
+    public Iterable<IDataElement> getMeasurements() throws AWEException;
 
     /**
      * Traverses database to get the dataset nodes correlated to the defined sector node.
@@ -63,8 +62,7 @@ public interface ICorrelationModel extends IModel {
      * @param sector the sector to find correlations for
      * @return traverser over dataset nodes
      */
-    //TODO: LN: use IDataElement
-    public Iterable<Node> getCorrelatedNodes(Node sector);
+    public Iterable<IDataElement> getCorrelatedNodes(Node sector);
 
     /**
      * Find a node in the current network, that is correlated to the defined dataset node.
@@ -72,5 +70,5 @@ public interface ICorrelationModel extends IModel {
      * @param measurement the node to find correlation for
      * @return the correlated sector or <code>null</code>.
      */
-    public Node getCorrelatedSector(Node measurement);
+    public IDataElement getCorrelatedSector(Node measurement);
 }

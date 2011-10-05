@@ -38,7 +38,10 @@ import org.junit.runners.Suite.SuiteClasses;
                org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModelTest.class,
                org.amanzi.neo.services.model.impl.ProjectModelTest.class,
                org.amanzi.neo.services.testing.filters.FilterTest.class,
-               org.amanzi.neo.services.testing.statistic.VaultTests.class
+               org.amanzi.neo.services.testing.statistic.VaultTests.class,
+               org.amanzi.neo.services.synonyms.ExportSynonymsServiceTest.class,
+               org.amanzi.neo.services.synonyms.ExportSynonymsManagerTest.class,
+               org.amanzi.neo.services.model.impl.SelectionModelTest.class
                })
 
 public class NeoServiceSuite {

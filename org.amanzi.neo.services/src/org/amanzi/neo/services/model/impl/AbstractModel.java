@@ -51,4 +51,9 @@ public abstract class AbstractModel implements IModel {
     public INodeType getType() {
         return nodeType;
     }
+    
+    @Override
+    public String toString() {
+        return getName();
+    }
 }

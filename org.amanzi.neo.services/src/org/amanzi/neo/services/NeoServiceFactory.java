@@ -2,6 +2,7 @@ package org.amanzi.neo.services;
 
 import org.amanzi.neo.services.correlation.CorrelationService;
 import org.amanzi.neo.services.node2node.NodeToNodeRelationService;
+import org.amanzi.neo.services.synonyms.ExportSynonymsService;
 
 /* AWE - Amanzi Wireless Explorer
  * http://awe.amanzi.org
@@ -43,6 +44,9 @@ public class NeoServiceFactory {
     private NewStatisticsService newStatisticsService = null;
     private ProjectService newProjectService = null;
     private org.amanzi.neo.services.CorrelationService newCorrelationService = null;
+    
+    private ExportSynonymsService exportSynonymsService = null;
+    private Object exportSynonymsMonitor = new Object();
 
     public static NeoServiceFactory getInstance() {
         return instance;
@@ -183,6 +187,18 @@ public class NeoServiceFactory {
         return newCorrelationService;
     }
     
+    public ExportSynonymsService getExportSynonymsService() {
+        if (exportSynonymsService == null) {
+            synchronized (exportSynonymsMonitor) {
+                if (exportSynonymsService == null) {
+                    exportSynonymsService = new ExportSynonymsService();
+                }
+            }
+        }
+        
+        return exportSynonymsService;
+    }
+    
     public void clear() {
         datasetService = null;
         correlationService = null;
@@ -195,6 +211,7 @@ public class NeoServiceFactory {
         newStatisticsService = null;
         newProjectService = null;
         newCorrelationService = null;
+        exportSynonymsService = null;
     }
 
 }
