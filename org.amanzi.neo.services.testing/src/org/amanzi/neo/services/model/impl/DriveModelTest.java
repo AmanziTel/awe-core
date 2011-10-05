@@ -736,8 +736,9 @@ public class DriveModelTest extends AbstractNeoServiceTest {
 			LOGGER.error("Could not create drive model", e);
 			fail();
 		}
+		String filename = null;
 		try {
-			dm.addMeasurement(null, new HashMap<String, Object>());
+			dm.addMeasurement(filename, new HashMap<String, Object>());
 		} catch (AWEException e) {
 			LOGGER.error("Could not add measurement", e);
 			fail();

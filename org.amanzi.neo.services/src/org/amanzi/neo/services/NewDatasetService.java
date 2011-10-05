@@ -24,6 +24,7 @@ import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
+import org.amanzi.neo.services.model.impl.DriveModel.DriveRelationshipTypes;
 import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelationships;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -87,8 +88,13 @@ public class NewDatasetService extends NewAbstractService {
             .relationships(N2NRelationships.N2N_REL, Direction.INCOMING).evaluator(Evaluators.excludeStartPosition());
 
     /** <code>TraversalDescription</code> for an empty iterator */
-    public static final TraversalDescription EMPTY_TRAVERSAL_DESCRIPTION = Traversal.description().evaluator(Evaluators.fromDepth(2))
-            .evaluator(Evaluators.toDepth(1));
+    public static final TraversalDescription EMPTY_TRAVERSAL_DESCRIPTION = Traversal.description()
+            .evaluator(Evaluators.fromDepth(2)).evaluator(Evaluators.toDepth(1));
+
+    /** <code>TraversalDescription</code> to iterate over virtual dataset nodes. */
+    public static final TraversalDescription VIRTUAL_DATASET_TRAVERSAL_DESCRIPTION = Traversal.description().breadthFirst()
+            .relationships(DriveRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING).evaluator(Evaluators.atDepth(1))
+            .evaluator(Evaluators.excludeStartPosition());
 
     /**
      * <p>
@@ -993,9 +999,17 @@ public class NewDatasetService extends NewAbstractService {
     public Iterable<Node> emptyTraverser(Node source) {
         // validate parameters
         if (source == null) {
-            throw new IllegalArgumentException("Source nonde is null.");
+            throw new IllegalArgumentException("Source node is null.");
         }
         return EMPTY_TRAVERSAL_DESCRIPTION.traverse(source).nodes();
+    }
+
+    public Iterable<Node> getVirtalDatasets(Node rootDataset) {
+        // validate
+        if (rootDataset == null) {
+            throw new IllegalArgumentException("Root dataset node is null.");
+        }
+        return VIRTUAL_DATASET_TRAVERSAL_DESCRIPTION.traverse(rootDataset).nodes();
     }
 
 }

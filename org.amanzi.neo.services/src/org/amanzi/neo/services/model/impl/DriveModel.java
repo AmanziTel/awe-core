@@ -88,14 +88,14 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         public String getId() {
             return name().toLowerCase();
         }
-        
+
         public static DriveNodeTypes findById(String id) {
             for (DriveNodeTypes driveNodeType : values()) {
                 if (driveNodeType.getId().equals(id)) {
                     return driveNodeType;
                 }
             }
-            
+
             return null;
         }
 
@@ -244,9 +244,8 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     public Iterable<IDriveModel> getVirtualDatasets() {
         LOGGER.debug("start getVirtualDatasets()");
 
-        // TODO: LN: move this to Service
         List<IDriveModel> result = new ArrayList<IDriveModel>();
-        for (Node node : getVirtualDatasetsTraversalDescription().traverse(rootNode).nodes()) {
+        for (Node node : dsServ.getVirtalDatasets(rootNode)) {
             try {
                 result.add(new DriveModel(null, node, null, null));
             } catch (AWEException e) {
@@ -254,17 +253,6 @@ public class DriveModel extends RenderableModel implements IDriveModel {
             }
         }
         return result;
-    }
-
-    // TODO: LN: move this to Service
-    /**
-     * @return TraversalDescription to iterate over virtual dataset nodes.
-     */
-    protected TraversalDescription getVirtualDatasetsTraversalDescription() {
-        LOGGER.debug("start getVirtualDatasetsTraversalDescription()");
-
-        return Traversal.description().breadthFirst().relationships(DriveRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING)
-                .evaluator(Evaluators.atDepth(1)).evaluator(Evaluators.excludeStartPosition());
     }
 
     /**
@@ -316,8 +304,75 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         return addMeasurement(filename, params, primaryType);
     }
 
-    // TODO: LN: maybe it make sense to add method like addMeasurerment(IDataElement.... since
-    // addFile already returns IDataElement
+    /**
+     * Adds a measurement node to a file node in <code>file</code> parameter. If params map contains
+     * lat and lon properties, also creates a location node. Use this method if you want to create a
+     * measurement with default type.
+     * 
+     * @param file a <code>IDataElement</code>, containing he file node
+     * @param params a map containing parameters of the new measurement
+     * @return the newly created node
+     * @throws AWEException
+     */
+    public IDataElement addMeasurement(IDataElement file, Map<String, Object> params) throws AWEException {
+        return addMeasurement(file, params, primaryType);
+    }
+
+    /**
+     * Adds a measurement node to a file node in the <code>file</code> parameter. If params map
+     * contains lat and lon properties, also creates a location node. Use this method if you want to
+     * create a measurement with type, that is different from drive model primary type.
+     * 
+     * @param filename the name of file
+     * @param params a map containing parameters of the new measurement
+     * @param nodeType the type of node to create
+     * @return the newly created node
+     * @throws AWEException
+     */
+    public IDataElement addMeasurement(IDataElement file, Map<String, Object> params, INodeType nodeType) throws AWEException {
+
+        // validate parameters
+        if (file == null) {
+            throw new IllegalArgumentException("File element is null.");
+        }
+        Node fileNode = ((DataElement)file).getNode();
+        if (fileNode == null) {
+            throw new IllegalArgumentException("File node is null.");
+        }
+        if (params == null) {
+            throw new IllegalArgumentException("Parameter map is null.");
+        }
+        if (nodeType == null) {
+            throw new IllegalArgumentException("Node type is null.");
+        }
+
+        Node m = dsServ.createNode(nodeType);
+        dsServ.addChild(fileNode, m, null);
+        Long lat = (Long)params.get(LATITUDE);
+        Long lon = (Long)params.get(LONGITUDE);
+        Long tst = (Long)params.get(TIMESTAMP);
+
+        if ((lat != null) && (lat != 0) && (lon != null) && (lon != 0)) {
+            createLocationNode(m, lat, lon);
+            params.remove(LATITUDE);
+            params.remove(LONGITUDE);
+        }
+        if ((tst != null) && (tst != 0)) {
+            updateTimestamp(tst);
+        }
+        params.put(NewAbstractService.DATASET_ID, this.name);
+        dsServ.setProperties(m, params);
+        indexProperty(primaryType, params); // TODO: ??????????
+
+        count++;
+        Map<String, Object> prop = new HashMap<String, Object>();
+        prop.put(PRIMARY_TYPE, primaryType.getId());// TODO: ?????????????
+        prop.put(COUNT, count);
+        dsServ.setProperties(rootNode, prop);
+        indexProperty(primaryType, prop); // TODO: ???????????
+
+        return new DataElement(m);
+    }
 
     /**
      * Adds a measurement node to a file node with defined filename. If params map contains lat and
@@ -351,32 +406,8 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         if (fileNode == null) {
             throw new IllegalArgumentException("File node " + filename + " not found.");
         }
-        Node m = dsServ.createNode(nodeType);
-        dsServ.addChild(fileNode, m, null);
-        Long lat = (Long)params.get(LATITUDE);
-        Long lon = (Long)params.get(LONGITUDE);
-        Long tst = (Long)params.get(TIMESTAMP);
 
-        if ((lat != null) && (lat != 0) && (lon != null) && (lon != 0)) {
-            createLocationNode(m, lat, lon);
-            params.remove(LATITUDE);
-            params.remove(LONGITUDE);
-        }
-        if ((tst != null) && (tst != 0)) {
-            updateTimestamp(tst);
-        }
-        params.put(NewAbstractService.DATASET_ID, this.name);
-        dsServ.setProperties(m, params);
-        indexProperty(primaryType, params); // TODO: ??????????
-
-        count++;
-        Map<String, Object> prop = new HashMap<String, Object>();
-        prop.put(PRIMARY_TYPE, primaryType.getId());// TODO: ?????????????
-        prop.put(COUNT, count);
-        dsServ.setProperties(rootNode, prop);
-        indexProperty(primaryType, prop); // TODO: ???????????
-
-        return new DataElement(m);
+        return addMeasurement(new DataElement(fileNode), params, nodeType);
     }
 
     /**
@@ -624,5 +655,5 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     @Override
     public INodeType getType() {
         return primaryType;
-    }    
+    }
 }

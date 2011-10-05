@@ -347,7 +347,7 @@ public class CorrelationService extends NewAbstractService {
         }
         LOGGER.info("getCorrelatedNetworks(" + dataset.getId() + ")");
 
-        return CORRELATED_TRAVERSAL_DESCRIPTION.relationships(Correlations.CORRELATED, Direction.INCOMING)
+        return CORRELATED_DATASETS_TRAVERSAL_DESCRIPTION.relationships(Correlations.CORRELATED, Direction.INCOMING)
                 .evaluator(new FilterNodesByType(DatasetTypes.NETWORK)).evaluator(Evaluators.atDepth(2))
                 .traverse(getCorrelationRoot(dataset)).nodes();
     }

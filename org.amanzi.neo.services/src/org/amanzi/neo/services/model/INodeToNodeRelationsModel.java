@@ -13,10 +13,10 @@
 
 package org.amanzi.neo.services.model;
 
-//TODO: LN: comments
 /**
- * TODO Purpose of
  * <p>
+ * The interface for models describing node relationships, that are beyond common data
+ * structure, e.g. neighbouring between sectors.
  * </p>
  * 
  * @author grigoreva_a
