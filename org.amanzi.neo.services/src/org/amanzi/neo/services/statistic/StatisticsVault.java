@@ -675,7 +675,7 @@ public class StatisticsVault implements IVault {
     }
 
     @Override
-    public boolean getIsStatisticsChanged() {
+    public boolean isStatisticsChanged() {
         return isStatisticsChanged;
     }
 

@@ -15,15 +15,19 @@ package org.amanzi.neo.services;
 
 import java.util.Iterator;
 
+import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
+import org.amanzi.neo.services.model.impl.DataElement;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
@@ -45,6 +49,8 @@ public class NewNetworkService extends NewAbstractService {
     public final static String CELL_INDEX = "ci";
     public final static String LOCATION_AREA_CODE = "lac";
 
+    public final static String SELECTION_RELATIONSHIP_INDEX = "selection_relationship";
+
     public final static String SELECTED_NODES_COUNT = "selected_nodes_count";
 
     private static Logger LOGGER = Logger.getLogger(NewNetworkService.class);
@@ -60,7 +66,7 @@ public class NewNetworkService extends NewAbstractService {
      * @since 1.0.0
      */
     public enum NetworkElementNodeType implements INodeType {
-        NETWORK, BSC, SITE, SECTOR, CITY, MSC, SELECTION_LIST_ROOT;
+        NETWORK, BSC, SITE, SECTOR, CITY, MSC, SELECTION_LIST_ROOT, TRX_GROUP, TRX, CHANNEL_GROUP;
 
         static {
             NodeTypeManager.registerNodeType(NetworkElementNodeType.class);
@@ -80,7 +86,7 @@ public class NewNetworkService extends NewAbstractService {
      * @since 1.0.0
      */
     public enum NetworkRelationshipTypes implements RelationshipType {
-        SELECTION_LIST;
+        SELECTION_LIST, SELECTED, TRXGROUP, CHANNEL, TRX;
     }
 
     /*
@@ -112,41 +118,7 @@ public class NewNetworkService extends NewAbstractService {
      */
     public Node createNetworkElement(Node parent, Index<Node> index, String name, INodeType elementType)
             throws IllegalNodeDataException, DatabaseException {
-        LOGGER.debug("start createNetworkElement(Node parent, String indexName, String name, INodeType elementType)");
-
-        // validate parameters
-        if (parent == null) {
-            throw new IllegalArgumentException("Parent is null.");
-        }
-        if (index == null) {
-            throw new IllegalArgumentException("Index is null.");
-        }
-        if ((name == null) || (name.equals(StringUtils.EMPTY))) {
-            throw new IllegalNodeDataException("Name cannot be empty");
-        }
-        if (elementType == null) {
-            throw new IllegalArgumentException("Type cannot be null");
-        }
-        if (elementType.equals(NetworkElementNodeType.SECTOR)) {
-            throw new IllegalArgumentException("To create a sector use method createSector()");
-        }
-
-        Transaction tx = graphDb.beginTx();
-        Node result = null;
-        try {
-            result = createNode(elementType);
-            datasetService.addChild(parent, result);
-            setNameProperty(result, name);
-            addNodeToIndex(result, index, NAME, name);
-            tx.success();
-        } catch (Exception e) {
-            LOGGER.error("Could not create network element.", e);
-            tx.failure();
-            throw new DatabaseException(e);
-        } finally {
-            tx.finish();
-        }
-        return result;
+        return createNetworkElement(parent, index, name, elementType, DatasetRelationshipTypes.CHILD);
     }
 
     /**
@@ -440,11 +412,164 @@ public class NewNetworkService extends NewAbstractService {
     }
 
     /**
+     * Creates Seleciton link with node
+     * 
+     * @param selectionRootNode root of selection structure
+     * @param selectedNode node to add in selection structure
+     */
+    public void createSelectionLink(Node selectionRootNode, Node selectedNode, Index<Relationship> linkIndex) throws AWEException {
+        LOGGER.debug("start createSelectionLink(<" + selectionRootNode + ">, <" + selectedNode + ">)");
+
+        // validate input
+        if (selectionRootNode == null) {
+            LOGGER.error("Input selectionRootNode cannot be null");
+            throw new IllegalArgumentException("Input selectionRootNode cannot be null");
+        }
+        if (selectedNode == null) {
+            LOGGER.error("Input selectedNode cannot be null");
+            throw new IllegalArgumentException("Input selectedNode cannot be null");
+        }
+        if (linkIndex == null) {
+            LOGGER.error("Input linkIndex cannot be null");
+            throw new IllegalArgumentException("Input linkIndex cannot be null");
+        }
+
+        // check duplication
+        String indexKey = Long.toString(selectionRootNode.getId());
+        Object indexValue = selectedNode.getId();
+
+        if (linkIndex.get(indexKey, indexValue).getSingle() != null) {
+            LOGGER.error("Link between Root Selection Node <" + selectionRootNode + "> and Node <" + selectedNode
+                    + "> already exists.");
+            throw new DatabaseException("Link between Root Selection Node <" + selectionRootNode + "> and Node <" + selectedNode
+                    + "> already exists.");
+        }
+
+        // create a link
+        Transaction tx = graphDb.beginTx();
+        try {
+            Relationship link = selectionRootNode.createRelationshipTo(selectedNode, NetworkRelationshipTypes.SELECTED);
+
+            linkIndex.add(link, indexKey, indexValue);
+
+            tx.success();
+        } catch (Exception e) {
+            tx.failure();
+            LOGGER.error("Error on creating Selection link", e);
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
+
+        LOGGER.debug("finish createSelectionLink");
+    }
+
+    /**
+     * Remove required relationship from current node and create new relationship from
+     * newParentElement to currentNode
+     * 
      * @param newParentnodem
      * @param currentNode
+     * @throws DatabaseException
      */
-    public void changeRelationship(Node newParentNode, Node curentNode, RelationshipType type, Direction direction) {
-        curentNode.getSingleRelationship(type, direction).delete();
-        newParentNode.createRelationshipTo(curentNode, type);
+    public void replaceRelationship(Node newParentNode, Node curentNode, RelationshipType type, Direction direction)
+            throws AWEException {
+        Transaction tx = graphDb.beginTx();
+        try {
+            curentNode.getSingleRelationship(type, direction).delete();
+            newParentNode.createRelationshipTo(curentNode, type);
+            tx.success();
+        } catch (Exception e) {
+            tx.failure();
+            LOGGER.debug("end with exception");
+            throw new DatabaseException(e);
+        } finally {
+
+            tx.finish();
+        }
+    }
+
+    /**
+     * complete properties of existed Node with new properties. If Is replaceExisted set to
+     * <b>true</b> existed properties will be replaced with new values;
+     * 
+     * @param existedNode
+     * @param dataElement
+     * @param isReplaceExisted
+     * @throws DatabaseException 
+     */
+    public void completeProperties(Node existedNode, DataElement dataElement, boolean isReplaceExisted) throws DatabaseException {
+        Transaction tx = graphDb.beginTx();
+        try {
+            LOGGER.debug("Start completing properties in " + existedNode);
+            for (String mapKey : dataElement.keySet()) {
+                if (existedNode.hasProperty(mapKey) && isReplaceExisted) {
+                    existedNode.setProperty(mapKey, dataElement.get(mapKey));
+                } else if (!existedNode.hasProperty(mapKey)) {
+                    existedNode.setProperty(mapKey, dataElement.get(mapKey));
+                }
+            }
+            LOGGER.debug("END completing properties in " + existedNode);
+            tx.success();
+        } catch (Exception e) {
+            tx.failure();
+            LOGGER.debug("end with exception");
+            throw new DatabaseException(e);
+        } finally {
+            LOGGER.debug("finish replacement");
+            tx.finish();
+        }
+    }
+
+    /**
+     * Creates a new network element of defined <code>elementType</code>, sets its <code>name</code>
+     * property, adds this element to index <code>indexName</code>, and attaches this element to
+     * <code>parent</code> node with defined relationship.
+     * 
+     * @param parent
+     * @param indexName
+     * @param name
+     * @param elementType
+     * @return the newly created network element node
+     */
+    public Node createNetworkElement(Node parent, Index<Node> index, String name, INodeType elementType, RelationshipType relType)
+            throws IllegalNodeDataException, DatabaseException {
+        LOGGER.debug("start createNetworkElement(Node parent, String indexName, String name, INodeType elementType)");
+
+        LOGGER.debug("start createNetworkElement(Node parent, String indexName, String name, INodeType elementType)");
+
+        // validate parameters
+        if (parent == null) {
+            throw new IllegalArgumentException("Parent is null.");
+        }
+        if (index == null) {
+            throw new IllegalArgumentException("Index is null.");
+        }
+        if ((name == null) || (name.equals(StringUtils.EMPTY))) {
+            throw new IllegalNodeDataException("Name cannot be empty");
+        }
+        if (elementType == null) {
+            throw new IllegalArgumentException("Type cannot be null");
+        }
+        if (elementType.equals(NetworkElementNodeType.SECTOR)) {
+            throw new IllegalArgumentException("To create a sector use method createSector()");
+        }
+
+        Transaction tx = graphDb.beginTx();
+        Node result = null;
+        try {
+            result = createNode(elementType);
+            datasetService.createRelationship(parent, result, relType);
+            setNameProperty(result, name);
+            addNodeToIndex(result, index, NAME, name);
+            tx.success();
+        } catch (Exception e) {
+            LOGGER.error("Could not create network element.", e);
+            tx.failure();
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
+        return result;
     }
 }

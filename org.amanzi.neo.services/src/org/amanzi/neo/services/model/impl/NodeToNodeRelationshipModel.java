@@ -20,6 +20,7 @@ import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.NewNetworkService;
 import org.amanzi.neo.services.NodeTypeManager;
+import org.amanzi.neo.services.CorrelationService.CorrelationNodeTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataElement;
@@ -32,6 +33,9 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
+import org.neo4j.graphdb.traversal.Evaluators;
+import org.neo4j.graphdb.traversal.TraversalDescription;
+import org.neo4j.kernel.Traversal;
 
 /**
  * <p>
@@ -89,11 +93,11 @@ public class NodeToNodeRelationshipModel extends AbstractModel implements INodeT
      * @author grigoreva_a
      * @since 1.0.0
      */
-    public enum NodeToNodeTypes implements INodeType {
+    protected enum NodeToNodeTypes implements INodeType {
         NODE2NODE, PROXY;
 
         static {
-            NodeTypeManager.registerNodeType(NodeToNodeTypes.class);
+            NodeTypeManager.registerNodeType(CorrelationNodeTypes.class);
         }
 
         @Override

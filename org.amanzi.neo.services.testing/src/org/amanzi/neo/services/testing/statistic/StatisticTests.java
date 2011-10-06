@@ -3,27 +3,16 @@ package org.amanzi.neo.services.testing.statistic;
 
 import java.util.ArrayList;
 
-import org.amanzi.neo.services.DatasetService;
-import org.amanzi.neo.services.NeoServiceFactory;
-
-import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.statistic.ChangeClassRule;
 import org.amanzi.neo.services.statistic.internal.DatasetStatistic;
 import org.amanzi.neo.services.statistic.internal.PropertyStatistics;
-import org.amanzi.neo.services.statistic.internal.Vault;
-
-
 import org.amanzi.testing.AbstractAWETest;
 import org.apache.log4j.Logger;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-
-
 import org.junit.Test;
-
 import org.neo4j.graphdb.Node;
-
 import org.neo4j.graphdb.Transaction;
 
 public class StatisticTests extends AbstractAWETest{
@@ -31,10 +20,8 @@ public class StatisticTests extends AbstractAWETest{
 
     private static long startTimestamp;
 
-    private static DatasetService datasetService;
     private static String ROOT_KEY = "root key";
     private static String NODE_TYPE_1 = "node type 1";
-    private static String NODE_TYPE_2 = "node type 2";
     private static String PROPERTY_NAME_1 = "property name 1";
     private static String PROPERTY_NAME_2 = "property name 2";
     private static String PROPERTY_VALUE_1 = "property value 1";
@@ -50,10 +37,6 @@ public class StatisticTests extends AbstractAWETest{
 
         try {
             initializeDb();
-            initPreferences();
-            
-            datasetService = NeoServiceFactory.getInstance().getDatasetService();
-            //afpService = AfpService.getService();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -371,7 +354,7 @@ public class StatisticTests extends AbstractAWETest{
             Assert.assertTrue("collection of propertyName is wrong", col.equals(datasetStatistic.getPropertyNameCollection(ROOT_KEY, NODE_TYPE_1,  new Comparable<Class<?>>() {
 
                 @Override
-                public int compareTo(Class o) {
+                public int compareTo(Class<?> o) {
                     return Comparable.class.isAssignableFrom(o) ? 0 : -1;
                 }
             })));
@@ -399,7 +382,7 @@ public class StatisticTests extends AbstractAWETest{
             Assert.assertFalse("collection of propertyName is wrong", col.equals(datasetStatistic.getPropertyNameCollection(ROOT_KEY, NODE_TYPE_1,  new Comparable<Class<?>>() {
 
                 @Override
-                public int compareTo(Class o) {
+                public int compareTo(Class<?> o) {
                     return Comparable.class.isAssignableFrom(o) ? 0 : -1;
                 }
             })));

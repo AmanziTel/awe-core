@@ -40,7 +40,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.geotools.referencing.CRS;
 import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
@@ -62,8 +61,6 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     private static Logger LOGGER = Logger.getLogger(DriveModel.class);
 
     // private members
-    // TODO: LN: do not use GraphDBService in Model
-    private GraphDatabaseService graphDb;
     private Index<Node> files;
     private int count = 0;
     private INodeType primaryType = DriveNodeTypes.M;
@@ -90,6 +87,16 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         @Override
         public String getId() {
             return name().toLowerCase();
+        }
+
+        public static DriveNodeTypes findById(String id) {
+            for (DriveNodeTypes driveNodeType : values()) {
+                if (driveNodeType.getId().equals(id)) {
+                    return driveNodeType;
+                }
+            }
+
+            return null;
         }
 
     }
@@ -119,20 +126,17 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     public DriveModel(Node parent, Node rootNode, String name, IDriveType type) throws AWEException {
         // if root node is null, get one by name
         if (rootNode != null) {
-            graphDb = rootNode.getGraphDatabase();
             dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
 
             this.rootNode = rootNode;
             this.name = (String)rootNode.getProperty(NewAbstractService.NAME, null);
-            this.driveType = DriveTypes.valueOf(rootNode.getProperty(NewDatasetService.DRIVE_TYPE, StringUtils.EMPTY).toString()
-                    .toUpperCase());
+            this.driveType = DriveTypes.valueOf(rootNode.getProperty(NewDatasetService.DRIVE_TYPE, StringUtils.EMPTY).toString());
         } else {
             // validate params
             if (parent == null) {
                 throw new IllegalArgumentException("Parent is null.");
             }
 
-            graphDb = parent.getGraphDatabase();
             dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
             this.rootNode = dsServ.getDataset(parent, name, DatasetTypes.DRIVE, type);
             this.name = name;
@@ -187,7 +191,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         Node virtual = dsServ.createNode(rootNode, DriveRelationshipTypes.VIRTUAL_DATASET, DatasetTypes.DRIVE);
         Map<String, Object> params = new HashMap<String, Object>();
         params.put(NewAbstractService.NAME, name);
-        params.put(DRIVE_TYPE, driveType.getId());
+        params.put(DRIVE_TYPE, driveType.name());
         dsServ.setProperties(virtual, params);
 
         DriveModel result = new DriveModel(null, virtual, name, null);
@@ -240,9 +244,8 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     public Iterable<IDriveModel> getVirtualDatasets() {
         LOGGER.debug("start getVirtualDatasets()");
 
-        // TODO: LN: move this to Service
         List<IDriveModel> result = new ArrayList<IDriveModel>();
-        for (Node node : getVirtualDatasetsTraversalDescription().traverse(rootNode).nodes()) {
+        for (Node node : dsServ.getVirtalDatasets(rootNode)) {
             try {
                 result.add(new DriveModel(null, node, null, null));
             } catch (AWEException e) {
@@ -250,17 +253,6 @@ public class DriveModel extends RenderableModel implements IDriveModel {
             }
         }
         return result;
-    }
-
-    // TODO: LN: move this to Service
-    /**
-     * @return TraversalDescription to iterate over virtual dataset nodes.
-     */
-    protected TraversalDescription getVirtualDatasetsTraversalDescription() {
-        LOGGER.debug("start getVirtualDatasetsTraversalDescription()");
-
-        return Traversal.description().breadthFirst().relationships(DriveRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING)
-                .evaluator(Evaluators.atDepth(1)).evaluator(Evaluators.excludeStartPosition());
     }
 
     /**
@@ -312,8 +304,75 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         return addMeasurement(filename, params, primaryType);
     }
 
-    // TODO: LN: maybe it make sense to add method like addMeasurerment(IDataElement.... since
-    // addFile already returns IDataElement
+    /**
+     * Adds a measurement node to a file node in <code>file</code> parameter. If params map contains
+     * lat and lon properties, also creates a location node. Use this method if you want to create a
+     * measurement with default type.
+     * 
+     * @param file a <code>IDataElement</code>, containing he file node
+     * @param params a map containing parameters of the new measurement
+     * @return the newly created node
+     * @throws AWEException
+     */
+    public IDataElement addMeasurement(IDataElement file, Map<String, Object> params) throws AWEException {
+        return addMeasurement(file, params, primaryType);
+    }
+
+    /**
+     * Adds a measurement node to a file node in the <code>file</code> parameter. If params map
+     * contains lat and lon properties, also creates a location node. Use this method if you want to
+     * create a measurement with type, that is different from drive model primary type.
+     * 
+     * @param filename the name of file
+     * @param params a map containing parameters of the new measurement
+     * @param nodeType the type of node to create
+     * @return the newly created node
+     * @throws AWEException
+     */
+    public IDataElement addMeasurement(IDataElement file, Map<String, Object> params, INodeType nodeType) throws AWEException {
+
+        // validate parameters
+        if (file == null) {
+            throw new IllegalArgumentException("File element is null.");
+        }
+        Node fileNode = ((DataElement)file).getNode();
+        if (fileNode == null) {
+            throw new IllegalArgumentException("File node is null.");
+        }
+        if (params == null) {
+            throw new IllegalArgumentException("Parameter map is null.");
+        }
+        if (nodeType == null) {
+            throw new IllegalArgumentException("Node type is null.");
+        }
+
+        Node m = dsServ.createNode(nodeType);
+        dsServ.addChild(fileNode, m, null);
+        Long lat = (Long)params.get(LATITUDE);
+        Long lon = (Long)params.get(LONGITUDE);
+        Long tst = (Long)params.get(TIMESTAMP);
+
+        if ((lat != null) && (lat != 0) && (lon != null) && (lon != 0)) {
+            createLocationNode(m, lat, lon);
+            params.remove(LATITUDE);
+            params.remove(LONGITUDE);
+        }
+        if ((tst != null) && (tst != 0)) {
+            updateTimestamp(tst);
+        }
+        params.put(NewAbstractService.DATASET_ID, this.name);
+        dsServ.setProperties(m, params);
+        indexProperty(primaryType, params); // TODO: ??????????
+
+        count++;
+        Map<String, Object> prop = new HashMap<String, Object>();
+        prop.put(PRIMARY_TYPE, primaryType.getId());// TODO: ?????????????
+        prop.put(COUNT, count);
+        dsServ.setProperties(rootNode, prop);
+        indexProperty(primaryType, prop); // TODO: ???????????
+
+        return new DataElement(m);
+    }
 
     /**
      * Adds a measurement node to a file node with defined filename. If params map contains lat and
@@ -347,32 +406,8 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         if (fileNode == null) {
             throw new IllegalArgumentException("File node " + filename + " not found.");
         }
-        Node m = dsServ.createNode(nodeType);
-        dsServ.addChild(fileNode, m, null);
-        Long lat = (Long)params.get(LATITUDE);
-        Long lon = (Long)params.get(LONGITUDE);
-        Long tst = (Long)params.get(TIMESTAMP);
 
-        if ((lat != null) && (lat != 0) && (lon != null) && (lon != 0)) {
-            createLocationNode(m, lat, lon);
-            params.remove(LATITUDE);
-            params.remove(LONGITUDE);
-        }
-        if ((tst != null) && (tst != 0)) {
-            updateTimestamp(tst);
-        }
-        params.put(NewAbstractService.DATASET_ID, this.name);
-        dsServ.setProperties(m, params);
-        indexProperty(primaryType, params); // TODO: ??????????
-
-        count++;
-        Map<String, Object> prop = new HashMap<String, Object>();
-        prop.put(PRIMARY_TYPE, primaryType.getId());// TODO: ?????????????
-        prop.put(COUNT, count);
-        dsServ.setProperties(rootNode, prop);
-        indexProperty(primaryType, prop); // TODO: ???????????
-
-        return new DataElement(m);
+        return addMeasurement(new DataElement(fileNode), params, nodeType);
     }
 
     /**
@@ -462,7 +497,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
             throw new IllegalArgumentException("Name is null or empty");
         }
         if (files == null) {
-            files = graphDb.index().forNodes(NewAbstractService.getIndexKey(rootNode, DriveNodeTypes.FILE));
+            files = dsServ.getIndexForNodes(rootNode, DriveNodeTypes.FILE);
         }
 
         Node fileNode = files.get(NewAbstractService.NAME, name).getSingle();

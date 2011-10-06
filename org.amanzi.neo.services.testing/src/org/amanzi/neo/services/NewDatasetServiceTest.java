@@ -6,6 +6,7 @@ import java.util.List;
 
 import junit.framework.Assert;
 
+import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.NewDatasetService.DriveTypes;
@@ -15,7 +16,6 @@ import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
-import org.amanzi.testing.AbstractAWETest;
 import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -33,7 +33,7 @@ import org.neo4j.graphdb.Transaction;
  * @author kruglik_a
  * 
  */
-public class NewDatasetServiceTest extends AbstractAWETest {
+public class NewDatasetServiceTest extends AbstractNeoServiceTest {
 
 	private static Logger LOGGER = Logger
 			.getLogger(NewDatasetServiceTest.class);
@@ -44,6 +44,8 @@ public class NewDatasetServiceTest extends AbstractAWETest {
     public static final void beforeClass() {
         clearDb();
         initializeDb();
+        new LogStarter().earlyStartup();
+        clearServices();
     }
 
     @AfterClass
@@ -56,8 +58,8 @@ public class NewDatasetServiceTest extends AbstractAWETest {
     private NewDatasetService service;
 
     @Before
-    public final void before() {
-        service = NeoServiceFactory.getInstance().getNewDatasetService();
+    public void before() {
+        service = new NewDatasetService(graphDatabaseService);
         initProjectNode();
     }
 
@@ -84,7 +86,7 @@ public class NewDatasetServiceTest extends AbstractAWETest {
     private void setPropertyToDatasetNode(Node datasetNode, String name,
             DatasetTypes type, DriveTypes driveType) {
         datasetNode.setProperty(NewDatasetService.NAME, name);
-        datasetNode.setProperty(NewDatasetService.TYPE, type.name());
+        datasetNode.setProperty(NewDatasetService.TYPE, type.getId());
         if (driveType != null)
             datasetNode.setProperty(NewDatasetService.DRIVE_TYPE,
                     driveType.name());
@@ -453,7 +455,7 @@ public class NewDatasetServiceTest extends AbstractAWETest {
         String actualType = (String) actualDataset
                 .getProperty(NewDatasetService.TYPE);
         Assert.assertEquals("dataset has wrong type",
-                DatasetTypes.DRIVE.name(), actualType);
+                DatasetTypes.DRIVE.getId(), actualType);
 
         String actualDriveType = (String) actualDataset
                 .getProperty(NewDatasetService.DRIVE_TYPE);
@@ -592,7 +594,7 @@ public class NewDatasetServiceTest extends AbstractAWETest {
         String actualType = (String) actualDataset
                 .getProperty(NewDatasetService.TYPE);
         Assert.assertEquals("dataset has wrong type",
-                DatasetTypes.NETWORK.name(), actualType);
+                DatasetTypes.NETWORK.getId(), actualType);
     }
 
     /**
@@ -731,7 +733,7 @@ public class NewDatasetServiceTest extends AbstractAWETest {
         String actualType = (String) actualDataset
                 .getProperty(NewDatasetService.TYPE);
         Assert.assertEquals("dataset has wrong type",
-                DatasetTypes.NETWORK.name(), actualType);
+                DatasetTypes.NETWORK.getId(), actualType);
     }
 
     /**
@@ -897,7 +899,7 @@ public class NewDatasetServiceTest extends AbstractAWETest {
         String actualType = (String) actualDataset
                 .getProperty(NewDatasetService.TYPE);
         Assert.assertEquals("dataset has wrong type",
-                DatasetTypes.DRIVE.name(), actualType);
+                DatasetTypes.DRIVE.getId(), actualType);
 
         String actualDriveType = (String) actualDataset
                 .getProperty(NewDatasetService.DRIVE_TYPE);
@@ -1939,7 +1941,10 @@ public class NewDatasetServiceTest extends AbstractAWETest {
             tx.finish();
         }
 
-        for (DriveNodeTypes type : DriveNodeTypes.values()) {
+        DriveNodeTypes[] possibleDriveNodeTypes = new DriveNodeTypes[] 
+                {DriveNodeTypes.FILE, DriveNodeTypes.M, DriveNodeTypes.MP};
+        
+        for (DriveNodeTypes type : possibleDriveNodeTypes) {
 
             Iterable<Node> traverser = service.findAllDatasetElements(parent,
                     type);
@@ -1949,7 +1954,7 @@ public class NewDatasetServiceTest extends AbstractAWETest {
             Assert.assertTrue(traverser.iterator().hasNext());
 
             for (Node node : traverser) {
-                DriveNodeTypes testType = DriveNodeTypes.valueOf(node
+                DriveNodeTypes testType = DriveNodeTypes.findById(node
                         .getProperty(NewAbstractService.TYPE, null).toString());
                 // type correct
                 Assert.assertEquals(type, testType);

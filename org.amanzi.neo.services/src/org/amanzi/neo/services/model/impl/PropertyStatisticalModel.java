@@ -24,6 +24,7 @@ import org.amanzi.neo.services.exceptions.InvalidStatisticsParameterException;
 import org.amanzi.neo.services.exceptions.LoadVaultException;
 import org.amanzi.neo.services.model.IPropertyStatisticalModel;
 import org.amanzi.neo.services.statistic.IVault;
+import org.amanzi.neo.services.statistic.internal.NewPropertyStatistics;
 import org.apache.log4j.Logger;
 
 /**
@@ -37,11 +38,12 @@ import org.apache.log4j.Logger;
 public abstract class PropertyStatisticalModel extends DataModel implements IPropertyStatisticalModel {
 
     private static Logger LOGGER = Logger.getLogger(PropertyStatisticalModel.class);
+    
+    static NewStatisticsService statisticsService = NeoServiceFactory.getInstance().getNewStatisticsService();
 
     protected IVault statisticsVault;
 
     protected void initializeStatistics() {
-        NewStatisticsService statisticsService = NeoServiceFactory.getInstance().getNewStatisticsService();
         try {
             statisticsVault = statisticsService.loadVault(getRootNode());
         } catch (AWEException e) {
@@ -104,11 +106,25 @@ public abstract class PropertyStatisticalModel extends DataModel implements IPro
 
     @Override
     public void finishUp() {
-        NewStatisticsService statisticsService = new NewStatisticsService();
         try {
             statisticsService.saveVault(rootNode, statisticsVault);
         } catch (AWEException e) {
             LOGGER.error("Could not save property statistical vault.", e);
         }
+    }
+    
+    @Override
+    public Class<?> getPropertyClass(INodeType nodeType, String propertyName) {
+        IVault nodeTypeVault = statisticsVault.getSubVaults().get(nodeType.getId());
+        
+        if (nodeTypeVault != null) {
+            NewPropertyStatistics property = nodeTypeVault.getPropertyStatisticsMap().get(propertyName);
+            
+            if (property != null) {
+                return property.getKlass();
+            }
+        }
+        
+        return null;
     }
 }

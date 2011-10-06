@@ -11,6 +11,7 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
+import org.amanzi.neo.services.AbstractNeoServiceTest;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService;
@@ -28,7 +29,6 @@ import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveRelationshipTypes;
-import org.amanzi.testing.AbstractAWETest;
 import org.apache.log4j.Logger;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -38,7 +38,7 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 
-public class DriveModelTest extends AbstractAWETest {
+public class DriveModelTest extends AbstractNeoServiceTest {
 
 	private static Logger LOGGER = Logger.getLogger(DriveModelTest.class);
 	private static final String databasePath = getDbLocation();
@@ -53,6 +53,9 @@ public class DriveModelTest extends AbstractAWETest {
 	public static void setUpBeforeClass() throws Exception {
 		clearDb();
 		initializeDb();
+		
+		clearServices();
+		
 		LOGGER.info("Database created in folder " + databasePath);
 		prServ = NeoServiceFactory.getInstance().getNewProjectService();
 		dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
@@ -165,7 +168,7 @@ public class DriveModelTest extends AbstractAWETest {
 		// root node type is correct
 		Assert.assertEquals(DatasetTypes.DRIVE.getId(), virtual.getRootNode()
 				.getProperty(NewAbstractService.TYPE, null));
-		Assert.assertEquals(DriveTypes.values()[0].getId(), virtual
+		Assert.assertEquals(DriveTypes.values()[0].name(), virtual
 				.getRootNode().getProperty(DriveModel.DRIVE_TYPE, null));
 	}
 
@@ -180,15 +183,14 @@ public class DriveModelTest extends AbstractAWETest {
 			fail();
 		}
 		// add first virtual dataset
-		DriveModel virtual = null;
 		try {
-			virtual = dm.addVirtualDataset("name", DriveTypes.values()[0]);
+			dm.addVirtualDataset("name", DriveTypes.values()[0]);
 		} catch (AWEException e) {
 			LOGGER.error("Could not add virtual dataset", e);
 			fail();
 		}
 		// exception
-		virtual = dm.addVirtualDataset("name", DriveTypes.values()[0]);
+		dm.addVirtualDataset("name", DriveTypes.values()[0]);
 	}
 
 	@Test(expected = IllegalNodeDataException.class)
@@ -734,8 +736,9 @@ public class DriveModelTest extends AbstractAWETest {
 			LOGGER.error("Could not create drive model", e);
 			fail();
 		}
+		String filename = null;
 		try {
-			dm.addMeasurement(null, new HashMap<String, Object>());
+			dm.addMeasurement(filename, new HashMap<String, Object>());
 		} catch (AWEException e) {
 			LOGGER.error("Could not add measurement", e);
 			fail();

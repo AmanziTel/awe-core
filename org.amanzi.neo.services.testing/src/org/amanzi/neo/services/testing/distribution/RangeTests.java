@@ -23,7 +23,7 @@ import org.neo4j.graphdb.Transaction;
 
 public class RangeTests extends AbstractAWETest {
 
-	private static Logger LOGGER = Logger.getLogger(DistributionTests.class);
+	private static Logger LOGGER = Logger.getLogger(RangeTests.class);
 
 	private static long startTimestamp;
 	private static Node rootNode;
@@ -42,8 +42,6 @@ public class RangeTests extends AbstractAWETest {
 
 		clearDb();
 		initializeDb();
-		initPreferences();
-
 	}
 
 	/**

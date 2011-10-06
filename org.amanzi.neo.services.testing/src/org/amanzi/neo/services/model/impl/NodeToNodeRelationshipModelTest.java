@@ -8,6 +8,8 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
+import org.amanzi.log4j.LogStarter;
+import org.amanzi.neo.services.AbstractNeoServiceTest;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;
@@ -19,7 +21,6 @@ import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelTypes;
 import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelationships;
-import org.amanzi.testing.AbstractAWETest;
 import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -31,7 +32,7 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 
-public class NodeToNodeRelationshipModelTest extends AbstractAWETest {
+public class NodeToNodeRelationshipModelTest extends AbstractNeoServiceTest {
 
 	private static Logger LOGGER = Logger
 			.getLogger(NodeToNodeRelationshipModelTest.class);
@@ -48,6 +49,9 @@ public class NodeToNodeRelationshipModelTest extends AbstractAWETest {
 	public static void setUpBeforeClass() throws Exception {
 		clearDb();
 		initializeDb();
+		
+		new LogStarter().earlyStartup();
+        clearServices();
 
 		dsServ = new NewDatasetService(graphDatabaseService);
 		prServ = new ProjectService(graphDatabaseService);

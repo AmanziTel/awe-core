@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,7 +11,7 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
-import org.amanzi.neo.services.CorrelationService;
+import org.amanzi.neo.services.AbstractNeoServiceTest;
 import org.amanzi.neo.services.CorrelationServiceTest;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService;
@@ -25,11 +24,6 @@ import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.ICorrelationModel;
 import org.amanzi.neo.services.model.IDataElement;
-import org.amanzi.neo.services.model.impl.CorrelationModel;
-import org.amanzi.neo.services.model.impl.DataElement;
-import org.amanzi.neo.services.model.impl.DriveModel;
-import org.amanzi.neo.services.model.impl.NetworkModel;
-import org.amanzi.testing.AbstractAWETest;
 import org.apache.log4j.Logger;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
@@ -38,37 +32,32 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 
-public class NetworkModelTest extends AbstractAWETest {
+public class NetworkModelTest extends AbstractNeoServiceTest {
 
 	private static Logger LOGGER = Logger
 			.getLogger(CorrelationServiceTest.class);
 
 	private Transaction tx;
-	private static CorrelationService correlationServ;
 	private static NewDatasetService dsServ;
-	private static NewNetworkService nwServ;
 	private static ProjectService prServ;
 	private Node network;
-	private Node dataset;
 	private Node project;
 	private static int count = 0;
-	private static String filename = "." + File.separator + "file.txt";
-
+	
 	private NetworkModel model;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		clearDb();
 		initializeDb();
+		
+		clearServices();
 
-		correlationServ = new CorrelationService(graphDatabaseService);
 		dsServ = new NewDatasetService(graphDatabaseService);
-		nwServ = new NewNetworkService(graphDatabaseService);
 		prServ = new ProjectService(graphDatabaseService);
 	}
 
@@ -250,18 +239,6 @@ public class NetworkModelTest extends AbstractAWETest {
 
 			parentElement = testElement;
 		}
-	}
-
-	@Ignore
-	@Test
-	public void testGetCRS() {
-		fail("Not yet implemented"); // TODO
-	}
-
-	@Ignore
-	@Test
-	public void testGetNetworkType() {
-		fail("Not yet implemented"); // TODO
 	}
 
 	@Test

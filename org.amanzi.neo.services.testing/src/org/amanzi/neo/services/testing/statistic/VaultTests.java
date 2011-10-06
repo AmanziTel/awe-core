@@ -140,7 +140,7 @@ public class VaultTests {
     
     private final static String EMPTY_STRING = "";
     private final static String STRING_INT_VALUE = "5";
-    private final static String STRING_FLOAT_VALUE = "5,5";
+    private final static String STRING_FLOAT_VALUE = "5.5";
     private final static String STRING_BOOLEAN_VALUE = "true";
 
     private List<StoreForTestingParse> testingList = new ArrayList<VaultTests.StoreForTestingParse>();
@@ -686,7 +686,7 @@ public class VaultTests {
         LOGGER.debug("start test parseAvtoParseDoubleValuePositiveTest()");
         StatisticsVault propVault = new StatisticsVault(PROPERTIES);
 
-        Object actualParseValue = propVault.parse(NETWORK, DOUBLE_VALUE, "1,12345678e-13");
+        Object actualParseValue = propVault.parse(NETWORK, DOUBLE_VALUE, "1.12345678e-13");
         Assert.assertEquals("parse value has not expected type", actualParseValue.getClass(), Double.class);
         LOGGER.debug("finish test parseAvtoParseDoubleValuePositiveTest()");
 

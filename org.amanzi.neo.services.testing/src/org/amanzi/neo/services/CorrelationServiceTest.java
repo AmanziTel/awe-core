@@ -11,6 +11,7 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
+import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.services.CorrelationService.CorrelationNodeTypes;
 import org.amanzi.neo.services.CorrelationService.Correlations;
 import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;
@@ -21,7 +22,6 @@ import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.DriveModel;
-import org.amanzi.testing.AbstractAWETest;
 import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -34,7 +34,7 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
 
-public class CorrelationServiceTest extends AbstractAWETest {
+public class CorrelationServiceTest extends AbstractNeoServiceTest {
 
 	private static Logger LOGGER = Logger
 			.getLogger(CorrelationServiceTest.class);
@@ -54,6 +54,9 @@ public class CorrelationServiceTest extends AbstractAWETest {
 	public static void setUpBeforeClass() throws Exception {
 		clearDb();
 		initializeDb();
+
+		new LogStarter().earlyStartup();
+        clearServices();
 
 		correlationServ = new CorrelationService(graphDatabaseService);
 		dsServ = new NewDatasetService(graphDatabaseService);
@@ -84,7 +87,7 @@ public class CorrelationServiceTest extends AbstractAWETest {
 
 	@After
 	public final void after() {
-		tx.success();
+		tx.failure();
 		tx.finish();
 	}
 
@@ -96,7 +99,7 @@ public class CorrelationServiceTest extends AbstractAWETest {
 	}
 
 	@Test
-	public void testCreateCorrelation() {
+	public void testCreateCorrelation() throws AWEException {
 		// create correlation
 		Node correlation = null;
 		try {
@@ -126,7 +129,7 @@ public class CorrelationServiceTest extends AbstractAWETest {
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void testCreateCorrelationNetworkNull() {
+	public void testCreateCorrelationNetworkNull() throws AWEException {
 		// exception
 		try {
 			correlationServ.createCorrelation(null, dataset);
@@ -137,7 +140,7 @@ public class CorrelationServiceTest extends AbstractAWETest {
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void testCreateCorrelationDatasetNull() {
+	public void testCreateCorrelationDatasetNull() throws AWEException {
 		// exception
 		try {
 			correlationServ.createCorrelation(network, null);
@@ -148,7 +151,7 @@ public class CorrelationServiceTest extends AbstractAWETest {
 	}
 
 	@Test
-	public void testGetCorrelationRoot() {
+	public void testGetCorrelationRoot() throws AWEException {
 		// root exists
 		Node corRoot = null;
 		try {
@@ -172,7 +175,7 @@ public class CorrelationServiceTest extends AbstractAWETest {
 	}
 
 	@Test
-	public void testGetCorrelationRootNoRoot() {
+	public void testGetCorrelationRootNoRoot() throws AWEException {
 		// no root
 		Node testNode = null;
 		try {
@@ -186,7 +189,7 @@ public class CorrelationServiceTest extends AbstractAWETest {
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void testGetCorrelationRootNetworkNull() {
+	public void testGetCorrelationRootNetworkNull() throws AWEException {
 		// exception
 		try {
 			correlationServ.getCorrelationRoot(null);
@@ -419,7 +422,7 @@ public class CorrelationServiceTest extends AbstractAWETest {
 	}
 
 	@Test
-	public void testGetAllCorrelatedNodes() {
+	public void testGetAllCorrelatedNodes() throws AWEException {
 		List<Node> ms = new ArrayList<Node>();
 		List<Node> mms = new ArrayList<Node>();
 		Node sector = null, file = null;
@@ -501,7 +504,7 @@ public class CorrelationServiceTest extends AbstractAWETest {
 	}
 
 	@Test
-	public void testGetCorrelatedDatasets() {
+	public void testGetCorrelatedDatasets() throws AWEException {
 		List<Node> dss = new ArrayList<Node>();
 		for (int i = 0; i < 7; i++) {
 			try {
@@ -538,7 +541,7 @@ public class CorrelationServiceTest extends AbstractAWETest {
 	}
 
 	@Test
-	public void testGetCorrelatedNetworks() {
+	public void testGetCorrelatedNetworks() throws AWEException {
 		Node ds1 = null, ds2 = null;
 		List<Node> nws = new ArrayList<Node>();
 		try {
