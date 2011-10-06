@@ -1340,7 +1340,12 @@ public class NewNetworkServiceTest extends AbstractAWETest {
         addedNodeProperties(rootNode, FIRST_PROPERTY, NAME_VALUE);
         Map<String, Object> valuesMap = new HashMap<String, Object>();
         valuesMap.put(SECOND_PROPERTY, NEW_NAME_VALUE);
-        networkService.completeProperties(rootNode, new DataElement(valuesMap), false);
+        try {
+            networkService.completeProperties(rootNode, new DataElement(valuesMap), false);
+        } catch (DatabaseException e) {
+            Assert.fail("End with exception");
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
         assertTrue("Missing property: " + SECOND_PROPERTY, rootNode.hasProperty(SECOND_PROPERTY));
         assertTrue(SECOND_PROPERTY + "isn't equals" + NEW_NAME_VALUE, rootNode.getProperty(SECOND_PROPERTY).equals(NEW_NAME_VALUE));
         assertTrue("Missing property: " + FIRST_PROPERTY, rootNode.hasProperty(FIRST_PROPERTY));
@@ -1354,7 +1359,12 @@ public class NewNetworkServiceTest extends AbstractAWETest {
         Map<String, Object> valuesMap = new HashMap<String, Object>();
         valuesMap.put(SECOND_PROPERTY, NEW_NAME_VALUE);
         valuesMap.put(FIRST_PROPERTY, NEW_NAME_VALUE);
-        networkService.completeProperties(rootNode, new DataElement(valuesMap), true);
+        try {
+            networkService.completeProperties(rootNode, new DataElement(valuesMap), true);
+        } catch (DatabaseException e) {
+            Assert.fail("End with exception");
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
         assertTrue("Missing property: " + SECOND_PROPERTY, rootNode.hasProperty(SECOND_PROPERTY));
         assertTrue(SECOND_PROPERTY + "isn't equals" + NEW_NAME_VALUE, rootNode.getProperty(SECOND_PROPERTY).equals(NEW_NAME_VALUE));
         assertTrue("Missing property: " + FIRST_PROPERTY, rootNode.hasProperty(FIRST_PROPERTY));

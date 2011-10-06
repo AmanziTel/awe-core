@@ -132,7 +132,7 @@ public class NewDatasetService extends NewAbstractService {
      * @since 1.0.0
      */
     public enum DriveTypes implements IDriveType {
-        NEMO_V1, NEMO_V2, TEMS, ROMES, AMS_CALLS, AMS, AMS_PESQ;        
+        NEMO_V1, NEMO_V2, TEMS, ROMES, AMS_CALLS, AMS, AMS_PESQ;
     }
 
     /**
@@ -916,7 +916,7 @@ public class NewDatasetService extends NewAbstractService {
             throw new IllegalArgumentException("parent is null");
         }
 
-        return CHILDREN_CHAIN_TRAVERSAL_DESCRIPTION.traverse(parent).nodes();
+        return CHILDREN_TRAVERSAL_DESCRIPTION.traverse(parent).nodes();
 
     }
 
