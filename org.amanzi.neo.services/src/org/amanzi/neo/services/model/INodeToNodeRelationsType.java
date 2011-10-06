@@ -15,10 +15,10 @@ package org.amanzi.neo.services.model;
 
 import org.neo4j.graphdb.RelationshipType;
 
-//TODO: LN: comments
 /**
- * TODO Purpose of
  * <p>
+ * This is a common interface for enums, describing node relationships, that are beyond common data
+ * structure.
  * </p>
  * 
  * @author grigoreva_a

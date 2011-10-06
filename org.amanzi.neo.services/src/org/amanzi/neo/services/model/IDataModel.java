@@ -40,7 +40,7 @@ public interface IDataModel extends IModel {
      * @param parent
      * @return an <code>Iterable</code> of <code>IDataElement</code>s, based on the found nodes.
      */
-    //TODO: LN: use Iterator
+    // TODO: LN: use Iterator
     public Iterable<IDataElement> getChildren(IDataElement parent);
 
     /**
@@ -49,9 +49,11 @@ public interface IDataModel extends IModel {
      * @param elementType
      * @return an <code>Iterable</code> of <code>IDataElement</code>s, based on the found nodes.
      */
-    //TODO: LN: use Iterator
+    // TODO: LN: use Iterator
     public Iterable<IDataElement> getAllElementsByType(INodeType elementType);
 
-    //TODO: LN: comments
+    /**
+     * The method should perform final operations like storing indexes and statistics values.
+     */
     public void finishUp();
 }

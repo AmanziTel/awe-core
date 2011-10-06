@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.amanzi.neo.services.CorrelationService.CorrelationNodeTypes;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.IDriveType;
 import org.amanzi.neo.services.enums.INodeType;
@@ -25,6 +24,7 @@ import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
+import org.amanzi.neo.services.model.impl.DriveModel.DriveRelationshipTypes;
 import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelationships;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -32,6 +32,7 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.traversal.Evaluation;
@@ -87,8 +88,13 @@ public class NewDatasetService extends NewAbstractService {
             .relationships(N2NRelationships.N2N_REL, Direction.INCOMING).evaluator(Evaluators.excludeStartPosition());
 
     /** <code>TraversalDescription</code> for an empty iterator */
-    protected final TraversalDescription EMPTY_TRAVERSAL_DESCRIPTION = Traversal.description().evaluator(Evaluators.fromDepth(2))
-            .evaluator(Evaluators.toDepth(1));
+    public static final TraversalDescription EMPTY_TRAVERSAL_DESCRIPTION = Traversal.description()
+            .evaluator(Evaluators.fromDepth(2)).evaluator(Evaluators.toDepth(1));
+
+    /** <code>TraversalDescription</code> to iterate over virtual dataset nodes. */
+    public static final TraversalDescription VIRTUAL_DATASET_TRAVERSAL_DESCRIPTION = Traversal.description().breadthFirst()
+            .relationships(DriveRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING).evaluator(Evaluators.atDepth(1))
+            .evaluator(Evaluators.excludeStartPosition());
 
     /**
      * <p>
@@ -931,14 +937,14 @@ public class NewDatasetService extends NewAbstractService {
     }
 
     /**
-     * <Fully taken from old code> Gets the gis node by dataset.
+     * Gets the gis node by dataset, if it exists.
      * 
      * @param dataset the dataset
-     * @return the gis node by dataset
+     * @return the gis node by dataset or null
      */
     public Node createGisNodeByDataset(Node dataset) {
-        // TODO: temporary solution
-        return dataset.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING).getStartNode();
+        Relationship rel = dataset.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING);
+        return rel == null ? null : rel.getStartNode();
     }
 
     /**
@@ -993,9 +999,17 @@ public class NewDatasetService extends NewAbstractService {
     public Iterable<Node> emptyTraverser(Node source) {
         // validate parameters
         if (source == null) {
-            throw new IllegalArgumentException("Source nonde is null.");
+            throw new IllegalArgumentException("Source node is null.");
         }
         return EMPTY_TRAVERSAL_DESCRIPTION.traverse(source).nodes();
+    }
+
+    public Iterable<Node> getVirtalDatasets(Node rootDataset) {
+        // validate
+        if (rootDataset == null) {
+            throw new IllegalArgumentException("Root dataset node is null.");
+        }
+        return VIRTUAL_DATASET_TRAVERSAL_DESCRIPTION.traverse(rootDataset).nodes();
     }
 
 }
