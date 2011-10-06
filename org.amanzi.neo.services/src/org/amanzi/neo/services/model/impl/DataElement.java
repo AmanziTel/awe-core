@@ -40,6 +40,7 @@ public class DataElement extends HashMap<String, Object> implements IDataElement
      * @param node the node to wrap
      */
     public DataElement(Node node) {
+        super();
         this.node = node;
     }
 
@@ -50,6 +51,7 @@ public class DataElement extends HashMap<String, Object> implements IDataElement
      * @param params
      */
     public DataElement(Map< ? extends String, ? extends Object> params) {
+        super();
         if (params != null) {
             this.putAll(params);
         }
@@ -77,6 +79,12 @@ public class DataElement extends HashMap<String, Object> implements IDataElement
         return result;
     }
 
+    @Override
+    public Object put(String key, Object value) {
+        Object obj = super.put(key, value);
+        return obj;
+    }
+    
     @Override
     public String toString() {
         return node == null ? this.get(NewAbstractService.NAME).toString() : StringUtils.EMPTY + node.getId();
