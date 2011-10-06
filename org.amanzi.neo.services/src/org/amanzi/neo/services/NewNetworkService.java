@@ -192,8 +192,7 @@ public class NewNetworkService extends NewAbstractService {
             throw new IllegalArgumentException("Index is null.");
         }
 
-        // TODO: LN: incorrect condition - you have now <Name> AND <CI+LAC>, but should have OR
-        // AG: !(A|B) = !(A)&!(B)
+        // !(A|B) = !(A)&!(B). !(name OR (ci AND lac)) = !name AND !(ci AND lac) = !name AND (!ci OR !lac)
         if (((name == null) || (name.equals(StringUtils.EMPTY)))
                 && ((ci == null) || (ci.equals(StringUtils.EMPTY)) || (lac == null) || (lac.equals(StringUtils.EMPTY)))) {
             throw new IllegalNodeDataException("Name or CI+LAC must be set");
