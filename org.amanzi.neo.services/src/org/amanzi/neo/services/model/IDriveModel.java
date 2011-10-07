@@ -15,10 +15,9 @@ package org.amanzi.neo.services.model;
 
 import org.amanzi.neo.services.enums.IDriveType;
 
-//TODO: LN: comments
 /**
- * TODO Purpose of
  * <p>
+ * This interface contains declarations of methods, that are common for drive models.
  * </p>
  * 
  * @author grigoreva_a

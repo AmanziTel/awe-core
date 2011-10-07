@@ -15,6 +15,8 @@ package org.amanzi.neo.loader.core.impl;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.amanzi.neo.loader.core.IConfiguration;
@@ -22,33 +24,35 @@ import org.amanzi.neo.loader.core.IConfiguration;
 /**
  * General Class for Configuration on loading data from Directory
  * 
- * 
- * 
  * @author gerzog
  * @since 1.0.0
  */
 public abstract class AbstractDirectoryConfiguration implements IConfiguration {
-    
-    protected File directory;
-    
+
+    protected Collection<File> directory;
+
     @Override
     public boolean isMultiFile() {
         return true;
     }
-    
+
     @Override
-    public void setSourceFile(File file) {
+    public void setSourceFile(Collection<File> file) {
         directory = file;
     }
-    
+
     @Override
     public List<File> getFilesToLoad() {
-        return getFilesToLoad(directory);
+        List<File> fileList = new LinkedList<File>();
+        for (File file : directory) {
+            fileList.addAll(getFilesToLoad(file));
+        }
+        return fileList;
     }
-    
+
     private List<File> getFilesToLoad(File directory) {
         List<File> result = new ArrayList<File>();
-        
+
         for (File subFile : directory.listFiles()) {
             if (subFile.isDirectory()) {
                 result.addAll(getFilesToLoad(subFile));
@@ -56,7 +60,7 @@ public abstract class AbstractDirectoryConfiguration implements IConfiguration {
                 result.add(subFile);
             }
         }
-        
+
         return result;
     }
 

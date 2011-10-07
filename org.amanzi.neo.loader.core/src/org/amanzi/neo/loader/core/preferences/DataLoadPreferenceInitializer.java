@@ -196,8 +196,13 @@ public class DataLoadPreferenceInitializer extends AbstractPreferenceInitializer
 
         pref.setDefault(DataLoadPreferences.TR_SITE_ID_NEIB, "Site ID, Far end Name");
         pref.setDefault(DataLoadPreferences.TR_SITE_NO_NEIB, "Site No, Far End Site No");
-        pref.setDefault(DataLoadPreferences.TR_ITEM_NAME_NEIB, "ITEM_Name");
 
+        pref.setDefault(DataLoadPreferences.RADIO_HEAD, "RADIO");
+        pref.setDefault(DataLoadPreferences.XCEIVER_HEAD, "X-CEIVER");
+        pref.setDefault(DataLoadPreferences.ADMINISTRATION_HEAD, "ADMINISTRATION");
+        pref.setDefault(DataLoadPreferences.MO, "MO,Managed Object");
+        pref.setDefault(DataLoadPreferences.CHGR, "CHGR,Chanel group");
+        pref.setDefault(DataLoadPreferences.FHOP, "FHOP,hopping method");
         // pref.setDefault(DataLoadPreferences.PROPERY_LISTS,
         // "dbm--DELIMETER--dbm--DELIMETER--dbm+mw--DELIMETER--dbm,mw");
         pref.setDefault(DataLoadPreferences.DEFAULT_CHARSET, Charset.defaultCharset().name());
@@ -215,5 +220,4 @@ public class DataLoadPreferenceInitializer extends AbstractPreferenceInitializer
 
         pref.setDefault(DataLoadPreferences.REMOTE_SERVER_URL, "http://explorer.amanzitel.com/geoptima");
     }
-
 }

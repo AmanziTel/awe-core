@@ -1,15 +1,15 @@
 package org.amanzi.neo.services;
 
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import junit.framework.Assert;
 
-import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewNetworkService;
@@ -21,6 +21,7 @@ import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
+import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.testing.AbstractAWETest;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -30,6 +31,7 @@ import org.junit.Test;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
 
@@ -39,16 +41,17 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     private static final String databasePath = getDbLocation();
     private static Transaction tx;
     private static Node parent;
-
+    private static final String NAME_VALUE = "default name";
+    private static final String NEW_NAME_VALUE = "new name value";
+    private static final String FIRST_PROPERTY = "first property";
+    private static final String SECOND_PROPERTY = "second property";
     private final static String DEFAULT_SELECTION_LIST_NAME = "Selection List";
+    private int indexCount = 0;
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
         clearDb();
         initializeDb();
-
-        new LogStarter().earlyStartup();
-
         LOGGER.info("Database created in folder " + databasePath);
         networkService = NeoServiceFactory.getInstance().getNewNetworkService();
     }
@@ -94,9 +97,15 @@ public class NewNetworkServiceTest extends AbstractAWETest {
                 continue;
             }
 
-            String indexName = NewAbstractService.getIndexKey(parent, type);
+            Index<Node> index = null;
             try {
-                Node node = networkService.createNetworkElement(parent, indexName, type.getId(), type);
+                index = networkService.getIndex(parent, type);
+            } catch (DatabaseException e1) {
+                LOGGER.error("Could not create index.", e1);
+                fail();
+            }
+            try {
+                Node node = networkService.createNetworkElement(parent, index, type.getId(), type);
 
                 // the node returned is not null
                 Assert.assertNotNull(node);
@@ -107,8 +116,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
                 Assert.assertEquals(type.getId(), node.getProperty(NewNetworkService.NAME, null));
                 Assert.assertEquals(type.getId(), node.getProperty(NewNetworkService.TYPE, null));
                 // the element is indexed
-                Assert.assertEquals(node, graphDatabaseService.index().forNodes(indexName)
-                        .get(NewNetworkService.NAME, type.getId()).getSingle());
+                Assert.assertEquals(node, index.get(NewNetworkService.NAME, type.getId()).getSingle());
             } catch (DatabaseException e) {
                 LOGGER.error("could not create network element", e);
                 fail();
@@ -121,20 +129,21 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 
     // -
     @Test(expected = IllegalArgumentException.class)
-    public void testCreateNEParentNull() throws AWEException {
+    public void testCreateNEParentNull() {
         // exception
         INodeType type = NetworkElementNodeType.values()[0];
-        String indexName = NewAbstractService.getIndexKey(parent, type);
         try {
-            networkService.createNetworkElement(null, indexName, "name", type);
-        } catch (DatabaseException e) {
+
+            Index<Node> index = networkService.getIndex(parent, type);
+            networkService.createNetworkElement(null, index, "name", type);
+        } catch (AWEException e) {
             LOGGER.error("could not create network element", e);
             fail();
         }
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testCreateNEIndexNameNull() throws AWEException {
+    public void testCreateNEIndexNull() throws AWEException {
         // exception
         INodeType type = NetworkElementNodeType.values()[0];
         try {
@@ -145,25 +154,13 @@ public class NewNetworkServiceTest extends AbstractAWETest {
         }
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testCreateNEIndexNameEmpty() throws AWEException {
-        // exception
-        INodeType type = NetworkElementNodeType.values()[0];
-        try {
-            networkService.createNetworkElement(parent, "", "name", type);
-        } catch (DatabaseException e) {
-            LOGGER.error("could not create network element", e);
-            fail();
-        }
-    }
-
     @Test(expected = IllegalNodeDataException.class)
     public void testCreateNENameNull() throws AWEException {
         // exception
         INodeType type = NetworkElementNodeType.values()[0];
-        String indexName = NewAbstractService.getIndexKey(parent, type);
         try {
-            networkService.createNetworkElement(parent, indexName, null, type);
+            Index<Node> index = networkService.getIndex(parent, type);
+            networkService.createNetworkElement(parent, index, null, type);
         } catch (DatabaseException e) {
             LOGGER.error("could not create network element", e);
             fail();
@@ -174,9 +171,9 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     public void testCreateNENameEmpty() throws AWEException {
         // exception
         INodeType type = NetworkElementNodeType.values()[0];
-        String indexName = NewAbstractService.getIndexKey(parent, type);
         try {
-            networkService.createNetworkElement(parent, indexName, "", type);
+            Index<Node> index = networkService.getIndex(parent, type);
+            networkService.createNetworkElement(parent, index, "", type);
         } catch (DatabaseException e) {
             LOGGER.error("could not create network element", e);
             fail();
@@ -187,9 +184,9 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     public void testCreateNETypeNull() {
         // exception
         INodeType type = NetworkElementNodeType.values()[0];
-        String indexName = NewAbstractService.getIndexKey(parent, type);
         try {
-            networkService.createNetworkElement(parent, indexName, "name", null);
+            Index<Node> index = networkService.getIndex(parent, type);
+            networkService.createNetworkElement(parent, index, "name", null);
         } catch (AWEException e) {
             LOGGER.error("could not create network element", e);
             fail();
@@ -200,9 +197,9 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     public void testCreateNETypeSector() throws AWEException {
         // exception
         INodeType type = NetworkElementNodeType.SECTOR;
-        String indexName = NewAbstractService.getIndexKey(parent, type);
         try {
-            networkService.createNetworkElement(parent, indexName, "name", type);
+            Index<Node> index = networkService.getIndex(parent, type);
+            networkService.createNetworkElement(parent, index, "name", type);
         } catch (DatabaseException e) {
             LOGGER.error("could not create network element", e);
             fail();
@@ -218,9 +215,9 @@ public class NewNetworkServiceTest extends AbstractAWETest {
             if (type.equals(NetworkElementNodeType.SECTOR)) {
                 continue;
             }
-            String indexName = NewAbstractService.getIndexKey(parent, type);
             try {
-                Node node = networkService.createNetworkElement(parent, indexName, type.getId(), type);
+                Index<Node> index = networkService.getIndex(parent, type);
+                Node node = networkService.createNetworkElement(parent, index, type.getId(), type);
                 nodes.add(node);
             } catch (AWEException e) {
                 LOGGER.error("could not create network element", e);
@@ -232,8 +229,14 @@ public class NewNetworkServiceTest extends AbstractAWETest {
             if (type.equals(NetworkElementNodeType.SECTOR)) {
                 continue;
             }
-            String indexName = NewAbstractService.getIndexKey(parent, type);
-            Node node = networkService.findNetworkElement(indexName, type.getId());
+            Index<Node> index = null;
+            try {
+                index = networkService.getIndex(parent, type);
+            } catch (DatabaseException e) {
+                LOGGER.error("Could not create index.", e);
+                fail();
+            }
+            Node node = networkService.findNetworkElement(index, type.getId());
 
             // the node returned is not null
             Assert.assertNotNull(node);
@@ -250,37 +253,51 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     @Test
     public void testFindNetworkElementNotFound() {
         parent = getNewNE();
-        String indexName = NewAbstractService.getIndexKey(parent, NetworkElementNodeType.values()[0]);
+        Index<Node> index = null;
+        try {
+            index = networkService.getIndex(parent, NetworkElementNodeType.values()[0]);
+        } catch (DatabaseException e) {
+            LOGGER.error("Could not create index.", e);
+            fail();
+        }
         String name = "elementNOTfound";
         // the element does not exist
-        Node node = networkService.findNetworkElement(indexName, name);
+        Node node = networkService.findNetworkElement(index, name);
         // the node returned is null
         Assert.assertNull(node);
     }
 
     // -
     @Test(expected = IllegalArgumentException.class)
-    public void testFindNEIndexNameNull() {
+    public void testFindNEIndexNull() {
         // exception
         networkService.findNetworkElement(null, "name");
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testFindNEIndexNameEmpty() {
-        // exception
-        networkService.findNetworkElement("", "name");
-    }
-
-    @Test(expected = IllegalArgumentException.class)
     public void testFindNENameEmpty() {
+        Index<Node> index = null;
+        try {
+            index = networkService.getIndex(parent, NetworkElementNodeType.values()[0]);
+        } catch (DatabaseException e) {
+            LOGGER.error("Could not create index.", e);
+            fail();
+        }
         // exception
-        networkService.findNetworkElement("index", "");
+        networkService.findNetworkElement(index, "");
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testFindNENameNull() {
+        Index<Node> index = null;
+        try {
+            index = networkService.getIndex(parent, NetworkElementNodeType.values()[0]);
+        } catch (DatabaseException e) {
+            LOGGER.error("Could not create index.", e);
+            fail();
+        }
         // exception
-        networkService.findNetworkElement("index", null);
+        networkService.findNetworkElement(index, null);
     }
 
     // +
@@ -288,17 +305,23 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     public void testGetNetworkElement() {
         parent = getNewNE();
         INodeType type = NetworkElementNodeType.values()[0];
-        String indexName = NewAbstractService.getIndexKey(parent, type);
+        Index<Node> index = null;
+        try {
+            index = networkService.getIndex(parent, type);
+        } catch (DatabaseException e1) {
+            LOGGER.error("Could not create index.", e1);
+            fail();
+        }
         Node node = null;
         try {
-            node = networkService.createNetworkElement(parent, indexName, type.getId(), type);
+            node = networkService.createNetworkElement(parent, index, type.getId(), type);
         } catch (AWEException e) {
             LOGGER.error("could not create network element", e);
             fail();
         }
         // element exists
         try {
-            Node testNode = networkService.getNetworkElement(parent, indexName, type.getId(), type);
+            Node testNode = networkService.getNetworkElement(parent, index, type.getId(), type);
             // node returned is not null
             Assert.assertNotNull(testNode);
             // name is right
@@ -318,18 +341,25 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     @Test
     public void testGetNetworkElementParamsNull() {
         parent = getNewNE();
+
         INodeType type = NetworkElementNodeType.values()[0];
-        String indexName = NewAbstractService.getIndexKey(parent, type);
+        Index<Node> index = null;
+        try {
+            index = networkService.getIndex(parent, type);
+        } catch (DatabaseException e1) {
+            LOGGER.error("Could not create index.", e1);
+            fail();
+        }
         Node node = null;
         try {
-            node = networkService.createNetworkElement(parent, indexName, type.getId(), type);
+            node = networkService.createNetworkElement(parent, index, type.getId(), type);
         } catch (AWEException e) {
             LOGGER.error("could not create network element", e);
             fail();
         }
         // element exists, parent and type - null
         try {
-            Node testNode = networkService.getNetworkElement(null, indexName, type.getId(), null);
+            Node testNode = networkService.getNetworkElement(null, index, type.getId(), null);
 
             // node returned is not null
             Assert.assertNotNull(testNode);
@@ -350,10 +380,16 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     public void testGetNetworkElementNoElement() {
         parent = getNewNE();
         INodeType type = NetworkElementNodeType.values()[0];
-        String indexName = NewAbstractService.getIndexKey(parent, type);
+        Index<Node> index = null;
+        try {
+            index = networkService.getIndex(parent, type);
+        } catch (DatabaseException e1) {
+            LOGGER.error("Could not create index.", e1);
+            fail();
+        }
         // element does not exist
         try {
-            Node node = networkService.getNetworkElement(parent, indexName, type.getId(), type);
+            Node node = networkService.getNetworkElement(parent, index, type.getId(), type);
             // node returned is not null
             Assert.assertNotNull(node);
             // name is right
@@ -361,8 +397,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
             // type is right
             Assert.assertEquals(type.getId(), node.getProperty(NewNetworkService.TYPE, null));
             // element is indexed
-            Assert.assertEquals(node, graphDatabaseService.index().forNodes(indexName).get(NewNetworkService.NAME, type.getId())
-                    .getSingle());
+            Assert.assertEquals(node, index.get(NewNetworkService.NAME, type.getId()).getSingle());
             // the relationship from parent exists
             Assert.assertEquals(parent, node.getRelationships(DatasetRelationTypes.CHILD, Direction.INCOMING).iterator().next()
                     .getOtherNode(node));
@@ -377,10 +412,16 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     public void testGetNEParentNull() {
         parent = getNewNE();
         INodeType type = NetworkElementNodeType.values()[0];
-        String indexName = NewAbstractService.getIndexKey(parent, type);
+        Index<Node> index = null;
+        try {
+            index = networkService.getIndex(parent, type);
+        } catch (DatabaseException e1) {
+            LOGGER.error("Could not create index.", e1);
+            fail();
+        }
         // element does not exist, parent is null
         try {
-            networkService.getNetworkElement(null, indexName, type.getId(), type);
+            networkService.getNetworkElement(null, index, type.getId(), type);
             // exception
         } catch (AWEException e) {
             LOGGER.error("could not create network element", e);
@@ -392,10 +433,16 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     public void testGetNETypeNull() {
         parent = getNewNE();
         INodeType type = NetworkElementNodeType.values()[0];
-        String indexName = NewAbstractService.getIndexKey(parent, type);
+        Index<Node> index = null;
+        try {
+            index = networkService.getIndex(parent, type);
+        } catch (DatabaseException e1) {
+            LOGGER.error("Could not create index.", e1);
+            fail();
+        }
         // element does not exist, type is null
         try {
-            networkService.getNetworkElement(parent, indexName, type.getId(), null);
+            networkService.getNetworkElement(parent, index, type.getId(), null);
             // exception
         } catch (AWEException e) {
             LOGGER.error("could not create network element", e);
@@ -407,10 +454,16 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     public void testGetNENameNull() {
         parent = getNewNE();
         INodeType type = NetworkElementNodeType.values()[0];
-        String indexName = NewAbstractService.getIndexKey(parent, type);
+        Index<Node> index = null;
+        try {
+            index = networkService.getIndex(parent, type);
+        } catch (DatabaseException e1) {
+            LOGGER.error("Could not create index.", e1);
+            fail();
+        }
         // name is null
         try {
-            networkService.getNetworkElement(parent, indexName, null, type);
+            networkService.getNetworkElement(parent, index, null, type);
             // exception
         } catch (AWEException e) {
             LOGGER.error("could not create network element", e);
@@ -419,7 +472,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testGetNEIndexNameNull() {
+    public void testGetNEIndexNull() {
         parent = getNewNE();
         INodeType type = NetworkElementNodeType.values()[0];
         // indexName is null
@@ -436,10 +489,16 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     public void testGetNENameEmpty() {
         parent = getNewNE();
         INodeType type = NetworkElementNodeType.values()[0];
-        String indexName = NewAbstractService.getIndexKey(parent, type);
+        Index<Node> index = null;
+        try {
+            index = networkService.getIndex(parent, type);
+        } catch (DatabaseException e1) {
+            LOGGER.error("Could not create index.", e1);
+            fail();
+        }
         // name is ""
         try {
-            networkService.getNetworkElement(parent, indexName, "", type);
+            networkService.getNetworkElement(parent, index, "", type);
             // exception
         } catch (AWEException e) {
             LOGGER.error("could not create network element", e);
@@ -453,7 +512,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
         INodeType type = NetworkElementNodeType.values()[0];
         // indexName is ""
         try {
-            networkService.getNetworkElement(parent, "", type.getId(), type);
+            networkService.getNetworkElement(parent, null, type.getId(), type);
             // exception
         } catch (AWEException e) {
             LOGGER.error("could not create network element", e);
@@ -468,11 +527,12 @@ public class NewNetworkServiceTest extends AbstractAWETest {
         // all parameters are set, parent is correct
         Node sector = null;
         tx = graphDatabaseService.beginTx();
+        Index<Node> index = null;
         try {
             parent = getNewNE();
             parent.setProperty(NewNetworkService.TYPE, NetworkElementNodeType.SITE.getId());
-            String indexName = NewAbstractService.getIndexKey(parent, NetworkElementNodeType.SECTOR);
-            sector = networkService.createSector(parent, indexName, "name", "ci", "lac");
+            index = networkService.getIndex(parent, NetworkElementNodeType.SECTOR);
+            sector = networkService.createSector(parent, index, "name", "ci", "lac");
 
             tx.success();
         } catch (AWEException e) {
@@ -492,8 +552,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
         Assert.assertEquals(parent, sector.getRelationships(DatasetRelationTypes.CHILD, Direction.INCOMING).iterator().next()
                 .getOtherNode(sector));
         // sector is indexed
-        Index<Node> index = graphDatabaseService.index().forNodes(
-                NewAbstractService.getIndexKey(parent, NetworkElementNodeType.SECTOR));
+        index = graphDatabaseService.index().forNodes(NewAbstractService.getIndexKey(parent, NetworkElementNodeType.SECTOR));
         Assert.assertEquals(sector, index.get(NewNetworkService.NAME, "name").getSingle());
         Assert.assertEquals(sector, index.get(NewNetworkService.LOCATION_AREA_CODE, "lac").getSingle());
         Assert.assertEquals(sector, index.get(NewNetworkService.CELL_INDEX, "ci").getSingle());
@@ -504,11 +563,12 @@ public class NewNetworkServiceTest extends AbstractAWETest {
         // only name is set, parent is correct
         Node sector = null;
         tx = graphDatabaseService.beginTx();
+        Index<Node> index = null;
         try {
             parent = getNewNE();
             parent.setProperty(NewNetworkService.TYPE, NetworkElementNodeType.SITE.getId());
-            String indexName = NewAbstractService.getIndexKey(parent, NetworkElementNodeType.SECTOR);
-            sector = networkService.createSector(parent, indexName, "name", null, null);
+            index = networkService.getIndex(parent, NetworkElementNodeType.SECTOR);
+            sector = networkService.createSector(parent, index, "name", null, null);
 
             tx.success();
         } catch (AWEException e) {
@@ -526,8 +586,6 @@ public class NewNetworkServiceTest extends AbstractAWETest {
         Assert.assertEquals(parent, sector.getRelationships(DatasetRelationTypes.CHILD, Direction.INCOMING).iterator().next()
                 .getOtherNode(sector));
         // sector is indexed
-        Index<Node> index = graphDatabaseService.index().forNodes(
-                NewAbstractService.getIndexKey(parent, NetworkElementNodeType.SECTOR));
         Assert.assertEquals(sector, index.get(NewNetworkService.NAME, "name").getSingle());
     }
 
@@ -536,11 +594,12 @@ public class NewNetworkServiceTest extends AbstractAWETest {
         // CILAC are set, parent is correct
         Node sector = null;
         tx = graphDatabaseService.beginTx();
+        Index<Node> index = null;
         try {
             parent = getNewNE();
             parent.setProperty(NewNetworkService.TYPE, NetworkElementNodeType.SITE.getId());
-            String indexName = NewAbstractService.getIndexKey(parent, NetworkElementNodeType.SECTOR);
-            sector = networkService.createSector(parent, indexName, null, "ci", "lac");
+            index = networkService.getIndex(parent, NetworkElementNodeType.SECTOR);
+            sector = networkService.createSector(parent, index, null, "ci", "lac");
 
             tx.success();
         } catch (AWEException e) {
@@ -559,8 +618,6 @@ public class NewNetworkServiceTest extends AbstractAWETest {
         Assert.assertEquals(parent, sector.getRelationships(DatasetRelationTypes.CHILD, Direction.INCOMING).iterator().next()
                 .getOtherNode(sector));
         // sector is indexed
-        Index<Node> index = graphDatabaseService.index().forNodes(
-                NewAbstractService.getIndexKey(parent, NetworkElementNodeType.SECTOR));
         Assert.assertEquals(sector, index.get(NewNetworkService.LOCATION_AREA_CODE, "lac").getSingle());
         Assert.assertEquals(sector, index.get(NewNetworkService.CELL_INDEX, "ci").getSingle());
     }
@@ -570,11 +627,12 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     public void testCreateSectorNoneSet() throws IllegalNodeDataException {
         // properties are not set
         tx = graphDatabaseService.beginTx();
+        Index<Node> index = null;
         try {
             parent = getNewNE();
             parent.setProperty(NewNetworkService.TYPE, NetworkElementNodeType.SITE.getId());
-            String indexName = NewAbstractService.getIndexKey(parent, NetworkElementNodeType.SECTOR);
-            networkService.createSector(parent, indexName, null, null, null);
+            index = networkService.getIndex(parent, NetworkElementNodeType.SECTOR);
+            networkService.createSector(parent, index, null, null, null);
 
             tx.success();
         } catch (DatabaseException e) {
@@ -590,11 +648,12 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     public void testCreateSectorCISet() throws IllegalNodeDataException {
         // only CI set
         tx = graphDatabaseService.beginTx();
+        Index<Node> index = null;
         try {
             parent = getNewNE();
             parent.setProperty(NewNetworkService.TYPE, NetworkElementNodeType.SITE.getId());
-            String indexName = NewAbstractService.getIndexKey(parent, NetworkElementNodeType.SECTOR);
-            networkService.createSector(parent, indexName, null, "ci", null);
+            index = networkService.getIndex(parent, NetworkElementNodeType.SECTOR);
+            networkService.createSector(parent, index, null, "ci", null);
 
             tx.success();
         } catch (DatabaseException e) {
@@ -610,11 +669,12 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     public void testCreateSectorLACSet() throws IllegalNodeDataException {
         // only LAC set
         tx = graphDatabaseService.beginTx();
+        Index<Node> index = null;
         try {
             parent = getNewNE();
             parent.setProperty(NewNetworkService.TYPE, NetworkElementNodeType.SITE.getId());
-            String indexName = NewAbstractService.getIndexKey(parent, NetworkElementNodeType.SECTOR);
-            networkService.createSector(parent, indexName, null, null, "lac");
+            index = networkService.getIndex(parent, NetworkElementNodeType.SECTOR);
+            networkService.createSector(parent, index, null, null, "lac");
 
             tx.success();
         } catch (DatabaseException e) {
@@ -630,10 +690,11 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     public void testCreateSectorParentWrong() {
         // parent is not SITE
         tx = graphDatabaseService.beginTx();
+        Index<Node> index = null;
         try {
             parent = getNewNE();
-            String indexName = NewAbstractService.getIndexKey(parent, NetworkElementNodeType.SECTOR);
-            networkService.createSector(parent, indexName, "name", "ci", "lac");
+            index = networkService.getIndex(parent, NetworkElementNodeType.SECTOR);
+            networkService.createSector(parent, index, "name", "ci", "lac");
 
             tx.success();
         } catch (AWEException e) {
@@ -649,10 +710,11 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     public void testCreateSectorParentNull() {
         // parent is null
         tx = graphDatabaseService.beginTx();
+        Index<Node> index = null;
         try {
             parent = getNewNE();
-            String indexName = NewAbstractService.getIndexKey(parent, NetworkElementNodeType.SECTOR);
-            networkService.createSector(null, indexName, "name", "ci", "lac");
+            index = networkService.getIndex(parent, NetworkElementNodeType.SECTOR);
+            networkService.createSector(null, index, "name", "ci", "lac");
 
             tx.success();
         } catch (AWEException e) {
@@ -683,37 +745,18 @@ public class NewNetworkServiceTest extends AbstractAWETest {
         // exception
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testCreateSectorIndexEmpty() {
-        // indexName ""
-        tx = graphDatabaseService.beginTx();
-        try {
-            parent = getNewNE();
-            parent.setProperty(NewNetworkService.TYPE, NetworkElementNodeType.SITE.getId());
-            networkService.createSector(parent, "", "name", "ci", "lac");
-
-            tx.success();
-        } catch (AWEException e) {
-            LOGGER.error("could not create network element", e);
-            fail();
-        } finally {
-            tx.finish();
-        }
-        // exception
-    }
-
     // +
     @Test
     public void testFindSector() {
         // sector exists, all params set
         Node sector = null;
-        String indexName = null;
         tx = graphDatabaseService.beginTx();
+        Index<Node> index = null;
         try {
             parent = getNewNE();
             parent.setProperty(NewNetworkService.TYPE, NetworkElementNodeType.SITE.getId());
-            indexName = NewAbstractService.getIndexKey(parent, NetworkElementNodeType.SECTOR);
-            sector = networkService.createSector(parent, indexName, "name", "ci", "lac");
+            index = networkService.getIndex(parent, NetworkElementNodeType.SECTOR);
+            sector = networkService.createSector(parent, index, "name", "ci", "lac");
 
             tx.success();
         } catch (AWEException e) {
@@ -723,7 +766,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
             tx.finish();
         }
 
-        Node testNode = networkService.findSector(indexName, "name", "ci", "lac");
+        Node testNode = networkService.findSector(index, "name", "ci", "lac");
         // correct node is found
         Assert.assertEquals(sector, testNode);
         // sector has valid properties
@@ -740,13 +783,13 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     public void testFindSectorNameSet() {
         // sector exists, name set
         Node sector = null;
-        String indexName = null;
         tx = graphDatabaseService.beginTx();
+        Index<Node> index = null;
         try {
             parent = getNewNE();
             parent.setProperty(NewNetworkService.TYPE, NetworkElementNodeType.SITE.getId());
-            indexName = NewAbstractService.getIndexKey(parent, NetworkElementNodeType.SECTOR);
-            sector = networkService.createSector(parent, indexName, "name", "ci", "lac");
+            index = networkService.getIndex(parent, NetworkElementNodeType.SECTOR);
+            sector = networkService.createSector(parent, index, "name", "ci", "lac");
 
             tx.success();
         } catch (AWEException e) {
@@ -756,7 +799,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
             tx.finish();
         }
 
-        Node testNode = networkService.findSector(indexName, "name", null, null);
+        Node testNode = networkService.findSector(index, "name", null, null);
         // correct node is found
         Assert.assertEquals(sector, testNode);
         // sector has valid properties
@@ -771,13 +814,13 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     public void testFindSectorCILACSet() {
         // sector exists, CI+LAC set
         Node sector = null;
-        String indexName = null;
         tx = graphDatabaseService.beginTx();
+        Index<Node> index = null;
         try {
             parent = getNewNE();
             parent.setProperty(NewNetworkService.TYPE, NetworkElementNodeType.SITE.getId());
-            indexName = NewAbstractService.getIndexKey(parent, NetworkElementNodeType.SECTOR);
-            sector = networkService.createSector(parent, indexName, "name", "ci", "lac");
+            index = networkService.getIndex(parent, NetworkElementNodeType.SECTOR);
+            sector = networkService.createSector(parent, index, "name", "ci", "lac");
 
             tx.success();
         } catch (AWEException e) {
@@ -787,7 +830,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
             tx.finish();
         }
 
-        Node testNode = networkService.findSector(indexName, null, "ci", "lac");
+        Node testNode = networkService.findSector(index, null, "ci", "lac");
         // correct node is found
         Assert.assertEquals(sector, testNode);
         // sector has valid properties
@@ -803,9 +846,15 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     public void testFindSectorNotFound() {
         // sector is not there, all set
         parent = getNewNE();
-        String indexName = NewAbstractService.getIndexKey(parent, NetworkElementNodeType.SECTOR);
+        Index<Node> index = null;
+        try {
+            index = networkService.getIndex(parent, NetworkElementNodeType.SECTOR);
+        } catch (DatabaseException e1) {
+            LOGGER.error("Could not create index.", e1);
+            fail();
+        }
 
-        Node testNode = networkService.findSector(indexName, "name", "ci", "lac");
+        Node testNode = networkService.findSector(index, "name", "ci", "lac");
 
         // node returned is null
         Assert.assertNull(testNode);
@@ -815,13 +864,13 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     @Test(expected = IllegalArgumentException.class)
     public void testFindSectorNoneSet() {
         // sector exists, none set
-        String indexName = null;
         tx = graphDatabaseService.beginTx();
+        Index<Node> index = null;
         try {
             parent = getNewNE();
             parent.setProperty(NewNetworkService.TYPE, NetworkElementNodeType.SITE.getId());
-            indexName = NewAbstractService.getIndexKey(parent, NetworkElementNodeType.SECTOR);
-            networkService.createSector(parent, indexName, "name", "ci", "lac");
+            index = networkService.getIndex(parent, NetworkElementNodeType.SECTOR);
+            networkService.createSector(parent, index, "name", "ci", "lac");
 
             tx.success();
         } catch (AWEException e) {
@@ -831,7 +880,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
             tx.finish();
         }
 
-        networkService.findSector(indexName, null, null, null);
+        networkService.findSector(index, null, null, null);
         // exception
 
     }
@@ -839,13 +888,13 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     @Test(expected = IllegalArgumentException.class)
     public void testFindSectorCISet() {
         // sector exists, CI set
-        String indexName = null;
         tx = graphDatabaseService.beginTx();
+        Index<Node> index = null;
         try {
             parent = getNewNE();
             parent.setProperty(NewNetworkService.TYPE, NetworkElementNodeType.SITE.getId());
-            indexName = NewAbstractService.getIndexKey(parent, NetworkElementNodeType.SECTOR);
-            networkService.createSector(parent, indexName, "name", "ci", "lac");
+            index = networkService.getIndex(parent, NetworkElementNodeType.SECTOR);
+            networkService.createSector(parent, index, "name", "ci", "lac");
 
             tx.success();
         } catch (AWEException e) {
@@ -855,20 +904,20 @@ public class NewNetworkServiceTest extends AbstractAWETest {
             tx.finish();
         }
 
-        networkService.findSector(indexName, null, "ci", null);
+        networkService.findSector(index, null, "ci", null);
         // exception
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testFindSectorLACSet() {
         // sector exists, LAC set
-        String indexName = null;
         tx = graphDatabaseService.beginTx();
+        Index<Node> index = null;
         try {
             parent = getNewNE();
             parent.setProperty(NewNetworkService.TYPE, NetworkElementNodeType.SITE.getId());
-            indexName = NewAbstractService.getIndexKey(parent, NetworkElementNodeType.SECTOR);
-            networkService.createSector(parent, indexName, "name", "ci", "lac");
+            index = networkService.getIndex(parent, NetworkElementNodeType.SECTOR);
+            networkService.createSector(parent, index, "name", "ci", "lac");
 
             tx.success();
         } catch (AWEException e) {
@@ -878,20 +927,20 @@ public class NewNetworkServiceTest extends AbstractAWETest {
             tx.finish();
         }
 
-        networkService.findSector(indexName, null, null, "lac");
+        networkService.findSector(index, null, null, "lac");
         // exception
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testFindSectorIndexNull() {
-        // sector exists, all set, indexName null
-        String indexName = null;
+        // sector exists, all set, index null
         tx = graphDatabaseService.beginTx();
+        Index<Node> index = null;
         try {
             parent = getNewNE();
             parent.setProperty(NewNetworkService.TYPE, NetworkElementNodeType.SITE.getId());
-            indexName = NewAbstractService.getIndexKey(parent, NetworkElementNodeType.SECTOR);
-            networkService.createSector(parent, indexName, "name", "ci", "lac");
+            index = networkService.getIndex(parent, NetworkElementNodeType.SECTOR);
+            networkService.createSector(parent, index, "name", "ci", "lac");
 
             tx.success();
         } catch (AWEException e) {
@@ -905,41 +954,18 @@ public class NewNetworkServiceTest extends AbstractAWETest {
         // exception
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testFindSectorIndexEmpty() {
-        // sector exists, all set, indexName ""
-        String indexName = null;
-        tx = graphDatabaseService.beginTx();
-        try {
-            parent = getNewNE();
-            parent.setProperty(NewNetworkService.TYPE, NetworkElementNodeType.SITE.getId());
-            indexName = NewAbstractService.getIndexKey(parent, NetworkElementNodeType.SECTOR);
-            networkService.createSector(parent, indexName, "name", "ci", "lac");
-
-            tx.success();
-        } catch (AWEException e) {
-            LOGGER.error("could not create network element", e);
-            fail();
-        } finally {
-            tx.finish();
-        }
-
-        networkService.findSector("", "name", "ci", "lac");
-        // exception
-    }
-
     // +
     @Test
     public void testGetSector() {
         // sector exists
         Node sector = null;
-        String indexName = null;
+        Index<Node> index = null;
         tx = graphDatabaseService.beginTx();
         try {
             parent = getNewNE();
             parent.setProperty(NewNetworkService.TYPE, NetworkElementNodeType.SITE.getId());
-            indexName = NewAbstractService.getIndexKey(parent, NetworkElementNodeType.SECTOR);
-            sector = networkService.createSector(parent, indexName, "name", "ci", "lac");
+            index = networkService.getIndex(parent, NetworkElementNodeType.SECTOR);
+            sector = networkService.createSector(parent, index, "name", "ci", "lac");
 
             tx.success();
         } catch (AWEException e) {
@@ -950,7 +976,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
         }
 
         try {
-            Node testNode = networkService.getSector(parent, indexName, "name", "ci", "lac");
+            Node testNode = networkService.getSector(parent, index, "name", "ci", "lac");
 
             // sector not recreated
             Assert.assertEquals(sector, testNode);
@@ -972,13 +998,13 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     public void testGetSectorParentNull() {
         // sector exists
         Node sector = null;
-        String indexName = null;
+        Index<Node> index = null;
         tx = graphDatabaseService.beginTx();
         try {
             parent = getNewNE();
             parent.setProperty(NewNetworkService.TYPE, NetworkElementNodeType.SITE.getId());
-            indexName = NewAbstractService.getIndexKey(parent, NetworkElementNodeType.SECTOR);
-            sector = networkService.createSector(parent, indexName, "name", "ci", "lac");
+            index = networkService.getIndex(parent, NetworkElementNodeType.SECTOR);
+            sector = networkService.createSector(parent, index, "name", "ci", "lac");
 
             tx.success();
         } catch (AWEException e) {
@@ -989,7 +1015,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
         }
 
         try {
-            Node testNode = networkService.getSector(null, indexName, "name", "ci", "lac");
+            Node testNode = networkService.getSector(null, index, "name", "ci", "lac");
 
             // sector not recreated
             Assert.assertEquals(sector, testNode);
@@ -1010,20 +1036,22 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     @Test
     public void testGetSectorNoSector() {
         // sector !exists
-        String indexName = null;
+        Index<Node> index = null;
         tx = graphDatabaseService.beginTx();
         try {
             parent = getNewNE();
             parent.setProperty(NewNetworkService.TYPE, NetworkElementNodeType.SITE.getId());
-            indexName = NewAbstractService.getIndexKey(parent, NetworkElementNodeType.SECTOR);
+            index = networkService.getIndex(parent, NetworkElementNodeType.SECTOR);
 
             tx.success();
+        } catch (DatabaseException e) {
+            LOGGER.error("Could not create index.", e);
         } finally {
             tx.finish();
         }
 
         try {
-            Node testNode = networkService.getSector(parent, indexName, "name", "ci", "lac");
+            Node testNode = networkService.getSector(parent, index, "name", "ci", "lac");
 
             // sector created
             Assert.assertNotNull(testNode);
@@ -1036,8 +1064,6 @@ public class NewNetworkServiceTest extends AbstractAWETest {
             Assert.assertEquals(parent, testNode.getRelationships(DatasetRelationTypes.CHILD, Direction.INCOMING).iterator().next()
                     .getOtherNode(testNode));
             // sector is indexed
-            Index<Node> index = graphDatabaseService.index().forNodes(
-                    NewAbstractService.getIndexKey(parent, NetworkElementNodeType.SECTOR));
             Assert.assertEquals(testNode, index.get(NewNetworkService.NAME, "name").getSingle());
             Assert.assertEquals(testNode, index.get(NewNetworkService.LOCATION_AREA_CODE, "lac").getSingle());
             Assert.assertEquals(testNode, index.get(NewNetworkService.CELL_INDEX, "ci").getSingle());
@@ -1055,24 +1081,21 @@ public class NewNetworkServiceTest extends AbstractAWETest {
             nodes.put(type, new ArrayList<Node>());
         }
         try {
+            Index<Node> index = networkService.getIndex(parent, NetworkElementNodeType.NETWORK);
+            Index<Node> indexBSC = networkService.getIndex(parent, NetworkElementNodeType.BSC);
+            Index<Node> indexSITE = networkService.getIndex(parent, NetworkElementNodeType.SITE);
+            Index<Node> indexSECTOR = networkService.getIndex(parent, NetworkElementNodeType.SECTOR);
             for (int i = 0; i < 4; i++) {
-                Node network = networkService.createNetworkElement(parent,
-                        NewAbstractService.getIndexKey(parent, NetworkElementNodeType.NETWORK), "" + i,
-                        NetworkElementNodeType.NETWORK);
+                Node network = networkService.createNetworkElement(parent, index, "" + i, NetworkElementNodeType.NETWORK);
                 nodes.get(NetworkElementNodeType.NETWORK).add(network);
                 for (int j = 0; j < 4; j++) {
-                    Node bsc = networkService
-                            .createNetworkElement(network, NewAbstractService.getIndexKey(network, NetworkElementNodeType.BSC), ""
-                                    + j, NetworkElementNodeType.BSC);
+                    Node bsc = networkService.createNetworkElement(network, indexBSC, "" + j, NetworkElementNodeType.BSC);
                     nodes.get(NetworkElementNodeType.BSC).add(bsc);
                     for (int k = 0; k < 4; k++) {
-                        Node site = networkService.createNetworkElement(bsc,
-                                NewAbstractService.getIndexKey(bsc, NetworkElementNodeType.SITE), "" + k,
-                                NetworkElementNodeType.SITE);
+                        Node site = networkService.createNetworkElement(bsc, indexSITE, "" + k, NetworkElementNodeType.SITE);
                         nodes.get(NetworkElementNodeType.SITE).add(site);
                         for (int l = 0; l < 4; l++) {
-                            Node sector = networkService.createSector(site,
-                                    NewAbstractService.getIndexKey(site, NetworkElementNodeType.SECTOR), "" + l, "" + l, "" + l);
+                            Node sector = networkService.createSector(site, indexSECTOR, "" + l, "" + l, "" + l);
                             nodes.get(NetworkElementNodeType.SECTOR).add(sector);
                         }
                     }
@@ -1109,262 +1132,301 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void createSelectionModelWithoutName() throws IllegalArgumentException, AWEException {
+    public void createSelectionModelWithoutName() throws IllegalArgumentException {
         Transaction tx = graphDatabaseService.beginTx();
         Node networkNode = graphDatabaseService.createNode();
         tx.success();
         tx.finish();
 
-        networkService.createSelectionList(networkNode, null);
+        try {
+            networkService.createSelectionList(networkNode, null);
+        } catch (AWEException e) {
+            LOGGER.error("Could not create selection list.", e);
+            fail();
+        }
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void createSelectionModelWithEmptyName() throws IllegalArgumentException, AWEException {
+    public void createSelectionModelWithEmptyName() throws IllegalArgumentException {
         Transaction tx = graphDatabaseService.beginTx();
         Node networkNode = graphDatabaseService.createNode();
         tx.success();
         tx.finish();
 
-        networkService.createSelectionList(networkNode, StringUtils.EMPTY);
+        try {
+            networkService.createSelectionList(networkNode, StringUtils.EMPTY);
+        } catch (AWEException e) {
+            LOGGER.error("Could not create selection list.", e);
+            fail();
+        }
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void createSelectionModelWithoutNetworkNode() throws IllegalArgumentException, AWEException {
-        networkService.createSelectionList(null, DEFAULT_SELECTION_LIST_NAME);
+    public void createSelectionModelWithoutNetworkNode() throws IllegalArgumentException {
+        try {
+            networkService.createSelectionList(null, DEFAULT_SELECTION_LIST_NAME);
+        } catch (AWEException e) {
+            LOGGER.error("Could not create selection list.", e);
+            fail();
+        }
     }
 
     @Test(expected = DuplicateNodeNameException.class)
-    public void createSelectionModelWithAlreadyExistingName() throws AWEException, IllegalArgumentException {
+    public void createSelectionModelWithAlreadyExistingName() throws DuplicateNodeNameException {
         Transaction tx = graphDatabaseService.beginTx();
         Node networkNode = graphDatabaseService.createNode();
         tx.success();
         tx.finish();
 
-        networkService.createSelectionList(networkNode, DEFAULT_SELECTION_LIST_NAME);
-        networkService.createSelectionList(networkNode, DEFAULT_SELECTION_LIST_NAME);
-    }
-
-    @Test
-    public void checkCreatedSelectionListNode() throws AWEException, IllegalArgumentException {
-        Transaction tx = graphDatabaseService.beginTx();
-        Node networkNode = graphDatabaseService.createNode();
-        tx.success();
-        tx.finish();
-
-        Node selectionNode = networkService.createSelectionList(networkNode, DEFAULT_SELECTION_LIST_NAME);
-
-        Assert.assertNotNull("Created node should not be null", selectionNode);
-    }
-
-    @Test
-    public void checkTypeOfCreatedSelectionListNode() throws AWEException, IllegalArgumentException {
-        Transaction tx = graphDatabaseService.beginTx();
-        Node networkNode = graphDatabaseService.createNode();
-        tx.success();
-        tx.finish();
-
-        Node selectionNode = networkService.createSelectionList(networkNode, DEFAULT_SELECTION_LIST_NAME);
-
-        Assert.assertEquals("Incorrect Type of created Node", NetworkElementNodeType.SELECTION_LIST_ROOT.getId(),
-                networkService.getNodeType(selectionNode));
-    }
-
-    @Test
-    public void checkCountOfCreatedSelectionListNode() throws AWEException, IllegalArgumentException {
-        Transaction tx = graphDatabaseService.beginTx();
-        Node networkNode = graphDatabaseService.createNode();
-        tx.success();
-        tx.finish();
-
-        Node selectionNode = networkService.createSelectionList(networkNode, DEFAULT_SELECTION_LIST_NAME);
-
-        Assert.assertEquals("Incorrect Count of created Node", 0, selectionNode.getProperty(NewNetworkService.SELECTED_NODES_COUNT));
-    }
-
-    @Test
-    public void checkNameOfCreatedSelectionListNode() throws AWEException, IllegalArgumentException {
-        Transaction tx = graphDatabaseService.beginTx();
-        Node networkNode = graphDatabaseService.createNode();
-        tx.success();
-        tx.finish();
-
-        Node selectionNode = networkService.createSelectionList(networkNode, DEFAULT_SELECTION_LIST_NAME);
-
-        Assert.assertEquals("Incorrect name of created Node", DEFAULT_SELECTION_LIST_NAME,
-                selectionNode.getProperty(NewAbstractService.NAME));
-    }
-
-    @Test
-    public void checkRelationshipsOfCreatedSelectionListNode() throws AWEException, IllegalArgumentException {
-        Transaction tx = graphDatabaseService.beginTx();
-        Node networkNode = graphDatabaseService.createNode();
-        tx.success();
-        tx.finish();
-
-        Node selectionNode = networkService.createSelectionList(networkNode, DEFAULT_SELECTION_LIST_NAME);
-
-        Iterable<Relationship> incomingRelationships = selectionNode.getRelationships(Direction.INCOMING);
-
-        int count = 0;
-        for (Relationship relationship : incomingRelationships) {
-            count++;
-
-            Node network = relationship.getOtherNode(selectionNode);
-            Assert.assertEquals("Unexpected type of Relationship", NewNetworkService.NetworkRelationshipTypes.SELECTION_LIST,
-                    relationship.getType());
-            Assert.assertEquals("Unexpected start Node of Relationship", networkNode, network);
+        try {
+            networkService.createSelectionList(networkNode, DEFAULT_SELECTION_LIST_NAME);
+            networkService.createSelectionList(networkNode, DEFAULT_SELECTION_LIST_NAME);
+        } catch (DatabaseException e) {
+            LOGGER.error("Could not create selection list.", e);
+            fail();
         }
 
-        Assert.assertEquals("unexpected number of incoming relationships", 1, count);
+    }
+
+    @Test
+    public void checkCreatedSelectionListNode() {
+        Transaction tx = graphDatabaseService.beginTx();
+        Node networkNode = graphDatabaseService.createNode();
+        tx.success();
+        tx.finish();
+
+        Node selectionNode = null;
+        try {
+            selectionNode = networkService.createSelectionList(networkNode, DEFAULT_SELECTION_LIST_NAME);
+        } catch (AWEException e) {
+            LOGGER.error("Could not create selection list.", e);
+            fail();
+        }
+
+        Assert.assertNotNull(selectionNode);
+    }
+
+    @Test
+    public void checkTypeOfCreatedSelectionListNode() {
+        Transaction tx = graphDatabaseService.beginTx();
+        Node networkNode = graphDatabaseService.createNode();
+        tx.success();
+        tx.finish();
+
+        Node selectionNode = null;
+        try {
+            selectionNode = networkService.createSelectionList(networkNode, DEFAULT_SELECTION_LIST_NAME);
+        } catch (AWEException e) {
+            LOGGER.error("Could not create selection list.", e);
+            fail();
+        }
+
+        Assert.assertEquals(NetworkElementNodeType.SELECTION_LIST_ROOT.getId(), NewNetworkService.getNodeType(selectionNode));
+    }
+
+    @Test
+    public void checkNameOfCreatedSelectionListNode() {
+        Transaction tx = graphDatabaseService.beginTx();
+        Node networkNode = graphDatabaseService.createNode();
+        tx.success();
+        tx.finish();
+
+        Node selectionNode = null;
+        try {
+            selectionNode = networkService.createSelectionList(networkNode, DEFAULT_SELECTION_LIST_NAME);
+        } catch (AWEException e) {
+            LOGGER.error("Could not create selection list.", e);
+            fail();
+        }
+
+        Assert.assertEquals(DEFAULT_SELECTION_LIST_NAME, selectionNode.getProperty(NewAbstractService.NAME));
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void findSelectionModelWithoutNetworkNode() throws AWEException {
-        networkService.findSelectionList(null, DEFAULT_SELECTION_LIST_NAME);
+    public void tryToLinkSelectionNodeWithoutSelectionRootNode() throws Exception {
+        Node sector = getSectorForSelection();
+
+        networkService.createSelectionLink(null, sector, getLinkIndex());
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void findSelectionModelWithEmptyName() throws AWEException {
-        Transaction tx = graphDatabaseService.beginTx();
-        Node networkNode = graphDatabaseService.createNode();
-        tx.success();
-        tx.finish();
+    public void tryToLinkSelectionNodeWithoutNode() throws Exception {
+        Node rootSelection = getRootForSelection();
 
-        networkService.findSelectionList(networkNode, StringUtils.EMPTY);
+        networkService.createSelectionLink(rootSelection, null, getLinkIndex());
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void findSelectionModelWithoutName() throws AWEException {
-        Transaction tx = graphDatabaseService.beginTx();
-        Node networkNode = graphDatabaseService.createNode();
-        tx.success();
-        tx.finish();
+    public void tryToLinkWihoutIndexes() throws Exception {
+        Node rootSelection = getRootForSelection();
+        Node sector = getSectorForSelection();
 
-        networkService.findSelectionList(networkNode, null);
+        networkService.createSelectionLink(rootSelection, sector, null);
     }
 
-    @Test(expected = DuplicateNodeNameException.class)
-    public void findDuplicatedSelecitonNodes() throws AWEException {
-        Transaction tx = graphDatabaseService.beginTx();
-        Node networkNode = graphDatabaseService.createNode();
+    @Test(expected = DatabaseException.class)
+    public void tryToDoubleLinkNode() throws Exception {
+        Node rootSelection = getRootForSelection();
+        Node sector = getSectorForSelection();
+        Index<Relationship> index = getLinkIndex();
 
-        createSelectionNode(networkNode, DEFAULT_SELECTION_LIST_NAME);
-        createSelectionNode(networkNode, DEFAULT_SELECTION_LIST_NAME);
-
-        tx.success();
-        tx.finish();
-
-        networkService.findSelectionList(networkNode, DEFAULT_SELECTION_LIST_NAME);
+        networkService.createSelectionLink(rootSelection, sector, index);
+        networkService.createSelectionLink(rootSelection, sector, index);
     }
 
     @Test
-    public void checkFoundedSelectionNodes() throws AWEException {
-        Transaction tx = graphDatabaseService.beginTx();
-        Node networkNode = graphDatabaseService.createNode();
+    public void checkCreatedLink() throws Exception {
+        Node rootSelection = getRootForSelection();
+        Node sector = getSectorForSelection();
 
-        Node[] selectionNodes = new Node[5];
-        for (int i = 0; i < 5; i++) {
-            selectionNodes[i] = createSelectionNode(networkNode, DEFAULT_SELECTION_LIST_NAME + i);
-        }
+        networkService.createSelectionLink(rootSelection, sector, getLinkIndex());
 
-        tx.success();
-        tx.finish();
+        Iterable<Relationship> relationships = rootSelection.getRelationships(Direction.OUTGOING);
 
-        for (int i = 0; i < 5; i++) {
-            Node foundedNode = networkService.findSelectionList(networkNode, DEFAULT_SELECTION_LIST_NAME + i);
+        assertNotNull("Result should not be null", relationships);
 
-            Assert.assertNotNull("Selection List Node <" + DEFAULT_SELECTION_LIST_NAME + i + "> was not found", foundedNode);
-            Assert.assertEquals("Was found incorrect selection node", selectionNodes[i], foundedNode);
-        }
+        Iterator<Relationship> relationshipIterator = relationships.iterator();
+
+        assertTrue("It should be at least one Relationship", relationshipIterator.hasNext());
+
+        relationshipIterator.next();
+
+        assertFalse("It should not be more than one Relationship", relationshipIterator.hasNext());
     }
 
     @Test
-    public void tryToFindNotExistingSelectionNode() throws AWEException {
-        Transaction tx = graphDatabaseService.beginTx();
-        Node networkNode = graphDatabaseService.createNode();
+    public void checkTypeOfCreatedLink() throws Exception {
+        Node rootSelection = getRootForSelection();
+        Node sector = getSectorForSelection();
 
-        Node[] selectionNodes = new Node[5];
-        for (int i = 0; i < 5; i++) {
-            selectionNodes[i] = createSelectionNode(networkNode, DEFAULT_SELECTION_LIST_NAME + i);
-        }
+        networkService.createSelectionLink(rootSelection, sector, getLinkIndex());
 
-        tx.success();
-        tx.finish();
+        Iterator<Relationship> relationshipIterator = rootSelection.getRelationships(Direction.OUTGOING).iterator();
 
-        Node foundedNode = networkService.findSelectionList(networkNode, DEFAULT_SELECTION_LIST_NAME + 7);
-
-        Assert.assertNull("Node should not be found", foundedNode);
+        RelationshipType linkType = relationshipIterator.next().getType();
+        assertEquals("Incorrect type of Relationship", NetworkRelationshipTypes.SELECTED, linkType);
     }
 
-    private Node createSelectionNode(Node network, String name) {
-        Node selectionNode = graphDatabaseService.createNode();
-        selectionNode.setProperty(NewAbstractService.NAME, name);
-        selectionNode.setProperty(NewAbstractService.TYPE, NetworkElementNodeType.SELECTION_LIST_ROOT.getId());
-
-        network.createRelationshipTo(selectionNode, NetworkRelationshipTypes.SELECTION_LIST);
-
-        return selectionNode;
-    }
-    
-    @Test(expected = IllegalArgumentException.class)
-    public void tryToFindAllSelectionModelsWithoutNetworkNode() throws AWEException {
-        networkService.getAllSelectionModelsOfNetwork(null);
-    }
-    
     @Test
-    public void tryToFindAllSelectionModelsWithNetworkWithoutSelecdtionLists() throws AWEException {
-        Transaction tx = graphDatabaseService.beginTx();
-        Node networkNode = graphDatabaseService.createNode();
-        tx.success();
-        tx.finish();
-        
-        Iterable<Node> result = networkService.getAllSelectionModelsOfNetwork(networkNode);
-        
-        Assert.assertNotNull("Result of search should not be null", result);
-        Assert.assertFalse("Result should not contain any value", result.iterator().hasNext());
+    public void checkLinkedNode() throws Exception {
+        Node rootSelection = getRootForSelection();
+        Node sector = getSectorForSelection();
+
+        networkService.createSelectionLink(rootSelection, sector, getLinkIndex());
+
+        Iterator<Relationship> relationshipIterator = rootSelection.getRelationships(Direction.OUTGOING).iterator();
+
+        Node otherNode = relationshipIterator.next().getOtherNode(rootSelection);
+        assertEquals("Incorrect Node on another end of Link", sector, otherNode);
     }
-    
+
     @Test
-    public void checkNumberOfFoundedSelectionNodes() throws AWEException {
-        Transaction tx = graphDatabaseService.beginTx();
-        Node networkNode1 = graphDatabaseService.createNode();
+    public void checkReplaceRelationship() throws Exception {
+        Node root = getNewNE();
+        Node childNode = getNewNE();
+        networkService.createRelationship(root, childNode, org.amanzi.neo.services.enums.NetworkRelationshipTypes.CHILD);
+        Node newRootNode = getNewNE();
+        networkService.replaceRelationship(newRootNode, childNode, org.amanzi.neo.services.enums.NetworkRelationshipTypes.CHILD,
+                Direction.INCOMING);
+        assertNull(root + " still has relationships",
+                root.getSingleRelationship(org.amanzi.neo.services.enums.NetworkRelationshipTypes.CHILD, Direction.OUTGOING));
+        assertNotNull(newRootNode + "still hasn't relationships",
+                newRootNode.getSingleRelationship(org.amanzi.neo.services.enums.NetworkRelationshipTypes.CHILD, Direction.OUTGOING));
+    }
 
-        Node[] selectionNodesForNetwork1 = new Node[5];
-        for (int i = 0; i < 5; i++) {
-            selectionNodesForNetwork1[i] = createSelectionNode(networkNode1, DEFAULT_SELECTION_LIST_NAME + i);
+    @Test
+    public void checkCompletePropertiesWithoutReplacement() {
+        Node rootNode = getNewNE();
+        addedNodeProperties(rootNode, FIRST_PROPERTY, NAME_VALUE);
+        Map<String, Object> valuesMap = new HashMap<String, Object>();
+        valuesMap.put(SECOND_PROPERTY, NEW_NAME_VALUE);
+        try {
+            networkService.completeProperties(rootNode, new DataElement(valuesMap), false);
+        } catch (DatabaseException e) {
+            Assert.fail("End with exception");
+            throw (RuntimeException)new RuntimeException().initCause(e);
         }
-        
-        Node networkNode2 = graphDatabaseService.createNode();
-        
-        Node[] selectionNodesForNetwork2 = new Node[10];
-        for (int i = 0; i < 10; i++) {
-            selectionNodesForNetwork2[i] = createSelectionNode(networkNode2, DEFAULT_SELECTION_LIST_NAME + i);
+        assertTrue("Missing property: " + SECOND_PROPERTY, rootNode.hasProperty(SECOND_PROPERTY));
+        assertTrue(SECOND_PROPERTY + "isn't equals" + NEW_NAME_VALUE, rootNode.getProperty(SECOND_PROPERTY).equals(NEW_NAME_VALUE));
+        assertTrue("Missing property: " + FIRST_PROPERTY, rootNode.hasProperty(FIRST_PROPERTY));
+        assertTrue(SECOND_PROPERTY + "isn't equals" + NAME_VALUE, rootNode.getProperty(FIRST_PROPERTY).equals(NAME_VALUE));
+    }
+
+    @Test
+    public void checkCompletePropertiesWithReplacement() {
+        Node rootNode = getNewNE();
+        addedNodeProperties(rootNode, FIRST_PROPERTY, NAME_VALUE);
+        Map<String, Object> valuesMap = new HashMap<String, Object>();
+        valuesMap.put(SECOND_PROPERTY, NEW_NAME_VALUE);
+        valuesMap.put(FIRST_PROPERTY, NEW_NAME_VALUE);
+        try {
+            networkService.completeProperties(rootNode, new DataElement(valuesMap), true);
+        } catch (DatabaseException e) {
+            Assert.fail("End with exception");
+            throw (RuntimeException)new RuntimeException().initCause(e);
         }
+        assertTrue("Missing property: " + SECOND_PROPERTY, rootNode.hasProperty(SECOND_PROPERTY));
+        assertTrue(SECOND_PROPERTY + "isn't equals" + NEW_NAME_VALUE, rootNode.getProperty(SECOND_PROPERTY).equals(NEW_NAME_VALUE));
+        assertTrue("Missing property: " + FIRST_PROPERTY, rootNode.hasProperty(FIRST_PROPERTY));
+        assertTrue(FIRST_PROPERTY + "isn't equals" + NEW_NAME_VALUE, rootNode.getProperty(FIRST_PROPERTY).equals(NEW_NAME_VALUE));
+    }
+
+    /**
+     * added properties to node
+     * 
+     * @param node
+     * @param key
+     * @param value
+     */
+    private void addedNodeProperties(Node node, String key, Object value) {
+        Transaction tx = graphDatabaseService.beginTx();
+        node.setProperty(key, value);
+        tx.success();
+        tx.finish();
+
+    }
+
+    /**
+     * Creates Root node for Selection Structure
+     * 
+     * @return
+     */
+    private Node getRootForSelection() {
+        Transaction tx = graphDatabaseService.beginTx();
+
+        Node result = graphDatabaseService.createNode();
 
         tx.success();
         tx.finish();
 
-        Iterable<Node> selection1 = networkService.getAllSelectionModelsOfNetwork(networkNode1);
-        ArrayList<Node> selectionList1 = new ArrayList<Node>();
-        for (Node selectionNode : selection1) {
-            selectionList1.add(selectionNode);
-        }
-        
-        Iterable<Node> selection2 = networkService.getAllSelectionModelsOfNetwork(networkNode2);
-        ArrayList<Node> selectionList2 = new ArrayList<Node>();
-        for (Node selectionNode : selection2) {
-            selectionList2.add(selectionNode);
-        }
-        
-        Assert.assertEquals("Unexpected number of founded selection lists", 5, selectionList1.size());
-        Assert.assertEquals("Unexpected number of founded selection lists", 10, selectionList2.size());
-        
-        for (int i = 0; i < 5; i++) {
-            Assert.assertTrue("Selection list <" + DEFAULT_SELECTION_LIST_NAME + i + "> not found", selectionList1.contains(selectionNodesForNetwork1[i]));
-        }
-        
-        for (int i = 0; i < 10; i++) {
-            Assert.assertTrue("Selection list <" + DEFAULT_SELECTION_LIST_NAME + i + "> not found", selectionList2.contains(selectionNodesForNetwork2[i]));
-        }
+        return result;
     }
+
+    /**
+     * Creates Sector node to add in Selection Structure
+     * 
+     * @return
+     */
+    private Node getSectorForSelection() {
+        Transaction tx = graphDatabaseService.beginTx();
+
+        Node result = graphDatabaseService.createNode();
+
+        tx.success();
+        tx.finish();
+
+        return result;
+    }
+
+    private Index<Relationship> getLinkIndex() {
+        Transaction tx = graphDatabaseService.beginTx();
+
+        Index<Relationship> result = graphDatabaseService.index().forRelationships("" + indexCount++);
+
+        tx.success();
+        tx.finish();
+
+        return result;
+    }
+
 }

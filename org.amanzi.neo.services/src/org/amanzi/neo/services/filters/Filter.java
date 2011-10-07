@@ -22,6 +22,8 @@ import org.amanzi.neo.services.filters.exceptions.FilterTypeException;
 import org.amanzi.neo.services.filters.exceptions.NotComparebleException;
 import org.amanzi.neo.services.filters.exceptions.NotComparebleRuntimeException;
 import org.amanzi.neo.services.filters.exceptions.NullValueException;
+import org.amanzi.neo.services.model.IDataElement;
+import org.amanzi.neo.services.model.impl.DataElement;
 import org.neo4j.graphdb.Node;
 
 
@@ -240,9 +242,10 @@ public class Filter implements IFilter {
     public IFilter getUnderlyingFilter() {
         return underlyingFilter;
     }
-public static void main(String[] args) {
-    Integer f=1;
-    Comparable  e=2.0;
-    System.out.println(e.compareTo(f));
-}
+
+    @Override
+    public boolean check(IDataElement dataElement) throws NullValueException, NotComparebleException {
+        return check(((DataElement)dataElement).getNode());
+    }
+
 }

@@ -47,13 +47,13 @@ public class CommonCSVParser<T1 extends ISaver<IModel, CSVContainer, T2>, T2 ext
     protected CSVParser parser;
     protected int MINIMAL_SIZE = 2;
     protected Character delimeters;
-    protected String[] possibleFieldSepRegexes = new String[] {"\t", ",", ";"};
+    protected String[] possibleFieldSepRegexes = new String[] {"\t", ",", ";", " ", "\n"};
     protected Character quoteCharacter = 0;
     private CSVContainer container;
     private CountingFileInputStream is;
     private String charSetName = Charset.defaultCharset().name();
     protected BufferedReader reader;
-    private File tempFile;
+
     private double persentageOld = 0;
 
     /**
@@ -112,6 +112,8 @@ public class CommonCSVParser<T1 extends ISaver<IModel, CSVContainer, T2>, T2 ext
                 is = new CountingFileInputStream(currentFile);
                 reader = new BufferedReader(new InputStreamReader(is, charSetName));
                 tempFile = currentFile;
+                persentageOld = 0;
+                container.setHeaders(null);
             } catch (FileNotFoundException e) {
                 // TODO Handle FileNotFoundException
                 throw (RuntimeException)new RuntimeException().initCause(e);

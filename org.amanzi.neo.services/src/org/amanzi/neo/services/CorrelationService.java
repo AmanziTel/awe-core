@@ -13,11 +13,9 @@
 
 package org.amanzi.neo.services;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
+import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.apache.log4j.Logger;
@@ -34,10 +32,9 @@ import org.neo4j.graphdb.traversal.Evaluators;
 import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.kernel.Traversal;
 
-//TODO: LN: comments!
 /**
- * TODO Purpose of
  * <p>
+ * Correlation service handles calls to database referring correlations.
  * </p>
  * 
  * @author grigoreva_a
@@ -45,10 +42,28 @@ import org.neo4j.kernel.Traversal;
  */
 public class CorrelationService extends NewAbstractService {
 
+    /** TraversalDescription ALL_CORRELATED_TRAVERSAL_DESCRIPTION field */
+    protected static final TraversalDescription ALL_CORRELATED_TRAVERSAL_DESCRIPTION = Traversal.description().depthFirst()
+            .relationships(DatasetRelationTypes.CHILD, Direction.OUTGOING)
+            .relationships(DatasetRelationTypes.NEXT, Direction.OUTGOING)
+            .relationships(Correlations.CORRELATED, Direction.OUTGOING).evaluator(Evaluators.excludeStartPosition());
+
+    /** TraversalDescription CORRELATED_TRAVERSAL_DESCRIPTION field */
+    protected static final TraversalDescription CORRELATED_TRAVERSAL_DESCRIPTION = Traversal.description().breadthFirst()
+            .relationships(Correlations.CORRELATED, Direction.OUTGOING).evaluator(Evaluators.excludeStartPosition());
+
+    /** TraversalDescription CORRELATED_SECTORS_TRAVERSAL_DESCRIPTION field */
+    protected static final TraversalDescription CORRELATED_SECTORS_TRAVERSAL_DESCRIPTION = Traversal.description().depthFirst()
+            .relationships(DatasetRelationTypes.CHILD, Direction.OUTGOING)
+            .relationships(DatasetRelationTypes.NEXT, Direction.OUTGOING).evaluator(Evaluators.excludeStartPosition())
+            .relationships(Correlations.CORRELATED, Direction.BOTH).evaluator(new FilterNodesByType(NetworkElementNodeType.SECTOR));
+
+    /** TraversalDescription CORRELATED_DATASETS_TRAVERSAL_DESCRIPTION field */
+    public static final TraversalDescription CORRELATED_DATASETS_TRAVERSAL_DESCRIPTION = Traversal.description().breadthFirst()
+            .relationships(Correlations.CORRELATED, Direction.OUTGOING).relationships(Correlations.CORRELATION, Direction.INCOMING);
+
     private static Logger LOGGER = Logger.getLogger(CorrelationService.class);
 
-    private Transaction tx;
-    
     private NewDatasetService datasetService = NeoServiceFactory.getInstance().getNewDatasetService();
 
     public enum Correlations implements RelationshipType {
@@ -57,6 +72,11 @@ public class CorrelationService extends NewAbstractService {
 
     public enum CorrelationNodeTypes implements INodeType {
         CORRELATION, PROXY;
+
+        static {
+            NodeTypeManager.registerNodeType(CorrelationNodeTypes.class);
+        }
+
         @Override
         public String getId() {
             return name().toLowerCase();
@@ -89,8 +109,7 @@ public class CorrelationService extends NewAbstractService {
 
         Node result = findCorrelationRoot(network, dataset);
         if (result == null) {
-            //TODO: LN: do not use field for transaction!!!!!!!!
-            tx = graphDb.beginTx();
+            Transaction tx = graphDb.beginTx();
             try {
                 result = getCorrelationRoot(network);
                 Node dsRoot = getCorrelationRoot(dataset);
@@ -99,7 +118,9 @@ public class CorrelationService extends NewAbstractService {
                 result.createRelationshipTo(dsRoot, Correlations.CORRELATED);
                 tx.success();
             } catch (Exception e) {
-                // TODO: LN: handle exception
+                LOGGER.error("Could not create correlation.", e);
+                tx.failure();
+                throw new DatabaseException(e);
             } finally {
                 tx.finish();
             }
@@ -152,7 +173,7 @@ public class CorrelationService extends NewAbstractService {
         Node result = findCorrelation(sector, measurement);
 
         if (result == null) {
-            tx = graphDb.beginTx();
+            Transaction tx = graphDb.beginTx();
             try {
                 result = getSectorProxy(network, sector);
                 if (result == null) {
@@ -238,7 +259,7 @@ public class CorrelationService extends NewAbstractService {
         Node proxy = getSectorProxy(network, sector);
         if (proxy != null) {
             // add relationship property evaluator
-            return getCorrelatedTraversalDescription()
+            return CORRELATED_TRAVERSAL_DESCRIPTION
                     .evaluator(
                             new HasRelationshipPropertyValueEvaluator(DATASET_ID, dataset.getId(), Correlations.CORRELATED,
                                     Direction.INCOMING))
@@ -246,22 +267,15 @@ public class CorrelationService extends NewAbstractService {
                             new HasRelationshipPropertyValueEvaluator(NETWORK_ID, network.getId(), Correlations.CORRELATED,
                                     Direction.INCOMING)).traverse(proxy).nodes();
         } else {
-            return Traversal.description().evaluator(Evaluators.fromDepth(2)).evaluator(Evaluators.toDepth(1)).traverse(sector)
-                    .nodes();
+            return NewDatasetService.EMPTY_TRAVERSAL_DESCRIPTION.traverse(sector).nodes();
         }
-    }
-
-    protected TraversalDescription getCorrelatedTraversalDescription() {
-        LOGGER.info("getCorrelatedTraversalDescription()");
-        return Traversal.description().breadthFirst().relationships(Correlations.CORRELATED, Direction.OUTGOING)
-                .evaluator(Evaluators.excludeStartPosition());
     }
 
     // getAllCorrelatedNodes(Network, Dataset)
     public Iterable<Node> getAllCorrelatedNodes(Node network, Node dataset) throws DatabaseException {
         LOGGER.info("getAllCorrelatedNodes(" + network.getId() + ", " + dataset.getId() + ")");
         Node corRoot = getCorrelationRoot(network);
-        return getAllCorrelatedTraversalDescription()
+        return ALL_CORRELATED_TRAVERSAL_DESCRIPTION
                 .evaluator(
                         new HasRelationshipPropertyValueEvaluator(DATASET_ID, dataset.getId(), Correlations.CORRELATED,
                                 Direction.INCOMING))
@@ -270,32 +284,14 @@ public class CorrelationService extends NewAbstractService {
                                 Direction.INCOMING)).traverse(corRoot).nodes();
     }
 
-    protected TraversalDescription getAllCorrelatedTraversalDescription() {
-        LOGGER.info("getAllCorrelatedTraversalDescription()");
-        return Traversal.description().depthFirst().relationships(DatasetRelationTypes.CHILD, Direction.OUTGOING)
-                .relationships(DatasetRelationTypes.NEXT, Direction.OUTGOING)
-                .relationships(Correlations.CORRELATED, Direction.OUTGOING).evaluator(Evaluators.excludeStartPosition());
-    }
-
-    //TODO: LN: do not use List - it will slow down work of this method 
-    //better to return Iterator of Nodes
     public Iterable<Node> getAllCorrelatedSectors(Node network, Node dataset) throws DatabaseException {
         LOGGER.info("getAllCorrelatedSectors(" + network.getId() + ", " + dataset.getId() + ")");
 
         Node corRoot = getCorrelationRoot(network);
-        List<Node> result = new ArrayList<Node>();
-        for (Node pr : getAllSectorProxiesTraversalDescription()
+        return CORRELATED_SECTORS_TRAVERSAL_DESCRIPTION
                 .evaluator(
                         new HasRelationshipPropertyValueEvaluator(DATASET_ID, dataset.getId(), Correlations.CORRELATED,
-                                Direction.OUTGOING)).traverse(corRoot).nodes()) {
-            result.add(pr.getSingleRelationship(Correlations.CORRELATED, Direction.INCOMING).getStartNode());
-        }
-        return result;
-    }
-
-    protected TraversalDescription getAllSectorProxiesTraversalDescription() {
-        return Traversal.description().depthFirst().relationships(DatasetRelationTypes.CHILD, Direction.OUTGOING)
-                .relationships(DatasetRelationTypes.NEXT, Direction.OUTGOING).evaluator(Evaluators.excludeStartPosition());
+                                Direction.INCOMING)).traverse(corRoot).nodes();
     }
 
     /**
@@ -314,7 +310,7 @@ public class CorrelationService extends NewAbstractService {
         if (rel != null) {
             result = rel.getEndNode();
         } else {
-            tx = graphDb.beginTx();
+            Transaction tx = graphDb.beginTx();
             try {
                 result = createNode(CorrelationNodeTypes.CORRELATION);
                 network.createRelationshipTo(result, Correlations.CORRELATION);
@@ -338,16 +334,10 @@ public class CorrelationService extends NewAbstractService {
         }
         LOGGER.info("getCorrelatedDatasets(" + network.getId() + ")");
 
-        return getCorrelatedDatasetsTraversalDescription()
+        return CORRELATED_DATASETS_TRAVERSAL_DESCRIPTION
                 .evaluator(
                         new HasRelationshipPropertyValueEvaluator(NETWORK_ID, network.getId(), Correlations.CORRELATION,
                                 Direction.OUTGOING)).traverse(getCorrelationRoot(network)).nodes();
-    }
-
-    protected TraversalDescription getCorrelatedDatasetsTraversalDescription() {
-        LOGGER.info("getCorrelatedDatasetsTraversalDescription()");
-        return Traversal.description().breadthFirst().relationships(Correlations.CORRELATED, Direction.OUTGOING)
-                .relationships(Correlations.CORRELATION, Direction.INCOMING);
     }
 
     public Iterable<Node> getCorrelatedNetworks(Node dataset) throws DatabaseException {
@@ -357,7 +347,7 @@ public class CorrelationService extends NewAbstractService {
         }
         LOGGER.info("getCorrelatedNetworks(" + dataset.getId() + ")");
 
-        return getCorrelatedDatasetsTraversalDescription().relationships(Correlations.CORRELATED, Direction.INCOMING)
+        return CORRELATED_DATASETS_TRAVERSAL_DESCRIPTION.relationships(Correlations.CORRELATED, Direction.INCOMING)
                 .evaluator(new FilterNodesByType(DatasetTypes.NETWORK)).evaluator(Evaluators.atDepth(2))
                 .traverse(getCorrelationRoot(dataset)).nodes();
     }

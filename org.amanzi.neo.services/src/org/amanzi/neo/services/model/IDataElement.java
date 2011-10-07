@@ -30,14 +30,4 @@ public interface IDataElement {
      * @return property value or <code>null</code>.
      */
     public Object get(String header);
-    
-
-    /**
-     * Put any object to DataElement
-     *
-     * @param key Key by object
-     * @param value Value by object
-     * @return
-     */
-    public Object put(String key, Object value);
 }

@@ -11,11 +11,7 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
-import org.amanzi.neo.services.CorrelationService;
-import org.amanzi.neo.services.NewAbstractService;
-import org.amanzi.neo.services.NewDatasetService;
-import org.amanzi.neo.services.NewNetworkService;
-import org.amanzi.neo.services.ProjectService;
+import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.services.CorrelationService.CorrelationNodeTypes;
 import org.amanzi.neo.services.CorrelationService.Correlations;
 import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;
@@ -23,9 +19,9 @@ import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.NewDatasetService.DriveTypes;
 import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.DriveModel;
-import org.amanzi.testing.AbstractAWETest;
 import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -36,8 +32,9 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.index.Index;
 
-public class CorrelationServiceTest extends AbstractAWETest {
+public class CorrelationServiceTest extends AbstractNeoServiceTest {
 
 	private static Logger LOGGER = Logger
 			.getLogger(CorrelationServiceTest.class);
@@ -57,6 +54,9 @@ public class CorrelationServiceTest extends AbstractAWETest {
 	public static void setUpBeforeClass() throws Exception {
 		clearDb();
 		initializeDb();
+
+		new LogStarter().earlyStartup();
+        clearServices();
 
 		correlationServ = new CorrelationService(graphDatabaseService);
 		dsServ = new NewDatasetService(graphDatabaseService);
@@ -101,7 +101,12 @@ public class CorrelationServiceTest extends AbstractAWETest {
 	@Test
 	public void testCreateCorrelation() throws AWEException {
 		// create correlation
-		Node correlation = correlationServ.createCorrelation(network, dataset);
+		Node correlation = null;
+		try {
+			correlation = correlationServ.createCorrelation(network, dataset);
+		} catch (DatabaseException e) {
+			LOGGER.error("Could not create orrelation", e);
+		}
 		// node returned is not null
 		Assert.assertNotNull(correlation);
 		// relationship from network exists
@@ -126,21 +131,43 @@ public class CorrelationServiceTest extends AbstractAWETest {
 	@Test(expected = IllegalArgumentException.class)
 	public void testCreateCorrelationNetworkNull() throws AWEException {
 		// exception
-		correlationServ.createCorrelation(null, dataset);
+		try {
+			correlationServ.createCorrelation(null, dataset);
+		} catch (DatabaseException e) {
+			LOGGER.error("Could not create correlation", e);
+			fail();
+		}
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testCreateCorrelationDatasetNull() throws AWEException {
 		// exception
-		correlationServ.createCorrelation(network, null);
+		try {
+			correlationServ.createCorrelation(network, null);
+		} catch (DatabaseException e) {
+			LOGGER.error("Could not create correlation", e);
+			fail();
+		}
 	}
 
 	@Test
 	public void testGetCorrelationRoot() throws AWEException {
 		// root exists
-		Node corRoot = correlationServ.createCorrelation(network, dataset);
+		Node corRoot = null;
+		try {
+			corRoot = correlationServ.createCorrelation(network, dataset);
+		} catch (DatabaseException e) {
+			LOGGER.error("Could not create correlation", e);
+			fail();
+		}
 
-		Node testNode = correlationServ.getCorrelationRoot(network);
+		Node testNode = null;
+		try {
+			testNode = correlationServ.getCorrelationRoot(network);
+		} catch (DatabaseException e) {
+			LOGGER.error("Could not get correlation root", e);
+			fail();
+		}
 		// node returned not null
 		Assert.assertNotNull(testNode);
 		// node correct
@@ -150,27 +177,39 @@ public class CorrelationServiceTest extends AbstractAWETest {
 	@Test
 	public void testGetCorrelationRootNoRoot() throws AWEException {
 		// no root
-		Node testnNode = correlationServ.getCorrelationRoot(network);
+		Node testNode = null;
+		try {
+			testNode = correlationServ.getCorrelationRoot(network);
+		} catch (DatabaseException e) {
+			LOGGER.error("Could not get correlation root.", e);
+			fail();
+		}
 		// node returned is not null
-		Assert.assertNotNull(testnNode);
+		Assert.assertNotNull(testNode);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testGetCorrelationRootNetworkNull() throws AWEException {
 		// exception
-		correlationServ.getCorrelationRoot(null);
+		try {
+			correlationServ.getCorrelationRoot(null);
+		} catch (DatabaseException e) {
+			LOGGER.error("Could not get correation root.", e);
+			fail();
+		}
 	}
 
 	@Test
 	public void testAddCorrelationNodes() {
 		List<Node> ms = new ArrayList<Node>();
 		try {
+			Index<Node> index = graphDatabaseService.index().forNodes("index");
 			// correlate
 			correlationServ.createCorrelation(network, dataset);
 			// create sector
 			Node sector = nwServ.createSector(nwServ.createNetworkElement(
-					network, "index", "site", NetworkElementNodeType.SITE),
-					"index", "name", "ci", "lac");
+					network, index, "site", NetworkElementNodeType.SITE),
+					index, "name", "ci", "lac");
 
 			// create measurement
 			DriveModel dm = new DriveModel(null, dataset, null, null);
@@ -229,12 +268,13 @@ public class CorrelationServiceTest extends AbstractAWETest {
 	public void testGetCorrelatedSector() {
 		Node m = null, sector = null;
 		try {
+			Index<Node> index = graphDatabaseService.index().forNodes("index");
 			// correlate
 			correlationServ.createCorrelation(network, dataset);
 			// create sector
 			sector = nwServ.createSector(nwServ.createNetworkElement(network,
-					"index", "site", NetworkElementNodeType.SITE), "index",
-					"name", "ci", "lac");
+					index, "site", NetworkElementNodeType.SITE), index, "name",
+					"ci", "lac");
 
 			// create measurement
 			DriveModel dm = new DriveModel(null, dataset, null, null);
@@ -315,9 +355,10 @@ public class CorrelationServiceTest extends AbstractAWETest {
 			// correlate
 			correlationServ.createCorrelation(network, dataset);
 			// create sector
+			Index<Node> index = graphDatabaseService.index().forNodes("index");
 			sector = nwServ.createSector(nwServ.createNetworkElement(network,
-					"index", "site", NetworkElementNodeType.SITE), "index",
-					"name", "ci", "lac");
+					index, "site", NetworkElementNodeType.SITE), index, "name",
+					"ci", "lac");
 
 			// create measurement
 			DriveModel dm = new DriveModel(null, dataset, null, null);
@@ -361,9 +402,10 @@ public class CorrelationServiceTest extends AbstractAWETest {
 		Node sector = null;
 		try {
 			// create sector
+			Index<Node> index = graphDatabaseService.index().forNodes("index");
 			sector = nwServ.createSector(nwServ.createNetworkElement(network,
-					"index", "site", NetworkElementNodeType.SITE), "index",
-					"name", "ci", "lac");
+					index, "site", NetworkElementNodeType.SITE), index, "name",
+					"ci", "lac");
 
 		} catch (AWEException e) {
 			LOGGER.error("Could not add correlation.", e);
@@ -388,9 +430,10 @@ public class CorrelationServiceTest extends AbstractAWETest {
 			// correlate
 			correlationServ.createCorrelation(network, dataset);
 			// create sector
+			Index<Node> index = graphDatabaseService.index().forNodes("index");
 			sector = nwServ.createSector(nwServ.createNetworkElement(network,
-					"index", "site", NetworkElementNodeType.SITE), "index",
-					"name", "ci", "lac");
+					index, "site", NetworkElementNodeType.SITE), index, "name",
+					"ci", "lac");
 
 			// create measurement
 			DriveModel dm = new DriveModel(null, dataset, null, null);
@@ -420,30 +463,40 @@ public class CorrelationServiceTest extends AbstractAWETest {
 			fail();
 		}
 
-		for (Node node : correlationServ
-				.getAllCorrelatedNodes(network, dataset)) {
-			// node returned is not null
-			Assert.assertNotNull(node);
-			// relationships exist
-			Assert.assertEquals(
-					sector,
-					node.getSingleRelationship(Correlations.CORRELATED,
-							Direction.INCOMING)
-							.getStartNode()
-							.getSingleRelationship(Correlations.CORRELATED,
-									Direction.INCOMING).getStartNode());
-			// node correct
-			Assert.assertTrue(ms.contains(node));
-			Assert.assertFalse(mms.contains(node));
-			// chain exists
-			Assert.assertTrue(chainExists(file, node));
+		try {
+			for (Node node : correlationServ.getAllCorrelatedNodes(network,
+					dataset)) {
+				// node returned is not null
+				Assert.assertNotNull(node);
+				// relationships exist
+				Assert.assertEquals(
+						sector,
+						node.getSingleRelationship(Correlations.CORRELATED,
+								Direction.INCOMING)
+								.getStartNode()
+								.getSingleRelationship(Correlations.CORRELATED,
+										Direction.INCOMING).getStartNode());
+				// node correct
+				Assert.assertTrue(ms.contains(node));
+				Assert.assertFalse(mms.contains(node));
+				// chain exists
+				Assert.assertTrue(chainExists(file, node));
+			}
+		} catch (DatabaseException e) {
+			LOGGER.error("Could not get correlated nodes.", e);
+			fail();
 		}
 	}
 
 	@Test
-	public void testGetAllCorrelatedNodesNoNodes() throws AWEException {
-		Iterable<Node> it = correlationServ.getAllCorrelatedNodes(network,
-				dataset);
+	public void testGetAllCorrelatedNodesNoNodes() {
+		Iterable<Node> it = null;
+		try {
+			it = correlationServ.getAllCorrelatedNodes(network, dataset);
+		} catch (DatabaseException e) {
+			LOGGER.error("Could not get correlated nodes.", e);
+			fail();
+		}
 		// object returned is not null
 		Assert.assertNotNull(it);
 		// iterator is empty
@@ -471,7 +524,13 @@ public class CorrelationServiceTest extends AbstractAWETest {
 		}
 		tx = graphDatabaseService.beginTx();
 		// iterator returned
-		Iterable<Node> it = correlationServ.getCorrelatedDatasets(network);
+		Iterable<Node> it = null;
+		try {
+			it = correlationServ.getCorrelatedDatasets(network);
+		} catch (DatabaseException e) {
+			LOGGER.error("Could not get correlated datasets.", e);
+			fail();
+		}
 		Assert.assertNotNull(it);
 		Assert.assertTrue(it.iterator().hasNext());
 		// all nodes returned
@@ -513,7 +572,13 @@ public class CorrelationServiceTest extends AbstractAWETest {
 
 		tx = graphDatabaseService.beginTx();
 		// iterator returned
-		Iterable<Node> it = correlationServ.getCorrelatedNetworks(ds1);
+		Iterable<Node> it = null;
+		try {
+			it = correlationServ.getCorrelatedNetworks(ds1);
+		} catch (DatabaseException e) {
+			LOGGER.error("Could not get correlated networks.", e);
+			fail();
+		}
 		Assert.assertNotNull(it);
 		Assert.assertTrue(it.iterator().hasNext());
 		// all nodes returned
@@ -524,7 +589,12 @@ public class CorrelationServiceTest extends AbstractAWETest {
 		}
 
 		// iterator returned
-		it = correlationServ.getCorrelatedNetworks(ds2);
+		try {
+			it = correlationServ.getCorrelatedNetworks(ds2);
+		} catch (DatabaseException e) {
+			LOGGER.error("Could not get correlated networks.", e);
+			fail();
+		}
 		Assert.assertNotNull(it);
 		Assert.assertTrue(it.iterator().hasNext());
 		// all nodes returned

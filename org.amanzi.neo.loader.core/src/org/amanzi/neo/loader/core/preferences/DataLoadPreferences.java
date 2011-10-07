@@ -92,6 +92,14 @@ public class DataLoadPreferences {
     public static final String REMOTE_SERVER_URL = "REMOTE_SERVER_URL";
     public static final String USER_IMEI = "USER_IMEI";
     public static final String USER_IMSI = "USER_IMSI";
+    // bsm file identifier key
+    public static final String RADIO_HEAD = "RADIO";
+    public static final String XCEIVER_HEAD = "X-CEIVER";
+    public static final String ADMINISTRATION_HEAD = "ADMINISTRATION";
+   
+    public final static String MO = "MO";
+    public final static String CHGR = "CHGR";
+    public final static String FHOP = "FHOP";
 
     private DataLoadPreferences() {
 

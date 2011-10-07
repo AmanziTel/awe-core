@@ -2,12 +2,13 @@ package org.amanzi.neo.services.model.impl;
 
 import junit.framework.Assert;
 
+import org.amanzi.log4j.LogStarter;
+import org.amanzi.neo.services.AbstractNeoServiceTest;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService.DriveTypes;
 import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.INetworkModel;
-import org.amanzi.testing.AbstractAWETest;
 import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -16,7 +17,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.neo4j.graphdb.Transaction;
 
-public class ProjectModelTest extends AbstractAWETest {
+public class ProjectModelTest extends AbstractNeoServiceTest {
 
 	private static Logger LOGGER = Logger.getLogger(ProjectModelTest.class);
 
@@ -29,6 +30,9 @@ public class ProjectModelTest extends AbstractAWETest {
 	public static void setUpBeforeClass() throws Exception {
 		clearDb();
 		initializeDb();
+		
+		new LogStarter().earlyStartup();
+        clearServices();
 	}
 
 	@AfterClass

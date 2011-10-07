@@ -16,6 +16,7 @@ package org.amanzi.neo.loader.ui.wizards;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +34,6 @@ import org.amanzi.neo.loader.core.newsaver.IData;
 import org.amanzi.neo.loader.core.parser.IConfigurationData;
 import org.amanzi.neo.loader.core.parser.IDataElement;
 import org.amanzi.neo.loader.core.preferences.PreferenceStore;
-import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
 import org.amanzi.neo.services.ui.utils.ActionUtil;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -73,10 +73,10 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
      * new loaders
      */
     protected LinkedHashMap<ILoaderNew<IData, IConfiguration>, LoaderInfo<T>> newloaders = new LinkedHashMap<ILoaderNew<IData, IConfiguration>, LoaderInfo<T>>();
+    protected static Map<ILoaderNew< ? extends IData, IConfiguration>, IConfiguration> requiredLoaders = new LinkedHashMap<ILoaderNew< ? extends IData, IConfiguration>, IConfiguration>();
     /** The max main page id. */
     protected int maxMainPageId;
     /** The batch mode. */
-    private DatabaseAccessType accessType = DatabaseAccessType.EMBEDDED;
     private ILoader< ? extends IDataElement, T> selectedLoader;
     private ILoaderNew< ? extends IData, IConfiguration> newSelectedLoader;
 
@@ -115,7 +115,7 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
      * @param accessType the new access type
      */
     public void setAccessType(DatabaseAccessType accessType) {
-        this.accessType = accessType;
+//        this.accessType = accessType;
     }
 
     @Override
@@ -178,6 +178,16 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
         }
         if (loader != null) {
             LoaderInfo<T> info = loaders.get(loader);
+            if (info.pageId.length == 0) {
+                return true;
+            }
+            for (int i = 0; i < info.pageId.length; i++) {
+                if (!pages.get(info.pageId[i]).isPageComplete()) {
+                    return false;
+                }
+            }
+        } else if (loadernew != null) {
+            LoaderInfo<T> info = newloaders.get(loadernew);
             if (info.pageId.length == 0) {
                 return true;
             }
@@ -263,30 +273,44 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
             return pages.get(index + 1);
         }
         ILoader< ? extends IDataElement, T> loader = getSelectedLoader();
-        if (loader == null) {
+        ILoaderNew< ? extends IData, IConfiguration> loaderNew = getNewSelectedLoader();
+        if (loader == null && loaderNew == null) {
             return null;
         }
         LoaderInfo<T> info = loaders.get(loader);
-        if (info.pageId.length == 0) {
+        LoaderInfo<T> infonew = newloaders.get(loaderNew);
+        if (info == null && infonew == null) {
             return null;
         }
-        if (index == maxMainPageId) {
+        if (index == maxMainPageId && info != null) {
             return info.pageId.length == 0 ? null : pages.get(info.pageId[0]);
+        } else if (index == maxMainPageId && infonew != null) {
+            return infonew.pageId.length == 0 ? null : pages.get(infonew.pageId[0]);
         }
-        Integer nextWizardId = info.getNextWizardId(index);
-        return nextWizardId == null ? null : pages.get(nextWizardId);
+        Integer nextWizardId = null;
+        Integer nextWizardIdNew = null;
+        if (info != null) {
+            nextWizardId = info.getNextWizardId(index);
+        } else {
+            nextWizardIdNew = infonew.getNextWizardId(index);
+        }
+        if (nextWizardIdNew == null) {
+            return nextWizardId == null ? null : pages.get(nextWizardId);
+        } else {
+            return nextWizardIdNew == null ? null : pages.get(nextWizardIdNew);
+        }
     }
 
     @Override
     public boolean performFinish() {
         final DatabaseAccessType accessType = getAccessType();
         final T data = getConfigurationData();
-        final IConfiguration newdata = getNewConfigurationData();
+        // final IConfiguration newdata = getNewConfigurationData();
         final ILoader< ? extends IDataElement, T> loader = getSelectedLoader();
-        final ILoaderNew< ? extends IData, IConfiguration> newloader = getNewSelectedLoader();
-        if ((data == null || loader == null) && (newdata == null || newloader == null)) {
-            return false;
-        }
+        final Map<ILoaderNew< ? extends IData, IConfiguration>, ? extends IConfiguration> newloader = getRequiredLoaders();
+        // if ((data == null || loader == null) && (newdata == null || newloader == null)) {
+        // return false;
+        // }
         if (accessType != DatabaseAccessType.EMBEDDED) {
             IRunnableWithProgress importer = new IRunnableWithProgress() {
 
@@ -303,7 +327,7 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
                         if (loader != null) {
                             load(accessType, data, loader, monitor);
                         } else {
-                            newload(accessType, newdata, newloader, monitor);
+                            newload(newloader, monitor);
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -335,7 +359,7 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
                     if (loader != null) {
                         load(accessType, data, loader, monitor);
                     } else {
-                        newload(accessType, newdata, newloader, monitor);
+                        newload(newloader, monitor);
                     }
                     return Status.OK_STATUS;
                 }
@@ -371,11 +395,16 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
      * @param loader the loader
      * @param monitor the monitor
      */
-    protected void newload(final DatabaseAccessType accessType, final IConfiguration data,
-            final ILoaderNew< ? extends IData, IConfiguration> loader, IProgressMonitor monitor) {
-        assignMonitorToProgressLoader(monitor, loader);
-        loader.init(data);
-        loader.run();
+    protected void newload(final Map<ILoaderNew< ? extends IData, IConfiguration>, ? extends IConfiguration> loaders,
+            IProgressMonitor monitor) {
+
+        for (ILoaderNew< ? extends IData, IConfiguration> loader : loaders.keySet()) {
+            if (loaders.get(loader) != null) {
+                assignMonitorToProgressLoader(monitor, loader);
+                loader.init(loaders.get(loader));
+                loader.run();
+            }
+        }
     }
 
     /**
@@ -439,6 +468,13 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
         loaders.put(loader, info);
     }
 
+    @Override
+    public void addNewLoader(ILoaderNew<IData, IConfiguration> loader, IConfigurationElement[] pageConfigElements) {
+        LoaderInfo<T> info = new LoaderInfo<T>();
+        info.setAdditionalPages(pageConfigElements);
+        newloaders.put(loader, info);
+    }
+
     /**
      * Gets the configuration data.
      * 
@@ -487,6 +523,7 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
      */
     public void setSelectedLoaderNew(ILoaderNew< ? extends IData, IConfiguration> selectedLoader) {
         this.newSelectedLoader = selectedLoader;
+
     }
 
     /**
@@ -540,6 +577,9 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
          * @return the previous wizard id
          */
         public Integer getNextWizardId(int index) {
+            if (pageId.length == 0) {
+                return null;
+            }
             for (int i = 0; i < pageId.length; i++) {
                 if (pageId[i] == index) {
                     return i == pageId.length - 1 ? null : pageId[i + 1];
@@ -571,5 +611,12 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
     @Override
     public void setInitializationData(IConfigurationElement config, String propertyName, Object data) throws CoreException {
         // do nothing
+    }
+
+    /**
+     * @return Returns the requiredLoaders.
+     */
+    public Map<ILoaderNew< ? extends IData, IConfiguration>, ? extends IConfiguration> getRequiredLoaders() {
+        return requiredLoaders;
     }
 }

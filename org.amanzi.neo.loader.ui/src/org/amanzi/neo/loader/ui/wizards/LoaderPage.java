@@ -336,6 +336,12 @@ public abstract class LoaderPage<T extends IConfigurationData> extends WizardPag
      */
     protected abstract boolean validateConfigData(T configurationData);
 
+    /**
+     * validate new configuration data
+     *
+     * @param configurationData
+     * @return true if validation result <code>SUCCESS</code>
+     */
     protected abstract boolean validateConfigData(IConfiguration configurationData);
 
 }

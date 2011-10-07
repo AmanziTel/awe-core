@@ -24,6 +24,8 @@ import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
+import org.amanzi.neo.services.model.impl.DriveModel.DriveRelationshipTypes;
+import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelationships;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
@@ -81,6 +83,19 @@ public class NewDatasetService extends NewAbstractService {
             .relationships(DatasetRelationTypes.CHILD, Direction.OUTGOING)
             .relationships(DatasetRelationTypes.NEXT, Direction.OUTGOING);
 
+    /** <code>TraversalDescription</code> to iterate over n2n related nodes */
+    protected final TraversalDescription N2N_TRAVERSAL_DESCRIPTION = Traversal.description().breadthFirst()
+            .relationships(N2NRelationships.N2N_REL, Direction.INCOMING).evaluator(Evaluators.excludeStartPosition());
+
+    /** <code>TraversalDescription</code> for an empty iterator */
+    public static final TraversalDescription EMPTY_TRAVERSAL_DESCRIPTION = Traversal.description()
+            .evaluator(Evaluators.fromDepth(2)).evaluator(Evaluators.toDepth(1));
+
+    /** <code>TraversalDescription</code> to iterate over virtual dataset nodes. */
+    public static final TraversalDescription VIRTUAL_DATASET_TRAVERSAL_DESCRIPTION = Traversal.description().breadthFirst()
+            .relationships(DriveRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING).evaluator(Evaluators.atDepth(1))
+            .evaluator(Evaluators.excludeStartPosition());
+
     /**
      * <p>
      * enum of dataset relationships types
@@ -104,6 +119,10 @@ public class NewDatasetService extends NewAbstractService {
     public enum DatasetTypes implements INodeType {
         NETWORK, DRIVE, COUNTERS;
 
+        static {
+            NodeTypeManager.registerNodeType(DatasetTypes.class);
+        }
+
         @Override
         public String getId() {
             return name().toLowerCase();
@@ -120,11 +139,6 @@ public class NewDatasetService extends NewAbstractService {
      */
     public enum DriveTypes implements IDriveType {
         NEMO_V1, NEMO_V2, TEMS, ROMES, AMS_CALLS, AMS, AMS_PESQ;
-
-        @Override
-        public String getId() {
-            return name();
-        }
     }
 
     /**
@@ -165,7 +179,7 @@ public class NewDatasetService extends NewAbstractService {
         @Override
         public Evaluation evaluate(Path arg0) {
             if (super.evaluate(arg0).includes()) {
-                if (driveType == null || driveType.getId().equals(arg0.endNode().getProperty(DRIVE_TYPE, StringUtils.EMPTY))) {
+                if (driveType == null || driveType.name().equals(arg0.endNode().getProperty(DRIVE_TYPE, StringUtils.EMPTY))) {
                     return Evaluation.INCLUDE_AND_CONTINUE;
                 }
                 return Evaluation.EXCLUDE_AND_CONTINUE;
@@ -418,7 +432,7 @@ public class NewDatasetService extends NewAbstractService {
             datasetNode = createNode(type);
             projectNode.createRelationshipTo(datasetNode, DatasetRelationTypes.DATASET);
             datasetNode.setProperty(NAME, name);
-            datasetNode.setProperty(DRIVE_TYPE, driveType.getId());
+            datasetNode.setProperty(DRIVE_TYPE, driveType.name());
             tx.success();
 
         } catch (Exception e) {
@@ -540,7 +554,7 @@ public class NewDatasetService extends NewAbstractService {
     public List<Node> findAllDatasets() {
         LOGGER.debug("start findAllDatasets()");
         List<Node> datasetList = new ArrayList<Node>();
-        TraversalDescription allProjects = NeoServiceFactory.getInstance().getNewProjectService().getProjectTraversalDescription();
+        TraversalDescription allProjects = NeoServiceFactory.getInstance().getNewProjectService().projectTraversalDescription;
 
         for (Node projectNode : allProjects.traverse(graphDb.getReferenceNode()).nodes()) {
             Traverser tr = DATASET_TRAVERSAL_DESCRIPTION.traverse(projectNode);
@@ -568,7 +582,7 @@ public class NewDatasetService extends NewAbstractService {
         }
 
         List<Node> datasetList = new ArrayList<Node>();
-        TraversalDescription allProjects = NeoServiceFactory.getInstance().getNewProjectService().getProjectTraversalDescription();
+        TraversalDescription allProjects = NeoServiceFactory.getInstance().getNewProjectService().projectTraversalDescription;
 
         for (Node projectNode : allProjects.traverse(graphDb.getReferenceNode()).nodes()) {
             Traverser tr = DATASET_TRAVERSAL_DESCRIPTION.evaluator(new FilterNodesByType(type)).traverse(projectNode);
@@ -908,33 +922,8 @@ public class NewDatasetService extends NewAbstractService {
             throw new IllegalArgumentException("parent is null");
         }
 
-        return CHILDREN_CHAIN_TRAVERSAL_DESCRIPTION.traverse(parent).nodes();
+        return CHILDREN_TRAVERSAL_DESCRIPTION.traverse(parent).nodes();
 
-    }
-
-    /**
-     * Safely get a node that is linked to <code>startNode</code> with the defined relationship.
-     * Assumed, that <code>startNode</code> has only one relationship of that kind
-     * 
-     * @param startNode
-     * @param relationship
-     * @param direction
-     * @return the node on the other end of relationship from <code>startNode</code>
-     * @throws DatabaseException if there are more than one relationships
-     */
-    private Node getNextNode(Node startNode, RelationshipType relationship, Direction direction) throws DatabaseException {
-        Node result = null;
-
-        Iterator<Relationship> rels = startNode.getRelationships(relationship, direction).iterator();
-        if (rels.hasNext()) {
-            result = rels.next().getOtherNode(startNode);
-        }
-        if (rels.hasNext()) {
-            // result is ambiguous
-            throw new DatabaseException("Errors exist in database structure");
-        }
-
-        return result;
     }
 
     /**
@@ -948,14 +937,14 @@ public class NewDatasetService extends NewAbstractService {
     }
 
     /**
-     * <Fully taken from old code> Gets the gis node by dataset.
+     * Gets the gis node by dataset, if it exists.
      * 
      * @param dataset the dataset
-     * @return the gis node by dataset
+     * @return the gis node by dataset or null
      */
     public Node createGisNodeByDataset(Node dataset) {
-        // TODO: temporary solution
-        return dataset.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING).getStartNode();
+        Relationship rel = dataset.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING);
+        return rel == null ? null : rel.getStartNode();
     }
 
     /**
@@ -975,6 +964,52 @@ public class NewDatasetService extends NewAbstractService {
         }
 
         return DATASET_ELEMENT_TRAVERSAL_DESCRIPTION.evaluator(new FilterNodesByType(elementType)).traverse(parent).nodes();
+    }
+
+    /**
+     * @param n2nProxy
+     * @param nodeType
+     * @param relType
+     * @return
+     */
+    public Iterable<Node> findN2NRelatedNodes(Node n2nProxy, INodeType nodeType, RelationshipType relType) {
+        // validate parameters
+        if (n2nProxy == null) {
+            throw new IllegalArgumentException("N2N proxy is null.");
+        }
+        if (nodeType == null) {
+            throw new IllegalArgumentException("Node type is null.");
+        }
+        if (relType == null) {
+            throw new IllegalArgumentException("Relationship type is null.");
+        }
+
+        return N2N_TRAVERSAL_DESCRIPTION.evaluator(new FilterNodesByType(nodeType)).relationships(relType, Direction.OUTGOING)
+                .traverse(n2nProxy).nodes();
+    }
+
+    /**
+     * The method traverses database with a description, that will definitely return an empty
+     * iterator.
+     * 
+     * @param source a node to pass to {@link TraversalDescription#traverse(Node)} method, must not
+     *        be <code>null</code>
+     * @return a not-null iterable over nodes with no elements in it.
+     */
+    public Iterable<Node> emptyTraverser(Node source) {
+        // validate parameters
+        if (source == null) {
+            throw new IllegalArgumentException("Source node is null.");
+        }
+        return EMPTY_TRAVERSAL_DESCRIPTION.traverse(source).nodes();
+    }
+
+    public Iterable<Node> getVirtalDatasets(Node rootDataset) {
+        // validate
+        if (rootDataset == null) {
+            throw new IllegalArgumentException("Root dataset node is null.");
+        }
+        return VIRTUAL_DATASET_TRAVERSAL_DESCRIPTION.traverse(rootDataset).nodes();
     }
 
 }

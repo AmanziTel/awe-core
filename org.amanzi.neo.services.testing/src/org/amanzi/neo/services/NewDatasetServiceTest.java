@@ -6,6 +6,7 @@ import java.util.List;
 
 import junit.framework.Assert;
 
+import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.NewDatasetService.DriveTypes;
@@ -15,7 +16,6 @@ import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
-import org.amanzi.testing.AbstractAWETest;
 import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -33,7 +33,7 @@ import org.neo4j.graphdb.Transaction;
  * @author kruglik_a
  * 
  */
-public class NewDatasetServiceTest extends AbstractAWETest {
+public class NewDatasetServiceTest extends AbstractNeoServiceTest {
 
 	private static Logger LOGGER = Logger
 			.getLogger(NewDatasetServiceTest.class);
@@ -44,6 +44,8 @@ public class NewDatasetServiceTest extends AbstractAWETest {
     public static final void beforeClass() {
         clearDb();
         initializeDb();
+        new LogStarter().earlyStartup();
+        clearServices();
     }
 
     @AfterClass
@@ -56,7 +58,7 @@ public class NewDatasetServiceTest extends AbstractAWETest {
     private NewDatasetService service;
 
     @Before
-    public final void before() {
+    public void before() {
         service = new NewDatasetService(graphDatabaseService);
         initProjectNode();
     }

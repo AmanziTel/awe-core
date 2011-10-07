@@ -23,6 +23,10 @@
             class="org.amanzi.neo.loader.core.newsaver.SectorSelectionSaver"
             id="org.amanzi.neo.loader.core.newsaver.SectorSelectionSaver">
       </newsaver>
+       <newsaver
+            class="org.amanzi.neo.loader.core.newsaver.CNASaver"
+            id="org.amanzi.neo.loader.core.newsaver.CNASaver">
+      </newsaver>
    </extension>
    <extension
          point="org.amanzi.loader.core.parser">

@@ -42,7 +42,10 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
     protected static Logger LOGGER;
     private final List<ILoaderProgressListener> listeners = new ArrayList<ILoaderProgressListener>();
     protected final int PERCENTAGE_FIRE = 2;
-    private int percentage = 0;
+    private double percentage = 0.0;
+    protected File tempFile;
+    private boolean isNewFile = false;
+    private int commonPercentage = 0;
 
     @Override
     public void addProgressListener(ILoaderProgressListener listener) {
@@ -89,7 +92,11 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
      */
     protected void parseFile(File file) {
         currentFile = file;
+        if (tempFile == null || tempFile != currentFile) {
+            isNewFile = true;
+        }
         T3 element = parseElement();
+
         long startTime = System.currentTimeMillis();
         while (element != null) {
             for (ISaver< ? , T3, T2> saver : savers) {
@@ -114,7 +121,12 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
      * @param event the event
      */
     protected boolean fireSubProgressEvent(File element, final IProgressEvent event) {
-        return fireProgressEvent(new ProgressEventImpl(event.getProcessName(), ((percentage + event.getPercentage()) / 100)
+        if (isNewFile) {
+            percentage += commonPercentage;
+            isNewFile = false;
+        }
+        commonPercentage += event.getPercentage() / 100;
+        return fireProgressEvent(new ProgressEventImpl(event.getProcessName(), (percentage + (event.getPercentage()) / 100)
                 / config.getFilesToLoad().size()));
     }
 

@@ -14,6 +14,7 @@
 package org.amanzi.neo.loader.core;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -49,7 +50,7 @@ public interface IConfiguration extends IConfigurationData {
     /**
      * set source file
      */
-    void setSourceFile(File file);
+    void setSourceFile(Collection<File> file);
 
     /**
      * set dataset names map

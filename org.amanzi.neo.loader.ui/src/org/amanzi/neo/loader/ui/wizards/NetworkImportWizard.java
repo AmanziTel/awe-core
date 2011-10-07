@@ -47,6 +47,7 @@ public class NetworkImportWizard extends AbstractLoaderWizard<CommonConfigData> 
 
     @Override
     protected List<IWizardPage> getMainPagesList() {
+        requiredLoaders.clear();
         List<IWizardPage> result = new ArrayList<IWizardPage>();
         result.add(new LoadNetworkMainPage());
         return result;
@@ -71,8 +72,7 @@ public class NetworkImportWizard extends AbstractLoaderWizard<CommonConfigData> 
         if (getConfigurationData().getCharsetName() == null) {
             String characterSet = null;
             try {
-                characterSet = PreferenceStore.getPreferenceStore()
-                        .getValue(DataLoadPreferences.DEFAULT_CHARSET);
+                characterSet = PreferenceStore.getPreferenceStore().getValue(DataLoadPreferences.DEFAULT_CHARSET);
             } catch (Exception e) {
                 characterSet = null;
             }
@@ -92,10 +92,14 @@ public class NetworkImportWizard extends AbstractLoaderWizard<CommonConfigData> 
         LoaderInfo<CommonConfigData> info = new LoaderInfo<CommonConfigData>();
         info.setAdditionalPages(pageConfigElements);
         newloaders.put(loader, info);
+        requiredLoaders.put(loader, null);
     }
 
     @Override
     public IConfiguration getNewConfigurationData() {
+        if (getNewSelectedLoader() != null && configData != null) {
+            requiredLoaders.put(getNewSelectedLoader(), configData);
+        }
         if (configData == null) {
             configData = new ConfigurationDataImpl();
         }
