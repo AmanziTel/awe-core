@@ -15,7 +15,9 @@ package org.amanzi.neo.loader.core;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -35,7 +37,7 @@ public class ConfigurationDataImpl implements IConfiguration {
     /**
      * selected directory
      */
-    private File sourceFile;
+    private Collection<File> sourceFile;
     /**
      * dataset names collection
      */
@@ -45,7 +47,8 @@ public class ConfigurationDataImpl implements IConfiguration {
      * init source with file or directory path
      */
     public ConfigurationDataImpl(String source) {
-        sourceFile = new File(source);
+        sourceFile = new LinkedList<File>();
+        sourceFile.add(new File(source));
     }
 
     @Override
@@ -58,7 +61,11 @@ public class ConfigurationDataImpl implements IConfiguration {
 
     @Override
     public List<File> getFilesToLoad() {
-        return getRootsFiles(sourceFile);
+        List<File> fileList = new LinkedList<File>();
+        for (File file : sourceFile) {
+            fileList.addAll(getRootsFiles(file));
+        }
+        return fileList;
     }
 
     // private Long extractTimeStampFromFileName(String fileName) {
@@ -71,17 +78,17 @@ public class ConfigurationDataImpl implements IConfiguration {
     /**
      * get all files from directory and subdirectories
      * 
-     * @param root
+     * @param sourceFile2
      * @return
      */
-    private List<File> getRootsFiles(File root) {
+    private List<File> getRootsFiles(File sourceFile2) {
         List<File> filelist = new ArrayList<File>();
         File[] rootList;
-        if (root.isDirectory()) {
-            rootList = root.listFiles();
+        if (sourceFile2.isDirectory()) {
+            rootList = sourceFile2.listFiles();
         } else {
             rootList = new File[1];
-            rootList[0] = root;
+            rootList[0] = sourceFile2;
         }
         if (rootList != null) {
             for (int i = 0; i < rootList.length; i++) {
@@ -104,7 +111,7 @@ public class ConfigurationDataImpl implements IConfiguration {
     }
 
     @Override
-    public void setSourceFile(File sourceFile) {
+    public void setSourceFile(Collection<File> sourceFile) {
         this.sourceFile = sourceFile;
     }
 

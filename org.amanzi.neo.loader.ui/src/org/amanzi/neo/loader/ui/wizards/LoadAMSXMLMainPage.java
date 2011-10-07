@@ -17,6 +17,8 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 import org.amanzi.neo.db.manager.NeoServiceProvider;
@@ -202,8 +204,10 @@ public class LoadAMSXMLMainPage extends LoaderPage<CommonConfigData> {
         this.fileName = fileName;
         networkName = new java.io.File(getFileName()).getName();
         datasetName = networkName;
+        List<File> files= new LinkedList<File>();
+        files.add(new File(fileName));
         // CommonConfigData configurationData = getConfigurationData();
-        getNewConfigurationData().setSourceFile(new File(fileName));
+        getNewConfigurationData().setSourceFile(files);
         getNewConfigurationData().getDatasetNames().put("Network", networkName + " Probes");
         getNewConfigurationData().getDatasetNames().put("Dataset", networkName);
         // config.getFilesToLoad()

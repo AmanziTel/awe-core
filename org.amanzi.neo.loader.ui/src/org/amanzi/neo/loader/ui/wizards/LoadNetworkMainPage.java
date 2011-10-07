@@ -17,6 +17,8 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 import org.amanzi.neo.db.manager.NeoServiceProvider;
@@ -201,7 +203,9 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
         networkName = new java.io.File(getFileName()).getName();
         networkName = networkName.substring(0, networkName.lastIndexOf('.'));
         // CommonConfigData configurationData = getConfigurationData();
-        getNewConfigurationData().setSourceFile(new File(fileName));
+        List<File> files = new LinkedList<File>();
+        files.add(new File(fileName));
+        getNewConfigurationData().setSourceFile(files);
 
         // config.getFilesToLoad()
         // configurationData.setRoot(new File(fileName));
@@ -346,7 +350,9 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
         }
         getNewConfigurationData().getDatasetNames().put("Network", networkName);
         getNewConfigurationData().getDatasetNames().put("Project", LoaderUiUtils.getAweProjectName());
-        getNewConfigurationData().setSourceFile(file);
+        List<File> files = new LinkedList<File>();
+        files.add(file);
+        getNewConfigurationData().setSourceFile(files);
         // configurationData.setProjectName(LoaderUiUtils.getAweProjectName());
         // configurationData.setCrs(getSelectedCRS());
         // configurationData.setDbRootName(networkName);

@@ -44,6 +44,7 @@ public class AMSXMLLoaderWizard extends AbstractLoaderWizard<IConfigurationData>
 
     @Override
     protected List<IWizardPage> getMainPagesList() {
+        requiredLoaders.clear();
         List<IWizardPage> result = new ArrayList<IWizardPage>();
         result.add(new LoadAMSXMLMainPage());
         return result;
@@ -61,6 +62,7 @@ public class AMSXMLLoaderWizard extends AbstractLoaderWizard<IConfigurationData>
     public IConfiguration getNewConfigurationData() {
         if (configData == null) {
             configData = new ConfigurationDataImpl();
+            requiredLoaders.put(getNewSelectedLoader(), configData);
         }
         return configData;
     }
@@ -96,6 +98,7 @@ public class AMSXMLLoaderWizard extends AbstractLoaderWizard<IConfigurationData>
         LoaderInfo<IConfigurationData> info = new LoaderInfo<IConfigurationData>();
         info.setAdditionalPages(pageConfigElements);
         newloaders.put(loader, info);
+        requiredLoaders.put(loader, null);
     }
 
 }
