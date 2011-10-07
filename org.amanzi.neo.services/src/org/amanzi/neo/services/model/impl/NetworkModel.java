@@ -362,5 +362,10 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     public Iterable<ISelectionModel> getAllSelectionModels() throws AWEException {
         return null;
     }
+    
+    @Override
+    public String toString() {
+        return name;
+    }
 
 }

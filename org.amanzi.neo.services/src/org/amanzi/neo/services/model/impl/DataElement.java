@@ -87,7 +87,9 @@ public class DataElement extends HashMap<String, Object> implements IDataElement
     
     @Override
     public String toString() {
-        return node == null ? this.get(NewAbstractService.NAME).toString() : StringUtils.EMPTY + node.getId();
+        return !this.get(NewAbstractService.NAME).toString().isEmpty() ? 
+                this.get(NewAbstractService.NAME).toString() : 
+            (node == null ? "" :StringUtils.EMPTY + node.getId());
     }
 
 }
