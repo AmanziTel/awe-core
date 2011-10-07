@@ -73,11 +73,10 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
      * new loaders
      */
     protected LinkedHashMap<ILoaderNew<IData, IConfiguration>, LoaderInfo<T>> newloaders = new LinkedHashMap<ILoaderNew<IData, IConfiguration>, LoaderInfo<T>>();
-    protected static Map<ILoaderNew< ? extends IData, IConfiguration>, IConfiguration> requiredLoaders = new HashMap<ILoaderNew< ? extends IData, IConfiguration>, IConfiguration>();
+    protected static Map<ILoaderNew< ? extends IData, IConfiguration>, IConfiguration> requiredLoaders = new LinkedHashMap<ILoaderNew< ? extends IData, IConfiguration>, IConfiguration>();
     /** The max main page id. */
     protected int maxMainPageId;
     /** The batch mode. */
-    private DatabaseAccessType accessType = DatabaseAccessType.EMBEDDED;
     private ILoader< ? extends IDataElement, T> selectedLoader;
     private ILoaderNew< ? extends IData, IConfiguration> newSelectedLoader;
 
@@ -116,7 +115,7 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
      * @param accessType the new access type
      */
     public void setAccessType(DatabaseAccessType accessType) {
-        this.accessType = accessType;
+//        this.accessType = accessType;
     }
 
     @Override
@@ -306,12 +305,12 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
     public boolean performFinish() {
         final DatabaseAccessType accessType = getAccessType();
         final T data = getConfigurationData();
-//        final IConfiguration newdata = getNewConfigurationData();
+        // final IConfiguration newdata = getNewConfigurationData();
         final ILoader< ? extends IDataElement, T> loader = getSelectedLoader();
         final Map<ILoaderNew< ? extends IData, IConfiguration>, ? extends IConfiguration> newloader = getRequiredLoaders();
-//        if ((data == null || loader == null) && (newdata == null || newloader == null)) {
-//            return false;
-//        }
+        // if ((data == null || loader == null) && (newdata == null || newloader == null)) {
+        // return false;
+        // }
         if (accessType != DatabaseAccessType.EMBEDDED) {
             IRunnableWithProgress importer = new IRunnableWithProgress() {
 
@@ -328,7 +327,7 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
                         if (loader != null) {
                             load(accessType, data, loader, monitor);
                         } else {
-                            newload( newloader, monitor);
+                            newload(newloader, monitor);
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -396,7 +395,8 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
      * @param loader the loader
      * @param monitor the monitor
      */
-    protected void newload(final Map<ILoaderNew< ? extends IData, IConfiguration>, ? extends IConfiguration> loaders, IProgressMonitor monitor) {
+    protected void newload(final Map<ILoaderNew< ? extends IData, IConfiguration>, ? extends IConfiguration> loaders,
+            IProgressMonitor monitor) {
 
         for (ILoaderNew< ? extends IData, IConfiguration> loader : loaders.keySet()) {
             if (loaders.get(loader) != null) {
