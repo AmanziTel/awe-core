@@ -46,7 +46,6 @@ public class DataLoadPreferenceManager {
     public DataLoadPreferenceManager() {
         intializeDefault();
     }
-
     private String[] getPossibleHeaders(String key) {
         String text = PreferenceStore.getPreferenceStore().getValue(key);
         String[] array = text.split(",");

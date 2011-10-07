@@ -327,7 +327,7 @@
    <extension
          point="org.eclipse.core.runtime.preferences">
       <initializer
-            class="org.amanzi.neo.loader.ui.preferences.DataLoadPreferenceInitializer">
+            class="org.amanzi.neo.loader.core.preferences.DataLoadPreferenceInitializer">
       </initializer>
    </extension>
 
