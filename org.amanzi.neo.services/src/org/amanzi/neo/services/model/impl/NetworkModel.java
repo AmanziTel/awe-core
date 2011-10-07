@@ -272,7 +272,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     public Iterable<IDataElement> getChildren(IDataElement parent) {
         // validate
         if (parent == null) {
-            return new DataElementIterable(dsServ.getChildrenTraverser(getRootNode()));
+            parent = new DataElement(getRootNode());
         }
         LOGGER.info("getChildren(" + parent.toString() + ")");
 
