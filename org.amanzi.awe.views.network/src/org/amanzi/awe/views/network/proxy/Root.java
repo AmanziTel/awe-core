@@ -107,8 +107,7 @@ public class Root extends NeoNode {
         for (INetworkModel nModel : networkModels) {
         	nodes.add(nModel.getRootNode());
         }
-//        for (Node node : Utils.getTDRootNodes(null).traverse(reference).nodes()) {
-        for (Node node : nodes) {
+        for (Node node : Utils.getTDRootNodes(null).traverse(reference).nodes()) {
             if (node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "").equals(NodeTypes.NETWORK.getId())) {
                 networkNodes.add(new NeoNode(node, nextNum++));
                 for (Relationship deltaRelationship : node.getRelationships(NetworkRelationshipTypes.DELTA_REPORT, Direction.INCOMING)) {

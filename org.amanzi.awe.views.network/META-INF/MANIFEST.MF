@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Networktree Plug-in
 Bundle-SymbolicName: org.amanzi.awe.views.network;singleton:=true
 Bundle-Version: 1.0.0.qualifier
-Bundle-Activator: org.amanzi.awe.views.network.NetworkTreePlugin
+Bundle-Activator: org.amanzi.awe.views.network.NewNetworkTreePlugin
 Require-Bundle: org.eclipse.core.runtime,
  org.amanzi.neo.core,
  org.eclipse.ui.views,
@@ -26,3 +26,4 @@ Export-Package: org.amanzi.awe.awe.views.view.provider,
  org.amanzi.awe.views.network.view
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-Vendor: amanzi.org
+Import-Package: org.amanzi.awe.views.network.view

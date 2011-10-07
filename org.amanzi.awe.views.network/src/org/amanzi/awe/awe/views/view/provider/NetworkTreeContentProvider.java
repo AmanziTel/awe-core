@@ -12,19 +12,11 @@
  */
 package org.amanzi.awe.awe.views.view.provider;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.awe.views.network.proxy.Root;
 import org.amanzi.neo.services.INeoConstants;
-import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.services.model.IDataElement;
-import org.amanzi.neo.services.model.INetworkModel;
-import org.amanzi.neo.services.model.impl.DataElement;
-import org.amanzi.neo.services.model.impl.NetworkModel;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -78,25 +70,6 @@ public class NetworkTreeContentProvider implements IStructuredContentProvider, I
     }
 
     public Object[] getChildren(Object parentElement) {
-//        List<INetworkModel> networkModels = NetworkModel.findAllNetworkModels();
-//        List<Node> nodes = new ArrayList<Node>();
-//        for (INetworkModel nModel : networkModels) {
-//        	nodes.add(nModel.getRootNode());
-//        }
-//        Iterable<IDataElement> childrens =
-//        		networkModels.get(0).getChildren(new DataElement(((NeoNode)parentElement).getNode()));
-//        ArrayList<NeoNode> neoNodes = new ArrayList<NeoNode>();
-//        int number = 0;
-//        for (IDataElement element : childrens) {
-//        	neoNodes.add(new NeoNode(((DataElement)element).getNode(), number++));
-//        }
-//        
-//        NeoNode[] neoNodesArray = new NeoNode[neoNodes.size()];
-//        number = 0;
-//        for (NeoNode neoNode : neoNodes) {
-//        	neoNodesArray[number++] = neoNode;
-//        }
-//        return neoNodesArray;
         if (parentElement instanceof NeoNode) {
             return ((NeoNode)parentElement).getChildren();
         }
@@ -119,7 +92,6 @@ public class NetworkTreeContentProvider implements IStructuredContentProvider, I
                     return null;
                 } else {
                     Root root = getRoot();
-//                    NetworkModel.findAllNetworkNodes();
                     NeoNode[] rootChildren = root.getChildren();
                     for (NeoNode neoNode : rootChildren) {
                         if (neoNode.getNode().equals(node)) {

@@ -21,6 +21,7 @@ import java.util.Map;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.core.preferences.PreferenceStore;
 import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 
 /**
  * @author Kondratenko_Vladislav
@@ -45,7 +46,6 @@ public class DataLoadPreferenceManager {
     public DataLoadPreferenceManager() {
         intializeDefault();
     }
-
     private String[] getPossibleHeaders(String key) {
         String text = PreferenceStore.getPreferenceStore().getValue(key);
         String[] array = text.split(",");
@@ -59,7 +59,18 @@ public class DataLoadPreferenceManager {
         return result.toArray(new String[0]);
     }
 
-    public Map<String, String[]> getNetworkPosibleValues() {
+    public Map<String, String[]> getSynonyms(DatasetTypes type) {
+        switch (type) {
+        case NETWORK:
+            return getNetworkPosibleValues();
+        case DRIVE:
+        case COUNTERS:
+        default:
+            return null;
+        }
+    }
+
+    private Map<String, String[]> getNetworkPosibleValues() {
         Map<String, String[]> posibleValues = new HashMap<String, String[]>();
         posibleValues.put(CITY, getPossibleHeaders(DataLoadPreferences.NH_CITY));
         posibleValues.put(MSC, getPossibleHeaders(DataLoadPreferences.NH_MSC));
@@ -72,17 +83,12 @@ public class DataLoadPreferenceManager {
         posibleValues.put(INeoConstants.PROPERTY_SECTOR_LAC, getPossibleHeaders(DataLoadPreferences.NH_SECTOR_LAC));
         posibleValues.put(INeoConstants.PROPERTY_LAT_NAME, getPossibleHeaders(DataLoadPreferences.NH_LATITUDE));
         posibleValues.put(INeoConstants.PROPERTY_LON_NAME, getPossibleHeaders(DataLoadPreferences.NH_LONGITUDE));
-        return posibleValues;
-    }
-
-    public Map<String, String[]> getBSMPosibleValues() {
-        Map<String, String[]> posibleValues = new HashMap<String, String[]>();
         posibleValues.put(DataLoadPreferences.MO, getPossibleHeaders(DataLoadPreferences.MO));
         posibleValues.put(SITE, getPossibleHeaders(DataLoadPreferences.NH_SITE));
         posibleValues.put(SECTOR, getPossibleHeaders(DataLoadPreferences.NH_SECTOR));
         posibleValues.put(DataLoadPreferences.CHGR, getPossibleHeaders(DataLoadPreferences.CHGR));
         posibleValues.put(DataLoadPreferences.FHOP, getPossibleHeaders(DataLoadPreferences.FHOP));
         return posibleValues;
-
     }
+
 }

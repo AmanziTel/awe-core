@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.amanzi.awe.views.network.NetworkTreePlugin;
+import org.amanzi.awe.views.network.NewNetworkTreePlugin;
 import org.amanzi.neo.loader.core.LoaderUtils;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
@@ -120,7 +121,7 @@ public class ExportNetworkWizard extends Wizard implements IExportWizard {
                     runExport(fileWithPrefix, pagesWithProperties, rootNode, checkBoxStates, separator, quoteChar, charSet);
                     return Status.OK_STATUS;
                 } catch (IOException e) {
-                    return new Status(Status.ERROR, NetworkTreePlugin.PLUGIN_ID, e.getLocalizedMessage(), e);
+                    return new Status(Status.ERROR, NewNetworkTreePlugin.PLUGIN_ID, e.getLocalizedMessage(), e);
                 } finally {
                     // ActionUtil.getInstance().runTask(new Runnable() {
                     //

@@ -9,15 +9,15 @@
             name="Network Tree"
             icon="icons/network.png"
             category="org.amanzi.awe.script"
-            class="org.amanzi.awe.views.network.view.NetworkTreeView"
-            id="org.amanzi.awe.views.network.views.NetworkTreeView">
+            class="org.amanzi.awe.views.network.view.NewNetworkTreeView"
+            id="org.amanzi.awe.views.network.views.NewNetworkTreeView">
       </view>
       
    </extension>
    <extension
             point="org.eclipse.ui.viewActions">
          <viewContribution
-               targetID="org.amanzi.awe.views.network.views.NetworkTreeView"
+               targetID="org.amanzi.awe.views.network.views.NewNetworkTreeView"
                id="org.amanzi.awe.views.network.view.NewTypeAction0">
             <action
                   toolbarPath="additions"

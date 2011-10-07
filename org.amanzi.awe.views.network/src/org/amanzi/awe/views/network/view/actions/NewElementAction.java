@@ -21,6 +21,7 @@ import java.util.Map;
 import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
 import org.amanzi.awe.catalog.neo.upd_layers.events.UpdatePropertiesAndMapEvent;
 import org.amanzi.awe.views.network.NetworkTreePlugin;
+import org.amanzi.awe.views.network.NewNetworkTreePlugin;
 import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.awe.views.network.proxy.Root;
 import org.amanzi.neo.services.DatasetService;
@@ -321,7 +322,7 @@ public class NewElementAction extends Action {
             index.add(newElement);
             index.finishUp();
         } catch (IOException e) {
-            NetworkTreePlugin.getDefault().getLog().log(new Status(IStatus.ERROR, NetworkTreePlugin.PLUGIN_ID, e.getMessage(), e));
+            NewNetworkTreePlugin.getDefault().getLog().log(new Status(IStatus.ERROR, NetworkTreePlugin.PLUGIN_ID, e.getMessage(), e));
         }
     }
 

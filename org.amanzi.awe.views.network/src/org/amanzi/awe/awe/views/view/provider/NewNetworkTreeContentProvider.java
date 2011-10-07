@@ -1,20 +1,22 @@
 package org.amanzi.awe.awe.views.view.provider;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
-import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
-import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.NetworkModel;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
-import org.neo4j.graphdb.Node;
 
+/**
+ * New content provider for NetworkTree
+ * 
+ * @author Kasnitskij_V
+ * @since 1.0.0
+ */
 public class NewNetworkTreeContentProvider implements IStructuredContentProvider, ITreeContentProvider {
 
 	private static String NETWORK_MODEL_NAME = "NetworkModel";
@@ -23,6 +25,8 @@ public class NewNetworkTreeContentProvider implements IStructuredContentProvider
      */
     
     protected NeoServiceProviderUi neoServiceProvider;
+    
+    private INetworkModel rootNetworkModel;
     
     /**
      * Constructor of ContentProvider
@@ -51,6 +55,7 @@ public class NewNetworkTreeContentProvider implements IStructuredContentProvider
 		if (parentElement instanceof INetworkModel) {
 			Iterable<IDataElement> children = 
 					((INetworkModel)parentElement).getChildren(null);
+			rootNetworkModel = (INetworkModel)parentElement;
 			for (IDataElement dataElement : children) {
 				// add network model to data element
 				dataElement.put(NETWORK_MODEL_NAME, parentElement);
@@ -60,12 +65,12 @@ public class NewNetworkTreeContentProvider implements IStructuredContentProvider
         }
         else if (parentElement instanceof IDataElement) {
         	IDataElement child = (IDataElement)parentElement;
-        	Iterable<IDataElement> children = 
-        			((INetworkModel)(child).get(NETWORK_MODEL_NAME)).getChildren(null);
+        	INetworkModel localRootNetworkModel = (INetworkModel)(child).get(NETWORK_MODEL_NAME);
+        	Iterable<IDataElement> children = localRootNetworkModel.getChildren(child);
         	
         	for (IDataElement dataElement : children) {
         		// add network model to data element
-				dataElement.put(NETWORK_MODEL_NAME, parentElement);
+				dataElement.put(NETWORK_MODEL_NAME, rootNetworkModel);
         		dataElements.add(dataElement);
         	}
         	return dataElements.toArray();
