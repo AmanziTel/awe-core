@@ -47,6 +47,9 @@ public class NeoServiceFactory {
     
     private ExportSynonymsService exportSynonymsService = null;
     private Object exportSynonymsMonitor = new Object();
+    
+    private DistributionService distributionService = null;
+    private Object distributionServiceMonitor = new Object();
 
     public static NeoServiceFactory getInstance() {
         return instance;
@@ -199,6 +202,18 @@ public class NeoServiceFactory {
         return exportSynonymsService;
     }
     
+    public DistributionService getDistributionService() {
+        if (distributionService == null) {
+            synchronized (distributionServiceMonitor) {
+                if (distributionService == null) {
+                    distributionService = new DistributionService();
+                }
+            }
+        }
+        
+        return distributionService;
+    }
+    
     public void clear() {
         datasetService = null;
         correlationService = null;
@@ -212,6 +227,7 @@ public class NeoServiceFactory {
         newProjectService = null;
         newCorrelationService = null;
         exportSynonymsService = null;
+        distributionService = null;
     }
 
 }

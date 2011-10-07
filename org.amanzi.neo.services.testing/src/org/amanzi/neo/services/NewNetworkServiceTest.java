@@ -1221,7 +1221,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
             fail();
         }
 
-        Assert.assertEquals(NetworkElementNodeType.SELECTION_LIST_ROOT.getId(), networkService.getNodeType(selectionNode));
+        Assert.assertEquals(NetworkElementNodeType.SELECTION_LIST_ROOT.getId(), NewNetworkService.getNodeType(selectionNode));
     }
 
     @Test

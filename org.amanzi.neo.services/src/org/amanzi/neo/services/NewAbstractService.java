@@ -78,7 +78,7 @@ public abstract class NewAbstractService {
     }
 
     public static String getNodeType(Node node) {
-        return (String)node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, StringUtils.EMPTY);
+        return (String)node.getProperty(TYPE, StringUtils.EMPTY);
     }
 
     /**

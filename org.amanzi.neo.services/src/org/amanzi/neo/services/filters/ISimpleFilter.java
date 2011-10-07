@@ -15,29 +15,26 @@ package org.amanzi.neo.services.filters;
 
 import java.io.Serializable;
 
-import org.amanzi.neo.services.enums.INodeType;
-import org.amanzi.neo.services.filters.exceptions.FilterTypeException;
 import org.amanzi.neo.services.filters.exceptions.NotComparebleException;
 import org.amanzi.neo.services.filters.exceptions.NullValueException;
-import org.neo4j.graphdb.Node;
+import org.amanzi.neo.services.model.IDataElement;
 
 /**
- * <p>
- *Filter interface
- * </p>
- * @author tsinkel_a
+ * Interface that describes simple Filter
+ * 
+ * @author lagutko_n
  * @since 1.0.0
  */
-public interface IFilter extends ISimpleFilter {
-
-    void setExpression(INodeType nodeType, String propertyName, Serializable value);
+public interface ISimpleFilter extends Serializable {
     
-    void setExpression(INodeType nodeType, String propertyName) throws FilterTypeException;
-
-    void addFilter(IFilter additionalFilter);
-
-    INodeType getNodeType();
-    
-    boolean check(Node node) throws NullValueException, NotComparebleException;
+    /**
+     * Checks Data Element 
+     *
+     * @param dataElement
+     * @return
+     * @throws NullValueException
+     * @throws NotComparebleException
+     */
+    boolean check(IDataElement dataElement) throws NullValueException, NotComparebleException; 
 
 }
