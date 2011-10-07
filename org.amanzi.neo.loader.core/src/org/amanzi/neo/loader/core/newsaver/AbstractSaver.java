@@ -15,6 +15,7 @@ package org.amanzi.neo.loader.core.newsaver;
 
 import org.amanzi.neo.db.manager.NeoServiceProvider;
 import org.amanzi.neo.loader.core.IConfiguration;
+import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceManager;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IModel;
@@ -38,7 +39,7 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
     public static final String PROJECT_PROPERTY = "project";
     public static final String CONFIG_VALUE_CALLS = "Calls";
     public static final String CONFIG_VALUE_PESQ = "PESQ";
-
+    protected static DataLoadPreferenceManager preferenceManager = new DataLoadPreferenceManager();
     /**
      * action threshold for commit
      */
@@ -100,7 +101,7 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
      * transaction more than commitTxCount and open new;
      */
     protected void openOrReopenTx() {
-        if (actionCount > commitTxCount) {
+        if ((actionCount > commitTxCount) || (tx != null && actionCount == 0)) {
             tx.finish();
             tx = null;
             actionCount = 0;

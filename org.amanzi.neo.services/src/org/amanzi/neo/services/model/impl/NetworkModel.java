@@ -247,7 +247,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     public Iterable<IDataElement> getChildren(IDataElement parent) {
         // validate
         if (parent == null) {
-            throw new IllegalArgumentException("Parent is null.");
+            parent = new DataElement(getRootNode());
         }
         LOGGER.info("getChildren(" + parent.toString() + ")");
 
@@ -421,4 +421,8 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         return node == null ? null : new DataElement(node);
     }
 
+    @Override
+    public String toString() {
+        return name;
+    }
 }
