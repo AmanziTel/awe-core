@@ -287,6 +287,12 @@
       		category="org.amanzi.neo.loader.ui.preferences.DataLoadPreferencePage">
       </page>
        <page
+            class="org.amanzi.neo.loader.ui.preferences.CommonSynonymsPreferencePage"
+            id="org.amanzi.neo.loader.ui.preferences.CommonSynonymsPreferencePage"
+            name="Common synonyms data"
+            category="org.amanzi.neo.loader.ui.preferences.SynonymsPreferencePage">
+      </page>
+      <page
             class="org.amanzi.neo.loader.ui.preferences.NetworkLoaderPreferencePage"
             id="org.amanzi.neo.loader.ui.preferences.NetworkLoaderPreferencePage"
             name="Network data"

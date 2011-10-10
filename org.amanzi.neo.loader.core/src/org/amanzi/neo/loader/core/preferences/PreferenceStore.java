@@ -94,7 +94,6 @@ public class PreferenceStore {
     }
 
     /**
-     *
      * @param name
      * @param defaultObject
      */
@@ -103,11 +102,20 @@ public class PreferenceStore {
     }
 
     /**
-     *
      * @param name
      * @param value
      */
     public void setDefault(String name, boolean value) {
         propertyMap.put(name, value);
+    }
+
+    /**
+     * check if required key exists in preference store;
+     * 
+     * @param key
+     * @return
+     */
+    public boolean contains(String key) {
+        return propertyMap.containsKey(key);
     }
 }

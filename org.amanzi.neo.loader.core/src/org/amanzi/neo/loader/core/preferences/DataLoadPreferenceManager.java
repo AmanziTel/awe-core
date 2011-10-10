@@ -35,6 +35,8 @@ public class DataLoadPreferenceManager {
     public final static String SITE = "site";
     public final static String AZIMUTH = "azimuth";
     public final static String BEAMWITH = "beamwidth";
+    private static Map<String, String[]> currentSynonyms;
+    private static Map<String, String[]> networkMap;
 
     public static void intializeDefault() {
         if (preferenceInitializer == null) {
@@ -46,6 +48,7 @@ public class DataLoadPreferenceManager {
     public DataLoadPreferenceManager() {
         intializeDefault();
     }
+
     private String[] getPossibleHeaders(String key) {
         String text = PreferenceStore.getPreferenceStore().getValue(key);
         String[] array = text.split(",");
@@ -59,36 +62,60 @@ public class DataLoadPreferenceManager {
         return result.toArray(new String[0]);
     }
 
-    public Map<String, String[]> getSynonyms(DatasetTypes type) {
+    public void updateSynonyms(DatasetTypes type, Map<String, String[]> newSynonyms) {
         switch (type) {
         case NETWORK:
-            return getNetworkPosibleValues();
+            networkMap = getNetworkPosibleValues();
+            updateSynonyms(networkMap, newSynonyms);
+            break;
         case DRIVE:
         case COUNTERS:
-        default:
-            return null;
         }
     }
 
-    private Map<String, String[]> getNetworkPosibleValues() {
-        Map<String, String[]> posibleValues = new HashMap<String, String[]>();
-        posibleValues.put(CITY, getPossibleHeaders(DataLoadPreferences.NH_CITY));
-        posibleValues.put(MSC, getPossibleHeaders(DataLoadPreferences.NH_MSC));
-        posibleValues.put(BSC, getPossibleHeaders(DataLoadPreferences.NH_BSC));
-        posibleValues.put(SITE, getPossibleHeaders(DataLoadPreferences.NH_SITE));
-        posibleValues.put(SECTOR, getPossibleHeaders(DataLoadPreferences.NH_SECTOR));
-        posibleValues.put(AZIMUTH, getPossibleHeaders(DataLoadPreferences.NH_AZIMUTH));
-        posibleValues.put(BEAMWITH, getPossibleHeaders(DataLoadPreferences.NH_BEAMWIDTH));
-        posibleValues.put(INeoConstants.PROPERTY_SECTOR_CI, getPossibleHeaders(DataLoadPreferences.NH_SECTOR_CI));
-        posibleValues.put(INeoConstants.PROPERTY_SECTOR_LAC, getPossibleHeaders(DataLoadPreferences.NH_SECTOR_LAC));
-        posibleValues.put(INeoConstants.PROPERTY_LAT_NAME, getPossibleHeaders(DataLoadPreferences.NH_LATITUDE));
-        posibleValues.put(INeoConstants.PROPERTY_LON_NAME, getPossibleHeaders(DataLoadPreferences.NH_LONGITUDE));
-        posibleValues.put(DataLoadPreferences.MO, getPossibleHeaders(DataLoadPreferences.MO));
-        posibleValues.put(SITE, getPossibleHeaders(DataLoadPreferences.NH_SITE));
-        posibleValues.put(SECTOR, getPossibleHeaders(DataLoadPreferences.NH_SECTOR));
-        posibleValues.put(DataLoadPreferences.CHGR, getPossibleHeaders(DataLoadPreferences.CHGR));
-        posibleValues.put(DataLoadPreferences.FHOP, getPossibleHeaders(DataLoadPreferences.FHOP));
-        return posibleValues;
+    /**
+     * @param networkPosibleValues
+     * @param newSynonyms
+     */
+    private void updateSynonyms(Map<String, String[]> networkPosibleValues, Map<String, String[]> newSynonyms) {
+        for (String newKey : newSynonyms.keySet()) {
+            networkPosibleValues.put(newKey, newSynonyms.get(newKey));
+        }
     }
 
+    public Map<String, String[]> getSynonyms(DatasetTypes type) {
+        switch (type) {
+        case NETWORK:
+            currentSynonyms = getNetworkPosibleValues();
+        case DRIVE:
+        case COUNTERS:
+            break;
+        }
+        return currentSynonyms;
+    }
+
+    private Map<String, String[]> getNetworkPosibleValues() {
+        if (networkMap == null) {
+            networkMap = new HashMap<String, String[]>();
+        }
+        if (networkMap.isEmpty()) {
+            networkMap.put(CITY, getPossibleHeaders(DataLoadPreferences.NH_CITY));
+            networkMap.put(MSC, getPossibleHeaders(DataLoadPreferences.NH_MSC));
+            networkMap.put(BSC, getPossibleHeaders(DataLoadPreferences.NH_BSC));
+            networkMap.put(SITE, getPossibleHeaders(DataLoadPreferences.NH_SITE));
+            networkMap.put(SECTOR, getPossibleHeaders(DataLoadPreferences.NH_SECTOR));
+            networkMap.put(AZIMUTH, getPossibleHeaders(DataLoadPreferences.NH_AZIMUTH));
+            networkMap.put(BEAMWITH, getPossibleHeaders(DataLoadPreferences.NH_BEAMWIDTH));
+            networkMap.put(INeoConstants.PROPERTY_SECTOR_CI, getPossibleHeaders(DataLoadPreferences.NH_SECTOR_CI));
+            networkMap.put(INeoConstants.PROPERTY_SECTOR_LAC, getPossibleHeaders(DataLoadPreferences.NH_SECTOR_LAC));
+            networkMap.put(INeoConstants.PROPERTY_LAT_NAME, getPossibleHeaders(DataLoadPreferences.NH_LATITUDE));
+            networkMap.put(INeoConstants.PROPERTY_LON_NAME, getPossibleHeaders(DataLoadPreferences.NH_LONGITUDE));
+            networkMap.put(DataLoadPreferences.MO, getPossibleHeaders(DataLoadPreferences.MO));
+            networkMap.put(SITE, getPossibleHeaders(DataLoadPreferences.NH_SITE));
+            networkMap.put(SECTOR, getPossibleHeaders(DataLoadPreferences.NH_SECTOR));
+            networkMap.put(DataLoadPreferences.CHGR, getPossibleHeaders(DataLoadPreferences.CHGR));
+            networkMap.put(DataLoadPreferences.FHOP, getPossibleHeaders(DataLoadPreferences.FHOP));
+        }
+        return networkMap;
+    }
 }
