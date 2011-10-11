@@ -51,6 +51,9 @@ public class DataLoadPreferenceManager {
 
     private String[] getPossibleHeaders(String key) {
         String text = PreferenceStore.getPreferenceStore().getValue(key);
+        if (text == null) {
+            return new String[0];
+        }
         String[] array = text.split(",");
         List<String> result = new ArrayList<String>();
         for (String string : array) {
@@ -73,13 +76,25 @@ public class DataLoadPreferenceManager {
         }
     }
 
+    public void removeSynonym(DatasetTypes type, String key) {
+        switch (type) {
+        case NETWORK:
+            networkMap = getNetworkPosibleValues();
+            removeSynonym(networkMap, key);
+            break;
+        case DRIVE:
+        case COUNTERS:
+        }
+    }
+
     /**
      * @param networkPosibleValues
      * @param newSynonyms
      */
     private void updateSynonyms(Map<String, String[]> networkPosibleValues, Map<String, String[]> newSynonyms) {
         for (String newKey : newSynonyms.keySet()) {
-            networkPosibleValues.put(newKey, newSynonyms.get(newKey));
+            PreferenceStore.getPreferenceStore().setProperty(newKey, newSynonyms.get(newKey));
+            networkMap.put(newKey, newSynonyms.get(newKey));
         }
     }
 
@@ -92,6 +107,11 @@ public class DataLoadPreferenceManager {
             break;
         }
         return currentSynonyms;
+    }
+
+    private void removeSynonym(Map<String, String[]> synonymsMap, String key) {
+        synonymsMap.remove(key);
+        PreferenceStore.getPreferenceStore().remove(key);
     }
 
     private Map<String, String[]> getNetworkPosibleValues() {

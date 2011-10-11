@@ -118,4 +118,8 @@ public class PreferenceStore {
     public boolean contains(String key) {
         return propertyMap.containsKey(key);
     }
+
+    public void remove(String key) {
+        propertyMap.remove(key);
+    }
 }

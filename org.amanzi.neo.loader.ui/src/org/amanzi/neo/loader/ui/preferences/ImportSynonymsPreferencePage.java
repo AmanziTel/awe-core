@@ -56,21 +56,55 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
 /**
+ * visualization for import synonyms
+ * 
  * @author Vladislav_Kondratenko
  */
-public class CommonSynonymsPreferencePage extends PreferencePage implements IWorkbenchPreferencePage {
-
-    private final static int DATASET_PARAMETER_COLUMN = 0;
+public class ImportSynonymsPreferencePage extends PreferencePage implements IWorkbenchPreferencePage {
+    /**
+     * number of real name column
+     */
+    private final static int REAL_NAME_COLUMN = 0;
+    /**
+     * list of created or changed synonyms
+     */
     private List<Map<String, String[]>> newSynonyms = new LinkedList<Map<String, String[]>>();
+    /**
+     * already added synonyms
+     */
     private static List<SynonymsContainer> previousSynonymslist = new LinkedList<SynonymsContainer>();
-    private final static int SYNONYM_COLUMN = 2;
+    /**
+     * number of synonyms column
+     */
+    private final static int SYNONYM_COLUMN = 1;
+    /**
+     * preference page title;
+     */
     private String DEF_TITLE;
+    /**
+     * selected column number
+     */
     private int numberSelectedColumn;
+    /**
+     * selected item
+     */
     private TableItem item;
+    /**
+     * list of warped synonyms
+     */
     private List<SynonymsContainer> synonymContainer = new LinkedList<SynonymsContainer>();
-    private List<TextCellEditor> editors = new LinkedList<TextCellEditor>();
+    /**
+     * empty synonyms array;
+     */
     private final SynonymsContainer[] EMPTY_SYNONYMS_CONTAINER = new SynonymsContainer[0];
+    /**
+     * loaded synonyms map
+     */
     private Map<String, String[]> synonymsMap;
+    /**
+     * Synonyms manager instance ;
+     */
+    protected static DataLoadPreferenceManager preferenceManager;
 
     private class SynonymLabelProvider extends ColumnLabelProvider {
 
@@ -84,7 +118,7 @@ public class CommonSynonymsPreferencePage extends PreferencePage implements IWor
         public String getText(Object element) {
             if (element instanceof SynonymsContainer)
                 switch (columnNumber) {
-                case DATASET_PARAMETER_COLUMN:
+                case REAL_NAME_COLUMN:
                     return ((SynonymsContainer)element).getKey();
                 case SYNONYM_COLUMN:
                     return ((SynonymsContainer)element).getValue();
@@ -106,27 +140,65 @@ public class CommonSynonymsPreferencePage extends PreferencePage implements IWor
         @Override
         public Object[] getElements(Object inputElement) {
             if (!synonymContainer.isEmpty()) {
-                previousSynonymslist.clear();
                 for (SynonymsContainer synonym : synonymContainer) {
                     if (!previousSynonymslist.contains(synonym)) {
                         previousSynonymslist.add(synonym);
                     }
                 }
+                synonymContainer.clear();
             }
 
+            if (!previousSynonymslist.isEmpty()) {
+                if (!previousSynonymslist.contains(new SynonymsContainer("", new String[0]))) {
+                    previousSynonymslist.add(new SynonymsContainer("", new String[0]));
+                }
+            }
             return previousSynonymslist.toArray(EMPTY_SYNONYMS_CONTAINER);
         }
     }
 
+    /**
+     * class which warp single element from <code>DataLoadPreferenceManager</code> result, contain<br>
+     * <b>KEY</b>: real name; <b>Value</b>:array of synonyms;
+     * 
+     * @author Vladislav_Kondratenko
+     */
     private class SynonymsContainer {
-
         /**
-         * 
+         * initialize synonyms container with necessary parameters;
          */
         public SynonymsContainer(String key, String[] value) {
             super();
             this.key = key;
             this.value = value;
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + getOuterType().hashCode();
+            result = prime * result + ((key == null) ? 0 : key.hashCode());
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            SynonymsContainer other = (SynonymsContainer)obj;
+            if (!getOuterType().equals(other.getOuterType()))
+                return false;
+            if (key == null) {
+                if (other.key != null)
+                    return false;
+            } else if (!key.equals(other.key))
+                return false;
+            return true;
         }
 
         /**
@@ -137,6 +209,8 @@ public class CommonSynonymsPreferencePage extends PreferencePage implements IWor
         }
 
         /**
+         * set real name
+         * 
          * @param key The key to set.
          */
         public void setKey(String key) {
@@ -144,6 +218,8 @@ public class CommonSynonymsPreferencePage extends PreferencePage implements IWor
         }
 
         /**
+         * set synonyms array;
+         * 
          * @param value The value to set.
          */
         public void setValue(String[] value) {
@@ -151,6 +227,8 @@ public class CommonSynonymsPreferencePage extends PreferencePage implements IWor
         }
 
         /**
+         * return array of synonyms in string format with ',' separator
+         * 
          * @return Returns the value.
          */
         public String getValue() {
@@ -164,6 +242,10 @@ public class CommonSynonymsPreferencePage extends PreferencePage implements IWor
         private String key;
         private String[] value;
 
+        private ImportSynonymsPreferencePage getOuterType() {
+            return ImportSynonymsPreferencePage.this;
+        }
+
     }
 
     private class TextCellEditorSupport extends EditingSupport {
@@ -173,19 +255,20 @@ public class CommonSynonymsPreferencePage extends PreferencePage implements IWor
         private int columnNumber;
 
         /**
+         * initialize required parameters
+         * 
          * @param viewer
          */
         public TextCellEditorSupport(TableViewer viewer, int columnNumber) {
             super(viewer);
             editor = new TextCellEditor(viewer.getTable());
-            editors.add(editor);
             this.columnNumber = columnNumber;
         }
 
         @Override
         protected CellEditor getCellEditor(Object element) {
             switch (columnNumber) {
-            case DATASET_PARAMETER_COLUMN:
+            case REAL_NAME_COLUMN:
                 editor.setValue(((SynonymsContainer)element).getKey());
                 break;
             case SYNONYM_COLUMN: {
@@ -204,7 +287,7 @@ public class CommonSynonymsPreferencePage extends PreferencePage implements IWor
         @Override
         protected Object getValue(Object element) {
             switch (columnNumber) {
-            case DATASET_PARAMETER_COLUMN: {
+            case REAL_NAME_COLUMN: {
                 return ((SynonymsContainer)element).getKey();
             }
             case SYNONYM_COLUMN: {
@@ -219,7 +302,7 @@ public class CommonSynonymsPreferencePage extends PreferencePage implements IWor
         @Override
         protected void setValue(Object element, Object value) {
             switch (columnNumber) {
-            case DATASET_PARAMETER_COLUMN:
+            case REAL_NAME_COLUMN:
                 ((SynonymsContainer)element).setKey(value.toString());
                 editor.setValue(((SynonymsContainer)element).getKey());
                 break;
@@ -227,11 +310,40 @@ public class CommonSynonymsPreferencePage extends PreferencePage implements IWor
                 ((SynonymsContainer)element).setValue(value.toString().split(","));
                 Map<String, String[]> newSyn = new HashMap<String, String[]>();
                 newSyn.put(((SynonymsContainer)element).getKey(), ((SynonymsContainer)element).getValue().toString().split(","));
-                newSynonyms.add(newSyn);
+                boolean isExist = false;
+                int existedIndex = 0;
+                for (Map<String, String[]> member : newSynonyms) {
+                    if (member.containsKey(((SynonymsContainer)element).getKey())) {
+                        isExist = true;
+                        existedIndex = newSynonyms.indexOf(member);
+                        break;
+                    }
+                }
+                if (!isExist) {
+                    newSynonyms.add(newSyn);
+                } else {
+                    newSynonyms.set(existedIndex, newSyn);
+                }
                 editor.setValue(((SynonymsContainer)element).getValue());
                 break;
             }
             }
+            boolean isInvalid = false;
+            for (Map<String, String[]> container : newSynonyms) {
+                for (String key : container.keySet()) {
+                    if (key.equals("") || container.get(key).length < 1) {
+                        isInvalid = true;
+                    }
+                }
+            }
+            if (isInvalid) {
+                getApplyButton().setEnabled(false);
+                setErrorMessage("Real name or Synonym name should be filled");
+            } else {
+                getApplyButton().setEnabled(true);
+                setErrorMessage(null);
+            }
+            tableViewer.refresh();
         }
     }
 
@@ -243,9 +355,7 @@ public class CommonSynonymsPreferencePage extends PreferencePage implements IWor
     protected Control createContents(Composite parent) {
         DEF_TITLE = getTitle();
         setTitle(DEF_TITLE + " : not select Dataset Type");
-
         setImageDescriptor(null);
-
         Group mainFrame = new Group(parent, SWT.NONE);
 
         GridLayout mainLayout = new GridLayout(1, false);
@@ -261,7 +371,7 @@ public class CommonSynonymsPreferencePage extends PreferencePage implements IWor
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-
+                loadMappings(DatasetTypes.valueOf(cDatasetTypes.getText()));
                 updateTable(DatasetTypes.valueOf(cDatasetTypes.getText()));
                 setTitle(DEF_TITLE + " : not select Synonyms Type");
                 Table table = tableViewer.getTable();
@@ -284,7 +394,9 @@ public class CommonSynonymsPreferencePage extends PreferencePage implements IWor
     }
 
     /**
-     * @return
+     * prepare cDatasetTypes values
+     * 
+     * @return array of all dataset types
      */
     private String[] prepareDatasetType() {
         String[] datasetTypesArray = new String[DatasetTypes.values().length];
@@ -296,9 +408,13 @@ public class CommonSynonymsPreferencePage extends PreferencePage implements IWor
         return datasetTypesArray;
     }
 
+    /**
+     * update table;
+     * 
+     * @param datasetType
+     */
     private void updateTable(DatasetTypes datasetType) {
         // Collections.sort(currentParameters);
-        loadMappings(false, DatasetTypes.valueOf(cDatasetTypes.getText()));
         tableViewer.refresh();
         tableViewer.getTable().setVisible(true);
         tableViewer.getTable().setEnabled(true);
@@ -306,6 +422,11 @@ public class CommonSynonymsPreferencePage extends PreferencePage implements IWor
         tableViewer.getTable().setLinesVisible(true);
     }
 
+    /**
+     * table creation
+     * 
+     * @param mainFrame
+     */
     private void createTable(Composite mainFrame) {
         tableViewer = new TableViewer(mainFrame, SWT.FULL_SELECTION | SWT.BORDER);
         Table table = tableViewer.getTable();
@@ -314,8 +435,8 @@ public class CommonSynonymsPreferencePage extends PreferencePage implements IWor
         column.setText("Real name");
         column.setWidth(100);
         column.setResizable(true);
-        viewerColumn.setEditingSupport(new TextCellEditorSupport(tableViewer, DATASET_PARAMETER_COLUMN));
-        viewerColumn.setLabelProvider(new SynonymLabelProvider(DATASET_PARAMETER_COLUMN));
+        viewerColumn.setEditingSupport(new TextCellEditorSupport(tableViewer, REAL_NAME_COLUMN));
+        viewerColumn.setLabelProvider(new SynonymLabelProvider(REAL_NAME_COLUMN));
         viewerColumn = new TableViewerColumn(tableViewer, SWT.LEFT);
         column = viewerColumn.getColumn();
         column.setText("Synonym");
@@ -344,21 +465,16 @@ public class CommonSynonymsPreferencePage extends PreferencePage implements IWor
             public void mouseDown(MouseEvent e) {
                 Table table = (Table)e.widget;
                 item = table.getItem(new Point(e.x, e.y));
-
                 if (item == null || item.getText().equals("")) {
                     numberSelectedColumn = -1;
                     return;
                 }
-
                 for (int i = 0; i < table.getColumnCount(); i++) {
-
                     Rectangle bounds = item.getBounds(i);
                     if (bounds.contains(e.x, e.y)) {
                         numberSelectedColumn = i;
-
                     }
                 }
-
             }
 
             @Override
@@ -376,41 +492,42 @@ public class CommonSynonymsPreferencePage extends PreferencePage implements IWor
         menuMgr.setRemoveAllWhenShown(true);
         menuMgr.addMenuListener(new IMenuListener() {
             public void menuAboutToShow(IMenuManager manager) {
-                if (numberSelectedColumn == DATASET_PARAMETER_COLUMN)
+                if (numberSelectedColumn == REAL_NAME_COLUMN)
                     fillContextMenu(manager);
             }
         });
         Menu menu = menuMgr.createContextMenu(tableViewer.getControl());
         tableViewer.getControl().setMenu(menu);
-
     }
 
     /**
+     * describe action for popUp menu
+     * 
      * @param manager
      */
     protected void fillContextMenu(IMenuManager manager) {
         manager.add(new Action("Delete") {
             @Override
             public void run() {
-                tableViewer.refresh();
+                preferenceManager.removeSynonym(DatasetTypes.valueOf(cDatasetTypes.getText()), item.getText());
+                previousSynonymslist.remove(new SynonymsContainer(item.getText(), null));
+                updateTable(DatasetTypes.valueOf(cDatasetTypes.getText()));
             }
         });
     }
 
-    protected static DataLoadPreferenceManager preferenceManager;
-
-    private void loadMappings(boolean isDefault, DatasetTypes synonymsType) {
-        if (isDefault) {
-            DataLoadPreferenceManager.intializeDefault();
-        } else {
-            synonymContainer.clear();
-            if (synonymsMap != null) {
-                synonymsMap.clear();
-            }
-            synonymsMap = preferenceManager.getSynonyms(DatasetTypes.valueOf(cDatasetTypes.getText()));
-            for (String key : synonymsMap.keySet()) {
-                synonymContainer.add(new SynonymsContainer(key, synonymsMap.get(key)));
-            }
+    /**
+     * load mappings in depends from selected value in cDatasetTypes
+     * 
+     * @param isDefault
+     * @param synonymsType
+     */
+    private void loadMappings(DatasetTypes synonymsType) {
+        previousSynonymslist.clear();
+        synonymContainer.clear();
+        synonymsMap = preferenceManager.getSynonyms(DatasetTypes.valueOf(cDatasetTypes.getText()));
+        for (String key : synonymsMap.keySet()) {
+            synonymContainer.add(new SynonymsContainer(key, synonymsMap.get(key)));
         }
     }
 
@@ -421,14 +538,12 @@ public class CommonSynonymsPreferencePage extends PreferencePage implements IWor
 
     @Override
     protected void performApply() {
-
         savePreferences();
-
         super.performApply();
     }
 
     /**
-     *
+     * save <code>newSynonyms</code> list in preference store;
      */
     private void savePreferences() {
         for (Map<String, String[]> container : newSynonyms) {
@@ -439,7 +554,6 @@ public class CommonSynonymsPreferencePage extends PreferencePage implements IWor
     @Override
     public boolean performOk() {
         savePreferences();
-
         return super.performOk();
     }
 }
