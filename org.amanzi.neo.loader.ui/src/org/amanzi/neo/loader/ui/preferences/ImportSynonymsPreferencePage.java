@@ -20,6 +20,8 @@ import java.util.Map;
 
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceManager;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
+import org.amanzi.neo.services.NewDatasetService.DriveTypes;
+import org.amanzi.neo.services.enums.IDriveType;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
@@ -65,6 +67,7 @@ public class ImportSynonymsPreferencePage extends PreferencePage implements IWor
      * number of real name column
      */
     private final static int REAL_NAME_COLUMN = 0;
+
     /**
      * list of created or changed synonyms
      */
@@ -104,7 +107,7 @@ public class ImportSynonymsPreferencePage extends PreferencePage implements IWor
     /**
      * Synonyms manager instance ;
      */
-    protected static DataLoadPreferenceManager preferenceManager;
+    protected static DataLoadPreferenceManager preferenceManager = new DataLoadPreferenceManager();
 
     private class SynonymLabelProvider extends ColumnLabelProvider {
 
@@ -169,8 +172,8 @@ public class ImportSynonymsPreferencePage extends PreferencePage implements IWor
          */
         public SynonymsContainer(String key, String[] value) {
             super();
-            this.key = key;
-            this.value = value;
+            setKey(key);
+            setValue(value);
         }
 
         @Override
@@ -214,7 +217,7 @@ public class ImportSynonymsPreferencePage extends PreferencePage implements IWor
          * @param key The key to set.
          */
         public void setKey(String key) {
-            this.key = key;
+            this.key = key.split(DataLoadPreferenceManager.INFO_SEPARATOR)[0];
         }
 
         /**
@@ -309,7 +312,8 @@ public class ImportSynonymsPreferencePage extends PreferencePage implements IWor
             case SYNONYM_COLUMN: {
                 ((SynonymsContainer)element).setValue(value.toString().split(","));
                 Map<String, String[]> newSyn = new HashMap<String, String[]>();
-                newSyn.put(((SynonymsContainer)element).getKey(), ((SynonymsContainer)element).getValue().toString().split(","));
+                newSyn.put(((SynonymsContainer)element).getKey() + DataLoadPreferenceManager.INFO_SEPARATOR + cSubTypes.getText(),
+                        ((SynonymsContainer)element).getValue().toString().split(","));
                 boolean isExist = false;
                 int existedIndex = 0;
                 for (Map<String, String[]> member : newSynonyms) {
@@ -348,7 +352,7 @@ public class ImportSynonymsPreferencePage extends PreferencePage implements IWor
     }
 
     private Combo cDatasetTypes;
-
+    private Combo cSubTypes;
     private TableViewer tableViewer;
 
     @Override
@@ -371,8 +375,56 @@ public class ImportSynonymsPreferencePage extends PreferencePage implements IWor
 
             @Override
             public void widgetSelected(SelectionEvent e) {
+                cSubTypes.setItems(prepareSubTypes((DatasetTypes.valueOf(cDatasetTypes.getText()))));
                 loadMappings(DatasetTypes.valueOf(cDatasetTypes.getText()));
-                updateTable(DatasetTypes.valueOf(cDatasetTypes.getText()));
+                updateTable();
+                setTitle(DEF_TITLE + " : not select Synonyms Type");
+                Table table = tableViewer.getTable();
+                table.setVisible(true);
+                table.setHeaderVisible(true);
+                table.setLinesVisible(true);
+                table.setEnabled(true);
+
+            }
+
+            private String[] prepareSubTypes(DatasetTypes datasetTypes) {
+                String[] subTypes = null;
+                switch (datasetTypes) {
+                case NETWORK:
+                    subTypes = new String[0];
+                    break;
+                case DRIVE:
+                    subTypes = new String[DriveTypes.values().length+1];
+                    int count = 0;
+                    subTypes[count] = StringUtils.EMPTY;
+                    count++;
+                    for (DriveTypes type : DriveTypes.values()) {
+                        subTypes[count] = type.name();
+                        count++;
+                    }
+                    break;
+                case COUNTERS:
+                    subTypes = new String[0];
+                    break;
+                }
+                return subTypes;
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
+
+        cDatasetTypes.setItems(prepareDatasetType());
+        cSubTypes = new Combo(mainFrame, SWT.DROP_DOWN);
+        cSubTypes.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
+        cSubTypes.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                loadMappings(DatasetTypes.valueOf(cDatasetTypes.getText()), DriveTypes.valueOf(cSubTypes.getText()));
+                updateTable();
                 setTitle(DEF_TITLE + " : not select Synonyms Type");
                 Table table = tableViewer.getTable();
                 table.setVisible(true);
@@ -387,7 +439,8 @@ public class ImportSynonymsPreferencePage extends PreferencePage implements IWor
                 widgetSelected(e);
             }
         });
-        cDatasetTypes.setItems(prepareDatasetType());
+
+        cSubTypes.setItems(new String[0]);
         createTable(mainFrame);
 
         return mainFrame;
@@ -413,7 +466,7 @@ public class ImportSynonymsPreferencePage extends PreferencePage implements IWor
      * 
      * @param datasetType
      */
-    private void updateTable(DatasetTypes datasetType) {
+    private void updateTable() {
         // Collections.sort(currentParameters);
         tableViewer.refresh();
         tableViewer.getTable().setVisible(true);
@@ -511,7 +564,7 @@ public class ImportSynonymsPreferencePage extends PreferencePage implements IWor
             public void run() {
                 preferenceManager.removeSynonym(DatasetTypes.valueOf(cDatasetTypes.getText()), item.getText());
                 previousSynonymslist.remove(new SynonymsContainer(item.getText(), null));
-                updateTable(DatasetTypes.valueOf(cDatasetTypes.getText()));
+                updateTable();
             }
         });
     }
@@ -525,7 +578,24 @@ public class ImportSynonymsPreferencePage extends PreferencePage implements IWor
     private void loadMappings(DatasetTypes synonymsType) {
         previousSynonymslist.clear();
         synonymContainer.clear();
-        synonymsMap = preferenceManager.getSynonyms(DatasetTypes.valueOf(cDatasetTypes.getText()));
+        newSynonyms.clear();
+        synonymsMap = preferenceManager.getSynonyms(synonymsType);
+        for (String key : synonymsMap.keySet()) {
+            synonymContainer.add(new SynonymsContainer(key, synonymsMap.get(key)));
+        }
+    }
+
+    /**
+     * load mappings in depends from selected value in cDatasetTypes
+     * 
+     * @param isDefault
+     * @param synonymsType
+     */
+    private void loadMappings(DatasetTypes synonymsType, IDriveType subtype) {
+        previousSynonymslist.clear();
+        synonymContainer.clear();
+        newSynonyms.clear();
+        synonymsMap = preferenceManager.getSubSynonyms(synonymsType, subtype);
         for (String key : synonymsMap.keySet()) {
             synonymContainer.add(new SynonymsContainer(key, synonymsMap.get(key)));
         }
@@ -533,7 +603,6 @@ public class ImportSynonymsPreferencePage extends PreferencePage implements IWor
 
     @Override
     public void init(IWorkbench workbench) {
-        preferenceManager = new DataLoadPreferenceManager();
     }
 
     @Override

@@ -22,21 +22,42 @@ import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.core.preferences.PreferenceStore;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
+import org.amanzi.neo.services.NewDatasetService.DriveTypes;
+import org.amanzi.neo.services.enums.IDriveType;
 
 /**
  * @author Kondratenko_Vladislav
  */
 public class DataLoadPreferenceManager {
     private static DataLoadPreferenceInitializer preferenceInitializer;
-    public final static String CITY = "city";
-    public final static String BSC = "bsc";
-    public final static String MSC = "msc";
-    public final static String SECTOR = "sector";
-    public final static String SITE = "site";
-    public final static String AZIMUTH = "azimuth";
-    public final static String BEAMWITH = "beamwidth";
-    private static Map<String, String[]> currentSynonyms;
+    public final static String INFO_SEPARATOR = "_";
+    /*
+     * network constants
+     */
+    public final static String CITY = "city" + INFO_SEPARATOR;
+    public final static String BSC = "bsc" + INFO_SEPARATOR;
+    public final static String MSC = "msc" + INFO_SEPARATOR;
+    public final static String SECTOR = "sector" + INFO_SEPARATOR;
+    public final static String SITE = "site" + INFO_SEPARATOR;
+    public final static String AZIMUTH = "azimuth" + INFO_SEPARATOR;
+    public final static String BEAMWITH = "beamwidth" + INFO_SEPARATOR;
+    /*
+     * drive constants
+     */
+    public final static String BCCH = "bcch" + INFO_SEPARATOR + "TEMS";
+    public static final String TCH = "tch" + INFO_SEPARATOR + "ROMES";
+    public static final String SC = "sc" + INFO_SEPARATOR + "TEMS";
+    public static final String PN = "PN" + INFO_SEPARATOR;
+    public static final String ECIO = "ecio" + INFO_SEPARATOR;
+    public static final String RSSI = "rssi" + INFO_SEPARATOR;
+    /*
+     * synonyms map
+     */
+    private static Map<String, String[]> subTypeSynonyms;
     private static Map<String, String[]> networkMap;
+    private static Map<String, String[]> driveMap;
+
+    // private static Map<String, String[]> countMap;
 
     public static void intializeDefault() {
         if (preferenceInitializer == null) {
@@ -65,6 +86,12 @@ public class DataLoadPreferenceManager {
         return result.toArray(new String[0]);
     }
 
+    /**
+     * update existing synonyms or create new
+     * 
+     * @param type
+     * @param newSynonyms
+     */
     public void updateSynonyms(DatasetTypes type, Map<String, String[]> newSynonyms) {
         switch (type) {
         case NETWORK:
@@ -72,6 +99,8 @@ public class DataLoadPreferenceManager {
             updateSynonyms(networkMap, newSynonyms);
             break;
         case DRIVE:
+            driveMap = getDrivePosibleValues();
+            updateSynonyms(driveMap, newSynonyms);
         case COUNTERS:
         }
     }
@@ -83,30 +112,56 @@ public class DataLoadPreferenceManager {
             removeSynonym(networkMap, key);
             break;
         case DRIVE:
+            driveMap = getDrivePosibleValues();
+            removeSynonym(driveMap, key);
         case COUNTERS:
         }
     }
 
     /**
-     * @param networkPosibleValues
+     * @param posibleValues
      * @param newSynonyms
      */
-    private void updateSynonyms(Map<String, String[]> networkPosibleValues, Map<String, String[]> newSynonyms) {
+    private void updateSynonyms(Map<String, String[]> posibleValues, Map<String, String[]> newSynonyms) {
         for (String newKey : newSynonyms.keySet()) {
             PreferenceStore.getPreferenceStore().setProperty(newKey, newSynonyms.get(newKey));
-            networkMap.put(newKey, newSynonyms.get(newKey));
+            posibleValues.put(newKey, newSynonyms.get(newKey));
         }
     }
 
     public Map<String, String[]> getSynonyms(DatasetTypes type) {
         switch (type) {
         case NETWORK:
-            currentSynonyms = getNetworkPosibleValues();
+            return getNetworkPosibleValues();
         case DRIVE:
+            return getDrivePosibleValues();
         case COUNTERS:
             break;
         }
-        return currentSynonyms;
+        return null;
+    }
+
+    /**
+     * return drive synonyms
+     * 
+     * @return
+     */
+    private Map<String, String[]> getDrivePosibleValues() {
+        if (driveMap == null) {
+            driveMap = new HashMap<String, String[]>();
+        }
+        if (driveMap.isEmpty()) {
+            driveMap.put(BCCH, getPossibleHeaders(DataLoadPreferences.DR_BCCH));
+            driveMap.put(ECIO, getPossibleHeaders(DataLoadPreferences.DR_EcIo));
+            driveMap.put(PN, getPossibleHeaders(DataLoadPreferences.DR_PN));
+            driveMap.put(RSSI, getPossibleHeaders(DataLoadPreferences.DR_RSSI));
+            driveMap.put(SC, getPossibleHeaders(DataLoadPreferences.DR_SC));
+            driveMap.put(TCH, getPossibleHeaders(DataLoadPreferences.DR_TCH));
+            driveMap.put(INeoConstants.PROPERTY_SECTOR_CI, getPossibleHeaders(DataLoadPreferences.DR_CI));
+            driveMap.put(INeoConstants.PROPERTY_LAT_NAME, getPossibleHeaders(DataLoadPreferences.DR_LATITUDE));
+            driveMap.put(INeoConstants.PROPERTY_LON_NAME, getPossibleHeaders(DataLoadPreferences.DR_LONGITUDE));
+        }
+        return driveMap;
     }
 
     private void removeSynonym(Map<String, String[]> synonymsMap, String key) {
@@ -137,5 +192,52 @@ public class DataLoadPreferenceManager {
             networkMap.put(DataLoadPreferences.FHOP, getPossibleHeaders(DataLoadPreferences.FHOP));
         }
         return networkMap;
+    }
+
+    /**
+     * get synonym for subtype only
+     * 
+     * @param synonymsType
+     * @param subtype
+     * @return
+     */
+    public Map<String, String[]> getSubSynonyms(DatasetTypes synonymsType, IDriveType subtype) {
+        if (subTypeSynonyms == null) {
+            subTypeSynonyms = new HashMap<String, String[]>();
+        }
+        subTypeSynonyms.clear();
+        switch (synonymsType) {
+        case NETWORK:
+            return getNetworSubtypeSynonyms(subtype);
+        case DRIVE:
+            return getDriveSubtype(subtype);
+        case COUNTERS:
+            break;
+        }
+        return null;
+    }
+
+    /**
+     * @param subtype
+     * @return
+     */
+    private Map<String, String[]> getDriveSubtype(IDriveType subtype) {
+        for (String key : driveMap.keySet()) {
+            String[] keys = key.split(INFO_SEPARATOR);
+            if (keys.length > 1) {
+                if (keys[1].equals(((DriveTypes)subtype).name())) {
+                    subTypeSynonyms.put(key, driveMap.get(key));
+                }
+            }
+        }
+        return subTypeSynonyms;
+    }
+
+    /**
+     * @param subtype
+     * @return
+     */
+    private Map<String, String[]> getNetworSubtypeSynonyms(IDriveType subtype) {
+        return null;
     }
 }
