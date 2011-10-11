@@ -239,5 +239,5 @@ public interface INeoConstants {
     public static final String PROPERTY_TOC_LISTENING_QUALITY="TOC Listening Quality";
     public static final String PROPERTY_TTC_LISTENING_QUALITY="TTC Listening Quality";
 
-
+    public static final String NETWORK_MODEL_NAME = "NetworkModel";
 }

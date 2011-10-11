@@ -18,9 +18,12 @@ import java.util.Map;
 
 import org.amanzi.neo.db.manager.NeoServiceProvider;
 import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;
+import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
+import org.amanzi.neo.services.exceptions.InvalidStatisticsParameterException;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -107,6 +110,70 @@ public abstract class NewAbstractService {
             tx.finish();
         }
         return result;
+    }
+    
+    /**
+     * Method delete node and all sub-nodes if they related with CHILD-relationships
+     *
+     * @param nodeToDelete Node which need delete
+     * @throws DatabaseException 
+     * @throws InvalidStatisticsParameterException 
+     */
+    public void deleteNode(Node nodeToDelete) throws AWEException {
+        LOGGER.debug("start method deleteNode(Node nodeToDelete)");
+        
+        if (nodeToDelete == null) {
+            LOGGER.error("InvalidStatisticsParameterException: parameter nodeToDelete = null");
+            throw new InvalidStatisticsParameterException("nodeToDelete", nodeToDelete);
+        }
+        
+        Transaction tx = graphDb.beginTx();
+        try {
+            Iterable<Relationship> childRelationships =
+                    nodeToDelete.getRelationships(DatasetRelationshipTypes.CHILD, Direction.OUTGOING);
+            
+            for (Relationship rel : childRelationships) {
+                Node childNode = rel.getEndNode();
+                if (childNode != null) {
+                    deleteSubNodes(childNode);
+                    rel.delete();
+                    childNode.delete();
+                }
+            }
+            Iterable<Relationship> incomingRelationships = nodeToDelete.getRelationships(Direction.INCOMING);
+            for (Relationship incomingRelationship : incomingRelationships) {
+                incomingRelationship.delete();
+            }
+            nodeToDelete.delete();
+            tx.success();
+        } catch (Exception e) {
+            LOGGER.error("Could not delete node from database", e);
+            tx.failure();
+            throw new DatabaseException(e);
+
+        } finally {
+            tx.finish();
+
+        }
+        LOGGER.debug("finish method deleteNode(Node nodeToDelete)");
+    }
+    
+    /**
+     * Recursive deleting all sub-nodes of this node
+     *
+     * @param child Node to delete
+     */
+    private void deleteSubNodes(Node child) {
+        for (Relationship childRel : child.
+                getRelationships(DatasetRelationshipTypes.CHILD, Direction.OUTGOING)) {
+            Node subNode = childRel.getEndNode();
+
+            if (subNode != null) {
+                deleteSubNodes(subNode);
+                subNode.delete();
+                childRel.delete();
+            }
+        }
     }
 
     public Node createNode(Map<String, Object> params) throws DatabaseException {
@@ -229,7 +296,7 @@ public abstract class NewAbstractService {
      * @param name
      * @throws IllegalNodeDataException if name is null or empty
      */
-    protected void setNameProperty(Node node, String name) throws IllegalNodeDataException, DatabaseException {
+    public void setNameProperty(Node node, String name) throws IllegalNodeDataException, DatabaseException {
         // validate parameters
         if ((name == null) || name.equals(StringUtils.EMPTY)) {
             throw new IllegalNodeDataException("Name cannot be empty.");

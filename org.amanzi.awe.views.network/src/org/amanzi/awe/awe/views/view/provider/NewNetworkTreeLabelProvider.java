@@ -12,8 +12,6 @@
  */
 package org.amanzi.awe.awe.views.view.provider;
 
-import org.amanzi.awe.views.network.proxy.NeoNode;
-import org.amanzi.awe.views.network.proxy.Root;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;

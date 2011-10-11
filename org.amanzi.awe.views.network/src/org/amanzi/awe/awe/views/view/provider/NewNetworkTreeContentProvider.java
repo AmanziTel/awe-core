@@ -1,8 +1,11 @@
 package org.amanzi.awe.awe.views.view.provider;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
+import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.impl.NetworkModel;
@@ -18,8 +21,6 @@ import org.eclipse.jface.viewers.Viewer;
  * @since 1.0.0
  */
 public class NewNetworkTreeContentProvider implements IStructuredContentProvider, ITreeContentProvider {
-
-	private static String NETWORK_MODEL_NAME = "NetworkModel";
     /*
      * NeoServiceProvider
      */
@@ -52,34 +53,50 @@ public class NewNetworkTreeContentProvider implements IStructuredContentProvider
 	public Object[] getChildren(Object parentElement) {
         
 		ArrayList<IDataElement> dataElements = new ArrayList<IDataElement>();
+		Iterable<IDataElement> children = null;
 		if (parentElement instanceof INetworkModel) {
-			Iterable<IDataElement> children = 
-					((INetworkModel)parentElement).getChildren(null);
+			children = ((INetworkModel)parentElement).getChildren(null);
 			rootNetworkModel = (INetworkModel)parentElement;
 			for (IDataElement dataElement : children) {
 				// add network model to data element
-				dataElement.put(NETWORK_MODEL_NAME, parentElement);
+				dataElement.put(INeoConstants.NETWORK_MODEL_NAME, parentElement);
 				dataElements.add(dataElement);
 			}
-			return dataElements.toArray();
         }
         else if (parentElement instanceof IDataElement) {
         	IDataElement child = (IDataElement)parentElement;
-        	INetworkModel localRootNetworkModel = (INetworkModel)(child).get(NETWORK_MODEL_NAME);
-        	Iterable<IDataElement> children = localRootNetworkModel.getChildren(child);
+        	INetworkModel localRootNetworkModel = (INetworkModel)(child).
+        			get(INeoConstants.NETWORK_MODEL_NAME);
+        	children = localRootNetworkModel.getChildren(child);
         	
         	for (IDataElement dataElement : children) {
         		// add network model to data element
-				dataElement.put(NETWORK_MODEL_NAME, rootNetworkModel);
+				dataElement.put(INeoConstants.NETWORK_MODEL_NAME, rootNetworkModel);
         		dataElements.add(dataElement);
         	}
-        	return dataElements.toArray();
         }
-    	else {
-    		return new Object[0];
-    	}
+		Collections.sort(dataElements, new IDataElementComparator());
+		return dataElements.toArray();
 	}
 
+	/**
+	 * <p>
+	 * Comparator of IDataElement
+	 * </p>
+	 * 
+	 * @author Kasnitskij_V
+	 * @since 1.0.0
+	 */
+	public static class IDataElementComparator implements Comparator<IDataElement> {
+
+		@Override
+		public int compare(IDataElement dataElement1, IDataElement dataElement2) {
+			return dataElement1 == null ? -1 : 
+				dataElement2 == null ? 1 : dataElement1.get(INeoConstants.PROPERTY_NAME_NAME).toString()
+					.compareTo(dataElement2.get(INeoConstants.PROPERTY_NAME_NAME).toString());
+		}
+
+	}
 	@Override
 	public Object getParent(Object element) {
 		// TODO Need implement
@@ -87,12 +104,24 @@ public class NewNetworkTreeContentProvider implements IStructuredContentProvider
 	}
 
 	@Override
-	public boolean hasChildren(Object element) {
-//        if (element instanceof INetworkModel) {
-//            return ((INetworkModel)parentElement).getChildren(null)
-//        }
-//        return false;
-		return true;
+	public boolean hasChildren(Object parentElement) {
+		
+		Iterable<IDataElement> children = null;
+		if (parentElement instanceof INetworkModel) {
+			children = ((INetworkModel)parentElement).getChildren(null);
+        }
+        else if (parentElement instanceof IDataElement) {
+        	IDataElement child = (IDataElement)parentElement;
+        	INetworkModel localRootNetworkModel = (INetworkModel)(child).
+        			get(INeoConstants.NETWORK_MODEL_NAME);
+        	children = localRootNetworkModel.getChildren(child);
+        }
+		if (children.iterator().hasNext()) {
+			return true;
+		}
+		else {
+			return false;
+		}
 	}
 
 	@Override

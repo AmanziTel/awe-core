@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService;
@@ -118,6 +119,33 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     @Override
     public IDataElement createElement(IDataElement parent, Map<String, Object> params) {
         return createElement(parent, params, NetworkRelationshipTypes.CHILD);
+    }
+    
+    @Override
+    public void deleteElement(IDataElement elementToDelete) {
+        if (elementToDelete == null) {
+            throw new IllegalArgumentException("DataElement to delete is null.");
+        }
+        Node node = ((DataElement)elementToDelete).getNode();
+        if (node == null) {
+            throw new IllegalArgumentException("Node assotiated with DataElement is null.");
+        }
+        try {
+            nwServ.deleteNode(((DataElement)elementToDelete).getNode());
+        } catch (AWEException e) {
+            LOGGER.error("Could not delete all or some nodes", e);
+        }
+    }
+    
+    @Override
+    public void renameElement(IDataElement elementToRename, String newName) {
+        elementToRename.put(INeoConstants.PROPERTY_NAME_NAME, newName);
+        Node node = ((DataElement)elementToRename).getNode();
+        try {
+            nwServ.setNameProperty(node, newName);
+        } catch (AWEException e) {
+            LOGGER.error("Could not save new name of node", e);
+        }
     }
 
     // find element
