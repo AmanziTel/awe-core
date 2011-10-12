@@ -218,6 +218,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         return result;
     }
 
+    
     /**
      * Manage index names for current model.
      * 

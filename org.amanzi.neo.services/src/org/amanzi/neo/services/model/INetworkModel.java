@@ -12,6 +12,7 @@
  */
 
 package org.amanzi.neo.services.model;
+ 
 
 import java.util.Map;
 
