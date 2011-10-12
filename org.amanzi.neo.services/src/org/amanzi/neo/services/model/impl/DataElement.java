@@ -18,7 +18,6 @@ import java.util.Map;
 
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.model.IDataElement;
-import org.apache.commons.lang.StringUtils;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -32,6 +31,7 @@ import org.neo4j.graphdb.Node;
 public class DataElement extends HashMap<String, Object> implements IDataElement {
     /** long serialVersionUID field */
     private static final long serialVersionUID = -5368114834697417654L;
+    
     private Node node;
 
     /**
@@ -79,9 +79,11 @@ public class DataElement extends HashMap<String, Object> implements IDataElement
 
     @Override
     public String toString() {
-        return !this.get(NewAbstractService.NAME).toString().isEmpty() ? 
-                this.get(NewAbstractService.NAME).toString() : 
-            (node == null ? "" :StringUtils.EMPTY + node.getId());
+        if (this.containsKey(NewAbstractService.NAME)) {
+            return this.get(NewAbstractService.NAME).toString();
+        } else {
+            return node == null ? super.toString() : Long.toString(node.getId()); 
+        }    
     }
 
 }

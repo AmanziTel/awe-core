@@ -32,7 +32,6 @@ import org.amanzi.neo.services.model.impl.DataElement;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.SubProgressMonitor;
 import org.neo4j.graphdb.Node;
 
 /**
