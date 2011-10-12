@@ -20,6 +20,7 @@ import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDataModel;
+import org.amanzi.neo.services.model.IProjectModel;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
 
@@ -164,6 +165,18 @@ public abstract class DataModel extends AbstractModel implements IDataModel {
         public Iterator<IDataElement> iterator() {
             return new DataElementIterator(nodeTraverse);
         }
+    }
+
+    @Override
+    public IProjectModel getProject() {
+        Node project = null;
+        try {
+            project = dsServ.getParent(rootNode, false);
+        } catch (DatabaseException e) {
+            LOGGER.error("Could not get parent project node.", e);
+        }
+        ProjectModel model = project == null ? null : new ProjectModel(project);
+        return model;
     }
 
 }

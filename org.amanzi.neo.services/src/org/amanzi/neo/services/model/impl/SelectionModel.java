@@ -21,6 +21,7 @@ import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataElement;
+import org.amanzi.neo.services.model.IProjectModel;
 import org.amanzi.neo.services.model.ISelectionModel;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -154,6 +155,11 @@ public class SelectionModel extends AbstractModel implements ISelectionModel {
         }
         
         return selectionLinkIndex;
+    }
+
+    @Override
+    public IProjectModel getProject() {
+        return null;
     }
 
 }

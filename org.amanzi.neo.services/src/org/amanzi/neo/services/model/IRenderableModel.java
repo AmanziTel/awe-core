@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.services.model;
 
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 
 /**
@@ -23,7 +24,7 @@ import org.geotools.referencing.CRS;
  * @author grigoreva_a
  * @since 1.0.0
  */
-public interface IRenderableModel {
+public interface IRenderableModel extends IModel {
 
     /**
      * Update the minimum and maximum values of latitude and longitude.
@@ -42,4 +43,14 @@ public interface IRenderableModel {
     public double getMaxLongitude();
 
     public CRS getCRS();
+
+    /**
+     * @return A <code>String</code> description for use of geo tools;
+     */
+    public String getDescription();
+
+    /**
+     * @return An envelope, representing the coordinate bounds for the data in current model.
+     */
+    public ReferencedEnvelope getBounds();
 }
