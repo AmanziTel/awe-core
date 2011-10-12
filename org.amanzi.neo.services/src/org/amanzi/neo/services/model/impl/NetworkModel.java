@@ -146,7 +146,8 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
             throw new IllegalArgumentException("Node assotiated with DataElement is null.");
         }
         try {
-            nwServ.deleteNode(((DataElement)elementToDelete).getNode());
+            nwServ.deleteNode(node, getRootNode(), indexMap);
+            elementToDelete = null;
         } catch (AWEException e) {
             LOGGER.error("Could not delete all or some nodes", e);
         }
