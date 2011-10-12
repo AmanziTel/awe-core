@@ -15,12 +15,13 @@ package org.amanzi.neo.services.model;
 
 import org.amanzi.neo.services.enums.IDriveType;
 import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.exceptions.AWEException;
 
 /**
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author gerzog
  * @since 1.0.0
  */
@@ -112,5 +113,14 @@ public interface IProjectModel extends IModel {
      * @return a <code>NetworkModel</code>, based on the found or created node.
      */
     public abstract INetworkModel getNetwork(String name);
+
+    /**
+     * Looks up for drive and network datasets, included in current project, and build a list of
+     * renderable models based on them.
+     * 
+     * @return a list of renderable models that belong to the current project
+     * @throws AWEException if errors occur in database
+     */
+    public abstract Iterable<IRenderableModel> getAllRenderableModels() throws AWEException;
 
 }

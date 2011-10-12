@@ -1004,7 +1004,7 @@ public class NewDatasetService extends NewAbstractService {
         return EMPTY_TRAVERSAL_DESCRIPTION.traverse(source).nodes();
     }
 
-    public Iterable<Node> getVirtalDatasets(Node rootDataset) {
+    public Iterable<Node> getVirtualDatasets(Node rootDataset) {
         // validate
         if (rootDataset == null) {
             throw new IllegalArgumentException("Root dataset node is null.");

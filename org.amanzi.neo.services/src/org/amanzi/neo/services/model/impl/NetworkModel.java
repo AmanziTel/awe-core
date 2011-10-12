@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.services.model.impl;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -78,6 +79,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         this.rootNode = networkRoot;
         this.name = rootNode.getProperty(NewAbstractService.NAME, StringUtils.EMPTY).toString();
         initializeStatistics();
+        initializeMultiPropertyIndexing();
     }
 
     /**
@@ -113,6 +115,19 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         this.rootNode = networkNode;
         this.name = name;
         initializeStatistics();
+        initializeMultiPropertyIndexing();
+    }
+
+    /**
+     * Initializes location index for sector nodes.
+     */
+    private void initializeMultiPropertyIndexing() {
+        LOGGER.info("Initializing multi proerty index...");
+        try {
+            addLocationIndex(NetworkElementNodeType.SECTOR);
+        } catch (IOException e) {
+            LOGGER.error("Could not initialize multi property index for network model " + rootNode.getId() + ".", e);
+        }
     }
 
     @Override
@@ -414,6 +429,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
             }
             nwServ.setProperties(node, element);
             indexProperty(type, element);
+            indexNode(node);
         } catch (AWEException e) {
             LOGGER.error("Could not create network element.", e);
         }
@@ -424,5 +440,10 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     @Override
     public String toString() {
         return name;
+    }
+
+    @Override
+    public void finishUp() {
+        super.finishUp();
     }
 }

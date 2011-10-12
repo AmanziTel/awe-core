@@ -52,7 +52,7 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
     protected double min_longitude = Double.MAX_VALUE;
     protected double max_longitude = -Double.MAX_VALUE;
 
-    private Map<INodeType, List<MultiPropertyIndex< ? >>> indexes;
+    private Map<INodeType, List<MultiPropertyIndex< ? >>> indexes = new HashMap<INodeType, List<MultiPropertyIndex< ? >>>();
 
     /**
      * Creates and stores a location index for the defined node type.
