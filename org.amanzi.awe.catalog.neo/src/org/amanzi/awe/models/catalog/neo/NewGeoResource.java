@@ -22,6 +22,7 @@ import net.refractions.udig.catalog.IGeoResourceInfo;
 import net.refractions.udig.catalog.IService;
 
 import org.amanzi.neo.services.model.IDataModel;
+import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.IRenderableModel;
 import org.apache.log4j.Logger;
@@ -95,12 +96,15 @@ public class NewGeoResource extends IGeoResource {
     @Override
     public <T> boolean canResolve(Class<T> adaptee) {
         return adaptee.isAssignableFrom(INetworkModel.class) || adaptee.isAssignableFrom(IRenderableModel.class)
-                || super.canResolve(adaptee);
+                || adaptee.isAssignableFrom(IDriveModel.class) || super.canResolve(adaptee);
     }
 
     @Override
     public <T> T resolve(Class<T> adaptee, IProgressMonitor monitor) throws IOException {
+        // TODO: really?
         if (adaptee.isAssignableFrom(INetworkModel.class)) {
+            return adaptee.cast(source);
+        } else if (adaptee.isAssignableFrom(IDriveModel.class)) {
             return adaptee.cast(source);
         } else if (adaptee.isAssignableFrom(IRenderableModel.class)) {
             return adaptee.cast(source);

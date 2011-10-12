@@ -75,6 +75,7 @@ public class NewGeoService extends IService {
             synchronized (this) {
                 List<IGeoResource> result = new ArrayList<IGeoResource>();
                 try {
+                    // TODO: current project or all the projects?
                     for (IRenderableModel model : ProjectModel.getCurrentProjectModel().getAllRenderableModels()) {
                         result.add(new NewGeoResource(this, model));
                     }

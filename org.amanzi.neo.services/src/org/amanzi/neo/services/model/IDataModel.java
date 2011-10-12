@@ -51,6 +51,8 @@ public interface IDataModel extends IModel {
     public Iterable<IDataElement> getAllElementsByType(INodeType elementType);
 
     /**
+     * TODO: test implementation
+     * 
      * Returns the project model, where current data model belongs to.
      * 
      * @return

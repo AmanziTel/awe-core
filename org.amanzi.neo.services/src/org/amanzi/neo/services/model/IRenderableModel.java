@@ -45,11 +45,15 @@ public interface IRenderableModel extends IModel {
     public CRS getCRS();
 
     /**
+     * TODO: test implementation
+     * 
      * @return A <code>String</code> description for use of geo tools;
      */
     public String getDescription();
 
     /**
+     * TODO: test implementation
+     * 
      * @return An envelope, representing the coordinate bounds for the data in current model.
      */
     public ReferencedEnvelope getBounds();
