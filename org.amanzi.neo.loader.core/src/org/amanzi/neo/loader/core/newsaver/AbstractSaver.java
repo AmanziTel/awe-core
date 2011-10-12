@@ -13,14 +13,22 @@
 
 package org.amanzi.neo.loader.core.newsaver;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.amanzi.neo.db.manager.NeoServiceProvider;
 import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceManager;
 import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.exceptions.DatabaseException;
+import org.amanzi.neo.services.model.IDataModel;
 import org.amanzi.neo.services.model.IModel;
 import org.amanzi.neo.services.model.IProjectModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
+import org.amanzi.neo.services.synonyms.ExportSynonymsManager;
+import org.amanzi.neo.services.synonyms.ExportSynonymsService.ExportSynonyms;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Transaction;
 
@@ -39,7 +47,41 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
     public static final String PROJECT_PROPERTY = "project";
     public static final String CONFIG_VALUE_CALLS = "Calls";
     public static final String CONFIG_VALUE_PESQ = "PESQ";
+    protected final static ExportSynonymsManager exportManager = ExportSynonymsManager.getManager();
     protected static DataLoadPreferenceManager preferenceManager = new DataLoadPreferenceManager();
+    protected Map<String, String[]> preferenceStoreSynonyms;
+    protected Map<String, IDataModel> modelMap = new HashMap<String, IDataModel>();
+    protected Map<IDataModel, ExportSynonyms> synonymsMap = new HashMap<IDataModel, ExportSynonyms>();
+
+    protected void createExportSynonymsForModels() {
+        try {
+            for (String key : modelMap.keySet()) {
+                synonymsMap.put(modelMap.get(key), exportManager.createExportSynonym(modelMap.get(key)));
+            }
+        } catch (DatabaseException e) {
+            // TODO Handle DatabaseException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+    }
+
+    protected void addedDatasetSynonyms(IDataModel model, INodeType nodeType, String propertyName, String synonym) {
+        synonymsMap.get(model).addSynonym(nodeType, propertyName, synonym);
+    }
+
+    /**
+     * save synonyms into database
+     */
+    private void saveSynonym() {
+        for (String key : modelMap.keySet()) {
+            try {
+                exportManager.saveExportSynonyms(modelMap.get(key), synonymsMap.get(modelMap.get(key)));
+            } catch (DatabaseException e) {
+                // TODO Handle DatabaseException
+                throw (RuntimeException)new RuntimeException().initCause(e);
+            }
+        }
+    }
+
     /**
      * action threshold for commit
      */
@@ -113,7 +155,9 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
     }
 
     protected void finishTx() {
+        actionCount = 0;
         tx.finish();
+        tx = null;
     }
 
     /**
@@ -132,6 +176,7 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
 
     @Override
     public void finishUp() {
+        saveSynonym();
         tx.finish();
         NeoServiceProvider.getProvider().commit();
         actionCount = 0;
@@ -139,5 +184,6 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
 
     protected IProjectModel getActiveProject() throws AWEException {
         return ProjectModel.getCurrentProjectModel();
+
     }
 }

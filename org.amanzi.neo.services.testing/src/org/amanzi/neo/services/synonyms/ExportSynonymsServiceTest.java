@@ -25,6 +25,7 @@ import junit.framework.Assert;
 import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.services.AbstractNeoServiceTest;
 import org.amanzi.neo.services.NewAbstractService;
+import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.exceptions.DatabaseException;
@@ -280,6 +281,22 @@ public class ExportSynonymsServiceTest extends AbstractNeoServiceTest {
 
         Transaction tx = graphDatabaseService.beginTx();
         datasetSynonyms.setProperty(ExportSynonymsService.EXPORT_SYNONYMS_TYPE, ExportSynonymType.GLOBAL.name());
+        tx.success();
+        tx.finish();
+
+        synonymsService.getDatasetExportSynonyms(datasetNode);
+    }
+
+    @Test
+    public void checkExportSynonymsFill() throws Exception {
+        Node datasetNode = createDataset();
+        ExportSynonyms synonyms = synonymsService.getDatasetExportSynonyms(datasetNode);
+        synonyms.addSynonym(NetworkElementNodeType.SITE, "site", "Site");
+        Transaction tx = graphDatabaseService.beginTx();
+        synonymsService.saveExportSynonyms(datasetNode, synonyms);
+        Assert.assertNotNull(synonymsService.getDatasetExportSynonyms(datasetNode));
+        Assert.assertNotNull(synonymsService.getDatasetExportSynonyms(datasetNode).rawSynonyms
+                .containsKey(NetworkElementNodeType.SITE.getId() + "." + "site"));
         tx.success();
         tx.finish();
 
