@@ -93,6 +93,21 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
     public IDataElement createElement(IDataElement parent, Map<String, Object> params);
 
     /**
+     * Delete a network element based on <code>IDataElement element</code> object.
+     *
+     * @param elementToDelete Element to delete
+     */
+    public void deleteElement(IDataElement elementToDelete);
+    
+    /**
+     * Rename name of a network element based on <code>IDataElement element</code> object.
+     *
+     * @param elementToRename Element to rename
+     * @param newName New name of node and dataElement
+     */
+    public void renameElement(IDataElement elementToRename, String newName);
+    
+    /**
      * complete existedElement with new property. if
      * 
      * @param existedElement
