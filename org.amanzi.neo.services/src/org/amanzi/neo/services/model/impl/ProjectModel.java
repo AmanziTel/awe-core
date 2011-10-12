@@ -13,10 +13,14 @@
 
 package org.amanzi.neo.services.model.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
+import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.ProjectService;
 import org.amanzi.neo.services.enums.IDriveType;
 import org.amanzi.neo.services.enums.INodeType;
@@ -24,6 +28,7 @@ import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.IProjectModel;
+import org.amanzi.neo.services.model.IRenderableModel;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
@@ -251,18 +256,35 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
 
     /**
      * Returns a DB Model of currently Active Project from uDIG
-     *
+     * 
      * @return Model of active Project
      * @throws AWEException
      */
     public static IProjectModel getCurrentProjectModel() throws AWEException {
         ProjectService projectService = NeoServiceFactory.getInstance().getNewProjectService();
-        
-        //TODO: LN: since for now we can't use
-        //ApplicationGIS.getActiveProject().getName()
-        //name of active project will be hard-coded
+
+        // TODO: LN: since for now we can't use
+        // ApplicationGIS.getActiveProject().getName()
+        // name of active project will be hard-coded
         Node projectNode = projectService.getProject("project");
-        
+
         return new ProjectModel(projectNode);
+    }
+
+    @Override
+    public Iterable<IRenderableModel> getAllRenderableModels() throws AWEException {
+        List<IRenderableModel> result = new ArrayList<IRenderableModel>();
+        for (Node node : dsServ.findAllDatasets(rootNode)) {
+            INodeType type = NodeTypeManager.getType(node.getProperty(NewAbstractService.TYPE, StringUtils.EMPTY).toString());
+            if (type != null) {
+                if (type.equals(DatasetTypes.DRIVE)) {
+                    result.add(new DriveModel(rootNode, node, null, null));
+                }
+                if (type.equals(DatasetTypes.NETWORK)) {
+                    result.add(new NetworkModel(node));
+                }
+            }
+        }
+        return result;
     }
 }

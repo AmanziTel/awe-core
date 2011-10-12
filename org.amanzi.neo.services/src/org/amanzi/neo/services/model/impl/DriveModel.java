@@ -245,7 +245,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         LOGGER.debug("start getVirtualDatasets()");
 
         List<IDriveModel> result = new ArrayList<IDriveModel>();
-        for (Node node : dsServ.getVirtalDatasets(rootNode)) {
+        for (Node node : dsServ.getVirtualDatasets(rootNode)) {
             try {
                 result.add(new DriveModel(null, node, null, null));
             } catch (AWEException e) {
