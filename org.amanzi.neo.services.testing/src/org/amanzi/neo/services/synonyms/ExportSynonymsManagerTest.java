@@ -191,10 +191,10 @@ public class ExportSynonymsManagerTest extends AbstractNeoServiceTest {
     }
 
     @Test
-    public void createNewExportSynonmsTest() throws Exception {
+    public void createDatasetExportSynonmsTest() throws Exception {
         ExportSynonymsService service = getSynonymsService(ExportSynonymType.DATASET, true, null);
         ExportSynonymsManager.initializeService(service);
-        ExportSynonyms result = manager.createExportSynonym(getDataModelMock());
+        ExportSynonyms result = manager.createExportSynonym(getDataModelMock(), ExportSynonymType.DATASET);
 
         Assert.assertNotNull("Unexpected Synonym with Dataset Synonyms", result);
 
@@ -203,16 +203,41 @@ public class ExportSynonymsManagerTest extends AbstractNeoServiceTest {
     }
 
     @Test
-    public void addedExportSynonymsTest() throws Exception {
+    public void createGlobalExportSynonmsTest() throws Exception {
+        ExportSynonymsService service = getSynonymsService(ExportSynonymType.GLOBAL, false, true);
+        ExportSynonymsManager.initializeService(service);
+        ExportSynonyms result = manager.createExportSynonym(getDataModelMock(), ExportSynonymType.GLOBAL);
+
+        Assert.assertNotNull("Unexpected Synonym with Dataset Synonyms", result);
+
+        verify(service).getGlobalExportSynonyms();
+        verify(service, never()).getDatasetExportSynonyms(any(Node.class));
+    }
+
+    @Test
+    public void addedDatasetExportSynonymsTest() throws Exception {
         ExportSynonymsService service = getSynonymsService(ExportSynonymType.DATASET, true, null);
         ExportSynonymsManager.initializeService(service);
-        ExportSynonyms result = manager.createExportSynonym(getDataModelMock());
+        ExportSynonyms result = manager.createExportSynonym(getDataModelMock(), ExportSynonymType.DATASET);
         result.addSynonym(NODE_TYPE, PROPERTY_NAME, SYNONYM);
 
         Assert.assertNotNull("Unexpected Synonym with Dataset Synonyms", result);
         verify(result).addSynonym(eq(NODE_TYPE), eq(PROPERTY_NAME), eq(SYNONYM));
         verify(service).getDatasetExportSynonyms(any(Node.class));
         verify(service, never()).getGlobalExportSynonyms();
+    }
+
+    @Test
+    public void addedGlobalExportSynonymsTest() throws Exception {
+        ExportSynonymsService service = getSynonymsService(ExportSynonymType.GLOBAL, false, true);
+        ExportSynonymsManager.initializeService(service);
+        ExportSynonyms result = manager.createExportSynonym(getDataModelMock(), ExportSynonymType.GLOBAL);
+        result.addSynonym(NODE_TYPE, PROPERTY_NAME, SYNONYM);
+
+        Assert.assertNotNull("Unexpected Synonym with Dataset Synonyms", result);
+        verify(result).addSynonym(eq(NODE_TYPE), eq(PROPERTY_NAME), eq(SYNONYM));
+        verify(service).getGlobalExportSynonyms();
+        verify(service, never()).getDatasetExportSynonyms(any(Node.class));
     }
 
     /**

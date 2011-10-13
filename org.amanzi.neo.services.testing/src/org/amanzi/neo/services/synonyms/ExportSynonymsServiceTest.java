@@ -288,15 +288,29 @@ public class ExportSynonymsServiceTest extends AbstractNeoServiceTest {
     }
 
     @Test
-    public void checkExportSynonymsFill() throws Exception {
+    public void checkDatasetExportSynonymsFill() throws Exception {
         Node datasetNode = createDataset();
         ExportSynonyms synonyms = synonymsService.getDatasetExportSynonyms(datasetNode);
-        synonyms.addSynonym(NetworkElementNodeType.SITE, "site", "Site");
+        synonyms.addSynonym(NetworkElementNodeType.SITE, TEST_PROPERTY_NAME, TEST_KEY);
         Transaction tx = graphDatabaseService.beginTx();
-        synonymsService.saveExportSynonyms(datasetNode, synonyms);
+        synonymsService.saveExportSynonyms(datasetNode, synonyms, ExportSynonymType.DATASET);
         Assert.assertNotNull(synonymsService.getDatasetExportSynonyms(datasetNode));
-        Assert.assertNotNull(synonymsService.getDatasetExportSynonyms(datasetNode).rawSynonyms
-                .containsKey(NetworkElementNodeType.SITE.getId() + "." + "site"));
+        Assert.assertNotNull(synonymsService.getDatasetExportSynonyms(datasetNode).rawSynonyms.containsKey(TEST_KEY));
+        tx.success();
+        tx.finish();
+
+        synonymsService.getDatasetExportSynonyms(datasetNode);
+    }
+
+    @Test
+    public void checkGlobalExportSynonymsFill() throws Exception {
+        Node datasetNode = createDataset();
+        ExportSynonyms synonyms = synonymsService.getGlobalExportSynonyms();
+        synonyms.addSynonym(NetworkElementNodeType.SITE, TEST_PROPERTY_NAME, TEST_PROPERTY_NAME);
+        Transaction tx = graphDatabaseService.beginTx();
+        synonymsService.saveExportSynonyms(datasetNode, synonyms, ExportSynonymType.DATASET);
+        Assert.assertNotNull(synonymsService.getGlobalExportSynonyms());
+        Assert.assertNotNull(synonymsService.getGlobalExportSynonyms().rawSynonyms.containsKey(TEST_KEY));
         tx.success();
         tx.finish();
 

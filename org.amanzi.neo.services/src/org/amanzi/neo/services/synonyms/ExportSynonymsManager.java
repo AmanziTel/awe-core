@@ -17,6 +17,7 @@ import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataModel;
+import org.amanzi.neo.services.synonyms.ExportSynonymsService.ExportSynonymType;
 import org.amanzi.neo.services.synonyms.ExportSynonymsService.ExportSynonyms;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -117,23 +118,45 @@ public class ExportSynonymsManager {
     }
 
     /**
-     * try to find export synonyms node in database. if node not found that create new node
+     * try to find export synonyms node in database. if node not found that create new one. If you
+     * want to get export synonyms for dataset that you should set the model and export synonyms
+     * type<code>DATASET</code>, else you should set <code>GLOBAL</code> export synonyms type
      * 
      * @param model
      * @return ExportSynonyms
      * @throws DatabaseException
      */
-    public ExportSynonyms createExportSynonym(IDataModel model) throws DatabaseException {
+    public ExportSynonyms createExportSynonym(IDataModel model, ExportSynonymType type) throws DatabaseException {
         // validate input parameters
-        if (model == null) {
-            LOGGER.error("Input DataModel is null");
-            throw new IllegalArgumentException("Input DataModel is null");
+
+        ExportSynonyms synonyms = null;
+        switch (type) {
+        case DATASET:
+            if (model == null) {
+                LOGGER.error("Input DataModel is null");
+                throw new IllegalArgumentException("Input DataModel is null");
+            }
+            synonyms = synonymsService.getDatasetExportSynonyms(model.getRootNode());
+            break;
+        case GLOBAL:
+            synonyms = synonymsService.getGlobalExportSynonyms();
+            break;
         }
-        ExportSynonyms synonyms = synonymsService.getDatasetExportSynonyms(model.getRootNode());
         return synonyms;
     }
 
-    public void saveExportSynonyms(IDataModel model, ExportSynonyms synonyms) throws DatabaseException {
-        synonymsService.saveExportSynonyms(model.getRootNode(), synonyms);
+    /**
+     * If you wont to save dataset synonyms that you should set the model ,synonyms,and export
+     * synonyms type <code>DATASET</code>, else you should set synonyms and <code>GLOBAL</code>
+     * export synonyms type
+     * 
+     * @param model
+     * @param synonyms
+     * @param type
+     * @throws DatabaseException
+     */
+    public void saveDatasetExportSynonyms(IDataModel model, ExportSynonyms synonyms, ExportSynonymType type)
+            throws DatabaseException {
+        synonymsService.saveExportSynonyms(model.getRootNode(), synonyms, type);
     }
 }

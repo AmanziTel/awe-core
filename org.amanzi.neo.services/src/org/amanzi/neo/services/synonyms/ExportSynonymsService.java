@@ -259,11 +259,22 @@ public class ExportSynonymsService extends NewAbstractService {
      * @param rootNode
      * @throws DatabaseException
      */
-    public void saveExportSynonyms(Node rootNode, ExportSynonyms synonyms) throws DatabaseException {
-        Node exportDatasetSynonymsNode = getExportSynonymsNode(rootNode, ExportSynonymsRelationshipTypes.DATASET_SYNONYMS,
-                ExportSynonymType.DATASET);
-        for (String key : synonyms.rawSynonyms.keySet()) {
-            exportDatasetSynonymsNode.setProperty(key, synonyms.rawSynonyms.get(key));
+    public void saveExportSynonyms(Node rootNode, ExportSynonyms synonyms, ExportSynonymType type) throws DatabaseException {
+        Node exportSynonymsNode = null;
+        switch (type) {
+        case DATASET:
+            exportSynonymsNode = getExportSynonymsNode(rootNode, ExportSynonymsRelationshipTypes.DATASET_SYNONYMS,
+                    ExportSynonymType.DATASET);
+            break;
+        case GLOBAL:
+            exportSynonymsNode = getExportSynonymsNode(graphDb.getReferenceNode(), ExportSynonymsRelationshipTypes.GLOBAL_SYNONYMS,
+                    ExportSynonymType.GLOBAL);
+        default:
+            break;
         }
+        for (String key : synonyms.rawSynonyms.keySet()) {
+            exportSynonymsNode.setProperty(key, synonyms.rawSynonyms.get(key));
+        }
+
     }
 }

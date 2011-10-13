@@ -28,6 +28,7 @@ import org.amanzi.neo.services.model.IModel;
 import org.amanzi.neo.services.model.IProjectModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.amanzi.neo.services.synonyms.ExportSynonymsManager;
+import org.amanzi.neo.services.synonyms.ExportSynonymsService.ExportSynonymType;
 import org.amanzi.neo.services.synonyms.ExportSynonymsService.ExportSynonyms;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Transaction;
@@ -56,7 +57,7 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
     protected void createExportSynonymsForModels() {
         try {
             for (String key : modelMap.keySet()) {
-                synonymsMap.put(modelMap.get(key), exportManager.createExportSynonym(modelMap.get(key)));
+                synonymsMap.put(modelMap.get(key), exportManager.createExportSynonym(modelMap.get(key), ExportSynonymType.DATASET));
             }
         } catch (DatabaseException e) {
             // TODO Handle DatabaseException
@@ -77,7 +78,8 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
         }
         for (String key : modelMap.keySet()) {
             try {
-                exportManager.saveExportSynonyms(modelMap.get(key), synonymsMap.get(modelMap.get(key)));
+                exportManager.saveDatasetExportSynonyms(modelMap.get(key), synonymsMap.get(modelMap.get(key)),
+                        ExportSynonymType.DATASET);
             } catch (DatabaseException e) {
                 // TODO Handle DatabaseException
                 throw (RuntimeException)new RuntimeException().initCause(e);
