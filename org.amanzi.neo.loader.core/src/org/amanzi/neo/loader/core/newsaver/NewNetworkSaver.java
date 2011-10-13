@@ -246,7 +246,7 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
                 columnSynonyms.get(fileSynonyms.get(SECTOR))).toString() : "";
         String ci = sectorMap.containsKey("ci") ? sectorMap.get("ci").toString() : "";
         String lac = sectorMap.containsKey("lac") ? sectorMap.get("lac").toString() : "";
-        if ((ci == null || StringUtils.isEmpty(ci)) || (lac == null || StringUtils.isEmpty(lac))
+        if ((ci == null || StringUtils.isEmpty(ci)) && (lac == null || StringUtils.isEmpty(lac))
                 || (sectorName == null || StringUtils.isEmpty(sectorName))) {
             LOGGER.info("Sector haven't Name or CI + LAC properties on line: " + lineCounter);
             return;

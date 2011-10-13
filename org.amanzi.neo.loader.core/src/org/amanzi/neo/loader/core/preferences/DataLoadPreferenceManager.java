@@ -51,11 +51,21 @@ public class DataLoadPreferenceManager {
     public static final String ECIO = "ecio" + INFO_SEPARATOR;
     public static final String RSSI = "rssi" + INFO_SEPARATOR;
     /*
+     * neighbours
+     */
+    public final static String NEIGHBOUR_SECTOR_CI = "neigh_sector_ci" + INFO_SEPARATOR;
+    public final static String NEIGHBOUR_SECTOR_LAC = "neigh_sector_lac" + INFO_SEPARATOR;
+    public final static String NEIGHBOUR_SECTOR_NAME = "neigh_sector_name" + INFO_SEPARATOR;
+    public final static String SERVING_SECTOR_CI = "serv_sector_ci" + INFO_SEPARATOR;
+    public final static String SERVING_SECTOR_LAC = "serv_sector_lac" + INFO_SEPARATOR;
+    public final static String SERVING_SECTOR_NAME = "serv_sector_name" + INFO_SEPARATOR;
+    /*
      * synonyms map
      */
     private static Map<String, String[]> subTypeSynonyms;
     private static Map<String, String[]> networkMap;
     private static Map<String, String[]> driveMap;
+    private static Map<String, String[]> neighMap;
 
     // private static Map<String, String[]> countMap;
 
@@ -215,6 +225,21 @@ public class DataLoadPreferenceManager {
             break;
         }
         return null;
+    }
+
+    public Map<String, String[]> getNeighbourSynonyms() {
+        if (neighMap == null) {
+            neighMap = new HashMap<String, String[]>();
+        }
+        if (neighMap.isEmpty()) {
+            neighMap.put(SERVING_SECTOR_CI, getPossibleHeaders(DataLoadPreferences.NE_SRV_CI));
+            neighMap.put(SERVING_SECTOR_LAC, getPossibleHeaders(DataLoadPreferences.NE_SRV_LAC));
+            neighMap.put(SERVING_SECTOR_NAME, getPossibleHeaders(DataLoadPreferences.NE_SRV_NAME));
+            neighMap.put(NEIGHBOUR_SECTOR_CI, getPossibleHeaders(DataLoadPreferences.NE_NBR_CI));
+            neighMap.put(NEIGHBOUR_SECTOR_LAC, getPossibleHeaders(DataLoadPreferences.NE_NBR_LAC));
+            neighMap.put(NEIGHBOUR_SECTOR_NAME, getPossibleHeaders(DataLoadPreferences.NE_NBR_NAME));
+        }
+        return neighMap;
     }
 
     /**
