@@ -47,7 +47,7 @@ import org.neo4j.kernel.Traversal;
  * </p>
  * 
  * @author grigoreva_a
- * @since 1.0.0 
+ * @since 1.0.0
  */
 public abstract class NewAbstractService {
     public final static String TYPE = "type";
@@ -113,34 +113,13 @@ public abstract class NewAbstractService {
     }
     
     /**
-     * Manage index names for current model.
-     * 
-     * @param type the type of node to index
-     * @param rootNode Root-node
-     * @return the index name
-     * @throws DatabaseException
-     */
-    private Index<Node> getIndex(INodeType type, Node rootNode, 
-            Map<INodeType, Index<Node>> indexMap) throws DatabaseException {
-        
-        Index<Node> result = indexMap.get(type.getId());
-        if (result == null) {
-            result = getIndex(rootNode, type);
-            if (result != null) {
-                indexMap.put(type, result);
-            }
-        }
-        return result;
-    }
-    
-    /**
      * Method delete node and all sub-nodes if they related with CHILD-relationships
      *
      * @param nodeToDelete Node which need delete
      * @throws DatabaseException 
      * @throws InvalidStatisticsParameterException 
      */
-    public void deleteNode(Node nodeToDelete, Node rootNode, Map<INodeType, Index<Node>> indexMap) throws AWEException {
+    public void deleteNode(Node nodeToDelete) throws AWEException {
         LOGGER.debug("start method deleteNode(Node nodeToDelete)");
         
         if (nodeToDelete == null) {
@@ -156,9 +135,8 @@ public abstract class NewAbstractService {
             for (Relationship rel : childRelationships) {
                 Node childNode = rel.getEndNode();
                 if (childNode != null) {
-                    deleteSubNodes(childNode, rootNode, indexMap);
+                    deleteSubNodes(childNode);
                     rel.delete();
-                    removeIndexFromNode(childNode, rootNode, indexMap);
                     childNode.delete();
                 }
             }
@@ -166,7 +144,6 @@ public abstract class NewAbstractService {
             for (Relationship incomingRelationship : incomingRelationships) {
                 incomingRelationship.delete();
             }
-            removeIndexFromNode(nodeToDelete, rootNode, indexMap);
             nodeToDelete.delete();
             tx.success();
         } catch (Exception e) {
@@ -185,16 +162,16 @@ public abstract class NewAbstractService {
      * Recursive deleting all sub-nodes of this node
      *
      * @param child Node to delete
-     * @throws DatabaseException 
      */
-    private void deleteSubNodes(Node child, Node rootNode, Map<INodeType, Index<Node>> indexMap) throws DatabaseException {
-        for (Relationship childRel : child.getRelationships(Direction.OUTGOING)) {
+    private void deleteSubNodes(Node child) {
+        for (Relationship childRel : child.
+                getRelationships(DatasetRelationshipTypes.CHILD, Direction.OUTGOING)) {
             Node subNode = childRel.getEndNode();
+
             if (subNode != null) {
-                deleteSubNodes(subNode, rootNode, indexMap);
-                childRel.delete();
-                removeIndexFromNode(subNode, rootNode, indexMap);
+                deleteSubNodes(subNode);
                 subNode.delete();
+                childRel.delete();
             }
         }
     }
@@ -363,22 +340,6 @@ public abstract class NewAbstractService {
             tx.finish();
         }
         return index;
-    }
-    
-    private void removeIndexFromNode(Node node, Node rootNode, Map<INodeType, Index<Node>> indexMap) throws DatabaseException {
-        Transaction tx = graphDb.beginTx();
-        try {
-            INodeType nodeType = NodeTypeManager.
-                    getType(node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).toString());
-            Index<Node> index = getIndex(nodeType, rootNode, indexMap);
-            index.remove(node, NAME, node.getProperty(INeoConstants.PROPERTY_NAME_NAME));
-            tx.success();
-        } catch (Exception e) {
-            LOGGER.error("Could not index node", e);
-            throw new DatabaseException(e);
-        } finally {
-            tx.finish();
-        }
     }
 
     public Index<Node> addNodeToIndex(Node node, Index<Node> index, String propertyName, Object propertyValue)

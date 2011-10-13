@@ -25,7 +25,6 @@ import junit.framework.Assert;
 import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.services.AbstractNeoServiceTest;
 import org.amanzi.neo.services.NewAbstractService;
-import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.exceptions.DatabaseException;
@@ -281,36 +280,6 @@ public class ExportSynonymsServiceTest extends AbstractNeoServiceTest {
 
         Transaction tx = graphDatabaseService.beginTx();
         datasetSynonyms.setProperty(ExportSynonymsService.EXPORT_SYNONYMS_TYPE, ExportSynonymType.GLOBAL.name());
-        tx.success();
-        tx.finish();
-
-        synonymsService.getDatasetExportSynonyms(datasetNode);
-    }
-
-    @Test
-    public void checkDatasetExportSynonymsFill() throws Exception {
-        Node datasetNode = createDataset();
-        ExportSynonyms synonyms = synonymsService.getDatasetExportSynonyms(datasetNode);
-        synonyms.addSynonym(NetworkElementNodeType.SITE, TEST_PROPERTY_NAME, TEST_KEY);
-        Transaction tx = graphDatabaseService.beginTx();
-        synonymsService.saveExportSynonyms(datasetNode, synonyms, ExportSynonymType.DATASET);
-        Assert.assertNotNull(synonymsService.getDatasetExportSynonyms(datasetNode));
-        Assert.assertNotNull(synonymsService.getDatasetExportSynonyms(datasetNode).rawSynonyms.containsKey(TEST_KEY));
-        tx.success();
-        tx.finish();
-
-        synonymsService.getDatasetExportSynonyms(datasetNode);
-    }
-
-    @Test
-    public void checkGlobalExportSynonymsFill() throws Exception {
-        Node datasetNode = createDataset();
-        ExportSynonyms synonyms = synonymsService.getGlobalExportSynonyms();
-        synonyms.addSynonym(NetworkElementNodeType.SITE, TEST_PROPERTY_NAME, TEST_PROPERTY_NAME);
-        Transaction tx = graphDatabaseService.beginTx();
-        synonymsService.saveExportSynonyms(datasetNode, synonyms, ExportSynonymType.DATASET);
-        Assert.assertNotNull(synonymsService.getGlobalExportSynonyms());
-        Assert.assertNotNull(synonymsService.getGlobalExportSynonyms().rawSynonyms.containsKey(TEST_KEY));
         tx.success();
         tx.finish();
 

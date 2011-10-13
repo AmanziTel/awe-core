@@ -48,6 +48,8 @@ import org.neo4j.kernel.Traversal;
  */
 public class NodeToNodeRelationshipModel extends AbstractModel implements INodeToNodeRelationsModel {
 
+    public static final String RELATION_TYPE = "rel_type";
+
     private static Logger LOGGER = Logger.getLogger(NodeToNodeRelationshipModel.class);
 
     private INodeToNodeRelationsType relType;
@@ -115,7 +117,7 @@ public class NodeToNodeRelationshipModel extends AbstractModel implements INodeT
      * @param name
      * @param nodeType
      */
-    NodeToNodeRelationshipModel(IDataElement parent, INodeToNodeRelationsType relType, String name, INodeType nodeType) {
+    public NodeToNodeRelationshipModel(IDataElement parent, INodeToNodeRelationsType relType, String name, INodeType nodeType) {
         // validate parameters
         if (parent == null) {
             throw new IllegalArgumentException("Parent is null.");
@@ -147,11 +149,30 @@ public class NodeToNodeRelationshipModel extends AbstractModel implements INodeT
                 params.put(NewNetworkService.NETWORK_ID, parentNode.getId());
                 params.put(NewNetworkService.NAME, this.name);
                 params.put(NewNetworkService.TYPE, NodeToNodeTypes.NODE2NODE.getId());
-                params.put(PRIMARY_TYPE, this.relType.getId());
+                params.put(RELATION_TYPE, this.relType.getId());
+                params.put(PRIMARY_TYPE, nodeType.getId());
                 dsServ.setProperties(rootNode, params);
             }
         } catch (DatabaseException e) {
             LOGGER.error("Could not create root node.", e);
+        }
+    }
+
+    NodeToNodeRelationshipModel(Node n2nRoot) {
+        // validate
+        if (n2nRoot == null) {
+            throw new IllegalArgumentException("Node2node root is null.");
+        }
+
+        this.rootNode = n2nRoot;
+        try {
+            this.nodeType = NodeTypeManager.getType(n2nRoot.getProperty(PRIMARY_TYPE).toString());
+            this.relType = N2NRelTypes.valueOf(n2nRoot.getProperty(RELATION_TYPE).toString());
+            this.name = n2nRoot.getProperty(NewNetworkService.NAME).toString();
+        } catch (Exception e) {
+            LOGGER.error("Could not create correlation model based on node " + n2nRoot.getId() + ": invalid properties.", e);
+            throw new IllegalArgumentException("Could not create correlation model based on node " + n2nRoot.getId()
+                    + ": invalid properties.");
         }
     }
 

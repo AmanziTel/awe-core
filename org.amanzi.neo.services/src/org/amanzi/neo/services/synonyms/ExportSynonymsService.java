@@ -128,6 +128,7 @@ public class ExportSynonymsService extends NewAbstractService {
          */
         public String getSynonym(INodeType nodeType, String propertyName) {
             String key = nodeType.getId() + SEPARATOR + propertyName;
+
             return rawSynonyms.get(key);
         }
 
@@ -139,7 +140,7 @@ public class ExportSynonymsService extends NewAbstractService {
          * @param synonym synonym of Property
          */
         public void addSynonym(INodeType nodeType, String propertyName, String synonym) {
-            rawSynonyms.put(nodeType.getId() + SEPARATOR + propertyName, synonym);
+
         }
 
     }
@@ -200,7 +201,7 @@ public class ExportSynonymsService extends NewAbstractService {
             try {
                 exportSynonymsNode = createNode(ExportSynonymsNodeType.EXPORT_SYNONYMS);
                 exportSynonymsNode.setProperty(EXPORT_SYNONYMS_TYPE, synonymType.name());
-                rootNode.createRelationshipTo(exportSynonymsNode, relationshipType);
+
                 tx.success();
             } catch (Exception e) {
                 tx.failure();
@@ -253,28 +254,4 @@ public class ExportSynonymsService extends NewAbstractService {
         return new ExportSynonyms(exportSynonymsNode);
     }
 
-    /**
-     * save export synonyms into existing synonyms node.
-     * 
-     * @param rootNode
-     * @throws DatabaseException
-     */
-    public void saveExportSynonyms(Node rootNode, ExportSynonyms synonyms, ExportSynonymType type) throws DatabaseException {
-        Node exportSynonymsNode = null;
-        switch (type) {
-        case DATASET:
-            exportSynonymsNode = getExportSynonymsNode(rootNode, ExportSynonymsRelationshipTypes.DATASET_SYNONYMS,
-                    ExportSynonymType.DATASET);
-            break;
-        case GLOBAL:
-            exportSynonymsNode = getExportSynonymsNode(graphDb.getReferenceNode(), ExportSynonymsRelationshipTypes.GLOBAL_SYNONYMS,
-                    ExportSynonymType.GLOBAL);
-        default:
-            break;
-        }
-        for (String key : synonyms.rawSynonyms.keySet()) {
-            exportSynonymsNode.setProperty(key, synonyms.rawSynonyms.get(key));
-        }
-
-    }
 }

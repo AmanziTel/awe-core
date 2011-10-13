@@ -22,6 +22,7 @@ import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.model.impl.DataElement;
+import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelationships;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
@@ -94,6 +95,12 @@ public class NewNetworkService extends NewAbstractService {
      */
     protected final static TraversalDescription ALL_SELECTION_LISTS_TRAVERSER = Traversal.description().breadthFirst()
             .relationships(NetworkRelationshipTypes.SELECTION_LIST).evaluator(Evaluators.excludeStartPosition());
+
+    /*
+     * Traversal Description to find all node2node relationship root nodes
+     */
+    protected final static TraversalDescription N2N_ROOT_TRAVERSER = Traversal.description().breadthFirst()
+            .relationships(N2NRelationships.N2N_REL, Direction.OUTGOING).evaluator(Evaluators.excludeStartPosition());
 
     public NewNetworkService() {
         super();
@@ -192,7 +199,8 @@ public class NewNetworkService extends NewAbstractService {
             throw new IllegalArgumentException("Index is null.");
         }
 
-        // !(A|B) = !(A)&!(B). !(name OR (ci AND lac)) = !name AND !(ci AND lac) = !name AND (!ci OR !lac)
+        // !(A|B) = !(A)&!(B). !(name OR (ci AND lac)) = !name AND !(ci AND lac) = !name AND (!ci OR
+        // !lac)
         if (((name == null) || (name.equals(StringUtils.EMPTY)))
                 && ((ci == null) || (ci.equals(StringUtils.EMPTY)) || (lac == null) || (lac.equals(StringUtils.EMPTY)))) {
             throw new IllegalNodeDataException("Name or CI+LAC must be set");
@@ -495,7 +503,7 @@ public class NewNetworkService extends NewAbstractService {
      * @param existedNode
      * @param dataElement
      * @param isReplaceExisted
-     * @throws DatabaseException 
+     * @throws DatabaseException
      */
     public void completeProperties(Node existedNode, DataElement dataElement, boolean isReplaceExisted) throws DatabaseException {
         Transaction tx = graphDb.beginTx();
@@ -570,5 +578,20 @@ public class NewNetworkService extends NewAbstractService {
             tx.finish();
         }
         return result;
+    }
+
+    /**
+     * Traverses the database to find all n2n relationship root nodes, that refer to the defined
+     * <code>network</code> node
+     * 
+     * @param network the root network node to find n2n nodes for
+     * @return iterable over the found nodes
+     */
+    public Iterable<Node> getNodeToNodeRoots(Node network) {
+        // validate
+        if (network == null) {
+            throw new IllegalArgumentException("Network node is null.");
+        }
+        return N2N_ROOT_TRAVERSER.traverse(network).nodes();
     }
 }

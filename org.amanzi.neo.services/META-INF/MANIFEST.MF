@@ -26,5 +26,4 @@ Export-Package: org.amanzi.neo.services,
  org.amanzi.neo.services.nodes,
  org.amanzi.neo.services.statistic,
  org.amanzi.neo.services.statistic.internal,
- org.amanzi.neo.services.synonyms,
  org.amanzi.neo.services.utils

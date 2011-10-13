@@ -36,6 +36,7 @@ import org.amanzi.neo.services.model.ICorrelationModel;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.INetworkType;
+import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
 import org.amanzi.neo.services.model.ISelectionModel;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -51,7 +52,7 @@ import org.neo4j.graphdb.index.Index;
  * </p>
  * 
  * @author grigoreva_a
- * @since 1.0.0 
+ * @since 1.0.0
  */
 public class NetworkModel extends RenderableModel implements INetworkModel {
 
@@ -146,8 +147,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
             throw new IllegalArgumentException("Node assotiated with DataElement is null.");
         }
         try {
-            nwServ.deleteNode(node, getRootNode(), indexMap);
-            elementToDelete = null;
+            nwServ.deleteNode(((DataElement)elementToDelete).getNode());
         } catch (AWEException e) {
             LOGGER.error("Could not delete all or some nodes", e);
         }
@@ -286,6 +286,19 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
 
         return result;
 
+    }
+    
+    @Override
+    public Iterable<INodeToNodeRelationsModel> getNodeToNodeModels() throws AWEException {
+        LOGGER.info("getNodeToNodeModels()");
+
+        Node network = getRootNode();
+        List<INodeToNodeRelationsModel> result = new ArrayList<INodeToNodeRelationsModel>();
+        for (Node n2nRoot : nwServ.getNodeToNodeRoots(network)) {
+            result.add(new NodeToNodeRelationshipModel(n2nRoot));
+        }
+
+        return result;
     }
 
     @Override

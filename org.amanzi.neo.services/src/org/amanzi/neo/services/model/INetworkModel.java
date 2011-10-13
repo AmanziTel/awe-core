@@ -12,7 +12,6 @@
  */
 
 package org.amanzi.neo.services.model;
- 
 
 import java.util.Map;
 
@@ -29,7 +28,21 @@ import org.neo4j.graphdb.RelationshipType;
  */
 public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IRenderableModel {
 
+    /**
+     * Traverse database to find all correlation root nodes and create models based on them.
+     * 
+     * @return an iterable over correlation models, referring to current network
+     * @throws AWEException if errors occur in database
+     */
     public Iterable<ICorrelationModel> getCorrelationModels() throws AWEException;
+
+    /**
+     * Traverse database to find all n2n root nodes and create models based on them.
+     * 
+     * @return an iterable over n2n models, referring to current network
+     * @throws AWEException if errors occur in database
+     */
+    public Iterable<INodeToNodeRelationsModel> getNodeToNodeModels() throws AWEException;
 
     public INetworkType getNetworkType();
 
@@ -95,19 +108,19 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
 
     /**
      * Delete a network element based on <code>IDataElement element</code> object.
-     *
+     * 
      * @param elementToDelete Element to delete
      */
     public void deleteElement(IDataElement elementToDelete);
-    
+
     /**
      * Rename name of a network element based on <code>IDataElement element</code> object.
-     *
+     * 
      * @param elementToRename Element to rename
      * @param newName New name of node and dataElement
      */
     public void renameElement(IDataElement elementToRename, String newName);
-    
+
     /**
      * complete existedElement with new property. if
      * 

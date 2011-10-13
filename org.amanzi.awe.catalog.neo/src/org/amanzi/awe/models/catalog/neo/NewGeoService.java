@@ -24,7 +24,6 @@ import net.refractions.udig.catalog.IService;
 import net.refractions.udig.catalog.IServiceInfo;
 
 import org.amanzi.awe.catalog.neo.NeoServiceExtension;
-import org.amanzi.awe.catalog.neo.NeoServiceInfo;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IRenderableModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
@@ -42,9 +41,10 @@ public class NewGeoService extends IService {
     private final Map<String, Serializable> params;
     private final Class<Object> type;
 
+    @SuppressWarnings("unchecked")
     NewGeoService(Map<String, Serializable> params) {
         this.params = params;
-        url = (URL)params.get(NeoServiceExtension.URL_KEY);
+        url = (URL)params.get(NewGeoServiceExtension.URL_KEY);
         type = (Class<Object>)params.get(NeoServiceExtension.CLASS_KEY);
     }
 
