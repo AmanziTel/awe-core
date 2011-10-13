@@ -31,14 +31,14 @@ import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.apache.log4j.Logger;
 
 /**
- * IValidator implementation contain methods for validation ams xml data
+ * IValidator implementation contain methods for validation xml data files
  * 
  * @author Kondratenko_Vladislav
  */
-public class AMSXMLDataValidator implements IValidator {
+public class XMLValidator implements IValidator {
     Result result = Result.FAIL;
     String message = "";
-    private static Logger LOGGER = Logger.getLogger(AMSXMLDataValidator.class);
+    private static Logger LOGGER = Logger.getLogger(XMLValidator.class);
 
     /**
      * check correct file extension
@@ -144,6 +144,8 @@ public class AMSXMLDataValidator implements IValidator {
         }
 
         catch (IOException e) {
+            LOGGER.error("Unable to validate files " + fileToLoad.toString(), e);
+            return;
         }
     }
 

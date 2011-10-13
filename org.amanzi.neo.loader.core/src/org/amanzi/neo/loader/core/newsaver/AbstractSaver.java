@@ -46,7 +46,7 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
     public static final String CONFIG_VALUE_DATASET = "Dataset";
     public static final String PROJECT_PROPERTY = "project";
     public static final String CONFIG_VALUE_CALLS = "Calls";
-    public static final String CONFIG_VALUE_PESQ = "PESQ";
+    public static final String CONFIG_VALUE_PESQ = "Pesq";
     protected final static ExportSynonymsManager exportManager = ExportSynonymsManager.getManager();
     protected static DataLoadPreferenceManager preferenceManager = new DataLoadPreferenceManager();
     protected Map<String, String[]> preferenceStoreSynonyms;
@@ -72,6 +72,9 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
      * save synonyms into database
      */
     private void saveSynonym() {
+        if (synonymsMap.isEmpty()) {
+            return;
+        }
         for (String key : modelMap.keySet()) {
             try {
                 exportManager.saveExportSynonyms(modelMap.get(key), synonymsMap.get(modelMap.get(key)));

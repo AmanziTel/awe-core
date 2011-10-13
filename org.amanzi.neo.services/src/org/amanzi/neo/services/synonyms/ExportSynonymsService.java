@@ -254,8 +254,7 @@ public class ExportSynonymsService extends NewAbstractService {
     }
 
     /**
-     * save export synonyms into existing synonyms node. current method also update global synonyms
-     * setting;
+     * save export synonyms into existing synonyms node.
      * 
      * @param rootNode
      * @throws DatabaseException
@@ -265,13 +264,6 @@ public class ExportSynonymsService extends NewAbstractService {
                 ExportSynonymType.DATASET);
         for (String key : synonyms.rawSynonyms.keySet()) {
             exportDatasetSynonymsNode.setProperty(key, synonyms.rawSynonyms.get(key));
-        }
-        Node exportGlobalSynonymsNode = getExportSynonymsNode(graphDb.getReferenceNode(),
-                ExportSynonymsRelationshipTypes.GLOBAL_SYNONYMS, ExportSynonymType.GLOBAL);
-        for (String key : synonyms.rawSynonyms.keySet()) {
-            if (!exportGlobalSynonymsNode.hasProperty(key)) {
-                exportGlobalSynonymsNode.setProperty(key, synonyms.rawSynonyms.get(key));
-            }
         }
     }
 }
