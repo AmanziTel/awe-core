@@ -71,7 +71,8 @@ public class ProjectModelTest extends AbstractNeoServiceTest {
 	@Test(expected = IllegalArgumentException.class)
 	public void testProjectModelNameNull() {
 		LOGGER.debug("start testProjectModelNameNull()");
-		model = new ProjectModel(null);
+		String nl = null;
+		model = new ProjectModel(nl);
 		// exception
 	}
 

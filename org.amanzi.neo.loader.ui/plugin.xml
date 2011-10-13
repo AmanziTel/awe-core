@@ -60,16 +60,7 @@
              locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
           <toolbar
                 id="org.amanzi.neo.loader.toolbar2">             
-            <command
-                   commandId="org.amanzi.neo.loader.ui.commands.LaunchLoaderNew"
-                   icon="icons/16/probe.png"
-                   id="org.amanzi.neo.loader.ui.commands.LaunchLoaderNew"
-                   tooltip="Load AMS XML Data">
-                <parameter
-                      name="org.amanzi.neo.loader.ui.commands.guiId"
-                      value="org.amanzi.neo.loader.ui.wizards.AMSXMLLoaderWizard">
-                </parameter>
-             </command>
+           
               <command
                    commandId="org.amanzi.neo.loader.ui.commands.LaunchLoaderNew"
                    icon="icons/16/network.png"
@@ -146,10 +137,6 @@
        <GUI
              class="org.amanzi.neo.loader.ui.wizards.NetworkConfigurationImportWizard"
              id="org.amanzi.neo.loader.ui.wizards.NetworkConfigurationImportWizard">
-       </GUI>
-       <GUI
-             class="org.amanzi.neo.loader.ui.wizards.AMSXMLLoaderWizard"
-             id="org.amanzi.neo.loader.ui.wizards.AMSXMLLoaderWizard">
        </GUI>
     </extension>
     <extension
@@ -337,23 +324,8 @@
       </initializer>
    </extension>
 
-   <extension
+    <extension
          point="org.amanzi.neo.loader.ui.newloaders">
-      <newloader
-            gui="org.amanzi.neo.loader.ui.wizards.AMSXMLLoaderWizard"
-            id="AMSXMLLoader"
-            loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoaderNew"
-            loader_data_type="AMS"
-            loader_name="AMSXMLLoader"
-            loader_type="XML"
-            parser="org.amanzi.awe.cassidian.loader.parser.AMSXMLParser"
-            validator="org.amanzi.neo.loader.ui.validators.AMSXMLDataValidator">
-                <saver 
-                id="org.amanzi.awe.cassidian.saver.AMSXMLSaver"
-            	class="org.amanzi.awe.cassidian.saver.AMSXMLSaver"
-            />
-            
-      </newloader>
        <newloader
              gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
              id="NewNetworkLoader"

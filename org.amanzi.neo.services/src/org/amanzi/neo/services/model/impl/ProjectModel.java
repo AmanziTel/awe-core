@@ -71,7 +71,7 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
      * 
      * @param projectNode node for a Project
      */
-    private ProjectModel(Node projectNode) {
+    public ProjectModel(Node projectNode) {
         if (projectNode == null) {
             throw new IllegalArgumentException("Project node is null");
         }

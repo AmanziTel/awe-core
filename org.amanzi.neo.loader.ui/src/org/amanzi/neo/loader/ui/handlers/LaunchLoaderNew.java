@@ -90,7 +90,6 @@ public class LaunchLoaderNew extends AbstractHandler {
      * @return the wizard instance
      */
     private IGraphicInterfaceForLoaders getWizardInstance(ExecutionEvent arg0, List<IConfigurationElement> elements) {
-
         Object wizard = null;
         IExtensionRegistry reg = Platform.getExtensionRegistry();
         IConfigurationElement[] extensions = reg.getConfigurationElementsFor("org.amanzi.neo.loader.ui.gui");

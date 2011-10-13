@@ -115,8 +115,10 @@ public interface IProjectModel extends IModel {
     public abstract INetworkModel getNetwork(String name);
 
     /**
-     * Looks up for drive and network datasets, included in current project, and build a list of
-     * renderable models based on them.
+     * TODO: test implementation
+     * 
+     * Looks up for drive and network datasets, included in current
+     * project, and build a list of renderable models based on them.
      * 
      * @return a list of renderable models that belong to the current project
      * @throws AWEException if errors occur in database
