@@ -158,7 +158,7 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
 			}
 			parentElement = testElement;
 		}
-	}
+	} 
 	
 	@Test
 	public void testDeleteElement() {

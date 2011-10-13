@@ -51,7 +51,7 @@ import org.neo4j.graphdb.index.Index;
  * </p>
  * 
  * @author grigoreva_a
- * @since 1.0.0
+ * @since 1.0.0 
  */
 public class NetworkModel extends RenderableModel implements INetworkModel {
 

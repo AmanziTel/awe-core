@@ -47,7 +47,7 @@ import org.neo4j.kernel.Traversal;
  * </p>
  * 
  * @author grigoreva_a
- * @since 1.0.0
+ * @since 1.0.0 
  */
 public abstract class NewAbstractService {
     public final static String TYPE = "type";
