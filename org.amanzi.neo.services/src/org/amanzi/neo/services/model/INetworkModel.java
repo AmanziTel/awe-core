@@ -15,6 +15,7 @@ package org.amanzi.neo.services.model;
 
 import java.util.Map;
 
+import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.neo4j.graphdb.RelationshipType;
 
@@ -37,12 +38,27 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
     public Iterable<ICorrelationModel> getCorrelationModels() throws AWEException;
 
     /**
+     * Find or create a correlation model between the current network and the defined dataset.
+     * 
+     * @param datasetElement
+     * @return
+     * @throws AWEException
+     */
+    public ICorrelationModel getCorrelationModel(IDataElement datasetElement) throws AWEException;
+
+    /**
      * Traverse database to find all n2n root nodes and create models based on them.
      * 
      * @return an iterable over n2n models, referring to current network
      * @throws AWEException if errors occur in database
      */
     public Iterable<INodeToNodeRelationsModel> getNodeToNodeModels() throws AWEException;
+
+    public INodeToNodeRelationsModel createNodeToNodeMmodel(INodeToNodeRelationsType relType, String name, INodeType nodeType);
+
+    public INodeToNodeRelationsModel findNodeToNodeModel(INodeToNodeRelationsType relType, String name, INodeType nodeType);
+
+    public INodeToNodeRelationsModel getNodeToNodeModel(INodeToNodeRelationsType relType, String name, INodeType nodeType);
 
     public INetworkType getNetworkType();
 

@@ -37,6 +37,7 @@ import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.INetworkType;
 import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
+import org.amanzi.neo.services.model.INodeToNodeRelationsType;
 import org.amanzi.neo.services.model.ISelectionModel;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -136,7 +137,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     public IDataElement createElement(IDataElement parent, Map<String, Object> params) {
         return createElement(parent, params, NetworkRelationshipTypes.CHILD);
     }
-    
+
     @Override
     public void deleteElement(IDataElement elementToDelete) {
         if (elementToDelete == null) {
@@ -152,7 +153,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
             LOGGER.error("Could not delete all or some nodes", e);
         }
     }
-    
+
     @Override
     public void renameElement(IDataElement elementToRename, String newName) {
         elementToRename.put(INeoConstants.PROPERTY_NAME_NAME, newName);
@@ -219,7 +220,6 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         return result;
     }
 
-    
     /**
      * Manage index names for current model.
      * 
@@ -287,7 +287,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         return result;
 
     }
-    
+
     @Override
     public Iterable<INodeToNodeRelationsModel> getNodeToNodeModels() throws AWEException {
         LOGGER.info("getNodeToNodeModels()");
@@ -488,5 +488,31 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     @Override
     public void finishUp() {
         super.finishUp();
+    }
+
+    @Override
+    public ICorrelationModel getCorrelationModel(IDataElement datasetElement) throws DatabaseException {
+        return new CorrelationModel(new DataElement(this.rootNode), datasetElement);
+    }
+
+    @Override
+    public INodeToNodeRelationsModel createNodeToNodeMmodel(INodeToNodeRelationsType relType, String name, INodeType nodeType) {
+        return new NodeToNodeRelationshipModel(new DataElement(this.rootNode), relType, name, nodeType);
+    }
+
+    @Override
+    public INodeToNodeRelationsModel findNodeToNodeModel(INodeToNodeRelationsType relType, String name, INodeType nodeType) {
+        Node n2nRoot = dsServ.findNode(this.rootNode, relType, name, nodeType);
+        return n2nRoot == null ? null : new NodeToNodeRelationshipModel(n2nRoot);
+    }
+
+    @Override
+    public INodeToNodeRelationsModel getNodeToNodeModel(INodeToNodeRelationsType relType, String name, INodeType nodeType) {
+        INodeToNodeRelationsModel result = findNodeToNodeModel(relType, name, nodeType);
+        if (result == null) {
+            result = createNodeToNodeMmodel(relType, name, nodeType);
+
+        }
+        return result;
     }
 }
