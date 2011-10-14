@@ -165,7 +165,7 @@ public class NewNeighboursSaver extends AbstractSaver<NetworkModel, CSVContainer
                 for (String mask : preferenceStoreSynonyms.get(posibleHeader)) {
                     if (header.toLowerCase().matches(mask.toLowerCase())) {
                         isAppropriation = true;
-                        String name = posibleHeader.substring(0, posibleHeader.indexOf('.'));
+                        String name = posibleHeader.substring(0, posibleHeader.indexOf(DataLoadPreferenceManager.INFO_SEPARATOR));
                         fileSynonyms.put(name, header);
                         break;
                     }
