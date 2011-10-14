@@ -137,7 +137,7 @@ public class VaultTests {
     private final static Integer INTEGER_PROPERTY_VALUE_NETWORK_2 = new Integer(200);
     private final static String STRING_PROPERTY_VALUE_NEIGHBOURS_1 = "neighbour_1";
     private final static String STRING_PROPERTY_VALUE_NEIGHBOURS_2 = "neighbour_2";
-    
+
     private final static String EMPTY_STRING = "";
     private final static String STRING_INT_VALUE = "5";
     private final static String STRING_FLOAT_VALUE = "5.5";
@@ -154,7 +154,7 @@ public class VaultTests {
         testingList.add(new StoreForTestingParse(SHORT_VALUE, Short.class, Integer.class, STRING_INT_VALUE));
         testingList.add(new StoreForTestingParse(STRING_VALUE, String.class, STRING_VALUE));
     }
-    
+
     StatisticsVault propVault = null;
     StatisticsVault neighboursSubVault = null;
     StatisticsVault networkSubVault = null;
@@ -317,7 +317,8 @@ public class VaultTests {
         indexProperty(propVault, NETWORK, PROPERTY_NAME_NAME_1, STRING_PROPERTY_VALUE_NETWORK_1, expectedNetworkSubVaultCount);
 
         int expectedNeighbourSubVaultCount = 4;
-        indexProperty(propVault, NEIGHBOURS, PROPERTY_NAME_NAME_1, STRING_PROPERTY_VALUE_NEIGHBOURS_1, expectedNeighbourSubVaultCount);
+        indexProperty(propVault, NEIGHBOURS, PROPERTY_NAME_NAME_1, STRING_PROPERTY_VALUE_NEIGHBOURS_1,
+                expectedNeighbourSubVaultCount);
 
         int expectedVaultCount = expectedNeighbourSubVaultCount + expectedNetworkSubVaultCount;
 
@@ -783,20 +784,17 @@ public class VaultTests {
         LOGGER.debug("finish test parseEmptyPropNameNegativeTest()");
 
     }
-    
+
     /**
-     * Creating standart structure of statistics
+     * Creating standart structure of statistics STRUCTURE:
+     * ...........................properties................................
+     * ...................../..................\............................
+     * ..................../....................\...........................
+     * ..................network....................neighbours..............
+     * .............../.....|.....\................../.........\............
+     * ............../......|......\................/...........\...........
+     * ........name4(S)..name5(I)....name3(S)....name1(2xS).......name2(I)....
      * 
-     * STRUCTURE:
-     * 
-     *...........................properties................................
-     *...................../..................\............................
-     *..................../....................\...........................
-     *..................network....................neighbours..............
-     *.............../.....|.....\................../.........\............
-     *............../......|......\................/...........\...........
-     *........name4(S)..name5(I)....name3(S)....name1(2xS).......name2(I)....
-     *
      * @throws IndexPropertyException
      * @throws InvalidStatisticsParameterException
      */
@@ -816,7 +814,7 @@ public class VaultTests {
         networkSubVault.addPropertyStatistics(propStat4);
         NewPropertyStatistics propStat5 = new NewPropertyStatistics(PROPERTY_NAME_NAME_5, Integer.class);
         networkSubVault.addPropertyStatistics(propStat5);
-        
+
         indexProperty(propVault, NEIGHBOURS, PROPERTY_NAME_NAME_1, STRING_PROPERTY_VALUE_NETWORK_1, 1);
         indexProperty(propVault, NEIGHBOURS, PROPERTY_NAME_NAME_1, STRING_PROPERTY_VALUE_NEIGHBOURS_2, 1);
         indexProperty(propVault, NEIGHBOURS, PROPERTY_NAME_NAME_2, INTEGER_PROPERTY_VALUE_NETWORK, 1);
@@ -824,10 +822,10 @@ public class VaultTests {
         indexProperty(propVault, NETWORK, PROPERTY_NAME_NAME_4, STRING_PROPERTY_VALUE_NETWORK_3, 1);
         indexProperty(propVault, NETWORK, PROPERTY_NAME_NAME_5, INTEGER_PROPERTY_VALUE_NETWORK_2, 1);
     }
-    
+
     /**
      * testing method getCount() positive tests (standart structure)
-     *
+     * 
      * @throws IndexPropertyException
      * @throws InvalidStatisticsParameterException
      */
@@ -835,29 +833,26 @@ public class VaultTests {
     public void getCountStandartStructurePositiveTest() throws IndexPropertyException, InvalidStatisticsParameterException {
         LOGGER.debug("start test getCountStandartStructurePositiveTest()");
         createStandartStructureOfStatistics();
-        
+
         int expectedPropStatCount = 6;
-        
+
         int propCount = propVault.getCount();
-        Assert.assertEquals("getCount() return wrong count (test with prop vault)", 
-        		expectedPropStatCount, propCount);
-        
+        Assert.assertEquals("getCount() return wrong count (test with prop vault)", expectedPropStatCount, propCount);
+
         expectedPropStatCount = 3;
         int networkCount = networkSubVault.getCount();
-        Assert.assertEquals("getCount() return wrong count (test with subvault)", 
-        		expectedPropStatCount, networkCount);
-        
+        Assert.assertEquals("getCount() return wrong count (test with subvault)", expectedPropStatCount, networkCount);
+
         int neighboursCount = neighboursSubVault.getCount();
-        Assert.assertEquals("getCount() return wrong count (test with subvault)", 
-        		expectedPropStatCount, neighboursCount);
-        
+        Assert.assertEquals("getCount() return wrong count (test with subvault)", expectedPropStatCount, neighboursCount);
+
         LOGGER.debug("finish test getCountStandartStructurePositiveTest()");
 
     }
-    
+
     /**
      * testing method getNodeCount(String nodeType) positive tests (standart structure)
-     *
+     * 
      * @throws IndexPropertyException
      * @throws InvalidStatisticsParameterException
      */
@@ -865,29 +860,30 @@ public class VaultTests {
     public void getNodeCountStandartStructurePositiveTest() throws IndexPropertyException, InvalidStatisticsParameterException {
         LOGGER.debug("start test getNodeCountStandartStructurePositiveTest()");
         createStandartStructureOfStatistics();
-        
+
         int expectedPropStatCount = 6;
-        
+
         int propCountProperty = propVault.getNodeCount(PROPERTIES);
-        Assert.assertEquals("getNodeCount(String nodeType) return wrong count (test with main vault)", 
-        		expectedPropStatCount, propCountProperty);
-        
+        Assert.assertEquals("getNodeCount(String nodeType) return wrong count (test with main vault)", expectedPropStatCount,
+                propCountProperty);
+
         expectedPropStatCount = 0;
         int networkCountProperty = neighboursSubVault.getNodeCount(NETWORK);
-        Assert.assertEquals("getNodeCount(String nodeType) return wrong count (test with subvault)", 
-        		expectedPropStatCount, networkCountProperty);
-        
+        Assert.assertEquals("getNodeCount(String nodeType) return wrong count (test with subvault)", expectedPropStatCount,
+                networkCountProperty);
+
         expectedPropStatCount = 3;
         int neighboursCountProperty = neighboursSubVault.getNodeCount(NEIGHBOURS);
-        Assert.assertEquals("getNodeCount(String nodeType) return wrong count (test with subvault)", 
-        		expectedPropStatCount, neighboursCountProperty);
-        
+        Assert.assertEquals("getNodeCount(String nodeType) return wrong count (test with subvault)", expectedPropStatCount,
+                neighboursCountProperty);
+
         LOGGER.debug("finish test getNodeCountStandartStructurePositiveTest()");
     }
-    
+
     /**
-     * testing method getPropertyCount(String nodeType, String propertyName) positive tests (standart structure)
-     *
+     * testing method getPropertyCount(String nodeType, String propertyName) positive tests
+     * (standart structure)
+     * 
      * @throws IndexPropertyException
      * @throws InvalidStatisticsParameterException
      */
@@ -895,35 +891,34 @@ public class VaultTests {
     public void getPropertyCountStandartStructurePositiveTest() throws IndexPropertyException, InvalidStatisticsParameterException {
         LOGGER.debug("start test getPropertyCountStandartStructurePositiveTest()");
         createStandartStructureOfStatistics();
-        
+
         int expectedPropStatCount = 2;
-        
+
         int propCountProperty = propVault.getPropertyCount(NEIGHBOURS, PROPERTY_NAME_NAME_1);
-        Assert.assertEquals("getPropertyCount(String nodeType, String propertyName) return wrong count (test with main vault)", 
-        		expectedPropStatCount, propCountProperty);
-        
+        Assert.assertEquals("getPropertyCount(String nodeType, String propertyName) return wrong count (test with main vault)",
+                expectedPropStatCount, propCountProperty);
+
         expectedPropStatCount = 0;
         int networkCountProperty = neighboursSubVault.getPropertyCount(NETWORK, PROPERTY_NAME_NAME_3);
-        Assert.assertEquals("getPropertyCount(String nodeType, String propertyName) return wrong count (test with subvault)", 
-        		expectedPropStatCount, networkCountProperty);
-        
+        Assert.assertEquals("getPropertyCount(String nodeType, String propertyName) return wrong count (test with subvault)",
+                expectedPropStatCount, networkCountProperty);
+
         expectedPropStatCount = 0;
         int neighboursCountProperty = networkSubVault.getPropertyCount(NETWORK, PROPERTY_NAME_NAME_5);
-        Assert.assertEquals("getNodeCount(String nodeType) return wrong count (test with subvault)", 
-        		expectedPropStatCount, neighboursCountProperty);
-        
+        Assert.assertEquals("getNodeCount(String nodeType) return wrong count (test with subvault)", expectedPropStatCount,
+                neighboursCountProperty);
+
         expectedPropStatCount = 1;
         int networkCountProperty2 = propVault.getPropertyCount(NETWORK, PROPERTY_NAME_NAME_5);
-        Assert.assertEquals("getNodeCount(String nodeType) return wrong count (test with main vault)", 
-        		expectedPropStatCount, networkCountProperty2);
-        
+        Assert.assertEquals("getNodeCount(String nodeType) return wrong count (test with main vault)", expectedPropStatCount,
+                networkCountProperty2);
+
         LOGGER.debug("finish test getPropertyCountStandartStructurePositiveTest()");
     }
 
-    
     /**
      * testing method getAllProperties() (standart structure)
-     *
+     * 
      * @throws IndexPropertyException
      * @throws InvalidStatisticsParameterException
      */
@@ -931,214 +926,231 @@ public class VaultTests {
     public void getAllPropertiesStandartStructureTest() throws IndexPropertyException, InvalidStatisticsParameterException {
         LOGGER.debug("start test getAllPropertiesStandartStructureTest()");
         createStandartStructureOfStatistics();
-        
+
         int expectedAllPropStatCount = 6;
         Map<Object, Integer> allProperties_propVault = propVault.getAllProperties();
-        Assert.assertEquals("getAllProperties() return wrong count (test with prop vault)", 
-        		expectedAllPropStatCount, allProperties_propVault.size());
-        
+        Assert.assertEquals("getAllProperties() return wrong count (test with prop vault)", expectedAllPropStatCount,
+                allProperties_propVault.size());
+
         expectedAllPropStatCount = 3;
         Map<Object, Integer> allProperties_neighboursSubVault = neighboursSubVault.getAllProperties();
-        Assert.assertEquals("getAllProperties() return wrong count (test with neighbours subVault)", 
-        		expectedAllPropStatCount, allProperties_neighboursSubVault.size());
-        
+        Assert.assertEquals("getAllProperties() return wrong count (test with neighbours subVault)", expectedAllPropStatCount,
+                allProperties_neighboursSubVault.size());
+
         expectedAllPropStatCount = 3;
         Map<Object, Integer> allProperties_networkSubVault = networkSubVault.getAllProperties();
-        Assert.assertEquals("getAllProperties() return wrong count (test with network subVault)", 
-        		expectedAllPropStatCount, allProperties_networkSubVault.size());
+        Assert.assertEquals("getAllProperties() return wrong count (test with network subVault)", expectedAllPropStatCount,
+                allProperties_networkSubVault.size());
         LOGGER.debug("finish test getAllPropertiesStandartStructureTest()");
     }
-    
+
     /**
      * testing method getAllProperties(String nodeType) (standart structure)
-     *
+     * 
      * @throws IndexPropertyException
      * @throws InvalidStatisticsParameterException
      */
     @Test
-    public void getAllPropertiesWithNodeNameStandartStructureTest() throws IndexPropertyException, InvalidStatisticsParameterException {
+    public void getAllPropertiesWithNodeNameStandartStructureTest() throws IndexPropertyException,
+            InvalidStatisticsParameterException {
         LOGGER.debug("start test getAllPropertiesWithNodeNameStandartStructureTest()");
         createStandartStructureOfStatistics();
-        
+
         int expectedAllPropStatCount = 3;
         Map<Object, Integer> allPropertiesWithNodeType_propVault = propVault.getAllProperties(NEIGHBOURS);
-        Assert.assertEquals("getAllProperties(String nodeType) return wrong count (test with main vault)", 
-        		expectedAllPropStatCount, allPropertiesWithNodeType_propVault.size());
-        
+        Assert.assertEquals("getAllProperties(String nodeType) return wrong count (test with main vault)",
+                expectedAllPropStatCount, allPropertiesWithNodeType_propVault.size());
+
         expectedAllPropStatCount = 0;
         Map<Object, Integer> allPropertiesWithNodeType_neighboursSubVault = neighboursSubVault.getAllProperties(NEIGHBOURS);
-        Assert.assertEquals("getAllProperties(String nodeType) return wrong count (test with subVault). Expected zero.", 
-        		expectedAllPropStatCount, allPropertiesWithNodeType_neighboursSubVault.size());
-        
+        Assert.assertEquals("getAllProperties(String nodeType) return wrong count (test with subVault). Expected zero.",
+                expectedAllPropStatCount, allPropertiesWithNodeType_neighboursSubVault.size());
+
         expectedAllPropStatCount = 0;
         Map<Object, Integer> allPropertiesWithNodeType_networkSubVault = networkSubVault.getAllProperties(NEIGHBOURS);
-        Assert.assertEquals("getAllProperties(String nodeType) return wrong count (test with subVault). Expected zero.", 
-        		expectedAllPropStatCount, allPropertiesWithNodeType_networkSubVault.size());
-        
+        Assert.assertEquals("getAllProperties(String nodeType) return wrong count (test with subVault). Expected zero.",
+                expectedAllPropStatCount, allPropertiesWithNodeType_networkSubVault.size());
+
         expectedAllPropStatCount = 3;
         Map<Object, Integer> allPropertiesWithNodeType_propVault2 = propVault.getAllProperties(NETWORK);
-        Assert.assertEquals("getAllProperties(String nodeType) return wrong count (test with main vault)", 
-        		expectedAllPropStatCount, allPropertiesWithNodeType_propVault2.size());
-        
+        Assert.assertEquals("getAllProperties(String nodeType) return wrong count (test with main vault)",
+                expectedAllPropStatCount, allPropertiesWithNodeType_propVault2.size());
+
         expectedAllPropStatCount = 0;
         Map<Object, Integer> allPropertiesWithNodeType_propVault3 = propVault.getAllProperties(SECTOR);
-        Assert.assertEquals("getAllProperties(String nodeType) return wrong count (test with main vault). Expected zero.", 
-        		expectedAllPropStatCount, allPropertiesWithNodeType_propVault3.size());
-        
+        Assert.assertEquals("getAllProperties(String nodeType) return wrong count (test with main vault). Expected zero.",
+                expectedAllPropStatCount, allPropertiesWithNodeType_propVault3.size());
+
         LOGGER.debug("finish test getAllPropertiesWithNodeNameStandartStructureTest()");
     }
 
-
     /**
      * testing method getAllPropertiesWithName(String propertyName) (standart structure)
-     *
+     * 
      * @throws IndexPropertyException
      * @throws InvalidStatisticsParameterException
      */
     @Test
-    public void getAllPropertiesWithPropertyNameStandartStructureTest() throws IndexPropertyException, InvalidStatisticsParameterException {
+    public void getAllPropertiesWithPropertyNameStandartStructureTest() throws IndexPropertyException,
+            InvalidStatisticsParameterException {
         LOGGER.debug("start test getAllPropertiesWithPropertyNameStandartStructureTest()");
         createNotStandartStructureOfStatistics();
         getAllPropertiesWithPropertyNameStandartAndNotStandartStructureTest();
         LOGGER.debug("finish test getAllPropertiesWithPropertyNameStandartStructureTest()");
     }
-    
+
     private void getAllPropertiesWithPropertyNameStandartAndNotStandartStructureTest() {
         int expectedAllPropStatCount = 2;
-        Map<Object, Integer> allPropertiesWithPropertyName_name0 = neighboursSubVault.getAllPropertiesWithName(PROPERTY_NAME_NAME_1);
-        Assert.assertEquals("getAllPropertiesWithName(String propertyName) return wrong count (test with subVault)", 
-        		expectedAllPropStatCount, allPropertiesWithPropertyName_name0.size());
-        
+        Map<Object, Integer> allPropertiesWithPropertyName_name0 = neighboursSubVault
+                .getAllPropertiesWithName(PROPERTY_NAME_NAME_1);
+        Assert.assertEquals("getAllPropertiesWithName(String propertyName) return wrong count (test with subVault)",
+                expectedAllPropStatCount, allPropertiesWithPropertyName_name0.size());
+
         Map<Object, Integer> allPropertiesWithPropertyName_name1 = propVault.getAllPropertiesWithName(PROPERTY_NAME_NAME_1);
-        Assert.assertEquals("getAllPropertiesWithName(String propertyName) return wrong count (test with main vault)", 
-        		expectedAllPropStatCount, allPropertiesWithPropertyName_name1.size());
-        
+        Assert.assertEquals("getAllPropertiesWithName(String propertyName) return wrong count (test with main vault)",
+                expectedAllPropStatCount, allPropertiesWithPropertyName_name1.size());
+
         expectedAllPropStatCount = 1;
         Map<Object, Integer> allPropertiesWithPropertyName_name2 = propVault.getAllPropertiesWithName(PROPERTY_NAME_NAME_2);
-        Assert.assertEquals("getAllPropertiesWithName(String propertyName) return wrong count (test with main vault)", 
-        		expectedAllPropStatCount, allPropertiesWithPropertyName_name2.size());
-        
+        Assert.assertEquals("getAllPropertiesWithName(String propertyName) return wrong count (test with main vault)",
+                expectedAllPropStatCount, allPropertiesWithPropertyName_name2.size());
+
         Map<Object, Integer> allPropertiesWithPropertyName_name3 = propVault.getAllPropertiesWithName(PROPERTY_NAME_NAME_3);
-        Assert.assertEquals("getAllPropertiesWithName(String propertyName) return wrong count (test with main vault)", 
-        		expectedAllPropStatCount, allPropertiesWithPropertyName_name3.size());
-        
+        Assert.assertEquals("getAllPropertiesWithName(String propertyName) return wrong count (test with main vault)",
+                expectedAllPropStatCount, allPropertiesWithPropertyName_name3.size());
+
         Map<Object, Integer> allPropertiesWithPropertyName_name4 = propVault.getAllPropertiesWithName(PROPERTY_NAME_NAME_4);
-        Assert.assertEquals("getAllPropertiesWithName(String propertyName) return wrong count (test with main vault)", 
-        		expectedAllPropStatCount, allPropertiesWithPropertyName_name4.size());
-        
+        Assert.assertEquals("getAllPropertiesWithName(String propertyName) return wrong count (test with main vault)",
+                expectedAllPropStatCount, allPropertiesWithPropertyName_name4.size());
+
         Map<Object, Integer> allPropertiesWithPropertyName_name5 = propVault.getAllPropertiesWithName(PROPERTY_NAME_NAME_5);
-        Assert.assertEquals("getAllPropertiesWithName(String propertyName) return wrong count (test with main vault)", 
-        		expectedAllPropStatCount, allPropertiesWithPropertyName_name5.size());
-        
-        Map<Object, Integer> allPropertiesWithPropertyName_name6 = neighboursSubVault.getAllPropertiesWithName(PROPERTY_NAME_NAME_2);
-        Assert.assertEquals("getAllPropertiesWithName(String propertyName) return wrong count (test with subVault)", 
-        		expectedAllPropStatCount, allPropertiesWithPropertyName_name6.size());
-        
+        Assert.assertEquals("getAllPropertiesWithName(String propertyName) return wrong count (test with main vault)",
+                expectedAllPropStatCount, allPropertiesWithPropertyName_name5.size());
+
+        Map<Object, Integer> allPropertiesWithPropertyName_name6 = neighboursSubVault
+                .getAllPropertiesWithName(PROPERTY_NAME_NAME_2);
+        Assert.assertEquals("getAllPropertiesWithName(String propertyName) return wrong count (test with subVault)",
+                expectedAllPropStatCount, allPropertiesWithPropertyName_name6.size());
+
         expectedAllPropStatCount = 0;
-        Map<Object, Integer> allPropertiesWithPropertyName_name7 = neighboursSubVault.getAllPropertiesWithName(PROPERTY_NAME_NAME_3);
-        Assert.assertEquals("getAllPropertiesWithName(String propertyName) return wrong count (test with subVault)", 
-        		expectedAllPropStatCount, allPropertiesWithPropertyName_name7.size());
-        
-        Map<Object, Integer> allPropertiesWithPropertyName_name8 = neighboursSubVault.getAllPropertiesWithName(PROPERTY_NAME_NAME_4);
-        Assert.assertEquals("getAllPropertiesWithName(String propertyName) return wrong count (test with subVault)", 
-        		expectedAllPropStatCount, allPropertiesWithPropertyName_name8.size());
-        
-        Map<Object, Integer> allPropertiesWithPropertyName_name9 = neighboursSubVault.getAllPropertiesWithName(PROPERTY_NAME_NAME_5);
-        Assert.assertEquals("getAllPropertiesWithName(String propertyName) return wrong count (test with subVault)", 
-        		expectedAllPropStatCount, allPropertiesWithPropertyName_name9.size());
+        Map<Object, Integer> allPropertiesWithPropertyName_name7 = neighboursSubVault
+                .getAllPropertiesWithName(PROPERTY_NAME_NAME_3);
+        Assert.assertEquals("getAllPropertiesWithName(String propertyName) return wrong count (test with subVault)",
+                expectedAllPropStatCount, allPropertiesWithPropertyName_name7.size());
+
+        Map<Object, Integer> allPropertiesWithPropertyName_name8 = neighboursSubVault
+                .getAllPropertiesWithName(PROPERTY_NAME_NAME_4);
+        Assert.assertEquals("getAllPropertiesWithName(String propertyName) return wrong count (test with subVault)",
+                expectedAllPropStatCount, allPropertiesWithPropertyName_name8.size());
+
+        Map<Object, Integer> allPropertiesWithPropertyName_name9 = neighboursSubVault
+                .getAllPropertiesWithName(PROPERTY_NAME_NAME_5);
+        Assert.assertEquals("getAllPropertiesWithName(String propertyName) return wrong count (test with subVault)",
+                expectedAllPropStatCount, allPropertiesWithPropertyName_name9.size());
     }
-    
+
     /**
      * testing method getAllProperties(Class< ? > klass) (not-standart structure)
-     *
+     * 
      * @throws IndexPropertyException
      * @throws InvalidStatisticsParameterException
      */
     @Test
-    public void getAllPropertiesWithTypeOfClassStandartStructureTest() throws IndexPropertyException, InvalidStatisticsParameterException {
+    public void getAllPropertiesWithTypeOfClassStandartStructureTest() throws IndexPropertyException,
+            InvalidStatisticsParameterException {
         LOGGER.debug("start test getAllPropertiesWithTypeOfClassNotStandartStructureTest()");
         createNotStandartStructureOfStatistics();
-        
+
         int expectedAllPropStatCount = 4;
         Map<Object, Integer> allPropertiesWithKlass_class1 = propVault.getAllProperties(String.class);
-        Assert.assertEquals("getAllProperties(Class< ? > klass) return wrong count (test with main vault)", 
-        		expectedAllPropStatCount, allPropertiesWithKlass_class1.size());
-       
+        Assert.assertEquals("getAllProperties(Class< ? > klass) return wrong count (test with main vault)",
+                expectedAllPropStatCount, allPropertiesWithKlass_class1.size());
+
         expectedAllPropStatCount = 2;
         Map<Object, Integer> allPropertiesWithKlass_class2 = propVault.getAllProperties(Integer.class);
-        Assert.assertEquals("getAllProperties(Class< ? > klass) return wrong count (test with main vault)", 
-        		expectedAllPropStatCount, allPropertiesWithKlass_class2.size());
-        
+        Assert.assertEquals("getAllProperties(Class< ? > klass) return wrong count (test with main vault)",
+                expectedAllPropStatCount, allPropertiesWithKlass_class2.size());
+
         expectedAllPropStatCount = 0;
         Map<Object, Integer> allPropertiesWithKlass_class3 = propVault.getAllProperties(Double.class);
-        Assert.assertEquals("getAllProperties(Class< ? > klass) return wrong count (test with subvault)", 
-        		expectedAllPropStatCount, allPropertiesWithKlass_class3.size());
-        
+        Assert.assertEquals("getAllProperties(Class< ? > klass) return wrong count (test with subvault)", expectedAllPropStatCount,
+                allPropertiesWithKlass_class3.size());
+
         LOGGER.debug("finish test getAllPropertiesWithTypeOfClassNotStandartStructureTest()");
     }
-    
+
     /**
      * testing method getAllProperties(Class< ? > klass) (standart structure)
-     *
+     * 
      * @throws IndexPropertyException
      * @throws InvalidStatisticsParameterException
      */
     @Test
-    public void getAllPropertiesWithNodeTypeAndPropertyNameStandartStructureTest() throws IndexPropertyException, InvalidStatisticsParameterException {
+    public void getAllPropertiesWithNodeTypeAndPropertyNameStandartStructureTest() throws IndexPropertyException,
+            InvalidStatisticsParameterException {
         LOGGER.debug("start test getAllPropertiesWithTypeOfClassNotStandartStructureTest()");
         createStandartStructureOfStatistics();
-        
+
         int expectedAllPropStatCount = 2;
-        Map<Object, Integer> allPropertiesWithPropertyNameAndNodeType_name1 = propVault.getAllProperties(NEIGHBOURS, PROPERTY_NAME_NAME_1);
-        Assert.assertEquals("getAllProperties(String nodeType, String propertyName) return wrong count (test with main vault)", 
-        		expectedAllPropStatCount, allPropertiesWithPropertyNameAndNodeType_name1.size());
-        
+        Map<Object, Integer> allPropertiesWithPropertyNameAndNodeType_name1 = propVault.getAllProperties(NEIGHBOURS,
+                PROPERTY_NAME_NAME_1);
+        Assert.assertEquals("getAllProperties(String nodeType, String propertyName) return wrong count (test with main vault)",
+                expectedAllPropStatCount, allPropertiesWithPropertyNameAndNodeType_name1.size());
+
         expectedAllPropStatCount = 1;
-        Map<Object, Integer> allPropertiesWithPropertyNameAndNodeType_name2 = propVault.getAllProperties(NEIGHBOURS, PROPERTY_NAME_NAME_2);
-        Assert.assertEquals("getAllProperties(String nodeType, String propertyName) return wrong count (test with main vault)", 
-        		expectedAllPropStatCount, allPropertiesWithPropertyNameAndNodeType_name2.size());
-        
+        Map<Object, Integer> allPropertiesWithPropertyNameAndNodeType_name2 = propVault.getAllProperties(NEIGHBOURS,
+                PROPERTY_NAME_NAME_2);
+        Assert.assertEquals("getAllProperties(String nodeType, String propertyName) return wrong count (test with main vault)",
+                expectedAllPropStatCount, allPropertiesWithPropertyNameAndNodeType_name2.size());
+
         expectedAllPropStatCount = 0;
-        Map<Object, Integer> allPropertiesWithPropertyNameAndNodeType_name3 = propVault.getAllProperties(SECTOR, PROPERTY_NAME_NAME_3);
-        Assert.assertEquals("getAllProperties(String nodeType, String propertyName) return wrong count (test with main vault). Expected zero", 
-        		expectedAllPropStatCount, allPropertiesWithPropertyNameAndNodeType_name3.size());
-        
+        Map<Object, Integer> allPropertiesWithPropertyNameAndNodeType_name3 = propVault.getAllProperties(SECTOR,
+                PROPERTY_NAME_NAME_3);
+        Assert.assertEquals(
+                "getAllProperties(String nodeType, String propertyName) return wrong count (test with main vault). Expected zero",
+                expectedAllPropStatCount, allPropertiesWithPropertyNameAndNodeType_name3.size());
+
         expectedAllPropStatCount = 1;
-        Map<Object, Integer> allPropertiesWithPropertyNameAndNodeType_name4 = propVault.getAllProperties(NETWORK, PROPERTY_NAME_NAME_4);
-        Assert.assertEquals("getAllProperties(String nodeType, String propertyName) return wrong count (test with main vault)", 
-        		expectedAllPropStatCount, allPropertiesWithPropertyNameAndNodeType_name4.size());
-        
+        Map<Object, Integer> allPropertiesWithPropertyNameAndNodeType_name4 = propVault.getAllProperties(NETWORK,
+                PROPERTY_NAME_NAME_4);
+        Assert.assertEquals("getAllProperties(String nodeType, String propertyName) return wrong count (test with main vault)",
+                expectedAllPropStatCount, allPropertiesWithPropertyNameAndNodeType_name4.size());
+
         expectedAllPropStatCount = 0;
-        Map<Object, Integer> allPropertiesWithPropertyNameAndNodeType_name5 = networkSubVault.getAllProperties(NETWORK, PROPERTY_NAME_NAME_5);
-        Assert.assertEquals("getAllProperties(String nodeType, String propertyName) return wrong count (test with subVault). Expected zero", 
-        		expectedAllPropStatCount, allPropertiesWithPropertyNameAndNodeType_name5.size());
-        
+        Map<Object, Integer> allPropertiesWithPropertyNameAndNodeType_name5 = networkSubVault.getAllProperties(NETWORK,
+                PROPERTY_NAME_NAME_5);
+        Assert.assertEquals(
+                "getAllProperties(String nodeType, String propertyName) return wrong count (test with subVault). Expected zero",
+                expectedAllPropStatCount, allPropertiesWithPropertyNameAndNodeType_name5.size());
+
         LOGGER.debug("finish test getAllPropertiesWithNodeTypeAndPropertyNameStandartStructureTest()");
     }
-    
+
     @Test
-    public void deletePropertiesWithNodeTypeStandartStructureTest() throws IndexPropertyException, InvalidStatisticsParameterException {
+    public void deletePropertiesWithNodeTypeStandartStructureTest() throws IndexPropertyException,
+            InvalidStatisticsParameterException {
         LOGGER.debug("start test deletePropertiesWithNodeTypeStandartStructureTest()");
-       
+
         createStandartStructureOfStatistics();
         int expectedCount = 3;
         propVault.deletePropertiesWithNodeType(NETWORK);
         int actualCount = propVault.getAllProperties().values().size();
         Assert.assertEquals("deleting properties work not correctly (test with main vault)", expectedCount, actualCount);
-        
+
         createStandartStructureOfStatistics();
         expectedCount = 3;
         propVault.deletePropertiesWithNodeType(NEIGHBOURS);
         actualCount = propVault.getAllProperties().values().size();
         Assert.assertEquals("deleting properties work not correctly (test with main vault)", expectedCount, actualCount);
-        
+
         LOGGER.debug("finish test deletePropertiesWithNodeTypeStandartStructureTest()");
     }
-    
+
     @Test
-    public void deletePropertiesWithPropertyNameStandartStructureTest() throws IndexPropertyException, InvalidStatisticsParameterException {
+    public void deletePropertiesWithPropertyNameStandartStructureTest() throws IndexPropertyException,
+            InvalidStatisticsParameterException {
         LOGGER.debug("start test deletePropertiesWithPropertyNameStandartStructureTest()");
-       
+
         createStandartStructureOfStatistics();
         int expectedCount = 4;
         propVault.deleteProperties(PROPERTY_NAME_NAME_1);
@@ -1147,7 +1159,7 @@ public class VaultTests {
         expectedCount = 1;
         actualCount = neighboursSubVault.getAllProperties().values().size();
         Assert.assertEquals("deleting properties work not correctly (test with main vault)", expectedCount, actualCount);
-        
+
         createStandartStructureOfStatistics();
         expectedCount = 5;
         propVault.deleteProperties(PROPERTY_NAME_NAME_3);
@@ -1156,7 +1168,7 @@ public class VaultTests {
         expectedCount = 2;
         actualCount = networkSubVault.getAllProperties().values().size();
         Assert.assertEquals("deleting properties work not correctly (test with main vault)", expectedCount, actualCount);
-        
+
         createStandartStructureOfStatistics();
         expectedCount = 5;
         propVault.deleteProperties(PROPERTY_NAME_NAME_3);
@@ -1165,7 +1177,7 @@ public class VaultTests {
         expectedCount = 2;
         actualCount = networkSubVault.getAllProperties().values().size();
         Assert.assertEquals("deleting properties work not correctly (test with main vault)", expectedCount, actualCount);
-        
+
         createStandartStructureOfStatistics();
         expectedCount = 5;
         networkSubVault.deleteProperties(PROPERTY_NAME_NAME_4);
@@ -1174,7 +1186,7 @@ public class VaultTests {
         expectedCount = 2;
         actualCount = networkSubVault.getAllProperties().values().size();
         Assert.assertEquals("deleting properties work not correctly (test with main vault)", expectedCount, actualCount);
-        
+
         createStandartStructureOfStatistics();
         expectedCount = 5;
         neighboursSubVault.deleteProperties(PROPERTY_NAME_NAME_2);
@@ -1183,14 +1195,15 @@ public class VaultTests {
         expectedCount = 2;
         actualCount = neighboursSubVault.getAllProperties().values().size();
         Assert.assertEquals("deleting properties work not correctly (test with subvault)", expectedCount, actualCount);
-        
+
         LOGGER.debug("finish test deletePropertiesWithPropertyNameStandartStructureTest()");
     }
-    
+
     @Test
-    public void deletePropertiesWithNodeTypeAndPropertyNameStandartStructureTest() throws IndexPropertyException, InvalidStatisticsParameterException {
+    public void deletePropertiesWithNodeTypeAndPropertyNameStandartStructureTest() throws IndexPropertyException,
+            InvalidStatisticsParameterException {
         LOGGER.debug("start test deletePropertiesWithNodeTypeAndPropertyNameStandartStructureTest()");
-       
+
         createStandartStructureOfStatistics();
         int expectedCount = 4;
         propVault.deleteProperties(NEIGHBOURS, PROPERTY_NAME_NAME_1);
@@ -1199,7 +1212,7 @@ public class VaultTests {
         expectedCount = 1;
         actualCount = neighboursSubVault.getAllProperties().values().size();
         Assert.assertEquals("deleting properties work not correctly (test with main vault)", expectedCount, actualCount);
-        
+
         createStandartStructureOfStatistics();
         expectedCount = 5;
         propVault.deleteProperties(NETWORK, PROPERTY_NAME_NAME_4);
@@ -1208,7 +1221,7 @@ public class VaultTests {
         expectedCount = 2;
         actualCount = networkSubVault.getAllProperties().values().size();
         Assert.assertEquals("deleting properties work not correctly (test with main vault)", expectedCount, actualCount);
-        
+
         createStandartStructureOfStatistics();
         expectedCount = 5;
         networkSubVault.deleteProperties(NETWORK, PROPERTY_NAME_NAME_5);
@@ -1217,7 +1230,7 @@ public class VaultTests {
         expectedCount = 2;
         actualCount = networkSubVault.getAllProperties().values().size();
         Assert.assertEquals("deleting properties work not correctly (test with main vault)", expectedCount, actualCount);
-        
+
         createStandartStructureOfStatistics();
         expectedCount = 5;
         neighboursSubVault.deleteProperties(NEIGHBOURS, PROPERTY_NAME_NAME_2);
@@ -1226,15 +1239,14 @@ public class VaultTests {
         expectedCount = 2;
         actualCount = neighboursSubVault.getAllProperties().values().size();
         Assert.assertEquals("deleting properties work not correctly (test with subvault)", expectedCount, actualCount);
-        
+
         LOGGER.debug("finish test deletePropertiesWithNodeTypeAndPropertyNameStandartStructureTest()");
     }
 
     @Test
-    public void updatePropertiesCountStandartStructureTest() 
-    		throws IndexPropertyException, InvalidStatisticsParameterException {
+    public void updatePropertiesCountStandartStructureTest() throws IndexPropertyException, InvalidStatisticsParameterException {
         LOGGER.debug("start test updatePropertiesCountStandartStructureTest()");
-       
+
         createStandartStructureOfStatistics();
         int expectedCount = 2;
         propVault.updatePropertiesCount(NETWORK, PROPERTY_NAME_NAME_4, STRING_PROPERTY_VALUE_NETWORK_3, 2);
@@ -1243,7 +1255,7 @@ public class VaultTests {
         expectedCount = 6;
         actualCount = propVault.getAllProperties().size();
         Assert.assertEquals("updating properties work not correctly (test with main vault)", expectedCount, actualCount);
-        
+
         createStandartStructureOfStatistics();
         expectedCount = 126;
         propVault.updatePropertiesCount(NEIGHBOURS, PROPERTY_NAME_NAME_1, STRING_PROPERTY_VALUE_NETWORK_1, 126);
@@ -1256,26 +1268,23 @@ public class VaultTests {
         expectedCount = 6;
         actualCount = propVault.getAllProperties().size();
         Assert.assertEquals("updating properties work not correctly (test with main vault)", expectedCount, actualCount);
-        
+
         LOGGER.debug("finish test updatePropertiesCountStandartStructureTest()");
     }
-    
+
     /**
-     * Creating not standart structure of statistics
+     * Creating not standart structure of statistics STRUCTURE:
+     * .....................properties........................
+     * ................../..............\.....................
+     * ................./................\....................
+     * .............network............neighbours.............
+     * ............./......\.........../.........\............
+     * ............/........\........./...........\...........
+     * .........site......sector....name1(2xS).......name2(I)...
+     * ......../...\..........\...............................
+     * ......./.....\..........\..............................
+     * ..name4(S)....name5(I)..name3(S).......................
      * 
-     * STRUCTURE:
-     * 
-     *.....................properties........................
-     *................../..............\.....................
-     *................./................\....................
-     *.............network............neighbours.............
-     *............./......\.........../.........\............
-     *............/........\........./...........\...........
-     *.........site......sector....name1(2xS).......name2(I)...
-     *......../...\..........\...............................
-     *......./.....\..........\..............................
-     *..name4(S)....name5(I)..name3(S).......................
-     *
      * @throws IndexPropertyException
      * @throws InvalidStatisticsParameterException
      */
@@ -1299,7 +1308,7 @@ public class VaultTests {
         siteSubVault.addPropertyStatistics(propStat4);
         NewPropertyStatistics propStat5 = new NewPropertyStatistics(PROPERTY_NAME_NAME_5, Integer.class);
         siteSubVault.addPropertyStatistics(propStat5);
-        
+
         indexProperty(propVault, NEIGHBOURS, PROPERTY_NAME_NAME_1, STRING_PROPERTY_VALUE_NETWORK_1, 1);
         indexProperty(propVault, NEIGHBOURS, PROPERTY_NAME_NAME_1, STRING_PROPERTY_VALUE_NEIGHBOURS_2, 1);
         indexProperty(propVault, NEIGHBOURS, PROPERTY_NAME_NAME_2, INTEGER_PROPERTY_VALUE_NETWORK, 1);
@@ -1307,10 +1316,10 @@ public class VaultTests {
         indexProperty(networkSubVault, SITE, PROPERTY_NAME_NAME_4, STRING_PROPERTY_VALUE_NETWORK_3, 1);
         indexProperty(networkSubVault, SITE, PROPERTY_NAME_NAME_5, INTEGER_PROPERTY_VALUE_NETWORK_2, 1);
     }
-    
+
     /**
      * testing method getCount() positive tests (not-standart structure)
-     *
+     * 
      * @throws IndexPropertyException
      * @throws InvalidStatisticsParameterException
      */
@@ -1318,28 +1327,25 @@ public class VaultTests {
     public void getCountNotStandartStructurePositiveTest() throws IndexPropertyException, InvalidStatisticsParameterException {
         LOGGER.debug("start test getCountNotStandartStructurePositiveTest()");
         createNotStandartStructureOfStatistics();
-        
+
         int expectedPropStatCount = 3;
-        
+
         int propCount = propVault.getCount();
-        Assert.assertEquals("getCount() return wrong count (test with prop vault)", 
-        		expectedPropStatCount, propCount);
-        
+        Assert.assertEquals("getCount() return wrong count (test with prop vault)", expectedPropStatCount, propCount);
+
         int networkCount = networkSubVault.getCount();
-        Assert.assertEquals("getCount() return wrong count (test with subvault)", 
-        		expectedPropStatCount, networkCount);
-        
+        Assert.assertEquals("getCount() return wrong count (test with subvault)", expectedPropStatCount, networkCount);
+
         int neighboursCount = neighboursSubVault.getCount();
-        Assert.assertEquals("getCount() return wrong count (test with subvault)", 
-        		expectedPropStatCount, neighboursCount);
-        
+        Assert.assertEquals("getCount() return wrong count (test with subvault)", expectedPropStatCount, neighboursCount);
+
         LOGGER.debug("finish test getCountNotStandartStructurePositiveTest()");
 
     }
-    
+
     /**
      * testing method getNodeCount(String nodeType) positive tests (not-standart structure)
-     *
+     * 
      * @throws IndexPropertyException
      * @throws InvalidStatisticsParameterException
      */
@@ -1347,60 +1353,61 @@ public class VaultTests {
     public void getNodeCountNotStandartStructurePositiveTest() throws IndexPropertyException, InvalidStatisticsParameterException {
         LOGGER.debug("start test getNodeCountNotStandartStructurePositiveTest()");
         createNotStandartStructureOfStatistics();
-        
+
         int expectedPropStatCount = 3;
-        
+
         int propCountProperty = propVault.getNodeCount(PROPERTIES);
-        Assert.assertEquals("getNodeCount(String nodeType) return wrong count (test with main vault)", 
-        		expectedPropStatCount, propCountProperty);
-        
+        Assert.assertEquals("getNodeCount(String nodeType) return wrong count (test with main vault)", expectedPropStatCount,
+                propCountProperty);
+
         expectedPropStatCount = 0;
         int networkCountProperty = neighboursSubVault.getNodeCount(NETWORK);
-        Assert.assertEquals("getNodeCount(String nodeType) return wrong count (test with subvault)", 
-        		expectedPropStatCount, networkCountProperty);
-        
+        Assert.assertEquals("getNodeCount(String nodeType) return wrong count (test with subvault)", expectedPropStatCount,
+                networkCountProperty);
+
         expectedPropStatCount = 3;
         int neighboursCountProperty = neighboursSubVault.getNodeCount(NEIGHBOURS);
-        Assert.assertEquals("getNodeCount(String nodeType) return wrong count (test with subvault)", 
-        		expectedPropStatCount, neighboursCountProperty);
-        
+        Assert.assertEquals("getNodeCount(String nodeType) return wrong count (test with subvault)", expectedPropStatCount,
+                neighboursCountProperty);
+
         LOGGER.debug("finish test getNodeCountNotStandartStructurePositiveTest()");
     }
-    
+
     /**
-     * testing method getPropertyCount(String nodeType, String propertyName) positive tests (not-standart structure)
-     *
+     * testing method getPropertyCount(String nodeType, String propertyName) positive tests
+     * (not-standart structure)
+     * 
      * @throws IndexPropertyException
      * @throws InvalidStatisticsParameterException
      */
     @Test
-    public void getPropertyCountNotStandartStructurePositiveTest() throws IndexPropertyException, InvalidStatisticsParameterException {
+    public void getPropertyCountNotStandartStructurePositiveTest() throws IndexPropertyException,
+            InvalidStatisticsParameterException {
         LOGGER.debug("start test getPropertyCountNotStandartStructurePositiveTest()");
         createNotStandartStructureOfStatistics();
-        
+
         int expectedPropStatCount = 2;
-        
+
         int propCountProperty = propVault.getPropertyCount(NEIGHBOURS, PROPERTY_NAME_NAME_1);
-        Assert.assertEquals("getPropertyCount(String nodeType, String propertyName) return wrong count (test with main vault)", 
-        		expectedPropStatCount, propCountProperty);
-        
+        Assert.assertEquals("getPropertyCount(String nodeType, String propertyName) return wrong count (test with main vault)",
+                expectedPropStatCount, propCountProperty);
+
         expectedPropStatCount = 0;
         int networkCountProperty = neighboursSubVault.getPropertyCount(SECTOR, PROPERTY_NAME_NAME_3);
-        Assert.assertEquals("getPropertyCount(String nodeType, String propertyName) return wrong count (test with subvault)", 
-        		expectedPropStatCount, networkCountProperty);
-        
+        Assert.assertEquals("getPropertyCount(String nodeType, String propertyName) return wrong count (test with subvault)",
+                expectedPropStatCount, networkCountProperty);
+
         expectedPropStatCount = 1;
         int neighboursCountProperty = networkSubVault.getPropertyCount(SITE, PROPERTY_NAME_NAME_5);
-        Assert.assertEquals("getNodeCount(String nodeType) return wrong count (test with subvault)", 
-        		expectedPropStatCount, neighboursCountProperty);
-        
+        Assert.assertEquals("getNodeCount(String nodeType) return wrong count (test with subvault)", expectedPropStatCount,
+                neighboursCountProperty);
+
         LOGGER.debug("finish test getPropertyCountNotStandartStructurePositiveTest()");
     }
 
-    
     /**
      * testing method getAllProperties() (not-standart structure)
-     *
+     * 
      * @throws IndexPropertyException
      * @throws InvalidStatisticsParameterException
      */
@@ -1408,176 +1415,185 @@ public class VaultTests {
     public void getAllPropertiesNotStandartStructureTest() throws IndexPropertyException, InvalidStatisticsParameterException {
         LOGGER.debug("start test getAllPropertiesNotStandartStructureTest()");
         createNotStandartStructureOfStatistics();
-        
+
         int expectedAllPropStatCount = 6;
         Map<Object, Integer> allProperties_propVault = propVault.getAllProperties();
-        Assert.assertEquals("getAllProperties() return wrong count (test with prop vault)", 
-        		expectedAllPropStatCount, allProperties_propVault.size());
-        
+        Assert.assertEquals("getAllProperties() return wrong count (test with prop vault)", expectedAllPropStatCount,
+                allProperties_propVault.size());
+
         expectedAllPropStatCount = 3;
         Map<Object, Integer> allProperties_neighboursSubVault = neighboursSubVault.getAllProperties();
-        Assert.assertEquals("getAllProperties() return wrong count (test with neighbours subVault)", 
-        		expectedAllPropStatCount, allProperties_neighboursSubVault.size());
-        
+        Assert.assertEquals("getAllProperties() return wrong count (test with neighbours subVault)", expectedAllPropStatCount,
+                allProperties_neighboursSubVault.size());
+
         expectedAllPropStatCount = 3;
         Map<Object, Integer> allProperties_networkSubVault = networkSubVault.getAllProperties();
-        Assert.assertEquals("getAllProperties() return wrong count (test with network subVault)", 
-        		expectedAllPropStatCount, allProperties_networkSubVault.size());
+        Assert.assertEquals("getAllProperties() return wrong count (test with network subVault)", expectedAllPropStatCount,
+                allProperties_networkSubVault.size());
         LOGGER.debug("finish test getAllPropertiesNotStandartStructureTest()");
     }
-    
+
     /**
      * testing method getAllProperties(String nodeType) (not-standart structure)
-     *
+     * 
      * @throws IndexPropertyException
      * @throws InvalidStatisticsParameterException
      */
     @Test
-    public void getAllPropertiesWithNodeNameNotStandartStructureTest() throws IndexPropertyException, InvalidStatisticsParameterException {
+    public void getAllPropertiesWithNodeNameNotStandartStructureTest() throws IndexPropertyException,
+            InvalidStatisticsParameterException {
         LOGGER.debug("start test getAllPropertiesWithNodeNameNotStandartStructureTest()");
         createNotStandartStructureOfStatistics();
-        
+
         int expectedAllPropStatCount = 3;
         Map<Object, Integer> allPropertiesWithNodeType_propVault = propVault.getAllProperties(NEIGHBOURS);
-        Assert.assertEquals("getAllProperties(String nodeType) return wrong count (test with prop vault)", 
-        		expectedAllPropStatCount, allPropertiesWithNodeType_propVault.size());
-        
+        Assert.assertEquals("getAllProperties(String nodeType) return wrong count (test with prop vault)",
+                expectedAllPropStatCount, allPropertiesWithNodeType_propVault.size());
+
         expectedAllPropStatCount = 0;
         Map<Object, Integer> allPropertiesWithNodeType_neighboursSubVault = neighboursSubVault.getAllProperties(NEIGHBOURS);
-        Assert.assertEquals("getAllProperties(String nodeType) return wrong count (test with neighbours subVault). Expected zero.", 
-        		expectedAllPropStatCount, allPropertiesWithNodeType_neighboursSubVault.size());
-        
+        Assert.assertEquals("getAllProperties(String nodeType) return wrong count (test with neighbours subVault). Expected zero.",
+                expectedAllPropStatCount, allPropertiesWithNodeType_neighboursSubVault.size());
+
         expectedAllPropStatCount = 0;
         Map<Object, Integer> allPropertiesWithNodeType_networkSubVault = networkSubVault.getAllProperties(NEIGHBOURS);
-        Assert.assertEquals("getAllProperties(String nodeType) return wrong count (test with network subVault). Expected zero.", 
-        		expectedAllPropStatCount, allPropertiesWithNodeType_networkSubVault.size());
-        
+        Assert.assertEquals("getAllProperties(String nodeType) return wrong count (test with network subVault). Expected zero.",
+                expectedAllPropStatCount, allPropertiesWithNodeType_networkSubVault.size());
+
         expectedAllPropStatCount = 3;
         Map<Object, Integer> allPropertiesWithNodeType_propVault2 = propVault.getAllProperties(NETWORK);
-        Assert.assertEquals("getAllProperties(String nodeType) return wrong count (test with prop vault)", 
-        		expectedAllPropStatCount, allPropertiesWithNodeType_propVault2.size());
-        
+        Assert.assertEquals("getAllProperties(String nodeType) return wrong count (test with prop vault)",
+                expectedAllPropStatCount, allPropertiesWithNodeType_propVault2.size());
+
         expectedAllPropStatCount = 1;
         Map<Object, Integer> allPropertiesWithNodeType_propVault3 = propVault.getAllProperties(SECTOR);
-        Assert.assertEquals("getAllProperties(String nodeType) return wrong count (test with prop vault)", 
-        		expectedAllPropStatCount, allPropertiesWithNodeType_propVault3.size());
-        
+        Assert.assertEquals("getAllProperties(String nodeType) return wrong count (test with prop vault)",
+                expectedAllPropStatCount, allPropertiesWithNodeType_propVault3.size());
+
         expectedAllPropStatCount = 2;
         Map<Object, Integer> allPropertiesWithNodeType_propVault4 = propVault.getAllProperties(SITE);
-        Assert.assertEquals("getAllProperties(String nodeType) return wrong count (test with prop vault)", 
-        		expectedAllPropStatCount, allPropertiesWithNodeType_propVault4.size());
-        
+        Assert.assertEquals("getAllProperties(String nodeType) return wrong count (test with prop vault)",
+                expectedAllPropStatCount, allPropertiesWithNodeType_propVault4.size());
+
         LOGGER.debug("finish test getAllPropertiesWithNodeNameNotStandartStructureTest()");
     }
 
-
     /**
      * testing method getAllPropertiesWithName(String propertyName) (not-standart structure)
-     *
+     * 
      * @throws IndexPropertyException
      * @throws InvalidStatisticsParameterException
      */
     @Test
-    public void getAllPropertiesWithPropertyNameNotStandartStructureTest() throws IndexPropertyException, InvalidStatisticsParameterException {
+    public void getAllPropertiesWithPropertyNameNotStandartStructureTest() throws IndexPropertyException,
+            InvalidStatisticsParameterException {
         LOGGER.debug("start test getAllPropertiesWithPropertyNameNotStandartStructureTest()");
         createNotStandartStructureOfStatistics();
         getAllPropertiesWithPropertyNameStandartAndNotStandartStructureTest();
         LOGGER.debug("finish test getAllPropertiesWithPropertyNameNotStandartStructureTest()");
     }
-    
+
     /**
      * testing method getAllProperties(Class< ? > klass) (not-standart structure)
-     *
+     * 
      * @throws IndexPropertyException
      * @throws InvalidStatisticsParameterException
      */
     @Test
-    public void getAllPropertiesWithTypeOfClassNotStandartStructureTest() throws IndexPropertyException, InvalidStatisticsParameterException {
+    public void getAllPropertiesWithTypeOfClassNotStandartStructureTest() throws IndexPropertyException,
+            InvalidStatisticsParameterException {
         LOGGER.debug("start test getAllPropertiesWithTypeOfClassNotStandartStructureTest()");
         createNotStandartStructureOfStatistics();
-        
+
         int expectedAllPropStatCount = 4;
         Map<Object, Integer> allPropertiesWithKlass_class1 = propVault.getAllProperties(String.class);
-        Assert.assertEquals("getAllProperties(Class< ? > klass) return wrong count (test with main vault)", 
-        		expectedAllPropStatCount, allPropertiesWithKlass_class1.size());
-       
+        Assert.assertEquals("getAllProperties(Class< ? > klass) return wrong count (test with main vault)",
+                expectedAllPropStatCount, allPropertiesWithKlass_class1.size());
+
         expectedAllPropStatCount = 2;
         Map<Object, Integer> allPropertiesWithKlass_class2 = propVault.getAllProperties(Integer.class);
-        Assert.assertEquals("getAllProperties(Class< ? > klass) return wrong count (test with main vault)", 
-        		expectedAllPropStatCount, allPropertiesWithKlass_class2.size());
-        
+        Assert.assertEquals("getAllProperties(Class< ? > klass) return wrong count (test with main vault)",
+                expectedAllPropStatCount, allPropertiesWithKlass_class2.size());
+
         expectedAllPropStatCount = 0;
         Map<Object, Integer> allPropertiesWithKlass_class3 = propVault.getAllProperties(Double.class);
-        Assert.assertEquals("getAllProperties(Class< ? > klass) return wrong count (test with subvault)", 
-        		expectedAllPropStatCount, allPropertiesWithKlass_class3.size());
-        
+        Assert.assertEquals("getAllProperties(Class< ? > klass) return wrong count (test with subvault)", expectedAllPropStatCount,
+                allPropertiesWithKlass_class3.size());
+
         LOGGER.debug("finish test getAllPropertiesWithTypeOfClassNotStandartStructureTest()");
     }
-    
+
     /**
      * testing method getAllProperties(Class< ? > klass) (not-standart structure)
-     *
+     * 
      * @throws IndexPropertyException
      * @throws InvalidStatisticsParameterException
      */
     @Test
-    public void getAllPropertiesWithNodeTypeAndPropertyNameNotStandartStructureTest() throws IndexPropertyException, InvalidStatisticsParameterException {
+    public void getAllPropertiesWithNodeTypeAndPropertyNameNotStandartStructureTest() throws IndexPropertyException,
+            InvalidStatisticsParameterException {
         LOGGER.debug("start test getAllPropertiesWithTypeOfClassNotStandartStructureTest()");
         createNotStandartStructureOfStatistics();
-        
+
         int expectedAllPropStatCount = 2;
-        Map<Object, Integer> allPropertiesWithPropertyNameAndNodeType_name1 = propVault.getAllProperties(NEIGHBOURS, PROPERTY_NAME_NAME_1);
-        Assert.assertEquals("getAllProperties(String nodeType, String propertyName) return wrong count (test with main vault)", 
-        		expectedAllPropStatCount, allPropertiesWithPropertyNameAndNodeType_name1.size());
-        
+        Map<Object, Integer> allPropertiesWithPropertyNameAndNodeType_name1 = propVault.getAllProperties(NEIGHBOURS,
+                PROPERTY_NAME_NAME_1);
+        Assert.assertEquals("getAllProperties(String nodeType, String propertyName) return wrong count (test with main vault)",
+                expectedAllPropStatCount, allPropertiesWithPropertyNameAndNodeType_name1.size());
+
         expectedAllPropStatCount = 1;
-        Map<Object, Integer> allPropertiesWithPropertyNameAndNodeType_name2 = propVault.getAllProperties(NEIGHBOURS, PROPERTY_NAME_NAME_2);
-        Assert.assertEquals("getAllProperties(String nodeType, String propertyName) return wrong count (test with main vault)", 
-        		expectedAllPropStatCount, allPropertiesWithPropertyNameAndNodeType_name2.size());
-        
-        Map<Object, Integer> allPropertiesWithPropertyNameAndNodeType_name3 = propVault.getAllProperties(SECTOR, PROPERTY_NAME_NAME_3);
-        Assert.assertEquals("getAllProperties(String nodeType, String propertyName) return wrong count (test with main vault)", 
-        		expectedAllPropStatCount, allPropertiesWithPropertyNameAndNodeType_name3.size());
-        
-        Map<Object, Integer> allPropertiesWithPropertyNameAndNodeType_name4 = propVault.getAllProperties(SITE, PROPERTY_NAME_NAME_4);
-        Assert.assertEquals("getAllProperties(String nodeType, String propertyName) return wrong count (test with main vault)", 
-        		expectedAllPropStatCount, allPropertiesWithPropertyNameAndNodeType_name4.size());
-        
-        Map<Object, Integer> allPropertiesWithPropertyNameAndNodeType_name5 = propVault.getAllProperties(SITE, PROPERTY_NAME_NAME_5);
-        Assert.assertEquals("getAllProperties(String nodeType, String propertyName) return wrong count (test with main vault)", 
-        		expectedAllPropStatCount, allPropertiesWithPropertyNameAndNodeType_name5.size());
-        
+        Map<Object, Integer> allPropertiesWithPropertyNameAndNodeType_name2 = propVault.getAllProperties(NEIGHBOURS,
+                PROPERTY_NAME_NAME_2);
+        Assert.assertEquals("getAllProperties(String nodeType, String propertyName) return wrong count (test with main vault)",
+                expectedAllPropStatCount, allPropertiesWithPropertyNameAndNodeType_name2.size());
+
+        Map<Object, Integer> allPropertiesWithPropertyNameAndNodeType_name3 = propVault.getAllProperties(SECTOR,
+                PROPERTY_NAME_NAME_3);
+        Assert.assertEquals("getAllProperties(String nodeType, String propertyName) return wrong count (test with main vault)",
+                expectedAllPropStatCount, allPropertiesWithPropertyNameAndNodeType_name3.size());
+
+        Map<Object, Integer> allPropertiesWithPropertyNameAndNodeType_name4 = propVault
+                .getAllProperties(SITE, PROPERTY_NAME_NAME_4);
+        Assert.assertEquals("getAllProperties(String nodeType, String propertyName) return wrong count (test with main vault)",
+                expectedAllPropStatCount, allPropertiesWithPropertyNameAndNodeType_name4.size());
+
+        Map<Object, Integer> allPropertiesWithPropertyNameAndNodeType_name5 = propVault
+                .getAllProperties(SITE, PROPERTY_NAME_NAME_5);
+        Assert.assertEquals("getAllProperties(String nodeType, String propertyName) return wrong count (test with main vault)",
+                expectedAllPropStatCount, allPropertiesWithPropertyNameAndNodeType_name5.size());
+
         LOGGER.debug("finish test getAllPropertiesWithNodeTypeAndPropertyNameNotStandartStructureTest()");
     }
-    
+
     @Test
-    public void deletePropertiesWithNodeTypeNotStandartStructureTest() throws IndexPropertyException, InvalidStatisticsParameterException {
+    public void deletePropertiesWithNodeTypeNotStandartStructureTest() throws IndexPropertyException,
+            InvalidStatisticsParameterException {
         LOGGER.debug("start test deletePropertiesWithNodeTypeNotStandartStructureTest()");
-       
+
         createNotStandartStructureOfStatistics();
         int expectedCount = 3;
         propVault.deletePropertiesWithNodeType(NETWORK);
         int actualCount = propVault.getAllProperties().values().size();
         Assert.assertEquals("deleting properties work not correctly (test with main vault)", expectedCount, actualCount);
-        
+
         createNotStandartStructureOfStatistics();
         expectedCount = 4;
         propVault.deletePropertiesWithNodeType(SITE);
         actualCount = propVault.getAllProperties().values().size();
         Assert.assertEquals("deleting properties work not correctly (test with main vault)", expectedCount, actualCount);
-        
+
         createNotStandartStructureOfStatistics();
         expectedCount = 5;
         propVault.deletePropertiesWithNodeType(SECTOR);
         actualCount = propVault.getAllProperties().values().size();
         Assert.assertEquals("deleting properties work not correctly (test with main vault)", expectedCount, actualCount);
-        
+
         createNotStandartStructureOfStatistics();
         expectedCount = 3;
         propVault.deletePropertiesWithNodeType(NEIGHBOURS);
         actualCount = propVault.getAllProperties().values().size();
         Assert.assertEquals("deleting properties work not correctly (test with main vault)", expectedCount, actualCount);
-        
+
         createNotStandartStructureOfStatistics();
         networkSubVault.deletePropertiesWithNodeType(SITE);
         expectedCount = 4;
@@ -1586,7 +1602,7 @@ public class VaultTests {
         expectedCount = 1;
         actualCount = networkSubVault.getAllProperties().values().size();
         Assert.assertEquals("deleting properties work not correctly (test with subvault)", expectedCount, actualCount);
-        
+
         createNotStandartStructureOfStatistics();
         networkSubVault.deletePropertiesWithNodeType(SECTOR);
         expectedCount = 5;
@@ -1595,14 +1611,15 @@ public class VaultTests {
         expectedCount = 2;
         actualCount = networkSubVault.getAllProperties().values().size();
         Assert.assertEquals("deleting properties work not correctly (test with subvault)", expectedCount, actualCount);
-        
+
         LOGGER.debug("finish test deletePropertiesWithNodeTypeNotStandartStructureTest()");
     }
-    
+
     @Test
-    public void deletePropertiesWithPropertyNameNotStandartStructureTest() throws IndexPropertyException, InvalidStatisticsParameterException {
+    public void deletePropertiesWithPropertyNameNotStandartStructureTest() throws IndexPropertyException,
+            InvalidStatisticsParameterException {
         LOGGER.debug("start test deletePropertiesWithPropertyNameNotStandartStructureTest()");
-       
+
         createNotStandartStructureOfStatistics();
         int expectedCount = 4;
         propVault.deleteProperties(PROPERTY_NAME_NAME_1);
@@ -1611,7 +1628,7 @@ public class VaultTests {
         expectedCount = 1;
         actualCount = neighboursSubVault.getAllProperties().values().size();
         Assert.assertEquals("deleting properties work not correctly (test with main vault)", expectedCount, actualCount);
-        
+
         createNotStandartStructureOfStatistics();
         expectedCount = 5;
         propVault.deleteProperties(PROPERTY_NAME_NAME_2);
@@ -1620,7 +1637,7 @@ public class VaultTests {
         expectedCount = 2;
         actualCount = neighboursSubVault.getAllProperties().values().size();
         Assert.assertEquals("deleting properties work not correctly (test with main vault)", expectedCount, actualCount);
-        
+
         createNotStandartStructureOfStatistics();
         expectedCount = 5;
         propVault.deleteProperties(PROPERTY_NAME_NAME_3);
@@ -1632,7 +1649,7 @@ public class VaultTests {
         expectedCount = 0;
         actualCount = sectorSubVault.getAllProperties().values().size();
         Assert.assertEquals("deleting properties work not correctly (test with main vault)", expectedCount, actualCount);
-        
+
         createNotStandartStructureOfStatistics();
         expectedCount = 5;
         propVault.deleteProperties(PROPERTY_NAME_NAME_4);
@@ -1644,7 +1661,7 @@ public class VaultTests {
         expectedCount = 1;
         actualCount = siteSubVault.getAllProperties().values().size();
         Assert.assertEquals("deleting properties work not correctly (test with main vault)", expectedCount, actualCount);
-        
+
         createNotStandartStructureOfStatistics();
         expectedCount = 4;
         neighboursSubVault.deleteProperties(PROPERTY_NAME_NAME_1);
@@ -1656,7 +1673,7 @@ public class VaultTests {
         expectedCount = 3;
         actualCount = networkSubVault.getAllProperties().values().size();
         Assert.assertEquals("deleting properties work not correctly (test with main vault)", expectedCount, actualCount);
-        
+
         createNotStandartStructureOfStatistics();
         expectedCount = 5;
         networkSubVault.deleteProperties(PROPERTY_NAME_NAME_3);
@@ -1671,7 +1688,7 @@ public class VaultTests {
         expectedCount = 2;
         actualCount = siteSubVault.getAllProperties().values().size();
         Assert.assertEquals("deleting properties work not correctly (test with main vault)", expectedCount, actualCount);
-        
+
         createNotStandartStructureOfStatistics();
         expectedCount = 5;
         siteSubVault.deleteProperties(PROPERTY_NAME_NAME_5);
@@ -1687,14 +1704,14 @@ public class VaultTests {
         actualCount = siteSubVault.getAllProperties().values().size();
         Assert.assertEquals("deleting properties work not correctly (test with main vault)", expectedCount, actualCount);
 
-        
         LOGGER.debug("finish test deletePropertiesWithPropertyNameNotStandartStructureTest()");
     }
-    
+
     @Test
-    public void deletePropertiesWithNodeTypeAndPropertyNameNotStandartStructureTest() throws IndexPropertyException, InvalidStatisticsParameterException {
+    public void deletePropertiesWithNodeTypeAndPropertyNameNotStandartStructureTest() throws IndexPropertyException,
+            InvalidStatisticsParameterException {
         LOGGER.debug("start test deletePropertiesWithNodeTypeAndPropertyNameNotStandartStructureTest()");
-       
+
         createNotStandartStructureOfStatistics();
         int expectedCount = 4;
         propVault.deleteProperties(NEIGHBOURS, PROPERTY_NAME_NAME_1);
@@ -1703,7 +1720,7 @@ public class VaultTests {
         expectedCount = 1;
         actualCount = neighboursSubVault.getAllProperties().values().size();
         Assert.assertEquals("deleting properties work not correctly (test with main vault)", expectedCount, actualCount);
-        
+
         createNotStandartStructureOfStatistics();
         expectedCount = 5;
         propVault.deleteProperties(NEIGHBOURS, PROPERTY_NAME_NAME_2);
@@ -1712,7 +1729,7 @@ public class VaultTests {
         expectedCount = 2;
         actualCount = neighboursSubVault.getAllProperties().values().size();
         Assert.assertEquals("deleting properties work not correctly (test with main vault)", expectedCount, actualCount);
-        
+
         createNotStandartStructureOfStatistics();
         expectedCount = 6;
         propVault.deleteProperties(NETWORK, PROPERTY_NAME_NAME_4);
@@ -1724,7 +1741,7 @@ public class VaultTests {
         expectedCount = 2;
         actualCount = siteSubVault.getAllProperties().values().size();
         Assert.assertEquals("deleting properties work not correctly (test with main vault)", expectedCount, actualCount);
-        
+
         createNotStandartStructureOfStatistics();
         expectedCount = 5;
         propVault.deleteProperties(SECTOR, PROPERTY_NAME_NAME_3);
@@ -1739,7 +1756,7 @@ public class VaultTests {
         expectedCount = 0;
         actualCount = sectorSubVault.getAllProperties().values().size();
         Assert.assertEquals("deleting properties work not correctly (test with main vault)", expectedCount, actualCount);
-        
+
         createNotStandartStructureOfStatistics();
         expectedCount = 6;
         propVault.deleteProperties(SITE, PROPERTY_NAME_NAME_3);
@@ -1754,7 +1771,7 @@ public class VaultTests {
         expectedCount = 1;
         actualCount = sectorSubVault.getAllProperties().values().size();
         Assert.assertEquals("deleting properties work not correctly (test with main vault)", expectedCount, actualCount);
-        
+
         createNotStandartStructureOfStatistics();
         expectedCount = 4;
         neighboursSubVault.deleteProperties(NEIGHBOURS, PROPERTY_NAME_NAME_1);
@@ -1766,15 +1783,15 @@ public class VaultTests {
         expectedCount = 3;
         actualCount = networkSubVault.getAllProperties().values().size();
         Assert.assertEquals("deleting properties work not correctly (test with main vault)", expectedCount, actualCount);
-        
+
         LOGGER.debug("finish test deletePropertiesWithNodeTypeAndPropertyNameNotStandartStructureTest()");
     }
-    
+
     @Test
-    public void deletePropertiesWithNodeTypeAndPropertyNameAndPropertyValueNotStandartStructureTest() 
-    		throws IndexPropertyException, InvalidStatisticsParameterException {
+    public void deletePropertiesWithNodeTypeAndPropertyNameAndPropertyValueNotStandartStructureTest()
+            throws IndexPropertyException, InvalidStatisticsParameterException {
         LOGGER.debug("start test deletePropertiesWithNodeTypeAndPropertyNameAndPropertyValueNotStandartStructureTest()");
-       
+
         createNotStandartStructureOfStatistics();
         int expectedCount = 5;
         propVault.deleteProperties(NEIGHBOURS, PROPERTY_NAME_NAME_1, STRING_PROPERTY_VALUE_NETWORK_1);
@@ -1783,7 +1800,7 @@ public class VaultTests {
         expectedCount = 2;
         actualCount = neighboursSubVault.getAllProperties().values().size();
         Assert.assertEquals("deleting properties work not correctly (test with main vault)", expectedCount, actualCount);
-        
+
         createNotStandartStructureOfStatistics();
         expectedCount = 5;
         propVault.deleteProperties(NEIGHBOURS, PROPERTY_NAME_NAME_2, INTEGER_PROPERTY_VALUE_NETWORK);
@@ -1792,7 +1809,7 @@ public class VaultTests {
         expectedCount = 2;
         actualCount = neighboursSubVault.getAllProperties().values().size();
         Assert.assertEquals("deleting properties work not correctly (test with main vault)", expectedCount, actualCount);
-        
+
         createNotStandartStructureOfStatistics();
         expectedCount = 6;
         propVault.deleteProperties(NETWORK, PROPERTY_NAME_NAME_4, STRING_PROPERTY_VALUE_NETWORK_3);
@@ -1804,7 +1821,7 @@ public class VaultTests {
         expectedCount = 2;
         actualCount = siteSubVault.getAllProperties().values().size();
         Assert.assertEquals("deleting properties work not correctly (test with main vault)", expectedCount, actualCount);
-        
+
         createNotStandartStructureOfStatistics();
         expectedCount = 5;
         propVault.deleteProperties(SECTOR, PROPERTY_NAME_NAME_3, STRING_PROPERTY_VALUE_NETWORK_2);
@@ -1819,7 +1836,7 @@ public class VaultTests {
         expectedCount = 0;
         actualCount = sectorSubVault.getAllProperties().values().size();
         Assert.assertEquals("deleting properties work not correctly (test with main vault)", expectedCount, actualCount);
-        
+
         createNotStandartStructureOfStatistics();
         expectedCount = 6;
         propVault.deleteProperties(SITE, PROPERTY_NAME_NAME_3, STRING_PROPERTY_VALUE_NETWORK_3);
@@ -1834,7 +1851,7 @@ public class VaultTests {
         expectedCount = 1;
         actualCount = sectorSubVault.getAllProperties().values().size();
         Assert.assertEquals("deleting properties work not correctly (test with main vault)", expectedCount, actualCount);
-        
+
         createNotStandartStructureOfStatistics();
         expectedCount = 4;
         neighboursSubVault.deleteProperties(NEIGHBOURS, PROPERTY_NAME_NAME_1, STRING_PROPERTY_VALUE_NETWORK_1);
@@ -1847,15 +1864,14 @@ public class VaultTests {
         expectedCount = 3;
         actualCount = networkSubVault.getAllProperties().values().size();
         Assert.assertEquals("deleting properties work not correctly (test with main vault)", expectedCount, actualCount);
-        
+
         LOGGER.debug("finish test deletePropertiesWithNodeTypeAndPropertyNameNotStandartStructureTest()");
     }
-    
+
     @Test
-    public void updatePropertiesCountNotStandartStructureTest() 
-    		throws IndexPropertyException, InvalidStatisticsParameterException {
+    public void updatePropertiesCountNotStandartStructureTest() throws IndexPropertyException, InvalidStatisticsParameterException {
         LOGGER.debug("start test updatePropertiesCountNotStandartStructureTest()");
-       
+
         createNotStandartStructureOfStatistics();
         int expectedCount = 2;
         propVault.updatePropertiesCount(SITE, PROPERTY_NAME_NAME_4, STRING_PROPERTY_VALUE_NETWORK_3, 2);
@@ -1864,7 +1880,7 @@ public class VaultTests {
         expectedCount = 6;
         actualCount = propVault.getAllProperties().size();
         Assert.assertEquals("updating properties work not correctly (test with main vault)", expectedCount, actualCount);
-        
+
         createNotStandartStructureOfStatistics();
         expectedCount = 3;
         propVault.updatePropertiesCount(SITE, PROPERTY_NAME_NAME_5, INTEGER_PROPERTY_VALUE_NETWORK_2, 3);
@@ -1873,7 +1889,7 @@ public class VaultTests {
         expectedCount = 6;
         actualCount = propVault.getAllProperties().size();
         Assert.assertEquals("updating properties work not correctly (test with main vault)", expectedCount, actualCount);
-        
+
         createNotStandartStructureOfStatistics();
         expectedCount = 56;
         propVault.updatePropertiesCount(SECTOR, PROPERTY_NAME_NAME_3, STRING_PROPERTY_VALUE_NETWORK_2, 56);
@@ -1882,7 +1898,7 @@ public class VaultTests {
         expectedCount = 6;
         actualCount = propVault.getAllProperties().size();
         Assert.assertEquals("updating properties work not correctly (test with main vault)", expectedCount, actualCount);
-        
+
         createNotStandartStructureOfStatistics();
         expectedCount = 1;
         propVault.updatePropertiesCount(SECTOR, PROPERTY_NAME_NAME_3, STRING_PROPERTY_VALUE_NETWORK_3, 56);
@@ -1891,7 +1907,7 @@ public class VaultTests {
         expectedCount = 6;
         actualCount = propVault.getAllProperties().size();
         Assert.assertEquals("updating properties work not correctly (test with main vault)", expectedCount, actualCount);
-        
+
         createNotStandartStructureOfStatistics();
         expectedCount = 126;
         propVault.updatePropertiesCount(NEIGHBOURS, PROPERTY_NAME_NAME_1, STRING_PROPERTY_VALUE_NETWORK_1, 126);
@@ -1904,7 +1920,7 @@ public class VaultTests {
         expectedCount = 6;
         actualCount = propVault.getAllProperties().size();
         Assert.assertEquals("updating properties work not correctly (test with main vault)", expectedCount, actualCount);
-        
+
         LOGGER.debug("finish test updatePropertiesCountNotStandartStructureTest()");
     }
 }

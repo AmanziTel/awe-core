@@ -14,8 +14,10 @@
 package org.amanzi.neo.services.statistic;
 
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import org.amanzi.neo.services.exceptions.AWEException;
@@ -39,7 +41,7 @@ public class StatisticsVault implements IVault {
     private boolean isStatisticsChanged = false;
     private Map<String, NewPropertyStatistics> propertyStatisticsMap = new HashMap<String, NewPropertyStatistics>();
     private Map<Object, Integer> allProperties = new HashMap<Object, Integer>();
-    
+
     private static Logger LOGGER = Logger.getLogger(StatisticsVault.class);
 
     private static final String TRUE = "true";
@@ -240,8 +242,7 @@ public class StatisticsVault implements IVault {
     private Object autoParse(String propertyValue) {
 
         try {
-            DecimalFormat format = new DecimalFormat();
-            char separator = format.getDecimalFormatSymbols().getDecimalSeparator();
+            char separator = '.';
             if (propertyValue.indexOf(separator) != -1) {
                 Number numberValue = NumberFormat.getNumberInstance().parse(propertyValue);
                 int lastIndex = propertyValue.indexOf("e") + propertyValue.indexOf("E");
@@ -276,8 +277,7 @@ public class StatisticsVault implements IVault {
     public int getNodeCount(String nodeType) {
         if (this.type.equals(nodeType)) {
             return this.count;
-        }
-        else {
+        } else {
             for (String type : this.subVaults.keySet()) {
                 if (type.equals(nodeType)) {
                     return this.subVaults.get(type).getCount();
@@ -292,10 +292,9 @@ public class StatisticsVault implements IVault {
         getAllProperties(nodeType, propertyName);
         return allProperties.size();
     }
-    
+
     @Override
-    public int getPropertyValueCount(String nodeType, String propertyName, Object propertyValue)
-    {
+    public int getPropertyValueCount(String nodeType, String propertyName, Object propertyValue) {
         int countOfPropertyValue = 0;
         getAllProperties(nodeType, propertyName);
         for (Object propValue : allProperties.keySet()) {
@@ -305,15 +304,15 @@ public class StatisticsVault implements IVault {
         }
         return countOfPropertyValue;
     }
-    
+
     @Override
     public Map<Object, Integer> getAllProperties() {
         allProperties = new HashMap<Object, Integer>();
         return getAllProperties(this);
     }
-    
+
     private Map<Object, Integer> getAllProperties(IVault subVault) {
-        
+
         if (subVault.getSubVaults().values().size() != 0) {
             for (String nameOfSubVault : subVault.getSubVaults().keySet()) {
                 IVault subV = subVault.getSubVaults().get(nameOfSubVault);
@@ -323,78 +322,72 @@ public class StatisticsVault implements IVault {
                         NewPropertyStatistics newPropertyStatistic = propertyStatisticMap.get(property);
                         allProperties.putAll(newPropertyStatistic.getPropertyMap());
                     }
-                }
-                else {
+                } else {
                     getAllProperties(subV);
                 }
             }
-        }
-        else {
+        } else {
             Map<String, NewPropertyStatistics> propertyStatisticMap = subVault.getPropertyStatisticsMap();
             for (String property : propertyStatisticMap.keySet()) {
                 NewPropertyStatistics newPropertyStatistic = propertyStatisticMap.get(property);
                 allProperties.putAll(newPropertyStatistic.getPropertyMap());
             }
         }
-        
+
         return allProperties;
     }
-    
+
     @Override
     public Map<Object, Integer> getAllProperties(String nodeType) {
         allProperties = new HashMap<Object, Integer>();
         return getAllProperties(this, nodeType);
     }
-    
+
     private Map<Object, Integer> getAllProperties(IVault subVault, String nodeType) {
         if (subVault.getSubVaults().size() != 0) {
             for (String nameOfSubVault : subVault.getSubVaults().keySet()) {
                 IVault subV = subVault.getSubVaults().get(nameOfSubVault);
                 if (subV.getType().equals(nodeType)) {
                     getAllProperties(subV);
-                }
-                else {
+                } else {
                     getAllProperties(subV, nodeType);
                 }
             }
-        }
-        else {
+        } else {
             for (IVault subSubVault : subVault.getSubVaults().values()) {
                 if (subSubVault.getType().equals(nodeType)) {
                     getAllProperties(subSubVault);
                 }
             }
         }
-        
+
         return allProperties;
     }
-    
+
     @Override
     public Map<Object, Integer> getAllProperties(String nodeType, String propertyName) {
         allProperties = new HashMap<Object, Integer>();
         return getAllProperties(this, nodeType, propertyName);
     }
-    
+
     private Map<Object, Integer> getAllProperties(IVault subVault, String nodeType, String propertyName) {
         if (subVault.getSubVaults().size() != 0) {
             for (String nameOfSubVault : subVault.getSubVaults().keySet()) {
                 IVault subV = subVault.getSubVaults().get(nameOfSubVault);
                 if (subV.getType().equals(nodeType)) {
                     getAllPropertiesWithName(subV, propertyName);
-                }
-                else {
+                } else {
                     getAllProperties(subV, nodeType, propertyName);
                 }
             }
-        }
-        else {
+        } else {
             for (IVault subSubVault : subVault.getSubVaults().values()) {
                 if (subSubVault.getType().equals(nodeType)) {
                     getAllPropertiesWithName(subSubVault, propertyName);
                 }
             }
         }
-        
+
         return allProperties;
     }
 
@@ -403,7 +396,7 @@ public class StatisticsVault implements IVault {
         allProperties = new HashMap<Object, Integer>();
         return getAllPropertiesWithName(this, propertyName);
     }
-    
+
     private Map<Object, Integer> getAllPropertiesWithName(IVault subVault, String propertyName) {
         if (subVault.getSubVaults().values().size() != 0) {
             for (String nameOfSubVault : subVault.getSubVaults().keySet()) {
@@ -419,13 +412,11 @@ public class StatisticsVault implements IVault {
                             }
                         }
                     }
-                }
-                else {
+                } else {
                     getAllPropertiesWithName(subV, propertyName);
                 }
             }
-        }
-        else {
+        } else {
             Map<String, NewPropertyStatistics> propertyStatisticMap = subVault.getPropertyStatisticsMap();
             for (String property : propertyStatisticMap.keySet()) {
                 if (property.equals(propertyName)) {
@@ -437,16 +428,16 @@ public class StatisticsVault implements IVault {
                 }
             }
         }
-        
+
         return allProperties;
     }
-    
+
     @Override
     public Map<Object, Integer> getAllProperties(Class< ? > klass) {
         allProperties = new HashMap<Object, Integer>();
         return getAllProperties(this, klass);
     }
-    
+
     private Map<Object, Integer> getAllProperties(IVault subVault, Class< ? > klass) {
         if (subVault.getSubVaults().values().size() != 0) {
             for (String nameOfSubVault : subVault.getSubVaults().keySet()) {
@@ -462,13 +453,11 @@ public class StatisticsVault implements IVault {
                             }
                         }
                     }
-                }
-                else {
+                } else {
                     getAllProperties(subV, klass);
                 }
             }
-        }
-        else {
+        } else {
             Map<String, NewPropertyStatistics> propertyStatisticMap = subVault.getPropertyStatisticsMap();
             for (String property : propertyStatisticMap.keySet()) {
                 NewPropertyStatistics newPropertyStatistic = propertyStatisticMap.get(property);
@@ -480,7 +469,7 @@ public class StatisticsVault implements IVault {
                 }
             }
         }
-        
+
         return allProperties;
     }
 
@@ -488,30 +477,28 @@ public class StatisticsVault implements IVault {
     public void deletePropertiesWithNodeType(String nodeType) {
         deletePropertiesWithNodeType(this, nodeType);
     }
-    
+
     private void deletePropertiesWithNodeType(IVault vault, String nodeType) {
         if (vault.getType().equals(nodeType)) {
             vault.getSubVaults().remove(nodeType);
-        }
-        else {
+        } else {
             for (String tempNodeType : vault.getSubVaults().keySet()) {
                 IVault subVault = vault.getSubVaults().get(tempNodeType);
                 if (tempNodeType.equals(nodeType)) {
                     vault.getSubVaults().remove(nodeType);
                     break;
-                }
-                else {
+                } else {
                     deletePropertiesWithNodeType(subVault, nodeType);
                 }
             }
         }
     }
-    
+
     @Override
     public void deleteProperties(String propertyName) {
         deleteProperties(this, propertyName);
     }
-    
+
     private void deleteProperties(IVault vault, String propertyName) {
         if (vault.getSubVaults().values().size() == 0) {
             for (String property : vault.getPropertyStatisticsMap().keySet()) {
@@ -520,8 +507,7 @@ public class StatisticsVault implements IVault {
                     break;
                 }
             }
-        }
-        else {
+        } else {
             for (String tempNodeType : vault.getSubVaults().keySet()) {
                 IVault subVault = vault.getSubVaults().get(tempNodeType);
                 if (subVault.getSubVaults().values().size() == 0) {
@@ -531,8 +517,7 @@ public class StatisticsVault implements IVault {
                             break;
                         }
                     }
-                }
-                else {
+                } else {
                     deleteProperties(subVault, propertyName);
                 }
             }
@@ -543,7 +528,7 @@ public class StatisticsVault implements IVault {
     public void deleteProperties(String nodeType, String propertyName) {
         deleteProperties(this, nodeType, propertyName);
     }
-    
+
     private void deleteProperties(IVault vault, String nodeType, String propertyName) {
         if (vault.getSubVaults().values().size() == 0) {
             if (vault.getType().equals(nodeType)) {
@@ -554,8 +539,7 @@ public class StatisticsVault implements IVault {
                     }
                 }
             }
-        }
-        else {
+        } else {
             for (String tempNodeType : vault.getSubVaults().keySet()) {
                 IVault subVault = vault.getSubVaults().get(tempNodeType);
                 if (subVault.getSubVaults().values().size() == 0) {
@@ -567,8 +551,7 @@ public class StatisticsVault implements IVault {
                             }
                         }
                     }
-                }
-                else {
+                } else {
                     deleteProperties(subVault, nodeType, propertyName);
                 }
             }
@@ -579,9 +562,8 @@ public class StatisticsVault implements IVault {
     public void deleteProperties(String nodeType, String propertyName, Object propertyValue) {
         deleteProperties(this, nodeType, propertyName, propertyValue);
     }
-    
-    private void deleteProperties(IVault vault, String nodeType, String propertyName,
-            Object propertyValue) {
+
+    private void deleteProperties(IVault vault, String nodeType, String propertyName, Object propertyValue) {
         if (vault.getSubVaults().values().size() == 0) {
             if (vault.getType().equals(nodeType)) {
                 for (String property : vault.getPropertyStatisticsMap().keySet()) {
@@ -597,8 +579,7 @@ public class StatisticsVault implements IVault {
                     }
                 }
             }
-        }
-        else {
+        } else {
             for (String tempNodeType : vault.getSubVaults().keySet()) {
                 IVault subVault = vault.getSubVaults().get(tempNodeType);
                 if (subVault.getSubVaults().values().size() == 0) {
@@ -616,8 +597,7 @@ public class StatisticsVault implements IVault {
                             }
                         }
                     }
-                }
-                else {
+                } else {
                     deleteProperties(subVault, nodeType, propertyName, propertyValue);
                 }
             }
@@ -628,7 +608,7 @@ public class StatisticsVault implements IVault {
     public void updatePropertiesCount(String nodeType, String propertyName, Object propertyValue, int newCount) {
         updatePropertiesCount(this, nodeType, propertyName, propertyValue, newCount);
     }
-    
+
     private void updatePropertiesCount(IVault vault, String nodeType, String propertyName, Object propertyValue, int newCount) {
         if (vault.getSubVaults().values().size() == 0) {
             if (vault.getType().equals(nodeType)) {
@@ -646,8 +626,7 @@ public class StatisticsVault implements IVault {
                     }
                 }
             }
-        }
-        else {
+        } else {
             for (String tempNodeType : vault.getSubVaults().keySet()) {
                 IVault subVault = vault.getSubVaults().get(tempNodeType);
                 if (subVault.getSubVaults().values().size() == 0) {
@@ -666,8 +645,7 @@ public class StatisticsVault implements IVault {
                             }
                         }
                     }
-                }
-                else {
+                } else {
                     updatePropertiesCount(subVault, nodeType, propertyName, propertyValue, newCount);
                 }
             }
@@ -683,6 +661,5 @@ public class StatisticsVault implements IVault {
     public void setIsStatisticsChanged(boolean isStatisticsChanged) {
         this.isStatisticsChanged = isStatisticsChanged;
     }
-    
-    
+
 }
