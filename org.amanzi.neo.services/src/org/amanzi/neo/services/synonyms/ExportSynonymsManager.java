@@ -17,6 +17,7 @@ import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataModel;
+import org.amanzi.neo.services.model.IModel;
 import org.amanzi.neo.services.synonyms.ExportSynonymsService.ExportSynonymType;
 import org.amanzi.neo.services.synonyms.ExportSynonymsService.ExportSynonyms;
 import org.apache.commons.lang.StringUtils;
@@ -126,7 +127,7 @@ public class ExportSynonymsManager {
      * @return ExportSynonyms
      * @throws DatabaseException
      */
-    public ExportSynonyms createExportSynonym(IDataModel model, ExportSynonymType type) throws DatabaseException {
+    public ExportSynonyms createExportSynonym(IModel model, ExportSynonymType type) throws DatabaseException {
         // validate input parameters
 
         ExportSynonyms synonyms = null;
@@ -155,7 +156,7 @@ public class ExportSynonymsManager {
      * @param type
      * @throws DatabaseException
      */
-    public void saveDatasetExportSynonyms(IDataModel model, ExportSynonyms synonyms, ExportSynonymType type)
+    public void saveDatasetExportSynonyms(IModel model, ExportSynonyms synonyms, ExportSynonymType type)
             throws DatabaseException {
         synonymsService.saveExportSynonyms(model.getRootNode(), synonyms, type);
     }

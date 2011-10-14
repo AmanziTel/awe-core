@@ -27,6 +27,10 @@
             class="org.amanzi.neo.loader.core.newsaver.CNASaver"
             id="org.amanzi.neo.loader.core.newsaver.CNASaver">
       </newsaver>
+       <newsaver
+            class="org.amanzi.neo.loader.core.newsaver.NewNeighboursSaver"
+            id="org.amanzi.neo.loader.core.newsaver.NewNeighboursSaver">
+      </newsaver>
    </extension>
    <extension
          point="org.amanzi.loader.core.parser">
@@ -47,6 +51,7 @@
             class="org.amanzi.neo.loader.core.saver.impl.NeighbourSaver"
             id="org.amanzi.neo.loader.core.saver.impl.NeighbourSaver">
       </saver>
+      
       <saver
             class="org.amanzi.neo.loader.core.saver.impl.Nemo1xSaver"
             id="org.amanzi.neo.loader.core.saver.impl.Nemo1xSaver">

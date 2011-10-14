@@ -217,7 +217,11 @@ public class ImportSynonymsPreferencePage extends PreferencePage implements IWor
          * @param key The key to set.
          */
         public void setKey(String key) {
-            this.key = key.split(DataLoadPreferenceManager.INFO_SEPARATOR)[0];
+            if (key.indexOf(DataLoadPreferenceManager.INFO_SEPARATOR) < 0) {
+                this.key = key;
+            } else {
+                this.key = key.substring(0, key.indexOf(DataLoadPreferenceManager.INFO_SEPARATOR));
+            }
         }
 
         /**
@@ -394,7 +398,7 @@ public class ImportSynonymsPreferencePage extends PreferencePage implements IWor
                     subTypes = new String[0];
                     break;
                 case DRIVE:
-                    subTypes = new String[DriveTypes.values().length+1];
+                    subTypes = new String[DriveTypes.values().length + 1];
                     int count = 0;
                     subTypes[count] = StringUtils.EMPTY;
                     count++;

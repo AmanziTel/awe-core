@@ -39,9 +39,9 @@ import org.apache.log4j.Logger;
 /**
  * @author Kondratneko_Vladislav
  */
-public class NeighboursSaver extends AbstractSaver<NetworkModel, CSVContainer, ConfigurationDataImpl> {
+public class NewNeighboursSaver extends AbstractSaver<NetworkModel, CSVContainer, ConfigurationDataImpl> {
     private Long lineCounter = 0l;
-    private INetworkModel model;
+    private INetworkModel networkModel;
     private INodeToNodeRelationsModel n2nModel;
     private IDataElement rootDataElement;
     private Map<String, Integer> columnSynonyms;
@@ -78,11 +78,11 @@ public class NeighboursSaver extends AbstractSaver<NetworkModel, CSVContainer, C
         openOrReopenTx();
         try {
             rootElement.put(INeoConstants.PROPERTY_NAME_NAME, configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK));
-            model = getActiveProject().getNetwork(configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK));
-            rootDataElement = new DataElement(model.getRootNode());
-//            n2nModel = new NodeToNodeRelationshipModel(rootDataElement, N2NRelTypes.NEIGHBOUR, configuration
-//                    .getFilesToLoad().get(0).getName(),NetworkElementNodeType.SECTOR);
-            modelMap.put(configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK), model);
+            networkModel = getActiveProject().getNetwork(configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK));
+            n2nModel = networkModel.getNodeToNodeModel(N2NRelTypes.NEIGHBOUR, configuration.getFilesToLoad().get(0).getName(),
+                    NetworkElementNodeType.SECTOR);
+            rootDataElement = new DataElement(networkModel.getRootNode());
+            modelMap.put(configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK), networkModel);
             createExportSynonymsForModels();
             markTxAsSuccess();
         } catch (AWEException e) {
@@ -106,9 +106,35 @@ public class NeighboursSaver extends AbstractSaver<NetworkModel, CSVContainer, C
         } else {
             lineCounter++;
             List<String> value = container.getValues();
-            // createMSC(value);
+            createNeighbour(value);
             markTxAsSuccess();
             increaseActionCount();
+        }
+    }
+
+    /**
+     * try create a neighbour relationship between sectors
+     * 
+     * @param value
+     */
+    private void createNeighbour(List<String> row) {
+        String neighbSectorName = row.get(columnSynonyms.get(fileSynonyms.get(NEIGHBOUR_SECTOR_NAME)));
+        String serviceNeighName = row.get(columnSynonyms.get(fileSynonyms.get(SERVING_SECTOR_NAME)));
+        Map<String, Object> properties = new HashMap<String, Object>();
+        properties.put(INeoConstants.PROPERTY_TYPE_NAME, NetworkElementNodeType.SECTOR.getId());
+        properties.put(INeoConstants.PROPERTY_NAME_NAME, neighbSectorName);
+        IDataElement findedNeighSector = networkModel.findElement(properties);
+        properties.put(INeoConstants.PROPERTY_NAME_NAME, serviceNeighName);
+        IDataElement findedServiceSector = networkModel.findElement(properties);
+        for (String head : headers) {
+            if (!fileSynonyms.containsValue(head)) {
+                properties.put(head.toLowerCase(), row.get(columnSynonyms.get(head)));
+            }
+        }
+        if (findedNeighSector != null && findedServiceSector != null) {
+            n2nModel.linkNode(findedServiceSector, findedNeighSector, properties);
+        } else {
+            LOGGER.warn("cann't find service or neighbour sector on line " + lineCounter);
         }
     }
 
@@ -139,9 +165,8 @@ public class NeighboursSaver extends AbstractSaver<NetworkModel, CSVContainer, C
                 for (String mask : preferenceStoreSynonyms.get(posibleHeader)) {
                     if (header.toLowerCase().matches(mask.toLowerCase())) {
                         isAppropriation = true;
-                        String[] posibleHeadersArray = posibleHeader.split(DataLoadPreferenceManager.INFO_SEPARATOR);
-                        fileSynonyms.put(posibleHeadersArray != null ? posibleHeadersArray[0] : posibleHeader, header);
-
+                        String name = posibleHeader.substring(0, posibleHeader.indexOf('.'));
+                        fileSynonyms.put(name, header);
                         break;
                     }
                 }

@@ -30,7 +30,7 @@ import org.amanzi.neo.services.enums.IDriveType;
  */
 public class DataLoadPreferenceManager {
     private static DataLoadPreferenceInitializer preferenceInitializer;
-    public final static String INFO_SEPARATOR = "_";
+    public final static String INFO_SEPARATOR = "\\.";
     /*
      * network constants
      */
@@ -167,9 +167,9 @@ public class DataLoadPreferenceManager {
             driveMap.put(RSSI, getPossibleHeaders(DataLoadPreferences.DR_RSSI));
             driveMap.put(SC, getPossibleHeaders(DataLoadPreferences.DR_SC));
             driveMap.put(TCH, getPossibleHeaders(DataLoadPreferences.DR_TCH));
-            driveMap.put(INeoConstants.PROPERTY_SECTOR_CI, getPossibleHeaders(DataLoadPreferences.DR_CI));
-            driveMap.put(INeoConstants.PROPERTY_LAT_NAME, getPossibleHeaders(DataLoadPreferences.DR_LATITUDE));
-            driveMap.put(INeoConstants.PROPERTY_LON_NAME, getPossibleHeaders(DataLoadPreferences.DR_LONGITUDE));
+            driveMap.put(INeoConstants.PROPERTY_SECTOR_CI + INFO_SEPARATOR, getPossibleHeaders(DataLoadPreferences.DR_CI));
+            driveMap.put(INeoConstants.PROPERTY_LAT_NAME + INFO_SEPARATOR, getPossibleHeaders(DataLoadPreferences.DR_LATITUDE));
+            driveMap.put(INeoConstants.PROPERTY_LON_NAME + INFO_SEPARATOR, getPossibleHeaders(DataLoadPreferences.DR_LONGITUDE));
         }
         return driveMap;
     }
@@ -191,15 +191,16 @@ public class DataLoadPreferenceManager {
             networkMap.put(SECTOR, getPossibleHeaders(DataLoadPreferences.NH_SECTOR));
             networkMap.put(AZIMUTH, getPossibleHeaders(DataLoadPreferences.NH_AZIMUTH));
             networkMap.put(BEAMWITH, getPossibleHeaders(DataLoadPreferences.NH_BEAMWIDTH));
-            networkMap.put(INeoConstants.PROPERTY_SECTOR_CI, getPossibleHeaders(DataLoadPreferences.NH_SECTOR_CI));
-            networkMap.put(INeoConstants.PROPERTY_SECTOR_LAC, getPossibleHeaders(DataLoadPreferences.NH_SECTOR_LAC));
-            networkMap.put(INeoConstants.PROPERTY_LAT_NAME, getPossibleHeaders(DataLoadPreferences.NH_LATITUDE));
-            networkMap.put(INeoConstants.PROPERTY_LON_NAME, getPossibleHeaders(DataLoadPreferences.NH_LONGITUDE));
-            networkMap.put(DataLoadPreferences.MO, getPossibleHeaders(DataLoadPreferences.MO));
+            networkMap.put(INeoConstants.PROPERTY_SECTOR_CI + INFO_SEPARATOR, getPossibleHeaders(DataLoadPreferences.NH_SECTOR_CI));
+            networkMap.put(INeoConstants.PROPERTY_SECTOR_LAC + INFO_SEPARATOR,
+                    getPossibleHeaders(DataLoadPreferences.NH_SECTOR_LAC));
+            networkMap.put(INeoConstants.PROPERTY_LAT_NAME + INFO_SEPARATOR, getPossibleHeaders(DataLoadPreferences.NH_LATITUDE));
+            networkMap.put(INeoConstants.PROPERTY_LON_NAME + INFO_SEPARATOR, getPossibleHeaders(DataLoadPreferences.NH_LONGITUDE));
+            networkMap.put(DataLoadPreferences.MO + INFO_SEPARATOR, getPossibleHeaders(DataLoadPreferences.MO));
             networkMap.put(SITE, getPossibleHeaders(DataLoadPreferences.NH_SITE));
             networkMap.put(SECTOR, getPossibleHeaders(DataLoadPreferences.NH_SECTOR));
-            networkMap.put(DataLoadPreferences.CHGR, getPossibleHeaders(DataLoadPreferences.CHGR));
-            networkMap.put(DataLoadPreferences.FHOP, getPossibleHeaders(DataLoadPreferences.FHOP));
+            networkMap.put(DataLoadPreferences.CHGR + INFO_SEPARATOR, getPossibleHeaders(DataLoadPreferences.CHGR));
+            networkMap.put(DataLoadPreferences.FHOP + INFO_SEPARATOR, getPossibleHeaders(DataLoadPreferences.FHOP));
         }
         return networkMap;
     }

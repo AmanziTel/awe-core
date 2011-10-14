@@ -16,11 +16,11 @@ package org.amanzi.neo.services.model.impl;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.amanzi.neo.services.CorrelationService.CorrelationNodeTypes;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.NewNetworkService;
 import org.amanzi.neo.services.NodeTypeManager;
-import org.amanzi.neo.services.CorrelationService.CorrelationNodeTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataElement;
@@ -33,9 +33,6 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
-import org.neo4j.graphdb.traversal.Evaluators;
-import org.neo4j.graphdb.traversal.TraversalDescription;
-import org.neo4j.kernel.Traversal;
 
 /**
  * <p>
@@ -176,15 +173,7 @@ public class NodeToNodeRelationshipModel extends AbstractModel implements INodeT
         }
     }
 
-    /**
-     * Creates a relationship from <code>source</code> to <code>target</code> through PROXY nodes,
-     * and sets <code>params</code> properties to the relationship, if defined. Proxy nodes are
-     * added to the node2node model root as C-N-N.
-     * 
-     * @param source
-     * @param target
-     * @param params can be <code>null</code>
-     */
+    @Override
     public void linkNode(IDataElement source, IDataElement target, Map<String, Object> params) {
         // validate parameters
         if (source == null) {
@@ -269,13 +258,7 @@ public class NodeToNodeRelationshipModel extends AbstractModel implements INodeT
         return result;
     }
 
-    /**
-     * Traverses database to find elements connected to the <code>source</code> element with
-     * relations, defined by current node2node model.
-     * 
-     * @param source
-     * @return <code>IDataElement</code> traverser
-     */
+    @Override
     public Iterable<IDataElement> getN2NRelatedElements(IDataElement source) {
         // validate parameters
         if (source == null) {

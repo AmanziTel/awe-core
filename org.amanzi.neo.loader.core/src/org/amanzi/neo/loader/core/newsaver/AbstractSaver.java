@@ -51,8 +51,8 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
     protected final static ExportSynonymsManager exportManager = ExportSynonymsManager.getManager();
     protected static DataLoadPreferenceManager preferenceManager = new DataLoadPreferenceManager();
     protected Map<String, String[]> preferenceStoreSynonyms;
-    protected Map<String, IDataModel> modelMap = new HashMap<String, IDataModel>();
-    protected Map<IDataModel, ExportSynonyms> synonymsMap = new HashMap<IDataModel, ExportSynonyms>();
+    protected Map<String, IModel> modelMap = new HashMap<String, IModel>();
+    protected Map<IModel, ExportSynonyms> synonymsMap = new HashMap<IModel, ExportSynonyms>();
 
     protected void createExportSynonymsForModels() {
         try {

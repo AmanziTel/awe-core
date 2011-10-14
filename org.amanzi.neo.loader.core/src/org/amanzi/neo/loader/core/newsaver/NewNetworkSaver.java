@@ -330,9 +330,8 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
                 for (String mask : preferenceStoreSynonyms.get(posibleHeader)) {
                     if (header.toLowerCase().matches(mask.toLowerCase())) {
                         isAppropriation = true;
-                        String[] posibleHeadersArray = posibleHeader.split(DataLoadPreferenceManager.INFO_SEPARATOR);
-                        fileSynonyms.put(posibleHeadersArray != null ? posibleHeadersArray[0] : posibleHeader, header);
-
+                        String name = posibleHeader.substring(0, posibleHeader.indexOf(DataLoadPreferenceManager.INFO_SEPARATOR));
+                        fileSynonyms.put(name, header);
                         break;
                     }
                 }

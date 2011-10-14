@@ -13,16 +13,38 @@
 
 package org.amanzi.neo.services.model;
 
+import java.util.Map;
+
 /**
  * <p>
- * The interface for models describing node relationships, that are beyond common data
- * structure, e.g. neighbouring between sectors.
+ * The interface for models describing node relationships, that are beyond common data structure,
+ * e.g. neighbouring between sectors.
  * </p>
  * 
  * @author grigoreva_a
  * @since 1.0.0
  */
-public interface INodeToNodeRelationsModel {
+public interface INodeToNodeRelationsModel extends IModel {
 
     public INodeToNodeRelationsType getNodeToNodeRelationsType();
+
+    /**
+     * Creates a relationship from <code>source</code> to <code>target</code> through PROXY nodes,
+     * and sets <code>params</code> properties to the relationship, if defined. Proxy nodes are
+     * added to the node2node model root as C-N-N.
+     * 
+     * @param source
+     * @param target
+     * @param params can be <code>null</code>
+     */
+    public void linkNode(IDataElement source, IDataElement target, Map<String, Object> params);
+
+    /**
+     * Traverses database to find elements connected to the <code>source</code> element with
+     * relations, defined by current node2node model.
+     * 
+     * @param source
+     * @return <code>IDataElement</code> traverser
+     */
+    public Iterable<IDataElement> getN2NRelatedElements(IDataElement source);
 }
