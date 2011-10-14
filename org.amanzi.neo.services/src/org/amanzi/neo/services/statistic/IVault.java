@@ -228,6 +228,21 @@ public interface IVault {
      */
     public void indexProperty(String nodeType, String propName, Object propValue) throws IndexPropertyException,
             InvalidStatisticsParameterException;
+    
+    /**
+     * * this method remove property from PropertyStatistics and update counts in vaults
+     * 
+     * @param nodeType
+     * @param propName
+     * @param propValue
+     * @throws IndexPropertyException - method throw this exception if type of given propValue is
+     *         wrong
+     * @throws InvalidStatisticsParameterException - method throw this exception if some parameter =
+     *         null
+     * 
+     */
+    public void removeProperty(String nodeType, String propName, Object propValue) throws IndexPropertyException,
+            InvalidStatisticsParameterException;
 
    /**
     * this method defines type of property value and return this value

@@ -18,7 +18,6 @@ import java.util.Map;
 
 import org.amanzi.neo.db.manager.NeoServiceProvider;
 import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;
-import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
@@ -113,14 +112,35 @@ public abstract class NewAbstractService {
     }
     
     /**
+     * Manage index names for current model.
+     * 
+     * @param type the type of node to index
+     * @param rootNode Root-node
+     * @return the index name
+     * @throws DatabaseException
+     */
+    private Index<Node> getIndex(INodeType type, Node rootNode, 
+            Map<INodeType, Index<Node>> indexMap) throws DatabaseException {
+        
+        Index<Node> result = indexMap.get(type.getId());
+        if (result == null) {
+            result = getIndex(rootNode, type);
+            if (result != null) {
+                indexMap.put(type, result);
+            }
+        }
+        return result;
+    }
+    
+    /**
      * Method delete node and all sub-nodes if they related with CHILD-relationships
      *
      * @param nodeToDelete Node which need delete
      * @throws DatabaseException 
      * @throws InvalidStatisticsParameterException 
      */
-    public void deleteNode(Node nodeToDelete) throws AWEException {
-        LOGGER.debug("start method deleteNode(Node nodeToDelete)");
+    public void deleteOneNode(Node nodeToDelete, Node rootNode, Map<INodeType, Index<Node>> indexMap) throws AWEException {
+        LOGGER.debug("start method deleteOneNode(Node nodeToDelete)");
         
         if (nodeToDelete == null) {
             LOGGER.error("InvalidStatisticsParameterException: parameter nodeToDelete = null");
@@ -129,14 +149,14 @@ public abstract class NewAbstractService {
         
         Transaction tx = graphDb.beginTx();
         try {
-            Iterable<Relationship> childRelationships =
-                    nodeToDelete.getRelationships(DatasetRelationshipTypes.CHILD, Direction.OUTGOING);
+            Iterable<Relationship> childRelationships = 
+                    nodeToDelete.getRelationships(Direction.OUTGOING);
             
             for (Relationship rel : childRelationships) {
                 Node childNode = rel.getEndNode();
                 if (childNode != null) {
-                    deleteSubNodes(childNode);
                     rel.delete();
+                    removeIndexFromNode(childNode, rootNode, indexMap);
                     childNode.delete();
                 }
             }
@@ -144,6 +164,7 @@ public abstract class NewAbstractService {
             for (Relationship incomingRelationship : incomingRelationships) {
                 incomingRelationship.delete();
             }
+            removeIndexFromNode(nodeToDelete, rootNode, indexMap);
             nodeToDelete.delete();
             tx.success();
         } catch (Exception e) {
@@ -155,25 +176,7 @@ public abstract class NewAbstractService {
             tx.finish();
 
         }
-        LOGGER.debug("finish method deleteNode(Node nodeToDelete)");
-    }
-    
-    /**
-     * Recursive deleting all sub-nodes of this node
-     *
-     * @param child Node to delete
-     */
-    private void deleteSubNodes(Node child) {
-        for (Relationship childRel : child.
-                getRelationships(DatasetRelationshipTypes.CHILD, Direction.OUTGOING)) {
-            Node subNode = childRel.getEndNode();
-
-            if (subNode != null) {
-                deleteSubNodes(subNode);
-                subNode.delete();
-                childRel.delete();
-            }
-        }
+        LOGGER.debug("finish method deleteOneNode(Node nodeToDelete)");
     }
 
     public Node createNode(Map<String, Object> params) throws DatabaseException {
@@ -340,6 +343,22 @@ public abstract class NewAbstractService {
             tx.finish();
         }
         return index;
+    }
+    
+    private void removeIndexFromNode(Node node, Node rootNode, Map<INodeType, Index<Node>> indexMap) throws DatabaseException {
+        Transaction tx = graphDb.beginTx();
+        try {
+            INodeType nodeType = NodeTypeManager.
+                    getType(node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).toString());
+            Index<Node> index = getIndex(nodeType, rootNode, indexMap);
+            index.remove(node, NAME, node.getProperty(INeoConstants.PROPERTY_NAME_NAME));
+            tx.success();
+        } catch (Exception e) {
+            LOGGER.error("Could not index node", e);
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
     }
 
     public Index<Node> addNodeToIndex(Node node, Index<Node> index, String propertyName, Object propertyValue)

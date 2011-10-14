@@ -158,6 +158,48 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
             parentElement = testElement;
         }
     }
+    
+	@Test
+	public void testDeleteElement() {
+		ArrayList<IDataElement> allDataElements = new ArrayList<IDataElement>();
+		ArrayList<IDataElement> paramsDataElements = new ArrayList<IDataElement>();
+		IDataElement parentElement = new DataElement(network);
+		for (INodeType type : NetworkElementNodeType.values()) {
+			Map<String, Object> params = new HashMap<String, Object>();
+			params.put(NewAbstractService.TYPE, type.getId());
+			params.put(NewAbstractService.NAME, type.getId());
+			params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
+			DataElement element = new DataElement(params);
+			paramsDataElements.add(element);
+			
+			IDataElement testElement = model.createElement(parentElement,
+					element);
+			// object returned not null
+			assertNotNull(testElement);
+			// underlying node not null
+			assertNotNull(((DataElement) testElement).getNode());
+			// properties set
+			for (String key : params.keySet()) {
+				assertEquals(params.get(key), testElement.get(key));
+			}
+			parentElement = testElement;
+			allDataElements.add(parentElement);
+		}
+		int index = 2;
+		IDataElement elementToDelete = allDataElements.get(index);
+		model.deleteElement(elementToDelete);
+		
+		ArrayList<IDataElement> foundElements = new ArrayList<IDataElement>();
+		for (IDataElement dataElement : paramsDataElements) {
+			
+			IDataElement foundElement = model.findElement(((DataElement)dataElement));
+			if (foundElement != null) {
+				foundElements.add(foundElement);
+			}
+		}
+		
+		assertEquals(foundElements.size(), index);
+	}
 
     @Test
     public void testFindElement() {

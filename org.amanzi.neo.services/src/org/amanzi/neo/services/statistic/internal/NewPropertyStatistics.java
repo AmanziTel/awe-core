@@ -93,11 +93,19 @@ public class NewPropertyStatistics {
      * @param count - count to update for this value
      */
     public void updatePropertyMap(Object value, Integer count) {
-        Integer oldCount = 0;
-        if (propertyMap.containsKey(value)) {
-            oldCount = propertyMap.get(value);
+        if (value.getClass().isPrimitive()) {
+            Integer oldCount = 0;
+            if (propertyMap.containsKey(value.toString())) {
+                oldCount = propertyMap.get(value);
+            }
+            int newCount = oldCount + count;
+            if (newCount > 0) {
+                propertyMap.put(value, newCount);
+            }
+            else if (propertyMap.containsKey(value)) {
+                propertyMap.remove(value);
+            }
         }
-        propertyMap.put(value, oldCount + count);
     }
 
     /**

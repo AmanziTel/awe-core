@@ -13,11 +13,8 @@
 
 package org.amanzi.neo.services.statistic;
 
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 
 import org.amanzi.neo.services.exceptions.AWEException;
@@ -155,6 +152,53 @@ public class StatisticsVault implements IVault {
         LOGGER.debug("finish method indexProperty(String nodeType, String propName, Object propValue)");
 
     }
+    
+    @Override
+    public void removeProperty(String nodeType, String propName, Object propValue) throws IndexPropertyException,
+            InvalidStatisticsParameterException {
+
+        LOGGER.debug("start method removeProperty(String nodeType, String propName, Object propValue)");
+
+        if (nodeType == null) {
+            LOGGER.error("InvalidStatisticsParameterException: parameter nodeType is null");
+            throw new InvalidStatisticsParameterException(PARAM_NODE_TYPE, nodeType);
+        }
+        if (propName == null) {
+            LOGGER.error("InvalidStatisticsParameterException: parameter propName is null");
+            throw new InvalidStatisticsParameterException(PARAM_PROP_NAME, propName);
+        }
+        if (propValue == null) {
+            LOGGER.error("InvalidStatisticsParameterException: parameter propValue is null");
+            throw new InvalidStatisticsParameterException(PARAM_PROP_VALUE, propValue);
+        }
+        if (nodeType.isEmpty()) {
+            LOGGER.error("InvalidStatisticsParameterException: parameter nodeType is empty String");
+            throw new InvalidStatisticsParameterException(PARAM_NODE_TYPE, nodeType);
+        }
+        if (propName.isEmpty()) {
+            LOGGER.error("InvalidStatisticsParameterException: parameter propName is empty String");
+            throw new InvalidStatisticsParameterException(PARAM_PROP_NAME, propName);
+        }
+
+        IVault vault;
+        if (this.getType().equals(nodeType)) {
+            vault = this;
+        } else {
+            this.setCount(this.getCount() - 1);
+            vault = this.getSubVault(nodeType);
+        }
+        try {
+            NewPropertyStatistics propStat = ((StatisticsVault)vault).getPropertyStatistics(propName, propValue.getClass());
+            propStat.updatePropertyMap(propValue, -1);
+            vault.setCount(vault.getCount() - 1);
+        } catch (IndexPropertyException e) {
+            this.setCount(this.getCount() + 1);
+            LOGGER.error("IndexPropertyException: index property has wrong type");
+            throw e;
+        }
+        LOGGER.debug("finish method removeProperty(String nodeType, String propName, Object propValue)");
+    }
+
 
     /**
      * this method find propertyStatistics by name and check matches the types

@@ -148,9 +148,34 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
             throw new IllegalArgumentException("Node assotiated with DataElement is null.");
         }
         try {
-            nwServ.deleteNode(((DataElement)elementToDelete).getNode());
+            deleteSubElements(elementToDelete);
+            INodeType nodeType = NodeTypeManager.
+                    getType(elementToDelete.get(INeoConstants.PROPERTY_TYPE_NAME).toString()); 
+            removeProperty(nodeType, (DataElement)elementToDelete);
+            nwServ.deleteOneNode(((DataElement)elementToDelete).getNode(), getRootNode(), indexMap);
+            elementToDelete = null;
+            
         } catch (AWEException e) {
             LOGGER.error("Could not delete all or some nodes", e);
+        }
+    }
+    
+    /**
+     * Recursive deleting all sub-nodes of this node
+     *
+     * @param child Node to delete
+     * @throws DatabaseException 
+     */
+    private void deleteSubElements(IDataElement elementToDelete) throws AWEException {
+        for (IDataElement childElement : getChildren(elementToDelete)) {
+            Node subNode = ((DataElement)childElement).getNode();
+            if (subNode != null) {
+                deleteSubElements(childElement);
+                INodeType nodeType = NodeTypeManager.
+                        getType(childElement.get(INeoConstants.PROPERTY_TYPE_NAME).toString()); 
+                removeProperty(nodeType, (DataElement)childElement);
+                nwServ.deleteOneNode(subNode, getRootNode(), indexMap);
+            }
         }
     }
 
