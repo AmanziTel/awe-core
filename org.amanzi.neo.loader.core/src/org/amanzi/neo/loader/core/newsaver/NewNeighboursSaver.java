@@ -21,19 +21,13 @@ import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceManager;
 import org.amanzi.neo.services.INeoConstants;
-import org.amanzi.neo.services.NeoServiceFactory;
-import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
-import org.amanzi.neo.services.model.INodeToNodeRelationsType;
-import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.NetworkModel;
-import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel;
 import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelTypes;
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -43,7 +37,6 @@ public class NewNeighboursSaver extends AbstractSaver<NetworkModel, CSVContainer
     private Long lineCounter = 0l;
     private INetworkModel networkModel;
     private INodeToNodeRelationsModel n2nModel;
-    private IDataElement rootDataElement;
     private Map<String, Integer> columnSynonyms;
     private final int MAX_TX_BEFORE_COMMIT = 1000;
 
@@ -81,7 +74,6 @@ public class NewNeighboursSaver extends AbstractSaver<NetworkModel, CSVContainer
             networkModel = getActiveProject().getNetwork(configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK));
             n2nModel = networkModel.getNodeToNodeModel(N2NRelTypes.NEIGHBOUR, configuration.getFilesToLoad().get(0).getName(),
                     NetworkElementNodeType.SECTOR);
-            rootDataElement = new DataElement(networkModel.getRootNode());
             modelMap.put(configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK), networkModel);
             createExportSynonymsForModels();
             markTxAsSuccess();

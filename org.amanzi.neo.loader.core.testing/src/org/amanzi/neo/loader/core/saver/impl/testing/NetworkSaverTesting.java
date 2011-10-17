@@ -22,8 +22,8 @@ import java.util.Set;
 
 import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.loader.core.parser.BaseTransferData;
-import org.amanzi.neo.loader.core.saver.impl.NetworkSaver;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceInitializer;
+import org.amanzi.neo.loader.core.saver.impl.NetworkSaver;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.statistic.internal.DatasetStatistic;
 import org.amanzi.neo.services.statistic.internal.StatisticRelationshipTypes;

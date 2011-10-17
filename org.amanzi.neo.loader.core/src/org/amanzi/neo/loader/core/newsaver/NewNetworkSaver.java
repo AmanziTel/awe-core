@@ -49,8 +49,6 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
     private final String MSC = "msc";
     private final String SECTOR = "sector";
     private final String SITE = "site";
-    private final String AZIMUTH = "azimuth";
-    private final String BEAMWITH = "beamwidth";
     /**
      * contains appropriation of header synonyms and name inDB</br> <b>key</b>- name in db ,
      * <b>value</b>-file header key
@@ -108,7 +106,11 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
         bscProperty.put(INeoConstants.PROPERTY_NAME_NAME, row.get(columnSynonyms.get(fileSynonyms.get(BSC))));
         IDataElement findedElement = model.findElement(bscProperty);
         if (findedElement == null) {
-            findedElement = model.createElement(root, bscProperty);
+            if (root != null) {
+                findedElement = model.createElement(root, bscProperty);
+            } else {
+                findedElement = model.createElement(rootDataElement, bscProperty);
+            }
             addedDatasetSynonyms(model, NetworkElementNodeType.BSC, INeoConstants.PROPERTY_NAME_NAME,
                     headers.get(getHeaderId(fileSynonyms.get(BSC))));
         }
