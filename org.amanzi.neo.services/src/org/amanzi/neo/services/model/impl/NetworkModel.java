@@ -521,18 +521,19 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     }
 
     @Override
-    public INodeToNodeRelationsModel createNodeToNodeMmodel(INodeToNodeRelationsType relType, String name, INodeType nodeType) {
+    public INodeToNodeRelationsModel createNodeToNodeMmodel(INodeToNodeRelationsType relType, String name, INodeType nodeType) throws AWEException {
         return new NodeToNodeRelationshipModel(new DataElement(this.rootNode), relType, name, nodeType);
     }
 
     @Override
-    public INodeToNodeRelationsModel findNodeToNodeModel(INodeToNodeRelationsType relType, String name, INodeType nodeType) {
+    public INodeToNodeRelationsModel findNodeToNodeModel(INodeToNodeRelationsType relType, String name, INodeType nodeType)
+            throws AWEException {
         Node n2nRoot = dsServ.findNode(this.rootNode, relType, name, nodeType);
         return n2nRoot == null ? null : new NodeToNodeRelationshipModel(n2nRoot);
     }
 
     @Override
-    public INodeToNodeRelationsModel getNodeToNodeModel(INodeToNodeRelationsType relType, String name, INodeType nodeType) {
+    public INodeToNodeRelationsModel getNodeToNodeModel(INodeToNodeRelationsType relType, String name, INodeType nodeType) throws AWEException {
         INodeToNodeRelationsModel result = findNodeToNodeModel(relType, name, nodeType);
         if (result == null) {
             result = createNodeToNodeMmodel(relType, name, nodeType);

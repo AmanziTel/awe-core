@@ -32,6 +32,7 @@ import org.amanzi.neo.loader.core.newsaver.NewNeighboursSaver;
 import org.amanzi.neo.loader.core.newsaver.NewNetworkSaver;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceInitializer;
 import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel;
 import org.amanzi.testing.AbstractAWETest;
@@ -148,6 +149,7 @@ public class NewNeighbourSaverTesting extends AbstractAWETest {
             values = prepareValues(hashMap);
             rowContainer.setValues(values);
             neighbourSaver.saveElement(rowContainer);
+
             verify(model).linkNode(any(IDataElement.class), any(IDataElement.class), any(Map.class));
         } catch (Exception e) {
             e.printStackTrace();
@@ -183,9 +185,11 @@ public class NewNeighbourSaverTesting extends AbstractAWETest {
             rowContainer.setValues(values);
             neighbourSaver.saveElement(rowContainer);
             verify(model, never()).linkNode(any(IDataElement.class), any(IDataElement.class), any(Map.class));
-            Assert.fail("nullPointerException should be thrown");
+            Assert.fail("if one of necessary parameters is null than nullPointerException should be thrown");
         } catch (NullPointerException e) {
-            Assert.assertTrue("if one of necessary parameters is null than nullPointerException should be thrown", true);
+            Assert.assertTrue(true);
+        } catch (AWEException e) {
+            Assert.fail();
         }
     }
 
