@@ -313,27 +313,6 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
     }
     
     @Test
-    public void checkCreatedDataElement() throws Exception {
-        Node parentDistribution = getNode();
-        Node rootAggregation = getNode(DistributionNodeTypes.ROOT_AGGREGATION);
-        List<Node> distributionBarNodes = getDistributionBarNodes();
-        DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, false);
-        DistributionModel.distributionService = service;
-        IDistributionalModel model = getDistributionalModel(parentDistribution);
-        IDistribution distributionType = getDistributionType();
-        
-        DistributionModel distribution = new DistributionModel(model, distributionType);
-        List<IDistributionBar> distributionBars = distribution.getDistributionBars();
-        
-        for (int i = 0; i < NUMBER_OF_DISTRIBUTION_BARS; i++) { 
-            IDataElement rootElement = distributionBars.get(i).getRootElement();
-            Node rootNode = ((DataElement)rootElement).getNode();
-            
-            assertEquals("Incorrect Root node of Distribution bar", distributionBarNodes.get(i), rootNode);
-        }
-    }
-    
-    @Test
     public void checkPropertiesOfCreatedBars() throws Exception {
         Node parentDistribution = getNode();
         Node rootAggregation = getNode(DistributionNodeTypes.ROOT_AGGREGATION);
@@ -372,9 +351,7 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         DistributionModel distribution = new DistributionModel(model, distributionType);
         distribution.getDistributionBars();
         
-        for (int i = 0; i < NUMBER_OF_DISTRIBUTION_BARS; i++) { 
-            verify(service).createAggregationBarNode(eq(distribution.getRootNode()), any(IDistributionBar.class));
-        }
+        verify(service, atLeast(NUMBER_OF_DISTRIBUTION_BARS)).createAggregationBarNode(eq(distribution.getRootNode()), any(IDistributionBar.class));
         
         verify(service, never()).findAggregationBars(any(Node.class));
     }
@@ -409,25 +386,6 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         distribution.getDistributionBars();
         
         verify(service, atLeast(NUMBER_OF_NODES_TO_ANALYSE)).createAggregation(any(Node.class), any(Node.class));        
-    }
-    
-    @Test
-    public void checkCorretRangesActivity() throws Exception {
-        Node parentDistribution = getNode();
-        Node rootAggregation = getNode(DistributionNodeTypes.ROOT_AGGREGATION);
-        List<Node> distributionBarNodes = getDistributionBarNodes();
-        DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, false);
-        DistributionModel.distributionService = service;
-        IDistributionalModel model = getDistributionalModel(parentDistribution);
-        IDistribution distributionType = getDistributionType();
-        
-        DistributionModel distribution = new DistributionModel(model, distributionType);
-        distribution.getDistributionBars();
-        
-        for (int i = 0; i < NUMBER_OF_DISTRIBUTION_BARS; i++) {
-            Node barNode = distributionBarNodes.get(i);
-            verify(service, atLeast(BAR_COUNT[i])).createAggregation(eq(barNode), any(Node.class));
-        }        
     }
     
     @Test

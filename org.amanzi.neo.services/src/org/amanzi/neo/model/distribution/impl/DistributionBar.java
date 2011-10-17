@@ -96,4 +96,15 @@ public class DistributionBar implements IDistributionBar {
         this.rootElement = rootElement;
     }
 
+    @Override
+    public boolean equals(Object o) { 
+        if (o instanceof IDistributionBar){ 
+            IDistributionBar otherBar = (IDistributionBar)o;
+            
+            return (otherBar.getName().equals(getName()) && 
+                   (otherBar.getRootElement().equals(getRootElement())));
+        }
+        
+        return false;
+    }
 }

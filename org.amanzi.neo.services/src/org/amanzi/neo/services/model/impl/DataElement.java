@@ -85,5 +85,18 @@ public class DataElement extends HashMap<String, Object> implements IDataElement
             return node == null ? super.toString() : Long.toString(node.getId()); 
         }    
     }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof DataElement) {
+            if (node != null) { 
+                return ((DataElement)o).node.equals(node);
+            } else {
+                return super.equals(o);
+            }
+        }
+        
+        return false;
+    }
 
 }
