@@ -17,7 +17,8 @@ Export-Package: org.amanzi.awe.catalog.neo;
    org.opengis.referencing.crs,
    org.neo4j.api.core",
  org.amanzi.awe.catalog.neo.upd_layers,
- org.amanzi.awe.catalog.neo.upd_layers.events
+ org.amanzi.awe.catalog.neo.upd_layers.events,
+ org.amanzi.awe.models.catalog.neo
 Bundle-Activator: org.amanzi.awe.catalog.neo.NeoCatalogPlugin
 Eclipse-LazyStart: true
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6

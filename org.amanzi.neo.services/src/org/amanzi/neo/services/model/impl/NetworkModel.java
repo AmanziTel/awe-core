@@ -41,11 +41,15 @@ import org.amanzi.neo.services.model.INodeToNodeRelationsType;
 import org.amanzi.neo.services.model.ISelectionModel;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.geotools.referencing.CRS;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.index.Index;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Envelope;
 
 /**
  * <p>
@@ -149,30 +153,28 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         }
         try {
             deleteSubElements(elementToDelete);
-            INodeType nodeType = NodeTypeManager.
-                    getType(elementToDelete.get(INeoConstants.PROPERTY_TYPE_NAME).toString()); 
+            INodeType nodeType = NodeTypeManager.getType(elementToDelete.get(INeoConstants.PROPERTY_TYPE_NAME).toString());
             removeProperty(nodeType, (DataElement)elementToDelete);
             nwServ.deleteOneNode(((DataElement)elementToDelete).getNode(), getRootNode(), indexMap);
             elementToDelete = null;
-            
+
         } catch (AWEException e) {
             LOGGER.error("Could not delete all or some nodes", e);
         }
     }
-    
+
     /**
      * Recursive deleting all sub-nodes of this node
-     *
+     * 
      * @param child Node to delete
-     * @throws DatabaseException 
+     * @throws DatabaseException
      */
     private void deleteSubElements(IDataElement elementToDelete) throws AWEException {
         for (IDataElement childElement : getChildren(elementToDelete)) {
             Node subNode = ((DataElement)childElement).getNode();
             if (subNode != null) {
                 deleteSubElements(childElement);
-                INodeType nodeType = NodeTypeManager.
-                        getType(childElement.get(INeoConstants.PROPERTY_TYPE_NAME).toString()); 
+                INodeType nodeType = NodeTypeManager.getType(childElement.get(INeoConstants.PROPERTY_TYPE_NAME).toString());
                 removeProperty(nodeType, (DataElement)childElement);
                 nwServ.deleteOneNode(subNode, getRootNode(), indexMap);
             }
@@ -290,8 +292,8 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     }
 
     @Override
-    public CRS getCRS() {
-        return null;
+    public CoordinateReferenceSystem getCRS() {
+        return this.crs;
     }
 
     @Override
@@ -539,5 +541,31 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
 
         }
         return result;
+    }
+
+    @Override
+    public Iterable<IDataElement> getElements(Envelope bounds_transformed) {
+        return null;
+    }
+
+    @Override
+    public ReferencedEnvelope getBounds() {
+        return super.getBounds();
+    }
+
+    @Override
+    public Coordinate getCoordinate(IDataElement element) {
+        NetworkElementNodeType type = (NetworkElementNodeType)NodeTypeManager.getType(element.get(NewAbstractService.TYPE)
+                .toString());
+        switch (type) {
+        case SITE:
+            return new Coordinate((Long)element.get(LATITUDE), (Long)element.get(LONGITUDE));
+
+        case SECTOR:
+            IDataElement site = getParentElement(element);
+            return new Coordinate((Long)site.get(LATITUDE), (Long)site.get(LONGITUDE));
+        default:
+            return null;
+        }
     }
 }
