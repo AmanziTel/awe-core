@@ -20,6 +20,7 @@ import org.amanzi.neo.model.distribution.IDistributionBar;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
+import org.amanzi.neo.services.model.impl.DataElement;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -79,7 +80,13 @@ public class DistributionService extends NewAbstractService {
         /*
          * Link between Root Node of Analyzed structure and Root Node of Distribution Structure
          */
-        ROOT_AGGREGATION;
+        ROOT_AGGREGATION,
+        
+        /*
+         * Link between Bar Node and Source node of Analyzed structure
+         */
+        AGGREGATED;
+        
     }
 
     /*
@@ -235,6 +242,10 @@ public class DistributionService extends NewAbstractService {
             LOGGER.error("Name of Bar cannot be null or empty");
             throw new IllegalArgumentException("Name of Bar cannot be null or empty");
         }
+        if (bar.getCount() < 0) {
+            LOGGER.error("Count of Bar cannot be less than zero");
+            throw new IllegalArgumentException("Count of Bar cannot be less than zero");
+        }
         
         //check unicality
         if (findAggregationBarNode(rootAggregationNode, bar.getName()) != null) {
@@ -257,7 +268,7 @@ public class DistributionService extends NewAbstractService {
             tx.success();
         } catch (Exception e) {
             tx.failure();
-            LOGGER.error("Error on creaing Distribution Bar <" + bar.getName() + ">");
+            LOGGER.error("Error on creaing Distribution Bar <" + bar.getName() + ">", e);
             throw new DatabaseException(e);
         } finally {
             tx.finish();
@@ -268,6 +279,12 @@ public class DistributionService extends NewAbstractService {
         return result;
     }
     
+    /**
+     * Converts Color to Array from 3 elements - Right, Green and Blue components
+     *
+     * @param color
+     * @return
+     */
     private int[] convertColorToArray(Color color) {
         return new int[] {color.getRed(), color.getGreen(), color.getBlue()};
     }
@@ -304,8 +321,35 @@ public class DistributionService extends NewAbstractService {
      * @param barNode node of distribution bar
      * @param sourceNode source node
      */
-    public void createAggregation(Node barNode, Node sourceNode) {
+    public void createAggregation(Node barNode, Node sourceNode) throws DatabaseException {
+        LOGGER.debug("start createAggregation(<" + barNode + ">, <" + sourceNode + ">");
         
+        //check input
+        if (barNode == null) {
+            LOGGER.error("Input barNode cannot be null");
+            throw new IllegalArgumentException("Input barNode cannot be null");
+        }
+        if (sourceNode == null) {
+            LOGGER.error("Input sourceNode cannot be null");
+            throw new IllegalArgumentException("Input sourceNode cannot be null");
+        }
+        
+        //link nodes
+        Transaction tx = graphDb.beginTx();
+        try {
+            barNode.createRelationshipTo(sourceNode, DistributionRelationshipTypes.AGGREGATED);
+            
+            tx.success();
+        } catch (Exception e) { 
+            tx.failure();
+            LOGGER.error("Error on creating Aggregation Relationship " +
+            		"between <" + barNode + "> and <" + sourceNode + ">", e);
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
+        
+        LOGGER.debug("finish createAggregation()");
     }
     
     /**
@@ -314,8 +358,72 @@ public class DistributionService extends NewAbstractService {
      * @param rootAggregationNode root node of distribution structure
      * @param bar bar to update
      */
-    public void updateDistributionBar(Node rootAggregationNode, IDistributionBar bar) {
+    public void updateDistributionBar(Node rootAggregationNode, IDistributionBar bar) throws DatabaseException {
+        LOGGER.debug("start updateDistributionBar(<" + rootAggregationNode + ">, <" + bar + ">)");
         
+        //check input
+        if (rootAggregationNode == null) {
+            LOGGER.error("Input rootAggregationNode cannot be null");
+            throw new IllegalArgumentException("Input rootAggregationNode cannot be null");
+        }
+        if (bar == null) {
+            LOGGER.error("Input bar cannot be null");
+            throw new IllegalArgumentException("Input bar cannot be null");
+        }
+        if (bar.getName() == null || bar.getName().isEmpty()) {
+            LOGGER.error("New name of bar cannot be null or empty");
+            throw new IllegalArgumentException("New name of bar cannot be null or empty");
+        }
+        if (bar.getCount() < 0) {
+            LOGGER.error("Count of Bar cannot be less than zero");
+            throw new IllegalArgumentException("Count of Bar cannot be less than zero");
+        }
+        if (bar.getRootElement() == null) {
+            LOGGER.error("RootElement of Bar cannot be null");
+            throw new IllegalArgumentException("RootElement of Bar cannot be null");
+        }
+        
+        DataElement rootElement = (DataElement)bar.getRootElement();
+        if (rootElement.getNode() == null) {
+            LOGGER.error("RootElement Node of Bar cannot be null");
+            throw new IllegalArgumentException("RootElement Node of Bar cannot be null");
+        }
+        
+        //check root node and bar node
+        boolean found = false;
+        Node rootBarNode = rootElement.getNode();
+        for (Node barNode : findAggregationBars(rootAggregationNode)) {
+            if (barNode.equals(rootBarNode)) {
+                found = true;
+                break;
+            }
+        }
+        
+        if (!found) {
+            LOGGER.error("Bar <" + bar + "> is from incorrect Distribution structure");
+            throw new IllegalArgumentException("Bar <" + bar + "> is from incorrect Distribution structure");
+        }
+        
+        //update properties
+        Transaction tx = graphDb.beginTx();
+        try {
+            if (bar.getColor() != null) {
+                rootBarNode.setProperty(BAR_COLOR, convertColorToArray(bar.getColor()));
+            }
+            
+            rootBarNode.setProperty(COUNT, bar.getCount());
+            rootBarNode.setProperty(NAME, bar.getName());
+            
+            tx.success();
+        } catch (Exception e) {
+            tx.failure();
+            LOGGER.error("Error on updating properties of Distribution Bar <" + bar + ">", e);
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
+        
+        LOGGER.debug("finish updateDistributionBar()");
     }
     
     /**
@@ -324,8 +432,39 @@ public class DistributionService extends NewAbstractService {
      * @param rootAggregationNode root node of distribution structure 
      * @param count new count
      */
-    public void updateDistributionModelCount(Node rootAggregationNode, Integer count) {
+    public void updateDistributionModelCount(Node rootAggregationNode, Integer count) throws DatabaseException {
+        LOGGER.debug("start updateDistributionModelCount(<" + rootAggregationNode + ">, <" + count + ">");
         
+        //validate input
+        if (rootAggregationNode == null) {
+            LOGGER.error("Input rootAggregationNode cannot be null");
+            throw new IllegalArgumentException("Input rootAggregationNode cannot be null");
+        }
+        if (count == null) {
+            LOGGER.error("Input count cannot be null");
+            throw new IllegalArgumentException("Input count cannot be null");
+        }
+        if (count < 0) {
+            LOGGER.error("Input count cannot be less than zero");
+            throw new IllegalArgumentException("Input count cannot be less than zero");
+        }
+        
+        //update property
+        Transaction tx = graphDb.beginTx();
+        try {
+            rootAggregationNode.setProperty(COUNT, count);
+            
+            tx.success();
+        } catch (Exception e) {
+            tx.failure();
+            LOGGER.error("Error on updating count of Distribution Model", e);
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
+        
+        LOGGER.debug("finish updateDistributionModelCount()");
     }
     
 }
+

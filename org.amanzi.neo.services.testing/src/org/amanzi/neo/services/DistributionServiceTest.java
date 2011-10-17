@@ -32,6 +32,7 @@ import org.amanzi.neo.services.DistributionService.DistributionNodeTypes;
 import org.amanzi.neo.services.DistributionService.DistributionRelationshipTypes;
 import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
+import org.amanzi.neo.services.model.impl.DataElement;
 import org.apache.commons.lang.StringUtils;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -66,6 +67,12 @@ public class DistributionServiceTest extends AbstractNeoServiceTest {
     private final static int DEFAULT_BAR_COUNT = 100;
 
     private final static String DEFAULT_BAR_NAME = "bar_name";
+    
+    private final static Color UPDATED_BAR_COLOR = Color.WHITE;
+    
+    private final static String UPDATED_BAR_NAME = "new_bar_name";
+    
+    private final static int UPDATED_BAR_COUNT = 500;
 
     /*
      * Distribution service
@@ -317,6 +324,13 @@ public class DistributionServiceTest extends AbstractNeoServiceTest {
 
         distributionService.createAggregationBarNode(rootNode, getDistributionBar(StringUtils.EMPTY));
     }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToCreateAggregationBarWithNegativeCount() throws Exception {
+        Node rootNode = createRootAggregationNode(getParentNode(), DISTRIBUTION_NAME);
+
+        distributionService.createAggregationBarNode(rootNode, getDistributionBar(DISTRIBUTION_NAME, -DEFAULT_BAR_COUNT));
+    }
 
     @Test(expected = DuplicateNodeNameException.class)
     public void tryToCreateBarWithDuplicatedName() throws Exception {
@@ -427,6 +441,230 @@ public class DistributionServiceTest extends AbstractNeoServiceTest {
             }
         }
     }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToCreateAggregationWithoutSourceNode() throws Exception {
+        Node rootNode = createRootAggregationNode(getParentNode(), DISTRIBUTION_NAME);
+        List<Node> barNode = createAggregationBars(rootNode);
+        
+        distributionService.createAggregation(barNode.get(0), null);
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToCreateAggregationWithoutBarNode() throws Exception {
+        distributionService.createAggregation(null, createSourceNode());
+    }
+    
+    @Test
+    public void checkRelationshipBetweenBarAndSource() throws Exception {
+        Node rootNode = createRootAggregationNode(getParentNode(), DISTRIBUTION_NAME);
+        List<Node> barNodes = createAggregationBars(rootNode);
+        Node barNode = barNodes.get(0);
+        
+        Node sourceNode = createSourceNode();
+        
+        distributionService.createAggregation(barNode, sourceNode);
+        
+        assertTrue("BarNode should have at least one outgouing relationship", barNode.hasRelationship(DistributionRelationshipTypes.AGGREGATED, Direction.OUTGOING));
+    }
+    
+    @Test
+    public void checkRelationshipBetweenSourceNodeAndBar() throws Exception {
+        Node rootNode = createRootAggregationNode(getParentNode(), DISTRIBUTION_NAME);
+        List<Node> barNodes = createAggregationBars(rootNode);
+        Node barNode = barNodes.get(0);
+        
+        Node sourceNode = createSourceNode();
+        
+        distributionService.createAggregation(barNode, sourceNode);
+        
+        assertTrue("BarNode should have at least one outgouing relationship", sourceNode.hasRelationship(DistributionRelationshipTypes.AGGREGATED, Direction.INCOMING));
+    }
+    
+    @Test
+    public void checkNodeOfAggregationRelationship() throws Exception {
+        Node rootNode = createRootAggregationNode(getParentNode(), DISTRIBUTION_NAME);
+        List<Node> barNodes = createAggregationBars(rootNode);
+        Node barNode = barNodes.get(0);
+        
+        Node sourceNode = createSourceNode();
+        
+        distributionService.createAggregation(barNode, sourceNode);
+        
+        Relationship relFromBar = barNode.getSingleRelationship(DistributionRelationshipTypes.AGGREGATED, Direction.OUTGOING);
+        Relationship relToSource = sourceNode.getSingleRelationship(DistributionRelationshipTypes.AGGREGATED, Direction.INCOMING);
+        
+        assertTrue("Incorrect incoming and outgoing relationship for Aggregation", relFromBar.equals(relToSource));
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToUpdateDistributionBarWithoutNode() throws Exception {
+        Node rootNode = createRootAggregationNode(getParentNode(), DISTRIBUTION_NAME);
+        distributionService.updateDistributionBar(rootNode, null);
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToUpdateDistirubitonBarWithoutNode() throws Exception {
+        distributionService.updateDistributionBar(null, getDistributionBarInstance(null, UPDATED_BAR_NAME, true));
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToUpdateBarFromIncorrectDataStructure() throws Exception {
+        Node rootNode = createRootAggregationNode(getParentNode(), DISTRIBUTION_NAME);
+        List<Node> barNodes = createAggregationBars(rootNode);
+        
+        rootNode = createRootAggregationNode(getParentNode(), DISTRIBUTION_NAME + UPDATED_BAR_NAME);
+        
+        IDistributionBar bar = getDistributionBarInstance(barNodes.get(1), UPDATED_BAR_NAME, true);
+        
+        distributionService.updateDistributionBar(rootNode, bar);
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToSkipNameOfBar() throws Exception {
+        Node rootNode = createRootAggregationNode(getParentNode(), DISTRIBUTION_NAME);
+        List<Node> barNodes = createAggregationBars(rootNode);
+        Node barNode = barNodes.get(0);
+        
+        IDistributionBar bar = getDistributionBarInstance(barNode, null, true);
+        
+        distributionService.updateDistributionBar(rootNode, bar);
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToSetEmptyNameForBar() throws Exception {
+        Node rootNode = createRootAggregationNode(getParentNode(), DISTRIBUTION_NAME);
+        List<Node> barNodes = createAggregationBars(rootNode);
+        Node barNode = barNodes.get(0);
+        
+        IDistributionBar bar = getDistributionBarInstance(barNode, StringUtils.EMPTY, true);
+        
+        distributionService.updateDistributionBar(rootNode, bar);
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToUpdatePropertyWithoutRootElementNode() throws Exception {
+        Node rootNode = createRootAggregationNode(getParentNode(), DISTRIBUTION_NAME);
+        createAggregationBars(rootNode);
+        
+        IDistributionBar bar = getDistributionBarInstance(null, UPDATED_BAR_NAME, true);
+        
+        distributionService.updateDistributionBar(rootNode, bar);
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToUpdatePropertyWithoutRootElement() throws Exception {
+        Node rootNode = createRootAggregationNode(getParentNode(), DISTRIBUTION_NAME);
+        createAggregationBars(rootNode);
+        
+        IDistributionBar bar = getDistributionBarInstance(null, UPDATED_BAR_NAME, true);
+        
+        distributionService.updateDistributionBar(rootNode, bar);
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToSetNegativeCountForBar() throws Exception {
+        Node rootNode = createRootAggregationNode(getParentNode(), DISTRIBUTION_NAME);
+        List<Node> barNodes = createAggregationBars(rootNode);
+        Node barNode = barNodes.get(0);
+        
+        IDistributionBar bar = getDistributionBarInstance(barNode, UPDATED_BAR_NAME, true, -UPDATED_BAR_COUNT);
+        
+        distributionService.updateDistributionBar(rootNode, bar);
+    }
+    
+    @Test
+    public void checkUpdatedProperties() throws Exception {
+        Node rootNode = createRootAggregationNode(getParentNode(), DISTRIBUTION_NAME);
+        List<Node> barNodes = createAggregationBars(rootNode);
+        Node barNode = barNodes.get(0);
+        
+        IDistributionBar bar = getDistributionBarInstance(barNode, UPDATED_BAR_NAME, true);
+        
+        distributionService.updateDistributionBar(rootNode, bar);
+        
+        assertEquals("incorrect name of bar", UPDATED_BAR_NAME, barNode.getProperty(NewAbstractService.NAME));
+        assertEquals("incorrect name of bar", UPDATED_BAR_COUNT, barNode.getProperty(DistributionService.COUNT));
+        assertTrue("incorrect color of bar", Arrays.equals(getColorArray(UPDATED_BAR_COLOR), (int[])barNode.getProperty(DistributionService.BAR_COLOR)));
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToUpdateModelCountWithoutRootNode() throws Exception {
+        distributionService.updateDistributionModelCount(null, UPDATED_BAR_COUNT);
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToUpdateModelCountWithoutCount() throws Exception {
+        Node rootNode = createRootAggregationNode(getParentNode(), DISTRIBUTION_NAME);
+        
+        distributionService.updateDistributionModelCount(rootNode, null);
+    }
+    
+    @Test
+    public void checkUpdatedCount() throws Exception {
+        Node rootNode = createRootAggregationNode(getParentNode(), DISTRIBUTION_NAME);
+        
+        distributionService.updateDistributionModelCount(rootNode, UPDATED_BAR_COUNT);
+        
+        assertEquals("Incorrect updated count", UPDATED_BAR_COUNT, rootNode.getProperty(DistributionService.COUNT));
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToSetNegativeCount() throws Exception {
+        Node rootNode = createRootAggregationNode(getParentNode(), DISTRIBUTION_NAME);
+        
+        distributionService.updateDistributionModelCount(rootNode, -UPDATED_BAR_COUNT);
+    }
+    
+    private IDistributionBar getDistributionBarInstance(Node barNode, String name, boolean createRootElement, int count) {
+        DistributionBar result = getDistributionBarInstance(barNode, name, createRootElement);
+        
+        result.setCount(count);
+        
+        return result;
+    }
+    
+    /**
+     * Creates IDistributionBar
+     *
+     * @param barNode
+     * @param name
+     * @return
+     */
+    private DistributionBar getDistributionBarInstance(Node barNode, String name, boolean createRootElement) {
+        DistributionBar result = new DistributionBar();
+        
+        if (createRootElement) {
+            result.setRootElement(new DataElement(barNode));
+        }
+        result.setColor(UPDATED_BAR_COLOR);
+        result.setName(name);
+        result.setCount(UPDATED_BAR_COUNT);
+        
+        return result;
+    }
+    
+    /**
+     * Creates source node for Aggregation
+     *
+     * @return
+     */
+    private Node createSourceNode() throws Exception {
+        Node node = null;
+        
+        Transaction tx = graphDatabaseService.beginTx();
+        try {
+            node = graphDatabaseService.createNode();
+            tx.success();
+        } catch (Exception e){ 
+            tx.failure();
+            throw e;
+        } finally {
+            tx.finish();
+        }
+        
+        return node;
+    }
 
     /**
      * Creates list of aggregation bars
@@ -529,8 +767,16 @@ public class DistributionServiceTest extends AbstractNeoServiceTest {
 
         return result;
     }
+    
+    private IDistributionBar getDistributionBar(String name, int count) {
+        DistributionBar result = getDistributionBar(name);
+        
+        result.setCount(count);
+        
+        return result;
+    }
 
-    private IDistributionBar getDistributionBar(String name) {
+    private DistributionBar getDistributionBar(String name) {
         DistributionBar bar = new DistributionBar();
 
         bar.setColor(DEFAULT_BAR_COLOR);
