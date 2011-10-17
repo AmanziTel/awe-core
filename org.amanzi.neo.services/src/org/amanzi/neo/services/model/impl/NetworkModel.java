@@ -153,28 +153,30 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         }
         try {
             deleteSubElements(elementToDelete);
-            INodeType nodeType = NodeTypeManager.getType(elementToDelete.get(INeoConstants.PROPERTY_TYPE_NAME).toString());
+            INodeType nodeType = NodeTypeManager.
+                    getType(elementToDelete.get(INeoConstants.PROPERTY_TYPE_NAME).toString()); 
             removeProperty(nodeType, (DataElement)elementToDelete);
             nwServ.deleteOneNode(((DataElement)elementToDelete).getNode(), getRootNode(), indexMap);
             elementToDelete = null;
-
+            
         } catch (AWEException e) {
             LOGGER.error("Could not delete all or some nodes", e);
         }
     }
-
+    
     /**
      * Recursive deleting all sub-nodes of this node
-     * 
+     *
      * @param child Node to delete
-     * @throws DatabaseException
+     * @throws DatabaseException 
      */
     private void deleteSubElements(IDataElement elementToDelete) throws AWEException {
         for (IDataElement childElement : getChildren(elementToDelete)) {
             Node subNode = ((DataElement)childElement).getNode();
             if (subNode != null) {
                 deleteSubElements(childElement);
-                INodeType nodeType = NodeTypeManager.getType(childElement.get(INeoConstants.PROPERTY_TYPE_NAME).toString());
+                INodeType nodeType = NodeTypeManager.
+                        getType(childElement.get(INeoConstants.PROPERTY_TYPE_NAME).toString()); 
                 removeProperty(nodeType, (DataElement)childElement);
                 nwServ.deleteOneNode(subNode, getRootNode(), indexMap);
             }
@@ -523,18 +525,19 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     }
 
     @Override
-    public INodeToNodeRelationsModel createNodeToNodeMmodel(INodeToNodeRelationsType relType, String name, INodeType nodeType) {
+    public INodeToNodeRelationsModel createNodeToNodeMmodel(INodeToNodeRelationsType relType, String name, INodeType nodeType) throws AWEException {
         return new NodeToNodeRelationshipModel(new DataElement(this.rootNode), relType, name, nodeType);
     }
 
     @Override
-    public INodeToNodeRelationsModel findNodeToNodeModel(INodeToNodeRelationsType relType, String name, INodeType nodeType) {
+    public INodeToNodeRelationsModel findNodeToNodeModel(INodeToNodeRelationsType relType, String name, INodeType nodeType)
+            throws AWEException {
         Node n2nRoot = dsServ.findNode(this.rootNode, relType, name, nodeType);
         return n2nRoot == null ? null : new NodeToNodeRelationshipModel(n2nRoot);
     }
 
     @Override
-    public INodeToNodeRelationsModel getNodeToNodeModel(INodeToNodeRelationsType relType, String name, INodeType nodeType) {
+    public INodeToNodeRelationsModel getNodeToNodeModel(INodeToNodeRelationsType relType, String name, INodeType nodeType) throws AWEException {
         INodeToNodeRelationsModel result = findNodeToNodeModel(relType, name, nodeType);
         if (result == null) {
             result = createNodeToNodeMmodel(relType, name, nodeType);
