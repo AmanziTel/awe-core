@@ -97,13 +97,8 @@ public class NewPropertyStatistics {
                 value.getClass().getSimpleName().equals("Boolean") ||
                 value.getClass().getSuperclass().getSimpleName().equals("Number")) {
             Integer oldCount = 0;
-            try {
-                if (propertyMap.containsKey(value)) {
-                    oldCount = propertyMap.get(value);
-                }
-            }
-            catch (Exception e) {
-                System.out.println(propertyMap.toString() + e);
+            if (propertyMap.containsKey(value)) {
+                oldCount = propertyMap.get(value);
             }
             int newCount = oldCount + count;
             if (newCount > 0) {
