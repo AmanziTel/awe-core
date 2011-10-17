@@ -242,6 +242,10 @@ public class DistributionService extends NewAbstractService {
             LOGGER.error("Name of Bar cannot be null or empty");
             throw new IllegalArgumentException("Name of Bar cannot be null or empty");
         }
+        if (bar.getCount() < 0) {
+            LOGGER.error("Count of Bar cannot be less than zero");
+            throw new IllegalArgumentException("Count of Bar cannot be less than zero");
+        }
         
         //check unicality
         if (findAggregationBarNode(rootAggregationNode, bar.getName()) != null) {
@@ -370,6 +374,10 @@ public class DistributionService extends NewAbstractService {
             LOGGER.error("New name of bar cannot be null or empty");
             throw new IllegalArgumentException("New name of bar cannot be null or empty");
         }
+        if (bar.getCount() < 0) {
+            LOGGER.error("Count of Bar cannot be less than zero");
+            throw new IllegalArgumentException("Count of Bar cannot be less than zero");
+        }
         if (bar.getRootElement() == null) {
             LOGGER.error("RootElement of Bar cannot be null");
             throw new IllegalArgumentException("RootElement of Bar cannot be null");
@@ -399,7 +407,10 @@ public class DistributionService extends NewAbstractService {
         //update properties
         Transaction tx = graphDb.beginTx();
         try {
-            rootBarNode.setProperty(BAR_COLOR, convertColorToArray(bar.getColor()));
+            if (bar.getColor() != null) {
+                rootBarNode.setProperty(BAR_COLOR, convertColorToArray(bar.getColor()));
+            }
+            
             rootBarNode.setProperty(COUNT, bar.getCount());
             rootBarNode.setProperty(NAME, bar.getName());
             
@@ -421,8 +432,39 @@ public class DistributionService extends NewAbstractService {
      * @param rootAggregationNode root node of distribution structure 
      * @param count new count
      */
-    public void updateDistributionModelCount(Node rootAggregationNode, Integer count) {
+    public void updateDistributionModelCount(Node rootAggregationNode, Integer count) throws DatabaseException {
+        LOGGER.debug("start updateDistributionModelCount(<" + rootAggregationNode + ">, <" + count + ">");
         
+        //validate input
+        if (rootAggregationNode == null) {
+            LOGGER.error("Input rootAggregationNode cannot be null");
+            throw new IllegalArgumentException("Input rootAggregationNode cannot be null");
+        }
+        if (count == null) {
+            LOGGER.error("Input count cannot be null");
+            throw new IllegalArgumentException("Input count cannot be null");
+        }
+        if (count < 0) {
+            LOGGER.error("Input count cannot be less than zero");
+            throw new IllegalArgumentException("Input count cannot be less than zero");
+        }
+        
+        //update property
+        Transaction tx = graphDb.beginTx();
+        try {
+            rootAggregationNode.setProperty(COUNT, count);
+            
+            tx.success();
+        } catch (Exception e) {
+            tx.failure();
+            LOGGER.error("Error on updating count of Distribution Model", e);
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
+        
+        LOGGER.debug("finish updateDistributionModelCount()");
     }
     
 }
+

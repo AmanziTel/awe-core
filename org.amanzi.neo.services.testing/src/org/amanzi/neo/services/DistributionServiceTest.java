@@ -324,6 +324,13 @@ public class DistributionServiceTest extends AbstractNeoServiceTest {
 
         distributionService.createAggregationBarNode(rootNode, getDistributionBar(StringUtils.EMPTY));
     }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToCreateAggregationBarWithNegativeCount() throws Exception {
+        Node rootNode = createRootAggregationNode(getParentNode(), DISTRIBUTION_NAME);
+
+        distributionService.createAggregationBarNode(rootNode, getDistributionBar(DISTRIBUTION_NAME, -DEFAULT_BAR_COUNT));
+    }
 
     @Test(expected = DuplicateNodeNameException.class)
     public void tryToCreateBarWithDuplicatedName() throws Exception {
@@ -538,10 +545,9 @@ public class DistributionServiceTest extends AbstractNeoServiceTest {
     @Test(expected = IllegalArgumentException.class)
     public void tryToUpdatePropertyWithoutRootElementNode() throws Exception {
         Node rootNode = createRootAggregationNode(getParentNode(), DISTRIBUTION_NAME);
-        List<Node> barNodes = createAggregationBars(rootNode);
-        Node barNode = barNodes.get(0);
+        createAggregationBars(rootNode);
         
-        IDistributionBar bar = getDistributionBarInstance(barNode, UPDATED_BAR_NAME, false);
+        IDistributionBar bar = getDistributionBarInstance(null, UPDATED_BAR_NAME, true);
         
         distributionService.updateDistributionBar(rootNode, bar);
     }
@@ -549,8 +555,20 @@ public class DistributionServiceTest extends AbstractNeoServiceTest {
     @Test(expected = IllegalArgumentException.class)
     public void tryToUpdatePropertyWithoutRootElement() throws Exception {
         Node rootNode = createRootAggregationNode(getParentNode(), DISTRIBUTION_NAME);
+        createAggregationBars(rootNode);
         
         IDistributionBar bar = getDistributionBarInstance(null, UPDATED_BAR_NAME, true);
+        
+        distributionService.updateDistributionBar(rootNode, bar);
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToSetNegativeCountForBar() throws Exception {
+        Node rootNode = createRootAggregationNode(getParentNode(), DISTRIBUTION_NAME);
+        List<Node> barNodes = createAggregationBars(rootNode);
+        Node barNode = barNodes.get(0);
+        
+        IDistributionBar bar = getDistributionBarInstance(barNode, UPDATED_BAR_NAME, true, -UPDATED_BAR_COUNT);
         
         distributionService.updateDistributionBar(rootNode, bar);
     }
@@ -570,6 +588,42 @@ public class DistributionServiceTest extends AbstractNeoServiceTest {
         assertTrue("incorrect color of bar", Arrays.equals(getColorArray(UPDATED_BAR_COLOR), (int[])barNode.getProperty(DistributionService.BAR_COLOR)));
     }
     
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToUpdateModelCountWithoutRootNode() throws Exception {
+        distributionService.updateDistributionModelCount(null, UPDATED_BAR_COUNT);
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToUpdateModelCountWithoutCount() throws Exception {
+        Node rootNode = createRootAggregationNode(getParentNode(), DISTRIBUTION_NAME);
+        
+        distributionService.updateDistributionModelCount(rootNode, null);
+    }
+    
+    @Test
+    public void checkUpdatedCount() throws Exception {
+        Node rootNode = createRootAggregationNode(getParentNode(), DISTRIBUTION_NAME);
+        
+        distributionService.updateDistributionModelCount(rootNode, UPDATED_BAR_COUNT);
+        
+        assertEquals("Incorrect updated count", UPDATED_BAR_COUNT, rootNode.getProperty(DistributionService.COUNT));
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToSetNegativeCount() throws Exception {
+        Node rootNode = createRootAggregationNode(getParentNode(), DISTRIBUTION_NAME);
+        
+        distributionService.updateDistributionModelCount(rootNode, -UPDATED_BAR_COUNT);
+    }
+    
+    private IDistributionBar getDistributionBarInstance(Node barNode, String name, boolean createRootElement, int count) {
+        DistributionBar result = getDistributionBarInstance(barNode, name, createRootElement);
+        
+        result.setCount(count);
+        
+        return result;
+    }
+    
     /**
      * Creates IDistributionBar
      *
@@ -577,7 +631,7 @@ public class DistributionServiceTest extends AbstractNeoServiceTest {
      * @param name
      * @return
      */
-    private IDistributionBar getDistributionBarInstance(Node barNode, String name, boolean createRootElement) {
+    private DistributionBar getDistributionBarInstance(Node barNode, String name, boolean createRootElement) {
         DistributionBar result = new DistributionBar();
         
         if (createRootElement) {
@@ -713,8 +767,16 @@ public class DistributionServiceTest extends AbstractNeoServiceTest {
 
         return result;
     }
+    
+    private IDistributionBar getDistributionBar(String name, int count) {
+        DistributionBar result = getDistributionBar(name);
+        
+        result.setCount(count);
+        
+        return result;
+    }
 
-    private IDistributionBar getDistributionBar(String name) {
+    private DistributionBar getDistributionBar(String name) {
         DistributionBar bar = new DistributionBar();
 
         bar.setColor(DEFAULT_BAR_COLOR);
