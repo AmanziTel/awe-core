@@ -49,7 +49,6 @@ public class NewNetworkTesting {
     private HashMap<String, Object> hashMap = null;
     private GraphDatabaseService graphDatabaseService = null;
 
-    @SuppressWarnings("deprecation")
     @Before
     public void onStart() {
         saver = new NewNetworkSaver();

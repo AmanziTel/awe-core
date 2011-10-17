@@ -40,6 +40,24 @@ public class NewNeighboursSaver extends AbstractSaver<NetworkModel, CSVContainer
     private Map<String, Integer> columnSynonyms;
     private final int MAX_TX_BEFORE_COMMIT = 1000;
 
+    public NewNeighboursSaver(INodeToNodeRelationsModel model, ConfigurationDataImpl data) {
+        preferenceStoreSynonyms = preferenceManager.getNeighbourSynonyms();
+        columnSynonyms = new HashMap<String, Integer>();
+        setDbInstance();
+        setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
+        if (model != null) {
+            n2nModel = model;
+        } else {
+            init(data, null);
+        }
+        try {
+            networkModel = getActiveProject().getNetwork(data.getDatasetNames().get(CONFIG_VALUE_NETWORK));
+        } catch (AWEException e) {
+            // TODO Handle AWEException
+            throw (RuntimeException) new RuntimeException( ).initCause( e );
+        }
+    }
+
     /*
      * neighbours
      */
