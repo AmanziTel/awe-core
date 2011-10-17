@@ -26,9 +26,12 @@ import org.amanzi.neo.services.DistributionService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NodeTypeManager;
+import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
+import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.impl.AbstractModel;
 import org.amanzi.neo.services.model.impl.DataElement;
+import org.amanzi.neo.services.utils.Pair;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -43,16 +46,6 @@ import org.neo4j.graphdb.Node;
 public class DistributionModel extends AbstractModel implements IDistributionModel {
     
     private static final Logger LOGGER = Logger.getLogger(DistributionModel.class);
-    
-    /*
-     * Color property of Distribution Bar node 
-     */
-    static final String BAR_COLOR = "color";
-    
-    /*
-     * Count property of Distribution Bar node
-     */
-    static final String COUNT = "count"; 
     
     /*
      * Distribution Service
@@ -73,7 +66,7 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
      * @param distributionName
      * @throws DatabaseException
      */
-    public DistributionModel(IDistributionalModel analyzedModel, IDistribution distributionType) throws DatabaseException {
+    public DistributionModel(IDistributionalModel analyzedModel, IDistribution distributionType) throws AWEException {
         LOGGER.debug("start new DistributionModel()");
         
         //validate input
@@ -102,7 +95,7 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
         this.distributionType = distributionType;
         this.name = distributionType.getName();
         this.nodeType = NodeTypeManager.getType(DistributionService.getNodeType(rootNode));
-        this.count = (Integer)rootNode.getProperty(COUNT, 0);
+        this.count = (Integer)rootNode.getProperty(DistributionService.COUNT, 0);
         
         LOGGER.debug("finish new DistributionModel()");
     }
@@ -113,7 +106,7 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
     }
 
     @Override
-    public List<IDistributionBar> getDistributionBars() {
+    public List<IDistributionBar> getDistributionBars() throws AWEException {
         return getDistributionBars(new NullProgressMonitor());
     }
     
@@ -130,7 +123,7 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
         DistributionBar distributionBar = new DistributionBar(rootElement);
         
         //load properties
-        Integer count = (Integer)rootElement.get(COUNT);
+        Integer count = (Integer)rootElement.get(DistributionService.COUNT);
         if (count != null) {
             distributionBar.setCount(count);
         }
@@ -151,7 +144,7 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
      * @return
      */
     private Color getColor(DataElement rootElement) {
-        int[] colorArray = (int[])rootElement.get(BAR_COLOR);
+        int[] colorArray = (int[])rootElement.get(DistributionService.BAR_COLOR);
         
         if (colorArray != null) {
             return new Color(colorArray[0], colorArray[1], colorArray[2]);
@@ -163,12 +156,52 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
     /**
      * Creates Distribution Database structure
      */
-    private List<IDistributionBar> createDistribution(IProgressMonitor monitor) {
+    private List<IDistributionBar> createDistribution(IProgressMonitor monitor) throws AWEException {
         monitor.beginTask("Creating Distribution <" + getName() + "> in Database", distributionType.getCount());
         
-        List<IDistributionBar> result = createDistributionBars();
+        List<Pair<IRange, DistributionBar>> distributionConditions = createDistributionBars();
+        
+        try {
+            //iterate through all analysed data
+            for (IDataElement element : analyzedModel.getAllElementsByType(distributionType.getNodeType())) {
+                //iterate through conditions
+                for (Pair<IRange, DistributionBar> condition : distributionConditions) {
+                    IRange range = condition.getLeft();
+                    
+                    //check element
+                    if (range.getFilter().check(element)) {
+                        DistributionBar bar = condition.getRight();
+                        Node barNode = ((DataElement)bar.getRootElement()).getNode();
+                        Node sourceNode = ((DataElement)element).getNode();
+                        
+                        //create aggregation link
+                        distributionService.createAggregation(barNode, sourceNode);
+                        
+                        //increase count in bar
+                        bar.setCount(bar.getCount() + 1);
+                    }
+                }
+            
+                monitor.worked(1);
+            }
+        } catch (Exception e) {
+            LOGGER.error(e);
+            throw new DatabaseException(e);
+        }
         
         monitor.done();
+        
+        //create result
+        List<IDistributionBar> result = new ArrayList<IDistributionBar>();
+        for (Pair<IRange, DistributionBar> condition : distributionConditions) {
+            IDistributionBar distributionBar = condition.getRight();
+            
+            //update properties in DB
+            distributionService.updateDistributionBar(getRootNode(), distributionBar);
+            
+            //add to result
+            result.add(distributionBar);
+        }
         
         return result;
     }
@@ -178,16 +211,17 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
      *
      * @return
      */
-    private List<IDistributionBar> createDistributionBars() {
-        ArrayList<IDistributionBar> result = new ArrayList<IDistributionBar>();
-        
-        Node previousBar = null;
+    private List<Pair<IRange, DistributionBar>> createDistributionBars() throws AWEException {
+        ArrayList<Pair<IRange, DistributionBar>> result = new ArrayList<Pair<IRange, DistributionBar>>();
         
         for (IRange range : distributionType.getRanges()) {
-            IDistributionBar bar = createDistributionBar(previousBar, range);
+            DistributionBar bar = createDistributionBar(range);
             
-            previousBar = ((DataElement)bar.getRootElement()).getNode();
+            result.add(new Pair<IRange, DistributionBar>(range, bar));
         }
+        
+        //update count of bars for model
+        distributionService.updateDistributionModelCount(getRootNode(), result.size());
         
         return result;
     }
@@ -198,8 +232,17 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
      * @param range
      * @return
      */
-    private IDistributionBar createDistributionBar(Node previousBar, IRange range) {
+    private DistributionBar createDistributionBar(IRange range) throws AWEException {
         DistributionBar distributionBar = new DistributionBar();
+        if (range.getColor() != null) {
+            distributionBar.setColor(range.getColor());
+        }
+        
+        distributionBar.setName(range.getName());
+        
+        Node barNode = distributionService.createAggregationBarNode(getRootNode(), distributionBar);
+        
+        distributionBar.setRootElement(new DataElement(barNode));
         
         return distributionBar;
     }
@@ -231,7 +274,7 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
     }
 
     @Override
-    public List<IDistributionBar> getDistributionBars(IProgressMonitor monitor) {
+    public List<IDistributionBar> getDistributionBars(IProgressMonitor monitor) throws AWEException {
         LOGGER.debug("start getDistributionBars()");
         
         List<IDistributionBar> result = null;

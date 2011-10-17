@@ -13,7 +13,6 @@
 
 package org.amanzi.neo.model.distribution;
 
-import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.model.IPropertyStatisticalModel;
 
 /**
@@ -32,6 +31,6 @@ public interface IDistributionalModel extends IPropertyStatisticalModel {
      * @param distributionType type of Distribution
      * @return 
      */
-    public IDistributionModel getDistributionModel(INodeType nodeType, IDistribution distributionType);
+    public IDistributionModel getDistributionModel(IDistribution distributionType);
 
 }

@@ -13,8 +13,16 @@
 
 package org.amanzi.neo.model.distribution.impl;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -27,10 +35,12 @@ import org.amanzi.neo.model.distribution.IDistributionalModel;
 import org.amanzi.neo.model.distribution.IRange;
 import org.amanzi.neo.services.AbstractNeoServiceTest;
 import org.amanzi.neo.services.DistributionService;
-import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.DistributionService.DistributionNodeTypes;
+import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.filters.Filter;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.apache.commons.lang.StringUtils;
@@ -62,6 +72,10 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
     private static final INodeType DISTRIBUTION_NODE_TYPE = NodeTypes.SECTOR;
     
     private static final int NUMBER_OF_NODES_TO_ANALYSE = 40;
+    
+    private static final int[] BAR_COUNT = new int[] {10, 9, 8, 7, 6};
+    
+    private static final String DISTRIBUTION_PROPERTY_NAME = "property";
     
     /**
      *
@@ -205,6 +219,8 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         distribution.getDistributionBars();
         
         verify(service).findAggregationBars(rootAggregation);
+        
+        verify(service, never()).createAggregationBarNode(any(Node.class), any(IDistributionBar.class));
     }
     
     @Test
@@ -297,27 +313,6 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
     }
     
     @Test
-    public void checkCreatedDataElement() throws Exception {
-        Node parentDistribution = getNode();
-        Node rootAggregation = getNode(DistributionNodeTypes.ROOT_AGGREGATION);
-        List<Node> distributionBarNodes = getDistributionBarNodes();
-        DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, false);
-        DistributionModel.distributionService = service;
-        IDistributionalModel model = getDistributionalModel(parentDistribution);
-        IDistribution distributionType = getDistributionType();
-        
-        DistributionModel distribution = new DistributionModel(model, distributionType);
-        List<IDistributionBar> distributionBars = distribution.getDistributionBars();
-        
-        for (int i = 0; i < NUMBER_OF_DISTRIBUTION_BARS; i++) { 
-            IDataElement rootElement = distributionBars.get(i).getRootElement();
-            Node rootNode = ((DataElement)rootElement).getNode();
-            
-            assertEquals("Incorrect Root node of Distribution bar", distributionBarNodes.get(i), rootNode);
-        }
-    }
-    
-    @Test
     public void checkPropertiesOfCreatedBars() throws Exception {
         Node parentDistribution = getNode();
         Node rootAggregation = getNode(DistributionNodeTypes.ROOT_AGGREGATION);
@@ -339,7 +334,6 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
             }
             
             assertEquals("Incorrect Color of Bar", color, distributionBar.getColor());
-            assertEquals("Incorrect count of Bar", i, distributionBar.getCount());
             assertEquals("Incorrect Name of Bar", DISTRIBUTION_BAR_NAME_PREFIX + i, distributionBar.getName());
         }
     }
@@ -349,7 +343,7 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         Node parentDistribution = getNode();
         Node rootAggregation = getNode(DistributionNodeTypes.ROOT_AGGREGATION);
         List<Node> distributionBarNodes = getDistributionBarNodes();
-        DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, true);
+        DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, false);
         DistributionModel.distributionService = service;
         IDistributionalModel model = getDistributionalModel(parentDistribution);
         IDistribution distributionType = getDistributionType();
@@ -357,11 +351,125 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         DistributionModel distribution = new DistributionModel(model, distributionType);
         distribution.getDistributionBars();
         
-        Node previous = null;
-        for (int i = 0; i < NUMBER_OF_DISTRIBUTION_BARS; i++) { 
-            verify(service).createAggregationBarNode(eq(rootAggregation), eq(previous), any(IDistributionBar.class));
-            previous = distributionBarNodes.get(i);
+        verify(service, atLeast(NUMBER_OF_DISTRIBUTION_BARS)).createAggregationBarNode(eq(distribution.getRootNode()), any(IDistributionBar.class));
+        
+        verify(service, never()).findAggregationBars(any(Node.class));
+    }
+    
+    @Test
+    public void checkModelActivity() throws Exception {
+        Node parentDistribution = getNode();
+        Node rootAggregation = getNode(DistributionNodeTypes.ROOT_AGGREGATION);
+        List<Node> distributionBarNodes = getDistributionBarNodes();
+        DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, false);
+        DistributionModel.distributionService = service;
+        IDistributionalModel model = getDistributionalModel(parentDistribution);
+        IDistribution distributionType = getDistributionType();
+        
+        DistributionModel distribution = new DistributionModel(model, distributionType);
+        distribution.getDistributionBars();
+        
+        verify(model).getAllElementsByType(DISTRIBUTION_NODE_TYPE);
+    }
+    
+    @Test
+    public void checkSerivceActivity() throws Exception {
+        Node parentDistribution = getNode();
+        Node rootAggregation = getNode(DistributionNodeTypes.ROOT_AGGREGATION);
+        List<Node> distributionBarNodes = getDistributionBarNodes();
+        DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, false);
+        DistributionModel.distributionService = service;
+        IDistributionalModel model = getDistributionalModel(parentDistribution);
+        IDistribution distributionType = getDistributionType();
+        
+        DistributionModel distribution = new DistributionModel(model, distributionType);
+        distribution.getDistributionBars();
+        
+        verify(service, atLeast(NUMBER_OF_NODES_TO_ANALYSE)).createAggregation(any(Node.class), any(Node.class));        
+    }
+    
+    @Test
+    public void checkBarCounts() throws Exception {
+        Node parentDistribution = getNode();
+        Node rootAggregation = getNode(DistributionNodeTypes.ROOT_AGGREGATION);
+        List<Node> distributionBarNodes = getDistributionBarNodes();
+        DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, false);
+        DistributionModel.distributionService = service;
+        IDistributionalModel model = getDistributionalModel(parentDistribution);
+        IDistribution distributionType = getDistributionType();
+        
+        DistributionModel distribution = new DistributionModel(model, distributionType);
+        List<IDistributionBar> bars = distribution.getDistributionBars();
+        
+        for (int i = 0; i < NUMBER_OF_DISTRIBUTION_BARS; i++) {
+            assertEquals("Incorrect count in Bar", BAR_COUNT[i], bars.get(i).getCount());
         }
+    }
+    
+    @Test
+    public void checkReloadedDistribution() throws Exception {
+        Node parentDistribution = getNode();
+        Node rootAggregation = getNode(DistributionNodeTypes.ROOT_AGGREGATION);
+        List<Node> distributionBarNodes = getDistributionBarNodes();
+        DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, false);
+        DistributionModel.distributionService = service;
+        IDistributionalModel model = getDistributionalModel(parentDistribution);
+        IDistribution distributionType = getDistributionType();
+        
+        DistributionModel newDistribution = new DistributionModel(model, distributionType);
+        List<IDistributionBar> newBars = newDistribution.getDistributionBars();
+        
+        DistributionModel reloadedDistribution = new DistributionModel(model, distributionType);
+        List<IDistributionBar> reloadedBars = reloadedDistribution.getDistributionBars();
+        
+        assertEquals("Invalid name of reloaded Distribution", newDistribution.getName(), reloadedDistribution.getName());
+        assertEquals("Invalid size of bars in reloaded Distribution", newBars.size(), reloadedBars.size());
+        
+        for (int i = 0; i < NUMBER_OF_DISTRIBUTION_BARS; i++) {
+            IDistributionBar newBar = newBars.get(i);
+            IDistributionBar reloadedBar = reloadedBars.get(i);
+            
+            assertEquals("Incorrect name of reloaded distribution", newBar.getName(), reloadedBar.getName());
+            assertEquals("Incorrect color of reloaded distribution", newBar.getColor(), reloadedBar.getColor());
+            assertEquals("Incorrect count of reloaded distribution", newBar.getCount(), reloadedBar.getCount());
+            assertEquals("Incorrect root element of reloaded distribution", newBar.getRootElement(), reloadedBar.getRootElement());
+        }
+    }
+    
+    @Test
+    public void checkPropertiesOfBarUpdated() throws Exception {
+        Node parentDistribution = getNode();
+        Node rootAggregation = getNode(DistributionNodeTypes.ROOT_AGGREGATION);
+        List<Node> distributionBarNodes = getDistributionBarNodes();
+        DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, false);
+        DistributionModel.distributionService = service;
+        IDistributionalModel model = getDistributionalModel(parentDistribution);
+        IDistribution distributionType = getDistributionType();
+        
+        DistributionModel newDistribution = new DistributionModel(model, distributionType);
+        List<IDistributionBar> distributionBars = newDistribution.getDistributionBars();
+        
+        for (int i = 0; i < NUMBER_OF_DISTRIBUTION_BARS; i++) {
+            IDistributionBar distributionBar = distributionBars.get(i); 
+            
+            verify(service).updateDistributionBar(eq(rootAggregation), eq(distributionBar));
+        }
+    }
+    
+    @Test
+    public void checkModelCountChanged() throws Exception {
+        Node parentDistribution = getNode();
+        Node rootAggregation = getNode(DistributionNodeTypes.ROOT_AGGREGATION);
+        List<Node> distributionBarNodes = getDistributionBarNodes();
+        DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, false);
+        DistributionModel.distributionService = service;
+        IDistributionalModel model = getDistributionalModel(parentDistribution);
+        IDistribution distributionType = getDistributionType();
+        
+        DistributionModel newDistribution = new DistributionModel(model, distributionType);
+        newDistribution.getDistributionBars();
+        
+        verify(service).updateDistributionModelCount(eq(rootAggregation), any(Integer.class));
     }
     
     /**
@@ -387,19 +495,11 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
     private Node getDistributionBarNode(int index) {
         Node result = getNode(DistributionNodeTypes.AGGREGATION_BAR);
         
-        when(result.getProperty(DistributionModel.BAR_COLOR, null)).thenReturn(getColorArray(DISTRIBUTION_BAR_COLORS[index]));
-        when(result.getProperty(DistributionModel.COUNT, null)).thenReturn(index);
+        when(result.getProperty(DistributionService.BAR_COLOR, null)).thenReturn(getColorArray(DISTRIBUTION_BAR_COLORS[index]));
+        when(result.getProperty(DistributionService.COUNT, null)).thenReturn(index);
         when(result.getProperty(NewAbstractService.NAME, null)).thenReturn(DISTRIBUTION_BAR_NAME_PREFIX + index);
         
         return result;
-    }
-    
-    private int[] getColorArray(Color color) {
-        if (color != null) {
-            return new int[] {color.getRed(), color.getGreen(), color.getBlue()};
-        } else {
-            return null;
-        }
     }
     
     /**
@@ -410,7 +510,7 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
      * @param shouldFind
      * @return
      */
-    private DistributionService getDistributionService(Node distributionModelRoot, Node rootAggregationNode, List<Node> distributionBars, boolean shouldFind) {
+    private DistributionService getDistributionService(Node distributionModelRoot, Node rootAggregationNode, List<Node> distributionBars, boolean shouldFind) throws AWEException {
         DistributionService service = mock(DistributionService.class);
         
         Node aggregationForFind = null;
@@ -428,10 +528,8 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         if (!shouldFind) {
             when(service.createRootAggregationNode(distributionModelRoot, DEFAULT_DISTRIBUTION_NAME)).thenReturn(rootAggregationNode);
             
-            Node previous = null;
             for (int i = 0; i < NUMBER_OF_DISTRIBUTION_BARS; i++) {
-                when(service.createAggregationBarNode(eq(rootAggregationNode), eq(previous), any(IDistributionBar.class))).thenReturn(distributionBars.get(i));
-                previous = distributionBars.get(i);
+                when(service.createAggregationBarNode(eq(rootAggregationNode), any(IDistributionBar.class))).thenReturn(distributionBars.get(i));                
             }
         }
         
@@ -449,7 +547,7 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         if (nodeType != null) {
             when(result.getProperty(NewAbstractService.TYPE, StringUtils.EMPTY)).thenReturn(nodeType.getId());
         }
-        when(result.getProperty(DistributionModel.COUNT, 0)).thenReturn(NUMBER_OF_DISTRIBUTION_BARS);
+        when(result.getProperty(DistributionService.COUNT, 0)).thenReturn(NUMBER_OF_DISTRIBUTION_BARS);
         
         return result;
     }
@@ -484,6 +582,9 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         when(result.getRootNode()).thenReturn(rootNode);
         when(result.getName()).thenReturn(DEFAULT_MODEL_NAME);
         
+        Iterable<IDataElement> analysedNodes = getAnalysedNodes();
+        when(result.getAllElementsByType(DISTRIBUTION_NODE_TYPE)).thenReturn(analysedNodes);
+        
         return result;
     }
     
@@ -498,6 +599,10 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         
         when(result.getName()).thenReturn(DISTRIBUTION_BAR_NAME_PREFIX + index);
         when(result.getColor()).thenReturn(DISTRIBUTION_BAR_COLORS[index]);
+        
+        Filter filter = new Filter();
+        filter.setExpression(DISTRIBUTION_NODE_TYPE, DISTRIBUTION_PROPERTY_NAME, index);
+        when(result.getFilter()).thenReturn(filter);
         
         return result;
     }
@@ -533,6 +638,29 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         when(result.getNodeType()).thenReturn(DISTRIBUTION_NODE_TYPE);
         when(result.getCount()).thenReturn(NUMBER_OF_NODES_TO_ANALYSE);
                 
+        return result;
+    }
+    
+    /**
+     * Creates Iterable of Analysed Nodes
+     *
+     * @return
+     */
+    private Iterable<IDataElement> getAnalysedNodes() {
+        List<IDataElement> result = new ArrayList<IDataElement>();
+        
+        for (int i = 0; i < NUMBER_OF_DISTRIBUTION_BARS; i++) {
+            for (int j = 0; j < BAR_COUNT[i]; j++) {
+                Node node = getNode(DISTRIBUTION_NODE_TYPE);
+                
+                when(node.hasProperty(DISTRIBUTION_PROPERTY_NAME)).thenReturn(true);
+                when(node.getProperty(DISTRIBUTION_PROPERTY_NAME)).thenReturn(i);
+                
+                DataElement element = new DataElement(node);
+                result.add(element);
+            }
+        }
+        
         return result;
     }
 

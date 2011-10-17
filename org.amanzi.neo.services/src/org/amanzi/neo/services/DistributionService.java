@@ -13,10 +13,19 @@
 
 package org.amanzi.neo.services;
 
+import java.awt.Color;
+import java.util.Iterator;
+
 import org.amanzi.neo.model.distribution.IDistributionBar;
 import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.exceptions.DatabaseException;
+import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.RelationshipType;
+import org.neo4j.graphdb.Transaction;
 
 /**
  * Service to work with Distribution Structure
@@ -40,7 +49,14 @@ public class DistributionService extends NewAbstractService {
      * @since 1.0.0
      */
     public static enum DistributionNodeTypes implements INodeType {
-        ROOT_AGGREGATION, AGGREGATION_BAR;
+        /*
+         * Marks Root Node of Disribution Structure
+         */
+        ROOT_AGGREGATION, 
+        /*
+         * Marks Bar Node of Distribution Structure
+         */
+        AGGREGATION_BAR;
         
         static {
             NodeTypeManager.registerNodeType(DistributionNodeTypes.class);
@@ -54,6 +70,49 @@ public class DistributionService extends NewAbstractService {
     }
     
     /**
+     * Relationship types used in Distribution Database Structure
+     * 
+     * @author lagutko_n
+     * @since 1.0.0
+     */
+    public static enum DistributionRelationshipTypes implements RelationshipType {
+        /*
+         * Link between Root Node of Analyzed structure and Root Node of Distribution Structure
+         */
+        ROOT_AGGREGATION;
+    }
+
+    /*
+     * Color property of Distribution Bar node 
+     */
+    public static final String BAR_COLOR = "color";
+
+    /*
+     * Count property of Distribution Bar node
+     */
+    public static final String COUNT = "count";
+    
+    private NewDatasetService datasetService;
+    
+    /**
+     * Default constructor
+     */
+    public DistributionService() {
+        super();
+        datasetService = NeoServiceFactory.getInstance().getNewDatasetService();
+    }
+    
+    /**
+     * Constructor for testing
+     * 
+     * @param service test DB service
+     */
+    public DistributionService(GraphDatabaseService service) {
+        super(service);
+        datasetService = new NewDatasetService(service);
+    }
+    
+    /**
      * Searches for a Root Aggregation Node
      *
      * @param parentNode parent node of Distribution
@@ -61,7 +120,23 @@ public class DistributionService extends NewAbstractService {
      * @return
      */
     public Node findRootAggregationNode(Node parentNode, String distributionName) {
-        return null;
+        LOGGER.debug("start findRootAggregationNode(<" + parentNode + ">, <" + distributionName + ">)");
+        
+        //validate input
+        if (parentNode == null) {
+            LOGGER.error("Parent Node cannot be null");
+            throw new IllegalArgumentException("Parent Node cannot be null");
+        }
+        if ((distributionName == null) || (distributionName.equals(StringUtils.EMPTY))) {
+            LOGGER.error("Distribuiton Name cannot be null or empty");
+            throw new IllegalArgumentException("Distribuiton Name cannot be null or empty");
+        }
+        
+        Node result = findNode(parentNode, DistributionRelationshipTypes.ROOT_AGGREGATION, distributionName, DistributionNodeTypes.ROOT_AGGREGATION);
+        
+        LOGGER.debug("finish findRootAggregationNode()");
+        
+        return result;
     }
     
     /**
@@ -71,8 +146,48 @@ public class DistributionService extends NewAbstractService {
      * @param distributionName name of Distribution
      * @return
      */
-    public Node createRootAggregationNode(Node parentNode, String distributionName) {
-        return null;
+    public Node createRootAggregationNode(Node parentNode, String distributionName) throws DuplicateNodeNameException, DatabaseException {
+        LOGGER.debug("start createRootAggregationNode(<" + parentNode + ">, <" + distributionName + ">)");
+        
+        //validate input
+        if (parentNode == null) {
+            LOGGER.error("Parent node cannot be null");
+            throw new IllegalArgumentException("Parent node cannot be null");
+        }
+        if ((distributionName == null) || (distributionName.isEmpty())) {
+            LOGGER.error("Distribution name cannot be null or empty");
+            throw new IllegalArgumentException("Distribution name cannot be null or empty");
+        }
+        
+        //check duplicated name
+        if (findRootAggregationNode(parentNode, distributionName) != null) {
+            LOGGER.error("Root Aggregation Node <" + parentNode + ", " + distributionName + "> already exists in Database");
+            throw new DuplicateNodeNameException(distributionName, DistributionNodeTypes.ROOT_AGGREGATION);
+        }
+        
+        //create new node
+        Transaction tx = graphDb.beginTx();
+        
+        Node result = null;
+        
+        try {
+            result = createNode(parentNode, DistributionRelationshipTypes.ROOT_AGGREGATION, DistributionNodeTypes.ROOT_AGGREGATION);
+            
+            result.setProperty(DistributionService.NAME, distributionName);
+            result.setProperty(DistributionService.COUNT, 0);
+            
+            tx.success();
+        } catch (Exception e) {
+            tx.failure();
+            LOGGER.error("Error on creating Root Aggregation Node", e);
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
+        
+        LOGGER.debug("finish createRootAggregationNode()");
+        
+        return result;
     }
     
     /**
@@ -82,18 +197,135 @@ public class DistributionService extends NewAbstractService {
      * @return
      */
     public Iterable<Node> findAggregationBars(Node rootAggregationNode) {
-        return null;
+        LOGGER.debug("start findAggregationBars(<" + rootAggregationNode + ">)");
+        
+        //validate input
+        if (rootAggregationNode == null) {
+            LOGGER.error("Root Aggregation Node cannot be null");
+            throw new IllegalArgumentException("Root Aggregation Node cannot be null");
+        }
+        
+        Iterable<Node> result = datasetService.getChildrenChainTraverser(rootAggregationNode);
+        
+        LOGGER.debug("finish findAggregationBars()");
+        
+        return result;
     }
     
     /**
      * Creates new Aggregation Bar Node in Database
      *
      * @param rootAggregationNode root node of Distribution Structure
-     * @param previousBarNode previous Bar node
      * @param bar info about Bar
      */
-    public Node createAggregationBarNode(Node rootAggregationNode, Node previousBarNode, IDistributionBar bar) {
+    public Node createAggregationBarNode(Node rootAggregationNode, IDistributionBar bar) throws DuplicateNodeNameException, DatabaseException {
+        LOGGER.debug("start createAggregationBarNode(<" + rootAggregationNode + ">, <" + bar + ">)");
+        
+        //validate input
+        if (rootAggregationNode == null) {
+            LOGGER.error("Root Aggregation node should not be null");
+            throw new IllegalArgumentException("Root Aggregation node should not be null");
+        }
+        if (bar == null) {
+            LOGGER.error("Distribution Bar should not be null");
+            throw new IllegalArgumentException("Distribution Bar should not be null");
+        }
+        //validate bar
+        if (bar.getName() == null || bar.getName().isEmpty()) {
+            LOGGER.error("Name of Bar cannot be null or empty");
+            throw new IllegalArgumentException("Name of Bar cannot be null or empty");
+        }
+        
+        //check unicality
+        if (findAggregationBarNode(rootAggregationNode, bar.getName()) != null) {
+            LOGGER.error("Bar with name <" + bar.getName() + "> already exists");
+            throw new DuplicateNodeNameException(bar.getName(), DistributionNodeTypes.AGGREGATION_BAR);
+        }
+        
+        Transaction tx = graphDb.beginTx();
+        Node result = null;
+        
+        try {
+            result = createNode(DistributionNodeTypes.AGGREGATION_BAR);
+            
+            datasetService.addChild(rootAggregationNode, result, null);
+            
+            result.setProperty(NAME, bar.getName());
+            result.setProperty(COUNT, bar.getCount());
+            result.setProperty(BAR_COLOR, convertColorToArray(bar.getColor()));
+            
+            tx.success();
+        } catch (Exception e) {
+            tx.failure();
+            LOGGER.error("Error on creaing Distribution Bar <" + bar.getName() + ">");
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
+        
+        LOGGER.debug("finish createAggregationBarNode()");
+        
+        return result;
+    }
+    
+    private int[] convertColorToArray(Color color) {
+        return new int[] {color.getRed(), color.getGreen(), color.getBlue()};
+    }
+    
+    /**
+     * Searches Aggregation Bar Node in Chain by it's name
+     *
+     * @param rootAggregationNode root node for Aggregation
+     * @param name name of bar
+     * @return
+     */
+    private Node findAggregationBarNode(Node rootAggregationNode, String name) throws DuplicateNodeNameException {
+        Iterator<Node> aggrBarNodes = datasetService.DATASET_ELEMENT_TRAVERSAL_DESCRIPTION.
+                evaluator(new NameTypeEvaluator(name, DistributionNodeTypes.AGGREGATION_BAR)).
+                traverse(rootAggregationNode).nodes().iterator();
+        
+        if (aggrBarNodes.hasNext()) {
+            Node result = aggrBarNodes.next();
+            
+            if (aggrBarNodes.hasNext()) {
+                LOGGER.error("Found Bar Node with duplicated name <" + name + ">");
+                throw new DuplicateNodeNameException(name, DistributionNodeTypes.AGGREGATION_BAR);
+            }
+            
+            return result;
+        }
+        
         return null;
+    }
+    
+    /**
+     * Creates aggregation between bar and Source node
+     *
+     * @param barNode node of distribution bar
+     * @param sourceNode source node
+     */
+    public void createAggregation(Node barNode, Node sourceNode) {
+        
+    }
+    
+    /**
+     * Updates Distribution Bar Properties in Database
+     *
+     * @param rootAggregationNode root node of distribution structure
+     * @param bar bar to update
+     */
+    public void updateDistributionBar(Node rootAggregationNode, IDistributionBar bar) {
+        
+    }
+    
+    /**
+     * Updates number of Bars of Distribution
+     *
+     * @param rootAggregationNode root node of distribution structure 
+     * @param count new count
+     */
+    public void updateDistributionModelCount(Node rootAggregationNode, Integer count) {
+        
     }
     
 }
