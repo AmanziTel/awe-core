@@ -17,6 +17,7 @@ import java.util.Map;
 
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.neo4j.graphdb.RelationshipType;
 
 /**
@@ -54,11 +55,11 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
      */
     public Iterable<INodeToNodeRelationsModel> getNodeToNodeModels() throws AWEException;
 
-    public INodeToNodeRelationsModel createNodeToNodeMmodel(INodeToNodeRelationsType relType, String name, INodeType nodeType);
+    public INodeToNodeRelationsModel createNodeToNodeMmodel(INodeToNodeRelationsType relType, String name, INodeType nodeType) throws  AWEException;
 
-    public INodeToNodeRelationsModel findNodeToNodeModel(INodeToNodeRelationsType relType, String name, INodeType nodeType);
+    public INodeToNodeRelationsModel findNodeToNodeModel(INodeToNodeRelationsType relType, String name, INodeType nodeType) throws AWEException;
 
-    public INodeToNodeRelationsModel getNodeToNodeModel(INodeToNodeRelationsType relType, String name, INodeType nodeType);
+    public INodeToNodeRelationsModel getNodeToNodeModel(INodeToNodeRelationsType relType, String name, INodeType nodeType) throws AWEException;
 
     public INetworkType getNetworkType();
 

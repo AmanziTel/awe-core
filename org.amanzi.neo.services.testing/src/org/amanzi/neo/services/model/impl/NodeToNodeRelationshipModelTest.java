@@ -83,8 +83,14 @@ public class NodeToNodeRelationshipModelTest extends AbstractNeoServiceTest {
     @Test
     public void testNode2NodeRelationshipModel() {
         // create new model
-        NodeToNodeRelationshipModel model = new NodeToNodeRelationshipModel(new DataElement(network), N2NRelTypes.NEIGHBOUR,
-                "name", NetworkElementNodeType.SECTOR);
+        NodeToNodeRelationshipModel model;
+        try {
+            model = new NodeToNodeRelationshipModel(new DataElement(network), N2NRelTypes.NEIGHBOUR, "name",
+                    NetworkElementNodeType.SECTOR);
+        } catch (AWEException e) {
+            // TODO Handle DatabaseException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
         // object returned is not null
         Assert.assertNotNull(model);
         // relation type is correct
@@ -93,11 +99,21 @@ public class NodeToNodeRelationshipModelTest extends AbstractNeoServiceTest {
 
     @Test
     public void testNode2NodeRelationshipModelNotRecreated() {
-        // create new model
-        new NodeToNodeRelationshipModel(new DataElement(network), N2NRelTypes.NEIGHBOUR, "name", NetworkElementNodeType.SECTOR);
+        try {
+            new NodeToNodeRelationshipModel(new DataElement(network), N2NRelTypes.NEIGHBOUR, "name", NetworkElementNodeType.SECTOR);
+        } catch (AWEException e) {
+            // TODO Handle DatabaseException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
         // create new model with the same parameters
-        NodeToNodeRelationshipModel model = new NodeToNodeRelationshipModel(new DataElement(network), N2NRelTypes.NEIGHBOUR,
-                "name", NetworkElementNodeType.SECTOR);
+        NodeToNodeRelationshipModel model;
+        try {
+            model = new NodeToNodeRelationshipModel(new DataElement(network), N2NRelTypes.NEIGHBOUR, "name",
+                    NetworkElementNodeType.SECTOR);
+        } catch (AWEException e) {
+            // TODO Handle DatabaseException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
         // object returned is not null
         Assert.assertNotNull(model);
         // n2n root not recreated
@@ -125,14 +141,20 @@ public class NodeToNodeRelationshipModelTest extends AbstractNeoServiceTest {
         params.put(NewNetworkService.LOCATION_AREA_CODE, "lac2");
         IDataElement sector2 = nm.createElement(site, new DataElement(params));
 
-        NodeToNodeRelationshipModel model = new NodeToNodeRelationshipModel(new DataElement(network), N2NRelTypes.NEIGHBOUR,
-                "name", NetworkElementNodeType.SECTOR);
-        params = new HashMap<String, Object>();
-        params.put(NewAbstractService.NAME, "neighbour");
-        params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
-        model.linkNode(sector1, sector2, params);
+        NodeToNodeRelationshipModel model;
+        try {
+            model = new NodeToNodeRelationshipModel(new DataElement(network), N2NRelTypes.NEIGHBOUR, "name",
+                    NetworkElementNodeType.SECTOR);
 
-        // proxies created
+            params = new HashMap<String, Object>();
+            params.put(NewAbstractService.NAME, "neighbour");
+            params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
+            model.linkNode(sector1, sector2, params);
+
+        } catch (AWEException e) {
+            LOGGER.error("Error in testLinkNode ", e);
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }// proxies created
         Node s1 = ((DataElement)sector1).getNode();
         Node s2 = ((DataElement)sector2).getNode();
         Node p1 = s1.getSingleRelationship(N2NRelationships.N2N_REL, Direction.BOTH).getOtherNode(s1);
@@ -178,16 +200,22 @@ public class NodeToNodeRelationshipModelTest extends AbstractNeoServiceTest {
         params.put(NewNetworkService.LOCATION_AREA_CODE, "lac3");
         IDataElement sector3 = nm.createElement(site, new DataElement(params));
 
-        NodeToNodeRelationshipModel model = new NodeToNodeRelationshipModel(new DataElement(network), N2NRelTypes.NEIGHBOUR,
-                "name", NetworkElementNodeType.SECTOR);
-        params = new HashMap<String, Object>();
-        params.put(NewAbstractService.NAME, "neighbour");
-        params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
-        model.linkNode(sector1, sector2, params);
+        NodeToNodeRelationshipModel model;
+        try {
+            model = new NodeToNodeRelationshipModel(new DataElement(network), N2NRelTypes.NEIGHBOUR, "name",
+                    NetworkElementNodeType.SECTOR);
 
-        params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
-        model.linkNode(sector1, sector3, params);
+            params = new HashMap<String, Object>();
+            params.put(NewAbstractService.NAME, "neighbour");
+            params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
+            model.linkNode(sector1, sector2, params);
 
+            params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
+            model.linkNode(sector1, sector3, params);
+        } catch (AWEException e) {
+            LOGGER.error("Error in testLinkFewNodes ", e);
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
         // proxies created
         Node s1 = ((DataElement)sector1).getNode();
         Node s2 = ((DataElement)sector2).getNode();
@@ -217,8 +245,14 @@ public class NodeToNodeRelationshipModelTest extends AbstractNeoServiceTest {
         List<Node> sectors = new ArrayList<Node>();
         // create network structure
 
-        NodeToNodeRelationshipModel model = new NodeToNodeRelationshipModel(new DataElement(network), N2NRelTypes.NEIGHBOUR,
-                "name", NetworkElementNodeType.SECTOR);
+        NodeToNodeRelationshipModel model;
+        try {
+            model = new NodeToNodeRelationshipModel(new DataElement(network), N2NRelTypes.NEIGHBOUR, "name",
+                    NetworkElementNodeType.SECTOR);
+        } catch (AWEException e1) {
+            // TODO Handle DatabaseException
+            throw (RuntimeException)new RuntimeException().initCause(e1);
+        }
 
         NetworkModel nm = new NetworkModel(network);
         Map<String, Object> params = new HashMap<String, Object>();
@@ -245,7 +279,12 @@ public class NodeToNodeRelationshipModelTest extends AbstractNeoServiceTest {
             params = new HashMap<String, Object>();
             params.put(NewAbstractService.NAME, "neighbour");
             params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
-            model.linkNode(sector, sect, params);
+            try {
+                model.linkNode(sector, sect, params);
+            } catch (AWEException e) {
+                LOGGER.error("Error in testLinkFewNodes ", e);
+                throw (RuntimeException)new RuntimeException().initCause(e);
+            }
         }
 
         // all elements are returned
@@ -257,13 +296,25 @@ public class NodeToNodeRelationshipModelTest extends AbstractNeoServiceTest {
     @Test
     public void testConstructorRootNode() {
         // create n2n model
-        NodeToNodeRelationshipModel model = new NodeToNodeRelationshipModel(new DataElement(network), N2NRelTypes.NEIGHBOUR,
-                "name", NetworkElementNodeType.SECTOR);
+        NodeToNodeRelationshipModel model;
+        try {
+            model = new NodeToNodeRelationshipModel(new DataElement(network), N2NRelTypes.NEIGHBOUR, "name",
+                    NetworkElementNodeType.SECTOR);
+        } catch (AWEException e) {
+            // TODO Handle DatabaseException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
         Node n2nRoot = model.getRootNode();
         Assert.assertNotNull(n2nRoot);
 
         // create n2n model based on existing root
-        NodeToNodeRelationshipModel testModel = new NodeToNodeRelationshipModel(n2nRoot);
+        NodeToNodeRelationshipModel testModel;
+        try {
+            testModel = new NodeToNodeRelationshipModel(n2nRoot);
+        } catch (AWEException e) {
+            // TODO Handle AWEException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
         Assert.assertNotNull(testModel);
         // properties correct
         Assert.assertEquals(model.getName(), testModel.getName());

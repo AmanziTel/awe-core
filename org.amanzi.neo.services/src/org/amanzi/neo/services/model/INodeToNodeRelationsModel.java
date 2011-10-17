@@ -15,6 +15,9 @@ package org.amanzi.neo.services.model;
 
 import java.util.Map;
 
+import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.exceptions.DatabaseException;
+
 /**
  * <p>
  * The interface for models describing node relationships, that are beyond common data structure,
@@ -36,8 +39,11 @@ public interface INodeToNodeRelationsModel extends IModel {
      * @param source
      * @param target
      * @param params can be <code>null</code>
+     * @throws DatabaseException
+     * @throws AWEException
      */
-    public void linkNode(IDataElement source, IDataElement target, Map<String, Object> params);
+    public void linkNode(IDataElement source, IDataElement target, Map<String, Object> params) throws DatabaseException,
+            AWEException;
 
     /**
      * Traverses database to find elements connected to the <code>source</code> element with
