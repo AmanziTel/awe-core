@@ -108,25 +108,6 @@ public class ExportSynonymsServiceTest extends AbstractNeoServiceTest {
         cleanUpReferenceNode();
     }
 
-    /**
-     * Cleans up all relationships from ReferenceNode
-     */
-    private void cleanUpReferenceNode() throws Exception {
-        Transaction tx = graphDatabaseService.beginTx();
-        try {
-            for (Relationship relationship : graphDatabaseService.getReferenceNode().getRelationships()) {
-                relationship.delete();
-            }
-            tx.success();
-        } catch (Exception e) {
-            tx.failure();
-            LOGGER.error("Exception on cleaning up reference node", e);
-            throw e;
-        } finally {
-            tx.finish();
-        }
-    }
-
     @Test
     public void testGetGlobalSynonymsDidNotThrowExceptions() throws Exception {
         synonymsService.getGlobalExportSynonyms();

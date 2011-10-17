@@ -42,7 +42,8 @@ import org.junit.runners.Suite.SuiteClasses;
                org.amanzi.neo.services.synonyms.ExportSynonymsServiceTest.class,
                org.amanzi.neo.services.synonyms.ExportSynonymsManagerTest.class,
                org.amanzi.neo.services.model.impl.SelectionModelTest.class,
-               org.amanzi.neo.model.distribution.impl.DistributionModelTest.class
+               org.amanzi.neo.model.distribution.impl.DistributionModelTest.class,
+               org.amanzi.neo.services.DistributionServiceTest.class
                })
 
 public class NeoServiceSuite {

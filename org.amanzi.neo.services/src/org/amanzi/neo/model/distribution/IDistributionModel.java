@@ -15,6 +15,7 @@ package org.amanzi.neo.model.distribution;
 
 import java.util.List;
 
+import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IModel;
 import org.eclipse.core.runtime.IProgressMonitor;
 
@@ -38,7 +39,7 @@ public interface IDistributionModel extends IModel {
      *
      * @return
      */
-    public List<IDistributionBar> getDistributionBars();
+    public List<IDistributionBar> getDistributionBars() throws AWEException;
     
     /**
      * Returns List of Distribution Bars 
@@ -46,7 +47,7 @@ public interface IDistributionModel extends IModel {
      * @param monitor
      * @return
      */
-    public List<IDistributionBar> getDistributionBars(IProgressMonitor monitor);
+    public List<IDistributionBar> getDistributionBars(IProgressMonitor monitor) throws AWEException;
     
     /**
      * Updates info about Distribution Bar in Database
