@@ -38,15 +38,15 @@ import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.geotools.referencing.CRS;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.index.Index;
-import org.neo4j.graphdb.traversal.Evaluators;
-import org.neo4j.graphdb.traversal.TraversalDescription;
-import org.neo4j.kernel.Traversal;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Envelope;
 
 /**
  * <p>
@@ -475,8 +475,16 @@ public class DriveModel extends RenderableModel implements IDriveModel {
      * @param parent
      * @return the found location node or null.
      */
-    public IDataElement getLocation(Node parent) {
-        LOGGER.debug("start getLocation(Node measurement)");
+    public IDataElement getLocation(IDataElement parentElement) {
+        // validate
+        if (parentElement == null) {
+            throw new IllegalArgumentException("Parent element is null.");
+        }
+        Node parent = ((DataElement)parentElement).getNode();
+        if (parent == null) {
+            throw new IllegalArgumentException("Parent node is null.");
+        }
+        LOGGER.debug("start getLocation(IDataElement parentElement)");
 
         Iterator<Relationship> it = parent.getRelationships(DriveRelationshipTypes.LOCATION, Direction.OUTGOING).iterator();
         if (it.hasNext()) {
@@ -552,8 +560,8 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     }
 
     @Override
-    public CRS getCRS() {
-        return null;
+    public CoordinateReferenceSystem getCRS() {
+        return crs;
     }
 
     @Override
@@ -655,5 +663,19 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     @Override
     public INodeType getType() {
         return primaryType;
+    }
+
+    @Override
+    public Iterable<IDataElement> getElements(Envelope bounds_transformed) {
+        return null;
+    }
+
+    @Override
+    public Coordinate getCoordinate(IDataElement element) {
+        IDataElement location = getLocation(element);
+        if (location != null) {
+            return new Coordinate((Long)location.get(LATITUDE), (Long)location.get(LONGITUDE));
+        }
+        return null;
     }
 }

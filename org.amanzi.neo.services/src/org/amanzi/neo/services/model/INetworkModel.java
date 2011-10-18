@@ -55,11 +55,14 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
      */
     public Iterable<INodeToNodeRelationsModel> getNodeToNodeModels() throws AWEException;
 
-    public INodeToNodeRelationsModel createNodeToNodeMmodel(INodeToNodeRelationsType relType, String name, INodeType nodeType) throws  AWEException;
+    public INodeToNodeRelationsModel createNodeToNodeMmodel(INodeToNodeRelationsType relType, String name, INodeType nodeType)
+            throws AWEException;
 
-    public INodeToNodeRelationsModel findNodeToNodeModel(INodeToNodeRelationsType relType, String name, INodeType nodeType) throws AWEException;
+    public INodeToNodeRelationsModel findNodeToNodeModel(INodeToNodeRelationsType relType, String name, INodeType nodeType)
+            throws AWEException;
 
-    public INodeToNodeRelationsModel getNodeToNodeModel(INodeToNodeRelationsType relType, String name, INodeType nodeType) throws AWEException;
+    public INodeToNodeRelationsModel getNodeToNodeModel(INodeToNodeRelationsType relType, String name, INodeType nodeType)
+            throws AWEException;
 
     public INetworkType getNetworkType();
 
@@ -69,8 +72,9 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
      * 
      * @param newParentElement
      * @param currentNode
+     * @throws AWEException
      */
-    public void replaceRelationship(IDataElement newParentElement, IDataElement currentNode);
+    public void replaceRelationship(IDataElement newParentElement, IDataElement currentNode) throws AWEException;
 
     /**
      * Searches for a Selection Model by it's name
@@ -110,8 +114,9 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
      * @param params
      * @return <code>DataElement</code> object, created on base of the found network node, or
      *         <code>null</code>.
+     * @throws AWEException
      */
-    public IDataElement findElement(Map<String, Object> params);
+    public IDataElement findElement(Map<String, Object> params) throws AWEException;
 
     /**
      * Create a new network element based on <code>IDataElement element</code> object. MUST set NAME
@@ -120,23 +125,26 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
      * @param parent
      * @param params
      * @return <code>DataElement</code> object, created on base of the new network node.
+     * @throws AWEException
      */
-    public IDataElement createElement(IDataElement parent, Map<String, Object> params);
+    public IDataElement createElement(IDataElement parent, Map<String, Object> params) throws AWEException;
 
     /**
      * Delete a network element based on <code>IDataElement element</code> object.
      * 
      * @param elementToDelete Element to delete
+     * @throws AWEException
      */
-    public void deleteElement(IDataElement elementToDelete);
+    public void deleteElement(IDataElement elementToDelete) throws AWEException;
 
     /**
      * Rename name of a network element based on <code>IDataElement element</code> object.
      * 
      * @param elementToRename Element to rename
      * @param newName New name of node and dataElement
+     * @throws AWEException
      */
-    public void renameElement(IDataElement elementToRename, String newName);
+    public void renameElement(IDataElement elementToRename, String newName) throws AWEException;
 
     /**
      * complete existedElement with new property. if
@@ -146,8 +154,10 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
      * @param isReplaceExistedis <code>replaceExisted</code> set <b>true</b> than existed property
      *        will replaced with new
      * @return
+     * @throws DatabaseException
      */
-    public IDataElement completeProperties(IDataElement existedElement, Map<String, Object> newPropertySet, boolean isReplaceExisted);
+    public IDataElement completeProperties(IDataElement existedElement, Map<String, Object> newPropertySet, boolean isReplaceExisted)
+            throws DatabaseException;
 
     /**
      * Create a new network element based on <code>IDataElement element</code> object. MUST set NAME
@@ -156,8 +166,9 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
      * @param parent
      * @param element
      * @return <code>DataElement</code> object, created on base of the new network node.
+     * @throws AWEException
      */
-    public IDataElement createElement(IDataElement parent, Map<String, Object> element, RelationshipType type);
+    public IDataElement createElement(IDataElement parent, Map<String, Object> element, RelationshipType type) throws AWEException;
 
     /**
      * create required relationship between 2 nodes
@@ -165,6 +176,7 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
      * @param parent
      * @param child
      * @param rel
+     * @throws AWEException
      */
-    public void createRelationship(IDataElement parent, IDataElement child, RelationshipType rel);
+    public void createRelationship(IDataElement parent, IDataElement child, RelationshipType rel) throws AWEException;
 }

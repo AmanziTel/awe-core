@@ -80,11 +80,8 @@ public class NewNeighbourSaverTesting extends AbstractAWETest {
 
     @Before
     public void onStart() {
-
         networkSaver = new NewNetworkSaver();
-
         hashMap = new HashMap<String, Object>();
-
         config = new ConfigurationDataImpl();
         config.getDatasetNames().put(NETWORK_KEY, NETWORK_NAME);
         config.getDatasetNames().put(PROJECT_KEY, PROJECT_NAME);

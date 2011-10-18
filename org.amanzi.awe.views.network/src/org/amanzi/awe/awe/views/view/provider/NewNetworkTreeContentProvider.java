@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.impl.NetworkModel;
@@ -24,117 +25,117 @@ public class NewNetworkTreeContentProvider implements IStructuredContentProvider
     /*
      * NeoServiceProvider
      */
-    
+
     protected NeoServiceProviderUi neoServiceProvider;
-    
+
     private INetworkModel rootNetworkModel;
-    
+
     /**
      * Constructor of ContentProvider
      * 
      * @param neoProvider neoServiceProvider for this ContentProvider
      */
-    
+
     public NewNetworkTreeContentProvider(NeoServiceProviderUi neoProvider) {
         this.neoServiceProvider = neoProvider;
     }
-    
-	@Override
-	public void dispose() {
 
-	}
+    @Override
+    public void dispose() {
 
-	@Override
-	public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+    }
 
-	}
+    @Override
+    public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
 
-	@Override
-	public Object[] getChildren(Object parentElement) {
-        
-		ArrayList<IDataElement> dataElements = new ArrayList<IDataElement>();
-		Iterable<IDataElement> children = null;
-		if (parentElement instanceof INetworkModel) {
-			children = ((INetworkModel)parentElement).getChildren(null);
-			rootNetworkModel = (INetworkModel)parentElement;
-			for (IDataElement dataElement : children) {
-				// add network model to data element
-				dataElement.put(INeoConstants.NETWORK_MODEL_NAME, parentElement);
-				dataElements.add(dataElement);
-			}
+    }
+
+    @Override
+    public Object[] getChildren(Object parentElement) {
+
+        ArrayList<IDataElement> dataElements = new ArrayList<IDataElement>();
+        Iterable<IDataElement> children = null;
+        if (parentElement instanceof INetworkModel) {
+            children = ((INetworkModel)parentElement).getChildren(null);
+            rootNetworkModel = (INetworkModel)parentElement;
+            for (IDataElement dataElement : children) {
+                // add network model to data element
+                dataElement.put(INeoConstants.NETWORK_MODEL_NAME, parentElement);
+                dataElements.add(dataElement);
+            }
+        } else if (parentElement instanceof IDataElement) {
+            IDataElement child = (IDataElement)parentElement;
+            INetworkModel localRootNetworkModel = (INetworkModel)(child).get(INeoConstants.NETWORK_MODEL_NAME);
+            children = localRootNetworkModel.getChildren(child);
+
+            for (IDataElement dataElement : children) {
+                // add network model to data element
+                dataElement.put(INeoConstants.NETWORK_MODEL_NAME, rootNetworkModel);
+                dataElements.add(dataElement);
+            }
         }
-        else if (parentElement instanceof IDataElement) {
-        	IDataElement child = (IDataElement)parentElement;
-        	INetworkModel localRootNetworkModel = (INetworkModel)(child).
-        			get(INeoConstants.NETWORK_MODEL_NAME);
-        	children = localRootNetworkModel.getChildren(child);
-        	
-        	for (IDataElement dataElement : children) {
-        		// add network model to data element
-				dataElement.put(INeoConstants.NETWORK_MODEL_NAME, rootNetworkModel);
-        		dataElements.add(dataElement);
-        	}
+        Collections.sort(dataElements, new IDataElementComparator());
+        return dataElements.toArray();
+    }
+
+    /**
+     * <p>
+     * Comparator of IDataElement
+     * </p>
+     * 
+     * @author Kasnitskij_V
+     * @since 1.0.0
+     */
+    public static class IDataElementComparator implements Comparator<IDataElement> {
+
+        @Override
+        public int compare(IDataElement dataElement1, IDataElement dataElement2) {
+            return dataElement1 == null ? -1 : dataElement2 == null ? 1 : dataElement1.get(INeoConstants.PROPERTY_NAME_NAME)
+                    .toString().compareTo(dataElement2.get(INeoConstants.PROPERTY_NAME_NAME).toString());
         }
-		Collections.sort(dataElements, new IDataElementComparator());
-		return dataElements.toArray();
-	}
 
-	/**
-	 * <p>
-	 * Comparator of IDataElement
-	 * </p>
-	 * 
-	 * @author Kasnitskij_V
-	 * @since 1.0.0
-	 */
-	public static class IDataElementComparator implements Comparator<IDataElement> {
+    }
 
-		@Override
-		public int compare(IDataElement dataElement1, IDataElement dataElement2) {
-			return dataElement1 == null ? -1 : 
-				dataElement2 == null ? 1 : dataElement1.get(INeoConstants.PROPERTY_NAME_NAME).toString()
-					.compareTo(dataElement2.get(INeoConstants.PROPERTY_NAME_NAME).toString());
-		}
+    @Override
+    public Object getParent(Object element) {
+        // TODO Need implement
+        return null;
+    }
 
-	}
-	@Override
-	public Object getParent(Object element) {
-		// TODO Need implement
-		return null;
-	}
+    @Override
+    public boolean hasChildren(Object parentElement) {
 
-	@Override
-	public boolean hasChildren(Object parentElement) {
-		
-		Iterable<IDataElement> children = null;
-		if (parentElement instanceof INetworkModel) {
-			children = ((INetworkModel)parentElement).getChildren(null);
+        Iterable<IDataElement> children = null;
+        if (parentElement instanceof INetworkModel) {
+            children = ((INetworkModel)parentElement).getChildren(null);
+        } else if (parentElement instanceof IDataElement) {
+            IDataElement child = (IDataElement)parentElement;
+            INetworkModel localRootNetworkModel = (INetworkModel)(child).get(INeoConstants.NETWORK_MODEL_NAME);
+            children = localRootNetworkModel.getChildren(child);
         }
-        else if (parentElement instanceof IDataElement) {
-        	IDataElement child = (IDataElement)parentElement;
-        	INetworkModel localRootNetworkModel = (INetworkModel)(child).
-        			get(INeoConstants.NETWORK_MODEL_NAME);
-        	children = localRootNetworkModel.getChildren(child);
+        if (children.iterator().hasNext()) {
+            return true;
+        } else {
+            return false;
         }
-		if (children.iterator().hasNext()) {
-			return true;
-		}
-		else {
-			return false;
-		}
-	}
+    }
 
-	@Override
-	public Object[] getElements(Object inputElement) {
-		
-		List<INetworkModel> networkModels = NetworkModel.findAllNetworkModels();
-		
-		Object[] networkModelsInObjects = new Object[networkModels.size()];
-		int i = 0;
-		for (INetworkModel model : networkModels) {
-			networkModelsInObjects[i++] = model;
-		}
-		
-		return networkModelsInObjects;
-	}
+    @Override
+    public Object[] getElements(Object inputElement) {
+
+        List<INetworkModel> networkModels;
+        try {
+            networkModels = NetworkModel.findAllNetworkModels();
+        } catch (AWEException e) {
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+
+        Object[] networkModelsInObjects = new Object[networkModels.size()];
+        int i = 0;
+        for (INetworkModel model : networkModels) {
+            networkModelsInObjects[i++] = model;
+        }
+
+        return networkModelsInObjects;
+    }
 }

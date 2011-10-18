@@ -21,6 +21,7 @@ import java.util.List;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.impl.NetworkModel;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
@@ -102,7 +103,13 @@ public class Root extends NeoNode {
         
         Node reference = service.getReferenceNode();
         int nextNum = number+1;
-        List<INetworkModel> networkModels = NetworkModel.findAllNetworkModels();
+        List<INetworkModel> networkModels;
+        try {
+            networkModels = NetworkModel.findAllNetworkModels();
+        } catch (AWEException e) {
+            // TODO Handle AWEException
+            throw (RuntimeException) new RuntimeException( ).initCause( e );
+        }
         List<Node> nodes = new ArrayList<Node>();
         for (INetworkModel nModel : networkModels) {
         	nodes.add(nModel.getRootNode());

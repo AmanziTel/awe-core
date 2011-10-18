@@ -24,6 +24,7 @@ import org.amanzi.awe.views.network.NetworkTreePlugin;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.events.ShowPreparedViewEvent;
+import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.impl.DataElement;
@@ -239,7 +240,12 @@ public class NewNetworkTreeView extends ViewPart {
         	String value = 
         			getNewName(node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString());
         	INetworkModel networkModel = (INetworkModel)dataElement.get(INeoConstants.NETWORK_MODEL_NAME);
-        	networkModel.renameElement(dataElement, value);
+        	try {
+                networkModel.renameElement(dataElement, value);
+            } catch (AWEException e) {
+                // TODO Handle AWEException
+                throw (RuntimeException) new RuntimeException( ).initCause( e );
+            }
             viewer.refresh();
         }
         
@@ -344,7 +350,12 @@ public class NewNetworkTreeView extends ViewPart {
             for (int i = countOfNodesToDelete - 1; i >= 0; i--) {
             	IDataElement dataElement = nodesToDeleteArray[i];
             	INetworkModel networkModel = (INetworkModel)dataElement.get(INeoConstants.NETWORK_MODEL_NAME);
-            	networkModel.deleteElement(dataElement);
+            	try {
+                    networkModel.deleteElement(dataElement);
+                } catch (AWEException e) {
+                    // TODO Handle AWEException
+                    throw (RuntimeException) new RuntimeException( ).initCause( e );
+                }
             }
             
             viewer.refresh();

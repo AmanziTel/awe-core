@@ -14,7 +14,10 @@
 package org.amanzi.neo.services.model;
 
 import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.geotools.referencing.CRS;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Envelope;
 
 /**
  * <p>
@@ -42,7 +45,7 @@ public interface IRenderableModel extends IModel {
 
     public double getMaxLongitude();
 
-    public CRS getCRS();
+    public CoordinateReferenceSystem getCRS();
 
     /**
      * TODO: test implementation
@@ -57,4 +60,20 @@ public interface IRenderableModel extends IModel {
      * @return An envelope, representing the coordinate bounds for the data in current model.
      */
     public ReferencedEnvelope getBounds();
+
+    /**
+     * Gets all the model elements in the defined bounds.
+     * 
+     * @param bounds_transformed
+     * @return
+     */
+    public Iterable<IDataElement> getElements(Envelope bounds_transformed);
+
+    /**
+     * Find out coordinates from the defined element.
+     * 
+     * @param element a not null element with an underlying node or properties set.
+     * @return
+     */
+    public Coordinate getCoordinate(IDataElement element);
 }
