@@ -16,18 +16,24 @@ package org.amanzi.neo.model.distribution.types.impl;
 import org.amanzi.neo.model.distribution.IDistributionalModel;
 import org.amanzi.neo.model.distribution.types.ranges.impl.SimpleRange;
 import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.filters.Filter;
+import org.apache.log4j.Logger;
 
 /**
- * TODO Purpose of 
- * <p>
- *
- * </p>
+ * Distribution for String properties
+ * 
+ * Creates range for each String value of property
+ * 
  * @author gerzog
  * @since 1.0.0
  */
 public class StringDistribution extends AbstractDistribution<SimpleRange> {
     
+    private static final Logger LOGGER = Logger.getLogger(StringDistribution.class);
+    
     static final String STRING_DISTRIBUTION_NAME = "auto";
+    
+    private int count = 0;
 
     /**
      * @param model
@@ -45,11 +51,27 @@ public class StringDistribution extends AbstractDistribution<SimpleRange> {
 
     @Override
     public int getCount() {
-        return 0;
+        return count;
     }
 
     @Override
     protected void createRanges() {
+        LOGGER.debug("start createRange()");
+        
+        //initialize count of all properties
+        count = model.getPropertyCount(nodeType, propertyName);
+        
+        //initialize ranges
+        for (Object value : model.getPropertyValues(nodeType, propertyName)) {
+            //we are sure that it's a string
+            String sValue = value.toString();
+            
+            Filter filter = new Filter();
+            filter.setExpression(nodeType, propertyName, sValue);
+            ranges.add(new SimpleRange(sValue, filter));
+        }
+        
+        LOGGER.debug("finish createRange()");
     }
 
 }

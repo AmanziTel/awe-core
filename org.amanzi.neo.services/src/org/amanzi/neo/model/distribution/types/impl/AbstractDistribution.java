@@ -51,6 +51,9 @@ public abstract class AbstractDistribution<T extends IRange> implements IDistrib
      */
     private boolean isInitialized = false;
     
+    /*
+     * List of ranges
+     */
     protected List<T> ranges = new ArrayList<T>();
     
     /**
@@ -100,7 +103,7 @@ public abstract class AbstractDistribution<T extends IRange> implements IDistrib
     
     @Override
     public List<T> getRanges() {
-        return null;
+        return ranges;
     }
     
     /**

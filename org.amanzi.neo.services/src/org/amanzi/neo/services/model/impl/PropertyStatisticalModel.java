@@ -142,4 +142,18 @@ public abstract class PropertyStatisticalModel extends DataModel implements IPro
         
         return null;
     }
+    
+    @Override
+    public Object[] getPropertyValues(INodeType nodeType, String propertyName) {
+        IVault nodeTypeVault = statisticsVault.getSubVaults().get(nodeType.getId());
+        
+        if (nodeTypeVault != null) {
+            NewPropertyStatistics property = nodeTypeVault.getPropertyStatisticsMap().get(propertyName);
+            if (property != null) {
+                return property.getPropertyMap().keySet().toArray();
+            }
+        }
+        
+        return null;
+    }
 }

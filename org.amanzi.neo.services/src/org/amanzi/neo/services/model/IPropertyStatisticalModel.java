@@ -44,4 +44,13 @@ public interface IPropertyStatisticalModel extends IDataModel {
      * @return
      */
     public Class<?> getPropertyClass(INodeType nodeType, String propertyName);
+    
+    /**
+     * Returns all values of this property
+     *
+     * @param nodeType type of node
+     * @param propertyName name of property
+     * @return
+     */
+    public Object[] getPropertyValues(INodeType nodeType, String propertyName);
 }
