@@ -51,11 +51,6 @@ public class StringDistribution extends AbstractDistribution {
     }
 
     @Override
-    public INodeType getNodeType() {
-        return null;
-    }
-
-    @Override
     public int getCount() {
         return 0;
     }

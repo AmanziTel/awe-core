@@ -75,5 +75,12 @@ public abstract class AbstractDistribution implements IDistribution {
      * Method to Create Ranges of Distribution
      */
     protected abstract void createRanges();
+    
+
+
+    @Override
+    public INodeType getNodeType() {
+        return nodeType;
+    }
 
 }

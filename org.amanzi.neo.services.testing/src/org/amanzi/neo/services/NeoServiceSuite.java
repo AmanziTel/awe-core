@@ -44,7 +44,8 @@ import org.junit.runners.Suite.SuiteClasses;
                org.amanzi.neo.services.model.impl.SelectionModelTest.class,
                org.amanzi.neo.model.distribution.impl.DistributionModelTest.class,
                org.amanzi.neo.services.DistributionServiceTest.class,
-               org.amanzi.neo.model.distribution.impl.DistributionManager.class
+               org.amanzi.neo.model.distribution.impl.DistributionManagerTest.class,
+               org.amanzi.neo.model.distribution.types.impl.StringDistributionTest.class
                })
 
 public class NeoServiceSuite {

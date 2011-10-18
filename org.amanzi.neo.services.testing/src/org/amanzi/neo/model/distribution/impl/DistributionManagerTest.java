@@ -29,6 +29,7 @@ import org.amanzi.neo.model.distribution.types.impl.StringDistribution;
 import org.amanzi.neo.services.AbstractNeoServiceTest;
 import org.amanzi.neo.services.DistributionService.DistributionNodeTypes;
 import org.amanzi.neo.services.enums.INodeType;
+import org.apache.commons.lang.StringUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -100,6 +101,39 @@ public class DistributionManagerTest extends AbstractNeoServiceTest {
         IDistribution secondDistribution = result.get(0);
         
         assertSame("Distributions should be same", firstDistribution, secondDistribution);
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToGetDistributionWithoutModel() throws Exception {
+        manager.getDistributions(null, DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME, ChartType.getDefault());
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToGetDistributionWithoutNodeType() throws Exception {
+        IDistributionalModel model = getDistributionalModel(String.class);
+        
+        manager.getDistributions(model, null, DEFAULT_PROPERTY_NAME, ChartType.getDefault());
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToGetDistributionWithoutPropertyName() throws Exception {
+        IDistributionalModel model = getDistributionalModel(String.class);
+        
+        manager.getDistributions(model, DEFAULT_NODE_TYPE, null, ChartType.getDefault());
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToGetDistributionWithEmptyPropertyName() throws Exception {
+        IDistributionalModel model = getDistributionalModel(String.class);
+        
+        manager.getDistributions(model, DEFAULT_NODE_TYPE, StringUtils.EMPTY, ChartType.getDefault());
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToGetDistributionWithoutChartType() throws Exception {
+        IDistributionalModel model = getDistributionalModel(String.class);
+        
+        manager.getDistributions(model, DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME, null);
     }
     
     /**

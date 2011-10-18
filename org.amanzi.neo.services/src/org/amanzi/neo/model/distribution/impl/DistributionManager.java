@@ -89,6 +89,24 @@ public class DistributionManager {
     public List<IDistribution> getDistributions(IDistributionalModel model, INodeType nodeType, String propertyName, ChartType chartType) throws DistributionManagerException {
         LOGGER.debug("start getDistributions(<" + model + ">, <" + nodeType + ">, " + propertyName + ">, <" + chartType + ">)");
         
+        //check input
+        if (model == null) {
+            LOGGER.error("Analyzed model cannot be null");
+            throw new IllegalArgumentException("Analyzed model cannot be null");
+        }
+        if (nodeType == null) {
+            LOGGER.error("NodeType cannot be null");
+            throw new IllegalArgumentException("NodeType cannot be null");
+        }
+        if (propertyName == null || propertyName.isEmpty()) {
+            LOGGER.error("PropertyName to Analyze cannot be null or empty");
+            throw new IllegalArgumentException("PropertyName to Analyze cannot be null or empty");
+        }
+        if (chartType == null) {
+            LOGGER.error("ChartType cannot be null");
+            throw new IllegalArgumentException("ChartType cannot be null");
+        }
+        
         Class<?> clazz = model.getPropertyClass(nodeType, propertyName);
         
         List<IDistribution> result = new ArrayList<IDistribution>();
@@ -146,6 +164,9 @@ public class DistributionManager {
         IDistribution result = distributionCache.get(cacheKey);
         
         if (result == null) {
+            LOGGER.info("No Distribution for params <" + model + ", " + nodeType + ", " + propertyName + ">. " +
+            		"Create new one.");
+            
             result = new StringDistribution(model, nodeType, propertyName);
             distributionCache.put(cacheKey, result);
         }
