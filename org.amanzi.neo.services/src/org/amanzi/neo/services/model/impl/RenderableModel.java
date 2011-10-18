@@ -17,6 +17,7 @@ import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.model.IDataElement;
 import org.apache.commons.lang.StringUtils;
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
@@ -31,8 +32,9 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 public class RenderableModel extends AbstractIndexedModel {
     static final String DESCRIPTION = "description";
 
+    protected static CoordinateReferenceSystem DEFAULT_CRS = DefaultGeographicCRS.WGS84;
     /** The field used in geo tools. Assignment not yet implemented.//TODO */
-    protected CoordinateReferenceSystem crs;
+    protected CoordinateReferenceSystem crs = DEFAULT_CRS;
 
     // TODO: make it abstract?
     @Override

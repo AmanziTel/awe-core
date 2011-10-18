@@ -234,13 +234,18 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
         members = new HashMap<String, Node>();
-        for (INetworkModel model : NetworkModel.findAllNetworkModels()) {
-            String id = model.getRootNode().getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
-            if (NodeTypes.NETWORK.checkNode(model.getRootNode())) { //$NON-NLS-1$
-                members.put(id, model.getRootNode());
-            } else {
-                restrictedNames.add(id);
+        try {
+            for (INetworkModel model : NetworkModel.findAllNetworkModels()) {
+                String id = model.getRootNode().getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+                if (NodeTypes.NETWORK.checkNode(model.getRootNode())) { //$NON-NLS-1$
+                    members.put(id, model.getRootNode());
+                } else {
+                    restrictedNames.add(id);
+                }
             }
+        } catch (AWEException e) {
+            LOGGER.error("Error while getRootItems work", e);
+            throw (RuntimeException)new RuntimeException().initCause(e);
         }
 
         String[] result = members.keySet().toArray(new String[] {});

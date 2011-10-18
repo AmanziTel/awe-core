@@ -33,6 +33,8 @@ import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
+import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
+import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
 import org.amanzi.neo.services.model.ICorrelationModel;
 import org.amanzi.neo.services.model.IDataElement;
@@ -43,11 +45,15 @@ import org.amanzi.neo.services.model.INodeToNodeRelationsType;
 import org.amanzi.neo.services.model.ISelectionModel;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.geotools.referencing.CRS;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.index.Index;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Envelope;
 
 /**
  * <p>
@@ -93,8 +99,13 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
      * 
      * @param network MUST contain property ("project",<code>Node</code> project) <i>OR</i> an
      *        underlying network node.
+     * @throws AWEException
+     * @throws DuplicateNodeNameException
+     * @throws DatasetTypeParameterException
+     * @throws InvalidDatasetParameterException
      */
-    public NetworkModel(IDataElement project, IDataElement network, String name) {
+    public NetworkModel(IDataElement project, IDataElement network, String name) throws InvalidDatasetParameterException,
+            DatasetTypeParameterException, DuplicateNodeNameException, AWEException {
         // validate
         if (project == null) {
             throw new IllegalArgumentException("Parent is null.");
@@ -111,11 +122,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         }
         Node networkNode = ((DataElement)network).getNode();
         if (networkNode == null) {
-            try {
-                networkNode = dsServ.createDataset(projectNode, name, DatasetTypes.NETWORK);
-            } catch (AWEException e) {
-                LOGGER.error("Could not create network root.", e);
-            }
+            networkNode = dsServ.createDataset(projectNode, name, DatasetTypes.NETWORK);
         }
         this.rootNode = networkNode;
         this.name = name;
@@ -136,12 +143,12 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     }
 
     @Override
-    public IDataElement createElement(IDataElement parent, Map<String, Object> params) {
+    public IDataElement createElement(IDataElement parent, Map<String, Object> params) throws AWEException {
         return createElement(parent, params, NetworkRelationshipTypes.CHILD);
     }
 
     @Override
-    public void deleteElement(IDataElement elementToDelete) {
+    public void deleteElement(IDataElement elementToDelete) throws AWEException {
         if (elementToDelete == null) {
             throw new IllegalArgumentException("DataElement to delete is null.");
         }
@@ -149,32 +156,26 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         if (node == null) {
             throw new IllegalArgumentException("Node assotiated with DataElement is null.");
         }
-        try {
-            deleteSubElements(elementToDelete);
-            INodeType nodeType = NodeTypeManager.
-                    getType(elementToDelete.get(INeoConstants.PROPERTY_TYPE_NAME).toString()); 
-            removeProperty(nodeType, (DataElement)elementToDelete);
-            nwServ.deleteOneNode(((DataElement)elementToDelete).getNode(), getRootNode(), indexMap);
-            elementToDelete = null;
-            
-        } catch (AWEException e) {
-            LOGGER.error("Could not delete all or some nodes", e);
-        }
+        deleteSubElements(elementToDelete);
+        INodeType nodeType = NodeTypeManager.getType(elementToDelete.get(INeoConstants.PROPERTY_TYPE_NAME).toString());
+        removeProperty(nodeType, (DataElement)elementToDelete);
+        nwServ.deleteOneNode(((DataElement)elementToDelete).getNode(), getRootNode(), indexMap);
+        elementToDelete = null;
+
     }
-    
+
     /**
      * Recursive deleting all sub-nodes of this node
-     *
+     * 
      * @param child Node to delete
-     * @throws DatabaseException 
+     * @throws DatabaseException
      */
     private void deleteSubElements(IDataElement elementToDelete) throws AWEException {
         for (IDataElement childElement : getChildren(elementToDelete)) {
             Node subNode = ((DataElement)childElement).getNode();
             if (subNode != null) {
                 deleteSubElements(childElement);
-                INodeType nodeType = NodeTypeManager.
-                        getType(childElement.get(INeoConstants.PROPERTY_TYPE_NAME).toString()); 
+                INodeType nodeType = NodeTypeManager.getType(childElement.get(INeoConstants.PROPERTY_TYPE_NAME).toString());
                 removeProperty(nodeType, (DataElement)childElement);
                 nwServ.deleteOneNode(subNode, getRootNode(), indexMap);
             }
@@ -182,20 +183,16 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     }
 
     @Override
-    public void renameElement(IDataElement elementToRename, String newName) {
+    public void renameElement(IDataElement elementToRename, String newName) throws AWEException {
         elementToRename.put(INeoConstants.PROPERTY_NAME_NAME, newName);
         Node node = ((DataElement)elementToRename).getNode();
-        try {
-            nwServ.setNameProperty(node, newName);
-        } catch (AWEException e) {
-            LOGGER.error("Could not save new name of node", e);
-        }
+        nwServ.setNameProperty(node, newName);
     }
 
     // find element
 
     @Override
-    public IDataElement findElement(Map<String, Object> params) {
+    public IDataElement findElement(Map<String, Object> params) throws AWEException {
         // validate
 
         if (params == null) {
@@ -209,18 +206,14 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
 
         if (type != null) {
 
-            try {
-                if (type.equals(NetworkElementNodeType.SECTOR)) {
-                    Object elName = params.get(NewAbstractService.NAME);
-                    Object elCI = params.get(NewNetworkService.CELL_INDEX);
-                    Object elLAC = params.get(NewNetworkService.LOCATION_AREA_CODE);
-                    node = nwServ.findSector(getIndex(type), elName == null ? null : elName.toString(),
-                            elCI == null ? null : elCI.toString(), elLAC == null ? null : elLAC.toString());
-                } else {
-                    node = nwServ.findNetworkElement(getIndex(type), params.get(NewAbstractService.NAME).toString());
-                }
-            } catch (DatabaseException e) {
-                LOGGER.error("Could not find data element.", e);
+            if (type.equals(NetworkElementNodeType.SECTOR)) {
+                Object elName = params.get(NewAbstractService.NAME);
+                Object elCI = params.get(NewNetworkService.CELL_INDEX);
+                Object elLAC = params.get(NewNetworkService.LOCATION_AREA_CODE);
+                node = nwServ.findSector(getIndex(type), elName == null ? null : elName.toString(),
+                        elCI == null ? null : elCI.toString(), elLAC == null ? null : elLAC.toString());
+            } else {
+                node = nwServ.findNetworkElement(getIndex(type), params.get(NewAbstractService.NAME).toString());
             }
         }
 
@@ -236,8 +229,9 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
      * @param params
      * @return<code>DataElement</code> object, created on base of the resulting network node, or
      *                                 <code>null</code>.
+     * @throws AWEException
      */
-    public IDataElement getElement(IDataElement parent, Map<String, Object> params) {
+    public IDataElement getElement(IDataElement parent, Map<String, Object> params) throws AWEException {
 
         IDataElement result = findElement(params);
         if (result == null) {
@@ -292,8 +286,8 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     }
 
     @Override
-    public CRS getCRS() {
-        return null;
+    public CoordinateReferenceSystem getCRS() {
+        return this.crs;
     }
 
     @Override
@@ -373,15 +367,11 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         this.nwServ = nwServ;
     }
 
-    public static List<INetworkModel> findAllNetworkModels() {
+    public static List<INetworkModel> findAllNetworkModels() throws AWEException {
         List<INetworkModel> networkModels = new ArrayList<INetworkModel>();
 
         List<Node> allNetworkNodes = null;
-        try {
-            allNetworkNodes = NeoServiceFactory.getInstance().getNewDatasetService().findAllDatasetsByType(DatasetTypes.NETWORK);
-        } catch (InvalidDatasetParameterException e) {
-            LOGGER.error(e);
-        }
+        allNetworkNodes = NeoServiceFactory.getInstance().getNewDatasetService().findAllDatasetsByType(DatasetTypes.NETWORK);
         for (Node networkRoot : allNetworkNodes) {
             networkModels.add(new NetworkModel(networkRoot));
         }
@@ -423,50 +413,35 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     }
 
     @Override
-    public void replaceRelationship(IDataElement newParentElement, IDataElement currentNode) {
+    public void replaceRelationship(IDataElement newParentElement, IDataElement currentNode) throws AWEException {
         Node curentNode;
         Node newParentNode;
-        try {
-            curentNode = ((DataElement)currentNode).getNode();
-            newParentNode = ((DataElement)newParentElement).getNode();
-            nwServ.replaceRelationship(newParentNode, curentNode, NetworkRelationshipTypes.CHILD, Direction.INCOMING);
-        } catch (AWEException e) {
-            LOGGER.error("couldn't extract node from dataelement", e);
-            return;
-        }
-
+        curentNode = ((DataElement)currentNode).getNode();
+        newParentNode = ((DataElement)newParentElement).getNode();
+        nwServ.replaceRelationship(newParentNode, curentNode, NetworkRelationshipTypes.CHILD, Direction.INCOMING);
     }
 
     @Override
-    public IDataElement completeProperties(IDataElement existedElement, Map<String, Object> newPropertySet, boolean isReplaceExisted) {
+    public IDataElement completeProperties(IDataElement existedElement, Map<String, Object> newPropertySet, boolean isReplaceExisted)
+            throws DatabaseException {
         Node existedNode;
-        try {
-            existedNode = ((DataElement)existedElement).getNode();
-            nwServ.completeProperties(existedNode, new DataElement(newPropertySet), isReplaceExisted);
-            return new DataElement(existedNode);
-        } catch (AWEException e) {
-            LOGGER.error("couldn't complete new properties", e);
-            return null;
-        }
+        existedNode = ((DataElement)existedElement).getNode();
+        nwServ.completeProperties(existedNode, new DataElement(newPropertySet), isReplaceExisted);
+        return new DataElement(existedNode);
     }
 
     @Override
-    public void createRelationship(IDataElement parent, IDataElement child, RelationshipType rel) {
+    public void createRelationship(IDataElement parent, IDataElement child, RelationshipType rel) throws AWEException {
         Node parentNode;
         Node childNode;
-        try {
-            parentNode = ((DataElement)parent).getNode();
-            childNode = ((DataElement)child).getNode();
-            nwServ.createRelationship(parentNode, childNode, rel);
-        } catch (AWEException e) {
-            LOGGER.error("couldn't create relationship ", e);
-            throw (RuntimeException)new RuntimeException().initCause(e);
-        }
-
+        parentNode = ((DataElement)parent).getNode();
+        childNode = ((DataElement)child).getNode();
+        nwServ.createRelationship(parentNode, childNode, rel);
     }
 
     @Override
-    public IDataElement createElement(IDataElement parent, Map<String, Object> element, RelationshipType reltype) {
+    public IDataElement createElement(IDataElement parent, Map<String, Object> element, RelationshipType reltype)
+            throws AWEException {
         if (parent == null) {
             throw new IllegalArgumentException("Parent is null.");
         }
@@ -480,29 +455,25 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
 
         INodeType type = NodeTypeManager.getType(element.get(NewAbstractService.TYPE).toString());
         Node node = null;
-        try {
 
-            // TODO:validate network structure and save it in root node
+        // TODO:validate network structure and save it in root node
 
-            if (type != null) {
+        if (type != null) {
 
-                if (type.equals(NetworkElementNodeType.SECTOR)) {
-                    Object elName = element.get(NewAbstractService.NAME);
-                    Object elCI = element.get(NewNetworkService.CELL_INDEX);
-                    Object elLAC = element.get(NewNetworkService.LOCATION_AREA_CODE);
-                    node = nwServ.createSector(parentNode, getIndex(type), elName == null ? null : elName.toString(), elCI == null
-                            ? null : elCI.toString(), elLAC == null ? null : elLAC.toString());
-                } else {
-                    node = nwServ.createNetworkElement(parentNode, getIndex(type), element.get(NewAbstractService.NAME).toString(),
-                            type, reltype);
-                }
+            if (type.equals(NetworkElementNodeType.SECTOR)) {
+                Object elName = element.get(NewAbstractService.NAME);
+                Object elCI = element.get(NewNetworkService.CELL_INDEX);
+                Object elLAC = element.get(NewNetworkService.LOCATION_AREA_CODE);
+                node = nwServ.createSector(parentNode, getIndex(type), elName == null ? null : elName.toString(), elCI == null
+                        ? null : elCI.toString(), elLAC == null ? null : elLAC.toString());
+            } else {
+                node = nwServ.createNetworkElement(parentNode, getIndex(type), element.get(NewAbstractService.NAME).toString(),
+                        type, reltype);
             }
-            nwServ.setProperties(node, element);
-            indexProperty(type, element);
-            indexNode(node);
-        } catch (AWEException e) {
-            LOGGER.error("Could not create network element.", e);
         }
+        nwServ.setProperties(node, element);
+        indexProperty(type, element);
+        indexNode(node);
 
         return node == null ? null : new DataElement(node);
     }
@@ -523,18 +494,21 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     }
 
     @Override
-    public INodeToNodeRelationsModel createNodeToNodeMmodel(INodeToNodeRelationsType relType, String name, INodeType nodeType) {
+    public INodeToNodeRelationsModel createNodeToNodeMmodel(INodeToNodeRelationsType relType, String name, INodeType nodeType)
+            throws AWEException {
         return new NodeToNodeRelationshipModel(new DataElement(this.rootNode), relType, name, nodeType);
     }
 
     @Override
-    public INodeToNodeRelationsModel findNodeToNodeModel(INodeToNodeRelationsType relType, String name, INodeType nodeType) {
+    public INodeToNodeRelationsModel findNodeToNodeModel(INodeToNodeRelationsType relType, String name, INodeType nodeType)
+            throws AWEException {
         Node n2nRoot = dsServ.findNode(this.rootNode, relType, name, nodeType);
         return n2nRoot == null ? null : new NodeToNodeRelationshipModel(n2nRoot);
     }
 
     @Override
-    public INodeToNodeRelationsModel getNodeToNodeModel(INodeToNodeRelationsType relType, String name, INodeType nodeType) {
+    public INodeToNodeRelationsModel getNodeToNodeModel(INodeToNodeRelationsType relType, String name, INodeType nodeType)
+            throws AWEException {
         INodeToNodeRelationsModel result = findNodeToNodeModel(relType, name, nodeType);
         if (result == null) {
             result = createNodeToNodeMmodel(relType, name, nodeType);
@@ -546,5 +520,30 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     @Override
     public IDistributionModel getDistributionModel(IDistribution distributionType) {
         return null;
+    }
+
+    public Iterable<IDataElement> getElements(Envelope bounds_transformed) {
+        return null;
+    }
+
+    @Override
+    public ReferencedEnvelope getBounds() {
+        return super.getBounds();
+    }
+
+    @Override
+    public Coordinate getCoordinate(IDataElement element) {
+        NetworkElementNodeType type = (NetworkElementNodeType)NodeTypeManager.getType(element.get(NewAbstractService.TYPE)
+                .toString());
+        switch (type) {
+        case SITE:
+            return new Coordinate((Long)element.get(LATITUDE), (Long)element.get(LONGITUDE));
+
+        case SECTOR:
+            IDataElement site = getParentElement(element);
+            return new Coordinate((Long)site.get(LATITUDE), (Long)site.get(LONGITUDE));
+        default:
+            return null;
+        }
     }
 }

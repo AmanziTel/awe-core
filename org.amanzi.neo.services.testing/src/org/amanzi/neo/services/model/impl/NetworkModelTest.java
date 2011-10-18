@@ -22,6 +22,9 @@ import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.ProjectService;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
+import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
+import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
 import org.amanzi.neo.services.model.ICorrelationModel;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
@@ -126,7 +129,22 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
         DataElement root = new DataElement(network);
         DataElement parent = new DataElement(project);
 
-        NetworkModel nm = new NetworkModel(parent, root, name);
+        NetworkModel nm;
+        try {
+            nm = new NetworkModel(parent, root, name);
+        } catch (InvalidDatasetParameterException e) {
+            // TODO Handle InvalidDatasetParameterException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        } catch (DatasetTypeParameterException e) {
+            // TODO Handle DatasetTypeParameterException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        } catch (DuplicateNodeNameException e) {
+            // TODO Handle DuplicateNodeNameException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        } catch (AWEException e) {
+            // TODO Handle AWEException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
 
         // object created not null
         assertNotNull(nm);
@@ -146,7 +164,13 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
             params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
             DataElement element = new DataElement(params);
 
-            IDataElement testElement = model.createElement(parentElement, element);
+            IDataElement testElement;
+            try {
+                testElement = model.createElement(parentElement, element);
+            } catch (AWEException e) {
+                // TODO Handle AWEException
+                throw (RuntimeException)new RuntimeException().initCause(e);
+            }
             // object returned not null
             assertNotNull(testElement);
             // underlying node not null
@@ -158,48 +182,64 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
             parentElement = testElement;
         }
     }
-    
-	@Test
-	public void testDeleteElement() {
-		ArrayList<IDataElement> allDataElements = new ArrayList<IDataElement>();
-		ArrayList<IDataElement> paramsDataElements = new ArrayList<IDataElement>();
-		IDataElement parentElement = new DataElement(network);
-		for (INodeType type : NetworkElementNodeType.values()) {
-			Map<String, Object> params = new HashMap<String, Object>();
-			params.put(NewAbstractService.TYPE, type.getId());
-			params.put(NewAbstractService.NAME, type.getId());
-			params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
-			DataElement element = new DataElement(params);
-			paramsDataElements.add(element);
-			
-			IDataElement testElement = model.createElement(parentElement,
-					element);
-			// object returned not null
-			assertNotNull(testElement);
-			// underlying node not null
-			assertNotNull(((DataElement) testElement).getNode());
-			// properties set
-			for (String key : params.keySet()) {
-				assertEquals(params.get(key), testElement.get(key));
-			}
-			parentElement = testElement;
-			allDataElements.add(parentElement);
-		}
-		int index = 2;
-		IDataElement elementToDelete = allDataElements.get(index);
-		model.deleteElement(elementToDelete);
-		
-		ArrayList<IDataElement> foundElements = new ArrayList<IDataElement>();
-		for (IDataElement dataElement : paramsDataElements) {
-			
-			IDataElement foundElement = model.findElement(((DataElement)dataElement));
-			if (foundElement != null) {
-				foundElements.add(foundElement);
-			}
-		}
-		
-		assertEquals(foundElements.size(), index);
-	}
+
+    @Test
+    public void testDeleteElement() {
+        ArrayList<IDataElement> allDataElements = new ArrayList<IDataElement>();
+        ArrayList<IDataElement> paramsDataElements = new ArrayList<IDataElement>();
+        IDataElement parentElement = new DataElement(network);
+        for (INodeType type : NetworkElementNodeType.values()) {
+            Map<String, Object> params = new HashMap<String, Object>();
+            params.put(NewAbstractService.TYPE, type.getId());
+            params.put(NewAbstractService.NAME, type.getId());
+            params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
+            DataElement element = new DataElement(params);
+            paramsDataElements.add(element);
+
+            IDataElement testElement;
+            try {
+                testElement = model.createElement(parentElement, element);
+            } catch (AWEException e) {
+                LOGGER.error("Erorr while trying to create element" + element, e);
+                throw (RuntimeException)new RuntimeException().initCause(e);
+            }
+            // object returned not null
+            assertNotNull(testElement);
+            // underlying node not null
+            assertNotNull(((DataElement)testElement).getNode());
+            // properties set
+            for (String key : params.keySet()) {
+                assertEquals(params.get(key), testElement.get(key));
+            }
+            parentElement = testElement;
+            allDataElements.add(parentElement);
+        }
+        int index = 2;
+        IDataElement elementToDelete = allDataElements.get(index);
+        try {
+            model.deleteElement(elementToDelete);
+        } catch (AWEException e) {
+            LOGGER.error("Erorr while trying to delete element" + elementToDelete, e);
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+
+        ArrayList<IDataElement> foundElements = new ArrayList<IDataElement>();
+        for (IDataElement dataElement : paramsDataElements) {
+
+            IDataElement foundElement;
+            try {
+                foundElement = model.findElement(((DataElement)dataElement));
+            } catch (AWEException e) {
+                LOGGER.error("Erorr while trying to found element" + dataElement, e);
+                throw (RuntimeException)new RuntimeException().initCause(e);
+            }
+            if (foundElement != null) {
+                foundElements.add(foundElement);
+            }
+        }
+
+        assertEquals(foundElements.size(), index);
+    }
 
     @Test
     public void testFindElement() {
@@ -212,7 +252,13 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
             params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
             DataElement element = new DataElement(params);
 
-            IDataElement newElement = model.createElement(parentElement, element);
+            IDataElement newElement;
+            try {
+                newElement = model.createElement(parentElement, element);
+            } catch (AWEException e) {
+                LOGGER.error("Erorr while trying to Create element" + element, e);
+                throw (RuntimeException)new RuntimeException().initCause(e);
+            }
             parentElement = newElement;
         }
 
@@ -221,7 +267,13 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
             Map<String, Object> params = new HashMap<String, Object>();
             params.put(NewAbstractService.TYPE, type.getId());
             params.put(NewAbstractService.NAME, type.getId());
-            IDataElement testElement = model.findElement(new DataElement(params));
+            IDataElement testElement;
+            try {
+                testElement = model.findElement(new DataElement(params));
+            } catch (AWEException e) {
+                LOGGER.error("Erorr while trying to found element", e);
+                throw (RuntimeException)new RuntimeException().initCause(e);
+            }
             // object returned not null
             assertNotNull(testElement);
             // underlying node not null
@@ -241,7 +293,13 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
             params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
             DataElement element = new DataElement(params);
 
-            IDataElement newElement = model.createElement(parentElement, element);
+            IDataElement newElement;
+            try {
+                newElement = model.createElement(parentElement, element);
+            } catch (AWEException e) {
+                LOGGER.error("Erorr while trying to create element" + element, e);
+                throw (RuntimeException)new RuntimeException().initCause(e);
+            }
             parentElement = newElement;
         }
 
@@ -250,7 +308,13 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
             Map<String, Object> params = new HashMap<String, Object>();
             params.put(NewAbstractService.TYPE, type.getId());
             params.put(NewAbstractService.NAME, type.getId());
-            IDataElement testElement = model.getElement(parentElement, new DataElement(params));
+            IDataElement testElement;
+            try {
+                testElement = model.getElement(parentElement, new DataElement(params));
+            } catch (AWEException e) {
+                LOGGER.error("Erorr while trying to get element", e);
+                throw (RuntimeException)new RuntimeException().initCause(e);
+            }
             // object returned not null
             assertNotNull(testElement);
             // underlying node not null
@@ -267,7 +331,13 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
             Map<String, Object> params = new HashMap<String, Object>();
             params.put(NewAbstractService.TYPE, type.getId());
             params.put(NewAbstractService.NAME, type.getId());
-            IDataElement testElement = model.getElement(parentElement, new DataElement(params));
+            IDataElement testElement;
+            try {
+                testElement = model.getElement(parentElement, new DataElement(params));
+            } catch (AWEException e) {
+                LOGGER.error("Erorr while trying to get element", e);
+                throw (RuntimeException)new RuntimeException().initCause(e);
+            }
             // object returned not null
             assertNotNull(testElement);
             // underlying node not null
@@ -320,8 +390,14 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
     public void testGetN2NModels() {
         List<Node> n2ns = new ArrayList<Node>();
         for (int i = 0; i < 4; i++) {
-            NodeToNodeRelationshipModel mdl = new NodeToNodeRelationshipModel(new DataElement(network), N2NRelTypes.NEIGHBOUR,
-                    "name" + i, NetworkElementNodeType.SECTOR);
+            NodeToNodeRelationshipModel mdl;
+            try {
+                mdl = new NodeToNodeRelationshipModel(new DataElement(network), N2NRelTypes.NEIGHBOUR, "name" + i,
+                        NetworkElementNodeType.SECTOR);
+            } catch (AWEException e) {
+                // TODO Handle DatabaseException
+                throw (RuntimeException)new RuntimeException().initCause(e);
+            }
             n2ns.add(mdl.getRootNode());
         }
 

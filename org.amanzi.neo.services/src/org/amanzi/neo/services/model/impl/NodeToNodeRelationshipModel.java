@@ -22,7 +22,7 @@ import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.NewNetworkService;
 import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.enums.INodeType;
-import org.amanzi.neo.services.exceptions.DatabaseException;
+import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
 import org.amanzi.neo.services.model.INodeToNodeRelationsType;
@@ -113,8 +113,10 @@ public class NodeToNodeRelationshipModel extends AbstractModel implements INodeT
      * @param relType
      * @param name
      * @param nodeType
+     * @throws AWEException
      */
-    public NodeToNodeRelationshipModel(IDataElement parent, INodeToNodeRelationsType relType, String name, INodeType nodeType) {
+    public NodeToNodeRelationshipModel(IDataElement parent, INodeToNodeRelationsType relType, String name, INodeType nodeType)
+            throws AWEException {
         // validate parameters
         if (parent == null) {
             throw new IllegalArgumentException("Parent is null.");
@@ -136,45 +138,35 @@ public class NodeToNodeRelationshipModel extends AbstractModel implements INodeT
         this.nodeType = nodeType;
         this.relType = relType;
         this.name = name;
-        try {
-            Node root = dsServ.findNode(parentNode, N2NRelationships.N2N_REL, name, NodeToNodeTypes.NODE2NODE);
-            if (root != null) {
-                this.rootNode = root;
-            } else {
-                this.rootNode = dsServ.createNode(parentNode, N2NRelationships.N2N_REL, NodeToNodeTypes.NODE2NODE);
-                Map<String, Object> params = new HashMap<String, Object>();
-                params.put(NewNetworkService.NETWORK_ID, parentNode.getId());
-                params.put(NewNetworkService.NAME, this.name);
-                params.put(NewNetworkService.TYPE, NodeToNodeTypes.NODE2NODE.getId());
-                params.put(RELATION_TYPE, this.relType.getId());
-                params.put(PRIMARY_TYPE, nodeType.getId());
-                dsServ.setProperties(rootNode, params);
-            }
-        } catch (DatabaseException e) {
-            LOGGER.error("Could not create root node.", e);
+        Node root = dsServ.findNode(parentNode, N2NRelationships.N2N_REL, name, NodeToNodeTypes.NODE2NODE);
+        if (root != null) {
+            this.rootNode = root;
+        } else {
+            this.rootNode = dsServ.createNode(parentNode, N2NRelationships.N2N_REL, NodeToNodeTypes.NODE2NODE);
+            Map<String, Object> params = new HashMap<String, Object>();
+            params.put(NewNetworkService.NETWORK_ID, parentNode.getId());
+            params.put(NewNetworkService.NAME, this.name);
+            params.put(NewNetworkService.TYPE, NodeToNodeTypes.NODE2NODE.getId());
+            params.put(RELATION_TYPE, this.relType.getId());
+            params.put(PRIMARY_TYPE, nodeType.getId());
+            dsServ.setProperties(rootNode, params);
         }
     }
 
-    NodeToNodeRelationshipModel(Node n2nRoot) {
+    NodeToNodeRelationshipModel(Node n2nRoot) throws AWEException {
         // validate
         if (n2nRoot == null) {
             throw new IllegalArgumentException("Node2node root is null.");
         }
 
         this.rootNode = n2nRoot;
-        try {
-            this.nodeType = NodeTypeManager.getType(n2nRoot.getProperty(PRIMARY_TYPE).toString());
-            this.relType = N2NRelTypes.valueOf(n2nRoot.getProperty(RELATION_TYPE).toString());
-            this.name = n2nRoot.getProperty(NewNetworkService.NAME).toString();
-        } catch (Exception e) {
-            LOGGER.error("Could not create correlation model based on node " + n2nRoot.getId() + ": invalid properties.", e);
-            throw new IllegalArgumentException("Could not create correlation model based on node " + n2nRoot.getId()
-                    + ": invalid properties.");
-        }
+        this.nodeType = NodeTypeManager.getType(n2nRoot.getProperty(PRIMARY_TYPE).toString());
+        this.relType = N2NRelTypes.valueOf(n2nRoot.getProperty(RELATION_TYPE).toString());
+        this.name = n2nRoot.getProperty(NewNetworkService.NAME).toString();
     }
 
     @Override
-    public void linkNode(IDataElement source, IDataElement target, Map<String, Object> params) {
+    public void linkNode(IDataElement source, IDataElement target, Map<String, Object> params) throws AWEException {
         // validate parameters
         if (source == null) {
             throw new IllegalArgumentException("Source is null.");
@@ -195,15 +187,9 @@ public class NodeToNodeRelationshipModel extends AbstractModel implements INodeT
         Node proxy2 = getProxy(targetNode);
 
         if (!related(proxy1, proxy2)) {
-
-            try {
-                Relationship rel = dsServ.createRelationship(proxy1, proxy2, relType);
-
-                if (params != null) {
-                    dsServ.setProperties(rel, params);
-                }
-            } catch (DatabaseException e) {
-                LOGGER.error("Could not create " + relType.getId() + " relationship.", e);
+            Relationship rel = dsServ.createRelationship(proxy1, proxy2, relType);
+            if (params != null) {
+                dsServ.setProperties(rel, params);
             }
         }
     }
@@ -229,16 +215,13 @@ public class NodeToNodeRelationshipModel extends AbstractModel implements INodeT
      * 
      * @param sourceNode
      * @return the resulting proxy
+     * @throws AWEException
      */
-    private Node getProxy(Node sourceNode) {
+    private Node getProxy(Node sourceNode) throws AWEException {
         Node result = findProxy(sourceNode);
         if (result == null) {
-            try {
-                result = dsServ.createNode(sourceNode, N2NRelationships.N2N_REL, NodeToNodeTypes.PROXY);
-                dsServ.addChild(rootNode, result, null);
-            } catch (DatabaseException e) {
-                LOGGER.error("Could not create proxy node.", e);
-            }
+            result = dsServ.createNode(sourceNode, N2NRelationships.N2N_REL, NodeToNodeTypes.PROXY);
+            dsServ.addChild(rootNode, result, null);
         }
         return result;
     }
@@ -279,7 +262,6 @@ public class NodeToNodeRelationshipModel extends AbstractModel implements INodeT
 
     @Override
     public INodeToNodeRelationsType getNodeToNodeRelationsType() {
-
         return this.relType;
     }
 

@@ -46,6 +46,7 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
     protected File tempFile;
     private boolean isNewFile = false;
     private int commonPercentage = 0;
+    protected boolean isCanceled = false;
 
     @Override
     public void addProgressListener(ILoaderProgressListener listener) {
@@ -103,6 +104,9 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
                 saver.saveElement(element);
             }
             element = parseElement();
+            if (isCanceled) {
+                break;
+            }
         }
         for (ISaver< ? , T3, T2> saver : savers) {
             saver.finishUp();
@@ -126,8 +130,9 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
             isNewFile = false;
         }
         commonPercentage += event.getPercentage() / 100;
-        return fireProgressEvent(new ProgressEventImpl(event.getProcessName(), (percentage + (event.getPercentage()) / 100)
+        isCanceled = fireProgressEvent(new ProgressEventImpl(event.getProcessName(), (percentage + (event.getPercentage()) / 100)
                 / config.getFilesToLoad().size()));
+        return isCanceled;
     }
 
     @Override

@@ -83,8 +83,14 @@ public class NodeToNodeRelationshipModelTest extends AbstractNeoServiceTest {
     @Test
     public void testNode2NodeRelationshipModel() {
         // create new model
-        NodeToNodeRelationshipModel model = new NodeToNodeRelationshipModel(new DataElement(network), N2NRelTypes.NEIGHBOUR,
-                "name", NetworkElementNodeType.SECTOR);
+        NodeToNodeRelationshipModel model;
+        try {
+            model = new NodeToNodeRelationshipModel(new DataElement(network), N2NRelTypes.NEIGHBOUR, "name",
+                    NetworkElementNodeType.SECTOR);
+        } catch (AWEException e) {
+            LOGGER.error("Error while trying to create element", e);
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
         // object returned is not null
         Assert.assertNotNull(model);
         // relation type is correct
@@ -93,11 +99,21 @@ public class NodeToNodeRelationshipModelTest extends AbstractNeoServiceTest {
 
     @Test
     public void testNode2NodeRelationshipModelNotRecreated() {
-        // create new model
-        new NodeToNodeRelationshipModel(new DataElement(network), N2NRelTypes.NEIGHBOUR, "name", NetworkElementNodeType.SECTOR);
+        try {
+            new NodeToNodeRelationshipModel(new DataElement(network), N2NRelTypes.NEIGHBOUR, "name", NetworkElementNodeType.SECTOR);
+        } catch (AWEException e) {
+            LOGGER.error("Error while trying to create element", e);
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
         // create new model with the same parameters
-        NodeToNodeRelationshipModel model = new NodeToNodeRelationshipModel(new DataElement(network), N2NRelTypes.NEIGHBOUR,
-                "name", NetworkElementNodeType.SECTOR);
+        NodeToNodeRelationshipModel model;
+        try {
+            model = new NodeToNodeRelationshipModel(new DataElement(network), N2NRelTypes.NEIGHBOUR, "name",
+                    NetworkElementNodeType.SECTOR);
+        } catch (AWEException e) {
+            LOGGER.error("Error while trying to create element", e);
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
         // object returned is not null
         Assert.assertNotNull(model);
         // n2n root not recreated
@@ -112,27 +128,51 @@ public class NodeToNodeRelationshipModelTest extends AbstractNeoServiceTest {
 
         params.put(NewAbstractService.TYPE, NetworkElementNodeType.SITE.getId());
         params.put(NewAbstractService.NAME, NetworkElementNodeType.SITE.getId());
-        IDataElement site = nm.createElement(new DataElement(nm.getRootNode()), new DataElement(params));
+        IDataElement site;
+        try {
+            site = nm.createElement(new DataElement(nm.getRootNode()), new DataElement(params));
+        } catch (AWEException e1) {
+            LOGGER.error("Error while trying to create element", e1);
+            throw (RuntimeException)new RuntimeException().initCause(e1);
+        }
 
         params.put(NewAbstractService.NAME, "sector1");
         params.put(NewNetworkService.CELL_INDEX, "ci1");
         params.put(NewNetworkService.LOCATION_AREA_CODE, "lac1");
         params.put(NewAbstractService.TYPE, NetworkElementNodeType.SITE.getId());
-        IDataElement sector1 = nm.createElement(site, new DataElement(params));
+        IDataElement sector1;
+        try {
+            sector1 = nm.createElement(site, new DataElement(params));
+        } catch (AWEException e1) {
+            LOGGER.error("Error while trying to create element", e1);
+            throw (RuntimeException)new RuntimeException().initCause(e1);
+        }
 
         params.put(NewAbstractService.NAME, "sector2");
         params.put(NewNetworkService.CELL_INDEX, "ci2");
         params.put(NewNetworkService.LOCATION_AREA_CODE, "lac2");
-        IDataElement sector2 = nm.createElement(site, new DataElement(params));
+        IDataElement sector2;
+        try {
+            sector2 = nm.createElement(site, new DataElement(params));
+        } catch (AWEException e1) {
+            LOGGER.error("Error while trying to create element", e1);
+            throw (RuntimeException)new RuntimeException().initCause(e1);
+        }
 
-        NodeToNodeRelationshipModel model = new NodeToNodeRelationshipModel(new DataElement(network), N2NRelTypes.NEIGHBOUR,
-                "name", NetworkElementNodeType.SECTOR);
-        params = new HashMap<String, Object>();
-        params.put(NewAbstractService.NAME, "neighbour");
-        params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
-        model.linkNode(sector1, sector2, params);
+        NodeToNodeRelationshipModel model;
+        try {
+            model = new NodeToNodeRelationshipModel(new DataElement(network), N2NRelTypes.NEIGHBOUR, "name",
+                    NetworkElementNodeType.SECTOR);
 
-        // proxies created
+            params = new HashMap<String, Object>();
+            params.put(NewAbstractService.NAME, "neighbour");
+            params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
+            model.linkNode(sector1, sector2, params);
+
+        } catch (AWEException e) {
+            LOGGER.error("Error in testLinkNode ", e);
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }// proxies created
         Node s1 = ((DataElement)sector1).getNode();
         Node s2 = ((DataElement)sector2).getNode();
         Node p1 = s1.getSingleRelationship(N2NRelationships.N2N_REL, Direction.BOTH).getOtherNode(s1);
@@ -160,34 +200,64 @@ public class NodeToNodeRelationshipModelTest extends AbstractNeoServiceTest {
 
         params.put(NewAbstractService.TYPE, NetworkElementNodeType.SITE.getId());
         params.put(NewAbstractService.NAME, NetworkElementNodeType.SITE.getId());
-        IDataElement site = nm.createElement(new DataElement(nm.getRootNode()), new DataElement(params));
+        IDataElement site;
+        try {
+            site = nm.createElement(new DataElement(nm.getRootNode()), new DataElement(params));
+        } catch (AWEException e1) {
+            LOGGER.error("Error while trying to create element", e1);
+            throw (RuntimeException)new RuntimeException().initCause(e1);
+        }
 
         params.put(NewAbstractService.NAME, "sector1");
         params.put(NewNetworkService.CELL_INDEX, "ci1");
         params.put(NewNetworkService.LOCATION_AREA_CODE, "lac1");
         params.put(NewAbstractService.TYPE, NetworkElementNodeType.SITE.getId());
-        IDataElement sector1 = nm.createElement(site, new DataElement(params));
+        IDataElement sector1;
+        try {
+            sector1 = nm.createElement(site, new DataElement(params));
+        } catch (AWEException e1) {
+            // TODO Handle AWEException
+            throw (RuntimeException)new RuntimeException().initCause(e1);
+        }
 
         params.put(NewAbstractService.NAME, "sector2");
         params.put(NewNetworkService.CELL_INDEX, "ci2");
         params.put(NewNetworkService.LOCATION_AREA_CODE, "lac2");
-        IDataElement sector2 = nm.createElement(site, new DataElement(params));
+        IDataElement sector2;
+        try {
+            sector2 = nm.createElement(site, new DataElement(params));
+        } catch (AWEException e1) {
+            LOGGER.error("Error while trying to create element", e1);
+            throw (RuntimeException)new RuntimeException().initCause(e1);
+        }
 
         params.put(NewAbstractService.NAME, "sector3");
         params.put(NewNetworkService.CELL_INDEX, "ci3");
         params.put(NewNetworkService.LOCATION_AREA_CODE, "lac3");
-        IDataElement sector3 = nm.createElement(site, new DataElement(params));
+        IDataElement sector3;
+        try {
+            sector3 = nm.createElement(site, new DataElement(params));
+        } catch (AWEException e1) {
+            LOGGER.error("Error while trying to create element", e1);
+            throw (RuntimeException)new RuntimeException().initCause(e1);
+        }
 
-        NodeToNodeRelationshipModel model = new NodeToNodeRelationshipModel(new DataElement(network), N2NRelTypes.NEIGHBOUR,
-                "name", NetworkElementNodeType.SECTOR);
-        params = new HashMap<String, Object>();
-        params.put(NewAbstractService.NAME, "neighbour");
-        params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
-        model.linkNode(sector1, sector2, params);
+        NodeToNodeRelationshipModel model;
+        try {
+            model = new NodeToNodeRelationshipModel(new DataElement(network), N2NRelTypes.NEIGHBOUR, "name",
+                    NetworkElementNodeType.SECTOR);
 
-        params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
-        model.linkNode(sector1, sector3, params);
+            params = new HashMap<String, Object>();
+            params.put(NewAbstractService.NAME, "neighbour");
+            params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
+            model.linkNode(sector1, sector2, params);
 
+            params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
+            model.linkNode(sector1, sector3, params);
+        } catch (AWEException e) {
+            LOGGER.error("Error in testLinkFewNodes ", e);
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
         // proxies created
         Node s1 = ((DataElement)sector1).getNode();
         Node s2 = ((DataElement)sector2).getNode();
@@ -217,35 +287,64 @@ public class NodeToNodeRelationshipModelTest extends AbstractNeoServiceTest {
         List<Node> sectors = new ArrayList<Node>();
         // create network structure
 
-        NodeToNodeRelationshipModel model = new NodeToNodeRelationshipModel(new DataElement(network), N2NRelTypes.NEIGHBOUR,
-                "name", NetworkElementNodeType.SECTOR);
+        NodeToNodeRelationshipModel model;
+        try {
+            model = new NodeToNodeRelationshipModel(new DataElement(network), N2NRelTypes.NEIGHBOUR, "name",
+                    NetworkElementNodeType.SECTOR);
+        } catch (AWEException e1) {
+            LOGGER.error("Error while trying to create model", e1);
+            throw (RuntimeException)new RuntimeException().initCause(e1);
+        }
 
         NetworkModel nm = new NetworkModel(network);
         Map<String, Object> params = new HashMap<String, Object>();
 
         params.put(NewAbstractService.TYPE, NetworkElementNodeType.SITE.getId());
         params.put(NewAbstractService.NAME, NetworkElementNodeType.SITE.getId());
-        IDataElement site = nm.createElement(new DataElement(nm.getRootNode()), new DataElement(params));
+        IDataElement site;
+        try {
+            site = nm.createElement(new DataElement(nm.getRootNode()), new DataElement(params));
+        } catch (AWEException e1) {
+            LOGGER.error("Error while trying to create element", e1);
+            throw (RuntimeException)new RuntimeException().initCause(e1);
+        }
 
         params.put(NewAbstractService.NAME, "sector");
         params.put(NewNetworkService.CELL_INDEX, "ci");
         params.put(NewNetworkService.LOCATION_AREA_CODE, "lac");
         params.put(NewAbstractService.TYPE, NetworkElementNodeType.SITE.getId());
-        IDataElement sector = nm.createElement(site, new DataElement(params));
+        IDataElement sector;
+        try {
+            sector = nm.createElement(site, new DataElement(params));
+        } catch (AWEException e1) {
+            LOGGER.error("Error while trying to create element", e1);
+            throw (RuntimeException)new RuntimeException().initCause(e1);
+        }
 
         for (int i = 0; i < 5; i++) {
             params.put(NewAbstractService.NAME, "sector" + i);
             params.put(NewNetworkService.CELL_INDEX, "ci" + i);
             params.put(NewNetworkService.LOCATION_AREA_CODE, "lac" + i);
             params.put(NewAbstractService.TYPE, NetworkElementNodeType.SITE.getId());
-            IDataElement sect = nm.createElement(site, new DataElement(params));
+            IDataElement sect;
+            try {
+                sect = nm.createElement(site, new DataElement(params));
+            } catch (AWEException e1) {
+                LOGGER.error("Error while trying to create element", e1);
+                throw (RuntimeException)new RuntimeException().initCause(e1);
+            }
             sectors.add(((DataElement)sect).getNode());
 
             // link sector
             params = new HashMap<String, Object>();
             params.put(NewAbstractService.NAME, "neighbour");
             params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
-            model.linkNode(sector, sect, params);
+            try {
+                model.linkNode(sector, sect, params);
+            } catch (AWEException e) {
+                LOGGER.error("Error in testLinkFewNodes ", e);
+                throw (RuntimeException)new RuntimeException().initCause(e);
+            }
         }
 
         // all elements are returned
@@ -257,13 +356,25 @@ public class NodeToNodeRelationshipModelTest extends AbstractNeoServiceTest {
     @Test
     public void testConstructorRootNode() {
         // create n2n model
-        NodeToNodeRelationshipModel model = new NodeToNodeRelationshipModel(new DataElement(network), N2NRelTypes.NEIGHBOUR,
-                "name", NetworkElementNodeType.SECTOR);
+        NodeToNodeRelationshipModel model;
+        try {
+            model = new NodeToNodeRelationshipModel(new DataElement(network), N2NRelTypes.NEIGHBOUR, "name",
+                    NetworkElementNodeType.SECTOR);
+        } catch (AWEException e) {
+            // TODO Handle DatabaseException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
         Node n2nRoot = model.getRootNode();
         Assert.assertNotNull(n2nRoot);
 
         // create n2n model based on existing root
-        NodeToNodeRelationshipModel testModel = new NodeToNodeRelationshipModel(n2nRoot);
+        NodeToNodeRelationshipModel testModel;
+        try {
+            testModel = new NodeToNodeRelationshipModel(n2nRoot);
+        } catch (AWEException e) {
+            // TODO Handle AWEException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
         Assert.assertNotNull(testModel);
         // properties correct
         Assert.assertEquals(model.getName(), testModel.getName());

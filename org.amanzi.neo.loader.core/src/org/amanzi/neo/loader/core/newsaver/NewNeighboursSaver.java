@@ -23,6 +23,7 @@ import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceManager;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
@@ -39,6 +40,25 @@ public class NewNeighboursSaver extends AbstractSaver<NetworkModel, CSVContainer
     private INodeToNodeRelationsModel n2nModel;
     private Map<String, Integer> columnSynonyms;
     private final int MAX_TX_BEFORE_COMMIT = 1000;
+
+    public NewNeighboursSaver(INodeToNodeRelationsModel model, ConfigurationDataImpl data) {
+        preferenceStoreSynonyms = preferenceManager.getNeighbourSynonyms();
+        columnSynonyms = new HashMap<String, Integer>();
+        setDbInstance();
+        setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
+        if (model != null && networkModel == null) {
+            n2nModel = model;
+            try {
+                networkModel = getActiveProject().getNetwork(data.getDatasetNames().get(CONFIG_VALUE_NETWORK));
+            } catch (AWEException e) {
+                // TODO Handle AWEException
+                throw (RuntimeException)new RuntimeException().initCause(e);
+            }
+        } else {
+            init(data, null);
+        }
+
+    }
 
     /*
      * neighbours
@@ -90,17 +110,24 @@ public class NewNeighboursSaver extends AbstractSaver<NetworkModel, CSVContainer
     public void saveElement(CSVContainer dataElement) {
         openOrReopenTx();
         CSVContainer container = dataElement;
-        if (fileSynonyms.isEmpty()) {
-            headers = container.getHeaders();
-            makeAppropriationWithSynonyms(headers);
-            makeIndexAppropriation();
-            lineCounter++;
-        } else {
-            lineCounter++;
-            List<String> value = container.getValues();
-            createNeighbour(value);
-            markTxAsSuccess();
-            increaseActionCount();
+        try {
+            if (fileSynonyms.isEmpty()) {
+                headers = container.getHeaders();
+                makeAppropriationWithSynonyms(headers);
+                makeIndexAppropriation();
+                lineCounter++;
+            } else {
+                lineCounter++;
+                List<String> value = container.getValues();
+                createNeighbour(value);
+                markTxAsSuccess();
+                increaseActionCount();
+            }
+        } catch (AWEException e) {
+            markTxAsFailure();
+            finishTx();
+            LOGGER.error("Error while neighbour create on line " + lineCounter, e);
+            throw (RuntimeException)new RuntimeException().initCause(e);
         }
     }
 
@@ -108,8 +135,9 @@ public class NewNeighboursSaver extends AbstractSaver<NetworkModel, CSVContainer
      * try create a neighbour relationship between sectors
      * 
      * @param value
+     * @throws DatabaseException
      */
-    private void createNeighbour(List<String> row) {
+    private void createNeighbour(List<String> row) throws AWEException {
         String neighbSectorName = row.get(columnSynonyms.get(fileSynonyms.get(NEIGHBOUR_SECTOR_NAME)));
         String serviceNeighName = row.get(columnSynonyms.get(fileSynonyms.get(SERVING_SECTOR_NAME)));
         Map<String, Object> properties = new HashMap<String, Object>();
