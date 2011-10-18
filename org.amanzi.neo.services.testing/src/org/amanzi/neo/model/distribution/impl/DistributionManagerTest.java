@@ -74,7 +74,7 @@ public class DistributionManagerTest extends AbstractNeoServiceTest {
     public void checkSizeOfDistributionsForString() throws Exception {
         IDistributionalModel model = getDistributionalModel(String.class);
         
-        List<IDistribution> result = manager.getDistributions(model, DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME, ChartType.getDefault());
+        List<IDistribution<?>> result = manager.getDistributions(model, DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME, ChartType.getDefault());
         
         assertEquals("Unexpected size of Distributions created for String type", STRING_DISTRIBUTIONS_NUMBER, result.size());
     }
@@ -83,9 +83,9 @@ public class DistributionManagerTest extends AbstractNeoServiceTest {
     public void checkStringDistributionsSize() throws Exception {
         IDistributionalModel model = getDistributionalModel(String.class);
         
-        List<IDistribution> result = manager.getDistributions(model, DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME, ChartType.getDefault());
+        List<IDistribution<?>> result = manager.getDistributions(model, DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME, ChartType.getDefault());
         
-        IDistribution stringDistribution = result.get(0);
+        IDistribution<?> stringDistribution = result.get(0);
         
         assertEquals("Unexpected type of Distribution for String type", StringDistribution.class, stringDistribution.getClass());
     }
@@ -94,11 +94,11 @@ public class DistributionManagerTest extends AbstractNeoServiceTest {
     public void checkCacheForStringDistribution() throws Exception {
         IDistributionalModel model = getDistributionalModel(String.class);
         
-        List<IDistribution> result = manager.getDistributions(model, DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME, ChartType.getDefault());
-        IDistribution firstDistribution = result.get(0);
+        List<IDistribution<?>> result = manager.getDistributions(model, DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME, ChartType.getDefault());
+        IDistribution<?> firstDistribution = result.get(0);
         
         result = manager.getDistributions(model, DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME, ChartType.getDefault());
-        IDistribution secondDistribution = result.get(0);
+        IDistribution<?> secondDistribution = result.get(0);
         
         assertSame("Distributions should be same", firstDistribution, secondDistribution);
     }

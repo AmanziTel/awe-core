@@ -54,7 +54,7 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
     
     private IDistributionalModel analyzedModel;
     
-    private IDistribution distributionType;
+    private IDistribution<?> distributionType;
     
     private boolean isExist = false;
     
@@ -66,7 +66,7 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
      * @param distributionName
      * @throws DatabaseException
      */
-    public DistributionModel(IDistributionalModel analyzedModel, IDistribution distributionType) throws AWEException {
+    public DistributionModel(IDistributionalModel analyzedModel, IDistribution<?> distributionType) throws AWEException {
         LOGGER.debug("start new DistributionModel()");
         
         //validate input
@@ -101,7 +101,7 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
     }
     
     @Override
-    public IDistribution getDistributionType() {
+    public IDistribution<?> getDistributionType() {
         return distributionType;
     }
 

@@ -23,7 +23,7 @@ import org.amanzi.neo.services.enums.INodeType;
  * @author lagutko_n
  * @since 1.0.0
  */
-public interface IDistribution {
+public interface IDistribution<T extends IRange> {
     
     /**
      * Type of Chart
@@ -76,7 +76,7 @@ public interface IDistribution {
      *
      * @return
      */
-    public List<IRange> getRanges();
+    public List<T> getRanges();
     
     /**
      * Type of Node to Analyze

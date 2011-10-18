@@ -13,10 +13,8 @@
 
 package org.amanzi.neo.model.distribution.types.impl;
 
-import java.util.List;
-
 import org.amanzi.neo.model.distribution.IDistributionalModel;
-import org.amanzi.neo.model.distribution.IRange;
+import org.amanzi.neo.model.distribution.types.ranges.impl.SimpleRange;
 import org.amanzi.neo.services.enums.INodeType;
 
 /**
@@ -27,7 +25,7 @@ import org.amanzi.neo.services.enums.INodeType;
  * @author gerzog
  * @since 1.0.0
  */
-public class StringDistribution extends AbstractDistribution {
+public class StringDistribution extends AbstractDistribution<SimpleRange> {
     
     static final String STRING_DISTRIBUTION_NAME = "auto";
 
@@ -43,11 +41,6 @@ public class StringDistribution extends AbstractDistribution {
     @Override
     public String getName() {
         return STRING_DISTRIBUTION_NAME;
-    }
-
-    @Override
-    public List<IRange> getRanges() {
-        return null;
     }
 
     @Override

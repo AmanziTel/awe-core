@@ -66,7 +66,7 @@ public class DistributionManager {
     /*
      * Cache of Distributions
      */
-    private Map<String, IDistribution> distributionCache = new HashMap<String, IDistribution>();
+    private Map<String, IDistribution<?>> distributionCache = new HashMap<String, IDistribution<?>>();
     
     /**
      * Returns instance of this Manager
@@ -86,7 +86,7 @@ public class DistributionManager {
         
     }
     
-    public List<IDistribution> getDistributions(IDistributionalModel model, INodeType nodeType, String propertyName, ChartType chartType) throws DistributionManagerException {
+    public List<IDistribution<?>> getDistributions(IDistributionalModel model, INodeType nodeType, String propertyName, ChartType chartType) throws DistributionManagerException {
         LOGGER.debug("start getDistributions(<" + model + ">, <" + nodeType + ">, " + propertyName + ">, <" + chartType + ">)");
         
         //check input
@@ -109,7 +109,7 @@ public class DistributionManager {
         
         Class<?> clazz = model.getPropertyClass(nodeType, propertyName);
         
-        List<IDistribution> result = new ArrayList<IDistribution>();
+        List<IDistribution<?>> result = new ArrayList<IDistribution<?>>();
         
         if (clazz.equals(String.class)) {
             switch (chartType) {
@@ -159,9 +159,9 @@ public class DistributionManager {
      * @param propertyName
      * @return
      */
-    private IDistribution getStringDistribution(IDistributionalModel model, INodeType nodeType, String propertyName) {
+    private IDistribution<?> getStringDistribution(IDistributionalModel model, INodeType nodeType, String propertyName) {
         String cacheKey = getStringDistributionCacheKey(model, nodeType, propertyName);
-        IDistribution result = distributionCache.get(cacheKey);
+        IDistribution<?> result = distributionCache.get(cacheKey);
         
         if (result == null) {
             LOGGER.info("No Distribution for params <" + model + ", " + nodeType + ", " + propertyName + ">. " +

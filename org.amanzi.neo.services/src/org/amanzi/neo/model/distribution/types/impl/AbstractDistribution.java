@@ -13,16 +13,23 @@
 
 package org.amanzi.neo.model.distribution.types.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.amanzi.neo.model.distribution.IDistribution;
 import org.amanzi.neo.model.distribution.IDistributionalModel;
+import org.amanzi.neo.model.distribution.IRange;
 import org.amanzi.neo.services.enums.INodeType;
+import org.apache.log4j.Logger;
 
 /**
  * Abstract class for Distributions
  * @author gerzog
  * @since 1.0.0
  */
-public abstract class AbstractDistribution implements IDistribution {
+public abstract class AbstractDistribution<T extends IRange> implements IDistribution<T> {
+    
+    private static final Logger LOGGER = Logger.getLogger(AbstractDistribution.class);
     
     /*
      * Analyzed Model 
@@ -44,6 +51,8 @@ public abstract class AbstractDistribution implements IDistribution {
      */
     private boolean isInitialized = false;
     
+    protected List<T> ranges = new ArrayList<T>();
+    
     /**
      * Default constructor
      * 
@@ -52,9 +61,27 @@ public abstract class AbstractDistribution implements IDistribution {
      * @param propertyName
      */
     protected AbstractDistribution(IDistributionalModel model, INodeType nodeType, String propertyName) {
+        LOGGER.debug("start new AbstractDistribution(<" + model + ">, <" + nodeType + ">, <" + propertyName + ">)");
+        
+        //check input
+        if (model == null) {
+            LOGGER.error("Analyzed model cannot be null");
+            throw new IllegalArgumentException("Analyzed model cannot be null");
+        }
+        if (nodeType == null) {
+            LOGGER.error("NodeType cannot be null");
+            throw new IllegalArgumentException("NodeType cannot be null");
+        }
+        if (propertyName == null || propertyName.isEmpty()) {
+            LOGGER.error("PropertyName to Analyze cannot be null or empty");
+            throw new IllegalArgumentException("PropertyName to Analyze cannot be null or empty");
+        }
+        
         this.model = model;
         this.nodeType = nodeType;
         this.propertyName = propertyName;
+        
+        LOGGER.debug("finish new AbstractDistribution()");
     }
 
     @Override
@@ -69,6 +96,11 @@ public abstract class AbstractDistribution implements IDistribution {
             isInitialized = true;
             createRanges();
         }
+    }
+    
+    @Override
+    public List<T> getRanges() {
+        return null;
     }
     
     /**
