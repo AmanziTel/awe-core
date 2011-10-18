@@ -35,6 +35,7 @@ import org.amanzi.neo.services.enums.NetworkTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.INetworkModel;
+import org.amanzi.neo.services.model.IProjectModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.amanzi.neo.services.model.impl.NetworkModel;
 import org.apache.commons.lang.StringUtils;
@@ -227,15 +228,12 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
      * @return array of GIS nodes
      */
     private String[] getRootItems() {
-        try {
-            ProjectModel.getCurrentProjectModel();
-        } catch (AWEException e) {
-            LOGGER.error("Error while try to get Project Model", e);
-            throw (RuntimeException)new RuntimeException().initCause(e);
-        }
         members = new HashMap<String, Node>();
+    
         try {
-            for (INetworkModel model : NetworkModel.findAllNetworkModels()) {
+            IProjectModel projectModel = ProjectModel.getCurrentProjectModel();
+        
+            for (INetworkModel model : projectModel.findAllNetworkModels()) {
                 String id = model.getRootNode().getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
                 if (NodeTypes.NETWORK.checkNode(model.getRootNode())) { //$NON-NLS-1$
                     members.put(id, model.getRootNode());

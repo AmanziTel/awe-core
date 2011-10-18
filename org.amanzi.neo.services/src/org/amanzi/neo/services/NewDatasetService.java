@@ -567,34 +567,6 @@ public class NewDatasetService extends NewAbstractService {
     }
 
     /**
-     * this method find all dataset nodes by type in all projects
-     * 
-     * @param type - dataset type
-     * @return List<Node> list of dataset nodes
-     * @throws InvalidDatasetParameterException this method may call exception if type == null
-     */
-    public List<Node> findAllDatasetsByType(DatasetTypes type) throws InvalidDatasetParameterException {
-        LOGGER.debug("start findAllDatasetsByType()");
-
-        if (type == null) {
-            LOGGER.error("InvalidDatasetParameterException: parameter type = null");
-            throw new InvalidDatasetParameterException(INeoConstants.PROPERTY_TYPE_NAME, type);
-        }
-
-        List<Node> datasetList = new ArrayList<Node>();
-        TraversalDescription allProjects = NeoServiceFactory.getInstance().getNewProjectService().projectTraversalDescription;
-
-        for (Node projectNode : allProjects.traverse(graphDb.getReferenceNode()).nodes()) {
-            Traverser tr = DATASET_TRAVERSAL_DESCRIPTION.evaluator(new FilterNodesByType(type)).traverse(projectNode);
-            for (Node dataset : tr.nodes()) {
-                datasetList.add(dataset);
-            }
-        }
-        LOGGER.debug("finish findAllDatasetsByType()");
-        return datasetList;
-    }
-
-    /**
      * this method find all dataset nodes in project
      * 
      * @param projectNode - node, which defines the project, within which will be implemented search

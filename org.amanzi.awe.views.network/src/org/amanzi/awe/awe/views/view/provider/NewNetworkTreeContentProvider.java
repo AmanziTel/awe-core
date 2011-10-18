@@ -3,14 +3,14 @@ package org.amanzi.awe.awe.views.view.provider;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
 
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
-import org.amanzi.neo.services.model.impl.NetworkModel;
+import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
+import org.apache.commons.lang.ArrayUtils;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
@@ -123,17 +123,16 @@ public class NewNetworkTreeContentProvider implements IStructuredContentProvider
     @Override
     public Object[] getElements(Object inputElement) {
 
-        List<INetworkModel> networkModels;
+        Iterable<INetworkModel> networkModels;
         try {
-            networkModels = NetworkModel.findAllNetworkModels();
+            networkModels = ProjectModel.getCurrentProjectModel().findAllNetworkModels();
         } catch (AWEException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
 
-        Object[] networkModelsInObjects = new Object[networkModels.size()];
-        int i = 0;
+        Object[] networkModelsInObjects = new Object[0];
         for (INetworkModel model : networkModels) {
-            networkModelsInObjects[i++] = model;
+            ArrayUtils.add(networkModelsInObjects, model);
         }
 
         return networkModelsInObjects;

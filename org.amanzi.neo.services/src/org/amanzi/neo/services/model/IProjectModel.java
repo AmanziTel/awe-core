@@ -124,5 +124,13 @@ public interface IProjectModel extends IModel {
      * @throws AWEException if errors occur in database
      */
     public abstract Iterable<IRenderableModel> getAllRenderableModels() throws AWEException;
+    
+    /**
+     * Looks up for all Networks related to this Project
+     *
+     * @return
+     * @throws AWEException
+     */
+    public Iterable<INetworkModel> findAllNetworkModels() throws AWEException;   
 
 }

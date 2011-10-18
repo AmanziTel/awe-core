@@ -367,18 +367,6 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         this.nwServ = nwServ;
     }
 
-    public static List<INetworkModel> findAllNetworkModels() throws AWEException {
-        List<INetworkModel> networkModels = new ArrayList<INetworkModel>();
-
-        List<Node> allNetworkNodes = null;
-        allNetworkNodes = NeoServiceFactory.getInstance().getNewDatasetService().findAllDatasetsByType(DatasetTypes.NETWORK);
-        for (Node networkRoot : allNetworkNodes) {
-            networkModels.add(new NetworkModel(networkRoot));
-        }
-
-        return networkModels;
-    }
-
     @Override
     public ISelectionModel findSelectionModel(String name) throws AWEException {
         Node rootSelectionNode = nwServ.findSelectionList(rootNode, name);
@@ -518,7 +506,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     }
 
     @Override
-    public IDistributionModel getDistributionModel(IDistribution distributionType) {
+    public IDistributionModel getDistributionModel(IDistribution<?> distributionType) {
         return null;
     }
 
@@ -546,4 +534,5 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
             return null;
         }
     }
+    
 }

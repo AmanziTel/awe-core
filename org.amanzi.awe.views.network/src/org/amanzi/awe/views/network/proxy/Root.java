@@ -23,7 +23,7 @@ import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.INetworkModel;
-import org.amanzi.neo.services.model.impl.NetworkModel;
+import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.utils.Utils;
 import org.neo4j.graphdb.Direction;
@@ -103,9 +103,9 @@ public class Root extends NeoNode {
         
         Node reference = service.getReferenceNode();
         int nextNum = number+1;
-        List<INetworkModel> networkModels;
+        Iterable<INetworkModel> networkModels;
         try {
-            networkModels = NetworkModel.findAllNetworkModels();
+            networkModels = ProjectModel.getCurrentProjectModel().findAllNetworkModels();
         } catch (AWEException e) {
             // TODO Handle AWEException
             throw (RuntimeException) new RuntimeException( ).initCause( e );

@@ -16,6 +16,7 @@ package org.amanzi.neo.services.model.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.amanzi.neo.model.distribution.IDistributionalModel;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService;
@@ -42,6 +43,62 @@ import org.neo4j.graphdb.Node;
  * @since 1.0.0
  */
 public class ProjectModel extends AbstractModel implements IProjectModel {
+    
+    /**
+     * Class that describes Distribution Item
+     * 
+     * It consist of DistributionalModel and Type of Node to Analyze
+     * 
+     * @author gerzog
+     * @since 1.0.0
+     */
+    public static class DistributionItem {
+        
+        /*
+         * Model for Distribution 
+         */
+        private IDistributionalModel model;
+        
+        /*
+         * Type of Node to Analyze
+         */
+        private INodeType nodeType;
+        
+        /**
+         * Default constructor
+         * 
+         * @param model
+         * @param nodeType
+         */
+        public DistributionItem(IDistributionalModel model, INodeType nodeType) {
+            this.model = model;
+            this.nodeType = nodeType;
+        }
+        
+        /**
+         * Returns model
+         *
+         * @return
+         */
+        public IDistributionalModel getModel() {
+            return model;
+        }
+        
+        /**
+         * Returns NodeType
+         *
+         * @return
+         */
+        public INodeType getNodeType() {
+            return nodeType;
+        }
+        
+        @Override
+        public String toString() {
+            return getModel().toString() + " - " + getNodeType().getId();
+        }
+        
+    }
 
     private static Logger LOGGER = Logger.getLogger(ProjectModel.class);
 
@@ -286,5 +343,29 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
             }
         }
         return result;
+    }
+
+    @Override
+    public Iterable<INetworkModel> findAllNetworkModels() throws AWEException {
+        List<INetworkModel> networkModels = new ArrayList<INetworkModel>();
+
+        List<Node> allNetworkNodes = null;
+        allNetworkNodes = NeoServiceFactory.getInstance().getNewDatasetService().findAllDatasetsByType(getRootNode(), DatasetTypes.NETWORK);
+        for (Node networkRoot : allNetworkNodes) {
+            networkModels.add(new NetworkModel(networkRoot));
+        }
+
+        return networkModels;
+    }
+
+    
+    public List<IDistributionalModel> getAllDistributionalModels() throws AWEException {
+        List<IDistributionalModel> result = new ArrayList<IDistributionalModel>();
+        //first add all NetworkModels and it's n2nrelationship models
+        for (INetworkModel network : findAllNetworkModels()) {
+            
+        }
+        
+        return null;
     }
 }

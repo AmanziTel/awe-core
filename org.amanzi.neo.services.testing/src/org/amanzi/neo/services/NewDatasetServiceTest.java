@@ -1151,35 +1151,6 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
     }
 
     /**
-     * testing method findAllDatasetsByType(DatasetTypes type) when some
-     * datasets exist
-     * 
-     * @throws InvalidDatasetParameterException
-     */
-    @Test
-    public void findAllDatasetsByTypeInAllProjectsTest()
-            throws InvalidDatasetParameterException {
-
-        Node dataset_1 = initDatasetNode(NAME_1, DatasetTypes.NETWORK, null);
-        initProjectNode();
-        Node dataset_2 = initDatasetNode(NAME_2, DatasetTypes.NETWORK, null);
-        initDatasetNode(NAME_1, DatasetTypes.COUNTERS, DriveTypes.NEMO_V1);
-        List<Node> checkList = service
-                .findAllDatasetsByType(DatasetTypes.NETWORK);
-        Assert.assertTrue(
-                "method findAllDatasetsByType didn't return dataset_1",
-                checkList.contains(dataset_1));
-        Assert.assertTrue(
-                "method findAllDatasetsByType didn't return dataset_2",
-                checkList.contains(dataset_2));
-        checkList.remove(dataset_1);
-        checkList.remove(dataset_2);
-        Assert.assertTrue(
-                "method findAllDatasetsByType return superfluouts nodes",
-                checkList.isEmpty());
-    }
-
-    /**
      * testing method findAllDatasetsByType(DatasetTypes type) when nobody
      * datasets exist
      * 
@@ -1192,7 +1163,7 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
         initDatasetNode(NAME_1, DatasetTypes.NETWORK, null);
 
         List<Node> checkList = service
-                .findAllDatasetsByType(DatasetTypes.COUNTERS);
+                .findAllDatasetsByType(projectNode, DatasetTypes.COUNTERS);
 
         Assert.assertTrue(
                 "method findAllDatasetsByType return superfluouts nodes",
@@ -1207,7 +1178,7 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
     @Test(expected = InvalidDatasetParameterException.class)
     public void findAllDatasetsByTypeInAllProjectsExceptionTest()
             throws InvalidDatasetParameterException {
-        service.findAllDatasetsByType(null);
+        service.findAllDatasetsByType(projectNode, null);
     }
 
     // +
