@@ -7,6 +7,6 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.junit4;bundle-version="4.3.1",
  org.amanzi.neo.services;bundle-version="1.0.0",
  org.amanzi.testing;bundle-version="1.0.0",
- org.amanzi.neo.loader.ui;bundle-version="1.0.0"
+ org.amanzi.log4j,
+ org.amanzi.neo.loader.core;bundle-version="1.0.0"
 Import-Package: org.amanzi.neo.services.ui
-Export-Package: org.amanzi.neo.loader.core.saver.impl.testing
