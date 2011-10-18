@@ -31,6 +31,6 @@ public interface IDistributionalModel extends IPropertyStatisticalModel {
      * @param distributionType type of Distribution
      * @return 
      */
-    public IDistributionModel getDistributionModel(IDistribution distributionType);
+    public IDistributionModel getDistributionModel(IDistribution<?> distributionType);
 
 }

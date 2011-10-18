@@ -44,9 +44,6 @@ import org.amanzi.neo.services.filters.Filter;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.apache.commons.lang.StringUtils;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
@@ -83,39 +80,10 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
      */
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        clearDb();
-        initializeDb();
         new LogStarter().earlyStartup();
         clearServices();
     }
 
-    /**
-     *
-     * @throws java.lang.Exception
-     */
-    @AfterClass
-    public static void tearDownAfterClass() throws Exception {
-        stopDb();
-        clearDb();
-    }
-
-    /**
-     *
-     * @throws java.lang.Exception
-     */
-    @Before
-    public void setUp() throws Exception {
-    }
-
-    /**
-     *
-     * @throws java.lang.Exception
-     */
-    @After
-    public void tearDown() throws Exception {
-        
-    }
-    
     @Test(expected = IllegalArgumentException.class)
     public void tryToCreatesDistributionWithoutAnalyzedModel() throws Exception {
         new DistributionModel(null, getDistributionType());
@@ -149,7 +117,7 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         DistributionService service = getDistributionService(parentDistribution, rootAggregation, getDistributionBarNodes(), true);
         DistributionModel.distributionService = service;
         IDistributionalModel model = getDistributionalModel(parentDistribution);
-        IDistribution distributionType = getDistributionType();
+        IDistribution< ? > distributionType = getDistributionType();
         
         DistributionModel distribution = new DistributionModel(model, distributionType);
         
@@ -180,7 +148,7 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         DistributionService service = getDistributionService(parentDistribution, rootAggregation, getDistributionBarNodes(), false);
         DistributionModel.distributionService = service;
         IDistributionalModel model = getDistributionalModel(parentDistribution);
-        IDistribution distributionType = getDistributionType();
+        IDistribution< ? > distributionType = getDistributionType();
         
         DistributionModel distribution = new DistributionModel(model, distributionType);
         
@@ -197,7 +165,7 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         DistributionService service = getDistributionService(parentDistribution, rootAggregation, getDistributionBarNodes(), true);
         DistributionModel.distributionService = service;
         IDistributionalModel model = getDistributionalModel(parentDistribution);
-        IDistribution distributionType = getDistributionType();
+        IDistribution< ? > distributionType = getDistributionType();
         
         DistributionModel distribution = new DistributionModel(model, distributionType);
         distribution.getDistributionBars();
@@ -213,7 +181,7 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         DistributionService service = getDistributionService(parentDistribution, rootAggregation, getDistributionBarNodes(), true);
         DistributionModel.distributionService = service;
         IDistributionalModel model = getDistributionalModel(parentDistribution);
-        IDistribution distributionType = getDistributionType();
+        IDistribution< ? > distributionType = getDistributionType();
         
         DistributionModel distribution = new DistributionModel(model, distributionType);
         distribution.getDistributionBars();
@@ -230,7 +198,7 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         DistributionService service = getDistributionService(parentDistribution, rootAggregation, getDistributionBarNodes(), true);
         DistributionModel.distributionService = service;
         IDistributionalModel model = getDistributionalModel(parentDistribution);
-        IDistribution distributionType = getDistributionType();
+        IDistribution< ? > distributionType = getDistributionType();
         
         DistributionModel distribution = new DistributionModel(model, distributionType);
         List<IDistributionBar> distributionBars = distribution.getDistributionBars();
@@ -251,7 +219,7 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, true);
         DistributionModel.distributionService = service;
         IDistributionalModel model = getDistributionalModel(parentDistribution);
-        IDistribution distributionType = getDistributionType();
+        IDistribution< ? > distributionType = getDistributionType();
         
         DistributionModel distribution = new DistributionModel(model, distributionType);
         List<IDistributionBar> distributionBars = distribution.getDistributionBars();
@@ -272,7 +240,7 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, true);
         DistributionModel.distributionService = service;
         IDistributionalModel model = getDistributionalModel(parentDistribution);
-        IDistribution distributionType = getDistributionType();
+        IDistribution< ? > distributionType = getDistributionType();
         
         DistributionModel distribution = new DistributionModel(model, distributionType);
         List<IDistributionBar> distributionBars = distribution.getDistributionBars();
@@ -299,7 +267,7 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, false);
         DistributionModel.distributionService = service;
         IDistributionalModel model = getDistributionalModel(parentDistribution);
-        IDistribution distributionType = getDistributionType();
+        IDistribution< ? > distributionType = getDistributionType();
         
         DistributionModel distribution = new DistributionModel(model, distributionType);
         List<IDistributionBar> distributionBars = distribution.getDistributionBars();
@@ -320,7 +288,7 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, false);
         DistributionModel.distributionService = service;
         IDistributionalModel model = getDistributionalModel(parentDistribution);
-        IDistribution distributionType = getDistributionType();
+        IDistribution< ? > distributionType = getDistributionType();
         
         DistributionModel distribution = new DistributionModel(model, distributionType);
         List<IDistributionBar> distributionBars = distribution.getDistributionBars();
@@ -346,7 +314,7 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, false);
         DistributionModel.distributionService = service;
         IDistributionalModel model = getDistributionalModel(parentDistribution);
-        IDistribution distributionType = getDistributionType();
+        IDistribution< ? > distributionType = getDistributionType();
         
         DistributionModel distribution = new DistributionModel(model, distributionType);
         distribution.getDistributionBars();
@@ -364,12 +332,13 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, false);
         DistributionModel.distributionService = service;
         IDistributionalModel model = getDistributionalModel(parentDistribution);
-        IDistribution distributionType = getDistributionType();
+        IDistribution< ? > distributionType = getDistributionType();
         
         DistributionModel distribution = new DistributionModel(model, distributionType);
         distribution.getDistributionBars();
         
         verify(model).getAllElementsByType(DISTRIBUTION_NODE_TYPE);
+        verify(distributionType).init();
     }
     
     @Test
@@ -380,7 +349,7 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, false);
         DistributionModel.distributionService = service;
         IDistributionalModel model = getDistributionalModel(parentDistribution);
-        IDistribution distributionType = getDistributionType();
+        IDistribution< ? > distributionType = getDistributionType();
         
         DistributionModel distribution = new DistributionModel(model, distributionType);
         distribution.getDistributionBars();
@@ -396,7 +365,7 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, false);
         DistributionModel.distributionService = service;
         IDistributionalModel model = getDistributionalModel(parentDistribution);
-        IDistribution distributionType = getDistributionType();
+        IDistribution< ? > distributionType = getDistributionType();
         
         DistributionModel distribution = new DistributionModel(model, distributionType);
         List<IDistributionBar> bars = distribution.getDistributionBars();
@@ -414,7 +383,7 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, false);
         DistributionModel.distributionService = service;
         IDistributionalModel model = getDistributionalModel(parentDistribution);
-        IDistribution distributionType = getDistributionType();
+        IDistribution< ? > distributionType = getDistributionType();
         
         DistributionModel newDistribution = new DistributionModel(model, distributionType);
         List<IDistributionBar> newBars = newDistribution.getDistributionBars();
@@ -444,7 +413,7 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, false);
         DistributionModel.distributionService = service;
         IDistributionalModel model = getDistributionalModel(parentDistribution);
-        IDistribution distributionType = getDistributionType();
+        IDistribution< ? > distributionType = getDistributionType();
         
         DistributionModel newDistribution = new DistributionModel(model, distributionType);
         List<IDistributionBar> distributionBars = newDistribution.getDistributionBars();
@@ -464,7 +433,7 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, false);
         DistributionModel.distributionService = service;
         IDistributionalModel model = getDistributionalModel(parentDistribution);
-        IDistribution distributionType = getDistributionType();
+        IDistribution< ? > distributionType = getDistributionType();
         
         DistributionModel newDistribution = new DistributionModel(model, distributionType);
         newDistribution.getDistributionBars();
@@ -627,6 +596,7 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
      *
      * @return
      */
+    @SuppressWarnings("rawtypes")
     private IDistribution getDistributionType() {
         IDistribution result = mock(IDistribution.class);
         

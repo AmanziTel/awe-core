@@ -32,7 +32,7 @@ public interface IDistributionModel extends IModel {
      *
      * @return
      */
-    public IDistribution getDistributionType();
+    public IDistribution<?> getDistributionType();
     
     /**
      * Returns List of Distribution Bars

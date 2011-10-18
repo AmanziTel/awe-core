@@ -14,9 +14,11 @@
 package org.amanzi.neo.loader.core.saver.impl.testing;
 
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,6 +27,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
@@ -34,6 +37,9 @@ import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceInitializer;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
+import org.amanzi.neo.services.model.INetworkModel;
+import org.amanzi.neo.services.model.impl.DataElement;
+import org.amanzi.neo.services.model.impl.NetworkModel;
 import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel;
 import org.amanzi.testing.AbstractAWETest;
 import org.junit.AfterClass;
@@ -56,10 +62,28 @@ public class NewNeighbourSaverTesting extends AbstractAWETest {
     private static final String PROJECT_NAME = "project";
     private int MINIMAL_COLUMN_SIZE = 2;
     private static DataLoadPreferenceInitializer initializer;
+    private final static Map<String, Object> BSC = new HashMap<String, Object>();
+    private final static Map<String, Object> SITE = new HashMap<String, Object>();
+    private final static Map<String, Object> SECTOR1 = new HashMap<String, Object>();
+    private final static Map<String, Object> SECTOR2 = new HashMap<String, Object>();
+    private final static Map<String, Object> MSC = new HashMap<String, Object>();
+    private final static Map<String, Object> CITY = new HashMap<String, Object>();
+    INetworkModel networkModel;
     static {
         PATH_TO_BASE = System.getProperty("user.home");
+        BSC.put("name", "bsc1");
+        BSC.put("type", "bsc");
+        SITE.put("name", "site1");
+        SITE.put("type", "site");
+        SECTOR1.put("name", "sector1");
+        SECTOR1.put("type", "sector");
+        SECTOR2.put("name", "sector2");
+        SECTOR2.put("type", "sector");
+        MSC.put("name", "msc1");
+        MSC.put("type", "msc");
+        CITY.put("name", "city1");
+        CITY.put("type", "city");
     }
-
     private HashMap<String, Object> hashMap = null;
 
     @BeforeClass
@@ -68,6 +92,7 @@ public class NewNeighbourSaverTesting extends AbstractAWETest {
         initializeDb();
         initializer = new DataLoadPreferenceInitializer();
         initializer.initializeDefaultPreferences();
+        new LogStarter().earlyStartup();
         NeoServiceFactory.getInstance().clear();
 
     }
@@ -80,11 +105,9 @@ public class NewNeighbourSaverTesting extends AbstractAWETest {
 
     @Before
     public void onStart() {
-
-        networkSaver = new NewNetworkSaver();
+        networkModel = mock(NetworkModel.class);
 
         hashMap = new HashMap<String, Object>();
-
         config = new ConfigurationDataImpl();
         config.getDatasetNames().put(NETWORK_KEY, NETWORK_NAME);
         config.getDatasetNames().put(PROJECT_KEY, PROJECT_NAME);
@@ -98,6 +121,7 @@ public class NewNeighbourSaverTesting extends AbstractAWETest {
         }
         fileList.add(testFile);
         config.setSourceFile(fileList);
+        networkSaver = new NewNetworkSaver(networkModel, (ConfigurationDataImpl)config);
         hashMap.put("bsc", "bsc1");
         hashMap.put("site", "site1");
         hashMap.put("lat", "3.123");
@@ -120,18 +144,25 @@ public class NewNeighbourSaverTesting extends AbstractAWETest {
     @SuppressWarnings("unchecked")
     @Test
     public void testNeighbourNetworkSaver() {
-        networkSaver.init((ConfigurationDataImpl)config, null);
-        NodeToNodeRelationshipModel model;
-        model = mock(NodeToNodeRelationshipModel.class);
-        neighbourSaver = new NewNeighboursSaver(model, (ConfigurationDataImpl)config);
+        NodeToNodeRelationshipModel model = mock(NodeToNodeRelationshipModel.class);
+        neighbourSaver = new NewNeighboursSaver(model, networkModel, (ConfigurationDataImpl)config);
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
         networkSaver.saveElement(rowContainer);
         List<String> values = prepareValues(hashMap);
         rowContainer.setValues(values);
-        networkSaver.saveElement(rowContainer);
+
         try {
+            when(networkModel.findElement(BSC)).thenReturn(null);
+            when(networkModel.createElement(any(IDataElement.class), eq(BSC))).thenReturn(new DataElement(BSC));
+            when(networkModel.findElement(SITE)).thenReturn(null);
+            when(networkModel.createElement(any(IDataElement.class), eq(SITE))).thenReturn(new DataElement(SITE));
+            when(networkModel.findElement(SECTOR1)).thenReturn(null);
+            when(networkModel.createElement(any(IDataElement.class), eq(SECTOR1))).thenReturn(new DataElement(SECTOR1));
+            when(networkModel.findElement(SECTOR2)).thenReturn(null);
+            when(networkModel.createElement(any(IDataElement.class), eq(SECTOR2))).thenReturn(new DataElement(SECTOR2));
+            networkSaver.saveElement(rowContainer);
             hashMap.put("sector", "sector2");
             hashMap.put("ci", "119");
             hashMap.put("lac", "331");
@@ -142,6 +173,8 @@ public class NewNeighbourSaverTesting extends AbstractAWETest {
             hashMap.put("Neighbour", "sector2");
             hashMap.put("Server", "sector1");
             hashMap.put("property", "site1");
+            when(networkModel.findElement(SECTOR1)).thenReturn(new DataElement(SECTOR1));
+            when(networkModel.findElement(SECTOR2)).thenReturn(new DataElement(SECTOR2));
             rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
             header = new LinkedList<String>(hashMap.keySet());
             rowContainer.setHeaders(header);
@@ -149,7 +182,6 @@ public class NewNeighbourSaverTesting extends AbstractAWETest {
             values = prepareValues(hashMap);
             rowContainer.setValues(values);
             neighbourSaver.saveElement(rowContainer);
-
             verify(model).linkNode(any(IDataElement.class), any(IDataElement.class), any(Map.class));
         } catch (Exception e) {
             e.printStackTrace();
@@ -159,18 +191,25 @@ public class NewNeighbourSaverTesting extends AbstractAWETest {
     @SuppressWarnings("unchecked")
     @Test
     public void testNeighbourNetworkWithoutNecessaryParameters() {
-        networkSaver.init((ConfigurationDataImpl)config, null);
-        NodeToNodeRelationshipModel model;
-        model = mock(NodeToNodeRelationshipModel.class);
-        neighbourSaver = new NewNeighboursSaver(model, (ConfigurationDataImpl)config);
+        NodeToNodeRelationshipModel model = mock(NodeToNodeRelationshipModel.class);
+        neighbourSaver = new NewNeighboursSaver(model, networkModel, (ConfigurationDataImpl)config);
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
         networkSaver.saveElement(rowContainer);
         List<String> values = prepareValues(hashMap);
         rowContainer.setValues(values);
-        networkSaver.saveElement(rowContainer);
+
         try {
+            when(networkModel.findElement(BSC)).thenReturn(null);
+            when(networkModel.createElement(any(IDataElement.class), eq(BSC))).thenReturn(new DataElement(BSC));
+            when(networkModel.findElement(SITE)).thenReturn(null);
+            when(networkModel.createElement(any(IDataElement.class), eq(SITE))).thenReturn(new DataElement(SITE));
+            when(networkModel.findElement(SECTOR1)).thenReturn(null);
+            when(networkModel.createElement(any(IDataElement.class), eq(SECTOR1))).thenReturn(new DataElement(SECTOR1));
+            when(networkModel.findElement(SECTOR2)).thenReturn(null);
+            when(networkModel.createElement(any(IDataElement.class), eq(SECTOR2))).thenReturn(new DataElement(SECTOR2));
+            networkSaver.saveElement(rowContainer);
             values = prepareValues(hashMap);
             rowContainer.setValues(values);
             networkSaver.saveElement(rowContainer);
@@ -196,18 +235,24 @@ public class NewNeighbourSaverTesting extends AbstractAWETest {
     @SuppressWarnings("unchecked")
     @Test
     public void testNeighbourNetworkWithoutExistingServer() {
-        networkSaver.init((ConfigurationDataImpl)config, null);
-        NodeToNodeRelationshipModel model;
-        model = mock(NodeToNodeRelationshipModel.class);
-        neighbourSaver = new NewNeighboursSaver(model, (ConfigurationDataImpl)config);
+        NodeToNodeRelationshipModel model = mock(NodeToNodeRelationshipModel.class);
+        neighbourSaver = new NewNeighboursSaver(model, networkModel, (ConfigurationDataImpl)config);
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
         networkSaver.saveElement(rowContainer);
         List<String> values = prepareValues(hashMap);
         rowContainer.setValues(values);
-        networkSaver.saveElement(rowContainer);
         try {
+            when(networkModel.findElement(BSC)).thenReturn(null);
+            when(networkModel.createElement(any(IDataElement.class), eq(BSC))).thenReturn(new DataElement(BSC));
+            when(networkModel.findElement(SITE)).thenReturn(null);
+            when(networkModel.createElement(any(IDataElement.class), eq(SITE))).thenReturn(new DataElement(SITE));
+            when(networkModel.findElement(SECTOR1)).thenReturn(null);
+            when(networkModel.createElement(any(IDataElement.class), eq(SECTOR1))).thenReturn(new DataElement(SECTOR1));
+            when(networkModel.findElement(SECTOR2)).thenReturn(null);
+            when(networkModel.createElement(any(IDataElement.class), eq(SECTOR2))).thenReturn(new DataElement(SECTOR2));
+            networkSaver.saveElement(rowContainer);
             values = prepareValues(hashMap);
             rowContainer.setValues(values);
             networkSaver.saveElement(rowContainer);
