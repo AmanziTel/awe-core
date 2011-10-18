@@ -23,7 +23,7 @@ import org.amanzi.neo.services.enums.INodeType;
  * @author lagutko_n
  * @since 1.0.0
  */
-public interface IDistribution {
+public interface IDistribution<T extends IRange> {
     
     /**
      * Type of Chart
@@ -32,10 +32,36 @@ public interface IDistribution {
      * @since 1.0.0
      */
     public static enum ChartType {
+        /*
+         * Chart shows Counts of property for each bar 
+         */
         COUNTS,
+        
+        /*
+         * Chart shows Percents of count of property for each bar
+         */
         PERCENTS,
-        LOGARYTHMIC,
+        
+        /*
+         * Chart show Logarithmic count of property for each bar
+         */
+        LOGARITHMIC,
+        
+        /*
+         * Chart show CDF of this property
+         */
         CDF;
+        
+        /**
+         * Returns Default ChartType
+         * 
+         * Default ChartType is COUNTS
+         *
+         * @return
+         */
+        public static ChartType getDefault() {
+            return COUNTS;
+        }
     }
     
     /**
@@ -50,7 +76,7 @@ public interface IDistribution {
      *
      * @return
      */
-    public List<IRange> getRanges();
+    public List<T> getRanges();
     
     /**
      * Type of Node to Analyze
@@ -65,5 +91,10 @@ public interface IDistribution {
      * @return
      */
     public int getCount();
+    
+    /**
+     * Initializes current distribution
+     */
+    public void init();
 
 }

@@ -37,11 +37,14 @@ public abstract class AWEException extends Exception {
      */
     protected AWEException(String message, Object... params) {
         this.message = String.format(message, params);
-
     }
 
     protected AWEException() {
         super();
+    }
+    
+    protected AWEException(String message) {
+        super(message);
     }
 
     @Override
