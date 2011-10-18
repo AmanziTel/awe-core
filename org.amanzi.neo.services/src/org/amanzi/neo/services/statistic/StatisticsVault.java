@@ -13,11 +13,9 @@
 
 package org.amanzi.neo.services.statistic;
 
-import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.IndexPropertyException;
 import org.amanzi.neo.services.exceptions.InvalidStatisticsParameterException;
 import org.amanzi.neo.services.statistic.internal.NewPropertyStatistics;
@@ -41,8 +39,6 @@ public class StatisticsVault implements IVault {
 
     private static Logger LOGGER = Logger.getLogger(StatisticsVault.class);
 
-    private static final String TRUE = "true";
-    private static final String FALSE = "false";
     private static final String PARAM_NODE_TYPE = "nodeType";
     private static final String PARAM_PROP_NAME = "propName";
     private static final String PARAM_PROP_VALUE = "propValue";
@@ -152,7 +148,7 @@ public class StatisticsVault implements IVault {
         LOGGER.debug("finish method indexProperty(String nodeType, String propName, Object propValue)");
 
     }
-    
+
     @Override
     public void removeProperty(String nodeType, String propName, Object propValue) throws IndexPropertyException,
             InvalidStatisticsParameterException {
@@ -199,7 +195,6 @@ public class StatisticsVault implements IVault {
         LOGGER.debug("finish method removeProperty(String nodeType, String propName, Object propValue)");
     }
 
-
     /**
      * this method find propertyStatistics by name and check matches the types
      * 
@@ -238,84 +233,7 @@ public class StatisticsVault implements IVault {
         return result;
     }
 
-    @Override
-    public Object parse(String nodeType, String propertyName, String propertyValue) throws AWEException {
-        LOGGER.debug("start method parse(String nodeType, String propertyName, String propertyValue)");
-        if (nodeType == null || nodeType.isEmpty()) {
-            LOGGER.error("InvalidStatisticsParameterException: parameter nodeType is null or Empty String");
-            throw new InvalidStatisticsParameterException(PARAM_NODE_TYPE, nodeType);
-        }
-        if (propertyName == null || propertyName.isEmpty()) {
-            LOGGER.error("InvalidStatisticsParameterException: parameter propertyName is null or Empty String");
-            throw new InvalidStatisticsParameterException(PARAM_PROP_NAME, propertyName);
-        }
-        if (propertyValue == null || propertyValue.isEmpty()) {
-            return null;
-        }
-
-        boolean hasPropStat;
-        IVault vault;
-
-        if (this.getType().equals(nodeType)) {
-            vault = this;
-        } else {
-            vault = this.getSubVault(nodeType);
-        }
-
-        hasPropStat = vault.getPropertyStatisticsMap().containsKey(propertyName);
-        try {
-            if (hasPropStat) {
-                return vault.getPropertyStatisticsMap().get(propertyName).parseValue(propertyValue);
-            } else {
-                Object result = autoParse(propertyValue);
-                vault.addPropertyStatistics(new NewPropertyStatistics(propertyName, result.getClass()));
-                return result;
-            }
-        } catch (AWEException e) {
-            LOGGER.error(e.getMessage());
-            throw e;
-        }
-    }
-
-    /**
-     * this method try to parse String propValue if its type is unknown
-     * 
-     * @param propertyValue - String propValue
-     * @return Object parseValue
-     */
-    private Object autoParse(String propertyValue) {
-
-        try {
-            char separator = '.';
-            if (propertyValue.indexOf(separator) != -1) {
-                Number numberValue = NumberFormat.getNumberInstance().parse(propertyValue);
-                int lastIndex = propertyValue.indexOf("e") + propertyValue.indexOf("E");
-                lastIndex = (lastIndex < 0) ? (propertyValue.length() - 1) : lastIndex;
-
-                Boolean isDouble = 7 < (lastIndex - propertyValue.indexOf(separator));
-
-                if (isDouble) {
-                    return numberValue.doubleValue();
-                } else {
-                    return numberValue.floatValue();
-                }
-            } else {
-                try {
-                    return Integer.parseInt(propertyValue);
-                } catch (NumberFormatException e) {
-                    return Long.parseLong(propertyValue);
-                }
-            }
-        } catch (Exception e) {
-            if (propertyValue.equalsIgnoreCase(TRUE)) {
-                return Boolean.TRUE;
-            } else if (propertyValue.equalsIgnoreCase(FALSE)) {
-                return Boolean.FALSE;
-            }
-            return propertyValue;
-        }
-
-    }
+    
 
     @Override
     public int getNodeCount(String nodeType) {

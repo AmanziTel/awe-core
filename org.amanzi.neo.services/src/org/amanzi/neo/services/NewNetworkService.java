@@ -543,8 +543,6 @@ public class NewNetworkService extends NewAbstractService {
             throws IllegalNodeDataException, DatabaseException {
         LOGGER.debug("start createNetworkElement(Node parent, String indexName, String name, INodeType elementType)");
 
-        LOGGER.debug("start createNetworkElement(Node parent, String indexName, String name, INodeType elementType)");
-
         // validate parameters
         if (parent == null) {
             throw new IllegalArgumentException("Parent is null.");

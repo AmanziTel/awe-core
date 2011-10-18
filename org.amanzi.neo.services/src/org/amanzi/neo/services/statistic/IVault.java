@@ -15,11 +15,8 @@ package org.amanzi.neo.services.statistic;
 
 import java.util.Map;
 
-import org.amanzi.neo.services.exceptions.AWEException;
-import org.amanzi.neo.services.exceptions.FailedParseValueException;
 import org.amanzi.neo.services.exceptions.IndexPropertyException;
 import org.amanzi.neo.services.exceptions.InvalidStatisticsParameterException;
-import org.amanzi.neo.services.exceptions.UnsupportedClassException;
 import org.amanzi.neo.services.statistic.internal.NewPropertyStatistics;
 
 /**
@@ -45,129 +42,127 @@ public interface IVault {
      * @return Count of all properties
      */
     public int getCount();
-    
+
     /**
      * Method return count of properties in node with certain node type
-     *
+     * 
      * @param nodeType Type of node
      * @return Count of all properties in node with certain node type
      */
     public int getNodeCount(String nodeType);
-    
+
     /**
-     * Method return count of properties in node with certain node type and 
-     * certain property name
-     *
+     * Method return count of properties in node with certain node type and certain property name
+     * 
      * @param nodeType Type of node
      * @param propertyName Name of property
      * @return Count of property with certain property name
      */
     public int getPropertyCount(String nodeType, String propertyName);
-    
+
     /**
-     * Method return count of properties in node with certain node type and
-     * certain property name and property value
-     *
+     * Method return count of properties in node with certain node type and certain property name
+     * and property value
+     * 
      * @param nodeType Type of node
      * @param propertyName Name of property
      * @param propertyValue Value of property
      * @return Count of property with certain property name and property value
      */
     public int getPropertyValueCount(String nodeType, String propertyName, Object propertyValue);
-    
+
     /**
      * Method find all properties in all vaults
-     *
+     * 
      * @return All properties from statistics
      */
     public Map<Object, Integer> getAllProperties();
-    
+
     /**
      * Method find properties with certain node type
-     *
+     * 
      * @param nodeType Type of node
      * @return All properties from statistics with certain node type
      */
     public Map<Object, Integer> getAllProperties(String nodeType);
-    
+
     /**
      * Method find properties with certain type of Class
-     *
+     * 
      * @param klass Type of Class
      * @return All properties from statistics with certain type of Class
      */
-    public Map<Object, Integer> getAllProperties(Class<?> klass);
+    public Map<Object, Integer> getAllProperties(Class< ? > klass);
 
     /**
      * Method find properties with certain node type and certain property name
-     *
+     * 
      * @param nodeType Type of node
      * @param propertyName Name of property
      * @return All properties from statistics with certain node type and certain property name
      */
     public Map<Object, Integer> getAllProperties(String nodeType, String propertyName);
-    
+
     /**
-    * Method find properties with certain name of property
-    *
-    * @param propertyName Name of property
-    * @return All properties from statistics with certain name of property
-    */
+     * Method find properties with certain name of property
+     * 
+     * @param propertyName Name of property
+     * @return All properties from statistics with certain name of property
+     */
     public Map<Object, Integer> getAllPropertiesWithName(String propertyName);
-   
+
     /**
      * Method to delete all properties with certain type of node
-     *
+     * 
      * @param nodeType Type of node
      */
     public void deletePropertiesWithNodeType(String nodeType);
-    
+
     /**
      * Method to delete all properties with certain name of property
-     *
+     * 
      * @param propertyName Name of property
      */
     public void deleteProperties(String propertyName);
-    
+
     /**
      * Method to delete all properties with certain type of node and certain name of property
-     *
+     * 
      * @param nodeType Type of node
      * @param propertyName Name of property
      */
     public void deleteProperties(String nodeType, String propertyName);
-    
+
     /**
-     * Method to delete all properties with certain type of node and 
-     * certain name of property and
+     * Method to delete all properties with certain type of node and certain name of property and
      * certain value of property
-     *
+     * 
      * @param nodeType Type of node
      * @param propertyName Name of property
      * @param propertyValue Value of property
      */
     public void deleteProperties(String nodeType, String propertyName, Object propertyValue);
-    
+
     /**
      * Method to update count of propertyValue by certain count of propertyValue
-     *
+     * 
      * @param nodeType Type of node
      * @param propertyName Name of property
      * @param propertyValue Value of property
      * @param newCount New count of propertyValue
      */
     public void updatePropertiesCount(String nodeType, String propertyName, Object propertyValue, int newCount);
-    
+
     /**
      * Method return node type of vault
      * 
      * @return Type of vault
      */
     public String getType();
-    
+
     /**
      * Method return whether to statistics changed
-     *
+     * 
      * @return True if statistics is changed, false if statistics not change.
      */
     public boolean isStatisticsChanged();
@@ -192,11 +187,11 @@ public interface IVault {
      * @param type
      */
     public void setType(String type);
-    
+
     /**
      * Set state of statistics
-     *
-     * @param isStatisticsChanged State of statictics 
+     * 
+     * @param isStatisticsChanged State of statictics
      */
     public void setIsStatisticsChanged(boolean isStatisticsChanged);
 
@@ -224,11 +219,10 @@ public interface IVault {
      *         wrong
      * @throws InvalidStatisticsParameterException - method throw this exception if some parameter =
      *         null
-     * 
      */
     public void indexProperty(String nodeType, String propName, Object propValue) throws IndexPropertyException,
             InvalidStatisticsParameterException;
-    
+
     /**
      * * this method remove property from PropertyStatistics and update counts in vaults
      * 
@@ -239,21 +233,8 @@ public interface IVault {
      *         wrong
      * @throws InvalidStatisticsParameterException - method throw this exception if some parameter =
      *         null
-     * 
      */
     public void removeProperty(String nodeType, String propName, Object propValue) throws IndexPropertyException,
             InvalidStatisticsParameterException;
-
-   /**
-    * this method defines type of property value and return this value
-    *
-    * @param nodeType - type of vault
-    * @param propertyName - property name
-    * @param propertyValue - String property value
-    * @return Object property value
-    * @throws UnsupportedClassException 
-    * @throws AWEException 
-    */
-    public Object parse(String nodeType, String propertyName, String propertyValue) throws InvalidStatisticsParameterException, FailedParseValueException, UnsupportedClassException, AWEException ;
 
 }

@@ -81,9 +81,9 @@ public abstract class PropertyStatisticalModel extends DataModel implements IPro
         }
     }
 
-    protected Object parse(INodeType nodeType, String propertyName, String propertyValue) throws AWEException {
-        return statisticsVault.parse(nodeType.getId(), propertyName, propertyValue);
-    }
+//    protected Object parse(INodeType nodeType, String propertyName, String propertyValue) throws AWEException {
+//        return statisticsVault.parse(nodeType.getId(), propertyName, propertyValue);
+//    }
 
     @Override
     public int getNodeCount(INodeType nodeType) {
