@@ -15,6 +15,7 @@ package org.amanzi.neo.services.model;
 
 import java.util.Map;
 
+import org.amanzi.neo.model.distribution.IDistributionalModel;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.neo4j.graphdb.RelationshipType;
@@ -27,7 +28,7 @@ import org.neo4j.graphdb.RelationshipType;
  * @author grigoreva_a
  * @since 1.0.0
  */
-public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IRenderableModel {
+public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IRenderableModel, IDistributionalModel {
 
     /**
      * Traverse database to find all correlation root nodes and create models based on them.

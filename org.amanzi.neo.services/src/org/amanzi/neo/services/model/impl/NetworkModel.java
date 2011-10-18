@@ -19,6 +19,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.amanzi.neo.model.distribution.IDistribution;
+import org.amanzi.neo.model.distribution.IDistributionModel;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewAbstractService;
@@ -539,5 +541,10 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
 
         }
         return result;
+    }
+
+    @Override
+    public IDistributionModel getDistributionModel(IDistribution distributionType) {
+        return null;
     }
 }
