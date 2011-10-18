@@ -28,6 +28,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
@@ -47,7 +48,7 @@ import org.junit.Test;
 /**
  * @author Kondratenko_Vladsialv
  */
-public class NewNetworkTesting extends AbstractAWETest {
+public class NewNetworkSaverTesting extends AbstractAWETest {
     private NewNetworkSaver networkSaver;
     private static String PATH_TO_BASE = "";
     private IConfiguration config;
@@ -62,7 +63,7 @@ public class NewNetworkTesting extends AbstractAWETest {
     private final static Map<String, Object> SECTOR = new HashMap<String, Object>();
     private final static Map<String, Object> MSC = new HashMap<String, Object>();
     private final static Map<String, Object> CITY = new HashMap<String, Object>();
-    private NetworkModel model;
+    private static NetworkModel model;
     static {
         PATH_TO_BASE = System.getProperty("user.home");
         BSC.put("name", "bsc1");
@@ -81,6 +82,7 @@ public class NewNetworkTesting extends AbstractAWETest {
 
     @BeforeClass
     public static void prepare() {
+        new LogStarter().earlyStartup();
         clearDb();
         initializeDb();
         initializer = new DataLoadPreferenceInitializer();
@@ -158,6 +160,7 @@ public class NewNetworkTesting extends AbstractAWETest {
             networkSaver.saveElement(rowContainer);
             verify(model, times(5)).createElement(any(IDataElement.class), any(Map.class));
         } catch (Exception e) {
+            e.printStackTrace();
             Assert.fail("Exception while saving row");
         }
     }
