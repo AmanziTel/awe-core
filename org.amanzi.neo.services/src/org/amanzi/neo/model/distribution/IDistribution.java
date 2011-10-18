@@ -65,5 +65,10 @@ public interface IDistribution {
      * @return
      */
     public int getCount();
+    
+    /**
+     * Initializes current distribution
+     */
+    public void init();
 
 }

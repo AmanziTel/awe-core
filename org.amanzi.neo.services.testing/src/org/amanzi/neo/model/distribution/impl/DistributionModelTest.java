@@ -44,9 +44,6 @@ import org.amanzi.neo.services.filters.Filter;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.apache.commons.lang.StringUtils;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
@@ -83,39 +80,10 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
      */
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        clearDb();
-        initializeDb();
         new LogStarter().earlyStartup();
         clearServices();
     }
 
-    /**
-     *
-     * @throws java.lang.Exception
-     */
-    @AfterClass
-    public static void tearDownAfterClass() throws Exception {
-        stopDb();
-        clearDb();
-    }
-
-    /**
-     *
-     * @throws java.lang.Exception
-     */
-    @Before
-    public void setUp() throws Exception {
-    }
-
-    /**
-     *
-     * @throws java.lang.Exception
-     */
-    @After
-    public void tearDown() throws Exception {
-        
-    }
-    
     @Test(expected = IllegalArgumentException.class)
     public void tryToCreatesDistributionWithoutAnalyzedModel() throws Exception {
         new DistributionModel(null, getDistributionType());
@@ -370,6 +338,7 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         distribution.getDistributionBars();
         
         verify(model).getAllElementsByType(DISTRIBUTION_NODE_TYPE);
+        verify(distributionType).init();
     }
     
     @Test

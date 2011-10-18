@@ -159,6 +159,8 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
     private List<IDistributionBar> createDistribution(IProgressMonitor monitor) throws AWEException {
         monitor.beginTask("Creating Distribution <" + getName() + "> in Database", distributionType.getCount());
         
+        distributionType.init();
+        
         List<Pair<IRange, DistributionBar>> distributionConditions = createDistributionBars();
         
         try {
