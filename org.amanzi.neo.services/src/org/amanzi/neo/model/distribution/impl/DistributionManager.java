@@ -23,6 +23,7 @@ import org.amanzi.neo.model.distribution.IDistribution.ChartType;
 import org.amanzi.neo.model.distribution.IDistributionalModel;
 import org.amanzi.neo.model.distribution.types.impl.StringDistribution;
 import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.exceptions.AWEException;
 import org.apache.log4j.Logger;
 
 /**
@@ -32,6 +33,23 @@ import org.apache.log4j.Logger;
  * @since 1.0.0
  */
 public class DistributionManager {
+    
+    /**
+     * Exception on Creating Distribution
+     * 
+     * @author gerzog
+     * @since 1.0.0
+     */
+    public static class DistributionManagerException extends AWEException {
+
+        /** long serialVersionUID field */
+        private static final long serialVersionUID = 1L;
+        
+        public DistributionManagerException(Class<?> clazz, ChartType chartType) {
+            super("Impossible to create chart <" + chartType + "> on class <" + clazz.getSimpleName() + ">.");
+        }
+        
+    }
     
     private static final Logger LOGGER = Logger.getLogger(DistributionManager.class);
     
@@ -68,7 +86,7 @@ public class DistributionManager {
         
     }
     
-    public List<IDistribution> getDistributions(IDistributionalModel model, INodeType nodeType, String propertyName, ChartType chartType) {
+    public List<IDistribution> getDistributions(IDistributionalModel model, INodeType nodeType, String propertyName, ChartType chartType) throws DistributionManagerException {
         LOGGER.debug("start getDistributions(<" + model + ">, <" + nodeType + ">, " + propertyName + ">, <" + chartType + ">)");
         
         Class<?> clazz = model.getPropertyClass(nodeType, propertyName);
@@ -78,12 +96,12 @@ public class DistributionManager {
         if (clazz.equals(String.class)) {
             switch (chartType) {
             case COUNTS:
-            case LOGARYTHMIC:
+            case LOGARITHMIC:
             case PERCENTS:
                 result.add(getStringDistribution(model, nodeType, propertyName));
                 break;
             default:
-                //TODO: throw exception about illegal Chart Type for this Class of Property
+                throw new DistributionManagerException(clazz, chartType);
             }
         } else if (clazz.isAssignableFrom(Number.class)){ 
             //TODO: create Number distribution
@@ -91,7 +109,9 @@ public class DistributionManager {
             //TODO: try to find user-defined distributions
         }
         
-        return null;
+        LOGGER.debug("finish getDistributions()");
+        
+        return result;
     }
     
     /**

@@ -32,10 +32,36 @@ public interface IDistribution {
      * @since 1.0.0
      */
     public static enum ChartType {
+        /*
+         * Chart shows Counts of property for each bar 
+         */
         COUNTS,
+        
+        /*
+         * Chart shows Percents of count of property for each bar
+         */
         PERCENTS,
-        LOGARYTHMIC,
+        
+        /*
+         * Chart show Logarithmic count of property for each bar
+         */
+        LOGARITHMIC,
+        
+        /*
+         * Chart show CDF of this property
+         */
         CDF;
+        
+        /**
+         * Returns Default ChartType
+         * 
+         * Default ChartType is COUNTS
+         *
+         * @return
+         */
+        public static ChartType getDefault() {
+            return COUNTS;
+        }
     }
     
     /**
