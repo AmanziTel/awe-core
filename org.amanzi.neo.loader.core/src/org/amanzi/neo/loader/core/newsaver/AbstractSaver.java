@@ -53,6 +53,42 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
     protected Map<String, String[]> preferenceStoreSynonyms;
     protected Map<String, IModel> modelMap = new HashMap<String, IModel>();
     protected Map<IModel, ExportSynonyms> synonymsMap = new HashMap<IModel, ExportSynonyms>();
+    private static final String TRUE = "true";
+    private static final String FALSE = "false";
+
+    /**
+     * this method try to parse String propValue if its type is unknown
+     * 
+     * @param propertyValue - String propValue
+     * @return Object parseValue
+     */
+    protected Object autoParse(String propertyValue) {
+        try {
+            char separator = '.';
+            if (propertyValue.indexOf(separator) != -1) {
+                Float floatValue = Float.parseFloat(propertyValue);
+                if (floatValue.toString().length() < propertyValue.length()) {
+                    return Double.parseDouble(propertyValue);
+                } else {
+                    return floatValue;
+                }
+            } else {
+                try {
+                    return Integer.parseInt(propertyValue);
+                } catch (NumberFormatException e) {
+                    return Long.parseLong(propertyValue);
+                }
+            }
+        } catch (Exception e) {
+            if (propertyValue.equalsIgnoreCase(TRUE)) {
+                return Boolean.TRUE;
+            } else if (propertyValue.equalsIgnoreCase(FALSE)) {
+                return Boolean.FALSE;
+            }
+            return propertyValue;
+        }
+
+    }
 
     protected void createExportSynonymsForModels() {
         try {

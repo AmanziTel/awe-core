@@ -41,7 +41,7 @@ public class NewNeighboursSaver extends AbstractSaver<NetworkModel, CSVContainer
     private Map<String, Integer> columnSynonyms;
     private final int MAX_TX_BEFORE_COMMIT = 1000;
 
-    public NewNeighboursSaver(INodeToNodeRelationsModel model, INetworkModel networkModel, ConfigurationDataImpl data) {
+    protected NewNeighboursSaver(INodeToNodeRelationsModel model, INetworkModel networkModel, ConfigurationDataImpl data) {
         preferenceStoreSynonyms = preferenceManager.getNeighbourSynonyms();
         columnSynonyms = new HashMap<String, Integer>();
         setDbInstance();
@@ -62,6 +62,13 @@ public class NewNeighboursSaver extends AbstractSaver<NetworkModel, CSVContainer
             init(data, null);
         }
 
+    }
+
+    /**
+     * 
+     */
+    public NewNeighboursSaver() {
+        super();
     }
 
     /*
@@ -152,7 +159,7 @@ public class NewNeighboursSaver extends AbstractSaver<NetworkModel, CSVContainer
         IDataElement findedServiceSector = networkModel.findElement(properties);
         for (String head : headers) {
             if (!fileSynonyms.containsValue(head)) {
-                properties.put(head.toLowerCase(), row.get(columnSynonyms.get(head)));
+                properties.put(head.toLowerCase(), autoParse(row.get(columnSynonyms.get(head))));
             }
         }
         if (findedNeighSector != null && findedServiceSector != null) {

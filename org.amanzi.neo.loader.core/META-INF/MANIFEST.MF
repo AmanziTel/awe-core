@@ -30,3 +30,5 @@ Bundle-ClassPath: .,
  lib/commons-io-2.0.1.jar
 Bundle-Vendor: amanzi.org
 Import-Package: org.eclipse.jface.preference
+Eclipse-LazyStart: true
+Eclipse-ExtensibleAPI: true

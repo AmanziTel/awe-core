@@ -8,9 +8,3 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.junit4,
  org.amanzi.testing;bundle-version="1.0.0",
  org.amanzi.log4j
-Export-Package: org.amanzi.neo.services,
- org.amanzi.neo.services.model.impl,
- org.amanzi.neo.services.testing.distribution,
- org.amanzi.neo.services.testing.filters,
- org.amanzi.neo.services.testing.network_model,
- org.amanzi.neo.services.testing.statistic
