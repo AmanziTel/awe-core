@@ -42,6 +42,7 @@ import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.NetworkModel;
 import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel;
 import org.amanzi.testing.AbstractAWETest;
+import org.apache.log4j.Logger;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
@@ -52,6 +53,7 @@ import org.junit.Test;
  * @author Vladislav_Kondratenko
  */
 public class NewNeighbourSaverTesting extends AbstractAWETest {
+    private static Logger LOGGER = Logger.getLogger(NewNetworkSaverTesting.class);
     private NewNetworkSaver networkSaver;
     private NewNeighboursSaver neighbourSaver;
     private static String PATH_TO_BASE = "";
@@ -68,7 +70,8 @@ public class NewNeighbourSaverTesting extends AbstractAWETest {
     private final static Map<String, Object> SECTOR2 = new HashMap<String, Object>();
     private final static Map<String, Object> MSC = new HashMap<String, Object>();
     private final static Map<String, Object> CITY = new HashMap<String, Object>();
-    INetworkModel networkModel;
+    private INetworkModel networkModel;
+    private static Long startTime;
     static {
         PATH_TO_BASE = System.getProperty("user.home");
         BSC.put("name", "bsc1");
@@ -94,13 +97,14 @@ public class NewNeighbourSaverTesting extends AbstractAWETest {
         initializer.initializeDefaultPreferences();
         new LogStarter().earlyStartup();
         NeoServiceFactory.getInstance().clear();
-
+        startTime = System.currentTimeMillis();
     }
 
     @AfterClass
     public static void tearDownAfterClass() throws Exception {
         stopDb();
         clearDb();
+        LOGGER.info("NewNeighbourSaverTesting finished in " + (System.currentTimeMillis() - startTime));
     }
 
     @Before
@@ -116,7 +120,7 @@ public class NewNeighbourSaverTesting extends AbstractAWETest {
         try {
             testFile.createNewFile();
         } catch (IOException e) {
-            // TODO Handle IOException
+            LOGGER.error(" onStart error while trying to create file", e);
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
         fileList.add(testFile);
@@ -184,12 +188,13 @@ public class NewNeighbourSaverTesting extends AbstractAWETest {
             neighbourSaver.saveElement(rowContainer);
             verify(model).linkNode(any(IDataElement.class), any(IDataElement.class), any(Map.class));
         } catch (Exception e) {
+            LOGGER.error(" testNeighbourNetworkSaver error", e);
             e.printStackTrace();
         }
     }
 
     @SuppressWarnings("unchecked")
-    @Test
+    @Test(expected = NullPointerException.class)
     public void testNeighbourNetworkWithoutNecessaryParameters() {
         NodeToNodeRelationshipModel model = mock(NodeToNodeRelationshipModel.class);
         neighbourSaver = new NewNeighboursSaver(model, networkModel, (ConfigurationDataImpl)config);
@@ -225,9 +230,8 @@ public class NewNeighbourSaverTesting extends AbstractAWETest {
             neighbourSaver.saveElement(rowContainer);
             verify(model, never()).linkNode(any(IDataElement.class), any(IDataElement.class), any(Map.class));
             Assert.fail("if one of necessary parameters is null than nullPointerException should be thrown");
-        } catch (NullPointerException e) {
-            Assert.assertTrue(true);
         } catch (AWEException e) {
+            LOGGER.error(" testNeighbourNetworkWithoutNecessaryParameters error", e);
             Assert.fail();
         }
     }
@@ -269,6 +273,7 @@ public class NewNeighbourSaverTesting extends AbstractAWETest {
             neighbourSaver.saveElement(rowContainer);
             verify(model, never()).linkNode(any(IDataElement.class), any(IDataElement.class), any(Map.class));
         } catch (Exception e) {
+            LOGGER.error(" testNeighbourNetworkWithoutExistingServer error", e);
             Assert.fail("Exception while saving row");
         }
     }
