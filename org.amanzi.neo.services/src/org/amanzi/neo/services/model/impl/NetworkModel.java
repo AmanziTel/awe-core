@@ -13,7 +13,6 @@
 
 package org.amanzi.neo.services.model.impl;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -81,7 +80,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
      * 
      * @param networkRoot
      */
-    public NetworkModel(Node networkRoot) {
+    public NetworkModel(Node networkRoot) throws AWEException {
         // validate
         if (networkRoot == null) {
             throw new IllegalArgumentException("Network root is null.");
@@ -136,13 +135,9 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     /**
      * Initializes location index for sector nodes.
      */
-    private void initializeMultiPropertyIndexing() {
+    private void initializeMultiPropertyIndexing() throws AWEException {
         LOGGER.info("Initializing multi proerty index...");
-        try {
-            addLocationIndex(NetworkElementNodeType.SECTOR);
-        } catch (IOException e) {
-            LOGGER.error("Could not initialize multi property index for network model " + rootNode.getId() + ".", e);
-        }
+        addLocationIndex(NetworkElementNodeType.SECTOR);
     }
 
     @Override

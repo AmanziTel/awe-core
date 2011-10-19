@@ -282,7 +282,7 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
      * @return a <code>NetworkModel</code>, based on the new network node
      */
     @Override
-    public INetworkModel createNetwork(String name) {
+    public INetworkModel createNetwork(String name) throws AWEException {
         Node networkRoot = null;
         try {
             networkRoot = dsServ.createDataset(rootNode, name, DatasetTypes.NETWORK);
@@ -300,7 +300,7 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
      * @return a <code>NetworkModel</code> object, based on the found node, or <code>null</code>
      */
     @Override
-    public INetworkModel findNetwork(String name) {
+    public INetworkModel findNetwork(String name) throws AWEException {
         Node networkRoot = null;
         try {
             networkRoot = dsServ.findDataset(rootNode, name, DatasetTypes.NETWORK);
@@ -319,7 +319,7 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
      * @return a <code>NetworkModel</code>, based on the found or created node.
      */
     @Override
-    public INetworkModel getNetwork(String name) {
+    public INetworkModel getNetwork(String name) throws AWEException {
         INetworkModel result = findNetwork(name);
         if (result == null) {
             result = createNetwork(name);
@@ -374,7 +374,12 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
         return networkModels;
     }
 
-    
+    /**
+     * Collects list of all models that are available for Distribution Analysis
+     *
+     * @return
+     * @throws AWEException
+     */
     public List<DistributionItem> getAllDistributionalModels() throws AWEException {
         List<DistributionItem> result = new ArrayList<DistributionItem>();
         //first add all NetworkModels and it's n2nrelationship models
@@ -389,6 +394,6 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
             //create Distribution Items for n2n relationships
         }
         
-        return null;
+        return result;
     }
 }

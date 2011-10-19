@@ -143,6 +143,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
             this.driveType = type;
         }
         initializeStatistics();
+        initializeMultiPropertyIndexing();
     }
 
     /**
@@ -162,6 +163,15 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         if (primaryType != null) {
             this.primaryType = primaryType;
         }
+    }
+    
+    /**
+     * Initializes location index for sector nodes.
+     */
+    private void initializeMultiPropertyIndexing() throws AWEException {
+        LOGGER.info("Initializing multi proerty index...");
+        addLocationIndex(DriveNodeTypes.MP);
+        addTimestampIndex(primaryType);
     }
 
     /**

@@ -905,7 +905,12 @@ public class NewDatasetService extends NewAbstractService {
      * @return the gis node by dataset
      */
     public Node getGisNodeByDataset(Node dataset) {
-        return dataset.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING).getStartNode();
+        Relationship gisLink = dataset.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING);
+        
+        if (gisLink != null) {
+            return gisLink.getStartNode();
+        }
+        return null;
     }
 
     /**

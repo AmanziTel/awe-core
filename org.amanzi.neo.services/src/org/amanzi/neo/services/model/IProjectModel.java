@@ -93,7 +93,7 @@ public interface IProjectModel extends IModel {
      * @param name
      * @return a <code>NetworkModel</code>, based on the new network node
      */
-    public abstract INetworkModel createNetwork(String name);
+    public abstract INetworkModel createNetwork(String name) throws AWEException;
 
     /**
      * Tries to find a network node with the defined <code>name</code> within the current project.
@@ -102,7 +102,7 @@ public interface IProjectModel extends IModel {
      * @param name
      * @return a <code>NetworkModel</code> object, based on the found node, or <code>null</code>
      */
-    public abstract INetworkModel findNetwork(String name);
+    public abstract INetworkModel findNetwork(String name) throws AWEException;
 
     /**
      * Tries to find a network node with the defined <code>name</code> within the current project;
@@ -112,7 +112,7 @@ public interface IProjectModel extends IModel {
      * @param name
      * @return a <code>NetworkModel</code>, based on the found or created node.
      */
-    public abstract INetworkModel getNetwork(String name);
+    public abstract INetworkModel getNetwork(String name) throws AWEException;
 
     /**
      * TODO: test implementation

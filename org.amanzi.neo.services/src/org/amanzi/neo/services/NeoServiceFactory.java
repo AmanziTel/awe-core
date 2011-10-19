@@ -50,6 +50,9 @@ public class NeoServiceFactory {
     
     private DistributionService distributionService = null;
     private Object distributionServiceMonitor = new Object();
+    
+    private IndexService indexService = null;
+    private Object indexServiceMonitor = new Object();
 
     public static NeoServiceFactory getInstance() {
         return instance;
@@ -214,6 +217,18 @@ public class NeoServiceFactory {
         return distributionService;
     }
     
+    public IndexService getIndexService() {
+        if (indexService == null) {
+            synchronized (indexServiceMonitor) { 
+                if (indexService == null) {
+                    indexService = new IndexService();
+                }
+            }
+        }
+        
+        return indexService;
+    }
+    
     public void clear() {
         datasetService = null;
         correlationService = null;
@@ -228,6 +243,7 @@ public class NeoServiceFactory {
         newCorrelationService = null;
         exportSynonymsService = null;
         distributionService = null;
+        indexService = null;
     }
 
 }

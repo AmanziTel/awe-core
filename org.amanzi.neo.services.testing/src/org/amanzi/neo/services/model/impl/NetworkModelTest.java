@@ -1,9 +1,12 @@
 package org.amanzi.neo.services.model.impl;
 
-import static org.mockito.Mockito.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,19 +37,16 @@ import org.apache.log4j.Logger;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.lib.legacy.ClassImposteriser;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Transaction;
 
 public class NetworkModelTest extends AbstractNeoServiceTest {
 
     private static Logger LOGGER = Logger.getLogger(CorrelationServiceTest.class);
 
-    private Transaction tx;
     private static NewDatasetService dsServ;
     private static ProjectService prServ;
     private Node network;
@@ -74,7 +74,6 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
 
     @Before
     public final void before() {
-        tx = graphDatabaseService.beginTx();
         try {
             count++;
             project = prServ.createProject("project" + count);
@@ -83,12 +82,6 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
         } catch (AWEException e) {
             LOGGER.error("Could not create test nodes.", e);
         }
-    }
-
-    @After
-    public final void after() {
-        tx.success();
-        tx.finish();
     }
 
     @Test

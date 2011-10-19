@@ -121,7 +121,7 @@ public class NodeToNodeRelationshipModelTest extends AbstractNeoServiceTest {
     }
 
     @Test
-    public void testLinkNode() {
+    public void testLinkNode() throws Exception {
         // create network structure
         NetworkModel nm = new NetworkModel(network);
         Map<String, Object> params = new HashMap<String, Object>();
@@ -193,7 +193,7 @@ public class NodeToNodeRelationshipModelTest extends AbstractNeoServiceTest {
     }
 
     @Test
-    public void testLinkFewNodes() {
+    public void testLinkFewNodes() throws Exception {
         // create network structure
         NetworkModel nm = new NetworkModel(network);
         Map<String, Object> params = new HashMap<String, Object>();
@@ -283,7 +283,7 @@ public class NodeToNodeRelationshipModelTest extends AbstractNeoServiceTest {
     }
 
     @Test
-    public void testGetN2NRelatedElements() {
+    public void testGetN2NRelatedElements() throws Exception {
         List<Node> sectors = new ArrayList<Node>();
         // create network structure
 

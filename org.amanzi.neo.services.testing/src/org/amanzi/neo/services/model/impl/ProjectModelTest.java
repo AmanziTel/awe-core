@@ -204,7 +204,7 @@ public class ProjectModelTest extends AbstractNeoServiceTest {
 	}
 
 	@Test
-	public void testCreateNetwork() {
+	public void testCreateNetwork() throws Exception {
 		LOGGER.debug("start testCreateNetwork()");
 		INetworkModel nm = model.createNetwork("network");
 
@@ -216,7 +216,7 @@ public class ProjectModelTest extends AbstractNeoServiceTest {
 	}
 
 	@Test
-	public void testFindNetwork() {
+	public void testFindNetwork() throws Exception {
 		LOGGER.debug("start testFindNetwork()");
 		model.createNetwork("network");
 
@@ -229,7 +229,7 @@ public class ProjectModelTest extends AbstractNeoServiceTest {
 	}
 
 	@Test
-	public void testFindNetworkNoNetwork() {
+	public void testFindNetworkNoNetwork() throws Exception {
 		LOGGER.debug("start testFindNetworkNoNetwork()");
 		INetworkModel nm = model.findNetwork("network");
 		// object returned is null
@@ -237,7 +237,7 @@ public class ProjectModelTest extends AbstractNeoServiceTest {
 	}
 
 	@Test
-	public void testGetNetwork() {
+	public void testGetNetwork() throws Exception {
 		LOGGER.debug("start testGetNetwork()");
 		// network exists
 		model.createNetwork("network");
@@ -251,7 +251,7 @@ public class ProjectModelTest extends AbstractNeoServiceTest {
 	}
 
 	@Test
-	public void testGetNetworkNoNetwork() {
+	public void testGetNetworkNoNetwork() throws Exception {
 		LOGGER.debug("start testGetNetworkNoNetwork()");
 		// network !exists
 		INetworkModel nm = model.getNetwork("network");

@@ -40,7 +40,6 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     private static Logger LOGGER = Logger.getLogger(NewNetworkServiceTest.class);
     private static NewNetworkService networkService;
     private static final String databasePath = getDbLocation();
-    private static Transaction tx;
     private static Node parent;
     private static final String NAME_VALUE = "default name";
     private static final String NEW_NAME_VALUE = "new name value";
@@ -544,7 +543,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 
         // all parameters are set, parent is correct
         Node sector = null;
-        tx = graphDatabaseService.beginTx();
+        Transaction tx = graphDatabaseService.beginTx();
         Index<Node> index = null;
         try {
             parent = getNewNE();
@@ -580,7 +579,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     public void testCreateSectorNameSet() {
         // only name is set, parent is correct
         Node sector = null;
-        tx = graphDatabaseService.beginTx();
+        Transaction tx = graphDatabaseService.beginTx();
         Index<Node> index = null;
         try {
             parent = getNewNE();
@@ -611,7 +610,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     public void testCreateSectorCILACSet() {
         // CILAC are set, parent is correct
         Node sector = null;
-        tx = graphDatabaseService.beginTx();
+        Transaction tx = graphDatabaseService.beginTx();
         Index<Node> index = null;
         try {
             parent = getNewNE();
@@ -644,7 +643,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     @Test(expected = IllegalNodeDataException.class)
     public void testCreateSectorNoneSet() throws IllegalNodeDataException {
         // properties are not set
-        tx = graphDatabaseService.beginTx();
+        Transaction tx = graphDatabaseService.beginTx();
         Index<Node> index = null;
         try {
             parent = getNewNE();
@@ -665,7 +664,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     @Test(expected = IllegalNodeDataException.class)
     public void testCreateSectorCISet() throws IllegalNodeDataException {
         // only CI set
-        tx = graphDatabaseService.beginTx();
+        Transaction tx = graphDatabaseService.beginTx();
         Index<Node> index = null;
         try {
             parent = getNewNE();
@@ -686,7 +685,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     @Test(expected = IllegalNodeDataException.class)
     public void testCreateSectorLACSet() throws IllegalNodeDataException {
         // only LAC set
-        tx = graphDatabaseService.beginTx();
+        Transaction tx = graphDatabaseService.beginTx();
         Index<Node> index = null;
         try {
             parent = getNewNE();
@@ -707,7 +706,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     @Test(expected = IllegalArgumentException.class)
     public void testCreateSectorParentWrong() {
         // parent is not SITE
-        tx = graphDatabaseService.beginTx();
+        Transaction tx = graphDatabaseService.beginTx();
         Index<Node> index = null;
         try {
             parent = getNewNE();
@@ -727,7 +726,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     @Test(expected = IllegalArgumentException.class)
     public void testCreateSectorParentNull() {
         // parent is null
-        tx = graphDatabaseService.beginTx();
+        Transaction tx = graphDatabaseService.beginTx();
         Index<Node> index = null;
         try {
             parent = getNewNE();
@@ -747,7 +746,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     @Test(expected = IllegalArgumentException.class)
     public void testCreateSectorIndexNull() {
         // indexName null
-        tx = graphDatabaseService.beginTx();
+        Transaction tx = graphDatabaseService.beginTx();
         try {
             parent = getNewNE();
             parent.setProperty(NewNetworkService.TYPE, NetworkElementNodeType.SITE.getId());
@@ -768,7 +767,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     public void testFindSector() {
         // sector exists, all params set
         Node sector = null;
-        tx = graphDatabaseService.beginTx();
+        Transaction tx = graphDatabaseService.beginTx();
         Index<Node> index = null;
         try {
             parent = getNewNE();
@@ -801,7 +800,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     public void testFindSectorNameSet() {
         // sector exists, name set
         Node sector = null;
-        tx = graphDatabaseService.beginTx();
+        Transaction tx = graphDatabaseService.beginTx();
         Index<Node> index = null;
         try {
             parent = getNewNE();
@@ -832,7 +831,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     public void testFindSectorCILACSet() {
         // sector exists, CI+LAC set
         Node sector = null;
-        tx = graphDatabaseService.beginTx();
+        Transaction tx = graphDatabaseService.beginTx();
         Index<Node> index = null;
         try {
             parent = getNewNE();
@@ -882,7 +881,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     @Test(expected = IllegalArgumentException.class)
     public void testFindSectorNoneSet() {
         // sector exists, none set
-        tx = graphDatabaseService.beginTx();
+        Transaction tx = graphDatabaseService.beginTx();
         Index<Node> index = null;
         try {
             parent = getNewNE();
@@ -906,7 +905,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     @Test(expected = IllegalArgumentException.class)
     public void testFindSectorCISet() {
         // sector exists, CI set
-        tx = graphDatabaseService.beginTx();
+        Transaction tx = graphDatabaseService.beginTx();
         Index<Node> index = null;
         try {
             parent = getNewNE();
@@ -929,7 +928,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     @Test(expected = IllegalArgumentException.class)
     public void testFindSectorLACSet() {
         // sector exists, LAC set
-        tx = graphDatabaseService.beginTx();
+        Transaction tx = graphDatabaseService.beginTx();
         Index<Node> index = null;
         try {
             parent = getNewNE();
@@ -952,7 +951,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     @Test(expected = IllegalArgumentException.class)
     public void testFindSectorIndexNull() {
         // sector exists, all set, index null
-        tx = graphDatabaseService.beginTx();
+        Transaction tx = graphDatabaseService.beginTx();
         Index<Node> index = null;
         try {
             parent = getNewNE();
@@ -978,7 +977,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
         // sector exists
         Node sector = null;
         Index<Node> index = null;
-        tx = graphDatabaseService.beginTx();
+        Transaction tx = graphDatabaseService.beginTx();
         try {
             parent = getNewNE();
             parent.setProperty(NewNetworkService.TYPE, NetworkElementNodeType.SITE.getId());
@@ -1017,7 +1016,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
         // sector exists
         Node sector = null;
         Index<Node> index = null;
-        tx = graphDatabaseService.beginTx();
+        Transaction tx = graphDatabaseService.beginTx();
         try {
             parent = getNewNE();
             parent.setProperty(NewNetworkService.TYPE, NetworkElementNodeType.SITE.getId());
@@ -1055,7 +1054,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     public void testGetSectorNoSector() {
         // sector !exists
         Index<Node> index = null;
-        tx = graphDatabaseService.beginTx();
+        Transaction tx = graphDatabaseService.beginTx();
         try {
             parent = getNewNE();
             parent.setProperty(NewNetworkService.TYPE, NetworkElementNodeType.SITE.getId());

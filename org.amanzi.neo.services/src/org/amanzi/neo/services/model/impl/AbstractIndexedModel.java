@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.amanzi.neo.db.manager.NeoServiceProvider;
+import org.amanzi.neo.services.IndexService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService;
@@ -27,8 +27,6 @@ import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.indexes.MultiPropertyIndex;
-import org.amanzi.neo.services.indexes.MultiPropertyIndex.MultiDoubleConverter;
-import org.amanzi.neo.services.indexes.MultiPropertyIndex.MultiTimeIndexConverter;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
@@ -54,6 +52,8 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
     protected double max_longitude = -Double.MAX_VALUE;
 
     private Map<INodeType, List<MultiPropertyIndex< ? >>> indexes = new HashMap<INodeType, List<MultiPropertyIndex< ? >>>();
+    
+    private IndexService indexService = NeoServiceFactory.getInstance().getIndexService();
 
     /**
      * Creates and stores a location index for the defined node type.
@@ -61,8 +61,12 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
      * @param nodeType
      * @throws IOException if was unable to create an index in the database.
      */
-    protected void addLocationIndex(INodeType nodeType) throws IOException {
+    protected void addLocationIndex(INodeType nodeType) throws AWEException {
         LOGGER.debug("addLocationIndex(" + nodeType + ")");
+        
+        //since location index exist it should also be a GIS node
+        NewDatasetService dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
+        dsServ.createGisNodeByDataset(rootNode);
 
         // validate parameters
         if (nodeType == null) {
@@ -75,7 +79,7 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
             indexes.put(nodeType, indList);
         }
 
-        MultiPropertyIndex<Double> index = createLocationIndex(nodeType);
+        MultiPropertyIndex<Double> index = indexService.createLocationIndex(rootNode, nodeType);
         if (!indList.contains(index)) {
             indList.add(index);
         }
@@ -87,7 +91,7 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
      * @param nodeType
      * @throws IOException if was unable to create an index in the database.
      */
-    protected void addTimestampIndex(INodeType nodeType) throws IOException {
+    protected void addTimestampIndex(INodeType nodeType) throws AWEException {
         LOGGER.debug("addTimestampIndex(" + nodeType + ")");
 
         // validate parameters
@@ -101,7 +105,7 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
             indexes.put(nodeType, indList);
         }
 
-        MultiPropertyIndex<Long> index = createTimestampIndex(nodeType);
+        MultiPropertyIndex<Long> index = indexService.createTimestampIndex(rootNode, nodeType);
         if (!indList.contains(index)) {
             indList.add(index);
         }
@@ -144,22 +148,6 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
                 index.finishUp();
             }
         }
-    }
-
-    private MultiPropertyIndex<Long> createTimestampIndex(INodeType nodeType) throws IOException {
-        String indexName = NewAbstractService.getIndexKey(getRootNode(), nodeType);
-        MultiPropertyIndex<Long> result = new MultiPropertyIndex<Long>(indexName, new String[] {DriveModel.TIMESTAMP},
-                new MultiTimeIndexConverter(), 10);
-        result.initialize(NeoServiceProvider.getProvider().getService(), getRootNode());
-        return result;
-    }
-
-    private MultiPropertyIndex<Double> createLocationIndex(INodeType nodeType) throws IOException {
-        String indexName = NewAbstractService.getIndexKey(getRootNode(), nodeType);
-        MultiPropertyIndex<Double> result = new MultiPropertyIndex<Double>(indexName, new String[] {DriveModel.LATITUDE,
-                DriveModel.LONGITUDE}, new MultiDoubleConverter(0.001), 10);
-        result.initialize(NeoServiceProvider.getProvider().getService(), getRootNode());
-        return result;
     }
 
     /**
