@@ -93,6 +93,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         this.name = rootNode.getProperty(NewAbstractService.NAME, StringUtils.EMPTY).toString();
         initializeStatistics();
         initializeMultiPropertyIndexing();
+        initializeNetworkStructure();
     }
 
     /**
@@ -130,6 +131,21 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         this.name = name;
         initializeStatistics();
         initializeMultiPropertyIndexing();
+        initializeNetworkStructure();
+    }
+    
+    /**
+     * Initializes Network Structure from Node
+     */
+    private void initializeNetworkStructure() {
+        String[] networkStructure = (String[])rootNode.getProperty(NewNetworkService.NETWORK_STRUCTURE, null);
+        
+        currentNetworkStructure = new LinkedList<INodeType>();
+        if (networkStructure != null) {
+            for (String nodeType : networkStructure) {
+                currentNetworkStructure.add(NodeTypeManager.getType(nodeType));
+            }
+        }
     }
 
     /**

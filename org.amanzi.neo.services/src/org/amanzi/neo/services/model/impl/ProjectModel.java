@@ -366,7 +366,7 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
         List<INetworkModel> networkModels = new ArrayList<INetworkModel>();
 
         List<Node> allNetworkNodes = null;
-        allNetworkNodes = NeoServiceFactory.getInstance().getNewDatasetService().findAllDatasetsByType(getRootNode(), DatasetTypes.NETWORK);
+        allNetworkNodes = dsServ.findAllDatasetsByType(getRootNode(), DatasetTypes.NETWORK);
         for (Node networkRoot : allNetworkNodes) {
             networkModels.add(new NetworkModel(networkRoot));
         }
