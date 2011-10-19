@@ -115,6 +115,25 @@ public abstract class PropertyStatisticalModel extends DataModel implements IPro
         allProperties.keySet().toArray(result);
         return result;
     }
+    
+    @Override
+    public String[] getAllProperties(String propertyName)
+    {
+        Map<Object, Integer> allProperties = statisticsVault.getAllPropertiesWithName(propertyName);
+        String[] result = new String[allProperties.size()];
+        allProperties.keySet().toArray(result);
+        return result;
+    }
+    
+    @Override
+    public String[] getAllProperties(INodeType nodeType, String propertyName)
+    {
+        Map<Object, Integer> allProperties = statisticsVault.getAllProperties(nodeType.getId(), propertyName);
+        String[] result = new String[allProperties.size()];
+        allProperties.keySet().toArray(result);
+        return result;
+    }
+    
 
     @Override
     public void finishUp() throws AWEException{
