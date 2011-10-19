@@ -3,6 +3,7 @@ package org.amanzi.neo.services;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -47,6 +48,23 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     private static final String SECOND_PROPERTY = "second property";
     private final static String DEFAULT_SELECTION_LIST_NAME = "Selection List";
     private int indexCount = 0;
+    
+    private final static List<INodeType> DEFAULT_NETWORK_STRUCTURE = new ArrayList<INodeType>();
+    
+    private final static INodeType[] NETWORK_STRUCTURE_NODE_TYPES = new INodeType[] {
+        NetworkElementNodeType.NETWORK,
+        NetworkElementNodeType.BSC,
+        NetworkElementNodeType.CITY,
+        NetworkElementNodeType.SITE,
+        NetworkElementNodeType.SECTOR
+    };
+    
+    static {
+        //initialize default network structure
+        for (INodeType nodeType : NETWORK_STRUCTURE_NODE_TYPES) {
+            DEFAULT_NETWORK_STRUCTURE.add(nodeType);
+        }
+    }
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
@@ -1369,6 +1387,42 @@ public class NewNetworkServiceTest extends AbstractAWETest {
         assertTrue(SECOND_PROPERTY + "isn't equals" + NEW_NAME_VALUE, rootNode.getProperty(SECOND_PROPERTY).equals(NEW_NAME_VALUE));
         assertTrue("Missing property: " + FIRST_PROPERTY, rootNode.hasProperty(FIRST_PROPERTY));
         assertTrue(FIRST_PROPERTY + "isn't equals" + NEW_NAME_VALUE, rootNode.getProperty(FIRST_PROPERTY).equals(NEW_NAME_VALUE));
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToSetNetworkStructureWithoutNode() throws Exception {
+        networkService.setNetworkStructure(null, DEFAULT_NETWORK_STRUCTURE);
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToSetNetworkStructureWithoutList() throws Exception {
+        networkService.setNetworkStructure(getNewNE(), null);
+    }
+    
+    @Test
+    public void checkSavedNetworkStructureInNode() throws Exception {
+        Node network = getNewNE();
+        
+        networkService.setNetworkStructure(network, DEFAULT_NETWORK_STRUCTURE);
+        
+        assertTrue("No network structure in node", network.hasProperty(NewNetworkService.NETWORK_STRUCTURE));
+    }
+    
+    @Test
+    public void checkContentOfNetworkStructureInNode() throws Exception {
+        Node network = getNewNE();
+        
+        networkService.setNetworkStructure(network, DEFAULT_NETWORK_STRUCTURE);
+        
+        String[] elementNames = new String[NETWORK_STRUCTURE_NODE_TYPES.length];
+        int i = 0;
+        for (INodeType nodeType : NETWORK_STRUCTURE_NODE_TYPES) {
+            elementNames[i++] = nodeType.getId();
+        }
+        
+        String[] structureFromNode = (String[])network.getProperty(NewNetworkService.NETWORK_STRUCTURE);
+        
+        assertTrue("Incorrect Network Structure in Node", Arrays.equals(elementNames, structureFromNode));
     }
 
     /**

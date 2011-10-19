@@ -14,6 +14,7 @@
 package org.amanzi.testing.sanity;
 
 import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 /**
@@ -24,24 +25,13 @@ import org.junit.runners.Suite.SuiteClasses;
  *@author Rahul Jain
  */
 
-@RunWith(CustomSuite.class)
+@RunWith(Suite.class)
 //Generate class array here.
 //TODO: The array should be generated automatically by searching the classpath
 //Hard coded as of now
 @SuiteClasses( {
-//    org.amanzi.awe.neostyle.NeoStyleSuite.class,
-               org.amanzi.neo.services.NeoServiceSuite.class,
-//                org.amanzi.splash.testing.SpreadsheetServiceCellMovingTest.class,
-//				org.amanzi.awe.views.reuse.testing.ReuseAnalyserTest.class,
-//				org.amanzi.neo.loader.testing.EriccsonTopologyTest.class,
-//				org.amanzi.neo.loader.testing.NeighbourLoaderTest.class,
-//				org.amanzi.neo.loader.testing.NokiaTopologyLoaderTest.class,
-//				org.amanzi.neo.loader.testing.RomesLoaderTest.class,
-//				org.amanzi.neo.loader.testing.TemsLoaderTest.class,
-				org.amanzi.neo.loader.core.newsaver.SaversSuite.class,
-//				org.amanzi.neo.loader.core.saver.impl.testing.StatisticTesting.class,
-//				org.amanzi.neo.services.node2node.testing.NodeToNodeRelationModelTesting.class,
-//				org.amanzi.neo.services.testing.filters.FilterTest.class
+                org.amanzi.neo.services.NeoServiceSuite.class,
+                org.amanzi.neo.loader.core.newsaver.SaversSuite.class,
 				} )
 				
 // Note that Categories is a kind of Suite

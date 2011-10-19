@@ -54,6 +54,11 @@ public class NewNetworkService extends NewAbstractService {
     public final static String SELECTION_RELATIONSHIP_INDEX = "selection_relationship";
 
     public final static String SELECTED_NODES_COUNT = "selected_nodes_count";
+    
+    /*
+     * name of property that contains array with network structure 
+     */
+    public final static String NETWORK_STRUCTURE = "network_structure";
 
     private static Logger LOGGER = Logger.getLogger(NewNetworkService.class);
 
@@ -600,7 +605,40 @@ public class NewNetworkService extends NewAbstractService {
      * @param networkNode
      * @param networkStructure
      */
-    public void setNetworkStructure(Node networkNode, List<INodeType> networkStructure) {
+    public void setNetworkStructure(Node networkNode, List<INodeType> networkStructure) throws DatabaseException {
+        LOGGER.debug("start setNetworkStructure(<" + networkNode + ">, <" + networkStructure + ">)");
         
+        //check input
+        if (networkNode == null) {
+            LOGGER.error("Input networkNode cannot be null");
+            throw new IllegalArgumentException("Input networkNode cannot be null");
+        }
+        if (networkStructure == null) {
+            LOGGER.error("Input networkStructure cannot be null");
+            throw new IllegalArgumentException("Input networkStructure cannot be null");
+        }
+        
+        //convert list of INodeTypes to array of Strings
+        String[] structureArray = new String[networkStructure.size()];
+        int i = 0;
+        for (INodeType nodeType : networkStructure) {
+            structureArray[i++] = nodeType.getId();
+        }
+        
+        //set propery to node
+        Transaction tx = graphDb.beginTx();
+        try {
+            networkNode.setProperty(NETWORK_STRUCTURE, structureArray);
+            
+            tx.success();
+        } catch (Exception e) {
+            tx.failure();
+            LOGGER.error("Error on setting Network Structure to Node", e);
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
+        
+        LOGGER.debug("finish setNetworkStructure()");
     }
 }

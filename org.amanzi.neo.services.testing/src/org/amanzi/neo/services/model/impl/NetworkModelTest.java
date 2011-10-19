@@ -1,5 +1,6 @@
 package org.amanzi.neo.services.model.impl;
 
+import static org.mockito.Mockito.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -470,5 +471,16 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
 
         // verify
         context.assertIsSatisfied();
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Test
+    public void checkSetStructureOnFinishUp() throws Exception {
+        NewNetworkService service = mock(NewNetworkService.class);
+        
+        model.setNetworkService(service);
+        model.finishUp();
+        
+        verify(service).setNetworkStructure(eq(model.getRootNode()), any(List.class));
     }
 }

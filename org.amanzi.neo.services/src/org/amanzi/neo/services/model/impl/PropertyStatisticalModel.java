@@ -25,7 +25,6 @@ import org.amanzi.neo.services.exceptions.LoadVaultException;
 import org.amanzi.neo.services.model.IPropertyStatisticalModel;
 import org.amanzi.neo.services.statistic.IVault;
 import org.amanzi.neo.services.statistic.internal.NewPropertyStatistics;
-import org.apache.log4j.Logger;
 
 /**
  * TODO Purpose of
@@ -37,8 +36,6 @@ import org.apache.log4j.Logger;
  */
 public abstract class PropertyStatisticalModel extends DataModel implements IPropertyStatisticalModel {
 
-    private static Logger LOGGER = Logger.getLogger(PropertyStatisticalModel.class);
-    
     static NewStatisticsService statisticsService = NeoServiceFactory.getInstance().getNewStatisticsService();
 
     protected IVault statisticsVault;
@@ -120,12 +117,8 @@ public abstract class PropertyStatisticalModel extends DataModel implements IPro
     }
 
     @Override
-    public void finishUp() {
-        try {
-            statisticsService.saveVault(rootNode, statisticsVault);
-        } catch (AWEException e) {
-            LOGGER.error("Could not save property statistical vault.", e);
-        }
+    public void finishUp() throws AWEException{
+        statisticsService.saveVault(rootNode, statisticsVault);
     }
     
     @Override

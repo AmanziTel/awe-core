@@ -25,6 +25,7 @@ import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.indexes.MultiPropertyIndex;
 import org.amanzi.neo.services.indexes.MultiPropertyIndex.MultiDoubleConverter;
 import org.amanzi.neo.services.indexes.MultiPropertyIndex.MultiTimeIndexConverter;
@@ -229,30 +230,24 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
      * Writes the stored values of timestamp, latitude and longitude to database.
      */
     @Override
-    public void finishUp() {
+    public void finishUp() throws AWEException {
+        NewDatasetService dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
 
-        try {
-            NewDatasetService dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
+        Node rootNode = getRootNode();
 
-            Node rootNode = getRootNode();
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put(DriveModel.MIN_TIMESTAMP, min_timestamp);
+        params.put(DriveModel.MAX_TIMESTAMP, max_timestamp);
+        dsServ.setProperties(rootNode, params);
 
-            Map<String, Object> params = new HashMap<String, Object>();
-            params.put(DriveModel.MIN_TIMESTAMP, min_timestamp);
-            params.put(DriveModel.MAX_TIMESTAMP, max_timestamp);
-            dsServ.setProperties(rootNode, params);
-
-            Node gis = dsServ.getGisNodeByDataset(rootNode);
-            if (gis != null) {
-                params = new HashMap<String, Object>();
-                params.put(DriveModel.MIN_LATITUDE, min_latitude);
-                params.put(DriveModel.MIN_LONGITUDE, min_longitude);
-                params.put(DriveModel.MAX_LATITUDE, max_latitude);
-                params.put(DriveModel.MAX_LONGITUDE, max_longitude);
-                dsServ.setProperties(gis, params);
-            }
-
-        } catch (Exception e) {
-            LOGGER.error("Could not set root node properties.", e);
+        Node gis = dsServ.getGisNodeByDataset(rootNode);
+        if (gis != null) {
+            params = new HashMap<String, Object>();
+            params.put(DriveModel.MIN_LATITUDE, min_latitude);
+            params.put(DriveModel.MIN_LONGITUDE, min_longitude);
+            params.put(DriveModel.MAX_LATITUDE, max_latitude);
+            params.put(DriveModel.MAX_LONGITUDE, max_longitude);
+            dsServ.setProperties(gis, params);
         }
     }
 }

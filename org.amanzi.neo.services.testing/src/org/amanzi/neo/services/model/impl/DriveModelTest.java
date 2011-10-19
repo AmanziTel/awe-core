@@ -494,7 +494,7 @@ public class DriveModelTest extends AbstractNeoServiceTest {
     }
 
     @Test
-    public final void testAddMeasurementRootParams() {
+    public final void testAddMeasurementRootParams() throws Exception {
         // add few measurements with some parameters
         DriveModel dm = null;
         try {
