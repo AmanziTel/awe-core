@@ -14,6 +14,7 @@
 package org.amanzi.neo.services;
 
 import java.util.Iterator;
+import java.util.List;
 
 import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.enums.INodeType;
@@ -591,5 +592,15 @@ public class NewNetworkService extends NewAbstractService {
             throw new IllegalArgumentException("Network node is null.");
         }
         return N2N_ROOT_TRAVERSER.traverse(network).nodes();
+    }
+    
+    /**
+     * Sets array with Network Structure to Node
+     *
+     * @param networkNode
+     * @param networkStructure
+     */
+    public void setNetworkStructure(Node networkNode, List<INodeType> networkStructure) {
+        
     }
 }

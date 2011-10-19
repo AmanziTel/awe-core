@@ -73,7 +73,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     private NewNetworkService nwServ = NeoServiceFactory.getInstance().getNewNetworkService();
     private NewDatasetService dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
 
-    private List<String> currentNetworkStructure = new LinkedList<String>();
+    private List<INodeType> currentNetworkStructure = new LinkedList<INodeType>();
     
     /**
      * Use this constructor to create a network model, based on a node, that already exists in the
@@ -436,7 +436,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
      * @param parentType Parent type in string format
      * @param childType Child type in string format
      */
-    private void changeNetworkStructure(String parentType, String childType) {
+    private void changeNetworkStructure(INodeType parentType, INodeType childType) {
         /**
          * if current structure not contains parent type and not contains child type,
          * then add parent and child in end of structure
@@ -466,12 +466,8 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         }
     }
     
-    /**
-     * Method return current structure of network
-     *
-     * @return Current structure of network
-     */
-    public List<String> getNetworkStructure() {
+    @Override
+    public List<INodeType> getNetworkStructure() {
         return currentNetworkStructure;
     }
 
@@ -491,7 +487,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         
         INodeType parentType = NodeTypeManager.getType(parent.get(NewAbstractService.TYPE).toString());
         INodeType type = NodeTypeManager.getType(element.get(NewAbstractService.TYPE).toString());
-        changeNetworkStructure(parentType.getId(), type.getId());
+        changeNetworkStructure(parentType, type);
         
         Node node = null;
 

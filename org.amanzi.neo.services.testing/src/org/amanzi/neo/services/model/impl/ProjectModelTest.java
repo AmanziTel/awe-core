@@ -1,17 +1,19 @@
 package org.amanzi.neo.services.model.impl;
 
-import junit.framework.Assert;
+import static org.junit.Assert.*;
 
 import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.services.AbstractNeoServiceTest;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService.DriveTypes;
 import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
+import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -259,5 +261,17 @@ public class ProjectModelTest extends AbstractNeoServiceTest {
 		// name correct
 		Assert.assertEquals("network", nm.getName());
 	}
+	
+	@Test
+	public void checkEmptyDistributionItemList() throws Exception {
+	    assertTrue("List of distributions should be empty", model.getAllDistributionalModels().isEmpty());
+	}
+	
+	@Test
+	public void checkNotNullDistributionItemList() throws Exception{
+	    assertNotNull("List of distributions should not be null", model.getAllDistributionalModels());
+	}
+	
+	
 
 }

@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.services.model;
 
+import java.util.List;
 import java.util.Map;
 
 import org.amanzi.neo.model.distribution.IDistributionalModel;
@@ -181,4 +182,11 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
      * @throws AWEException
      */
     public void createRelationship(IDataElement parent, IDataElement child, RelationshipType rel) throws AWEException;
+    
+    /**
+     * Method return current structure of network
+     *
+     * @return Current structure of network
+     */
+    public List<INodeType> getNetworkStructure();
 }

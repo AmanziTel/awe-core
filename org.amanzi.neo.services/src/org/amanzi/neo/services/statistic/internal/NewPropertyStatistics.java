@@ -45,12 +45,12 @@ public class NewPropertyStatistics {
     /**
      * Minimum value of property
      */
-    private Comparable minValue;
+    private Comparable<?> minValue;
     
     /**
      * Maximum value of property
      */
-    private Comparable maxValue;
+    private Comparable<?> maxValue;
 
     /**
      * map, which makes the correspondence between the value of the property and the number of such
@@ -102,6 +102,7 @@ public class NewPropertyStatistics {
      * @param value - property value
      * @param count - count to update for this value
      */
+    @SuppressWarnings({"rawtypes", "unchecked"})
     public void updatePropertyMap(Object value, Integer count) {
         if (value.getClass().getSimpleName().equals("String") ||
                 value.getClass().getSimpleName().equals("Boolean") ||
@@ -118,8 +119,16 @@ public class NewPropertyStatistics {
                 propertyMap.remove(value);
             }
         }
-        if (value.getClass().getSuperclass().getSimpleName().equals("Number")) {
+        if (value instanceof Number) {
             Comparable comparableValue = (Comparable)value;
+            
+            if (minValue == null) {
+                minValue = comparableValue;
+            }
+            if (maxValue == null) {
+                maxValue = comparableValue;
+            }
+            
             if (comparableValue.compareTo(minValue) < 0){
                 minValue = comparableValue;
             }

@@ -21,6 +21,7 @@ import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
+import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.ProjectService;
 import org.amanzi.neo.services.enums.IDriveType;
@@ -65,7 +66,7 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
         private INodeType nodeType;
         
         /**
-         * Default constructor
+         * Constructor for multi-type models
          * 
          * @param model
          * @param nodeType
@@ -73,6 +74,15 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
         public DistributionItem(IDistributionalModel model, INodeType nodeType) {
             this.model = model;
             this.nodeType = nodeType;
+        }
+        
+        /**
+         * Constructor for single-type models
+         * 
+         * @param model
+         */
+        public DistributionItem(IDistributionalModel model) {
+            this.model = model;
         }
         
         /**
@@ -95,7 +105,13 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
         
         @Override
         public String toString() {
-            return getModel().toString() + " - " + getNodeType().getId();
+            StringBuilder result = new StringBuilder(model.getName());
+            
+            if (nodeType != null) {
+                result.append(" - O").append(nodeType.getId());
+            }
+            
+            return result.toString();
         }
         
     }
@@ -359,11 +375,18 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
     }
 
     
-    public List<IDistributionalModel> getAllDistributionalModels() throws AWEException {
-        List<IDistributionalModel> result = new ArrayList<IDistributionalModel>();
+    public List<DistributionItem> getAllDistributionalModels() throws AWEException {
+        List<DistributionItem> result = new ArrayList<DistributionItem>();
         //first add all NetworkModels and it's n2nrelationship models
         for (INetworkModel network : findAllNetworkModels()) {
+            //create Distribution Items for all possible network Types
+            for (INodeType nodeType : network.getNetworkStructure()) {
+                if (!nodeType.equals(NetworkElementNodeType.NETWORK)) {
+                    result.add(new DistributionItem(network, nodeType));
+                }
+            }
             
+            //create Distribution Items for n2n relationships
         }
         
         return null;
