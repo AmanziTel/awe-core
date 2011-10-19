@@ -235,6 +235,7 @@ public class SelectionModelTest extends AbstractNeoServiceTest {
      * @param shouldFind should SelectionNode exists in DB or not
      * @return
      */
+    @SuppressWarnings("unchecked")
     private NewNetworkService getNetworkService(boolean shouldFind, boolean shouldThrow) throws AWEException {
         NewNetworkService service = mock(NewNetworkService.class);
         
