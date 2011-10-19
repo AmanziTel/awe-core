@@ -10,6 +10,7 @@ Require-Bundle: org.junit4;bundle-version="4.3.1",
  org.amanzi.splash.testing,
  org.amanzi.awe.views.reuse.testing,
  org.amanzi.neo.loader.testing,
- org.amanzi.neo.loader.core.testing;bundle-version="1.0.0",
- org.amanzi.awe.neostyle;bundle-version="1.0.0"
+ org.amanzi.awe.neostyle;bundle-version="1.0.0",
+ org.amanzi.neo.loader.core;bundle-version="1.0.0",
+ org.amanzi.neo.services;bundle-version="1.0.0"
 Export-Package: org.amanzi.testing.sanity

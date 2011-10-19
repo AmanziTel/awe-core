@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.core.saver.impl.testing;
+package org.amanzi.neo.loader.core.newsaver;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
@@ -27,8 +27,8 @@ import org.junit.runners.Suite.SuiteClasses;
  */
 @RunWith(Suite.class)
 @SuiteClasses({
-        org.amanzi.neo.loader.core.saver.impl.testing.NewNetworkSaverTesting.class,
-        org.amanzi.neo.loader.core.saver.impl.testing.NewNeighbourSaverTesting.class,
+        org.amanzi.neo.loader.core.newsaver.NewNetworkSaverTesting.class,
+        org.amanzi.neo.loader.core.newsaver.NewNeighbourSaverTesting.class,
         })
 public class SaversSuite {
 
