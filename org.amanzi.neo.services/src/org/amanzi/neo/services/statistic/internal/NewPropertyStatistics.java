@@ -104,9 +104,8 @@ public class NewPropertyStatistics {
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
     public void updatePropertyMap(Object value, Integer count) {
-        if (value.getClass().getSimpleName().equals("String") ||
-                value.getClass().getSimpleName().equals("Boolean") ||
-                value.getClass().getSuperclass().getSimpleName().equals("Number")) {
+        if (value instanceof String || value instanceof Boolean||
+                value instanceof Number) {
             Integer oldCount = 0;
             if (propertyMap.containsKey(value)) {
                 oldCount = propertyMap.get(value);
@@ -122,17 +121,10 @@ public class NewPropertyStatistics {
         if (value instanceof Number) {
             Comparable comparableValue = (Comparable)value;
             
-            if (minValue == null) {
+            if (minValue == null || comparableValue.compareTo(minValue) < 0){
                 minValue = comparableValue;
             }
-            if (maxValue == null) {
-                maxValue = comparableValue;
-            }
-            
-            if (comparableValue.compareTo(minValue) < 0){
-                minValue = comparableValue;
-            }
-            if (comparableValue.compareTo(maxValue) > 0) {
+            if (maxValue == null || comparableValue.compareTo(maxValue) > 0) {
                 maxValue = comparableValue;
             }
         }

@@ -30,11 +30,45 @@ public interface IPropertyStatisticalModel extends IDataModel {
 
     public int getPropertyCount(INodeType nodeType, String propertyName);
 
+    /**
+     * Method find all properties in all vaults
+     * 
+     * @return All properties from statistics
+     */
     public String[] getAllProperties();
-
+    
+    /**
+     * Method find properties with certain node type
+     * 
+     * @param nodeType Type of node
+     * @return All properties from statistics with certain node type
+     */
     public String[] getAllProperties(INodeType nodeType);
     
-    public String[] getAllProperties(Class<?> nodeType);
+    /**
+     * Method find properties with certain type of Class
+     * 
+     * @param klass Type of Class
+     * @return All properties from statistics with certain type of Class
+     */
+    public String[] getAllProperties(Class<?> klass);
+    
+    /**
+     * Method find properties with certain name of property
+     * 
+     * @param propertyName Name of property
+     * @return All properties from statistics with certain name of property
+     */
+    public String[] getAllProperties(String propertyName);
+    
+    /**
+     * Method find properties with certain node type and certain property name
+     * 
+     * @param nodeType Type of node
+     * @param propertyName Name of property
+     * @return All properties from statistics with certain node type and certain property name
+     */
+    public String[] getAllProperties(INodeType nodeType, String propertyName);
     
     /**
      * Returns Class of Property
