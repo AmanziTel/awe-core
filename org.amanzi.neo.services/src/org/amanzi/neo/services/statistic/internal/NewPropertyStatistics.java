@@ -33,14 +33,24 @@ import org.amanzi.neo.services.exceptions.UnsupportedClassException;
 public class NewPropertyStatistics {
 
     /**
-     * name of property
+     * Name of property
      */
     private String name;
 
     /**
-     * class of property values
+     * Class of property values
      */
     private Class< ? > klass;
+    
+    /**
+     * Minimum value of property
+     */
+    private Comparable minValue;
+    
+    /**
+     * Maximum value of property
+     */
+    private Comparable maxValue;
 
     /**
      * map, which makes the correspondence between the value of the property and the number of such
@@ -108,6 +118,33 @@ public class NewPropertyStatistics {
                 propertyMap.remove(value);
             }
         }
+        if (value.getClass().getSuperclass().getSimpleName().equals("Number")) {
+            Comparable comparableValue = (Comparable)value;
+            if (comparableValue.compareTo(minValue) < 0){
+                minValue = comparableValue;
+            }
+            if (comparableValue.compareTo(maxValue) > 0) {
+                maxValue = comparableValue;
+            }
+        }
+    }
+    
+    /**
+     * Method to get minimum value of property statistics
+     *
+     * @return
+     */
+    public Number getMinValue() {
+        return (Number)minValue;
+    }
+    
+    /**
+     * Method to get maximum value of property statistics
+     *
+     * @return
+     */
+    public Number getMaxValue() {
+        return (Number)maxValue;
     }
 
     /**

@@ -16,6 +16,7 @@ package org.amanzi.neo.services.model.impl;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -72,6 +73,8 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     private NewNetworkService nwServ = NeoServiceFactory.getInstance().getNewNetworkService();
     private NewDatasetService dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
 
+    private List<String> currentNetworkStructure = new LinkedList<String>();
+    
     /**
      * Use this constructor to create a network model, based on a node, that already exists in the
      * database.
@@ -426,6 +429,51 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         childNode = ((DataElement)child).getNode();
         nwServ.createRelationship(parentNode, childNode, rel);
     }
+    
+    /**
+     * Method to dynamically change of network structure
+     *
+     * @param parentType Parent type in string format
+     * @param childType Child type in string format
+     */
+    private void changeNetworkStructure(String parentType, String childType) {
+        /**
+         * if current structure not contains parent type and not contains child type,
+         * then add parent and child in end of structure
+         */
+        if (!currentNetworkStructure.contains(parentType) &&
+                !currentNetworkStructure.contains(childType)) {
+            currentNetworkStructure.add(parentType);
+            currentNetworkStructure.add(childType);
+        }
+        /**
+         * if current structure not contains parent type and contains child type,
+         * then add parent at index indexOf(child)
+         */
+        else if (!currentNetworkStructure.contains(parentType) &&
+                currentNetworkStructure.contains(childType)) {
+            int indexOfChild = currentNetworkStructure.indexOf(childType);
+            currentNetworkStructure.add(indexOfChild, parentType);
+        }
+        /**
+         * if current structure contains parent type and not contains child type,
+         * then add child at index indexOf(parent)+1
+         */
+        else if (currentNetworkStructure.contains(parentType) &&
+                !currentNetworkStructure.contains(childType)) {
+            int indexOfParent = currentNetworkStructure.indexOf(parentType);
+            currentNetworkStructure.add(indexOfParent + 1, childType);
+        }
+    }
+    
+    /**
+     * Method return current structure of network
+     *
+     * @return Current structure of network
+     */
+    public List<String> getNetworkStructure() {
+        return currentNetworkStructure;
+    }
 
     @Override
     public IDataElement createElement(IDataElement parent, Map<String, Object> element, RelationshipType reltype)
@@ -440,8 +488,11 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         if (element == null) {
             throw new IllegalArgumentException("Parameters map is null.");
         }
-
+        
+        INodeType parentType = NodeTypeManager.getType(parent.get(NewAbstractService.TYPE).toString());
         INodeType type = NodeTypeManager.getType(element.get(NewAbstractService.TYPE).toString());
+        changeNetworkStructure(parentType.getId(), type.getId());
+        
         Node node = null;
 
         // TODO:validate network structure and save it in root node
