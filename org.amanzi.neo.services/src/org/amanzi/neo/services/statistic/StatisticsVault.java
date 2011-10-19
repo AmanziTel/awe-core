@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.services.statistic;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,6 +38,7 @@ public class StatisticsVault implements IVault {
     private Map<String, NewPropertyStatistics> propertyStatisticsMap = new HashMap<String, NewPropertyStatistics>();
     private Map<Object, Integer> allProperties = new HashMap<Object, Integer>();
 
+    private ArrayList<String> notNecessaryListOfProperties = new ArrayList<String>();
     private static Logger LOGGER = Logger.getLogger(StatisticsVault.class);
 
     private static final String PARAM_NODE_TYPE = "nodeType";
@@ -50,6 +52,7 @@ public class StatisticsVault implements IVault {
         super();
         this.count = 0;
         this.type = "";
+        fillListOfNotNecessaryProperties();
     }
 
     /**
@@ -60,6 +63,15 @@ public class StatisticsVault implements IVault {
     public StatisticsVault(String type) {
         this.type = type;
         this.count = 0;
+        fillListOfNotNecessaryProperties();
+    }
+    
+    /**
+     * Method to fill properties which contains not need properties
+     */
+    private void fillListOfNotNecessaryProperties() {
+        notNecessaryListOfProperties.add("latitude");
+        notNecessaryListOfProperties.add("longitude");
     }
 
     @Override
@@ -126,6 +138,10 @@ public class StatisticsVault implements IVault {
         }
         if (propName.isEmpty()) {
             LOGGER.error("InvalidStatisticsParameterException: parameter propName is empty String");
+            throw new InvalidStatisticsParameterException(PARAM_PROP_NAME, propName);
+        }
+        if (notNecessaryListOfProperties.contains(propName)) {
+            LOGGER.error("InvalidStatisticsParameterException: parameter propName is mark as not necessary property");
             throw new InvalidStatisticsParameterException(PARAM_PROP_NAME, propName);
         }
 
