@@ -42,6 +42,7 @@ import org.amanzi.neo.loader.core.preferences.PreferenceStore;
 import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
 import org.amanzi.neo.services.events.UpdateDatabaseEvent;
 import org.amanzi.neo.services.events.UpdateViewEventType;
+import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.utils.ActionUtil;
 import org.eclipse.core.runtime.CoreException;
@@ -375,7 +376,12 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
                     if (loader != null) {
                         load(accessType, data, loader, monitor);
                     } else {
-                        newload(newloader, monitor);
+                        try {
+							newload(newloader, monitor);
+						} catch (AWEException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
                         try {
                             addDataToCatalog();
                         } catch (MalformedURLException e) {
@@ -440,9 +446,10 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
      * @param data the data
      * @param loader the loader
      * @param monitor the monitor
+     * @throws AWEException 
      */
     protected void newload(final Map<ILoaderNew< ? extends IData, IConfiguration>, ? extends IConfiguration> loaders,
-            IProgressMonitor monitor) {
+            IProgressMonitor monitor) throws AWEException {
 
         for (ILoaderNew< ? extends IData, IConfiguration> loader : loaders.keySet()) {
             if (loaders.get(loader) != null) {

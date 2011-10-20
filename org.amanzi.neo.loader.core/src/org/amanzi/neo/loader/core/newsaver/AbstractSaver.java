@@ -51,7 +51,7 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
     protected final static ExportSynonymsManager exportManager = ExportSynonymsManager.getManager();
     protected static DataLoadPreferenceManager preferenceManager = new DataLoadPreferenceManager();
     protected Map<String, String[]> preferenceStoreSynonyms;
-    protected Map<String, IModel> modelMap = new HashMap<String, IModel>();
+    protected Map<String, IDataModel> modelMap = new HashMap<String, IDataModel>();
     protected Map<IModel, ExportSynonyms> synonymsMap = new HashMap<IModel, ExportSynonyms>();
     private static final String TRUE = "true";
     private static final String FALSE = "false";
@@ -235,7 +235,10 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
     }
 
     @Override
-    public void finishUp() {
+    public void finishUp() throws AWEException {
+    	for (IDataModel dataModel : modelMap.values()) {
+    		dataModel.finishUp();
+    	}
         saveSynonym();
         tx.finish();
         NeoServiceProvider.getProvider().commit();

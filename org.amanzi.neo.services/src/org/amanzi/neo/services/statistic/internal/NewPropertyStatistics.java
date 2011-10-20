@@ -124,13 +124,15 @@ public class NewPropertyStatistics {
     public void updatePropertyMap(Object value, Integer count) {
         if (value instanceof String || value instanceof Boolean||
                 value instanceof Number) {
+            
+            value = changeTypeOfKlass(value);
+            
             Integer oldCount = 0;
             if (propertyMap.containsKey(value)) {
                 oldCount = propertyMap.get(value);
             }
             int newCount = oldCount + count;
             if (newCount > 0) {
-                changeTypeOfKlass(value);
                 propertyMap.put(value, newCount);
             }
             else if (propertyMap.containsKey(value)) {
@@ -154,7 +156,7 @@ public class NewPropertyStatistics {
      *
      * @param value New property to statistics 
      */
-    private void changeTypeOfKlass(Object value) {
+    private Object changeTypeOfKlass(Object value) {
         Class<?> klassOfNewValue = value.getClass();
         
         // if current class not equals with new type of class
@@ -172,8 +174,50 @@ public class NewPropertyStatistics {
                     klass = chainOfClassesToChange.get(indexOfNewClassInChain);
                     changeAllExistingProperties();
                 }
+                else {
+                    return changeTypeOfNewValue(value);
+                }
             }
         }
+        return value;
+    }
+    
+    /**
+     * Method which change type of value according to new type of class
+     *
+     * @param value Value to change
+     * @return Changed value of value:)
+     */
+    private Object changeTypeOfNewValue(Object value) {
+        
+        String valueInStringFormat = value.toString();
+        
+        if (klass.equals(Boolean.class)) {
+            value = Boolean.parseBoolean(valueInStringFormat);
+        }
+        if (klass.equals(Byte.class)) {
+            value = Byte.parseByte(valueInStringFormat);
+        }
+        if (klass.equals(Short.class)) {
+            value = Short.parseShort(valueInStringFormat);
+        }
+        if (klass.equals(Integer.class)) {
+            value = Integer.parseInt(valueInStringFormat);
+        }
+        if (klass.equals(Long.class)) {
+            value = Long.parseLong(valueInStringFormat);
+        }
+        if (klass.equals(Float.class)) {
+            value = Float.parseFloat(valueInStringFormat);
+        }
+        if (klass.equals(Double.class)) {
+            value = Double.parseDouble(valueInStringFormat);
+        }
+        if (klass.equals(String.class)) {
+            value = valueInStringFormat;
+        }
+        
+        return value;
     }
     
     /**
@@ -183,31 +227,11 @@ public class NewPropertyStatistics {
         
         Map<Object, Integer> newPropertyMap = new TreeMap<Object, Integer>();
         
-        for (Integer count : propertyMap.values()) {
-            Object value = propertyMap.get(count);
-            String valueInStringFormat = value.toString();
+        for (Object value : propertyMap.keySet()) {
+            Integer count = propertyMap.get(value);
             
-            if (klass.equals(Byte.class)) {
-                value = Byte.parseByte(valueInStringFormat);
-            }
-            if (klass.equals(Short.class)) {
-                value = Short.parseShort(valueInStringFormat);
-            }
-            if (klass.equals(Integer.class)) {
-                value = Integer.parseInt(valueInStringFormat);
-            }
-            if (klass.equals(Long.class)) {
-                value = Long.parseLong(valueInStringFormat);
-            }
-            if (klass.equals(Float.class)) {
-                value = Float.parseFloat(valueInStringFormat);
-            }
-            if (klass.equals(Double.class)) {
-                value = Double.parseDouble(valueInStringFormat);
-            }
-            if (klass.equals(String.class)) {
-                value = valueInStringFormat;
-            }
+            value = changeTypeOfNewValue(value);
+            
             newPropertyMap.put(value, count);
         }
         

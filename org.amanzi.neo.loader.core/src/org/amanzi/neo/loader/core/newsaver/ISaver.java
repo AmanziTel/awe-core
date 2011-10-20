@@ -14,6 +14,7 @@
 package org.amanzi.neo.loader.core.newsaver;
 
 import org.amanzi.neo.loader.core.IConfiguration;
+import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IModel;
 
 /**
@@ -40,5 +41,5 @@ public interface ISaver<M extends IModel, D extends IData, C extends IConfigurat
     /**
      * common finishing actions
      */
-    public void finishUp();
+    public void finishUp() throws AWEException;
 }
