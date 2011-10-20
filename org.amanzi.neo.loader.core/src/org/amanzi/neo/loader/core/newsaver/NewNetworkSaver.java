@@ -97,6 +97,7 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
             createBSC(null, row);
             return;
         }
+
         mscProperty.put(INeoConstants.PROPERTY_TYPE_NAME, NetworkElementNodeType.MSC.getId());
         mscProperty.put(INeoConstants.PROPERTY_NAME_NAME, autoParse(row.get(columnSynonyms.get(fileSynonyms.get(MSC)))));
 
@@ -346,6 +347,7 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
                 increaseActionCount();
             }
         } catch (AWEException e) {
+            LOGGER.error("Exception wile saving element on line " + lineCounter, e);
             markTxAsFailure();
             finishTx();
             throw (RuntimeException)new RuntimeException().initCause(e);
