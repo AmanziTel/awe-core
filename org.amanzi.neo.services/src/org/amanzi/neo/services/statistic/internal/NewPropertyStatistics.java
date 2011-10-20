@@ -15,6 +15,8 @@ package org.amanzi.neo.services.statistic.internal;
 
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -57,6 +59,8 @@ public class NewPropertyStatistics {
      * values
      */
     private Map<Object, Integer> propertyMap = new TreeMap<Object, Integer>();
+    
+    private List<Class<?>> chainOfClassesToChange = new LinkedList<Class<?>>();
 
     /**
      * constructor with parameter name
@@ -66,8 +70,22 @@ public class NewPropertyStatistics {
     public NewPropertyStatistics(String name, Class< ? > klass) {
         this.name = name;
         this.klass = klass;
+        fillChainOfClassesToChange();
     }
 
+    /**
+     * Fill list with classes which will change
+     */
+    private void fillChainOfClassesToChange() {
+        chainOfClassesToChange.add(Byte.class);
+        chainOfClassesToChange.add(Short.class);
+        chainOfClassesToChange.add(Integer.class);
+        chainOfClassesToChange.add(Long.class);
+        chainOfClassesToChange.add(Float.class);
+        chainOfClassesToChange.add(Double.class);
+        chainOfClassesToChange.add(String.class);
+    }
+    
     /**
      * get name of property
      * 
@@ -112,6 +130,7 @@ public class NewPropertyStatistics {
             }
             int newCount = oldCount + count;
             if (newCount > 0) {
+                changeTypeOfKlass(value);
                 propertyMap.put(value, newCount);
             }
             else if (propertyMap.containsKey(value)) {
@@ -128,6 +147,72 @@ public class NewPropertyStatistics {
                 maxValue = comparableValue;
             }
         }
+    }
+    
+    /**
+     * Change type of current class
+     *
+     * @param value New property to statistics 
+     */
+    private void changeTypeOfKlass(Object value) {
+        Class<?> klassOfNewValue = value.getClass();
+        
+        // if current class not equals with new type of class
+        if (!klass.equals(klassOfNewValue)) {
+            // if current class is Boolean and new value is not Boolean
+            if (klass.equals(Boolean.class)) {
+                klass = String.class;
+                changeAllExistingProperties();
+            }
+            // if current class not Boolean
+            else {
+                int indexOfCurrentClassInChain = chainOfClassesToChange.indexOf(klass);
+                int indexOfNewClassInChain = chainOfClassesToChange.indexOf(klassOfNewValue);
+                if (indexOfNewClassInChain > indexOfCurrentClassInChain) {
+                    klass = chainOfClassesToChange.get(indexOfNewClassInChain);
+                    changeAllExistingProperties();
+                }
+            }
+        }
+    }
+    
+    /**
+     * Method to change all existing properties according to new type of class
+     */
+    private void changeAllExistingProperties() {
+        
+        Map<Object, Integer> newPropertyMap = new TreeMap<Object, Integer>();
+        
+        for (Integer count : propertyMap.values()) {
+            Object value = propertyMap.get(count);
+            String valueInStringFormat = value.toString();
+            
+            if (klass.equals(Byte.class)) {
+                value = Byte.parseByte(valueInStringFormat);
+            }
+            if (klass.equals(Short.class)) {
+                value = Short.parseShort(valueInStringFormat);
+            }
+            if (klass.equals(Integer.class)) {
+                value = Integer.parseInt(valueInStringFormat);
+            }
+            if (klass.equals(Long.class)) {
+                value = Long.parseLong(valueInStringFormat);
+            }
+            if (klass.equals(Float.class)) {
+                value = Float.parseFloat(valueInStringFormat);
+            }
+            if (klass.equals(Double.class)) {
+                value = Double.parseDouble(valueInStringFormat);
+            }
+            if (klass.equals(String.class)) {
+                value = valueInStringFormat;
+            }
+            newPropertyMap.put(value, count);
+        }
+        
+        propertyMap.clear();
+        propertyMap = newPropertyMap;
     }
     
     /**
