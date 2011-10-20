@@ -82,7 +82,11 @@ public class DataElement extends HashMap<String, Object> implements IDataElement
         if (this.containsKey(NewAbstractService.NAME)) {
             return this.get(NewAbstractService.NAME).toString();
         } else {
-            return node == null ? super.toString() : Long.toString(node.getId()); 
+            return node == null ? 
+                    super.toString() : 
+                    (node.hasProperty(NewAbstractService.NAME) ? 
+                            node.getProperty(NewAbstractService.NAME).toString() : 
+                            Long.toString(node.getId())); 
         }    
     }
     
