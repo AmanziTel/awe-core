@@ -56,6 +56,21 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
     private static final String TRUE = "true";
     private static final String FALSE = "false";
 
+    protected AbstractSaver(GraphDatabaseService service) {
+        if (service != null) {
+            database = service;
+        } else {
+            setDbInstance();
+        }
+    }
+
+    /**
+     * 
+     */
+    public AbstractSaver() {
+        super();
+    }
+
     /**
      * this method try to parse String propValue if its type is unknown
      * 
@@ -146,7 +161,9 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
      * Initialize database;
      */
     protected void setDbInstance() {
-        database = NeoServiceProvider.getProvider().getService();
+        if (database == null) {
+            database = NeoServiceProvider.getProvider().getService();
+        }
     }
 
     /**
