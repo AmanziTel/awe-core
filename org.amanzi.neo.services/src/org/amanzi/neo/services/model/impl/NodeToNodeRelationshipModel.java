@@ -23,12 +23,14 @@ import org.amanzi.neo.services.NewNetworkService;
 import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
 import org.amanzi.neo.services.model.INodeToNodeRelationsType;
 import org.amanzi.neo.services.model.impl.DataModel.DataElementIterable;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.jdom.IllegalNameException;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
@@ -169,18 +171,18 @@ public class NodeToNodeRelationshipModel extends AbstractModel implements INodeT
     public void linkNode(IDataElement source, IDataElement target, Map<String, Object> params) throws AWEException {
         // validate parameters
         if (source == null) {
-            throw new IllegalArgumentException("Source is null.");
+            throw new IllegalNameException("Source is null.");
         }
         Node sourceNode = ((DataElement)source).getNode();
         if (sourceNode == null) {
-            throw new IllegalArgumentException("Source node is null.");
+            throw new IllegalNodeDataException("Source node is null.");
         }
         if (target == null) {
-            throw new IllegalArgumentException("Target is null.");
+            throw new IllegalNameException("Target is null.");
         }
         Node targetNode = ((DataElement)target).getNode();
         if (targetNode == null) {
-            throw new IllegalArgumentException("Target node is null.");
+            throw new IllegalNodeDataException("Target node is null.");
         }
 
         Node proxy1 = getProxy(sourceNode);

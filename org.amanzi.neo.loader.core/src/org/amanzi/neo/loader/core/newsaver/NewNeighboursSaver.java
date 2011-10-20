@@ -134,6 +134,8 @@ public class NewNeighboursSaver extends AbstractSaver<NetworkModel, CSVContainer
                 markTxAsSuccess();
                 increaseActionCount();
             }
+        } catch (IllegalArgumentException e) {
+            LOGGER.warn("Exception while trying to find service or neighbor node " + lineCounter, e);
         } catch (AWEException e) {
             markTxAsFailure();
             finishTx();
