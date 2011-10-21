@@ -318,6 +318,8 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
             rootDataElement = new DataElement(model.getRootNode());
             modelMap.put(configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK), model);
             createExportSynonymsForModels();
+            flag = true;
+            commitTx();
         } catch (AWEException e) {
             rollbackTx();
             LOGGER.error("Exception on creating root Model", e);

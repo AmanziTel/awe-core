@@ -41,194 +41,205 @@ import org.neo4j.graphdb.Transaction;
  * @param <T2>
  * @param <T3>
  */
-public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 extends IConfiguration> implements ISaver<T1, T2, T3> {
-    public static final String CONFIG_VALUE_PROJECT = "Project";
-    public static final String CONFIG_VALUE_NETWORK = "Network";
-    public static final String CONFIG_VALUE_DATASET = "Dataset";
-    public static final String PROJECT_PROPERTY = "project";
-    public static final String CONFIG_VALUE_CALLS = "Calls";
-    public static final String CONFIG_VALUE_PESQ = "Pesq";
-    protected final static ExportSynonymsManager exportManager = ExportSynonymsManager.getManager();
-    protected static DataLoadPreferenceManager preferenceManager = new DataLoadPreferenceManager();
-    protected Map<String, String[]> preferenceStoreSynonyms;
-    protected Map<String, IDataModel> modelMap = new HashMap<String, IDataModel>();
-    protected Map<IModel, ExportSynonyms> synonymsMap = new HashMap<IModel, ExportSynonyms>();
-    private static final String TRUE = "true";
-    private static final String FALSE = "false";
+public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 extends IConfiguration>
+		implements ISaver<T1, T2, T3> {
+	public static final String CONFIG_VALUE_PROJECT = "Project";
+	public static final String CONFIG_VALUE_NETWORK = "Network";
+	public static final String CONFIG_VALUE_DATASET = "Dataset";
+	public static final String PROJECT_PROPERTY = "project";
+	public static final String CONFIG_VALUE_CALLS = "Calls";
+	public static final String CONFIG_VALUE_PESQ = "Pesq";
+	protected final static ExportSynonymsManager exportManager = ExportSynonymsManager
+			.getManager();
+	protected static DataLoadPreferenceManager preferenceManager = new DataLoadPreferenceManager();
+	protected Map<String, String[]> preferenceStoreSynonyms;
+	protected Map<String, IDataModel> modelMap = new HashMap<String, IDataModel>();
+	protected Map<IModel, ExportSynonyms> synonymsMap = new HashMap<IModel, ExportSynonyms>();
+	private static final String TRUE = "true";
+	private static final String FALSE = "false";
+	protected static boolean flag = false;
 
-    protected AbstractSaver(GraphDatabaseService service) {
-        if (service != null) {
-            database = service;
-        } else {
-            setDbInstance();
-        }
-    }
+	protected AbstractSaver(GraphDatabaseService service) {
+		if (service != null) {
+			database = service;
+		} else {
+			setDbInstance();
+		}
+	}
 
-    /**
+	/**
      * 
      */
-    public AbstractSaver() {
-        super();
-    }
+	public AbstractSaver() {
+		super();
+	}
 
-    /**
-     * this method try to parse String propValue if its type is unknown
-     * 
-     * @param propertyValue - String propValue
-     * @return Object parseValue
-     */
-    protected Object autoParse(String propertyValue) {
-        try {
-            char separator = '.';
-            if (propertyValue.indexOf(separator) != -1) {
-                Float floatValue = Float.parseFloat(propertyValue);
-                if (floatValue.toString().length() < propertyValue.length()) {
-                    return Double.parseDouble(propertyValue);
-                } else {
-                    return floatValue;
-                }
-            } else {
-                try {
-                    return Integer.parseInt(propertyValue);
-                } catch (NumberFormatException e) {
-                    return Long.parseLong(propertyValue);
-                }
-            }
-        } catch (Exception e) {
-            if (propertyValue.equalsIgnoreCase(TRUE)) {
-                return Boolean.TRUE;
-            } else if (propertyValue.equalsIgnoreCase(FALSE)) {
-                return Boolean.FALSE;
-            }
-            return propertyValue;
-        }
+	/**
+	 * this method try to parse String propValue if its type is unknown
+	 * 
+	 * @param propertyValue
+	 *            - String propValue
+	 * @return Object parseValue
+	 */
+	protected Object autoParse(String propertyValue) {
+		try {
+			char separator = '.';
+			if (propertyValue.indexOf(separator) != -1) {
+				Float floatValue = Float.parseFloat(propertyValue);
+				if (floatValue.toString().length() < propertyValue.length()) {
+					return Double.parseDouble(propertyValue);
+				} else {
+					return floatValue;
+				}
+			} else {
+				try {
+					return Integer.parseInt(propertyValue);
+				} catch (NumberFormatException e) {
+					return Long.parseLong(propertyValue);
+				}
+			}
+		} catch (Exception e) {
+			if (propertyValue.equalsIgnoreCase(TRUE)) {
+				return Boolean.TRUE;
+			} else if (propertyValue.equalsIgnoreCase(FALSE)) {
+				return Boolean.FALSE;
+			}
+			return propertyValue;
+		}
 
-    }
+	}
 
-    protected void createExportSynonymsForModels() {
-        try {
-            for (String key : modelMap.keySet()) {
-                synonymsMap.put(modelMap.get(key), exportManager.createExportSynonym(modelMap.get(key), ExportSynonymType.DATASET));
-            }
-        } catch (DatabaseException e) {
-            // TODO Handle DatabaseException
-            throw (RuntimeException)new RuntimeException().initCause(e);
-        }
-    }
+	protected void createExportSynonymsForModels() {
+		try {
+			for (String key : modelMap.keySet()) {
+				synonymsMap.put(modelMap.get(key), exportManager
+						.createExportSynonym(modelMap.get(key),
+								ExportSynonymType.DATASET));
+			}
+		} catch (DatabaseException e) {
+			// TODO Handle DatabaseException
+			throw (RuntimeException) new RuntimeException().initCause(e);
+		}
+	}
 
-    protected void addedDatasetSynonyms(IDataModel model, INodeType nodeType, String propertyName, String synonym) {
-        if (model.getName() != null) {
-            synonymsMap.get(model).addSynonym(nodeType, propertyName, synonym);
-        }
-    }
+	protected void addedDatasetSynonyms(IDataModel model, INodeType nodeType,
+			String propertyName, String synonym) {
+		if (model.getName() != null) {
+			synonymsMap.get(model).addSynonym(nodeType, propertyName, synonym);
+		}
+	}
 
-    /**
-     * save synonyms into database
-     */
-    private void saveSynonym() {
-        if (synonymsMap.isEmpty()) {
-            return;
-        }
-        for (String key : modelMap.keySet()) {
-            try {
-                exportManager.saveDatasetExportSynonyms(modelMap.get(key), synonymsMap.get(modelMap.get(key)),
-                        ExportSynonymType.DATASET);
-            } catch (DatabaseException e) {
-                // TODO Handle DatabaseException
-                throw (RuntimeException)new RuntimeException().initCause(e);
-            }
-        }
-    }
+	/**
+	 * save synonyms into database
+	 */
+	private void saveSynonym() {
+		if (synonymsMap.isEmpty()) {
+			return;
+		}
+		for (String key : modelMap.keySet()) {
+			try {
+				exportManager.saveDatasetExportSynonyms(modelMap.get(key),
+						synonymsMap.get(modelMap.get(key)),
+						ExportSynonymType.DATASET);
+			} catch (DatabaseException e) {
+				// TODO Handle DatabaseException
+				throw (RuntimeException) new RuntimeException().initCause(e);
+			}
+		}
+	}
 
-    /**
-     * action threshold for commit
-     */
-    private int commitTxCount;
-    /**
-     * graph database instance
-     */
-    private GraphDatabaseService database;
-    /**
-     * top level trasnaction
-     */
-    private Transaction tx;
-    /**
-     * transactions count
-     */
-    private int actionCount;
+	/**
+	 * action threshold for commit
+	 */
+	private int commitTxCount;
+	/**
+	 * graph database instance
+	 */
+	private GraphDatabaseService database;
+	/**
+	 * top level trasnaction
+	 */
+	private Transaction tx;
+	/**
+	 * transactions count
+	 */
+	private int actionCount;
 
-    /**
-     * Initialize database;
-     */
-    protected void setDbInstance() {
-        if (database == null) {
-            database = NeoServiceProvider.getProvider().getService();
-        }
-    }
+	/**
+	 * Initialize database;
+	 */
+	protected void setDbInstance() {
+		if (database == null) {
+			database = NeoServiceProvider.getProvider().getService();
+		}
+	}
 
-   /**
-     * dataset service instance
-     */
-    protected static DatasetService datasetService;
+	/**
+	 * dataset service instance
+	 */
+	protected static DatasetService datasetService;
 
-    /**
-     * initialize dataset service
-     * 
-     * @return
-     */
-    protected void getDatasetService() {
-        if (datasetService == null) {
-            datasetService = new DatasetService();
-        }
-    }
+	/**
+	 * initialize dataset service
+	 * 
+	 * @return
+	 */
+	protected void getDatasetService() {
+		if (datasetService == null) {
+			datasetService = new DatasetService();
+		}
+	}
 
-    /**
-     * set how much transactions should gone before reopening
-     * 
-     * @param count
-     */
-    protected void setTxCountToReopen(int count) {
-        commitTxCount = count;
-    }
+	/**
+	 * set how much transactions should gone before reopening
+	 * 
+	 * @param count
+	 */
+	protected void setTxCountToReopen(int count) {
+		commitTxCount = count;
+	}
 
-    /**
-     * if current tx==null create new instance finish current transaction if actions in current
-     * transaction more than commitTxCount and open new;
-     */
-    protected void commitTx() {
-        if ((actionCount > commitTxCount) || (tx != null && actionCount == 0)) {
-        	tx.success();
-        	tx.finish();
-            tx = null;
-            actionCount = 0;
-        }
-        if (tx == null) {
-            tx = database.beginTx();
-        }  
-        actionCount++;
-    }
+	/**
+	 * if current tx==null create new instance finish current transaction if
+	 * actions in current transaction more than commitTxCount and open new;
+	 */
+	protected void commitTx() {
+		if ((actionCount > commitTxCount) || (tx != null && actionCount == 0)
+				|| (flag == true)) {
+			tx.success();
+			tx.finish();
+			tx = null;
+			actionCount = 0;
+			flag = false;
+		}
+		if (tx == null) {
+			tx = database.beginTx();
+		}
+		actionCount++;
 
-    protected void rollbackTx() {
-    	tx.failure();
-        actionCount = 0;
-        tx.finish();
-        tx = null;
-    }
+	}
 
-    @Override
-    public void finishUp() throws AWEException {
-    	for (IDataModel dataModel : modelMap.values()) {
-    		dataModel.finishUp();
-    	}
-        saveSynonym();
-        tx.success();
-        tx.finish();
-        NeoServiceProvider.getProvider().commit();
-        actionCount = 0;
-    }
+	protected void rollbackTx() {
+		tx.failure();
+		actionCount = 0;
+		tx.finish();
+		tx = null;
+	}
 
-    protected IProjectModel getActiveProject() throws AWEException {
-        return ProjectModel.getCurrentProjectModel();
+	@Override
+	public void finishUp() throws AWEException {
+		for (IDataModel dataModel : modelMap.values()) {
+			dataModel.finishUp();
+		}
+		saveSynonym();
+		tx.success();
+		tx.finish();
+		NeoServiceProvider.getProvider().commit();
+		actionCount = 0;
+	}
 
-    }
+	protected IProjectModel getActiveProject() throws AWEException {
+		return ProjectModel.getCurrentProjectModel();
+
+	}
 }
