@@ -99,7 +99,8 @@ public class NewNeighboursSaver extends AbstractSaver<NetworkModel, CSVContainer
         columnSynonyms = new HashMap<String, Integer>();
         setDbInstance();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
-        openOrReopenTx();
+       // openOrReopenTx();
+        commitTx();
         try {
             rootElement.put(INeoConstants.PROPERTY_NAME_NAME, configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK));
             networkModel = getActiveProject().getNetwork(configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK));
@@ -107,19 +108,21 @@ public class NewNeighboursSaver extends AbstractSaver<NetworkModel, CSVContainer
                     NetworkElementNodeType.SECTOR);
             modelMap.put(configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK), networkModel);
             createExportSynonymsForModels();
-            markTxAsSuccess();
+//            markTxAsSuccess();
         } catch (AWEException e) {
-            markTxAsSuccess();
+        	rollbackTx();
+          //  markTxAsSuccess();
             LOGGER.error("Exception on creating root Model", e);
             throw new RuntimeException(e);
-        } finally {
-            finishTx();
-        }
+        } //finally {
+           // finishTx();
+       // }
     }
 
     @Override
     public void saveElement(CSVContainer dataElement) {
-        openOrReopenTx();
+        //openOrReopenTx();
+    	commitTx();
         CSVContainer container = dataElement;
         try {
             if (fileSynonyms.isEmpty()) {
@@ -131,14 +134,16 @@ public class NewNeighboursSaver extends AbstractSaver<NetworkModel, CSVContainer
                 lineCounter++;
                 List<String> value = container.getValues();
                 createNeighbour(value);
-                markTxAsSuccess();
-                increaseActionCount();
+                //markTxAsSuccess();
+                //increaseActionCount();
+                commitTx();
             }
         } catch (IllegalArgumentException e) {
             LOGGER.warn("Exception while trying to find service or neighbor node " + lineCounter, e);
         } catch (AWEException e) {
-            markTxAsFailure();
-            finishTx();
+        	rollbackTx();
+            //markTxAsFailure();
+            //finishTx();
             LOGGER.error("Error while neighbour create on line " + lineCounter, e);
             throw (RuntimeException)new RuntimeException().initCause(e);
         }

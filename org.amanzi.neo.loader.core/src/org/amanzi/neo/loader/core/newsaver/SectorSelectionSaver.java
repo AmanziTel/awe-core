@@ -69,7 +69,8 @@ public class SectorSelectionSaver extends AbstractSaver<NetworkModel, CSVContain
 
     @Override
     public void saveElement(CSVContainer dataElement) {
-        openOrReopenTx();
+        //openOrReopenTx();
+    	commitTx();
         try {
             container = dataElement;
             if (headers == null) {
@@ -78,14 +79,16 @@ public class SectorSelectionSaver extends AbstractSaver<NetworkModel, CSVContain
                 for (String value : container.getValues()) {
 //                    IDataElement sector = networkModel.findElement(element)
                     
-                    markTxAsSuccess();
-                    increaseActionCount();
+                    //markTxAsSuccess();
+                    //increaseActionCount();
+                	commitTx();
                 }
             }
 
         } catch (Exception e) {
             LOGGER.error(e);
-            markTxAsFailure();
+            //markTxAsFailure();
+            rollbackTx();
         }
     }
 }

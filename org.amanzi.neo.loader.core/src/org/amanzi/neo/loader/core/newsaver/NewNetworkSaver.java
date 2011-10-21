@@ -67,13 +67,15 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
         columnSynonyms = new HashMap<String, Integer>();
         setDbInstance();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
-        openOrReopenTx();
+        //openOrReopenTx();
+        commitTx();
         if (model != null) {
             this.model = model;
             rootDataElement = new DataElement(model.getRootNode());
             modelMap.put(model.getName(), model);
-            markTxAsSuccess();
-            finishTx();
+            //markTxAsSuccess();
+            //finishTx();
+            commitTx();
         } else {
             init(config, null);
         }
@@ -312,26 +314,29 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
         columnSynonyms = new HashMap<String, Integer>();
         setDbInstance();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
-        openOrReopenTx();
+        //openOrReopenTx();
+        commitTx();
         try {
             rootElement.put(INeoConstants.PROPERTY_NAME_NAME, configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK));
             model = getActiveProject().getNetwork(configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK));
             rootDataElement = new DataElement(model.getRootNode());
             modelMap.put(configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK), model);
-            createExportSynonymsForModels();
-            markTxAsSuccess();
+//            createExportSynonymsForModels();
+//            markTxAsSuccess();
         } catch (AWEException e) {
-            markTxAsFailure();
+            //markTxAsFailure();
+        	rollbackTx();
             LOGGER.error("Exception on creating root Model", e);
             throw new RuntimeException(e);
-        } finally {
-            finishTx();
-        }
+        } //finally {
+          //  finishTx();
+       // }
     }
 
     @Override
     public void saveElement(CSVContainer dataElement) {
-        openOrReopenTx();
+        //openOrReopenTx();
+    	commitTx();
         CSVContainer container = dataElement;
         try {
             if (fileSynonyms.isEmpty()) {
@@ -343,13 +348,13 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
                 lineCounter++;
                 List<String> value = container.getValues();
                 createMSC(value);
-                markTxAsSuccess();
-                increaseActionCount();
+                commitTx();
+                //markTxAsSuccess();
+                //increaseActionCount();
             }
         } catch (AWEException e) {
             LOGGER.error("Exception wile saving element on line " + lineCounter, e);
-            markTxAsFailure();
-            finishTx();
+            rollbackTx();
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
     }
