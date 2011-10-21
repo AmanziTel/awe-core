@@ -41,217 +41,212 @@ import org.neo4j.graphdb.Transaction;
  * @param <T2>
  * @param <T3>
  */
-public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 extends IConfiguration>
-		implements ISaver<T1, T2, T3> {
-	public static final String CONFIG_VALUE_PROJECT = "Project";
-	public static final String CONFIG_VALUE_NETWORK = "Network";
-	public static final String CONFIG_VALUE_DATASET = "Dataset";
-	public static final String PROJECT_PROPERTY = "project";
-	public static final String CONFIG_VALUE_CALLS = "Calls";
-	public static final String CONFIG_VALUE_PESQ = "Pesq";
-	protected final static ExportSynonymsManager exportManager = ExportSynonymsManager
-			.getManager();
-	protected static DataLoadPreferenceManager preferenceManager = new DataLoadPreferenceManager();
-	protected Map<String, String[]> preferenceStoreSynonyms;
-	protected Map<String, IModel> modelMap = new HashMap<String, IModel>();
-	protected Map<IModel, ExportSynonyms> synonymsMap = new HashMap<IModel, ExportSynonyms>();
-	private static final String TRUE = "true";
-	private static final String FALSE = "false";
-	private boolean flag = false;
-	
-	/**
-	 * this method try to parse String propValue if its type is unknown
-	 * 
-	 * @param propertyValue
-	 *            - String propValue
-	 * @return Object parseValue
-	 */
-	protected Object autoParse(String propertyValue) {
-		try {
-			char separator = '.';
-			if (propertyValue.indexOf(separator) != -1) {
-				Float floatValue = Float.parseFloat(propertyValue);
-				if (floatValue.toString().length() < propertyValue.length()) {
-					return Double.parseDouble(propertyValue);
-				} else {
-					return floatValue;
-				}
-			} else {
-				try {
-					return Integer.parseInt(propertyValue);
-				} catch (NumberFormatException e) {
-					return Long.parseLong(propertyValue);
-				}
-			}
-		} catch (Exception e) {
-			if (propertyValue.equalsIgnoreCase(TRUE)) {
-				return Boolean.TRUE;
-			} else if (propertyValue.equalsIgnoreCase(FALSE)) {
-				return Boolean.FALSE;
-			}
-			return propertyValue;
-		}
+public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 extends IConfiguration> implements ISaver<T1, T2, T3> {
+    public static final String CONFIG_VALUE_PROJECT = "Project";
+    public static final String CONFIG_VALUE_NETWORK = "Network";
+    public static final String CONFIG_VALUE_DATASET = "Dataset";
+    public static final String PROJECT_PROPERTY = "project";
+    public static final String CONFIG_VALUE_CALLS = "Calls";
+    public static final String CONFIG_VALUE_PESQ = "Pesq";
+    protected final static ExportSynonymsManager exportManager = ExportSynonymsManager.getManager();
+    protected static DataLoadPreferenceManager preferenceManager = new DataLoadPreferenceManager();
+    protected Map<String, String[]> preferenceStoreSynonyms;
+    protected Map<String, IDataModel> modelMap = new HashMap<String, IDataModel>();
+    protected Map<IModel, ExportSynonyms> synonymsMap = new HashMap<IModel, ExportSynonyms>();
+    private static final String TRUE = "true";
+    private static final String FALSE = "false";
 
-	}
+    protected AbstractSaver(GraphDatabaseService service) {
+        if (service != null) {
+            database = service;
+        } else {
+            setDbInstance();
+        }
+    }
 
-	protected void createExportSynonymsForModels() {
-		try {
-			for (String key : modelMap.keySet()) {
-				synonymsMap.put(modelMap.get(key), exportManager
-						.createExportSynonym(modelMap.get(key),
-								ExportSynonymType.DATASET));
-			}
-		} catch (DatabaseException e) {
-			// TODO Handle DatabaseException
-			throw (RuntimeException) new RuntimeException().initCause(e);
-		}
-	}
+    /**
+     * 
+     */
+    public AbstractSaver() {
+        super();
+    }
 
-	protected void addedDatasetSynonyms(IDataModel model, INodeType nodeType,
-			String propertyName, String synonym) {
-		if (model.getName() != null) {
-			synonymsMap.get(model).addSynonym(nodeType, propertyName, synonym);
-		}
-	}
+    /**
+     * this method try to parse String propValue if its type is unknown
+     * 
+     * @param propertyValue - String propValue
+     * @return Object parseValue
+     */
+    protected Object autoParse(String propertyValue) {
+        try {
+            char separator = '.';
+            if (propertyValue.indexOf(separator) != -1) {
+                Float floatValue = Float.parseFloat(propertyValue);
+                if (floatValue.toString().length() < propertyValue.length()) {
+                    return Double.parseDouble(propertyValue);
+                } else {
+                    return floatValue;
+                }
+            } else {
+                try {
+                    return Integer.parseInt(propertyValue);
+                } catch (NumberFormatException e) {
+                    return Long.parseLong(propertyValue);
+                }
+            }
+        } catch (Exception e) {
+            if (propertyValue.equalsIgnoreCase(TRUE)) {
+                return Boolean.TRUE;
+            } else if (propertyValue.equalsIgnoreCase(FALSE)) {
+                return Boolean.FALSE;
+            }
+            return propertyValue;
+        }
 
-	/**
-	 * save synonyms into database
-	 */
-	private void saveSynonym() {
-		if (synonymsMap.isEmpty()) {
-			return;
-		}
-		for (String key : modelMap.keySet()) {
-			try {
-				exportManager.saveDatasetExportSynonyms(modelMap.get(key),
-						synonymsMap.get(modelMap.get(key)),
-						ExportSynonymType.DATASET);
-			} catch (DatabaseException e) {
-				// TODO Handle DatabaseException
-				throw (RuntimeException) new RuntimeException().initCause(e);
-			}
-		}
-	}
+    }
 
-	/**
-	 * action threshold for commit
-	 */
-	private int commitTxCount;
-	/**
-	 * graph database instance
-	 */
-	private GraphDatabaseService database;
-	/**
-	 * top level trasnaction
-	 */
-	private Transaction tx;
-	/**
-	 * transactions count
-	 */
-	private int actionCount;
+    protected void createExportSynonymsForModels() {
+        try {
+            for (String key : modelMap.keySet()) {
+                synonymsMap.put(modelMap.get(key), exportManager.createExportSynonym(modelMap.get(key), ExportSynonymType.DATASET));
+            }
+        } catch (DatabaseException e) {
+            // TODO Handle DatabaseException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+    }
 
-	/**
-	 * Initialize database;
-	 */
-	protected void setDbInstance() {
-		database = NeoServiceProvider.getProvider().getService();
-	}
+    protected void addedDatasetSynonyms(IDataModel model, INodeType nodeType, String propertyName, String synonym) {
+        if (model.getName() != null) {
+            synonymsMap.get(model).addSynonym(nodeType, propertyName, synonym);
+        }
+    }
 
-	/**
-	 * increase action counter in current tx;
-	 */
-	protected void increaseActionCount() {
-		actionCount++;
-	}
+    /**
+     * save synonyms into database
+     */
+    private void saveSynonym() {
+        if (synonymsMap.isEmpty()) {
+            return;
+        }
+        for (String key : modelMap.keySet()) {
+            try {
+                exportManager.saveDatasetExportSynonyms(modelMap.get(key), synonymsMap.get(modelMap.get(key)),
+                        ExportSynonymType.DATASET);
+            } catch (DatabaseException e) {
+                // TODO Handle DatabaseException
+                throw (RuntimeException)new RuntimeException().initCause(e);
+            }
+        }
+    }
 
-	/**
-	 * dataset service instance
-	 */
-	protected static DatasetService datasetService;
+    /**
+     * action threshold for commit
+     */
+    private int commitTxCount;
+    /**
+     * graph database instance
+     */
+    private GraphDatabaseService database;
+    /**
+     * top level trasnaction
+     */
+    private Transaction tx;
+    /**
+     * transactions count
+     */
+    private int actionCount;
 
-	/**
-	 * initialize dataset service
-	 * 
-	 * @return
-	 */
-	protected void getDatasetService() {
-		if (datasetService == null) {
-			datasetService = new DatasetService();
-		}
-	}
+    /**
+     * Initialize database;
+     */
+    protected void setDbInstance() {
+        if (database == null) {
+            database = NeoServiceProvider.getProvider().getService();
+        }
+    }
 
-	/**
-	 * set how much transactions should gone before reopening
-	 * 
-	 * @param count
-	 */
-	protected void setTxCountToReopen(int count) {
-		commitTxCount = count;
-	}
+    /**
+     * increase action counter in current tx;
+     */
+    protected void increaseActionCount() {
+        actionCount++;
+    }
 
-	/**
-	 * if current tx==null create new instance finish current transaction if
-	 * actions in current transaction more than commitTxCount and open new;
-	 */
-	/*
-	 * protected void openOrReopenTx() { if ((actionCount > commitTxCount) ||
-	 * (tx != null && actionCount == 0)) { tx.finish(); tx = null; actionCount =
-	 * 0; } if (tx == null) { tx = database.beginTx(); }
-	 * 
-	 * }
-	 * 
-	 * protected void finishTx() { actionCount = 0; tx.finish(); tx = null; }
-	 * 
-	 * /** mark transaction as success
-	 */
-	/*
-	 * protected void markTxAsSuccess() { tx.success(); }
-	 * 
-	 * /** mark tx as failure
-	 */
-	/*
-	 * protected void markTxAsFailure() { tx.failure(); }
-	 */
+    /**
+     * dataset service instance
+     */
+    protected static DatasetService datasetService;
 
-	protected void isFinishTrue() {
-		flag = true;
-	}
+    /**
+     * initialize dataset service
+     * 
+     * @return
+     */
+    protected void getDatasetService() {
+        if (datasetService == null) {
+            datasetService = new DatasetService();
+        }
+    }
 
-	protected void commitTx() {
-		if (tx != null) {
-			actionCount++;
-			tx.success();
-		}
-		if ((actionCount > commitTxCount) || (tx != null && actionCount == 0)
-				|| (flag == true)) {
-			tx.finish();
-			tx = null;
-			actionCount = 0;
-			flag = false;
-		}
-		if (tx == null) {
-			tx = database.beginTx();
-		}
-	}
+    /**
+     * set how much transactions should gone before reopening
+     * 
+     * @param count
+     */
+    protected void setTxCountToReopen(int count) {
+        commitTxCount = count;
+    }
 
-	protected void rollbackTx() {
-		tx.failure();
-		actionCount = 0;
-		tx.finish();
-		tx = null;
-	}
+    /**
+     * if current tx==null create new instance finish current transaction if actions in current
+     * transaction more than commitTxCount and open new;
+     */
+    protected void openOrReopenTx() {
+        if ((actionCount > commitTxCount) || (tx != null && actionCount == 0)) {
+            tx.finish();
+            tx = null;
+            actionCount = 0;
+        }
+        if (tx == null) {
+            tx = database.beginTx();
+        }
 
-	@Override
-	public void finishUp() {
-		saveSynonym();
+    }
 
-		tx.finish();
-		NeoServiceProvider.getProvider().commit();
-		actionCount = 0;
-	}
+    protected void finishTx() {
+        actionCount = 0;
+        tx.finish();
+        tx = null;
+    }
 
-	protected IProjectModel getActiveProject() throws AWEException {
-		return ProjectModel.getCurrentProjectModel();
+    /**
+     * mark transaction as success
+     */
+    protected void markTxAsSuccess() {
+        tx.success();
+    }
 
-	}
+    /**
+     * mark tx as failure
+     */
+    protected void markTxAsFailure() {
+        tx.failure();
+    }
+
+    @Override
+    public void finishUp() throws AWEException {
+    	for (IDataModel dataModel : modelMap.values()) {
+    		dataModel.finishUp();
+    	}
+        saveSynonym();
+        tx.finish();
+        NeoServiceProvider.getProvider().commit();
+        actionCount = 0;
+    }
+
+    protected IProjectModel getActiveProject() throws AWEException {
+        return ProjectModel.getCurrentProjectModel();
+
+    }
 }

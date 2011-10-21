@@ -419,26 +419,26 @@ public class VaultTests {
 
     }
 
-    /**
-     * testing method indexProperty(String nodeType, String propName, Object propValue) when
-     * propValue type is wrong
-     * 
-     * @throws IndexPropertyException
-     * @throws InvalidStatisticsParameterException
-     */
-    @Test(expected = IndexPropertyException.class)
-    public void indexPropertyInvalidPropertyTypeNegativeTest() throws IndexPropertyException, InvalidStatisticsParameterException {
-        LOGGER.debug("start test indexPropertyInvalidPropertyTypeNegativeTest()");
-        StatisticsVault propVault = new StatisticsVault(PROPERTIES);
-        StatisticsVault networkSubVault = new StatisticsVault(NETWORK);
-        propVault.addSubVault(networkSubVault);
-        NewPropertyStatistics propStat = new NewPropertyStatistics(PROPERTY_NAME_NAME_1, Integer.class);
-        networkSubVault.addPropertyStatistics(propStat);
-
-        propVault.indexProperty(NETWORK, PROPERTY_NAME_NAME_1, STRING_PROPERTY_VALUE_NETWORK_1);
-        LOGGER.debug("finish test indexPropertyInvalidPropertyTypeNegativeTest()");
-
-    }
+//    /**
+//     * testing method indexProperty(String nodeType, String propName, Object propValue) when
+//     * propValue type is wrong
+//     * 
+//     * @throws IndexPropertyException
+//     * @throws InvalidStatisticsParameterException
+//     */
+//    @Test(expected = IndexPropertyException.class)
+//    public void indexPropertyInvalidPropertyTypeNegativeTest() throws IndexPropertyException, InvalidStatisticsParameterException {
+//        LOGGER.debug("start test indexPropertyInvalidPropertyTypeNegativeTest()");
+//        StatisticsVault propVault = new StatisticsVault(PROPERTIES);
+//        StatisticsVault networkSubVault = new StatisticsVault(NETWORK);
+//        propVault.addSubVault(networkSubVault);
+//        NewPropertyStatistics propStat = new NewPropertyStatistics(PROPERTY_NAME_NAME_1, Integer.class);
+//        networkSubVault.addPropertyStatistics(propStat);
+//
+//        propVault.indexProperty(NETWORK, PROPERTY_NAME_NAME_1, STRING_PROPERTY_VALUE_NETWORK_1);
+//        LOGGER.debug("finish test indexPropertyInvalidPropertyTypeNegativeTest()");
+//
+//    }
 
     /**
      * testing method indexProperty(String nodeType, String propName, Object propValue) when

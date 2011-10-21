@@ -25,7 +25,8 @@ import org.junit.runners.Suite.SuiteClasses;
  * @since 1.0.0
  */
 @RunWith(Suite.class)
-@SuiteClasses({org.amanzi.neo.services.CorrelationServiceTest.class,
+@SuiteClasses({
+	org.amanzi.neo.services.CorrelationServiceTest.class,
                org.amanzi.neo.services.NewDatasetServiceTest.class,
                org.amanzi.neo.services.NewNetworkServiceTest.class,
                org.amanzi.neo.services.NewStatisticsServiceTest.class,
