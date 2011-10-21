@@ -1,29 +1,50 @@
 package org.amanzi.neo.services.model.impl;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.amanzi.log4j.LogStarter;
+import org.amanzi.neo.model.distribution.IDistributionalModel;
 import org.amanzi.neo.services.AbstractNeoServiceTest;
 import org.amanzi.neo.services.NewAbstractService;
+import org.amanzi.neo.services.NewDatasetService;
+import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.NewDatasetService.DriveTypes;
+import org.amanzi.neo.services.NewNetworkService;
 import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
+import org.amanzi.neo.services.indexes.PropertyIndex;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.INetworkModel;
+import org.amanzi.neo.services.model.impl.ProjectModel.DistributionItem;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 
 public class ProjectModelTest extends AbstractNeoServiceTest {
 
 	private static Logger LOGGER = Logger.getLogger(ProjectModelTest.class);
+	
+	private final static String[] NETWORK_STRUCTURE_NODE_TYPES = new String[] {
+        NetworkElementNodeType.BSC.getId(),
+        NetworkElementNodeType.CITY.getId(),
+        NetworkElementNodeType.SITE.getId(),
+        NetworkElementNodeType.SECTOR.getId()
+    };
 
-	private Transaction tx;
 	private static int count = 0;
 
 	private ProjectModel model;
@@ -45,15 +66,8 @@ public class ProjectModelTest extends AbstractNeoServiceTest {
 
 	@Before
 	public final void before() {
-		tx = graphDatabaseService.beginTx();
 		count++;
 		model = new ProjectModel("project" + count);
-	}
-
-	@After
-	public final void after() {
-		tx.success();
-		tx.finish();
 	}
 
 	@Test
@@ -272,6 +286,72 @@ public class ProjectModelTest extends AbstractNeoServiceTest {
 	    assertNotNull("List of distributions should not be null", model.getAllDistributionalModels());
 	}
 	
+	@Test
+	public void checkDistributionItemsForNetworkNotEmpty() throws Exception {
+	    model.dsServ = getDatasetService(model.getRootNode(), getNetworkNodes(1));
+	    
+	    List<DistributionItem> items = model.getAllDistributionalModels();
+	    assertFalse("DistributionItems list cannot be empty", items.isEmpty());
+	}
 	
+	@Test
+	public void checkDistributionItemsSizeForNetwork() throws Exception {
+	    model.dsServ = getDatasetService(model.getRootNode(), getNetworkNodes(1));
+        
+        List<DistributionItem> items = model.getAllDistributionalModels();
+        assertEquals("Unexpected size of Distribution Items list", NETWORK_STRUCTURE_NODE_TYPES.length, items.size());
+	}
+	
+	@Test
+	public void checkDistributionModelOfAllItems() throws Exception {
+	    model.dsServ = getDatasetService(model.getRootNode(), getNetworkNodes(1));
+        
+        List<DistributionItem> items = model.getAllDistributionalModels();
+        DistributionItem firstItem = items.get(0);
+        IDistributionalModel model = firstItem.getModel();
+        
+        for (DistributionItem item : items) {
+            assertEquals("Unexpected DistributionalModel for Item", model, item.getModel());
+        }   
+	}
+	
+	@Test
+	public void checkTypesOfAllItems() throws Exception {
+	    model.dsServ = getDatasetService(model.getRootNode(), getNetworkNodes(1));
+        
+        List<DistributionItem> items = model.getAllDistributionalModels();
+        
+        for (int i = 0; i < NETWORK_STRUCTURE_NODE_TYPES.length; i++) {
+            String expectedNodeType = NETWORK_STRUCTURE_NODE_TYPES[i];
+            String actualNodeType = items.get(i).getNodeType().getId();
+            
+            assertEquals("Unexepcted NodeType of Item", expectedNodeType, actualNodeType);
+        }
+	}
+	
+	private NewDatasetService getDatasetService(Node projectNode, List<Node> networkNodes) throws Exception {
+	    NewDatasetService result = mock(NewDatasetService.class);
+	    
+	    when(result.findAllDatasetsByType(projectNode, DatasetTypes.NETWORK)).thenReturn(networkNodes);
+	    
+	    return result;
+	}
+	
+	private List<Node> getNetworkNodes(Integer count) {
+	    List<Node> result = new ArrayList<Node>();
+	    
+	    for (int i = 0; i < count; i++) {
+	        Node networkNode = mock(Node.class);
+	        
+	        when(networkNode.getProperty(NewNetworkService.NETWORK_STRUCTURE, null)).thenReturn(NETWORK_STRUCTURE_NODE_TYPES);
+	        when(networkNode.getProperty(NewNetworkService.TYPE, null)).thenReturn(NetworkElementNodeType.NETWORK.getId());
+	        when(networkNode.getProperty(NewNetworkService.NAME, StringUtils.EMPTY)).thenReturn(count.toString());
+	        when(networkNode.getRelationships(PropertyIndex.NeoIndexRelationshipTypes.INDEX, Direction.OUTGOING)).thenReturn(new ArrayList<Relationship>());
+	        
+	        result.add(networkNode);
+	    }
+	    
+	    return result;
+	}
 
 }

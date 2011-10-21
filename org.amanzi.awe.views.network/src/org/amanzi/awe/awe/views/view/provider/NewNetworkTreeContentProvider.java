@@ -132,7 +132,7 @@ public class NewNetworkTreeContentProvider implements IStructuredContentProvider
 
         Object[] networkModelsInObjects = new Object[0];
         for (INetworkModel model : networkModels) {
-            ArrayUtils.add(networkModelsInObjects, model);
+            networkModelsInObjects = ArrayUtils.add(networkModelsInObjects, model);
         }
 
         return networkModelsInObjects;

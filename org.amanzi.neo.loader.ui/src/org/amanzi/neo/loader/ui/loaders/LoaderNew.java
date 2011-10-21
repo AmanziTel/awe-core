@@ -23,6 +23,7 @@ import org.amanzi.neo.loader.core.IValidator;
 import org.amanzi.neo.loader.core.newparser.IParser;
 import org.amanzi.neo.loader.core.newsaver.IData;
 import org.amanzi.neo.loader.core.newsaver.ISaver;
+import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IModel;
 
 /**
@@ -65,7 +66,7 @@ public class LoaderNew implements ILoaderNew<IData, IConfiguration> {
     }
 
     @Override
-    public void run() {
+    public void run() throws AWEException {
         parser.run();
     }
 

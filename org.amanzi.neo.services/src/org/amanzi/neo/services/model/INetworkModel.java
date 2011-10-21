@@ -20,6 +20,7 @@ import org.amanzi.neo.model.distribution.IDistributionalModel;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
+import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelTypes;
 import org.neo4j.graphdb.RelationshipType;
 
 /**
@@ -57,6 +58,14 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
      * @throws AWEException if errors occur in database
      */
     public Iterable<INodeToNodeRelationsModel> getNodeToNodeModels() throws AWEException;
+
+    /**
+     * Traverse database to find all n2n root nodes of one type and create models based on them.
+     * @param type
+     * @return an iterable over n2n models filtered by type, referring to current network
+     * @throws AWEException if errors occur in database
+     */
+    public Iterable<INodeToNodeRelationsModel> getNodeToNodeModels(N2NRelTypes type) throws AWEException;
 
     public INodeToNodeRelationsModel createNodeToNodeMmodel(INodeToNodeRelationsType relType, String name, INodeType nodeType)
             throws AWEException;

@@ -206,10 +206,11 @@ public class StatisticsVault implements IVault {
     private NewPropertyStatistics getPropertyStatistics(String name, Class< ? > klass) throws IndexPropertyException {
         NewPropertyStatistics propStat = this.getPropertyStatisticsMap().get(name);
         if (propStat != null) {
-            if (propStat.getKlass().equals(klass)) {
+//            if (propStat.getKlass().equals(klass)) {
                 return propStat;
-            }
-            throw new IndexPropertyException();
+//            }
+//            System.out.println(name);
+//            throw new IndexPropertyException();
         } else {
             propStat = new NewPropertyStatistics(name, klass);
             this.addPropertyStatistics(propStat);

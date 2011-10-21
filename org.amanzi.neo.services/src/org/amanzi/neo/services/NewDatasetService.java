@@ -949,7 +949,7 @@ public class NewDatasetService extends NewAbstractService {
      * @param relType
      * @return
      */
-    public Iterable<Node> findN2NRelatedNodes(Node n2nProxy, INodeType nodeType, RelationshipType relType) {
+    public Iterable<Relationship> findN2NRelationships(Node n2nProxy, INodeType nodeType, RelationshipType relType) {
         // validate parameters
         if (n2nProxy == null) {
             throw new IllegalArgumentException("N2N proxy is null.");
@@ -962,7 +962,7 @@ public class NewDatasetService extends NewAbstractService {
         }
 
         return N2N_TRAVERSAL_DESCRIPTION.evaluator(new FilterNodesByType(nodeType)).relationships(relType, Direction.OUTGOING)
-                .traverse(n2nProxy).nodes();
+                .traverse(n2nProxy).relationships();
     }
 
     /**

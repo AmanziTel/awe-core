@@ -15,12 +15,17 @@ package org.amanzi.neo.loader.ui.wizards;
 
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import net.refractions.udig.catalog.CatalogPlugin;
+import net.refractions.udig.catalog.ICatalog;
+import net.refractions.udig.catalog.IService;
 
 import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.db.manager.DatabaseManager;
@@ -34,11 +39,17 @@ import org.amanzi.neo.loader.core.newsaver.IData;
 import org.amanzi.neo.loader.core.parser.IConfigurationData;
 import org.amanzi.neo.loader.core.parser.IDataElement;
 import org.amanzi.neo.loader.core.preferences.PreferenceStore;
+import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
+import org.amanzi.neo.services.events.UpdateDatabaseEvent;
+import org.amanzi.neo.services.events.UpdateViewEventType;
+import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.utils.ActionUtil;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -115,7 +126,7 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
      * @param accessType the new access type
      */
     public void setAccessType(DatabaseAccessType accessType) {
-//        this.accessType = accessType;
+        // this.accessType = accessType;
     }
 
     @Override
@@ -328,6 +339,12 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
                             load(accessType, data, loader, monitor);
                         } else {
                             newload(newloader, monitor);
+                            try {
+                                addDataToCatalog();
+                            } catch (MalformedURLException e) {
+                                // TODO Handle MalformedURLException
+                                throw (RuntimeException)new RuntimeException().initCause(e);
+                            }
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -359,7 +376,18 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
                     if (loader != null) {
                         load(accessType, data, loader, monitor);
                     } else {
-                        newload(newloader, monitor);
+                        try {
+							newload(newloader, monitor);
+						} catch (AWEException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+                        try {
+                            addDataToCatalog();
+                        } catch (MalformedURLException e) {
+                            // TODO Handle MalformedURLException
+                            throw (RuntimeException)new RuntimeException().initCause(e);
+                        }
                     }
                     return Status.OK_STATUS;
                 }
@@ -367,6 +395,30 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
             job.schedule();
         }
         return true;
+    }
+
+    public static void addDataToCatalog() throws MalformedURLException {
+        // TODO: Lagutko, 17.12.2009, can be run as a Job
+        NeoServiceProviderUi neoProvider = NeoServiceProviderUi.getProvider();
+        if (neoProvider != null) {
+            String databaseLocation = neoProvider.getDefaultDatabaseLocation();
+            sendUpdateEvent(UpdateViewEventType.GIS);
+            ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
+            URL url = new URL("file://" + databaseLocation);
+            List<IService> services = CatalogPlugin.getDefault().getServiceFactory().createService(url);
+            for (IService service : services) {
+                if (catalog.getById(IService.class, service.getIdentifier(), new NullProgressMonitor()) != null) {
+                    catalog.replace(service.getIdentifier(), service);
+                } else {
+                    catalog.add(service);
+                }
+            }
+            neoProvider.commit();
+        }
+    }
+
+    public static void sendUpdateEvent(UpdateViewEventType aType) {
+        NeoLoaderPlugin.getDefault().getUpdateViewManager().fireUpdateView(new UpdateDatabaseEvent(aType));
     }
 
     /**
@@ -394,9 +446,10 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
      * @param data the data
      * @param loader the loader
      * @param monitor the monitor
+     * @throws AWEException 
      */
     protected void newload(final Map<ILoaderNew< ? extends IData, IConfiguration>, ? extends IConfiguration> loaders,
-            IProgressMonitor monitor) {
+            IProgressMonitor monitor) throws AWEException {
 
         for (ILoaderNew< ? extends IData, IConfiguration> loader : loaders.keySet()) {
             if (loaders.get(loader) != null) {

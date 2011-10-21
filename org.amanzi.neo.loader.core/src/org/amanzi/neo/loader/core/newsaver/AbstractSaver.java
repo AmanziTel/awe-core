@@ -51,10 +51,25 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
     protected final static ExportSynonymsManager exportManager = ExportSynonymsManager.getManager();
     protected static DataLoadPreferenceManager preferenceManager = new DataLoadPreferenceManager();
     protected Map<String, String[]> preferenceStoreSynonyms;
-    protected Map<String, IModel> modelMap = new HashMap<String, IModel>();
+    protected Map<String, IDataModel> modelMap = new HashMap<String, IDataModel>();
     protected Map<IModel, ExportSynonyms> synonymsMap = new HashMap<IModel, ExportSynonyms>();
     private static final String TRUE = "true";
     private static final String FALSE = "false";
+
+    protected AbstractSaver(GraphDatabaseService service) {
+        if (service != null) {
+            database = service;
+        } else {
+            setDbInstance();
+        }
+    }
+
+    /**
+     * 
+     */
+    public AbstractSaver() {
+        super();
+    }
 
     /**
      * this method try to parse String propValue if its type is unknown
@@ -146,7 +161,9 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
      * Initialize database;
      */
     protected void setDbInstance() {
-        database = NeoServiceProvider.getProvider().getService();
+        if (database == null) {
+            database = NeoServiceProvider.getProvider().getService();
+        }
     }
 
     /**
@@ -185,41 +202,32 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
      * if current tx==null create new instance finish current transaction if actions in current
      * transaction more than commitTxCount and open new;
      */
-    protected void openOrReopenTx() {
+    protected void commitTx() {
         if ((actionCount > commitTxCount) || (tx != null && actionCount == 0)) {
+        	tx.success();
             tx.finish();
             tx = null;
             actionCount = 0;
         }
         if (tx == null) {
             tx = database.beginTx();
-        }
-
+        }        
     }
 
-    protected void finishTx() {
+    protected void rollbackTx() {
+    	tx.failure();
         actionCount = 0;
         tx.finish();
         tx = null;
     }
 
-    /**
-     * mark transaction as success
-     */
-    protected void markTxAsSuccess() {
-        tx.success();
-    }
-
-    /**
-     * mark tx as failure
-     */
-    protected void markTxAsFailure() {
-        tx.failure();
-    }
-
     @Override
-    public void finishUp() {
+    public void finishUp() throws AWEException {
+    	for (IDataModel dataModel : modelMap.values()) {
+    		dataModel.finishUp();
+    	}
         saveSynonym();
+        tx.success();
         tx.finish();
         NeoServiceProvider.getProvider().commit();
         actionCount = 0;
