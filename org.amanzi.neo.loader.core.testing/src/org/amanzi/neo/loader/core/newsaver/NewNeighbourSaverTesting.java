@@ -125,7 +125,7 @@ public class NewNeighbourSaverTesting extends AbstractAWETest {
         }
         fileList.add(testFile);
         config.setSourceFile(fileList);
-        networkSaver = new NewNetworkSaver(networkModel, (ConfigurationDataImpl)config);
+        networkSaver = new NewNetworkSaver(networkModel, (ConfigurationDataImpl)config, null);
         hashMap.put("bsc", "bsc1");
         hashMap.put("site", "site1");
         hashMap.put("lat", "3.123");

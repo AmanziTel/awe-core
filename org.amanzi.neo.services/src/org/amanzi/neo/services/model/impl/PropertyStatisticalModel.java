@@ -13,8 +13,10 @@
 
 package org.amanzi.neo.services.model.impl;
 
+import java.util.ArrayList;
 import java.util.Map;
 
+import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewStatisticsService;
 import org.amanzi.neo.services.enums.INodeType;
@@ -40,9 +42,23 @@ public abstract class PropertyStatisticalModel extends DataModel implements IPro
 
     protected IVault statisticsVault;
 
+    protected ArrayList<String> notNecessaryListOfProperties = new ArrayList<String>();
+    
+    /**
+     * Method to fill properties which contains not need properties
+     */
+    private void fillListOfNotNecessaryProperties() {
+        notNecessaryListOfProperties.add(INeoConstants.PROPERTY_LAT_NAME);
+        notNecessaryListOfProperties.add(INeoConstants.PROPERTY_LATITUDE_NAME);
+        notNecessaryListOfProperties.add(INeoConstants.PROPERTY_LON_NAME);
+        notNecessaryListOfProperties.add(INeoConstants.PROPERTY_LONGITUDE_NAME);
+        notNecessaryListOfProperties.add(INeoConstants.PROPERTY_TIMESTAMP_NAME);
+    }
+    
     protected void initializeStatistics() {
         try {
             statisticsVault = statisticsService.loadVault(getRootNode());
+            fillListOfNotNecessaryProperties();
         } catch (AWEException e) {
 
         }
@@ -51,7 +67,9 @@ public abstract class PropertyStatisticalModel extends DataModel implements IPro
     protected void indexProperty(INodeType nodeType, String propertyName, Object propertyValue)
             throws InvalidStatisticsParameterException, LoadVaultException, IndexPropertyException {
 
-        statisticsVault.indexProperty(nodeType.getId(), propertyName, propertyValue);
+        if (!notNecessaryListOfProperties.contains(propertyName)) {
+            statisticsVault.indexProperty(nodeType.getId(), propertyName, propertyValue);
+        }
     }
     
     protected void removeProperty(INodeType nodeType, String propertyName, Object propertyValue)
@@ -64,7 +82,7 @@ public abstract class PropertyStatisticalModel extends DataModel implements IPro
         for (String key : params.keySet()) {
             Object value = params.get(key);
             if (value != null) {
-                statisticsVault.indexProperty(nodeType.getId(), key, value);
+                indexProperty(nodeType, key, value);
             }
         }
     }
@@ -73,7 +91,7 @@ public abstract class PropertyStatisticalModel extends DataModel implements IPro
         for (String key : params.keySet()) {
             Object value = params.get(key);
             if (value != null) {
-                statisticsVault.removeProperty(nodeType.getId(), key, value);
+                removeProperty(nodeType, key, value);
             }
         }
     }

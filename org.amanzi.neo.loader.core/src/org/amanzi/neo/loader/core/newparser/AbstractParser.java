@@ -23,6 +23,7 @@ import org.amanzi.neo.loader.core.IProgressEvent;
 import org.amanzi.neo.loader.core.ProgressEventImpl;
 import org.amanzi.neo.loader.core.newsaver.IData;
 import org.amanzi.neo.loader.core.newsaver.ISaver;
+import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IModel;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.ISafeRunnable;
@@ -90,8 +91,9 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
      * Parses single file
      * 
      * @param file
+     * @throws AWEException 
      */
-    protected void parseFile(File file) {
+    protected void parseFile(File file) throws AWEException {
         currentFile = file;
         if (tempFile == null || tempFile != currentFile) {
             isNewFile = true;
@@ -136,7 +138,7 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
     }
 
     @Override
-    public void run() {
+    public void run() throws AWEException {
         long globalStartTime = System.currentTimeMillis();
         for (File file : config.getFilesToLoad()) {
             long startTime = System.currentTimeMillis();

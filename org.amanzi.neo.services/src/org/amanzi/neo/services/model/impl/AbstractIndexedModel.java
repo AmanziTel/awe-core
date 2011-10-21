@@ -219,6 +219,7 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
      */
     @Override
     public void finishUp() throws AWEException {
+//        super.finishUp();
         NewDatasetService dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
 
         Node rootNode = getRootNode();

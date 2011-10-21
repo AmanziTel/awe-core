@@ -24,12 +24,14 @@ import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.NetworkModel;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
  * network saver
@@ -49,7 +51,6 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
     private final String MSC = "msc";
     private final String SECTOR = "sector";
     private final String SITE = "site";
-
     /**
      * contains appropriation of header synonyms and name inDB</br> <b>key</b>- name in db ,
      * <b>value</b>-file header key
@@ -62,10 +63,10 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
 
     private Map<String, String[]> preferenceStoreSynonyms;
 
-    protected NewNetworkSaver(INetworkModel model, ConfigurationDataImpl config) {
+    protected NewNetworkSaver(INetworkModel model, ConfigurationDataImpl config, GraphDatabaseService service) {
+        super(service);
         preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.NETWORK);
         columnSynonyms = new HashMap<String, Integer>();
-        setDbInstance();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
         openOrReopenTx();
         if (model != null) {
@@ -97,6 +98,7 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
             createBSC(null, row);
             return;
         }
+
         mscProperty.put(INeoConstants.PROPERTY_TYPE_NAME, NetworkElementNodeType.MSC.getId());
         mscProperty.put(INeoConstants.PROPERTY_NAME_NAME, autoParse(row.get(columnSynonyms.get(fileSynonyms.get(MSC)))));
 
@@ -345,10 +347,14 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
                 markTxAsSuccess();
                 increaseActionCount();
             }
-        } catch (AWEException e) {
+        } catch (DatabaseException e) {
+            LOGGER.error("Error while saving element on line " + lineCounter, e);
             markTxAsFailure();
             finishTx();
             throw (RuntimeException)new RuntimeException().initCause(e);
+        } catch (Exception e) {
+            LOGGER.error("Exception while saving element on line " + lineCounter, e);
+            markTxAsSuccess();
         }
     }
 

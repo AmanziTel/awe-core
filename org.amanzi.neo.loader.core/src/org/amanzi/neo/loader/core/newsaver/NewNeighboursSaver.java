@@ -134,11 +134,14 @@ public class NewNeighboursSaver extends AbstractSaver<NetworkModel, CSVContainer
                 markTxAsSuccess();
                 increaseActionCount();
             }
-        } catch (AWEException e) {
+        } catch (DatabaseException e) {
+            LOGGER.error("Error while saving element on line " + lineCounter, e);
             markTxAsFailure();
             finishTx();
-            LOGGER.error("Error while neighbour create on line " + lineCounter, e);
             throw (RuntimeException)new RuntimeException().initCause(e);
+        } catch (Exception e) {
+            LOGGER.error("Exception while saving element on line " + lineCounter, e);
+            markTxAsSuccess();
         }
     }
 
