@@ -128,7 +128,6 @@ public class NewNeighboursSaver extends AbstractSaver<NetworkModel, CSVContainer
                 lineCounter++;
                 List<String> value = container.getValues();
                 createNeighbour(value);
-                increaseActionCount();
             }
         } catch (DatabaseException e) {
             LOGGER.error("Error while saving element on line " + lineCounter, e);

@@ -82,7 +82,6 @@ public class SectorSelectionSaver extends AbstractSaver<NetworkModel, CSVContain
                 for (String value : container.getValues()) {
                     // IDataElement sector = networkModel.findElement(element)
 
-                    increaseActionCount();
                 }
             }
 

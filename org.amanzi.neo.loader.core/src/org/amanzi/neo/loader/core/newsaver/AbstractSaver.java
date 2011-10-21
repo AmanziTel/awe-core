@@ -166,14 +166,7 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
         }
     }
 
-    /**
-     * increase action counter in current tx;
-     */
-    protected void increaseActionCount() {
-        actionCount++;
-    }
-
-    /**
+   /**
      * dataset service instance
      */
     protected static DatasetService datasetService;
@@ -205,13 +198,14 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
     protected void commitTx() {
         if ((actionCount > commitTxCount) || (tx != null && actionCount == 0)) {
         	tx.success();
-            tx.finish();
+        	tx.finish();
             tx = null;
             actionCount = 0;
         }
         if (tx == null) {
             tx = database.beginTx();
-        }        
+        }  
+        actionCount++;
     }
 
     protected void rollbackTx() {
