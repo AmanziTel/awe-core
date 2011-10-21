@@ -15,6 +15,7 @@ package org.amanzi.neo.services.model.impl;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Set;
 
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
@@ -38,7 +39,7 @@ import org.amanzi.neo.services.statistic.internal.NewPropertyStatistics;
  */
 public abstract class PropertyStatisticalModel extends DataModel implements IPropertyStatisticalModel {
 
-    static NewStatisticsService statisticsService = NeoServiceFactory.getInstance().getNewStatisticsService();
+    private NewStatisticsService statisticsService = NeoServiceFactory.getInstance().getNewStatisticsService();
 
     protected IVault statisticsVault;
 
@@ -111,45 +112,25 @@ public abstract class PropertyStatisticalModel extends DataModel implements IPro
     }
 
     @Override
-    public String[] getAllProperties() {
-        Map<Object, Integer> allProperties = statisticsVault.getAllProperties();
+    public String[] getAllPropertyNames(INodeType nodeType) {
+        Set<String> allProperties = statisticsVault.getAllPropertyNames(nodeType.getId());
         String[] result = new String[allProperties.size()];
-        allProperties.keySet().toArray(result);
+        allProperties.toArray(result);
         return result;
     }
 
     @Override
-    public String[] getAllProperties(INodeType nodeType) {
-        Map<Object, Integer> allProperties = statisticsVault.getAllProperties(nodeType.getId());
+    public String[] getAllProperties(INodeType nodeType, Class< ? > klass) {
+        Set<String> allProperties = statisticsVault.getAllProperties(nodeType.getId(), klass);
         String[] result = new String[allProperties.size()];
-        allProperties.keySet().toArray(result);
-        return result;
-    }
-
-    @Override
-    public String[] getAllProperties(Class< ? > klass) {
-        Map<Object, Integer> allProperties = statisticsVault.getAllProperties(klass);
-        String[] result = new String[allProperties.size()];
-        allProperties.keySet().toArray(result);
+        allProperties.toArray(result);
         return result;
     }
     
     @Override
-    public String[] getAllProperties(String propertyName)
-    {
-        Map<Object, Integer> allProperties = statisticsVault.getAllPropertiesWithName(propertyName);
-        String[] result = new String[allProperties.size()];
-        allProperties.keySet().toArray(result);
-        return result;
-    }
-    
-    @Override
-    public String[] getAllProperties(INodeType nodeType, String propertyName)
-    {
+    public Set<Object> getAllProperties(INodeType nodeType, String propertyName) {
         Map<Object, Integer> allProperties = statisticsVault.getAllProperties(nodeType.getId(), propertyName);
-        String[] result = new String[allProperties.size()];
-        allProperties.keySet().toArray(result);
-        return result;
+        return allProperties.keySet(); 
     }
     
 

@@ -13,9 +13,12 @@
 
 package org.amanzi.neo.services.model;
 
+import java.util.List;
+
 import org.amanzi.neo.services.enums.IDriveType;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.model.impl.ProjectModel.DistributionItem;
 
 /**
  * TODO Purpose of
@@ -131,6 +134,14 @@ public interface IProjectModel extends IModel {
      * @return
      * @throws AWEException
      */
-    public Iterable<INetworkModel> findAllNetworkModels() throws AWEException;   
+    public Iterable<INetworkModel> findAllNetworkModels() throws AWEException;
+    
+    /**
+     * Collects list of all models that are available for Distribution Analysis
+     *
+     * @return
+     * @throws AWEException
+     */
+    public List<DistributionItem> getAllDistributionalModels() throws AWEException;
 
 }
