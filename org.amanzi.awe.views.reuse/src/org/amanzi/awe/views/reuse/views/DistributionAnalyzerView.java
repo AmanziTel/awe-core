@@ -14,8 +14,12 @@
 package org.amanzi.awe.views.reuse.views;
 
 import java.util.HashMap;
+import java.util.List;
 
+import org.amanzi.neo.model.distribution.IDistribution;
+import org.amanzi.neo.model.distribution.IDistribution.ChartType;
 import org.amanzi.neo.model.distribution.IDistributionalModel;
+import org.amanzi.neo.model.distribution.impl.DistributionManager;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IProjectModel;
@@ -42,6 +46,8 @@ public class DistributionAnalyzerView extends ViewPart {
     
     private static final String PROPERTY_LABEL = "Property";
     
+    private static final String DISTRIBUTION_LABEL = "Distribution"; 
+    
     /*
      * Combo to choose DistributionItem
      */
@@ -51,6 +57,11 @@ public class DistributionAnalyzerView extends ViewPart {
      * Combo to choose PropertyName
      */
     private Combo propertyCombo;
+    
+    /*
+     * Distribution Combo
+     */
+    private Combo distributionCombo;
     
     /*
      * Current project
@@ -68,9 +79,19 @@ public class DistributionAnalyzerView extends ViewPart {
     private INodeType analyzedNodeType;
     
     /*
+     * Name of property to Analyze
+     */
+    private String propertyName;
+    
+    /*
      * Map with Distribution Items
      */
     private HashMap<String, DistributionItem> distributionItems = new HashMap<String, DistributionItem>();
+    
+    /*
+     * Map with Distribution Types
+     */
+    private HashMap<String, IDistribution<?>> distributionTypes = new HashMap<String, IDistribution<?>>();
 
     @Override
     public void createPartControl(Composite parent) {
@@ -104,6 +125,11 @@ public class DistributionAnalyzerView extends ViewPart {
         
         propertyCombo = new Combo(parent, SWT.DROP_DOWN | SWT.READ_ONLY);
         
+        //label and combor for DistributionType
+        Label distributionTypeLabel = new Label(parent, SWT.NONE);
+        distributionTypeLabel.setText(DISTRIBUTION_LABEL);
+        
+        distributionCombo = new Combo(parent, SWT.DROP_DOWN | SWT.READ_ONLY);
     }
     
     /**
@@ -125,6 +151,10 @@ public class DistributionAnalyzerView extends ViewPart {
         //property combo
         propertyCombo.setItems(ArrayUtils.EMPTY_STRING_ARRAY);
         propertyCombo.setEnabled(false);
+        
+        //distribution combo
+        distributionCombo.setItems(ArrayUtils.EMPTY_STRING_ARRAY);
+        distributionCombo.setEnabled(false);
     }
     
     /**
@@ -140,6 +170,28 @@ public class DistributionAnalyzerView extends ViewPart {
             
             propertyCombo.setItems(analyzedModel.getAllPropertyNames(analyzedNodeType));
             propertyCombo.setEnabled(true);
+        }
+    }
+    
+    /**
+     * Initialized list of Distribution Types available for selected property and data
+     */
+    private void initializeDistributionCombo() {
+        try {
+            propertyName = propertyCombo.getText();
+            if (!StringUtils.isEmpty(propertyName)) {
+                List<IDistribution<?>> distribuitons = DistributionManager.getManager().
+                        getDistributions(analyzedModel, analyzedNodeType, propertyName, ChartType.getDefault());
+            
+                for (IDistribution<?> singleDistribution : distribuitons) {
+                    distributionTypes.put(singleDistribution.getName(), singleDistribution);
+                }
+            
+                distributionCombo.setItems(distributionTypes.keySet().toArray(ArrayUtils.EMPTY_STRING_ARRAY));
+                distributionCombo.setEnabled(true);
+            }
+        } catch (AWEException e) {
+            //TODO: handle exception
         }
     }
     
@@ -161,6 +213,20 @@ public class DistributionAnalyzerView extends ViewPart {
             }
         });
         
+        
+        //listener for Property combo
+        propertyCombo.addSelectionListener(new SelectionListener() {
+            
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                initializeDistributionCombo();
+            }
+            
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
     }
     
     

@@ -13,7 +13,7 @@
 
 package org.amanzi.neo.model.distribution.impl;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -29,6 +29,7 @@ import org.amanzi.neo.model.distribution.types.impl.StringDistribution;
 import org.amanzi.neo.services.AbstractNeoServiceTest;
 import org.amanzi.neo.services.DistributionService.DistributionNodeTypes;
 import org.amanzi.neo.services.enums.INodeType;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -50,6 +51,22 @@ public class DistributionManagerTest extends AbstractNeoServiceTest {
     private static final String DEFAULT_MODEL_NAME = "model_name";
     
     private static DistributionManager manager;
+    
+    private static final ChartType[] NON_NUMBERIC_CHARTS = new ChartType[] {
+        ChartType.COUNTS,
+        ChartType.LOGARITHMIC,
+        ChartType.PERCENTS
+    };
+    
+    private static final ChartType[] NUMBERIC_CHARTS = new ChartType[] {
+        ChartType.COUNTS,
+        ChartType.LOGARITHMIC,
+        ChartType.PERCENTS,
+        ChartType.CDF
+    };
+    
+    
+
 
     /**
      *
@@ -66,6 +83,13 @@ public class DistributionManagerTest extends AbstractNeoServiceTest {
     @Test(expected = DistributionManagerException.class)
     public void tryToCreateCDFChartForString() throws Exception {
         IDistributionalModel model = getDistributionalModel(String.class);
+        
+        manager.getDistributions(model, DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME, ChartType.CDF);
+    }
+    
+    @Test(expected = DistributionManagerException.class)
+    public void tryToCreateCDFChartForBoolean() throws Exception {
+        IDistributionalModel model = getDistributionalModel(Boolean.class);
         
         manager.getDistributions(model, DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME, ChartType.CDF);
     }
@@ -135,6 +159,79 @@ public class DistributionManagerTest extends AbstractNeoServiceTest {
         
         manager.getDistributions(model, DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME, null);
     }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToGetChartsWithoutModel() throws Exception {
+        manager.getPossibleChartTypes(null, DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME);
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToGetChartsWithoutNodeType() throws Exception {
+        manager.getPossibleChartTypes(getDistributionalModel(String.class), null, DEFAULT_PROPERTY_NAME);
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToGetChartsWithoutPropertyName() throws Exception {
+        manager.getPossibleChartTypes(getDistributionalModel(String.class), DEFAULT_NODE_TYPE, null);
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToGetChartsWithEmptyPropertyName() throws Exception {
+        manager.getPossibleChartTypes(getDistributionalModel(String.class), DEFAULT_NODE_TYPE, StringUtils.EMPTY);
+    }
+    
+    @Test
+    public void checkChartsForString() throws Exception {
+        ChartType[] chartType = manager.getPossibleChartTypes(getDistributionalModel(String.class), DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME);
+        
+        for (ChartType nonNumericChart : NON_NUMBERIC_CHARTS) {
+            assertTrue("chart for string didn't contains <" + nonNumericChart + ">", ArrayUtils.contains(chartType, nonNumericChart));
+            
+            chartType = (ChartType[])ArrayUtils.removeElement(chartType, nonNumericChart);
+        }
+        
+        assertTrue("array of chart types should be empty", chartType.length == 0);
+    }
+    
+    @Test
+    public void checkChartsForBoolean() throws Exception {
+        ChartType[] chartType = manager.getPossibleChartTypes(getDistributionalModel(Boolean.class), DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME);
+        
+        for (ChartType nonNumericChart : NON_NUMBERIC_CHARTS) {
+            assertTrue("chart for boolean didn't contains <" + nonNumericChart + ">", ArrayUtils.contains(chartType, nonNumericChart));
+            
+            chartType = (ChartType[])ArrayUtils.removeElement(chartType, nonNumericChart);
+        }
+        
+        assertTrue("array of chart types should be empty", chartType.length == 0);
+    }
+    
+    @Test
+    public void checkChartsForLong() throws Exception {
+        ChartType[] chartType = manager.getPossibleChartTypes(getDistributionalModel(Long.class), DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME);
+        
+        for (ChartType numericChart : NUMBERIC_CHARTS) {
+            assertTrue("chart for long didn't contains <" + numericChart + ">", ArrayUtils.contains(chartType, numericChart));
+            
+            chartType = (ChartType[])ArrayUtils.removeElement(chartType, numericChart);
+        }
+        
+        assertTrue("array of chart types should be empty", chartType.length == 0);
+    }
+    
+    @Test
+    public void checkChartsForDouble() throws Exception {
+        ChartType[] chartType = manager.getPossibleChartTypes(getDistributionalModel(Double.class), DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME);
+        
+        for (ChartType numericChart : NUMBERIC_CHARTS) {
+            assertTrue("chart for double didn't contains <" + numericChart + ">", ArrayUtils.contains(chartType, numericChart));
+            
+            chartType = (ChartType[])ArrayUtils.removeElement(chartType, numericChart);
+        }
+        
+        assertTrue("array of chart types should be empty", chartType.length == 0);
+    }
+    
     
     /**
      * Creates mocked DistributionalModel

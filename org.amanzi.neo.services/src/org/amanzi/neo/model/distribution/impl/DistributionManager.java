@@ -24,6 +24,7 @@ import org.amanzi.neo.model.distribution.IDistributionalModel;
 import org.amanzi.neo.model.distribution.types.impl.StringDistribution;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -86,6 +87,16 @@ public class DistributionManager {
         
     }
     
+    /**
+     * Returns list of Distributions available for current parameters
+     *
+     * @param model model to Analyze
+     * @param nodeType type of Node to Analyze
+     * @param propertyName property to Analyze
+     * @param chartType type of output chart
+     * @return
+     * @throws DistributionManagerException
+     */
     public List<IDistribution<?>> getDistributions(IDistributionalModel model, INodeType nodeType, String propertyName, ChartType chartType) throws DistributionManagerException {
         LOGGER.debug("start getDistributions(<" + model + ">, <" + nodeType + ">, " + propertyName + ">, <" + chartType + ">)");
         
@@ -111,7 +122,7 @@ public class DistributionManager {
         
         List<IDistribution<?>> result = new ArrayList<IDistribution<?>>();
         
-        if (clazz.equals(String.class)) {
+        if (clazz.equals(String.class) || clazz.equals(Boolean.class)) {
             switch (chartType) {
             case COUNTS:
             case LOGARITHMIC:
@@ -130,6 +141,50 @@ public class DistributionManager {
         LOGGER.debug("finish getDistributions()");
         
         return result;
+    }
+    
+    /**
+     * Returns array of possible chart types for current properties
+     *
+     * @param analyzedModel model to Analyze
+     * @param nodeType type of node to Analyze
+     * @param propertyName name of Property to Analyze
+     * @return
+     */
+    public ChartType[] getPossibleChartTypes(IDistributionalModel analyzedModel, INodeType nodeType, String propertyName) {
+        LOGGER.debug("start getPossibleChartTypes(<" + analyzedModel + ">, <" + nodeType + ">, <" + propertyName + ">)");
+        
+        //check input
+        if (analyzedModel == null) {
+            LOGGER.error("Input analyzedModel is null");
+            throw new IllegalArgumentException("Input analyzedModel is null");
+        }
+        if (nodeType == null) {
+            LOGGER.error("Input nodeType is null");
+            throw new IllegalArgumentException("Input nodeType is null");
+        }
+        if (StringUtils.isEmpty(propertyName)) {
+            LOGGER.error("Input propertyName is null or empty");
+            throw new IllegalArgumentException("Input propertyName is null or empty");
+        }
+        
+        //create list of Charts
+        List<ChartType> result = new ArrayList<ChartType>();
+        
+        //add chart types for all classees
+        result.add(ChartType.COUNTS);
+        result.add(ChartType.LOGARITHMIC);
+        result.add(ChartType.PERCENTS);
+        
+        //get type of property
+        Class<?> klass = analyzedModel.getPropertyClass(nodeType, propertyName);
+        if (!klass.equals(String.class) && !klass.equals(Boolean.class)) {
+            result.add(ChartType.CDF);
+        }
+        
+        LOGGER.debug("finish getPossibleChartTypes()");
+        
+        return result.toArray(new ChartType[0]);
     }
     
     /**
