@@ -27,7 +27,6 @@ import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
 import org.amanzi.neo.services.model.INodeToNodeRelationsType;
-import org.amanzi.neo.services.model.impl.DataModel.DataElementIterable;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.jdom.IllegalNameException;
@@ -45,7 +44,7 @@ import org.neo4j.graphdb.RelationshipType;
  * @author grigoreva_a
  * @since 1.0.0
  */
-public class NodeToNodeRelationshipModel extends AbstractModel implements INodeToNodeRelationsModel {
+public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implements INodeToNodeRelationsModel {
 
     public static final String RELATION_TYPE = "rel_type";
 
@@ -153,6 +152,8 @@ public class NodeToNodeRelationshipModel extends AbstractModel implements INodeT
             params.put(PRIMARY_TYPE, nodeType.getId());
             dsServ.setProperties(rootNode, params);
         }
+        
+        initializeStatistics();
     }
 
     NodeToNodeRelationshipModel(Node n2nRoot) throws AWEException {
@@ -165,6 +166,8 @@ public class NodeToNodeRelationshipModel extends AbstractModel implements INodeT
         this.nodeType = NodeTypeManager.getType(n2nRoot.getProperty(PRIMARY_TYPE).toString());
         this.relType = N2NRelTypes.valueOf(n2nRoot.getProperty(RELATION_TYPE).toString());
         this.name = n2nRoot.getProperty(NewNetworkService.NAME).toString();
+        
+        initializeStatistics();
     }
 
     @Override
@@ -192,6 +195,7 @@ public class NodeToNodeRelationshipModel extends AbstractModel implements INodeT
             Relationship rel = dsServ.createRelationship(proxy1, proxy2, relType);
             if (params != null) {
                 dsServ.setProperties(rel, params);
+                indexProperty(NodeToNodeTypes.PROXY, params);
             }
         }
     }
@@ -265,6 +269,16 @@ public class NodeToNodeRelationshipModel extends AbstractModel implements INodeT
     @Override
     public INodeToNodeRelationsType getNodeToNodeRelationsType() {
         return this.relType;
+    }
+
+    @Override
+    public Iterable<IDataElement> getChildren(IDataElement parent) {
+        return null;
+    }
+
+    @Override
+    public Iterable<IDataElement> getAllElementsByType(INodeType elementType) {
+        return null;
     }
 
 }

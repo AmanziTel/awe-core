@@ -322,7 +322,7 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
             rollbackTx();
             LOGGER.error("Exception on creating root Model", e);
             throw new RuntimeException(e);
-        } 
+        }
     }
 
     @Override
@@ -339,7 +339,6 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
                 lineCounter++;
                 List<String> value = container.getValues();
                 createMSC(value);
-                increaseActionCount();
             }
         } catch (DatabaseException e) {
             LOGGER.error("Error while saving element on line " + lineCounter, e);

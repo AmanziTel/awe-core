@@ -167,13 +167,6 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
     }
 
     /**
-     * increase action counter in current tx;
-     */
-    protected void increaseActionCount() {
-        actionCount++;
-    }
-
-    /**
      * dataset service instance
      */
     protected static DatasetService datasetService;
@@ -203,19 +196,21 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
      * transaction more than commitTxCount and open new;
      */
     protected void commitTx() {
-        if ((actionCount > commitTxCount) || (tx != null && actionCount == 0)) {
-        	tx.success();
+        actionCount++;
+        if (actionCount > commitTxCount) {
+            tx.success();
             tx.finish();
             tx = null;
             actionCount = 0;
         }
         if (tx == null) {
             tx = database.beginTx();
-        }        
+        }
+
     }
 
     protected void rollbackTx() {
-    	tx.failure();
+        tx.failure();
         actionCount = 0;
         tx.finish();
         tx = null;
@@ -223,9 +218,9 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
 
     @Override
     public void finishUp() throws AWEException {
-    	for (IDataModel dataModel : modelMap.values()) {
-    		dataModel.finishUp();
-    	}
+        for (IDataModel dataModel : modelMap.values()) {
+            dataModel.finishUp();
+        }
         saveSynonym();
         tx.success();
         tx.finish();

@@ -95,6 +95,7 @@ public class StatisticsVault implements IVault {
 
     @Override
     public void setCount(int count) {
+        isStatisticsChanged = true;
         this.count = count;
     }
 
