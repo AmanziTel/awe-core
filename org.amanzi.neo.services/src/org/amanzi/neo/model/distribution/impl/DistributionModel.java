@@ -295,4 +295,21 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
         return result;
     }
 
+    @Override
+    public void setCurrent(boolean isCurrent) throws AWEException {
+        LOGGER.debug("start setCurrent(<" + isCurrent + ">)");
+        
+        Node rootDistributionNode = getRootNode(); 
+        if (isCurrent) {
+            LOGGER.info("Enabling Distribution <" + getName() + "> for Model <" + analyzedModel.getName() + ">");
+        } else {
+            rootDistributionNode = null;
+            LOGGER.info("Disabling Distribution <" + getName() + "> for Model <" + analyzedModel.getName() + ">");
+        }
+        
+        distributionService.setCurrentDistributionModel(analyzedModel.getRootNode(), rootDistributionNode);
+        
+        LOGGER.debug("finish setCurrent()");
+    }
+
 }

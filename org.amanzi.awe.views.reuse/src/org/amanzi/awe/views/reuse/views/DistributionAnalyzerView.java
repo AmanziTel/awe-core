@@ -44,6 +44,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.part.ViewPart;
+import org.jfree.chart.JFreeChart;
 
 /**
  * View for Distribution Analyzis
@@ -119,6 +120,11 @@ public class DistributionAnalyzerView extends ViewPart {
      * Distribution Model
      */
     private IDistributionModel distributionModel;
+    
+    /*
+     * Distribution Chart
+     */
+    private JFreeChart distributionChart;
 
     @Override
     public void createPartControl(Composite parent) {
@@ -223,6 +229,10 @@ public class DistributionAnalyzerView extends ViewPart {
         selectCombo.setLayoutData(dCombo);
     }
     
+    private void createChartComposite(Composite parent) {
+        
+    }
+    
     /**
      * Pre-initializations of all fields
      *
@@ -324,7 +334,16 @@ public class DistributionAnalyzerView extends ViewPart {
                 //initialize current distribution
                 
                 try {
+                    if (distributionModel != null) {
+                        //if old distribution model exists - mark it as not-current
+                        distributionModel.setCurrent(false);
+                    }
+                    
                     distributionModel = analyzedModel.getDistributionModel(currentDistributionType);
+                    
+                    //mark new distribution model as current
+                    distributionModel.setCurrent(true);
+                    
                     distributionModel.getDistributionBars(monitor);
                 } catch (AWEException e) {
                     //TODO: handle exception
