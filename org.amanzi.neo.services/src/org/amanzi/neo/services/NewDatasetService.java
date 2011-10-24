@@ -945,7 +945,7 @@ public class NewDatasetService extends NewAbstractService {
     }
 
     /**
-     * Traverses database to find all network elements of defined type
+     * Traverses database to find all n2n elements of defined type
      * 
      * @param elementType
      * @return an <code>Iterable</code> over found nodes
