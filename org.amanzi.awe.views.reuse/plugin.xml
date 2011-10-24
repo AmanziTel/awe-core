@@ -12,6 +12,13 @@
             id="org.amanzi.awe.views.reuse.views.ReuseAnalyserView">
       </view>
       <view
+            name="Distribution Analyzer"
+            icon="icons/distribution.png"
+            category="org.amanzi.awe.script"
+            class="org.amanzi.awe.views.reuse.views.DistributionAnalyzerView"
+            id="org.amanzi.awe.views.reuse.views.DistributionAnalyzerView">
+      </view>
+      <view
             name="Property Table"
             icon="icons/properties.gif"
             category="org.amanzi.awe.script"
@@ -30,6 +37,15 @@
          point="org.eclipse.ui.perspectiveExtensions">
       <perspectiveExtension
             targetID="org.amanzi.awe.perspective">
+         <view
+               id="org.amanzi.awe.views.reuse.views.DistributionAnalyzerView"
+               relationship="stack"
+               relative="net.refractions.udig.catalog.ui.CatalogView"
+               visible="true">
+         </view>
+         <viewShortcut
+               id="org.amanzi.awe.views.reuse.views.DistributionAnalyzerView">
+         </viewShortcut>
          <view
                id="org.amanzi.awe.views.reuse.views.ReuseAnalyserView"
                relationship="stack"

@@ -108,7 +108,7 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
             StringBuilder result = new StringBuilder(model.getName());
             
             if (nodeType != null) {
-                result.append(" - O").append(nodeType.getId());
+                result.append(" - ").append(nodeType.getId());
             }
             
             return result.toString();
@@ -374,12 +374,7 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
         return networkModels;
     }
 
-    /**
-     * Collects list of all models that are available for Distribution Analysis
-     *
-     * @return
-     * @throws AWEException
-     */
+    @Override
     public List<DistributionItem> getAllDistributionalModels() throws AWEException {
         List<DistributionItem> result = new ArrayList<DistributionItem>();
         //first add all NetworkModels and it's n2nrelationship models
