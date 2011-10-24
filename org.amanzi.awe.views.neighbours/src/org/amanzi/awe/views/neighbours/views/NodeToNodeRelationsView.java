@@ -16,7 +16,7 @@ package org.amanzi.awe.views.neighbours.views;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.amanzi.neo.services.NewAbstractService;
+import org.amanzi.neo.services.NewNetworkService;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
@@ -124,7 +124,6 @@ public class NodeToNodeRelationsView extends ViewPart {
     }
 
     private class TableLabelProvider extends LabelProvider implements ITableLabelProvider {
-        // private final Image delete = IconManager.getIconManager().getNeoImage("DELETE_ENABLED");
         private final ArrayList<TableColumn> columns = new ArrayList<TableColumn>();
         private final static int DEF_SIZE = 120;
         private final static int PROP_DEF_SIZE = 80;
@@ -144,13 +143,14 @@ public class NodeToNodeRelationsView extends ViewPart {
          */
         public void createTableColumn(String[] properties) {
             Table tabl = table.getTable();
-            if (columns.isEmpty()) {
-                for (String colName : colNames) {
-                    createColumn(colName, DEF_SIZE);
-                }
-                for (String prop : properties) {
-                    createColumn(prop, PROP_DEF_SIZE);
-                }
+            for (TableColumn column : columns) {
+                column.dispose();
+            }
+            for (String colName : colNames) {
+                createColumn(colName, DEF_SIZE);
+            }
+            for (String prop : properties) {
+                createColumn(prop, PROP_DEF_SIZE);
             }
             tabl.setHeaderVisible(true);
             tabl.setLinesVisible(true);
@@ -205,14 +205,14 @@ public class NodeToNodeRelationsView extends ViewPart {
                 return;
             }
             INodeToNodeRelationsModel n2nModel = getSelectedN2NModel();
-            String[] properties = n2nModel.getAllProperties();
+            String[] properties = n2nModel.getAllPropertyNames(n2nModel.getType());
             ((TableLabelProvider)table.getLabelProvider()).createTableColumn(properties);
             for (IDataElement source : n2nModel.getAllElementsByType(NodeTypes.SECTOR)) {
                 Iterable<IDataElement> relations = n2nModel.getN2NRelatedElements(source);
                 for (IDataElement element : relations) {
                     Relationship relation = ((DataElement)element).getRelationship();
-                    RowWrapper row = new RowWrapper(relation.getStartNode().getProperty(NewAbstractService.NAME).toString(),
-                            relation.getEndNode().getProperty(NewAbstractService.NAME).toString());
+                    RowWrapper row = new RowWrapper(relation.getStartNode().getProperty(NewNetworkService.SOURCE_NAME).toString(),
+                            relation.getEndNode().getProperty(NewNetworkService.SOURCE_NAME).toString());
                     for (int q = 0; q < properties.length; q++) {
                         row.addPropValue(relation.getProperty(properties[q], null));
                     }
@@ -345,7 +345,7 @@ public class NodeToNodeRelationsView extends ViewPart {
             nodeToNodeModels = null;
         } else {
             try {
-                nodeToNodeModels = network.getNodeToNodeModels(N2NRelTypes.NEIGHBOUR);
+                nodeToNodeModels = network.getNodeToNodeModels(getSelectedN2NType());
                 List<String> models = new ArrayList<String>();
                 for (INodeToNodeRelationsModel model : nodeToNodeModels) {
                     models.add(model.getName());

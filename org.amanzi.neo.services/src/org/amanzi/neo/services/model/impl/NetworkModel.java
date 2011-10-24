@@ -345,7 +345,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
 
         return getNodeToNodeModels(null);
     }
-
+    
     @Override
     public Iterable<IDataElement> getChildren(IDataElement parent) {
         // validate
@@ -541,8 +541,8 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
 
     @Override
     public void finishUp() throws AWEException {
-        super.finishUp();
         nwServ.setNetworkStructure(rootNode, currentNetworkStructure);
+        super.finishUp();
     }
 
     @Override

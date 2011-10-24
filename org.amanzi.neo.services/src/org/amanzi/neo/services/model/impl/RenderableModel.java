@@ -29,7 +29,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @author grigoreva_a
  * @since 1.0.0
  */
-public class RenderableModel extends AbstractIndexedModel {
+public abstract class RenderableModel extends AbstractIndexedModel {
     static final String DESCRIPTION = "description";
 
     protected static CoordinateReferenceSystem DEFAULT_CRS = DefaultGeographicCRS.WGS84;

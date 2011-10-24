@@ -25,6 +25,7 @@ import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveRelationshipTypes;
+import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelationships;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
@@ -59,6 +60,7 @@ public class NewDatasetService extends NewAbstractService {
     public final static String PROJECT_NODE = "project_node";
     public static final String LAST_CHILD_ID = "last_child_id";
     public static final String PARENT_ID = "parent_id";
+    
     /**
      * TraversalDescription for Dataset nodes
      */
@@ -942,6 +944,25 @@ public class NewDatasetService extends NewAbstractService {
         return DATASET_ELEMENT_TRAVERSAL_DESCRIPTION.evaluator(new FilterNodesByType(elementType)).traverse(parent).nodes();
     }
 
+    /**
+     * Traverses database to find all network elements of defined type
+     * 
+     * @param elementType
+     * @return an <code>Iterable</code> over found nodes
+     */
+    public Iterable<Node> findAllN2NElements(Node parent, INodeType elementType) {
+        LOGGER.debug("start findAllNetworkElements(Node parent, INodeType elementType)");
+        // validate parameters
+        if (parent == null) {
+            throw new IllegalArgumentException("Parent is null.");
+        }
+        if (elementType == null) {
+            throw new IllegalArgumentException("Element type is null.");
+        }
+
+        return DATASET_ELEMENT_TRAVERSAL_DESCRIPTION.relationships(N2NRelationships.N2N_REL, Direction.INCOMING).evaluator(new FilterNodesByType(elementType)).traverse(parent).nodes();
+    }
+    
     /**
      * @param n2nProxy
      * @param nodeType

@@ -34,30 +34,6 @@ import org.neo4j.graphdb.Transaction;
  * 
  * @author kruglik_a
  */
-/**
- * TODO Purpose of 
- * <p>
- *
- * </p>
- * @author kostyukovich_n
- * @since 1.0.0
- */
-/**
- * TODO Purpose of 
- * <p>
- *
- * </p>
- * @author kostyukovich_n
- * @since 1.0.0
- */
-/**
- * TODO Purpose of
- * <p>
- * </p>
- * 
- * @author kostyukovich_n
- * @since 1.0.0
- */
 public class NewDatasetServiceTest extends AbstractNeoServiceTest {
 
     private static Logger LOGGER = Logger.getLogger(NewDatasetServiceTest.class);

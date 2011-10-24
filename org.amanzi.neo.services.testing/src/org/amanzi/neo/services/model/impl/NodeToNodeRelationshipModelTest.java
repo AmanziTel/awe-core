@@ -336,11 +336,8 @@ public class NodeToNodeRelationshipModelTest extends AbstractNeoServiceTest {
                 throw (RuntimeException)new RuntimeException().initCause(e1);
             }
 
-            // link sector
-//            params.put(NewAbstractService.NAME, "neighbour");
-//            params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
             Relationship rel = dsServ.createRelationship(model.getProxy(((DataElement)sector).getNode()),
-                    model.getProxy(((DataElement)sect).getNode()), N2NRelTypes.NEIGHBOUR); 
+                    model.getProxy(((DataElement)sect).getNode()), N2NRelTypes.NEIGHBOUR);
 
             relations.add(rel);
 
@@ -351,10 +348,7 @@ public class NodeToNodeRelationshipModelTest extends AbstractNeoServiceTest {
         int resCount = 0;
         for (IDataElement element : elements) {
             resCount++;
-            DataElement el = (DataElement)element;
-            Relationship rel = el.getRelationship();
-            System.out.println(rel.getId());
-            Assert.assertTrue(relations.contains(rel));
+            Assert.assertTrue(relations.contains(((DataElement)element).getRelationship()));
         }
         Assert.assertTrue("Incorrect Relations Count: " + resCount, resCount == relCount);
     }
