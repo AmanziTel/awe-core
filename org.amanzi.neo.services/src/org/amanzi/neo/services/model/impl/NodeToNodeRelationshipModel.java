@@ -218,7 +218,7 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
      * @return the resulting proxy
      * @throws AWEException
      */
-    private Node getProxy(Node sourceNode) throws AWEException {
+    public Node getProxy(Node sourceNode) throws AWEException {
         Node result = findProxy(sourceNode);
         if (result == null) {
             result = dsServ.createNode(sourceNode, N2NRelationships.N2N_REL, NodeToNodeTypes.PROXY);
@@ -255,7 +255,7 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
 
         Node proxy = findProxy(sourceNode);
         if (proxy != null) {
-            return new DataElementIterable(dsServ.findN2NRelationships(proxy, nodeType, relType));
+            return new DataElementIterable(dsServ.findN2NRelationships(proxy, relType));
         } else {
             return new DataElementIterable(dsServ.emptyTraverser(sourceNode));
         }

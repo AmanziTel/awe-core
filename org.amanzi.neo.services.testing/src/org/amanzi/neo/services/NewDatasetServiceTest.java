@@ -11,7 +11,6 @@ import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.NewDatasetService.DriveTypes;
 import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
-import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
@@ -28,7 +27,6 @@ import org.junit.Test;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
 
 /**
@@ -241,13 +239,13 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
     }
 
     /**
-     * Testing method findN2NRelationships(Node n2nProxy, INodeType nodeType, RelationshipType
-     * relType) all parameters names in test data relations are different
+     * Testing method findN2NRelationships(Node n2nProxy, RelationshipType relType) all parameters
+     * names in test data relations are different
      */
     @Test
     public void findN2NRelationshipsTest() {
         Node n2nProxy = initN2NRelations();
-        Iterable<Relationship> relations = service.findN2NRelationships(n2nProxy, NodeTypes.SECTOR, N2NRelationships.N2N_REL);
+        Iterable<Relationship> relations = service.findN2NRelationships(n2nProxy, N2NRelationships.N2N_REL);
         int cnt = 0;
         for (int i = 0; i < N2N_CORRECT_REL_PROPS.length; i++) {
             boolean finded = false;
@@ -266,30 +264,21 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
     }
 
     /**
-     * Testing method findN2NRelationships(Node n2nProxy, INodeType nodeType, RelationshipType
-     * relType) with null parameter
+     * Testing method findN2NRelationships(Node n2nProxy, RelationshipType relType) with null
+     * parameter
      */
     @Test(expected = IllegalArgumentException.class)
     public void findN2NRelationshipsNullTest1() {
-        service.findN2NRelationships(null, NodeTypes.SECTOR, N2NRelationships.N2N_REL);
+        service.findN2NRelationships(null, N2NRelationships.N2N_REL);
     }
 
     /**
-     * Testing method findN2NRelationships(Node n2nProxy, INodeType nodeType, RelationshipType
-     * relType) with null parameter
-     */
-    @Test(expected = IllegalArgumentException.class)
-    public void findN2NRelationshipsNullTest2() {
-        service.findN2NRelationships(createNode(), null, N2NRelationships.N2N_REL);
-    }
-
-    /**
-     * Testing method findN2NRelationships(Node n2nProxy, INodeType nodeType, RelationshipType
-     * relType) with null parameter
+     * Testing method findN2NRelationships(Node n2nProxy, RelationshipType relType) with null
+     * parameter
      */
     @Test(expected = IllegalArgumentException.class)
     public void findN2NRelationshipsNullTest3() {
-        service.findN2NRelationships(createNode(), NodeTypes.SECTOR, null);
+        service.findN2NRelationships(createNode(), null);
     }
 
     /**
