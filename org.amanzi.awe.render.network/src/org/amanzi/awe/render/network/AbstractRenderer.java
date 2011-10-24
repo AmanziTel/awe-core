@@ -93,15 +93,15 @@ public class AbstractRenderer extends RendererImpl {
 
             // TODO: selection
 
-            for (IDataElement element : model.getElements(bounds_transformed)) {
+            for (IDataElement element : model.getElements(data_bounds)) {
                 Coordinate location = model.getCoordinate(element);
                 if (location == null) {
                     continue;
                 }
                 Coordinate world_location = new Coordinate();
-                if (bounds_transformed != null && !bounds_transformed.contains(location)) {
-                    continue; // Don't draw points outside viewport
-                }
+//                if (bounds_transformed != null && !bounds_transformed.contains(location)) {
+//                    continue; // Don't draw points outside viewport
+//                }
                 try {
                     JTS.transform(location, world_location, transform_d2w);
                 } catch (Exception e) {

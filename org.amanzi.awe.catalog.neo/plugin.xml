@@ -6,7 +6,7 @@
          name="Neo4J Service Extensions"
          point="net.refractions.udig.catalog.ServiceExtension">
       <service
-            class="org.amanzi.awe.catalog.neo.NeoServiceExtension"
+            class="org.amanzi.awe.models.catalog.neo.NewGeoServiceExtension"
             id="org.amanzi.awe.catalog.neo.service"
             name="Neo4J Catalog Service Extension">
       </service>

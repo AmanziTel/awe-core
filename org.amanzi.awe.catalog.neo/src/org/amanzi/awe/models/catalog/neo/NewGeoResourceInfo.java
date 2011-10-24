@@ -19,6 +19,7 @@ import org.amanzi.neo.services.ui.IconManager;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.ImageData;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 
 public class NewGeoResourceInfo extends IGeoResourceInfo {
 
@@ -48,5 +49,10 @@ public class NewGeoResourceInfo extends IGeoResourceInfo {
                 return imageData;
             }
         };
+    }
+
+    @Override
+    public ReferencedEnvelope getBounds() {
+          return this.bounds;
     }
 }

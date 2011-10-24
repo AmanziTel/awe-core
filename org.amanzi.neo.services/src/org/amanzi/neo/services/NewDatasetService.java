@@ -117,7 +117,7 @@ public class NewDatasetService extends NewAbstractService {
      * @since 1.0.0
      */
     public enum DatasetTypes implements INodeType {
-        NETWORK, DRIVE, COUNTERS;
+        NETWORK, DRIVE, COUNTERS, GIS;
 
         static {
             NodeTypeManager.registerNodeType(DatasetTypes.class);
@@ -792,7 +792,10 @@ public class NewDatasetService extends NewAbstractService {
         for (Node node : nodes) {
             Node parent = getNextNode(node, DatasetRelationTypes.CHILD, Direction.INCOMING);
             if (parent == null) {
-                return null;
+                parent = getNextNode(node, DatasetRelationTypes.DATASET, Direction.INCOMING);
+                if (parent == null) {
+                    return null;
+                }
             }
             if (updateProperties) {
                 Transaction tx = graphDb.beginTx();
@@ -899,29 +902,31 @@ public class NewDatasetService extends NewAbstractService {
     }
 
     /**
-     * <Fully taken from old code> Gets the gis node by dataset.
-     * 
-     * @param dataset the dataset
-     * @return the gis node by dataset
-     */
-    public Node getGisNodeByDataset(Node dataset) {
-        Relationship gisLink = dataset.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING);
-        
-        if (gisLink != null) {
-            return gisLink.getStartNode();
-        }
-        return null;
-    }
-
-    /**
      * Gets the gis node by dataset, if it exists.
      * 
      * @param dataset the dataset
      * @return the gis node by dataset or null
+     * @throws DatabaseException
      */
-    public Node createGisNodeByDataset(Node dataset) {
+    public Node getGisNodeByDataset(Node dataset) throws DatabaseException {
+        if (dataset == null) {
+            return null;
+        }
         Relationship rel = dataset.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING);
-        return rel == null ? null : rel.getStartNode();
+        return rel == null ? createGisNode(dataset) : rel.getStartNode();
+    }
+
+    /**
+     * Create a gis node
+     * 
+     * @param dataset
+     * @return
+     * @throws DatabaseException
+     */
+    private Node createGisNode(Node dataset) throws DatabaseException {
+        Node gis = createNode(DatasetTypes.GIS);
+        createRelationship(gis, dataset, DatasetRelationTypes.NEXT);
+        return gis;
     }
 
     /**

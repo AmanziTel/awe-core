@@ -26,6 +26,7 @@ import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.indexes.MultiPropertyIndex;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -51,8 +52,21 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
     protected double min_longitude = Double.MAX_VALUE;
     protected double max_longitude = -Double.MAX_VALUE;
 
+    protected AbstractIndexedModel(Node rootNode) throws AWEException {
+        this.rootNode = rootNode;
+        
+        NewDatasetService dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
+        Node gis = dsServ.getGisNodeByDataset(rootNode);
+        if (gis != null) {
+            min_latitude = (Double)gis.getProperty(DriveModel.MIN_LATITUDE, min_latitude);
+            min_longitude = (Double)gis.getProperty(DriveModel.MIN_LONGITUDE, min_longitude);
+            max_latitude = (Double)gis.getProperty(DriveModel.MAX_LATITUDE, max_latitude);
+            max_longitude = (Double)gis.getProperty(DriveModel.MAX_LONGITUDE, max_longitude);
+        }
+    }
+
     private Map<INodeType, List<MultiPropertyIndex< ? >>> indexes = new HashMap<INodeType, List<MultiPropertyIndex< ? >>>();
-    
+
     private IndexService indexService = NeoServiceFactory.getInstance().getIndexService();
 
     /**
@@ -63,10 +77,10 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
      */
     protected void addLocationIndex(INodeType nodeType) throws AWEException {
         LOGGER.debug("addLocationIndex(" + nodeType + ")");
-        
-        //since location index exist it should also be a GIS node
+
+        // since location index exist it should also be a GIS node
         NewDatasetService dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
-        dsServ.createGisNodeByDataset(rootNode);
+        dsServ.getGisNodeByDataset(rootNode);
 
         // validate parameters
         if (nodeType == null) {
@@ -219,7 +233,6 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
      */
     @Override
     public void finishUp() throws AWEException {
-//        super.finishUp();
         NewDatasetService dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
 
         Node rootNode = getRootNode();
@@ -238,5 +251,7 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
             params.put(DriveModel.MAX_LONGITUDE, max_longitude);
             dsServ.setProperties(gis, params);
         }
+
+        super.finishUp();
     }
 }

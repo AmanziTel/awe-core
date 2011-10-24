@@ -44,27 +44,26 @@ import org.neo4j.graphdb.Node;
  * @since 1.0.0
  */
 public class ProjectModel extends AbstractModel implements IProjectModel {
-    
+
     /**
-     * Class that describes Distribution Item
-     * 
-     * It consist of DistributionalModel and Type of Node to Analyze
+     * Class that describes Distribution Item It consist of DistributionalModel and Type of Node to
+     * Analyze
      * 
      * @author gerzog
      * @since 1.0.0
      */
     public static class DistributionItem {
-        
+
         /*
-         * Model for Distribution 
+         * Model for Distribution
          */
         private IDistributionalModel model;
-        
+
         /*
          * Type of Node to Analyze
          */
         private INodeType nodeType;
-        
+
         /**
          * Constructor for multi-type models
          * 
@@ -75,7 +74,7 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
             this.model = model;
             this.nodeType = nodeType;
         }
-        
+
         /**
          * Constructor for single-type models
          * 
@@ -84,36 +83,36 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
         public DistributionItem(IDistributionalModel model) {
             this.model = model;
         }
-        
+
         /**
          * Returns model
-         *
+         * 
          * @return
          */
         public IDistributionalModel getModel() {
             return model;
         }
-        
+
         /**
          * Returns NodeType
-         *
+         * 
          * @return
          */
         public INodeType getNodeType() {
             return nodeType;
         }
-        
+
         @Override
         public String toString() {
             StringBuilder result = new StringBuilder(model.getName());
-            
+
             if (nodeType != null) {
                 result.append(" - O").append(nodeType.getId());
             }
-            
+
             return result.toString();
         }
-        
+
     }
 
     private static Logger LOGGER = Logger.getLogger(ProjectModel.class);
@@ -350,10 +349,10 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
         for (Node node : dsServ.findAllDatasets(rootNode)) {
             INodeType type = NodeTypeManager.getType(node.getProperty(NewAbstractService.TYPE, StringUtils.EMPTY).toString());
             if (type != null) {
-                if (type.equals(DatasetTypes.DRIVE)) {
+                if (type.getId().equals(DatasetTypes.DRIVE.getId())) {
                     result.add(new DriveModel(rootNode, node, null, null));
                 }
-                if (type.equals(DatasetTypes.NETWORK)) {
+                if (type.getId().equals(DatasetTypes.NETWORK.getId())) {
                     result.add(new NetworkModel(node));
                 }
             }
@@ -376,24 +375,24 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
 
     /**
      * Collects list of all models that are available for Distribution Analysis
-     *
+     * 
      * @return
      * @throws AWEException
      */
     public List<DistributionItem> getAllDistributionalModels() throws AWEException {
         List<DistributionItem> result = new ArrayList<DistributionItem>();
-        //first add all NetworkModels and it's n2nrelationship models
+        // first add all NetworkModels and it's n2nrelationship models
         for (INetworkModel network : findAllNetworkModels()) {
-            //create Distribution Items for all possible network Types
+            // create Distribution Items for all possible network Types
             for (INodeType nodeType : network.getNetworkStructure()) {
                 if (!nodeType.equals(NetworkElementNodeType.NETWORK)) {
                     result.add(new DistributionItem(network, nodeType));
                 }
             }
-            
-            //create Distribution Items for n2n relationships
+
+            // create Distribution Items for n2n relationships
         }
-        
+
         return result;
     }
 }
