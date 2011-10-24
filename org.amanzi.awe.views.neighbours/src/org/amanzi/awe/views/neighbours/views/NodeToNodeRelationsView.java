@@ -108,6 +108,7 @@ public class NodeToNodeRelationsView extends ViewPart {
         addListeners();
         setNetworkItems();
         setN2NTypeItems();
+        enableElements();
 
         table = new TableViewer(frame, SWT.BORDER | SWT.FULL_SELECTION);
         FormData fData = new FormData();
@@ -118,8 +119,8 @@ public class NodeToNodeRelationsView extends ViewPart {
         table.getControl().setLayoutData(fData);
         labelProvider = new TableLabelProvider();
         labelProvider.createTableColumn(new String[] {});
-         provider = new TableContentProvider();
-         table.setContentProvider(provider);
+        provider = new TableContentProvider();
+        table.setContentProvider(provider);
     }
 
     private class TableLabelProvider extends LabelProvider implements ITableLabelProvider {
@@ -166,13 +167,20 @@ public class NodeToNodeRelationsView extends ViewPart {
                 return wrapper.getNeighbourName();
             } else {
                 return wrapper.getPropValue(columnIndex - 2);
-            } 
+            }
         }
 
         @Override
         public Image getColumnImage(Object element, int columnIndex) {
             return null;
         }
+    }
+
+    private void enableElements() {
+        cbN2NType.setEnabled(cbNetwork.getSelectionIndex() >= 0);
+        cbN2NName.setEnabled(cbNetwork.getSelectionIndex() >= 0 && cbN2NType.getSelectionIndex() >= 0);
+        btnSearch.setEnabled(cbNetwork.getSelectionIndex() >= 0 && cbN2NName.getSelectionIndex() >= 0
+                && cbN2NType.getSelectionIndex() >= 0);
     }
 
     private class TableContentProvider implements IStructuredContentProvider {
@@ -246,10 +254,6 @@ public class NodeToNodeRelationsView extends ViewPart {
             propValues.add(value.toString());
         }
 
-        public void clearPropValues() {
-            propValues.clear();
-        }
-
         public String getPropValue(int index) {
             if (propValues.size() <= index)
                 return null;
@@ -260,7 +264,6 @@ public class NodeToNodeRelationsView extends ViewPart {
 
     private void addListeners() {
         cbNetwork.addSelectionListener(new SelectionListener() {
-
             @Override
             public void widgetSelected(SelectionEvent e) {
                 setN2NModelsItems(getSelectedNetwork());
@@ -270,10 +273,25 @@ public class NodeToNodeRelationsView extends ViewPart {
             public void widgetDefaultSelected(SelectionEvent e) {
             }
         });
+        SelectionListener selListener = new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                enableElements();
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+            }
+        };
+        cbNetwork.addSelectionListener(selListener);
+        cbN2NType.addSelectionListener(selListener);
+        cbN2NName.addSelectionListener(selListener);
         btnSearch.addSelectionListener(new SelectionListener() {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
+                table.setInput("");
             }
 
             @Override

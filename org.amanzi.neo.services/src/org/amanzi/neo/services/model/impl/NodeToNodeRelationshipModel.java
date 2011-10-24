@@ -27,7 +27,6 @@ import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
 import org.amanzi.neo.services.model.INodeToNodeRelationsType;
-import org.amanzi.neo.services.model.impl.DataModel.DataElementIterable;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.jdom.IllegalNameException;
@@ -45,7 +44,7 @@ import org.neo4j.graphdb.RelationshipType;
  * @author grigoreva_a
  * @since 1.0.0
  */
-public class NodeToNodeRelationshipModel extends AbstractModel implements INodeToNodeRelationsModel {
+public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implements INodeToNodeRelationsModel {
 
     public static final String RELATION_TYPE = "rel_type";
 
@@ -256,7 +255,7 @@ public class NodeToNodeRelationshipModel extends AbstractModel implements INodeT
 
         Node proxy = findProxy(sourceNode);
         if (proxy != null) {
-            return new DataElementIterable(dsServ.findN2NRelatedNodes(proxy, nodeType, relType));
+            return new DataElementIterable(dsServ.findN2NRelationships(proxy, nodeType, relType));
         } else {
             return new DataElementIterable(dsServ.emptyTraverser(sourceNode));
         }
@@ -266,5 +265,21 @@ public class NodeToNodeRelationshipModel extends AbstractModel implements INodeT
     public INodeToNodeRelationsType getNodeToNodeRelationsType() {
         return this.relType;
     }
+    
+    @Override
+    public Iterable<IDataElement> getChildren(IDataElement parent) {
+        return null;
+    }
 
+    @Override
+    public Iterable<IDataElement> getAllElementsByType(INodeType elementType) {
+        // validate
+        if (elementType == null) {
+            throw new IllegalArgumentException("Element type is null.");
+        }
+        LOGGER.info("getAllElementsByType(" + elementType.getId() + ")");
+
+        return new DataElementIterable(dsServ.findAllDatasetElements(getRootNode(), elementType));
+
+    }
 }
