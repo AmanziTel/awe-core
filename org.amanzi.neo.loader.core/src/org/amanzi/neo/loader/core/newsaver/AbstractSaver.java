@@ -57,7 +57,6 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
 	protected Map<IModel, ExportSynonyms> synonymsMap = new HashMap<IModel, ExportSynonyms>();
 	private static final String TRUE = "true";
 	private static final String FALSE = "false";
-	protected static boolean flag = false;
 
 	protected AbstractSaver(GraphDatabaseService service) {
 		if (service != null) {
@@ -204,18 +203,16 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
 	 * actions in current transaction more than commitTxCount and open new;
 	 */
 	protected void commitTx() {
-		if ((actionCount > commitTxCount) || (tx != null && actionCount == 0)
-				|| (flag == true)) {
+		actionCount++;
+		if (actionCount > commitTxCount) {
 			tx.success();
 			tx.finish();
 			tx = null;
 			actionCount = 0;
-			flag = false;
 		}
 		if (tx == null) {
 			tx = database.beginTx();
 		}
-		actionCount++;
 
 	}
 

@@ -107,8 +107,6 @@ public class NewNeighboursSaver extends AbstractSaver<NetworkModel, CSVContainer
                     NetworkElementNodeType.SECTOR);
             modelMap.put(configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK), networkModel);
             createExportSynonymsForModels();
-            flag = true;
-            commitTx();
         } catch (AWEException e) {
             rollbackTx();
             LOGGER.error("Exception on creating root Model", e);
