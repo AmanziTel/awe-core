@@ -35,22 +35,66 @@ public interface IDistribution<T extends IRange> {
         /*
          * Chart shows Counts of property for each bar 
          */
-        COUNTS,
+        COUNTS("Counts"),
         
         /*
          * Chart shows Percents of count of property for each bar
          */
-        PERCENTS,
+        PERCENTS("Percents"),
         
         /*
          * Chart show Logarithmic count of property for each bar
          */
-        LOGARITHMIC,
+        LOGARITHMIC("Logarithmic counts"),
         
         /*
          * Chart show CDF of this property
          */
-        CDF;
+        CDF("CDF Chart");
+        
+        /*
+         * title of this type of chart 
+         */
+        private String title;
+        
+        /**
+         * Constructor 
+         * 
+         * @param title
+         */
+        private ChartType(String title) {
+            this.title = title;
+        }
+        
+        /**
+         * Returns title of this type of Chart
+         *
+         * @return
+         */
+        public String getTitle() {
+            return title;
+        }
+        
+        @Override
+        public String toString() {
+            return getTitle();
+        }
+        
+        /**
+         * Searches corresponding ChartType enum by it's title
+         *
+         * @param title
+         * @return
+         */
+        public static ChartType findByTitle(String title) {
+            for (ChartType singleType : values()) {
+                if (singleType.equals(title)) {
+                    return singleType;
+                }
+            }
+            
+            return null;
+        }
         
         /**
          * Returns Default ChartType

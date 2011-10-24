@@ -79,6 +79,11 @@ public class EnumeratedDistribution extends AbstractDistribution<SimpleRange> {
     @Override
     public Select[] getPossibleSelects() {
         return POSSIBLE_SELECTS;
+    }
+
+    @Override
+    protected Select getDefaultSelect() {
+        return Select.EXISTS;
     }    
 
 }

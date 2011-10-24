@@ -16,8 +16,11 @@ package org.amanzi.awe.views.reuse.views;
 import java.util.HashMap;
 import java.util.List;
 
+import org.amanzi.awe.views.reuse.ReusePlugin;
 import org.amanzi.neo.model.distribution.IDistribution;
 import org.amanzi.neo.model.distribution.IDistribution.ChartType;
+import org.amanzi.neo.model.distribution.IDistribution.Select;
+import org.amanzi.neo.model.distribution.IDistributionModel;
 import org.amanzi.neo.model.distribution.IDistributionalModel;
 import org.amanzi.neo.model.distribution.impl.DistributionManager;
 import org.amanzi.neo.services.enums.INodeType;
@@ -27,6 +30,10 @@ import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.amanzi.neo.services.model.impl.ProjectModel.DistributionItem;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -49,7 +56,9 @@ public class DistributionAnalyzerView extends ViewPart {
     
     private static final String PROPERTY_LABEL = "Property";
     
-    private static final String DISTRIBUTION_LABEL = "Distribution"; 
+    private static final String DISTRIBUTION_LABEL = "Distribution";
+    
+    private static final String SELECT_LABEL = "Select";
     
     /*
      * Combo to choose DistributionItem
@@ -65,6 +74,11 @@ public class DistributionAnalyzerView extends ViewPart {
      * Distribution Combo
      */
     private Combo distributionCombo;
+    
+    /*
+     * Select Combo
+     */
+    private Combo selectCombo;
     
     /*
      * Current project
@@ -95,6 +109,16 @@ public class DistributionAnalyzerView extends ViewPart {
      * Map with Distribution Types
      */
     private HashMap<String, IDistribution<?>> distributionTypes = new HashMap<String, IDistribution<?>>();
+    
+    /*
+     * Currently available Distribution
+     */
+    private IDistribution<?> currentDistributionType;
+    
+    /*
+     * Distribution Model
+     */
+    private IDistributionModel distributionModel;
 
     @Override
     public void createPartControl(Composite parent) {
@@ -179,6 +203,24 @@ public class DistributionAnalyzerView extends ViewPart {
         dCombo.top = new FormAttachment(0, 2);
         dCombo.right = new FormAttachment(68, -5);
         distributionCombo.setLayoutData(dCombo);
+        
+        //label and combo for Select
+        Label selectLabel = new Label(parent, SWT.NONE);
+        selectLabel.setText(SELECT_LABEL);
+        
+        selectCombo = new Combo(parent, SWT.DROP_DOWN | SWT.READ_ONLY);
+        
+        //layout for label
+        dLabel = new FormData(); // bind to left & text
+        dLabel.left = new FormAttachment(distributionCombo, 10);
+        dLabel.top = new FormAttachment(selectCombo, 5, SWT.CENTER);
+        selectLabel.setLayoutData(dLabel);
+
+        dCombo = new FormData(); // bind to label and text
+        dCombo.left = new FormAttachment(selectLabel, 2);
+        dCombo.top = new FormAttachment(0, 2);
+        dCombo.right = new FormAttachment(82, -5);
+        selectCombo.setLayoutData(dCombo);
     }
     
     /**
@@ -204,6 +246,10 @@ public class DistributionAnalyzerView extends ViewPart {
         //distribution combo
         distributionCombo.setItems(ArrayUtils.EMPTY_STRING_ARRAY);
         distributionCombo.setEnabled(false);
+        
+        //select combo
+        selectCombo.setItems(ArrayUtils.EMPTY_STRING_ARRAY);
+        selectCombo.setEnabled(false);
     }
     
     /**
@@ -245,6 +291,61 @@ public class DistributionAnalyzerView extends ViewPart {
     }
     
     /**
+     * Initialized Distribution Type
+     */
+    private void initializeDistributionType() {
+        String distribution = distributionCombo.getText();
+        if (!StringUtils.isEmpty(distribution)) {
+            //get distribution
+            currentDistributionType = distributionTypes.get(distribution);
+            
+            //fill Select combo
+            Select[] possibleSelects = currentDistributionType.getPossibleSelects();
+            String[] selectNames = new String[possibleSelects.length];
+            for (int i = 0; i < possibleSelects.length; i++) {
+                selectNames[i] = possibleSelects[i].name();
+            }
+            selectCombo.setItems(selectNames);
+            selectCombo.setEnabled(true);
+            
+            //run analizys
+            runAnalyzis();
+        }
+    }
+    
+    /**
+     * Starts analyzis
+     */
+    private void runAnalyzis() {
+        Job distributionJob = new Job("Create Distribution model <" + currentDistributionType + ">") {
+            
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                //initialize current distribution
+                
+                try {
+                    distributionModel = analyzedModel.getDistributionModel(currentDistributionType);
+                    distributionModel.getDistributionBars(monitor);
+                } catch (AWEException e) {
+                    //TODO: handle exception
+                    return new Status(IStatus.ERROR, ReusePlugin.PLUGIN_ID, getName(), e);
+                }
+                
+                return Status.OK_STATUS;
+            }
+        };
+        
+        //run a job and wait until it finishes
+        distributionJob.schedule();
+        
+        try {
+            distributionJob.join();
+        } catch (InterruptedException e) {
+            //TODO: handle exception
+        }
+    }
+    
+    /**
      * Add listeners on Components
      */
     private void addListeners() {
@@ -269,6 +370,20 @@ public class DistributionAnalyzerView extends ViewPart {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 initializeDistributionCombo();
+            }
+            
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
+        
+        //listener for Distribution combo
+        distributionCombo.addSelectionListener(new SelectionListener() {
+            
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                initializeDistributionType();
             }
             
             @Override

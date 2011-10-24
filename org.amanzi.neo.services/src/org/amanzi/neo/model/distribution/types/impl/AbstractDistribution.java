@@ -124,10 +124,20 @@ public abstract class AbstractDistribution<T extends IRange> implements IDistrib
         return nodeType;
     }
     
+    /**
+     * Returns Default Select for this Distribution
+     *
+     * @return
+     */
+    protected abstract Select getDefaultSelect();
+    
     @Override
     public void setSelect(Select select) {
         if (ArrayUtils.contains(getPossibleSelects(), select)) {
-            this.select = select;
+            if (this.select != select) {
+                this.select = select;
+                isInitialized = false;
+            }
         } else {
             throw new IllegalArgumentException("Cannot set Select <" + select + "> for Distribution <" + this + ">.");
         }
