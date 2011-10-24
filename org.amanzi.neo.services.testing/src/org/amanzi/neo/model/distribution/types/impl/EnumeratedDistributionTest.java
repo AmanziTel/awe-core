@@ -22,6 +22,7 @@ import java.util.List;
 import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.model.distribution.IDistribution;
 import org.amanzi.neo.model.distribution.IDistributionalModel;
+import org.amanzi.neo.model.distribution.IDistribution.Select;
 import org.amanzi.neo.model.distribution.types.ranges.impl.SimpleRange;
 import org.amanzi.neo.services.AbstractNeoServiceTest;
 import org.amanzi.neo.services.DistributionService;
@@ -41,7 +42,7 @@ import org.neo4j.graphdb.Node;
  * @author gerzog
  * @since 1.0.0
  */
-public class StringDistributionTest extends AbstractNeoServiceTest {
+public class EnumeratedDistributionTest extends AbstractNeoServiceTest {
     
     private static final INodeType DEFAULT_NODE_TYPE = DistributionNodeTypes.AGGREGATION_BAR;
     
@@ -63,37 +64,37 @@ public class StringDistributionTest extends AbstractNeoServiceTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void tryToCreateWithoutModel() throws Exception {
-        new StringDistribution(null, DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME);
+        new EnumeratedDistribution(null, DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME);
     }
     
     @Test(expected = IllegalArgumentException.class)
     public void tryToCreateWithoutNodeType() throws Exception {
         IDistributionalModel model = getDistributionalModel();
         
-        new StringDistribution(model, null, DEFAULT_PROPERTY_NAME);
+        new EnumeratedDistribution(model, null, DEFAULT_PROPERTY_NAME);
     }
     
     @Test(expected = IllegalArgumentException.class)
     public void tryToCreateWithoutPropertyName() throws Exception {
         IDistributionalModel model = getDistributionalModel();
         
-        new StringDistribution(model, DEFAULT_NODE_TYPE, null);
+        new EnumeratedDistribution(model, DEFAULT_NODE_TYPE, null);
     }
     
     @Test(expected = IllegalArgumentException.class)
     public void tryToCreateWithEmptyPropertyName() throws Exception {
         IDistributionalModel model = getDistributionalModel();
         
-        new StringDistribution(model, DEFAULT_NODE_TYPE, StringUtils.EMPTY);
+        new EnumeratedDistribution(model, DEFAULT_NODE_TYPE, StringUtils.EMPTY);
     }
     
     @Test
     public void checkResultsOfCreation() throws Exception {
         IDistributionalModel model = getDistributionalModel();
         
-        IDistribution<SimpleRange> distribution = new StringDistribution(model, DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME);
+        IDistribution<SimpleRange> distribution = new EnumeratedDistribution(model, DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME);
         
-        assertEquals("Unexpected name of Distribution", StringDistribution.STRING_DISTRIBUTION_NAME, distribution.getName());
+        assertEquals("Unexpected name of Distribution", EnumeratedDistribution.STRING_DISTRIBUTION_NAME, distribution.getName());
         assertEquals("Unexpected NodeType of Distribution", DEFAULT_NODE_TYPE, distribution.getNodeType());
         assertNotNull("Initially Range of Distribution should not be null", distribution.getRanges());
         assertTrue("Initially ranges of Distribution should be empty", distribution.getRanges().isEmpty());
@@ -104,7 +105,7 @@ public class StringDistributionTest extends AbstractNeoServiceTest {
     public void checkCountAfterDistributionInitialization() throws Exception {
         IDistributionalModel model = getDistributionalModel();
         
-        IDistribution<SimpleRange> distribution = new StringDistribution(model, DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME);
+        IDistribution<SimpleRange> distribution = new EnumeratedDistribution(model, DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME);
         distribution.init();
         
         assertEquals("Unexpected number of values to Analyze", DEFAULT_NUMBER_OF_PROPERTIES, distribution.getCount());
@@ -114,7 +115,7 @@ public class StringDistributionTest extends AbstractNeoServiceTest {
     public void checkNumberOfRangesAfterInitialization() throws Exception {
         IDistributionalModel model = getDistributionalModel();
         
-        IDistribution<SimpleRange> distribution = new StringDistribution(model, DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME);
+        IDistribution<SimpleRange> distribution = new EnumeratedDistribution(model, DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME);
         distribution.init();
         
         assertEquals("Unexpected number of ranges in Distribution", DEFAULT_PROPERTY_NAMES.length, distribution.getRanges().size());
@@ -124,7 +125,7 @@ public class StringDistributionTest extends AbstractNeoServiceTest {
     public void checkRangeNamesAfterInitialization() throws Exception {
         IDistributionalModel model = getDistributionalModel();
         
-        IDistribution<SimpleRange> distribution = new StringDistribution(model, DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME);
+        IDistribution<SimpleRange> distribution = new EnumeratedDistribution(model, DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME);
         distribution.init();
         
         for (int i = 0; i < DEFAULT_PROPERTY_NAMES.length; i++) {
@@ -136,7 +137,7 @@ public class StringDistributionTest extends AbstractNeoServiceTest {
     public void checkRangeColorsAfterInitialization() throws Exception {
         IDistributionalModel model = getDistributionalModel();
         
-        IDistribution<SimpleRange> distribution = new StringDistribution(model, DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME);
+        IDistribution<SimpleRange> distribution = new EnumeratedDistribution(model, DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME);
         distribution.init();
         
         for (int i = 0; i < DEFAULT_PROPERTY_NAMES.length; i++) {
@@ -148,7 +149,7 @@ public class StringDistributionTest extends AbstractNeoServiceTest {
     public void checkRangeFiltersAfterInitialization() throws Exception {
         IDistributionalModel model = getDistributionalModel();
         
-        IDistribution<SimpleRange> distribution = new StringDistribution(model, DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME);
+        IDistribution<SimpleRange> distribution = new EnumeratedDistribution(model, DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME);
         distribution.init();
         
         IDataElement[] nodesToCheck = getMockedNodesForFilter();
@@ -164,12 +165,20 @@ public class StringDistributionTest extends AbstractNeoServiceTest {
     public void checkActionsOfModelOnInitialization() throws Exception {
         IDistributionalModel model = getDistributionalModel();
         
-        IDistribution<SimpleRange> distribution = new StringDistribution(model, DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME);
+        IDistribution<SimpleRange> distribution = new EnumeratedDistribution(model, DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME);
         distribution.init();
         
         verify(model).getPropertyCount(DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME);
         verify(model).getPropertyValues(DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME);
         verifyNoMoreInteractions(model);
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToSetIllegalSelect() throws Exception {
+        IDistributionalModel model = getDistributionalModel();
+        
+        IDistribution<SimpleRange> distribution = new EnumeratedDistribution(model, DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME);
+        distribution.setSelect(Select.MAX);
     }
     
     /**

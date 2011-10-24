@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.model.distribution;
 
+import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IPropertyStatisticalModel;
 
 /**
@@ -31,6 +32,6 @@ public interface IDistributionalModel extends IPropertyStatisticalModel {
      * @param distributionType type of Distribution
      * @return 
      */
-    public IDistributionModel getDistributionModel(IDistribution<?> distributionType);
+    public IDistributionModel getDistributionModel(IDistribution<?> distributionType) throws AWEException;
 
 }
