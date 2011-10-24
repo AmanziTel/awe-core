@@ -13,6 +13,8 @@
 
 package org.amanzi.awe.views.reuse.views;
 
+import java.awt.Color;
+import java.awt.Paint;
 import java.util.HashMap;
 import java.util.List;
 
@@ -20,6 +22,7 @@ import org.amanzi.awe.views.reuse.ReusePlugin;
 import org.amanzi.neo.model.distribution.IDistribution;
 import org.amanzi.neo.model.distribution.IDistribution.ChartType;
 import org.amanzi.neo.model.distribution.IDistribution.Select;
+import org.amanzi.neo.model.distribution.IDistributionBar;
 import org.amanzi.neo.model.distribution.IDistributionModel;
 import org.amanzi.neo.model.distribution.IDistributionalModel;
 import org.amanzi.neo.model.distribution.impl.DistributionManager;
@@ -28,6 +31,7 @@ import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IProjectModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.amanzi.neo.services.model.impl.ProjectModel.DistributionItem;
+import org.amanzi.neo.services.ui.utils.ActionUtil;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -44,7 +48,17 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.part.ViewPart;
+import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.labels.StandardCategoryToolTipGenerator;
+import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.renderer.category.BarRenderer;
+import org.jfree.chart.renderer.category.CategoryItemRenderer;
+import org.jfree.data.category.CategoryDataset;
+import org.jfree.data.general.AbstractDataset;
+import org.jfree.experimental.chart.swt.ChartComposite;
 
 /**
  * View for Distribution Analyzis
@@ -60,6 +74,112 @@ public class DistributionAnalyzerView extends ViewPart {
     private static final String DISTRIBUTION_LABEL = "Distribution";
     
     private static final String SELECT_LABEL = "Select";
+    
+    private static final Color CHART_BACKGROUND = Color.WHITE;
+    
+    private static final Color PLOT_BACKGROUND = new Color(230, 230, 230);
+    
+    private static final String DISTRIBUTION_CHART_NAME = "Distribution Chart";
+    
+    private static final String VALUES_AXIS_NAME = "Values";
+    
+    private static final String NUMBERS_AXIS_NAME = "Numbers";
+    
+    @SuppressWarnings("rawtypes")
+    private class DistributionDataset extends AbstractDataset implements CategoryDataset {
+        
+        private List<IDistributionBar> distributionBars;
+
+        /** long serialVersionUID field */
+        private static final long serialVersionUID = 1L;
+        
+        
+
+        @Override
+        public int getColumnIndex(Comparable arg0) {
+            return 0;
+        }
+
+        @Override
+        public Comparable getColumnKey(int arg0) {
+            return null;
+        }
+
+        @Override
+        public List getColumnKeys() {
+            return null;
+        }
+
+        @Override
+        public int getRowIndex(Comparable arg0) {
+            return 0;
+        }
+
+        @Override
+        public Comparable getRowKey(int arg0) {
+            return null;
+        }
+
+        @Override
+        public List getRowKeys() {
+            return null;
+        }
+
+        @Override
+        public Number getValue(Comparable arg0, Comparable arg1) {
+            return null;
+        }
+
+        @Override
+        public int getColumnCount() {
+            return 0;
+        }
+
+        @Override
+        public int getRowCount() {
+            return 0;
+        }
+
+        @Override
+        public Number getValue(int arg0, int arg1) {
+            return null;
+        }
+
+        /**
+         * @return Returns the ranges.
+         */
+        public List<IDistributionBar> getDistributionBars() {
+            return distributionBars;
+        }
+
+        /**
+         * @param ranges The ranges to set.
+         */
+        public void setDistributionBars(List<IDistributionBar> distributionBars) {
+            this.distributionBars = distributionBars;
+        }
+        
+    }
+    
+    private class DistributionBarRenderer extends BarRenderer {
+
+        /** long serialVersionUID field */
+        private static final long serialVersionUID = 1L;
+        
+        /**
+         * Returns the paint for an item. Overrides the default behaviour inherited from
+         * AbstractSeriesRenderer.
+         * 
+         * @param row the series.
+         * @param column the category.
+         * @return The item color.
+         */
+        @Override
+        public Paint getItemPaint(final int row, final int column) {
+            return dataset.getDistributionBars().get(column).getColor();
+        }
+        
+    }
     
     /*
      * Combo to choose DistributionItem
@@ -125,9 +245,26 @@ public class DistributionAnalyzerView extends ViewPart {
      * Distribution Chart
      */
     private JFreeChart distributionChart;
+    
+    /*
+     * Dataset for Chart
+     */
+    private DistributionDataset dataset;
+    
+    /*
+     * Composite for Chart
+     */
+    private ChartComposite chartFrame;
+    
+    /*
+     * Parent composite
+     */
+    private Composite mainView;
 
     @Override
     public void createPartControl(Composite parent) {
+        mainView = parent;
+        
         //layout for main composite
         FormLayout layout = new FormLayout();
         layout.marginHeight = 0;
@@ -136,6 +273,7 @@ public class DistributionAnalyzerView extends ViewPart {
         parent.setLayout(layout);
         
         createDistributionSelectionCombos(parent);
+        createDistributionChart(parent);
         
         addListeners();
         
@@ -145,6 +283,47 @@ public class DistributionAnalyzerView extends ViewPart {
         } catch (AWEException e){
             //TODO: throw Runtime? show error message? 
         }
+    }
+    
+    /**
+     * Creates Composite for Distribution Chart
+     */
+    private void createDistributionChart(Composite parent) {
+        //initialize a dataset
+        dataset = new DistributionDataset();
+        
+        //create a chart
+        distributionChart = ChartFactory.createBarChart(DISTRIBUTION_CHART_NAME, 
+                                                        VALUES_AXIS_NAME,
+                                                        NUMBERS_AXIS_NAME,
+                                                        dataset,
+                                                        PlotOrientation.VERTICAL,
+                                                        false, false, false);
+        
+        //axis properties
+        CategoryPlot plot = (CategoryPlot)distributionChart.getPlot();
+        NumberAxis rangeAxis = (NumberAxis)plot.getRangeAxis();
+        rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+        
+        //update renderer
+        CategoryItemRenderer renderer = new DistributionBarRenderer();
+        renderer.setBaseToolTipGenerator(new StandardCategoryToolTipGenerator());
+        plot.setRenderer(renderer);
+        
+        //default background colors
+        plot.setBackgroundPaint(PLOT_BACKGROUND);
+        distributionChart.setBackgroundPaint(CHART_BACKGROUND);
+        
+        chartFrame = new ChartComposite(parent, 0, distributionChart, true);
+        chartFrame.pack();
+        
+        //layout chart
+        FormData dChart = new FormData(); // bind to label and text
+        dChart.left = new FormAttachment(0, 5);
+        dChart.top = new FormAttachment(datasetCombo, 10);
+        dChart.bottom = new FormAttachment(100, -5);
+        dChart.right = new FormAttachment(100, -5);
+        chartFrame.setLayoutData(dChart);
     }
     
     /**
@@ -229,10 +408,6 @@ public class DistributionAnalyzerView extends ViewPart {
         selectCombo.setLayoutData(dCombo);
     }
     
-    private void createChartComposite(Composite parent) {
-        
-    }
-    
     /**
      * Pre-initializations of all fields
      *
@@ -260,6 +435,9 @@ public class DistributionAnalyzerView extends ViewPart {
         //select combo
         selectCombo.setItems(ArrayUtils.EMPTY_STRING_ARRAY);
         selectCombo.setEnabled(false);
+        
+        //chart
+        chartFrame.setVisible(false);
     }
     
     /**
@@ -327,6 +505,8 @@ public class DistributionAnalyzerView extends ViewPart {
      * Starts analyzis
      */
     private void runAnalyzis() {
+        mainView.setEnabled(false);
+        
         Job distributionJob = new Job("Create Distribution model <" + currentDistributionType + ">") {
             
             @Override
@@ -350,18 +530,20 @@ public class DistributionAnalyzerView extends ViewPart {
                     return new Status(IStatus.ERROR, ReusePlugin.PLUGIN_ID, getName(), e);
                 }
                 
+                ActionUtil.getInstance().runTask(new Runnable() {
+                    
+                    @Override
+                    public void run() {
+                        updateChart();
+                    }
+                }, true);
+                
                 return Status.OK_STATUS;
             }
         };
         
         //run a job and wait until it finishes
         distributionJob.schedule();
-        
-        try {
-            distributionJob.join();
-        } catch (InterruptedException e) {
-            //TODO: handle exception
-        }
     }
     
     /**
@@ -410,6 +592,25 @@ public class DistributionAnalyzerView extends ViewPart {
                 widgetSelected(e);
             }
         });
+    }
+    
+    private void updateChart() {
+        try {
+            //set name of chart
+            distributionChart.setTitle(distributionModel.getName());
+        
+            //update dataset
+            dataset.setDistributionBars(distributionModel.getDistributionBars());
+            
+            distributionChart.fireChartChanged();
+        } catch (AWEException e) {
+            //TODO: handle exception
+        } finally {
+            //show a chart
+            chartFrame.setVisible(true);
+            //enable main view
+            mainView.setEnabled(true);
+        }
     }
     
     
