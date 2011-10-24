@@ -36,6 +36,10 @@ public class DistributionBar implements IDistributionBar {
     
     private IDataElement rootElement;
     
+    private Comparable<Object> minValue;
+    
+    private Comparable<Object> maxValue;
+    
     public DistributionBar(IDataElement rootElement) {
         this.rootElement = rootElement;
     }
@@ -111,5 +115,34 @@ public class DistributionBar implements IDistributionBar {
     @Override
     public String toString() {
         return "DistributionBar <" + name + ">: " + color + " -> " + count;
+    }
+
+    @Override
+    public int compareTo(IDistributionBar arg0) {
+        return minValue.compareTo(arg0.getMinValue()); 
+    }
+
+    @Override
+    public Comparable<Object> getMinValue() {
+        return minValue;
+    }
+
+    @Override
+    public Comparable<Object> getMaxValue() {
+        return maxValue;
+    }
+
+    /**
+     * @param minValue The minValue to set.
+     */
+    public void setMinValue(Comparable<Object> minValue) {
+        this.minValue = minValue;
+    }
+
+    /**
+     * @param maxValue The maxValue to set.
+     */
+    public void setMaxValue(Comparable<Object> maxValue) {
+        this.maxValue = maxValue;
     }
 }

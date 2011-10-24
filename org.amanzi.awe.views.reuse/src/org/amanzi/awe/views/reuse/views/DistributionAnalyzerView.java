@@ -15,6 +15,7 @@ package org.amanzi.awe.views.reuse.views;
 
 import java.awt.Color;
 import java.awt.Paint;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -88,26 +89,30 @@ public class DistributionAnalyzerView extends ViewPart {
     @SuppressWarnings("rawtypes")
     private class DistributionDataset extends AbstractDataset implements CategoryDataset {
         
+        private final List<String> ROW_KEYS = new ArrayList<String>();
+        
         private List<IDistributionBar> distributionBars;
 
         /** long serialVersionUID field */
         private static final long serialVersionUID = 1L;
         
-        
+        public DistributionDataset() {
+            ROW_KEYS.add(VALUES_AXIS_NAME);
+        }
 
         @Override
         public int getColumnIndex(Comparable arg0) {
-            return 0;
+            return distributionBars.indexOf(arg0);
         }
 
         @Override
         public Comparable getColumnKey(int arg0) {
-            return null;
+            return distributionBars.get(arg0);
         }
 
         @Override
         public List getColumnKeys() {
-            return null;
+            return distributionBars;
         }
 
         @Override
@@ -117,12 +122,12 @@ public class DistributionAnalyzerView extends ViewPart {
 
         @Override
         public Comparable getRowKey(int arg0) {
-            return null;
+            return VALUES_AXIS_NAME;
         }
 
         @Override
         public List getRowKeys() {
-            return null;
+            return ROW_KEYS;
         }
 
         @Override
