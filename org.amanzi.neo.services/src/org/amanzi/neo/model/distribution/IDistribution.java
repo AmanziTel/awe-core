@@ -65,6 +65,21 @@ public interface IDistribution<T extends IRange> {
     }
     
     /**
+     * Type of Distribution Selection
+     * 
+     * @author gerzog
+     * @since 1.0.0
+     */
+    public static enum Select {
+        MIN,
+        MAX,
+        AVERAGE,
+        EXISTS,
+        UNIQUE,
+        FIRST;
+    }
+    
+    /**
      * Returns name of this Distribution
      *
      * @return
@@ -96,5 +111,19 @@ public interface IDistribution<T extends IRange> {
      * Initializes current distribution
      */
     public void init();
+    
+    /**
+     * Returns possible Selects
+     *
+     * @return
+     */
+    public Select[] getPossibleSelects();
+    
+    /**
+     * Sets type of Selection
+     *
+     * @param select
+     */
+    public void setSelect(Select select);
 
 }

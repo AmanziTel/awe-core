@@ -20,6 +20,7 @@ import org.amanzi.neo.model.distribution.IDistribution;
 import org.amanzi.neo.model.distribution.IDistributionalModel;
 import org.amanzi.neo.model.distribution.IRange;
 import org.amanzi.neo.services.enums.INodeType;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -55,6 +56,11 @@ public abstract class AbstractDistribution<T extends IRange> implements IDistrib
      * List of ranges
      */
     protected List<T> ranges = new ArrayList<T>();
+    
+    /*
+     * Type of Select
+     */
+    protected Select select;
     
     /**
      * Default constructor
@@ -116,6 +122,15 @@ public abstract class AbstractDistribution<T extends IRange> implements IDistrib
     @Override
     public INodeType getNodeType() {
         return nodeType;
+    }
+    
+    @Override
+    public void setSelect(Select select) {
+        if (ArrayUtils.contains(getPossibleSelects(), select)) {
+            this.select = select;
+        } else {
+            throw new IllegalArgumentException("Cannot set Select <" + select + "> for Distribution <" + this + ">.");
+        }
     }
 
 }

@@ -25,7 +25,7 @@ import org.amanzi.neo.model.distribution.IDistribution;
 import org.amanzi.neo.model.distribution.IDistribution.ChartType;
 import org.amanzi.neo.model.distribution.IDistributionalModel;
 import org.amanzi.neo.model.distribution.impl.DistributionManager.DistributionManagerException;
-import org.amanzi.neo.model.distribution.types.impl.StringDistribution;
+import org.amanzi.neo.model.distribution.types.impl.EnumeratedDistribution;
 import org.amanzi.neo.services.AbstractNeoServiceTest;
 import org.amanzi.neo.services.DistributionService.DistributionNodeTypes;
 import org.amanzi.neo.services.enums.INodeType;
@@ -111,7 +111,7 @@ public class DistributionManagerTest extends AbstractNeoServiceTest {
         
         IDistribution<?> stringDistribution = result.get(0);
         
-        assertEquals("Unexpected type of Distribution for String type", StringDistribution.class, stringDistribution.getClass());
+        assertEquals("Unexpected type of Distribution for String type", EnumeratedDistribution.class, stringDistribution.getClass());
     }
     
     @Test

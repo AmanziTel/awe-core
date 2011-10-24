@@ -21,7 +21,7 @@ import java.util.Map;
 import org.amanzi.neo.model.distribution.IDistribution;
 import org.amanzi.neo.model.distribution.IDistribution.ChartType;
 import org.amanzi.neo.model.distribution.IDistributionalModel;
-import org.amanzi.neo.model.distribution.types.impl.StringDistribution;
+import org.amanzi.neo.model.distribution.types.impl.EnumeratedDistribution;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.apache.commons.lang.StringUtils;
@@ -222,7 +222,7 @@ public class DistributionManager {
             LOGGER.info("No Distribution for params <" + model + ", " + nodeType + ", " + propertyName + ">. " +
             		"Create new one.");
             
-            result = new StringDistribution(model, nodeType, propertyName);
+            result = new EnumeratedDistribution(model, nodeType, propertyName);
             distributionCache.put(cacheKey, result);
         }
         

@@ -30,6 +30,9 @@ import org.apache.commons.lang.StringUtils;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.layout.FormAttachment;
+import org.eclipse.swt.layout.FormData;
+import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
@@ -95,6 +98,13 @@ public class DistributionAnalyzerView extends ViewPart {
 
     @Override
     public void createPartControl(Composite parent) {
+        //layout for main composite
+        FormLayout layout = new FormLayout();
+        layout.marginHeight = 0;
+        layout.marginWidth = 0;
+        layout.spacing = 0;
+        parent.setLayout(layout);
+        
         createDistributionSelectionCombos(parent);
         
         addListeners();
@@ -119,17 +129,56 @@ public class DistributionAnalyzerView extends ViewPart {
         
         datasetCombo = new Combo(parent, SWT.DROP_DOWN | SWT.READ_ONLY);
         
+        //layout for label
+        FormData dLabel = new FormData(); // bind to left & text
+        dLabel.left = new FormAttachment(0, 5);
+        dLabel.top = new FormAttachment(datasetCombo, 5, SWT.CENTER);
+        datasetNameLabel.setLayoutData(dLabel);
+        
+        //layout for combo
+        FormData dCombo = new FormData(); // bind to label and text
+        dCombo.left = new FormAttachment(datasetNameLabel, 2);
+        dCombo.top = new FormAttachment(0, 2);
+        dCombo.right = new FormAttachment(20, -5);
+        datasetCombo.setLayoutData(dCombo);
+        
         //label and combo for Property
         Label propertyNameLabel = new Label(parent, SWT.NONE);
         propertyNameLabel.setText(PROPERTY_LABEL);
         
         propertyCombo = new Combo(parent, SWT.DROP_DOWN | SWT.READ_ONLY);
         
-        //label and combor for DistributionType
+        //layout for label
+        dLabel = new FormData(); // bind to left & text
+        dLabel.left = new FormAttachment(datasetCombo, 10);
+        dLabel.top = new FormAttachment(propertyCombo, 5, SWT.CENTER);
+        propertyNameLabel.setLayoutData(dLabel);
+        
+        //layout for combo
+        dCombo = new FormData(); // bind to label and text
+        dCombo.left = new FormAttachment(propertyNameLabel, 2);
+        dCombo.top = new FormAttachment(0, 2);
+        dCombo.right = new FormAttachment(50, -5);
+        propertyCombo.setLayoutData(dCombo);
+        
+        //label and combo for DistributionType
         Label distributionTypeLabel = new Label(parent, SWT.NONE);
         distributionTypeLabel.setText(DISTRIBUTION_LABEL);
         
         distributionCombo = new Combo(parent, SWT.DROP_DOWN | SWT.READ_ONLY);
+        
+        //layout for label
+        dLabel = new FormData(); // bind to left & text
+        dLabel.left = new FormAttachment(propertyCombo, 10);
+        dLabel.top = new FormAttachment(distributionCombo, 5, SWT.CENTER);
+        distributionTypeLabel.setLayoutData(dLabel);
+
+        //layout for combo
+        dCombo = new FormData(); // bind to label and text
+        dCombo.left = new FormAttachment(distributionTypeLabel, 2);
+        dCombo.top = new FormAttachment(0, 2);
+        dCombo.right = new FormAttachment(68, -5);
+        distributionCombo.setLayoutData(dCombo);
     }
     
     /**
