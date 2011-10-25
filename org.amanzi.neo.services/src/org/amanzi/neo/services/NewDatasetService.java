@@ -25,7 +25,6 @@ import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveRelationshipTypes;
-import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelationships;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
@@ -85,10 +84,9 @@ public class NewDatasetService extends NewAbstractService {
             .relationships(DatasetRelationTypes.NEXT, Direction.OUTGOING);
 
     /** <code>TraversalDescription</code> to iterate over n2n related nodes */
-    // protected final TraversalDescription N2N_TRAVERSAL_DESCRIPTION =
-    // Traversal.description().breadthFirst()
-    // .relationships(N2NRelationships.N2N_REL,
-    // Direction.INCOMING).evaluator(Evaluators.excludeStartPosition());
+
+    protected final TraversalDescription N2N_TRAVERSAL_DESCRIPTION = Traversal.description().breadthFirst()
+            .evaluator(Evaluators.atDepth(1));
 
     /** <code>TraversalDescription</code> for an empty iterator */
     public static final TraversalDescription EMPTY_TRAVERSAL_DESCRIPTION = Traversal.description()
@@ -950,6 +948,25 @@ public class NewDatasetService extends NewAbstractService {
     }
 
     /**
+     * @param n2nProxy
+     * @param nodeType
+     * @param relType
+     * @return
+     */
+    public Iterable<Relationship> findN2NRelationships(Node n2nProxy, RelationshipType relType) {
+        // validate parameters
+        if (n2nProxy == null) {
+            throw new IllegalArgumentException("N2N proxy is null.");
+        }
+        if (relType == null) {
+            throw new IllegalArgumentException("Relationship type is null.");
+        }
+
+        return N2N_TRAVERSAL_DESCRIPTION.relationships(relType, Direction.INCOMING).
+                relationships(relType, Direction.OUTGOING).traverse(n2nProxy).relationships();
+    }
+    
+    /**
      * Traverses database to find all n2n elements of defined type
      * 
      * @param elementType
@@ -967,25 +984,6 @@ public class NewDatasetService extends NewAbstractService {
 
         return DATASET_ELEMENT_TRAVERSAL_DESCRIPTION.relationships(N2NRelationships.N2N_REL, Direction.INCOMING)
                 .evaluator(new FilterNodesByType(elementType)).traverse(parent).nodes();
-    }
-
-    /**
-     * @param n2nProxy
-     * @param nodeType
-     * @param relType
-     * @return
-     */
-    public Iterable<Relationship> findN2NRelationships(Node n2nProxy, RelationshipType relType) {
-        // validate parameters
-        if (n2nProxy == null) {
-            throw new IllegalArgumentException("N2N proxy is null.");
-        }
-        if (relType == null) {
-            throw new IllegalArgumentException("Relationship type is null.");
-        }
-
-        return N2N_RELATIONSHIPS_TRAVERSAL_DESCRIPTION.relationships(relType, Direction.OUTGOING).traverse(n2nProxy)
-                .relationships();
     }
 
     /**
@@ -1012,4 +1010,5 @@ public class NewDatasetService extends NewAbstractService {
         return VIRTUAL_DATASET_TRAVERSAL_DESCRIPTION.traverse(rootDataset).nodes();
     }
 
+    
 }

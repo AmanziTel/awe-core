@@ -96,7 +96,7 @@ public class Filter implements IFilter {
         boolean result = false;
         boolean supportedType = true;
         
-        INodeType currentType = NodeTypeManager.getType(NewAbstractService.getNodeType(node));;
+        INodeType currentType = NodeTypeManager.getType(NewAbstractService.getNodeType(node));
         
         if ((currentType != null) && (nodeType != null) &&
                 (!currentType.equals(nodeType))) {

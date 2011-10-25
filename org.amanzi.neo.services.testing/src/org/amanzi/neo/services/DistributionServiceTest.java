@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.services;
 
+import static org.mockito.Mockito.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -26,11 +27,14 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.amanzi.log4j.LogStarter;
+import org.amanzi.neo.model.distribution.IDistribution;
 import org.amanzi.neo.model.distribution.IDistributionBar;
 import org.amanzi.neo.model.distribution.impl.DistributionBar;
 import org.amanzi.neo.services.DistributionService.DistributionNodeTypes;
 import org.amanzi.neo.services.DistributionService.DistributionRelationshipTypes;
+import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
+import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.apache.commons.lang.StringUtils;
@@ -65,6 +69,8 @@ public class DistributionServiceTest extends AbstractNeoServiceTest {
     private final static Color DEFAULT_BAR_COLOR = Color.BLACK;
 
     private final static int DEFAULT_BAR_COUNT = 100;
+    
+    private final static INodeType DEFAULT_NODE_TYPE = NetworkElementNodeType.SECTOR;
 
     private final static String DEFAULT_BAR_NAME = "bar_name";
     
@@ -72,12 +78,16 @@ public class DistributionServiceTest extends AbstractNeoServiceTest {
     
     private final static String UPDATED_BAR_NAME = "new_bar_name";
     
+    private final static String DEFAULT_PROPERTY_NAME = "property";
+    
     private final static int UPDATED_BAR_COUNT = 500;
 
     /*
      * Distribution service
      */
     private DistributionService distributionService;
+    
+    private IDistribution<?> distribution;
 
     /**
      * @throws java.lang.Exception
@@ -105,6 +115,7 @@ public class DistributionServiceTest extends AbstractNeoServiceTest {
     @Before
     public void setUp() throws Exception {
         distributionService = new DistributionService(graphDatabaseService);
+        distribution = getDistribution(DISTRIBUTION_NAME);
     }
 
     /**
@@ -117,7 +128,7 @@ public class DistributionServiceTest extends AbstractNeoServiceTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void tryToFindRootAggregationNodeWithoutParentNode() throws Exception {
-        distributionService.findRootAggregationNode(null, DISTRIBUTION_NAME);
+        distributionService.findRootAggregationNode(null, distribution);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -125,17 +136,12 @@ public class DistributionServiceTest extends AbstractNeoServiceTest {
         distributionService.findRootAggregationNode(getParentNode(), null);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void tryToFindRootAggregationNodeWithEmptyName() throws Exception {
-        distributionService.findRootAggregationNode(getParentNode(), StringUtils.EMPTY);
-    }
-
     @Test
     public void checkSingleResultOfSearch() throws Exception {
         Node parentNode = getParentNode();
         Node rootAggregation = createRootAggregationNode(parentNode, DISTRIBUTION_NAME);
 
-        Node result = distributionService.findRootAggregationNode(parentNode, DISTRIBUTION_NAME);
+        Node result = distributionService.findRootAggregationNode(parentNode, distribution);
 
         assertNotNull("Result of search cannot be null", result);
         assertEquals("Search found incorrect node", rootAggregation, result);
@@ -146,7 +152,7 @@ public class DistributionServiceTest extends AbstractNeoServiceTest {
         Node parentNode = getParentNode();
         createRootAggregationNode(parentNode, DISTRIBUTION_NAME + DISTRIBUTION_NAME);
 
-        Node result = distributionService.findRootAggregationNode(parentNode, DISTRIBUTION_NAME);
+        Node result = distributionService.findRootAggregationNode(parentNode, distribution);
 
         assertNull("Result of search should be null", result);
     }
@@ -160,7 +166,7 @@ public class DistributionServiceTest extends AbstractNeoServiceTest {
         }
 
         for (int i = 0; i < NUMBER_OF_ROOT_AGGREGATIONS; i++) {
-            Node result = distributionService.findRootAggregationNode(parentNode, DISTRIBUTION_NAME + i);
+            Node result = distributionService.findRootAggregationNode(parentNode, getDistribution(DISTRIBUTION_NAME + i));
 
             assertNotNull("Result should not be null", result);
 
@@ -173,7 +179,7 @@ public class DistributionServiceTest extends AbstractNeoServiceTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void createAggregationRootWithoutParent() throws Exception {
-        distributionService.createRootAggregationNode(null, DISTRIBUTION_NAME);
+        distributionService.createRootAggregationNode(null, distribution);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -181,27 +187,22 @@ public class DistributionServiceTest extends AbstractNeoServiceTest {
         distributionService.createRootAggregationNode(getParentNode(), null);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void createAggregationRootWithEmptyName() throws Exception {
-        distributionService.createRootAggregationNode(getParentNode(), StringUtils.EMPTY);
-    }
-
     @Test(expected = DuplicateNodeNameException.class)
     public void createDuplicatedRoot() throws Exception {
         Node parentNode = getParentNode();
 
-        distributionService.createRootAggregationNode(parentNode, DISTRIBUTION_NAME);
-        distributionService.createRootAggregationNode(parentNode, DISTRIBUTION_NAME);
+        distributionService.createRootAggregationNode(parentNode, distribution);
+        distributionService.createRootAggregationNode(parentNode, distribution);
     }
 
     @Test
     public void checkNoExceptionsOnCreate() throws Exception {
-        distributionService.createRootAggregationNode(getParentNode(), DISTRIBUTION_NAME);
+        distributionService.createRootAggregationNode(getParentNode(), distribution);
     }
 
     @Test
     public void checkPropertiesOfCreatedRootAggregationNode() throws Exception {
-        Node result = distributionService.createRootAggregationNode(getParentNode(), DISTRIBUTION_NAME);
+        Node result = distributionService.createRootAggregationNode(getParentNode(), distribution);
 
         assertNotNull("Result should not be null", result);
 
@@ -213,7 +214,7 @@ public class DistributionServiceTest extends AbstractNeoServiceTest {
 
     @Test
     public void checkRelationshipOfCreatedRootAggregationNode() throws Exception {
-        Node result = distributionService.createRootAggregationNode(getParentNode(), DISTRIBUTION_NAME);
+        Node result = distributionService.createRootAggregationNode(getParentNode(), distribution);
 
         Iterator<Relationship> relationships = result.getRelationships().iterator();
 
@@ -225,7 +226,7 @@ public class DistributionServiceTest extends AbstractNeoServiceTest {
     @Test
     public void checkRootAggregationRelationshipProperties() throws Exception {
         Node parentNode = getParentNode();
-        Node result = distributionService.createRootAggregationNode(parentNode, DISTRIBUTION_NAME);
+        Node result = distributionService.createRootAggregationNode(parentNode, distribution);
 
         Iterator<Relationship> relationships = result.getRelationships().iterator();
         Relationship relationship = relationships.next();
@@ -616,6 +617,116 @@ public class DistributionServiceTest extends AbstractNeoServiceTest {
         distributionService.updateDistributionModelCount(rootNode, -UPDATED_BAR_COUNT);
     }
     
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToSetModelAsCurrentWithoutAnalyzedModelRoo() throws Exception {
+        Node rootNode = createRootAggregationNode(getParentNode(), DISTRIBUTION_NAME);
+        
+        distributionService.setCurrentDistributionModel(null, rootNode);
+    }
+    
+    @Test
+    public void setModelAsCurrent() throws Exception {
+        Node parentNode = getParentNode();
+        Node rootNode = createRootAggregationNode(parentNode, DISTRIBUTION_NAME);
+        
+        distributionService.setCurrentDistributionModel(parentNode, rootNode);
+        
+        assertEquals("Unexpected name of current distribution", DISTRIBUTION_NAME, parentNode.getProperty(DistributionService.CURRENT_DISTRIBUTION_MODEL));
+    }
+    
+    @Test
+    public void skipCurrentModel() throws Exception {
+        Node parentNode = getParentNode();
+        Node rootNode = createRootAggregationNode(parentNode, DISTRIBUTION_NAME);
+        
+        distributionService.setCurrentDistributionModel(parentNode, rootNode);
+        distributionService.setCurrentDistributionModel(parentNode, null);
+        
+        assertFalse("Parent should not have such property", parentNode.hasProperty(DistributionService.CURRENT_DISTRIBUTION_MODEL));
+    }
+    
+    @Test(expected = IllegalArgumentException.class) 
+    public void tryToFindDistributionWithoutName() throws Exception {
+        Node parentNode = getParentNode();
+        IDistribution<?> distribution = getDistribution(null);
+        distributionService.findRootAggregationNode(parentNode, distribution);
+    }
+    
+    @Test(expected = IllegalArgumentException.class) 
+    public void tryToFindDistributionWithEmptyName() throws Exception {
+        Node parentNode = getParentNode();
+        IDistribution<?> distribution = getDistribution(StringUtils.EMPTY);
+        distributionService.findRootAggregationNode(parentNode, distribution);
+    }
+    
+    @Test(expected = IllegalArgumentException.class) 
+    public void tryToFindDistributionWithoutPropertyName() throws Exception {
+        Node parentNode = getParentNode();
+        IDistribution<?> distribution = getDistribution(DEFAULT_PROPERTY_NAME);
+        when(distribution.getPropertyName()).thenReturn(null);
+        
+        distributionService.findRootAggregationNode(parentNode, distribution);
+    }
+    
+    @Test(expected = IllegalArgumentException.class) 
+    public void tryToFindDistributionWithEmptyPropertyName() throws Exception {
+        Node parentNode = getParentNode();
+        IDistribution<?> distribution = getDistribution(DEFAULT_PROPERTY_NAME);
+        when(distribution.getPropertyName()).thenReturn(StringUtils.EMPTY);
+        
+        distributionService.findRootAggregationNode(parentNode, distribution);
+    }
+    
+    @Test(expected = IllegalArgumentException.class) 
+    public void tryToFindDistributionWithoutNodeType() throws Exception {
+        Node parentNode = getParentNode();
+        IDistribution<?> distribution = getDistribution(DEFAULT_PROPERTY_NAME);
+        when(distribution.getNodeType()).thenReturn(null);
+        
+        distributionService.findRootAggregationNode(parentNode, distribution);
+    }
+    
+    @Test(expected = IllegalArgumentException.class) 
+    public void tryToCreateDistributionWithoutName() throws Exception {
+        Node parentNode = getParentNode();
+        IDistribution<?> distribution = getDistribution(null);
+        distributionService.createRootAggregationNode(parentNode, distribution);
+    }
+    
+    @Test(expected = IllegalArgumentException.class) 
+    public void tryToCreateDistributionWithEmptyName() throws Exception {
+        Node parentNode = getParentNode();
+        IDistribution<?> distribution = getDistribution(StringUtils.EMPTY);
+        distributionService.createRootAggregationNode(parentNode, distribution);
+    }
+    
+    @Test(expected = IllegalArgumentException.class) 
+    public void tryToCreateDistributionWithPropertyName() throws Exception {
+        Node parentNode = getParentNode();
+        IDistribution<?> distribution = getDistribution(DEFAULT_PROPERTY_NAME);
+        when(distribution.getPropertyName()).thenReturn(null);
+        
+        distributionService.createRootAggregationNode(parentNode, distribution);
+    }
+    
+    @Test(expected = IllegalArgumentException.class) 
+    public void tryToCreateDistributionWithEmptyPropertyName() throws Exception {
+        Node parentNode = getParentNode();
+        IDistribution<?> distribution = getDistribution(DEFAULT_PROPERTY_NAME);
+        when(distribution.getPropertyName()).thenReturn(StringUtils.EMPTY);
+        
+        distributionService.createRootAggregationNode(parentNode, distribution);
+    }
+    
+    @Test(expected = IllegalArgumentException.class) 
+    public void tryToCreateDistributionWithoutNodeType() throws Exception {
+        Node parentNode = getParentNode();
+        IDistribution<?> distribution = getDistribution(DEFAULT_PROPERTY_NAME);
+        when(distribution.getNodeType()).thenReturn(null);
+        
+        distributionService.createRootAggregationNode(parentNode, distribution);
+    }
+    
     private IDistributionBar getDistributionBarInstance(Node barNode, String name, boolean createRootElement, int count) {
         DistributionBar result = getDistributionBarInstance(barNode, name, createRootElement);
         
@@ -731,6 +842,8 @@ public class DistributionServiceTest extends AbstractNeoServiceTest {
 
             result.setProperty(NewAbstractService.TYPE, DistributionNodeTypes.ROOT_AGGREGATION.getId());
             result.setProperty(NewAbstractService.NAME, name);
+            result.setProperty(DistributionService.NODE_TYPE, DEFAULT_NODE_TYPE.getId());
+            result.setProperty(DistributionService.PROPERTY_NAME, DEFAULT_PROPERTY_NAME);
             result.setProperty(DistributionService.COUNT, NUMBER_OF_BARS);
 
             tx.success();
@@ -784,5 +897,16 @@ public class DistributionServiceTest extends AbstractNeoServiceTest {
         bar.setName(name);
 
         return bar;
+    }
+    
+    @SuppressWarnings("rawtypes")
+    private IDistribution<?> getDistribution(String name) { 
+        IDistribution result = mock(IDistribution.class);
+        
+        when(result.getName()).thenReturn(name);
+        when(result.getNodeType()).thenReturn(DEFAULT_NODE_TYPE);
+        when(result.getPropertyName()).thenReturn(DEFAULT_PROPERTY_NAME);
+        
+        return result;
     }
 }

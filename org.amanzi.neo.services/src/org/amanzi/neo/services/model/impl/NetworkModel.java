@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.amanzi.neo.model.distribution.IDistribution;
 import org.amanzi.neo.model.distribution.IDistributionModel;
+import org.amanzi.neo.model.distribution.impl.DistributionModel;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewAbstractService;
@@ -575,8 +576,8 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     }
 
     @Override
-    public IDistributionModel getDistributionModel(IDistribution<?> distributionType) {
-        return null;
+    public IDistributionModel getDistributionModel(IDistribution<?> distributionType) throws AWEException {
+        return new DistributionModel(this, distributionType);
     }
 
     public Iterable<IDataElement> getElements(Envelope bounds_transformed) {

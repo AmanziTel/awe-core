@@ -26,7 +26,7 @@ import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.model.impl.DataElement;
-import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelationships;
+import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelTypes;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
@@ -135,7 +135,10 @@ public class NewNetworkService extends NewAbstractService {
      * Traversal Description to find all node2node relationship root nodes
      */
     protected final static TraversalDescription N2N_ROOT_TRAVERSER = Traversal.description().breadthFirst()
-            .relationships(N2NRelationships.N2N_REL, Direction.OUTGOING).evaluator(Evaluators.excludeStartPosition());
+            .relationships(N2NRelTypes.NEIGHBOUR, Direction.OUTGOING)
+            .relationships(N2NRelTypes.INTERFERENCE_MATRIX, Direction.OUTGOING)
+            .relationships(N2NRelTypes.SHADOW, Direction.OUTGOING).relationships(N2NRelTypes.TRIANGULATION, Direction.OUTGOING)
+            .evaluator(Evaluators.excludeStartPosition());
 
     public NewNetworkService() {
         super();

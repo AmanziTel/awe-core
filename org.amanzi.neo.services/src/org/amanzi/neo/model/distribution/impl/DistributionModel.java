@@ -80,11 +80,11 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
         }
         
         //try to find in DB
-        rootNode = distributionService.findRootAggregationNode(analyzedModel.getRootNode(), distributionType.getName());
+        rootNode = distributionService.findRootAggregationNode(analyzedModel.getRootNode(), distributionType);
         if (rootNode == null) {
             LOGGER.info("Creating new Distribution Structure for <" + analyzedModel + ", " + distributionType + ">");
             
-            rootNode = distributionService.createRootAggregationNode(analyzedModel.getRootNode(), distributionType.getName());
+            rootNode = distributionService.createRootAggregationNode(analyzedModel.getRootNode(), distributionType);
         } else {
             isExist = true;
             LOGGER.info("Distribution Found for <" + analyzedModel + ", " + distributionType + ">");
@@ -93,7 +93,7 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
         //initialize other fields
         this.analyzedModel = analyzedModel;
         this.distributionType = distributionType;
-        this.name = distributionType.getName();
+        this.name = distributionType.getPropertyName() + " - " + distributionType.getName();
         this.nodeType = NodeTypeManager.getType(DistributionService.getNodeType(rootNode));
         this.count = (Integer)rootNode.getProperty(DistributionService.COUNT, 0);
         
@@ -293,6 +293,23 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
         LOGGER.debug("finish getDistributionBars()");
         
         return result;
+    }
+
+    @Override
+    public void setCurrent(boolean isCurrent) throws AWEException {
+        LOGGER.debug("start setCurrent(<" + isCurrent + ">)");
+        
+        Node rootDistributionNode = getRootNode(); 
+        if (isCurrent) {
+            LOGGER.info("Enabling Distribution <" + getName() + "> for Model <" + analyzedModel.getName() + ">");
+        } else {
+            rootDistributionNode = null;
+            LOGGER.info("Disabling Distribution <" + getName() + "> for Model <" + analyzedModel.getName() + ">");
+        }
+        
+        distributionService.setCurrentDistributionModel(analyzedModel.getRootNode(), rootDistributionNode);
+        
+        LOGGER.debug("finish setCurrent()");
     }
 
 }

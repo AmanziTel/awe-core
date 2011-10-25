@@ -33,7 +33,6 @@ import org.jdom.IllegalNameException;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.RelationshipType;
 
 /**
  * <p>
@@ -57,19 +56,6 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
 
     /**
      * <p>
-     * Enum describing utility relationships in <code>NodeToNodeRelationshipModel</code> class. TODO
-     * rename?
-     * </p>
-     * 
-     * @author grigoreva_a
-     * @since 1.0.0
-     */
-    public enum N2NRelationships implements RelationshipType {
-        N2N_REL;
-    }
-
-    /**
-     * <p>
      * This enum describes relationships between nodes.
      * </p>
      * 
@@ -77,7 +63,7 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
      * @since 1.0.0
      */
     public enum N2NRelTypes implements INodeToNodeRelationsType {
-        NEIGHBOUR;
+        NEIGHBOUR, INTERFERENCE_MATRIX, TRIANGULATION, SHADOW;
 
         @Override
         public String getId() {
@@ -119,11 +105,11 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
         this.nodeType = nodeType;
         this.relType = relType;
         this.name = name;
-        Node root = dsServ.findNode(parentNode, N2NRelationships.N2N_REL, name, NodeToNodeTypes.NODE2NODE);
+        Node root = dsServ.findNode(parentNode, relType, name, NodeToNodeTypes.NODE2NODE);
         if (root != null) {
             this.rootNode = root;
         } else {
-            this.rootNode = dsServ.createNode(parentNode, N2NRelationships.N2N_REL, NodeToNodeTypes.NODE2NODE);
+            this.rootNode = dsServ.createNode(parentNode, relType, NodeToNodeTypes.NODE2NODE);
             Map<String, Object> params = new HashMap<String, Object>();
             params.put(NewNetworkService.NETWORK_ID, parentNode.getId());
             params.put(NewNetworkService.NAME, this.name);
@@ -219,7 +205,7 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
      */
     private Node findProxy(Node sourceNode) {
         Node result = null;
-        Relationship rel = sourceNode.getSingleRelationship(N2NRelationships.N2N_REL, Direction.OUTGOING);
+        Relationship rel = sourceNode.getSingleRelationship(this.relType, Direction.OUTGOING);
         if (rel != null) {
             result = rel.getEndNode();
         }
