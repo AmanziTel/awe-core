@@ -93,7 +93,7 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
         //initialize other fields
         this.analyzedModel = analyzedModel;
         this.distributionType = distributionType;
-        this.name = distributionType.getName();
+        this.name = distributionType.getPropertyName() + " - " + distributionType.getName();
         this.nodeType = NodeTypeManager.getType(DistributionService.getNodeType(rootNode));
         this.count = (Integer)rootNode.getProperty(DistributionService.COUNT, 0);
         

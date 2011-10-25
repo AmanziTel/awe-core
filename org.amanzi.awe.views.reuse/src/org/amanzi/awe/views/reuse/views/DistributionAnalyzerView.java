@@ -51,8 +51,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.part.ViewPart;
 import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartMouseEvent;
+import org.jfree.chart.ChartMouseListener;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.entity.CategoryItemEntity;
+import org.jfree.chart.entity.ChartEntity;
 import org.jfree.chart.labels.StandardCategoryToolTipGenerator;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
@@ -273,6 +277,13 @@ public class DistributionAnalyzerView extends ViewPart {
      * Parent composite
      */
     private Composite mainView;
+    
+    /*
+     * Selected bar in the Chart
+     */
+    private IDistributionBar selectedBar;
+    
+    
 
     @Override
     public void createPartControl(Composite parent) {
@@ -605,6 +616,30 @@ public class DistributionAnalyzerView extends ViewPart {
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {
                 widgetSelected(e);
+            }
+        });
+        
+        //listener for Chart View
+        chartFrame.addChartMouseListener(new ChartMouseListener() {
+            
+            @Override
+            public void chartMouseMoved(ChartMouseEvent arg0) {
+                //not interested 
+            }
+            
+            @Override
+            public void chartMouseClicked(ChartMouseEvent arg0) {
+                //get selected bar
+                ChartEntity entity = arg0.getEntity();
+                if (entity instanceof CategoryItemEntity) {
+                    CategoryItemEntity itemEntity = (CategoryItemEntity)entity;
+                    IDistributionBar newSelectedBar = (IDistributionBar)itemEntity.getColumnKey();
+        
+                    
+                } else {
+                    //skip selection
+                    selectedBar = null;
+                }
             }
         });
     }
