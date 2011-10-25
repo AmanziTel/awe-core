@@ -46,6 +46,7 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
@@ -91,6 +92,8 @@ public class DistributionAnalyzerView extends ViewPart {
     private static final String VALUES_AXIS_NAME = "Values";
 
     private static final String NUMBERS_AXIS_NAME = "Numbers";
+    
+    private static final String COLOR_PROPERTIES_LABEL = "Color properties";
     
     @SuppressWarnings("rawtypes")
     private class DistributionDataset extends AbstractDataset implements CategoryDataset {
@@ -283,6 +286,11 @@ public class DistributionAnalyzerView extends ViewPart {
      * Selected bar in the Chart
      */
     private IDistributionBar selectedBar;
+    
+    /*
+     * Button for enabling/disabling color properties
+     */
+    private Button colorProperties;
 
     @Override
     public void createPartControl(Composite parent) {
@@ -297,6 +305,7 @@ public class DistributionAnalyzerView extends ViewPart {
 
         createDistributionSelectionCombos(parent);
         createDistributionChart(parent);
+        createColoringPropertiesControl(parent);
 
         addListeners();
 
@@ -333,6 +342,7 @@ public class DistributionAnalyzerView extends ViewPart {
         plot.setBackgroundPaint(PLOT_BACKGROUND);
         distributionChart.setBackgroundPaint(CHART_BACKGROUND);
 
+        //chart composite
         chartFrame = new ChartComposite(parent, 0, distributionChart, true);
         chartFrame.pack();
 
@@ -340,7 +350,7 @@ public class DistributionAnalyzerView extends ViewPart {
         FormData dChart = new FormData(); // bind to label and text
         dChart.left = new FormAttachment(0, 5);
         dChart.top = new FormAttachment(datasetCombo, 10);
-        dChart.bottom = new FormAttachment(100, -5);
+        dChart.bottom = new FormAttachment(colorProperties, -2);
         dChart.right = new FormAttachment(100, -5);
         chartFrame.setLayoutData(dChart);
     }
@@ -425,6 +435,28 @@ public class DistributionAnalyzerView extends ViewPart {
         dCombo.top = new FormAttachment(0, 2);
         dCombo.right = new FormAttachment(82, -5);
         selectCombo.setLayoutData(dCombo);
+    }
+    
+    /**
+     * Creates control for coloring properties
+     */
+    private void createColoringPropertiesControl(Composite parent) {
+        //label and button for color properties
+        Label colorPropertiesLabel = new Label(parent, SWT.NONE);
+        colorPropertiesLabel.setText(COLOR_PROPERTIES_LABEL);
+        
+        colorProperties = new Button(parent, SWT.CHECK);
+        
+        //layout
+        FormData dCombo = new FormData(); // bind to label and text
+        dCombo.left = new FormAttachment(0, 2);
+        dCombo.bottom = new FormAttachment(100, -2);
+        colorProperties.setLayoutData(dCombo);
+
+        FormData dLabel = new FormData();
+        dLabel.left = new FormAttachment(colorProperties, 2);
+        dLabel.top = new FormAttachment(colorProperties, 5, SWT.CENTER);
+        colorPropertiesLabel.setLayoutData(dLabel);
     }
 
     /**
@@ -671,7 +703,9 @@ public class DistributionAnalyzerView extends ViewPart {
      * Updates colors of Chart
      */
     private void updateChartColors() {
-        
+        if (currentDistributionType.canChangeColors()) {
+            
+        }
         
         distributionChart.fireChartChanged();
     }

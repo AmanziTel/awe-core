@@ -236,7 +236,7 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
                 monitor.worked(1);
             }
         } catch (Exception e) {
-            LOGGER.error(e);
+            LOGGER.error("Exception on creating aggregation links", e);
             throw new DatabaseException(e);
         }
         
