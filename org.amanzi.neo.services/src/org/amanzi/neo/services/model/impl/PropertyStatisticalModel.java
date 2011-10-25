@@ -133,6 +133,16 @@ public abstract class PropertyStatisticalModel extends DataModel implements IPro
         return allProperties.keySet(); 
     }
     
+    @Override
+    public Number getMinValue(INodeType nodeType, String propertyName) {
+        return statisticsVault.getMinValue(nodeType.getId(), propertyName);
+    }
+    
+    @Override
+    public Number getMaxValue(INodeType nodeType, String propertyName) {
+        return statisticsVault.getMaxValue(nodeType.getId(), propertyName);
+    }
+    
 
     @Override
     public void finishUp() throws AWEException{

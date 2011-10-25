@@ -538,4 +538,88 @@ public class StatisticsVault implements IVault {
         this.isStatisticsChanged = isStatisticsChanged;
     }
 
+    @Override
+    public Number getMinValue(String nodeType, String propertyName) {
+        for (IVault mainVault : subVaults.values()) {
+            Number result = getMinValue(mainVault, nodeType, propertyName, false);
+            if (result != null)
+                return result;
+        }
+        return null;
+    }
+    
+    /**
+     * Recursive method to find minimum value
+     *
+     * @param vault This vault or sub-vault
+     * @param nodeType Type of node
+     * @param propertyName Name of property
+     * @return Minimum value of vault or sub-vaults or null
+     */
+    private Number getMinValue(IVault vault, String nodeType, String propertyName, boolean isNeedType) {
+        if (isNeedType || vault.getType().equals(nodeType)) {
+            isNeedType = true;
+            Map<String, NewPropertyStatistics> localPropertyStatisticsMap =
+                    vault.getPropertyStatisticsMap();
+            if (localPropertyStatisticsMap.keySet().contains(propertyName)) {
+                NewPropertyStatistics propertyStatistics = 
+                        localPropertyStatisticsMap.get(propertyName);
+                return propertyStatistics.getMinValue();
+            }
+            else {
+                for (IVault subVault : vault.getSubVaults().values()) {
+                    return getMinValue(subVault, nodeType, propertyName, isNeedType);
+                }
+            }
+        }
+        else {
+            for (IVault subVault : vault.getSubVaults().values()) {
+                return getMinValue(subVault, nodeType, propertyName, isNeedType);
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public Number getMaxValue(String nodeType, String propertyName) {
+        for (IVault mainVault : subVaults.values()) {
+            Number result = getMaxValue(mainVault, nodeType, propertyName, false);
+            if (result != null)
+                return result;
+        }
+        return null;
+    }
+    
+    /**
+     * Recursive method to find maximum value
+     *
+     * @param vault This vault or sub-vault
+     * @param nodeType Type of node
+     * @param propertyName Name of property
+     * @return Maximum value of vault or sub-vaults or null
+     */
+    private Number getMaxValue(IVault vault, String nodeType, String propertyName, boolean isNeedType) {
+        if (isNeedType || vault.getType().equals(nodeType)) {
+            isNeedType = true;
+            Map<String, NewPropertyStatistics> localPropertyStatisticsMap =
+                    vault.getPropertyStatisticsMap();
+            if (localPropertyStatisticsMap.keySet().contains(propertyName)) {
+                NewPropertyStatistics propertyStatistics = 
+                        localPropertyStatisticsMap.get(propertyName);
+                return propertyStatistics.getMaxValue();
+            }
+            else {
+                for (IVault subVault : vault.getSubVaults().values()) {
+                    return getMaxValue(subVault, nodeType, propertyName, isNeedType);
+                }
+            }
+        }
+        else {
+            for (IVault subVault : vault.getSubVaults().values()) {
+                return getMaxValue(subVault, nodeType, propertyName, isNeedType);
+            }
+        }
+        return null;
+    }
+
 }
