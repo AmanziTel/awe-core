@@ -60,7 +60,7 @@ public class NewDatasetService extends NewAbstractService {
     public final static String PROJECT_NODE = "project_node";
     public static final String LAST_CHILD_ID = "last_child_id";
     public static final String PARENT_ID = "parent_id";
-    
+
     /**
      * TraversalDescription for Dataset nodes
      */
@@ -85,8 +85,10 @@ public class NewDatasetService extends NewAbstractService {
             .relationships(DatasetRelationTypes.NEXT, Direction.OUTGOING);
 
     /** <code>TraversalDescription</code> to iterate over n2n related nodes */
-//    protected final TraversalDescription N2N_TRAVERSAL_DESCRIPTION = Traversal.description().breadthFirst()
-//            .relationships(N2NRelationships.N2N_REL, Direction.INCOMING).evaluator(Evaluators.excludeStartPosition());
+    // protected final TraversalDescription N2N_TRAVERSAL_DESCRIPTION =
+    // Traversal.description().breadthFirst()
+    // .relationships(N2NRelationships.N2N_REL,
+    // Direction.INCOMING).evaluator(Evaluators.excludeStartPosition());
 
     /** <code>TraversalDescription</code> for an empty iterator */
     public static final TraversalDescription EMPTY_TRAVERSAL_DESCRIPTION = Traversal.description()
@@ -96,6 +98,9 @@ public class NewDatasetService extends NewAbstractService {
     public static final TraversalDescription VIRTUAL_DATASET_TRAVERSAL_DESCRIPTION = Traversal.description().breadthFirst()
             .relationships(DriveRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING).evaluator(Evaluators.atDepth(1))
             .evaluator(Evaluators.excludeStartPosition());
+
+    protected static final TraversalDescription N2N_RELATIONSHIPS_TRAVERSAL_DESCRIPTION = Traversal.description().evaluator(
+            Evaluators.atDepth(1));
 
     /**
      * <p>
@@ -907,7 +912,7 @@ public class NewDatasetService extends NewAbstractService {
      */
     public Node getGisNodeByDataset(Node dataset) {
         Relationship gisLink = dataset.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING);
-        
+
         if (gisLink != null) {
             return gisLink.getStartNode();
         }
@@ -960,9 +965,10 @@ public class NewDatasetService extends NewAbstractService {
             throw new IllegalArgumentException("Element type is null.");
         }
 
-        return DATASET_ELEMENT_TRAVERSAL_DESCRIPTION.relationships(N2NRelationships.N2N_REL, Direction.INCOMING).evaluator(new FilterNodesByType(elementType)).traverse(parent).nodes();
+        return DATASET_ELEMENT_TRAVERSAL_DESCRIPTION.relationships(N2NRelationships.N2N_REL, Direction.INCOMING)
+                .evaluator(new FilterNodesByType(elementType)).traverse(parent).nodes();
     }
-    
+
     /**
      * @param n2nProxy
      * @param nodeType
@@ -978,8 +984,8 @@ public class NewDatasetService extends NewAbstractService {
             throw new IllegalArgumentException("Relationship type is null.");
         }
 
-        return Traversal.description().breadthFirst().relationships(relType, Direction.OUTGOING)
-                .traverse(n2nProxy).relationships();
+        return N2N_RELATIONSHIPS_TRAVERSAL_DESCRIPTION.relationships(relType, Direction.OUTGOING).traverse(n2nProxy)
+                .relationships();
     }
 
     /**

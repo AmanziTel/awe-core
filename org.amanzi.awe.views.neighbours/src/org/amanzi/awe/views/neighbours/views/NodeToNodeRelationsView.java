@@ -31,7 +31,10 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerComparator;
+import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
@@ -46,6 +49,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.part.ViewPart;
 import org.neo4j.graphdb.Relationship;
 
@@ -60,17 +64,41 @@ import org.neo4j.graphdb.Relationship;
 public class NodeToNodeRelationsView extends ViewPart {
 
     private Combo cbNetwork, cbN2NType, cbN2NName;
-    private Button btnSearch;
-    private TableViewer table;
+    private Button btnFilter;
+    private TableViewer tableViewer;
     private Iterable<INetworkModel> networkList;
     private Iterable<INodeToNodeRelationsModel> nodeToNodeModels;
     private TableLabelProvider labelProvider;
     private TableContentProvider provider;
+    private TableFilter servingFilter, neighbourFilter;
+
+    public abstract class TableFilter extends ViewerFilter {
+
+        private String searchString;
+
+        private TableFilter() {
+            super();
+        }
+
+        public String getSearchString() {
+            return searchString;
+        }
+
+        public void setSearchText(String s) {
+            this.searchString = ".*" + s + ".*";
+        }
+    }
 
     private void createLabel(Composite parent, String labelText) {
         Label label = new Label(parent, SWT.FLAT);
         label.setText(labelText + ":");
         label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+    }
+
+    private GridData createLayoutData(int minimumWidth) {
+        GridData layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
+        layoutData.minimumWidth = minimumWidth;
+        return layoutData;
     }
 
     @Override
@@ -83,17 +111,16 @@ public class NodeToNodeRelationsView extends ViewPart {
         frame.setLayout(formLayout);
 
         Composite child = new Composite(frame, SWT.FILL);
-        final GridLayout layout = new GridLayout(7, false);
+        final GridLayout layout = new GridLayout(6, false);
         child.setLayout(layout);
         createLabel(child, "Data");
         cbNetwork = new Combo(child, SWT.DROP_DOWN | SWT.READ_ONLY);
 
-        GridData layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
-        layoutData.minimumWidth = 100;
-        cbNetwork.setLayoutData(layoutData);
+        cbNetwork.setLayoutData(createLayoutData(70));
 
         createLabel(child, "N2N Type");
         cbN2NType = new Combo(child, SWT.DROP_DOWN | SWT.READ_ONLY);
+        cbN2NType.setLayoutData(createLayoutData(70));
 
         // layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
         // layoutData.minimumWidth = 150;
@@ -101,26 +128,25 @@ public class NodeToNodeRelationsView extends ViewPart {
 
         createLabel(child, "N2N Name");
         cbN2NName = new Combo(child, SWT.DROP_DOWN | SWT.READ_ONLY);
-
-        btnSearch = new Button(child, SWT.PUSH);
-        btnSearch.setText("Search");
+        cbN2NName.setLayoutData(createLayoutData(70));
 
         addListeners();
         setNetworkItems();
         setN2NTypeItems();
         enableElements();
 
-        table = new TableViewer(frame, SWT.BORDER | SWT.FULL_SELECTION);
+        tableViewer = new TableViewer(frame, SWT.BORDER | SWT.FULL_SELECTION);
+        createFilters(child);
         FormData fData = new FormData();
         fData.left = new FormAttachment(0, 0);
         fData.right = new FormAttachment(100, 0);
         fData.top = new FormAttachment(child, 2);
         fData.bottom = new FormAttachment(100, -2);
-        table.getControl().setLayoutData(fData);
+        tableViewer.getControl().setLayoutData(fData);
         labelProvider = new TableLabelProvider();
         labelProvider.createTableColumn(new String[] {});
         provider = new TableContentProvider();
-        table.setContentProvider(provider);
+        tableViewer.setContentProvider(provider);
     }
 
     private class TableLabelProvider extends LabelProvider implements ITableLabelProvider {
@@ -129,33 +155,47 @@ public class NodeToNodeRelationsView extends ViewPart {
         private final static int PROP_DEF_SIZE = 80;
         private final String[] colNames = new String[] {"Serving", "Neighbour"};
 
-        private void createColumn(String label, int size) {
-            TableViewerColumn column = new TableViewerColumn(table, SWT.LEFT);
+        private void createColumn(String label, int size, boolean sortable, final int idx) {
+            TableViewerColumn column = new TableViewerColumn(tableViewer, SWT.LEFT);
             TableColumn col = column.getColumn();
             col.setText(label);
             columns.add(col);
             col.setWidth(size);
             col.setResizable(true);
+            if (sortable) {
+                TableColumnSorter cSorter = new TableColumnSorter(tableViewer, col) {
+                    protected int doCompare(Viewer v, Object e1, Object e2) {
+                        ITableLabelProvider lp = ((ITableLabelProvider)tableViewer.getLabelProvider());
+                        String t1 = lp.getColumnText(e1, idx);
+                        String t2 = lp.getColumnText(e2, idx);
+                        return t1.compareTo(t2);
+                    }
+                };
+                cSorter.setSorter(cSorter, TableColumnSorter.ASC);
+            }
         }
 
         /**
          * create column table
          */
         public void createTableColumn(String[] properties) {
-            Table tabl = table.getTable();
+            Table tabl = tableViewer.getTable();
             for (TableColumn column : columns) {
                 column.dispose();
             }
+            int idx = 0;
             for (String colName : colNames) {
-                createColumn(colName, DEF_SIZE);
+                createColumn(colName, DEF_SIZE, true, idx);
+                idx++;
             }
             for (String prop : properties) {
-                createColumn(prop, PROP_DEF_SIZE);
+                createColumn(prop, PROP_DEF_SIZE, false, idx);
+                idx++;
             }
             tabl.setHeaderVisible(true);
             tabl.setLinesVisible(true);
-            table.setLabelProvider(this);
-            table.refresh();
+            tableViewer.setLabelProvider(this);
+            tableViewer.refresh();
         }
 
         @Override
@@ -176,11 +216,78 @@ public class NodeToNodeRelationsView extends ViewPart {
         }
     }
 
+    private static abstract class TableColumnSorter extends ViewerComparator {
+        public static final int ASC = 1;
+
+        public static final int NONE = 0;
+
+        public static final int DESC = -1;
+
+        private int direction = 0;
+
+        private TableColumn column;
+
+        private TableViewer viewer;
+
+        public TableColumnSorter(TableViewer viewer, TableColumn column) {
+            this.column = column;
+            this.viewer = viewer;
+            this.column.addSelectionListener(new SelectionAdapter() {
+
+                public void widgetSelected(SelectionEvent e) {
+                    if (TableColumnSorter.this.viewer.getComparator() != null) {
+                        if (TableColumnSorter.this.viewer.getComparator() == TableColumnSorter.this) {
+                            int tdirection = TableColumnSorter.this.direction;
+
+                            if (tdirection == ASC) {
+                                setSorter(TableColumnSorter.this, DESC);
+                            } else if (tdirection == DESC) {
+                                setSorter(TableColumnSorter.this, NONE);
+                            }
+                        } else {
+                            setSorter(TableColumnSorter.this, ASC);
+                        }
+                    } else {
+                        setSorter(TableColumnSorter.this, ASC);
+                    }
+                }
+            });
+        }
+
+        public void setSorter(TableColumnSorter sorter, int direction) {
+            if (direction == NONE) {
+                column.getParent().setSortColumn(null);
+                column.getParent().setSortDirection(SWT.NONE);
+                viewer.setComparator(null);
+            } else {
+                column.getParent().setSortColumn(column);
+                sorter.direction = direction;
+
+                if (direction == ASC) {
+                    column.getParent().setSortDirection(SWT.DOWN);
+                } else {
+                    column.getParent().setSortDirection(SWT.UP);
+                }
+
+                if (viewer.getComparator() == sorter) {
+                    viewer.refresh();
+                } else {
+                    viewer.setComparator(sorter);
+                }
+
+            }
+        }
+
+        public int compare(Viewer viewer, Object e1, Object e2) {
+            return direction * doCompare(viewer, e1, e2);
+        }
+
+        protected abstract int doCompare(Viewer TableViewer, Object e1, Object e2);
+    }
+
     private void enableElements() {
         cbN2NType.setEnabled(cbNetwork.getSelectionIndex() >= 0);
         cbN2NName.setEnabled(cbNetwork.getSelectionIndex() >= 0 && cbN2NType.getSelectionIndex() >= 0);
-        btnSearch.setEnabled(cbNetwork.getSelectionIndex() >= 0 && cbN2NName.getSelectionIndex() >= 0
-                && cbN2NType.getSelectionIndex() >= 0);
     }
 
     private class TableContentProvider implements IStructuredContentProvider {
@@ -206,7 +313,7 @@ public class NodeToNodeRelationsView extends ViewPart {
             }
             INodeToNodeRelationsModel n2nModel = getSelectedN2NModel();
             String[] properties = n2nModel.getAllPropertyNames(n2nModel.getType());
-            ((TableLabelProvider)table.getLabelProvider()).createTableColumn(properties);
+            ((TableLabelProvider)tableViewer.getLabelProvider()).createTableColumn(properties);
             for (IDataElement source : n2nModel.getAllElementsByType(NodeTypes.SECTOR)) {
                 Iterable<IDataElement> relations = n2nModel.getN2NRelatedElements(source);
                 for (IDataElement element : relations) {
@@ -262,6 +369,57 @@ public class NodeToNodeRelationsView extends ViewPart {
 
     }
 
+    private void createFilters(Composite composite) {
+        createLabel(composite, "Serving");
+        final Text servingText = new Text(composite, SWT.BORDER | SWT.SEARCH);
+        servingText.setLayoutData(createLayoutData(70));
+
+        servingFilter = new TableFilter() {
+
+            @Override
+            public boolean select(Viewer viewer, Object parentElement, Object element) {
+                if (getSearchString() == null || getSearchString().length() == 0) {
+                    return true;
+                }
+                RowWrapper p = (RowWrapper)element;
+                return p.getServingName().matches(getSearchString());
+            }
+        };
+
+        createLabel(composite, "Neigbour");
+        final Text neighbourText = new Text(composite, SWT.BORDER | SWT.SEARCH);
+        neighbourText.setLayoutData(createLayoutData(70));
+        neighbourFilter = new TableFilter() {
+
+            @Override
+            public boolean select(Viewer viewer, Object parentElement, Object element) {
+                if (getSearchString() == null || getSearchString().length() == 0) {
+                    return true;
+                }
+                RowWrapper p = (RowWrapper)element;
+                return p.getNeighbourName().matches(getSearchString());
+            }
+        };
+        btnFilter = new Button(composite, SWT.PUSH);
+        btnFilter.setText("Filter");
+        btnFilter.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                servingFilter.setSearchText(servingText.getText());
+                neighbourFilter.setSearchText(neighbourText.getText());
+                tableViewer.refresh();
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+            }
+        });
+
+        tableViewer.addFilter(servingFilter);
+        tableViewer.addFilter(neighbourFilter);
+    }
+
     private void addListeners() {
         cbNetwork.addSelectionListener(new SelectionListener() {
             @Override
@@ -284,20 +442,19 @@ public class NodeToNodeRelationsView extends ViewPart {
             public void widgetDefaultSelected(SelectionEvent e) {
             }
         };
-        cbNetwork.addSelectionListener(selListener);
-        cbN2NType.addSelectionListener(selListener);
-        cbN2NName.addSelectionListener(selListener);
-        btnSearch.addSelectionListener(new SelectionListener() {
-
+        cbN2NName.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                table.setInput("");
+                tableViewer.setInput("");
             }
 
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {
             }
         });
+        cbNetwork.addSelectionListener(selListener);
+        cbN2NType.addSelectionListener(selListener);
+        cbN2NName.addSelectionListener(selListener);
     }
 
     private INetworkModel getSelectedNetwork() {
