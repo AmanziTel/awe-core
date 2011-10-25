@@ -972,7 +972,7 @@ public class NewDatasetService extends NewAbstractService {
      * @param elementType
      * @return an <code>Iterable</code> over found nodes
      */
-    public Iterable<Node> findAllN2NElements(Node parent, INodeType elementType) {
+    public Iterable<Node> findAllN2NElements(Node parent, INodeType elementType, RelationshipType relType) {
         LOGGER.debug("start findAllNetworkElements(Node parent, INodeType elementType)");
         // validate parameters
         if (parent == null) {
@@ -982,7 +982,7 @@ public class NewDatasetService extends NewAbstractService {
             throw new IllegalArgumentException("Element type is null.");
         }
 
-        return DATASET_ELEMENT_TRAVERSAL_DESCRIPTION.relationships(N2NRelationships.N2N_REL, Direction.INCOMING)
+        return DATASET_ELEMENT_TRAVERSAL_DESCRIPTION.relationships(relType, Direction.INCOMING)
                 .evaluator(new FilterNodesByType(elementType)).traverse(parent).nodes();
     }
 

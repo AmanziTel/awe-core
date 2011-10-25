@@ -674,7 +674,7 @@ public class NewNetworkService extends NewAbstractService {
         LOGGER.debug("finish setNetworkStructure()");
     }
 
-    public Node createProxy(Node sourceNode, Node rootNode) throws DatabaseException {
+    public Node createProxy(Node sourceNode, Node rootNode, RelationshipType n2nRelType) throws DatabaseException {
         LOGGER.debug("start createProxy(Node sourceNode)");
 
         if (sourceNode == null) {
@@ -687,7 +687,7 @@ public class NewNetworkService extends NewAbstractService {
         }
         Transaction tx = graphDb.beginTx();
         try {
-            Node result = datasetService.createNode(sourceNode, N2NRelationships.N2N_REL, NodeToNodeTypes.PROXY);
+            Node result = datasetService.createNode(sourceNode, n2nRelType, NodeToNodeTypes.PROXY);
             datasetService.addChild(rootNode, result, null);
             Map<String, Object> properties = new HashMap<String, Object>();
             properties.put(SOURCE_NAME, sourceNode.getProperty(NewAbstractService.NAME));

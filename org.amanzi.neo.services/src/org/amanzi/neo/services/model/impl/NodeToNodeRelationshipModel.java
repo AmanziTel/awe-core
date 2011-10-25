@@ -192,7 +192,7 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
     public Node getProxy(Node sourceNode) throws AWEException {
         Node result = findProxy(sourceNode);
         if (result == null) {
-            result = networkServ.createProxy(sourceNode, rootNode);
+            result = networkServ.createProxy(sourceNode, rootNode, N2NRelTypes.NEIGHBOUR);
         }
         return result;
     }
@@ -248,7 +248,7 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
         }
         LOGGER.info("getAllElementsByType(" + elementType.getId() + ")");
 
-        return new DataElementIterable(dsServ.findAllN2NElements(getRootNode(), elementType));
+        return new DataElementIterable(dsServ.findAllN2NElements(getRootNode(), elementType, relType));
     }
 
 }

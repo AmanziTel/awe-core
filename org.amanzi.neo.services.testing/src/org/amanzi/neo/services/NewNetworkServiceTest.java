@@ -25,7 +25,8 @@ import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.model.impl.DataElement;
-import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelationships;
+import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelTypes;
+import org.amanzi.neo.services.node2node.NodeToNodeRelationService.NodeToNodeRelationshipTypes;
 import org.amanzi.testing.AbstractAWETest;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -1446,9 +1447,9 @@ public class NewNetworkServiceTest extends AbstractAWETest {
         props.put(NewAbstractService.NAME, TEST_NAME);
         datasetService.setProperties(sourceNode, props);
 
-        Node result = networkService.createProxy(sourceNode, rootNode);
+        Node result = networkService.createProxy(sourceNode, rootNode, N2NRelTypes.NEIGHBOUR);
         
-        assertTrue("No N2N relation", result.hasRelationship(N2NRelationships.N2N_REL, Direction.INCOMING));
+        assertTrue("No N2N relation", result.hasRelationship(N2NRelTypes.NEIGHBOUR, Direction.INCOMING));
     }
 
     /**
@@ -1463,7 +1464,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
         props.put(NewAbstractService.NAME, TEST_NAME);
         datasetService.setProperties(sourceNode, props);
 
-        Node result = networkService.createProxy(sourceNode, rootNode);
+        Node result = networkService.createProxy(sourceNode, rootNode, N2NRelTypes.NEIGHBOUR);
 
         assertTrue("No CHILD OR NEXT relation", result.hasRelationship(DatasetRelationTypes.CHILD, Direction.INCOMING)
                 || sourceNode.hasRelationship(DatasetRelationTypes.NEXT, Direction.INCOMING));
@@ -1481,7 +1482,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
         props.put(NewAbstractService.NAME, TEST_NAME);
         datasetService.setProperties(sourceNode, props);
 
-        Node result = networkService.createProxy(sourceNode, rootNode);
+        Node result = networkService.createProxy(sourceNode, rootNode, NodeToNodeRelationshipTypes.PROXYS);
 
         assertTrue("Proxy node doesn't have " + NewNetworkService.SOURCE_NAME + " property",
                 result.hasProperty(NewNetworkService.SOURCE_NAME));
@@ -1495,14 +1496,14 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     public void checkCreateProxyNullRoot() throws DatabaseException {
         Node sourceNode = getNewNE();
 
-        networkService.createProxy(sourceNode, null);
+        networkService.createProxy(sourceNode, null, N2NRelTypes.NEIGHBOUR);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void checkCreateProxyNullSource() throws DatabaseException {
         Node rootNode = getNewNE();
 
-        networkService.createProxy(null, rootNode);
+        networkService.createProxy(null, rootNode, N2NRelTypes.NEIGHBOUR);
     }
 
     /**

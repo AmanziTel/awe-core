@@ -17,7 +17,7 @@ import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
-import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelationships;
+import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelTypes;
 import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -177,13 +177,13 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
             for (int i = 0; i < N2N_CORRECT_REL_PROPS.length; i++) {
                 Node child = graphDatabaseService.createNode();
                 child.setProperty(NewAbstractService.TYPE, NodeTypes.SECTOR.getId());
-                Relationship rel = n2nProxy.createRelationshipTo(child, N2NRelationships.N2N_REL);
+                Relationship rel = n2nProxy.createRelationshipTo(child, N2NRelTypes.NEIGHBOUR);
                 rel.setProperty(N2N_CORRECT_REL_PROPS[i][0], N2N_CORRECT_REL_PROPS[i][1]);
             }
             for (int i = 0; i < N2N_INCORRECT_REL_PROPS.length; i++) {
                 Node child = graphDatabaseService.createNode();
                 child.setProperty(NewAbstractService.TYPE, NodeTypes.SECTOR.getId());
-                Relationship rel = child.createRelationshipTo(n2nProxy, N2NRelationships.N2N_REL);
+                Relationship rel = child.createRelationshipTo(n2nProxy, N2NRelTypes.NEIGHBOUR);
                 rel.setProperty(N2N_INCORRECT_REL_PROPS[i][0], N2N_INCORRECT_REL_PROPS[i][1]);
             }
             tx.success();
@@ -221,7 +221,7 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
     @Test
     public void findN2NRelationshipsTest() {
         Node n2nProxy = initN2NRelations();
-        Iterable<Relationship> relations = service.findN2NRelationships(n2nProxy, N2NRelationships.N2N_REL);
+        Iterable<Relationship> relations = service.findN2NRelationships(n2nProxy, N2NRelTypes.NEIGHBOUR);
         int cnt = 0;
         for (int i = 0; i < N2N_CORRECT_REL_PROPS.length; i++) {
             boolean finded = false;
@@ -245,7 +245,7 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
      */
     @Test(expected = IllegalArgumentException.class)
     public void findN2NRelationshipsNullTest1() {
-        service.findN2NRelationships(null, N2NRelationships.N2N_REL);
+        service.findN2NRelationships(null, N2NRelTypes.NEIGHBOUR);
     }
 
     /**
