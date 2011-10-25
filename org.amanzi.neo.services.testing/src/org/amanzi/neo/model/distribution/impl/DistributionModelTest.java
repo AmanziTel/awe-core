@@ -37,6 +37,7 @@ import org.amanzi.neo.services.AbstractNeoServiceTest;
 import org.amanzi.neo.services.DistributionService;
 import org.amanzi.neo.services.DistributionService.DistributionNodeTypes;
 import org.amanzi.neo.services.NewAbstractService;
+import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.exceptions.AWEException;
@@ -66,7 +67,7 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
     
     private static final Color[] DISTRIBUTION_BAR_COLORS = new Color[] {Color.BLACK, Color.WHITE, Color.RED, null, Color.CYAN};
     
-    private static final INodeType DISTRIBUTION_NODE_TYPE = NodeTypes.SECTOR;
+    private static final INodeType DISTRIBUTION_NODE_TYPE = NetworkElementNodeType.SECTOR;
     
     private static final int NUMBER_OF_NODES_TO_ANALYSE = 40;
     
@@ -439,6 +440,38 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         newDistribution.getDistributionBars();
         
         verify(service).updateDistributionModelCount(eq(rootAggregation), any(Integer.class));
+    }
+    
+    @Test
+    public void checkModelActionsOnEnablingCurrent() throws Exception {
+        Node parentDistribution = getNode();
+        Node rootAggregation = getNode(DistributionNodeTypes.ROOT_AGGREGATION);
+        List<Node> distributionBarNodes = getDistributionBarNodes();
+        DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, false);
+        DistributionModel.distributionService = service;
+        IDistributionalModel model = getDistributionalModel(parentDistribution);
+        IDistribution< ? > distributionType = getDistributionType();
+        
+        DistributionModel newDistribution = new DistributionModel(model, distributionType);
+        newDistribution.setCurrent(true);
+        
+        verify(service).setCurrentDistributionModel(parentDistribution, rootAggregation);
+    }
+    
+    @Test
+    public void checkModelActionsOnDisablingCurrent() throws Exception {
+        Node parentDistribution = getNode();
+        Node rootAggregation = getNode(DistributionNodeTypes.ROOT_AGGREGATION);
+        List<Node> distributionBarNodes = getDistributionBarNodes();
+        DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, false);
+        DistributionModel.distributionService = service;
+        IDistributionalModel model = getDistributionalModel(parentDistribution);
+        IDistribution< ? > distributionType = getDistributionType();
+        
+        DistributionModel newDistribution = new DistributionModel(model, distributionType);
+        newDistribution.setCurrent(false);
+        
+        verify(service).setCurrentDistributionModel(parentDistribution, null);
     }
     
     /**

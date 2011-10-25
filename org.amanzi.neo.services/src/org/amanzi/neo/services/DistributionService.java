@@ -43,6 +43,11 @@ public class DistributionService extends NewAbstractService {
      */
     public static final String PROPERTY_NAME = "property_name";
     
+    /*
+     * Property for name of Current Distribution Model of Analyzed Model
+     */
+    public static final String CURRENT_DISTRIBUTION_MODEL = "current_distribution_model";
+    
     /**
      * Node Types for Distribution Database Structure
      * 
@@ -465,6 +470,43 @@ public class DistributionService extends NewAbstractService {
         
         LOGGER.debug("finish updateDistributionModelCount()");
     }
-    
+
+    /**
+     * Sets distribution model as current for analyzed model
+     *
+     * @param analyzedModelRoot root of Analyzed Model
+     * @param distributionModelRoot root of Distribution Model - can be null, and in this case current distribution
+     * model will be skipped
+     */
+    public void setCurrentDistributionModel(Node analyzedModelRoot, Node distributionModelRoot) throws DatabaseException {
+        LOGGER.debug("start setCurrentDistributionModel(<" + analyzedModelRoot + ">, <" + distributionModelRoot + ">)");
+        
+        //check input
+        if (analyzedModelRoot == null) {
+            LOGGER.error("Input analyzedModelRoot cannot be null");
+            throw new IllegalArgumentException("Input analyzedModelRoot cannot be null");
+        }
+        
+        //make changes
+        Transaction tx = graphDb.beginTx();
+        try {
+            
+            if (distributionModelRoot == null) {
+                analyzedModelRoot.removeProperty(CURRENT_DISTRIBUTION_MODEL);
+            } else {
+                analyzedModelRoot.setProperty(CURRENT_DISTRIBUTION_MODEL, distributionModelRoot.getProperty(NAME));
+            }
+            
+            tx.success();
+        } catch (Exception e) {
+            tx.failure();
+            LOGGER.error("Error on setting current Distribution Model");
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
+        
+        LOGGER.debug("finish setCurrentDistributionModel()");
+    }
 }
 

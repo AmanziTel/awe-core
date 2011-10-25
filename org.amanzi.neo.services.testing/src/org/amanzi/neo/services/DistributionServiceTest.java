@@ -616,6 +616,35 @@ public class DistributionServiceTest extends AbstractNeoServiceTest {
         distributionService.updateDistributionModelCount(rootNode, -UPDATED_BAR_COUNT);
     }
     
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToSetModelAsCurrentWithoutAnalyzedModelRoo() throws Exception {
+        Node rootNode = createRootAggregationNode(getParentNode(), DISTRIBUTION_NAME);
+        
+        distributionService.setCurrentDistributionModel(null, rootNode);
+    }
+    
+    @Test
+    public void setModelAsCurrent() throws Exception {
+        Node parentNode = getParentNode();
+        Node rootNode = createRootAggregationNode(parentNode, DISTRIBUTION_NAME);
+        
+        distributionService.setCurrentDistributionModel(parentNode, rootNode);
+        
+        assertEquals("Unexpected name of current distribution", DISTRIBUTION_NAME, parentNode.getProperty(DistributionService.CURRENT_DISTRIBUTION_MODEL));
+    }
+    
+    @Test
+    public void skipCurrentModel() throws Exception {
+        Node parentNode = getParentNode();
+        Node rootNode = createRootAggregationNode(parentNode, DISTRIBUTION_NAME);
+        
+        distributionService.setCurrentDistributionModel(parentNode, rootNode);
+        distributionService.setCurrentDistributionModel(parentNode, null);
+        
+        assertFalse("Parent should not have such property", parentNode.hasProperty(DistributionService.CURRENT_DISTRIBUTION_MODEL));
+    }
+    
+    
     private IDistributionBar getDistributionBarInstance(Node barNode, String name, boolean createRootElement, int count) {
         DistributionBar result = getDistributionBarInstance(barNode, name, createRootElement);
         

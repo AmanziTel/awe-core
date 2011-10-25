@@ -15,11 +15,11 @@ package org.amanzi.neo.loader.core.newsaver;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
@@ -29,13 +29,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.neo4j.graphdb.Transaction;
-
 import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
-import org.amanzi.neo.loader.core.newsaver.NewNetworkSaver;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceInitializer;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.exceptions.AWEException;
@@ -45,14 +42,13 @@ import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.NetworkModel;
 import org.amanzi.testing.AbstractAWETest;
 import org.apache.log4j.Logger;
-import org.jdom.IllegalDataException;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.kernel.EmbeddedGraphDatabase;
+import org.neo4j.graphdb.Transaction;
 
 /**
  * @author Kondratenko_Vladsialv
@@ -83,8 +79,8 @@ public class NewNetworkSaverTesting extends AbstractAWETest {
         BSC.put("type", "bsc");
         SITE.put("name", "site1");
         SITE.put("type", "site");
-        SITE.put("lat", "3.123");
-        SITE.put("lon", "2.1234");
+        SITE.put("lat", Float.valueOf("3.123"));
+        SITE.put("lon", Float.valueOf("2.1234"));
         SECTOR.put("name", "sector1");
         SECTOR.put("type", "sector1");
         MSC.put("name", "msc1");
@@ -256,6 +252,7 @@ public class NewNetworkSaverTesting extends AbstractAWETest {
             when(model.createElement(any(IDataElement.class), eq(SECTOR))).thenReturn(new DataElement(SECTOR));
 
             networkSaver.saveElement(rowContainer);
+            networkSaver.finishUp();
             verify(model, times(2)).createElement(any(IDataElement.class), any(Map.class));
             verify(tx, atLeastOnce()).success();
         } catch (Exception e) {
@@ -264,11 +261,9 @@ public class NewNetworkSaverTesting extends AbstractAWETest {
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testTransactionRollBackIfDatabaseExceptionThrow() {
-        hashMap.remove("msc");
-        hashMap.remove("bsc");
-        hashMap.remove("city");
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
@@ -277,24 +272,17 @@ public class NewNetworkSaverTesting extends AbstractAWETest {
         try {
             rowContainer.setValues(values);
             when(model.findElement(any(Map.class))).thenThrow(new DatabaseException("required exception"));
-            // when(model.createElement(any(IDataElement.class), eq(SITE))).thenReturn(new
-            // DataElement(SITE));
-            // when(model.findElement(SECTOR)).thenReturn(null);
-            // when(model.createElement(any(IDataElement.class), eq(SECTOR))).thenReturn(new
-            // DataElement(SECTOR));
             networkSaver.saveElement(rowContainer);
         } catch (Exception e) {
-            verify(tx, times(1)).success();
+            verify(tx, never()).success();
             verify(tx, atLeastOnce()).failure();
-            verify(tx, times(3)).finish();
+            verify(tx, times(1)).finish();
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Test
-    public void testTransactionRollBackIfRestExceptionThrow() {
-        hashMap.remove("msc");
-        hashMap.remove("bsc");
-        hashMap.remove("city");
+    public void testTransactionContiniousIfRestExceptionThrow() {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
@@ -303,11 +291,6 @@ public class NewNetworkSaverTesting extends AbstractAWETest {
         try {
             rowContainer.setValues(values);
             when(model.findElement(any(Map.class))).thenThrow(new IllegalArgumentException("required exception"));
-            // when(model.createElement(any(IDataElement.class), eq(SITE))).thenReturn(new
-            // DataElement(SITE));
-            // when(model.findElement(SECTOR)).thenReturn(null);
-            // when(model.createElement(any(IDataElement.class), eq(SECTOR))).thenReturn(new
-            // DataElement(SECTOR));
             networkSaver.saveElement(rowContainer);
         } catch (Exception e) {
             verify(tx, times(2)).success();
