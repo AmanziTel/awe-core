@@ -142,5 +142,10 @@ public abstract class AbstractDistribution<T extends IRange> implements IDistrib
             throw new IllegalArgumentException("Cannot set Select <" + select + "> for Distribution <" + this + ">.");
         }
     }
+    
+    @Override
+    public String getPropertyName() {
+        return propertyName;
+    }
 
 }

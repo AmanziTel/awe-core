@@ -16,6 +16,7 @@ package org.amanzi.neo.services;
 import java.awt.Color;
 import java.util.Iterator;
 
+import org.amanzi.neo.model.distribution.IDistribution;
 import org.amanzi.neo.model.distribution.IDistributionBar;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
@@ -23,8 +24,10 @@ import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
 
@@ -47,6 +50,21 @@ public class DistributionService extends NewAbstractService {
      * Property for name of Current Distribution Model of Analyzed Model
      */
     public static final String CURRENT_DISTRIBUTION_MODEL = "current_distribution_model";
+    
+    /*
+     * Color property of Distribution Bar node 
+     */
+    public static final String BAR_COLOR = "color";
+
+    /*
+     * Count property of Distribution Bar node
+     */
+    public static final String COUNT = "count";
+    
+    /*
+     * NodeType property of Distribution Bar node
+     */
+    public static final String NODE_TYPE = "node_type";
     
     /**
      * Node Types for Distribution Database Structure
@@ -94,16 +112,6 @@ public class DistributionService extends NewAbstractService {
         
     }
 
-    /*
-     * Color property of Distribution Bar node 
-     */
-    public static final String BAR_COLOR = "color";
-
-    /*
-     * Count property of Distribution Bar node
-     */
-    public static final String COUNT = "count";
-    
     private NewDatasetService datasetService;
     
     /**
@@ -131,20 +139,44 @@ public class DistributionService extends NewAbstractService {
      * @param distributionName name of Distribution
      * @return
      */
-    public Node findRootAggregationNode(Node parentNode, String distributionName) {
-        LOGGER.debug("start findRootAggregationNode(<" + parentNode + ">, <" + distributionName + ">)");
+    public Node findRootAggregationNode(Node parentNode, IDistribution<?> distribution) {
+        LOGGER.debug("start findRootAggregationNode(<" + parentNode + ">, <" + distribution + ">)");
         
         //validate input
         if (parentNode == null) {
             LOGGER.error("Parent Node cannot be null");
             throw new IllegalArgumentException("Parent Node cannot be null");
         }
-        if ((distributionName == null) || (distributionName.equals(StringUtils.EMPTY))) {
-            LOGGER.error("Distribuiton Name cannot be null or empty");
-            throw new IllegalArgumentException("Distribuiton Name cannot be null or empty");
+        if (distribution == null) {
+            LOGGER.error("Distribuiton cannot be null or empty");
+            throw new IllegalArgumentException("Distribuiton cannot be null or empty");
+        }
+        if (StringUtils.isEmpty(distribution.getName())) {
+            LOGGER.error("Name of Distribution cannot be null or empty");
+            throw new IllegalArgumentException("Name of Distribution cannot be null or empty");
+        }
+        if (StringUtils.isEmpty(distribution.getPropertyName())) {
+            LOGGER.error("PropertyName of Distribution cannot be null or empty");
+            throw new IllegalArgumentException("PropertyName of Distribution cannot be null or empty");
+        }
+        if (distribution.getNodeType() == null) {
+            LOGGER.error("NodeType of Distribution cannot be null or empty");
+            throw new IllegalArgumentException("NodeType of Distribution cannot be null or empty");
         }
         
-        Node result = findNode(parentNode, DistributionRelationshipTypes.ROOT_AGGREGATION, distributionName, DistributionNodeTypes.ROOT_AGGREGATION);
+        Node result = null;
+        
+        for (Relationship aggregationRelationships : parentNode.getRelationships(DistributionRelationshipTypes.ROOT_AGGREGATION, Direction.OUTGOING)) {
+            Node candidateRoot = aggregationRelationships.getEndNode();
+            
+            //check properties
+            if (candidateRoot.getProperty(NAME, StringUtils.EMPTY).equals(distribution.getName()) &&
+                candidateRoot.getProperty(PROPERTY_NAME, StringUtils.EMPTY).equals(distribution.getPropertyName()) &&
+                candidateRoot.getProperty(NODE_TYPE, StringUtils.EMPTY).equals(distribution.getNodeType().getId())) {
+                result = candidateRoot;
+                break;
+            }
+        }
         
         LOGGER.debug("finish findRootAggregationNode()");
         
@@ -158,23 +190,35 @@ public class DistributionService extends NewAbstractService {
      * @param distributionName name of Distribution
      * @return
      */
-    public Node createRootAggregationNode(Node parentNode, String distributionName) throws DuplicateNodeNameException, DatabaseException {
-        LOGGER.debug("start createRootAggregationNode(<" + parentNode + ">, <" + distributionName + ">)");
+    public Node createRootAggregationNode(Node parentNode, IDistribution<?> distribution) throws DuplicateNodeNameException, DatabaseException {
+        LOGGER.debug("start createRootAggregationNode(<" + parentNode + ">, <" + distribution + ">)");
         
         //validate input
         if (parentNode == null) {
             LOGGER.error("Parent node cannot be null");
             throw new IllegalArgumentException("Parent node cannot be null");
         }
-        if ((distributionName == null) || (distributionName.isEmpty())) {
-            LOGGER.error("Distribution name cannot be null or empty");
-            throw new IllegalArgumentException("Distribution name cannot be null or empty");
+        if (distribution == null) {
+            LOGGER.error("Distribution cannot be null or empty");
+            throw new IllegalArgumentException("Distribution cannot be null or empty");
+        }
+        if (StringUtils.isEmpty(distribution.getName())) {
+            LOGGER.error("Name of Distribution cannot be null or empty");
+            throw new IllegalArgumentException("Name of Distribution cannot be null or empty");
+        }
+        if (StringUtils.isEmpty(distribution.getPropertyName())) {
+            LOGGER.error("PropertyName of Distribution cannot be null or empty");
+            throw new IllegalArgumentException("PropertyName of Distribution cannot be null or empty");
+        }
+        if (distribution.getNodeType() == null) {
+            LOGGER.error("NodeType of Distribution cannot be null or empty");
+            throw new IllegalArgumentException("NodeType of Distribution cannot be null or empty");
         }
         
         //check duplicated name
-        if (findRootAggregationNode(parentNode, distributionName) != null) {
-            LOGGER.error("Root Aggregation Node <" + parentNode + ", " + distributionName + "> already exists in Database");
-            throw new DuplicateNodeNameException(distributionName, DistributionNodeTypes.ROOT_AGGREGATION);
+        if (findRootAggregationNode(parentNode, distribution) != null) {
+            LOGGER.error("Root Aggregation Node <" + parentNode + ", " + distribution + "> already exists in Database");
+            throw new DuplicateNodeNameException(distribution.getName(), DistributionNodeTypes.ROOT_AGGREGATION);
         }
         
         //create new node
@@ -185,8 +229,10 @@ public class DistributionService extends NewAbstractService {
         try {
             result = createNode(parentNode, DistributionRelationshipTypes.ROOT_AGGREGATION, DistributionNodeTypes.ROOT_AGGREGATION);
             
-            result.setProperty(DistributionService.NAME, distributionName);
-            result.setProperty(DistributionService.COUNT, 0);
+            result.setProperty(NAME, distribution.getName());
+            result.setProperty(PROPERTY_NAME, distribution.getPropertyName());
+            result.setProperty(NODE_TYPE, distribution.getNodeType().getId());
+            result.setProperty(COUNT, 0);
             
             tx.success();
         } catch (Exception e) {

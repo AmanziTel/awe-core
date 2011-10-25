@@ -169,5 +169,12 @@ public interface IDistribution<T extends IRange> {
      * @param select
      */
     public void setSelect(Select select);
+    
+    /**
+     * Returns name of Analyzed Property
+     *
+     * @return
+     */
+    public String getPropertyName();
 
 }

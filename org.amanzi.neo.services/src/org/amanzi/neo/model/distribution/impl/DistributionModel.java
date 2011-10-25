@@ -80,11 +80,11 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
         }
         
         //try to find in DB
-        rootNode = distributionService.findRootAggregationNode(analyzedModel.getRootNode(), distributionType.getName());
+        rootNode = distributionService.findRootAggregationNode(analyzedModel.getRootNode(), distributionType);
         if (rootNode == null) {
             LOGGER.info("Creating new Distribution Structure for <" + analyzedModel + ", " + distributionType + ">");
             
-            rootNode = distributionService.createRootAggregationNode(analyzedModel.getRootNode(), distributionType.getName());
+            rootNode = distributionService.createRootAggregationNode(analyzedModel.getRootNode(), distributionType);
         } else {
             isExist = true;
             LOGGER.info("Distribution Found for <" + analyzedModel + ", " + distributionType + ">");
