@@ -25,7 +25,6 @@ import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveRelationshipTypes;
-import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelationships;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
@@ -85,7 +84,7 @@ public class NewDatasetService extends NewAbstractService {
 
     /** <code>TraversalDescription</code> to iterate over n2n related nodes */
     protected final TraversalDescription N2N_TRAVERSAL_DESCRIPTION = Traversal.description().breadthFirst()
-            .relationships(N2NRelationships.N2N_REL, Direction.INCOMING).evaluator(Evaluators.excludeStartPosition());
+            .evaluator(Evaluators.excludeStartPosition());
 
     /** <code>TraversalDescription</code> for an empty iterator */
     public static final TraversalDescription EMPTY_TRAVERSAL_DESCRIPTION = Traversal.description()
@@ -906,7 +905,7 @@ public class NewDatasetService extends NewAbstractService {
      */
     public Node getGisNodeByDataset(Node dataset) {
         Relationship gisLink = dataset.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING);
-        
+
         if (gisLink != null) {
             return gisLink.getStartNode();
         }
@@ -961,8 +960,8 @@ public class NewDatasetService extends NewAbstractService {
             throw new IllegalArgumentException("Relationship type is null.");
         }
 
-        return N2N_TRAVERSAL_DESCRIPTION.evaluator(new FilterNodesByType(nodeType)).relationships(relType, Direction.OUTGOING)
-                .traverse(n2nProxy).nodes();
+        return N2N_TRAVERSAL_DESCRIPTION.relationships(relType, Direction.INCOMING).evaluator(new FilterNodesByType(nodeType))
+                .relationships(relType, Direction.OUTGOING).traverse(n2nProxy).nodes();
     }
 
     /**
