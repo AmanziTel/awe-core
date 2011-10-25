@@ -182,11 +182,19 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
      * @throws AWEException
      */
     public void createRelationship(IDataElement parent, IDataElement child, RelationshipType rel) throws AWEException;
-    
+
     /**
      * Method return current structure of network
-     *
+     * 
      * @return Current structure of network
      */
     public List<INodeType> getNetworkStructure();
+
+    /**
+     * @param servSector
+     * @param bsic
+     * @param arfcn
+     * @return
+     */
+    public IDataElement getClosestSector(IDataElement servSector, Integer bsic, Integer arfcn);
 }

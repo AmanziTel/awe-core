@@ -23,6 +23,7 @@ import org.amanzi.neo.services.NewNetworkService;
 import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
@@ -177,7 +178,7 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
         Node proxy1 = getProxy(sourceNode);
         Node proxy2 = getProxy(targetNode);
 
-        if (!related(proxy1, proxy2)) {
+        if (related(proxy1, proxy2) == null) {
             Relationship rel = dsServ.createRelationship(proxy1, proxy2, relType);
             if (params != null) {
                 dsServ.setProperties(rel, params);
@@ -193,13 +194,24 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
      * @param proxy2
      * @return
      */
-    private boolean related(Node proxy1, Node proxy2) {
+    private Relationship related(Node proxy1, Node proxy2) {
         for (Relationship rel : proxy1.getRelationships(relType, Direction.OUTGOING)) {
             if (rel.getEndNode().equals(proxy2)) {
-                return true;
+                return rel;
             }
         }
-        return false;
+        return null;
+    }
+
+    @Override
+    public void updateRelationship(IDataElement serviceElement, IDataElement neighbourElement, Map<String, Object> properties,
+            boolean isReplace) throws DatabaseException {
+        Node serviceNode = ((DataElement)serviceElement).getNode();
+        Node neighbourNode = ((DataElement)neighbourElement).getNode();
+        Node serviceProxy = findProxy(serviceNode);
+        Node neighbourProxy = findProxy(neighbourNode);
+        Relationship rel = related(serviceProxy, neighbourProxy);
+        NeoServiceFactory.getInstance().getNewNetworkService().completeProperties(rel, new DataElement(properties), isReplace);
     }
 
     /**
