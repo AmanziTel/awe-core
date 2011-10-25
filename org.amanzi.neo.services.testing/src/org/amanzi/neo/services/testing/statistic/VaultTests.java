@@ -132,6 +132,10 @@ public class VaultTests {
     private final static String STRING_PROPERTY_VALUE_NETWORK_3 = "network_3";
     private final static Integer INTEGER_PROPERTY_VALUE_NETWORK = new Integer(100);
     private final static Integer INTEGER_PROPERTY_VALUE_NETWORK_2 = new Integer(200);
+    private final static Integer INTEGER_PROPERTY_VALUE_NETWORK_3 = new Integer(1000);
+    private final static Integer INTEGER_PROPERTY_VALUE_NETWORK_4 = new Integer(2000);
+    private final static Integer INTEGER_PROPERTY_VALUE_NETWORK_5 = new Integer(15000);
+    private final static Integer INTEGER_PROPERTY_VALUE_NETWORK_6 = new Integer(-200);
     private final static String STRING_PROPERTY_VALUE_NEIGHBOURS_1 = "neighbour_1";
     private final static String STRING_PROPERTY_VALUE_NEIGHBOURS_2 = "neighbour_2";
 
@@ -961,6 +965,76 @@ public class VaultTests {
 
         LOGGER.debug("finish test updatePropertiesCountStandartStructureTest()");
     }
+    
+    
+    /**
+     * Method added some values to property statistics to standart structure
+     * @throws IndexPropertyException
+     * @throws InvalidStatisticsParameterException
+     */
+    private void createAdditionalToStandartStructureOfSTatistics() throws IndexPropertyException, InvalidStatisticsParameterException {
+        indexProperty(propVault, NEIGHBOURS, PROPERTY_NAME_NAME_2, INTEGER_PROPERTY_VALUE_NETWORK_3, 1);
+        indexProperty(propVault, NEIGHBOURS, PROPERTY_NAME_NAME_2, INTEGER_PROPERTY_VALUE_NETWORK_4, 1);
+        indexProperty(propVault, NEIGHBOURS, PROPERTY_NAME_NAME_2, INTEGER_PROPERTY_VALUE_NETWORK_5, 1);
+        indexProperty(propVault, NEIGHBOURS, PROPERTY_NAME_NAME_2, INTEGER_PROPERTY_VALUE_NETWORK_6, 1);
+        
+        indexProperty(networkSubVault, NETWORK, PROPERTY_NAME_NAME_5, INTEGER_PROPERTY_VALUE_NETWORK_2, 1);
+        indexProperty(networkSubVault, NETWORK, PROPERTY_NAME_NAME_5, INTEGER_PROPERTY_VALUE_NETWORK_3, 1);
+        indexProperty(networkSubVault, NETWORK, PROPERTY_NAME_NAME_5, INTEGER_PROPERTY_VALUE_NETWORK_4, 1);
+        indexProperty(networkSubVault, NETWORK, PROPERTY_NAME_NAME_5, INTEGER_PROPERTY_VALUE_NETWORK_5, 1);
+        indexProperty(networkSubVault, NETWORK, PROPERTY_NAME_NAME_5, INTEGER_PROPERTY_VALUE_NETWORK_6, 1);
+    }
+    
+    @Test
+    public void getMinValueStandartStructureTest() throws IndexPropertyException, InvalidStatisticsParameterException {
+        LOGGER.debug("start test getMinValueStandartStructureTest()");
+        createStandartStructureOfStatistics();
+        createAdditionalToStandartStructureOfSTatistics();
+
+        Number n1 = propVault.getMinValue(NETWORK, PROPERTY_NAME_NAME_2);
+        Assert.assertEquals("min value by type of node and name of property not correct", 
+        		 n1, null);
+        
+        Number n2 = propVault.getMinValue(NETWORK, PROPERTY_NAME_NAME_5);
+        Assert.assertEquals("min value by type of node and name of property not correct", 
+       		 (int)n2.intValue(), (int)INTEGER_PROPERTY_VALUE_NETWORK_6.intValue());
+        
+        Number n3 = propVault.getMinValue(NEIGHBOURS, PROPERTY_NAME_NAME_5);
+        Assert.assertEquals("min value by type of node and name of property not correct", 
+        		 n3, null);
+        
+        Number n4 = propVault.getMinValue(NEIGHBOURS, PROPERTY_NAME_NAME_2);
+        Assert.assertEquals("min value by type of node and name of property not correct", 
+       		 (int)n4.intValue(), (int)INTEGER_PROPERTY_VALUE_NETWORK_6.intValue());
+
+        LOGGER.debug("finish test getMinValueStandartStructureTest()");
+    }
+    
+    @Test
+    public void getMaxValueStandartStructureTest() throws IndexPropertyException, InvalidStatisticsParameterException {
+        LOGGER.debug("start test getMaxValueStandartStructureTest()");
+        
+        createStandartStructureOfStatistics();
+        createAdditionalToStandartStructureOfSTatistics();
+
+        Number n1 = propVault.getMaxValue(NETWORK, PROPERTY_NAME_NAME_2);
+        Assert.assertEquals("min value by type of node and name of property not correct", 
+        		 n1, null);
+        
+        Number n2 = propVault.getMaxValue(NETWORK, PROPERTY_NAME_NAME_5);
+        Assert.assertEquals("min value by type of node and name of property not correct", 
+       		 (int)n2.intValue(), (int)INTEGER_PROPERTY_VALUE_NETWORK_5.intValue());
+        
+        Number n3 = propVault.getMaxValue(NEIGHBOURS, PROPERTY_NAME_NAME_5);
+        Assert.assertEquals("min value by type of node and name of property not correct", 
+        		 n3, null);
+        
+        Number n4 = propVault.getMaxValue(NEIGHBOURS, PROPERTY_NAME_NAME_2);
+        Assert.assertEquals("min value by type of node and name of property not correct", 
+       		 (int)n4.intValue(), (int)INTEGER_PROPERTY_VALUE_NETWORK_5.intValue());
+
+        LOGGER.debug("finish test getMaxValueStandartStructureTest()");
+    }    
 
     /**
      * Creating not standart structure of statistics STRUCTURE:
@@ -1231,4 +1305,74 @@ public class VaultTests {
 
         LOGGER.debug("finish test deletePropertiesWithNodeTypeNotStandartStructureTest()");
     }    
+    
+    /**
+     * Method added some values to property statistics to not-standart structure
+     * @throws IndexPropertyException
+     * @throws InvalidStatisticsParameterException
+     */
+    private void createAdditionalToNotStandartStructureOfSTatistics() throws IndexPropertyException, InvalidStatisticsParameterException {
+        indexProperty(propVault, NEIGHBOURS, PROPERTY_NAME_NAME_2, INTEGER_PROPERTY_VALUE_NETWORK_3, 1);
+        indexProperty(propVault, NEIGHBOURS, PROPERTY_NAME_NAME_2, INTEGER_PROPERTY_VALUE_NETWORK_4, 1);
+        indexProperty(propVault, NEIGHBOURS, PROPERTY_NAME_NAME_2, INTEGER_PROPERTY_VALUE_NETWORK_5, 1);
+        indexProperty(propVault, NEIGHBOURS, PROPERTY_NAME_NAME_2, INTEGER_PROPERTY_VALUE_NETWORK_6, 1);
+        
+        indexProperty(networkSubVault, SITE, PROPERTY_NAME_NAME_5, INTEGER_PROPERTY_VALUE_NETWORK_2, 1);
+        indexProperty(networkSubVault, SITE, PROPERTY_NAME_NAME_5, INTEGER_PROPERTY_VALUE_NETWORK_3, 1);
+        indexProperty(networkSubVault, SITE, PROPERTY_NAME_NAME_5, INTEGER_PROPERTY_VALUE_NETWORK_4, 1);
+        indexProperty(networkSubVault, SITE, PROPERTY_NAME_NAME_5, INTEGER_PROPERTY_VALUE_NETWORK_5, 1);
+        indexProperty(networkSubVault, SITE, PROPERTY_NAME_NAME_5, INTEGER_PROPERTY_VALUE_NETWORK_6, 1);
+    }
+    
+    @Test
+    public void getMinValueNotStandartStructureTest() throws IndexPropertyException, InvalidStatisticsParameterException {
+        LOGGER.debug("start test getMinValueNotStandartStructureTest()");
+        createNotStandartStructureOfStatistics();
+        createAdditionalToNotStandartStructureOfSTatistics();
+
+        Number n1 = propVault.getMinValue(NETWORK, PROPERTY_NAME_NAME_2);
+        Assert.assertEquals("min value by type of node and name of property not correct", 
+        		 n1, null);
+        
+        Number n2 = propVault.getMinValue(NETWORK, PROPERTY_NAME_NAME_5);
+        Assert.assertEquals("min value by type of node and name of property not correct", 
+       		 (int)n2.intValue(), (int)INTEGER_PROPERTY_VALUE_NETWORK_6.intValue());
+        
+        Number n3 = propVault.getMinValue(NEIGHBOURS, PROPERTY_NAME_NAME_5);
+        Assert.assertEquals("min value by type of node and name of property not correct", 
+        		 n3, null);
+        
+        Number n4 = propVault.getMinValue(NEIGHBOURS, PROPERTY_NAME_NAME_2);
+        Assert.assertEquals("min value by type of node and name of property not correct", 
+       		 (int)n4.intValue(), (int)INTEGER_PROPERTY_VALUE_NETWORK_6.intValue());
+
+        LOGGER.debug("finish test getMinValueNotStandartStructureTest()");
+    }
+    
+    @Test
+    public void getMaxValueNotStandartStructureTest() throws IndexPropertyException, InvalidStatisticsParameterException {
+        LOGGER.debug("start test getMaxValueNotStandartStructureTest()");
+        
+        createNotStandartStructureOfStatistics();
+        createAdditionalToNotStandartStructureOfSTatistics();
+
+        Number n1 = propVault.getMaxValue(NETWORK, PROPERTY_NAME_NAME_2);
+        Assert.assertEquals("min value by type of node and name of property not correct", 
+        		 n1, null);
+        
+        Number n2 = propVault.getMaxValue(NETWORK, PROPERTY_NAME_NAME_5);
+        Assert.assertEquals("min value by type of node and name of property not correct", 
+       		 (int)n2.intValue(), (int)INTEGER_PROPERTY_VALUE_NETWORK_5.intValue());
+        
+        Number n3 = propVault.getMaxValue(NEIGHBOURS, PROPERTY_NAME_NAME_5);
+        Assert.assertEquals("min value by type of node and name of property not correct", 
+        		 n3, null);
+        
+        Number n4 = propVault.getMaxValue(NEIGHBOURS, PROPERTY_NAME_NAME_2);
+        Assert.assertEquals("min value by type of node and name of property not correct", 
+       		 (int)n4.intValue(), (int)INTEGER_PROPERTY_VALUE_NETWORK_5.intValue());
+
+        LOGGER.debug("finish test getMaxValueNotStandartStructureTest()");
+    }    
+
 }
