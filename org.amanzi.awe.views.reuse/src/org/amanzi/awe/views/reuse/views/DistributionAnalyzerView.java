@@ -16,6 +16,7 @@ package org.amanzi.awe.views.reuse.views;
 import java.awt.Color;
 import java.awt.Paint;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -91,7 +92,7 @@ public class DistributionAnalyzerView extends ViewPart {
         
         private final List<String> ROW_KEYS = new ArrayList<String>();
         
-        private List<IDistributionBar> distributionBars;
+        private List<IDistributionBar> distributionBars = new ArrayList<IDistributionBar>();
 
         /** long serialVersionUID field */
         private static final long serialVersionUID = 1L;
@@ -132,22 +133,28 @@ public class DistributionAnalyzerView extends ViewPart {
 
         @Override
         public Number getValue(Comparable arg0, Comparable arg1) {
-            return null;
+            if (arg1 instanceof IDistributionBar) {
+                IDistributionBar bar = (IDistributionBar)arg1;
+                
+                return bar.getCount();
+            }
+            
+            return 0;
         }
 
         @Override
         public int getColumnCount() {
-            return 0;
+            return distributionBars.size();
         }
 
         @Override
         public int getRowCount() {
-            return 0;
+            return 1;
         }
 
         @Override
         public Number getValue(int arg0, int arg1) {
-            return null;
+            return getValue(getRowKey(arg0), getColumnKey(arg1));
         }
 
         /**
@@ -162,6 +169,7 @@ public class DistributionAnalyzerView extends ViewPart {
          */
         public void setDistributionBars(List<IDistributionBar> distributionBars) {
             this.distributionBars = distributionBars;
+            fireDatasetChanged();
         }
         
     }
@@ -456,7 +464,9 @@ public class DistributionAnalyzerView extends ViewPart {
             analyzedModel = distributionItem.getModel();
             analyzedNodeType = distributionItem.getNodeType();
             
-            propertyCombo.setItems(analyzedModel.getAllPropertyNames(analyzedNodeType));
+            String[] propertyNames = analyzedModel.getAllPropertyNames(analyzedNodeType);
+            Arrays.sort(propertyNames);
+            propertyCombo.setItems(propertyNames);
             propertyCombo.setEnabled(true);
         }
     }
@@ -610,6 +620,7 @@ public class DistributionAnalyzerView extends ViewPart {
             distributionChart.fireChartChanged();
         } catch (AWEException e) {
             //TODO: handle exception
+            e.printStackTrace();
         } finally {
             //show a chart
             chartFrame.setVisible(true);

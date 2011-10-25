@@ -114,7 +114,7 @@ public class DistributionBar implements IDistributionBar {
     
     @Override
     public String toString() {
-        return "DistributionBar <" + name + ">: " + color + " -> " + count;
+        return name;
     }
 
     @Override
