@@ -81,6 +81,12 @@ public class DistributionServiceTest extends AbstractNeoServiceTest {
     private final static String DEFAULT_PROPERTY_NAME = "property";
     
     private final static int UPDATED_BAR_COUNT = 500;
+    
+    private final static Color DEFAULT_LEFT_COLOR = Color.WHITE;
+    
+    private final static Color DEFAULT_RIGHT_COLOR = Color.YELLOW;
+    
+    private final static Color DEFAULT_SELECTED_COLOR = Color.BLACK;
 
     /*
      * Distribution service
@@ -727,6 +733,44 @@ public class DistributionServiceTest extends AbstractNeoServiceTest {
         distributionService.createRootAggregationNode(parentNode, distribution);
     }
     
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToSetColorsWhenRootNodeIsNull() throws Exception {
+        distributionService.updateSelectedBarColors(null, DEFAULT_LEFT_COLOR, DEFAULT_RIGHT_COLOR, DEFAULT_SELECTED_COLOR);
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToSetColorsWhenLeftColorIsNull() throws Exception {
+        Node rootNode = createRootAggregationNode(getParentNode(), DISTRIBUTION_NAME);
+        
+        distributionService.updateSelectedBarColors(rootNode, null, DEFAULT_RIGHT_COLOR, DEFAULT_SELECTED_COLOR);
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToSetColorsWhenRightColorIsNull() throws Exception {
+        Node rootNode = createRootAggregationNode(getParentNode(), DISTRIBUTION_NAME);
+        
+        distributionService.updateSelectedBarColors(rootNode, DEFAULT_LEFT_COLOR, null, DEFAULT_SELECTED_COLOR);
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToSetColorsWhenSelectedColorIsNull() throws Exception {
+        Node rootNode = createRootAggregationNode(getParentNode(), DISTRIBUTION_NAME);
+        
+        distributionService.updateSelectedBarColors(rootNode, DEFAULT_LEFT_COLOR, DEFAULT_RIGHT_COLOR, null);
+    }
+    
+    @Test
+    public void checkColorPropertiesOfNode() throws Exception {
+        Node rootNode = createRootAggregationNode(getParentNode(), DISTRIBUTION_NAME);
+        
+        distributionService.updateSelectedBarColors(rootNode, DEFAULT_LEFT_COLOR, DEFAULT_RIGHT_COLOR, DEFAULT_SELECTED_COLOR);
+        
+        assertTrue("Unexpected Left Color", Arrays.equals(getColorArray(DEFAULT_LEFT_COLOR), (int[])rootNode.getProperty(DistributionService.LEFT_COLOR)));
+        assertTrue("Unexpected Right Color", Arrays.equals(getColorArray(DEFAULT_RIGHT_COLOR), (int[])rootNode.getProperty(DistributionService.RIGHT_COLOR)));
+        assertTrue("Unexpected Selected Color", Arrays.equals(getColorArray(DEFAULT_SELECTED_COLOR), (int[])rootNode.getProperty(DistributionService.SELECTED_COLOR)));
+    }
+    
+    
     private IDistributionBar getDistributionBarInstance(Node barNode, String name, boolean createRootElement, int count) {
         DistributionBar result = getDistributionBarInstance(barNode, name, createRootElement);
         
@@ -909,4 +953,6 @@ public class DistributionServiceTest extends AbstractNeoServiceTest {
         
         return result;
     }
+    
+    
 }

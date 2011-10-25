@@ -176,5 +176,19 @@ public interface IDistribution<T extends IRange> {
      * @return
      */
     public String getPropertyName();
+    
+    /**
+     * Is it possible to changes colors of this Distribution
+     *
+     * @return
+     */
+    public boolean canChangeColors();
+    
+    /**
+     * Set possibility to change colors of this Distribution
+     *
+     * @param canChangeColor
+     */
+    public void setCanChangeColors(boolean canChangeColor);
 
 }

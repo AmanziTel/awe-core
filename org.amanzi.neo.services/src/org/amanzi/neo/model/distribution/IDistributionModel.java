@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.model.distribution;
 
+import java.awt.Color;
 import java.util.List;
 
 import org.amanzi.neo.services.exceptions.AWEException;
@@ -62,5 +63,41 @@ public interface IDistributionModel extends IModel {
      * @param isCurrent is this model a current model
      */
     public void setCurrent(boolean isCurrent) throws AWEException;
+    
+    /**
+     * Get Color of Bar that is right to Selected
+     *
+     * @return
+     */
+    public Color getRightColor();
+    
+    /**
+     * Set Color for Bar that is right to Selected
+     */
+    public void setRightColor(Color rightBarColor);
+    
+    /**
+     * Get Color of Bar that is left to Selected
+     *
+     * @return
+     */
+    public Color getLeftColor();
+    
+    /**
+     * Set Color for Bar that is left to Selected
+     */
+    public void setLeftColor(Color leftBarColor);
+    
+    /**
+     * Get Color of Selected Bar
+     *
+     * @return
+     */
+    public Color getSelectedColor();
+    
+    /**
+     * Set Color for Selected Bar
+     */
+    public void setSelectedColor(Color selectedBarColor);
 
 }

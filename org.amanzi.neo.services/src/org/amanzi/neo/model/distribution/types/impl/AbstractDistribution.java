@@ -62,6 +62,11 @@ public abstract class AbstractDistribution<T extends IRange> implements IDistrib
      */
     protected Select select;
     
+    /*
+     * Is it possible to change color of Bar
+     */
+    private boolean canChangeColor;
+    
     /**
      * Default constructor
      * 
@@ -146,6 +151,16 @@ public abstract class AbstractDistribution<T extends IRange> implements IDistrib
     @Override
     public String getPropertyName() {
         return propertyName;
+    }
+
+    @Override
+    public boolean canChangeColors() {
+        return canChangeColor;
+    }
+
+    @Override
+    public void setCanChangeColors(boolean canChangeColors) {
+        this.canChangeColor = canChangeColors;
     }
 
 }

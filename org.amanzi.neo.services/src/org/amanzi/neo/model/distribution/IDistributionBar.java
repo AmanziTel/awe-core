@@ -75,19 +75,5 @@ public interface IDistributionBar extends Comparable<IDistributionBar> {
      * @return
      */
     public Comparable<Object> getMaxValue();
-
-    /**
-     * Is it possible to change color of this Bar
-     *
-     * @return
-     */
-    public boolean isStaticColoring();
-    
-    /**
-     * Set is it possible to change color of this Bar
-     *
-     * @param isStaticColoring
-     */
-    public void setStaticColorin(boolean isStaticColoring);
 }
 

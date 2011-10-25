@@ -40,8 +40,6 @@ public class DistributionBar implements IDistributionBar {
     
     private Comparable<Object> maxValue;
     
-    private boolean isStaticColor = false;
-    
     public DistributionBar(IDataElement rootElement) {
         this.rootElement = rootElement;
     }
@@ -57,7 +55,6 @@ public class DistributionBar implements IDistributionBar {
 
     @Override
     public void setColor(Color color) {
-        isStaticColor = true;
         this.color = color;
     }
 
@@ -147,15 +144,5 @@ public class DistributionBar implements IDistributionBar {
      */
     public void setMaxValue(Comparable<Object> maxValue) {
         this.maxValue = maxValue;
-    }
-
-    @Override
-    public boolean isStaticColoring() {
-        return isStaticColor;
-    }
-
-    @Override
-    public void setStaticColorin(boolean isStaticColoring) {
-        isStaticColor = isStaticColoring;
     }
 }

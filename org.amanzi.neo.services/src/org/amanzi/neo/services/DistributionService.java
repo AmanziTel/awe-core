@@ -66,6 +66,22 @@ public class DistributionService extends NewAbstractService {
      */
     public static final String NODE_TYPE = "node_type";
     
+    /*
+     * Left Color property of Distribution Root node
+     */
+    public static final String LEFT_COLOR = "left_color";
+    
+    /*
+     * Right Color property of Distribution Root node
+     */
+    public static final String RIGHT_COLOR = "right_color";
+    
+    /*
+     * Selected Color property of Distribution Root node
+     */
+    public static final String SELECTED_COLOR = "selected_color";
+    
+    
     /**
      * Node Types for Distribution Database Structure
      * 
@@ -553,6 +569,55 @@ public class DistributionService extends NewAbstractService {
         }
         
         LOGGER.debug("finish setCurrentDistributionModel()");
+    }
+    
+    /**
+     * Updates colors for Selected Bars of this Model
+     *
+     * @param rootAggregationNode
+     * @param leftBarColor
+     * @param rightBarColor
+     * @param selectedBarColor
+     * @throws DatabaseException
+     */
+    public void updateSelectedBarColors(Node rootAggregationNode, Color leftBarColor, Color rightBarColor, Color selectedBarColor) throws DatabaseException {
+        LOGGER.debug("start updateSelectedBarColors(<" + rootAggregationNode + ">, <" + leftBarColor + ">, <" + rightBarColor + ">, <" + selectedBarColor + ">)");
+        
+        //check input
+        if (rootAggregationNode == null) {
+            LOGGER.error("Input rootAggregationNode cannot be null");
+            throw new IllegalArgumentException("Input rootAggregationNode cannot be null");
+        }
+        if (leftBarColor == null) {
+            LOGGER.error("Input leftBarColor cannot be null");
+            throw new IllegalArgumentException("Input leftBarColor cannot be null");
+        }
+        if (rightBarColor == null) {
+            LOGGER.error("Input rightBarColor cannot be null");
+            throw new IllegalArgumentException("Input rightBarColor cannot be null");
+        }
+        if (selectedBarColor == null) {
+            LOGGER.error("Input selectedBarColor cannot be null");
+            throw new IllegalArgumentException("Input selectedBarColor cannot be null");
+        }
+        
+        //update properties
+        Transaction tx = graphDb.beginTx();
+        try {
+            rootAggregationNode.setProperty(LEFT_COLOR, convertColorToArray(leftBarColor));
+            rootAggregationNode.setProperty(RIGHT_COLOR, convertColorToArray(rightBarColor));
+            rootAggregationNode.setProperty(SELECTED_COLOR, convertColorToArray(selectedBarColor));
+            
+            tx.success();
+        } catch (Exception e) {
+            tx.failure();
+            LOGGER.error("Exception on updating color properties of Distribution <" + rootAggregationNode + ">", e);
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
+        
+        LOGGER.debug("finish updateSelectedBarColors()");
     }
 }
 

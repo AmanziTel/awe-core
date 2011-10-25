@@ -122,7 +122,7 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         
         DistributionModel distribution = new DistributionModel(model, distributionType);
         
-        assertEquals("Incorrect name of Distribution", DEFAULT_DISTRIBUTION_NAME, distribution.getName());
+        assertEquals("Incorrect name of Distribution", DISTRIBUTION_PROPERTY_NAME + " - " + DEFAULT_DISTRIBUTION_NAME, distribution.getName());
         assertNotNull("Root Node cannot be null", distribution.getRootNode());
         assertEquals("Incorrect distribution type", distributionType, distribution.getDistributionType());
         assertEquals("Incorrect Type of Distribution", DistributionNodeTypes.ROOT_AGGREGATION, distribution.getType());
@@ -154,7 +154,7 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         
         DistributionModel distribution = new DistributionModel(model, distributionType);
         
-        assertEquals("Incorrect name of Distribution", DEFAULT_DISTRIBUTION_NAME, distribution.getName());
+        assertEquals("Incorrect name of Distribution", DISTRIBUTION_PROPERTY_NAME + " - " + DEFAULT_DISTRIBUTION_NAME, distribution.getName());
         assertNotNull("Root Node cannot be null", distribution.getRootNode());
         assertEquals("Incorrect distribution type", distributionType, distribution.getDistributionType());
         assertEquals("Incorrect Type of Distribution", DistributionNodeTypes.ROOT_AGGREGATION, distribution.getType());
@@ -476,6 +476,82 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         verify(service).setCurrentDistributionModel(parentDistribution, null);
     }
     
+    @Test(expected = IllegalArgumentException.class)
+    public void trySetNullForLeftColor() throws Exception {
+        Node parentDistribution = getNode();
+        Node rootAggregation = getNode(DistributionNodeTypes.ROOT_AGGREGATION);
+        List<Node> distributionBarNodes = getDistributionBarNodes();
+        IDistribution< ? > distributionType = getDistributionType();
+        DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, false, distributionType);
+        DistributionModel.distributionService = service;
+        IDistributionalModel model = getDistributionalModel(parentDistribution);
+        
+        DistributionModel newDistribution = new DistributionModel(model, distributionType);
+        newDistribution.setLeftColor(null);
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void trySetNullForRightColor() throws Exception {
+        Node parentDistribution = getNode();
+        Node rootAggregation = getNode(DistributionNodeTypes.ROOT_AGGREGATION);
+        List<Node> distributionBarNodes = getDistributionBarNodes();
+        IDistribution< ? > distributionType = getDistributionType();
+        DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, false, distributionType);
+        DistributionModel.distributionService = service;
+        IDistributionalModel model = getDistributionalModel(parentDistribution);
+        
+        DistributionModel newDistribution = new DistributionModel(model, distributionType);
+        newDistribution.setRightColor(null);
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void trySetNullForSelectedColor() throws Exception {
+        Node parentDistribution = getNode();
+        Node rootAggregation = getNode(DistributionNodeTypes.ROOT_AGGREGATION);
+        List<Node> distributionBarNodes = getDistributionBarNodes();
+        IDistribution< ? > distributionType = getDistributionType();
+        DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, false, distributionType);
+        DistributionModel.distributionService = service;
+        IDistributionalModel model = getDistributionalModel(parentDistribution);
+        
+        DistributionModel newDistribution = new DistributionModel(model, distributionType);
+        newDistribution.setSelectedColor(null);
+    }
+    
+    @Test
+    public void checkServiceActivityOnFinishUp() throws Exception {
+        Node parentDistribution = getNode();
+        Node rootAggregation = getNode(DistributionNodeTypes.ROOT_AGGREGATION);
+        List<Node> distributionBarNodes = getDistributionBarNodes();
+        IDistribution< ? > distributionType = getDistributionType();
+        DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, false, distributionType);
+        DistributionModel.distributionService = service;
+        IDistributionalModel model = getDistributionalModel(parentDistribution);
+        
+        DistributionModel newDistribution = new DistributionModel(model, distributionType);
+        newDistribution.finishUp();
+        
+        verify(service).updateSelectedBarColors(eq(rootAggregation), any(Color.class), any(Color.class), any(Color.class));
+    }
+    
+    @Test
+    public void checkDefaultSelectionColors() throws Exception {
+        Node parentDistribution = getNode();
+        Node rootAggregation = getNode(DistributionNodeTypes.ROOT_AGGREGATION);
+        List<Node> distributionBarNodes = getDistributionBarNodes();
+        IDistribution< ? > distributionType = getDistributionType();
+        DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, false, distributionType);
+        DistributionModel.distributionService = service;
+        IDistributionalModel model = getDistributionalModel(parentDistribution);
+        
+        DistributionModel newDistribution = new DistributionModel(model, distributionType);
+        
+        assertEquals("Unexpected default left color", DistributionModel.DEFAULT_LEFT_COLOR, newDistribution.getLeftColor());
+        assertEquals("Unexpected default right color", DistributionModel.DEFAULT_RIGHT_COLOR, newDistribution.getRightColor());
+        assertEquals("Unexpected default selected color", DistributionModel.DEFAULT_MIDDLE_COLOR, newDistribution.getSelectedColor());
+    }
+    
+    
     /**
      * Returns mocked list of Distribution Bars
      *
@@ -642,6 +718,7 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         
         when(result.getNodeType()).thenReturn(DISTRIBUTION_NODE_TYPE);
         when(result.getCount()).thenReturn(NUMBER_OF_NODES_TO_ANALYSE);
+        when(result.getPropertyName()).thenReturn(DISTRIBUTION_PROPERTY_NAME);
                 
         return result;
     }

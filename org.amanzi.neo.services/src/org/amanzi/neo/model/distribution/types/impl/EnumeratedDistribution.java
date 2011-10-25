@@ -44,6 +44,7 @@ public class EnumeratedDistribution extends AbstractDistribution<SimpleRange> {
      */
     public EnumeratedDistribution(IDistributionalModel model, INodeType nodeType, String propertyName) {
         super(model, nodeType, propertyName);
+        setCanChangeColors(true);
     }
 
     @Override

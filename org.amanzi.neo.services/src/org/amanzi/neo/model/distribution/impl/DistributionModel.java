@@ -47,6 +47,21 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
     
     private static final Logger LOGGER = Logger.getLogger(DistributionModel.class);
     
+    /**
+     * Default color for Left Bar
+     */
+    static final Color DEFAULT_LEFT_COLOR = Color.BLUE;
+    
+    /**
+     * Default color for Right Bar
+     */
+    static final Color DEFAULT_RIGHT_COLOR = Color.GREEN;
+    
+    /**
+     * Default color for Selected Bar
+     */
+    static final Color DEFAULT_MIDDLE_COLOR = Color.RED;
+    
     /*
      * Distribution Service
      */
@@ -58,7 +73,25 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
     
     private boolean isExist = false;
     
+    /*
+     * Number  
+     */
     private int count;
+    
+    /*
+     * Color of left Bar from Selected Bar  
+     */
+    private Color leftBarColor = DEFAULT_LEFT_COLOR;
+    
+    /*
+     * Color of right Bar from Selected Bar
+     */
+    private Color rightBarColor = DEFAULT_RIGHT_COLOR;
+    
+    /*
+     * Color of selected Bar
+     */
+    private Color selectedBarColor = DEFAULT_MIDDLE_COLOR;
     
     /**
      * Returns 
@@ -97,6 +130,11 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
         this.nodeType = NodeTypeManager.getType(DistributionService.getNodeType(rootNode));
         this.count = (Integer)rootNode.getProperty(DistributionService.COUNT, 0);
         
+        //initialize selection colors
+        this.leftBarColor = getColor(rootNode, DistributionService.LEFT_COLOR, DEFAULT_LEFT_COLOR);
+        this.rightBarColor = getColor(rootNode, DistributionService.RIGHT_COLOR, DEFAULT_RIGHT_COLOR);
+        this.selectedBarColor = getColor(rootNode, DistributionService.SELECTED_COLOR, DEFAULT_MIDDLE_COLOR);
+        
         LOGGER.debug("finish new DistributionModel()");
     }
     
@@ -127,7 +165,7 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
         if (count != null) {
             distributionBar.setCount(count);
         }
-        Color color = getColor(rootElement);
+        Color color = getColor(rootElement, DistributionService.BAR_COLOR);
         if (color != null) {
             distributionBar.setColor(color);
         }
@@ -143,13 +181,24 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
      * @param rootElement bar element
      * @return
      */
-    private Color getColor(DataElement rootElement) {
-        int[] colorArray = (int[])rootElement.get(DistributionService.BAR_COLOR);
+    private Color getColor(DataElement rootElement, String colorProperty) {
+        return getColor(rootElement.getNode(), colorProperty, null);
+    }
+    
+    /**
+     * Converts Color property from Node to Color object
+     *
+     * @param node
+     * @param colorProperty
+     * @return
+     */
+    private Color getColor(Node node, String colorProperty, Color defaultColor) {
+        int[] colorArray = (int[])node.getProperty(colorProperty, null);
         
         if (colorArray != null) {
             return new Color(colorArray[0], colorArray[1], colorArray[2]);
         } else {
-            return null;
+            return defaultColor;
         }
     }
     
@@ -312,4 +361,55 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
         LOGGER.debug("finish setCurrent()");
     }
 
+    @Override
+    public Color getRightColor() {
+        return rightBarColor;
+    }
+
+    @Override
+    public void setRightColor(Color rightBarColor) {
+        if (rightBarColor == null) {
+            LOGGER.error("Cannot set null for rightBarColor");
+            throw new IllegalArgumentException("Cannot set null for rightBarColor");
+        }
+        
+        this.rightBarColor = rightBarColor;
+    }
+
+    @Override
+    public Color getLeftColor() {
+        return leftBarColor;
+    }
+
+    @Override
+    public void setLeftColor(Color leftBarColor) {
+        if (leftBarColor == null) {
+            LOGGER.error("Cannot set null for leftBarColor");
+            throw new IllegalArgumentException("Cannot set null for leftBarColor");
+        }
+        
+        this.leftBarColor = leftBarColor;
+    }
+
+    @Override
+    public Color getSelectedColor() {
+        return selectedBarColor;
+    }
+
+    @Override
+    public void setSelectedColor(Color selectedBarColor) {
+        if (selectedBarColor == null) {
+            LOGGER.error("Cannot set null for selectedBarColor");
+            throw new IllegalArgumentException("Cannot set null for selectedBarColor");
+        }
+        
+        this.selectedBarColor = selectedBarColor;
+    }
+
+    @Override
+    public void finishUp() throws AWEException {
+        distributionService.updateSelectedBarColors(rootNode, leftBarColor, rightBarColor, selectedBarColor);
+        
+        super.finishUp();
+    }
 }
