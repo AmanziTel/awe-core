@@ -18,12 +18,6 @@
             id="org.amanzi.awe.views.neighbours.views.Node2NodeViews"
             name="Neighbour and Interference Relations">
       </view>
-      <view
-            category="org.amanzi.awe.script"
-            class="org.amanzi.awe.views.neighbours.views.NodeToNodeRelationsView"
-            id="org.amanzi.awe.views.neighbours.views.NodeToNodeRelationsView"
-            name="Node To Node Relations">
-      </view>
    </extension>
    <extension
          point="org.eclipse.ui.views">

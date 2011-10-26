@@ -25,7 +25,7 @@ import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveRelationshipTypes;
-import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelationships;
+import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelTypes;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
@@ -85,7 +85,13 @@ public class NewDatasetService extends NewAbstractService {
 
     /** <code>TraversalDescription</code> to iterate over n2n related nodes */
     protected final TraversalDescription N2N_TRAVERSAL_DESCRIPTION = Traversal.description().breadthFirst()
-            .relationships(N2NRelationships.N2N_REL, Direction.INCOMING).evaluator(Evaluators.excludeStartPosition());
+            .evaluator(Evaluators.excludeStartPosition());
+
+    /** <code>TraversalDescription</code> to iterate over n2n related nodes */
+    protected final TraversalDescription ALL_N2N_TRAVERSAL_DESCRIPTION = Traversal.description().breadthFirst()
+            .relationships(N2NRelTypes.INTERFERENCE_MATRIX, Direction.OUTGOING)
+            .relationships(N2NRelTypes.NEIGHBOUR, Direction.OUTGOING).relationships(N2NRelTypes.SHADOW, Direction.OUTGOING)
+            .relationships(N2NRelTypes.TRIANGULATION, Direction.OUTGOING);
 
     /** <code>TraversalDescription</code> for an empty iterator */
     public static final TraversalDescription EMPTY_TRAVERSAL_DESCRIPTION = Traversal.description()
@@ -95,6 +101,11 @@ public class NewDatasetService extends NewAbstractService {
     public static final TraversalDescription VIRTUAL_DATASET_TRAVERSAL_DESCRIPTION = Traversal.description().breadthFirst()
             .relationships(DriveRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING).evaluator(Evaluators.atDepth(1))
             .evaluator(Evaluators.excludeStartPosition());
+    /**
+     * <code>TraversalDescription</code> to iterate over children of a node
+     */
+    protected final TraversalDescription FIRST_RELATION_TRAVERSAL_DESCRIPTION = Traversal.description().breadthFirst()
+            .evaluator(Evaluators.excludeStartPosition()).evaluator(Evaluators.atDepth(1));
 
     /**
      * <p>
@@ -899,6 +910,24 @@ public class NewDatasetService extends NewAbstractService {
     }
 
     /**
+     * Returns a traverser to iterate over nodes, that are linked to <code>parent</code> with
+     * relType relationship and
+     * 
+     * @param parent
+     * @return
+     */
+    public Iterable<Node> getFirstRelationTraverser(Node parent, RelationshipType relType, Direction direction) {
+        LOGGER.debug("start getChildrenTraverser(Node parent)");
+        // validate parameters
+        if (parent == null) {
+            throw new IllegalArgumentException("parent is null");
+        }
+
+        return FIRST_RELATION_TRAVERSAL_DESCRIPTION.relationships(relType, direction).traverse(parent).nodes();
+
+    }
+
+    /**
      * <Fully taken from old code> Gets the gis node by dataset.
      * 
      * @param dataset the dataset
@@ -906,7 +935,7 @@ public class NewDatasetService extends NewAbstractService {
      */
     public Node getGisNodeByDataset(Node dataset) {
         Relationship gisLink = dataset.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING);
-        
+
         if (gisLink != null) {
             return gisLink.getStartNode();
         }
@@ -944,12 +973,31 @@ public class NewDatasetService extends NewAbstractService {
     }
 
     /**
+     * Traverses database to find all n2n elements of defined type
+     * 
+     * @param elementType
+     * @return an <code>Iterable</code> over found nodes
+     */
+    public Iterable<Node> findAllN2NElements(Node parent, INodeType elementType) {
+        LOGGER.debug("start findAllNetworkElements(Node parent, INodeType elementType)");
+        // validate parameters
+        if (parent == null) {
+            throw new IllegalArgumentException("Parent is null.");
+        }
+        if (elementType == null) {
+            throw new IllegalArgumentException("Element type is null.");
+        }
+
+        return ALL_N2N_TRAVERSAL_DESCRIPTION.evaluator(new FilterNodesByType(elementType)).traverse(parent).nodes();
+    }
+
+    /**
      * @param n2nProxy
      * @param nodeType
      * @param relType
      * @return
      */
-    public Iterable<Relationship> findN2NRelationships(Node n2nProxy, INodeType nodeType, RelationshipType relType) {
+    public Iterable<Node> findN2NRelatedNodes(Node n2nProxy, INodeType nodeType, RelationshipType relType) {
         // validate parameters
         if (n2nProxy == null) {
             throw new IllegalArgumentException("N2N proxy is null.");
@@ -961,8 +1009,8 @@ public class NewDatasetService extends NewAbstractService {
             throw new IllegalArgumentException("Relationship type is null.");
         }
 
-        return N2N_TRAVERSAL_DESCRIPTION.evaluator(new FilterNodesByType(nodeType)).relationships(relType, Direction.OUTGOING)
-                .traverse(n2nProxy).relationships();
+        return N2N_TRAVERSAL_DESCRIPTION.relationships(relType, Direction.INCOMING).evaluator(new FilterNodesByType(nodeType))
+                .relationships(relType, Direction.OUTGOING).traverse(n2nProxy).nodes();
     }
 
     /**

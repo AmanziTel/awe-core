@@ -20,7 +20,6 @@ import org.amanzi.neo.model.distribution.IDistributionalModel;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
-import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelTypes;
 import org.neo4j.graphdb.RelationshipType;
 
 /**
@@ -58,14 +57,6 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
      * @throws AWEException if errors occur in database
      */
     public Iterable<INodeToNodeRelationsModel> getNodeToNodeModels() throws AWEException;
-
-    /**
-     * Traverse database to find all n2n root nodes of one type and create models based on them.
-     * @param type
-     * @return an iterable over n2n models filtered by type, referring to current network
-     * @throws AWEException if errors occur in database
-     */
-    public Iterable<INodeToNodeRelationsModel> getNodeToNodeModels(N2NRelTypes type) throws AWEException;
 
     public INodeToNodeRelationsModel createNodeToNodeMmodel(INodeToNodeRelationsType relType, String name, INodeType nodeType)
             throws AWEException;
@@ -167,9 +158,10 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
      *        will replaced with new
      * @return
      * @throws DatabaseException
+     * @throws AWEException 
      */
     public IDataElement completeProperties(IDataElement existedElement, Map<String, Object> newPropertySet, boolean isReplaceExisted)
-            throws DatabaseException;
+            throws DatabaseException, AWEException;
 
     /**
      * Create a new network element based on <code>IDataElement element</code> object. MUST set NAME
@@ -191,11 +183,31 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
      * @throws AWEException
      */
     public void createRelationship(IDataElement parent, IDataElement child, RelationshipType rel) throws AWEException;
-    
+
     /**
      * Method return current structure of network
-     *
+     * 
      * @return Current structure of network
      */
     public List<INodeType> getNetworkStructure();
+
+    /**
+     * find closest to <code>servSector</code>sector by <code>bsic</code> and <code>bcch</code>
+     * 
+     * @param servSector
+     * @param bsic
+     * @param arfcn
+     * @return
+     */
+    public IDataElement getClosestSector(IDataElement servSector, Integer bsic, Integer arfcn);
+
+    /**
+     * get sequence of nodes which link to <code>parent</code> by OUTGOING <code>relType</code>
+     * relationShip
+     * 
+     * @param parent
+     * @param reltype
+     * @return
+     */
+    public Iterable<IDataElement> getRelatedNodes(IDataElement parent, RelationshipType reltype);
 }

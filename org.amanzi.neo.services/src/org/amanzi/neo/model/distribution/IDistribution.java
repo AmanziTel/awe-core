@@ -35,22 +35,66 @@ public interface IDistribution<T extends IRange> {
         /*
          * Chart shows Counts of property for each bar 
          */
-        COUNTS,
+        COUNTS("Counts"),
         
         /*
          * Chart shows Percents of count of property for each bar
          */
-        PERCENTS,
+        PERCENTS("Percents"),
         
         /*
          * Chart show Logarithmic count of property for each bar
          */
-        LOGARITHMIC,
+        LOGARITHMIC("Logarithmic counts"),
         
         /*
          * Chart show CDF of this property
          */
-        CDF;
+        CDF("CDF Chart");
+        
+        /*
+         * title of this type of chart 
+         */
+        private String title;
+        
+        /**
+         * Constructor 
+         * 
+         * @param title
+         */
+        private ChartType(String title) {
+            this.title = title;
+        }
+        
+        /**
+         * Returns title of this type of Chart
+         *
+         * @return
+         */
+        public String getTitle() {
+            return title;
+        }
+        
+        @Override
+        public String toString() {
+            return getTitle();
+        }
+        
+        /**
+         * Searches corresponding ChartType enum by it's title
+         *
+         * @param title
+         * @return
+         */
+        public static ChartType findByTitle(String title) {
+            for (ChartType singleType : values()) {
+                if (singleType.equals(title)) {
+                    return singleType;
+                }
+            }
+            
+            return null;
+        }
         
         /**
          * Returns Default ChartType
@@ -62,6 +106,21 @@ public interface IDistribution<T extends IRange> {
         public static ChartType getDefault() {
             return COUNTS;
         }
+    }
+    
+    /**
+     * Type of Distribution Selection
+     * 
+     * @author gerzog
+     * @since 1.0.0
+     */
+    public static enum Select {
+        MIN,
+        MAX,
+        AVERAGE,
+        EXISTS,
+        UNIQUE,
+        FIRST;
     }
     
     /**
@@ -96,5 +155,40 @@ public interface IDistribution<T extends IRange> {
      * Initializes current distribution
      */
     public void init();
+    
+    /**
+     * Returns possible Selects
+     *
+     * @return
+     */
+    public Select[] getPossibleSelects();
+    
+    /**
+     * Sets type of Selection
+     *
+     * @param select
+     */
+    public void setSelect(Select select);
+
+    /**
+     * Returns name of Analyzed Property
+     *
+     * @return
+     */
+    public String getPropertyName();
+    
+    /**
+     * Is it possible to changes colors of this Distribution
+     *
+     * @return
+     */
+    public boolean canChangeColors();
+    
+    /**
+     * Set possibility to change colors of this Distribution
+     *
+     * @param canChangeColor
+     */
+    public void setCanChangeColors(boolean canChangeColor);
 
 }

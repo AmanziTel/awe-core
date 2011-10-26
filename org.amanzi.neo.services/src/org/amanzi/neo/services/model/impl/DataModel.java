@@ -23,7 +23,6 @@ import org.amanzi.neo.services.model.IDataModel;
 import org.amanzi.neo.services.model.IProjectModel;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.PropertyContainer;
 
 /**
  * TODO Purpose of
@@ -133,9 +132,9 @@ public abstract class DataModel extends AbstractModel implements IDataModel {
     public static class DataElementIterable implements Iterable<IDataElement> {
         private class DataElementIterator implements Iterator<IDataElement> {
 
-            private Iterator<? extends PropertyContainer> it;
+            private Iterator<Node> it;
 
-            public DataElementIterator(Iterable<? extends PropertyContainer> nodeTraverse) {
+            public DataElementIterator(Iterable<Node> nodeTraverse) {
                 this.it = nodeTraverse.iterator();
             }
 
@@ -156,9 +155,9 @@ public abstract class DataModel extends AbstractModel implements IDataModel {
 
         }
 
-        private Iterable<? extends PropertyContainer> nodeTraverse;
+        private Iterable<Node> nodeTraverse;
 
-        public DataElementIterable(Iterable<? extends PropertyContainer> nodeTraverse) {
+        public DataElementIterable(Iterable<Node> nodeTraverse) {
             this.nodeTraverse = nodeTraverse;
         }
 

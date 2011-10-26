@@ -1,6 +1,11 @@
 package org.amanzi.neo.services;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,9 +16,6 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
-import org.amanzi.neo.services.NeoServiceFactory;
-import org.amanzi.neo.services.NewAbstractService;
-import org.amanzi.neo.services.NewNetworkService;
 import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.NewNetworkService.NetworkRelationshipTypes;
@@ -23,6 +25,8 @@ import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.model.impl.DataElement;
+import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelTypes;
+import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.NodeToNodeTypes;
 import org.amanzi.testing.AbstractAWETest;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -36,9 +40,18 @@ import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
 
+/**
+ * TODO Purpose of
+ * <p>
+ * </p>
+ * 
+ * @author kostyukovich_n
+ * @since 1.0.0
+ */
 public class NewNetworkServiceTest extends AbstractAWETest {
     private static Logger LOGGER = Logger.getLogger(NewNetworkServiceTest.class);
     private static NewNetworkService networkService;
+    private static NewDatasetService datasetService;
     private static final String databasePath = getDbLocation();
     private static Node parent;
     private static final String NAME_VALUE = "default name";
@@ -47,19 +60,14 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     private static final String SECOND_PROPERTY = "second property";
     private final static String DEFAULT_SELECTION_LIST_NAME = "Selection List";
     private int indexCount = 0;
-    
+
     private final static List<INodeType> DEFAULT_NETWORK_STRUCTURE = new ArrayList<INodeType>();
-    
-    private final static INodeType[] NETWORK_STRUCTURE_NODE_TYPES = new INodeType[] {
-        NetworkElementNodeType.NETWORK,
-        NetworkElementNodeType.BSC,
-        NetworkElementNodeType.CITY,
-        NetworkElementNodeType.SITE,
-        NetworkElementNodeType.SECTOR
-    };
-    
+
+    private final static INodeType[] NETWORK_STRUCTURE_NODE_TYPES = new INodeType[] {NetworkElementNodeType.NETWORK,
+            NetworkElementNodeType.BSC, NetworkElementNodeType.CITY, NetworkElementNodeType.SITE, NetworkElementNodeType.SECTOR};
+
     static {
-        //initialize default network structure
+        // initialize default network structure
         for (INodeType nodeType : NETWORK_STRUCTURE_NODE_TYPES) {
             DEFAULT_NETWORK_STRUCTURE.add(nodeType);
         }
@@ -71,6 +79,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
         initializeDb();
         LOGGER.info("Database created in folder " + databasePath);
         networkService = NeoServiceFactory.getInstance().getNewNetworkService();
+        datasetService = NeoServiceFactory.getInstance().getNewDatasetService();
     }
 
     @AfterClass
@@ -1358,7 +1367,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
         Map<String, Object> valuesMap = new HashMap<String, Object>();
         valuesMap.put(SECOND_PROPERTY, NEW_NAME_VALUE);
         try {
-            networkService.completeProperties(rootNode, new DataElement(valuesMap), false);
+            networkService.completeProperties(rootNode, new DataElement(valuesMap), false, null);
         } catch (DatabaseException e) {
             Assert.fail("End with exception");
             throw (RuntimeException)new RuntimeException().initCause(e);
@@ -1377,7 +1386,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
         valuesMap.put(SECOND_PROPERTY, NEW_NAME_VALUE);
         valuesMap.put(FIRST_PROPERTY, NEW_NAME_VALUE);
         try {
-            networkService.completeProperties(rootNode, new DataElement(valuesMap), true);
+            networkService.completeProperties(rootNode, new DataElement(valuesMap), true, null);
         } catch (DatabaseException e) {
             Assert.fail("End with exception");
             throw (RuntimeException)new RuntimeException().initCause(e);
@@ -1387,41 +1396,116 @@ public class NewNetworkServiceTest extends AbstractAWETest {
         assertTrue("Missing property: " + FIRST_PROPERTY, rootNode.hasProperty(FIRST_PROPERTY));
         assertTrue(FIRST_PROPERTY + "isn't equals" + NEW_NAME_VALUE, rootNode.getProperty(FIRST_PROPERTY).equals(NEW_NAME_VALUE));
     }
-    
+
     @Test(expected = IllegalArgumentException.class)
     public void tryToSetNetworkStructureWithoutNode() throws Exception {
         networkService.setNetworkStructure(null, DEFAULT_NETWORK_STRUCTURE);
     }
-    
+
     @Test(expected = IllegalArgumentException.class)
     public void tryToSetNetworkStructureWithoutList() throws Exception {
         networkService.setNetworkStructure(getNewNE(), null);
     }
-    
+
     @Test
     public void checkSavedNetworkStructureInNode() throws Exception {
         Node network = getNewNE();
-        
+
         networkService.setNetworkStructure(network, DEFAULT_NETWORK_STRUCTURE);
-        
+
         assertTrue("No network structure in node", network.hasProperty(NewNetworkService.NETWORK_STRUCTURE));
     }
-    
+
     @Test
     public void checkContentOfNetworkStructureInNode() throws Exception {
         Node network = getNewNE();
-        
+
         networkService.setNetworkStructure(network, DEFAULT_NETWORK_STRUCTURE);
-        
+
         String[] elementNames = new String[NETWORK_STRUCTURE_NODE_TYPES.length];
         int i = 0;
         for (INodeType nodeType : NETWORK_STRUCTURE_NODE_TYPES) {
             elementNames[i++] = nodeType.getId();
         }
-        
+
         String[] structureFromNode = (String[])network.getProperty(NewNetworkService.NETWORK_STRUCTURE);
-        
+
         assertTrue("Incorrect Network Structure in Node", Arrays.equals(elementNames, structureFromNode));
+    }
+
+    private final static String TEST_NAME = "test_name";
+
+    /**
+     * createProxy(Node sourceNode, Node rootNode), check N2N_REL relation
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void checkCreateProxyRelation() throws DatabaseException {
+        Node sourceNode = getNewNE();
+        Node rootNode = getNewNE();
+        Map<String, Object> props = new HashMap<String, Object>();
+        props.put(NewAbstractService.NAME, TEST_NAME);
+        datasetService.setProperties(sourceNode, props);
+        Node result = networkService.createProxy(sourceNode, rootNode, N2NRelTypes.NEIGHBOUR, NodeToNodeTypes.PROXY);
+
+        assertTrue("No N2N relation", result.hasRelationship(N2NRelTypes.NEIGHBOUR, Direction.INCOMING));
+    }
+
+    /**
+     * createProxy(Node sourceNode, Node rootNode), check N2N_REL relation
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void checkCreateProxyChildRelation() throws DatabaseException {
+        Node sourceNode = getNewNE();
+        Node rootNode = getNewNE();
+        Map<String, Object> props = new HashMap<String, Object>();
+        props.put(NewAbstractService.NAME, TEST_NAME);
+        datasetService.setProperties(sourceNode, props);
+
+        Node result = networkService.createProxy(sourceNode, rootNode, N2NRelTypes.NEIGHBOUR, NodeToNodeTypes.PROXY);
+
+        assertTrue("No CHILD OR NEXT relation", result.hasRelationship(DatasetRelationTypes.CHILD, Direction.INCOMING)
+                || sourceNode.hasRelationship(DatasetRelationTypes.NEXT, Direction.INCOMING));
+    }
+
+    /**
+     * createProxy(Node sourceNode, Node rootNode), check SOURCE_NAME property
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void checkCreateProxyProperty() throws DatabaseException {
+        Node sourceNode = getNewNE();
+        Node rootNode = getNewNE();
+        Map<String, Object> props = new HashMap<String, Object>();
+        props.put(NewAbstractService.NAME, TEST_NAME);
+        datasetService.setProperties(sourceNode, props);
+
+        Node result = networkService.createProxy(sourceNode, rootNode, N2NRelTypes.NEIGHBOUR, NodeToNodeTypes.PROXY);
+
+        assertTrue("Proxy node doesn't have " + NewNetworkService.SOURCE_NAME + " property",
+                result.hasProperty(NewNetworkService.SOURCE_NAME));
+
+        assertTrue(NewNetworkService.SOURCE_NAME + " property of proxy node contains incorrect data",
+                TEST_NAME.equals(result.getProperty(NewNetworkService.SOURCE_NAME)));
+
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void checkCreateProxyNullRoot() throws DatabaseException {
+        Node sourceNode = getNewNE();
+
+        networkService.createProxy(sourceNode, null, N2NRelTypes.NEIGHBOUR, NodeToNodeTypes.PROXY);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void checkCreateProxyNullSource() throws DatabaseException {
+        Node rootNode = getNewNE();
+
+        networkService.createProxy(null, rootNode, N2NRelTypes.NEIGHBOUR, NodeToNodeTypes.PROXY);
     }
 
     /**

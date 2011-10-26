@@ -14,6 +14,7 @@
 package org.amanzi.neo.services.statistic;
 
 import java.util.Map;
+import java.util.Set;
 
 import org.amanzi.neo.services.exceptions.IndexPropertyException;
 import org.amanzi.neo.services.exceptions.InvalidStatisticsParameterException;
@@ -72,19 +73,12 @@ public interface IVault {
     public int getPropertyValueCount(String nodeType, String propertyName, Object propertyValue);
 
     /**
-     * Method find all properties in all vaults
-     * 
-     * @return All properties from statistics
-     */
-    public Map<Object, Integer> getAllProperties();
-
-    /**
      * Method find properties with certain node type
      * 
      * @param nodeType Type of node
      * @return All properties from statistics with certain node type
      */
-    public Map<Object, Integer> getAllProperties(String nodeType);
+    public Set<String> getAllPropertyNames(String nodeType);
 
     /**
      * Method find properties with certain type of Class
@@ -92,7 +86,7 @@ public interface IVault {
      * @param klass Type of Class
      * @return All properties from statistics with certain type of Class
      */
-    public Map<Object, Integer> getAllProperties(Class< ? > klass);
+    public Set<String> getAllProperties(String nodeType, Class< ? > klass);
 
     /**
      * Method find properties with certain node type and certain property name
@@ -236,5 +230,23 @@ public interface IVault {
      */
     public void removeProperty(String nodeType, String propName, Object propValue) throws IndexPropertyException,
             InvalidStatisticsParameterException;
+    
+    /**
+     * Method find min value in statistics by nodeType and propertyName
+     *
+     * @param nodeType Type of node
+     * @param propertyName Name of property
+     * @return Minimum value in statistics
+     */
+    public Number getMinValue(String nodeType, String propertyName);
+    
+    /**
+     * Method find max value in statistics by nodeType and propertyName
+     *
+     * @param nodeType Type of node
+     * @param propertyName Name of property
+     * @return Maximum value in statistics
+     */
+    public Number getMaxValue(String nodeType, String propertyName);
 
 }

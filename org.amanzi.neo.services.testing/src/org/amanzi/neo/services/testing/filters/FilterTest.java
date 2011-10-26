@@ -17,6 +17,7 @@ import java.io.Serializable;
 
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.filters.ExpressionType;
 import org.amanzi.neo.services.filters.Filter;
@@ -1195,7 +1196,7 @@ public class FilterTest extends AbstractAWETest {
             secondNode.setProperty("Name", "name");
             secondNode.setProperty("Rest", "value 4");
             Filter afpFilter = new Filter(FilterType.EQUALS,ExpressionType.AND);
-            afpFilter.setExpression(NodeTypes.CITY,"Rest", "value 4");
+            afpFilter.setExpression(NetworkElementNodeType.CITY,"Rest", "value 4");
 
             LOGGER.info("--firstNode nodeType:'CITY'; property: " + "'Rest'; value: " + firstNode.getProperty("Rest"));
             LOGGER.info("---- afpFilter FilterType is 'EQUALS' ExpressionType is 'AND'");

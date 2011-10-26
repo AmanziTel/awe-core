@@ -20,28 +20,31 @@ import org.amanzi.neo.services.filters.Filter;
 import org.apache.log4j.Logger;
 
 /**
- * Distribution for String properties
+ * Distribution for Enumerated properties (such as String and Boolean for example)
  * 
  * Creates range for each String value of property
  * 
  * @author gerzog
  * @since 1.0.0
  */
-public class StringDistribution extends AbstractDistribution<SimpleRange> {
+public class EnumeratedDistribution extends AbstractDistribution<SimpleRange> {
     
-    private static final Logger LOGGER = Logger.getLogger(StringDistribution.class);
+    private static final Logger LOGGER = Logger.getLogger(EnumeratedDistribution.class);
     
     static final String STRING_DISTRIBUTION_NAME = "auto";
     
     private int count = 0;
-
+    
+    private static final Select[] POSSIBLE_SELECTS = new Select[] {Select.EXISTS};
+    
     /**
      * @param model
      * @param nodeType
      * @param propertyName
      */
-    public StringDistribution(IDistributionalModel model, INodeType nodeType, String propertyName) {
+    public EnumeratedDistribution(IDistributionalModel model, INodeType nodeType, String propertyName) {
         super(model, nodeType, propertyName);
+        setCanChangeColors(true);
     }
 
     @Override
@@ -73,5 +76,15 @@ public class StringDistribution extends AbstractDistribution<SimpleRange> {
         
         LOGGER.debug("finish createRange()");
     }
+
+    @Override
+    public Select[] getPossibleSelects() {
+        return POSSIBLE_SELECTS;
+    }
+
+    @Override
+    protected Select getDefaultSelect() {
+        return Select.EXISTS;
+    }    
 
 }

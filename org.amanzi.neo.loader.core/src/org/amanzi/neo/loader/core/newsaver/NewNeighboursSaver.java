@@ -105,7 +105,8 @@ public class NewNeighboursSaver extends AbstractSaver<NetworkModel, CSVContainer
             networkModel = getActiveProject().getNetwork(configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK));
             n2nModel = networkModel.getNodeToNodeModel(N2NRelTypes.NEIGHBOUR, configuration.getFilesToLoad().get(0).getName(),
                     NetworkElementNodeType.SECTOR);
-            modelMap.put(configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK), networkModel);
+            modelMap.put(networkModel.getName(), networkModel);
+            modelMap.put(n2nModel.getName(), n2nModel);
             createExportSynonymsForModels();
         } catch (AWEException e) {
             rollbackTx();
@@ -128,7 +129,6 @@ public class NewNeighboursSaver extends AbstractSaver<NetworkModel, CSVContainer
                 lineCounter++;
                 List<String> value = container.getValues();
                 createNeighbour(value);
-                increaseActionCount();
             }
         } catch (DatabaseException e) {
             LOGGER.error("Error while saving element on line " + lineCounter, e);

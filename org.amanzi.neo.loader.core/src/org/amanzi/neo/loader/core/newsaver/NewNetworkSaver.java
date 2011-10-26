@@ -286,8 +286,8 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
         String ci = sectorMap.containsKey("ci") ? sectorMap.get("ci").toString() : "";
         String lac = sectorMap.containsKey("lac") ? sectorMap.get("lac").toString() : "";
         if ((ci == null || StringUtils.isEmpty(ci)) && (lac == null || StringUtils.isEmpty(lac))
-                || (sectorName == null || StringUtils.isEmpty(sectorName))) {
-            LOGGER.info("Sector haven't Name or CI + LAC properties on line: " + lineCounter);
+                && (sectorName == null || StringUtils.isEmpty(sectorName))) {
+            LOGGER.info("Sector should have Name or CI + LAC properties on line: " + lineCounter);
             return;
         }
         if (fileSynonyms.containsKey(SECTOR)) {
@@ -322,7 +322,7 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
             rollbackTx();
             LOGGER.error("Exception on creating root Model", e);
             throw new RuntimeException(e);
-        } 
+        }
     }
 
     @Override
@@ -339,7 +339,6 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
                 lineCounter++;
                 List<String> value = container.getValues();
                 createMSC(value);
-                increaseActionCount();
             }
         } catch (DatabaseException e) {
             LOGGER.error("Error while saving element on line " + lineCounter, e);

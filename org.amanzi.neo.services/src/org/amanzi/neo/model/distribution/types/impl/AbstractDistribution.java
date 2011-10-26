@@ -20,6 +20,7 @@ import org.amanzi.neo.model.distribution.IDistribution;
 import org.amanzi.neo.model.distribution.IDistributionalModel;
 import org.amanzi.neo.model.distribution.IRange;
 import org.amanzi.neo.services.enums.INodeType;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -55,6 +56,16 @@ public abstract class AbstractDistribution<T extends IRange> implements IDistrib
      * List of ranges
      */
     protected List<T> ranges = new ArrayList<T>();
+    
+    /*
+     * Type of Select
+     */
+    protected Select select;
+    
+    /*
+     * Is it possible to change color of Bar
+     */
+    private boolean canChangeColor;
     
     /**
      * Default constructor
@@ -116,6 +127,40 @@ public abstract class AbstractDistribution<T extends IRange> implements IDistrib
     @Override
     public INodeType getNodeType() {
         return nodeType;
+    }
+    
+    /**
+     * Returns Default Select for this Distribution
+     *
+     * @return
+     */
+    protected abstract Select getDefaultSelect();
+    
+    @Override
+    public void setSelect(Select select) {
+        if (ArrayUtils.contains(getPossibleSelects(), select)) {
+            if (this.select != select) {
+                this.select = select;
+                isInitialized = false;
+            }
+        } else {
+            throw new IllegalArgumentException("Cannot set Select <" + select + "> for Distribution <" + this + ">.");
+        }
+    }
+    
+    @Override
+    public String getPropertyName() {
+        return propertyName;
+    }
+
+    @Override
+    public boolean canChangeColors() {
+        return canChangeColor;
+    }
+
+    @Override
+    public void setCanChangeColors(boolean canChangeColors) {
+        this.canChangeColor = canChangeColors;
     }
 
 }
