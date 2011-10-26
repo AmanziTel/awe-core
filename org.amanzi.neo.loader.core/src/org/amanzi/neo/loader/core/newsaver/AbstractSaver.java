@@ -167,13 +167,6 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
     }
 
     /**
-     * increase action counter in current tx;
-     */
-    protected void increaseActionCount() {
-        actionCount++;
-    }
-
-    /**
      * dataset service instance
      */
     protected static DatasetService datasetService;
@@ -202,8 +195,10 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
      * if current tx==null create new instance finish current transaction if actions in current
      * transaction more than commitTxCount and open new;
      */
-    protected void openOrReopenTx() {
-        if ((actionCount > commitTxCount) || (tx != null && actionCount == 0)) {
+    protected void commitTx() {
+        actionCount++;
+        if (actionCount > commitTxCount) {
+            tx.success();
             tx.finish();
             tx = null;
             actionCount = 0;
@@ -214,32 +209,20 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
 
     }
 
-    protected void finishTx() {
+    protected void rollbackTx() {
+        tx.failure();
         actionCount = 0;
         tx.finish();
         tx = null;
     }
 
-    /**
-     * mark transaction as success
-     */
-    protected void markTxAsSuccess() {
-        tx.success();
-    }
-
-    /**
-     * mark tx as failure
-     */
-    protected void markTxAsFailure() {
-        tx.failure();
-    }
-
     @Override
     public void finishUp() throws AWEException {
-    	for (IDataModel dataModel : modelMap.values()) {
-    		dataModel.finishUp();
-    	}
+        for (IDataModel dataModel : modelMap.values()) {
+            dataModel.finishUp();
+        }
         saveSynonym();
+        tx.success();
         tx.finish();
         NeoServiceProvider.getProvider().commit();
         actionCount = 0;

@@ -19,6 +19,7 @@ import org.amanzi.neo.loader.core.saver.MetaData;
 import org.amanzi.neo.services.GisProperties;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.network.NetworkModel;
+import org.amanzi.neo.services.networkselection.NetworkSelectionModel;
 import org.amanzi.neo.services.networkselection.SelectionModel;
 import org.neo4j.graphdb.Node;
 

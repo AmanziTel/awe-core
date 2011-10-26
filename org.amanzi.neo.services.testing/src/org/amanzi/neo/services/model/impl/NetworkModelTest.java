@@ -399,7 +399,7 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
         try {
             it = model.getNodeToNodeModels();
         } catch (AWEException e) {
-            LOGGER.error("Could not get correlation models.", e);
+            LOGGER.error("Could not get N2N models.", e);
             fail();
         }
         Assert.assertNotNull(it);

@@ -67,6 +67,8 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
     private Map<INodeType, List<MultiPropertyIndex< ? >>> indexes = new HashMap<INodeType, List<MultiPropertyIndex< ? >>>();
 
     private IndexService indexService = NeoServiceFactory.getInstance().getIndexService();
+    
+    private NewDatasetService datasetService = NeoServiceFactory.getInstance().getNewDatasetService();
 
     /**
      * Creates and stores a location index for the defined node type.
@@ -76,10 +78,9 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
      */
     protected void addLocationIndex(INodeType nodeType) throws AWEException {
         LOGGER.debug("addLocationIndex(" + nodeType + ")");
-
-        // since location index exist it should also be a GIS node
-        NewDatasetService dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
-        dsServ.getGisNodeByDataset(rootNode);
+        
+        //since location index exist it should also be a GIS node
+        datasetService.getGisNodeByDataset(rootNode);
 
         // validate parameters
         if (nodeType == null) {
@@ -232,25 +233,22 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
      */
     @Override
     public void finishUp() throws AWEException {
-        NewDatasetService dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
-
         Node rootNode = getRootNode();
 
         Map<String, Object> params = new HashMap<String, Object>();
         params.put(DriveModel.MIN_TIMESTAMP, min_timestamp);
         params.put(DriveModel.MAX_TIMESTAMP, max_timestamp);
-        dsServ.setProperties(rootNode, params);
+        datasetService.setProperties(rootNode, params);
 
-        Node gis = dsServ.getGisNodeByDataset(rootNode);
+        Node gis = datasetService.getGisNodeByDataset(rootNode);
         if (gis != null) {
             params = new HashMap<String, Object>();
             params.put(DriveModel.MIN_LATITUDE, min_latitude);
             params.put(DriveModel.MIN_LONGITUDE, min_longitude);
             params.put(DriveModel.MAX_LATITUDE, max_latitude);
             params.put(DriveModel.MAX_LONGITUDE, max_longitude);
-            dsServ.setProperties(gis, params);
+            datasetService.setProperties(gis, params);
         }
-
         super.finishUp();
     }
 }

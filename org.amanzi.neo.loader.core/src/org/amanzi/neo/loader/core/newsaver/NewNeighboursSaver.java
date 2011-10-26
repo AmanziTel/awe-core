@@ -99,27 +99,25 @@ public class NewNeighboursSaver extends AbstractSaver<NetworkModel, CSVContainer
         columnSynonyms = new HashMap<String, Integer>();
         setDbInstance();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
-        openOrReopenTx();
+        commitTx();
         try {
             rootElement.put(INeoConstants.PROPERTY_NAME_NAME, configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK));
             networkModel = getActiveProject().getNetwork(configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK));
             n2nModel = networkModel.getNodeToNodeModel(N2NRelTypes.NEIGHBOUR, configuration.getFilesToLoad().get(0).getName(),
                     NetworkElementNodeType.SECTOR);
-            modelMap.put(configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK), networkModel);
+            modelMap.put(networkModel.getName(), networkModel);
+            modelMap.put(n2nModel.getName(), n2nModel);
             createExportSynonymsForModels();
-            markTxAsSuccess();
         } catch (AWEException e) {
-            markTxAsSuccess();
+            rollbackTx();
             LOGGER.error("Exception on creating root Model", e);
             throw new RuntimeException(e);
-        } finally {
-            finishTx();
         }
     }
 
     @Override
     public void saveElement(CSVContainer dataElement) {
-        openOrReopenTx();
+        commitTx();
         CSVContainer container = dataElement;
         try {
             if (fileSynonyms.isEmpty()) {
@@ -131,17 +129,14 @@ public class NewNeighboursSaver extends AbstractSaver<NetworkModel, CSVContainer
                 lineCounter++;
                 List<String> value = container.getValues();
                 createNeighbour(value);
-                markTxAsSuccess();
-                increaseActionCount();
             }
         } catch (DatabaseException e) {
             LOGGER.error("Error while saving element on line " + lineCounter, e);
-            markTxAsFailure();
-            finishTx();
+            rollbackTx();
             throw (RuntimeException)new RuntimeException().initCause(e);
         } catch (Exception e) {
             LOGGER.error("Exception while saving element on line " + lineCounter, e);
-            markTxAsSuccess();
+            commitTx();
         }
     }
 

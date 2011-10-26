@@ -20,6 +20,7 @@ import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.ILoaderNew;
 import org.amanzi.neo.loader.core.newsaver.IData;
+import org.amanzi.neo.loader.ui.wizards.AbstractLoaderWizard.LoaderInfo;
 import org.amanzi.neo.services.events.UpdateDatabaseEvent;
 import org.amanzi.neo.services.events.UpdateViewEventType;
 import org.amanzi.neo.services.ui.NeoServicesUiPlugin;

@@ -43,6 +43,7 @@ import org.amanzi.neo.services.model.INetworkType;
 import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
 import org.amanzi.neo.services.model.INodeToNodeRelationsType;
 import org.amanzi.neo.services.model.ISelectionModel;
+import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelTypes;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.geotools.geometry.jts.ReferencedEnvelope;
@@ -84,7 +85,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         super(networkRoot);
         // validate
         if (networkRoot == null) {
-            throw new IllegalArgumentException("Root node is null.");
+            throw new IllegalArgumentException("Network root is null.");
         }
         if (!DatasetTypes.NETWORK.getId().equals(networkRoot.getProperty(NewAbstractService.TYPE, null))) {
             throw new IllegalArgumentException("Root node must be of type NETWORK.");
@@ -135,13 +136,13 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         initializeMultiPropertyIndexing();
         initializeNetworkStructure();
     }
-
+    
     /**
      * Initializes Network Structure from Node
      */
     private void initializeNetworkStructure() {
         String[] networkStructure = (String[])rootNode.getProperty(NewNetworkService.NETWORK_STRUCTURE, null);
-
+        
         currentNetworkStructure = new LinkedList<INodeType>();
         if (networkStructure != null) {
             for (String nodeType : networkStructure) {
@@ -326,18 +327,27 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     }
 
     @Override
-    public Iterable<INodeToNodeRelationsModel> getNodeToNodeModels() throws AWEException {
-        LOGGER.info("getNodeToNodeModels()");
+    public Iterable<INodeToNodeRelationsModel> getNodeToNodeModels(N2NRelTypes type) throws AWEException {
+        LOGGER.info("getNodeToNodeModels(N2NRelTypes type)");
 
         Node network = getRootNode();
         List<INodeToNodeRelationsModel> result = new ArrayList<INodeToNodeRelationsModel>();
         for (Node n2nRoot : nwServ.getNodeToNodeRoots(network)) {
-            result.add(new NodeToNodeRelationshipModel(n2nRoot));
+            N2NRelTypes relType = N2NRelTypes.valueOf(n2nRoot.getProperty(NodeToNodeRelationshipModel.RELATION_TYPE).toString());
+            if (type == null || relType.equals(type)) {
+                result.add(new NodeToNodeRelationshipModel(n2nRoot));
+            }
         }
-
         return result;
     }
 
+    @Override
+    public Iterable<INodeToNodeRelationsModel> getNodeToNodeModels() throws AWEException {
+        LOGGER.info("getNodeToNodeModels()");
+
+        return getNodeToNodeModels(null);
+    }
+    
     @Override
     public Iterable<IDataElement> getChildren(IDataElement parent) {
         // validate
@@ -442,10 +452,10 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         childNode = ((DataElement)child).getNode();
         nwServ.createRelationship(parentNode, childNode, rel);
     }
-
+    
     /**
      * Method to dynamically change of network structure
-     * 
+     *
      * @param parentType Parent type in string format
      * @param childType Child type in string format
      */
@@ -454,28 +464,31 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
          * if current structure not contains parent type and not contains child type, then add
          * parent and child in end of structure
          */
-        if (!currentNetworkStructure.contains(parentType) && !currentNetworkStructure.contains(childType)) {
+        if (!currentNetworkStructure.contains(parentType) &&
+                !currentNetworkStructure.contains(childType)) {
             currentNetworkStructure.add(parentType);
             currentNetworkStructure.add(childType);
         }
         /**
-         * if current structure not contains parent type and contains child type, then add parent at
-         * index indexOf(child)
+         * if current structure not contains parent type and contains child type,
+         * then add parent at index indexOf(child)
          */
-        else if (!currentNetworkStructure.contains(parentType) && currentNetworkStructure.contains(childType)) {
+        else if (!currentNetworkStructure.contains(parentType) &&
+                currentNetworkStructure.contains(childType)) {
             int indexOfChild = currentNetworkStructure.indexOf(childType);
             currentNetworkStructure.add(indexOfChild, parentType);
         }
         /**
-         * if current structure contains parent type and not contains child type, then add child at
-         * index indexOf(parent)+1
+         * if current structure contains parent type and not contains child type,
+         * then add child at index indexOf(parent)+1
          */
-        else if (currentNetworkStructure.contains(parentType) && !currentNetworkStructure.contains(childType)) {
+        else if (currentNetworkStructure.contains(parentType) &&
+                !currentNetworkStructure.contains(childType)) {
             int indexOfParent = currentNetworkStructure.indexOf(parentType);
             currentNetworkStructure.add(indexOfParent + 1, childType);
         }
     }
-
+    
     @Override
     public List<INodeType> getNetworkStructure() {
         return currentNetworkStructure;
@@ -494,11 +507,11 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         if (element == null) {
             throw new IllegalArgumentException("Parameters map is null.");
         }
-
+        
         INodeType parentType = NodeTypeManager.getType(parent.get(NewAbstractService.TYPE).toString());
         INodeType type = NodeTypeManager.getType(element.get(NewAbstractService.TYPE).toString());
         changeNetworkStructure(parentType, type);
-
+        
         Node node = null;
 
         // TODO:validate network structure and save it in root node
@@ -544,8 +557,8 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
 
     @Override
     public void finishUp() throws AWEException {
-        super.finishUp();
         nwServ.setNetworkStructure(rootNode, currentNetworkStructure);
+        super.finishUp();
     }
 
     @Override
@@ -578,7 +591,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     }
 
     @Override
-    public IDistributionModel getDistributionModel(IDistribution< ? > distributionType) {
+    public IDistributionModel getDistributionModel(IDistribution<?> distributionType) {
         return null;
     }
 
@@ -598,11 +611,11 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
                 .toString());
         switch (type) {
         case SITE:
-            return new Coordinate((Integer)element.get(LATITUDE), (Integer)element.get(LONGITUDE));
+            return new Coordinate((Long)element.get(LATITUDE), (Long)element.get(LONGITUDE));
 
         case SECTOR:
             IDataElement site = getParentElement(element);
-            return new Coordinate((Integer)site.get(LATITUDE), (Integer)site.get(LONGITUDE));
+            return new Coordinate((Long)site.get(LATITUDE), (Long)site.get(LONGITUDE));
         default:
             return null;
         }

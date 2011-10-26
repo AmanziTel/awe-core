@@ -68,13 +68,11 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
         preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.NETWORK);
         columnSynonyms = new HashMap<String, Integer>();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
-        openOrReopenTx();
+        commitTx();
         if (model != null) {
             this.model = model;
             rootDataElement = new DataElement(model.getRootNode());
             modelMap.put(model.getName(), model);
-            markTxAsSuccess();
-            finishTx();
         } else {
             init(config, null);
         }
@@ -313,26 +311,23 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
         columnSynonyms = new HashMap<String, Integer>();
         setDbInstance();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
-        openOrReopenTx();
+        commitTx();
         try {
             rootElement.put(INeoConstants.PROPERTY_NAME_NAME, configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK));
             model = getActiveProject().getNetwork(configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK));
             rootDataElement = new DataElement(model.getRootNode());
             modelMap.put(configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK), model);
             createExportSynonymsForModels();
-            markTxAsSuccess();
         } catch (AWEException e) {
-            markTxAsFailure();
+            rollbackTx();
             LOGGER.error("Exception on creating root Model", e);
             throw new RuntimeException(e);
-        } finally {
-            finishTx();
         }
     }
 
     @Override
     public void saveElement(CSVContainer dataElement) {
-        openOrReopenTx();
+        commitTx();
         CSVContainer container = dataElement;
         try {
             if (fileSynonyms.isEmpty()) {
@@ -344,17 +339,14 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
                 lineCounter++;
                 List<String> value = container.getValues();
                 createMSC(value);
-                markTxAsSuccess();
-                increaseActionCount();
             }
         } catch (DatabaseException e) {
             LOGGER.error("Error while saving element on line " + lineCounter, e);
-            markTxAsFailure();
-            finishTx();
+            rollbackTx();
             throw (RuntimeException)new RuntimeException().initCause(e);
         } catch (Exception e) {
             LOGGER.error("Exception while saving element on line " + lineCounter, e);
-            markTxAsSuccess();
+            commitTx();
         }
     }
 

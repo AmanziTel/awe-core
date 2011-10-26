@@ -16,10 +16,10 @@ package org.amanzi.neo.services.model.impl;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.amanzi.neo.services.CorrelationService.CorrelationNodeTypes;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.NewNetworkService;
+import org.amanzi.neo.services.NewNetworkService.NodeToNodeTypes;
 import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
@@ -27,7 +27,6 @@ import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
 import org.amanzi.neo.services.model.INodeToNodeRelationsType;
-import org.amanzi.neo.services.model.impl.DataModel.DataElementIterable;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.jdom.IllegalNameException;
@@ -45,7 +44,7 @@ import org.neo4j.graphdb.RelationshipType;
  * @author grigoreva_a
  * @since 1.0.0
  */
-public class NodeToNodeRelationshipModel extends AbstractModel implements INodeToNodeRelationsModel {
+public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implements INodeToNodeRelationsModel {
 
     public static final String RELATION_TYPE = "rel_type";
 
@@ -54,6 +53,7 @@ public class NodeToNodeRelationshipModel extends AbstractModel implements INodeT
     private INodeToNodeRelationsType relType;
 
     private NewDatasetService dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
+    private NewNetworkService networkServ = NeoServiceFactory.getInstance().getNewNetworkService();
 
     /**
      * <p>
@@ -84,27 +84,6 @@ public class NodeToNodeRelationshipModel extends AbstractModel implements INodeT
             return name();
         }
 
-    }
-
-    /**
-     * <p>
-     * Types of nodes that are used inside of <code>NodeToNodeRelationshipModel</code> class.
-     * </p>
-     * 
-     * @author grigoreva_a
-     * @since 1.0.0
-     */
-    protected enum NodeToNodeTypes implements INodeType {
-        NODE2NODE, PROXY;
-
-        static {
-            NodeTypeManager.registerNodeType(CorrelationNodeTypes.class);
-        }
-
-        @Override
-        public String getId() {
-            return name().toLowerCase();
-        }
     }
 
     /**
@@ -153,6 +132,8 @@ public class NodeToNodeRelationshipModel extends AbstractModel implements INodeT
             params.put(PRIMARY_TYPE, nodeType.getId());
             dsServ.setProperties(rootNode, params);
         }
+
+        initializeStatistics();
     }
 
     NodeToNodeRelationshipModel(Node n2nRoot) throws AWEException {
@@ -165,6 +146,8 @@ public class NodeToNodeRelationshipModel extends AbstractModel implements INodeT
         this.nodeType = NodeTypeManager.getType(n2nRoot.getProperty(PRIMARY_TYPE).toString());
         this.relType = N2NRelTypes.valueOf(n2nRoot.getProperty(RELATION_TYPE).toString());
         this.name = n2nRoot.getProperty(NewNetworkService.NAME).toString();
+
+        initializeStatistics();
     }
 
     @Override
@@ -192,6 +175,7 @@ public class NodeToNodeRelationshipModel extends AbstractModel implements INodeT
             Relationship rel = dsServ.createRelationship(proxy1, proxy2, relType);
             if (params != null) {
                 dsServ.setProperties(rel, params);
+                indexProperty(nodeType, params);
             }
         }
     }
@@ -219,11 +203,10 @@ public class NodeToNodeRelationshipModel extends AbstractModel implements INodeT
      * @return the resulting proxy
      * @throws AWEException
      */
-    private Node getProxy(Node sourceNode) throws AWEException {
+    public Node getProxy(Node sourceNode) throws AWEException {
         Node result = findProxy(sourceNode);
         if (result == null) {
-            result = dsServ.createNode(sourceNode, N2NRelationships.N2N_REL, NodeToNodeTypes.PROXY);
-            dsServ.addChild(rootNode, result, null);
+            result = networkServ.createProxy(sourceNode, rootNode);
         }
         return result;
     }
@@ -256,7 +239,7 @@ public class NodeToNodeRelationshipModel extends AbstractModel implements INodeT
 
         Node proxy = findProxy(sourceNode);
         if (proxy != null) {
-            return new DataElementIterable(dsServ.findN2NRelatedNodes(proxy, nodeType, relType));
+            return new DataElementIterable(dsServ.findN2NRelationships(proxy, relType));
         } else {
             return new DataElementIterable(dsServ.emptyTraverser(sourceNode));
         }
@@ -265,6 +248,21 @@ public class NodeToNodeRelationshipModel extends AbstractModel implements INodeT
     @Override
     public INodeToNodeRelationsType getNodeToNodeRelationsType() {
         return this.relType;
+    }
+
+    @Override
+    public Iterable<IDataElement> getChildren(IDataElement parent) {
+        return null;
+    }
+
+    @Override
+    public Iterable<IDataElement> getAllElementsByType(INodeType elementType) {
+        if (elementType == null) {
+            throw new IllegalArgumentException("Element type is null.");
+        }
+        LOGGER.info("getAllElementsByType(" + elementType.getId() + ")");
+
+        return new DataElementIterable(dsServ.findAllN2NElements(getRootNode(), elementType));
     }
 
 }

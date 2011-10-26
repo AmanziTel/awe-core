@@ -18,6 +18,12 @@
             id="org.amanzi.awe.views.neighbours.views.Node2NodeViews"
             name="Neighbour and Interference Relations">
       </view>
+      <view
+            category="org.amanzi.awe.script"
+            class="org.amanzi.awe.views.neighbours.views.NodeToNodeRelationsView"
+            id="org.amanzi.awe.views.neighbours.views.NodeToNodeRelationsView"
+            name="Node To Node Relations">
+      </view>
    </extension>
    <extension
          point="org.eclipse.ui.views">
@@ -55,6 +61,18 @@
          </view>
          <viewShortcut
                id="org.amanzi.awe.views.neighbours.views.Node2NodeViews">
+         </viewShortcut>
+      </perspectiveExtension>
+      <perspectiveExtension
+            targetID="org.amanzi.awe.perspective">
+         <view
+               id="org.amanzi.awe.views.neighbours.views.NodeToNodeRelationsView"
+               minimized="false"
+               relationship="stack"
+               relative="net.refractions.udig.catalog.ui.CatalogView">
+         </view>
+         <viewShortcut
+               id="org.amanzi.awe.views.neighbours.views.NodeToNodeRelationsView">
          </viewShortcut>
       </perspectiveExtension>
    </extension>

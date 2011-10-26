@@ -13,9 +13,12 @@
 
 package org.amanzi.neo.services;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
+import org.amanzi.neo.services.CorrelationService.CorrelationNodeTypes;
 import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
@@ -54,6 +57,12 @@ public class NewNetworkService extends NewAbstractService {
     public final static String SELECTION_RELATIONSHIP_INDEX = "selection_relationship";
 
     public final static String SELECTED_NODES_COUNT = "selected_nodes_count";
+
+
+    /*
+     * name of proxy node's property that contains source node name
+     */
+    public static final String SOURCE_NAME = "source_name";
 
     /*
      * name of property that contains array with network structure
@@ -94,6 +103,27 @@ public class NewNetworkService extends NewAbstractService {
      */
     public enum NetworkRelationshipTypes implements RelationshipType {
         SELECTION_LIST, SELECTED, TRXGROUP, CHANNEL, TRX;
+    }
+
+    /**
+     * <p>
+     * Types of nodes that are used inside of <code>NodeToNodeRelationshipModel</code> class.
+     * </p>
+     * 
+     * @author grigoreva_a
+     * @since 1.0.0
+     */
+    public enum NodeToNodeTypes implements INodeType {
+        NODE2NODE, PROXY;
+
+        static {
+            NodeTypeManager.registerNodeType(CorrelationNodeTypes.class);
+        }
+
+        @Override
+        public String getId() {
+            return name().toLowerCase();
+        }
     }
 
     /*
@@ -641,5 +671,35 @@ public class NewNetworkService extends NewAbstractService {
         }
 
         LOGGER.debug("finish setNetworkStructure()");
+    }
+
+    public Node createProxy(Node sourceNode, Node rootNode) throws DatabaseException {
+        LOGGER.debug("start createProxy(Node sourceNode)");
+
+        if (sourceNode == null) {
+            LOGGER.error("Input sourceNode cannot be null");
+            throw new IllegalArgumentException("Input sourceNode cannot be null");
+        }
+        if (rootNode == null) {
+            LOGGER.error("Input rootNode cannot be null");
+            throw new IllegalArgumentException("Input rootNode cannot be null");
+        }
+        Transaction tx = graphDb.beginTx();
+        try {
+            Node result = datasetService.createNode(sourceNode, N2NRelationships.N2N_REL, NodeToNodeTypes.PROXY);
+            datasetService.addChild(rootNode, result, null);
+            Map<String, Object> properties = new HashMap<String, Object>();
+            properties.put(SOURCE_NAME, sourceNode.getProperty(NewAbstractService.NAME));
+            datasetService.setProperties(result, properties);
+            tx.success();
+            return result;
+        } catch (Exception e) {
+            tx.failure();
+            LOGGER.error("Error on setting Network Structure to Node", e);
+            throw new DatabaseException(e);
+
+        } finally {
+            tx.finish();
+        }
     }
 }

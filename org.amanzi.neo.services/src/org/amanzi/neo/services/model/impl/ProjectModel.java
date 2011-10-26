@@ -44,10 +44,11 @@ import org.neo4j.graphdb.Node;
  * @since 1.0.0
  */
 public class ProjectModel extends AbstractModel implements IProjectModel {
-
+    
     /**
-     * Class that describes Distribution Item It consist of DistributionalModel and Type of Node to
-     * Analyze
+     * Class that describes Distribution Item
+     * 
+     * It consist of DistributionalModel and Type of Node to Analyze
      * 
      * @author gerzog
      * @since 1.0.0
@@ -107,7 +108,7 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
             StringBuilder result = new StringBuilder(model.getName());
 
             if (nodeType != null) {
-                result.append(" - O").append(nodeType.getId());
+                result.append(" - ").append(nodeType.getId());
             }
 
             return result.toString();
@@ -380,6 +381,7 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
      * @return
      * @throws AWEException
      */
+    @Override
     public List<DistributionItem> getAllDistributionalModels() throws AWEException {
         List<DistributionItem> result = new ArrayList<DistributionItem>();
         // first add all NetworkModels and it's n2nrelationship models

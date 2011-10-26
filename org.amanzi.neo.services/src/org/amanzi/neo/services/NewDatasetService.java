@@ -59,6 +59,7 @@ public class NewDatasetService extends NewAbstractService {
     public final static String PROJECT_NODE = "project_node";
     public static final String LAST_CHILD_ID = "last_child_id";
     public static final String PARENT_ID = "parent_id";
+
     /**
      * TraversalDescription for Dataset nodes
      */
@@ -83,8 +84,10 @@ public class NewDatasetService extends NewAbstractService {
             .relationships(DatasetRelationTypes.NEXT, Direction.OUTGOING);
 
     /** <code>TraversalDescription</code> to iterate over n2n related nodes */
-    protected final TraversalDescription N2N_TRAVERSAL_DESCRIPTION = Traversal.description().breadthFirst()
-            .relationships(N2NRelationships.N2N_REL, Direction.INCOMING).evaluator(Evaluators.excludeStartPosition());
+    // protected final TraversalDescription N2N_TRAVERSAL_DESCRIPTION =
+    // Traversal.description().breadthFirst()
+    // .relationships(N2NRelationships.N2N_REL,
+    // Direction.INCOMING).evaluator(Evaluators.excludeStartPosition());
 
     /** <code>TraversalDescription</code> for an empty iterator */
     public static final TraversalDescription EMPTY_TRAVERSAL_DESCRIPTION = Traversal.description()
@@ -94,6 +97,9 @@ public class NewDatasetService extends NewAbstractService {
     public static final TraversalDescription VIRTUAL_DATASET_TRAVERSAL_DESCRIPTION = Traversal.description().breadthFirst()
             .relationships(DriveRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING).evaluator(Evaluators.atDepth(1))
             .evaluator(Evaluators.excludeStartPosition());
+
+    protected static final TraversalDescription N2N_RELATIONSHIPS_TRAVERSAL_DESCRIPTION = Traversal.description().evaluator(
+            Evaluators.atDepth(1));
 
     /**
      * <p>
@@ -952,25 +958,42 @@ public class NewDatasetService extends NewAbstractService {
     }
 
     /**
+     * Traverses database to find all n2n elements of defined type
+     * 
+     * @param elementType
+     * @return an <code>Iterable</code> over found nodes
+     */
+    public Iterable<Node> findAllN2NElements(Node parent, INodeType elementType) {
+        LOGGER.debug("start findAllNetworkElements(Node parent, INodeType elementType)");
+        // validate parameters
+        if (parent == null) {
+            throw new IllegalArgumentException("Parent is null.");
+        }
+        if (elementType == null) {
+            throw new IllegalArgumentException("Element type is null.");
+        }
+
+        return DATASET_ELEMENT_TRAVERSAL_DESCRIPTION.relationships(N2NRelationships.N2N_REL, Direction.INCOMING)
+                .evaluator(new FilterNodesByType(elementType)).traverse(parent).nodes();
+    }
+
+    /**
      * @param n2nProxy
      * @param nodeType
      * @param relType
      * @return
      */
-    public Iterable<Node> findN2NRelatedNodes(Node n2nProxy, INodeType nodeType, RelationshipType relType) {
+    public Iterable<Relationship> findN2NRelationships(Node n2nProxy, RelationshipType relType) {
         // validate parameters
         if (n2nProxy == null) {
             throw new IllegalArgumentException("N2N proxy is null.");
-        }
-        if (nodeType == null) {
-            throw new IllegalArgumentException("Node type is null.");
         }
         if (relType == null) {
             throw new IllegalArgumentException("Relationship type is null.");
         }
 
-        return N2N_TRAVERSAL_DESCRIPTION.evaluator(new FilterNodesByType(nodeType)).relationships(relType, Direction.OUTGOING)
-                .traverse(n2nProxy).nodes();
+        return N2N_RELATIONSHIPS_TRAVERSAL_DESCRIPTION.relationships(relType, Direction.OUTGOING).traverse(n2nProxy)
+                .relationships();
     }
 
     /**
@@ -998,5 +1021,3 @@ public class NewDatasetService extends NewAbstractService {
     }
 
 }
-
-

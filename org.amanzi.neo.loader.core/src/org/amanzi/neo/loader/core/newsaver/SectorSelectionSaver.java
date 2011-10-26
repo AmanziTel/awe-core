@@ -18,6 +18,8 @@ import java.util.List;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.exceptions.DatabaseException;
+import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.ISelectionModel;
 import org.amanzi.neo.services.model.impl.NetworkModel;
@@ -69,7 +71,7 @@ public class SectorSelectionSaver extends AbstractSaver<NetworkModel, CSVContain
 
     @Override
     public void saveElement(CSVContainer dataElement) {
-        openOrReopenTx();
+        commitTx();
         try {
             container = dataElement;
             if (headers == null) {
@@ -80,15 +82,12 @@ public class SectorSelectionSaver extends AbstractSaver<NetworkModel, CSVContain
                 for (String value : container.getValues()) {
                     // IDataElement sector = networkModel.findElement(element)
 
-                    markTxAsSuccess();
-                    increaseActionCount();
                 }
             }
 
         } catch (Exception e) {
             LOGGER.error("Error while saving element on line " + lineCounter, e);
-            markTxAsFailure();
-            finishTx();
+            rollbackTx();
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
     }
