@@ -29,6 +29,15 @@
                   id="org.amanzi.awe.views.network.view.NewTypeAction">
 
             </action>
+            <action
+                  class="org.amanzi.awe.views.network.view.AddToSelectionList"
+                  icon="icons/add-type.gif"
+                  id="org.amanzi.awe.views.network.NewSelectionList"
+                  label="Label"
+                  style="push"
+                  toolbarPath="additions"
+                  tooltip="Create new selection list">
+            </action>
             
          </viewContribution>
       </extension>
