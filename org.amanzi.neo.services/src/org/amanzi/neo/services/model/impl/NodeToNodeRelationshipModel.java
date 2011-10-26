@@ -53,6 +53,7 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
     private INodeToNodeRelationsType relType;
 
     private NewDatasetService dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
+    private NewNetworkService networkServ = NeoServiceFactory.getInstance().getNewNetworkService();
 
     /**
      * <p>
@@ -80,7 +81,7 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
      * @author grigoreva_a
      * @since 1.0.0
      */
-    protected enum NodeToNodeTypes implements INodeType {
+    public enum NodeToNodeTypes implements INodeType {
         NODE2NODE, PROXY;
 
         static {
@@ -211,7 +212,8 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
         Node serviceProxy = findProxy(serviceNode);
         Node neighbourProxy = findProxy(neighbourNode);
         Relationship rel = related(serviceProxy, neighbourProxy);
-        NeoServiceFactory.getInstance().getNewNetworkService().completeProperties(rel, new DataElement(properties), isReplace);
+        NeoServiceFactory.getInstance().getNewNetworkService()
+                .completeProperties(rel, new DataElement(properties), isReplace, null);
     }
 
     /**
@@ -224,8 +226,7 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
     private Node getProxy(Node sourceNode) throws AWEException {
         Node result = findProxy(sourceNode);
         if (result == null) {
-            result = dsServ.createNode(sourceNode, this.relType, NodeToNodeTypes.PROXY);
-            dsServ.addChild(rootNode, result, null);
+            result = networkServ.createProxy(sourceNode, rootNode, this.relType, NodeToNodeTypes.PROXY);
         }
         return result;
     }
@@ -276,7 +277,12 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
 
     @Override
     public Iterable<IDataElement> getAllElementsByType(INodeType elementType) {
-        return null;
+        if (elementType == null) {
+            throw new IllegalArgumentException("Element type is null.");
+        }
+        LOGGER.info("getAllElementsByType(" + elementType.getId() + ")");
+
+        return new DataElementIterable(dsServ.findAllN2NElements(getRootNode(), elementType));
     }
 
 }

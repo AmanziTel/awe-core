@@ -356,6 +356,22 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         return new DataElementIterable(dsServ.getChildrenTraverser(parentNode));
     }
 
+    @Override
+    public Iterable<IDataElement> getRelatedNodes(IDataElement parent, RelationshipType reltype) {
+        // validate
+        if (parent == null) {
+            parent = new DataElement(getRootNode());
+        }
+        LOGGER.info("getFirstRelatedNode(" + parent.toString() + "," + reltype.name() + ")");
+
+        Node parentNode = ((DataElement)parent).getNode();
+        if (parentNode == null) {
+            throw new IllegalArgumentException("Parent node is null.");
+        }
+
+        return new DataElementIterable(dsServ.getFirstRelationTraverser(parentNode, reltype, Direction.OUTGOING));
+    }
+
     /**
      * Traverses only over CHILD relationships.
      */
@@ -429,10 +445,13 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
 
     @Override
     public IDataElement completeProperties(IDataElement existedElement, Map<String, Object> newPropertySet, boolean isReplaceExisted)
-            throws DatabaseException {
+            throws AWEException {
         Node existedNode;
         existedNode = ((DataElement)existedElement).getNode();
-        nwServ.completeProperties(existedNode, new DataElement(newPropertySet), isReplaceExisted);
+        INodeType nodeType = NodeTypeManager.getType(existedElement.get(INeoConstants.PROPERTY_TYPE_NAME).toString());
+        nwServ.completeProperties(existedNode, new DataElement(newPropertySet), isReplaceExisted, getIndex(nodeType));
+        nwServ.setProperties(existedNode, newPropertySet);
+        indexProperty(nodeType, newPropertySet);
         return new DataElement(existedNode);
     }
 

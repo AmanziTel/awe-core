@@ -444,7 +444,7 @@ public class DistributionAnalyzerView extends ViewPart {
         //label and button for color properties
         Label colorPropertiesLabel = new Label(parent, SWT.NONE);
         colorPropertiesLabel.setText(COLOR_PROPERTIES_LABEL);
-        
+
         colorProperties = new Button(parent, SWT.CHECK);
         
         //layout

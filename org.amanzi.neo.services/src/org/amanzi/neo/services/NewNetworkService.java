@@ -13,8 +13,10 @@
 
 package org.amanzi.neo.services;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.enums.INodeType;
@@ -55,7 +57,7 @@ public class NewNetworkService extends NewAbstractService {
     public final static String SELECTION_RELATIONSHIP_INDEX = "selection_relationship";
 
     public final static String SELECTED_NODES_COUNT = "selected_nodes_count";
-
+    public final static String SOURCE_NAME = "source name";
     /*
      * name of property that contains array with network structure
      */
@@ -513,11 +515,15 @@ public class NewNetworkService extends NewAbstractService {
      * @param existedNode
      * @param dataElement
      * @param isReplaceExisted
+     * @param index
      * @throws DatabaseException
      */
-    public void completeProperties(PropertyContainer existedNode, DataElement dataElement, boolean isReplaceExisted)
-            throws DatabaseException {
+    public void completeProperties(PropertyContainer existedNode, DataElement dataElement, boolean isReplaceExisted,
+            Index<Node> index) throws DatabaseException {
         Transaction tx = graphDb.beginTx();
+        if (existedNode instanceof Node && index != null) {
+            removeNodeFromIndex((Node)existedNode, index, NAME, existedNode.getProperty(NAME));
+        }
         try {
             LOGGER.debug("Start completing properties in " + existedNode);
             for (String mapKey : dataElement.keySet()) {
@@ -528,6 +534,9 @@ public class NewNetworkService extends NewAbstractService {
                 }
             }
             LOGGER.debug("END completing properties in " + existedNode);
+            if (existedNode instanceof Node && index != null) {
+                addNodeToIndex((Node)existedNode, index, NAME, existedNode.getProperty(NAME));
+            }
             tx.success();
         } catch (Exception e) {
             tx.failure();
@@ -645,5 +654,35 @@ public class NewNetworkService extends NewAbstractService {
         }
 
         LOGGER.debug("finish setNetworkStructure()");
+    }
+
+    public Node createProxy(Node sourceNode, Node rootNode, RelationshipType rel, INodeType type) throws DatabaseException {
+        LOGGER.debug("start createProxy(Node sourceNode)");
+
+        if (sourceNode == null) {
+            LOGGER.error("Input sourceNode cannot be null");
+            throw new IllegalArgumentException("Input sourceNode cannot be null");
+        }
+        if (rootNode == null) {
+            LOGGER.error("Input rootNode cannot be null");
+            throw new IllegalArgumentException("Input rootNode cannot be null");
+        }
+        Transaction tx = graphDb.beginTx();
+        try {
+            Node result = datasetService.createNode(sourceNode, rel, type);
+            datasetService.addChild(rootNode, result, null);
+            Map<String, Object> properties = new HashMap<String, Object>();
+            properties.put(SOURCE_NAME, sourceNode.getProperty(NewAbstractService.NAME));
+            datasetService.setProperties(result, properties);
+            tx.success();
+            return result;
+        } catch (Exception e) {
+            tx.failure();
+            LOGGER.error("Error on setting Network Structure to Node", e);
+            throw new DatabaseException(e);
+
+        } finally {
+            tx.finish();
+        }
     }
 }
