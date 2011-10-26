@@ -13,6 +13,7 @@
 
 package org.amanzi.awe.render.network;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.geom.AffineTransform;
@@ -49,6 +50,15 @@ import com.vividsolutions.jts.geom.Envelope;
  * @since 1.0.0
  */
 public class AbstractRenderer extends RendererImpl {
+    
+    public static class RenderOptions{
+        public static Scale scale = Scale.MEDIUM;
+        
+    }
+
+    protected enum Scale {
+        SMALL, MEDIUM, LARGE;
+    }
 
     private static Logger LOGGER = Logger.getLogger(AbstractRenderer.class);
 
@@ -99,16 +109,17 @@ public class AbstractRenderer extends RendererImpl {
                     continue;
                 }
                 Coordinate world_location = new Coordinate();
-//                if (bounds_transformed != null && !bounds_transformed.contains(location)) {
-//                    continue; // Don't draw points outside viewport
-//                }
+                if (bounds_transformed != null && !bounds_transformed.contains(location)) {
+                    continue; // Don't draw points outside viewport
+                }
                 try {
                     JTS.transform(location, world_location, transform_d2w);
                 } catch (Exception e) {
-                    // JTS.transform(location, world_location, transform_w2d.inverse());
+                    JTS.transform(location, world_location, transform_w2d.inverse());
                 }
 
                 java.awt.Point p = getContext().worldToPixel(world_location);
+                
                 renderElement(destination, p, element);
             }
 
@@ -129,7 +140,8 @@ public class AbstractRenderer extends RendererImpl {
      * @param point
      * @param element
      */
-    private void renderElement(Graphics2D destination, Point point, IDataElement element) {
+    protected void renderElement(Graphics2D destination, Point point, IDataElement element) {
+        destination.setColor(Color.BLACK);
         destination.drawOval(point.x - 1, point.y - 1, 2, 2);
     }
 

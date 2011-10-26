@@ -14,32 +14,20 @@
 package org.amanzi.neo.loader.ui.wizards;
 
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Set;
 
-import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.ILoaderNew;
 import org.amanzi.neo.loader.core.newsaver.IData;
-import org.amanzi.neo.loader.core.parser.IConfigurationData;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
-import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
-import org.amanzi.neo.loader.ui.wizards.AbstractLoaderWizard.LoaderInfo;
-import org.amanzi.neo.services.INeoConstants;
-import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.events.UpdateDatabaseEvent;
 import org.amanzi.neo.services.events.UpdateViewEventType;
 import org.amanzi.neo.services.ui.NeoServicesUiPlugin;
-import org.amanzi.neo.services.utils.Utils;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.ui.IWorkbench;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.traversal.TraversalDescription;
 
 /**
  * <p>

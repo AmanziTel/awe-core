@@ -26,7 +26,6 @@ import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
-import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.indexes.MultiPropertyIndex;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;

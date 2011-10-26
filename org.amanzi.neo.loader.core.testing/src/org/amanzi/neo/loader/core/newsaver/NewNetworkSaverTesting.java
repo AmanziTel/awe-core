@@ -15,11 +15,11 @@ package org.amanzi.neo.loader.core.newsaver;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
@@ -29,13 +29,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.neo4j.graphdb.Transaction;
-
 import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
-import org.amanzi.neo.loader.core.newsaver.NewNetworkSaver;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceInitializer;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.exceptions.AWEException;
@@ -45,14 +42,13 @@ import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.NetworkModel;
 import org.amanzi.testing.AbstractAWETest;
 import org.apache.log4j.Logger;
-import org.jdom.IllegalDataException;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.kernel.EmbeddedGraphDatabase;
+import org.neo4j.graphdb.Transaction;
 
 /**
  * @author Kondratenko_Vladsialv

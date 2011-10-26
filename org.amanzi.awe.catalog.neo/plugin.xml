@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.2"?>
 <plugin>
+ <extension
+         point="org.eclipse.ui.startup">
+         <startup class="org.amanzi.awe.catalog.neo.NeoCatalogStartup">
+         </startup>
+   </extension>
    <extension
          id="org.amanzi.awe.catalog.neo.ServiceExtensions"
          name="Neo4J Service Extensions"

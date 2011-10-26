@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.IDriveType;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
@@ -105,7 +104,7 @@ public class NewDatasetService extends NewAbstractService {
      * @since 1.0.0
      */
     public enum DatasetRelationTypes implements RelationshipType {
-        PROJECT, DATASET, CHILD, NEXT;
+        PROJECT, DATASET, CHILD, NEXT, GIS;
     }
 
     /**
@@ -116,7 +115,7 @@ public class NewDatasetService extends NewAbstractService {
      * @author Kruglik_A
      * @since 1.0.0
      */
-    public enum DatasetTypes implements INodeType {
+    public static enum DatasetTypes implements INodeType {
         NETWORK, DRIVE, COUNTERS, GIS;
 
         static {
@@ -126,6 +125,10 @@ public class NewDatasetService extends NewAbstractService {
         @Override
         public String getId() {
             return name().toLowerCase();
+        }
+        
+        public static DatasetTypes[] getRenderableDatasets() {
+            return new DatasetTypes[]{NETWORK, DRIVE};
         }
     }
 
@@ -912,8 +915,8 @@ public class NewDatasetService extends NewAbstractService {
         if (dataset == null) {
             return null;
         }
-        Relationship rel = dataset.getSingleRelationship(GeoNeoRelationshipTypes.NEXT, Direction.INCOMING);
-        return rel == null ? createGisNode(dataset) : rel.getStartNode();
+        Relationship rel = dataset.getSingleRelationship(DatasetRelationTypes.GIS, Direction.OUTGOING);
+        return rel == null ? createGisNode(dataset) : rel.getEndNode();
     }
 
     /**
@@ -925,7 +928,7 @@ public class NewDatasetService extends NewAbstractService {
      */
     private Node createGisNode(Node dataset) throws DatabaseException {
         Node gis = createNode(DatasetTypes.GIS);
-        createRelationship(gis, dataset, DatasetRelationTypes.NEXT);
+        createRelationship(dataset, gis, DatasetRelationTypes.GIS);
         return gis;
     }
 
@@ -995,3 +998,5 @@ public class NewDatasetService extends NewAbstractService {
     }
 
 }
+
+

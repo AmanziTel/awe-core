@@ -55,7 +55,7 @@ public class NetworkRenderMetricsFactory implements IRenderMetricsFactory {
      * @return NetworkRenderer.class
      */
     public Class< ? extends IRenderer> getRendererType() {
-        return AbstractRenderer.class;
+        return NewNetworkRenderer.class;
     }
 
 }

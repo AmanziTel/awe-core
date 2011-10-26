@@ -346,14 +346,15 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
     @Override
     public Iterable<IRenderableModel> getAllRenderableModels() throws AWEException {
         List<IRenderableModel> result = new ArrayList<IRenderableModel>();
-        for (Node node : dsServ.findAllDatasets(rootNode)) {
-            INodeType type = NodeTypeManager.getType(node.getProperty(NewAbstractService.TYPE, StringUtils.EMPTY).toString());
-            if (type != null) {
-                if (type.getId().equals(DatasetTypes.DRIVE.getId())) {
-                    result.add(new DriveModel(rootNode, node, null, null));
-                }
-                if (type.getId().equals(DatasetTypes.NETWORK.getId())) {
+        for (DatasetTypes type : DatasetTypes.getRenderableDatasets()) {
+            for (Node node : dsServ.findAllDatasetsByType(rootNode, type)) {
+                switch (type) {
+                case NETWORK:
                     result.add(new NetworkModel(node));
+                    break;
+                case DRIVE:
+                    result.add(new DriveModel(rootNode, node, null, null));
+                    break;
                 }
             }
         }

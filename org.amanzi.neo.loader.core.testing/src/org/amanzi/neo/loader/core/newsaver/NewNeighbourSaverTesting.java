@@ -31,8 +31,6 @@ import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
-import org.amanzi.neo.loader.core.newsaver.NewNeighboursSaver;
-import org.amanzi.neo.loader.core.newsaver.NewNetworkSaver;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceInitializer;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.exceptions.AWEException;
