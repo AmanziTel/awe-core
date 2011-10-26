@@ -66,12 +66,17 @@ public class DataLoadPreferenceManager {
     private static Map<String, String[]> networkMap;
     private static Map<String, String[]> driveMap;
     private static Map<String, String[]> neighMap;
-
     // private static Map<String, String[]> countMap;
 
+    public static Map<String, PossibleTypes> predifinedPropertyType = new HashMap<String, PossibleTypes>();
+
+
     public static void intializeDefault() {
+
         if (preferenceInitializer == null) {
             preferenceInitializer = new DataLoadPreferenceInitializer();
+            predifinedPropertyType.put("lat", PossibleTypes.DOUBLE);
+            predifinedPropertyType.put("lon", PossibleTypes.DOUBLE);
         }
         preferenceInitializer.initializeDefaultPreferences();
     }
