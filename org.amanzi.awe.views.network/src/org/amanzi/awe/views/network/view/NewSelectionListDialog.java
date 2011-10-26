@@ -15,17 +15,13 @@ package org.amanzi.awe.views.network.view;
 
 import java.util.Iterator;
 import org.amanzi.neo.core.utils.AbstractDialog;
-import org.amanzi.neo.services.DatasetService;
-import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
-import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoServicesUiPlugin;
+import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -45,6 +41,8 @@ import org.eclipse.swt.widgets.Text;
  * @since 1.0.0
  */
 public class NewSelectionListDialog extends AbstractDialog<Integer> {
+    
+    private static Logger LOGGER = Logger.getLogger(NewSelectionListDialog.class);
 
     /** The Constant MIN_FIELD_WIDTH. */
     private static final int MIN_FIELD_WIDTH = 50;
@@ -64,10 +62,7 @@ public class NewSelectionListDialog extends AbstractDialog<Integer> {
     /** The shell. */
     private Shell shell;
 
-    /** The ds. */
-    private final DatasetService ds;
-
-    /**
+   /**
      * Instantiates a new new selection list dialog.
      * 
      * @param parent the parent
@@ -77,7 +72,6 @@ public class NewSelectionListDialog extends AbstractDialog<Integer> {
     public NewSelectionListDialog(Shell parent, String title, int style) {
         super(parent, title, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.CENTER);
         status = SWT.CANCEL;
-        ds = NeoServiceFactory.getInstance().getDatasetService();
     }
 
     /**
@@ -133,7 +127,6 @@ public class NewSelectionListDialog extends AbstractDialog<Integer> {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 status = SWT.OK;
-                /* Заменить */
                 perfomrSave();
                 shell.close();
             }
@@ -144,37 +137,23 @@ public class NewSelectionListDialog extends AbstractDialog<Integer> {
                 status = SWT.CANCEL;
                 shell.close();
             }
-        });
-        tNewSelectionList.addKeyListener(new KeyListener() {
-
-            @Override
-            public void keyReleased(KeyEvent e) {
-                checkSelectionList();
-            }
-
-            @Override
-            public void keyPressed(KeyEvent e) {
-            }
-        });
-    }
-
-    /**
-     * Check type name.
-     */
-    protected void checkSelectionList() {
-        String nameOfNetwork = comboForNetwork.getText();
-        String newSelectionListName = tNewSelectionList.getText().toLowerCase().trim();
-        if (nameOfNetwork == "" || nameOfNetwork == null || newSelectionListName == "" || newSelectionListName == null) {
-            bOk.setEnabled(false);
-        } else {
-            bOk.setEnabled(true);
-        }
+        });        
     }
 
     /**
      * Perform save.
      */
     protected void perfomrSave() {
+        LOGGER.debug("Start method performSave");
+        String nameOfNetwork = comboForNetwork.getText();
+        try {
+            INetworkModel objINetworkModel = ProjectModel.getCurrentProjectModel().findNetwork(nameOfNetwork);
+            objINetworkModel.createSelectionModel(tNewSelectionList.getText());
+        } catch (AWEException e) {
+            LOGGER.error(e.getMessage());
+            throw (RuntimeException) new RuntimeException( ).initCause( e );
+        }
+        LOGGER.debug("SelectionList save");
         
     }
 
@@ -185,6 +164,9 @@ public class NewSelectionListDialog extends AbstractDialog<Integer> {
         // nothing to load
     }
 
+    /**
+     * Add text in combo
+     */
     private void createComboOfNetwork() {
         try {
             Iterable<INetworkModel> objINetworkModel = ProjectModel.getCurrentProjectModel().findAllNetworkModels();
@@ -193,7 +175,7 @@ public class NewSelectionListDialog extends AbstractDialog<Integer> {
                 comboForNetwork.add(it.next().getName());
             }
         } catch (AWEException e) {
-            // TODO Handle AWEException
+            LOGGER.error(e.getMessage());            
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
     }
