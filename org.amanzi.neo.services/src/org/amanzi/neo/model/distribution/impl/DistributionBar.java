@@ -55,6 +55,9 @@ public class DistributionBar implements IDistributionBar {
 
     @Override
     public void setColor(Color color) {
+        if (color == null) {
+            color = DEFUALT_COLOR;
+        }
         this.color = color;
     }
 
