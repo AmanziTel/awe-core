@@ -121,6 +121,19 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
             switch (preferenceManager.predifinedPropertyType.get(propertyName)) {
             case DOUBLE:
                 parsedValue = Double.parseDouble(propertyValue);
+                break;
+            case FLOAT:
+                parsedValue = Float.parseFloat(propertyValue);
+                break;
+            case INTEGER:
+                parsedValue = Integer.parseInt(propertyValue);
+                break;
+            case LONG:
+                parsedValue = Long.parseLong(propertyValue);
+                break;
+            case STRING:
+                parsedValue = propertyValue;
+                break;
             }
         }
         return parsedValue;
