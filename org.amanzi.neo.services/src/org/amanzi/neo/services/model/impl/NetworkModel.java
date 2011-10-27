@@ -46,6 +46,7 @@ import org.amanzi.neo.services.model.INetworkType;
 import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
 import org.amanzi.neo.services.model.INodeToNodeRelationsType;
 import org.amanzi.neo.services.model.ISelectionModel;
+import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelTypes;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -328,17 +329,27 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     }
 
     @Override
-    public Iterable<INodeToNodeRelationsModel> getNodeToNodeModels() throws AWEException {
-        LOGGER.info("getNodeToNodeModels()");
+    public Iterable<INodeToNodeRelationsModel> getNodeToNodeModels(N2NRelTypes type) throws AWEException {
+        LOGGER.info("getNodeToNodeModels(N2NRelTypes type)");
 
         Node network = getRootNode();
         List<INodeToNodeRelationsModel> result = new ArrayList<INodeToNodeRelationsModel>();
         for (Node n2nRoot : nwServ.getNodeToNodeRoots(network)) {
-            result.add(new NodeToNodeRelationshipModel(n2nRoot));
+            N2NRelTypes relType = N2NRelTypes.valueOf(n2nRoot.getProperty(NodeToNodeRelationshipModel.RELATION_TYPE).toString());
+            if (type == null || relType.equals(type)) {
+                result.add(new NodeToNodeRelationshipModel(n2nRoot));
+            }
         }
-
         return result;
     }
+
+    @Override
+    public Iterable<INodeToNodeRelationsModel> getNodeToNodeModels() throws AWEException {
+        LOGGER.info("getNodeToNodeModels()");
+
+        return getNodeToNodeModels(null);
+    }
+
 
     @Override
     public Iterable<IDataElement> getChildren(IDataElement parent) {
