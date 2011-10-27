@@ -18,7 +18,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.amanzi.neo.services.CorrelationService.CorrelationNodeTypes;
 import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
@@ -26,12 +25,13 @@ import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.model.impl.DataElement;
-import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelationships;
+import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelTypes;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
@@ -57,12 +57,7 @@ public class NewNetworkService extends NewAbstractService {
     public final static String SELECTION_RELATIONSHIP_INDEX = "selection_relationship";
 
     public final static String SELECTED_NODES_COUNT = "selected_nodes_count";
-
-    /*
-     * name of proxy node's property that contains source node name
-     */
-    public static final String SOURCE_NAME = "source_name";
-
+    public final static String SOURCE_NAME = "source name";
     /*
      * name of property that contains array with network structure
      */
@@ -104,27 +99,6 @@ public class NewNetworkService extends NewAbstractService {
         SELECTION_LIST, SELECTED, TRXGROUP, CHANNEL, TRX;
     }
 
-    /**
-     * <p>
-     * Types of nodes that are used inside of <code>NodeToNodeRelationshipModel</code> class.
-     * </p>
-     * 
-     * @author grigoreva_a
-     * @since 1.0.0
-     */
-    public enum NodeToNodeTypes implements INodeType {
-        NODE2NODE, PROXY;
-
-        static {
-            NodeTypeManager.registerNodeType(CorrelationNodeTypes.class);
-        }
-
-        @Override
-        public String getId() {
-            return name().toLowerCase();
-        }
-    }
-
     /*
      * Traversal Description to find out all Selection List Nodes
      */
@@ -135,7 +109,10 @@ public class NewNetworkService extends NewAbstractService {
      * Traversal Description to find all node2node relationship root nodes
      */
     protected final static TraversalDescription N2N_ROOT_TRAVERSER = Traversal.description().breadthFirst()
-            .relationships(N2NRelationships.N2N_REL, Direction.OUTGOING).evaluator(Evaluators.excludeStartPosition());
+            .relationships(N2NRelTypes.NEIGHBOUR, Direction.OUTGOING)
+            .relationships(N2NRelTypes.INTERFERENCE_MATRIX, Direction.OUTGOING)
+            .relationships(N2NRelTypes.SHADOW, Direction.OUTGOING).relationships(N2NRelTypes.TRIANGULATION, Direction.OUTGOING)
+            .evaluator(Evaluators.excludeStartPosition());
 
     public NewNetworkService() {
         super();
@@ -538,10 +515,15 @@ public class NewNetworkService extends NewAbstractService {
      * @param existedNode
      * @param dataElement
      * @param isReplaceExisted
+     * @param index
      * @throws DatabaseException
      */
-    public void completeProperties(Node existedNode, DataElement dataElement, boolean isReplaceExisted) throws DatabaseException {
+    public void completeProperties(PropertyContainer existedNode, DataElement dataElement, boolean isReplaceExisted,
+            Index<Node> index) throws DatabaseException {
         Transaction tx = graphDb.beginTx();
+        if (existedNode instanceof Node && index != null) {
+            removeNodeFromIndex((Node)existedNode, index, NAME, existedNode.getProperty(NAME));
+        }
         try {
             LOGGER.debug("Start completing properties in " + existedNode);
             for (String mapKey : dataElement.keySet()) {
@@ -552,6 +534,9 @@ public class NewNetworkService extends NewAbstractService {
                 }
             }
             LOGGER.debug("END completing properties in " + existedNode);
+            if (existedNode instanceof Node && index != null) {
+                addNodeToIndex((Node)existedNode, index, NAME, existedNode.getProperty(NAME));
+            }
             tx.success();
         } catch (Exception e) {
             tx.failure();
@@ -671,7 +656,7 @@ public class NewNetworkService extends NewAbstractService {
         LOGGER.debug("finish setNetworkStructure()");
     }
 
-    public Node createProxy(Node sourceNode, Node rootNode) throws DatabaseException {
+    public Node createProxy(Node sourceNode, Node rootNode, RelationshipType rel, INodeType type) throws DatabaseException {
         LOGGER.debug("start createProxy(Node sourceNode)");
 
         if (sourceNode == null) {
@@ -684,7 +669,7 @@ public class NewNetworkService extends NewAbstractService {
         }
         Transaction tx = graphDb.beginTx();
         try {
-            Node result = datasetService.createNode(sourceNode, N2NRelationships.N2N_REL, NodeToNodeTypes.PROXY);
+            Node result = datasetService.createNode(sourceNode, rel, type);
             datasetService.addChild(rootNode, result, null);
             Map<String, Object> properties = new HashMap<String, Object>();
             properties.put(SOURCE_NAME, sourceNode.getProperty(NewAbstractService.NAME));

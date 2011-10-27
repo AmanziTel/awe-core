@@ -16,13 +16,14 @@ package org.amanzi.neo.services.model.impl;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.amanzi.neo.services.CorrelationService.CorrelationNodeTypes;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.NewNetworkService;
-import org.amanzi.neo.services.NewNetworkService.NodeToNodeTypes;
 import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
@@ -33,7 +34,6 @@ import org.jdom.IllegalNameException;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.RelationshipType;
 
 /**
  * <p>
@@ -57,19 +57,6 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
 
     /**
      * <p>
-     * Enum describing utility relationships in <code>NodeToNodeRelationshipModel</code> class. TODO
-     * rename?
-     * </p>
-     * 
-     * @author grigoreva_a
-     * @since 1.0.0
-     */
-    public enum N2NRelationships implements RelationshipType {
-        N2N_REL;
-    }
-
-    /**
-     * <p>
      * This enum describes relationships between nodes.
      * </p>
      * 
@@ -77,13 +64,34 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
      * @since 1.0.0
      */
     public enum N2NRelTypes implements INodeToNodeRelationsType {
-        NEIGHBOUR;
+        NEIGHBOUR, INTERFERENCE_MATRIX, TRIANGULATION, SHADOW;
 
         @Override
         public String getId() {
             return name();
         }
 
+    }
+
+    /**
+     * <p>
+     * Types of nodes that are used inside of <code>NodeToNodeRelationshipModel</code> class.
+     * </p>
+     * 
+     * @author grigoreva_a
+     * @since 1.0.0
+     */
+    public enum NodeToNodeTypes implements INodeType {
+        NODE2NODE, PROXY;
+
+        static {
+            NodeTypeManager.registerNodeType(CorrelationNodeTypes.class);
+        }
+
+        @Override
+        public String getId() {
+            return name().toLowerCase();
+        }
     }
 
     /**
@@ -119,11 +127,11 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
         this.nodeType = nodeType;
         this.relType = relType;
         this.name = name;
-        Node root = dsServ.findNode(parentNode, N2NRelationships.N2N_REL, name, NodeToNodeTypes.NODE2NODE);
+        Node root = dsServ.findNode(parentNode, relType, name, NodeToNodeTypes.NODE2NODE);
         if (root != null) {
             this.rootNode = root;
         } else {
-            this.rootNode = dsServ.createNode(parentNode, N2NRelationships.N2N_REL, NodeToNodeTypes.NODE2NODE);
+            this.rootNode = dsServ.createNode(parentNode, relType, NodeToNodeTypes.NODE2NODE);
             Map<String, Object> params = new HashMap<String, Object>();
             params.put(NewNetworkService.NETWORK_ID, parentNode.getId());
             params.put(NewNetworkService.NAME, this.name);
@@ -171,11 +179,11 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
         Node proxy1 = getProxy(sourceNode);
         Node proxy2 = getProxy(targetNode);
 
-        if (!related(proxy1, proxy2)) {
+        if (related(proxy1, proxy2) == null) {
             Relationship rel = dsServ.createRelationship(proxy1, proxy2, relType);
             if (params != null) {
                 dsServ.setProperties(rel, params);
-                indexProperty(nodeType, params);
+                indexProperty(getType(), params);
             }
         }
     }
@@ -187,13 +195,25 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
      * @param proxy2
      * @return
      */
-    private boolean related(Node proxy1, Node proxy2) {
+    private Relationship related(Node proxy1, Node proxy2) {
         for (Relationship rel : proxy1.getRelationships(relType, Direction.OUTGOING)) {
             if (rel.getEndNode().equals(proxy2)) {
-                return true;
+                return rel;
             }
         }
-        return false;
+        return null;
+    }
+
+    @Override
+    public void updateRelationship(IDataElement serviceElement, IDataElement neighbourElement, Map<String, Object> properties,
+            boolean isReplace) throws DatabaseException {
+        Node serviceNode = ((DataElement)serviceElement).getNode();
+        Node neighbourNode = ((DataElement)neighbourElement).getNode();
+        Node serviceProxy = findProxy(serviceNode);
+        Node neighbourProxy = findProxy(neighbourNode);
+        Relationship rel = related(serviceProxy, neighbourProxy);
+        NeoServiceFactory.getInstance().getNewNetworkService()
+                .completeProperties(rel, new DataElement(properties), isReplace, null);
     }
 
     /**
@@ -203,10 +223,10 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
      * @return the resulting proxy
      * @throws AWEException
      */
-    public Node getProxy(Node sourceNode) throws AWEException {
+    private Node getProxy(Node sourceNode) throws AWEException {
         Node result = findProxy(sourceNode);
         if (result == null) {
-            result = networkServ.createProxy(sourceNode, rootNode);
+            result = networkServ.createProxy(sourceNode, rootNode, this.relType, NodeToNodeTypes.PROXY);
         }
         return result;
     }
@@ -219,7 +239,7 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
      */
     private Node findProxy(Node sourceNode) {
         Node result = null;
-        Relationship rel = sourceNode.getSingleRelationship(N2NRelationships.N2N_REL, Direction.OUTGOING);
+        Relationship rel = sourceNode.getSingleRelationship(this.relType, Direction.OUTGOING);
         if (rel != null) {
             result = rel.getEndNode();
         }
@@ -262,7 +282,7 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
         }
         LOGGER.info("getAllElementsByType(" + elementType.getId() + ")");
 
-        return new DataElementIterable(dsServ.findAllN2NElements(getRootNode(), elementType));
+        return new DataElementIterable(dsServ.findAllN2NElements(getRootNode(), elementType, relType));
     }
 
 }

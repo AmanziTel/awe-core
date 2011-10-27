@@ -1373,6 +1373,6 @@ public class VaultTests {
        		 (int)n4.intValue(), (int)INTEGER_PROPERTY_VALUE_NETWORK_5.intValue());
 
         LOGGER.debug("finish test getMaxValueNotStandartStructureTest()");
-    }
+    }    
 
 }

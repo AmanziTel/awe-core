@@ -77,8 +77,12 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
      * @param propertyValue - String propValue
      * @return Object parseValue
      */
-    protected Object autoParse(String propertyValue) {
+    protected Object autoParse(String propertyName, String propertyValue) {
         try {
+            Object predifinedCheck = checkInPredifined(propertyName, propertyValue);
+            if (predifinedCheck != null) {
+                return predifinedCheck;
+            }
             char separator = '.';
             if (propertyValue.indexOf(separator) != -1) {
                 Float floatValue = Float.parseFloat(propertyValue);
@@ -103,6 +107,36 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
             return propertyValue;
         }
 
+    }
+
+    /**
+     * @param propertyName
+     * @param propertyValue
+     * @return
+     */
+    @SuppressWarnings("static-access")
+    private Object checkInPredifined(String propertyName, String propertyValue) {
+        Object parsedValue = null;
+        if (preferenceManager.predifinedPropertyType.containsKey(propertyName)) {
+            switch (preferenceManager.predifinedPropertyType.get(propertyName)) {
+            case DOUBLE:
+                parsedValue = Double.parseDouble(propertyValue);
+                break;
+            case FLOAT:
+                parsedValue = Float.parseFloat(propertyValue);
+                break;
+            case INTEGER:
+                parsedValue = Integer.parseInt(propertyValue);
+                break;
+            case LONG:
+                parsedValue = Long.parseLong(propertyValue);
+                break;
+            case STRING:
+                parsedValue = propertyValue;
+                break;
+            }
+        }
+        return parsedValue;
     }
 
     protected void createExportSynonymsForModels() {

@@ -25,7 +25,8 @@ import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.model.impl.DataElement;
-import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelationships;
+import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelTypes;
+import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.NodeToNodeTypes;
 import org.amanzi.testing.AbstractAWETest;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -1366,7 +1367,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
         Map<String, Object> valuesMap = new HashMap<String, Object>();
         valuesMap.put(SECOND_PROPERTY, NEW_NAME_VALUE);
         try {
-            networkService.completeProperties(rootNode, new DataElement(valuesMap), false);
+            networkService.completeProperties(rootNode, new DataElement(valuesMap), false, null);
         } catch (DatabaseException e) {
             Assert.fail("End with exception");
             throw (RuntimeException)new RuntimeException().initCause(e);
@@ -1385,7 +1386,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
         valuesMap.put(SECOND_PROPERTY, NEW_NAME_VALUE);
         valuesMap.put(FIRST_PROPERTY, NEW_NAME_VALUE);
         try {
-            networkService.completeProperties(rootNode, new DataElement(valuesMap), true);
+            networkService.completeProperties(rootNode, new DataElement(valuesMap), true, null);
         } catch (DatabaseException e) {
             Assert.fail("End with exception");
             throw (RuntimeException)new RuntimeException().initCause(e);
@@ -1436,7 +1437,8 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 
     /**
      * createProxy(Node sourceNode, Node rootNode), check N2N_REL relation
-     * @throws Exception 
+     * 
+     * @throws Exception
      */
     @Test
     public void checkCreateProxyRelation() throws DatabaseException {
@@ -1445,15 +1447,15 @@ public class NewNetworkServiceTest extends AbstractAWETest {
         Map<String, Object> props = new HashMap<String, Object>();
         props.put(NewAbstractService.NAME, TEST_NAME);
         datasetService.setProperties(sourceNode, props);
+        Node result = networkService.createProxy(sourceNode, rootNode, N2NRelTypes.NEIGHBOUR, NodeToNodeTypes.PROXY);
 
-        Node result = networkService.createProxy(sourceNode, rootNode);
-        
-        assertTrue("No N2N relation", result.hasRelationship(N2NRelationships.N2N_REL, Direction.INCOMING));
+        assertTrue("No N2N relation", result.hasRelationship(N2NRelTypes.NEIGHBOUR, Direction.INCOMING));
     }
 
     /**
      * createProxy(Node sourceNode, Node rootNode), check N2N_REL relation
-     * @throws Exception 
+     * 
+     * @throws Exception
      */
     @Test
     public void checkCreateProxyChildRelation() throws DatabaseException {
@@ -1463,7 +1465,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
         props.put(NewAbstractService.NAME, TEST_NAME);
         datasetService.setProperties(sourceNode, props);
 
-        Node result = networkService.createProxy(sourceNode, rootNode);
+        Node result = networkService.createProxy(sourceNode, rootNode, N2NRelTypes.NEIGHBOUR, NodeToNodeTypes.PROXY);
 
         assertTrue("No CHILD OR NEXT relation", result.hasRelationship(DatasetRelationTypes.CHILD, Direction.INCOMING)
                 || sourceNode.hasRelationship(DatasetRelationTypes.NEXT, Direction.INCOMING));
@@ -1471,7 +1473,8 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 
     /**
      * createProxy(Node sourceNode, Node rootNode), check SOURCE_NAME property
-     * @throws Exception 
+     * 
+     * @throws Exception
      */
     @Test
     public void checkCreateProxyProperty() throws DatabaseException {
@@ -1481,7 +1484,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
         props.put(NewAbstractService.NAME, TEST_NAME);
         datasetService.setProperties(sourceNode, props);
 
-        Node result = networkService.createProxy(sourceNode, rootNode);
+        Node result = networkService.createProxy(sourceNode, rootNode, N2NRelTypes.NEIGHBOUR, NodeToNodeTypes.PROXY);
 
         assertTrue("Proxy node doesn't have " + NewNetworkService.SOURCE_NAME + " property",
                 result.hasProperty(NewNetworkService.SOURCE_NAME));
@@ -1495,14 +1498,14 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     public void checkCreateProxyNullRoot() throws DatabaseException {
         Node sourceNode = getNewNE();
 
-        networkService.createProxy(sourceNode, null);
+        networkService.createProxy(sourceNode, null, N2NRelTypes.NEIGHBOUR, NodeToNodeTypes.PROXY);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void checkCreateProxyNullSource() throws DatabaseException {
         Node rootNode = getNewNE();
 
-        networkService.createProxy(null, rootNode);
+        networkService.createProxy(null, rootNode, N2NRelTypes.NEIGHBOUR, NodeToNodeTypes.PROXY);
     }
 
     /**
