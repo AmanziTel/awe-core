@@ -14,10 +14,14 @@
 package org.amanzi.neo.services.model.impl;
 
 import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.geotools.referencing.CRS;
+import org.neo4j.graphdb.Node;
+import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
@@ -30,22 +34,25 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @since 1.0.0
  */
 public abstract class RenderableModel extends AbstractIndexedModel {
+
+    private static Logger LOGGER = Logger.getLogger(RenderableModel.class);
+
     static final String DESCRIPTION = "description";
 
-    protected static CoordinateReferenceSystem DEFAULT_CRS = DefaultGeographicCRS.WGS84;
+    protected final static String DEFAULT_EPSG = "EPSG:31467";
     /** The field used in geo tools. Assignment not yet implemented.//TODO */
-    protected CoordinateReferenceSystem crs = DEFAULT_CRS;
+    protected CoordinateReferenceSystem crs;
+
+    protected RenderableModel(Node rootNode) throws AWEException {
+        super(rootNode);
+    }
 
     // TODO: make it abstract?
     @Override
-    public Iterable<IDataElement> getChildren(IDataElement parent) {
-        return null;
-    }
+    public abstract Iterable<IDataElement> getChildren(IDataElement parent);
 
     @Override
-    public Iterable<IDataElement> getAllElementsByType(INodeType elementType) {
-        return null;
-    }
+    public abstract Iterable<IDataElement> getAllElementsByType(INodeType elementType);
 
     /**
      * @return A <code>String</code> description for use of geo tools;
@@ -58,6 +65,11 @@ public abstract class RenderableModel extends AbstractIndexedModel {
      * @return An envelope, representing the coordinate bounds for the data in current model.
      */
     public ReferencedEnvelope getBounds() {
+        try {
+            crs = CRS.decode(DEFAULT_EPSG);
+        } catch (NoSuchAuthorityCodeException e) {
+            LOGGER.error("Could not parse epsg.", e);
+        }
         return new ReferencedEnvelope(min_latitude, max_latitude, min_longitude, max_longitude, crs);
     }
 

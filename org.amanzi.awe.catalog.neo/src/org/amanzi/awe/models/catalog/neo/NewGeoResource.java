@@ -54,7 +54,9 @@ public class NewGeoResource extends IGeoResource {
 
     private URL getURL(IService service, IRenderableModel source) {
         try {
-            URL result = new URL(service.getIdentifier() + "#" + ((IDataModel)source).getProject().getName() + File.separator
+            URL result = new URL(service.getIdentifier().toString() +
+                    "#" + 
+                    ((IDataModel)source).getProject().getName() + File.separator
                     + ((IDataModel)source).getName());
             return result;
         } catch (MalformedURLException e) {

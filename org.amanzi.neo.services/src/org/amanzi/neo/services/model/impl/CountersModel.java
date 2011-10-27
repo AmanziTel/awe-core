@@ -40,6 +40,10 @@ public class CountersModel extends AbstractIndexedModel implements ICountersMode
 
     private CorrelationService crServ = NeoServiceFactory.getInstance().getNewCorrelationService();
 
+    protected CountersModel(Node rootNode) throws AWEException {
+        super(rootNode);
+    }
+
     @Override
     public Iterable<ICorrelationModel> getCorrelatedModels() throws AWEException {
         List<ICorrelationModel> result = new ArrayList<ICorrelationModel>();

@@ -88,6 +88,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
      * @param networkRoot
      */
     public NetworkModel(Node networkRoot) throws AWEException {
+        super(networkRoot);
         // validate
         if (networkRoot == null) {
             throw new IllegalArgumentException("Network root is null.");
@@ -116,6 +117,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
      */
     public NetworkModel(IDataElement project, IDataElement network, String name) throws InvalidDatasetParameterException,
             DatasetTypeParameterException, DuplicateNodeNameException, AWEException {
+        super(null);
         // validate
         if (project == null) {
             throw new IllegalArgumentException("Parent is null.");
@@ -622,11 +624,11 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
                 .toString());
         switch (type) {
         case SITE:
-            return new Coordinate((Long)element.get(LATITUDE), (Long)element.get(LONGITUDE));
+            return new Coordinate((Double)element.get(LATITUDE), (Double)element.get(LONGITUDE));
 
         case SECTOR:
             IDataElement site = getParentElement(element);
-            return new Coordinate((Long)site.get(LATITUDE), (Long)site.get(LONGITUDE));
+            return new Coordinate((Double)site.get(LATITUDE), (Double)site.get(LONGITUDE));
         default:
             return null;
         }
@@ -694,7 +696,8 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
      */
     private Set<IDataElement> findSectorsByBsicBcch(Integer bsic, Integer bcch) throws DatabaseException {
         Set<IDataElement> result = new LinkedHashSet<IDataElement>();
-        Iterator<Node> findedNodes = nwServ.findNetworkElementsByIndexName(getIndex(NetworkElementNodeType.SECTOR), "bsic", bsic);
+        Iterator<Node> findedNodes = nwServ.findNetworkElementsByPropertyAndValue(getIndex(NetworkElementNodeType.SECTOR), "bsic",
+                bsic);
         while (findedNodes.hasNext()) {
             Node node = findedNodes.next();
             Integer bcchno = (Integer)node.getProperty("bcchno", null);
