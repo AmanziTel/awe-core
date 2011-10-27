@@ -85,7 +85,7 @@ public class NewDatasetService extends NewAbstractService {
 
     /** <code>TraversalDescription</code> to iterate over n2n related nodes */
     protected final TraversalDescription N2N_TRAVERSAL_DESCRIPTION = Traversal.description().breadthFirst()
-            .evaluator(Evaluators.excludeStartPosition());
+            .evaluator(Evaluators.excludeStartPosition()).evaluator(Evaluators.toDepth(1));
 
     /** <code>TraversalDescription</code> to iterate over n2n related nodes */
     protected final TraversalDescription ALL_N2N_TRAVERSAL_DESCRIPTION = Traversal.description().breadthFirst()
