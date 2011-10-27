@@ -13,7 +13,7 @@
 
 package org.amanzi.neo.model.distribution.impl;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -27,6 +27,8 @@ import org.amanzi.neo.model.distribution.IDistribution.ChartType;
 import org.amanzi.neo.model.distribution.IDistributionalModel;
 import org.amanzi.neo.model.distribution.impl.DistributionManager.DistributionManagerException;
 import org.amanzi.neo.model.distribution.types.impl.EnumeratedDistribution;
+import org.amanzi.neo.model.distribution.types.impl.NumberDistribution;
+import org.amanzi.neo.model.distribution.types.impl.NumberDistributionType;
 import org.amanzi.neo.services.AbstractNeoServiceTest;
 import org.amanzi.neo.services.DistributionService.DistributionNodeTypes;
 import org.amanzi.neo.services.enums.INodeType;
@@ -128,6 +130,39 @@ public class DistributionManagerTest extends AbstractNeoServiceTest {
         assertSame("Distributions should be same", firstDistribution, secondDistribution);
     }
     
+    @Test
+    public void checkSizeOfDistributionsForNumber() throws Exception {
+        IDistributionalModel model = getDistributionalModel(Number.class);
+        
+        List<IDistribution<?>> result = manager.getDistributions(model, DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME, ChartType.getDefault());
+        
+        assertEquals("Unexpected size of Distributions created for Number type", NumberDistributionType.values().length, result.size());
+    }
+
+    @Test
+    public void checkNumberDistributionsType() throws Exception {
+        IDistributionalModel model = getDistributionalModel(Number.class);
+        
+        List<IDistribution<?>> result = manager.getDistributions(model, DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME, ChartType.getDefault());
+        
+        for (IDistribution<?> distribution : result) {
+            assertEquals("Unexpected type of Distribution for Number type", NumberDistribution.class, distribution.getClass());
+        }
+    }
+
+    @Test
+    public void checkCacheForNumberDistribution() throws Exception {
+        IDistributionalModel model = getDistributionalModel(Number.class);
+        
+        List<IDistribution<?>> result = manager.getDistributions(model, DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME, ChartType.getDefault());
+        IDistribution<?> firstDistribution = result.get(0);
+        
+        result = manager.getDistributions(model, DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME, ChartType.getDefault());
+        IDistribution<?> secondDistribution = result.get(0);
+        
+        assertSame("Distributions should be same", firstDistribution, secondDistribution);
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void tryToGetDistributionWithoutModel() throws Exception {
         manager.getDistributions(null, DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME, ChartType.getDefault());

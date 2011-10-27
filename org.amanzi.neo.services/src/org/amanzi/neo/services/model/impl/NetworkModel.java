@@ -195,6 +195,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
             if (subNode != null) {
                 deleteSubElements(childElement);
                 INodeType nodeType = NodeTypeManager.getType(childElement.get(INeoConstants.PROPERTY_TYPE_NAME).toString());
+                childElement.get(INeoConstants.PROPERTY_NAME_NAME);
                 removeProperty(nodeType, (DataElement)childElement);
                 nwServ.deleteOneNode(subNode, getRootNode(), indexMap);
                 finishUp();
