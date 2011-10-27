@@ -13,9 +13,11 @@
 package org.amanzi.awe.views.network.view;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.amanzi.awe.awe.views.view.provider.NewNetworkTreeContentProvider;
@@ -66,8 +68,8 @@ import org.neo4j.graphdb.Transaction;
 
 public class NewNetworkTreeView extends ViewPart {
 
-	private static final String RENAME_MSG = "Enter new Name";
-	
+    private static final String RENAME_MSG = "Enter new Name";
+
     /*
      * ID of this View
      */
@@ -104,21 +106,20 @@ public class NewNetworkTreeView extends ViewPart {
 
         tSearch = new Text(parent, SWT.BORDER);
         viewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
-    
-        
+
         neoServiceProvider = NeoServiceProviderUi.getProvider();
         Transaction tx = neoServiceProvider.getService().beginTx();
         try {
             setProviders(neoServiceProvider);
-            viewer.setInput(getSite());          
+            viewer.setInput(getSite());
             hookContextMenu();
-            getSite().setSelectionProvider(viewer); 
+            getSite().setSelectionProvider(viewer);
         } finally {
             tx.finish();
         }
         setLayout(parent);
     }
-    
+
     /**
      * Creates a popup menu
      */
@@ -135,20 +136,24 @@ public class NewNetworkTreeView extends ViewPart {
         viewer.getControl().setMenu(menu);
         getSite().registerContextMenu(menuMgr, viewer);
     }
-    
+
     private void fillContextMenu(IMenuManager manager) {
         SelectAction select = new SelectAction((IStructuredSelection)viewer.getSelection());
-        if (select.isEnabled()){
-            manager.add(select); 
+        if (select.isEnabled()) {
+            manager.add(select);
         }
         RenameAction reanmeAction = new RenameAction((IStructuredSelection)viewer.getSelection());
         manager.add(reanmeAction);
 
         DeleteAction deleteAction = new DeleteAction((IStructuredSelection)viewer.getSelection());
         manager.add(deleteAction);
-//        createAdditionalAction(manager);
+
+        AddToSelectionListAction addToSelectionListAction = new AddToSelectionListAction(
+                (IStructuredSelection)viewer.getSelection());
+        manager.add(addToSelectionListAction);
+        // createAdditionalAction(manager);
     }
-    
+
     private class SelectAction extends Action {
         private boolean enabled;
         private final String text;
@@ -160,20 +165,18 @@ public class NewNetworkTreeView extends ViewPart {
          * @param selection - selection
          */
         @SuppressWarnings("rawtypes")
-		public SelectAction(IStructuredSelection selection) {
+        public SelectAction(IStructuredSelection selection) {
             Iterator it = selection.iterator();
             while (it.hasNext()) {
                 IDataElement element = (IDataElement)it.next();
-                if (element instanceof INetworkModel){
+                if (element instanceof INetworkModel) {
                     continue;
-                }else{
+                } else {
                     selectedNodes.add(((DataElement)element).getNode());
                 }
             }
-            enabled = selectedNodes.size()>0;
-            text = selectedNodes.size() > 1 ? 
-            		"Show properties" : 
-            			"Show/edit property";
+            enabled = selectedNodes.size() > 0;
+            text = selectedNodes.size() > 1 ? "Show properties" : "Show/edit property";
         }
 
         @Override
@@ -190,17 +193,23 @@ public class NewNetworkTreeView extends ViewPart {
         public void run() {
             try {
                 if (selectedNodes.size() > 1) {
-                    PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView("org.amanzi.awe.views.reuse.views.MessageAndEventTableView");
-                    NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new ShowPreparedViewEvent("org.amanzi.awe.views.reuse.views.MessageAndEventTableView",selectedNodes));
+                    PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
+                            .showView("org.amanzi.awe.views.reuse.views.MessageAndEventTableView");
+                    NeoCorePlugin
+                            .getDefault()
+                            .getUpdateViewManager()
+                            .fireUpdateView(
+                                    new ShowPreparedViewEvent("org.amanzi.awe.views.reuse.views.MessageAndEventTableView",
+                                            selectedNodes));
                 } else {
                     PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IPageLayout.ID_PROP_SHEET);
                 }
             } catch (PartInitException e) {
                 NetworkTreePlugin.error(null, e);
             }
-        }     
+        }
     }
-    
+
     private class RenameAction extends Action {
 
         private boolean enabled;
@@ -215,9 +224,8 @@ public class NewNetworkTreeView extends ViewPart {
          */
         public RenameAction(IStructuredSelection selection) {
             text = "Rename";
-            enabled = selection.size() == 1 && 
-            		selection.getFirstElement() instanceof IDataElement
-            		&& !(selection.getFirstElement() instanceof INetworkModel);
+            enabled = selection.size() == 1 && selection.getFirstElement() instanceof IDataElement
+                    && !(selection.getFirstElement() instanceof INetworkModel);
             if (enabled) {
                 dataElement = (DataElement)selection.getFirstElement();
                 node = dataElement.getNode();
@@ -237,18 +245,17 @@ public class NewNetworkTreeView extends ViewPart {
 
         @Override
         public void run() {
-        	String value = 
-        			getNewName(node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString());
-        	INetworkModel networkModel = (INetworkModel)dataElement.get(INeoConstants.NETWORK_MODEL_NAME);
-        	try {
+            String value = getNewName(node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString());
+            INetworkModel networkModel = (INetworkModel)dataElement.get(INeoConstants.NETWORK_MODEL_NAME);
+            try {
                 networkModel.renameElement(dataElement, value);
             } catch (AWEException e) {
                 // TODO Handle AWEException
-                throw (RuntimeException) new RuntimeException( ).initCause( e );
+                throw (RuntimeException)new RuntimeException().initCause(e);
             }
             viewer.refresh();
         }
-        
+
         /**
          * Opens a dialog asking the user for a new name.
          * 
@@ -262,7 +269,7 @@ public class NewNetworkTreeView extends ViewPart {
             return dialog.getValue();
         }
     }
-    
+
     /**
      * Action to delete all selected nodes and their child nodes in the graph, but not nodes related
      * by other geographic relationships. The result is designed to remove sub-tree's from the tree
@@ -282,16 +289,14 @@ public class NewNetworkTreeView extends ViewPart {
         }
 
         @SuppressWarnings("rawtypes")
-		private DeleteAction(IStructuredSelection selection) {
+        private DeleteAction(IStructuredSelection selection) {
             interactive = true;
             nodesToDelete = new ArrayList<IDataElement>();
             Iterator iterator = selection.iterator();
             HashSet<String> nodeTypes = new HashSet<String>();
             while (iterator.hasNext()) {
                 Object element = iterator.next();
-                if (element != null && 
-                		element instanceof IDataElement && 
-                		!(element instanceof INetworkModel)) {
+                if (element != null && element instanceof IDataElement && !(element instanceof INetworkModel)) {
                     nodesToDelete.add((IDataElement)element);
                     nodeTypes.add(NeoUtils.getNodeType(((DataElement)element).getNode()));
                 }
@@ -335,29 +340,29 @@ public class NewNetworkTreeView extends ViewPart {
                     return;
                 }
             }
- 
+
             // Kasnitskij_V:
             // It's need when user want to delete nodes using bad-way.
             // For example, if we have a structure city->site->sector with values
-            // Dortmund->{AMZ000210, AMZ000234->{A0234, A0236, A0289} 
-            // and user choose to delete nodes Dortmund, AMZ000234, A0236. 
+            // Dortmund->{AMZ000210, AMZ000234->{A0234, A0236, A0289}
+            // and user choose to delete nodes Dortmund, AMZ000234, A0236.
             // We should delete in start A0236, then AMZ000234 and
             // all it remained nodes, and in the end - Dortmund and all it remained nodes
             int countOfNodesToDelete = nodesToDelete.size();
             IDataElement[] nodesToDeleteArray = new IDataElement[countOfNodesToDelete];
             nodesToDelete.toArray(nodesToDeleteArray);
-            
+
             for (int i = countOfNodesToDelete - 1; i >= 0; i--) {
-            	IDataElement dataElement = nodesToDeleteArray[i];
-            	INetworkModel networkModel = (INetworkModel)dataElement.get(INeoConstants.NETWORK_MODEL_NAME);
-            	try {
+                IDataElement dataElement = nodesToDeleteArray[i];
+                INetworkModel networkModel = (INetworkModel)dataElement.get(INeoConstants.NETWORK_MODEL_NAME);
+                try {
                     networkModel.deleteElement(dataElement);
                 } catch (AWEException e) {
                     // TODO Handle AWEException
-                    throw (RuntimeException) new RuntimeException( ).initCause( e );
+                    throw (RuntimeException)new RuntimeException().initCause(e);
                 }
             }
-            
+
             viewer.refresh();
         }
 
@@ -372,7 +377,93 @@ public class NewNetworkTreeView extends ViewPart {
         }
 
     }
-    
+
+    private class AddToSelectionListAction extends Action {
+
+        private final List<IDataElement> nodesToAddToSelectionList;
+        private String text = null;
+        private boolean interactive = false;
+        private String type = null;
+        private Map<String,String> sectorNetwork = new HashMap<String, String>();
+
+        private AddToSelectionListAction(List<IDataElement> nodesToAddToSelectionList, String text) {
+            this.nodesToAddToSelectionList = nodesToAddToSelectionList;
+            this.text = text;
+        }
+
+        @SuppressWarnings("rawtypes")
+        private AddToSelectionListAction(IStructuredSelection selection) {
+            interactive = true;
+            nodesToAddToSelectionList = new ArrayList<IDataElement>();
+            Iterator iterator = selection.iterator();
+            HashSet<String> nodeTypes = new HashSet<String>();
+            while (iterator.hasNext()) {
+                Object element = iterator.next();
+                if (element != null && element instanceof IDataElement && !(element instanceof INetworkModel)) {
+                    nodesToAddToSelectionList.add((IDataElement)element);
+                    nodeTypes.add(NeoUtils.getNodeType(((DataElement)element).getNode()));
+                }
+            }
+            type = nodeTypes.size() == 1 ? nodeTypes.iterator().next() : "node";
+            switch (nodesToAddToSelectionList.size()) {
+            case 0:
+                text = "Select nodes to add";
+                break;
+            case 1:
+                text = "Add to selection list " + type + " '" + nodesToAddToSelectionList.get(0).toString() + "'";
+                break;
+            case 2:
+            case 3:
+            case 4:
+                for (IDataElement dataElement : nodesToAddToSelectionList) {
+                    if (text == null) {
+                        text = "Add to selection list " + type + "s " + dataElement;
+                    } else {
+                        text += ", " + dataElement;
+                    }
+                }
+                break;
+            default:
+                text = "Add to selection list " + nodesToAddToSelectionList.size() + " " + type + "s";
+                break;
+            }            
+        }
+
+        @Override
+        public void run() {
+            if (interactive) {
+                int countOfNodesToAdd = nodesToAddToSelectionList.size();
+                IDataElement[] nodesToAddArray = new IDataElement[countOfNodesToAdd];
+                nodesToAddToSelectionList.toArray(nodesToAddArray);
+                String nameOfNetwork = "";
+                for (int i = countOfNodesToAdd - 1; i >= 0; i--) {
+                    IDataElement dataElement = nodesToAddArray[i];
+                    INetworkModel networkModel = (INetworkModel)dataElement.get(INeoConstants.NETWORK_MODEL_NAME);
+                    nameOfNetwork = networkModel.getName();
+                    sectorNetwork.put(dataElement.toString(), nameOfNetwork);
+                }
+                showAddToSelectionListDialog();
+            }
+        }
+        
+        private void showAddToSelectionListDialog(){
+            
+        }
+
+        @Override
+        public String getText() {
+            return text;
+        }
+
+        @Override
+        public boolean isEnabled() {
+            if(nodesToAddToSelectionList.size() > 0 && type.equals("sector")){
+                return true;
+            }
+            return false;
+        }
+    }
+
     /**
      * @param parent
      */
@@ -421,7 +512,7 @@ public class NewNetworkTreeView extends ViewPart {
     public void setFocus() {
         viewer.getControl().setFocus();
     }
-    
+
     /**
      * Select node
      * 
@@ -432,4 +523,6 @@ public class NewNetworkTreeView extends ViewPart {
         viewer.reveal(new DataElement(node));
         viewer.setSelection(new StructuredSelection(new Object[] {new DataElement(node)}));
     }
+
+   
 }
