@@ -52,7 +52,7 @@ public abstract class NewAbstractService {
     public final static String TYPE = "type";
     public final static String NAME = "name";
     public static final String DATASET_ID = "dataset";
-    public static final String NETWORK_ID = "network";    
+    public static final String NETWORK_ID = "network";
 
     private static Logger LOGGER = Logger.getLogger(NewAbstractService.class);
     /**
@@ -110,7 +110,7 @@ public abstract class NewAbstractService {
         }
         return result;
     }
-    
+
     /**
      * Manage index names for current model.
      * 
@@ -119,9 +119,8 @@ public abstract class NewAbstractService {
      * @return the index name
      * @throws DatabaseException
      */
-    private Index<Node> getIndex(INodeType type, Node rootNode, 
-            Map<INodeType, Index<Node>> indexMap) throws DatabaseException {
-        
+    private Index<Node> getIndex(INodeType type, Node rootNode, Map<INodeType, Index<Node>> indexMap) throws DatabaseException {
+
         Index<Node> result = indexMap.get(type.getId());
         if (result == null) {
             result = getIndex(rootNode, type);
@@ -131,27 +130,26 @@ public abstract class NewAbstractService {
         }
         return result;
     }
-    
+
     /**
      * Method delete node and all sub-nodes if they related with CHILD-relationships
-     *
+     * 
      * @param nodeToDelete Node which need delete
-     * @throws DatabaseException 
-     * @throws InvalidStatisticsParameterException 
+     * @throws DatabaseException
+     * @throws InvalidStatisticsParameterException
      */
     public void deleteOneNode(Node nodeToDelete, Node rootNode, Map<INodeType, Index<Node>> indexMap) throws AWEException {
         LOGGER.debug("start method deleteOneNode(Node nodeToDelete)");
-        
+
         if (nodeToDelete == null) {
             LOGGER.error("InvalidStatisticsParameterException: parameter nodeToDelete = null");
             throw new InvalidStatisticsParameterException("nodeToDelete", nodeToDelete);
         }
-        
+
         Transaction tx = graphDb.beginTx();
         try {
-            Iterable<Relationship> childRelationships = 
-                    nodeToDelete.getRelationships(Direction.OUTGOING);
-            
+            Iterable<Relationship> childRelationships = nodeToDelete.getRelationships(Direction.OUTGOING);
+
             for (Relationship rel : childRelationships) {
                 Node childNode = rel.getEndNode();
                 if (childNode != null) {
@@ -344,12 +342,35 @@ public abstract class NewAbstractService {
         }
         return index;
     }
-    
+
+    /**
+     * Adds <code>node</code> to <code> indexName</code>. Does not validate arguments.
+     * 
+     * @param node
+     * @param indexName
+     * @param propertyName
+     * @param propertyValue
+     * @throws DatabaseException if something went wrong
+     */
+    public Index<Node> removeNodeFromIndex(Node node, Index<Node> index, String propertyName, Object propertyValue)
+            throws DatabaseException {
+        Transaction tx = graphDb.beginTx();
+        try {
+            index.remove(node, propertyName, propertyValue);
+            tx.success();
+        } catch (Exception e) {
+            LOGGER.error("Could not index node", e);
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
+        return index;
+    }
+
     private void removeIndexFromNode(Node node, Node rootNode, Map<INodeType, Index<Node>> indexMap) throws DatabaseException {
         Transaction tx = graphDb.beginTx();
         try {
-            INodeType nodeType = NodeTypeManager.
-                    getType(node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).toString());
+            INodeType nodeType = NodeTypeManager.getType(node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).toString());
             Index<Node> index = getIndex(nodeType, rootNode, indexMap);
             index.remove(node, NAME, node.getProperty(INeoConstants.PROPERTY_NAME_NAME));
             tx.success();

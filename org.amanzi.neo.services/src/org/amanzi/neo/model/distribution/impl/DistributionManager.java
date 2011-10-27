@@ -33,7 +33,7 @@ import org.apache.log4j.Logger;
  * @author lagutko_n
  * @since 1.0.0
  */
-public class DistributionManager {
+public class DistributionManager  {
     
     /**
      * Exception on Creating Distribution

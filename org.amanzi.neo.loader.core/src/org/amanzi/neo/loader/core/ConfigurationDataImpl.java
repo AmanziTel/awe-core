@@ -62,8 +62,10 @@ public class ConfigurationDataImpl implements IConfiguration {
     @Override
     public List<File> getFilesToLoad() {
         List<File> fileList = new LinkedList<File>();
-        for (File file : sourceFile) {
-            fileList.addAll(getRootsFiles(file));
+        if (sourceFile != null) {
+            for (File file : sourceFile) {
+                fileList.addAll(getRootsFiles(file));
+            }
         }
         return fileList;
     }

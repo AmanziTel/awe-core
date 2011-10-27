@@ -18,7 +18,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.amanzi.neo.services.CorrelationService.CorrelationNodeTypes;
 import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
@@ -26,12 +25,13 @@ import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.model.impl.DataElement;
-import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelationships;
+import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelTypes;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
@@ -53,17 +53,12 @@ public class NewNetworkService extends NewAbstractService {
 
     public final static String CELL_INDEX = "ci";
     public final static String LOCATION_AREA_CODE = "lac";
+    public final static String BSIC = "bsic";
 
     public final static String SELECTION_RELATIONSHIP_INDEX = "selection_relationship";
 
     public final static String SELECTED_NODES_COUNT = "selected_nodes_count";
-
-
-    /*
-     * name of proxy node's property that contains source node name
-     */
-    public static final String SOURCE_NAME = "source_name";
-
+    public final static String SOURCE_NAME = "source name";
     /*
      * name of property that contains array with network structure
      */
@@ -105,27 +100,6 @@ public class NewNetworkService extends NewAbstractService {
         SELECTION_LIST, SELECTED, TRXGROUP, CHANNEL, TRX;
     }
 
-    /**
-     * <p>
-     * Types of nodes that are used inside of <code>NodeToNodeRelationshipModel</code> class.
-     * </p>
-     * 
-     * @author grigoreva_a
-     * @since 1.0.0
-     */
-    public enum NodeToNodeTypes implements INodeType {
-        NODE2NODE, PROXY;
-
-        static {
-            NodeTypeManager.registerNodeType(CorrelationNodeTypes.class);
-        }
-
-        @Override
-        public String getId() {
-            return name().toLowerCase();
-        }
-    }
-
     /*
      * Traversal Description to find out all Selection List Nodes
      */
@@ -136,7 +110,10 @@ public class NewNetworkService extends NewAbstractService {
      * Traversal Description to find all node2node relationship root nodes
      */
     protected final static TraversalDescription N2N_ROOT_TRAVERSER = Traversal.description().breadthFirst()
-            .relationships(N2NRelationships.N2N_REL, Direction.OUTGOING).evaluator(Evaluators.excludeStartPosition());
+            .relationships(N2NRelTypes.NEIGHBOUR, Direction.OUTGOING)
+            .relationships(N2NRelTypes.INTERFERENCE_MATRIX, Direction.OUTGOING)
+            .relationships(N2NRelTypes.SHADOW, Direction.OUTGOING).relationships(N2NRelTypes.TRIANGULATION, Direction.OUTGOING)
+            .evaluator(Evaluators.excludeStartPosition());
 
     public NewNetworkService() {
         super();
@@ -188,6 +165,21 @@ public class NewNetworkService extends NewAbstractService {
         return result;
     }
 
+    public Iterator<Node> findNetworkElementsByIndexName(Index<Node> index, String parameterName, Object parameterValue) {
+        LOGGER.debug("start findNetworkElement(String indexName, String name)");
+        // validate parameters
+        if (index == null) {
+            throw new IllegalArgumentException("Index is null.");
+        }
+        if ((parameterName == null) || (parameterName.equals(StringUtils.EMPTY))) {
+            throw new IllegalArgumentException("Name cannot be empty");
+        }
+        if ((parameterValue == null) || (parameterValue.equals(StringUtils.EMPTY))) {
+            throw new IllegalArgumentException("Value cannot be empty");
+        }
+        return index.get(parameterName, parameterValue).iterator();
+    }
+
     /**
      * Looks for a network element in <code>indexName</code> by <code>name</code>, or creates a new
      * network element and attaches it to <code>parent</code> node, and adds to index
@@ -209,6 +201,17 @@ public class NewNetworkService extends NewAbstractService {
         return result;
     }
 
+    public int getBsicProperty(Map<String, Object> element) {
+        String bcc = element.get("bcc") != null ? element.get("bcc").toString() : StringUtils.EMPTY;
+        boolean notEmptyBcc = StringUtils.isNotEmpty(bcc);
+        String ncc = element.get("ncc") != null ? element.get("ncc").toString() : StringUtils.EMPTY;
+        boolean notEmptyNcc = StringUtils.isNotEmpty(ncc);
+        int bccInt = notEmptyBcc ? Integer.valueOf(bcc) : 0;
+        int nccint = notEmptyNcc ? Integer.valueOf(ncc) : 0;
+        int bsic = nccint * 10 + bccInt;
+        return bsic;
+    }
+
     /**
      * Creates a sector node with specified parameters, attaches it with CHILD relationship to
      * <code>parent</code>, sets its properties, and adds it to index
@@ -222,6 +225,9 @@ public class NewNetworkService extends NewAbstractService {
      */
     public Node createSector(Node parent, Index<Node> index, String name, String ci, String lac) throws IllegalNodeDataException,
             DatabaseException {
+        // if (bsic == null) {
+        // bsic = 0;
+        // }
         LOGGER.debug("start createSector(Node parent, String indexName, String name, String ci, String lac)");
 
         // validate parameters
@@ -260,6 +266,35 @@ public class NewNetworkService extends NewAbstractService {
                 result.setProperty(LOCATION_AREA_CODE, lac);
                 addNodeToIndex(result, index, LOCATION_AREA_CODE, lac);
             }
+            tx.success();
+        } finally {
+            tx.finish();
+        }
+        return result;
+
+    }
+
+    /**
+     * Creates a sector node with specified parameters, attaches it with CHILD relationship to
+     * <code>parent</code>, sets its properties, and adds it to index
+     * 
+     * @param parent
+     * @param indexName
+     * @param name the value of NAME property
+     * @param ci the value of CELL_INDEX property
+     * @param lac the value of LOCATION_AREA_CODE property
+     * @param bsic unrequired parameter that represent index sector by bsic value if bsic value is
+     *        <code>NULL</code> sector will be indexed with 0 value
+     * @return the newly created sector node
+     */
+    public Node createSector(Node parent, Index<Node> index, String name, String ci, String lac, int bsic)
+            throws IllegalNodeDataException, DatabaseException {
+        LOGGER.debug("start createSector(Node parent, String indexName, String name, String ci, String lac,int bsic)");
+        Transaction tx = graphDb.beginTx();
+        Node result;
+        try {
+            result = createSector(parent, index, name, ci, lac);
+            addNodeToIndex(result, index, BSIC, bsic);
             tx.success();
         } finally {
             tx.finish();
@@ -340,8 +375,7 @@ public class NewNetworkService extends NewAbstractService {
             throw new IllegalArgumentException("Parent is null.");
         }
         if (elementType == null) {
-            // return all network elements
-            return CHILD_ELEMENT_TRAVERSAL_DESCRIPTION.evaluator(Evaluators.excludeStartPosition()).traverse(parent).nodes();
+            throw new IllegalArgumentException("Element type is null.");
         }
 
         return CHILD_ELEMENT_TRAVERSAL_DESCRIPTION.evaluator(new FilterNodesByType(elementType)).traverse(parent).nodes();
@@ -540,10 +574,15 @@ public class NewNetworkService extends NewAbstractService {
      * @param existedNode
      * @param dataElement
      * @param isReplaceExisted
+     * @param index
      * @throws DatabaseException
      */
-    public void completeProperties(Node existedNode, DataElement dataElement, boolean isReplaceExisted) throws DatabaseException {
+    public void completeProperties(PropertyContainer existedNode, DataElement dataElement, boolean isReplaceExisted,
+            Index<Node> index) throws DatabaseException {
         Transaction tx = graphDb.beginTx();
+        if (existedNode instanceof Node && index != null) {
+            removeNodeFromIndex((Node)existedNode, index, NAME, existedNode.getProperty(NAME));
+        }
         try {
             LOGGER.debug("Start completing properties in " + existedNode);
             for (String mapKey : dataElement.keySet()) {
@@ -554,6 +593,15 @@ public class NewNetworkService extends NewAbstractService {
                 }
             }
             LOGGER.debug("END completing properties in " + existedNode);
+            if (existedNode instanceof Node && index != null) {
+                if (existedNode.getProperty(TYPE).equals(NetworkElementNodeType.SECTOR.getId())) {
+                    int bsic = getBsicProperty(dataElement);
+                    if (bsic != 0) {
+                        addNodeToIndex((Node)existedNode, index, BSIC, getBsicProperty(dataElement));
+                    }
+                }
+                addNodeToIndex((Node)existedNode, index, NAME, existedNode.getProperty(NAME));
+            }
             tx.success();
         } catch (Exception e) {
             tx.failure();
@@ -673,7 +721,7 @@ public class NewNetworkService extends NewAbstractService {
         LOGGER.debug("finish setNetworkStructure()");
     }
 
-    public Node createProxy(Node sourceNode, Node rootNode) throws DatabaseException {
+    public Node createProxy(Node sourceNode, Node rootNode, RelationshipType rel, INodeType type) throws DatabaseException {
         LOGGER.debug("start createProxy(Node sourceNode)");
 
         if (sourceNode == null) {
@@ -686,7 +734,7 @@ public class NewNetworkService extends NewAbstractService {
         }
         Transaction tx = graphDb.beginTx();
         try {
-            Node result = datasetService.createNode(sourceNode, N2NRelationships.N2N_REL, NodeToNodeTypes.PROXY);
+            Node result = datasetService.createNode(sourceNode, rel, type);
             datasetService.addChild(rootNode, result, null);
             Map<String, Object> properties = new HashMap<String, Object>();
             properties.put(SOURCE_NAME, sourceNode.getProperty(NewAbstractService.NAME));

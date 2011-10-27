@@ -16,6 +16,7 @@ package org.amanzi.awe.render.network;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import java.io.IOException;
 
@@ -50,10 +51,16 @@ import com.vividsolutions.jts.geom.Envelope;
  * @since 1.0.0
  */
 public class AbstractRenderer extends RendererImpl {
-    
-    public static class RenderOptions{
-        public static Scale scale = Scale.MEDIUM;
-        
+
+    public static class RenderOptions {
+        public static Scale scale = Scale.LARGE;
+        public static int alpha = (int)(0.6 * 255.0);
+        public static int large_sector_size = 30;
+        public static int site_size = 10;
+        public static Color border = Color.BLACK;
+        public static Color site_fill = new Color(100, 100, 100, alpha);
+        public static Color sector_fill = new Color(255, 255, 100, alpha);
+        public static boolean antialiazing = true;
     }
 
     protected enum Scale {
@@ -101,6 +108,9 @@ public class AbstractRenderer extends RendererImpl {
             Envelope bounds_transformed = getTransformedBounds();
             Envelope data_bounds = model.getBounds();
 
+            destination.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            destination.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+
             // TODO: selection
 
             for (IDataElement element : model.getElements(data_bounds)) {
@@ -119,7 +129,7 @@ public class AbstractRenderer extends RendererImpl {
                 }
 
                 java.awt.Point p = getContext().worldToPixel(world_location);
-                
+
                 renderElement(destination, p, element);
             }
 

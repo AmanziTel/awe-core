@@ -167,9 +167,10 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
      *        will replaced with new
      * @return
      * @throws DatabaseException
+     * @throws AWEException 
      */
     public IDataElement completeProperties(IDataElement existedElement, Map<String, Object> newPropertySet, boolean isReplaceExisted)
-            throws DatabaseException;
+            throws DatabaseException, AWEException;
 
     /**
      * Create a new network element based on <code>IDataElement element</code> object. MUST set NAME
@@ -191,11 +192,32 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
      * @throws AWEException
      */
     public void createRelationship(IDataElement parent, IDataElement child, RelationshipType rel) throws AWEException;
-    
+
     /**
      * Method return current structure of network
-     *
+     * 
      * @return Current structure of network
      */
     public List<INodeType> getNetworkStructure();
+
+    /**
+     * find closest to <code>servSector</code>sector by <code>bsic</code> and <code>bcch</code>
+     * 
+     * @param servSector
+     * @param bsic
+     * @param arfcn
+     * @return
+     * @throws DatabaseException 
+     */
+    public IDataElement getClosestSector(IDataElement servSector, Integer bsic, Integer arfcn) throws DatabaseException;
+
+    /**
+     * get sequence of nodes which link to <code>parent</code> by OUTGOING <code>relType</code>
+     * relationShip
+     * 
+     * @param parent
+     * @param reltype
+     * @return
+     */
+    public Iterable<IDataElement> getRelatedNodes(IDataElement parent, RelationshipType reltype);
 }

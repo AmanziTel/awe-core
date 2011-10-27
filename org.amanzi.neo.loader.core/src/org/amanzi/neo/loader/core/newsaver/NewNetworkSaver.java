@@ -98,7 +98,7 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
         }
 
         mscProperty.put(INeoConstants.PROPERTY_TYPE_NAME, NetworkElementNodeType.MSC.getId());
-        mscProperty.put(INeoConstants.PROPERTY_NAME_NAME, autoParse(row.get(columnSynonyms.get(fileSynonyms.get(MSC)))));
+        mscProperty.put(INeoConstants.PROPERTY_NAME_NAME, row.get(columnSynonyms.get(fileSynonyms.get(MSC))));
 
         IDataElement findedElement;
         findedElement = model.findElement(mscProperty);
@@ -131,7 +131,7 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
             return;
         }
         bscProperty.put(INeoConstants.PROPERTY_TYPE_NAME, NetworkElementNodeType.BSC.getId());
-        bscProperty.put(INeoConstants.PROPERTY_NAME_NAME, autoParse(row.get(columnSynonyms.get(fileSynonyms.get(BSC)))));
+        bscProperty.put(INeoConstants.PROPERTY_NAME_NAME, row.get(columnSynonyms.get(fileSynonyms.get(BSC))));
         IDataElement findedElement;
         findedElement = model.findElement(bscProperty);
 
@@ -174,7 +174,7 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
         Map<String, Object> cityPropMap = new HashMap<String, Object>();
 
         cityPropMap.put(INeoConstants.PROPERTY_TYPE_NAME, NetworkElementNodeType.CITY.getId());
-        cityPropMap.put(INeoConstants.PROPERTY_NAME_NAME, autoParse(row.get(columnSynonyms.get(fileSynonyms.get(CITY)))));
+        cityPropMap.put(INeoConstants.PROPERTY_NAME_NAME, row.get(columnSynonyms.get(fileSynonyms.get(CITY))));
 
         IDataElement findedElement;
         findedElement = model.findElement(cityPropMap);
@@ -213,16 +213,21 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
 
         Map<String, Object> siteMap = new HashMap<String, Object>();
         siteMap.put(INeoConstants.PROPERTY_TYPE_NAME, NetworkElementNodeType.SITE.getId());
-        siteMap.put(INeoConstants.PROPERTY_LON_NAME,
-                autoParse(row.get(columnSynonyms.get(fileSynonyms.get(INeoConstants.PROPERTY_LON_NAME)))));
-        siteMap.put(INeoConstants.PROPERTY_LAT_NAME,
-                autoParse(row.get(columnSynonyms.get(fileSynonyms.get(INeoConstants.PROPERTY_LAT_NAME)))));
+        siteMap.put(
+                INeoConstants.PROPERTY_LON_NAME,
+                autoParse(INeoConstants.PROPERTY_LON_NAME,
+                        row.get(columnSynonyms.get(fileSynonyms.get(INeoConstants.PROPERTY_LON_NAME)))));
+        siteMap.put(
+                INeoConstants.PROPERTY_LAT_NAME,
+                autoParse(INeoConstants.PROPERTY_LAT_NAME,
+                        row.get(columnSynonyms.get(fileSynonyms.get(INeoConstants.PROPERTY_LAT_NAME)))));
         String siteName;
         if (fileSynonyms.get(SITE) == null || row.get(columnSynonyms.get(fileSynonyms.get(SITE))).equals(StringUtils.EMPTY)) {
             if (fileSynonyms.get(SECTOR) != null
                     && !row.get(columnSynonyms.get(fileSynonyms.get(SECTOR))).equals(StringUtils.EMPTY)) {
                 siteName = row.get(columnSynonyms.get(fileSynonyms.get(SECTOR)));
-                siteMap.put(INeoConstants.PROPERTY_NAME_NAME, autoParse(siteName.substring(0, siteName.length() - 1)));
+                siteMap.put(INeoConstants.PROPERTY_NAME_NAME,
+                        autoParse(INeoConstants.PROPERTY_NAME_NAME, siteName.substring(0, siteName.length() - 1)));
             } else {
                 LOGGER.info("Missing site name based on SectorName on line:" + lineCounter);
                 return;
@@ -230,7 +235,7 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
 
         } else {
             siteName = headers.get(getHeaderId((fileSynonyms.get(SITE))));
-            siteMap.put(INeoConstants.PROPERTY_NAME_NAME, autoParse(row.get(columnSynonyms.get(fileSynonyms.get(SITE)))));
+            siteMap.put(INeoConstants.PROPERTY_NAME_NAME, row.get(columnSynonyms.get(fileSynonyms.get(SITE))));
             row.set(columnSynonyms.get(fileSynonyms.get(SITE)), null);
         }
 
@@ -270,7 +275,7 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
         for (String head : headers) {
             if (row.get(columnSynonyms.get(head)) != null && !StringUtils.isEmpty(row.get(columnSynonyms.get(head)))
                     && head != fileSynonyms.get(SECTOR)) {
-                sectorMap.put(head.toLowerCase(), autoParse(row.get(columnSynonyms.get(head))));
+                sectorMap.put(head.toLowerCase(), autoParse(head.toLowerCase(), row.get(columnSynonyms.get(head))));
                 if (fileSynonyms.containsValue(head)) {
                     for (String key : fileSynonyms.keySet()) {
                         if (head.equals(fileSynonyms.get(key))) {
@@ -286,8 +291,8 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
         String ci = sectorMap.containsKey("ci") ? sectorMap.get("ci").toString() : "";
         String lac = sectorMap.containsKey("lac") ? sectorMap.get("lac").toString() : "";
         if ((ci == null || StringUtils.isEmpty(ci)) && (lac == null || StringUtils.isEmpty(lac))
-                || (sectorName == null || StringUtils.isEmpty(sectorName))) {
-            LOGGER.info("Sector haven't Name or CI + LAC properties on line: " + lineCounter);
+                && (sectorName == null || StringUtils.isEmpty(sectorName))) {
+            LOGGER.info("Sector should have Name or CI + LAC properties on line: " + lineCounter);
             return;
         }
         if (fileSynonyms.containsKey(SECTOR)) {

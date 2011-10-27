@@ -15,12 +15,16 @@ package org.amanzi.neo.services.model.impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.amanzi.neo.model.distribution.IDistribution;
 import org.amanzi.neo.model.distribution.IDistributionModel;
+import org.amanzi.neo.model.distribution.impl.DistributionModel;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewAbstractService;
@@ -44,8 +48,10 @@ import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
 import org.amanzi.neo.services.model.INodeToNodeRelationsType;
 import org.amanzi.neo.services.model.ISelectionModel;
 import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelTypes;
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
@@ -136,13 +142,13 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         initializeMultiPropertyIndexing();
         initializeNetworkStructure();
     }
-    
+
     /**
      * Initializes Network Structure from Node
      */
     private void initializeNetworkStructure() {
         String[] networkStructure = (String[])rootNode.getProperty(NewNetworkService.NETWORK_STRUCTURE, null);
-        
+
         currentNetworkStructure = new LinkedList<INodeType>();
         if (networkStructure != null) {
             for (String nodeType : networkStructure) {
@@ -178,7 +184,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         removeProperty(nodeType, (DataElement)elementToDelete);
         nwServ.deleteOneNode(((DataElement)elementToDelete).getNode(), getRootNode(), indexMap);
         elementToDelete = null;
-
+        finishUp();
     }
 
     /**
@@ -193,17 +199,23 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
             if (subNode != null) {
                 deleteSubElements(childElement);
                 INodeType nodeType = NodeTypeManager.getType(childElement.get(INeoConstants.PROPERTY_TYPE_NAME).toString());
+                childElement.get(INeoConstants.PROPERTY_NAME_NAME);
                 removeProperty(nodeType, (DataElement)childElement);
                 nwServ.deleteOneNode(subNode, getRootNode(), indexMap);
+                finishUp();
             }
         }
     }
 
     @Override
     public void renameElement(IDataElement elementToRename, String newName) throws AWEException {
+        String oldName = elementToRename.get(INeoConstants.PROPERTY_NAME_NAME).toString();
         elementToRename.put(INeoConstants.PROPERTY_NAME_NAME, newName);
         Node node = ((DataElement)elementToRename).getNode();
         nwServ.setNameProperty(node, newName);
+        INodeType nodeType = NodeTypeManager.getType(elementToRename.get(INeoConstants.PROPERTY_TYPE_NAME).toString());
+        renameProperty(nodeType, INeoConstants.PROPERTY_NAME_NAME, oldName, newName);
+        finishUp();
     }
 
     // find element
@@ -342,13 +354,6 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     }
 
     @Override
-    public Iterable<INodeToNodeRelationsModel> getNodeToNodeModels() throws AWEException {
-        LOGGER.info("getNodeToNodeModels()");
-
-        return getNodeToNodeModels(null);
-    }
-    
-    @Override
     public Iterable<IDataElement> getChildren(IDataElement parent) {
         // validate
         if (parent == null) {
@@ -362,6 +367,22 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         }
 
         return new DataElementIterable(dsServ.getChildrenTraverser(parentNode));
+    }
+
+    @Override
+    public Iterable<IDataElement> getRelatedNodes(IDataElement parent, RelationshipType reltype) {
+        // validate
+        if (parent == null) {
+            parent = new DataElement(getRootNode());
+        }
+        LOGGER.info("getFirstRelatedNode(" + parent.toString() + "," + reltype.name() + ")");
+
+        Node parentNode = ((DataElement)parent).getNode();
+        if (parentNode == null) {
+            throw new IllegalArgumentException("Parent node is null.");
+        }
+
+        return new DataElementIterable(dsServ.getFirstRelationTraverser(parentNode, reltype, Direction.OUTGOING));
     }
 
     /**
@@ -437,10 +458,13 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
 
     @Override
     public IDataElement completeProperties(IDataElement existedElement, Map<String, Object> newPropertySet, boolean isReplaceExisted)
-            throws DatabaseException {
+            throws AWEException {
         Node existedNode;
         existedNode = ((DataElement)existedElement).getNode();
-        nwServ.completeProperties(existedNode, new DataElement(newPropertySet), isReplaceExisted);
+        INodeType nodeType = NodeTypeManager.getType(existedElement.get(INeoConstants.PROPERTY_TYPE_NAME).toString());
+        nwServ.completeProperties(existedNode, new DataElement(newPropertySet), isReplaceExisted, getIndex(nodeType));
+        nwServ.setProperties(existedNode, newPropertySet);
+        indexProperty(nodeType, newPropertySet);
         return new DataElement(existedNode);
     }
 
@@ -452,10 +476,10 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         childNode = ((DataElement)child).getNode();
         nwServ.createRelationship(parentNode, childNode, rel);
     }
-    
+
     /**
      * Method to dynamically change of network structure
-     *
+     * 
      * @param parentType Parent type in string format
      * @param childType Child type in string format
      */
@@ -464,31 +488,28 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
          * if current structure not contains parent type and not contains child type, then add
          * parent and child in end of structure
          */
-        if (!currentNetworkStructure.contains(parentType) &&
-                !currentNetworkStructure.contains(childType)) {
+        if (!currentNetworkStructure.contains(parentType) && !currentNetworkStructure.contains(childType)) {
             currentNetworkStructure.add(parentType);
             currentNetworkStructure.add(childType);
         }
         /**
-         * if current structure not contains parent type and contains child type,
-         * then add parent at index indexOf(child)
+         * if current structure not contains parent type and contains child type, then add parent at
+         * index indexOf(child)
          */
-        else if (!currentNetworkStructure.contains(parentType) &&
-                currentNetworkStructure.contains(childType)) {
+        else if (!currentNetworkStructure.contains(parentType) && currentNetworkStructure.contains(childType)) {
             int indexOfChild = currentNetworkStructure.indexOf(childType);
             currentNetworkStructure.add(indexOfChild, parentType);
         }
         /**
-         * if current structure contains parent type and not contains child type,
-         * then add child at index indexOf(parent)+1
+         * if current structure contains parent type and not contains child type, then add child at
+         * index indexOf(parent)+1
          */
-        else if (currentNetworkStructure.contains(parentType) &&
-                !currentNetworkStructure.contains(childType)) {
+        else if (currentNetworkStructure.contains(parentType) && !currentNetworkStructure.contains(childType)) {
             int indexOfParent = currentNetworkStructure.indexOf(parentType);
             currentNetworkStructure.add(indexOfParent + 1, childType);
         }
     }
-    
+
     @Override
     public List<INodeType> getNetworkStructure() {
         return currentNetworkStructure;
@@ -507,11 +528,11 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         if (element == null) {
             throw new IllegalArgumentException("Parameters map is null.");
         }
-        
+
         INodeType parentType = NodeTypeManager.getType(parent.get(NewAbstractService.TYPE).toString());
         INodeType type = NodeTypeManager.getType(element.get(NewAbstractService.TYPE).toString());
         changeNetworkStructure(parentType, type);
-        
+
         Node node = null;
 
         // TODO:validate network structure and save it in root node
@@ -519,11 +540,18 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         if (type != null) {
 
             if (type.equals(NetworkElementNodeType.SECTOR)) {
+                Integer bsic = nwServ.getBsicProperty(element);
+
                 Object elName = element.get(NewAbstractService.NAME);
                 Object elCI = element.get(NewNetworkService.CELL_INDEX);
                 Object elLAC = element.get(NewNetworkService.LOCATION_AREA_CODE);
-                node = nwServ.createSector(parentNode, getIndex(type), elName == null ? null : elName.toString(), elCI == null
-                        ? null : elCI.toString(), elLAC == null ? null : elLAC.toString());
+                if (bsic == 0) {
+                    node = nwServ.createSector(parentNode, getIndex(type), elName == null ? null : elName.toString(), elCI == null
+                            ? null : elCI.toString(), elLAC == null ? null : elLAC.toString());
+                } else {
+                    node = nwServ.createSector(parentNode, getIndex(type), elName == null ? null : elName.toString(), elCI == null
+                            ? null : elCI.toString(), elLAC == null ? null : elLAC.toString(), bsic);
+                }
             } else {
                 node = nwServ.createNetworkElement(parentNode, getIndex(type), element.get(NewAbstractService.NAME).toString(),
                         type, reltype);
@@ -533,21 +561,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         indexProperty(type, element);
         indexNode(node);
 
-        updateLocationBounds(element);
-
         return node == null ? null : new DataElement(node);
-    }
-
-    /**
-     * @param element
-     */
-    private void updateLocationBounds(Map<String, Object> element) {
-        Integer lat = (Integer)element.get(LATITUDE);
-        Integer lon = (Integer)element.get(LONGITUDE);
-        if (lat == null || lon == null) {
-            return;
-        }
-        updateLocationBounds(lat, lon);
     }
 
     @Override
@@ -591,13 +605,12 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     }
 
     @Override
-    public IDistributionModel getDistributionModel(IDistribution<?> distributionType) {
-        return null;
+    public IDistributionModel getDistributionModel(IDistribution< ? > distributionType) throws AWEException {
+        return new DistributionModel(this, distributionType);
     }
 
     public Iterable<IDataElement> getElements(Envelope bounds_transformed) {
-        // currently return all elements
-        return new DataElementIterable(nwServ.findAllNetworkElements(rootNode, null));
+        return null;
     }
 
     @Override
@@ -619,6 +632,86 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         default:
             return null;
         }
+    }
+
+    /**
+     * return closest to servSector element
+     */
+    @Override
+    public IDataElement getClosestSector(IDataElement servSector, Integer bsic, Integer bcch) throws DatabaseException {
+        Set<IDataElement> nodes = findSectorsByBsicBcch(bsic, bcch);
+        return getClosestNode(servSector, nodes, 30000);
+    }
+
+    /**
+     * return closest to serviceSector nodes
+     * 
+     * @param servSector
+     * @param nodes
+     * @param i
+     * @return
+     */
+    private IDataElement getClosestNode(IDataElement servSector, Set<IDataElement> candidates, int maxDistance) {
+        Coordinate c = getCoordinate(servSector);
+        CoordinateReferenceSystem crs = getCRS();
+        if (c == null || crs == null) {
+            return null;
+        }
+        Double dist = null;
+        IDataElement candidateNode = null;
+        for (IDataElement candidate : candidates) {
+            if (servSector.equals(candidate)) {
+                continue;
+            }
+            Coordinate c1 = getCoordinate(candidate);
+            if (c1 == null) {
+                continue;
+            }
+            double distance;
+            try {
+                distance = JTS.orthodromicDistance(c, c1, crs);
+            } catch (Exception e) {
+                e.printStackTrace();
+                distance = Math.sqrt(Math.pow(c.x - c1.x, 2) + Math.pow(c.y - c1.y, 2));
+
+            }
+            if (distance > maxDistance) {
+                continue;
+            }
+            if (candidateNode == null || distance < dist) {
+                dist = distance;
+                candidateNode = candidate;
+            }
+        }
+        return candidateNode;
+    }
+
+    /**
+     * find sectors by required bsic and bcch value
+     * 
+     * @param bsic
+     * @param bcch
+     * @return
+     * @throws DatabaseException
+     */
+    private Set<IDataElement> findSectorsByBsicBcch(Integer bsic, Integer bcch) throws DatabaseException {
+        Set<IDataElement> result = new LinkedHashSet<IDataElement>();
+        Iterator<Node> findedNodes = nwServ.findNetworkElementsByIndexName(getIndex(NetworkElementNodeType.SECTOR), "bsic", bsic);
+        while (findedNodes.hasNext()) {
+            Node node = findedNodes.next();
+            Integer bcchno = (Integer)node.getProperty("bcchno", null);
+            if (ObjectUtils.equals(bcch, bcchno)) {
+                result.add(new DataElement(node));
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public Iterable<INodeToNodeRelationsModel> getNodeToNodeModels() throws AWEException {
+        LOGGER.info("getNodeToNodeModels()");
+
+        return getNodeToNodeModels(null);
     }
 
 }

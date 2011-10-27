@@ -193,7 +193,7 @@ public class EnumeratedDistributionTest extends AbstractNeoServiceTest {
             
             when(node.hasProperty(DistributionService.TYPE)).thenReturn(true);
             when(node.hasProperty(DEFAULT_PROPERTY_NAME)).thenReturn(true);
-            when(node.getProperty(DistributionService.TYPE)).thenReturn(DEFAULT_NODE_TYPE.getId());
+            when(node.getProperty(DistributionService.TYPE, StringUtils.EMPTY)).thenReturn(DEFAULT_NODE_TYPE.getId());
             when(node.getProperty(DEFAULT_PROPERTY_NAME)).thenReturn(DEFAULT_PROPERTY_NAMES[i]);
             
             result.add(new DataElement(node));

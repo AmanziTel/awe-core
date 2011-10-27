@@ -116,11 +116,11 @@ public class NodeToNodeRelationsView extends ViewPart {
         createLabel(child, "Data");
         cbNetwork = new Combo(child, SWT.DROP_DOWN | SWT.READ_ONLY);
 
-        cbNetwork.setLayoutData(createLayoutData(70));
+        cbNetwork.setLayoutData(createLayoutData(100));
 
         createLabel(child, "N2N Type");
         cbN2NType = new Combo(child, SWT.DROP_DOWN | SWT.READ_ONLY);
-        cbN2NType.setLayoutData(createLayoutData(70));
+        cbN2NType.setLayoutData(createLayoutData(100));
 
         // layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
         // layoutData.minimumWidth = 150;
@@ -128,7 +128,7 @@ public class NodeToNodeRelationsView extends ViewPart {
 
         createLabel(child, "N2N Name");
         cbN2NName = new Combo(child, SWT.DROP_DOWN | SWT.READ_ONLY);
-        cbN2NName.setLayoutData(createLayoutData(70));
+        cbN2NName.setLayoutData(createLayoutData(100));
 
         addListeners();
         setNetworkItems();
