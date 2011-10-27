@@ -183,7 +183,7 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
             Relationship rel = dsServ.createRelationship(proxy1, proxy2, relType);
             if (params != null) {
                 dsServ.setProperties(rel, params);
-                indexProperty(NodeToNodeTypes.PROXY, params);
+                indexProperty(getType(), params);
             }
         }
     }
