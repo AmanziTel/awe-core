@@ -67,13 +67,13 @@ public interface IDistributionBar extends Comparable<IDistributionBar> {
      *
      * @return
      */
-    public Comparable<Object> getMinValue();
+    public Comparable<?> getMinValue();
     
     /**
      * Returns Max value of this Bar
      *
      * @return
      */
-    public Comparable<Object> getMaxValue();
+    public Comparable<?> getMaxValue();
 }
 

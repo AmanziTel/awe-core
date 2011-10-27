@@ -26,6 +26,7 @@ import static org.mockito.Mockito.when;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.amanzi.log4j.LogStarter;
@@ -705,7 +706,12 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, true, distributionType);
         DistributionModel.distributionService = service;
         IDistributionalModel model = getDistributionalModel(parentDistribution);
-//        IDistributionBar bar = 
+        IDistributionBar bar = getDistributionBar();
+        
+        DistributionModel distribution = new DistributionModel(model, distributionType);
+        distribution.updateBar(bar);
+        
+        verify(service).updateDistributionBar(eq(rootAggregation), eq(bar));
     }
     
     /**
@@ -898,6 +904,19 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
                 result.add(element);
             }
         }
+        
+        return result;
+    }
+    
+    @SuppressWarnings("unchecked")
+    private IDistributionBar getDistributionBar() {
+        IDistributionBar result = mock(IDistributionBar.class);
+        
+        when(result.getName()).thenReturn(DISTRIBUTION_BAR_NAME_PREFIX);
+        when(result.getRootElement()).thenReturn(new DataElement(new HashMap<String, Object>()));
+        Comparable comparable = new Integer(1);
+        when(result.getMaxValue()).thenReturn(comparable);
+        when(result.getMinValue()).thenReturn(comparable);
         
         return result;
     }

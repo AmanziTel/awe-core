@@ -32,6 +32,7 @@ import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.impl.AbstractModel;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.utils.Pair;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -321,7 +322,39 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
     }
 
     @Override
-    public void updateBar(IDistributionBar bar) {
+    public void updateBar(IDistributionBar bar) throws AWEException {
+        LOGGER.debug("start updateBar(<" + bar + ">)");
+        
+        //check input
+        if (bar == null) {
+            LOGGER.error("Input bar cannot be null");
+            throw new IllegalArgumentException("Input bar cannot be null");
+        }
+        if (StringUtils.isEmpty(bar.getName())) {
+            LOGGER.error("New name of Bar cannot be null or empty");
+            throw new IllegalArgumentException("New name of Bar cannot be null or empty");
+        }
+        if (bar.getCount() < 0) {
+            LOGGER.error("New count of Bar cannot be less than zero");
+            throw new IllegalArgumentException("New count of Bar cannot be less than zero");
+        }
+        if (bar.getMinValue() == null) {
+            LOGGER.error("New minValue of Bar cannot be null");
+            throw new IllegalArgumentException("New minValue of Bar cannot be null");
+        }
+        if (bar.getMaxValue() == null) {
+            LOGGER.error("New maxValue of Bar cannot be null");
+            throw new IllegalArgumentException("New maxValue of Bar cannot be null");
+        }
+        if (bar.getRootElement() == null) {
+            LOGGER.error("New rootElement of Bar cannot be null");
+            throw new IllegalArgumentException("New rootElement of Bar cannot be null");
+        }
+        
+        //update bar
+        distributionService.updateDistributionBar(getRootNode(), bar);
+        
+        LOGGER.debug("finish updateBar()");
     }
 
     @Override

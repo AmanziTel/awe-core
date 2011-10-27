@@ -226,8 +226,12 @@ public class DistributionAnalyzerView extends ViewPart {
 
         @Override
         protected IStatus run(IProgressMonitor monitor) {
-            for (IDistributionBar bar : dataset.getDistributionBars()) {
-                distributionModel.updateBar(bar);
+            try {
+                for (IDistributionBar bar : dataset.getDistributionBars()) {
+                    distributionModel.updateBar(bar);
+                }
+            } catch (AWEException e) {
+                return new Status(Status.ERROR, ReusePlugin.PLUGIN_ID, "Error on updating Distribution Bars", e);
             }
             
             return Status.OK_STATUS;
