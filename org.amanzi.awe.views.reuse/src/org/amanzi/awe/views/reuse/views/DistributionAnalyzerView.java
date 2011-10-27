@@ -375,7 +375,7 @@ public class DistributionAnalyzerView extends ViewPart {
         try {
             initializeFields();
         } catch (AWEException e) {
-            // TODO: throw Runtime? show error message? 
+            // TODO: throw Runtime? show error message?
         }
     }
 
@@ -404,7 +404,7 @@ public class DistributionAnalyzerView extends ViewPart {
         plot.setBackgroundPaint(PLOT_BACKGROUND);
         distributionChart.setBackgroundPaint(CHART_BACKGROUND);
 
-        // chart composite
+        //chart composite
         chartFrame = new ChartComposite(parent, 0, distributionChart, true);
         chartFrame.pack();
     }
