@@ -20,7 +20,6 @@ import org.amanzi.neo.services.ProjectService;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelTypes;
-import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelationships;
 import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -117,7 +116,7 @@ public class NodeToNodeRelationshipModelTest extends AbstractNeoServiceTest {
         // object returned is not null
         Assert.assertNotNull(model);
         // n2n root not recreated
-        Assert.assertNotNull(network.getSingleRelationship(N2NRelationships.N2N_REL, Direction.OUTGOING));
+        Assert.assertNotNull(network.getSingleRelationship(N2NRelTypes.NEIGHBOUR, Direction.OUTGOING));
     }
 
     @Test
@@ -175,12 +174,12 @@ public class NodeToNodeRelationshipModelTest extends AbstractNeoServiceTest {
         }// proxies created
         Node s1 = ((DataElement)sector1).getNode();
         Node s2 = ((DataElement)sector2).getNode();
-        Node p1 = s1.getSingleRelationship(N2NRelationships.N2N_REL, Direction.BOTH).getOtherNode(s1);
-        Node p2 = s2.getSingleRelationship(N2NRelationships.N2N_REL, Direction.BOTH).getOtherNode(s2);
+        Node p1 = s1.getSingleRelationship(N2NRelTypes.NEIGHBOUR, Direction.BOTH).getOtherNode(s1);
+        Node p2 = s2.getSingleRelationship(N2NRelTypes.NEIGHBOUR, Direction.BOTH).getOtherNode(s2);
         Assert.assertNotNull(p1);
         Assert.assertNotNull(p2);
         // relationship created
-        Relationship rel = p1.getSingleRelationship(N2NRelTypes.NEIGHBOUR, Direction.BOTH);
+        Relationship rel = p1.getSingleRelationship(N2NRelTypes.NEIGHBOUR, Direction.OUTGOING);
         Assert.assertNotNull(rel);
         Assert.assertEquals(p2, rel.getOtherNode(p1));
         // properties set
@@ -263,19 +262,24 @@ public class NodeToNodeRelationshipModelTest extends AbstractNeoServiceTest {
         Node s2 = ((DataElement)sector2).getNode();
         Node s3 = ((DataElement)sector3).getNode();
 
-        Node p1 = s1.getSingleRelationship(N2NRelationships.N2N_REL, Direction.BOTH).getOtherNode(s1);
-        Node p2 = s2.getSingleRelationship(N2NRelationships.N2N_REL, Direction.BOTH).getOtherNode(s2);
-        Node p3 = s3.getSingleRelationship(N2NRelationships.N2N_REL, Direction.BOTH).getOtherNode(s3);
+        Node p1 = s1.getSingleRelationship(N2NRelTypes.NEIGHBOUR, Direction.BOTH).getOtherNode(s1);
+        Node p2 = s2.getSingleRelationship(N2NRelTypes.NEIGHBOUR, Direction.BOTH).getOtherNode(s2);
+        Node p3 = s3.getSingleRelationship(N2NRelTypes.NEIGHBOUR, Direction.BOTH).getOtherNode(s3);
 
         Assert.assertNotNull(p1);
         Assert.assertNotNull(p2);
         Assert.assertNotNull(p3);
         // proxy not recreated
-        Relationship rel2 = p2.getSingleRelationship(N2NRelTypes.NEIGHBOUR, Direction.BOTH);
-        Relationship rel3 = p3.getSingleRelationship(N2NRelTypes.NEIGHBOUR, Direction.BOTH);
-
-        Assert.assertEquals(rel2.getOtherNode(p2), rel3.getOtherNode(p3));
-        // chain exists
+        Relationship rel2 = s1.getSingleRelationship(N2NRelTypes.NEIGHBOUR, Direction.OUTGOING);
+        Relationship rel3 = s3.getSingleRelationship(N2NRelTypes.NEIGHBOUR, Direction.OUTGOING);
+        boolean isExist = false;
+        for (Relationship r : p3.getRelationships(N2NRelTypes.NEIGHBOUR)) {
+            if (r.getOtherNode(p3) != null && r.getOtherNode(p3).equals(rel2.getEndNode())) {
+                isExist = true;
+            }
+        }
+        Assert.assertEquals(rel3.getEndNode(), p3);
+        Assert.assertTrue(isExist);
         Assert.assertTrue(chainExists(model.getRootNode(), p1));
         Assert.assertTrue(chainExists(model.getRootNode(), p2));
         Assert.assertTrue(chainExists(model.getRootNode(), p3));

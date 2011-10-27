@@ -86,25 +86,66 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
     }
 
     /**
-     * find or create BSC node from row properties and pass the action down the chain, for creation
-     * BSC->CITY->SITE->SECTOR structure
+     * find or create city node from row properties and pass the action down the chain, for creation
+     * CITY->MSC->BSC->SITE->SECTOR nodes
+     * 
+     * @param row
+     * @throws AWEException
      */
-    private void createMSC(List<String> row) throws AWEException {
-        Map<String, Object> mscProperty = new HashMap<String, Object>();
-        if (fileSynonyms.get(MSC) == null || row.get(columnSynonyms.get(fileSynonyms.get(MSC))) == null
-                || row.get(columnSynonyms.get(fileSynonyms.get(MSC))).equals("")) {
-            createBSC(null, row);
+    private void createCity(List<String> row) throws AWEException {
+        if (fileSynonyms.get(CITY) == null || row.get(columnSynonyms.get(fileSynonyms.get(CITY))) == null
+                || StringUtils.isEmpty(row.get(columnSynonyms.get(fileSynonyms.get(CITY).toString())))) {
+            createMSC(null, row);
             return;
         }
 
+        Map<String, Object> cityPropMap = new HashMap<String, Object>();
+
+        cityPropMap.put(INeoConstants.PROPERTY_TYPE_NAME, NetworkElementNodeType.CITY.getId());
+        cityPropMap.put(INeoConstants.PROPERTY_NAME_NAME, row.get(columnSynonyms.get(fileSynonyms.get(CITY))));
+
+        IDataElement findedElement;
+        findedElement = model.findElement(cityPropMap);
+        if (findedElement == null) {
+            findedElement = model.createElement(rootDataElement, cityPropMap);
+            addedDatasetSynonyms(model, NetworkElementNodeType.CITY, INeoConstants.PROPERTY_NAME_NAME,
+                    headers.get(getHeaderId(fileSynonyms.get(CITY))));
+        }
+
+        row.set(columnSynonyms.get(fileSynonyms.get(CITY)), null);
+
+        createMSC(findedElement, row);
+    }
+
+    /**
+     * find or create BSC node from row properties and pass the action down the chain, for creation
+     * MSC->BSC->SITE->SECTOR nodes structure
+     */
+    private void createMSC(IDataElement root, List<String> row) throws AWEException {
+        Map<String, Object> mscProperty = new HashMap<String, Object>();
+        if (fileSynonyms.get(MSC) == null || row.get(columnSynonyms.get(fileSynonyms.get(MSC))) == null
+                || row.get(columnSynonyms.get(fileSynonyms.get(MSC))).equals("")) {
+            if (root == null) {
+                createSite(rootDataElement, row);
+                return;
+            } else {
+                createSite(root, row);
+                return;
+            }
+        }
+
         mscProperty.put(INeoConstants.PROPERTY_TYPE_NAME, NetworkElementNodeType.MSC.getId());
-        mscProperty.put(INeoConstants.PROPERTY_NAME_NAME, autoParse(row.get(columnSynonyms.get(fileSynonyms.get(MSC)))));
+        mscProperty.put(INeoConstants.PROPERTY_NAME_NAME, row.get(columnSynonyms.get(fileSynonyms.get(MSC))));
 
         IDataElement findedElement;
         findedElement = model.findElement(mscProperty);
 
         if (findedElement == null) {
-            findedElement = model.createElement(rootDataElement, mscProperty);
+            if (root == null) {
+                findedElement = model.createElement(rootDataElement, mscProperty);
+            } else {
+                findedElement = model.createElement(root, mscProperty);
+            }
             addedDatasetSynonyms(model, NetworkElementNodeType.MSC, INeoConstants.PROPERTY_NAME_NAME,
                     headers.get(getHeaderId(fileSynonyms.get(MSC))));
         }
@@ -114,7 +155,7 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
 
     /**
      * find or create BSC node from row properties and pass the action down the chain, for creation
-     * CITY->SITE->SECTOR structure
+     * BSC->SITE->SECTOR nodes structure
      * 
      * @param row
      * @throws AWEException
@@ -124,14 +165,14 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
         if (fileSynonyms.get(BSC) == null || row.get(columnSynonyms.get(fileSynonyms.get(BSC))) == null
                 || row.get(columnSynonyms.get(fileSynonyms.get(BSC))).equals("")) {
             if (root == null) {
-                createCity(null, row);
+                createSite(null, row);
             } else {
-                createCity(root, row);
+                createSite(root, row);
             }
             return;
         }
         bscProperty.put(INeoConstants.PROPERTY_TYPE_NAME, NetworkElementNodeType.BSC.getId());
-        bscProperty.put(INeoConstants.PROPERTY_NAME_NAME, autoParse(row.get(columnSynonyms.get(fileSynonyms.get(BSC)))));
+        bscProperty.put(INeoConstants.PROPERTY_NAME_NAME, row.get(columnSynonyms.get(fileSynonyms.get(BSC))));
         IDataElement findedElement;
         findedElement = model.findElement(bscProperty);
 
@@ -145,52 +186,11 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
                     headers.get(getHeaderId(fileSynonyms.get(BSC))));
         }
         row.set(columnSynonyms.get(fileSynonyms.get(BSC)), null);
-        createCity(findedElement, row);
+        createSite(findedElement, row);
     }
 
     private int getHeaderId(String header) {
         return headers.indexOf(header);
-    }
-
-    /**
-     * find or create city node from row properties and pass the action down the chain, for creation
-     * SITE->SECTOR nodes
-     * 
-     * @param row
-     * @throws AWEException
-     */
-    private void createCity(IDataElement root, List<String> row) throws AWEException {
-        if (fileSynonyms.get(CITY) == null || row.get(columnSynonyms.get(fileSynonyms.get(CITY))) == null
-                || StringUtils.isEmpty(row.get(columnSynonyms.get(fileSynonyms.get(CITY).toString())))) {
-            if (root == null) {
-                createSite(rootDataElement, row);
-                return;
-            } else {
-                createSite(root, row);
-                return;
-            }
-        }
-
-        Map<String, Object> cityPropMap = new HashMap<String, Object>();
-
-        cityPropMap.put(INeoConstants.PROPERTY_TYPE_NAME, NetworkElementNodeType.CITY.getId());
-        cityPropMap.put(INeoConstants.PROPERTY_NAME_NAME, autoParse(row.get(columnSynonyms.get(fileSynonyms.get(CITY)))));
-
-        IDataElement findedElement;
-        findedElement = model.findElement(cityPropMap);
-
-        if (findedElement == null) {
-            if (root == null) {
-                findedElement = model.createElement(rootDataElement, cityPropMap);
-            } else {
-                findedElement = model.createElement(root, cityPropMap);
-            }
-            addedDatasetSynonyms(model, NetworkElementNodeType.CITY, INeoConstants.PROPERTY_NAME_NAME,
-                    headers.get(getHeaderId(fileSynonyms.get(CITY))));
-        }
-        row.set(columnSynonyms.get(fileSynonyms.get(CITY)), null);
-
-        createSite(findedElement, row);
     }
 
     /**
@@ -213,16 +213,21 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
 
         Map<String, Object> siteMap = new HashMap<String, Object>();
         siteMap.put(INeoConstants.PROPERTY_TYPE_NAME, NetworkElementNodeType.SITE.getId());
-        siteMap.put(INeoConstants.PROPERTY_LON_NAME,
-                autoParse(row.get(columnSynonyms.get(fileSynonyms.get(INeoConstants.PROPERTY_LON_NAME)))));
-        siteMap.put(INeoConstants.PROPERTY_LAT_NAME,
-                autoParse(row.get(columnSynonyms.get(fileSynonyms.get(INeoConstants.PROPERTY_LAT_NAME)))));
+        siteMap.put(
+                INeoConstants.PROPERTY_LON_NAME,
+                autoParse(INeoConstants.PROPERTY_LON_NAME,
+                        row.get(columnSynonyms.get(fileSynonyms.get(INeoConstants.PROPERTY_LON_NAME)))));
+        siteMap.put(
+                INeoConstants.PROPERTY_LAT_NAME,
+                autoParse(INeoConstants.PROPERTY_LAT_NAME,
+                        row.get(columnSynonyms.get(fileSynonyms.get(INeoConstants.PROPERTY_LAT_NAME)))));
         String siteName;
         if (fileSynonyms.get(SITE) == null || row.get(columnSynonyms.get(fileSynonyms.get(SITE))).equals(StringUtils.EMPTY)) {
             if (fileSynonyms.get(SECTOR) != null
                     && !row.get(columnSynonyms.get(fileSynonyms.get(SECTOR))).equals(StringUtils.EMPTY)) {
                 siteName = row.get(columnSynonyms.get(fileSynonyms.get(SECTOR)));
-                siteMap.put(INeoConstants.PROPERTY_NAME_NAME, autoParse(siteName.substring(0, siteName.length() - 1)));
+                siteMap.put(INeoConstants.PROPERTY_NAME_NAME,
+                        autoParse(INeoConstants.PROPERTY_NAME_NAME, siteName.substring(0, siteName.length() - 1)));
             } else {
                 LOGGER.info("Missing site name based on SectorName on line:" + lineCounter);
                 return;
@@ -230,7 +235,7 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
 
         } else {
             siteName = headers.get(getHeaderId((fileSynonyms.get(SITE))));
-            siteMap.put(INeoConstants.PROPERTY_NAME_NAME, autoParse(row.get(columnSynonyms.get(fileSynonyms.get(SITE)))));
+            siteMap.put(INeoConstants.PROPERTY_NAME_NAME, row.get(columnSynonyms.get(fileSynonyms.get(SITE))));
             row.set(columnSynonyms.get(fileSynonyms.get(SITE)), null);
         }
 
@@ -270,7 +275,7 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
         for (String head : headers) {
             if (row.get(columnSynonyms.get(head)) != null && !StringUtils.isEmpty(row.get(columnSynonyms.get(head)))
                     && head != fileSynonyms.get(SECTOR)) {
-                sectorMap.put(head.toLowerCase(), autoParse(row.get(columnSynonyms.get(head))));
+                sectorMap.put(head.toLowerCase(), autoParse(head.toLowerCase(), row.get(columnSynonyms.get(head))));
                 if (fileSynonyms.containsValue(head)) {
                     for (String key : fileSynonyms.keySet()) {
                         if (head.equals(fileSynonyms.get(key))) {
@@ -285,9 +290,9 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
                 columnSynonyms.get(fileSynonyms.get(SECTOR))).toString() : "";
         String ci = sectorMap.containsKey("ci") ? sectorMap.get("ci").toString() : "";
         String lac = sectorMap.containsKey("lac") ? sectorMap.get("lac").toString() : "";
-        if ((ci == null || StringUtils.isEmpty(ci)) && (lac == null || StringUtils.isEmpty(lac))
-                || (sectorName == null || StringUtils.isEmpty(sectorName))) {
-            LOGGER.info("Sector haven't Name or CI + LAC properties on line: " + lineCounter);
+        if (((sectorName == null) || (sectorName.equals(StringUtils.EMPTY)))
+                && ((ci == null) || (ci.equals(StringUtils.EMPTY)) || (lac == null) || (lac.equals(StringUtils.EMPTY)))) {
+            LOGGER.info("Sector should have Name or CI + LAC properties on line: " + lineCounter);
             return;
         }
         if (fileSynonyms.containsKey(SECTOR)) {
@@ -338,7 +343,7 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
             } else {
                 lineCounter++;
                 List<String> value = container.getValues();
-                createMSC(value);
+                createCity(value);
             }
         } catch (DatabaseException e) {
             LOGGER.error("Error while saving element on line " + lineCounter, e);

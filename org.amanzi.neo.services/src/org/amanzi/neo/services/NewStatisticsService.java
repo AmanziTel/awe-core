@@ -117,7 +117,8 @@ public class NewStatisticsService extends NewAbstractService {
             result.setCount((Integer)vaultNode.getProperty(COUNT, null));
             result.setType((String)vaultNode.getProperty(NAME, EMPTY_STRING));
             for (Node propStatNode : getPropertyStatisticsNodes(vaultNode)) {
-                result.addPropertyStatistics(loadPropertyStatistics(propStatNode));
+                NewPropertyStatistics propertyStatistics = loadPropertyStatistics(propStatNode);
+                result.addPropertyStatistics(propertyStatistics);
             }
             for (Node subVauldNode : getSubVaultNodes(vaultNode)) {
                 result.addSubVault(loadSubVault(subVauldNode));
@@ -361,30 +362,39 @@ public class NewStatisticsService extends NewAbstractService {
         Map<Object, Integer> propMap = propStat.getPropertyMap();
         int number = propMap.size();
         String className = propStat.getKlass().getCanonicalName();
-        Transaction tx = graphDb.beginTx();
-        try {
-            Node propStatNode = createNode(StatisticsNodeTypes.PROPERTY_STATISTICS);
-            vaultNode.createRelationshipTo(propStatNode, DatasetRelationTypes.CHILD);
-            propStatNode.setProperty(NAME, name);
-            propStatNode.setProperty(NUMBER, number);
-            propStatNode.setProperty(CLASS, className);
+        
+        // Kasnitskij_V:
+        // Save statistics only if class of statistics is Boolean, String or Number
+        Class<?> klass = propStat.getKlass();
+        if (klass.equals(Boolean.class) ||
+                klass.equals(String.class) ||
+                klass.getSuperclass().equals(Number.class)) {
+            
+            Transaction tx = graphDb.beginTx();
+            try {
+                Node propStatNode = createNode(StatisticsNodeTypes.PROPERTY_STATISTICS);
+                vaultNode.createRelationshipTo(propStatNode, DatasetRelationTypes.CHILD);
+                propStatNode.setProperty(NAME, name);
+                propStatNode.setProperty(NUMBER, number);
+                propStatNode.setProperty(CLASS, className);
+        
+                int count = 0;
+                for (Entry<Object, Integer> entry : propMap.entrySet()) {
+                    count++;
+                    propStatNode.setProperty(VALUE_NAME + count, entry.getKey());
+                    propStatNode.setProperty(COUNT_NAME + count, entry.getValue());
+                }
     
-            int count = 0;
-            for (Entry<Object, Integer> entry : propMap.entrySet()) {
-                count++;
-                propStatNode.setProperty(VALUE_NAME + count, entry.getKey());
-                propStatNode.setProperty(COUNT_NAME + count, entry.getValue());
+                tx.success();
+    
+            } catch (Exception e) {
+                tx.failure();
+                LOGGER.error("DatabaseException: " + e.getMessage());
+                throw new DatabaseException(e);
+            } finally {
+                tx.finish();
+                LOGGER.debug("finish method savePropertyStatistics(NewPropertyStatistics propStat, Node vaultNode)" );
             }
-
-            tx.success();
-
-        } catch (Exception e) {
-            tx.failure();
-            LOGGER.error("DatabaseException: " + e.getMessage());
-            throw new DatabaseException(e);
-        } finally {
-            tx.finish();
-            LOGGER.debug("finish method savePropertyStatistics(NewPropertyStatistics propStat, Node vaultNode)" );
         }
 
     }

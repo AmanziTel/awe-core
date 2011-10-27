@@ -170,4 +170,25 @@ public interface IDistribution<T extends IRange> {
      */
     public void setSelect(Select select);
 
+    /**
+     * Returns name of Analyzed Property
+     *
+     * @return
+     */
+    public String getPropertyName();
+    
+    /**
+     * Is it possible to changes colors of this Distribution
+     *
+     * @return
+     */
+    public boolean canChangeColors();
+    
+    /**
+     * Set possibility to change colors of this Distribution
+     *
+     * @param canChangeColor
+     */
+    public void setCanChangeColors(boolean canChangeColor);
+
 }

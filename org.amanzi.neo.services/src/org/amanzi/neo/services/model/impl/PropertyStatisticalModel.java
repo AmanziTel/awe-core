@@ -145,10 +145,11 @@ public abstract class PropertyStatisticalModel extends DataModel implements IPro
     
 
     @Override
-    public void finishUp() throws AWEException{
+    public void finishUp() throws AWEException {
         if (statisticsVault.isStatisticsChanged()) {
             statisticsService.saveVault(rootNode, statisticsVault);
         }
+        super.finishUp();
     }
     
     @Override

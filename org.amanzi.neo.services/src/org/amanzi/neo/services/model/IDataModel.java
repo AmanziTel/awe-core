@@ -14,7 +14,6 @@
 package org.amanzi.neo.services.model;
 
 import org.amanzi.neo.services.enums.INodeType;
-import org.amanzi.neo.services.exceptions.AWEException;
 
 /**
  * <p>
@@ -59,9 +58,4 @@ public interface IDataModel extends IModel {
      * @return
      */
     public IProjectModel getProject();
-
-    /**
-     * The method should perform final operations like storing indexes and statistics values.
-     */
-    public void finishUp() throws AWEException;
 }

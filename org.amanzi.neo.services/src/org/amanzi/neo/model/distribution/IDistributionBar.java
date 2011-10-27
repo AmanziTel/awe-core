@@ -25,7 +25,7 @@ import org.amanzi.neo.services.model.IDataElement;
  * @author lagutko_n
  * @since 1.0.0
  */
-public interface IDistributionBar {
+public interface IDistributionBar extends Comparable<IDistributionBar> {
 
     /**
      * Returns Color of this Bar
@@ -61,5 +61,19 @@ public interface IDistributionBar {
      * @return
      */
     public IDataElement getRootElement();
-
+    
+    /**
+     * Returns Min value of this Bar
+     *
+     * @return
+     */
+    public Comparable<Object> getMinValue();
+    
+    /**
+     * Returns Max value of this Bar
+     *
+     * @return
+     */
+    public Comparable<Object> getMaxValue();
 }
+

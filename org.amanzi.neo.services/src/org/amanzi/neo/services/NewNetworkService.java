@@ -13,8 +13,10 @@
 
 package org.amanzi.neo.services;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.enums.INodeType;
@@ -23,12 +25,13 @@ import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.model.impl.DataElement;
-import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelationships;
+import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelTypes;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
@@ -54,9 +57,9 @@ public class NewNetworkService extends NewAbstractService {
     public final static String SELECTION_RELATIONSHIP_INDEX = "selection_relationship";
 
     public final static String SELECTED_NODES_COUNT = "selected_nodes_count";
-    
+    public final static String SOURCE_NAME = "source name";
     /*
-     * name of property that contains array with network structure 
+     * name of property that contains array with network structure
      */
     public final static String NETWORK_STRUCTURE = "network_structure";
 
@@ -106,7 +109,10 @@ public class NewNetworkService extends NewAbstractService {
      * Traversal Description to find all node2node relationship root nodes
      */
     protected final static TraversalDescription N2N_ROOT_TRAVERSER = Traversal.description().breadthFirst()
-            .relationships(N2NRelationships.N2N_REL, Direction.OUTGOING).evaluator(Evaluators.excludeStartPosition());
+            .relationships(N2NRelTypes.NEIGHBOUR, Direction.OUTGOING)
+            .relationships(N2NRelTypes.INTERFERENCE_MATRIX, Direction.OUTGOING)
+            .relationships(N2NRelTypes.SHADOW, Direction.OUTGOING).relationships(N2NRelTypes.TRIANGULATION, Direction.OUTGOING)
+            .evaluator(Evaluators.excludeStartPosition());
 
     public NewNetworkService() {
         super();
@@ -509,10 +515,15 @@ public class NewNetworkService extends NewAbstractService {
      * @param existedNode
      * @param dataElement
      * @param isReplaceExisted
+     * @param index
      * @throws DatabaseException
      */
-    public void completeProperties(Node existedNode, DataElement dataElement, boolean isReplaceExisted) throws DatabaseException {
+    public void completeProperties(PropertyContainer existedNode, DataElement dataElement, boolean isReplaceExisted,
+            Index<Node> index) throws DatabaseException {
         Transaction tx = graphDb.beginTx();
+        if (existedNode instanceof Node && index != null) {
+            removeNodeFromIndex((Node)existedNode, index, NAME, existedNode.getProperty(NAME));
+        }
         try {
             LOGGER.debug("Start completing properties in " + existedNode);
             for (String mapKey : dataElement.keySet()) {
@@ -523,6 +534,9 @@ public class NewNetworkService extends NewAbstractService {
                 }
             }
             LOGGER.debug("END completing properties in " + existedNode);
+            if (existedNode instanceof Node && index != null) {
+                addNodeToIndex((Node)existedNode, index, NAME, existedNode.getProperty(NAME));
+            }
             tx.success();
         } catch (Exception e) {
             tx.failure();
@@ -598,17 +612,17 @@ public class NewNetworkService extends NewAbstractService {
         }
         return N2N_ROOT_TRAVERSER.traverse(network).nodes();
     }
-    
+
     /**
      * Sets array with Network Structure to Node
-     *
+     * 
      * @param networkNode
      * @param networkStructure
      */
     public void setNetworkStructure(Node networkNode, List<INodeType> networkStructure) throws DatabaseException {
         LOGGER.debug("start setNetworkStructure(<" + networkNode + ">, <" + networkStructure + ">)");
-        
-        //check input
+
+        // check input
         if (networkNode == null) {
             LOGGER.error("Input networkNode cannot be null");
             throw new IllegalArgumentException("Input networkNode cannot be null");
@@ -617,19 +631,19 @@ public class NewNetworkService extends NewAbstractService {
             LOGGER.error("Input networkStructure cannot be null");
             throw new IllegalArgumentException("Input networkStructure cannot be null");
         }
-        
-        //convert list of INodeTypes to array of Strings
+
+        // convert list of INodeTypes to array of Strings
         String[] structureArray = new String[networkStructure.size()];
         int i = 0;
         for (INodeType nodeType : networkStructure) {
             structureArray[i++] = nodeType.getId();
         }
-        
-        //set propery to node
+
+        // set propery to node
         Transaction tx = graphDb.beginTx();
         try {
             networkNode.setProperty(NETWORK_STRUCTURE, structureArray);
-            
+
             tx.success();
         } catch (Exception e) {
             tx.failure();
@@ -638,7 +652,37 @@ public class NewNetworkService extends NewAbstractService {
         } finally {
             tx.finish();
         }
-        
+
         LOGGER.debug("finish setNetworkStructure()");
+    }
+
+    public Node createProxy(Node sourceNode, Node rootNode, RelationshipType rel, INodeType type) throws DatabaseException {
+        LOGGER.debug("start createProxy(Node sourceNode)");
+
+        if (sourceNode == null) {
+            LOGGER.error("Input sourceNode cannot be null");
+            throw new IllegalArgumentException("Input sourceNode cannot be null");
+        }
+        if (rootNode == null) {
+            LOGGER.error("Input rootNode cannot be null");
+            throw new IllegalArgumentException("Input rootNode cannot be null");
+        }
+        Transaction tx = graphDb.beginTx();
+        try {
+            Node result = datasetService.createNode(sourceNode, rel, type);
+            datasetService.addChild(rootNode, result, null);
+            Map<String, Object> properties = new HashMap<String, Object>();
+            properties.put(SOURCE_NAME, sourceNode.getProperty(NewAbstractService.NAME));
+            datasetService.setProperties(result, properties);
+            tx.success();
+            return result;
+        } catch (Exception e) {
+            tx.failure();
+            LOGGER.error("Error on setting Network Structure to Node", e);
+            throw new DatabaseException(e);
+
+        } finally {
+            tx.finish();
+        }
     }
 }

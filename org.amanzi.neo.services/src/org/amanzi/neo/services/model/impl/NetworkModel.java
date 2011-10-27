@@ -15,9 +15,11 @@ package org.amanzi.neo.services.model.impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.amanzi.neo.model.distribution.IDistribution;
 import org.amanzi.neo.model.distribution.IDistributionModel;
@@ -44,6 +46,8 @@ import org.amanzi.neo.services.model.INetworkType;
 import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
 import org.amanzi.neo.services.model.INodeToNodeRelationsType;
 import org.amanzi.neo.services.model.ISelectionModel;
+import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelTypes;
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.geotools.geometry.jts.ReferencedEnvelope;
@@ -74,7 +78,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     private NewDatasetService dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
 
     private List<INodeType> currentNetworkStructure = new LinkedList<INodeType>();
-    
+
     /**
      * Use this constructor to create a network model, based on a node, that already exists in the
      * database.
@@ -134,13 +138,13 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         initializeMultiPropertyIndexing();
         initializeNetworkStructure();
     }
-    
+
     /**
      * Initializes Network Structure from Node
      */
     private void initializeNetworkStructure() {
         String[] networkStructure = (String[])rootNode.getProperty(NewNetworkService.NETWORK_STRUCTURE, null);
-        
+
         currentNetworkStructure = new LinkedList<INodeType>();
         if (networkStructure != null) {
             for (String nodeType : networkStructure) {
@@ -325,17 +329,27 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     }
 
     @Override
-    public Iterable<INodeToNodeRelationsModel> getNodeToNodeModels() throws AWEException {
-        LOGGER.info("getNodeToNodeModels()");
+    public Iterable<INodeToNodeRelationsModel> getNodeToNodeModels(N2NRelTypes type) throws AWEException {
+        LOGGER.info("getNodeToNodeModels(N2NRelTypes type)");
 
         Node network = getRootNode();
         List<INodeToNodeRelationsModel> result = new ArrayList<INodeToNodeRelationsModel>();
         for (Node n2nRoot : nwServ.getNodeToNodeRoots(network)) {
-            result.add(new NodeToNodeRelationshipModel(n2nRoot));
+            N2NRelTypes relType = N2NRelTypes.valueOf(n2nRoot.getProperty(NodeToNodeRelationshipModel.RELATION_TYPE).toString());
+            if (type == null || relType.equals(type)) {
+                result.add(new NodeToNodeRelationshipModel(n2nRoot));
+            }
         }
-
         return result;
     }
+
+    @Override
+    public Iterable<INodeToNodeRelationsModel> getNodeToNodeModels() throws AWEException {
+        LOGGER.info("getNodeToNodeModels()");
+
+        return getNodeToNodeModels(null);
+    }
+
 
     @Override
     public Iterable<IDataElement> getChildren(IDataElement parent) {
@@ -351,6 +365,22 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         }
 
         return new DataElementIterable(dsServ.getChildrenTraverser(parentNode));
+    }
+
+    @Override
+    public Iterable<IDataElement> getRelatedNodes(IDataElement parent, RelationshipType reltype) {
+        // validate
+        if (parent == null) {
+            parent = new DataElement(getRootNode());
+        }
+        LOGGER.info("getFirstRelatedNode(" + parent.toString() + "," + reltype.name() + ")");
+
+        Node parentNode = ((DataElement)parent).getNode();
+        if (parentNode == null) {
+            throw new IllegalArgumentException("Parent node is null.");
+        }
+
+        return new DataElementIterable(dsServ.getFirstRelationTraverser(parentNode, reltype, Direction.OUTGOING));
     }
 
     /**
@@ -426,10 +456,13 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
 
     @Override
     public IDataElement completeProperties(IDataElement existedElement, Map<String, Object> newPropertySet, boolean isReplaceExisted)
-            throws DatabaseException {
+            throws AWEException {
         Node existedNode;
         existedNode = ((DataElement)existedElement).getNode();
-        nwServ.completeProperties(existedNode, new DataElement(newPropertySet), isReplaceExisted);
+        INodeType nodeType = NodeTypeManager.getType(existedElement.get(INeoConstants.PROPERTY_TYPE_NAME).toString());
+        nwServ.completeProperties(existedNode, new DataElement(newPropertySet), isReplaceExisted, getIndex(nodeType));
+        nwServ.setProperties(existedNode, newPropertySet);
+        indexProperty(nodeType, newPropertySet);
         return new DataElement(existedNode);
     }
 
@@ -441,43 +474,40 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         childNode = ((DataElement)child).getNode();
         nwServ.createRelationship(parentNode, childNode, rel);
     }
-    
+
     /**
      * Method to dynamically change of network structure
-     *
+     * 
      * @param parentType Parent type in string format
      * @param childType Child type in string format
      */
     private void changeNetworkStructure(INodeType parentType, INodeType childType) {
         /**
-         * if current structure not contains parent type and not contains child type,
-         * then add parent and child in end of structure
+         * if current structure not contains parent type and not contains child type, then add
+         * parent and child in end of structure
          */
-        if (!currentNetworkStructure.contains(parentType) &&
-                !currentNetworkStructure.contains(childType)) {
+        if (!currentNetworkStructure.contains(parentType) && !currentNetworkStructure.contains(childType)) {
             currentNetworkStructure.add(parentType);
             currentNetworkStructure.add(childType);
         }
         /**
-         * if current structure not contains parent type and contains child type,
-         * then add parent at index indexOf(child)
+         * if current structure not contains parent type and contains child type, then add parent at
+         * index indexOf(child)
          */
-        else if (!currentNetworkStructure.contains(parentType) &&
-                currentNetworkStructure.contains(childType)) {
+        else if (!currentNetworkStructure.contains(parentType) && currentNetworkStructure.contains(childType)) {
             int indexOfChild = currentNetworkStructure.indexOf(childType);
             currentNetworkStructure.add(indexOfChild, parentType);
         }
         /**
-         * if current structure contains parent type and not contains child type,
-         * then add child at index indexOf(parent)+1
+         * if current structure contains parent type and not contains child type, then add child at
+         * index indexOf(parent)+1
          */
-        else if (currentNetworkStructure.contains(parentType) &&
-                !currentNetworkStructure.contains(childType)) {
+        else if (currentNetworkStructure.contains(parentType) && !currentNetworkStructure.contains(childType)) {
             int indexOfParent = currentNetworkStructure.indexOf(parentType);
             currentNetworkStructure.add(indexOfParent + 1, childType);
         }
     }
-    
+
     @Override
     public List<INodeType> getNetworkStructure() {
         return currentNetworkStructure;
@@ -496,11 +526,11 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         if (element == null) {
             throw new IllegalArgumentException("Parameters map is null.");
         }
-        
+
         INodeType parentType = NodeTypeManager.getType(parent.get(NewAbstractService.TYPE).toString());
         INodeType type = NodeTypeManager.getType(element.get(NewAbstractService.TYPE).toString());
         changeNetworkStructure(parentType, type);
-        
+
         Node node = null;
 
         // TODO:validate network structure and save it in root node
@@ -566,7 +596,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     }
 
     @Override
-    public IDistributionModel getDistributionModel(IDistribution<?> distributionType) throws AWEException {
+    public IDistributionModel getDistributionModel(IDistribution< ? > distributionType) throws AWEException {
         return new DistributionModel(this, distributionType);
     }
 
@@ -594,5 +624,48 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
             return null;
         }
     }
-    
+
+    @Override
+    public IDataElement getClosestSector(IDataElement servSector, Integer bsic, Integer bcch) {
+        Set<IDataElement> nodes = findSectorsByBsicBcch(bsic, bcch);
+        return getClosestNode(servSector, nodes, 30000);
+    }
+
+    /**
+     * @param servSector
+     * @param nodes
+     * @param i
+     * @return
+     */
+    private IDataElement getClosestNode(IDataElement servSector, Set<IDataElement> nodes, int i) {
+        return null;
+    }
+
+    /**
+     * find sectors by required bsic and bcch value
+     * 
+     * @param bsic
+     * @param bcch
+     * @return
+     */
+    private Set<IDataElement> findSectorsByBsicBcch(Integer bsic, Integer bcch) {
+        Set<IDataElement> result = new LinkedHashSet<IDataElement>();
+        for (IDataElement sector : getAllElementsByType(NetworkElementNodeType.SECTOR)) {
+            Integer bcc = (Integer)sector.get("bcc");
+            Integer ncc = (Integer)sector.get("ncc");
+            if (bcc == null || ncc == null) {
+                break;
+            }
+            Integer sectorBsic = (bcc * 8 / 10 + bcc * 8) + (ncc * 8 / 10 + ncc * 8);
+            if (ObjectUtils.equals(bsic, sectorBsic)) {
+                Integer bcchno = (Integer)sector.get("bcchno");
+                if (ObjectUtils.equals(bcch, bcchno)) {
+                    result.add(sector);
+                }
+            }
+
+        }
+        return result;
+    }
+
 }
