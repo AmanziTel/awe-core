@@ -375,7 +375,7 @@ public class DistributionAnalyzerView extends ViewPart {
         try {
             initializeFields();
         } catch (AWEException e) {
-            // TODO: throw Runtime? show error message?
+            // TODO: throw Runtime? show error message? 
         }
     }
 
