@@ -978,7 +978,7 @@ public class NewDatasetService extends NewAbstractService {
      * @param elementType
      * @return an <code>Iterable</code> over found nodes
      */
-    public Iterable<Node> findAllN2NElements(Node parent, INodeType elementType) {
+    public Iterable<Node> findAllN2NElements(Node parent, INodeType elementType, RelationshipType relType) {
         LOGGER.debug("start findAllNetworkElements(Node parent, INodeType elementType)");
         // validate parameters
         if (parent == null) {
@@ -988,7 +988,9 @@ public class NewDatasetService extends NewAbstractService {
             throw new IllegalArgumentException("Element type is null.");
         }
 
-        return ALL_N2N_TRAVERSAL_DESCRIPTION.evaluator(new FilterNodesByType(elementType)).traverse(parent).nodes();
+        return DATASET_ELEMENT_TRAVERSAL_DESCRIPTION.relationships(relType, Direction.INCOMING)
+                .evaluator(new FilterNodesByType(elementType)).traverse(parent).nodes();
+
     }
 
     /**
@@ -997,21 +999,19 @@ public class NewDatasetService extends NewAbstractService {
      * @param relType
      * @return
      */
-    public Iterable<Node> findN2NRelatedNodes(Node n2nProxy, INodeType nodeType, RelationshipType relType) {
+    public Iterable<Relationship> findN2NRelationships(Node n2nProxy, RelationshipType relType) {
         // validate parameters
         if (n2nProxy == null) {
             throw new IllegalArgumentException("N2N proxy is null.");
-        }
-        if (nodeType == null) {
-            throw new IllegalArgumentException("Node type is null.");
         }
         if (relType == null) {
             throw new IllegalArgumentException("Relationship type is null.");
         }
 
-        return N2N_TRAVERSAL_DESCRIPTION.relationships(relType, Direction.INCOMING).evaluator(new FilterNodesByType(nodeType))
-                .relationships(relType, Direction.OUTGOING).traverse(n2nProxy).nodes();
+        return N2N_TRAVERSAL_DESCRIPTION.relationships(relType, Direction.INCOMING).
+                relationships(relType, Direction.OUTGOING).traverse(n2nProxy).relationships();
     }
+
 
     /**
      * The method traverses database with a description, that will definitely return an empty
