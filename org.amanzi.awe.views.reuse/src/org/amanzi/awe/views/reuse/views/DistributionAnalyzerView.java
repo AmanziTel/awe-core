@@ -640,6 +640,10 @@ public class DistributionAnalyzerView extends ViewPart {
             Arrays.sort(propertyNames);
             propertyCombo.setItems(propertyNames);
             propertyCombo.setEnabled(true);
+            distributionCombo.setItems(new String[] {});
+            selectCombo.setItems(new String[] {});
+            distributionCombo.setEnabled(false);
+            selectCombo.setEnabled(false);
         }
     }
 
@@ -653,18 +657,34 @@ public class DistributionAnalyzerView extends ViewPart {
                 List<IDistribution< ? >> distribuitons = DistributionManager.getManager().getDistributions(analyzedModel,
                         analyzedNodeType, propertyName, ChartType.getDefault());
 
+                distributionTypes.clear();
                 for (IDistribution< ? > singleDistribution : distribuitons) {
                     distributionTypes.put(singleDistribution.getName(), singleDistribution);
                 }
 
-                distributionCombo.setItems(distributionTypes.keySet().toArray(ArrayUtils.EMPTY_STRING_ARRAY));
+                String[] distributionItems = distributionTypes.keySet().toArray(ArrayUtils.EMPTY_STRING_ARRAY);
+                selectCombo.setItems(new String[] {});
+                distributionCombo.setItems(distributionItems);
                 distributionCombo.setEnabled(true);
                 
                 String[] chartTypeNames = new String[0];
+                String defChartType = StringUtils.EMPTY;
                 for (ChartType chartType : DistributionManager.getManager().getPossibleChartTypes(analyzedModel, analyzedNodeType, propertyName)) {
                     chartTypeNames = (String[])ArrayUtils.add(chartTypeNames, chartType.getTitle());
+                    if (chartType.equals(ChartType.getDefault())) {
+                        defChartType = chartType.getTitle();
+                    }
                 }
                 chartTypeCombo.setItems(chartTypeNames);
+                chartTypeCombo.setText(defChartType);
+                
+                if (distributionItems.length == 1) {
+                    distributionCombo.setText(distributionItems[0]);
+                    initializeDistributionType();
+                } else {
+                    selectCombo.setEnabled(false);
+                }
+
             }
         } catch (AWEException e) {
             // TODO: handle exception

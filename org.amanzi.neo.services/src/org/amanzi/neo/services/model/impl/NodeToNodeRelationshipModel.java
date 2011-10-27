@@ -16,6 +16,9 @@ package org.amanzi.neo.services.model.impl;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.amanzi.neo.model.distribution.IDistribution;
+import org.amanzi.neo.model.distribution.IDistributionModel;
+import org.amanzi.neo.model.distribution.impl.DistributionModel;
 import org.amanzi.neo.services.CorrelationService.CorrelationNodeTypes;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewDatasetService;
@@ -284,5 +287,9 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
 
         return new DataElementIterable(dsServ.findAllN2NElements(getRootNode(), elementType, relType));
     }
-
+    
+    @Override
+    public IDistributionModel getDistributionModel(IDistribution< ? > distributionType) throws AWEException {
+        return new DistributionModel(this, distributionType);
+    }
 }

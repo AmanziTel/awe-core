@@ -29,6 +29,7 @@ import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.INetworkModel;
+import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
 import org.amanzi.neo.services.model.IProjectModel;
 import org.amanzi.neo.services.model.IRenderableModel;
 import org.apache.commons.lang.StringUtils;
@@ -100,6 +101,8 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
          * @return
          */
         public INodeType getNodeType() {
+            if (nodeType == null)
+                return model.getType();
             return nodeType;
         }
         
@@ -385,8 +388,10 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
                     result.add(new DistributionItem(network, nodeType));
                 }
             }
-            
             //create Distribution Items for n2n relationships
+            for (INodeToNodeRelationsModel n2nModel : network.getNodeToNodeModels()) {
+                result.add(new DistributionItem(n2nModel));                
+            }            
         }
         
         return result;
