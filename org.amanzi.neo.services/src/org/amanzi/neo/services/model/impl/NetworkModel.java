@@ -15,6 +15,7 @@ package org.amanzi.neo.services.model.impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -46,9 +47,11 @@ import org.amanzi.neo.services.model.INetworkType;
 import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
 import org.amanzi.neo.services.model.INodeToNodeRelationsType;
 import org.amanzi.neo.services.model.ISelectionModel;
+import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelTypes;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
@@ -179,7 +182,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         removeProperty(nodeType, (DataElement)elementToDelete);
         nwServ.deleteOneNode(((DataElement)elementToDelete).getNode(), getRootNode(), indexMap);
         elementToDelete = null;
-
+        finishUp();
     }
 
     /**
@@ -196,15 +199,20 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
                 INodeType nodeType = NodeTypeManager.getType(childElement.get(INeoConstants.PROPERTY_TYPE_NAME).toString());
                 removeProperty(nodeType, (DataElement)childElement);
                 nwServ.deleteOneNode(subNode, getRootNode(), indexMap);
+                finishUp();
             }
         }
     }
 
     @Override
     public void renameElement(IDataElement elementToRename, String newName) throws AWEException {
+        String oldName = elementToRename.get(INeoConstants.PROPERTY_NAME_NAME).toString();
         elementToRename.put(INeoConstants.PROPERTY_NAME_NAME, newName);
         Node node = ((DataElement)elementToRename).getNode();
         nwServ.setNameProperty(node, newName);
+        INodeType nodeType = NodeTypeManager.getType(elementToRename.get(INeoConstants.PROPERTY_TYPE_NAME).toString());
+        renameProperty(nodeType, INeoConstants.PROPERTY_NAME_NAME, oldName, newName);
+        finishUp();
     }
 
     // find element
@@ -328,16 +336,25 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     }
 
     @Override
-    public Iterable<INodeToNodeRelationsModel> getNodeToNodeModels() throws AWEException {
-        LOGGER.info("getNodeToNodeModels()");
+    public Iterable<INodeToNodeRelationsModel> getNodeToNodeModels(N2NRelTypes type) throws AWEException {
+        LOGGER.info("getNodeToNodeModels(N2NRelTypes type)");
 
         Node network = getRootNode();
         List<INodeToNodeRelationsModel> result = new ArrayList<INodeToNodeRelationsModel>();
         for (Node n2nRoot : nwServ.getNodeToNodeRoots(network)) {
-            result.add(new NodeToNodeRelationshipModel(n2nRoot));
+            N2NRelTypes relType = N2NRelTypes.valueOf(n2nRoot.getProperty(NodeToNodeRelationshipModel.RELATION_TYPE).toString());
+            if (type == null || relType.equals(type)) {
+                result.add(new NodeToNodeRelationshipModel(n2nRoot));
+            }
         }
-
         return result;
+    }
+
+    @Override
+    public Iterable<INodeToNodeRelationsModel> getNodeToNodeModels() throws AWEException {
+        LOGGER.info("getNodeToNodeModels()");
+
+        return getNodeToNodeModels(null);
     }
 
     @Override
@@ -527,11 +544,18 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         if (type != null) {
 
             if (type.equals(NetworkElementNodeType.SECTOR)) {
+                Integer bsic = nwServ.getBsicProperty(element);
+
                 Object elName = element.get(NewAbstractService.NAME);
                 Object elCI = element.get(NewNetworkService.CELL_INDEX);
                 Object elLAC = element.get(NewNetworkService.LOCATION_AREA_CODE);
-                node = nwServ.createSector(parentNode, getIndex(type), elName == null ? null : elName.toString(), elCI == null
-                        ? null : elCI.toString(), elLAC == null ? null : elLAC.toString());
+                if (bsic == 0) {
+                    node = nwServ.createSector(parentNode, getIndex(type), elName == null ? null : elName.toString(), elCI == null
+                            ? null : elCI.toString(), elLAC == null ? null : elLAC.toString());
+                } else {
+                    node = nwServ.createSector(parentNode, getIndex(type), elName == null ? null : elName.toString(), elCI == null
+                            ? null : elCI.toString(), elLAC == null ? null : elLAC.toString(), bsic);
+                }
             } else {
                 node = nwServ.createNetworkElement(parentNode, getIndex(type), element.get(NewAbstractService.NAME).toString(),
                         type, reltype);
@@ -614,20 +638,56 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         }
     }
 
+    /**
+     * return closest to servSector element
+     */
     @Override
-    public IDataElement getClosestSector(IDataElement servSector, Integer bsic, Integer bcch) {
+    public IDataElement getClosestSector(IDataElement servSector, Integer bsic, Integer bcch) throws DatabaseException {
         Set<IDataElement> nodes = findSectorsByBsicBcch(bsic, bcch);
         return getClosestNode(servSector, nodes, 30000);
     }
 
     /**
+     * return closest to serviceSector nodes
+     * 
      * @param servSector
      * @param nodes
      * @param i
      * @return
      */
-    private IDataElement getClosestNode(IDataElement servSector, Set<IDataElement> nodes, int i) {
-        return null;
+    private IDataElement getClosestNode(IDataElement servSector, Set<IDataElement> candidates, int maxDistance) {
+        Coordinate c = getCoordinate(servSector);
+        CoordinateReferenceSystem crs = getCRS();
+        if (c == null || crs == null) {
+            return null;
+        }
+        Double dist = null;
+        IDataElement candidateNode = null;
+        for (IDataElement candidate : candidates) {
+            if (servSector.equals(candidate)) {
+                continue;
+            }
+            Coordinate c1 = getCoordinate(candidate);
+            if (c1 == null) {
+                continue;
+            }
+            double distance;
+            try {
+                distance = JTS.orthodromicDistance(c, c1, crs);
+            } catch (Exception e) {
+                e.printStackTrace();
+                distance = Math.sqrt(Math.pow(c.x - c1.x, 2) + Math.pow(c.y - c1.y, 2));
+
+            }
+            if (distance > maxDistance) {
+                continue;
+            }
+            if (candidateNode == null || distance < dist) {
+                dist = distance;
+                candidateNode = candidate;
+            }
+        }
+        return candidateNode;
     }
 
     /**
@@ -636,23 +696,17 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
      * @param bsic
      * @param bcch
      * @return
+     * @throws DatabaseException
      */
-    private Set<IDataElement> findSectorsByBsicBcch(Integer bsic, Integer bcch) {
+    private Set<IDataElement> findSectorsByBsicBcch(Integer bsic, Integer bcch) throws DatabaseException {
         Set<IDataElement> result = new LinkedHashSet<IDataElement>();
-        for (IDataElement sector : getAllElementsByType(NetworkElementNodeType.SECTOR)) {
-            Integer bcc = (Integer)sector.get("bcc");
-            Integer ncc = (Integer)sector.get("ncc");
-            if (bcc == null || ncc == null) {
-                break;
+        Iterator<Node> findedNodes = nwServ.findNetworkElementsByIndexName(getIndex(NetworkElementNodeType.SECTOR), "bsic", bsic);
+        while (findedNodes.hasNext()) {
+            Node node = findedNodes.next();
+            Integer bcchno = (Integer)node.getProperty("bcchno", null);
+            if (ObjectUtils.equals(bcch, bcchno)) {
+                result.add(new DataElement(node));
             }
-            Integer sectorBsic = (bcc * 8 / 10 + bcc * 8) + (ncc * 8 / 10 + ncc * 8);
-            if (ObjectUtils.equals(bsic, sectorBsic)) {
-                Integer bcchno = (Integer)sector.get("bcchno");
-                if (ObjectUtils.equals(bcch, bcchno)) {
-                    result.add(sector);
-                }
-            }
-
         }
         return result;
     }

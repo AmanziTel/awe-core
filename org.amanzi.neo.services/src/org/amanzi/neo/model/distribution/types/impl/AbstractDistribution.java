@@ -31,6 +31,8 @@ import org.apache.log4j.Logger;
 public abstract class AbstractDistribution<T extends IRange> implements IDistribution<T> {
     
     private static final Logger LOGGER = Logger.getLogger(AbstractDistribution.class);
+    private static final int DOUBLE_SCALE = 4;
+    static final double EPS = 0.00001; 
     
     /*
      * Analyzed Model 
@@ -163,4 +165,34 @@ public abstract class AbstractDistribution<T extends IRange> implements IDistrib
         this.canChangeColor = canChangeColors;
     }
 
+    static String getNumberDistributionRangeName(double min, double max) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(min).append(" - ").append(max);
+        return sb.toString();
+    }
+
+    static double getMinValue(Number[] values) {
+        double res = Double.MAX_VALUE;
+        for (Number v : values) {
+            if (v.doubleValue() < res)
+                res = v.doubleValue();
+        }
+        return res;
+    }
+
+    static double getMaxValue(Number[] values) {
+        double res = -Double.MAX_VALUE;
+        for (Number v : values) {
+            if (v.doubleValue() > res)
+                res = v.doubleValue();
+        }
+        return res;
+    }
+
+    static double getStep(double min, double max, int delta) {
+        double res = (max - min) / delta;
+        double scaleNum = Math.pow(10, DOUBLE_SCALE);
+        res = Math.round(res * scaleNum) / scaleNum;
+        return res;
+    }
 }

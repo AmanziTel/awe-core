@@ -20,6 +20,7 @@ import org.amanzi.neo.model.distribution.IDistributionalModel;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
+import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelTypes;
 import org.neo4j.graphdb.RelationshipType;
 
 /**
@@ -57,6 +58,15 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
      * @throws AWEException if errors occur in database
      */
     public Iterable<INodeToNodeRelationsModel> getNodeToNodeModels() throws AWEException;
+
+    /**
+     * Traverse database to find all n2n root nodes of one type and create models based on them.
+     * 
+     * @param type
+     * @return an iterable over n2n models filtered by type, referring to current network
+     * @throws AWEException if errors occur in database
+     */
+    public Iterable<INodeToNodeRelationsModel> getNodeToNodeModels(N2NRelTypes type) throws AWEException;
 
     public INodeToNodeRelationsModel createNodeToNodeMmodel(INodeToNodeRelationsType relType, String name, INodeType nodeType)
             throws AWEException;
@@ -158,7 +168,7 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
      *        will replaced with new
      * @return
      * @throws DatabaseException
-     * @throws AWEException 
+     * @throws AWEException
      */
     public IDataElement completeProperties(IDataElement existedElement, Map<String, Object> newPropertySet, boolean isReplaceExisted)
             throws DatabaseException, AWEException;
@@ -198,8 +208,9 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
      * @param bsic
      * @param arfcn
      * @return
+     * @throws DatabaseException
      */
-    public IDataElement getClosestSector(IDataElement servSector, Integer bsic, Integer arfcn);
+    public IDataElement getClosestSector(IDataElement servSector, Integer bsic, Integer arfcn) throws DatabaseException;
 
     /**
      * get sequence of nodes which link to <code>parent</code> by OUTGOING <code>relType</code>

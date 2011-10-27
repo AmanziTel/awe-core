@@ -551,6 +551,162 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         assertEquals("Unexpected default selected color", DistributionModel.DEFAULT_MIDDLE_COLOR, newDistribution.getSelectedColor());
     }
     
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToUpdateBarWithoutBar() throws Exception {
+        Node parentDistribution = getNode();
+        Node rootAggregation = getNode(DistributionNodeTypes.ROOT_AGGREGATION);
+        List<Node> distributionBarNodes = getDistributionBarNodes();
+        IDistribution< ? > distributionType = getDistributionType();
+        DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, true, distributionType);
+        DistributionModel.distributionService = service;
+        IDistributionalModel model = getDistributionalModel(parentDistribution);
+        
+        DistributionModel distribution = new DistributionModel(model, distributionType);
+        distribution.updateBar(null);
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToUpdateBarWithoutName() throws Exception {
+        Node parentDistribution = getNode();
+        Node rootAggregation = getNode(DistributionNodeTypes.ROOT_AGGREGATION);
+        List<Node> distributionBarNodes = getDistributionBarNodes();
+        IDistribution< ? > distributionType = getDistributionType();
+        DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, true, distributionType);
+        DistributionModel.distributionService = service;
+        IDistributionalModel model = getDistributionalModel(parentDistribution);
+        
+        DistributionModel distribution = new DistributionModel(model, distributionType);
+        
+        DistributionBar bar = new DistributionBar();
+        bar.setName(null);
+        bar.setMaxValue(mock(Comparable.class));
+        bar.setMinValue(mock(Comparable.class));
+        
+        distribution.updateBar(bar);
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToUpdateBarWithEmptyName() throws Exception {
+        Node parentDistribution = getNode();
+        Node rootAggregation = getNode(DistributionNodeTypes.ROOT_AGGREGATION);
+        List<Node> distributionBarNodes = getDistributionBarNodes();
+        IDistribution< ? > distributionType = getDistributionType();
+        DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, true, distributionType);
+        DistributionModel.distributionService = service;
+        IDistributionalModel model = getDistributionalModel(parentDistribution);
+        
+        DistributionModel distribution = new DistributionModel(model, distributionType);
+        
+        DistributionBar bar = new DistributionBar();
+        bar.setName(StringUtils.EMPTY);
+        bar.setMaxValue(mock(Comparable.class));
+        bar.setMinValue(mock(Comparable.class));
+        
+        distribution.updateBar(bar);
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToUpdateBarWithNullRootElement() throws Exception {
+        Node parentDistribution = getNode();
+        Node rootAggregation = getNode(DistributionNodeTypes.ROOT_AGGREGATION);
+        List<Node> distributionBarNodes = getDistributionBarNodes();
+        IDistribution< ? > distributionType = getDistributionType();
+        DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, true, distributionType);
+        DistributionModel.distributionService = service;
+        IDistributionalModel model = getDistributionalModel(parentDistribution);
+        
+        DistributionModel distribution = new DistributionModel(model, distributionType);
+        
+        DistributionBar bar = new DistributionBar();
+        bar.setName(DISTRIBUTION_BAR_NAME_PREFIX);
+        bar.setRootElement(null);
+        bar.setMaxValue(mock(Comparable.class));
+        bar.setMinValue(mock(Comparable.class));
+        
+        distribution.updateBar(bar);
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToUpdateBarWithNullNegativeCount() throws Exception {
+        Node parentDistribution = getNode();
+        Node rootAggregation = getNode(DistributionNodeTypes.ROOT_AGGREGATION);
+        List<Node> distributionBarNodes = getDistributionBarNodes();
+        IDistribution< ? > distributionType = getDistributionType();
+        DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, true, distributionType);
+        DistributionModel.distributionService = service;
+        IDistributionalModel model = getDistributionalModel(parentDistribution);
+        
+        DistributionModel distribution = new DistributionModel(model, distributionType);
+        
+        DistributionBar bar = new DistributionBar();
+        bar.setName(DISTRIBUTION_BAR_NAME_PREFIX);
+        bar.setRootElement(mock(IDataElement.class));
+        bar.setCount(-1);
+        bar.setMaxValue(mock(Comparable.class));
+        bar.setMinValue(mock(Comparable.class));
+        
+        distribution.updateBar(bar);
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToUpdateBarWithNullMinValue() throws Exception {
+        Node parentDistribution = getNode();
+        Node rootAggregation = getNode(DistributionNodeTypes.ROOT_AGGREGATION);
+        List<Node> distributionBarNodes = getDistributionBarNodes();
+        IDistribution< ? > distributionType = getDistributionType();
+        DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, true, distributionType);
+        DistributionModel.distributionService = service;
+        IDistributionalModel model = getDistributionalModel(parentDistribution);
+        
+        DistributionModel distribution = new DistributionModel(model, distributionType);
+        
+        DistributionBar bar = new DistributionBar();
+        bar.setName(DISTRIBUTION_BAR_NAME_PREFIX);
+        bar.setRootElement(mock(IDataElement.class));
+        bar.setMinValue(null);
+        bar.setMaxValue(mock(Comparable.class));
+        
+        distribution.updateBar(bar);
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToUpdateBarWithNullMaxValue() throws Exception {
+        Node parentDistribution = getNode();
+        Node rootAggregation = getNode(DistributionNodeTypes.ROOT_AGGREGATION);
+        List<Node> distributionBarNodes = getDistributionBarNodes();
+        IDistribution< ? > distributionType = getDistributionType();
+        DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, true, distributionType);
+        DistributionModel.distributionService = service;
+        IDistributionalModel model = getDistributionalModel(parentDistribution);
+        
+        DistributionModel distribution = new DistributionModel(model, distributionType);
+        
+        DistributionBar bar = new DistributionBar();
+        bar.setName(DISTRIBUTION_BAR_NAME_PREFIX);
+        bar.setRootElement(mock(IDataElement.class));
+        bar.setMaxValue(null);
+        bar.setMinValue(mock(Comparable.class));
+        
+        distribution.updateBar(bar);
+    }
+    
+    @Test
+    public void checkServiceActivityOnUpdate() throws Exception {
+        Node parentDistribution = getNode();
+        Node rootAggregation = getNode(DistributionNodeTypes.ROOT_AGGREGATION);
+        List<Node> distributionBarNodes = getDistributionBarNodes();
+        IDistribution< ? > distributionType = getDistributionType();
+        DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, true, distributionType);
+        DistributionModel.distributionService = service;
+        IDistributionalModel model = getDistributionalModel(parentDistribution);
+//        IDistributionBar bar = 
+    }
     
     /**
      * Returns mocked list of Distribution Bars

@@ -183,7 +183,7 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
             Relationship rel = dsServ.createRelationship(proxy1, proxy2, relType);
             if (params != null) {
                 dsServ.setProperties(rel, params);
-                indexProperty(NodeToNodeTypes.PROXY, params);
+                indexProperty(getType(), params);
             }
         }
     }
@@ -259,7 +259,7 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
 
         Node proxy = findProxy(sourceNode);
         if (proxy != null) {
-            return new DataElementIterable(dsServ.findN2NRelatedNodes(proxy, nodeType, relType));
+            return new DataElementIterable(dsServ.findN2NRelationships(proxy, relType));
         } else {
             return new DataElementIterable(dsServ.emptyTraverser(sourceNode));
         }
@@ -282,7 +282,7 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
         }
         LOGGER.info("getAllElementsByType(" + elementType.getId() + ")");
 
-        return new DataElementIterable(dsServ.findAllN2NElements(getRootNode(), elementType));
+        return new DataElementIterable(dsServ.findAllN2NElements(getRootNode(), elementType, relType));
     }
 
 }
