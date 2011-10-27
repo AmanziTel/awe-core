@@ -215,6 +215,25 @@ public class DistributionAnalyzerView extends ViewPart {
         }
 
     }
+    
+    /**
+     * Job to update colors of Bar
+     * 
+     * @author gerzog
+     * @since 1.0.0
+     */
+    private final Job UPDATE_BAR_COLORS_JOB = new Job("") {
+
+        @Override
+        protected IStatus run(IProgressMonitor monitor) {
+            for (IDistributionBar bar : dataset.getDistributionBars()) {
+                distributionModel.updateBar(bar);
+            }
+            
+            return Status.OK_STATUS;
+        }
+        
+    };
 
     /*
      * Combo to choose DistributionItem
@@ -330,6 +349,10 @@ public class DistributionAnalyzerView extends ViewPart {
      * Text for selected value
      */
     private Text selectedValue;
+    
+    public DistributionAnalyzerView() {
+        UPDATE_BAR_COLORS_JOB.setSystem(true);
+    }
     
     @Override
     public void createPartControl(Composite parent) {
@@ -665,6 +688,7 @@ public class DistributionAnalyzerView extends ViewPart {
             }
             selectCombo.setItems(selectNames);
             selectCombo.setEnabled(true);
+            selectCombo.setText(selectNames[0]);
 
             // run analizys
             runAnalyzis();
@@ -834,7 +858,7 @@ public class DistributionAnalyzerView extends ViewPart {
                 if (colorProperties.getSelection()) {
                     // use color properties
                 } else {
-                    if (selectedIndex > 0) {
+                    if (selectedIndex >= 0) {
                         // just color selected and near bar
                         if (selectedIndex == i) {
                             barColor = COLOR_SELECTED;
@@ -846,7 +870,9 @@ public class DistributionAnalyzerView extends ViewPart {
             }
             currentBar.setColor(barColor);
         }
-
+        
+        UPDATE_BAR_COLORS_JOB.schedule();
+        
         distributionChart.fireChartChanged();
     }
 
