@@ -223,7 +223,7 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
      * @return the resulting proxy
      * @throws AWEException
      */
-    private Node getProxy(Node sourceNode) throws AWEException {
+    public Node getProxy(Node sourceNode) throws AWEException {
         Node result = findProxy(sourceNode);
         if (result == null) {
             result = networkServ.createProxy(sourceNode, rootNode, this.relType, NodeToNodeTypes.PROXY);

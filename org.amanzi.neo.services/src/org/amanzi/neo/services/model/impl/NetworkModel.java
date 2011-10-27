@@ -197,6 +197,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
             if (subNode != null) {
                 deleteSubElements(childElement);
                 INodeType nodeType = NodeTypeManager.getType(childElement.get(INeoConstants.PROPERTY_TYPE_NAME).toString());
+                childElement.get(INeoConstants.PROPERTY_NAME_NAME);
                 removeProperty(nodeType, (DataElement)childElement);
                 nwServ.deleteOneNode(subNode, getRootNode(), indexMap);
                 finishUp();
@@ -348,13 +349,6 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
             }
         }
         return result;
-    }
-
-    @Override
-    public Iterable<INodeToNodeRelationsModel> getNodeToNodeModels() throws AWEException {
-        LOGGER.info("getNodeToNodeModels()");
-
-        return getNodeToNodeModels(null);
     }
 
     @Override
@@ -709,6 +703,13 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
             }
         }
         return result;
+    }
+
+    @Override
+    public Iterable<INodeToNodeRelationsModel> getNodeToNodeModels() throws AWEException {
+        LOGGER.info("getNodeToNodeModels()");
+
+        return getNodeToNodeModels(null);
     }
 
 }

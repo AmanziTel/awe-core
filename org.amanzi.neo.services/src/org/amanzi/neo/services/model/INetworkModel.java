@@ -61,7 +61,6 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
 
     /**
      * Traverse database to find all n2n root nodes of one type and create models based on them.
-     * 
      * @param type
      * @return an iterable over n2n models filtered by type, referring to current network
      * @throws AWEException if errors occur in database
@@ -168,7 +167,7 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
      *        will replaced with new
      * @return
      * @throws DatabaseException
-     * @throws AWEException
+     * @throws AWEException 
      */
     public IDataElement completeProperties(IDataElement existedElement, Map<String, Object> newPropertySet, boolean isReplaceExisted)
             throws DatabaseException, AWEException;
@@ -208,7 +207,7 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
      * @param bsic
      * @param arfcn
      * @return
-     * @throws DatabaseException
+     * @throws DatabaseException 
      */
     public IDataElement getClosestSector(IDataElement servSector, Integer bsic, Integer arfcn) throws DatabaseException;
 
