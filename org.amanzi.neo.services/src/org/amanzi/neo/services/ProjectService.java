@@ -39,7 +39,7 @@ import org.neo4j.kernel.Traversal;
  * @since 1.0.0
  */
 public class ProjectService extends NewAbstractService {
-
+    
     private static Logger LOGGER = Logger.getLogger(ProjectService.class);
 
     private Transaction tx;

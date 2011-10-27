@@ -26,7 +26,6 @@ import org.amanzi.neo.services.NewNetworkService;
 import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
-import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
@@ -209,12 +208,15 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
 
     @Override
     public void updateRelationship(IDataElement serviceElement, IDataElement neighbourElement, Map<String, Object> properties,
-            boolean isReplace) throws DatabaseException {
+            boolean isReplace) throws AWEException {
         Node serviceNode = ((DataElement)serviceElement).getNode();
         Node neighbourNode = ((DataElement)neighbourElement).getNode();
-        Node serviceProxy = findProxy(serviceNode);
-        Node neighbourProxy = findProxy(neighbourNode);
+        Node serviceProxy = getProxy(serviceNode);
+        Node neighbourProxy = getProxy(neighbourNode);
         Relationship rel = related(serviceProxy, neighbourProxy);
+        if (rel == null) {
+            rel = dsServ.createRelationship(serviceProxy, neighbourProxy, relType);
+        }
         NeoServiceFactory.getInstance().getNewNetworkService()
                 .completeProperties(rel, new DataElement(properties), isReplace, null);
     }
