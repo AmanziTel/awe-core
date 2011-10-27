@@ -13,12 +13,10 @@
 
 package org.amanzi.awe.views.network.view;
 
-import java.util.Iterator;
 import org.amanzi.neo.core.utils.AbstractDialog;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.INetworkModel;
-import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.amanzi.neo.services.ui.NeoServicesUiPlugin;
 import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
@@ -27,7 +25,6 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
@@ -47,9 +44,6 @@ public class NewSelectionListDialog extends AbstractDialog<Integer> {
     /** The Constant MIN_FIELD_WIDTH. */
     private static final int MIN_FIELD_WIDTH = 50;
 
-    /** The c listOfNetwork. */
-    private Combo comboForNetwork;
-
     /** The t new node. */
     private Text tNewSelectionList;
 
@@ -61,6 +55,8 @@ public class NewSelectionListDialog extends AbstractDialog<Integer> {
 
     /** The shell. */
     private Shell shell;
+    
+    private INetworkModel network;
 
    /**
      * Instantiates a new new selection list dialog.
@@ -69,9 +65,10 @@ public class NewSelectionListDialog extends AbstractDialog<Integer> {
      * @param title the title
      * @param style the style
      */
-    public NewSelectionListDialog(Shell parent, String title, int style) {
+    public NewSelectionListDialog(Shell parent,INetworkModel network, String title, int style) {
         super(parent, title, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.CENTER);
         status = SWT.CANCEL;
+        this.network = network;
     }
 
     /**
@@ -87,17 +84,8 @@ public class NewSelectionListDialog extends AbstractDialog<Integer> {
         shell.setImage(NeoServicesUiPlugin.getDefault().getImageForType(NodeTypes.DATASET));
         shell.setLayout(new GridLayout(2, true));
 
-        Label labelNetwork = new Label(shell, SWT.NONE);
         GridData layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
         layoutData.minimumWidth = MIN_FIELD_WIDTH;
-
-        labelNetwork.setText("Choose network:");
-        labelNetwork.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
-        comboForNetwork = new Combo(shell, SWT.NONE);
-        createComboOfNetwork();
-        layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
-        layoutData.minimumWidth = MIN_FIELD_WIDTH;
-        comboForNetwork.setLayoutData(layoutData);
 
         Label label = new Label(shell, SWT.NONE);
         layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
@@ -145,10 +133,8 @@ public class NewSelectionListDialog extends AbstractDialog<Integer> {
      */
     protected void perfomrSave() {
         LOGGER.debug("Start method performSave");
-        String nameOfNetwork = comboForNetwork.getText();
         try {
-            INetworkModel objINetworkModel = ProjectModel.getCurrentProjectModel().findNetwork(nameOfNetwork);
-            objINetworkModel.createSelectionModel(tNewSelectionList.getText());
+            network.createSelectionModel(tNewSelectionList.getText());
         } catch (AWEException e) {
             LOGGER.error(e.getMessage());
             throw (RuntimeException) new RuntimeException( ).initCause( e );
@@ -162,21 +148,5 @@ public class NewSelectionListDialog extends AbstractDialog<Integer> {
      */
     private void load() {
         // nothing to load
-    }
-
-    /**
-     * Add text in combo
-     */
-    private void createComboOfNetwork() {
-        try {
-            Iterable<INetworkModel> objINetworkModel = ProjectModel.getCurrentProjectModel().findAllNetworkModels();
-            Iterator<INetworkModel> it = objINetworkModel.iterator();
-            while (it.hasNext()) {
-                comboForNetwork.add(it.next().getName());
-            }
-        } catch (AWEException e) {
-            LOGGER.error(e.getMessage());            
-            throw (RuntimeException)new RuntimeException().initCause(e);
-        }
-    }
+    }    
 }

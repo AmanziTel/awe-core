@@ -49,6 +49,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.PartInitException;
@@ -151,7 +152,10 @@ public class NewNetworkTreeView extends ViewPart {
         AddToSelectionListAction addToSelectionListAction = new AddToSelectionListAction(
                 (IStructuredSelection)viewer.getSelection());
         manager.add(addToSelectionListAction);
-        // createAdditionalAction(manager);
+        
+        CreateSelectionList createSelectionList = new CreateSelectionList(
+                (IStructuredSelection)viewer.getSelection());
+        manager.add(createSelectionList); 
     }
 
     private class SelectAction extends Action {
@@ -168,10 +172,11 @@ public class NewNetworkTreeView extends ViewPart {
         public SelectAction(IStructuredSelection selection) {
             Iterator it = selection.iterator();
             while (it.hasNext()) {
-                IDataElement element = (IDataElement)it.next();
-                if (element instanceof INetworkModel) {
+                Object elementObject = it.next();
+                if (elementObject instanceof INetworkModel) {
                     continue;
                 } else {
+                    IDataElement element = (IDataElement)elementObject;
                     selectedNodes.add(((DataElement)element).getNode());
                 }
             }
@@ -442,13 +447,8 @@ public class NewNetworkTreeView extends ViewPart {
                     nameOfNetwork = networkModel.getName();
                     sectorNetwork.put(dataElement.toString(), nameOfNetwork);
                 }
-                showAddToSelectionListDialog();
             }
-        }
-        
-        private void showAddToSelectionListDialog(){
-            
-        }
+        }        
 
         @Override
         public String getText() {
@@ -464,6 +464,49 @@ public class NewNetworkTreeView extends ViewPart {
         }
     }
 
+    private class CreateSelectionList extends Action {
+
+        private boolean enabled;
+        private final String text;
+        private INetworkModel network;
+
+        /**
+         * Constructor
+         * 
+         * @param selection - selection
+         */
+        public CreateSelectionList(IStructuredSelection selection) {
+            text = "Create selection list";
+            enabled = selection.size() == 1 && selection.getFirstElement() instanceof INetworkModel;
+            if (enabled) {
+                network = (INetworkModel)selection.getFirstElement();
+            }
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        @Override
+        public String getText() {
+            return text;
+        }
+
+        @Override
+        public void run() {
+            Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+            NewSelectionListDialog pdialog = new NewSelectionListDialog(shell,network , "New selection list", SWT.OK);
+            if (pdialog.open() == SWT.OK) {
+
+            }else{
+
+            }
+        }
+
+        
+    }
+    
     /**
      * @param parent
      */
