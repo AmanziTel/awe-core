@@ -232,6 +232,19 @@ public interface IVault {
             InvalidStatisticsParameterException;
     
     /**
+     * Method rename old property value on new property value
+     *
+     * @param nodeType Type of node
+     * @param propertyName Name of property
+     * @param oldPropValue Old property value 
+     * @param newPropValue New property value
+     * @throws IndexPropertyException
+     * @throws InvalidStatisticsParameterException
+     */
+    public void renamePropertyValue(String nodeType, String propertyName, Object oldPropValue, Object newPropValue) throws IndexPropertyException,
+            InvalidStatisticsParameterException;
+    
+    /**
      * Method find min value in statistics by nodeType and propertyName
      *
      * @param nodeType Type of node

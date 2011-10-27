@@ -196,6 +196,55 @@ public class StatisticsVault implements IVault {
         }
         LOGGER.debug("finish method removeProperty(String nodeType, String propName, Object propValue)");
     }
+    
+    @Override
+    public void renamePropertyValue(String nodeType, String propName, Object oldPropValue, Object newPropValue) throws IndexPropertyException,
+            InvalidStatisticsParameterException {
+        
+        LOGGER.debug("start method renamePropertyValue(String nodeType, String propName, Object oldPropValue, Object newPropValue)");
+
+        if (nodeType == null) {
+            LOGGER.error("InvalidStatisticsParameterException: parameter nodeType is null");
+            throw new InvalidStatisticsParameterException(PARAM_NODE_TYPE, nodeType);
+        }
+        if (nodeType.isEmpty()) {
+            LOGGER.error("InvalidStatisticsParameterException: parameter nodeType is empty String");
+            throw new InvalidStatisticsParameterException(PARAM_NODE_TYPE, nodeType);
+        }
+        if (propName == null) {
+            LOGGER.error("InvalidStatisticsParameterException: parameter propName is null");
+            throw new InvalidStatisticsParameterException(PARAM_PROP_NAME, propName);
+        }
+        if (propName.isEmpty()) {
+            LOGGER.error("InvalidStatisticsParameterException: parameter propName is empty String");
+            throw new InvalidStatisticsParameterException(PARAM_PROP_NAME, propName);
+        }
+        if (oldPropValue == null) {
+            LOGGER.error("InvalidStatisticsParameterException: parameter oldPropValue is null");
+            throw new InvalidStatisticsParameterException(PARAM_PROP_VALUE, oldPropValue);
+        }
+        if (newPropValue == null) {
+            LOGGER.error("InvalidStatisticsParameterException: parameter newPropValue is null");
+            throw new InvalidStatisticsParameterException(PARAM_PROP_VALUE, newPropValue);
+        }
+
+        IVault vault;
+        if (this.getType().equals(nodeType)) {
+            vault = this;
+        } else {
+            vault = this.getSubVault(nodeType);
+        }
+        try {
+            NewPropertyStatistics propStat = ((StatisticsVault)vault).getPropertyStatistics(propName, oldPropValue.getClass());
+            propStat.updatePropertyMap(oldPropValue, -1);
+            propStat.updatePropertyMap(newPropValue, 1);
+        } catch (IndexPropertyException e) {
+            this.setCount(this.getCount() + 1);
+            LOGGER.error("IndexPropertyException: index property has wrong type");
+            throw e;
+        }
+        LOGGER.debug("finish method renamePropertyValue(String nodeType, String propName, Object oldPropValue, Object newPropValue)");
+    }
 
     /**
      * this method find propertyStatistics by name and check matches the types

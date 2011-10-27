@@ -180,7 +180,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         removeProperty(nodeType, (DataElement)elementToDelete);
         nwServ.deleteOneNode(((DataElement)elementToDelete).getNode(), getRootNode(), indexMap);
         elementToDelete = null;
-
+        finishUp();
     }
 
     /**
@@ -197,15 +197,20 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
                 INodeType nodeType = NodeTypeManager.getType(childElement.get(INeoConstants.PROPERTY_TYPE_NAME).toString());
                 removeProperty(nodeType, (DataElement)childElement);
                 nwServ.deleteOneNode(subNode, getRootNode(), indexMap);
+                finishUp();
             }
         }
     }
 
     @Override
     public void renameElement(IDataElement elementToRename, String newName) throws AWEException {
+        String oldName = elementToRename.get(INeoConstants.PROPERTY_NAME_NAME).toString();
         elementToRename.put(INeoConstants.PROPERTY_NAME_NAME, newName);
         Node node = ((DataElement)elementToRename).getNode();
         nwServ.setNameProperty(node, newName);
+        INodeType nodeType = NodeTypeManager.getType(elementToRename.get(INeoConstants.PROPERTY_TYPE_NAME).toString());
+        renameProperty(nodeType, INeoConstants.PROPERTY_NAME_NAME, oldName, newName);
+        finishUp();
     }
 
     // find element

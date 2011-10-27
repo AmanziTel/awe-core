@@ -78,6 +78,11 @@ public abstract class PropertyStatisticalModel extends DataModel implements IPro
 
         statisticsVault.removeProperty(nodeType.getId(), propertyName, propertyValue);
     }
+    
+    protected void renameProperty(INodeType nodeType, String propertyName, Object oldPropValue, Object newPropValue) 
+            throws IndexPropertyException, InvalidStatisticsParameterException {
+        statisticsVault.renamePropertyValue(nodeType.getId(), propertyName, oldPropValue, newPropValue);
+    }
 
     protected void indexProperty(INodeType nodeType, Map<String, Object> params) throws AWEException {
         for (String key : params.keySet()) {
