@@ -207,8 +207,9 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
      * @param bsic
      * @param arfcn
      * @return
+     * @throws DatabaseException 
      */
-    public IDataElement getClosestSector(IDataElement servSector, Integer bsic, Integer arfcn);
+    public IDataElement getClosestSector(IDataElement servSector, Integer bsic, Integer arfcn) throws DatabaseException;
 
     /**
      * get sequence of nodes which link to <code>parent</code> by OUTGOING <code>relType</code>
