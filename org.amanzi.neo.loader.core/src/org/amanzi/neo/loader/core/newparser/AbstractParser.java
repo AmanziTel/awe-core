@@ -91,7 +91,7 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
      * Parses single file
      * 
      * @param file
-     * @throws AWEException 
+     * @throws AWEException
      */
     protected void parseFile(File file) throws AWEException {
         currentFile = file;
@@ -110,10 +110,7 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
                 break;
             }
         }
-        for (ISaver< ? , T3, T2> saver : savers) {
-            saver.finishUp();
-            LOGGER.info("File " + currentFile.getName() + "  data saving finished in: " + getOperationTime(startTime));
-        }
+        LOGGER.info("File " + currentFile.getName() + "  data saving finished in: " + getOperationTime(startTime));
     }
 
     protected long getOperationTime(long time) {
@@ -144,6 +141,9 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
             long startTime = System.currentTimeMillis();
             parseFile(file);
             LOGGER.info("File " + currentFile.getName() + " Parsing/Saving data finished in: " + getOperationTime(startTime));
+        }
+        for (ISaver< ? , T3, T2> saver : savers) {
+            saver.finishUp();
         }
         LOGGER.info("All files Parsing/Saving finished in: " + getOperationTime(globalStartTime));
     }

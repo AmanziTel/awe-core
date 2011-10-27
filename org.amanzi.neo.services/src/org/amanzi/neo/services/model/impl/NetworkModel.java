@@ -645,7 +645,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
             if (bcc == null || ncc == null) {
                 break;
             }
-            Integer sectorBsic = (bcc / 8 * 10 + bcc % 8) + (ncc / 8 * 10 + ncc % 8);
+            Integer sectorBsic = (bcc * 8 / 10 + bcc * 8) + (ncc * 8 / 10 + ncc * 8);
             if (ObjectUtils.equals(bsic, sectorBsic)) {
                 Integer bcchno = (Integer)sector.get("bcchno");
                 if (ObjectUtils.equals(bcch, bcchno)) {
