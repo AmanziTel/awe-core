@@ -165,7 +165,7 @@ public class NewNetworkService extends NewAbstractService {
         return result;
     }
 
-    public Iterator<Node> findNetworkElementsByIndexName(Index<Node> index, String parameterName, Object parameterValue) {
+    public Iterator<Node> findNetworkElementsByPropertyAndValue(Index<Node> index, String parameterName, Object parameterValue) {
         LOGGER.debug("start findNetworkElement(String indexName, String name)");
         // validate parameters
         if (index == null) {

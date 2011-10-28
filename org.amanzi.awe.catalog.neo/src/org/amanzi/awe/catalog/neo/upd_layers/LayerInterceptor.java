@@ -21,6 +21,7 @@ import net.refractions.udig.project.LayerEvent.EventType;
 import net.refractions.udig.project.internal.Layer;
 
 import org.amanzi.awe.catalog.neo.NeoGeoResource;
+import org.amanzi.awe.models.catalog.neo.NewGeoResource;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.utils.ActionUtil;
@@ -48,7 +49,7 @@ public class LayerInterceptor implements net.refractions.udig.project.intercepto
 
     @Override
     public void run(Layer layer) {
-        if (layer.findGeoResource(NeoGeoResource.class) != null) {
+        if (layer.findGeoResource(NewGeoResource.class) != null) {// TODO: verify
             final Layer fLayer = layer;
             ILayerListener renameNameListener = new ILayerListener() {
                 @Override
@@ -70,29 +71,45 @@ public class LayerInterceptor implements net.refractions.udig.project.intercepto
      */
     protected void changeGisName(final Layer layer) {
         IProgressMonitor monitor = new NullProgressMonitor();
-        IGeoResource resource = layer.findGeoResource(NeoGeoResource.class);
-        Transaction tx = NeoServiceProviderUi.getProvider().getService().beginTx();
-        try {
-            NeoGeoResource geoRes = resource.resolve(NeoGeoResource.class, monitor);
-            Node gisNode = geoRes.resolve(Node.class, monitor);
-            String oldName = gisNode.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
-            String name = layer.getName().trim();
-            if (name.equals(oldName)) {
-                return;
-            }
-            if (name.isEmpty() || !askToRename(oldName, name)) {
-                return;
-            }
-            gisNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, name);
-
-            NeoServiceProviderUi.getProvider().commit();
-            layer.setID(geoRes.getIdentifier());
-
-        } catch (IOException e) {
-            throw (RuntimeException)new RuntimeException().initCause(e);
-        } finally {
-            tx.finish();
-        }
+//        IGeoResource resource = layer.findGeoResource(NewGeoResource.class);
+//        try {
+//            IRenderableModel model = resource.resolve(IRenderableModel.class, monitor);
+//            String oldName = model.getName();
+//            String name = layer.getName().trim();
+//            if (name.equals(oldName)) {
+//                return;
+//            }
+//            if (name.isEmpty() || !askToRename(oldName, name)) {
+//                return;
+//            }
+//            layer.setID(resource.getIdentifier());
+//        } catch (IOException e) {
+//            // TODO Handle IOException
+//            throw (RuntimeException)new RuntimeException().initCause(e);
+//        }
+         IGeoResource resource = layer.findGeoResource(NeoGeoResource.class);
+         Transaction tx = NeoServiceProviderUi.getProvider().getService().beginTx();
+         try {
+         NeoGeoResource geoRes = resource.resolve(NeoGeoResource.class, monitor);
+         Node gisNode = geoRes.resolve(Node.class, monitor);
+         String oldName = gisNode.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+         String name = layer.getName().trim();
+         if (name.equals(oldName)) {
+         return;
+         }
+         if (name.isEmpty() || !askToRename(oldName, name)) {
+         return;
+         }
+         gisNode.setProperty(INeoConstants.PROPERTY_NAME_NAME, name);
+        
+         NeoServiceProviderUi.getProvider().commit();
+         layer.setID(geoRes.getIdentifier());
+        
+         } catch (IOException e) {
+         throw (RuntimeException)new RuntimeException().initCause(e);
+         } finally {
+         tx.finish();
+         }
     }
 
     /**

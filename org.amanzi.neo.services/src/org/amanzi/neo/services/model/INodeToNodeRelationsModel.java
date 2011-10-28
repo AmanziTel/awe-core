@@ -62,7 +62,8 @@ public interface INodeToNodeRelationsModel extends IPropertyStatisticalModel {
      * @param properties
      * @param isReplace
      * @throws DatabaseException
+     * @throws AWEException 
      */
     void updateRelationship(IDataElement serviceElement, IDataElement neighbourElement, Map<String, Object> properties,
-            boolean isReplace) throws DatabaseException;
+            boolean isReplace) throws DatabaseException, AWEException;
 }
