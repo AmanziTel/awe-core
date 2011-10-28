@@ -26,6 +26,7 @@ import static org.mockito.Mockito.when;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.amanzi.log4j.LogStarter;
@@ -565,7 +566,6 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         distribution.updateBar(null);
     }
     
-    @SuppressWarnings("unchecked")
     @Test(expected = IllegalArgumentException.class)
     public void tryToUpdateBarWithoutName() throws Exception {
         Node parentDistribution = getNode();
@@ -580,13 +580,10 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         
         DistributionBar bar = new DistributionBar();
         bar.setName(null);
-        bar.setMaxValue(mock(Comparable.class));
-        bar.setMinValue(mock(Comparable.class));
         
         distribution.updateBar(bar);
     }
     
-    @SuppressWarnings("unchecked")
     @Test(expected = IllegalArgumentException.class)
     public void tryToUpdateBarWithEmptyName() throws Exception {
         Node parentDistribution = getNode();
@@ -601,13 +598,10 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         
         DistributionBar bar = new DistributionBar();
         bar.setName(StringUtils.EMPTY);
-        bar.setMaxValue(mock(Comparable.class));
-        bar.setMinValue(mock(Comparable.class));
         
         distribution.updateBar(bar);
     }
     
-    @SuppressWarnings("unchecked")
     @Test(expected = IllegalArgumentException.class)
     public void tryToUpdateBarWithNullRootElement() throws Exception {
         Node parentDistribution = getNode();
@@ -623,13 +617,10 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         DistributionBar bar = new DistributionBar();
         bar.setName(DISTRIBUTION_BAR_NAME_PREFIX);
         bar.setRootElement(null);
-        bar.setMaxValue(mock(Comparable.class));
-        bar.setMinValue(mock(Comparable.class));
         
         distribution.updateBar(bar);
     }
     
-    @SuppressWarnings("unchecked")
     @Test(expected = IllegalArgumentException.class)
     public void tryToUpdateBarWithNullNegativeCount() throws Exception {
         Node parentDistribution = getNode();
@@ -646,52 +637,6 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         bar.setName(DISTRIBUTION_BAR_NAME_PREFIX);
         bar.setRootElement(mock(IDataElement.class));
         bar.setCount(-1);
-        bar.setMaxValue(mock(Comparable.class));
-        bar.setMinValue(mock(Comparable.class));
-        
-        distribution.updateBar(bar);
-    }
-    
-    @SuppressWarnings("unchecked")
-    @Test(expected = IllegalArgumentException.class)
-    public void tryToUpdateBarWithNullMinValue() throws Exception {
-        Node parentDistribution = getNode();
-        Node rootAggregation = getNode(DistributionNodeTypes.ROOT_AGGREGATION);
-        List<Node> distributionBarNodes = getDistributionBarNodes();
-        IDistribution< ? > distributionType = getDistributionType();
-        DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, true, distributionType);
-        DistributionModel.distributionService = service;
-        IDistributionalModel model = getDistributionalModel(parentDistribution);
-        
-        DistributionModel distribution = new DistributionModel(model, distributionType);
-        
-        DistributionBar bar = new DistributionBar();
-        bar.setName(DISTRIBUTION_BAR_NAME_PREFIX);
-        bar.setRootElement(mock(IDataElement.class));
-        bar.setMinValue(null);
-        bar.setMaxValue(mock(Comparable.class));
-        
-        distribution.updateBar(bar);
-    }
-    
-    @SuppressWarnings("unchecked")
-    @Test(expected = IllegalArgumentException.class)
-    public void tryToUpdateBarWithNullMaxValue() throws Exception {
-        Node parentDistribution = getNode();
-        Node rootAggregation = getNode(DistributionNodeTypes.ROOT_AGGREGATION);
-        List<Node> distributionBarNodes = getDistributionBarNodes();
-        IDistribution< ? > distributionType = getDistributionType();
-        DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, true, distributionType);
-        DistributionModel.distributionService = service;
-        IDistributionalModel model = getDistributionalModel(parentDistribution);
-        
-        DistributionModel distribution = new DistributionModel(model, distributionType);
-        
-        DistributionBar bar = new DistributionBar();
-        bar.setName(DISTRIBUTION_BAR_NAME_PREFIX);
-        bar.setRootElement(mock(IDataElement.class));
-        bar.setMaxValue(null);
-        bar.setMinValue(mock(Comparable.class));
         
         distribution.updateBar(bar);
     }
@@ -705,7 +650,12 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, true, distributionType);
         DistributionModel.distributionService = service;
         IDistributionalModel model = getDistributionalModel(parentDistribution);
-//        IDistributionBar bar = 
+        IDistributionBar bar = getDistributionBar();
+        
+        DistributionModel distribution = new DistributionModel(model, distributionType);
+        distribution.updateBar(bar);
+        
+        verify(service).updateDistributionBar(eq(rootAggregation), eq(bar));
     }
     
     /**
@@ -898,6 +848,15 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
                 result.add(element);
             }
         }
+        
+        return result;
+    }
+    
+    private IDistributionBar getDistributionBar() {
+        IDistributionBar result = mock(IDistributionBar.class);
+        
+        when(result.getName()).thenReturn(DISTRIBUTION_BAR_NAME_PREFIX);
+        when(result.getRootElement()).thenReturn(new DataElement(new HashMap<String, Object>()));
         
         return result;
     }

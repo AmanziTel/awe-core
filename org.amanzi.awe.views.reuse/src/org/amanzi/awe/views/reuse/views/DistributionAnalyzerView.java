@@ -41,6 +41,8 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.FormAttachment;
@@ -233,14 +235,20 @@ public class DistributionAnalyzerView extends ViewPart {
 
         @Override
         protected IStatus run(IProgressMonitor monitor) {
-            for (IDistributionBar bar : dataset.getDistributionBars()) {
-                distributionModel.updateBar(bar);
+            try {
+                for (IDistributionBar bar : dataset.getDistributionBars()) {
+                    distributionModel.updateBar(bar);
+                }
+            } catch (AWEException e) {
+                return new Status(Status.ERROR, ReusePlugin.PLUGIN_ID, "Error on updating Distribution Bars", e);
             }
             
             return Status.OK_STATUS;
         }
         
     };
+
+
 
     /*
      * Combo to choose DistributionItem
@@ -589,6 +597,8 @@ public class DistributionAnalyzerView extends ViewPart {
      * @param isVisible
      */
     private void setStandardStatusPanelVisisble(boolean isVisible) {
+        colorProperties.setVisible(isVisible);
+        
         selectedValue.setVisible(isVisible);
         selectedValueLabel.setVisible(isVisible);
         
@@ -597,6 +607,7 @@ public class DistributionAnalyzerView extends ViewPart {
         selectionAdjacency.setVisible(isVisible);
         selectionAdjacencyLabel.setVisible(isVisible);
     }
+
 
     /**
      * Pre-initializations of all fields
@@ -844,7 +855,17 @@ public class DistributionAnalyzerView extends ViewPart {
                     updateChartColors();
                 }
 
+
                 // TODO: also it should open NetworkTreeView with this Distribution
+            }
+        });
+        
+        //selection adjacency
+        selectionAdjacency.addModifyListener(new ModifyListener() {
+            
+            @Override
+            public void modifyText(ModifyEvent e) {
+                updateChartColors();
             }
         });
     }
