@@ -55,7 +55,7 @@ public interface IDistributionModel extends IModel {
      *
      * @param bar 
      */
-    public void updateBar(IDistributionBar bar);
+    public void updateBar(IDistributionBar bar) throws AWEException;
     
     /**
      * Set this model as current/not-current distribution model of analyzed model
