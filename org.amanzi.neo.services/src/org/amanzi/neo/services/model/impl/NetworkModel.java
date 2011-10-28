@@ -290,7 +290,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
 
     @Override
     public void updateLocationBounds(double latitude, double longitude) {
-        LOGGER.info("updateBounds(" + latitude + ", " + longitude + ")");
+        LOGGER.debug("updateBounds(" + latitude + ", " + longitude + ")");
         super.updateLocationBounds(latitude, longitude);
     }
 
@@ -561,7 +561,21 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         indexProperty(type, element);
         indexNode(node);
 
+        updateLocationBounds(element);
+
         return node == null ? null : new DataElement(node);
+    }
+
+    /**
+     * @param element
+     */
+    private void updateLocationBounds(Map<String, Object> element) {
+        Double lat = (Double)element.get(LATITUDE);
+        Double lon = (Double)element.get(LONGITUDE);
+        if (lat == null || lon == null) {
+            return;
+        }
+        updateLocationBounds(lat, lon);
     }
 
     @Override
@@ -610,7 +624,8 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     }
 
     public Iterable<IDataElement> getElements(Envelope bounds_transformed) {
-        return null;
+        // currently return all elements
+        return new DataElementIterable(nwServ.findAllNetworkElements(rootNode, null));
     }
 
     @Override
@@ -624,11 +639,11 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
                 .toString());
         switch (type) {
         case SITE:
-            return new Coordinate((Long)element.get(LATITUDE), (Long)element.get(LONGITUDE));
+            return new Coordinate((Double)element.get(LATITUDE), (Double)element.get(LONGITUDE));
 
         case SECTOR:
             IDataElement site = getParentElement(element);
-            return new Coordinate((Long)site.get(LATITUDE), (Long)site.get(LONGITUDE));
+            return new Coordinate((Double)site.get(LATITUDE), (Double)site.get(LONGITUDE));
         default:
             return null;
         }
