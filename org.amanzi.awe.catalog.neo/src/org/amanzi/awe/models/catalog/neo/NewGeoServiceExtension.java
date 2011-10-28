@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.refractions.udig.catalog.IService;
+import net.refractions.udig.catalog.ServiceExtension;
 import net.refractions.udig.catalog.URLUtils;
 
 import org.amanzi.awe.catalog.neo.NeoService;
@@ -33,7 +34,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
  * @author grigoreva_a
  * @since 1.0.0
  */
-public class NewGeoServiceExtension {
+public class NewGeoServiceExtension implements ServiceExtension {
     private static final String NEOSTORE_DIR = "neostore";
     private static final String FILE_PROTOCOL = "file";
     /* Neo4J service key, URL to the Neo4J database and gis node */
