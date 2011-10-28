@@ -22,6 +22,8 @@ import org.amanzi.neo.model.distribution.IDistribution;
 import org.amanzi.neo.model.distribution.IDistribution.ChartType;
 import org.amanzi.neo.model.distribution.IDistributionalModel;
 import org.amanzi.neo.model.distribution.types.impl.EnumeratedDistribution;
+import org.amanzi.neo.model.distribution.types.impl.NumberDistribution;
+import org.amanzi.neo.model.distribution.types.impl.NumberDistributionType;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.apache.commons.lang.StringUtils;
@@ -33,8 +35,8 @@ import org.apache.log4j.Logger;
  * @author lagutko_n
  * @since 1.0.0
  */
-public class DistributionManager  {
-    
+public class DistributionManager {
+
     /**
      * Exception on Creating Distribution
      * 
@@ -45,30 +47,30 @@ public class DistributionManager  {
 
         /** long serialVersionUID field */
         private static final long serialVersionUID = 1L;
-        
-        public DistributionManagerException(Class<?> clazz, ChartType chartType) {
+
+        public DistributionManagerException(Class< ? > clazz, ChartType chartType) {
             super("Impossible to create chart <" + chartType + "> on class <" + clazz.getSimpleName() + ">.");
         }
-        
+
     }
-    
+
     private static final Logger LOGGER = Logger.getLogger(DistributionManager.class);
-    
+
     /*
      * Separator for names in Key of Cache
      */
     private static final String CACHE_KEY_SEPARATOR = "@";
-    
+
     /*
      * Instance of Manager
      */
     private static DistributionManager manager;
-    
+
     /*
      * Cache of Distributions
      */
-    private Map<String, IDistribution<?>> distributionCache = new HashMap<String, IDistribution<?>>();
-    
+    private Map<String, IDistribution< ? >> distributionCache = new HashMap<String, IDistribution< ? >>();
+
     /**
      * Returns instance of this Manager
      */
@@ -76,20 +78,20 @@ public class DistributionManager  {
         if (manager == null) {
             manager = new DistributionManager();
         }
-        
+
         return manager;
     }
-    
+
     /**
      * Private constructor, to prevent non-singleton access
      */
     private DistributionManager() {
-        
+
     }
-    
+
     /**
      * Returns list of Distributions available for current parameters
-     *
+     * 
      * @param model model to Analyze
      * @param nodeType type of Node to Analyze
      * @param propertyName property to Analyze
@@ -97,10 +99,11 @@ public class DistributionManager  {
      * @return
      * @throws DistributionManagerException
      */
-    public List<IDistribution<?>> getDistributions(IDistributionalModel model, INodeType nodeType, String propertyName, ChartType chartType) throws DistributionManagerException {
+    public List<IDistribution< ? >> getDistributions(IDistributionalModel model, INodeType nodeType, String propertyName,
+            ChartType chartType) throws DistributionManagerException {
         LOGGER.debug("start getDistributions(<" + model + ">, <" + nodeType + ">, " + propertyName + ">, <" + chartType + ">)");
-        
-        //check input
+
+        // check input
         if (model == null) {
             LOGGER.error("Analyzed model cannot be null");
             throw new IllegalArgumentException("Analyzed model cannot be null");
@@ -117,11 +120,11 @@ public class DistributionManager  {
             LOGGER.error("ChartType cannot be null");
             throw new IllegalArgumentException("ChartType cannot be null");
         }
-        
-        Class<?> clazz = model.getPropertyClass(nodeType, propertyName);
-        
-        List<IDistribution<?>> result = new ArrayList<IDistribution<?>>();
-        
+
+        Class< ? > clazz = model.getPropertyClass(nodeType, propertyName);
+
+        List<IDistribution< ? >> result = new ArrayList<IDistribution< ? >>();
+
         if (clazz.equals(String.class) || clazz.equals(Boolean.class)) {
             switch (chartType) {
             case COUNTS:
@@ -132,20 +135,22 @@ public class DistributionManager  {
             default:
                 throw new DistributionManagerException(clazz, chartType);
             }
-        } else if (clazz.isAssignableFrom(Number.class)){ 
-            //TODO: create Number distribution
+        } else if (Number.class.isAssignableFrom(clazz)) {
+            for (NumberDistributionType distrType : NumberDistributionType.values()) {
+                result.add(getNumberDistribution(model, nodeType, propertyName, distrType));
+            }
         } else {
-            //TODO: try to find user-defined distributions
+            // TODO: try to find user-defined distributions
         }
-        
+
         LOGGER.debug("finish getDistributions()");
-        
+
         return result;
     }
-    
+
     /**
      * Returns array of possible chart types for current properties
-     *
+     * 
      * @param analyzedModel model to Analyze
      * @param nodeType type of node to Analyze
      * @param propertyName name of Property to Analyze
@@ -153,8 +158,8 @@ public class DistributionManager  {
      */
     public ChartType[] getPossibleChartTypes(IDistributionalModel analyzedModel, INodeType nodeType, String propertyName) {
         LOGGER.debug("start getPossibleChartTypes(<" + analyzedModel + ">, <" + nodeType + ">, <" + propertyName + ">)");
-        
-        //check input
+
+        // check input
         if (analyzedModel == null) {
             LOGGER.error("Input analyzedModel is null");
             throw new IllegalArgumentException("Input analyzedModel is null");
@@ -167,29 +172,29 @@ public class DistributionManager  {
             LOGGER.error("Input propertyName is null or empty");
             throw new IllegalArgumentException("Input propertyName is null or empty");
         }
-        
-        //create list of Charts
+
+        // create list of Charts
         List<ChartType> result = new ArrayList<ChartType>();
-        
-        //add chart types for all classees
+
+        // add chart types for all classees
         result.add(ChartType.COUNTS);
         result.add(ChartType.LOGARITHMIC);
         result.add(ChartType.PERCENTS);
-        
-        //get type of property
-        Class<?> klass = analyzedModel.getPropertyClass(nodeType, propertyName);
+
+        // get type of property
+        Class< ? > klass = analyzedModel.getPropertyClass(nodeType, propertyName);
         if (!klass.equals(String.class) && !klass.equals(Boolean.class)) {
             result.add(ChartType.CDF);
         }
-        
+
         LOGGER.debug("finish getPossibleChartTypes()");
-        
+
         return result.toArray(new ChartType[0]);
     }
-    
+
     /**
      * Computes key of String Distribution in Cache
-     *
+     * 
      * @param model
      * @param nodeType
      * @param propertyName
@@ -197,36 +202,63 @@ public class DistributionManager  {
      */
     private String getStringDistributionCacheKey(IDistributionalModel model, INodeType nodeType, String propertyName) {
         StringBuilder result = new StringBuilder(model.getName());
-        
-        result.append(CACHE_KEY_SEPARATOR).append(nodeType.getId()).
-               append(CACHE_KEY_SEPARATOR).append(propertyName);
-        
+
+        result.append(CACHE_KEY_SEPARATOR).append(nodeType.getId()).append(CACHE_KEY_SEPARATOR).append(propertyName);
+
         return result.toString();
     }
-    
+
     /**
-     * Tries to find String Distribution in Cache
+     * Tries to find String Distribution in Cache Creates new one if nothing found and put it to
+     * cache
      * 
-     * Creates new one if nothing found and put it to cache
-     *
      * @param model
      * @param nodeType
      * @param propertyName
      * @return
      */
-    private IDistribution<?> getStringDistribution(IDistributionalModel model, INodeType nodeType, String propertyName) {
+    private IDistribution< ? > getStringDistribution(IDistributionalModel model, INodeType nodeType, String propertyName) {
         String cacheKey = getStringDistributionCacheKey(model, nodeType, propertyName);
-        IDistribution<?> result = distributionCache.get(cacheKey);
-        
+        IDistribution< ? > result = distributionCache.get(cacheKey);
+
         if (result == null) {
-            LOGGER.info("No Distribution for params <" + model + ", " + nodeType + ", " + propertyName + ">. " +
-            		"Create new one.");
-            
+            LOGGER.info("No Distribution for params <" + model + ", " + nodeType + ", " + propertyName + ">. " + "Create new one.");
+
             result = new EnumeratedDistribution(model, nodeType, propertyName);
             distributionCache.put(cacheKey, result);
         }
-        
+
         return result;
     }
 
+    /**
+     * Computes key of Number Distribution in Cache
+     * @param model
+     * @param nodeType
+     * @param propertyName
+     * @param distrType
+     * @return
+     */
+    private String getNumberDistributionCacheKey(IDistributionalModel model, INodeType nodeType, String propertyName, NumberDistributionType distrType) {
+        StringBuilder result = new StringBuilder(model.getName());
+
+        result.append(CACHE_KEY_SEPARATOR).append(nodeType.getId()).append(CACHE_KEY_SEPARATOR).append(propertyName);
+        result.append(CACHE_KEY_SEPARATOR).append(distrType);
+
+        return result.toString();
+    }
+
+    private IDistribution< ? > getNumberDistribution(IDistributionalModel model, INodeType nodeType, String propertyName, NumberDistributionType distrType) {
+        String cacheKey = getNumberDistributionCacheKey(model, nodeType, propertyName, distrType);
+        IDistribution< ? > result = distributionCache.get(cacheKey);
+
+        if (result == null) {
+            LOGGER.info("No Distribution for params <" + model + ", " + nodeType + ", " + propertyName + ", " + distrType + ">. " + "Create new one.");
+
+            result = new NumberDistribution(model, nodeType, propertyName, distrType);
+            distributionCache.put(cacheKey, result);
+        }
+
+        return result;
+    }
 }

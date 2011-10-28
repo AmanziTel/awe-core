@@ -79,7 +79,7 @@ public class NumberDistributionTest extends AbstractNeoServiceTest {
 
         IDistribution<SimpleRange> distribution = new NumberDistribution(model, DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME, distrType);
 
-        assertEquals("Unexpected name of Distribution", NumberDistribution.STRING_DISTRIBUTION_NAME, distribution.getName());
+        assertEquals("Unexpected name of Distribution", distrType.toString(), distribution.getName());
         assertEquals("Unexpected NodeType of Distribution", DEFAULT_NODE_TYPE, distribution.getNodeType());
         assertNotNull("Initially Range of Distribution should not be null", distribution.getRanges());
         assertTrue("Initially ranges of Distribution should be empty", distribution.getRanges().isEmpty());

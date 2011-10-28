@@ -77,7 +77,7 @@ public class NewNetworkService extends NewAbstractService {
      * @since 1.0.0
      */
     public enum NetworkElementNodeType implements INodeType {
-        NETWORK, BSC, SITE, SECTOR, CITY, MSC, SELECTION_LIST_ROOT, TRX_GROUP, TRX, CHANNEL_GROUP;
+        BSC, SITE, SECTOR, CITY, MSC, SELECTION_LIST_ROOT, TRX_GROUP, TRX, CHANNEL_GROUP;
 
         static {
             NodeTypeManager.registerNodeType(NetworkElementNodeType.class);
@@ -110,10 +110,7 @@ public class NewNetworkService extends NewAbstractService {
      * Traversal Description to find all node2node relationship root nodes
      */
     protected final static TraversalDescription N2N_ROOT_TRAVERSER = Traversal.description().breadthFirst()
-            .relationships(N2NRelTypes.NEIGHBOUR, Direction.OUTGOING)
-            .relationships(N2NRelTypes.INTERFERENCE_MATRIX, Direction.OUTGOING)
-            .relationships(N2NRelTypes.SHADOW, Direction.OUTGOING).relationships(N2NRelTypes.TRIANGULATION, Direction.OUTGOING)
-            .evaluator(Evaluators.excludeStartPosition());
+            .relationships(N2NRelTypes.NEIGHBOUR).evaluator(Evaluators.excludeStartPosition());
 
     public NewNetworkService() {
         super();

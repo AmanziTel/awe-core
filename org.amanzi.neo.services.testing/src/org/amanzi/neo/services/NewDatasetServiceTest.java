@@ -31,12 +31,10 @@ import org.neo4j.graphdb.Transaction;
  * Test for org.amanzi.neo.services.DataService
  * 
  * @author kruglik_a
- * 
  */
 public class NewDatasetServiceTest extends AbstractNeoServiceTest {
 
-	private static Logger LOGGER = Logger
-			.getLogger(NewDatasetServiceTest.class);
+    private static Logger LOGGER = Logger.getLogger(NewDatasetServiceTest.class);
 
     private static Node parent;
 
@@ -83,13 +81,11 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
      * @param type
      * @param driveType
      */
-    private void setPropertyToDatasetNode(Node datasetNode, String name,
-            DatasetTypes type, DriveTypes driveType) {
+    private void setPropertyToDatasetNode(Node datasetNode, String name, DatasetTypes type, DriveTypes driveType) {
         datasetNode.setProperty(NewDatasetService.NAME, name);
         datasetNode.setProperty(NewDatasetService.TYPE, type.getId());
         if (driveType != null)
-            datasetNode.setProperty(NewDatasetService.DRIVE_TYPE,
-                    driveType.name());
+            datasetNode.setProperty(NewDatasetService.DRIVE_TYPE, driveType.name());
     }
 
     /**
@@ -104,8 +100,7 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
         tx = graphDatabaseService.beginTx();
         try {
             projectNode = graphDatabaseService.createNode();
-            graphDatabaseService.getReferenceNode().createRelationshipTo(
-                    projectNode, DatasetRelationTypes.PROJECT);
+            graphDatabaseService.getReferenceNode().createRelationshipTo(projectNode, DatasetRelationTypes.PROJECT);
             projectNode.setProperty(NewDatasetService.NAME, "project");
             tx.success();
         } finally {
@@ -122,14 +117,12 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
      * @param driveType
      * @return datasetNode
      */
-    private Node initDatasetNode(String name, DatasetTypes type,
-            DriveTypes driveType) {
+    private Node initDatasetNode(String name, DatasetTypes type, DriveTypes driveType) {
         Node datasetNode = null;
         tx = graphDatabaseService.beginTx();
         try {
             datasetNode = graphDatabaseService.createNode();
-            projectNode.createRelationshipTo(datasetNode,
-                    DatasetRelationTypes.DATASET);
+            projectNode.createRelationshipTo(datasetNode, DatasetRelationTypes.DATASET);
             setPropertyToDatasetNode(datasetNode, name, type, driveType);
 
             tx.success();
@@ -148,8 +141,7 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
         tx = graphDatabaseService.beginTx();
         try {
 
-            Iterator<Relationship> iter = graphDatabaseService
-                    .getReferenceNode().getRelationships().iterator();
+            Iterator<Relationship> iter = graphDatabaseService.getReferenceNode().getRelationships().iterator();
             while (iter.hasNext()) {
                 iter.next().delete();
             }
@@ -162,413 +154,369 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
     }
 
     /**
-     * testing method findDataset(String name, DatasetTypes type, Node
-     * projectNode) when this dataset exists
+     * testing method findDataset(String name, DatasetTypes type, Node projectNode) when this
+     * dataset exists
      * 
      * @throws InvalidDatasetParameterException
      * @throws DatasetTypeParameterException
      * @throws DuplicateNodeNameException
      */
     @Test
-    public void findDatasetTest() throws InvalidDatasetParameterException,
-            DatasetTypeParameterException, DuplicateNodeNameException {
+    public void findDatasetTest() throws InvalidDatasetParameterException, DatasetTypeParameterException,
+            DuplicateNodeNameException {
 
         Node datasetNode = initDatasetNode(NAME_1, DatasetTypes.NETWORK, null);
 
-        Node checkNode = service.findDataset(projectNode, NAME_1,
-                DatasetTypes.NETWORK);
+        Node checkNode = service.findDataset(projectNode, NAME_1, DatasetTypes.NETWORK);
 
-        Assert.assertTrue("method findDataset() return wrong node",
-                datasetNode.equals(checkNode));
+        Assert.assertTrue("method findDataset() return wrong node", datasetNode.equals(checkNode));
 
     }
 
     /**
-     * testing method findDataset(String name, DatasetTypes type, Node
-     * projectNode) when this dataset doesn't exist
+     * testing method findDataset(String name, DatasetTypes type, Node projectNode) when this
+     * dataset doesn't exist
      * 
      * @throws InvalidDatasetParameterException
      * @throws DatasetTypeParameterException
      * @throws DuplicateNodeNameException
      */
     @Test
-    public void findDatasetNullTest() throws InvalidDatasetParameterException,
-            DatasetTypeParameterException, DuplicateNodeNameException {
+    public void findDatasetNullTest() throws InvalidDatasetParameterException, DatasetTypeParameterException,
+            DuplicateNodeNameException {
 
         initDatasetNode(NAME_1, DatasetTypes.NETWORK, null);
 
-        Node checkNode = service.findDataset(projectNode, NAME_2,
-                DatasetTypes.NETWORK);
+        Node checkNode = service.findDataset(projectNode, NAME_2, DatasetTypes.NETWORK);
 
         Assert.assertNull("method findDataset() return wrong node", checkNode);
 
     }
 
     /**
-     * testing method findDataset(String name, DatasetTypes type, Node
-     * projectNode) when parameter name = null
+     * testing method findDataset(String name, DatasetTypes type, Node projectNode) when parameter
+     * name = null
      * 
      * @throws InvalidDatasetParameterException
      * @throws DatasetTypeParameterException
      * @throws DuplicateNodeNameException
      */
     @Test(expected = InvalidDatasetParameterException.class)
-    public void findDatasetExeptionNameTest()
-            throws InvalidDatasetParameterException,
-            DatasetTypeParameterException, DuplicateNodeNameException {
+    public void findDatasetExeptionNameTest() throws InvalidDatasetParameterException, DatasetTypeParameterException,
+            DuplicateNodeNameException {
         service.findDataset(projectNode, null, DatasetTypes.NETWORK);
 
     }
 
     /**
-     * testing method findDataset(String name, DatasetTypes type, Node
-     * projectNode) when parameter type = null
+     * testing method findDataset(String name, DatasetTypes type, Node projectNode) when parameter
+     * type = null
      * 
      * @throws InvalidDatasetParameterException
      * @throws DatasetTypeParameterException
      * @throws DuplicateNodeNameException
      */
     @Test(expected = InvalidDatasetParameterException.class)
-    public void findDatasetExeptionTypeTest()
-            throws InvalidDatasetParameterException,
-            DatasetTypeParameterException, DuplicateNodeNameException {
+    public void findDatasetExeptionTypeTest() throws InvalidDatasetParameterException, DatasetTypeParameterException,
+            DuplicateNodeNameException {
         service.findDataset(projectNode, NAME_1, null);
 
     }
 
     /**
-     * testing method findDataset(String name, DatasetTypes type, Node
-     * projectNode) when parameter projectNode = null
+     * testing method findDataset(String name, DatasetTypes type, Node projectNode) when parameter
+     * projectNode = null
      * 
      * @throws InvalidDatasetParameterException
      * @throws DatasetTypeParameterException
      * @throws DuplicateNodeNameException
      */
     @Test(expected = InvalidDatasetParameterException.class)
-    public void findDatasetExeptionProjectNodeTest()
-            throws InvalidDatasetParameterException,
-            DatasetTypeParameterException, DuplicateNodeNameException {
+    public void findDatasetExeptionProjectNodeTest() throws InvalidDatasetParameterException, DatasetTypeParameterException,
+            DuplicateNodeNameException {
         service.findDataset(null, NAME_1, DatasetTypes.NETWORK);
 
     }
 
     /**
-     * testing method findDataset(String name, DatasetTypes type, Node
-     * projectNode) when parameter name = ""
+     * testing method findDataset(String name, DatasetTypes type, Node projectNode) when parameter
+     * name = ""
      * 
      * @throws InvalidDatasetParameterException
      * @throws DatasetTypeParameterException
      * @throws DuplicateNodeNameException
      */
     @Test(expected = InvalidDatasetParameterException.class)
-    public void findDatasetExeptionEmptyNameTest()
-            throws InvalidDatasetParameterException,
-            DatasetTypeParameterException, DuplicateNodeNameException {
+    public void findDatasetExeptionEmptyNameTest() throws InvalidDatasetParameterException, DatasetTypeParameterException,
+            DuplicateNodeNameException {
         service.findDataset(projectNode, "", DatasetTypes.NETWORK);
 
     }
 
     /**
-     * testing method findDataset(String name, DatasetTypes type, Node
-     * projectNode) when parameter type != NETWORK
+     * testing method findDataset(String name, DatasetTypes type, Node projectNode) when parameter
+     * type != NETWORK
      * 
      * @throws DatasetTypeParameterException
      * @throws InvalidDatasetParameterException
      * @throws DuplicateNodeNameException
      */
     @Test(expected = DatasetTypeParameterException.class)
-    public void findDatasetNetworkTest()
-            throws InvalidDatasetParameterException,
-            DatasetTypeParameterException, DuplicateNodeNameException {
+    public void findDatasetNetworkTest() throws InvalidDatasetParameterException, DatasetTypeParameterException,
+            DuplicateNodeNameException {
         service.findDataset(projectNode, NAME_1, DatasetTypes.DRIVE);
 
     }
 
     /**
-     * testing method findDataset(String name, DatasetTypes type, DriveTypes
-     * driveType, Node projectNode) when this dataset exists
+     * testing method findDataset(String name, DatasetTypes type, DriveTypes driveType, Node
+     * projectNode) when this dataset exists
      * 
      * @throws DatasetTypeParameterException
      * @throws InvalidDatasetParameterException
      * @throws DuplicateNodeNameException
      */
     @Test
-    public void findDatasetWithDriveTypeTest()
-            throws InvalidDatasetParameterException,
-            DatasetTypeParameterException, DuplicateNodeNameException {
+    public void findDatasetWithDriveTypeTest() throws InvalidDatasetParameterException, DatasetTypeParameterException,
+            DuplicateNodeNameException {
 
-        Node datasetNode = initDatasetNode(NAME_1, DatasetTypes.DRIVE,
-                DriveTypes.NEMO_V1);
+        Node datasetNode = initDatasetNode(NAME_1, DatasetTypes.DRIVE, DriveTypes.NEMO_V1);
 
-        Node checkNode = service.findDataset(projectNode, NAME_1,
-                DatasetTypes.DRIVE, DriveTypes.NEMO_V1);
+        Node checkNode = service.findDataset(projectNode, NAME_1, DatasetTypes.DRIVE, DriveTypes.NEMO_V1);
 
-        Assert.assertTrue("method findDataset() return wrong node",
-                datasetNode.equals(checkNode));
+        Assert.assertTrue("method findDataset() return wrong node", datasetNode.equals(checkNode));
 
     }
 
     /**
-     * testing method findDataset(String name, DatasetTypes type, DriveTypes
-     * driveType, Node projectNode) when this dataset doesn't exist
+     * testing method findDataset(String name, DatasetTypes type, DriveTypes driveType, Node
+     * projectNode) when this dataset doesn't exist
      * 
      * @throws DatasetTypeParameterException
      * @throws InvalidDatasetParameterException
      * @throws DuplicateNodeNameException
      */
     @Test
-    public void findDatasetWithDriveTypeNullTest()
-            throws InvalidDatasetParameterException,
-            DatasetTypeParameterException, DuplicateNodeNameException {
+    public void findDatasetWithDriveTypeNullTest() throws InvalidDatasetParameterException, DatasetTypeParameterException,
+            DuplicateNodeNameException {
 
-        Node checkNode = service.findDataset(projectNode, NAME_2,
-                DatasetTypes.DRIVE, DriveTypes.NEMO_V1);
+        Node checkNode = service.findDataset(projectNode, NAME_2, DatasetTypes.DRIVE, DriveTypes.NEMO_V1);
 
         Assert.assertNull("method findDataset() return wrong node", checkNode);
 
     }
 
     /**
-     * testing method findDataset(String name, DatasetTypes type, DriveTypes
-     * driveType, Node projectNode) when parameter type = NETWORK
+     * testing method findDataset(String name, DatasetTypes type, DriveTypes driveType, Node
+     * projectNode) when parameter type = NETWORK
      * 
      * @throws DatasetTypeParameterException
      * @throws InvalidDatasetParameterException
      * @throws DuplicateNodeNameException
      */
     @Test(expected = DatasetTypeParameterException.class)
-    public void findDatasetWithDriveTypeNetworkTest()
-            throws InvalidDatasetParameterException,
-            DatasetTypeParameterException, DuplicateNodeNameException {
-        service.findDataset(projectNode, NAME_1, DatasetTypes.NETWORK,
-                DriveTypes.NEMO_V1);
+    public void findDatasetWithDriveTypeNetworkTest() throws InvalidDatasetParameterException, DatasetTypeParameterException,
+            DuplicateNodeNameException {
+        service.findDataset(projectNode, NAME_1, DatasetTypes.NETWORK, DriveTypes.NEMO_V1);
 
     }
 
     /**
-     * testing method findDataset(String name, DatasetTypes type, DriveTypes
-     * driveType, Node projectNode) when parameter name = null
+     * testing method findDataset(String name, DatasetTypes type, DriveTypes driveType, Node
+     * projectNode) when parameter name = null
      * 
      * @throws DatasetTypeParameterException
      * @throws InvalidDatasetParameterException
      * @throws DuplicateNodeNameException
      */
     @Test(expected = InvalidDatasetParameterException.class)
-    public void findDatasetWithDriveTypeExeptionNameTest()
-            throws InvalidDatasetParameterException,
-            DatasetTypeParameterException, DuplicateNodeNameException {
-        service.findDataset(projectNode, null, DatasetTypes.DRIVE,
-                DriveTypes.NEMO_V1);
+    public void findDatasetWithDriveTypeExeptionNameTest() throws InvalidDatasetParameterException, DatasetTypeParameterException,
+            DuplicateNodeNameException {
+        service.findDataset(projectNode, null, DatasetTypes.DRIVE, DriveTypes.NEMO_V1);
 
     }
 
     /**
-     * testing method findDataset(String name, DatasetTypes type, DriveTypes
-     * driveType, Node projectNode) when parameter type = null
+     * testing method findDataset(String name, DatasetTypes type, DriveTypes driveType, Node
+     * projectNode) when parameter type = null
      * 
      * @throws DatasetTypeParameterException
      * @throws InvalidDatasetParameterException
      * @throws DuplicateNodeNameException
      */
     @Test(expected = InvalidDatasetParameterException.class)
-    public void findDatasetWithDriveTypeExeptionTypeTest()
-            throws InvalidDatasetParameterException,
-            DatasetTypeParameterException, DuplicateNodeNameException {
+    public void findDatasetWithDriveTypeExeptionTypeTest() throws InvalidDatasetParameterException, DatasetTypeParameterException,
+            DuplicateNodeNameException {
         service.findDataset(projectNode, NAME_1, null, DriveTypes.NEMO_V1);
 
     }
 
     /**
-     * testing method findDataset(String name, DatasetTypes type, DriveTypes
-     * driveType, Node projectNode) when parameter driveType = null
+     * testing method findDataset(String name, DatasetTypes type, DriveTypes driveType, Node
+     * projectNode) when parameter driveType = null
      * 
      * @throws DatasetTypeParameterException
      * @throws InvalidDatasetParameterException
      * @throws DuplicateNodeNameException
      */
     @Test(expected = InvalidDatasetParameterException.class)
-    public void findDatasetWithDriveTypeExeptionDriveTypeTest()
-            throws InvalidDatasetParameterException,
+    public void findDatasetWithDriveTypeExeptionDriveTypeTest() throws InvalidDatasetParameterException,
             DatasetTypeParameterException, DuplicateNodeNameException {
         service.findDataset(projectNode, NAME_1, DatasetTypes.DRIVE, null);
 
     }
 
     /**
-     * testing method findDataset(String name, DatasetTypes type, DriveTypes
-     * driveType, Node projectNode) when parameter projectNode = null
+     * testing method findDataset(String name, DatasetTypes type, DriveTypes driveType, Node
+     * projectNode) when parameter projectNode = null
      * 
      * @throws DatasetTypeParameterException
      * @throws InvalidDatasetParameterException
      * @throws DuplicateNodeNameException
      */
     @Test(expected = InvalidDatasetParameterException.class)
-    public void findDatasetWithDriveTypeExeptionProjectNodeTest()
-            throws InvalidDatasetParameterException,
+    public void findDatasetWithDriveTypeExeptionProjectNodeTest() throws InvalidDatasetParameterException,
             DatasetTypeParameterException, DuplicateNodeNameException {
-        service.findDataset(null, NAME_1, DatasetTypes.DRIVE,
-                DriveTypes.NEMO_V1);
+        service.findDataset(null, NAME_1, DatasetTypes.DRIVE, DriveTypes.NEMO_V1);
 
     }
 
     /**
-     * testing method findDataset(String name, DatasetTypes type, DriveTypes
-     * driveType, Node projectNode) when parameter name = ""
+     * testing method findDataset(String name, DatasetTypes type, DriveTypes driveType, Node
+     * projectNode) when parameter name = ""
      * 
      * @throws DatasetTypeParameterException
      * @throws InvalidDatasetParameterException
      * @throws DuplicateNodeNameException
      */
     @Test(expected = InvalidDatasetParameterException.class)
-    public void findDatasetWithDriveTypeExeptionEmptyNameTest()
-            throws InvalidDatasetParameterException,
+    public void findDatasetWithDriveTypeExeptionEmptyNameTest() throws InvalidDatasetParameterException,
             DatasetTypeParameterException, DuplicateNodeNameException {
-        service.findDataset(projectNode, "", DatasetTypes.DRIVE,
-                DriveTypes.NEMO_V1);
+        service.findDataset(projectNode, "", DatasetTypes.DRIVE, DriveTypes.NEMO_V1);
 
     }
 
     /**
-     * testing method createDataset(String name, DatasetTypes type, DriveType
-     * driveType, Node projectNode) when all parameter != null
+     * testing method createDataset(String name, DatasetTypes type, DriveType driveType, Node
+     * projectNode) when all parameter != null
      * 
      * @throws InvalidDatasetParameterException
      * @throws DatasetTypeParameterException
      * @throws DuplicateNodeNameException
      */
     @Test
-    public void createDatasetWithDriveTypeTest()
-            throws InvalidDatasetParameterException,
-            DatasetTypeParameterException, DuplicateNodeNameException, DatabaseException {
+    public void createDatasetWithDriveTypeTest() throws InvalidDatasetParameterException, DatasetTypeParameterException,
+            DuplicateNodeNameException, DatabaseException {
 
-        Node actualDataset = service.createDataset(projectNode, NAME_1,
-                DatasetTypes.DRIVE, DriveTypes.NEMO_V1);
+        Node actualDataset = service.createDataset(projectNode, NAME_1, DatasetTypes.DRIVE, DriveTypes.NEMO_V1);
 
-        boolean hasRelation = actualDataset.hasRelationship(
-                DatasetRelationTypes.DATASET, Direction.INCOMING);
+        boolean hasRelation = actualDataset.hasRelationship(DatasetRelationTypes.DATASET, Direction.INCOMING);
         Assert.assertTrue("not create DATASET relation", hasRelation);
 
-        String actualName = (String) actualDataset
-                .getProperty(NewDatasetService.NAME);
+        String actualName = (String)actualDataset.getProperty(NewDatasetService.NAME);
         Assert.assertEquals("dataset has wrong name", NAME_1, actualName);
 
-        String actualType = (String) actualDataset
-                .getProperty(NewDatasetService.TYPE);
-        Assert.assertEquals("dataset has wrong type",
-                DatasetTypes.DRIVE.getId(), actualType);
+        String actualType = (String)actualDataset.getProperty(NewDatasetService.TYPE);
+        Assert.assertEquals("dataset has wrong type", DatasetTypes.DRIVE.getId(), actualType);
 
-        String actualDriveType = (String) actualDataset
-                .getProperty(NewDatasetService.DRIVE_TYPE);
-        Assert.assertEquals("dataset has wrong driveType",
-                DriveTypes.NEMO_V1.name(), actualDriveType);
+        String actualDriveType = (String)actualDataset.getProperty(NewDatasetService.DRIVE_TYPE);
+        Assert.assertEquals("dataset has wrong driveType", DriveTypes.NEMO_V1.name(), actualDriveType);
     }
 
     /**
-     * testing method createDataset(String name, DatasetTypes type, DriveType
-     * driveType, Node projectNode) when parameter name = null
+     * testing method createDataset(String name, DatasetTypes type, DriveType driveType, Node
+     * projectNode) when parameter name = null
      * 
      * @throws InvalidDatasetParameterException
      * @throws DatasetTypeParameterException
      * @throws DuplicateNodeNameException
      */
     @Test(expected = InvalidDatasetParameterException.class)
-    public void createDatasetWithDriveTypeExeptionNameTest()
-            throws InvalidDatasetParameterException,
+    public void createDatasetWithDriveTypeExeptionNameTest() throws InvalidDatasetParameterException,
             DatasetTypeParameterException, DuplicateNodeNameException, DatabaseException {
-        service.createDataset(projectNode, null, DatasetTypes.NETWORK,
-                DriveTypes.NEMO_V1);
+        service.createDataset(projectNode, null, DatasetTypes.NETWORK, DriveTypes.NEMO_V1);
 
     }
 
     /**
-     * testing method createDataset(String name, DatasetTypes type, DriveType
-     * driveType, Node projectNode) when parameter type == NETWORK
+     * testing method createDataset(String name, DatasetTypes type, DriveType driveType, Node
+     * projectNode) when parameter type == NETWORK
      * 
      * @throws DatasetTypeParameterException
      * @throws DuplicateNodeNameException
      */
     @Test(expected = DatasetTypeParameterException.class)
-    public void createDatasetWithDriveTypeExeptionDatasetTypeTest()
-            throws InvalidDatasetParameterException,
+    public void createDatasetWithDriveTypeExeptionDatasetTypeTest() throws InvalidDatasetParameterException,
             DatasetTypeParameterException, DuplicateNodeNameException, DatabaseException {
-        service.createDataset(projectNode, NAME_1, DatasetTypes.NETWORK,
-                DriveTypes.NEMO_V1);
+        service.createDataset(projectNode, NAME_1, DatasetTypes.NETWORK, DriveTypes.NEMO_V1);
 
     }
 
     /**
-     * testing method createDataset(String name, DatasetTypes type, DriveType
-     * driveType, Node projectNode) when parameter type = null
+     * testing method createDataset(String name, DatasetTypes type, DriveType driveType, Node
+     * projectNode) when parameter type = null
      * 
      * @throws InvalidDatasetParameterException
      * @throws DatasetTypeParameterException
      * @throws DuplicateNodeNameException
      */
     @Test(expected = InvalidDatasetParameterException.class)
-    public void createDatasetWithDriveTypeExeptionTypeTest()
-            throws InvalidDatasetParameterException, DatabaseException,
+    public void createDatasetWithDriveTypeExeptionTypeTest() throws InvalidDatasetParameterException, DatabaseException,
             DatasetTypeParameterException, DuplicateNodeNameException {
         service.createDataset(projectNode, NAME_1, null, DriveTypes.NEMO_V1);
 
     }
 
     /**
-     * testing method createDataset(String name, DatasetTypes type, DriveTypes
-     * driveType, Node projectNode) when parameter projectNode = null
+     * testing method createDataset(String name, DatasetTypes type, DriveTypes driveType, Node
+     * projectNode) when parameter projectNode = null
      * 
      * @throws DatasetTypeParameterException
      * @throws InvalidDatasetParameterException
      * @throws DuplicateNodeNameException
      */
     @Test(expected = InvalidDatasetParameterException.class)
-    public void createDatasetWithDriveTypeExeptionProjectNodeTest()
-            throws InvalidDatasetParameterException, DatabaseException, 
+    public void createDatasetWithDriveTypeExeptionProjectNodeTest() throws InvalidDatasetParameterException, DatabaseException,
             DatasetTypeParameterException, DuplicateNodeNameException {
-        service.createDataset(null, NAME_1, DatasetTypes.DRIVE,
-                DriveTypes.NEMO_V1);
+        service.createDataset(null, NAME_1, DatasetTypes.DRIVE, DriveTypes.NEMO_V1);
 
     }
 
     /**
-     * testing method createDataset(String name, DatasetTypes type, DriveTypes
-     * driveType, Node projectNode) when parameter name = ""
+     * testing method createDataset(String name, DatasetTypes type, DriveTypes driveType, Node
+     * projectNode) when parameter name = ""
      * 
      * @throws DatasetTypeParameterException
      * @throws InvalidDatasetParameterException
      * @throws DuplicateNodeNameException
      */
     @Test(expected = InvalidDatasetParameterException.class)
-    public void createDatasetWithDriveTypeExeptionEmptyNameTest()
-            throws InvalidDatasetParameterException, DatabaseException, 
+    public void createDatasetWithDriveTypeExeptionEmptyNameTest() throws InvalidDatasetParameterException, DatabaseException,
             DatasetTypeParameterException, DuplicateNodeNameException {
-        service.createDataset(projectNode, "", DatasetTypes.DRIVE,
-                DriveTypes.NEMO_V1);
+        service.createDataset(projectNode, "", DatasetTypes.DRIVE, DriveTypes.NEMO_V1);
 
     }
 
     /**
-     * testing method createDataset(String name, DatasetTypes type, DriveTypes
-     * driveType, Node projectNode) when parameter name duplicate name existing
-     * dataset node
+     * testing method createDataset(String name, DatasetTypes type, DriveTypes driveType, Node
+     * projectNode) when parameter name duplicate name existing dataset node
      * 
      * @throws InvalidDatasetParameterException
      * @throws DatasetTypeParameterException
      * @throws DuplicateNodeNameException
      */
     @Test(expected = DuplicateNodeNameException.class)
-    public void createDatasetWithDriveTypeExeptionDublicateNameTest()
-            throws InvalidDatasetParameterException, DatabaseException, 
+    public void createDatasetWithDriveTypeExeptionDublicateNameTest() throws InvalidDatasetParameterException, DatabaseException,
             DatasetTypeParameterException, DuplicateNodeNameException {
 
         initDatasetNode(NAME_1, DatasetTypes.DRIVE, DriveTypes.ROMES);
-        service.createDataset(projectNode, NAME_1, DatasetTypes.DRIVE,
-                DriveTypes.ROMES);
+        service.createDataset(projectNode, NAME_1, DatasetTypes.DRIVE, DriveTypes.ROMES);
 
     }
 
     /**
-     * testing method createDataset(String name, DatasetTypes type, Node
-     * projectNode) when all parameter != null
+     * testing method createDataset(String name, DatasetTypes type, Node projectNode) when all
+     * parameter != null
      * 
      * @throws InvalidDatasetParameterException
      * @throws DatasetTypeParameterException
@@ -576,30 +524,24 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
      * @throws DatabaseException
      */
     @Test
-    public void createDatasetTest() throws InvalidDatasetParameterException,
-            DatasetTypeParameterException, DuplicateNodeNameException,
-            DatabaseException {
+    public void createDatasetTest() throws InvalidDatasetParameterException, DatasetTypeParameterException,
+            DuplicateNodeNameException, DatabaseException {
 
-        Node actualDataset = service.createDataset(projectNode, NAME_1,
-                DatasetTypes.NETWORK);
+        Node actualDataset = service.createDataset(projectNode, NAME_1, DatasetTypes.NETWORK);
 
-        boolean hasRelation = actualDataset.hasRelationship(
-                DatasetRelationTypes.DATASET, Direction.INCOMING);
+        boolean hasRelation = actualDataset.hasRelationship(DatasetRelationTypes.DATASET, Direction.INCOMING);
         Assert.assertTrue("not create DATASET relation", hasRelation);
 
-        String actualName = (String) actualDataset
-                .getProperty(NewDatasetService.NAME);
+        String actualName = (String)actualDataset.getProperty(NewDatasetService.NAME);
         Assert.assertEquals("dataset has wrong name", NAME_1, actualName);
 
-        String actualType = (String) actualDataset
-                .getProperty(NewDatasetService.TYPE);
-        Assert.assertEquals("dataset has wrong type",
-                DatasetTypes.NETWORK.getId(), actualType);
+        String actualType = (String)actualDataset.getProperty(NewDatasetService.TYPE);
+        Assert.assertEquals("dataset has wrong type", DatasetTypes.NETWORK.getId(), actualType);
     }
 
     /**
-     * testing method createDataset(String name, DatasetTypes type, Node
-     * projectNode) when parameter name = null
+     * testing method createDataset(String name, DatasetTypes type, Node projectNode) when parameter
+     * name = null
      * 
      * @throws InvalidDatasetParameterException
      * @throws DatasetTypeParameterException
@@ -607,34 +549,30 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
      * @throws DatabaseException
      */
     @Test(expected = InvalidDatasetParameterException.class)
-    public void createDatasetExeptionNameTest()
-            throws InvalidDatasetParameterException,
-            DatasetTypeParameterException, DuplicateNodeNameException,
-            DatabaseException {
+    public void createDatasetExeptionNameTest() throws InvalidDatasetParameterException, DatasetTypeParameterException,
+            DuplicateNodeNameException, DatabaseException {
         service.createDataset(projectNode, null, DatasetTypes.NETWORK);
 
     }
 
     /**
-     * testing method createDataset(String name, DatasetTypes type, Node
-     * projectNode) when parameter type != NETWORK
+     * testing method createDataset(String name, DatasetTypes type, Node projectNode) when parameter
+     * type != NETWORK
      * 
      * @throws DatasetTypeParameterException
      * @throws DuplicateNodeNameException
      * @throws DatabaseException
      */
     @Test(expected = DatasetTypeParameterException.class)
-    public void createDatasetExeptionDatasetTypeTest()
-            throws InvalidDatasetParameterException,
-            DatasetTypeParameterException, DuplicateNodeNameException,
-            DatabaseException {
+    public void createDatasetExeptionDatasetTypeTest() throws InvalidDatasetParameterException, DatasetTypeParameterException,
+            DuplicateNodeNameException, DatabaseException {
         service.createDataset(projectNode, NAME_1, DatasetTypes.DRIVE);
 
     }
 
     /**
-     * testing method createDataset(String name, DatasetTypes type, Node
-     * projectNode) when parameter type = null
+     * testing method createDataset(String name, DatasetTypes type, Node projectNode) when parameter
+     * type = null
      * 
      * @throws InvalidDatasetParameterException
      * @throws DatasetTypeParameterException
@@ -642,17 +580,15 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
      * @throws DatabaseException
      */
     @Test(expected = InvalidDatasetParameterException.class)
-    public void createDatasetExeptionTypeTest()
-            throws InvalidDatasetParameterException,
-            DatasetTypeParameterException, DuplicateNodeNameException,
-            DatabaseException {
+    public void createDatasetExeptionTypeTest() throws InvalidDatasetParameterException, DatasetTypeParameterException,
+            DuplicateNodeNameException, DatabaseException {
         service.createDataset(projectNode, NAME_1, null);
 
     }
 
     /**
-     * testing method createDataset(String name, DatasetTypes type, Node
-     * projectNode) when parameter projectNode = null
+     * testing method createDataset(String name, DatasetTypes type, Node projectNode) when parameter
+     * projectNode = null
      * 
      * @throws InvalidDatasetParameterException
      * @throws DatasetTypeParameterException
@@ -660,17 +596,15 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
      * @throws DatabaseException
      */
     @Test(expected = InvalidDatasetParameterException.class)
-    public void createDatasetExeptionProjectNodeTest()
-            throws InvalidDatasetParameterException,
-            DatasetTypeParameterException, DuplicateNodeNameException,
-            DatabaseException {
+    public void createDatasetExeptionProjectNodeTest() throws InvalidDatasetParameterException, DatasetTypeParameterException,
+            DuplicateNodeNameException, DatabaseException {
         service.createDataset(null, NAME_1, DatasetTypes.NETWORK);
 
     }
 
     /**
-     * testing method createDataset(String name, DatasetTypes type, Node
-     * projectNode) when parameter name = ""
+     * testing method createDataset(String name, DatasetTypes type, Node projectNode) when parameter
+     * name = ""
      * 
      * @throws InvalidDatasetParameterException
      * @throws DatasetTypeParameterException
@@ -678,17 +612,15 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
      * @throws DatabaseException
      */
     @Test(expected = InvalidDatasetParameterException.class)
-    public void createDatasetExeptionEmptyNameTest()
-            throws InvalidDatasetParameterException,
-            DatasetTypeParameterException, DuplicateNodeNameException,
-            DatabaseException {
+    public void createDatasetExeptionEmptyNameTest() throws InvalidDatasetParameterException, DatasetTypeParameterException,
+            DuplicateNodeNameException, DatabaseException {
         service.createDataset(projectNode, "", DatasetTypes.NETWORK);
 
     }
 
     /**
-     * testing method createDataset(String name, DatasetTypes type, Node
-     * projectNode) when parameter name dublicate name existing dataset node
+     * testing method createDataset(String name, DatasetTypes type, Node projectNode) when parameter
+     * name dublicate name existing dataset node
      * 
      * @throws InvalidDatasetParameterException
      * @throws DatasetTypeParameterException
@@ -696,10 +628,8 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
      * @throws DatabaseException
      */
     @Test(expected = DuplicateNodeNameException.class)
-    public void createDatasetExeptionDublicateNameTest()
-            throws InvalidDatasetParameterException,
-            DatasetTypeParameterException, DuplicateNodeNameException,
-            DatabaseException {
+    public void createDatasetExeptionDublicateNameTest() throws InvalidDatasetParameterException, DatasetTypeParameterException,
+            DuplicateNodeNameException, DatabaseException {
 
         initDatasetNode(NAME_1, DatasetTypes.NETWORK, null);
         service.createDataset(projectNode, NAME_1, DatasetTypes.NETWORK);
@@ -707,8 +637,8 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
     }
 
     /**
-     * testing method getDataset(String name, DatasetTypes, Node projectNode)
-     * when this dataset doesn't exist
+     * testing method getDataset(String name, DatasetTypes, Node projectNode) when this dataset
+     * doesn't exist
      * 
      * @throws InvalidDatasetParameterException
      * @throws DatasetTypeParameterException
@@ -716,29 +646,23 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
      * @throws DatabaseException
      */
     @Test
-    public void getDatasetCreateTest() throws InvalidDatasetParameterException,
-            DatasetTypeParameterException, DuplicateNodeNameException,
-            DatabaseException {
-        Node actualDataset = service.getDataset(projectNode, NAME_1,
-                DatasetTypes.NETWORK);
+    public void getDatasetCreateTest() throws InvalidDatasetParameterException, DatasetTypeParameterException,
+            DuplicateNodeNameException, DatabaseException {
+        Node actualDataset = service.getDataset(projectNode, NAME_1, DatasetTypes.NETWORK);
 
-        boolean hasRelation = actualDataset.hasRelationship(
-                DatasetRelationTypes.DATASET, Direction.INCOMING);
+        boolean hasRelation = actualDataset.hasRelationship(DatasetRelationTypes.DATASET, Direction.INCOMING);
         Assert.assertTrue("not create DATASET relation", hasRelation);
 
-        String actualName = (String) actualDataset
-                .getProperty(NewDatasetService.NAME);
+        String actualName = (String)actualDataset.getProperty(NewDatasetService.NAME);
         Assert.assertEquals("dataset has wrong name", NAME_1, actualName);
 
-        String actualType = (String) actualDataset
-                .getProperty(NewDatasetService.TYPE);
-        Assert.assertEquals("dataset has wrong type",
-                DatasetTypes.NETWORK.getId(), actualType);
+        String actualType = (String)actualDataset.getProperty(NewDatasetService.TYPE);
+        Assert.assertEquals("dataset has wrong type", DatasetTypes.NETWORK.getId(), actualType);
     }
 
     /**
-     * testing method getDataset(String name, DatasetTypes, Node projectNode)
-     * when this dataset exists
+     * testing method getDataset(String name, DatasetTypes, Node projectNode) when this dataset
+     * exists
      * 
      * @throws InvalidDatasetParameterException
      * @throws DatasetTypeParameterException
@@ -746,22 +670,19 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
      * @throws DatabaseException
      */
     @Test
-    public void getDatasetFindTest() throws InvalidDatasetParameterException,
-            DatasetTypeParameterException, DuplicateNodeNameException,
-            DatabaseException {
+    public void getDatasetFindTest() throws InvalidDatasetParameterException, DatasetTypeParameterException,
+            DuplicateNodeNameException, DatabaseException {
 
         Node datasetNode = initDatasetNode(NAME_1, DatasetTypes.NETWORK, null);
 
-        Node actualDataset = service.getDataset(projectNode, NAME_1,
-                DatasetTypes.NETWORK);
+        Node actualDataset = service.getDataset(projectNode, NAME_1, DatasetTypes.NETWORK);
 
-        Assert.assertEquals("method getDataset return wrong node", datasetNode,
-                actualDataset);
+        Assert.assertEquals("method getDataset return wrong node", datasetNode, actualDataset);
     }
 
     /**
-     * testing method getDataset(String name, DatasetTypes type, Node
-     * projectNode) when parameter name = null
+     * testing method getDataset(String name, DatasetTypes type, Node projectNode) when parameter
+     * name = null
      * 
      * @throws InvalidDatasetParameterException
      * @throws DatasetTypeParameterException
@@ -769,34 +690,30 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
      * @throws DatabaseException
      */
     @Test(expected = InvalidDatasetParameterException.class)
-    public void getDatasetExeptionNameTest()
-            throws InvalidDatasetParameterException,
-            DatasetTypeParameterException, DuplicateNodeNameException,
-            DatabaseException {
+    public void getDatasetExeptionNameTest() throws InvalidDatasetParameterException, DatasetTypeParameterException,
+            DuplicateNodeNameException, DatabaseException {
         service.getDataset(projectNode, null, DatasetTypes.NETWORK);
 
     }
 
     /**
-     * testing method getDataset(String name, DatasetTypes type, Node
-     * projectNode) when parameter type != NETWORK
+     * testing method getDataset(String name, DatasetTypes type, Node projectNode) when parameter
+     * type != NETWORK
      * 
      * @throws DatasetTypeParameterException
      * @throws DuplicateNodeNameException
      * @throws DatabaseException
      */
     @Test(expected = DatasetTypeParameterException.class)
-    public void getDatasetExeptionDatasetTypeTest()
-            throws InvalidDatasetParameterException,
-            DatasetTypeParameterException, DuplicateNodeNameException,
-            DatabaseException {
+    public void getDatasetExeptionDatasetTypeTest() throws InvalidDatasetParameterException, DatasetTypeParameterException,
+            DuplicateNodeNameException, DatabaseException {
         service.getDataset(projectNode, NAME_1, DatasetTypes.DRIVE);
 
     }
 
     /**
-     * testing method getDataset(String name, DatasetTypes type, Node
-     * projectNode) when parameter type = null
+     * testing method getDataset(String name, DatasetTypes type, Node projectNode) when parameter
+     * type = null
      * 
      * @throws InvalidDatasetParameterException
      * @throws DatasetTypeParameterException
@@ -804,17 +721,15 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
      * @throws DatabaseException
      */
     @Test(expected = InvalidDatasetParameterException.class)
-    public void getDatasetExeptionTypeTest()
-            throws InvalidDatasetParameterException,
-            DatasetTypeParameterException, DuplicateNodeNameException,
-            DatabaseException {
+    public void getDatasetExeptionTypeTest() throws InvalidDatasetParameterException, DatasetTypeParameterException,
+            DuplicateNodeNameException, DatabaseException {
         service.getDataset(projectNode, NAME_1, null);
 
     }
 
     /**
-     * testing method getDataset(String name, DatasetTypes type, Node
-     * projectNode) when parameter projectNode = null
+     * testing method getDataset(String name, DatasetTypes type, Node projectNode) when parameter
+     * projectNode = null
      * 
      * @throws InvalidDatasetParameterException
      * @throws DatasetTypeParameterException
@@ -822,17 +737,15 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
      * @throws DatabaseException
      */
     @Test(expected = InvalidDatasetParameterException.class)
-    public void getDatasetExeptionProjectNodeTest()
-            throws InvalidDatasetParameterException,
-            DatasetTypeParameterException, DuplicateNodeNameException,
-            DatabaseException {
+    public void getDatasetExeptionProjectNodeTest() throws InvalidDatasetParameterException, DatasetTypeParameterException,
+            DuplicateNodeNameException, DatabaseException {
         service.getDataset(null, NAME_1, DatasetTypes.NETWORK);
 
     }
 
     /**
-     * testing method getDataset(String name, DatasetTypes type, Node
-     * projectNode) when parameter name = ""
+     * testing method getDataset(String name, DatasetTypes type, Node projectNode) when parameter
+     * name = ""
      * 
      * @throws InvalidDatasetParameterException
      * @throws DatasetTypeParameterException
@@ -840,184 +753,158 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
      * @throws DatabaseException
      */
     @Test(expected = InvalidDatasetParameterException.class)
-    public void getDatasetExeptionEmptyNameTest()
-            throws InvalidDatasetParameterException,
-            DatasetTypeParameterException, DuplicateNodeNameException,
-            DatabaseException {
+    public void getDatasetExeptionEmptyNameTest() throws InvalidDatasetParameterException, DatasetTypeParameterException,
+            DuplicateNodeNameException, DatabaseException {
         service.getDataset(projectNode, "", DatasetTypes.NETWORK);
 
     }
 
     /**
-     * testing method getDataset(String name, DatasetTypes type, DriveTypes
-     * driveType, Node projectNode) when this dataset exists
+     * testing method getDataset(String name, DatasetTypes type, DriveTypes driveType, Node
+     * projectNode) when this dataset exists
      * 
      * @throws DatasetTypeParameterException
      * @throws InvalidDatasetParameterException
      * @throws DuplicateNodeNameException
      */
     @Test
-    public void getDatasetWithDriveTypeFindTest()
-            throws InvalidDatasetParameterException, DatabaseException, 
+    public void getDatasetWithDriveTypeFindTest() throws InvalidDatasetParameterException, DatabaseException,
             DatasetTypeParameterException, DuplicateNodeNameException {
 
-        Node datasetNode = initDatasetNode(NAME_1, DatasetTypes.DRIVE,
-                DriveTypes.NEMO_V1);
+        Node datasetNode = initDatasetNode(NAME_1, DatasetTypes.DRIVE, DriveTypes.NEMO_V1);
 
-        Node checkNode = service.getDataset(projectNode, NAME_1,
-                DatasetTypes.DRIVE, DriveTypes.NEMO_V1);
+        Node checkNode = service.getDataset(projectNode, NAME_1, DatasetTypes.DRIVE, DriveTypes.NEMO_V1);
 
-        Assert.assertTrue("method findDataset() return wrong node",
-                datasetNode.equals(checkNode));
+        Assert.assertTrue("method findDataset() return wrong node", datasetNode.equals(checkNode));
 
     }
 
     /**
-     * testing method getDataset(String name, DatasetTypes type, DriveType
-     * driveType, Node projectNode) when dataset node doesn't exist
+     * testing method getDataset(String name, DatasetTypes type, DriveType driveType, Node
+     * projectNode) when dataset node doesn't exist
      * 
      * @throws InvalidDatasetParameterException
      * @throws DatasetTypeParameterException
      * @throws DuplicateNodeNameException
      */
     @Test
-    public void getDatasetWithDriveTypeCreateTest()
-            throws InvalidDatasetParameterException, DatabaseException, 
+    public void getDatasetWithDriveTypeCreateTest() throws InvalidDatasetParameterException, DatabaseException,
             DatasetTypeParameterException, DuplicateNodeNameException {
 
-        Node actualDataset = service.getDataset(projectNode, NAME_1,
-                DatasetTypes.DRIVE, DriveTypes.NEMO_V1);
+        Node actualDataset = service.getDataset(projectNode, NAME_1, DatasetTypes.DRIVE, DriveTypes.NEMO_V1);
 
-        boolean hasRelation = actualDataset.hasRelationship(
-                DatasetRelationTypes.DATASET, Direction.INCOMING);
+        boolean hasRelation = actualDataset.hasRelationship(DatasetRelationTypes.DATASET, Direction.INCOMING);
         Assert.assertTrue("not create DATASET relation", hasRelation);
 
-        String actualName = (String) actualDataset
-                .getProperty(NewDatasetService.NAME);
+        String actualName = (String)actualDataset.getProperty(NewDatasetService.NAME);
         Assert.assertEquals("dataset has wrong name", NAME_1, actualName);
 
-        String actualType = (String) actualDataset
-                .getProperty(NewDatasetService.TYPE);
-        Assert.assertEquals("dataset has wrong type",
-                DatasetTypes.DRIVE.getId(), actualType);
+        String actualType = (String)actualDataset.getProperty(NewDatasetService.TYPE);
+        Assert.assertEquals("dataset has wrong type", DatasetTypes.DRIVE.getId(), actualType);
 
-        String actualDriveType = (String) actualDataset
-                .getProperty(NewDatasetService.DRIVE_TYPE);
-        Assert.assertEquals("dataset has wrong driveType",
-                DriveTypes.NEMO_V1.name(), actualDriveType);
+        String actualDriveType = (String)actualDataset.getProperty(NewDatasetService.DRIVE_TYPE);
+        Assert.assertEquals("dataset has wrong driveType", DriveTypes.NEMO_V1.name(), actualDriveType);
     }
 
     /**
-     * testing method getDataset(String name, DatasetTypes type, DriveTypes
-     * driveType, Node projectNode) when parameter type = NETWORK
+     * testing method getDataset(String name, DatasetTypes type, DriveTypes driveType, Node
+     * projectNode) when parameter type = NETWORK
      * 
      * @throws DatasetTypeParameterException
      * @throws InvalidDatasetParameterException
      * @throws DuplicateNodeNameException
      */
     @Test(expected = DatasetTypeParameterException.class)
-    public void getDatasetWithDriveTypeNetworkTest()
-            throws InvalidDatasetParameterException, DatabaseException, 
+    public void getDatasetWithDriveTypeNetworkTest() throws InvalidDatasetParameterException, DatabaseException,
             DatasetTypeParameterException, DuplicateNodeNameException {
-        service.getDataset(projectNode, NAME_1, DatasetTypes.NETWORK,
-                DriveTypes.NEMO_V1);
+        service.getDataset(projectNode, NAME_1, DatasetTypes.NETWORK, DriveTypes.NEMO_V1);
 
     }
 
     /**
-     * testing method getDataset(String name, DatasetTypes type, DriveTypes
-     * driveType, Node projectNode) when parameter name = null
+     * testing method getDataset(String name, DatasetTypes type, DriveTypes driveType, Node
+     * projectNode) when parameter name = null
      * 
      * @throws DatasetTypeParameterException
      * @throws InvalidDatasetParameterException
      * @throws DuplicateNodeNameException
      */
     @Test(expected = InvalidDatasetParameterException.class)
-    public void getDatasetWithDriveTypeExeptionNameTest()
-            throws InvalidDatasetParameterException, DatabaseException, 
+    public void getDatasetWithDriveTypeExeptionNameTest() throws InvalidDatasetParameterException, DatabaseException,
             DatasetTypeParameterException, DuplicateNodeNameException {
-        service.getDataset(projectNode, null, DatasetTypes.DRIVE,
-                DriveTypes.NEMO_V1);
+        service.getDataset(projectNode, null, DatasetTypes.DRIVE, DriveTypes.NEMO_V1);
 
     }
 
     /**
-     * testing method getDataset(String name, DatasetTypes type, DriveTypes
-     * driveType, Node projectNode) when parameter type = null
+     * testing method getDataset(String name, DatasetTypes type, DriveTypes driveType, Node
+     * projectNode) when parameter type = null
      * 
      * @throws DatasetTypeParameterException
      * @throws InvalidDatasetParameterException
      * @throws DuplicateNodeNameException
      */
     @Test(expected = InvalidDatasetParameterException.class)
-    public void getDatasetWithDriveTypeExeptionTypeTest()
-            throws InvalidDatasetParameterException, DatabaseException, 
+    public void getDatasetWithDriveTypeExeptionTypeTest() throws InvalidDatasetParameterException, DatabaseException,
             DatasetTypeParameterException, DuplicateNodeNameException {
         service.getDataset(projectNode, NAME_1, null, DriveTypes.NEMO_V1);
 
     }
 
     /**
-     * testing method getDataset(String name, DatasetTypes type, DriveTypes
-     * driveType, Node projectNode) when parameter driveType = null
+     * testing method getDataset(String name, DatasetTypes type, DriveTypes driveType, Node
+     * projectNode) when parameter driveType = null
      * 
      * @throws DatasetTypeParameterException
      * @throws InvalidDatasetParameterException
      * @throws DuplicateNodeNameException
      */
     @Test(expected = InvalidDatasetParameterException.class)
-    public void getDatasetWithDriveTypeExeptionDriveTypeTest()
-            throws InvalidDatasetParameterException, DatabaseException, 
+    public void getDatasetWithDriveTypeExeptionDriveTypeTest() throws InvalidDatasetParameterException, DatabaseException,
             DatasetTypeParameterException, DuplicateNodeNameException {
         service.getDataset(projectNode, NAME_1, DatasetTypes.DRIVE, null);
 
     }
 
     /**
-     * testing method getDataset(String name, DatasetTypes type, DriveTypes
-     * driveType, Node projectNode) when parameter projectNode = null
+     * testing method getDataset(String name, DatasetTypes type, DriveTypes driveType, Node
+     * projectNode) when parameter projectNode = null
      * 
      * @throws DatasetTypeParameterException
      * @throws InvalidDatasetParameterException
      * @throws DuplicateNodeNameException
      */
     @Test(expected = InvalidDatasetParameterException.class)
-    public void getDatasetWithDriveTypeExeptionProjectNodeTest()
-            throws InvalidDatasetParameterException, DatabaseException, 
+    public void getDatasetWithDriveTypeExeptionProjectNodeTest() throws InvalidDatasetParameterException, DatabaseException,
             DatasetTypeParameterException, DuplicateNodeNameException {
         service.getDataset(null, NAME_1, DatasetTypes.DRIVE, DriveTypes.NEMO_V1);
 
     }
 
     /**
-     * testing method getDataset(String name, DatasetTypes type, DriveTypes
-     * driveType, Node projectNode) when parameter name = ""
+     * testing method getDataset(String name, DatasetTypes type, DriveTypes driveType, Node
+     * projectNode) when parameter name = ""
      * 
      * @throws DatasetTypeParameterException
      * @throws InvalidDatasetParameterException
      * @throws DuplicateNodeNameException
      */
     @Test(expected = InvalidDatasetParameterException.class)
-    public void getDatasetWithDriveTypeExeptionEmptyNameTest()
-            throws InvalidDatasetParameterException, DatabaseException, 
+    public void getDatasetWithDriveTypeExeptionEmptyNameTest() throws InvalidDatasetParameterException, DatabaseException,
             DatasetTypeParameterException, DuplicateNodeNameException {
-        service.getDataset(projectNode, "", DatasetTypes.DRIVE,
-                DriveTypes.NEMO_V1);
+        service.getDataset(projectNode, "", DatasetTypes.DRIVE, DriveTypes.NEMO_V1);
 
     }
 
     /**
-     * testing method getAllDatasets(Node projectNode) when nobody datasets
-     * exist
+     * testing method getAllDatasets(Node projectNode) when nobody datasets exist
      * 
      * @throws InvalidDatasetParameterException
      */
     @Test
-    public void findAllDatasetsEmptyTest()
-            throws InvalidDatasetParameterException {
+    public void findAllDatasetsEmptyTest() throws InvalidDatasetParameterException {
         List<Node> checkList = service.findAllDatasets(projectNode);
-        Assert.assertTrue("method findAllDatasets return wrong nodes",
-                checkList.isEmpty());
+        Assert.assertTrue("method findAllDatasets return wrong nodes", checkList.isEmpty());
     }
 
     /**
@@ -1028,19 +915,15 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
     @Test
     public void findAllDatasetsTest() throws InvalidDatasetParameterException {
         Node dataset_1 = initDatasetNode(NAME_1, DatasetTypes.NETWORK, null);
-        Node dataset_2 = initDatasetNode(NAME_2, DatasetTypes.DRIVE,
-                DriveTypes.NEMO_V1);
+        Node dataset_2 = initDatasetNode(NAME_2, DatasetTypes.DRIVE, DriveTypes.NEMO_V1);
         List<Node> checkList = service.findAllDatasets(projectNode);
 
-        Assert.assertTrue("method findAllDatasets didn't return dataset_1",
-                checkList.contains(dataset_1));
-        Assert.assertTrue("method findAllDatasets didn't return dataset_2",
-                checkList.contains(dataset_2));
+        Assert.assertTrue("method findAllDatasets didn't return dataset_1", checkList.contains(dataset_1));
+        Assert.assertTrue("method findAllDatasets didn't return dataset_2", checkList.contains(dataset_2));
 
         checkList.remove(dataset_1);
         checkList.remove(dataset_2);
-        Assert.assertTrue("method findAllDatasets return superfluouts nodes",
-                checkList.isEmpty());
+        Assert.assertTrue("method findAllDatasets return superfluouts nodes", checkList.isEmpty());
     }
 
     /**
@@ -1049,71 +932,60 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
      * @throws InvalidDatasetParameterException
      */
     @Test(expected = InvalidDatasetParameterException.class)
-    public void findAllDatasetsExceptionTest()
-            throws InvalidDatasetParameterException {
+    public void findAllDatasetsExceptionTest() throws InvalidDatasetParameterException {
         service.findAllDatasets(null);
     }
 
     /**
-     * testing method getAllDatasetsByType(DatasetTypes type,Node projectNode)
-     * when nobody datasets by given type exist
+     * testing method getAllDatasetsByType(DatasetTypes type,Node projectNode) when nobody datasets
+     * by given type exist
      * 
      * @throws InvalidDatasetParameterException
      */
     @Test
-    public void findAllDatasetByTypesEmptyTest()
-            throws InvalidDatasetParameterException {
+    public void findAllDatasetByTypesEmptyTest() throws InvalidDatasetParameterException {
         initDatasetNode(NAME_1, DatasetTypes.DRIVE, DriveTypes.NEMO_V1);
-        List<Node> checkList = service.findAllDatasetsByType(projectNode,
-                DatasetTypes.NETWORK);
-        Assert.assertTrue("method findAllDatasetsByType return wrong nodes",
-                checkList.isEmpty());
+        List<Node> checkList = service.findAllDatasetsByType(projectNode, DatasetTypes.NETWORK);
+        Assert.assertTrue("method findAllDatasetsByType return wrong nodes", checkList.isEmpty());
     }
 
     /**
-     * testing method getAllDatasetsByType(DatasetTypes type, Node projectNode)
-     * when some datasets exist
+     * testing method getAllDatasetsByType(DatasetTypes type, Node projectNode) when some datasets
+     * exist
      * 
      * @throws InvalidDatasetParameterException
      */
     @Test
-    public void findAllDatasetsByTypeTest()
-            throws InvalidDatasetParameterException {
+    public void findAllDatasetsByTypeTest() throws InvalidDatasetParameterException {
         Node dataset_1 = initDatasetNode(NAME_1, DatasetTypes.NETWORK, null);
         initDatasetNode(NAME_2, DatasetTypes.DRIVE, DriveTypes.NEMO_V1);
 
-        List<Node> checkList = service.findAllDatasetsByType(projectNode,
-                DatasetTypes.NETWORK);
+        List<Node> checkList = service.findAllDatasetsByType(projectNode, DatasetTypes.NETWORK);
 
-        Assert.assertTrue("method findAllDatasets didn't return dataset_1",
-                checkList.contains(dataset_1));
+        Assert.assertTrue("method findAllDatasets didn't return dataset_1", checkList.contains(dataset_1));
 
         checkList.remove(dataset_1);
-        Assert.assertTrue("method findAllDatasets return superfluouts nodes",
-                checkList.isEmpty());
+        Assert.assertTrue("method findAllDatasets return superfluouts nodes", checkList.isEmpty());
     }
 
     /**
-     * testing method getAllDatasetsByType(DatasetTypes type,Node projectNode)
-     * when projectNode == null
+     * testing method getAllDatasetsByType(DatasetTypes type,Node projectNode) when projectNode ==
+     * null
      * 
      * @throws InvalidDatasetParameterException
      */
     @Test(expected = InvalidDatasetParameterException.class)
-    public void findAllDatasetsByTypeExceptionProjectNodeTest()
-            throws InvalidDatasetParameterException {
+    public void findAllDatasetsByTypeExceptionProjectNodeTest() throws InvalidDatasetParameterException {
         service.findAllDatasetsByType(null, DatasetTypes.NETWORK);
     }
 
     /**
-     * testing method getAllDatasetsByType(DatasetTypes type,Node projectNode)
-     * when type == null
+     * testing method getAllDatasetsByType(DatasetTypes type,Node projectNode) when type == null
      * 
      * @throws InvalidDatasetParameterException
      */
     @Test(expected = InvalidDatasetParameterException.class)
-    public void findAllDatasetsByTypeExceptionTypeTest()
-            throws InvalidDatasetParameterException {
+    public void findAllDatasetsByTypeExceptionTypeTest() throws InvalidDatasetParameterException {
         service.findAllDatasetsByType(projectNode, null);
     }
 
@@ -1125,17 +997,13 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
 
         Node dataset_1 = initDatasetNode(NAME_1, DatasetTypes.NETWORK, null);
         initProjectNode();
-        Node dataset_2 = initDatasetNode(NAME_2, DatasetTypes.DRIVE,
-                DriveTypes.TEMS);
+        Node dataset_2 = initDatasetNode(NAME_2, DatasetTypes.DRIVE, DriveTypes.TEMS);
         List<Node> checkList = service.findAllDatasets();
-        Assert.assertTrue("method findAllDatasets didn't return dataset_1",
-                checkList.contains(dataset_1));
-        Assert.assertTrue("method findAllDatasets didn't return dataset_2",
-                checkList.contains(dataset_2));
+        Assert.assertTrue("method findAllDatasets didn't return dataset_1", checkList.contains(dataset_1));
+        Assert.assertTrue("method findAllDatasets didn't return dataset_2", checkList.contains(dataset_2));
         checkList.remove(dataset_1);
         checkList.remove(dataset_2);
-        Assert.assertTrue("method findAllDatasets return superfluouts nodes",
-                checkList.isEmpty());
+        Assert.assertTrue("method findAllDatasets return superfluouts nodes", checkList.isEmpty());
     }
 
     /**
@@ -1146,28 +1014,22 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
 
         List<Node> checkList = service.findAllDatasets();
 
-        Assert.assertTrue("method findAllDatasets return superfluouts nodes",
-                checkList.isEmpty());
+        Assert.assertTrue("method findAllDatasets return superfluouts nodes", checkList.isEmpty());
     }
 
     /**
-     * testing method findAllDatasetsByType(DatasetTypes type) when nobody
-     * datasets exist
+     * testing method findAllDatasetsByType(DatasetTypes type) when nobody datasets exist
      * 
      * @throws InvalidDatasetParameterException
      */
     @Test
-    public void findAllDatasetsByTypeInAllProjectsEmptyTest()
-            throws InvalidDatasetParameterException {
+    public void findAllDatasetsByTypeInAllProjectsEmptyTest() throws InvalidDatasetParameterException {
 
         initDatasetNode(NAME_1, DatasetTypes.NETWORK, null);
 
-        List<Node> checkList = service
-                .findAllDatasetsByType(projectNode, DatasetTypes.COUNTERS);
+        List<Node> checkList = service.findAllDatasetsByType(projectNode, DatasetTypes.COUNTERS);
 
-        Assert.assertTrue(
-                "method findAllDatasetsByType return superfluouts nodes",
-                checkList.isEmpty());
+        Assert.assertTrue("method findAllDatasetsByType return superfluouts nodes", checkList.isEmpty());
     }
 
     /**
@@ -1176,8 +1038,7 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
      * @throws InvalidDatasetParameterException
      */
     @Test(expected = InvalidDatasetParameterException.class)
-    public void findAllDatasetsByTypeInAllProjectsExceptionTest()
-            throws InvalidDatasetParameterException {
+    public void findAllDatasetsByTypeInAllProjectsExceptionTest() throws InvalidDatasetParameterException {
         service.findAllDatasetsByType(projectNode, null);
     }
 
@@ -1197,11 +1058,9 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
         }
 
         // last_child_id is updated,
-        Assert.assertEquals(child.getId(),
-                parent.getProperty(NewDatasetService.LAST_CHILD_ID, 0L));
+        Assert.assertEquals(child.getId(), parent.getProperty(NewDatasetService.LAST_CHILD_ID, 0L));
         // parent_id set
-        Assert.assertEquals(parent.getId(),
-                child.getProperty(NewDatasetService.PARENT_ID, 0L));
+        Assert.assertEquals(parent.getId(), child.getProperty(NewDatasetService.PARENT_ID, 0L));
         // valid chain exists
         Assert.assertTrue(chainExists(parent, child));
 
@@ -1221,11 +1080,9 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
         }
 
         // last_child_id updated,
-        Assert.assertEquals(child.getId(),
-                parent.getProperty(NewDatasetService.LAST_CHILD_ID, 0L));
+        Assert.assertEquals(child.getId(), parent.getProperty(NewDatasetService.LAST_CHILD_ID, 0L));
         // parent_id updated,
-        Assert.assertEquals(parent.getId(),
-                child.getProperty(NewDatasetService.PARENT_ID, 0L));
+        Assert.assertEquals(parent.getId(), child.getProperty(NewDatasetService.PARENT_ID, 0L));
         // there is a chain from parent to the child
         Assert.assertTrue(chainExists(parent, child));
     }
@@ -1260,11 +1117,9 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
         }
 
         // last_child_id updated,
-        Assert.assertEquals(child.getId(),
-                parent.getProperty(NewDatasetService.LAST_CHILD_ID, 0L));
+        Assert.assertEquals(child.getId(), parent.getProperty(NewDatasetService.LAST_CHILD_ID, 0L));
         // parent_id updated,
-        Assert.assertEquals(parent.getId(),
-                child.getProperty(NewDatasetService.PARENT_ID, 0L));
+        Assert.assertEquals(parent.getId(), child.getProperty(NewDatasetService.PARENT_ID, 0L));
         // chain exists
         Assert.assertTrue(chainExists(parent, child));
     }
@@ -1293,11 +1148,9 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
             Assert.fail();
         }
         // last_child_id updated,
-        Assert.assertEquals(child.getId(),
-                parent.getProperty(NewDatasetService.LAST_CHILD_ID, 0L));
+        Assert.assertEquals(child.getId(), parent.getProperty(NewDatasetService.LAST_CHILD_ID, 0L));
         // parent_id updated,
-        Assert.assertEquals(parent.getId(),
-                child.getProperty(NewDatasetService.PARENT_ID, 0L));
+        Assert.assertEquals(parent.getId(), child.getProperty(NewDatasetService.PARENT_ID, 0L));
         // chain exists
         Assert.assertTrue(chainExists(parent, child));
     }
@@ -1433,8 +1286,7 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
         // chain exists
         Assert.assertTrue(chainExists(node, child));
         // parent_id updated
-        Assert.assertEquals(parent.getId(),
-                child.getProperty(NewDatasetService.PARENT_ID, 0L));
+        Assert.assertEquals(parent.getId(), child.getProperty(NewDatasetService.PARENT_ID, 0L));
     }
 
     @Test
@@ -1469,8 +1321,7 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
         // chain exists
         Assert.assertTrue(chainExists(node, child));
         // parent_id updated
-        Assert.assertEquals(parent.getId(),
-                child.getProperty(NewDatasetService.PARENT_ID, 0L));
+        Assert.assertEquals(parent.getId(), child.getProperty(NewDatasetService.PARENT_ID, 0L));
     }
 
     @Test
@@ -1586,8 +1437,7 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
         // chain exists,
         Assert.assertTrue(chainExists(parent, lastChild));
         // last_child_id updated
-        Assert.assertEquals(lastChild.getId(),
-                parent.getProperty(NewDatasetService.LAST_CHILD_ID, 0L));
+        Assert.assertEquals(lastChild.getId(), parent.getProperty(NewDatasetService.LAST_CHILD_ID, 0L));
     }
 
     // -
@@ -1630,11 +1480,8 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
             if (prevNode != null) {
                 // all relationships - next,
                 // children appear in the order they are linked
-                Assert.assertEquals(
-                        node,
-                        prevNode.getRelationships(DatasetRelationTypes.NEXT,
-                                Direction.OUTGOING).iterator().next()
-                                .getOtherNode(prevNode));
+                Assert.assertEquals(node, prevNode.getRelationships(DatasetRelationTypes.NEXT, Direction.OUTGOING).iterator()
+                        .next().getOtherNode(prevNode));
             }
             // check that node is in the chain
             Assert.assertTrue(chainExists(parent, node));
@@ -1661,8 +1508,7 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
         // check on nodes that have no children has no children:
         for (int i = 0; i < nodes.length; i++) {
             for (int j = 1; j < nodes[i].length; j++) {
-                Iterable<Node> traverser = service
-                        .getChildrenChainTraverser(nodes[i][j]);
+                Iterable<Node> traverser = service.getChildrenChainTraverser(nodes[i][j]);
                 // traverser not null,
                 Assert.assertNotNull(traverser);
                 // !iterator.hasNext()
@@ -1688,12 +1534,10 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
         // check that valid parent is returned
         for (int i = 0; i < nodes.length; i++) {
             try {
-                Assert.assertEquals(parent,
-                        service.getParent(nodes[i][0], true));
+                Assert.assertEquals(parent, service.getParent(nodes[i][0], true));
                 Assert.assertTrue(chainExists(parent, nodes[i][0]));
                 for (int j = 1; j < nodes[i].length; j++) {
-                    Assert.assertEquals(nodes[i][0],
-                            service.getParent(nodes[i][j], true));
+                    Assert.assertEquals(nodes[i][0], service.getParent(nodes[i][j], true));
                     Assert.assertTrue(chainExists(nodes[i][0], nodes[i][j]));
                 }
             } catch (DatabaseException e) {
@@ -1738,11 +1582,8 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
             if (prevNode != null) {
                 // all relationships - next,
                 // children appear in the order they are linked
-                Assert.assertEquals(
-                        node,
-                        prevNode.getRelationships(DatasetRelationTypes.NEXT,
-                                Direction.OUTGOING).iterator().next()
-                                .getOtherNode(prevNode));
+                Assert.assertEquals(node, prevNode.getRelationships(DatasetRelationTypes.NEXT, Direction.OUTGOING).iterator()
+                        .next().getOtherNode(prevNode));
             }
             prevNode = node;
             // check that node is in the chain
@@ -1759,12 +1600,8 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
                 if (prevNode != null) {
                     // all relationships - next,
                     // children appear in the order they are linked
-                    Assert.assertEquals(
-                            node,
-                            prevNode.getRelationships(
-                                    DatasetRelationTypes.NEXT,
-                                    Direction.OUTGOING).iterator().next()
-                                    .getOtherNode(prevNode));
+                    Assert.assertEquals(node, prevNode.getRelationships(DatasetRelationTypes.NEXT, Direction.OUTGOING).iterator()
+                            .next().getOtherNode(prevNode));
                 }
                 prevNode = node;
                 // check that node is in the chain
@@ -1788,8 +1625,7 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
             }
         }
         // check that a relationship is created
-        for (Relationship rel : parent.getRelationships(
-                DatasetRelationshipTypes.CHILD, Direction.OUTGOING)) {
+        for (Relationship rel : parent.getRelationships(DatasetRelationshipTypes.CHILD, Direction.OUTGOING)) {
             Assert.assertTrue(children.contains(rel.getOtherNode(parent)));
         }
     }
@@ -1825,8 +1661,7 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
         Assert.assertNotNull(traverser);
         for (Node node : traverser) {
             // all children are lined to parent
-            for (Relationship rel : node.getRelationships(
-                    DatasetRelationTypes.CHILD, Direction.INCOMING)) {
+            for (Relationship rel : node.getRelationships(DatasetRelationTypes.CHILD, Direction.INCOMING)) {
                 Assert.assertEquals(parent, rel.getOtherNode(node));
             }
         }
@@ -1912,21 +1747,18 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
             tx.finish();
         }
 
-        DriveNodeTypes[] possibleDriveNodeTypes = new DriveNodeTypes[] 
-                {DriveNodeTypes.FILE, DriveNodeTypes.M, DriveNodeTypes.MP};
-        
+        DriveNodeTypes[] possibleDriveNodeTypes = new DriveNodeTypes[] {DriveNodeTypes.FILE, DriveNodeTypes.M, DriveNodeTypes.MP};
+
         for (DriveNodeTypes type : possibleDriveNodeTypes) {
 
-            Iterable<Node> traverser = service.findAllDatasetElements(parent,
-                    type);
+            Iterable<Node> traverser = service.findAllDatasetElements(parent, type);
 
             // traverser not null,
             Assert.assertNotNull(traverser);
             Assert.assertTrue(traverser.iterator().hasNext());
 
             for (Node node : traverser) {
-                DriveNodeTypes testType = DriveNodeTypes.findById(node
-                        .getProperty(NewAbstractService.TYPE, null).toString());
+                DriveNodeTypes testType = DriveNodeTypes.findById(node.getProperty(NewAbstractService.TYPE, null).toString());
                 // type correct
                 Assert.assertEquals(type, testType);
                 // node correct
@@ -1950,7 +1782,7 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
     }
 
     private DriveNodeTypes getRandomType() {
-        int sw = (int) (Math.random() * 3);
+        int sw = (int)(Math.random() * 3);
 
         switch (sw) {
         case 0:
@@ -1963,8 +1795,7 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
     }
 
     private boolean chainExists(Node parent, Node child) {
-        Iterator<Relationship> it = parent.getRelationships(
-                DatasetRelationTypes.CHILD, Direction.OUTGOING).iterator();
+        Iterator<Relationship> it = parent.getRelationships(DatasetRelationTypes.CHILD, Direction.OUTGOING).iterator();
 
         Node prevNode = null, node = null;
         if (it.hasNext()) {
@@ -1978,8 +1809,7 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
             if (prevNode.equals(child)) {
                 return true;
             }
-            it = prevNode.getRelationships(DatasetRelationTypes.NEXT,
-                    Direction.OUTGOING).iterator();
+            it = prevNode.getRelationships(DatasetRelationTypes.NEXT, Direction.OUTGOING).iterator();
             if (it.hasNext()) {
                 node = it.next().getOtherNode(prevNode);
             } else {
@@ -2012,8 +1842,7 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
             try {
                 nodes[i][0] = service.addChild(parentNode, getNewChild(), null);
                 for (int j = 1; j < nodes[i].length; j++) {
-                    nodes[i][j] = service.addChild(nodes[i][0], getNewChild(),
-                            null);
+                    nodes[i][j] = service.addChild(nodes[i][0], getNewChild(), null);
                 }
             } catch (DatabaseException e) {
                 LOGGER.error("could not add child", e);
