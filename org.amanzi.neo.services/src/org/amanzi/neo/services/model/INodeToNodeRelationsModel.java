@@ -15,6 +15,7 @@ package org.amanzi.neo.services.model;
 
 import java.util.Map;
 
+import org.amanzi.neo.model.distribution.IDistributionalModel;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 
@@ -27,7 +28,7 @@ import org.amanzi.neo.services.exceptions.DatabaseException;
  * @author grigoreva_a
  * @since 1.0.0
  */
-public interface INodeToNodeRelationsModel extends IPropertyStatisticalModel {
+public interface INodeToNodeRelationsModel extends IPropertyStatisticalModel, IDistributionalModel {
 
     public INodeToNodeRelationsType getNodeToNodeRelationsType();
 
@@ -62,8 +63,16 @@ public interface INodeToNodeRelationsModel extends IPropertyStatisticalModel {
      * @param properties
      * @param isReplace
      * @throws DatabaseException
-     * @throws AWEException 
+     * @throws AWEException
      */
     void updateRelationship(IDataElement serviceElement, IDataElement neighbourElement, Map<String, Object> properties,
             boolean isReplace) throws DatabaseException, AWEException;
+
+    /**
+     * retrun service element by proxy
+     * 
+     * @param proxy proxy element
+     * @return service sector or null if not found
+     */
+    public IDataElement getServiceElementByProxy(IDataElement proxy);
 }

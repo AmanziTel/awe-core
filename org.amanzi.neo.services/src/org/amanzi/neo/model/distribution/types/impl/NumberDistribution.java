@@ -31,13 +31,10 @@ import org.apache.log4j.Logger;
 public class NumberDistribution extends AbstractDistribution<SimpleRange> {
     private static final Logger LOGGER = Logger.getLogger(NumberDistribution.class);
 
-    public static final String STRING_DISTRIBUTION_NAME = "number_distribution";
-
     private NumberDistributionType distrType;
     private int count = 0;
 
-    protected NumberDistribution(IDistributionalModel model, INodeType nodeType, String propertyName,
-            NumberDistributionType distrType) {
+    public NumberDistribution(IDistributionalModel model, INodeType nodeType, String propertyName, NumberDistributionType distrType) {
         super(model, nodeType, propertyName);
         if (distrType == null) {
             LOGGER.error("NumberDistributionType cannot be null");
@@ -48,7 +45,7 @@ public class NumberDistribution extends AbstractDistribution<SimpleRange> {
 
     @Override
     public String getName() {
-        return STRING_DISTRIBUTION_NAME;
+        return distrType.toString();
     }
 
     @Override
@@ -58,7 +55,7 @@ public class NumberDistribution extends AbstractDistribution<SimpleRange> {
 
     @Override
     public Select[] getPossibleSelects() {
-        return null;
+        return new Select[] {Select.EXISTS};
     }
 
     @Override

@@ -26,6 +26,7 @@ import static org.mockito.Mockito.when;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.amanzi.log4j.LogStarter;
@@ -551,6 +552,111 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         assertEquals("Unexpected default selected color", DistributionModel.DEFAULT_MIDDLE_COLOR, newDistribution.getSelectedColor());
     }
     
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToUpdateBarWithoutBar() throws Exception {
+        Node parentDistribution = getNode();
+        Node rootAggregation = getNode(DistributionNodeTypes.ROOT_AGGREGATION);
+        List<Node> distributionBarNodes = getDistributionBarNodes();
+        IDistribution< ? > distributionType = getDistributionType();
+        DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, true, distributionType);
+        DistributionModel.distributionService = service;
+        IDistributionalModel model = getDistributionalModel(parentDistribution);
+        
+        DistributionModel distribution = new DistributionModel(model, distributionType);
+        distribution.updateBar(null);
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToUpdateBarWithoutName() throws Exception {
+        Node parentDistribution = getNode();
+        Node rootAggregation = getNode(DistributionNodeTypes.ROOT_AGGREGATION);
+        List<Node> distributionBarNodes = getDistributionBarNodes();
+        IDistribution< ? > distributionType = getDistributionType();
+        DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, true, distributionType);
+        DistributionModel.distributionService = service;
+        IDistributionalModel model = getDistributionalModel(parentDistribution);
+        
+        DistributionModel distribution = new DistributionModel(model, distributionType);
+        
+        DistributionBar bar = new DistributionBar();
+        bar.setName(null);
+        
+        distribution.updateBar(bar);
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToUpdateBarWithEmptyName() throws Exception {
+        Node parentDistribution = getNode();
+        Node rootAggregation = getNode(DistributionNodeTypes.ROOT_AGGREGATION);
+        List<Node> distributionBarNodes = getDistributionBarNodes();
+        IDistribution< ? > distributionType = getDistributionType();
+        DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, true, distributionType);
+        DistributionModel.distributionService = service;
+        IDistributionalModel model = getDistributionalModel(parentDistribution);
+        
+        DistributionModel distribution = new DistributionModel(model, distributionType);
+        
+        DistributionBar bar = new DistributionBar();
+        bar.setName(StringUtils.EMPTY);
+        
+        distribution.updateBar(bar);
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToUpdateBarWithNullRootElement() throws Exception {
+        Node parentDistribution = getNode();
+        Node rootAggregation = getNode(DistributionNodeTypes.ROOT_AGGREGATION);
+        List<Node> distributionBarNodes = getDistributionBarNodes();
+        IDistribution< ? > distributionType = getDistributionType();
+        DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, true, distributionType);
+        DistributionModel.distributionService = service;
+        IDistributionalModel model = getDistributionalModel(parentDistribution);
+        
+        DistributionModel distribution = new DistributionModel(model, distributionType);
+        
+        DistributionBar bar = new DistributionBar();
+        bar.setName(DISTRIBUTION_BAR_NAME_PREFIX);
+        bar.setRootElement(null);
+        
+        distribution.updateBar(bar);
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToUpdateBarWithNullNegativeCount() throws Exception {
+        Node parentDistribution = getNode();
+        Node rootAggregation = getNode(DistributionNodeTypes.ROOT_AGGREGATION);
+        List<Node> distributionBarNodes = getDistributionBarNodes();
+        IDistribution< ? > distributionType = getDistributionType();
+        DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, true, distributionType);
+        DistributionModel.distributionService = service;
+        IDistributionalModel model = getDistributionalModel(parentDistribution);
+        
+        DistributionModel distribution = new DistributionModel(model, distributionType);
+        
+        DistributionBar bar = new DistributionBar();
+        bar.setName(DISTRIBUTION_BAR_NAME_PREFIX);
+        bar.setRootElement(mock(IDataElement.class));
+        bar.setCount(-1);
+        
+        distribution.updateBar(bar);
+    }
+    
+    @Test
+    public void checkServiceActivityOnUpdate() throws Exception {
+        Node parentDistribution = getNode();
+        Node rootAggregation = getNode(DistributionNodeTypes.ROOT_AGGREGATION);
+        List<Node> distributionBarNodes = getDistributionBarNodes();
+        IDistribution< ? > distributionType = getDistributionType();
+        DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, true, distributionType);
+        DistributionModel.distributionService = service;
+        IDistributionalModel model = getDistributionalModel(parentDistribution);
+        IDistributionBar bar = getDistributionBar();
+        
+        DistributionModel distribution = new DistributionModel(model, distributionType);
+        distribution.updateBar(bar);
+        
+        verify(service).updateDistributionBar(eq(rootAggregation), eq(bar));
+    }
     
     /**
      * Returns mocked list of Distribution Bars
@@ -742,6 +848,15 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
                 result.add(element);
             }
         }
+        
+        return result;
+    }
+    
+    private IDistributionBar getDistributionBar() {
+        IDistributionBar result = mock(IDistributionBar.class);
+        
+        when(result.getName()).thenReturn(DISTRIBUTION_BAR_NAME_PREFIX);
+        when(result.getRootElement()).thenReturn(new DataElement(new HashMap<String, Object>()));
         
         return result;
     }

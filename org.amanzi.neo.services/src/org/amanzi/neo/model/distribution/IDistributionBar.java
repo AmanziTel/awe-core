@@ -61,19 +61,5 @@ public interface IDistributionBar extends Comparable<IDistributionBar> {
      * @return
      */
     public IDataElement getRootElement();
-    
-    /**
-     * Returns Min value of this Bar
-     *
-     * @return
-     */
-    public Comparable<Object> getMinValue();
-    
-    /**
-     * Returns Max value of this Bar
-     *
-     * @return
-     */
-    public Comparable<Object> getMaxValue();
 }
 
