@@ -15,6 +15,7 @@ package org.amanzi.neo.services;
 
 import java.util.Iterator;
 
+import org.amanzi.neo.db.manager.NeoServiceProvider;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
@@ -136,6 +137,8 @@ public class ProjectService extends NewAbstractService {
         } finally {
             tx.finish();
         }
+        // TODO: Fake
+        NeoServiceProvider.getProvider().commit();
         LOGGER.debug("Finished createProject");
         return result;
     }
