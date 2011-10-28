@@ -26,7 +26,10 @@ import net.refractions.udig.project.internal.render.impl.RendererImpl;
 import net.refractions.udig.project.render.RenderException;
 
 import org.amanzi.awe.models.catalog.neo.NewGeoResource;
+import org.amanzi.neo.services.NewAbstractService;
+import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.model.IDataElement;
+import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.IRenderableModel;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -53,18 +56,44 @@ import com.vividsolutions.jts.geom.Envelope;
 public class AbstractRenderer extends RendererImpl {
 
     public static class RenderOptions {
-        public static Scale scale = Scale.LARGE;
+        public static Scale scale = Scale.MEDIUM;
         public static int alpha = (int)(0.6 * 255.0);
         public static int large_sector_size = 30;
         public static int site_size = 10;
         public static Color border = Color.BLACK;
-        public static Color site_fill = new Color(100, 100, 100, alpha);
-        public static Color sector_fill = new Color(255, 255, 100, alpha);
+        public static Color site_fill = new Color(128, 128, 128, alpha);
+        public static Color sector_fill = new Color(255, 255, 128, alpha);
         public static boolean antialiazing = true;
+        public static int maxSitesLabel;
+        public static int maxSitesFull;
+        public static int maxSitesLite;
+        public static int maxSymbolSize;
+        public static boolean drawLabels;
+        public static boolean scaleSymbols;
     }
 
     protected enum Scale {
         SMALL, MEDIUM, LARGE;
+    }
+
+    public void setScaling(Envelope bounds_transformed, Envelope data_bounds, final IProgressMonitor monitor, long count) {
+        double dataScaled = (bounds_transformed.getHeight() * bounds_transformed.getWidth())
+                / (data_bounds.getHeight() * data_bounds.getWidth());
+
+        double countScaled = dataScaled * count;
+        RenderOptions.drawLabels = countScaled < RenderOptions.maxSitesLabel;
+        if (countScaled < RenderOptions.maxSitesFull) {
+            RenderOptions.scale = Scale.LARGE;
+        }
+        if (countScaled > RenderOptions.maxSitesLite) {
+            RenderOptions.scale = Scale.SMALL;
+        }
+        if (RenderOptions.scale.equals(Scale.LARGE) && RenderOptions.scaleSymbols) {
+            RenderOptions.large_sector_size *= Math.sqrt(RenderOptions.maxSitesFull) / (3 * Math.sqrt(countScaled));
+            RenderOptions.large_sector_size = Math.min(RenderOptions.large_sector_size, RenderOptions.maxSymbolSize);
+        }
+        // expand the boundary to include sites just out of view (so partial sectors can be see)
+        bounds_transformed.expandBy(0.75 * (bounds_transformed.getHeight() + bounds_transformed.getWidth()));
     }
 
     private static Logger LOGGER = Logger.getLogger(AbstractRenderer.class);
@@ -108,6 +137,10 @@ public class AbstractRenderer extends RendererImpl {
             Envelope bounds_transformed = getTransformedBounds();
             Envelope data_bounds = model.getBounds();
 
+            //TODO: refactor
+            int count = ((INetworkModel)model).getAllProperties(NetworkElementNodeType.SITE, NewAbstractService.NAME).size();
+            setScaling(bounds_transformed, data_bounds, monitor, count);
+
             destination.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             destination.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
@@ -130,7 +163,7 @@ public class AbstractRenderer extends RendererImpl {
 
                 java.awt.Point p = getContext().worldToPixel(world_location);
 
-                renderElement(destination, p, element);
+                renderElement(destination, p, element, model);
             }
 
         } catch (IOException e) {
@@ -150,7 +183,7 @@ public class AbstractRenderer extends RendererImpl {
      * @param point
      * @param element
      */
-    protected void renderElement(Graphics2D destination, Point point, IDataElement element) {
+    protected void renderElement(Graphics2D destination, Point point, IDataElement element, IRenderableModel model) {
         destination.setColor(Color.BLACK);
         destination.drawOval(point.x - 1, point.y - 1, 2, 2);
     }

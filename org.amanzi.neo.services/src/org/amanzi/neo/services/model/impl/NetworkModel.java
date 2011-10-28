@@ -108,8 +108,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
      * Use this constructor to create a new network structure. Be careful to set
      * <code>rootElement</code> NAME and PROJECT properties.
      * 
-     * @param network MUST contain property ("project",<code>Node</code> project) <i>OR</i> an
-     *        underlying network node.
+     * @param network a <code>DataElement</code> object representing root network node
      * @throws AWEException
      * @throws DuplicateNodeNameException
      * @throws DatasetTypeParameterException
@@ -625,7 +624,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
 
     public Iterable<IDataElement> getElements(Envelope bounds_transformed) {
         // currently return all elements
-        return new DataElementIterable(nwServ.findAllNetworkElements(rootNode, null));
+        return new DataElementIterable(nwServ.findAllNetworkElements(rootNode, NetworkElementNodeType.SITE));
     }
 
     @Override

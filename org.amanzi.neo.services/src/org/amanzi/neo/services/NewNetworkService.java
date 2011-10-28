@@ -54,6 +54,7 @@ public class NewNetworkService extends NewAbstractService {
     public final static String CELL_INDEX = "ci";
     public final static String LOCATION_AREA_CODE = "lac";
     public final static String BSIC = "bsic";
+    public final static String SECTOR_COUNT = "sector_count";
 
     public final static String SELECTION_RELATIONSHIP_INDEX = "selection_relationship";
 
@@ -266,6 +267,8 @@ public class NewNetworkService extends NewAbstractService {
                 result.setProperty(LOCATION_AREA_CODE, lac);
                 addNodeToIndex(result, index, LOCATION_AREA_CODE, lac);
             }
+            parent.setProperty(SECTOR_COUNT, (Integer)parent.getProperty(SECTOR_COUNT, 0) + 1);
+            LOGGER.debug("site " + parent.getId() + "nodes: " + parent.getProperty(SECTOR_COUNT, 0));
             tx.success();
         } finally {
             tx.finish();

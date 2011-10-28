@@ -18,14 +18,15 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.geom.Arc2D;
 import java.awt.geom.GeneralPath;
-import java.awt.geom.Rectangle2D;
 
 import org.amanzi.neo.services.NewAbstractService;
+import org.amanzi.neo.services.NewNetworkService;
 import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.model.IDataElement;
-import org.geotools.brewer.color.ColorBrewer;
+import org.amanzi.neo.services.model.INetworkModel;
+import org.amanzi.neo.services.model.IRenderableModel;
 
 /**
  * TODO Purpose of
@@ -40,14 +41,28 @@ public class NewNetworkRenderer extends AbstractRenderer {
     // TODO: find a better place for the constants
     public static final String AZIMUTH = "azimuth";
     public static final String BEAMWIDTH = "beam";
+    private static final double FULL_CIRCLE = 360.0;
 
     @Override
-    protected void renderElement(Graphics2D destination, Point point, IDataElement element) {
-        INodeType type = NodeTypeManager.getType(element.get(NewAbstractService.TYPE).toString());
-        if (NetworkElementNodeType.SECTOR.equals(type)) {
-            renderSector(destination, point, element);
-        } else if (NetworkElementNodeType.SITE.equals(type)) {
-            renderSite(destination, point, element);
+    protected void renderElement(Graphics2D destination, Point point, IDataElement site, IRenderableModel model) {
+        INodeType type = NodeTypeManager.getType(site.get(NewAbstractService.TYPE).toString());
+        if (!NetworkElementNodeType.SITE.equals(type)) {
+            throw new IllegalArgumentException("Could not render element of type " + type.getId());
+        }
+
+        renderSite(destination, point, site);
+        int i = 0;
+        int sCount = (Integer)site.get(NewNetworkService.SECTOR_COUNT);
+        for (IDataElement sector : ((INetworkModel)model).getChildren(site)) {
+            Double azimuth = (Double)sector.get(AZIMUTH);
+            Double beamwidth = (Double)sector.get(BEAMWIDTH);
+            if (azimuth == null || azimuth == 0 || beamwidth == null || beamwidth == 0) {
+                beamwidth = FULL_CIRCLE / sCount;
+                azimuth = beamwidth * i;
+                beamwidth = beamwidth.doubleValue() * 0.8;
+            }
+            renderSector(destination, point, azimuth, beamwidth);
+            i++;
         }
     }
 
@@ -60,7 +75,7 @@ public class NewNetworkRenderer extends AbstractRenderer {
         int size = 2;
         switch (RenderOptions.scale) {
         case SMALL:
-            destination.setColor(RenderOptions.border);// TODO: hardcoded style
+            destination.setColor(RenderOptions.border);
             destination.drawRect(point.x - size / 2, point.y - size / 2, size, size);
             break;
         case MEDIUM:
@@ -83,24 +98,17 @@ public class NewNetworkRenderer extends AbstractRenderer {
      * @param point
      * @param element
      */
-    private void renderSector(Graphics2D destination, Point point, IDataElement element) {
+    private void renderSector(Graphics2D destination, Point point, double azimuth, double beamwidth) {
         switch (RenderOptions.scale) {
         case LARGE:
-            Integer azimuth = (Integer)element.get(AZIMUTH);
-            Integer beamwidth = (Integer)element.get(BEAMWIDTH);
-            if (azimuth == null || beamwidth == null) {
-                // TODO: calculate average values(how?)
-                destination.setColor(Color.RED);
-                destination.drawOval(point.x - 1, point.y - 1, 2, 2);
-                return;
-            }
+
             double angle1 = 90 - azimuth - beamwidth / 2.0;
             double angle2 = angle1 + beamwidth;
 
             GeneralPath path = new GeneralPath();
             path.moveTo(point.x, point.y);
             Arc2D a = new Arc2D.Double();
-            a.setArcByCenter(point.x, point.y, 20, angle2, beamwidth, Arc2D.OPEN);
+            a.setArcByCenter(point.x, point.y, RenderOptions.large_sector_size, angle2, beamwidth, Arc2D.OPEN);
             path.append(a.getPathIterator(null), true);
             path.closePath();
 
