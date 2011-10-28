@@ -516,6 +516,10 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     public List<INodeType> getNetworkStructure() {
         return currentNetworkStructure;
     }
+    
+    public void setCurrentNetworkStructure(List<INodeType> currentNetworkStructure) {
+        this.currentNetworkStructure = currentNetworkStructure;
+    }
 
     @Override
     public IDataElement createElement(IDataElement parent, Map<String, Object> element, RelationshipType reltype)

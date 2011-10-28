@@ -21,8 +21,6 @@ import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
-import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
-import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.ProjectService;
 import org.amanzi.neo.services.enums.IDriveType;
 import org.amanzi.neo.services.enums.INodeType;
@@ -45,11 +43,10 @@ import org.neo4j.graphdb.Node;
  * @since 1.0.0
  */
 public class ProjectModel extends AbstractModel implements IProjectModel {
-    
+
     /**
-     * Class that describes Distribution Item
-     * 
-     * It consist of DistributionalModel and Type of Node to Analyze
+     * Class that describes Distribution Item It consist of DistributionalModel and Type of Node to
+     * Analyze
      * 
      * @author gerzog
      * @since 1.0.0
@@ -385,14 +382,12 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
         for (INetworkModel network : findAllNetworkModels()) {
             // create Distribution Items for all possible network Types
             for (INodeType nodeType : network.getNetworkStructure()) {
-                if (!nodeType.equals(NetworkElementNodeType.NETWORK)) {
-                    result.add(new DistributionItem(network, nodeType));
-                }
+                result.add(new DistributionItem(network, nodeType));
             }
-            //create Distribution Items for n2n relationships
+            // create Distribution Items for n2n relationships
             for (INodeToNodeRelationsModel n2nModel : network.getNodeToNodeModels()) {
-                result.add(new DistributionItem(n2nModel));                
-            }            
+                result.add(new DistributionItem(n2nModel));
+            }
         }
 
         return result;

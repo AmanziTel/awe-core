@@ -50,8 +50,10 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartMouseEvent;
@@ -107,7 +109,12 @@ public class DistributionAnalyzerView extends ViewPart {
 
     private static final Color COLOR_MORE = Color.GREEN;
     
-    
+
+    private void showErrorMessage(String message) {
+        MessageBox msgBox = new MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.ICON_ERROR);
+        msgBox.setMessage(message);
+        msgBox.open();
+    }
 
     @SuppressWarnings("rawtypes")
     private class DistributionDataset extends AbstractDataset implements CategoryDataset {
@@ -375,7 +382,7 @@ public class DistributionAnalyzerView extends ViewPart {
         try {
             initializeFields();
         } catch (AWEException e) {
-            // TODO: throw Runtime? show error message?
+            showErrorMessage(e.getMessage());
         }
     }
 
@@ -687,7 +694,7 @@ public class DistributionAnalyzerView extends ViewPart {
 
             }
         } catch (AWEException e) {
-            // TODO: handle exception
+            showErrorMessage(e.getMessage());
         }
     }
 
@@ -740,7 +747,7 @@ public class DistributionAnalyzerView extends ViewPart {
 
                     distributionModel.getDistributionBars(monitor);
                 } catch (AWEException e) {
-                    // TODO: handle exception
+                    showErrorMessage(e.getMessage());
                     return new Status(IStatus.ERROR, ReusePlugin.PLUGIN_ID, getName(), e);
                 }
 
@@ -852,7 +859,7 @@ public class DistributionAnalyzerView extends ViewPart {
 
             distributionChart.fireChartChanged();
         } catch (AWEException e) {
-            // TODO: handle exception
+            showErrorMessage(e.getMessage());
             e.printStackTrace();
         } finally {
             // show a chart

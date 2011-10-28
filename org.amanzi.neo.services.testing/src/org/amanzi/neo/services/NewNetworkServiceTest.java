@@ -63,8 +63,8 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 
     private final static List<INodeType> DEFAULT_NETWORK_STRUCTURE = new ArrayList<INodeType>();
 
-    private final static INodeType[] NETWORK_STRUCTURE_NODE_TYPES = new INodeType[] {NetworkElementNodeType.NETWORK,
-            NetworkElementNodeType.BSC, NetworkElementNodeType.CITY, NetworkElementNodeType.SITE, NetworkElementNodeType.SECTOR};
+    private final static INodeType[] NETWORK_STRUCTURE_NODE_TYPES = new INodeType[] {NetworkElementNodeType.BSC,
+            NetworkElementNodeType.CITY, NetworkElementNodeType.SITE, NetworkElementNodeType.SECTOR};
 
     static {
         // initialize default network structure
@@ -1107,23 +1107,18 @@ public class NewNetworkServiceTest extends AbstractAWETest {
             nodes.put(type, new ArrayList<Node>());
         }
         try {
-            Index<Node> index = networkService.getIndex(parent, NetworkElementNodeType.NETWORK);
             Index<Node> indexBSC = networkService.getIndex(parent, NetworkElementNodeType.BSC);
             Index<Node> indexSITE = networkService.getIndex(parent, NetworkElementNodeType.SITE);
             Index<Node> indexSECTOR = networkService.getIndex(parent, NetworkElementNodeType.SECTOR);
-            for (int i = 0; i < 4; i++) {
-                Node network = networkService.createNetworkElement(parent, index, "" + i, NetworkElementNodeType.NETWORK);
-                nodes.get(NetworkElementNodeType.NETWORK).add(network);
-                for (int j = 0; j < 4; j++) {
-                    Node bsc = networkService.createNetworkElement(network, indexBSC, "" + j, NetworkElementNodeType.BSC);
-                    nodes.get(NetworkElementNodeType.BSC).add(bsc);
-                    for (int k = 0; k < 4; k++) {
-                        Node site = networkService.createNetworkElement(bsc, indexSITE, "" + k, NetworkElementNodeType.SITE);
-                        nodes.get(NetworkElementNodeType.SITE).add(site);
-                        for (int l = 0; l < 4; l++) {
-                            Node sector = networkService.createSector(site, indexSECTOR, "" + l, "" + l, "" + l);
-                            nodes.get(NetworkElementNodeType.SECTOR).add(sector);
-                        }
+            for (int j = 0; j < 4; j++) {
+                Node bsc = networkService.createNetworkElement(parent, indexBSC, "" + j, NetworkElementNodeType.BSC);
+                nodes.get(NetworkElementNodeType.BSC).add(bsc);
+                for (int k = 0; k < 4; k++) {
+                    Node site = networkService.createNetworkElement(bsc, indexSITE, "" + k, NetworkElementNodeType.SITE);
+                    nodes.get(NetworkElementNodeType.SITE).add(site);
+                    for (int l = 0; l < 4; l++) {
+                        Node sector = networkService.createSector(site, indexSECTOR, "" + l, "" + l, "" + l);
+                        nodes.get(NetworkElementNodeType.SECTOR).add(sector);
                     }
                 }
             }
