@@ -272,35 +272,38 @@ public class NewStatisticsService extends NewAbstractService {
     private void saveNewVault(Node rootNode, IVault vault) throws DatabaseException{
         LOGGER.debug("start method saveVault(Node rootNode, IVault vault)");
         
-        Transaction tx = graphDb.beginTx();
-        Node vaultNode = null;
-        try {
-            vaultNode = createNode(StatisticsNodeTypes.VAULT);
-
-            if (StatisticsNodeTypes.VAULT.getId().equals(getNodeType(rootNode))) {
-                rootNode.createRelationshipTo(vaultNode, DatasetRelationTypes.CHILD);
-            } else {
-                rootNode.createRelationshipTo(vaultNode, StatisticsRelationships.STATISTICS);
+        // Kasnitskij_V:
+        // Save statistics only if count of some properties more than zero
+//        if (vault.getCount() > 0) {
+            Transaction tx = graphDb.beginTx();
+            Node vaultNode = null;
+            try {
+                vaultNode = createNode(StatisticsNodeTypes.VAULT);
+    
+                if (StatisticsNodeTypes.VAULT.getId().equals(getNodeType(rootNode))) {
+                    rootNode.createRelationshipTo(vaultNode, DatasetRelationTypes.CHILD);
+                } else {
+                    rootNode.createRelationshipTo(vaultNode, StatisticsRelationships.STATISTICS);
+                }
+                vaultNode.setProperty(NAME, vault.getType());
+                vaultNode.setProperty(COUNT, vault.getCount());
+                vaultNode.setProperty(CLASS, vault.getClass().getCanonicalName());
+                for (NewPropertyStatistics propStat : vault.getPropertyStatisticsMap().values()) {
+                    savePropertyStatistics(propStat, vaultNode);
+                }
+                for (IVault subVault : vault.getSubVaults().values()) {
+                    saveNewVault(vaultNode, subVault);
+                }
+                tx.success();
+            } catch (Exception e) {
+                LOGGER.error("Could not create vault node in database", e);
+                tx.failure();
+                throw new DatabaseException(e);
+    
+            } finally {
+                tx.finish();
             }
-            vaultNode.setProperty(NAME, vault.getType());
-            vaultNode.setProperty(COUNT, vault.getCount());
-            vaultNode.setProperty(CLASS, vault.getClass().getCanonicalName());
-            for (NewPropertyStatistics propStat : vault.getPropertyStatisticsMap().values()) {
-                savePropertyStatistics(propStat, vaultNode);
-            }
-            for (IVault subVault : vault.getSubVaults().values()) {
-                saveNewVault(vaultNode, subVault);
-            }
-            tx.success();
-        } catch (Exception e) {
-            LOGGER.error("Could not create vault node in database", e);
-            tx.failure();
-            throw new DatabaseException(e);
-
-        } finally {
-            tx.finish();
-
-        }
+//        }
 
         LOGGER.debug("finish method saveNewVault(Node rootNode, IVault vault)");
     }
@@ -365,10 +368,11 @@ public class NewStatisticsService extends NewAbstractService {
         
         // Kasnitskij_V:
         // Save statistics only if class of statistics is Boolean, String or Number
+        // and only if count of some properties more than zero
         Class<?> klass = propStat.getKlass();
-        if (klass.equals(Boolean.class) ||
+        if ((number > 0) && (klass.equals(Boolean.class) ||
                 klass.equals(String.class) ||
-                klass.getSuperclass().equals(Number.class)) {
+                klass.getSuperclass().equals(Number.class))) {
             
             Transaction tx = graphDb.beginTx();
             try {

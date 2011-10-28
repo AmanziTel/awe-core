@@ -28,6 +28,7 @@ import org.amanzi.neo.services.exceptions.LoadVaultException;
 import org.amanzi.neo.services.model.IPropertyStatisticalModel;
 import org.amanzi.neo.services.statistic.IVault;
 import org.amanzi.neo.services.statistic.internal.NewPropertyStatistics;
+import org.neo4j.graphdb.Node;
 
 /**
  * TODO Purpose of
@@ -76,7 +77,9 @@ public abstract class PropertyStatisticalModel extends DataModel implements IPro
     protected void removeProperty(INodeType nodeType, String propertyName, Object propertyValue)
             throws InvalidStatisticsParameterException, LoadVaultException, IndexPropertyException {
 
-        statisticsVault.removeProperty(nodeType.getId(), propertyName, propertyValue);
+        if (!notNecessaryListOfProperties.contains(propertyName)) {
+            statisticsVault.removeProperty(nodeType.getId(), propertyName, propertyValue);
+        }
     }
     
     protected void renameProperty(INodeType nodeType, String propertyName, Object oldPropValue, Object newPropValue) 
@@ -93,11 +96,12 @@ public abstract class PropertyStatisticalModel extends DataModel implements IPro
         }
     }
     
-    protected void removeProperty(INodeType nodeType, Map<String, Object> params) throws AWEException {
-        for (String key : params.keySet()) {
-            Object value = params.get(key);
-            if (value != null) {
-                removeProperty(nodeType, key, value);
+    protected void removeProperty(INodeType nodeType, Map<String, Object> dataElement) throws AWEException {
+        Node nodeFromDataElement = ((DataElement)dataElement).getNode();
+        for (String propertyName : nodeFromDataElement.getPropertyKeys()) {
+            Object propertyValue = nodeFromDataElement.getProperty(propertyName);
+            if (propertyValue != null) {
+                removeProperty(nodeType, propertyName, propertyValue);
             }
         }
     }
