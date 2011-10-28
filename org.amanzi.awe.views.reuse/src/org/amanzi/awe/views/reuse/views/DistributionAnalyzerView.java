@@ -41,6 +41,8 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.FormAttachment;
@@ -586,6 +588,8 @@ public class DistributionAnalyzerView extends ViewPart {
      * @param isVisible
      */
     private void setStandardStatusPanelVisisble(boolean isVisible) {
+        colorProperties.setVisible(isVisible);
+        
         selectedValue.setVisible(isVisible);
         selectedValueLabel.setVisible(isVisible);
         
@@ -822,6 +826,15 @@ public class DistributionAnalyzerView extends ViewPart {
                 }
 
                 // TODO: also it should open NetworkTreeView with this Distribution
+            }
+        });
+        
+        //selection adjacency
+        selectionAdjacency.addModifyListener(new ModifyListener() {
+            
+            @Override
+            public void modifyText(ModifyEvent e) {
+                updateChartColors();
             }
         });
     }

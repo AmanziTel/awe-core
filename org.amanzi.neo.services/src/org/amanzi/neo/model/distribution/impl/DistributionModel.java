@@ -338,14 +338,6 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
             LOGGER.error("New count of Bar cannot be less than zero");
             throw new IllegalArgumentException("New count of Bar cannot be less than zero");
         }
-        if (bar.getMinValue() == null) {
-            LOGGER.error("New minValue of Bar cannot be null");
-            throw new IllegalArgumentException("New minValue of Bar cannot be null");
-        }
-        if (bar.getMaxValue() == null) {
-            LOGGER.error("New maxValue of Bar cannot be null");
-            throw new IllegalArgumentException("New maxValue of Bar cannot be null");
-        }
         if (bar.getRootElement() == null) {
             LOGGER.error("New rootElement of Bar cannot be null");
             throw new IllegalArgumentException("New rootElement of Bar cannot be null");
