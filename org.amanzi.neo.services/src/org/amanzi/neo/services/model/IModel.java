@@ -14,6 +14,7 @@
 package org.amanzi.neo.services.model;
 
 import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.exceptions.AWEException;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -57,4 +58,9 @@ public interface IModel {
      * @return ???
      */
     public INodeType getType();
+
+    /**
+     * The method should perform final operations like storing indexes and statistics values.
+     */
+    public void finishUp() throws AWEException;
 }

@@ -74,4 +74,22 @@ public interface IPropertyStatisticalModel extends IDataModel {
      * @return
      */
     public Object[] getPropertyValues(INodeType nodeType, String propertyName);
+    
+    /**
+     * Method find min value in statistics by nodeType and propertyName
+     *
+     * @param nodeType Type of node
+     * @param propertyName Name of property
+     * @return Minimum value in statistics
+     */
+    public Number getMinValue(INodeType nodeType, String propertyName);
+    
+    /**
+     * Method find max value in statistics by nodeType and propertyName
+     *
+     * @param nodeType Type of node
+     * @param propertyName Name of property
+     * @return Maximum value in statistics
+     */
+    public Number getMaxValue(INodeType nodeType, String propertyName);
 }

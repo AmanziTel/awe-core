@@ -27,7 +27,7 @@ import org.amanzi.neo.services.exceptions.DatabaseException;
  * @author grigoreva_a
  * @since 1.0.0
  */
-public interface INodeToNodeRelationsModel extends IDataModel {
+public interface INodeToNodeRelationsModel extends IPropertyStatisticalModel {
 
     public INodeToNodeRelationsType getNodeToNodeRelationsType();
 
@@ -53,4 +53,17 @@ public interface INodeToNodeRelationsModel extends IDataModel {
      * @return <code>IDataElement</code> traverser
      */
     public Iterable<IDataElement> getN2NRelatedElements(IDataElement source);
+
+    /**
+     * update relationship between service and neighbour elements proxys with required properties
+     * 
+     * @param serviceElement
+     * @param neighbourElement
+     * @param properties
+     * @param isReplace
+     * @throws DatabaseException
+     * @throws AWEException 
+     */
+    void updateRelationship(IDataElement serviceElement, IDataElement neighbourElement, Map<String, Object> properties,
+            boolean isReplace) throws DatabaseException, AWEException;
 }

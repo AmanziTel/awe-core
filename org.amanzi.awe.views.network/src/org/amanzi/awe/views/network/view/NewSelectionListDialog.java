@@ -30,11 +30,9 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 /**
- * TODO Purpose of
- * <p>
- * </p>
+ * Dialog for creating of selection list
  * 
- * @author Vampire
+ * @author Ladornaya_A
  * @since 1.0.0
  */
 public class NewSelectionListDialog extends AbstractDialog<Integer> {

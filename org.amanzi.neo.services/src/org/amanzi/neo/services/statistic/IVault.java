@@ -230,5 +230,36 @@ public interface IVault {
      */
     public void removeProperty(String nodeType, String propName, Object propValue) throws IndexPropertyException,
             InvalidStatisticsParameterException;
+    
+    /**
+     * Method rename old property value on new property value
+     *
+     * @param nodeType Type of node
+     * @param propertyName Name of property
+     * @param oldPropValue Old property value 
+     * @param newPropValue New property value
+     * @throws IndexPropertyException
+     * @throws InvalidStatisticsParameterException
+     */
+    public void renamePropertyValue(String nodeType, String propertyName, Object oldPropValue, Object newPropValue) throws IndexPropertyException,
+            InvalidStatisticsParameterException;
+    
+    /**
+     * Method find min value in statistics by nodeType and propertyName
+     *
+     * @param nodeType Type of node
+     * @param propertyName Name of property
+     * @return Minimum value in statistics
+     */
+    public Number getMinValue(String nodeType, String propertyName);
+    
+    /**
+     * Method find max value in statistics by nodeType and propertyName
+     *
+     * @param nodeType Type of node
+     * @param propertyName Name of property
+     * @return Maximum value in statistics
+     */
+    public Number getMaxValue(String nodeType, String propertyName);
 
 }

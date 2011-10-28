@@ -11,18 +11,11 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.core.newsaver;
-
-import org.amanzi.neo.loader.core.parser.IDataElement;
+package org.amanzi.neo.loader.core.preferences;
 
 /**
- * TODO Purpose of
- * <p>
- * </p>
- * 
- * @author Kondratenko_Vladislav
- * @since 1.0.0
+ * @author Vladislav_Kondratenko
  */
-public interface IData extends IDataElement {
-
+public enum PossibleTypes {
+    DOUBLE, FLOAT, INTEGER, LONG, STRING
 }

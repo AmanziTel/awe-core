@@ -20,6 +20,7 @@ import org.amanzi.neo.model.distribution.IDistribution;
 import org.amanzi.neo.model.distribution.IDistributionalModel;
 import org.amanzi.neo.model.distribution.IRange;
 import org.amanzi.neo.services.enums.INodeType;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -30,6 +31,8 @@ import org.apache.log4j.Logger;
 public abstract class AbstractDistribution<T extends IRange> implements IDistribution<T> {
     
     private static final Logger LOGGER = Logger.getLogger(AbstractDistribution.class);
+    private static final int DOUBLE_SCALE = 4;
+    static final double EPS = 0.00001; 
     
     /*
      * Analyzed Model 
@@ -55,6 +58,16 @@ public abstract class AbstractDistribution<T extends IRange> implements IDistrib
      * List of ranges
      */
     protected List<T> ranges = new ArrayList<T>();
+    
+    /*
+     * Type of Select
+     */
+    protected Select select;
+    
+    /*
+     * Is it possible to change color of Bar
+     */
+    private boolean canChangeColor;
     
     /**
      * Default constructor
@@ -117,5 +130,69 @@ public abstract class AbstractDistribution<T extends IRange> implements IDistrib
     public INodeType getNodeType() {
         return nodeType;
     }
+    
+    /**
+     * Returns Default Select for this Distribution
+     *
+     * @return
+     */
+    protected abstract Select getDefaultSelect();
+    
+    @Override
+    public void setSelect(Select select) {
+        if (ArrayUtils.contains(getPossibleSelects(), select)) {
+            if (this.select != select) {
+                this.select = select;
+                isInitialized = false;
+            }
+        } else {
+            throw new IllegalArgumentException("Cannot set Select <" + select + "> for Distribution <" + this + ">.");
+        }
+    }
+    
+    @Override
+    public String getPropertyName() {
+        return propertyName;
+    }
 
+    @Override
+    public boolean canChangeColors() {
+        return canChangeColor;
+    }
+
+    @Override
+    public void setCanChangeColors(boolean canChangeColors) {
+        this.canChangeColor = canChangeColors;
+    }
+
+    static String getNumberDistributionRangeName(double min, double max) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(min).append(" - ").append(max);
+        return sb.toString();
+    }
+
+    static double getMinValue(Number[] values) {
+        double res = Double.MAX_VALUE;
+        for (Number v : values) {
+            if (v.doubleValue() < res)
+                res = v.doubleValue();
+        }
+        return res;
+    }
+
+    static double getMaxValue(Number[] values) {
+        double res = -Double.MAX_VALUE;
+        for (Number v : values) {
+            if (v.doubleValue() > res)
+                res = v.doubleValue();
+        }
+        return res;
+    }
+
+    static double getStep(double min, double max, int delta) {
+        double res = (max - min) / delta;
+        double scaleNum = Math.pow(10, DOUBLE_SCALE);
+        res = Math.round(res * scaleNum) / scaleNum;
+        return res;
+    }
 }

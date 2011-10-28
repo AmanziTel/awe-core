@@ -154,7 +154,7 @@ public class DataLoadPreferenceInitializer extends AbstractPreferenceInitializer
         pref.setDefault(DataLoadPreferences.NH_CITY, "City, Town, Ort, SIT_City");
         pref.setDefault(DataLoadPreferences.NH_MSC, "MSC, MSC_NAME, MSC Name");
         pref.setDefault(DataLoadPreferences.NH_BSC, "BSC, BSC_NAME, RNC, BSC Name");
-        pref.setDefault(DataLoadPreferences.NH_SITE, "Site, Name, Site Name, SiteName, SITE_ID, SiteID");
+        pref.setDefault(DataLoadPreferences.NH_SITE, "Site, Name, Site Name, SiteName, SITE_ID, SiteID, RSITE");
         pref.setDefault(DataLoadPreferences.NH_SECTOR,
                 "Sector, SectorName, Cell, BTS_Name, CELL_NAME, GSM Sector ID,CellIdentity, cell name, Cell Name,sector_id, BS_NO");
         pref.setDefault(DataLoadPreferences.NH_SECTOR_CI, "CI,CI_s,CellId,CellIdentity");
