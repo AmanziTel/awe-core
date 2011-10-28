@@ -516,7 +516,7 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         IDistributionalModel model = getDistributionalModel(parentDistribution);
         
         DistributionModel newDistribution = new DistributionModel(model, distributionType);
-        newDistribution.setSelectedColor(null);
+        newDistribution.setMiddleColor(null);
     }
     
     @Test
@@ -549,7 +549,7 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         
         assertEquals("Unexpected default left color", DistributionModel.DEFAULT_LEFT_COLOR, newDistribution.getLeftColor());
         assertEquals("Unexpected default right color", DistributionModel.DEFAULT_RIGHT_COLOR, newDistribution.getRightColor());
-        assertEquals("Unexpected default selected color", DistributionModel.DEFAULT_MIDDLE_COLOR, newDistribution.getSelectedColor());
+        assertEquals("Unexpected default selected color", DistributionModel.DEFAULT_MIDDLE_COLOR, newDistribution.getMiddleColor());
     }
     
     @Test(expected = IllegalArgumentException.class)

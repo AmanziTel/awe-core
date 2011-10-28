@@ -51,7 +51,7 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
     /**
      * Default color for Left Bar
      */
-    static final Color DEFAULT_LEFT_COLOR = Color.BLUE;
+    static final Color DEFAULT_LEFT_COLOR = Color.RED;
     
     /**
      * Default color for Right Bar
@@ -61,17 +61,26 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
     /**
      * Default color for Selected Bar
      */
-    static final Color DEFAULT_MIDDLE_COLOR = Color.RED;
+    static final Color DEFAULT_MIDDLE_COLOR = Color.YELLOW;
     
     /*
      * Distribution Service
      */
     static DistributionService distributionService = NeoServiceFactory.getInstance().getDistributionService();
     
+    /*
+     * Analyzed Model
+     */
     private IDistributionalModel analyzedModel;
     
+    /*
+     * Type of Distribution
+     */
     private IDistribution<?> distributionType;
     
+    /*
+     * Is Distribution Structure already exists in DB
+     */
     private boolean isExist = false;
     
     /*
@@ -417,12 +426,12 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
     }
 
     @Override
-    public Color getSelectedColor() {
+    public Color getMiddleColor() {
         return selectedBarColor;
     }
 
     @Override
-    public void setSelectedColor(Color selectedBarColor) {
+    public void setMiddleColor(Color selectedBarColor) {
         if (selectedBarColor == null) {
             LOGGER.error("Cannot set null for selectedBarColor");
             throw new IllegalArgumentException("Cannot set null for selectedBarColor");

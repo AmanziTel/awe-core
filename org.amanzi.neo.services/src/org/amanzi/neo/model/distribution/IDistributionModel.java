@@ -93,11 +93,11 @@ public interface IDistributionModel extends IModel {
      *
      * @return
      */
-    public Color getSelectedColor();
+    public Color getMiddleColor();
     
     /**
      * Set Color for Selected Bar
      */
-    public void setSelectedColor(Color selectedBarColor);
+    public void setMiddleColor(Color middleBarColor);
 
 }
