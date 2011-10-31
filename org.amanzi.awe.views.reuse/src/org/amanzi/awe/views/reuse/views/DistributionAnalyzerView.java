@@ -792,6 +792,9 @@ public class DistributionAnalyzerView extends ViewPart {
         // chart
         chartFrame.setVisible(false);
         
+        //blend
+        blendButton.setSelection(true);
+        
         setStandardStatusPanelVisisble(false);
         setBlendPanelVisible(false);
     }
@@ -1035,6 +1038,8 @@ public class DistributionAnalyzerView extends ViewPart {
                     setBlendPanelVisible(false);
                     setStandardStatusPanelVisisble(true);
                 }
+                
+                updateChartColors();
             }
             
             @Override
@@ -1078,6 +1083,11 @@ public class DistributionAnalyzerView extends ViewPart {
     private void updateChartColors() {
         int selectedIndex = dataset.getColumnIndex(selectedBar);
         
+        RGB leftRGB = leftColor.getColorValue();
+        RGB rightRGB = rightColor.getColorValue();
+        float ratio = 0;
+        float perc = distributionModel.getBarCount() <= 0 ? 1 : (float)1 / distributionModel.getBarCount();
+        
         for (int i = 0; i < dataset.getDistributionBars().size(); i++) {
             Color barColor = null;
             IDistributionBar currentBar = (IDistributionBar)dataset.getColumnKey(i);
@@ -1085,7 +1095,8 @@ public class DistributionAnalyzerView extends ViewPart {
                 if (colorPropertiesButton.getSelection()) {
                     // use color properties
                     if (blendButton.getSelection()) {
-                        //set blend color
+                        barColor = blend(leftRGB, rightRGB, ratio);
+                        ratio+= perc;
                     } else {
                         //choose color from palette
                     }
@@ -1106,6 +1117,26 @@ public class DistributionAnalyzerView extends ViewPart {
         UPDATE_BAR_COLORS_JOB.schedule();
         
         distributionChart.fireChartChanged();
+    }
+    
+    /**
+     * Blend color
+     * 
+     * @param bg left
+     * @param fg right
+     * @param factor factor (0-1)
+     * @return RGB
+     */
+    private Color blend(RGB bg, RGB fg, float factor) {
+        if (factor < 0.0)
+            factor = 0F;
+        if (factor > 1.0)
+            factor = 1F;
+        float complement = 1.0F - factor;
+        RGB rgb = new RGB((int)(complement * bg.red + factor * fg.red), (int)(complement * bg.green + factor * fg.green),
+                (int)(complement * bg.blue + factor * fg.blue));
+        
+        return convertToColor(rgb);
     }
 
     @Override

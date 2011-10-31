@@ -103,6 +103,11 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
      */
     private Color selectedBarColor = DEFAULT_MIDDLE_COLOR;
     
+    /*
+     * Number of Bars 
+     */
+    private int barCount = 0;
+    
     /**
      * Returns 
      * @param parentNode
@@ -375,6 +380,8 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
     
         LOGGER.debug("finish getDistributionBars()");
         
+        barCount = result.size();
+        
         return result;
     }
 
@@ -445,5 +452,10 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
         distributionService.updateSelectedBarColors(rootNode, leftBarColor, rightBarColor, selectedBarColor);
         
         super.finishUp();
+    }
+
+    @Override
+    public int getBarCount() {
+        return barCount; 
     }
 }

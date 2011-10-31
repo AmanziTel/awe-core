@@ -99,5 +99,10 @@ public interface IDistributionModel extends IModel {
      * Set Color for Selected Bar
      */
     public void setMiddleColor(Color middleBarColor);
+    
+    /**
+     * Returns number of Bars in this distribution
+     */
+    public int getBarCount();
 
 }
