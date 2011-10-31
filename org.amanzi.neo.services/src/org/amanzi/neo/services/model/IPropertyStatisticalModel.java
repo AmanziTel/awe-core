@@ -17,19 +17,29 @@ import java.util.Set;
 
 import org.amanzi.neo.services.enums.INodeType;
 
-//TODO: LN: comments
 /**
- * TODO Purpose of
- * <p>
- * </p>
+ * Interface to PropertyStaticticalModel to work with statistics
  * 
  * @author grigoreva_a
  * @since 1.0.0
  */
 public interface IPropertyStatisticalModel extends IDataModel {
 
+    /**
+     * Method return count of properties in node with certain node type
+     * 
+     * @param nodeType Type of node
+     * @return Count of all properties in node with certain node type
+     */
     public int getNodeCount(INodeType nodeType);
 
+    /**
+     * Method return count of properties in node with certain node type and certain property name
+     * 
+     * @param nodeType Type of node
+     * @param propertyName Name of property
+     * @return Count of property with certain property name
+     */
     public int getPropertyCount(INodeType nodeType, String propertyName);
 
     /**

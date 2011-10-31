@@ -139,6 +139,7 @@ public class DistributionManager {
             for (NumberDistributionType distrType : NumberDistributionType.values()) {
                 result.add(getNumberDistribution(model, nodeType, propertyName, distrType));
             }
+            result.add(getStringDistribution(model, nodeType, propertyName));
         } else {
             // TODO: try to find user-defined distributions
         }
