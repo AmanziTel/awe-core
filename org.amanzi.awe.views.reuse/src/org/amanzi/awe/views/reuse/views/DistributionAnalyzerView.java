@@ -1136,7 +1136,23 @@ public class DistributionAnalyzerView extends ViewPart {
                 } else {
                     setBlendPanelVisible(false);
                     setPalettePanelVisible(true);
+                    
+                    updatePalette();
                 }
+            }
+            
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
+        
+        //selection listener for palette
+        paletteCombo.addSelectionListener(new SelectionListener() {
+            
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                updatePalette();
             }
             
             @Override
@@ -1184,6 +1200,11 @@ public class DistributionAnalyzerView extends ViewPart {
         float ratio = 0;
         float perc = distributionModel.getBarCount() <= 0 ? 1 : (float)1 / distributionModel.getBarCount();
         
+        Color[] paletteColors = null;
+        if (currentPalette != null) {
+            paletteColors = currentPalette.getColors(currentPalette.getMaxColors());
+        }
+        
         for (int i = 0; i < dataset.getDistributionBars().size(); i++) {
             Color barColor = null;
             IDistributionBar currentBar = (IDistributionBar)dataset.getColumnKey(i);
@@ -1195,6 +1216,9 @@ public class DistributionAnalyzerView extends ViewPart {
                         ratio+= perc;
                     } else {
                         //choose color from palette
+                        if (paletteColors != null) {
+                            barColor = paletteColors[i % paletteColors.length];
+                        }
                     }
                 } else {
                     if (selectedIndex >= 0) {
@@ -1235,13 +1259,19 @@ public class DistributionAnalyzerView extends ViewPart {
         return convertToColor(rgb);
     }
     
+    /**
+     * Updates Palette from UI
+     */
     private void updatePalette() {
-        if (paletteCombo.getSelectionIndex() > 0) {
+        if (paletteCombo.getSelectionIndex() >= 0) {
             String paletteName = paletteCombo.getText();
             currentPalette = PlatformGIS.getColorBrewer().getPalette(paletteName);
+        } else {
+            currentPalette = null;
         }
         
-        
+        distributionModel.setPalette(currentPalette);
+        updateChartColors();
     }
     
     @Override
