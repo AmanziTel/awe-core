@@ -136,7 +136,7 @@ public class DistributionManagerTest extends AbstractNeoServiceTest {
         
         List<IDistribution<?>> result = manager.getDistributions(model, DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME, ChartType.getDefault());
         
-        assertEquals("Unexpected size of Distributions created for Number type", NumberDistributionType.values().length, result.size());
+        assertEquals("Unexpected size of Distributions created for Number type", NumberDistributionType.values().length + 1, result.size());
     }
 
     @Test
@@ -145,9 +145,15 @@ public class DistributionManagerTest extends AbstractNeoServiceTest {
         
         List<IDistribution<?>> result = manager.getDistributions(model, DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME, ChartType.getDefault());
         
+        int cntEnumDistr = 0;
         for (IDistribution<?> distribution : result) {
-            assertEquals("Unexpected type of Distribution for Number type", NumberDistribution.class, distribution.getClass());
+            if (distribution instanceof EnumeratedDistribution) {
+                cntEnumDistr ++;
+            } else {
+                assertEquals("Unexpected type of Distribution for Number type", NumberDistribution.class, distribution.getClass());
+            }
         }
+        assertTrue("Unexpected type of Distribution for Number type", cntEnumDistr == 1);
     }
 
     @Test

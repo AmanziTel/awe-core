@@ -497,6 +497,23 @@ public class NewNetworkService extends NewAbstractService {
     }
 
     /**
+     * Checks existing of selection link
+     *
+     * @param selectionRootNode
+     * @param selectedNode
+     * @param linkIndex
+     * @return
+     */
+    public boolean isExistSelectionLink(Node selectionRootNode, Node selectedNode, Index<Relationship> linkIndex){
+        String indexKey = Long.toString(selectionRootNode.getId());
+        Object indexValue = selectedNode.getId();
+        if (linkIndex.get(indexKey, indexValue).getSingle() != null) {
+            return true;
+        }
+        return false;
+    }
+    
+    /**
      * Creates Seleciton link with node
      * 
      * @param selectionRootNode root of selection structure

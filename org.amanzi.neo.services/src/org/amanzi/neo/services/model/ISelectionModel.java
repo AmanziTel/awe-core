@@ -39,4 +39,12 @@ public interface ISelectionModel extends IDataModel {
      * @return
      */
     public int getSelectedNodesCount();
+    
+    /**
+     * Check existing of selection link
+     *
+     * @param element
+     * @return
+     */
+    public boolean isExistSelectionLink(IDataElement element);
 }
