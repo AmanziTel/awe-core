@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.model.distribution.types.impl;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -84,9 +85,10 @@ public class EnumeratedDistribution extends AbstractDistribution<SimpleRange> {
         for (Object value : propertyValues) {
             //we are sure that it's a string
             String sValue = value.toString();
+            Serializable serValue = (Serializable) value;
             
             Filter filter = new Filter();
-            filter.setExpression(nodeType, propertyName, sValue);
+            filter.setExpression(nodeType, propertyName, serValue);
             ranges.add(new SimpleRange(sValue, filter));
         }
         
