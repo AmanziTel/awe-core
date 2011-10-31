@@ -17,6 +17,8 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.refractions.udig.ui.PlatformGIS;
+
 import org.amanzi.neo.model.distribution.IDistribution;
 import org.amanzi.neo.model.distribution.IDistributionBar;
 import org.amanzi.neo.model.distribution.IDistributionModel;
@@ -36,6 +38,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.geotools.brewer.color.BrewerPalette;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -108,6 +111,11 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
      */
     private int barCount = 0;
     
+    /*
+     * Palette of this Distribution
+     */
+    private BrewerPalette palette;
+    
     /**
      * Returns 
      * @param parentNode
@@ -149,6 +157,11 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
         this.leftBarColor = getColor(rootNode, DistributionService.LEFT_COLOR, DEFAULT_LEFT_COLOR);
         this.rightBarColor = getColor(rootNode, DistributionService.RIGHT_COLOR, DEFAULT_RIGHT_COLOR);
         this.selectedBarColor = getColor(rootNode, DistributionService.SELECTED_COLOR, DEFAULT_MIDDLE_COLOR);
+        
+        String paletteName = (String)rootNode.getProperty(DistributionService.PALETTE, null);
+        if (!StringUtils.isEmpty(paletteName)) {
+            this.palette = PlatformGIS.getColorBrewer().getPalette(paletteName);
+        }
         
         LOGGER.debug("finish new DistributionModel()");
     }
@@ -450,6 +463,9 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
     @Override
     public void finishUp() throws AWEException {
         distributionService.updateSelectedBarColors(rootNode, leftBarColor, rightBarColor, selectedBarColor);
+        if (palette != null) {
+            distributionService.updatePalette(rootNode, palette);
+        }
         
         super.finishUp();
     }
@@ -457,5 +473,15 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
     @Override
     public int getBarCount() {
         return barCount; 
+    }
+
+    @Override
+    public BrewerPalette getPalette() {
+        return palette;
+    }
+
+    @Override
+    public void setPalette(BrewerPalette palette) {
+        this.palette = palette;
     }
 }

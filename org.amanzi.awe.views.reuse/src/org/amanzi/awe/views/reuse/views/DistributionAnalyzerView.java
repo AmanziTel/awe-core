@@ -20,7 +20,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+import net.refractions.udig.project.ui.ApplicationGIS;
 import net.refractions.udig.project.ui.internal.dialogs.ColorEditor;
+import net.refractions.udig.ui.PlatformGIS;
 
 import org.amanzi.awe.views.reuse.ReusePlugin;
 import org.amanzi.neo.model.distribution.IDistribution;
@@ -60,6 +62,7 @@ import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
+import org.geotools.brewer.color.BrewerPalette;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartMouseEvent;
 import org.jfree.chart.ChartMouseListener;
@@ -117,6 +120,8 @@ public class DistributionAnalyzerView extends ViewPart {
     private static final String RIGHT_COLOR_LABEL = "Right bar color";
     
     private static final String MIDDLE_COLOR_LABEL = "Middle bar color";
+    
+    private static final String PALETTE_LABEL = "Palette";
     
     private static final Color COLOR_SELECTED = Color.RED;
 
@@ -429,6 +434,21 @@ public class DistributionAnalyzerView extends ViewPart {
      */
     private ColorEditor middleColor;
     
+    /*
+     * Label for Palette Combo
+     */
+    private Label paletteLabel;
+    
+    /*
+     * Combo to choose Palette
+     */
+    private Combo paletteCombo;
+    
+    /*
+     * Currently selected palette
+     */
+    private BrewerPalette currentPalette;
+    
     /**
      * Custom constructor
      */
@@ -697,6 +717,25 @@ public class DistributionAnalyzerView extends ViewPart {
         dLabel.left = new FormAttachment(leftColor.getButton(), 15);
         dLabel.bottom = new FormAttachment(100, -2);
         rightColor.getButton().setLayoutData(dLabel);
+        
+        //label and combo for Palette
+        paletteLabel = new Label(parent, SWT.NONE);
+        paletteLabel.setText(PALETTE_LABEL);
+        
+        paletteCombo = new Combo(parent, SWT.DROP_DOWN | SWT.READ_ONLY);
+        
+        //layout for label
+        dLabel = new FormData();
+        dLabel.left = new FormAttachment(blendLabel, 15);
+        dLabel.top = new FormAttachment(paletteCombo, 5, SWT.CENTER);
+        paletteLabel.setLayoutData(dLabel);
+
+        //layout for combo
+        dText = new FormData();
+        dText.left = new FormAttachment(paletteLabel, 5);
+        dText.right = new FormAttachment(paletteLabel, 200);
+        dText.bottom = new FormAttachment(100, -2);
+        paletteCombo.setLayoutData(dText);
     }
     
     /**
@@ -718,6 +757,11 @@ public class DistributionAnalyzerView extends ViewPart {
         selectionAdjacencyLabel.setVisible(isVisible);
     }
     
+    /**
+     * Set visibility for components related to Blend Coloring
+     *
+     * @param isVisible
+     */
     private void setBlendPanelVisible(boolean isVisible) {
         colorPropertiesButton.setVisible(isVisible);
         colorPropertiesButton.setEnabled(isVisible);
@@ -738,6 +782,26 @@ public class DistributionAnalyzerView extends ViewPart {
             leftColor.setColorValue(convertToRGB(distributionModel.getLeftColor()));
             rightColor.setColorValue(convertToRGB(distributionModel.getRightColor()));
         }
+    }
+    
+    /**
+     * Set visibility for components related to Palette coloring
+     */
+    private void setPalettePanelVisible(boolean isVisible) {
+        colorPropertiesButton.setVisible(isVisible);
+        colorPropertiesButton.setEnabled(isVisible);
+        
+        selectedValueText.setVisible(isVisible);
+        selectedValueLabel.setVisible(isVisible);
+        
+        chartTypeCombo.setVisible(isVisible);
+        chartTypeLabel.setVisible(isVisible);
+        
+        blendButton.setVisible(isVisible);
+        blendLabel.setVisible(isVisible);
+        
+        paletteLabel.setVisible(isVisible);
+        paletteCombo.setVisible(isVisible);
     }
     
     /**
@@ -795,8 +859,14 @@ public class DistributionAnalyzerView extends ViewPart {
         //blend
         blendButton.setSelection(true);
         
+        //palettes
+        String[] paletteName = PlatformGIS.getColorBrewer().getPaletteNames();
+        paletteCombo.setItems(paletteName);
+        paletteCombo.select(0);
+        
         setStandardStatusPanelVisisble(false);
         setBlendPanelVisible(false);
+        setPalettePanelVisible(false);
     }
 
     /**
@@ -1051,8 +1121,31 @@ public class DistributionAnalyzerView extends ViewPart {
         SelectionListener colorListener = new ChangeColorListener();
         leftColor.addSelectionListener(colorListener);
         rightColor.addSelectionListener(colorListener);
+        
+        //listener for Blend button
+        blendButton.addSelectionListener(new SelectionListener() {
+            
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (blendButton.getSelection()) {
+                    setPalettePanelVisible(false);
+                    setBlendPanelVisible(true);
+                } else {
+                    setBlendPanelVisible(false);
+                    setPalettePanelVisible(true);
+                }
+            }
+            
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
     }
 
+    /**
+     * Updates a Chart 
+     */
     private void updateChart() {
         try {
             // set name of chart
@@ -1138,7 +1231,16 @@ public class DistributionAnalyzerView extends ViewPart {
         
         return convertToColor(rgb);
     }
-
+    
+    private void updatePalette() {
+        if (paletteCombo.getSelectionIndex() > 0) {
+            String paletteName = paletteCombo.getText();
+            currentPalette = PlatformGIS.getColorBrewer().getPalette(paletteName);
+        }
+        
+        
+    }
+    
     @Override
     public void setFocus() {
     }
