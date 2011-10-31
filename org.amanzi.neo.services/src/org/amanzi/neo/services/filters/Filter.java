@@ -110,6 +110,9 @@ public class Filter implements IFilter {
             //get property value
             if (hasProperty){
                 propertyValue = node.getProperty(propertyName);
+                if (propertyValue instanceof Number) {
+                    propertyValue = new Double(((Number)propertyValue).doubleValue());
+                }
             }
             //compare
             switch (filterType) {
