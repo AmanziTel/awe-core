@@ -66,7 +66,7 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
      * @since 1.0.0
      */
     public enum N2NRelTypes implements INodeToNodeRelationsType {
-        NEIGHBOUR, INTERFERENCE_MATRIX, TRIANGULATION, SHADOW;
+        NEIGHBOUR, INTERFERENCE_MATRIX, TRIANGULATION, SHADOW, ILLEGAL_FREQUENCY, TRANSMISSION, EXCEPTION;
 
         @Override
         public String getId() {
@@ -128,8 +128,8 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
 
         this.nodeType = nodeType;
         this.relType = relType;
-        this.name = name;
-        Node root = dsServ.findNode(parentNode, relType, name, NodeToNodeTypes.NODE2NODE);
+        this.name = name + " " + relType.name();
+        Node root = dsServ.findNode(parentNode, relType, this.name, NodeToNodeTypes.NODE2NODE);
         if (root != null) {
             this.rootNode = root;
         } else {
@@ -209,14 +209,12 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
     @Override
     public void updateRelationship(IDataElement serviceElement, IDataElement neighbourElement, Map<String, Object> properties,
             boolean isReplace) throws AWEException {
+        linkNode(serviceElement, neighbourElement, properties);
         Node serviceNode = ((DataElement)serviceElement).getNode();
         Node neighbourNode = ((DataElement)neighbourElement).getNode();
         Node serviceProxy = getProxy(serviceNode);
         Node neighbourProxy = getProxy(neighbourNode);
         Relationship rel = related(serviceProxy, neighbourProxy);
-        if (rel == null) {
-            rel = dsServ.createRelationship(serviceProxy, neighbourProxy, relType);
-        }
         NeoServiceFactory.getInstance().getNewNetworkService()
                 .completeProperties(rel, new DataElement(properties), isReplace, null);
     }
@@ -281,6 +279,11 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
     }
 
     @Override
+    public IDataElement getServiceElementByProxy(IDataElement proxy) {
+        return new DataElement(networkServ.getServiceElementByProxy(((DataElement)proxy).getNode(), (N2NRelTypes)relType));
+    }
+
+    @Override
     public Iterable<IDataElement> getAllElementsByType(INodeType elementType) {
         if (elementType == null) {
             throw new IllegalArgumentException("Element type is null.");
@@ -289,9 +292,10 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
 
         return new DataElementIterable(dsServ.findAllN2NElements(getRootNode(), elementType, relType));
     }
-    
+
     @Override
     public IDistributionModel getDistributionModel(IDistribution< ? > distributionType) throws AWEException {
         return new DistributionModel(this, distributionType);
     }
 }
+

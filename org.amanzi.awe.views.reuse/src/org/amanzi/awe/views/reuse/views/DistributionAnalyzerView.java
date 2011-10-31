@@ -589,8 +589,6 @@ public class DistributionAnalyzerView extends ViewPart {
         dChart.bottom = new FormAttachment(colorProperties, -2);
         dChart.right = new FormAttachment(100, -5);
         chartFrame.setLayoutData(dChart);
-        
-        //
     }
     
     /**
