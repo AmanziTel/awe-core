@@ -108,14 +108,18 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
      * Use this constructor to create a new network structure. Be careful to set
      * <code>rootElement</code> NAME and PROJECT properties.
      * 
-     * @param network a <code>DataElement</code> object representing root network node
-     * @throws AWEException
-     * @throws DuplicateNodeNameException
-     * @throws DatasetTypeParameterException
+     * @param project
+     * @param network a <code>DataElement</code> object containing properties of a network root that
+     *        should be created
+     * @param name the name of the new network
+     * @param crsCode a string that represents the CRS, used in the new network (e.g. "EPSG:31247")
      * @throws InvalidDatasetParameterException
+     * @throws DatasetTypeParameterException
+     * @throws DuplicateNodeNameException
+     * @throws AWEException
      */
-    public NetworkModel(IDataElement project, IDataElement network, String name) throws InvalidDatasetParameterException,
-            DatasetTypeParameterException, DuplicateNodeNameException, AWEException {
+    public NetworkModel(IDataElement project, IDataElement network, String name, String crsCode)
+            throws InvalidDatasetParameterException, DatasetTypeParameterException, DuplicateNodeNameException, AWEException {
         super(null);
         // validate
         if (project == null) {
@@ -140,6 +144,9 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         initializeStatistics();
         initializeMultiPropertyIndexing();
         initializeNetworkStructure();
+        if ((crsCode != null) && (!crsCode.equals(StringUtils.EMPTY))) {
+            updateCRS(crsCode);
+        }
     }
 
     /**
