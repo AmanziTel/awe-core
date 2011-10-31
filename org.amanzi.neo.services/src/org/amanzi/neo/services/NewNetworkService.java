@@ -162,7 +162,7 @@ public class NewNetworkService extends NewAbstractService {
         return result;
     }
 
-    public Iterator<Node> findNetworkElementsByPropertyAndValue(Index<Node> index, String parameterName, Object parameterValue) {
+    public Iterator<Node> findByIndex(Index<Node> index, String parameterName, Object parameterValue) {
         LOGGER.debug("start findNetworkElement(String indexName, String name)");
         // validate parameters
         if (index == null) {
@@ -337,6 +337,16 @@ public class NewNetworkService extends NewAbstractService {
             result = index.get(NAME, name).getSingle();
         }
         return result;
+    }
+
+    public Node getServiceElementByProxy(Node proxy, N2NRelTypes relType) {
+        Iterable<Relationship> rels = proxy.getRelationships(relType, Direction.INCOMING);
+        for (Relationship rel : rels) {
+            if (rel.getOtherNode(proxy).getProperty(NewAbstractService.TYPE).equals(NetworkElementNodeType.SECTOR.getId())) {
+                return rel.getOtherNode(proxy);
+            }
+        }
+        return null;
     }
 
     /**
@@ -593,8 +603,12 @@ public class NewNetworkService extends NewAbstractService {
             if (existedNode instanceof Node && index != null) {
                 if (existedNode.getProperty(TYPE).equals(NetworkElementNodeType.SECTOR.getId())) {
                     int bsic = getBsicProperty(dataElement);
+                    Integer bcch = dataElement.get("bcchno") != null ? (Integer)dataElement.get("bcchno") : null;
                     if (bsic != 0) {
-                        addNodeToIndex((Node)existedNode, index, BSIC, getBsicProperty(dataElement));
+                        addNodeToIndex((Node)existedNode, index, BSIC, bsic);
+                    }
+                    if (bcch != null) {
+                        addNodeToIndex((Node)existedNode, index, "bcchno", bcch);
                     }
                 }
                 addNodeToIndex((Node)existedNode, index, NAME, existedNode.getProperty(NAME));

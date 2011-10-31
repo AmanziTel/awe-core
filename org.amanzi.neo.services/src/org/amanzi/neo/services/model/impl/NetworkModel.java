@@ -466,7 +466,6 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         nwServ.completeProperties(existedNode, new DataElement(newPropertySet), isReplaceExisted, getIndex(nodeType));
         nwServ.setProperties(existedNode, newPropertySet);
         indexProperty(nodeType, newPropertySet);
-        indexNode(existedNode);
         return new DataElement(existedNode);
     }
 
@@ -547,16 +546,20 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
 
             if (type.equals(NetworkElementNodeType.SECTOR)) {
                 Integer bsic = nwServ.getBsicProperty(element);
-
+                Integer bcch = element.get("bcchno") != null ? (Integer)element.get("bcchno") : null;
                 Object elName = element.get(NewAbstractService.NAME);
                 Object elCI = element.get(NewNetworkService.CELL_INDEX);
                 Object elLAC = element.get(NewNetworkService.LOCATION_AREA_CODE);
+
                 if (bsic == 0) {
                     node = nwServ.createSector(parentNode, getIndex(type), elName == null ? null : elName.toString(), elCI == null
                             ? null : elCI.toString(), elLAC == null ? null : elLAC.toString());
                 } else {
                     node = nwServ.createSector(parentNode, getIndex(type), elName == null ? null : elName.toString(), elCI == null
                             ? null : elCI.toString(), elLAC == null ? null : elLAC.toString(), bsic);
+                }
+                if (bcch != null) {
+                    nwServ.addNodeToIndex(node, getIndex(type), "bcchno", bcch);
                 }
             } else {
                 node = nwServ.createNetworkElement(parentNode, getIndex(type), element.get(NewAbstractService.NAME).toString(),
@@ -644,12 +647,11 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
      * return closest to servSector element
      */
     @Override
-    public IDataElement getClosestSector(IDataElement servSector, Integer bsic, Integer bcch) throws DatabaseException {
+    public IDataElement getClosestSectorByBsicBcch(IDataElement servSector, Integer bsic, Integer bcch) throws DatabaseException {
         Set<IDataElement> nodes = findSectorsByBsicBcch(bsic, bcch);
         return getClosestElement(servSector, nodes, 30000);
     }
 
-  
     @Override
     public IDataElement getClosestElement(IDataElement servSector, Set<IDataElement> candidates, int maxDistance) {
         Coordinate c = getCoordinate(servSector);
@@ -696,8 +698,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
      */
     private Set<IDataElement> findSectorsByBsicBcch(Integer bsic, Integer bcch) throws DatabaseException {
         Set<IDataElement> result = new LinkedHashSet<IDataElement>();
-        Iterator<Node> findedNodes = nwServ.findNetworkElementsByPropertyAndValue(getIndex(NetworkElementNodeType.SECTOR),
-                NewNetworkService.BSIC, bsic);
+        Iterator<Node> findedNodes = nwServ.findByIndex(getIndex(NetworkElementNodeType.SECTOR), NewNetworkService.BSIC, bsic);
         while (findedNodes.hasNext()) {
             Node node = findedNodes.next();
             Integer bcchno = (Integer)node.getProperty("bcchno", null);
@@ -721,7 +722,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
             throw new IllegalArgumentException("propertyValue cann't be null");
         }
         Set<IDataElement> result = new HashSet<IDataElement>();
-        Iterator<Node> findedNodes = nwServ.findNetworkElementsByPropertyAndValue(getIndex(type), propertyName, propertyValue);
+        Iterator<Node> findedNodes = nwServ.findByIndex(getIndex(type), propertyName, propertyValue);
         while (findedNodes.hasNext()) {
             Node node = findedNodes.next();
             result.add(new DataElement(node));

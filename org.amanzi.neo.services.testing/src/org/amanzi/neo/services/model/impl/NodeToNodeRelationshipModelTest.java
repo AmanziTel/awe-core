@@ -358,6 +358,73 @@ public class NodeToNodeRelationshipModelTest extends AbstractNeoServiceTest {
     }
 
     @Test
+    public void testGetServiceByProxy() throws Exception {
+        List<Relationship> relations = new ArrayList<Relationship>();
+        final int relCount = 5;
+        // create network structure
+
+        NodeToNodeRelationshipModel model;
+        try {
+            model = new NodeToNodeRelationshipModel(new DataElement(network), N2NRelTypes.NEIGHBOUR, "name",
+                    NetworkElementNodeType.SECTOR);
+        } catch (AWEException e1) {
+            LOGGER.error("Error while trying to create model", e1);
+            throw (RuntimeException)new RuntimeException().initCause(e1);
+        }
+
+        NetworkModel nm = new NetworkModel(network);
+        Map<String, Object> params = new HashMap<String, Object>();
+
+        params.put(NewAbstractService.TYPE, NetworkElementNodeType.SITE.getId());
+        params.put(NewAbstractService.NAME, NetworkElementNodeType.SITE.getId());
+        IDataElement site;
+        try {
+            site = nm.createElement(new DataElement(nm.getRootNode()), new DataElement(params));
+        } catch (AWEException e1) {
+            LOGGER.error("Error while trying to create element", e1);
+            throw (RuntimeException)new RuntimeException().initCause(e1);
+        }
+
+        params.put(NewAbstractService.NAME, "sector");
+        params.put(NewNetworkService.CELL_INDEX, "ci");
+        params.put(NewNetworkService.LOCATION_AREA_CODE, "lac");
+        params.put(NewAbstractService.TYPE, NetworkElementNodeType.SECTOR.getId());
+        IDataElement sector;
+        try {
+            sector = nm.createElement(site, new DataElement(params));
+        } catch (AWEException e1) {
+            LOGGER.error("Error while trying to create element", e1);
+            throw (RuntimeException)new RuntimeException().initCause(e1);
+        }
+
+        for (int i = 0; i < relCount; i++) {
+            params = new HashMap<String, Object>();
+            params.put(NewAbstractService.NAME, "sector" + i);
+            params.put(NewNetworkService.CELL_INDEX, "ci" + i);
+            params.put(NewNetworkService.LOCATION_AREA_CODE, "lac" + i);
+            params.put(NewAbstractService.TYPE, NetworkElementNodeType.SECTOR.getId());
+            IDataElement sect;
+            try {
+                sect = nm.createElement(site, new DataElement(params));
+                model.linkNode(sector, sect, params);
+            } catch (AWEException e1) {
+                LOGGER.error("Error while trying to create element", e1);
+                throw (RuntimeException)new RuntimeException().initCause(e1);
+            }
+
+            Relationship rel = dsServ.createRelationship(model.getProxy(((DataElement)sector).getNode()),
+                    model.getProxy(((DataElement)sect).getNode()), N2NRelTypes.NEIGHBOUR);
+
+            relations.add(rel);
+
+        }
+        Node proxy = model.getProxy(((DataElement)sector).getNode());
+        IDataElement findedService = model.getServiceElementByProxy(new DataElement(proxy));
+        Assert.assertEquals("Unexpected element", sector, findedService);
+        // Assert.assertTrue("Incorrect Relations Count: " + resCount, resCount == relCount);
+    }
+
+    @Test
     public void testConstructorRootNode() {
         // create n2n model
         NodeToNodeRelationshipModel model;
