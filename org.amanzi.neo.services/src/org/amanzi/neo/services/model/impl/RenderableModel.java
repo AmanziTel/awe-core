@@ -45,6 +45,28 @@ public abstract class RenderableModel extends AbstractIndexedModel {
 
     protected RenderableModel(Node rootNode) throws AWEException {
         super(rootNode);
+        try {
+            crs = CRS.decode(DEFAULT_EPSG);
+        } catch (NoSuchAuthorityCodeException e) {
+            LOGGER.error("Could not parse epsg.", e);
+        }
+    }
+
+    /**
+     * Updates the model CRS and returns a <code>CoordinateReferenceSystem</code> object,
+     * representing the new value.
+     * 
+     * @param crsCode a string representing the new CRS - something like "EPSG:31247"
+     * @return the updated CRS as <code>CoordinateReferenceSystem</code> object
+     */
+    protected CoordinateReferenceSystem updateCRS(String crsCode) {
+        try {
+            crs = CRS.decode(crsCode);
+            return crs;
+        } catch (NoSuchAuthorityCodeException e) {
+            LOGGER.error("Could not parse epsg.", e);
+        }
+        return null;
     }
 
     // TODO: make it abstract?
@@ -65,11 +87,6 @@ public abstract class RenderableModel extends AbstractIndexedModel {
      * @return An envelope, representing the coordinate bounds for the data in current model.
      */
     public ReferencedEnvelope getBounds() {
-        try {
-            crs = CRS.decode(DEFAULT_EPSG);
-        } catch (NoSuchAuthorityCodeException e) {
-            LOGGER.error("Could not parse epsg.", e);
-        }
         return new ReferencedEnvelope(min_latitude, max_latitude, min_longitude, max_longitude, crs);
     }
 
