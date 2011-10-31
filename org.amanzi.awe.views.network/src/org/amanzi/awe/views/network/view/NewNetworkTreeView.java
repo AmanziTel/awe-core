@@ -399,7 +399,7 @@ public class NewNetworkTreeView extends ViewPart {
         INetworkModel network = null;
 
         // Sub menu
-        Set<Node> selectedNodes = new HashSet<Node>();
+        Set<IDataElement> selectedNodes = new HashSet<IDataElement>();
         MenuManager subMenu = new MenuManager(text);
 
         Iterator it = selection.iterator();
@@ -410,7 +410,7 @@ public class NewNetworkTreeView extends ViewPart {
                 continue;
             } else {
                 IDataElement element = (IDataElement)elementObject;
-                selectedNodes.add(((DataElement)element).getNode());
+                selectedNodes.add(element);
                 if (!NeoUtils.getNodeType(((DataElement)element).getNode()).equals("sector")) {
                     isSector = false;
                 }
@@ -427,21 +427,21 @@ public class NewNetworkTreeView extends ViewPart {
             }
         }
         if (isSector && isOneNetwork && !isNetwork) {
-            // try {
-            // List<ISelectionModel> selectionModel =
-            // ProjectModel.getCurrentProjectModel().findNetwork(nameNetwork).getAllSelectionModels();
-            // while(selectionModel.iterator().hasNext()){
-            // String nameSelectionList = selectionModel.iterator().next().getName();
-            // System.out.println("^^^^"+nameSelectionList);
-            AddToSelectionListAction addToSelectionListAction = new AddToSelectionListAction(
-                    (IStructuredSelection)viewer.getSelection(), subMenu);
-            subMenu.add(addToSelectionListAction);
-            manager.add(subMenu);
-            // }
-            // } catch (AWEException e) {
-            // TODO Handle AWEException
-            // throw (RuntimeException) new RuntimeException( ).initCause( e );
-            // }
+            /*try {
+                INetworkModel networkModel = ProjectModel.getCurrentProjectModel().findNetwork(nameNetwork);
+                List<ISelectionModel> selectionModel = networkModel.getAllSelectionModels();
+                Iterator<ISelectionModel> iterator = selectionModel.iterator();
+                while (iterator.hasNext()) {
+                    String nameSelectionList = iterator.next().getName();
+                    AddToSelectionListAction addToSelectionListAction = new AddToSelectionListAction(
+                            (IStructuredSelection)viewer.getSelection(), nameSelectionList, selectedNodes, networkModel);
+                    subMenu.add(addToSelectionListAction);
+                }
+                manager.add(subMenu);
+            } catch (AWEException e) {
+                // TODO Handle AWEException
+                throw (RuntimeException)new RuntimeException().initCause(e);
+            }*/
 
         }
 
@@ -456,27 +456,20 @@ public class NewNetworkTreeView extends ViewPart {
     private class AddToSelectionListAction extends Action {
         private boolean enabled;
         private final String text;
-        private Set<Node> selectedNodes = new HashSet<Node>();
+        private Set<IDataElement> selectedNodes = new HashSet<IDataElement>();
+        private INetworkModel networkModel;
 
         /**
          * Constructor
          * 
          * @param selection - selection
          */
-        @SuppressWarnings("rawtypes")
-        public AddToSelectionListAction(IStructuredSelection selection, MenuManager subMenu) {
-            Iterator it = selection.iterator();
-            while (it.hasNext()) {
-                Object elementObject = it.next();
-                if (elementObject instanceof INetworkModel) {
-                    continue;
-                } else {
-                    IDataElement element = (IDataElement)elementObject;
-                    selectedNodes.add(((DataElement)element).getNode());
-                }
-            }
-            enabled = selectedNodes.size() > 0;
-            text = selectedNodes.size() > 1 ? "Show properties" : "Show/edit property";
+        public AddToSelectionListAction(IStructuredSelection selection, String nameSelectionList, Set<IDataElement> selectedNodes,
+                INetworkModel networkModel) {
+            enabled = true;
+            text = nameSelectionList;
+            this.selectedNodes = selectedNodes;
+            this.networkModel = networkModel;
         }
 
         @Override
@@ -492,20 +485,14 @@ public class NewNetworkTreeView extends ViewPart {
         @Override
         public void run() {
             try {
-                if (selectedNodes.size() > 1) {
-                    PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
-                            .showView("org.amanzi.awe.views.reuse.views.MessageAndEventTableView");
-                    NeoCorePlugin
-                            .getDefault()
-                            .getUpdateViewManager()
-                            .fireUpdateView(
-                                    new ShowPreparedViewEvent("org.amanzi.awe.views.reuse.views.MessageAndEventTableView",
-                                            selectedNodes));
-                } else {
-                    PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IPageLayout.ID_PROP_SHEET);
+                ISelectionModel selectionModel = networkModel.findSelectionModel(text);
+                Iterator<IDataElement> it = selectedNodes.iterator();
+                while (it.hasNext()) {
+                    selectionModel.linkToSector(it.next());
                 }
-            } catch (PartInitException e) {
-                NetworkTreePlugin.error(null, e);
+            } catch (AWEException e) {
+                // TODO Handle AWEException
+                throw (RuntimeException)new RuntimeException().initCause(e);
             }
         }
     }

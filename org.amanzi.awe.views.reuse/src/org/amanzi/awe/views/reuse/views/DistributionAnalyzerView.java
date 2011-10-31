@@ -52,8 +52,10 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartMouseEvent;
@@ -109,7 +111,12 @@ public class DistributionAnalyzerView extends ViewPart {
 
     private static final Color COLOR_MORE = Color.GREEN;
     
-    
+
+    private void showErrorMessage(String message) {
+        MessageBox msgBox = new MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.ICON_ERROR);
+        msgBox.setMessage(message);
+        msgBox.open();
+    }
 
     @SuppressWarnings("rawtypes")
     private class DistributionDataset extends AbstractDataset implements CategoryDataset {
@@ -240,6 +247,8 @@ public class DistributionAnalyzerView extends ViewPart {
         }
         
     };
+
+
 
     /*
      * Combo to choose DistributionItem
@@ -381,7 +390,7 @@ public class DistributionAnalyzerView extends ViewPart {
         try {
             initializeFields();
         } catch (AWEException e) {
-            // TODO: throw Runtime? show error message?
+            showErrorMessage(e.getMessage());
         }
     }
 
@@ -599,6 +608,7 @@ public class DistributionAnalyzerView extends ViewPart {
         selectionAdjacencyLabel.setVisible(isVisible);
     }
 
+
     /**
      * Pre-initializations of all fields
      * 
@@ -648,6 +658,10 @@ public class DistributionAnalyzerView extends ViewPart {
             Arrays.sort(propertyNames);
             propertyCombo.setItems(propertyNames);
             propertyCombo.setEnabled(true);
+            distributionCombo.setItems(new String[] {});
+            selectCombo.setItems(new String[] {});
+            distributionCombo.setEnabled(false);
+            selectCombo.setEnabled(false);
         }
     }
 
@@ -661,21 +675,37 @@ public class DistributionAnalyzerView extends ViewPart {
                 List<IDistribution< ? >> distribuitons = DistributionManager.getManager().getDistributions(analyzedModel,
                         analyzedNodeType, propertyName, ChartType.getDefault());
 
+                distributionTypes.clear();
                 for (IDistribution< ? > singleDistribution : distribuitons) {
                     distributionTypes.put(singleDistribution.getName(), singleDistribution);
                 }
 
-                distributionCombo.setItems(distributionTypes.keySet().toArray(ArrayUtils.EMPTY_STRING_ARRAY));
+                String[] distributionItems = distributionTypes.keySet().toArray(ArrayUtils.EMPTY_STRING_ARRAY);
+                selectCombo.setItems(new String[] {});
+                distributionCombo.setItems(distributionItems);
                 distributionCombo.setEnabled(true);
                 
                 String[] chartTypeNames = new String[0];
+                String defChartType = StringUtils.EMPTY;
                 for (ChartType chartType : DistributionManager.getManager().getPossibleChartTypes(analyzedModel, analyzedNodeType, propertyName)) {
                     chartTypeNames = (String[])ArrayUtils.add(chartTypeNames, chartType.getTitle());
+                    if (chartType.equals(ChartType.getDefault())) {
+                        defChartType = chartType.getTitle();
+                    }
                 }
                 chartTypeCombo.setItems(chartTypeNames);
+                chartTypeCombo.setText(defChartType);
+                
+                if (distributionItems.length == 1) {
+                    distributionCombo.setText(distributionItems[0]);
+                    initializeDistributionType();
+                } else {
+                    selectCombo.setEnabled(false);
+                }
+
             }
         } catch (AWEException e) {
-            // TODO: handle exception
+            showErrorMessage(e.getMessage());
         }
     }
 
@@ -728,7 +758,7 @@ public class DistributionAnalyzerView extends ViewPart {
 
                     distributionModel.getDistributionBars(monitor);
                 } catch (AWEException e) {
-                    // TODO: handle exception
+                    showErrorMessage(e.getMessage());
                     return new Status(IStatus.ERROR, ReusePlugin.PLUGIN_ID, getName(), e);
                 }
 
@@ -825,6 +855,7 @@ public class DistributionAnalyzerView extends ViewPart {
                     updateChartColors();
                 }
 
+
                 // TODO: also it should open NetworkTreeView with this Distribution
             }
         });
@@ -849,7 +880,7 @@ public class DistributionAnalyzerView extends ViewPart {
 
             distributionChart.fireChartChanged();
         } catch (AWEException e) {
-            // TODO: handle exception
+            showErrorMessage(e.getMessage());
             e.printStackTrace();
         } finally {
             // show a chart
