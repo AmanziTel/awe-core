@@ -18,10 +18,11 @@ import java.util.HashSet;
 
 import org.amanzi.awe.views.network.view.NewNetworkTreeView;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.services.events.ShowPreparedViewEvent;
-import org.amanzi.neo.services.events.UpdateDrillDownEvent;
+import org.amanzi.neo.services.events.NewShowPreparedViewEvent;
+import org.amanzi.neo.services.events.NewUpdateDrillDownEvent;
 import org.amanzi.neo.services.events.UpdateViewEvent;
 import org.amanzi.neo.services.events.UpdateViewEventType;
+import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.ui.IUpdateViewListener;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -31,7 +32,6 @@ import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.neo4j.graphdb.Node;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -117,10 +117,10 @@ public class NewNetworkTreePlugin extends AbstractUIPlugin implements IUpdateVie
     public void updateView(UpdateViewEvent event) {
         switch (event.getType()) {
         case DRILL_DOWN:
-            updateView((UpdateDrillDownEvent)event);
+            updateView((NewUpdateDrillDownEvent)event);
             break;
         case SHOW_PREPARED_VIEW:
-            showPreparedView((ShowPreparedViewEvent)event);
+            showPreparedView((NewShowPreparedViewEvent)event);
             break;
         default:
             IViewPart viewNetwork = findTreeView();
@@ -131,14 +131,14 @@ public class NewNetworkTreePlugin extends AbstractUIPlugin implements IUpdateVie
         }
     }
     
-    private void updateView(UpdateDrillDownEvent event){
+    private void updateView(NewUpdateDrillDownEvent event){
         String source = event.getSource();
         if(!source.equals(NewNetworkTreeView.NETWORK_TREE_VIEW_ID)&& !source.equals(DRIVE_TREE_VIEW_ID)){
-            Node node = event.getNodes().get(0);
+            IDataElement node = event.getDataElements().get(0);
             IViewPart viewNetwork = findTreeView();
             if (viewNetwork != null) {
                 NewNetworkTreeView networkView = (NewNetworkTreeView)viewNetwork;
-                networkView.selectNode(node);
+                networkView.selectDataElement(node);
             }
         }
     }
@@ -160,13 +160,13 @@ public class NewNetworkTreePlugin extends AbstractUIPlugin implements IUpdateVie
         .findView(NewNetworkTreeView.NETWORK_TREE_VIEW_ID);
     }
     
-    private void showPreparedView(ShowPreparedViewEvent event){
+    private void showPreparedView(NewShowPreparedViewEvent event){
         if (event.isViewNeedUpdate(NewNetworkTreeView.NETWORK_TREE_VIEW_ID)) {
-            Node node = event.getNodes().get(0);
+            IDataElement dataElement = event.getDataElements().get(0);
             IViewPart viewNetwork = showTreeView();
             if (viewNetwork != null) {
                 NewNetworkTreeView networkView = (NewNetworkTreeView)viewNetwork;
-                networkView.selectNode(node);
+                networkView.selectDataElement(dataElement);
             }
         }
     }
