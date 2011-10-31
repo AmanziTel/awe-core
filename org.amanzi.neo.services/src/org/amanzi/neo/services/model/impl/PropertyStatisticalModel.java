@@ -22,18 +22,13 @@ import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewStatisticsService;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
-import org.amanzi.neo.services.exceptions.IndexPropertyException;
-import org.amanzi.neo.services.exceptions.InvalidStatisticsParameterException;
-import org.amanzi.neo.services.exceptions.LoadVaultException;
 import org.amanzi.neo.services.model.IPropertyStatisticalModel;
 import org.amanzi.neo.services.statistic.IVault;
 import org.amanzi.neo.services.statistic.internal.NewPropertyStatistics;
 import org.neo4j.graphdb.Node;
 
 /**
- * TODO Purpose of
- * <p>
- * </p>
+ * Model to work with statistics
  * 
  * @author grigoreva_a
  * @since 1.0.0
@@ -57,6 +52,9 @@ public abstract class PropertyStatisticalModel extends DataModel implements IPro
         notNecessaryListOfProperties.add(INeoConstants.PROPERTY_TIMESTAMP_NAME);
     }
     
+    /**
+     * Method to initialize statistics from other models
+     */
     protected void initializeStatistics() {
         try {
             statisticsVault = statisticsService.loadVault(getRootNode());
@@ -66,36 +64,78 @@ public abstract class PropertyStatisticalModel extends DataModel implements IPro
         }
     }
 
+    /**
+     * Method to add property in statistics by type of node and name of property
+     *
+     * @param nodeType Type of node 
+     * @param propertyName Name of property
+     * @param propertyValue Value of property
+     * @throws AWEException
+     */
     protected void indexProperty(INodeType nodeType, String propertyName, Object propertyValue)
-            throws InvalidStatisticsParameterException, LoadVaultException, IndexPropertyException {
+            throws AWEException {
 
         if (!notNecessaryListOfProperties.contains(propertyName)) {
             statisticsVault.indexProperty(nodeType.getId(), propertyName, propertyValue);
         }
     }
     
+    /**
+     * Method to remove property from statistics by type of node and name of property
+     *
+     * @param nodeType Type of node
+     * @param propertyName Name of property
+     * @param propertyValue Value of property
+     * @throws AWEException
+     */
     protected void removeProperty(INodeType nodeType, String propertyName, Object propertyValue)
-            throws InvalidStatisticsParameterException, LoadVaultException, IndexPropertyException {
+            throws AWEException {
 
         if (!notNecessaryListOfProperties.contains(propertyName)) {
             statisticsVault.removeProperty(nodeType.getId(), propertyName, propertyValue);
         }
     }
     
+    /**
+     * Method to rename property from statistics from old value of property 
+     *      to new value of property
+     *
+     * @param nodeType Type of node
+     * @param propertyName Name of property
+     * @param oldPropValue Old value of property
+     * @param newPropValue New value of property
+     * @throws AWEException
+     */
     protected void renameProperty(INodeType nodeType, String propertyName, Object oldPropValue, Object newPropValue) 
-            throws IndexPropertyException, InvalidStatisticsParameterException {
+            throws AWEException {
         statisticsVault.renamePropertyValue(nodeType.getId(), propertyName, oldPropValue, newPropValue);
     }
 
-    protected void indexProperty(INodeType nodeType, Map<String, Object> params) throws AWEException {
-        for (String key : params.keySet()) {
-            Object value = params.get(key);
+    /**
+     * Method to add all properties from dataElement
+     *      in statistics by type of node and name of property
+     *
+     * @param nodeType Type of node 
+     * @param dataElement Element which contains map with properties
+     * @throws AWEException
+     */
+    protected void indexProperty(INodeType nodeType, Map<String, Object> dataElement) throws AWEException {
+        for (String key : dataElement.keySet()) {
+            Object value = dataElement.get(key);
             if (value != null) {
                 indexProperty(nodeType, key, value);
             }
         }
     }
     
+    /**
+     * Method to remove all properties from dataElement 
+     *      in statistics by type of node and name of property
+     *
+     * @param nodeType Type of node
+     * @param dataElement Element which contains map with properties
+     * @throws AWEException
+     */
     protected void removeProperty(INodeType nodeType, Map<String, Object> dataElement) throws AWEException {
         Node nodeFromDataElement = ((DataElement)dataElement).getNode();
         for (String propertyName : nodeFromDataElement.getPropertyKeys()) {

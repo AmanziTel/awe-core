@@ -24,10 +24,10 @@ import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.NewNetworkService;
-import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
@@ -53,9 +53,9 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
     public static final String RELATION_TYPE = "rel_type";
 
     private static Logger LOGGER = Logger.getLogger(NodeToNodeRelationshipModel.class);
-
+    public static String FREQUENCY = "frequency";
     private INodeToNodeRelationsType relType;
-
+    private final Map<Integer, IDataElement> cache = new HashMap<Integer, IDataElement>();
     private NewDatasetService dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
     private NewNetworkService networkServ = NeoServiceFactory.getInstance().getNewNetworkService();
 
@@ -68,7 +68,7 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
      * @since 1.0.0
      */
     public enum N2NRelTypes implements INodeToNodeRelationsType {
-        NEIGHBOUR, INTERFERENCE_MATRIX, TRIANGULATION, SHADOW, ILLEGAL_FREQUENCY, TRANSMISSION, EXCEPTION;
+        NEIGHBOUR, INTERFERENCE_MATRIX, TRIANGULATION, SHADOW, ILLEGAL_FREQUENCY, FREQUENCY_SPECTRUM, TRANSMISSION, EXCEPTION;
 
         @Override
         public String getId() {
@@ -86,7 +86,7 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
      * @since 1.0.0
      */
     public enum NodeToNodeTypes implements INodeType {
-        NODE2NODE, PROXY;
+        NODE2NODE, PROXY, FREQUENCY;
 
         static {
             NodeTypeManager.registerNodeType(CorrelationNodeTypes.class);
@@ -143,6 +143,9 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
             params.put(RELATION_TYPE, this.relType.getId());
             params.put(PRIMARY_TYPE, nodeType.getId());
             dsServ.setProperties(rootNode, params);
+            if (this.relType == N2NRelTypes.FREQUENCY_SPECTRUM) {
+                loadCache();
+            }
         }
 
         initializeStatistics();
@@ -160,6 +163,31 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
         this.name = n2nRoot.getProperty(NewNetworkService.NAME).toString();
 
         initializeStatistics();
+    }
+
+    private void loadCache() {
+        cache.clear();
+        for (Node node : dsServ.getChildrenChainTraverser(rootNode)) {
+            cache.put((Integer)node.getProperty(FREQUENCY), new DataElement(node));
+        }
+    }
+
+    @Override
+    public IDataElement getFrequencyNode(int frequency) throws DatabaseException {
+        if (this.relType != N2NRelTypes.FREQUENCY_SPECTRUM) {
+            throw new IllegalAccessError("Frequency node can be get only from spectrum model");
+        }
+        IDataElement result = cache.get(frequency);
+        if (result != null) {
+            return result;
+        }
+        Node newNode = dsServ.createNode(NodeToNodeTypes.FREQUENCY);
+        newNode.setProperty(FREQUENCY, frequency);
+        newNode.setProperty(NewAbstractService.NAME, frequency);
+        dsServ.addChild(rootNode, newNode, null);
+        result = new DataElement(newNode);
+        cache.put(frequency, result);
+        return result;
     }
 
     @Override

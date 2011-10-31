@@ -51,11 +51,11 @@ import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartMouseEvent;
@@ -100,22 +100,27 @@ public class DistributionAnalyzerView extends ViewPart {
     private static final String NUMBERS_AXIS_NAME = "Numbers";
 
     private static final String COLOR_PROPERTIES_LABEL = "Color properties";
-    
+
     private static final String SELECTED_VALUES_LABEL = "Selected values";
-    
+
     private static final String SELECTION_ADJACENCY_LABEL = "Adjacency";
-    
+
     private static final Color COLOR_SELECTED = Color.RED;
 
     private static final Color COLOR_LESS = Color.BLUE;
 
     private static final Color COLOR_MORE = Color.GREEN;
-    
 
-    private void showErrorMessage(String message) {
-        MessageBox msgBox = new MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.ICON_ERROR);
-        msgBox.setMessage(message);
-        msgBox.open();
+    private void showErrorMessage(final String message) {
+        ActionUtil.getInstance().runTask(new Runnable() {
+
+            @Override
+            public void run() {
+                MessageBox msgBox = new MessageBox(Display.getCurrent().getActiveShell(), SWT.ICON_ERROR);
+                msgBox.setMessage(message);
+                msgBox.open();
+            }
+        }, false);
     }
 
     @SuppressWarnings("rawtypes")
@@ -224,7 +229,7 @@ public class DistributionAnalyzerView extends ViewPart {
         }
 
     }
-    
+
     /**
      * Job to update colors of Bar
      * 
@@ -242,13 +247,11 @@ public class DistributionAnalyzerView extends ViewPart {
             } catch (AWEException e) {
                 return new Status(Status.ERROR, ReusePlugin.PLUGIN_ID, "Error on updating Distribution Bars", e);
             }
-            
+
             return Status.OK_STATUS;
         }
-        
+
     };
-
-
 
     /*
      * Combo to choose DistributionItem
@@ -339,36 +342,36 @@ public class DistributionAnalyzerView extends ViewPart {
      * Button for enabling/disabling color properties
      */
     private Button colorProperties;
-    
+
     /*
      * Combo to choose type of Chart
      */
     private Combo chartTypeCombo;
-    
+
     /*
      * Label for Selection Adjacency spinner
      */
     private Label selectionAdjacencyLabel;
-    
+
     /*
      * Spinner to set selection Adjacency
      */
     private Spinner selectionAdjacency;
-    
+
     /*
      * Label for Selected Value Text
      */
     private Label selectedValueLabel;
-    
+
     /*
      * Text for selected value
      */
     private Text selectedValue;
-    
+
     public DistributionAnalyzerView() {
         UPDATE_BAR_COLORS_JOB.setSystem(true);
     }
-    
+
     @Override
     public void createPartControl(Composite parent) {
         mainView = parent;
@@ -419,7 +422,7 @@ public class DistributionAnalyzerView extends ViewPart {
         plot.setBackgroundPaint(PLOT_BACKGROUND);
         distributionChart.setBackgroundPaint(CHART_BACKGROUND);
 
-        //chart composite
+        // chart composite
         chartFrame = new ChartComposite(parent, 0, distributionChart, true);
         chartFrame.pack();
     }
@@ -526,52 +529,52 @@ public class DistributionAnalyzerView extends ViewPart {
         dLabel.left = new FormAttachment(colorProperties, 2);
         dLabel.top = new FormAttachment(colorProperties, 5, SWT.CENTER);
         colorPropertiesLabel.setLayoutData(dLabel);
-        
+
         colorProperties.setEnabled(false);
-        
-        //combo for chart type
+
+        // combo for chart type
         chartTypeCombo = new Combo(parent, SWT.DROP_DOWN | SWT.READ_ONLY);
         chartTypeCombo.setText(ChartType.getDefault().getTitle());
-        
-        //layout for combo
+
+        // layout for combo
         dLabel = new FormData();
         dLabel.left = new FormAttachment(colorPropertiesLabel, 2);
         dLabel.top = new FormAttachment(colorPropertiesLabel, 5, SWT.CENTER);
         dLabel.width = 150;
         chartTypeCombo.setLayoutData(dLabel);
-        
+
         chartTypeCombo.setVisible(false);
-        
-        //label and text for selected value
+
+        // label and text for selected value
         selectedValueLabel = new Label(parent, SWT.NONE);
         selectedValueLabel.setText(SELECTED_VALUES_LABEL);
-        
+
         selectedValue = new Text(parent, SWT.BORDER | SWT.READ_ONLY);
-        
-        //layout label
+
+        // layout label
         dLabel = new FormData();
         dLabel.left = new FormAttachment(chartTypeCombo, 15);
         dLabel.top = new FormAttachment(selectedValue, 5, SWT.CENTER);
         selectedValueLabel.setLayoutData(dLabel);
-        
-        //layout text
+
+        // layout text
         FormData dText = new FormData();
         dText.left = new FormAttachment(selectedValueLabel, 5);
         dText.right = new FormAttachment(selectedValueLabel, 200);
         dText.bottom = new FormAttachment(100, -2);
         selectedValue.setLayoutData(dText);
-        
-        //label and spinner for selection adjacency
+
+        // label and spinner for selection adjacency
         selectionAdjacencyLabel = new Label(parent, SWT.NONE);
         selectionAdjacencyLabel.setText(SELECTION_ADJACENCY_LABEL);
-        
+
         selectionAdjacency = new Spinner(parent, SWT.BORDER);
         selectionAdjacency.setDigits(0);
         selectionAdjacency.setIncrement(1);
         selectionAdjacency.setMinimum(0);
         selectionAdjacency.setSelection(1);
 
-        //label layout
+        // label layout
         dLabel = new FormData();
         dLabel.left = new FormAttachment(selectedValue, 5);
         dLabel.top = new FormAttachment(selectionAdjacency, 5, SWT.CENTER);
@@ -581,7 +584,7 @@ public class DistributionAnalyzerView extends ViewPart {
         dSpin.left = new FormAttachment(selectionAdjacencyLabel, 5);
         dSpin.top = new FormAttachment(selectedValue, 5, SWT.CENTER);
         selectionAdjacency.setLayoutData(dSpin);
-        
+
         // layout chart
         FormData dChart = new FormData(); // bind to label and text
         dChart.left = new FormAttachment(0, 5);
@@ -590,24 +593,23 @@ public class DistributionAnalyzerView extends ViewPart {
         dChart.right = new FormAttachment(100, -5);
         chartFrame.setLayoutData(dChart);
     }
-    
+
     /**
      * Sets visibility for components for default coloring
-     *
+     * 
      * @param isVisible
      */
     private void setStandardStatusPanelVisisble(boolean isVisible) {
         colorProperties.setVisible(isVisible);
-        
+
         selectedValue.setVisible(isVisible);
         selectedValueLabel.setVisible(isVisible);
-        
+
         chartTypeCombo.setVisible(isVisible);
-        
+
         selectionAdjacency.setVisible(isVisible);
         selectionAdjacencyLabel.setVisible(isVisible);
     }
-
 
     /**
      * Pre-initializations of all fields
@@ -639,7 +641,7 @@ public class DistributionAnalyzerView extends ViewPart {
 
         // chart
         chartFrame.setVisible(false);
-        
+
         setStandardStatusPanelVisisble(false);
     }
 
@@ -684,10 +686,11 @@ public class DistributionAnalyzerView extends ViewPart {
                 selectCombo.setItems(new String[] {});
                 distributionCombo.setItems(distributionItems);
                 distributionCombo.setEnabled(true);
-                
+
                 String[] chartTypeNames = new String[0];
                 String defChartType = StringUtils.EMPTY;
-                for (ChartType chartType : DistributionManager.getManager().getPossibleChartTypes(analyzedModel, analyzedNodeType, propertyName)) {
+                for (ChartType chartType : DistributionManager.getManager().getPossibleChartTypes(analyzedModel, analyzedNodeType,
+                        propertyName)) {
                     chartTypeNames = (String[])ArrayUtils.add(chartTypeNames, chartType.getTitle());
                     if (chartType.equals(ChartType.getDefault())) {
                         defChartType = chartType.getTitle();
@@ -695,7 +698,7 @@ public class DistributionAnalyzerView extends ViewPart {
                 }
                 chartTypeCombo.setItems(chartTypeNames);
                 chartTypeCombo.setText(defChartType);
-                
+
                 if (distributionItems.length == 1) {
                     distributionCombo.setText(distributionItems[0]);
                     initializeDistributionType();
@@ -757,18 +760,18 @@ public class DistributionAnalyzerView extends ViewPart {
                     distributionModel.setCurrent(true);
 
                     distributionModel.getDistributionBars(monitor);
+                    ActionUtil.getInstance().runTask(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            updateChart();
+                        }
+                    }, true);
+
                 } catch (AWEException e) {
                     showErrorMessage(e.getMessage());
                     return new Status(IStatus.ERROR, ReusePlugin.PLUGIN_ID, getName(), e);
                 }
-
-                ActionUtil.getInstance().runTask(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        updateChart();
-                    }
-                }, true);
 
                 return Status.OK_STATUS;
             }
@@ -855,14 +858,13 @@ public class DistributionAnalyzerView extends ViewPart {
                     updateChartColors();
                 }
 
-
                 // TODO: also it should open NetworkTreeView with this Distribution
             }
         });
-        
-        //selection adjacency
+
+        // selection adjacency
         selectionAdjacency.addModifyListener(new ModifyListener() {
-            
+
             @Override
             public void modifyText(ModifyEvent e) {
                 updateChartColors();
@@ -887,8 +889,8 @@ public class DistributionAnalyzerView extends ViewPart {
             chartFrame.setVisible(true);
             // enable main view
             mainView.setEnabled(true);
-            
-            //show color properties
+
+            // show color properties
             setStandardStatusPanelVisisble(true);
         }
     }
@@ -898,7 +900,7 @@ public class DistributionAnalyzerView extends ViewPart {
      */
     private void updateChartColors() {
         int selectedIndex = dataset.getColumnIndex(selectedBar);
-        
+
         for (int i = 0; i < dataset.getDistributionBars().size(); i++) {
             Color barColor = null;
             IDistributionBar currentBar = (IDistributionBar)dataset.getColumnKey(i);
@@ -918,9 +920,9 @@ public class DistributionAnalyzerView extends ViewPart {
             }
             currentBar.setColor(barColor);
         }
-        
+
         UPDATE_BAR_COLORS_JOB.schedule();
-        
+
         distributionChart.fireChartChanged();
     }
 

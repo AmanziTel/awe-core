@@ -13,6 +13,10 @@
 
 package org.amanzi.neo.model.distribution.types.impl;
 
+import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.amanzi.neo.model.distribution.IDistributionalModel;
 import org.amanzi.neo.model.distribution.types.ranges.impl.SimpleRange;
 import org.amanzi.neo.services.enums.INodeType;
@@ -32,6 +36,11 @@ public class EnumeratedDistribution extends AbstractDistribution<SimpleRange> {
     private static final Logger LOGGER = Logger.getLogger(EnumeratedDistribution.class);
     
     static final String STRING_DISTRIBUTION_NAME = "auto";
+    
+    /*
+     * Maximum count of property values, if count > max that exception will be thrown
+     */
+    static final int MAX_PROPERTY_VALUE_COUNT = 100;
     
     private int count = 0;
     
@@ -64,13 +73,22 @@ public class EnumeratedDistribution extends AbstractDistribution<SimpleRange> {
         //initialize count of all properties
         count = model.getPropertyCount(nodeType, propertyName);
         
+        Set<String> uniqueValues = new HashSet<String>();
+        Object[] propertyValues = model.getPropertyValues(nodeType, propertyName);
+        for (Object value : propertyValues) {
+            uniqueValues.add(value.toString());
+            if (uniqueValues.size() > MAX_PROPERTY_VALUE_COUNT) {
+                throw new IllegalArgumentException("Property values count more than " + MAX_PROPERTY_VALUE_COUNT);
+            }
+        }
         //initialize ranges
-        for (Object value : model.getPropertyValues(nodeType, propertyName)) {
+        for (Object value : propertyValues) {
             //we are sure that it's a string
             String sValue = value.toString();
+            Serializable serValue = (Serializable) value;
             
             Filter filter = new Filter();
-            filter.setExpression(nodeType, propertyName, sValue);
+            filter.setExpression(nodeType, propertyName, serValue);
             ranges.add(new SimpleRange(sValue, filter));
         }
         

@@ -77,7 +77,7 @@ public class NewNetworkService extends NewAbstractService {
      * @since 1.0.0
      */
     public enum NetworkElementNodeType implements INodeType {
-        BSC, SITE, SECTOR, CITY, MSC, SELECTION_LIST_ROOT, TRX_GROUP, TRX, CHANNEL_GROUP;
+        BSC, SITE, SECTOR, CITY, MSC, SELECTION_LIST_ROOT, TRX_GROUP, TRX, CHANNEL_GROUP, FREQUENCY_ROOT, FREQUENCY_PLAN;
 
         static {
             NodeTypeManager.registerNodeType(NetworkElementNodeType.class);
@@ -97,7 +97,7 @@ public class NewNetworkService extends NewAbstractService {
      * @since 1.0.0
      */
     public enum NetworkRelationshipTypes implements RelationshipType {
-        SELECTION_LIST, SELECTED, TRXGROUP, CHANNEL, TRX;
+        SELECTION_LIST, SELECTED, TRXGROUP, CHANNEL, TRX, FREQUENCY_ROOT, ENTRY_PLAN;
     }
 
     /*
@@ -496,6 +496,23 @@ public class NewNetworkService extends NewAbstractService {
         return result;
     }
 
+    /**
+     * Checks existing of selection link
+     *
+     * @param selectionRootNode
+     * @param selectedNode
+     * @param linkIndex
+     * @return
+     */
+    public boolean isExistSelectionLink(Node selectionRootNode, Node selectedNode, Index<Relationship> linkIndex){
+        String indexKey = Long.toString(selectionRootNode.getId());
+        Object indexValue = selectedNode.getId();
+        if (linkIndex.get(indexKey, indexValue).getSingle() != null) {
+            return true;
+        }
+        return false;
+    }
+    
     /**
      * Creates Seleciton link with node
      * 
