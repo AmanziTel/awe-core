@@ -26,6 +26,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import net.refractions.udig.ui.PlatformGIS;
+
 import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.model.distribution.IDistribution;
 import org.amanzi.neo.model.distribution.IDistributionBar;
@@ -38,6 +40,7 @@ import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.apache.commons.lang.StringUtils;
+import org.geotools.brewer.color.BrewerPalette;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -87,6 +90,9 @@ public class DistributionServiceTest extends AbstractNeoServiceTest {
     private final static Color DEFAULT_RIGHT_COLOR = Color.YELLOW;
     
     private final static Color DEFAULT_SELECTED_COLOR = Color.BLACK;
+    
+    private final static BrewerPalette DEFAULT_PALETTE = PlatformGIS.
+            getColorBrewer().getPalettes()[PlatformGIS.getColorBrewer().getPalettes().length / 2];
 
     /*
      * Distribution service
@@ -770,6 +776,33 @@ public class DistributionServiceTest extends AbstractNeoServiceTest {
         assertTrue("Unexpected Selected Color", Arrays.equals(getColorArray(DEFAULT_SELECTED_COLOR), (int[])rootNode.getProperty(DistributionService.SELECTED_COLOR)));
     }
     
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToUpdatePaletteWithoutRootNode() throws Exception {
+        distributionService.updatePalette(null, DEFAULT_PALETTE);
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToUpdatePaletteWithoutPalette() throws Exception {
+        Node rootNode = createRootAggregationNode(getParentNode(), DISTRIBUTION_NAME);
+        
+        distributionService.updatePalette(rootNode, null);
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToUpdatePaletteWithUnknownPalette() throws Exception {
+        Node rootNode = createRootAggregationNode(getParentNode(), DISTRIBUTION_NAME);
+        
+        distributionService.updatePalette(rootNode, new BrewerPalette());
+    }
+    
+    @Test
+    public void checkPaletteChanges() throws Exception {
+        Node rootNode = createRootAggregationNode(getParentNode(), DISTRIBUTION_NAME);
+        
+        distributionService.updatePalette(rootNode, DEFAULT_PALETTE);
+        
+        assertEquals("Unexpected name of Palette", DEFAULT_PALETTE.getName(), rootNode.getProperty(DistributionService.PALETTE));
+    }
     
     private IDistributionBar getDistributionBarInstance(Node barNode, String name, boolean createRootElement, int count) {
         DistributionBar result = getDistributionBarInstance(barNode, name, createRootElement);
