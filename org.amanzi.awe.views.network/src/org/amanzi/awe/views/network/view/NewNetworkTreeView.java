@@ -23,6 +23,7 @@ import org.amanzi.awe.awe.views.view.provider.NewNetworkTreeLabelProvider;
 import org.amanzi.awe.views.network.NetworkTreePlugin;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.events.ShowPreparedViewEvent;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
@@ -411,7 +412,7 @@ public class NewNetworkTreeView extends ViewPart {
             } else {
                 IDataElement element = (IDataElement)elementObject;
                 selectedNodes.add(element);
-                if (!NeoUtils.getNodeType(((DataElement)element).getNode()).equals("sector")) {
+                if (!NeoUtils.getNodeType(((DataElement)element).getNode()).equals(NodeTypes.SECTOR.getId())) {
                     isSector = false;
                 }
                 network = (INetworkModel)((DataElement)element).get(INeoConstants.NETWORK_MODEL_NAME);
@@ -427,9 +428,9 @@ public class NewNetworkTreeView extends ViewPart {
             }
         }
         if (isSector && isOneNetwork && !isNetwork) {
-            /*try {
+            try {
                 INetworkModel networkModel = ProjectModel.getCurrentProjectModel().findNetwork(nameNetwork);
-                List<ISelectionModel> selectionModel = networkModel.getAllSelectionModels();
+                Iterable<ISelectionModel> selectionModel = networkModel.getAllSelectionModels();
                 Iterator<ISelectionModel> iterator = selectionModel.iterator();
                 while (iterator.hasNext()) {
                     String nameSelectionList = iterator.next().getName();
@@ -441,7 +442,7 @@ public class NewNetworkTreeView extends ViewPart {
             } catch (AWEException e) {
                 // TODO Handle AWEException
                 throw (RuntimeException)new RuntimeException().initCause(e);
-            }*/
+            }
 
         }
 
