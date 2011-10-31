@@ -13,6 +13,7 @@
 package org.amanzi.awe.views.network.view;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -23,11 +24,14 @@ import org.amanzi.awe.awe.views.view.provider.NewNetworkTreeLabelProvider;
 import org.amanzi.awe.views.network.NetworkTreePlugin;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.events.NewShowPreparedViewEvent;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
+import org.amanzi.neo.services.model.ISelectionModel;
 import org.amanzi.neo.services.model.impl.DataElement;
+import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.jface.action.Action;
@@ -36,6 +40,7 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.InputDialog;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -47,6 +52,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.PartInitException;
@@ -146,7 +152,11 @@ public class NewNetworkTreeView extends ViewPart {
 
         DeleteAction deleteAction = new DeleteAction((IStructuredSelection)viewer.getSelection());
         manager.add(deleteAction);
-//        createAdditionalAction(manager);
+
+        createSubmenuAddToSelectionList((IStructuredSelection)viewer.getSelection(), manager);
+
+        CreateSelectionList createSelectionList = new CreateSelectionList((IStructuredSelection)viewer.getSelection());
+        manager.add(createSelectionList);
     }
     
     private class SelectAction extends Action {
@@ -368,6 +378,193 @@ public class NewNetworkTreeView extends ViewPart {
         }
     }
     
+    /**
+     * Method create submenu - Add to selection list
+     * 
+     * @param selection
+     * @param manager
+     */
+    @SuppressWarnings("rawtypes")
+    private void createSubmenuAddToSelectionList(IStructuredSelection selection, IMenuManager manager) {
+
+        boolean isNetwork = false;
+        boolean isSector = true;
+        boolean firstNode = true;
+        boolean isOneNetwork = true;
+        String text = "Add to selection list";
+        String nameNetwork = "";
+        INetworkModel network = null;
+
+        // Sub menu
+        Set<IDataElement> selectedNodes = new HashSet<IDataElement>();
+        MenuManager subMenu = new MenuManager(text);
+
+        Iterator it = selection.iterator();
+        while (it.hasNext()) {
+            Object elementObject = it.next();
+            if (elementObject instanceof INetworkModel) {
+                isNetwork = true;
+                continue;
+            } else {
+                IDataElement element = (IDataElement)elementObject;
+                selectedNodes.add(element);
+                if (!NeoUtils.getNodeType(((DataElement)element).getNode()).equals(NodeTypes.SECTOR.getId())) {
+                    isSector = false;
+                }
+                network = (INetworkModel)((DataElement)element).get(INeoConstants.NETWORK_MODEL_NAME);
+                if (firstNode) {
+                    nameNetwork = network.getName();
+                    firstNode = false;
+                } else {
+                    if (!network.getName().equals(nameNetwork)) {
+                        isOneNetwork = false;
+                    }
+                }
+
+            }
+        }
+        if (isSector && isOneNetwork && !isNetwork) {
+            try {
+                INetworkModel networkModel = ProjectModel.getCurrentProjectModel().findNetwork(nameNetwork);
+                Iterable<ISelectionModel> selectionModel = networkModel.getAllSelectionModels();
+                Iterator<ISelectionModel> iterator = selectionModel.iterator();
+                while (iterator.hasNext()) {
+                    String nameSelectionList = iterator.next().getName();
+                    AddToSelectionListAction addToSelectionListAction = new AddToSelectionListAction(
+                            (IStructuredSelection)viewer.getSelection(), nameSelectionList, selectedNodes, networkModel);
+                    subMenu.add(addToSelectionListAction);
+                }
+                manager.add(subMenu);
+            } catch (AWEException e) {
+                // TODO Handle AWEException
+                throw (RuntimeException)new RuntimeException().initCause(e);
+            }
+
+        }
+    }
+
+    /**
+     * Action for adding of sectors to selection list
+     * 
+     * @author Ladornaya_A
+     * @since 1.0.0
+     */
+    private class AddToSelectionListAction extends Action {
+        private boolean enabled = true;
+        private final String text;
+        private Set<IDataElement> selectedNodes = new HashSet<IDataElement>();
+        private ISelectionModel selectionModel;
+        private List<String> nameExistingSector = new ArrayList<String>();
+
+        /**
+         * Constructor
+         * 
+         * @param selection - selection
+         * @throws AWEException
+         */
+        public AddToSelectionListAction(IStructuredSelection selection, String nameSelectionList, Set<IDataElement> selectedNodes,
+                INetworkModel networkModel) throws AWEException {
+            text = nameSelectionList;
+            this.selectedNodes = selectedNodes;
+            this.selectionModel = networkModel.findSelectionModel(text);
+            for (IDataElement element : selectedNodes) {
+                if (selectionModel.isExistSelectionLink(element)) {
+                    nameExistingSector.add(element.toString());
+                    enabled = false;
+                }
+            }
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return true;
+        }
+
+        @Override
+        public String getText() {
+            return text;
+        }
+
+        @Override
+        public void run() {
+            try {
+                if (enabled == false) {
+                    Collections.sort(nameExistingSector);
+                    String msg = "";
+                    String sectors = "Sector";
+                    if (nameExistingSector.size() > 1) {
+                        sectors = sectors + "s";
+                    }
+                    sectors = sectors + " ";
+                    int i;
+                    for (i = 0; i < nameExistingSector.size() - 1; i++) {
+                        sectors = sectors + "" + nameExistingSector.get(i) + ", ";
+                    }
+                    sectors = sectors + "" + nameExistingSector.get(i) + " already exist in list - ";
+                    msg = sectors + " " + text + "!";
+                    MessageDialog.openInformation(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
+                            "Already exist!", msg);
+                } else {
+                    Iterator<IDataElement> it = selectedNodes.iterator();
+                    while (it.hasNext()) {
+                        IDataElement element = it.next();
+                        selectionModel.linkToSector(element);
+                    }
+                }
+            } catch (AWEException e) {
+                throw (RuntimeException)new RuntimeException().initCause(e);
+            }
+        }
+    }
+
+    /**
+     * Action for creating of selection list
+     * 
+     * @author Ladornaya_A
+     * @since 1.0.0
+     */
+    private class CreateSelectionList extends Action {
+
+        private boolean enabled;
+        private final String text;
+        private INetworkModel network;
+
+        /**
+         * Constructor
+         * 
+         * @param selection - selection
+         */
+        public CreateSelectionList(IStructuredSelection selection) {
+            text = "Create selection list";
+            enabled = selection.size() == 1 && selection.getFirstElement() instanceof INetworkModel;
+            if (enabled) {
+                network = (INetworkModel)selection.getFirstElement();
+            }
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        @Override
+        public String getText() {
+            return text;
+        }
+
+        @Override
+        public void run() {
+            Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+            NewSelectionListDialog pdialog = new NewSelectionListDialog(shell, network, "New selection list", SWT.OK);
+            if (pdialog.open() == SWT.OK) {
+
+            } else {
+
+            }
+        }
+
+    }
+
     /**
      * @param parent
      */
