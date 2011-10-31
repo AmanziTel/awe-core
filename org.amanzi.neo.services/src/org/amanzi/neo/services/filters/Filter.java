@@ -107,11 +107,13 @@ public class Filter implements IFilter {
         if (supportedType) {
             boolean hasProperty = node.hasProperty(propertyName);
             Object propertyValue = null;
+            Object compValue = null;
             //get property value
             if (hasProperty){
                 propertyValue = node.getProperty(propertyName);
-                if (propertyValue instanceof Number) {
-                    propertyValue = new Double(((Number)propertyValue).doubleValue());
+                compValue = propertyValue;
+                if (compValue instanceof Number) {
+                    compValue = new Double(((Number)compValue).doubleValue());
                 }
             }
             //compare
@@ -144,7 +146,7 @@ public class Filter implements IFilter {
                 }
 
                 result = false;
-                if (((Comparable<Serializable>)propertyValue).compareTo(value) > 0)
+                if (((Comparable<Serializable>)compValue).compareTo(value) > 0)
                     result = true;          
 
                 break;
@@ -161,7 +163,7 @@ public class Filter implements IFilter {
                 }
 
                 result = false;
-                if (((Comparable<Serializable>)propertyValue).compareTo(value) < 0)
+                if (((Comparable<Serializable>)compValue).compareTo(value) < 0)
                     result = true;                     
 
                 break;
@@ -175,7 +177,7 @@ public class Filter implements IFilter {
                     throw new NotComparebleException();
                 }
 
-                if (((Comparable<Serializable>)propertyValue).compareTo(value) > 0)
+                if (((Comparable<Serializable>)compValue).compareTo(value) > 0)
                     result = true;                     
                 break;
             case LESS_OR_EQUALS:
@@ -191,7 +193,7 @@ public class Filter implements IFilter {
                 catch(Exception e){
 
                 }
-                if (((Comparable<Serializable>)propertyValue).compareTo(value) < 0)
+                if (((Comparable<Serializable>)compValue).compareTo(value) < 0)
                     result = true;
                 break;
             case EMPTY:
