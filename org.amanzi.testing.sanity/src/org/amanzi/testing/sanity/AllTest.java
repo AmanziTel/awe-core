@@ -32,6 +32,7 @@ import org.junit.runners.Suite.SuiteClasses;
 @SuiteClasses( {
                 org.amanzi.neo.services.NeoServiceSuite.class,
                 org.amanzi.neo.loader.core.newsaver.SaversSuite.class,
+                org.amanzi.awe.models.catalog.neo.CatalogSuite.class
 				} )
 				
 // Note that Categories is a kind of Suite

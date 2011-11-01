@@ -7,5 +7,6 @@ Bundle-Vendor: amanzi.org
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.junit4;bundle-version="4.3.1",
  org.amanzi.neo.loader.core;bundle-version="1.0.0",
- org.amanzi.neo.services;bundle-version="1.0.0"
+ org.amanzi.neo.services;bundle-version="1.0.0",
+ org.amanzi.awe.catalog.neo;bundle-version="1.0.0"
 Export-Package: org.amanzi.testing.sanity

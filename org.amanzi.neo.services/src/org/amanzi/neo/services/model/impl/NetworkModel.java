@@ -445,7 +445,12 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
 
     @Override
     public Iterable<ISelectionModel> getAllSelectionModels() throws AWEException {
-        return null;
+        Iterable<Node> nodes = nwServ.getAllSelectionModelsOfNetwork(rootNode);
+        List<ISelectionModel> models = new ArrayList<ISelectionModel>();
+        for (Node node : nodes) {
+            models.add(new SelectionModel(node));
+        }
+        return models;
     }
 
     @Override
@@ -515,7 +520,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     public List<INodeType> getNetworkStructure() {
         return currentNetworkStructure;
     }
-    
+
     public void setCurrentNetworkStructure(List<INodeType> currentNetworkStructure) {
         this.currentNetworkStructure = currentNetworkStructure;
     }

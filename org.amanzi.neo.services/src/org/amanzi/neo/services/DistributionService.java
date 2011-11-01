@@ -24,6 +24,7 @@ import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.geotools.brewer.color.BrewerPalette;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -80,6 +81,11 @@ public class DistributionService extends NewAbstractService {
      * Selected Color property of Distribution Root node
      */
     public static final String SELECTED_COLOR = "selected_color";
+    
+    /*
+     * Selected Palette property of Distribution Root node
+     */
+    public static final String PALETTE = "palette";
     
     
     /**
@@ -618,6 +624,16 @@ public class DistributionService extends NewAbstractService {
         }
         
         LOGGER.debug("finish updateSelectedBarColors()");
+    }
+    
+    /**
+     * Updates Palette of selected Distribution Model
+     *
+     * @param rootAggregationNode
+     * @param palette
+     */
+    public void updatePalette(Node rootAggregationNode, BrewerPalette palette) {
+        
     }
 }
 

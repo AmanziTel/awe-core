@@ -69,10 +69,19 @@ public interface INodeToNodeRelationsModel extends IPropertyStatisticalModel, ID
             boolean isReplace) throws DatabaseException, AWEException;
 
     /**
-     * retrun service element by proxy
+     * return service element by proxy
      * 
      * @param proxy proxy element
      * @return service sector or null if not found
      */
     public IDataElement getServiceElementByProxy(IDataElement proxy);
+
+    /**
+     * try to find existed frequency element in db, if not foun -create new one.
+     * 
+     * @param frequency
+     * @return frequencyElement
+     * @throws DatabaseException
+     */
+    public IDataElement getFrequencyNode(int frequency) throws DatabaseException;
 }
