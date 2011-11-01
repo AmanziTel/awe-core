@@ -51,10 +51,10 @@ public class NewStatisticsService extends NewAbstractService {
     public static final String CLASS = "class";
     public static final String COUNT = "count";
     public static final String NUMBER = "number";
-    
+
     private static final String VALUE_NAME = "v";
     private static final String COUNT_NAME = "c";
-    
+
     private static final String EMPTY_STRING = "";
     private static final String PROP_STAT_NODE = "propertyStatisticsNode";
     private static final String VAULT_NODE = "vaultNode";
@@ -68,7 +68,6 @@ public class NewStatisticsService extends NewAbstractService {
      */
     private TraversalDescription childNodes = CHILD_ELEMENT_TRAVERSAL_DESCRIPTION.evaluator(Evaluators.atDepth(1));
 
-    
     /**
      * <p>
      * Relationship types for statistics nodes
@@ -107,7 +106,7 @@ public class NewStatisticsService extends NewAbstractService {
      *         className
      */
     private IVault loadSubVault(Node vaultNode) throws LoadVaultException {
-        IVault result;
+        IVault result = null;
         String className = (String)vaultNode.getProperty(CLASS, null);
         try {
             @SuppressWarnings("unchecked")
@@ -124,7 +123,8 @@ public class NewStatisticsService extends NewAbstractService {
                 result.addSubVault(loadSubVault(subVauldNode));
             }
         } catch (Exception e) {
-            throw new LoadVaultException(e);
+            LOGGER.error("Could not load statistics.", e);
+            // throw new LoadVaultException(e);
         }
         return result;
 
@@ -150,11 +150,11 @@ public class NewStatisticsService extends NewAbstractService {
         return childNodes.evaluator(new FilterNodesByType(StatisticsNodeTypes.PROPERTY_STATISTICS)).traverse(parentVaultNode)
                 .nodes();
     }
-    
+
     /**
-     * This method save vault to database. If it new vault - just save to database,
-     * if changed vault - new delete old vault from database and save new vault
-     *
+     * This method save vault to database. If it new vault - just save to database, if changed vault
+     * - new delete old vault from database and save new vault
+     * 
      * @param rootNode Node to which attached statistics vault
      * @param vault Vault with statistics
      * @throws DatabaseException - this method may generate exception if exception occurred while
@@ -182,24 +182,24 @@ public class NewStatisticsService extends NewAbstractService {
             LOGGER.error("DuplicateStatisticsException: for this rootNode already exists statistics");
             throw new DuplicateStatisticsException("for this rootNode already exists statistics");
         }
-        
+
         if (vault.isStatisticsChanged()) {
             // need delete rootVault and all subVaults and store changing rootVault
             deleteVault(rootNode);
         }
-        
+
         saveNewVault(rootNode, vault);
         vault.setIsStatisticsChanged(false);
-        
+
         LOGGER.debug("finish method saveVault(Node rootNode, IVault vault");
     }
-    
+
     /**
      * Method delete core vault with statistics
-     *
+     * 
      * @param rootNode Node to which attached statistics vault
-     * @throws DatabaseException 
-     * @throws InvalidStatisticsParameterException 
+     * @throws DatabaseException
+     * @throws InvalidStatisticsParameterException
      */
     public void deleteVault(Node rootNode) throws DatabaseException, InvalidStatisticsParameterException {
         LOGGER.debug("start method deleteVault(Node rootNode, IVault vault");
@@ -207,29 +207,29 @@ public class NewStatisticsService extends NewAbstractService {
             LOGGER.error("InvalidStatisticsParameterException: parameter rootNode = null");
             throw new InvalidStatisticsParameterException(ROOT_NODE, rootNode);
         }
-        
+
         Transaction tx = graphDb.beginTx();
         try {
             if (rootNode.getRelationships(StatisticsRelationships.STATISTICS, Direction.OUTGOING).iterator().hasNext()) {
-                Relationship statisticsRelationship =
-                        rootNode.getSingleRelationship(StatisticsRelationships.STATISTICS, Direction.OUTGOING);
-                
+                Relationship statisticsRelationship = rootNode.getSingleRelationship(StatisticsRelationships.STATISTICS,
+                        Direction.OUTGOING);
+
                 Node rootStaticticsNode = statisticsRelationship.getEndNode();
-                Iterable<Relationship> childRelationships =
-                        rootStaticticsNode.getRelationships(DatasetRelationshipTypes.CHILD, Direction.OUTGOING);
-                
+                Iterable<Relationship> childRelationships = rootStaticticsNode.getRelationships(DatasetRelationshipTypes.CHILD,
+                        Direction.OUTGOING);
+
                 for (Relationship rel : childRelationships) {
                     Node childNode = rel.getEndNode();
                     if (childNode != null) {
-                        if (childNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME).
-                                toString().equals(StatisticsNodeTypes.VAULT.getId())) {
+                        if (childNode.getProperty(INeoConstants.PROPERTY_TYPE_NAME).toString()
+                                .equals(StatisticsNodeTypes.VAULT.getId())) {
                             deleteSubVaults(childNode);
                         }
                         rel.delete();
                         childNode.delete();
                     }
                 }
-                
+
                 statisticsRelationship.delete();
                 rootStaticticsNode.delete();
             }
@@ -245,14 +245,13 @@ public class NewStatisticsService extends NewAbstractService {
         }
         LOGGER.debug("finish method deleteVault(Node rootNode, IVault vault");
     }
-    
+
     private void deleteSubVaults(Node vault) {
         for (Relationship childRel : vault.getRelationships(DatasetRelationshipTypes.CHILD, Direction.OUTGOING)) {
             Node subVault = childRel.getEndNode();
 
             if (subVault != null) {
-                if (subVault.getProperty(INeoConstants.PROPERTY_TYPE_NAME).
-                        toString().equals(StatisticsNodeTypes.VAULT.getId())) {
+                if (subVault.getProperty(INeoConstants.PROPERTY_TYPE_NAME).toString().equals(StatisticsNodeTypes.VAULT.getId())) {
                     deleteSubVaults(subVault);
                 }
                 subVault.delete();
@@ -269,9 +268,9 @@ public class NewStatisticsService extends NewAbstractService {
      * @throws DatabaseException - this method may generate exception if exception occurred while
      *         working with a database
      */
-    private void saveNewVault(Node rootNode, IVault vault) throws DatabaseException{
+    private void saveNewVault(Node rootNode, IVault vault) throws DatabaseException {
         LOGGER.debug("start method saveVault(Node rootNode, IVault vault)");
-        
+
         Transaction tx = graphDb.beginTx();
         Node vaultNode = null;
         try {
@@ -348,7 +347,7 @@ public class NewStatisticsService extends NewAbstractService {
      */
     public void savePropertyStatistics(NewPropertyStatistics propStat, Node vaultNode) throws DatabaseException,
             InvalidStatisticsParameterException {
-        LOGGER.debug("start method savePropertyStatistics(NewPropertyStatistics propStat, Node vaultNode)" );
+        LOGGER.debug("start method savePropertyStatistics(NewPropertyStatistics propStat, Node vaultNode)");
         if (propStat == null) {
             LOGGER.error("InvalidStatisticsParameterException: parameter propStat is null");
             throw new InvalidStatisticsParameterException(PROP_STAT, propStat);
@@ -362,14 +361,12 @@ public class NewStatisticsService extends NewAbstractService {
         Map<Object, Integer> propMap = propStat.getPropertyMap();
         int number = propMap.size();
         String className = propStat.getKlass().getCanonicalName();
-        
+
         // Kasnitskij_V:
         // Save statistics only if class of statistics is Boolean, String or Number
-        Class<?> klass = propStat.getKlass();
-        if (klass.equals(Boolean.class) ||
-                klass.equals(String.class) ||
-                klass.getSuperclass().equals(Number.class)) {
-            
+        Class< ? > klass = propStat.getKlass();
+        if (klass.equals(Boolean.class) || klass.equals(String.class) || klass.getSuperclass().equals(Number.class)) {
+
             Transaction tx = graphDb.beginTx();
             try {
                 Node propStatNode = createNode(StatisticsNodeTypes.PROPERTY_STATISTICS);
@@ -377,23 +374,23 @@ public class NewStatisticsService extends NewAbstractService {
                 propStatNode.setProperty(NAME, name);
                 propStatNode.setProperty(NUMBER, number);
                 propStatNode.setProperty(CLASS, className);
-        
+
                 int count = 0;
                 for (Entry<Object, Integer> entry : propMap.entrySet()) {
                     count++;
                     propStatNode.setProperty(VALUE_NAME + count, entry.getKey());
                     propStatNode.setProperty(COUNT_NAME + count, entry.getValue());
                 }
-    
+
                 tx.success();
-    
+
             } catch (Exception e) {
                 tx.failure();
                 LOGGER.error("DatabaseException: " + e.getMessage());
                 throw new DatabaseException(e);
             } finally {
                 tx.finish();
-                LOGGER.debug("finish method savePropertyStatistics(NewPropertyStatistics propStat, Node vaultNode)" );
+                LOGGER.debug("finish method savePropertyStatistics(NewPropertyStatistics propStat, Node vaultNode)");
             }
         }
 

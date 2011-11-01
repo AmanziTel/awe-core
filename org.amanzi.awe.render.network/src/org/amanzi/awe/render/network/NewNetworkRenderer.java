@@ -51,18 +51,20 @@ public class NewNetworkRenderer extends AbstractRenderer {
         }
 
         renderSite(destination, point, site);
-        int i = 0;
-        int sCount = (Integer)site.get(NewNetworkService.SECTOR_COUNT);
-        for (IDataElement sector : ((INetworkModel)model).getChildren(site)) {
-            Double azimuth = (Double)sector.get(AZIMUTH);
-            Double beamwidth = (Double)sector.get(BEAMWIDTH);
-            if (azimuth == null || azimuth == 0 || beamwidth == null || beamwidth == 0) {
-                beamwidth = FULL_CIRCLE / sCount;
-                azimuth = beamwidth * i;
-                beamwidth = beamwidth.doubleValue() * 0.8;
+        if (RenderOptions.scale == Scale.LARGE) {
+            int i = 0;
+            Integer sCount = (Integer)site.get(NewNetworkService.SECTOR_COUNT);
+            for (IDataElement sector : ((INetworkModel)model).getChildren(site)) {
+                Double azimuth = (Double)sector.get(AZIMUTH);
+                Double beamwidth = (Double)sector.get(BEAMWIDTH);
+                if (azimuth == null || beamwidth == null || beamwidth == 0) {
+                    beamwidth = FULL_CIRCLE / (sCount == null ? 1 : sCount);
+                    azimuth = beamwidth * i;
+                    beamwidth = beamwidth.doubleValue() * 0.8;
+                }
+                renderSector(destination, point, azimuth, beamwidth);
+                i++;
             }
-            renderSector(destination, point, azimuth, beamwidth);
-            i++;
         }
     }
 

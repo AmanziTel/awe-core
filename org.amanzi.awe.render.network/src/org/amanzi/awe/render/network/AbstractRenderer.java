@@ -64,12 +64,12 @@ public class AbstractRenderer extends RendererImpl {
         public static Color site_fill = new Color(128, 128, 128, alpha);
         public static Color sector_fill = new Color(255, 255, 128, alpha);
         public static boolean antialiazing = true;
-        public static int maxSitesLabel;
-        public static int maxSitesFull;
-        public static int maxSitesLite;
-        public static int maxSymbolSize;
-        public static boolean drawLabels;
-        public static boolean scaleSymbols;
+        public static int maxSitesLabel = 50;
+        public static int maxSitesFull = 100;
+        public static int maxSitesLite = 1000;
+        public static int maxSymbolSize = 40;
+        public static boolean drawLabels = false;
+        public static boolean scaleSymbols = false;
     }
 
     protected enum Scale {
@@ -84,15 +84,17 @@ public class AbstractRenderer extends RendererImpl {
         RenderOptions.drawLabels = countScaled < RenderOptions.maxSitesLabel;
         if (countScaled < RenderOptions.maxSitesFull) {
             RenderOptions.scale = Scale.LARGE;
-        }
-        if (countScaled > RenderOptions.maxSitesLite) {
+        } else if (countScaled > RenderOptions.maxSitesLite) {
             RenderOptions.scale = Scale.SMALL;
+        } else {
+            RenderOptions.scale = Scale.MEDIUM;
         }
         if (RenderOptions.scale.equals(Scale.LARGE) && RenderOptions.scaleSymbols) {
             RenderOptions.large_sector_size *= Math.sqrt(RenderOptions.maxSitesFull) / (3 * Math.sqrt(countScaled));
             RenderOptions.large_sector_size = Math.min(RenderOptions.large_sector_size, RenderOptions.maxSymbolSize);
         }
-        // expand the boundary to include sites just out of view (so partial sectors can be see)
+        
+
         bounds_transformed.expandBy(0.75 * (bounds_transformed.getHeight() + bounds_transformed.getWidth()));
     }
 
@@ -137,7 +139,7 @@ public class AbstractRenderer extends RendererImpl {
             Envelope bounds_transformed = getTransformedBounds();
             Envelope data_bounds = model.getBounds();
 
-            //TODO: refactor
+            // TODO: refactor
             int count = ((INetworkModel)model).getAllProperties(NetworkElementNodeType.SITE, NewAbstractService.NAME).size();
             setScaling(bounds_transformed, data_bounds, monitor, count);
 
