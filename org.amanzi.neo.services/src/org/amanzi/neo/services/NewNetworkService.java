@@ -101,6 +101,12 @@ public class NewNetworkService extends NewAbstractService {
     }
 
     /*
+     * Traversal Description to find out all Selection List Nodes of sector
+     */
+    protected final static TraversalDescription ALL_SELECTION_LISTS_OF_SECTOR_TRAVERSER = Traversal.description().breadthFirst()
+            .relationships(NetworkRelationshipTypes.SELECTED).evaluator(Evaluators.atDepth(1));
+    
+    /*
      * Traversal Description to find out all Selection List Nodes
      */
     protected final static TraversalDescription ALL_SELECTION_LISTS_TRAVERSER = Traversal.description().breadthFirst()
@@ -479,7 +485,7 @@ public class NewNetworkService extends NewAbstractService {
      * Returns all Selection Nodes related to Network
      * 
      * @param networkNode Network node
-     * @return
+     * @return all selection models of network
      */
     public Iterable<Node> getAllSelectionModelsOfNetwork(Node networkNode) {
         LOGGER.debug("start getAllSelectionModelsOfNetwork(<" + networkNode + ">)");
@@ -497,12 +503,33 @@ public class NewNetworkService extends NewAbstractService {
     }
 
     /**
+     * Returns all Selection Nodes related to Sector
+     * 
+     * @param sectorNode Sector node
+     * @return all selection models of sector
+     */
+    public Iterable<Node> getAllSelectionModelsOfSector(Node sectorNode) {
+        LOGGER.debug("start getAllSelectionModelsOfSector(<" + sectorNode + ">)");
+
+        if (sectorNode == null) {
+            LOGGER.error("Sector Node is null");
+            throw new IllegalArgumentException("SectorNode is null");
+        }
+
+        Iterable<Node> result = ALL_SELECTION_LISTS_OF_SECTOR_TRAVERSER.traverse(sectorNode).nodes();
+
+        LOGGER.debug("finish getAllSelectionModelsOfSector()");
+
+        return result;
+    }
+    
+    /**
      * Checks existing of selection link
      *
      * @param selectionRootNode
      * @param selectedNode
      * @param linkIndex
-     * @return
+     * @return 
      */
     public boolean isExistSelectionLink(Node selectionRootNode, Node selectedNode, Index<Relationship> linkIndex){
         String indexKey = Long.toString(selectionRootNode.getId());
