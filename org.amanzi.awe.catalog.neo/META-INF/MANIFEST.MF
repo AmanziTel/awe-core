@@ -20,5 +20,7 @@ Export-Package: org.amanzi.awe.catalog.neo;
  org.amanzi.awe.catalog.neo.upd_layers.events,
  org.amanzi.awe.models.catalog.neo
 Bundle-Activator: org.amanzi.awe.catalog.neo.NeoCatalogPlugin
-Eclipse-LazyStart: true
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Eclipse-LazyStart: true
+Eclipse-ExtensibleAPI: true
+

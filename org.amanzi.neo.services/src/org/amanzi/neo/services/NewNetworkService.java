@@ -101,6 +101,12 @@ public class NewNetworkService extends NewAbstractService {
     }
 
     /*
+     * Traversal Description to find out all Selection List Nodes of sector
+     */
+    protected final static TraversalDescription ALL_SELECTION_LISTS_OF_SECTOR_TRAVERSER = Traversal.description().breadthFirst()
+            .relationships(NetworkRelationshipTypes.SELECTED).evaluator(Evaluators.atDepth(1));
+    
+    /*
      * Traversal Description to find out all Selection List Nodes
      */
     protected final static TraversalDescription ALL_SELECTION_LISTS_TRAVERSER = Traversal.description().breadthFirst()
@@ -111,6 +117,7 @@ public class NewNetworkService extends NewAbstractService {
      */
     protected final static TraversalDescription N2N_ROOT_TRAVERSER = Traversal.description().breadthFirst()
             .relationships(N2NRelTypes.NEIGHBOUR).evaluator(Evaluators.excludeStartPosition());
+    public static final String SECTOR_COUNT = "sector_count";
 
     public NewNetworkService() {
         super();
@@ -479,7 +486,7 @@ public class NewNetworkService extends NewAbstractService {
      * Returns all Selection Nodes related to Network
      * 
      * @param networkNode Network node
-     * @return
+     * @return all selection models of network
      */
     public Iterable<Node> getAllSelectionModelsOfNetwork(Node networkNode) {
         LOGGER.debug("start getAllSelectionModelsOfNetwork(<" + networkNode + ">)");
@@ -498,13 +505,13 @@ public class NewNetworkService extends NewAbstractService {
 
     /**
      * Checks existing of selection link
-     *
+     * 
      * @param selectionRootNode
      * @param selectedNode
      * @param linkIndex
      * @return
      */
-    public boolean isExistSelectionLink(Node selectionRootNode, Node selectedNode, Index<Relationship> linkIndex){
+    public boolean isExistSelectionLink(Node selectionRootNode, Node selectedNode, Index<Relationship> linkIndex) {
         String indexKey = Long.toString(selectionRootNode.getId());
         Object indexValue = selectedNode.getId();
         if (linkIndex.get(indexKey, indexValue).getSingle() != null) {
@@ -512,7 +519,28 @@ public class NewNetworkService extends NewAbstractService {
         }
         return false;
     }
-    
+
+    /**
+     * Returns all Selection Nodes related to Sector
+     * 
+     * @param sectorNode Sector node
+     * @return all selection models of sector
+     */
+    public Iterable<Node> getAllSelectionModelsOfSector(Node sectorNode) {
+        LOGGER.debug("start getAllSelectionModelsOfSector(<" + sectorNode + ">)");
+
+        if (sectorNode == null) {
+            LOGGER.error("Sector Node is null");
+            throw new IllegalArgumentException("SectorNode is null");
+        }
+
+        Iterable<Node> result = ALL_SELECTION_LISTS_OF_SECTOR_TRAVERSER.traverse(sectorNode).nodes();
+
+        LOGGER.debug("finish getAllSelectionModelsOfSector()");
+
+        return result;
+    }
+
     /**
      * Creates Seleciton link with node
      * 

@@ -454,6 +454,16 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     }
 
     @Override
+    public Iterable<ISelectionModel> getAllSelectionModelsOfSector(IDataElement element) throws AWEException {
+        Iterable<Node> nodes = nwServ.getAllSelectionModelsOfSector(((DataElement)element).getNode());
+        List<ISelectionModel> models = new ArrayList<ISelectionModel>();
+        for (Node node : nodes) {
+            models.add(new SelectionModel(node));
+        }
+        return models;
+    }
+
+    @Override
     public void replaceRelationship(IDataElement newParentElement, IDataElement currentNode) throws AWEException {
         Node curentNode;
         Node newParentNode;
