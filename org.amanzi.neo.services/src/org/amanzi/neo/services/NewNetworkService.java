@@ -97,7 +97,7 @@ public class NewNetworkService extends NewAbstractService {
      * @since 1.0.0
      */
     public enum NetworkRelationshipTypes implements RelationshipType {
-        SELECTION_LIST, SELECTED, TRXGROUP, CHANNEL, TRX;
+        SELECTION_LIST, SELECTED, CHANNEL, TRX, FREQUENCY_ROOT, ENTRY_PLAN;
     }
 
     /*
@@ -105,7 +105,7 @@ public class NewNetworkService extends NewAbstractService {
      */
     protected final static TraversalDescription ALL_SELECTION_LISTS_OF_SECTOR_TRAVERSER = Traversal.description().breadthFirst()
             .relationships(NetworkRelationshipTypes.SELECTED).evaluator(Evaluators.atDepth(1));
-
+    
     /*
      * Traversal Description to find out all Selection List Nodes
      */
