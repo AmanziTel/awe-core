@@ -14,6 +14,7 @@
 package org.amanzi.neo.services.model.impl;
 
 import org.amanzi.neo.services.CorrelationService;
+import org.amanzi.neo.services.CorrelationService.CorrelationNodeTypes;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
@@ -44,6 +45,7 @@ public class CorrelationModel extends AbstractModel implements ICorrelationModel
      * @param dataset a dataset root node
      */
     CorrelationModel(Node network, Node dataset) throws AWEException {
+        super(CorrelationNodeTypes.CORRELATION);
         // validate parameters
         if (network == null) {
             throw new IllegalArgumentException("Network is null.");
@@ -66,6 +68,7 @@ public class CorrelationModel extends AbstractModel implements ICorrelationModel
      * @throws DatabaseException 
      */
     public CorrelationModel(IDataElement networkElement, IDataElement datasetElement) throws DatabaseException {
+        super(CorrelationNodeTypes.CORRELATION);
         // validate parameters
         if (networkElement == null) {
             throw new IllegalArgumentException("Network is null.");

@@ -43,8 +43,8 @@ public abstract class RenderableModel extends AbstractIndexedModel {
     /** The field used in geo tools. Assignment not yet implemented.//TODO */
     protected CoordinateReferenceSystem crs;
 
-    protected RenderableModel(Node rootNode) throws AWEException {
-        super(rootNode);
+    protected RenderableModel(Node rootNode, INodeType nodeType) throws AWEException {
+        super(rootNode, nodeType);
     }
 
     // TODO: make it abstract?

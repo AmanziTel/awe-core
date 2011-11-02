@@ -124,7 +124,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
      *         creation of nodes
      */
     public DriveModel(Node parent, Node rootNode, String name, IDriveType type) throws AWEException {
-        super(rootNode);
+        super(rootNode, DatasetTypes.DRIVE);
         // if root node is null, get one by name
         if (rootNode != null) {
             dsServ = NeoServiceFactory.getInstance().getNewDatasetService();

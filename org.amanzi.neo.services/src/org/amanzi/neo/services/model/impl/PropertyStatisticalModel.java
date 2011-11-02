@@ -35,6 +35,13 @@ import org.neo4j.graphdb.Node;
  */
 public abstract class PropertyStatisticalModel extends DataModel implements IPropertyStatisticalModel {
 
+    /**
+     * @param nodeType
+     */
+    protected PropertyStatisticalModel(INodeType nodeType) {
+        super(nodeType);
+    }
+
     private NewStatisticsService statisticsService = NeoServiceFactory.getInstance().getNewStatisticsService();
 
     protected IVault statisticsVault;
