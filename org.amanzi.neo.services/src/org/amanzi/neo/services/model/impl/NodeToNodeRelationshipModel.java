@@ -110,6 +110,8 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
      */
     public NodeToNodeRelationshipModel(IDataElement parent, INodeToNodeRelationsType relType, String name, INodeType nodeType)
             throws AWEException {
+        super(NodeToNodeTypes.NODE2NODE);
+        
         // validate parameters
         if (parent == null) {
             throw new IllegalArgumentException("Parent is null.");
@@ -152,6 +154,8 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
     }
 
     NodeToNodeRelationshipModel(Node n2nRoot) throws AWEException {
+        super(NodeToNodeTypes.NODE2NODE);
+        
         // validate
         if (n2nRoot == null) {
             throw new IllegalArgumentException("Node2node root is null.");

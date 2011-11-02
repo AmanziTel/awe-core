@@ -1503,6 +1503,12 @@ public class NewNetworkServiceTest extends AbstractAWETest {
         networkService.createProxy(null, rootNode, N2NRelTypes.NEIGHBOUR, NodeToNodeTypes.PROXY);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void checkGetAllSelectionModelsOfSector(){
+        Node sectorNode = null;
+        networkService.getAllSelectionModelsOfSector(sectorNode);
+    }    
+    
     /**
      * added properties to node
      * 
@@ -1560,5 +1566,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 
         return result;
     }
+    
+    
 
 }

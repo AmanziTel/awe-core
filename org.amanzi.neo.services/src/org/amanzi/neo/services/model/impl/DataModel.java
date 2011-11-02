@@ -17,6 +17,7 @@ import java.util.Iterator;
 
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewDatasetService;
+import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDataModel;
@@ -34,6 +35,13 @@ import org.neo4j.graphdb.PropertyContainer;
  * @since 1.0.0
  */
 public abstract class DataModel extends AbstractModel implements IDataModel {
+
+    /**
+     * @param nodeType
+     */
+    protected DataModel(INodeType nodeType) {
+        super(nodeType);
+    }
 
     private static Logger LOGGER = Logger.getLogger(DataModel.class);
 

@@ -88,7 +88,7 @@ public interface IDistribution<T extends IRange> {
          */
         public static ChartType findByTitle(String title) {
             for (ChartType singleType : values()) {
-                if (singleType.equals(title)) {
+                if (singleType.title.equals(title)) {
                     return singleType;
                 }
             }

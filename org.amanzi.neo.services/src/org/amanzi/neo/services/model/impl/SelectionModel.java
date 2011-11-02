@@ -17,6 +17,7 @@ import org.amanzi.neo.db.manager.NeoServiceProvider;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewNetworkService;
+import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
@@ -55,6 +56,8 @@ public class SelectionModel extends AbstractModel implements ISelectionModel {
      * @param rootSelectionList root node of SelectionList structure
      */
     public SelectionModel(Node rootSelectionList) {
+        super(NetworkElementNodeType.SELECTION_LIST_ROOT);
+        
         // check input parameters
         if (rootSelectionList == null) {
             LOGGER.error("Input RootSelectionList node is null");
@@ -76,6 +79,8 @@ public class SelectionModel extends AbstractModel implements ISelectionModel {
      * @throws AWEException
      */
     public SelectionModel(Node networkNode, String selectionListName) throws AWEException {
+        super(NetworkElementNodeType.SELECTION_LIST_ROOT);
+        
         // check input parameters
         if (networkNode == null) {
             LOGGER.error("Input NetworkModel is null");
@@ -125,7 +130,10 @@ public class SelectionModel extends AbstractModel implements ISelectionModel {
     @Override
     public boolean isExistSelectionLink(IDataElement element) {
         DataElement dataElement = (DataElement)element;
-        return networkService.isExistSelectionLink(getRootNode(), dataElement.getNode(), getSelectionLinkIndexes());
+        if (networkService.findSelectionLink(getRootNode(), dataElement.getNode(), getSelectionLinkIndexes()) != null) {
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -164,6 +172,27 @@ public class SelectionModel extends AbstractModel implements ISelectionModel {
     @Override
     public IProjectModel getProject() {
         return null;
+    }
+
+    @Override
+    public void deleteSelectionLink(IDataElement element) {
+        LOGGER.debug("start deleteSelectionLink(<" + element + ">)");
+        if (element == null) {
+            LOGGER.error("Input element is null");
+            throw new IllegalArgumentException("Input element is null");
+        }
+        DataElement dataElement = (DataElement)element;
+        if (dataElement.getNode() == null) {
+            LOGGER.error("Underlying node in input Element is null");
+            throw new IllegalArgumentException("Underlying node in input Element is null");
+        }
+        try {
+            networkService.deleteSelectionLink(getRootNode(), dataElement.getNode(), getSelectionLinkIndexes());
+        } catch (AWEException e) {
+            LOGGER.error("Error on deleting link from SelectionList <" + this + "> to Element <" + element + ">.");
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+        LOGGER.debug("finish deleteSelectionLink()");
     }
 
 }

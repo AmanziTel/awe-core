@@ -246,10 +246,10 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
 
     /**
      * return selection models of sector
-     *
+     * 
      * @param element
      * @return
      * @throws AWEException
      */
-    Iterable<ISelectionModel> getAllSelectionModelsOfSector(IDataElement element) throws AWEException;
+    public Iterable<ISelectionModel> getAllSelectionModelsOfSector(IDataElement element) throws AWEException;
 }
