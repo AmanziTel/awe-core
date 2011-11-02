@@ -77,7 +77,7 @@ public class NewNetworkService extends NewAbstractService {
      * @since 1.0.0
      */
     public enum NetworkElementNodeType implements INodeType {
-        BSC, SITE, SECTOR, CITY, MSC, SELECTION_LIST_ROOT, TRX_GROUP, TRX, CHANNEL_GROUP, FREQUENCY_ROOT, FREQUENCY_PLAN;
+        BSC, SITE, SECTOR, CITY, MSC, SELECTION_LIST_ROOT, TRX, CHANNEL_GROUP, FREQUENCY_ROOT, FREQUENCY_PLAN;
 
         static {
             NodeTypeManager.registerNodeType(NetworkElementNodeType.class);
@@ -97,7 +97,7 @@ public class NewNetworkService extends NewAbstractService {
      * @since 1.0.0
      */
     public enum NetworkRelationshipTypes implements RelationshipType {
-        SELECTION_LIST, SELECTED, TRXGROUP, CHANNEL, TRX, FREQUENCY_ROOT, ENTRY_PLAN;
+        SELECTION_LIST, SELECTED, CHANNEL, TRX, FREQUENCY_ROOT, ENTRY_PLAN;
     }
 
     /*

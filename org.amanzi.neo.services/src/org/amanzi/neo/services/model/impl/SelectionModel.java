@@ -17,6 +17,7 @@ import org.amanzi.neo.db.manager.NeoServiceProvider;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewNetworkService;
+import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
@@ -55,6 +56,8 @@ public class SelectionModel extends AbstractModel implements ISelectionModel {
      * @param rootSelectionList root node of SelectionList structure
      */
     public SelectionModel(Node rootSelectionList) {
+        super(NetworkElementNodeType.SELECTION_LIST_ROOT);
+        
         // check input parameters
         if (rootSelectionList == null) {
             LOGGER.error("Input RootSelectionList node is null");
@@ -76,6 +79,8 @@ public class SelectionModel extends AbstractModel implements ISelectionModel {
      * @throws AWEException
      */
     public SelectionModel(Node networkNode, String selectionListName) throws AWEException {
+        super(NetworkElementNodeType.SELECTION_LIST_ROOT);
+        
         // check input parameters
         if (networkNode == null) {
             LOGGER.error("Input NetworkModel is null");

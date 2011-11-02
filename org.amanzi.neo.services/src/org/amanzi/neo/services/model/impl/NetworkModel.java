@@ -89,7 +89,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
      * @param networkRoot
      */
     public NetworkModel(Node networkRoot) throws AWEException {
-        super(networkRoot);
+        super(networkRoot, DatasetTypes.NETWORK);
         // validate
         if (networkRoot == null) {
             throw new IllegalArgumentException("Network root is null.");
@@ -118,7 +118,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
      */
     public NetworkModel(IDataElement project, IDataElement network, String name) throws InvalidDatasetParameterException,
             DatasetTypeParameterException, DuplicateNodeNameException, AWEException {
-        super(null);
+        super(null, DatasetTypes.NETWORK);
         // validate
         if (project == null) {
             throw new IllegalArgumentException("Parent is null.");
@@ -454,16 +454,6 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     }
 
     @Override
-    public Iterable<ISelectionModel> getAllSelectionModelsOfSector(IDataElement element) throws AWEException {
-        Iterable<Node> nodes = nwServ.getAllSelectionModelsOfSector(((DataElement)element).getNode());
-        List<ISelectionModel> models = new ArrayList<ISelectionModel>();
-        for (Node node : nodes) {
-            models.add(new SelectionModel(node));
-        }
-        return models;
-    }
-
-    @Override
     public void replaceRelationship(IDataElement newParentElement, IDataElement currentNode) throws AWEException {
         Node curentNode;
         Node newParentNode;
@@ -743,6 +733,16 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
             result.add(new DataElement(node));
         }
         return result;
+    }
+
+    @Override
+    public Iterable<ISelectionModel> getAllSelectionModelsOfSector(IDataElement element) throws AWEException {
+        Iterable<Node> nodes = nwServ.getAllSelectionModelsOfSector(((DataElement)element).getNode());
+        List<ISelectionModel> models = new ArrayList<ISelectionModel>();
+        for (Node node : nodes) {
+            models.add(new SelectionModel(node));
+        }
+        return models;
     }
 
     @Override
