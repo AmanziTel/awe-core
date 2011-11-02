@@ -16,6 +16,8 @@ package org.amanzi.neo.services;
 import java.awt.Color;
 import java.util.Iterator;
 
+import net.refractions.udig.ui.PlatformGIS;
+
 import org.amanzi.neo.model.distribution.IDistribution;
 import org.amanzi.neo.model.distribution.IDistributionBar;
 import org.amanzi.neo.services.enums.INodeType;
@@ -632,8 +634,49 @@ public class DistributionService extends NewAbstractService {
      * @param rootAggregationNode
      * @param palette
      */
-    public void updatePalette(Node rootAggregationNode, BrewerPalette palette) {
+    public void updatePalette(Node rootAggregationNode, BrewerPalette palette) throws DatabaseException {
+        LOGGER.debug("start updatePalette(<" + rootAggregationNode + ">, <" + palette + ">)");
         
+        //check input
+        if (rootAggregationNode == null) {
+            LOGGER.error("Input rootAggregationNode cannot be null");
+            throw new IllegalArgumentException("Input rootAggregationNode cannot be null");
+        }
+        if (palette == null) {
+            LOGGER.error("Input palette cannot be null");
+            throw new IllegalArgumentException("Input palette cannot be null");
+        }
+        
+        //validate palette
+        boolean isValid = false;
+        for (BrewerPalette gisPalette : PlatformGIS.getColorBrewer().getPalettes()) {
+            if (gisPalette.getName().equals(palette.getName())) {
+                isValid = true;
+                break;
+            }
+        }
+        
+        if (!isValid) {
+            LOGGER.error("There is not such palette <" + palette + ">");
+            throw new IllegalArgumentException("There is not such palette <" + palette + ">");
+        }
+        
+        //update property
+        Transaction tx = graphDb.beginTx();
+        try {
+            
+            rootAggregationNode.setProperty(PALETTE, palette.getName());
+            
+            tx.success();
+        } catch (Exception e) {
+            tx.failure();
+            LOGGER.error("Error on updating Palette property of Node", e);
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
+        
+        LOGGER.debug("finish updatePalette()");
     }
 }
 

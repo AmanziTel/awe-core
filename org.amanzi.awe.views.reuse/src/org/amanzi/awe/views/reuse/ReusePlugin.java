@@ -67,6 +67,8 @@ public class ReusePlugin extends AbstractUIPlugin implements IUpdateViewListener
 		super.start(context);
 		plugin = this;
         NeoCorePlugin.getDefault().getUpdateViewManager().addListener(this);
+        
+        
 	}
 
 	/*

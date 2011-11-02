@@ -120,6 +120,8 @@ public class DistributionAnalyzerView extends ViewPart {
     
     private static final String MIDDLE_COLOR_LABEL = "Middle bar color";
     
+    private static final String THIRD_COLOR_LABEL = "Third color label";
+    
     private static final String PALETTE_LABEL = "Palette";
     
     private static final Color COLOR_SELECTED = Color.RED;
@@ -127,18 +129,6 @@ public class DistributionAnalyzerView extends ViewPart {
     private static final Color COLOR_LESS = Color.BLUE;
 
     private static final Color COLOR_MORE = Color.GREEN;
-
-    private void showErrorMessage(final String message) {
-        ActionUtil.getInstance().runTask(new Runnable() {
-
-            @Override
-            public void run() {
-                MessageBox msgBox = new MessageBox(Display.getCurrent().getActiveShell(), SWT.ICON_ERROR);
-                msgBox.setMessage(message);
-                msgBox.open();
-            }
-        }, false);
-    }
 
     @SuppressWarnings("rawtypes")
     private class DistributionDataset extends AbstractDataset implements CategoryDataset {
@@ -453,6 +443,18 @@ public class DistributionAnalyzerView extends ViewPart {
      */
     private BrewerPalette currentPalette;
     
+    /*
+     * Label to choose Third Color option
+     */
+    private Label thirdColorLabel;
+    
+    /*
+     * Button to choose Third Color option
+     */
+    private Button thirdColorButton;
+    
+    
+    
     /**
      * Custom constructor
      */
@@ -476,7 +478,7 @@ public class DistributionAnalyzerView extends ViewPart {
         createColoringPropertiesControl(parent);
 
         addListeners();
-
+        
         // initialize fields
         try {
             initializeFields();
@@ -740,6 +742,34 @@ public class DistributionAnalyzerView extends ViewPart {
         dText.right = new FormAttachment(paletteLabel, 200);
         dText.bottom = new FormAttachment(100, -2);
         paletteCombo.setLayoutData(dText);
+        
+        //label and button for third color option
+        thirdColorLabel = new Label(parent, SWT.NONE);
+        thirdColorLabel.setText(THIRD_COLOR_LABEL);
+        
+        thirdColorButton = new Button(parent, SWT.CHECK);
+        
+        //layout for label
+        dLabel = new FormData();
+        dLabel.left = new FormAttachment(thirdColorButton, 5);
+        dLabel.top = new FormAttachment(thirdColorButton, 5, SWT.CENTER);
+        thirdColorLabel.setLayoutData(dLabel);
+
+        //layout for button
+        dText = new FormData();
+        dText.left = new FormAttachment(rightColor.getButton(), 15);
+        dText.bottom = new FormAttachment(100, -2);
+        thirdColorButton.setLayoutData(dText);
+        
+        //middle color editor
+        middleColor = new ColorEditor(parent);
+        middleColor.getButton().setToolTipText(MIDDLE_COLOR_LABEL);
+        
+        //layout for middle color editor
+        dLabel = new FormData();
+        dLabel.left = new FormAttachment(thirdColorLabel, 15);
+        dLabel.bottom = new FormAttachment(100, -2);
+        middleColor.getButton().setLayoutData(dLabel);
     }
 
     /**
@@ -782,9 +812,29 @@ public class DistributionAnalyzerView extends ViewPart {
         leftColor.getButton().setVisible(isVisible);
         rightColor.getButton().setVisible(isVisible);
         
+        thirdColorButton.setVisible(isVisible);
+        thirdColorLabel.setVisible(isVisible);
+        
         if (isVisible) {
             leftColor.setColorValue(convertToRGB(distributionModel.getLeftColor()));
             rightColor.setColorValue(convertToRGB(distributionModel.getRightColor()));
+            
+            setThirdColorPanelVisible(thirdColorButton.getSelection());
+        } else {
+            setThirdColorPanelVisible(isVisible);
+        }
+    }
+    
+    /**
+     * Set visibility for components related to Middle Color of Blend
+     *
+     * @param isVisible
+     */
+    private void setThirdColorPanelVisible(boolean isVisible) {
+        middleColor.getButton().setVisible(isVisible);
+        
+        if (isVisible) {
+            middleColor.setColorValue(convertToRGB(distributionModel.getMiddleColor()));
         }
     }
     
@@ -1124,6 +1174,7 @@ public class DistributionAnalyzerView extends ViewPart {
         SelectionListener colorListener = new ChangeColorListener();
         leftColor.addSelectionListener(colorListener);
         rightColor.addSelectionListener(colorListener);
+        middleColor.addSelectionListener(colorListener);
         
         //listener for Blend button
         blendButton.addSelectionListener(new SelectionListener() {
@@ -1136,7 +1187,51 @@ public class DistributionAnalyzerView extends ViewPart {
                 } else {
                     setBlendPanelVisible(false);
                     setPalettePanelVisible(true);
+                    
+                    updatePalette();
                 }
+            }
+            
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
+        
+        //selection listener for palette
+        paletteCombo.addSelectionListener(new SelectionListener() {
+            
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                updatePalette();
+            }
+            
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
+        
+        //selection listener for Third Color Option button
+        thirdColorButton.addSelectionListener(new SelectionListener() {
+            
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                setThirdColorPanelVisible(thirdColorButton.getSelection());
+            }
+            
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
+        
+        //selection listener for Chart Type combo
+        chartTypeCombo.addSelectionListener(new SelectionListener() {
+            
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                
             }
             
             @Override
@@ -1170,6 +1265,8 @@ public class DistributionAnalyzerView extends ViewPart {
             //show color properties
             setBlendPanelVisible(false);
             setStandardStatusPanelVisisble(true);
+            
+            updateChartColors();
         }
     }
 
@@ -1181,8 +1278,21 @@ public class DistributionAnalyzerView extends ViewPart {
         
         RGB leftRGB = leftColor.getColorValue();
         RGB rightRGB = rightColor.getColorValue();
+        RGB middleRGB = middleColor.getColorValue();
+        
+        int size = distributionModel.getBarCount();
+        int midColumnIndex = size / 2;
+        
         float ratio = 0;
-        float perc = distributionModel.getBarCount() <= 0 ? 1 : (float)1 / distributionModel.getBarCount();
+        float ratio2 = 0;
+        float perc = size <= 0 ? 1 : (float)1 / size;
+        float percMid1 = midColumnIndex == 0 ? 1 : (float)1 / (midColumnIndex);
+        float percMid2 = size - midColumnIndex == 0 ? 1 : (float)1 / (size - midColumnIndex);
+        
+        Color[] paletteColors = null;
+        if (currentPalette != null) {
+            paletteColors = currentPalette.getColors(currentPalette.getMaxColors());
+        }
         
         for (int i = 0; i < dataset.getDistributionBars().size(); i++) {
             Color barColor = null;
@@ -1191,10 +1301,27 @@ public class DistributionAnalyzerView extends ViewPart {
                 if (colorPropertiesButton.getSelection()) {
                     // use color properties
                     if (blendButton.getSelection()) {
-                        barColor = blend(leftRGB, rightRGB, ratio);
-                        ratio+= perc;
+                        if (thirdColorButton.getSelection()) {
+                            //three color blend
+                            if (i < midColumnIndex) {
+                                barColor = blend(leftRGB, middleRGB, ratio);
+                                ratio += percMid1;
+                            } else if (i == midColumnIndex) {
+                                barColor = convertToColor(middleRGB);
+                            } else {
+                                barColor = blend(middleRGB, rightRGB, ratio2);
+                                ratio2 += percMid2;
+                            }
+                        } else {
+                            //two color blen
+                            barColor = blend(leftRGB, rightRGB, ratio);
+                            ratio+= perc;
+                        }   
                     } else {
                         //choose color from palette
+                        if (paletteColors != null) {
+                            barColor = paletteColors[i % paletteColors.length];
+                        }
                     }
                 } else {
                     if (selectedIndex >= 0) {
@@ -1235,17 +1362,35 @@ public class DistributionAnalyzerView extends ViewPart {
         return convertToColor(rgb);
     }
     
+    /**
+     * Updates Palette from UI
+     */
     private void updatePalette() {
-        if (paletteCombo.getSelectionIndex() > 0) {
+        if (paletteCombo.getSelectionIndex() >= 0) {
             String paletteName = paletteCombo.getText();
             currentPalette = PlatformGIS.getColorBrewer().getPalette(paletteName);
+        } else {
+            currentPalette = null;
         }
         
-        
+        distributionModel.setPalette(currentPalette);
+        updateChartColors();
     }
     
     @Override
     public void setFocus() {
+    }
+    
+    private void showErrorMessage(final String message) {
+        ActionUtil.getInstance().runTask(new Runnable() {
+
+            @Override
+            public void run() {
+                MessageBox msgBox = new MessageBox(Display.getCurrent().getActiveShell(), SWT.ICON_ERROR);
+                msgBox.setMessage(message);
+                msgBox.open();
+            }
+        }, false);
     }
 
 }
