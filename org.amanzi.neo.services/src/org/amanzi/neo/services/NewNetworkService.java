@@ -99,7 +99,7 @@ public class NewNetworkService extends NewAbstractService {
     public enum NetworkRelationshipTypes implements RelationshipType {
         SELECTION_LIST, SELECTED, CHANNEL, TRX, FREQUENCY_ROOT, ENTRY_PLAN;
     }
-
+    
     /*
      * Traversal Description to find out all Selection List Nodes of sector
      */
@@ -117,6 +117,7 @@ public class NewNetworkService extends NewAbstractService {
      */
     protected final static TraversalDescription N2N_ROOT_TRAVERSER = Traversal.description().breadthFirst()
             .relationships(N2NRelTypes.NEIGHBOUR).evaluator(Evaluators.excludeStartPosition());
+
     public static final String SECTOR_COUNT = "sector_count";
 
     public NewNetworkService() {
@@ -270,6 +271,8 @@ public class NewNetworkService extends NewAbstractService {
                 result.setProperty(LOCATION_AREA_CODE, lac);
                 addNodeToIndex(result, index, LOCATION_AREA_CODE, lac);
             }
+            parent.setProperty(SECTOR_COUNT, (Integer)parent.getProperty(SECTOR_COUNT, 0) + 1);
+            LOGGER.debug("site " + parent.getId() + "nodes: " + parent.getProperty(SECTOR_COUNT, 0));
             tx.success();
         } finally {
             tx.finish();
@@ -389,7 +392,8 @@ public class NewNetworkService extends NewAbstractService {
             throw new IllegalArgumentException("Parent is null.");
         }
         if (elementType == null) {
-            throw new IllegalArgumentException("Element type is null.");
+            // return all network elements
+            return CHILD_ELEMENT_TRAVERSAL_DESCRIPTION.evaluator(Evaluators.excludeStartPosition()).traverse(parent).nodes();
         }
 
         return CHILD_ELEMENT_TRAVERSAL_DESCRIPTION.evaluator(new FilterNodesByType(elementType)).traverse(parent).nodes();
@@ -486,7 +490,7 @@ public class NewNetworkService extends NewAbstractService {
      * Returns all Selection Nodes related to Network
      * 
      * @param networkNode Network node
-     * @return all selection models of network
+     * @return
      */
     public Iterable<Node> getAllSelectionModelsOfNetwork(Node networkNode) {
         LOGGER.debug("start getAllSelectionModelsOfNetwork(<" + networkNode + ">)");

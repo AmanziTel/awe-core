@@ -559,6 +559,7 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         
         assertEquals("Unexpected default left color", DistributionModel.DEFAULT_LEFT_COLOR, newDistribution.getLeftColor());
         assertEquals("Unexpected default right color", DistributionModel.DEFAULT_RIGHT_COLOR, newDistribution.getRightColor());
+
         assertEquals("Unexpected default selected color", DistributionModel.DEFAULT_MIDDLE_COLOR, newDistribution.getMiddleColor());
     }
     

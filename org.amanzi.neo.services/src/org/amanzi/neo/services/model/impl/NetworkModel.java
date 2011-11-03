@@ -109,14 +109,17 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
      * Use this constructor to create a new network structure. Be careful to set
      * <code>rootElement</code> NAME and PROJECT properties.
      * 
-     * @param network MUST contain property ("project",<code>Node</code> project) <i>OR</i> an
-     *        underlying network node.
-     * @throws AWEException
-     * @throws DuplicateNodeNameException
-     * @throws DatasetTypeParameterException
+     * @param project
+     * @param network a <code>DataElement</code> object containing properties of a network root that
+     *        should be created
+     * @param name the name of the new network
+     * @param crsCode a string that represents the CRS, used in the new network (e.g. "EPSG:31247")
      * @throws InvalidDatasetParameterException
+     * @throws DatasetTypeParameterException
+     * @throws DuplicateNodeNameException
+     * @throws AWEException
      */
-    public NetworkModel(IDataElement project, IDataElement network, String name) throws InvalidDatasetParameterException,
+    public NetworkModel(IDataElement project, IDataElement network, String name, String crsCode) throws InvalidDatasetParameterException,
             DatasetTypeParameterException, DuplicateNodeNameException, AWEException {
         super(null, DatasetTypes.NETWORK);
         // validate
@@ -142,6 +145,9 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         initializeStatistics();
         initializeMultiPropertyIndexing();
         initializeNetworkStructure();
+        if ((crsCode != null) && (!crsCode.equals(StringUtils.EMPTY))) {
+            updateCRS(crsCode);
+        }
     }
 
     /**
@@ -162,7 +168,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
      * Initializes location index for sector nodes.
      */
     private void initializeMultiPropertyIndexing() throws AWEException {
-        LOGGER.info("Initializing multi proerty index...");
+        LOGGER.info("Initializing multi property index...");
         addLocationIndex(NetworkElementNodeType.SECTOR);
     }
 
@@ -291,7 +297,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
 
     @Override
     public void updateLocationBounds(double latitude, double longitude) {
-        LOGGER.info("updateBounds(" + latitude + ", " + longitude + ")");
+        LOGGER.debug("updateBounds(" + latitude + ", " + longitude + ")");
         super.updateLocationBounds(latitude, longitude);
     }
 
@@ -585,7 +591,21 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         indexProperty(type, element);
         indexNode(node);
 
+        updateLocationBounds(element);
+
         return node == null ? null : new DataElement(node);
+    }
+
+    /**
+     * @param element
+     */
+    private void updateLocationBounds(Map<String, Object> element) {
+        Double lat = (Double)element.get(LATITUDE);
+        Double lon = (Double)element.get(LONGITUDE);
+        if (lat == null || lon == null) {
+            return;
+        }
+        updateLocationBounds(lat, lon);
     }
 
     @Override
@@ -634,7 +654,8 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     }
 
     public Iterable<IDataElement> getElements(Envelope bounds_transformed) {
-        return null;
+        // currently return all elements
+        return new DataElementIterable(nwServ.findAllNetworkElements(rootNode, NetworkElementNodeType.SITE));
     }
 
     @Override

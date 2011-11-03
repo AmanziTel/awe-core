@@ -69,7 +69,7 @@ public class EnumeratedDistributionTest extends AbstractNeoServiceTest {
     @Test(expected = IllegalArgumentException.class)
     public void tryToCreateWithoutNodeType() throws Exception {
         IDistributionalModel model = getDistributionalModel();
-
+        
         new EnumeratedDistribution(model, null, DEFAULT_PROPERTY_NAME);
     }
 
@@ -97,15 +97,12 @@ public class EnumeratedDistributionTest extends AbstractNeoServiceTest {
         when(model.getPropertyValues(DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME)).thenReturn(values);
         
         new EnumeratedDistribution(model, DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME).init();
-        
     }
 
     @Test
     public void checkResultsOfCreation() throws Exception {
         IDistributionalModel model = getDistributionalModel();
-
         IDistribution<SimpleRange> distribution = new EnumeratedDistribution(model, DEFAULT_NODE_TYPE, DEFAULT_PROPERTY_NAME);
-
         assertEquals("Unexpected name of Distribution", EnumeratedDistribution.STRING_DISTRIBUTION_NAME, distribution.getName());
         assertEquals("Unexpected NodeType of Distribution", DEFAULT_NODE_TYPE, distribution.getNodeType());
         assertNotNull("Initially Range of Distribution should not be null", distribution.getRanges());
