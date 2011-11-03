@@ -62,8 +62,8 @@ import org.neo4j.graphdb.Transaction;
 
 /**
  * This View contains a tree of objects found in the database. The tree is built based on the
- * existence of the NetworkRelationshipTypes.CHILD relation, and the set of INetworkModel
- * nodes defined by the INetworkModel.java class.
+ * existence of the NetworkRelationshipTypes.CHILD relation, and the set of INetworkModel nodes
+ * defined by the INetworkModel.java class.
  * 
  * @author Kasnitskij_V
  * @since 1.0.0
@@ -85,7 +85,7 @@ public class NewNetworkTreeView extends ViewPart {
 
     public static final String SHOW_PROPERTIES = "Show properties";
     public static final String SHOW_EDIT_PROPERTY = "Show/edit property";
-    
+
     /*
      * TreeViewer for database Nodes
      */
@@ -112,7 +112,7 @@ public class NewNetworkTreeView extends ViewPart {
 
         tSearch = new Text(parent, SWT.BORDER);
         viewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
-        
+
         neoServiceProvider = NeoServiceProviderUi.getProvider();
         Transaction tx = neoServiceProvider.getService().beginTx();
         try {
@@ -200,8 +200,14 @@ public class NewNetworkTreeView extends ViewPart {
         public void run() {
             try {
                 if (selectedDataElements.size() > 1) {
-                    PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView("org.amanzi.awe.views.reuse.views.MessageAndEventTableView");
-                    NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new NewShowPreparedViewEvent("org.amanzi.awe.views.reuse.views.MessageAndEventTableView",selectedDataElements));
+                    PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
+                            .showView("org.amanzi.awe.views.reuse.views.MessageAndEventTableView");
+                    NeoCorePlugin
+                            .getDefault()
+                            .getUpdateViewManager()
+                            .fireUpdateView(
+                                    new NewShowPreparedViewEvent("org.amanzi.awe.views.reuse.views.MessageAndEventTableView",
+                                            selectedDataElements));
                 } else {
                     PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IPageLayout.ID_PROP_SHEET);
                 }
