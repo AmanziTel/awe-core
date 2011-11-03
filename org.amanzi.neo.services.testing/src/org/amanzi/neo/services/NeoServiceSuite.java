@@ -13,6 +13,8 @@
 
 package org.amanzi.neo.services;
 
+import org.amanzi.neo.model.distribution.xml.DistributionXmlParser;
+import org.amanzi.neo.model.distribution.xml.DistributionXmlParserTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
@@ -47,7 +49,8 @@ import org.junit.runners.Suite.SuiteClasses;
                org.amanzi.neo.services.DistributionServiceTest.class,
                org.amanzi.neo.model.distribution.impl.DistributionManagerTest.class,
                org.amanzi.neo.model.distribution.types.impl.EnumeratedDistributionTest.class,
-               org.amanzi.neo.model.distribution.types.impl.NumberDistributionTest.class
+               org.amanzi.neo.model.distribution.types.impl.NumberDistributionTest.class,
+               org.amanzi.neo.model.distribution.xml.DistributionXmlParserTest.class
                })
 
 public class NeoServiceSuite {

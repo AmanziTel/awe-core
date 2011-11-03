@@ -37,7 +37,6 @@ import org.amanzi.neo.services.model.IProjectModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.amanzi.neo.services.model.impl.ProjectModel.DistributionItem;
 import org.amanzi.neo.services.ui.utils.ActionUtil;
-import org.amanzi.neo.services.utils.Pair;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -67,7 +66,6 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartMouseEvent;
 import org.jfree.chart.ChartMouseListener;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.LogarithmicAxis;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.entity.CategoryItemEntity;
 import org.jfree.chart.entity.ChartEntity;
@@ -132,43 +130,43 @@ public class DistributionAnalyzerView extends ViewPart {
     private static final Color COLOR_LESS = Color.BLUE;
 
     private static final Color COLOR_MORE = Color.GREEN;
-    
+
     /**
-     * TODO Purpose of 
+     * TODO Purpose of
      * <p>
-     *
      * </p>
+     * 
      * @author gerzog
      * @since 1.0.0
      */
     private abstract class AbstractDistributionChart<T extends Dataset> {
-        
+
         private T dataset;
-        
+
         private ChartComposite chartComposite;
-        
+
         public AbstractDistributionChart() {
             dataset = createDataset();
-            
+
             JFreeChart chart = createChart(dataset);
             initializeRange();
-            
+
         }
-        
+
         protected abstract JFreeChart createChart(T dataset);
-        
+
         public void setVisible(boolean isVisisble) {
             chartComposite.setVisible(isVisisble);
         }
-        
-        protected abstract T createDataset(); 
-        
+
+        protected abstract T createDataset();
+
         public abstract void updateDataset();
-        
+
         protected abstract void initializeRange();
 
     }
-    
+
     private class CategoryDistributionChart extends AbstractDistributionChart<CategoryDataset> {
 
         @Override
@@ -184,13 +182,13 @@ public class DistributionAnalyzerView extends ViewPart {
 
         @Override
         public void updateDataset() {
-            
+
         }
 
         @Override
         protected void initializeRange() {
         }
-        
+
     }
 
     @SuppressWarnings("rawtypes")
@@ -1074,6 +1072,19 @@ public class DistributionAnalyzerView extends ViewPart {
         }
     }
 
+    private void enableColorPropertiesButton() {
+        String distribution = distributionCombo.getText();
+        if (!StringUtils.isEmpty(distribution)) {
+            currentDistributionType = distributionTypes.get(distribution);
+
+            if (colorPropertiesButton.getSelection()) {
+                colorPropertiesButton.setSelection(false);
+            }
+            colorPropertiesButton.setEnabled(currentDistributionType.canChangeColors());
+            colorPropertiesButton.setVisible(currentDistributionType.canChangeColors());
+        }
+    }
+
     /**
      * Starts analyzis
      */
@@ -1193,7 +1204,7 @@ public class DistributionAnalyzerView extends ViewPart {
                     selectedBar = null;
                 }
 
-                if (needRedraw && currentDistributionType.canChangeColors()) {
+                if (needRedraw) {
                     updateChartColors();
                 }
 
@@ -1327,6 +1338,7 @@ public class DistributionAnalyzerView extends ViewPart {
             setBlendPanelVisible(false);
             setStandardStatusPanelVisisble(true);
 
+            enableColorPropertiesButton();
             updateChartColors();
         }
     }
@@ -1335,6 +1347,8 @@ public class DistributionAnalyzerView extends ViewPart {
      * Updates colors of Chart
      */
     private void updateChartColors() {
+        if (!currentDistributionType.canChangeColors())
+            return;
         int selectedIndex = dataset.getColumnIndex(selectedBar);
 
         RGB leftRGB = leftColor.getColorValue();
