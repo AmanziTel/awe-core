@@ -129,6 +129,10 @@ public class SelectionModel extends AbstractModel implements ISelectionModel {
 
     @Override
     public boolean isExistSelectionLink(IDataElement element) {
+        if (element == null) {
+            LOGGER.error("IDataElement is null");
+            throw new IllegalArgumentException("IDataElement is null");
+        }
         DataElement dataElement = (DataElement)element;
         if (networkService.findSelectionLink(getRootNode(), dataElement.getNode(), getSelectionLinkIndexes()) != null) {
             return true;
