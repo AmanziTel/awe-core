@@ -22,6 +22,7 @@ import java.util.Set;
 import org.amanzi.awe.awe.views.view.provider.NewNetworkTreeContentProvider;
 import org.amanzi.awe.awe.views.view.provider.NewNetworkTreeLabelProvider;
 import org.amanzi.awe.views.network.NetworkTreePlugin;
+import org.amanzi.awe.views.network.property.NewNetworkPropertySheetPage;
 import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.NodeTypes;
@@ -58,6 +59,7 @@ import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
+import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.neo4j.graphdb.Transaction;
 
 /**
@@ -90,6 +92,11 @@ public class NewNetworkTreeView extends ViewPart {
      * TreeViewer for database Nodes
      */
     protected TreeViewer viewer;
+    
+    /*
+     * PropertySheetPage for Properties of Nodes
+     */
+    private IPropertySheetPage propertySheetPage;
 
     /*
      * NeoService provider
