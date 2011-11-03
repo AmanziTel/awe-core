@@ -243,4 +243,14 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
      * @return
      */
     public IDataElement getClosestElement(IDataElement servSector, Set<IDataElement> candidates, int maxDistance);
+
+    /**
+     * return selection models of sector
+     * 
+     * @param element
+     * @return
+     * @throws AWEException
+     */
+    public Iterable<ISelectionModel> getAllSelectionModelsOfSector(IDataElement element) throws AWEException;
+
 }
