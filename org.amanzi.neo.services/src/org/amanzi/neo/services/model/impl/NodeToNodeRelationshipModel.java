@@ -332,4 +332,3 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
         return new DistributionModel(this, distributionType);
     }
 }
-

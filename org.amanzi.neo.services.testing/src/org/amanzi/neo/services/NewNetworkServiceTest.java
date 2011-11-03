@@ -19,6 +19,7 @@ import junit.framework.Assert;
 import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.NewNetworkService.NetworkRelationshipTypes;
+import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
@@ -1345,14 +1346,14 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     public void checkReplaceRelationship() throws Exception {
         Node root = getNewNE();
         Node childNode = getNewNE();
-        networkService.createRelationship(root, childNode, org.amanzi.neo.services.enums.NetworkRelationshipTypes.CHILD);
+        networkService.createRelationship(root, childNode, DatasetRelationshipTypes.CHILD);
         Node newRootNode = getNewNE();
-        networkService.replaceRelationship(newRootNode, childNode, org.amanzi.neo.services.enums.NetworkRelationshipTypes.CHILD,
+        networkService.replaceRelationship(newRootNode, childNode, DatasetRelationshipTypes.CHILD,
                 Direction.INCOMING);
         assertNull(root + " still has relationships",
-                root.getSingleRelationship(org.amanzi.neo.services.enums.NetworkRelationshipTypes.CHILD, Direction.OUTGOING));
+                root.getSingleRelationship(DatasetRelationshipTypes.CHILD, Direction.OUTGOING));
         assertNotNull(newRootNode + "still hasn't relationships",
-                newRootNode.getSingleRelationship(org.amanzi.neo.services.enums.NetworkRelationshipTypes.CHILD, Direction.OUTGOING));
+                newRootNode.getSingleRelationship(DatasetRelationshipTypes.CHILD, Direction.OUTGOING));
     }
 
     @Test

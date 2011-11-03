@@ -151,7 +151,7 @@ public class DistributionManager {
 
     /**
      * Returns array of possible chart types for current properties
-     * 
+     *
      * @param analyzedModel model to Analyze
      * @param nodeType type of node to Analyze
      * @param propertyName name of Property to Analyze
@@ -159,8 +159,8 @@ public class DistributionManager {
      */
     public ChartType[] getPossibleChartTypes(IDistributionalModel analyzedModel, INodeType nodeType, String propertyName) {
         LOGGER.debug("start getPossibleChartTypes(<" + analyzedModel + ">, <" + nodeType + ">, <" + propertyName + ">)");
-
-        // check input
+        
+        //check input
         if (analyzedModel == null) {
             LOGGER.error("Input analyzedModel is null");
             throw new IllegalArgumentException("Input analyzedModel is null");
@@ -173,26 +173,26 @@ public class DistributionManager {
             LOGGER.error("Input propertyName is null or empty");
             throw new IllegalArgumentException("Input propertyName is null or empty");
         }
-
-        // create list of Charts
+        
+        //create list of Charts
         List<ChartType> result = new ArrayList<ChartType>();
-
-        // add chart types for all classees
+        
+        //add chart types for all classees
         result.add(ChartType.COUNTS);
         result.add(ChartType.LOGARITHMIC);
         result.add(ChartType.PERCENTS);
-
-        // get type of property
-        Class< ? > klass = analyzedModel.getPropertyClass(nodeType, propertyName);
+        
+        //get type of property
+        Class<?> klass = analyzedModel.getPropertyClass(nodeType, propertyName);
         if (!klass.equals(String.class) && !klass.equals(Boolean.class)) {
             result.add(ChartType.CDF);
         }
-
+        
         LOGGER.debug("finish getPossibleChartTypes()");
-
+        
         return result.toArray(new ChartType[0]);
     }
-
+    
     /**
      * Computes key of String Distribution in Cache
      * 

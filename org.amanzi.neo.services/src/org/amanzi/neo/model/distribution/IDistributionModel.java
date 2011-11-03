@@ -120,4 +120,5 @@ public interface IDistributionModel extends IModel {
      */
     public void setPalette(BrewerPalette palette);
 
+
 }
