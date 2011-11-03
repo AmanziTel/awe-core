@@ -504,23 +504,6 @@ public class NewNetworkService extends NewAbstractService {
     }
 
     /**
-     * Checks existing of selection link
-     * 
-     * @param selectionRootNode
-     * @param selectedNode
-     * @param linkIndex
-     * @return
-     */
-    public boolean isExistSelectionLink(Node selectionRootNode, Node selectedNode, Index<Relationship> linkIndex) {
-        String indexKey = Long.toString(selectionRootNode.getId());
-        Object indexValue = selectedNode.getId();
-        if (linkIndex.get(indexKey, indexValue).getSingle() != null) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
      * Returns all Selection Nodes related to Sector
      * 
      * @param sectorNode Sector node
@@ -542,7 +525,39 @@ public class NewNetworkService extends NewAbstractService {
     }
 
     /**
-     * Creates Seleciton link with node
+     * Find selection link
+     * 
+     * @param selectionRootNode root of selection structure
+     * @param selectedNode node to find
+     * @param linkIndex links of selection structure
+     * @return relationship between selectionRootNode and selectedNode
+     */
+    public Relationship findSelectionLink(Node selectionRootNode, Node selectedNode, Index<Relationship> linkIndex) {
+        LOGGER.debug("start findSelectionLink(<" + selectionRootNode + ">, <" + selectedNode + ">)");
+
+        if (selectionRootNode == null) {
+            LOGGER.error("Input selectionRootNode cannot be null");
+            throw new IllegalArgumentException("Input selectionRootNode cannot be null");
+        }
+        if (selectedNode == null) {
+            LOGGER.error("Input selectedNode cannot be null");
+            throw new IllegalArgumentException("Input selectedNode cannot be null");
+        }
+        if (linkIndex == null) {
+            LOGGER.error("Input linkIndex cannot be null");
+            throw new IllegalArgumentException("Input linkIndex cannot be null");
+        }
+
+        String indexKey = Long.toString(selectionRootNode.getId());
+        Object indexValue = selectedNode.getId();
+
+        LOGGER.debug("finish findSelectionLink");
+
+        return linkIndex.get(indexKey, indexValue).getSingle();
+    }
+
+    /**
+     * Creates Selection link with node
      * 
      * @param selectionRootNode root of selection structure
      * @param selectedNode node to add in selection structure
@@ -568,7 +583,7 @@ public class NewNetworkService extends NewAbstractService {
         String indexKey = Long.toString(selectionRootNode.getId());
         Object indexValue = selectedNode.getId();
 
-        if (linkIndex.get(indexKey, indexValue).getSingle() != null) {
+        if (findSelectionLink(selectionRootNode, selectedNode, linkIndex) != null) {
             LOGGER.error("Link between Root Selection Node <" + selectionRootNode + "> and Node <" + selectedNode
                     + "> already exists.");
             throw new DatabaseException("Link between Root Selection Node <" + selectionRootNode + "> and Node <" + selectedNode
@@ -592,6 +607,45 @@ public class NewNetworkService extends NewAbstractService {
         }
 
         LOGGER.debug("finish createSelectionLink");
+    }
+
+    /**
+     * Delete selection link
+     * 
+     * @param selectionRootNode root of selection structure
+     * @param selectedNode node to delete from selection structure
+     * @param linkIndex links of selection structure
+     */
+    public void deleteSelectionLink(Node selectionRootNode, Node selectedNode, Index<Relationship> linkIndex) throws AWEException {
+
+        LOGGER.debug("start deleteSelectionLink(<" + selectionRootNode + ">, <" + selectedNode + ">)");
+
+        if (selectionRootNode == null) {
+            LOGGER.error("Input selectionRootNode cannot be null");
+            throw new IllegalArgumentException("Input selectionRootNode cannot be null");
+        }
+        if (selectedNode == null) {
+            LOGGER.error("Input selectedNode cannot be null");
+            throw new IllegalArgumentException("Input selectedNode cannot be null");
+        }
+        if (linkIndex == null) {
+            LOGGER.error("Input linkIndex cannot be null");
+            throw new IllegalArgumentException("Input linkIndex cannot be null");
+        }
+
+        Relationship r = findSelectionLink(selectionRootNode, selectedNode, linkIndex);
+        Transaction tx = graphDb.beginTx();
+        try {
+            r.delete();
+            tx.success();
+        } catch (Exception e) {
+            tx.failure();
+            LOGGER.error("Error on deleting Selection link", e);
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
+        LOGGER.debug("finish deleteSelectionLink");
     }
 
     /**
