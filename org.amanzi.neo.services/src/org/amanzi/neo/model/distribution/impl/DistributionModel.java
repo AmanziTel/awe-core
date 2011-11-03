@@ -28,6 +28,7 @@ import org.amanzi.neo.services.DistributionService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NodeTypeManager;
+import org.amanzi.neo.services.DistributionService.DistributionNodeTypes;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataElement;
@@ -123,6 +124,8 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
      * @throws DatabaseException
      */
     public DistributionModel(IDistributionalModel analyzedModel, IDistribution<?> distributionType) throws AWEException {
+        super(DistributionNodeTypes.ROOT_AGGREGATION);
+        
         LOGGER.debug("start new DistributionModel()");
         
         //validate input

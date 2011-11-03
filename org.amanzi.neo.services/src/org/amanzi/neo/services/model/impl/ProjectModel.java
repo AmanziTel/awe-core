@@ -22,6 +22,7 @@ import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.ProjectService;
+import org.amanzi.neo.services.ProjectService.ProjectNodeType;
 import org.amanzi.neo.services.enums.IDriveType;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
@@ -128,6 +129,8 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
      * @param name the name of the project.
      */
     public ProjectModel(String name) {
+        super(ProjectNodeType.PROJECT);
+        
         if ((name == null) || (name.equals(StringUtils.EMPTY))) {
             throw new IllegalArgumentException("Name is null or empty.");
         }
@@ -145,6 +148,8 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
      * @param projectNode node for a Project
      */
     public ProjectModel(Node projectNode) {
+        super(ProjectNodeType.PROJECT);
+        
         if (projectNode == null) {
             throw new IllegalArgumentException("Project node is null");
         }

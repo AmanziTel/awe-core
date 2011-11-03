@@ -61,7 +61,7 @@ public class ProjectService extends NewAbstractService {
      * @author grigoreva_a
      * @since 1.0.0
      */
-    protected enum ProjectNodeType implements INodeType {
+    public enum ProjectNodeType implements INodeType {
         PROJECT;
 
         @Override
