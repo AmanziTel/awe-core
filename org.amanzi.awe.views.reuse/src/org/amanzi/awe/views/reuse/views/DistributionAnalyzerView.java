@@ -1188,7 +1188,6 @@ public class DistributionAnalyzerView extends ViewPart {
             @Override
             public void chartMouseClicked(ChartMouseEvent arg0) {
                 boolean needRedraw = true;
-
                 ChartEntity entity = arg0.getEntity();
                 if (entity instanceof CategoryItemEntity) {
                     CategoryItemEntity itemEntity = (CategoryItemEntity)entity;

@@ -61,5 +61,6 @@ public interface IDistributionBar extends Comparable<IDistributionBar> {
      * @return
      */
     public IDataElement getRootElement();
+
 }
 

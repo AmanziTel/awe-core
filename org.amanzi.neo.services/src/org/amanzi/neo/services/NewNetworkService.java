@@ -77,7 +77,7 @@ public class NewNetworkService extends NewAbstractService {
      * @since 1.0.0
      */
     public enum NetworkElementNodeType implements INodeType {
-        BSC, SITE, SECTOR, CITY, MSC, SELECTION_LIST_ROOT, TRX_GROUP, TRX, CHANNEL_GROUP, FREQUENCY_ROOT, FREQUENCY_PLAN;
+        BSC, SITE, SECTOR, CITY, MSC, SELECTION_LIST_ROOT, TRX, CHANNEL_GROUP, FREQUENCY_ROOT, FREQUENCY_PLAN;
 
         static {
             NodeTypeManager.registerNodeType(NetworkElementNodeType.class);
@@ -97,9 +97,15 @@ public class NewNetworkService extends NewAbstractService {
      * @since 1.0.0
      */
     public enum NetworkRelationshipTypes implements RelationshipType {
-        SELECTION_LIST, SELECTED, TRXGROUP, CHANNEL, TRX, FREQUENCY_ROOT, ENTRY_PLAN;
+        SELECTION_LIST, SELECTED, CHANNEL, TRX, FREQUENCY_ROOT, ENTRY_PLAN;
     }
-
+    
+    /*
+     * Traversal Description to find out all Selection List Nodes of sector
+     */
+    protected final static TraversalDescription ALL_SELECTION_LISTS_OF_SECTOR_TRAVERSER = Traversal.description().breadthFirst()
+            .relationships(NetworkRelationshipTypes.SELECTED).evaluator(Evaluators.atDepth(1));
+    
     /*
      * Traversal Description to find out all Selection List Nodes
      */
@@ -111,6 +117,8 @@ public class NewNetworkService extends NewAbstractService {
      */
     protected final static TraversalDescription N2N_ROOT_TRAVERSER = Traversal.description().breadthFirst()
             .relationships(N2NRelTypes.NEIGHBOUR).evaluator(Evaluators.excludeStartPosition());
+
+    public static final String SECTOR_COUNT = "sector_count";
 
     public NewNetworkService() {
         super();
@@ -263,6 +271,8 @@ public class NewNetworkService extends NewAbstractService {
                 result.setProperty(LOCATION_AREA_CODE, lac);
                 addNodeToIndex(result, index, LOCATION_AREA_CODE, lac);
             }
+            parent.setProperty(SECTOR_COUNT, (Integer)parent.getProperty(SECTOR_COUNT, 0) + 1);
+            LOGGER.debug("site " + parent.getId() + "nodes: " + parent.getProperty(SECTOR_COUNT, 0));
             tx.success();
         } finally {
             tx.finish();
@@ -382,7 +392,8 @@ public class NewNetworkService extends NewAbstractService {
             throw new IllegalArgumentException("Parent is null.");
         }
         if (elementType == null) {
-            throw new IllegalArgumentException("Element type is null.");
+            // return all network elements
+            return CHILD_ELEMENT_TRAVERSAL_DESCRIPTION.evaluator(Evaluators.excludeStartPosition()).traverse(parent).nodes();
         }
 
         return CHILD_ELEMENT_TRAVERSAL_DESCRIPTION.evaluator(new FilterNodesByType(elementType)).traverse(parent).nodes();
@@ -497,24 +508,60 @@ public class NewNetworkService extends NewAbstractService {
     }
 
     /**
-     * Checks existing of selection link
-     *
-     * @param selectionRootNode
-     * @param selectedNode
-     * @param linkIndex
-     * @return
+     * Returns all Selection Nodes related to Sector
+     * 
+     * @param sectorNode Sector node
+     * @return all selection models of sector
      */
-    public boolean isExistSelectionLink(Node selectionRootNode, Node selectedNode, Index<Relationship> linkIndex){
+    public Iterable<Node> getAllSelectionModelsOfSector(Node sectorNode) {
+        LOGGER.debug("start getAllSelectionModelsOfSector(<" + sectorNode + ">)");
+
+        if (sectorNode == null) {
+            LOGGER.error("Sector Node is null");
+            throw new IllegalArgumentException("SectorNode is null");
+        }
+
+        Iterable<Node> result = ALL_SELECTION_LISTS_OF_SECTOR_TRAVERSER.traverse(sectorNode).nodes();
+
+        LOGGER.debug("finish getAllSelectionModelsOfSector()");
+
+        return result;
+    }
+
+    /**
+     * Find selection link
+     * 
+     * @param selectionRootNode root of selection structure
+     * @param selectedNode node to find
+     * @param linkIndex links of selection structure
+     * @return relationship between selectionRootNode and selectedNode
+     */
+    public Relationship findSelectionLink(Node selectionRootNode, Node selectedNode, Index<Relationship> linkIndex) {
+        LOGGER.debug("start findSelectionLink(<" + selectionRootNode + ">, <" + selectedNode + ">)");
+
+        if (selectionRootNode == null) {
+            LOGGER.error("Input selectionRootNode cannot be null");
+            throw new IllegalArgumentException("Input selectionRootNode cannot be null");
+        }
+        if (selectedNode == null) {
+            LOGGER.error("Input selectedNode cannot be null");
+            throw new IllegalArgumentException("Input selectedNode cannot be null");
+        }
+        if (linkIndex == null) {
+            LOGGER.error("Input linkIndex cannot be null");
+            throw new IllegalArgumentException("Input linkIndex cannot be null");
+        }
+
         String indexKey = Long.toString(selectionRootNode.getId());
         Object indexValue = selectedNode.getId();
-        if (linkIndex.get(indexKey, indexValue).getSingle() != null) {
-            return true;
-        }
-        return false;
+
+        LOGGER.debug("finish findSelectionLink");
+
+        return linkIndex.get(indexKey, indexValue).getSingle();
     }
-    
+
     /**
-     * Creates Seleciton link with node
+     * Creates Selection link with node
      * 
      * @param selectionRootNode root of selection structure
      * @param selectedNode node to add in selection structure
@@ -540,7 +587,7 @@ public class NewNetworkService extends NewAbstractService {
         String indexKey = Long.toString(selectionRootNode.getId());
         Object indexValue = selectedNode.getId();
 
-        if (linkIndex.get(indexKey, indexValue).getSingle() != null) {
+        if (findSelectionLink(selectionRootNode, selectedNode, linkIndex) != null) {
             LOGGER.error("Link between Root Selection Node <" + selectionRootNode + "> and Node <" + selectedNode
                     + "> already exists.");
             throw new DatabaseException("Link between Root Selection Node <" + selectionRootNode + "> and Node <" + selectedNode
@@ -564,6 +611,45 @@ public class NewNetworkService extends NewAbstractService {
         }
 
         LOGGER.debug("finish createSelectionLink");
+    }
+
+    /**
+     * Delete selection link
+     * 
+     * @param selectionRootNode root of selection structure
+     * @param selectedNode node to delete from selection structure
+     * @param linkIndex links of selection structure
+     */
+    public void deleteSelectionLink(Node selectionRootNode, Node selectedNode, Index<Relationship> linkIndex) throws AWEException {
+
+        LOGGER.debug("start deleteSelectionLink(<" + selectionRootNode + ">, <" + selectedNode + ">)");
+
+        if (selectionRootNode == null) {
+            LOGGER.error("Input selectionRootNode cannot be null");
+            throw new IllegalArgumentException("Input selectionRootNode cannot be null");
+        }
+        if (selectedNode == null) {
+            LOGGER.error("Input selectedNode cannot be null");
+            throw new IllegalArgumentException("Input selectedNode cannot be null");
+        }
+        if (linkIndex == null) {
+            LOGGER.error("Input linkIndex cannot be null");
+            throw new IllegalArgumentException("Input linkIndex cannot be null");
+        }
+
+        Relationship r = findSelectionLink(selectionRootNode, selectedNode, linkIndex);
+        Transaction tx = graphDb.beginTx();
+        try {
+            r.delete();
+            tx.success();
+        } catch (Exception e) {
+            tx.failure();
+            LOGGER.error("Error on deleting Selection link", e);
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
+        LOGGER.debug("finish deleteSelectionLink");
     }
 
     /**

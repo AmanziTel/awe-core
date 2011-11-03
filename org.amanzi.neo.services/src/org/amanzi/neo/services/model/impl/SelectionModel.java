@@ -129,8 +129,15 @@ public class SelectionModel extends AbstractModel implements ISelectionModel {
 
     @Override
     public boolean isExistSelectionLink(IDataElement element) {
+        if (element == null) {
+            LOGGER.error("IDataElement is null");
+            throw new IllegalArgumentException("IDataElement is null");
+        }
         DataElement dataElement = (DataElement)element;
-        return networkService.isExistSelectionLink(getRootNode(), dataElement.getNode(), getSelectionLinkIndexes());
+        if (networkService.findSelectionLink(getRootNode(), dataElement.getNode(), getSelectionLinkIndexes()) != null) {
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -169,6 +176,27 @@ public class SelectionModel extends AbstractModel implements ISelectionModel {
     @Override
     public IProjectModel getProject() {
         return null;
+    }
+
+    @Override
+    public void deleteSelectionLink(IDataElement element) {
+        LOGGER.debug("start deleteSelectionLink(<" + element + ">)");
+        if (element == null) {
+            LOGGER.error("Input element is null");
+            throw new IllegalArgumentException("Input element is null");
+        }
+        DataElement dataElement = (DataElement)element;
+        if (dataElement.getNode() == null) {
+            LOGGER.error("Underlying node in input Element is null");
+            throw new IllegalArgumentException("Underlying node in input Element is null");
+        }
+        try {
+            networkService.deleteSelectionLink(getRootNode(), dataElement.getNode(), getSelectionLinkIndexes());
+        } catch (AWEException e) {
+            LOGGER.error("Error on deleting link from SelectionList <" + this + "> to Element <" + element + ">.");
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+        LOGGER.debug("finish deleteSelectionLink()");
     }
 
 }

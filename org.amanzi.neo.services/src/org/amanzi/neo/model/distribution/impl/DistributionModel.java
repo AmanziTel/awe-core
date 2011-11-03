@@ -65,7 +65,7 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
     /**
      * Default color for Selected Bar
      */
-    static final Color DEFAULT_MIDDLE_COLOR = Color.YELLOW;
+    static final Color DEFAULT_MIDDLE_COLOR = Color.RED;
     
     /*
      * Distribution Service
@@ -487,4 +487,5 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
     public void setPalette(BrewerPalette palette) {
         this.palette = palette;
     }
+
 }

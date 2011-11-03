@@ -50,7 +50,13 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
     protected double max_latitude = -Double.MAX_VALUE;
     protected double min_longitude = Double.MAX_VALUE;
     protected double max_longitude = -Double.MAX_VALUE;
+    
+    private Map<INodeType, List<MultiPropertyIndex< ? >>> indexes = new HashMap<INodeType, List<MultiPropertyIndex< ? >>>();
 
+    private IndexService indexService = NeoServiceFactory.getInstance().getIndexService();
+    
+    private NewDatasetService datasetService = NeoServiceFactory.getInstance().getNewDatasetService();
+    
     protected AbstractIndexedModel(Node rootNode, INodeType nodeType) throws AWEException {
         super(nodeType);
         this.rootNode = rootNode;
@@ -64,12 +70,6 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
             max_longitude = (Double)gis.getProperty(DriveModel.MAX_LONGITUDE, max_longitude);
         }
     }
-
-    private Map<INodeType, List<MultiPropertyIndex< ? >>> indexes = new HashMap<INodeType, List<MultiPropertyIndex< ? >>>();
-
-    private IndexService indexService = NeoServiceFactory.getInstance().getIndexService();
-    
-    private NewDatasetService datasetService = NeoServiceFactory.getInstance().getNewDatasetService();
 
     /**
      * Creates and stores a location index for the defined node type.

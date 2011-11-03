@@ -77,6 +77,8 @@ public class DataLoadPreferenceManager {
             preferenceInitializer = new DataLoadPreferenceInitializer();
             predifinedPropertyType.put("lat", PossibleTypes.DOUBLE);
             predifinedPropertyType.put("lon", PossibleTypes.DOUBLE);
+            predifinedPropertyType.put("beam", PossibleTypes.DOUBLE);
+            predifinedPropertyType.put("azimuth", PossibleTypes.DOUBLE);
         }
         preferenceInitializer.initializeDefaultPreferences();
     }
