@@ -735,4 +735,14 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         return getNodeToNodeModels(null);
     }
 
+    @Override
+    public void setCRS(CoordinateReferenceSystem crs) {
+        super.setCRS(crs);
+    }
+
+    @Override
+    public CoordinateReferenceSystem updateCRS(String crsCode) {
+        return super.updateCRS(crsCode);
+    }
+
 }

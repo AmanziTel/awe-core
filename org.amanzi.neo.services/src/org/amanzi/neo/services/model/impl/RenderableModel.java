@@ -90,6 +90,14 @@ public abstract class RenderableModel extends AbstractIndexedModel {
         }
         return null;
     }
+    
+    /**
+     * @param crs The crs to set.
+     */
+    public void setCRS(CoordinateReferenceSystem crs) {
+        this.crs = crs;
+        crsCode = "";// ToDO:
+    }
 
     @Override
     public abstract Iterable<IDataElement> getChildren(IDataElement parent);

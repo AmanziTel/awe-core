@@ -24,8 +24,9 @@ import net.refractions.udig.project.ui.internal.dialogs.ColorEditor;
 import net.refractions.udig.style.IStyleConfigurator;
 
 import org.amanzi.awe.catalog.neo.GeoNeo;
-import org.amanzi.awe.catalog.neo.NeoGeoResource;
-import org.amanzi.neo.services.enums.GisTypes;
+import org.amanzi.awe.models.catalog.neo.NewGeoResource;
+import org.amanzi.neo.services.model.INetworkModel;
+import org.amanzi.neo.services.model.IRenderableModel;
 import org.amanzi.neo.services.statistic.PropertyHeader;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.swt.SWT;
@@ -58,6 +59,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
     public static final String ID = "org.amanzi.awe.neostyle.style"; //$NON-NLS-1$
 
     private static final String[] FONT_SIZE_ARRAY = new String[] {"8", "9", "10", "11", "12", "14", "16", "18", "20", "24"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$ //$NON-NLS-10$
+
     //private static final String[] ICON_SIZES = new String[] {"6", "8", "12", "16", "32", "48", "64"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
 
     public NeoStyleConfigurator() {
@@ -103,7 +105,6 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
 
     private boolean isNetwork;
 
-
     private Combo cFontSize;
 
     private Combo cMainProperty;
@@ -130,19 +131,19 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
 
     @Override
     public void createControl(Composite parent) {
-        //Lagutko, 15.03.2010, adding a Scroll
+        // Lagutko, 15.03.2010, adding a Scroll
         GridLayout mainLayout = new GridLayout(1, false);
         parent.setLayout(mainLayout);
-        
+
         ScrolledComposite scroll = new ScrolledComposite(parent, SWT.V_SCROLL | SWT.H_SCROLL);
         scroll.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         scroll.setExpandVertical(true);
         scroll.setExpandHorizontal(true);
-        
+
         parent = new Composite(scroll, SWT.NONE);
         parent.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         parent.setLayout(new GridLayout(1, true));
-        
+
         FormLayout layout = new FormLayout();
         layout.marginHeight = 0;
         layout.marginWidth = 0;
@@ -364,7 +365,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         formData.left = new FormAttachment(2);
         formData.top = new FormAttachment(bTransp, 5);
         bAlerts.setLayoutData(formData);
-        
+
         bCorrelation = new Button(grScale, SWT.CHECK);
         bCorrelation.setText(Messages.Draw_correlation);
         formData = new FormData();
@@ -386,7 +387,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         formData.top = new FormAttachment(bCorrelation, 5);
         formData.right = new FormAttachment(100, -5);
         sMaxSymSize.setLayoutData(formData);
-        
+
         lDefBeamwidth = new Label(grScale, SWT.NONE);
         sDefBeamwidth = new Spinner(grScale, SWT.BORDER);
         lDefBeamwidth.setText(Messages.Symbol_Def_Beam);
@@ -432,19 +433,19 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         sDefBeamwidth.setMinimum(10);
         sDefBeamwidth.setMaximum(360);
         rButton1.addSelectionListener(new SelectionListener() {
-            
+
             @Override
             public void widgetSelected(SelectionEvent e) {
                 lMaxSymSize.setVisible(rButton1.getSelection());
                 sMaxSymSize.setVisible(rButton1.getSelection());
             }
-            
+
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {
                 widgetSelected(e);
             }
         });
-        
+
         scroll.setContent(parent);
         scroll.setMinSize(parent.computeSize(SWT.DEFAULT, SWT.DEFAULT));
     }
@@ -488,17 +489,17 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
             cMainProperty.setText(curStyle.getMainProperty());
             sIconOffset.setSelection(curStyle.getIconOffset());
 
-            if(isNetwork){
+            if (isNetwork) {
                 lIconOffset.setVisible(false);
                 sIconOffset.setVisible(false);
-                
+
             } else {
                 changeToDriveStyle();
             }
         } finally {
         }
     }
-    
+
     /**
      * get array of possible site names
      * 
@@ -509,7 +510,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
     }
 
     /**
-     *get array of sector names
+     * get array of sector names
      * 
      * @return array
      */
@@ -517,8 +518,8 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
         List<String> result = new ArrayList<String>();
         result.add(NeoStyleContent.DEF_NONE);
         try {
-            GeoNeo resource = getLayer().findGeoResource(GeoNeo.class).resolve(GeoNeo.class, null);
-            Node datasetNode = NeoUtils.getDatasetNodeByGis(resource.getMainGisNode());
+            IRenderableModel resource = getLayer().findGeoResource(IRenderableModel.class).resolve(IRenderableModel.class, null);
+            Node datasetNode = resource.getRootNode();
             String[] allFields = PropertyHeader.getPropertyStatistic(datasetNode).getAllFields("-main-type-");
             if (allFields != null) {
                 result.addAll(Arrays.asList(allFields));
@@ -536,25 +537,26 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
     @Override
     public void focus(Layer layer1) {
         try {
-            GeoNeo geoNeo = layer1.findGeoResource(NeoGeoResource.class).resolve(GeoNeo.class, null);
-            isNetwork = geoNeo.getGisType() == GisTypes.NETWORK;
-            
+            IRenderableModel geoNeo = layer1.findGeoResource(NewGeoResource.class).resolve(IRenderableModel.class, null);
+            isNetwork = geoNeo instanceof INetworkModel;
+
         } catch (IOException e) {
             // TODO Handle IOException
             e.printStackTrace();
-            isNetwork = true;           
+            isNetwork = true;
         }
         super.focus(layer1);
     }
+
     /**
      *
      */
     private void changeToDriveStyle() {
-        //Hide site fill color
+        // Hide site fill color
         lFillSite.setVisible(false);
         cEdFillSite.getButton().setVisible(false);
 
-        //Change sector fill to 'fill' and reset layout
+        // Change sector fill to 'fill' and reset layout
         labelFill.setText(Messages.Color_Fill_Drive);
         FormData formData = new FormData();
         formData.left = new FormAttachment(labelFill, 130);

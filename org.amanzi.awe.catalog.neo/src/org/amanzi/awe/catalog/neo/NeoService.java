@@ -119,7 +119,7 @@ public class NeoService extends IService  implements INeoServiceProviderListener
                             Node node = relationship.getEndNode();
                             if(node.hasProperty(INeoConstants.PROPERTY_TYPE_NAME) && node.hasProperty(INeoConstants.PROPERTY_NAME_NAME) && node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).toString().equalsIgnoreCase(NodeTypes.GIS.getId())){
                                 GisTypes gistype = GisTypes.findGisTypeByHeader(node.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME).toString());
-                                members.add(gistype==GisTypes.NETWORK?new NeoNetworkGeoRes(this,graphDatabaseService,node):new NeoDriveGeoRes(this, graphDatabaseService, node));
+                               // members.add(gistype==GisTypes.NETWORK?new NeoNetworkGeoRes(this,graphDatabaseService,node):new NeoDriveGeoRes(this, graphDatabaseService, node));
                             }
                         }
                         transaction.success();

@@ -26,6 +26,7 @@ import net.refractions.udig.project.internal.render.impl.RendererImpl;
 import net.refractions.udig.project.render.RenderException;
 
 import org.amanzi.awe.models.catalog.neo.NewGeoResource;
+import org.amanzi.awe.neostyle.BaseNeoStyle;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.model.IDataElement;
@@ -54,6 +55,8 @@ import com.vividsolutions.jts.geom.Envelope;
  * @since 1.0.0
  */
 public class AbstractRenderer extends RendererImpl {
+
+    protected static BaseNeoStyle style;
 
     public static class RenderOptions {
         public static Scale scale = Scale.MEDIUM;
@@ -93,7 +96,6 @@ public class AbstractRenderer extends RendererImpl {
             RenderOptions.large_sector_size *= Math.sqrt(RenderOptions.maxSitesFull) / (3 * Math.sqrt(countScaled));
             RenderOptions.large_sector_size = Math.min(RenderOptions.large_sector_size, RenderOptions.maxSymbolSize);
         }
-        
 
         bounds_transformed.expandBy(0.75 * (bounds_transformed.getHeight() + bounds_transformed.getWidth()));
     }
