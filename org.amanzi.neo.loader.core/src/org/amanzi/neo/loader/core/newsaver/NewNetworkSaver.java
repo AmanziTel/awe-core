@@ -159,8 +159,7 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
             return;
         }
 
-        Map<String, Object> siteMap = new HashMap<String, Object>();
-        IDataElement findedElement = collectSite(row, siteMap, root);
+        IDataElement findedElement = collectSite(row, root);
         createSector(findedElement, row);
     }
 
@@ -315,13 +314,14 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
      * @return find element
      * @throws AWEException
      */
-    private IDataElement collectSite(List<String> row, Map<String, Object> mapProperty, IDataElement root) throws AWEException {
-        createMapSite(mapProperty, row);
+    private IDataElement collectSite(List<String> row, IDataElement root) throws AWEException {
+        Map<String, Object> siteMap = new HashMap<String, Object>();        
+        createMapSite(siteMap, row);
         IDataElement findedElement;
-        findedElement = model.findElement(mapProperty);
+        findedElement = model.findElement(siteMap);
 
         if (findedElement == null) {
-            findedElement = model.createElement(root, mapProperty);
+            findedElement = model.createElement(root, siteMap);
             addedDatasetSynonyms(model, NetworkElementNodeType.SITE, NewAbstractService.NAME, columnSynonyms.get(fileSynonyms
                     .get(SITE)) == null ? SITE : headers.get(columnSynonyms.get(fileSynonyms.get(SITE))));
             addedDatasetSynonyms(model, NetworkElementNodeType.SITE, LON, headers.get(columnSynonyms.get(fileSynonyms.get(LON))));
