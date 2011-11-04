@@ -1011,6 +1011,19 @@ public class DistributionAnalyzerView extends ViewPart {
         }
     }
 
+    private void enableColorPropertiesButton() {
+        String distribution = distributionCombo.getText();
+        if (!StringUtils.isEmpty(distribution)) {
+            currentDistributionType = distributionTypes.get(distribution);
+
+            if (colorPropertiesButton.getSelection()) {
+                colorPropertiesButton.setSelection(false);
+            }
+            colorPropertiesButton.setEnabled(currentDistributionType.canChangeColors());
+            colorPropertiesButton.setVisible(currentDistributionType.canChangeColors());
+        }
+    }
+
     /**
      * Starts analyzis
      */
@@ -1129,7 +1142,7 @@ public class DistributionAnalyzerView extends ViewPart {
                     selectedBar = null;
                 }
 
-                if (needRedraw && currentDistributionType.canChangeColors()) {
+                if (needRedraw) {
                     updateChartColors();
                 }
 
@@ -1263,6 +1276,7 @@ public class DistributionAnalyzerView extends ViewPart {
             setBlendPanelVisible(false);
             setStandardStatusPanelVisisble(true);
 
+            enableColorPropertiesButton();
             updateChartColors();
         }
     }
@@ -1271,6 +1285,8 @@ public class DistributionAnalyzerView extends ViewPart {
      * Updates colors of Chart
      */
     private void updateChartColors() {
+        if (!currentDistributionType.canChangeColors())
+            return;
         int selectedIndex = dataset.getColumnIndex(selectedBar);
 
         RGB leftRGB = leftColor.getColorValue();
