@@ -13,10 +13,7 @@
 
 package org.amanzi.neo.model.distribution.impl;
 
-import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,17 +21,13 @@ import java.util.Map;
 import org.amanzi.neo.model.distribution.IDistribution;
 import org.amanzi.neo.model.distribution.IDistribution.ChartType;
 import org.amanzi.neo.model.distribution.IDistributionalModel;
-import org.amanzi.neo.model.distribution.IRange;
 import org.amanzi.neo.model.distribution.types.impl.EnumeratedDistribution;
 import org.amanzi.neo.model.distribution.types.impl.NumberDistribution;
 import org.amanzi.neo.model.distribution.types.impl.NumberDistributionType;
-import org.amanzi.neo.model.distribution.xml.DistributionXmlParser;
-import org.amanzi.neo.model.distribution.xml.DistributionXmlParsingException;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.eclipse.core.runtime.Plugin;
 
 /**
  * Manager for Distribution types
@@ -78,12 +71,6 @@ public class DistributionManager {
      */
     private Map<String, IDistribution< ? >> distributionCache = new HashMap<String, IDistribution< ? >>();
 
-    /*
-     * Reuse plugin that contains bundle with distribution xml files
-     */
-    private Plugin reusePlugin;
-    public static final String DISTRIBUTION_XML_PATH = "distributions";
-
     /**
      * Returns instance of this Manager
      */
@@ -100,10 +87,6 @@ public class DistributionManager {
      */
     private DistributionManager() {
 
-    }
-
-    public void registerReusePlugin(Plugin plugin) {
-        this.reusePlugin = plugin;
     }
 
     /**
@@ -157,21 +140,8 @@ public class DistributionManager {
                 result.add(getNumberDistribution(model, nodeType, propertyName, distrType));
             }
             result.add(getStringDistribution(model, nodeType, propertyName));
-        }
-
-        if (reusePlugin != null) {
-            Enumeration<URL> xmlDistr = reusePlugin.getBundle().findEntries(DISTRIBUTION_XML_PATH, "*.xml", false);
-            while (xmlDistr.hasMoreElements()) {
-                try {
-                    IDistribution< ? > distribution = getUserDefinedDistribution(model, nodeType, propertyName,
-                            xmlDistr.nextElement());
-                    if (distribution != null) {
-                        result.add(distribution);
-                    }
-                } catch (Exception e) {
-                    LOGGER.error(e.getMessage());
-                }
-            }
+        } else {
+            // TODO: try to find user-defined distributions
         }
 
         LOGGER.debug("finish getDistributions()");
@@ -181,7 +151,7 @@ public class DistributionManager {
 
     /**
      * Returns array of possible chart types for current properties
-     * 
+     *
      * @param analyzedModel model to Analyze
      * @param nodeType type of node to Analyze
      * @param propertyName name of Property to Analyze
@@ -189,8 +159,8 @@ public class DistributionManager {
      */
     public ChartType[] getPossibleChartTypes(IDistributionalModel analyzedModel, INodeType nodeType, String propertyName) {
         LOGGER.debug("start getPossibleChartTypes(<" + analyzedModel + ">, <" + nodeType + ">, <" + propertyName + ">)");
-
-        // check input
+        
+        //check input
         if (analyzedModel == null) {
             LOGGER.error("Input analyzedModel is null");
             throw new IllegalArgumentException("Input analyzedModel is null");
@@ -203,26 +173,26 @@ public class DistributionManager {
             LOGGER.error("Input propertyName is null or empty");
             throw new IllegalArgumentException("Input propertyName is null or empty");
         }
-
-        // create list of Charts
+        
+        //create list of Charts
         List<ChartType> result = new ArrayList<ChartType>();
-
-        // add chart types for all classees
+        
+        //add chart types for all classees
         result.add(ChartType.COUNTS);
         result.add(ChartType.LOGARITHMIC);
         result.add(ChartType.PERCENTS);
-
-        // get type of property
-        Class< ? > klass = analyzedModel.getPropertyClass(nodeType, propertyName);
+        
+        //get type of property
+        Class<?> klass = analyzedModel.getPropertyClass(nodeType, propertyName);
         if (!klass.equals(String.class) && !klass.equals(Boolean.class)) {
             result.add(ChartType.CDF);
         }
-
+        
         LOGGER.debug("finish getPossibleChartTypes()");
-
+        
         return result.toArray(new ChartType[0]);
     }
-
+    
     /**
      * Computes key of String Distribution in Cache
      * 
@@ -264,15 +234,13 @@ public class DistributionManager {
 
     /**
      * Computes key of Number Distribution in Cache
-     * 
      * @param model
      * @param nodeType
      * @param propertyName
      * @param distrType
      * @return
      */
-    private String getNumberDistributionCacheKey(IDistributionalModel model, INodeType nodeType, String propertyName,
-            NumberDistributionType distrType) {
+    private String getNumberDistributionCacheKey(IDistributionalModel model, INodeType nodeType, String propertyName, NumberDistributionType distrType) {
         StringBuilder result = new StringBuilder(model.getName());
 
         result.append(CACHE_KEY_SEPARATOR).append(nodeType.getId()).append(CACHE_KEY_SEPARATOR).append(propertyName);
@@ -281,14 +249,12 @@ public class DistributionManager {
         return result.toString();
     }
 
-    private IDistribution< ? > getNumberDistribution(IDistributionalModel model, INodeType nodeType, String propertyName,
-            NumberDistributionType distrType) {
+    private IDistribution< ? > getNumberDistribution(IDistributionalModel model, INodeType nodeType, String propertyName, NumberDistributionType distrType) {
         String cacheKey = getNumberDistributionCacheKey(model, nodeType, propertyName, distrType);
         IDistribution< ? > result = distributionCache.get(cacheKey);
 
         if (result == null) {
-            LOGGER.info("No Distribution for params <" + model + ", " + nodeType + ", " + propertyName + ", " + distrType + ">. "
-                    + "Create new one.");
+            LOGGER.info("No Distribution for params <" + model + ", " + nodeType + ", " + propertyName + ", " + distrType + ">. " + "Create new one.");
 
             result = new NumberDistribution(model, nodeType, propertyName, distrType);
             distributionCache.put(cacheKey, result);
@@ -296,53 +262,4 @@ public class DistributionManager {
 
         return result;
     }
-
-    /**
-     * Computes key of User-Defined Distribution in Cache
-     * 
-     * @param model
-     * @param nodeType
-     * @param propertyName
-     * @param distrName
-     * @return
-     */
-    private String getUserDefinedDistributionCacheKey(IDistributionalModel model, INodeType nodeType, String propertyName,
-            String distrName) {
-        StringBuilder result = new StringBuilder(model.getName());
-
-        result.append(CACHE_KEY_SEPARATOR).append(nodeType.getId()).append(CACHE_KEY_SEPARATOR).append(propertyName);
-        result.append(CACHE_KEY_SEPARATOR).append(distrName);
-
-        return result.toString();
-    }
-
-    /**
-     * Tries to find User-Defined Distribution in Cache Creates new one if nothing found and put it
-     * to cache
-     * 
-     * @param model
-     * @param nodeType
-     * @param propertyName
-     * @param url
-     * @return
-     * @throws DistributionXmlParsingException
-     * @throws IOException
-     */
-    private IDistribution< ? > getUserDefinedDistribution(IDistributionalModel model, INodeType nodeType, String propertyName,
-            URL url) throws DistributionXmlParsingException, IOException {
-        String cacheKey = getUserDefinedDistributionCacheKey(model, nodeType, propertyName, url.getFile());
-        IDistribution< ? > result = distributionCache.get(cacheKey);
-
-        if (result == null) {
-            LOGGER.info("No Distribution for params <" + model + ", " + nodeType + ", " + url.getFile() + ">. " + "Create new one.");
-            DistributionXmlParser xmlParser = new DistributionXmlParser(url);
-            if (xmlParser.checkCompatibility(model, nodeType, propertyName)) {
-                result = xmlParser.getDistribution(model, nodeType, propertyName);
-                distributionCache.put(cacheKey, result);
-            }
-        }
-
-        return result;
-    }
-
 }

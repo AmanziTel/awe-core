@@ -175,16 +175,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         addTimestampIndex(primaryType);
     }
 
-    /**
-     * Adds a new node of type DRIVE, creates VIRTUAL_DATASET relationship from root node of current
-     * DM, and creates and returns a new DM on base of newly created node.
-     * 
-     * @param name the name of new virtual dataset
-     * @param driveType the drive type of new virtual dataset (NB! not TYPE, TYPE is set to DRIVE)
-     * @return DriveModel based on new virtual dataset node
-     * @throws AWEException if parameters are null or empty or some errors occur in database during
-     *         creation of nodes
-     */
+    @Override
     public DriveModel addVirtualDataset(String name, IDriveType driveType) throws AWEException {
         LOGGER.debug("start addVirtualDataset(String name, IDriveType driveType)");
 
@@ -209,13 +200,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         return result;
     }
 
-    /**
-     * Looks for a virtual dataset node with the defined name, creates a DriveModel based on it, if
-     * found
-     * 
-     * @param name the name of virtual dataset node
-     * @return DriveModel based on the found node or null if search failed
-     */
+    @Override
     public IDriveModel findVirtualDataset(String name) {
         LOGGER.debug("start findVirtualDataset(String name)");
 
@@ -229,15 +214,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         return result;
     }
 
-    /**
-     * Looks for a virtual dataset node or creates a new one if nothing found. returns a new
-     * DriveModel based on resulting node.
-     * 
-     * @param name
-     * @param driveType used to create a new virtual dataset
-     * @return a DriveModel based on found or created virtual dataset node
-     * @throws AWEException if errors occurred during creation of new node
-     */
+    @Override
     public IDriveModel getVirtualDataset(String name, IDriveType driveType) throws AWEException {
         LOGGER.debug("start getVirtualDataset(String name, IDriveType driveType)");
 
@@ -248,10 +225,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         return result;
     }
 
-    /**
-     * @return a List<Node> containing DriveModels created on base of virtual dataset nodes in
-     *         current DriveModel
-     */
+    @Override
     public Iterable<IDriveModel> getVirtualDatasets() {
         LOGGER.debug("start getVirtualDatasets()");
 
@@ -266,15 +240,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         return result;
     }
 
-    /**
-     * Adds a FILE node to the drive model. FILE nodes are added to root node via
-     * CHILD-NEXT-...-NEXT chain. FILE nodes are indexed by NAME.
-     * 
-     * @param file a File object containing file name and path
-     * @return the newly created node
-     * @throws DatabaseException if errors occur in database
-     * @throws DuplicateNodeNameException when trying to add a file that already exists
-     */
+    @Override
     public IDataElement addFile(File file) throws DatabaseException, DuplicateNodeNameException {
         LOGGER.debug("start addFile(File file)");
 
@@ -301,45 +267,17 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         return new DataElement(fileNode);
     }
 
-    /**
-     * Adds a measurement node to a file node with defined filename. If params map contains lat and
-     * lon properties, also creates a location node. Use this method if you want to create a
-     * measurement with default type.
-     * 
-     * @param filename the name of file
-     * @param params a map containing parameters of the new measurement
-     * @return the newly created node
-     * @throws AWEException
-     */
+    @Override
     public IDataElement addMeasurement(String filename, Map<String, Object> params) throws AWEException {
         return addMeasurement(filename, params, primaryType);
     }
 
-    /**
-     * Adds a measurement node to a file node in <code>file</code> parameter. If params map contains
-     * lat and lon properties, also creates a location node. Use this method if you want to create a
-     * measurement with default type.
-     * 
-     * @param file a <code>IDataElement</code>, containing he file node
-     * @param params a map containing parameters of the new measurement
-     * @return the newly created node
-     * @throws AWEException
-     */
+    @Override
     public IDataElement addMeasurement(IDataElement file, Map<String, Object> params) throws AWEException {
         return addMeasurement(file, params, primaryType);
     }
 
-    /**
-     * Adds a measurement node to a file node in the <code>file</code> parameter. If params map
-     * contains lat and lon properties, also creates a location node. Use this method if you want to
-     * create a measurement with type, that is different from drive model primary type.
-     * 
-     * @param filename the name of file
-     * @param params a map containing parameters of the new measurement
-     * @param nodeType the type of node to create
-     * @return the newly created node
-     * @throws AWEException
-     */
+    @Override
     public IDataElement addMeasurement(IDataElement file, Map<String, Object> params, INodeType nodeType) throws AWEException {
 
         // validate parameters
@@ -385,17 +323,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         return new DataElement(m);
     }
 
-    /**
-     * Adds a measurement node to a file node with defined filename. If params map contains lat and
-     * lon properties, also creates a location node. Use this method if you want to create a
-     * measurement with type, that is different from drive model primary type.
-     * 
-     * @param filename the name of file
-     * @param params a map containing parameters of the new measurement
-     * @param nodeType the type of node to create
-     * @return the newly created node
-     * @throws AWEException
-     */
+    @Override
     public IDataElement addMeasurement(String filename, Map<String, Object> params, INodeType nodeType) throws AWEException {
         LOGGER.debug("start addMeasurement(String filename, Map<String, Object> params)");
 
@@ -421,14 +349,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         return addMeasurement(new DataElement(fileNode), params, nodeType);
     }
 
-    /**
-     * The method creates CALL_M relationships between <code>parent</code> node and
-     * <code>source</code> nodes.
-     * 
-     * @param parent a <code>DataElement</code>, that contains parent node.
-     * @param source list of <code>DataElement</code>s, containing <code>Node</code> objects.
-     * @throws DatabaseException if problems occur in database
-     */
+    @Override
     public void linkNode(IDataElement parent, Iterable<IDataElement> source) throws DatabaseException {
         // validate
         if (parent == null) {
@@ -480,12 +401,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         updateLocationBounds(lat, lon);
     }
 
-    /**
-     * Finds a location node.
-     * 
-     * @param parent
-     * @return the found location node or null.
-     */
+    @Override
     public IDataElement getLocation(IDataElement parentElement) {
         // validate
         if (parentElement == null) {
@@ -504,12 +420,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         return null;
     }
 
-    /**
-     * Looks up for a file node through index
-     * 
-     * @param name
-     * @return
-     */
+    @Override
     public IDataElement findFile(String name) {
         // validate parameters
         if ((name == null) || (name.equals(StringUtils.EMPTY))) {
@@ -523,13 +434,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         return fileNode == null ? null : new DataElement(fileNode);
     }
 
-    /**
-     * Finds or creates a file with the defined name.
-     * 
-     * @param name
-     * @return FILE node
-     * @throws DatabaseException if errors occur in database
-     */
+    @Override
     public IDataElement getFile(String name) throws DatabaseException {
         IDataElement result = ((DataElement)findFile(name));
         if (result == null) {
@@ -542,12 +447,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         return result;
     }
 
-    /**
-     * Gets all measurements under defined file.
-     * 
-     * @param filename the name of the file
-     * @return and iterator over measurement nodes
-     */
+    @Override
     public Iterable<IDataElement> getMeasurements(String filename) {
         // validate
         if ((filename == null) || (filename.equals(StringUtils.EMPTY))) {
@@ -558,9 +458,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
                 new File(filename).getName()).getSingle()));
     }
 
-    /**
-     * @return an iterator over FILE nodes
-     */
+    @Override
     public Iterable<IDataElement> getFiles() {
         return new DataElementIterable(dsServ.getChildrenChainTraverser(rootNode));
     }

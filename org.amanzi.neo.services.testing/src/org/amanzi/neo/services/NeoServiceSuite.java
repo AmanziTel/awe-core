@@ -13,8 +13,6 @@
 
 package org.amanzi.neo.services;
 
-import org.amanzi.neo.model.distribution.xml.DistributionXmlParser;
-import org.amanzi.neo.model.distribution.xml.DistributionXmlParserTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
@@ -28,7 +26,7 @@ import org.junit.runners.Suite.SuiteClasses;
  */
 @RunWith(Suite.class)
 @SuiteClasses({
-	org.amanzi.neo.services.CorrelationServiceTest.class,
+    org.amanzi.neo.services.CorrelationServiceTest.class,
                org.amanzi.neo.services.NewDatasetServiceTest.class,
                org.amanzi.neo.services.NewNetworkServiceTest.class,
                org.amanzi.neo.services.NewStatisticsServiceTest.class,
@@ -50,7 +48,7 @@ import org.junit.runners.Suite.SuiteClasses;
                org.amanzi.neo.model.distribution.impl.DistributionManagerTest.class,
                org.amanzi.neo.model.distribution.types.impl.EnumeratedDistributionTest.class,
                org.amanzi.neo.model.distribution.types.impl.NumberDistributionTest.class,
-               org.amanzi.neo.model.distribution.xml.DistributionXmlParserTest.class
+               org.amanzi.neo.model.distribution.types.impl.EnumeratedDistributionTest.class
                })
 
 public class NeoServiceSuite {

@@ -76,7 +76,6 @@ import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.chart.renderer.category.CategoryItemRenderer;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.general.AbstractDataset;
-import org.jfree.data.general.Dataset;
 import org.jfree.experimental.chart.swt.ChartComposite;
 
 /**
@@ -130,67 +129,7 @@ public class DistributionAnalyzerView extends ViewPart {
     private static final Color COLOR_LESS = Color.BLUE;
 
     private static final Color COLOR_MORE = Color.GREEN;
-
-    /**
-     * TODO Purpose of
-     * <p>
-     * </p>
-     * 
-     * @author gerzog
-     * @since 1.0.0
-     */
-    private abstract class AbstractDistributionChart<T extends Dataset> {
-
-        private T dataset;
-
-        private ChartComposite chartComposite;
-
-        public AbstractDistributionChart() {
-            dataset = createDataset();
-
-            JFreeChart chart = createChart(dataset);
-            initializeRange();
-
-        }
-
-        protected abstract JFreeChart createChart(T dataset);
-
-        public void setVisible(boolean isVisisble) {
-            chartComposite.setVisible(isVisisble);
-        }
-
-        protected abstract T createDataset();
-
-        public abstract void updateDataset();
-
-        protected abstract void initializeRange();
-
-    }
-
-    private class CategoryDistributionChart extends AbstractDistributionChart<CategoryDataset> {
-
-        @Override
-        protected JFreeChart createChart(CategoryDataset dataset) {
-            return ChartFactory.createBarChart(DISTRIBUTION_CHART_NAME, VALUES_AXIS_NAME, NUMBERS_AXIS_NAME, dataset,
-                    PlotOrientation.VERTICAL, false, false, false);
-        }
-
-        @Override
-        protected CategoryDataset createDataset() {
-            return new DistributionDataset();
-        }
-
-        @Override
-        public void updateDataset() {
-
-        }
-
-        @Override
-        protected void initializeRange() {
-        }
-
-    }
-
+    
     @SuppressWarnings("rawtypes")
     private class DistributionDataset extends AbstractDataset implements CategoryDataset {
 
@@ -1072,19 +1011,6 @@ public class DistributionAnalyzerView extends ViewPart {
         }
     }
 
-    private void enableColorPropertiesButton() {
-        String distribution = distributionCombo.getText();
-        if (!StringUtils.isEmpty(distribution)) {
-            currentDistributionType = distributionTypes.get(distribution);
-
-            if (colorPropertiesButton.getSelection()) {
-                colorPropertiesButton.setSelection(false);
-            }
-            colorPropertiesButton.setEnabled(currentDistributionType.canChangeColors());
-            colorPropertiesButton.setVisible(currentDistributionType.canChangeColors());
-        }
-    }
-
     /**
      * Starts analyzis
      */
@@ -1203,7 +1129,7 @@ public class DistributionAnalyzerView extends ViewPart {
                     selectedBar = null;
                 }
 
-                if (needRedraw) {
+                if (needRedraw && currentDistributionType.canChangeColors()) {
                     updateChartColors();
                 }
 
@@ -1337,7 +1263,6 @@ public class DistributionAnalyzerView extends ViewPart {
             setBlendPanelVisible(false);
             setStandardStatusPanelVisisble(true);
 
-            enableColorPropertiesButton();
             updateChartColors();
         }
     }
@@ -1346,8 +1271,6 @@ public class DistributionAnalyzerView extends ViewPart {
      * Updates colors of Chart
      */
     private void updateChartColors() {
-        if (!currentDistributionType.canChangeColors())
-            return;
         int selectedIndex = dataset.getColumnIndex(selectedBar);
 
         RGB leftRGB = leftColor.getColorValue();

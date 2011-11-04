@@ -61,8 +61,6 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
      */
     private List<String> headers;
 
-    private Map<String, String[]> preferenceStoreSynonyms;
-
     protected NewNetworkSaver(INetworkModel model, ConfigurationDataImpl config, GraphDatabaseService service) {
         super(service);
         preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.NETWORK);
