@@ -114,6 +114,7 @@ public class CommonCSVParser<T1 extends ISaver<IModel, CSVContainer, T2>, T2 ext
                 tempFile = currentFile;
                 persentageOld = 0;
                 container.setHeaders(null);
+                container.setFile(tempFile);
             } catch (FileNotFoundException e) {
                 // TODO Handle FileNotFoundException
                 throw (RuntimeException)new RuntimeException().initCause(e);

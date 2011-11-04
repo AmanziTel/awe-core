@@ -13,6 +13,8 @@
 
 package org.amanzi.neo.services.filters;
 
+import org.apache.commons.lang.StringUtils;
+
 /**
  * 
  * <p>
@@ -23,4 +25,15 @@ package org.amanzi.neo.services.filters;
  */
 public enum FilterType{
     EQUALS, LIKE, MORE, LESS, MORE_OR_EQUALS, LESS_OR_EQUALS, EMPTY, NOT_EMPTY;
+    
+    public static FilterType getByName(String name) {
+        if (StringUtils.isEmpty(name))
+            return null;
+        for (FilterType filterType : FilterType.values()) {
+            if (filterType.name().toLowerCase().equals(name.toLowerCase())) {
+                return filterType;
+            }
+        }
+        return null;
+    }
 }

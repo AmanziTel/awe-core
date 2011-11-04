@@ -138,9 +138,9 @@ public class NewDatasetService extends NewAbstractService {
         public String getId() {
             return name().toLowerCase();
         }
-        
+
         public static DatasetTypes[] getRenderableDatasets() {
-            return new DatasetTypes[]{NETWORK, DRIVE};
+            return new DatasetTypes[] {NETWORK, DRIVE};
         }
     }
 
@@ -153,7 +153,7 @@ public class NewDatasetService extends NewAbstractService {
      * @since 1.0.0
      */
     public enum DriveTypes implements IDriveType {
-        NEMO_V1, NEMO_V2, TEMS, ROMES, AMS_CALLS, AMS, AMS_PESQ;
+        NEMO_V1, NEMO_V2, TEMS, ROMES, AMS_CALLS, AMS, AMS_PESQ, MS;
     }
 
     /**
@@ -1017,10 +1017,9 @@ public class NewDatasetService extends NewAbstractService {
             throw new IllegalArgumentException("Relationship type is null.");
         }
 
-        return N2N_TRAVERSAL_DESCRIPTION.relationships(relType, Direction.INCOMING).
-                relationships(relType, Direction.OUTGOING).traverse(n2nProxy).relationships();
+        return N2N_TRAVERSAL_DESCRIPTION.relationships(relType, Direction.INCOMING).relationships(relType, Direction.OUTGOING)
+                .traverse(n2nProxy).relationships();
     }
-
 
     /**
      * The method traverses database with a description, that will definitely return an empty
