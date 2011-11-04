@@ -13,6 +13,11 @@
 
 package org.amanzi.neo.services.model.impl;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
@@ -38,16 +43,53 @@ public abstract class RenderableModel extends AbstractIndexedModel {
     private static Logger LOGGER = Logger.getLogger(RenderableModel.class);
 
     static final String DESCRIPTION = "description";
+    static final String CRS_NAME = "crs";
+
+    private NewDatasetService datasetService = NeoServiceFactory.getInstance().getNewDatasetService();
 
     protected final static String DEFAULT_EPSG = "EPSG:31467";
     /** The field used in geo tools. Assignment not yet implemented.//TODO */
     protected CoordinateReferenceSystem crs;
 
+    protected String crsCode;
+
     protected RenderableModel(Node rootNode, INodeType nodeType) throws AWEException {
         super(rootNode, nodeType);
+        Node gis = datasetService.getGisNodeByDataset(rootNode);
+        crsCode = StringUtils.EMPTY;
+        if (gis != null) {
+            crsCode = gis.getProperty(CRS_NAME, StringUtils.EMPTY).toString();
+        }
+        try {
+            if (!crsCode.equals(StringUtils.EMPTY)) {
+                crs = CRS.decode(crsCode);
+                return;
+            }
+            crs = CRS.decode(DEFAULT_EPSG);
+            crsCode = DEFAULT_EPSG;
+        } catch (NoSuchAuthorityCodeException e) {
+            LOGGER.error("Could not parse epsg.", e);
+        }
     }
 
-    // TODO: make it abstract?
+    /**
+     * Updates the model CRS and returns a <code>CoordinateReferenceSystem</code> object,
+     * representing the new value.
+     * 
+     * @param crsCode a string representing the new CRS - something like "EPSG:31247"
+     * @return the updated CRS as <code>CoordinateReferenceSystem</code> object
+     */
+    protected CoordinateReferenceSystem updateCRS(String crsCode) {
+        try {
+            crs = CRS.decode(crsCode);
+            this.crsCode = crsCode;
+            return crs;
+        } catch (NoSuchAuthorityCodeException e) {
+            LOGGER.error("Could not parse epsg.", e);
+        }
+        return null;
+    }
+
     @Override
     public abstract Iterable<IDataElement> getChildren(IDataElement parent);
 
@@ -71,6 +113,17 @@ public abstract class RenderableModel extends AbstractIndexedModel {
             LOGGER.error("Could not parse epsg.", e);
         }
         return new ReferencedEnvelope(min_latitude, max_latitude, min_longitude, max_longitude, crs);
+    }
+
+    @Override
+    public void finishUp() throws AWEException {
+        Node gis = datasetService.getGisNodeByDataset(rootNode);
+        if (gis != null) {
+            Map<String, Object> params = new HashMap<String, Object>();
+            params.put(CRS_NAME, crsCode);
+            datasetService.setProperties(gis, params);
+        }
+        super.finishUp();
     }
 
 }

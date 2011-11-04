@@ -89,7 +89,6 @@ public class DistributionService extends NewAbstractService {
      */
     public static final String PALETTE = "palette";
     
-    
     /**
      * Node Types for Distribution Database Structure
      * 
@@ -178,6 +177,14 @@ public class DistributionService extends NewAbstractService {
         if (StringUtils.isEmpty(distribution.getName())) {
             LOGGER.error("Name of Distribution cannot be null or empty");
             throw new IllegalArgumentException("Name of Distribution cannot be null or empty");
+        }
+        if (StringUtils.isEmpty(distribution.getPropertyName())) {
+            LOGGER.error("PropertyName of Distribution cannot be null or empty");
+            throw new IllegalArgumentException("PropertyName of Distribution cannot be null or empty");
+        }
+        if (distribution.getNodeType() == null) {
+            LOGGER.error("NodeType of Distribution cannot be null or empty");
+            throw new IllegalArgumentException("NodeType of Distribution cannot be null or empty");
         }
         if (StringUtils.isEmpty(distribution.getPropertyName())) {
             LOGGER.error("PropertyName of Distribution cannot be null or empty");

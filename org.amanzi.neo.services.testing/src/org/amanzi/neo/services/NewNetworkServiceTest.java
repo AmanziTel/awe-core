@@ -19,6 +19,7 @@ import junit.framework.Assert;
 import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.NewNetworkService.NetworkRelationshipTypes;
+import org.amanzi.neo.services.enums.DatasetRelationshipTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
@@ -1345,14 +1346,14 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     public void checkReplaceRelationship() throws Exception {
         Node root = getNewNE();
         Node childNode = getNewNE();
-        networkService.createRelationship(root, childNode, org.amanzi.neo.services.enums.NetworkRelationshipTypes.CHILD);
+        networkService.createRelationship(root, childNode, DatasetRelationshipTypes.CHILD);
         Node newRootNode = getNewNE();
-        networkService.replaceRelationship(newRootNode, childNode, org.amanzi.neo.services.enums.NetworkRelationshipTypes.CHILD,
+        networkService.replaceRelationship(newRootNode, childNode, DatasetRelationshipTypes.CHILD,
                 Direction.INCOMING);
         assertNull(root + " still has relationships",
-                root.getSingleRelationship(org.amanzi.neo.services.enums.NetworkRelationshipTypes.CHILD, Direction.OUTGOING));
+                root.getSingleRelationship(DatasetRelationshipTypes.CHILD, Direction.OUTGOING));
         assertNotNull(newRootNode + "still hasn't relationships",
-                newRootNode.getSingleRelationship(org.amanzi.neo.services.enums.NetworkRelationshipTypes.CHILD, Direction.OUTGOING));
+                newRootNode.getSingleRelationship(DatasetRelationshipTypes.CHILD, Direction.OUTGOING));
     }
 
     @Test
@@ -1504,11 +1505,101 @@ public class NewNetworkServiceTest extends AbstractAWETest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void checkGetAllSelectionModelsOfSector(){
+    public void checkGetAllSelectionModelsOfSectorSectorNodeIsNull() {
         Node sectorNode = null;
         networkService.getAllSelectionModelsOfSector(sectorNode);
-    }    
-    
+    }
+
+    @Test
+    public void checkGetAllSelectionModelsOfSector() throws AWEException {
+        List<Node> nodes = new ArrayList<Node>();
+        Node selectionRootNode1 = getRootForSelection();
+        Node selectedNode = getSectorForSelection();
+        Index<Relationship> linkIndex = getLinkIndex();
+        networkService.createSelectionLink(selectionRootNode1, selectedNode, linkIndex);
+        nodes.add(selectionRootNode1);
+        Node selectionRootNode2 = getRootForSelection();
+        networkService.createSelectionLink(selectionRootNode2, selectedNode, linkIndex);
+        nodes.add(selectionRootNode2);
+        Iterable<Node> modelsNode = networkService.getAllSelectionModelsOfSector(selectedNode);
+        Iterator<Node> it = modelsNode.iterator();
+        Iterator<Node> itCheck = nodes.iterator();
+        while (it.hasNext() || itCheck.hasNext()) {
+            assertEquals(itCheck.next(), it.next());
+        }
+
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void checkFindSelectionLinkIndexRelationshipIsNull() {
+        Node selectionRootNode = getRootForSelection();
+        Node selectedNode = getSectorForSelection();
+        networkService.findSelectionLink(selectionRootNode, selectedNode, null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void checkFindSelectionLinkSelectionRootNodeIsNull() {
+        Node selectedNode = getSectorForSelection();
+        Index<Relationship> rel = getLinkIndex();
+        networkService.findSelectionLink(null, selectedNode, rel);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void checkFindSelectionLinkSelectedNodeIsNull() {
+        Node selectionRootNode = getRootForSelection();
+        Index<Relationship> rel = getLinkIndex();
+        networkService.findSelectionLink(selectionRootNode, null, rel);
+    }
+
+    @Test
+    public void checkFindSelectionLink() throws AWEException {
+        Node selectionRootNode = getRootForSelection();
+        Node selectedNode = getSectorForSelection();
+        Index<Relationship> linkIndex = getLinkIndex();
+        networkService.createSelectionLink(selectionRootNode, selectedNode, linkIndex);
+        assertEquals(NetworkRelationshipTypes.SELECTED, networkService
+                .findSelectionLink(selectionRootNode, selectedNode, linkIndex).getType());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void checkDeleteSelectionLinkIndexRelationshipIsNull() throws AWEException {
+        Node selectionRootNode = getRootForSelection();
+        Node selectedNode = getSectorForSelection();
+        networkService.deleteSelectionLink(selectionRootNode, selectedNode, null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void checkDeleteSelectionLinkSelectionRootNodeIsNull() throws AWEException {
+        Node selectedNode = getSectorForSelection();
+        Index<Relationship> rel = getLinkIndex();
+        networkService.deleteSelectionLink(null, selectedNode, rel);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void checkDeleteSelectionLinkSelectedNodeIsNull() throws AWEException {
+        Node selectionRootNode = getRootForSelection();
+        Index<Relationship> rel = getLinkIndex();
+        networkService.deleteSelectionLink(selectionRootNode, null, rel);
+    }
+
+    @Test
+    public void checkDeleteSelectionLink() throws AWEException {
+        Node selectionRootNode = getRootForSelection();
+        Node selectedNode = getSectorForSelection();
+        Index<Relationship> linkIndex = getLinkIndex();
+        networkService.createSelectionLink(selectionRootNode, selectedNode, linkIndex);
+        networkService.deleteSelectionLink(selectionRootNode, selectedNode, linkIndex);
+        assertNull(networkService.findSelectionLink(selectionRootNode, selectedNode, linkIndex));
+    }
+
+    @Test(expected = DatabaseException.class)
+    public void checkDeleteSelectionLinkDatabaseException() throws AWEException {
+        Node selectionRootNode = getRootForSelection();
+        Node selectedNode = getSectorForSelection();
+        Index<Relationship> linkIndex = getLinkIndex();
+        networkService.deleteSelectionLink(selectionRootNode, selectedNode, linkIndex);
+    }
+
     /**
      * added properties to node
      * 
@@ -1566,7 +1657,5 @@ public class NewNetworkServiceTest extends AbstractAWETest {
 
         return result;
     }
-    
-    
 
 }

@@ -37,7 +37,6 @@ import org.amanzi.neo.services.model.IProjectModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.amanzi.neo.services.model.impl.ProjectModel.DistributionItem;
 import org.amanzi.neo.services.ui.utils.ActionUtil;
-import org.amanzi.neo.services.utils.Pair;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -67,7 +66,6 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartMouseEvent;
 import org.jfree.chart.ChartMouseListener;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.LogarithmicAxis;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.entity.CategoryItemEntity;
 import org.jfree.chart.entity.ChartEntity;
@@ -1177,7 +1175,6 @@ public class DistributionAnalyzerView extends ViewPart {
             @Override
             public void chartMouseClicked(ChartMouseEvent arg0) {
                 boolean needRedraw = true;
-
                 ChartEntity entity = arg0.getEntity();
                 if (entity instanceof CategoryItemEntity) {
                     CategoryItemEntity itemEntity = (CategoryItemEntity)entity;

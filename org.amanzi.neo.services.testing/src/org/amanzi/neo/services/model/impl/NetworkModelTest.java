@@ -44,6 +44,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 public class NetworkModelTest extends AbstractNeoServiceTest {
 
@@ -127,7 +128,7 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
 
         NetworkModel nm;
         try {
-            nm = new NetworkModel(parent, root, name);
+            nm = new NetworkModel(parent, root, name, null);
         } catch (InvalidDatasetParameterException e) {
             // TODO Handle InvalidDatasetParameterException
             throw (RuntimeException)new RuntimeException().initCause(e);
@@ -148,6 +149,44 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
         assertEquals(network, nm.getRootNode());
         // name correct
         assertEquals(name, nm.getName());
+    }
+
+    @Test
+    public void testNetworkModelCRS() {
+        String name = "network1";
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("some", "param");
+        DataElement root = new DataElement(params);
+        DataElement parent = new DataElement(project);
+
+        NetworkModel nm;
+        try {
+            nm = new NetworkModel(parent, root, name, "EPSG:4326");
+            nm.finishUp();
+        } catch (InvalidDatasetParameterException e) {
+            // TODO Handle InvalidDatasetParameterException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        } catch (DatasetTypeParameterException e) {
+            // TODO Handle DatasetTypeParameterException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        } catch (DuplicateNodeNameException e) {
+            // TODO Handle DuplicateNodeNameException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        } catch (AWEException e) {
+            // TODO Handle AWEException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+        CoordinateReferenceSystem crs = nm.getCRS();
+
+        NetworkModel testModel = null;
+        try {
+            testModel = new NetworkModel(nm.getRootNode());
+        } catch (AWEException e) {
+            // TODO Handle AWEException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+
+        Assert.assertEquals(crs, testModel.getCRS());
     }
 
     @Test
