@@ -30,7 +30,7 @@ import org.amanzi.neo.services.enums.IDriveType;
  */
 public class DataLoadPreferenceManager {
     private static DataLoadPreferenceInitializer preferenceInitializer;
-    public final static String INFO_SEPARATOR = "\\.";
+    public final static String INFO_SEPARATOR = "//.";
     /*
      * network constants
      */
@@ -47,11 +47,11 @@ public class DataLoadPreferenceManager {
     public static final String TEMS = "TEMS";
     public static final String ROMES = "ROMES";
 
-    public static final String EVENT = "event" + INFO_SEPARATOR;
-    public static final String LATITUDE = "lat" + INFO_SEPARATOR;
-    public static final String LONGITUDE = "lon" + INFO_SEPARATOR;
-    public static final String SECTOR_ID = "sector_id" + INFO_SEPARATOR;
-    private static final String TIME = "time" + INFO_SEPARATOR;
+    public static final String EVENT = "event" + INFO_SEPARATOR + TEMS + INFO_SEPARATOR + ROMES;
+    public static final String LATITUDE = "lat" + INFO_SEPARATOR + TEMS + INFO_SEPARATOR + ROMES;
+    public static final String LONGITUDE = "lon" + INFO_SEPARATOR + TEMS + INFO_SEPARATOR + ROMES;
+    public static final String SECTOR_ID = "sector_id" + INFO_SEPARATOR + TEMS + INFO_SEPARATOR + ROMES;
+    private static final String TIME = "time" + INFO_SEPARATOR + TEMS + INFO_SEPARATOR + ROMES;
 
     public final static String BCCH = "bcch" + INFO_SEPARATOR + TEMS;
     public static final String TCH = "tch" + INFO_SEPARATOR + TEMS;
@@ -289,11 +289,12 @@ public class DataLoadPreferenceManager {
     private Map<String, String[]> getDriveSubtype(IDriveType subtype) {
         for (String key : driveMap.keySet()) {
             String[] keys = key.split(INFO_SEPARATOR);
-            if (keys.length > 1) {
-                if (keys[1].equals(((DriveTypes)subtype).name())) {
+            for (String iteam : keys) {
+                if (iteam.equals(((DriveTypes)subtype).name())) {
                     subTypeSynonyms.put(key, driveMap.get(key));
                 }
             }
+
         }
         return subTypeSynonyms;
     }
