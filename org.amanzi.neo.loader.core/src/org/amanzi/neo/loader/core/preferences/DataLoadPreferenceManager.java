@@ -18,11 +18,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
-import org.amanzi.neo.loader.core.preferences.PreferenceStore;
 import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.NewDatasetService.DriveTypes;
+import org.amanzi.neo.services.NewNetworkService;
 import org.amanzi.neo.services.enums.IDriveType;
 
 /**
@@ -30,7 +30,7 @@ import org.amanzi.neo.services.enums.IDriveType;
  */
 public class DataLoadPreferenceManager {
     private static DataLoadPreferenceInitializer preferenceInitializer;
-    public final static String INFO_SEPARATOR = "\\.";
+    public final static String INFO_SEPARATOR = "//.";
     /*
      * network constants
      */
@@ -44,12 +44,33 @@ public class DataLoadPreferenceManager {
     /*
      * drive constants
      */
-    public final static String BCCH = "bcch" + INFO_SEPARATOR + "TEMS";
-    public static final String TCH = "tch" + INFO_SEPARATOR + "ROMES";
-    public static final String SC = "sc" + INFO_SEPARATOR + "TEMS";
-    public static final String PN = "PN" + INFO_SEPARATOR;
-    public static final String ECIO = "ecio" + INFO_SEPARATOR;
-    public static final String RSSI = "rssi" + INFO_SEPARATOR;
+    public static final String TEMS = "TEMS";
+    public static final String ROMES = "ROMES";
+
+    public static final String EVENT = "event" + INFO_SEPARATOR + TEMS + INFO_SEPARATOR + ROMES;
+    public static final String LATITUDE = "lat" + INFO_SEPARATOR + TEMS + INFO_SEPARATOR + ROMES;
+    public static final String LONGITUDE = "lon" + INFO_SEPARATOR + TEMS + INFO_SEPARATOR + ROMES;
+    public static final String SECTOR_ID = "sector_id" + INFO_SEPARATOR + TEMS + INFO_SEPARATOR + ROMES;
+    private static final String TIME = "time" + INFO_SEPARATOR + TEMS + INFO_SEPARATOR + ROMES;
+
+    public final static String BCCH = "bcch" + INFO_SEPARATOR + TEMS;
+    public static final String TCH = "tch" + INFO_SEPARATOR + TEMS;
+    public static final String SC = "sc" + INFO_SEPARATOR + TEMS;
+    public static final String PN = "PN" + INFO_SEPARATOR + TEMS;
+    public static final String ECIO = "ecio" + INFO_SEPARATOR + TEMS;
+    public static final String RSSI = "rssi" + INFO_SEPARATOR + TEMS;
+    public static final String MS = "ms" + INFO_SEPARATOR + TEMS;
+    public static final String MESSAGE_TYPE = "message_type" + INFO_SEPARATOR + TEMS;
+    public static final String ALL_RXLEV_FULL = "all_rxlev_full" + INFO_SEPARATOR + TEMS;
+    public static final String ALL_RXLEV_SUB = "all_rxlev_sub" + INFO_SEPARATOR + TEMS;
+    public static final String ALL_RXQUAL_FULL = "all_rxqual_full" + INFO_SEPARATOR + TEMS;
+    public static final String ALL_RXQUAL_SUB = "all_rxqual_sub" + INFO_SEPARATOR + TEMS;
+    public static final String ALL_SQI = "all_sqi" + INFO_SEPARATOR + TEMS;
+    public static final String ALL_SQI_MOS = "all_sqi_mos" + INFO_SEPARATOR + TEMS;
+    public static final String ALL_PILOT_SET_EC_IO = "all_pilot_set_ec_io_";
+    public static final String ALL_PILOT_SET_CHANNEL = "all_pilot_set_channel_";
+    public static final String ALL_PILOT_SET_PN = "all_pilot_set_pn_";
+
     /*
      * neighbours
      */
@@ -59,6 +80,7 @@ public class DataLoadPreferenceManager {
     public final static String SERVING_SECTOR_CI = "serv_sector_ci" + INFO_SEPARATOR;
     public final static String SERVING_SECTOR_LAC = "serv_sector_lac" + INFO_SEPARATOR;
     public final static String SERVING_SECTOR_NAME = "serv_sector_name" + INFO_SEPARATOR;
+
     /*
      * synonyms map
      */
@@ -70,15 +92,12 @@ public class DataLoadPreferenceManager {
 
     public static Map<String, PossibleTypes> predifinedPropertyType = new HashMap<String, PossibleTypes>();
 
-
     public static void intializeDefault() {
 
         if (preferenceInitializer == null) {
             preferenceInitializer = new DataLoadPreferenceInitializer();
             predifinedPropertyType.put("lat", PossibleTypes.DOUBLE);
             predifinedPropertyType.put("lon", PossibleTypes.DOUBLE);
-            predifinedPropertyType.put("beam", PossibleTypes.DOUBLE);
-            predifinedPropertyType.put("azimuth", PossibleTypes.DOUBLE);
         }
         preferenceInitializer.initializeDefaultPreferences();
     }
@@ -174,9 +193,22 @@ public class DataLoadPreferenceManager {
             driveMap.put(RSSI, getPossibleHeaders(DataLoadPreferences.DR_RSSI));
             driveMap.put(SC, getPossibleHeaders(DataLoadPreferences.DR_SC));
             driveMap.put(TCH, getPossibleHeaders(DataLoadPreferences.DR_TCH));
-            driveMap.put(INeoConstants.PROPERTY_SECTOR_CI + INFO_SEPARATOR, getPossibleHeaders(DataLoadPreferences.DR_CI));
-            driveMap.put(INeoConstants.PROPERTY_LAT_NAME + INFO_SEPARATOR, getPossibleHeaders(DataLoadPreferences.DR_LATITUDE));
-            driveMap.put(INeoConstants.PROPERTY_LON_NAME + INFO_SEPARATOR, getPossibleHeaders(DataLoadPreferences.DR_LONGITUDE));
+            driveMap.put(NewNetworkService.CELL_INDEX + INFO_SEPARATOR, getPossibleHeaders(DataLoadPreferences.DR_CI));
+            driveMap.put(LATITUDE, getPossibleHeaders(DataLoadPreferences.DR_LATITUDE));
+            driveMap.put(LONGITUDE, getPossibleHeaders(DataLoadPreferences.DR_LONGITUDE));
+            driveMap.put(SECTOR_ID, new String[] {".*Cell Id.*", ".*Server.*Report.*CI.*"});
+            driveMap.put(ALL_RXLEV_FULL, new String[] {"All-RxLev Full", "all_rxlev_full"});
+            driveMap.put(ALL_RXLEV_SUB, new String[] {"All-RxLev Sub", "all_rxlev_sub"});
+            driveMap.put(ALL_RXQUAL_FULL, new String[] {"All-RxQual Full", "all_rxqual_full"});
+            driveMap.put(ALL_RXQUAL_SUB, new String[] {"All-RxQual Sub", "all_rxqual_sub"});
+            driveMap.put(ALL_SQI, new String[] {"All-SQI", "all_sqi"});
+            driveMap.put(ALL_SQI_MOS, new String[] {"All-SQI MOS", "all_sqi_mos"});
+            driveMap.put(TIME, new String[] {"time", "Timestamp", "timestamp"});
+            for (int i = 0; i <= 12; i++) {
+                driveMap.put(ALL_PILOT_SET_EC_IO + i + INFO_SEPARATOR + TEMS, new String[] {"all_pilot_set_ec_io_" + i});
+                driveMap.put(ALL_PILOT_SET_CHANNEL + i + INFO_SEPARATOR + TEMS, new String[] {"all_pilot_set_channel_" + i});
+                driveMap.put(ALL_PILOT_SET_PN + i + INFO_SEPARATOR + TEMS, new String[] {"all_pilot_set_pn_" + i});
+            }
         }
         return driveMap;
     }
@@ -198,8 +230,8 @@ public class DataLoadPreferenceManager {
             networkMap.put(SECTOR, getPossibleHeaders(DataLoadPreferences.NH_SECTOR));
             networkMap.put(AZIMUTH, getPossibleHeaders(DataLoadPreferences.NH_AZIMUTH));
             networkMap.put(BEAMWITH, getPossibleHeaders(DataLoadPreferences.NH_BEAMWIDTH));
-            networkMap.put(INeoConstants.PROPERTY_SECTOR_CI + INFO_SEPARATOR, getPossibleHeaders(DataLoadPreferences.NH_SECTOR_CI));
-            networkMap.put(INeoConstants.PROPERTY_SECTOR_LAC + INFO_SEPARATOR,
+            networkMap.put(NewNetworkService.CELL_INDEX + INFO_SEPARATOR, getPossibleHeaders(DataLoadPreferences.NH_SECTOR_CI));
+            networkMap.put(NewNetworkService.LOCATION_AREA_CODE + INFO_SEPARATOR,
                     getPossibleHeaders(DataLoadPreferences.NH_SECTOR_LAC));
             networkMap.put(INeoConstants.PROPERTY_LAT_NAME + INFO_SEPARATOR, getPossibleHeaders(DataLoadPreferences.NH_LATITUDE));
             networkMap.put(INeoConstants.PROPERTY_LON_NAME + INFO_SEPARATOR, getPossibleHeaders(DataLoadPreferences.NH_LONGITUDE));
@@ -257,11 +289,12 @@ public class DataLoadPreferenceManager {
     private Map<String, String[]> getDriveSubtype(IDriveType subtype) {
         for (String key : driveMap.keySet()) {
             String[] keys = key.split(INFO_SEPARATOR);
-            if (keys.length > 1) {
-                if (keys[1].equals(((DriveTypes)subtype).name())) {
+            for (String iteam : keys) {
+                if (iteam.equals(((DriveTypes)subtype).name())) {
                     subTypeSynonyms.put(key, driveMap.get(key));
                 }
             }
+
         }
         return subTypeSynonyms;
     }

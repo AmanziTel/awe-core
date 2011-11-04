@@ -11,21 +11,21 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.services.filters;
+package org.amanzi.neo.model.distribution.xml;
 
-import org.apache.commons.lang.StringUtils;
-
-public enum ExpressionType {
-    OR, AND;
+/**
+ * <p>
+ * Exception thrown when unmarshalling was failed
+ * </p>
+ * @author kostyukovich_n
+ * @since 1.0.0
+ */
+public class DistributionXmlParsingException extends Exception {
     
-    public static ExpressionType getByName(String name) {
-        if (StringUtils.isEmpty(name))
-            return null;
-        for (ExpressionType expType : ExpressionType.values()) {
-            if (expType.name().toLowerCase().equals(name.toLowerCase())) {
-                return expType;
-            }
-        }
-        return null;
+    /** long serialVersionUID field */
+    private static final long serialVersionUID = 1L;
+    
+    public DistributionXmlParsingException(String message) {
+        super(message);
     }
 }

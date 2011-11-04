@@ -151,7 +151,7 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
     }
 
     protected void addedDatasetSynonyms(IDataModel model, INodeType nodeType, String propertyName, String synonym) {
-        if (model.getName() != null) {
+        if (model.getName() != null && synonym != null) {
             synonymsMap.get(model).addSynonym(nodeType, propertyName, synonym);
         }
     }
