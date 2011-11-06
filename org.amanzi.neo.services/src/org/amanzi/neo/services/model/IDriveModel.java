@@ -22,7 +22,7 @@ import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.model.impl.DriveModel;
-import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.RelationshipType;
 
 /**
  * <p>
@@ -142,7 +142,7 @@ public interface IDriveModel extends ICorrelatableModel, IDataModel, IRenderable
      * @param source list of <code>DataElement</code>s, containing <code>Node</code> objects.
      * @throws DatabaseException if problems occur in database
      */
-    public void linkNode(IDataElement parent, Iterable<IDataElement> source) throws DatabaseException;
+    public void linkNode(IDataElement parent, Iterable<IDataElement> source, RelationshipType rel) throws DatabaseException;
 
     /**
      * Finds a location node.

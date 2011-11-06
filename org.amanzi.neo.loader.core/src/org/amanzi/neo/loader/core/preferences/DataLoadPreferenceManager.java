@@ -18,11 +18,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
-import org.amanzi.neo.loader.core.preferences.PreferenceStore;
 import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.NewDatasetService.DriveTypes;
+import org.amanzi.neo.services.NewNetworkService;
 import org.amanzi.neo.services.enums.IDriveType;
 
 /**
@@ -30,7 +30,7 @@ import org.amanzi.neo.services.enums.IDriveType;
  */
 public class DataLoadPreferenceManager {
     private static DataLoadPreferenceInitializer preferenceInitializer;
-    public final static String INFO_SEPARATOR = "\\.";
+    public final static String INFO_SEPARATOR = "//.";
     /*
      * network constants
      */
@@ -47,11 +47,11 @@ public class DataLoadPreferenceManager {
     public static final String TEMS = "TEMS";
     public static final String ROMES = "ROMES";
 
-    public static final String EVENT = "event" + INFO_SEPARATOR;
-    public static final String LATITUDE = "latitude" + INFO_SEPARATOR;
-    public static final String LONGITUDE = "longitude" + INFO_SEPARATOR;
-    public static final String SECTOR_ID = "sector_id" + INFO_SEPARATOR;
-    private static final String TIME = "TIME" + INFO_SEPARATOR;
+    public static final String EVENT = "event" + INFO_SEPARATOR + TEMS + INFO_SEPARATOR + ROMES;
+    public static final String LATITUDE = "lat" + INFO_SEPARATOR + TEMS + INFO_SEPARATOR + ROMES;
+    public static final String LONGITUDE = "lon" + INFO_SEPARATOR + TEMS + INFO_SEPARATOR + ROMES;
+    public static final String SECTOR_ID = "sector_id" + INFO_SEPARATOR + TEMS + INFO_SEPARATOR + ROMES;
+    private static final String TIME = "time" + INFO_SEPARATOR + TEMS + INFO_SEPARATOR + ROMES;
 
     public final static String BCCH = "bcch" + INFO_SEPARATOR + TEMS;
     public static final String TCH = "tch" + INFO_SEPARATOR + TEMS;
@@ -98,8 +98,6 @@ public class DataLoadPreferenceManager {
             preferenceInitializer = new DataLoadPreferenceInitializer();
             predifinedPropertyType.put("lat", PossibleTypes.DOUBLE);
             predifinedPropertyType.put("lon", PossibleTypes.DOUBLE);
-            predifinedPropertyType.put("beam", PossibleTypes.DOUBLE);
-            predifinedPropertyType.put("azimuth", PossibleTypes.DOUBLE);
         }
         preferenceInitializer.initializeDefaultPreferences();
     }
@@ -195,7 +193,7 @@ public class DataLoadPreferenceManager {
             driveMap.put(RSSI, getPossibleHeaders(DataLoadPreferences.DR_RSSI));
             driveMap.put(SC, getPossibleHeaders(DataLoadPreferences.DR_SC));
             driveMap.put(TCH, getPossibleHeaders(DataLoadPreferences.DR_TCH));
-            driveMap.put(INeoConstants.PROPERTY_SECTOR_CI + INFO_SEPARATOR, getPossibleHeaders(DataLoadPreferences.DR_CI));
+            driveMap.put(NewNetworkService.CELL_INDEX + INFO_SEPARATOR, getPossibleHeaders(DataLoadPreferences.DR_CI));
             driveMap.put(LATITUDE, getPossibleHeaders(DataLoadPreferences.DR_LATITUDE));
             driveMap.put(LONGITUDE, getPossibleHeaders(DataLoadPreferences.DR_LONGITUDE));
             driveMap.put(SECTOR_ID, new String[] {".*Cell Id.*", ".*Server.*Report.*CI.*"});
@@ -232,8 +230,8 @@ public class DataLoadPreferenceManager {
             networkMap.put(SECTOR, getPossibleHeaders(DataLoadPreferences.NH_SECTOR));
             networkMap.put(AZIMUTH, getPossibleHeaders(DataLoadPreferences.NH_AZIMUTH));
             networkMap.put(BEAMWITH, getPossibleHeaders(DataLoadPreferences.NH_BEAMWIDTH));
-            networkMap.put(INeoConstants.PROPERTY_SECTOR_CI + INFO_SEPARATOR, getPossibleHeaders(DataLoadPreferences.NH_SECTOR_CI));
-            networkMap.put(INeoConstants.PROPERTY_SECTOR_LAC + INFO_SEPARATOR,
+            networkMap.put(NewNetworkService.CELL_INDEX + INFO_SEPARATOR, getPossibleHeaders(DataLoadPreferences.NH_SECTOR_CI));
+            networkMap.put(NewNetworkService.LOCATION_AREA_CODE + INFO_SEPARATOR,
                     getPossibleHeaders(DataLoadPreferences.NH_SECTOR_LAC));
             networkMap.put(INeoConstants.PROPERTY_LAT_NAME + INFO_SEPARATOR, getPossibleHeaders(DataLoadPreferences.NH_LATITUDE));
             networkMap.put(INeoConstants.PROPERTY_LON_NAME + INFO_SEPARATOR, getPossibleHeaders(DataLoadPreferences.NH_LONGITUDE));
@@ -291,11 +289,12 @@ public class DataLoadPreferenceManager {
     private Map<String, String[]> getDriveSubtype(IDriveType subtype) {
         for (String key : driveMap.keySet()) {
             String[] keys = key.split(INFO_SEPARATOR);
-            if (keys.length > 1) {
-                if (keys[1].equals(((DriveTypes)subtype).name())) {
+            for (String iteam : keys) {
+                if (iteam.equals(((DriveTypes)subtype).name())) {
                     subTypeSynonyms.put(key, driveMap.get(key));
                 }
             }
+
         }
         return subTypeSynonyms;
     }

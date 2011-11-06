@@ -78,7 +78,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
      * @since 1.0.0
      */
     public enum DriveNodeTypes implements INodeType {
-        FILE, M, MP, M_AGGR, MM;
+        FILE, M, MP, M_AGGR, MM, MS;
 
         static {
             NodeTypeManager.registerNodeType(DriveNodeTypes.class);
@@ -170,7 +170,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
      * Initializes location index for sector nodes.
      */
     private void initializeMultiPropertyIndexing() throws AWEException {
-        LOGGER.info("Initializing multi property index...");
+        LOGGER.info("Initializing multi proerty index...");
         addLocationIndex(DriveNodeTypes.MP);
         addTimestampIndex(primaryType);
     }
@@ -350,7 +350,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     }
 
     @Override
-    public void linkNode(IDataElement parent, Iterable<IDataElement> source) throws DatabaseException {
+    public void linkNode(IDataElement parent, Iterable<IDataElement> source, RelationshipType rel) throws DatabaseException {
         // validate
         if (parent == null) {
             throw new IllegalArgumentException("Parent is null.");
@@ -372,7 +372,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
             if (node == null) {
                 throw new IllegalArgumentException("Source data element must contain nodes.");
             }
-            dsServ.createRelationship(parentNode, node, DriveRelationshipTypes.CALL_M);
+            dsServ.createRelationship(parentNode, node, rel);
         }
 
     }

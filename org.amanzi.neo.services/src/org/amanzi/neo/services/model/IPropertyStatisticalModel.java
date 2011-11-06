@@ -34,7 +34,6 @@ public interface IPropertyStatisticalModel extends IDataModel {
     public int getNodeCount(INodeType nodeType);
 
     /**
-<<<<<<< HEAD
      * Method return count of properties in node with certain node type and certain property name
      * 
      * @param nodeType Type of node
@@ -44,8 +43,6 @@ public interface IPropertyStatisticalModel extends IDataModel {
     public int getPropertyCount(INodeType nodeType, String propertyName);
 
     /**
-=======
->>>>>>> ada9f6694c73519bfd0dcee0df665ea09608baf7
      * Method find properties with certain node type
      * 
      * @param nodeType Type of node

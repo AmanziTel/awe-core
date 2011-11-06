@@ -744,4 +744,32 @@ public class NewNetworkTreeView extends ViewPart {
         viewer.reveal(dataElement);
         viewer.setSelection(new StructuredSelection(new Object[] {dataElement}));
     }
+    
+    
+    /**
+     * Returns (and creates is it need) property sheet page for this View
+     * 
+     * @return PropertySheetPage
+     */
+
+    private IPropertySheetPage getPropertySheetPage() {
+        if (propertySheetPage == null) {
+            propertySheetPage = new NewNetworkPropertySheetPage();
+        }
+
+        return propertySheetPage;
+    }
+    
+    /**
+     * This is how the framework determines which interfaces we implement.
+     */
+    @SuppressWarnings("rawtypes")
+	@Override
+    public Object getAdapter(final Class key) {
+        if (key.equals(IPropertySheetPage.class)) {
+            return getPropertySheetPage();
+        } else {
+            return super.getAdapter(key);
+        }
+    }
 }
