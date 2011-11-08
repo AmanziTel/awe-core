@@ -114,6 +114,28 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     }
 
     /**
+     * Use this constructor to create a drive model, based on a node, that already exists in the
+     * database.
+     * 
+     * @param driveRoot
+     */
+    public DriveModel(Node driveRoot) throws AWEException {
+        super(driveRoot, DatasetTypes.DRIVE);
+        // validate
+        if (driveRoot == null) {
+            throw new IllegalArgumentException("Network root is null.");
+        }
+        if (!DatasetTypes.NETWORK.getId().equals(driveRoot.getProperty(NewAbstractService.TYPE, null))) {
+            throw new IllegalArgumentException("Root node must be of type NETWORK.");
+        }
+
+        this.rootNode = driveRoot;
+        this.name = rootNode.getProperty(NewAbstractService.NAME, StringUtils.EMPTY).toString();
+        initializeStatistics();
+        initializeMultiPropertyIndexing();
+    }
+
+    /**
      * Constructor. Pass only rootNode, if you have one, <i>OR</i> all the other parameters.
      * 
      * @param parent a project node

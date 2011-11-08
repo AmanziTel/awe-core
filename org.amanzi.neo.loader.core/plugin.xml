@@ -24,12 +24,12 @@
             id="org.amanzi.neo.loader.core.newsaver.SectorSelectionSaver">
       </newsaver>
        <newsaver
-            class="org.amanzi.neo.loader.core.newsaver.CNASaver"
-            id="org.amanzi.neo.loader.core.newsaver.CNASaver">
-      </newsaver>
-       <newsaver
             class="org.amanzi.neo.loader.core.newsaver.NewNeighboursSaver"
             id="org.amanzi.neo.loader.core.newsaver.NewNeighboursSaver">
+      </newsaver>
+        <newsaver
+            class="org.amanzi.neo.loader.core.newsaver.NewTemsSaver"
+            id="org.amanzi.neo.loader.core.newsaver.NewTemsSaver">
       </newsaver>
    </extension>
    <extension

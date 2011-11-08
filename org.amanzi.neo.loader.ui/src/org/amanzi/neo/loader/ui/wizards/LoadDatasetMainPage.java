@@ -23,7 +23,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.amanzi.neo.db.manager.DatabaseManager;
+import org.amanzi.neo.db.manager.NeoServiceProvider;
 import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.IValidateResult;
@@ -32,8 +32,12 @@ import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.NodeTypes;
-import org.amanzi.neo.services.utils.Utils;
+import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.model.IDriveModel;
+import org.amanzi.neo.services.model.IProjectModel;
+import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -57,7 +61,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
@@ -69,6 +72,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @since 1.0.0
  */
 public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
+    private static Logger LOGGER = Logger.getLogger(LoadDatasetMainPage.class);
     /** String ASC_PAT_FILE field */
     private static final String ASC_PAT_FILE = ".*_(\\d{6})_.*";
     private static final String FMT_PAT_FILE = ".*(\\d{4}-\\d{2}-\\d{2}).*";
@@ -156,7 +160,7 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
      */
     private WizardPage wizardPage = null;
 
-    private final LinkedHashMap<String, Node> dataset = new LinkedHashMap<String, Node>();
+    private final LinkedHashMap<String, IDriveModel> dataset = new LinkedHashMap<String, IDriveModel>();
 
     private Label ldataset;
     private boolean addToSelect = false;
@@ -231,37 +235,37 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
         FormData dCombo = new FormData();
         dCombo.left = new FormAttachment(ldataset, 5);
         dCombo.top = new FormAttachment(0, 2);
-        dCombo.right= new FormAttachment(50, -2);
+        dCombo.right = new FormAttachment(50, -2);
         cLoaders.setLayoutData(dCombo);
-        
-         Label labl=new Label(panel, SWT.NONE);
-         labl.setText("Preffered date");
-         dLabel = new FormData();
-         dLabel.left = new FormAttachment(50, 5);
-         dLabel.top = new FormAttachment(cDataset, 5, SWT.CENTER);
-         labl.setLayoutData(dLabel);
-        
-         date= new DateTime(panel, SWT.FILL | SWT.BORDER | SWT.DATE | SWT.MEDIUM);
-         dCombo = new FormData();
-         dCombo.left = new FormAttachment(labl, 5);
-         dCombo.top = new FormAttachment(0, 2);
-         // dCombo.right = new FormAttachment(100, -2);
-         date.setLayoutData(dCombo);
-         final Button batchMode = new Button(parent,SWT.CHECK);
-         batchMode.addSelectionListener(new SelectionListener() {
-             
-             @Override
-             public void widgetSelected(SelectionEvent e) {
-                 setAccessType(batchMode.getSelection());
-             }
-             
-             @Override
-             public void widgetDefaultSelected(SelectionEvent e) {
-                 widgetSelected(e);
-             }
-         });
-         batchMode.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
-         batchMode.setText("batch mode");
+
+        Label labl = new Label(panel, SWT.NONE);
+        labl.setText("Preffered date");
+        dLabel = new FormData();
+        dLabel.left = new FormAttachment(50, 5);
+        dLabel.top = new FormAttachment(cDataset, 5, SWT.CENTER);
+        labl.setLayoutData(dLabel);
+
+        date = new DateTime(panel, SWT.FILL | SWT.BORDER | SWT.DATE | SWT.MEDIUM);
+        dCombo = new FormData();
+        dCombo.left = new FormAttachment(labl, 5);
+        dCombo.top = new FormAttachment(0, 2);
+        // dCombo.right = new FormAttachment(100, -2);
+        date.setLayoutData(dCombo);
+        final Button batchMode = new Button(parent, SWT.CHECK);
+        batchMode.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                setAccessType(batchMode.getSelection());
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
+        batchMode.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
+        batchMode.setText("batch mode");
     }
 
     /**
@@ -322,7 +326,8 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
         addFilesToLoaded = createChooseButton(actionPanel, NeoLoaderPluginMessages.DriveDialog_AddButtonText, SWT.CENTER);
         addAllFilesToLoaded = createChooseButton(actionPanel, NeoLoaderPluginMessages.DriveDialog_AddAllButtonText, SWT.CENTER);
         removeFilesFromLoaded = createChooseButton(actionPanel, NeoLoaderPluginMessages.DriveDialog_RemoveButtonText, SWT.CENTER);
-        removeAllFilesFromLoaded = createChooseButton(actionPanel, NeoLoaderPluginMessages.DriveDialog_RemoveAllButtonText, SWT.CENTER);
+        removeAllFilesFromLoaded = createChooseButton(actionPanel, NeoLoaderPluginMessages.DriveDialog_RemoveAllButtonText,
+                SWT.CENTER);
     }
 
     /**
@@ -388,7 +393,6 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
             }
         });
 
-
         cDataset.addModifyListener(new ModifyListener() {
 
             @Override
@@ -424,22 +428,25 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
      * @return the root items
      */
     private String[] getRootItems() {
-        final String projectName = LoaderUiUtils.getAweProjectName();
-        TraversalDescription td = Utils.getTDRootNodesOfProject(projectName, null);
-        Node refNode = DatabaseManager.getInstance().getCurrentDatabaseService().getReferenceNode();
-        restrictedNames.clear();
-        dataset.clear();
-        for (Node node : td.traverse(refNode).nodes()) {
-            String id = node.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
-            if (NodeTypes.DATASET.checkNode(node)) { //$NON-NLS-1$
-                dataset.put(id, node);
-            } else {
-                restrictedNames.add(id);
+        try {
+            IProjectModel projectModel = ProjectModel.getCurrentProjectModel();
+
+            for (IDriveModel model : projectModel.findAllDriveModels()) {
+                String id = model.getRootNode().getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+                if (NodeTypes.DRIVE.checkNode(model.getRootNode())) { //$NON-NLS-1$
+                    dataset.put(id, model);
+                } else {
+                    restrictedNames.add(id);
+                }
             }
+        } catch (AWEException e) {
+            LOGGER.error("Error while getRootItems work", e);
+            throw (RuntimeException)new RuntimeException().initCause(e);
         }
 
-        String[] result = dataset.keySet().toArray(new String[0]);
+        String[] result = dataset.keySet().toArray(new String[] {});
         Arrays.sort(result);
+        NeoServiceProvider.getProvider().commit();
         return result;
     }
 
@@ -475,9 +482,9 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
         }
         configurationData.setProjectName(LoaderUiUtils.getAweProjectName());
         configurationData.setCrs(getSelectedCRS());
-        Calendar cl=(Calendar)configurationData.getAdditionalProperties().get("workdate");
-        if (cl==null){
-            cl=Calendar.getInstance();
+        Calendar cl = (Calendar)configurationData.getAdditionalProperties().get("workdate");
+        if (cl == null) {
+            cl = Calendar.getInstance();
             cl.set(Calendar.HOUR, 0);
             cl.set(Calendar.MINUTE, 0);
             cl.set(Calendar.SECOND, 0);
