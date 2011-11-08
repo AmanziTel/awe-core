@@ -130,7 +130,7 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
      */
     public ProjectModel(String name) {
         super(ProjectNodeType.PROJECT);
-        
+
         if ((name == null) || (name.equals(StringUtils.EMPTY))) {
             throw new IllegalArgumentException("Name is null or empty.");
         }
@@ -149,7 +149,7 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
      */
     public ProjectModel(Node projectNode) {
         super(ProjectNodeType.PROJECT);
-        
+
         if (projectNode == null) {
             throw new IllegalArgumentException("Project node is null");
         }
@@ -378,6 +378,19 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
         }
 
         return networkModels;
+    }
+
+    @Override
+    public Iterable<IDriveModel> findAllDriveModels() throws AWEException {
+        List<IDriveModel> datasets = new ArrayList<IDriveModel>();
+
+        List<Node> allNetworkNodes = null;
+        allNetworkNodes = dsServ.findAllDatasetsByType(getRootNode(), DatasetTypes.DRIVE);
+        for (Node networkRoot : allNetworkNodes) {
+            datasets.add(new DriveModel(networkRoot));
+        }
+
+        return datasets;
     }
 
     @Override

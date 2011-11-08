@@ -78,7 +78,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
      * @since 1.0.0
      */
     public enum DriveNodeTypes implements INodeType {
-        FILE, M, MP, M_AGGR, MM;
+        FILE, M, MP, M_AGGR, MM, MS;
 
         static {
             NodeTypeManager.registerNodeType(DriveNodeTypes.class);
@@ -111,6 +111,28 @@ public class DriveModel extends RenderableModel implements IDriveModel {
      */
     public enum DriveRelationshipTypes implements RelationshipType {
         VIRTUAL_DATASET, LOCATION, CALL_M;
+    }
+
+    /**
+     * Use this constructor to create a drive model, based on a node, that already exists in the
+     * database.
+     * 
+     * @param driveRoot
+     */
+    public DriveModel(Node driveRoot) throws AWEException {
+        super(driveRoot, DatasetTypes.DRIVE);
+        // validate
+        if (driveRoot == null) {
+            throw new IllegalArgumentException("Network root is null.");
+        }
+        if (!DatasetTypes.DRIVE.getId().equals(driveRoot.getProperty(NewAbstractService.TYPE, null))) {
+            throw new IllegalArgumentException("Root node must be of type NETWORK.");
+        }
+
+        this.rootNode = driveRoot;
+        this.name = rootNode.getProperty(NewAbstractService.NAME, StringUtils.EMPTY).toString();
+        initializeStatistics();
+        initializeMultiPropertyIndexing();
     }
 
     /**
@@ -170,7 +192,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
      * Initializes location index for sector nodes.
      */
     private void initializeMultiPropertyIndexing() throws AWEException {
-        LOGGER.info("Initializing multi property index...");
+        LOGGER.info("Initializing multi proerty index...");
         addLocationIndex(DriveNodeTypes.MP);
         addTimestampIndex(primaryType);
     }
@@ -297,8 +319,8 @@ public class DriveModel extends RenderableModel implements IDriveModel {
 
         Node m = dsServ.createNode(nodeType);
         dsServ.addChild(fileNode, m, null);
-        Long lat = (Long)params.get(LATITUDE);
-        Long lon = (Long)params.get(LONGITUDE);
+        Double lat = (Double)params.get(LATITUDE);
+        Double lon = (Double)params.get(LONGITUDE);
         Long tst = (Long)params.get(TIMESTAMP);
 
         if ((lat != null) && (lat != 0) && (lon != null) && (lon != 0)) {
@@ -350,7 +372,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     }
 
     @Override
-    public void linkNode(IDataElement parent, Iterable<IDataElement> source) throws DatabaseException {
+    public void linkNode(IDataElement parent, Iterable<IDataElement> source, RelationshipType rel) throws DatabaseException {
         // validate
         if (parent == null) {
             throw new IllegalArgumentException("Parent is null.");
@@ -372,7 +394,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
             if (node == null) {
                 throw new IllegalArgumentException("Source data element must contain nodes.");
             }
-            dsServ.createRelationship(parentNode, node, DriveRelationshipTypes.CALL_M);
+            dsServ.createRelationship(parentNode, node, rel);
         }
 
     }
@@ -386,7 +408,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
      * @param lon
      * @throws DatabaseException if errors occur in the database
      */
-    protected void createLocationNode(Node parent, long lat, long lon) throws DatabaseException {
+    protected void createLocationNode(Node parent, double lat, double lon) throws DatabaseException {
         LOGGER.debug("start createLocationNode(Node measurement, long lat, long lon)");
         // validate params
         if (parent == null) {

@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.loader.core.newparser;
 
+import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -28,6 +29,11 @@ public class CSVContainer implements IData {
      * contain rows values;
      */
     private List<String> row = new LinkedList<String>();
+    /**
+     * name of parsed file
+     */
+    private File file;
+
     /**
      * contain header values;
      */
@@ -48,7 +54,7 @@ public class CSVContainer implements IData {
      * @param row The row to set.
      */
     public void setValues(List<String> row) {
-        
+
         this.row = row;
     }
 
@@ -65,4 +71,19 @@ public class CSVContainer implements IData {
     public void setHeaders(List<String> header) {
         this.headers = header;
     }
+
+    /**
+     * @return Returns the fileName.
+     */
+    public File getFile() {
+        return file;
+    }
+
+    /**
+     * @param fileName The fileName to set.
+     */
+    public void setFile(File fileName) {
+        this.file = fileName;
+    }
+
 }
