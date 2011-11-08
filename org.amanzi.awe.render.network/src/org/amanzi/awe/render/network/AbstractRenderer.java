@@ -142,7 +142,7 @@ public class AbstractRenderer extends RendererImpl {
             Envelope data_bounds = model.getBounds();
 
             // TODO: refactor
-            int count = ((INetworkModel)model).getAllProperties(NetworkElementNodeType.SITE, NewAbstractService.NAME).size();
+            int count = ((INetworkModel)model).getPropertyCount(NetworkElementNodeType.SITE, NewAbstractService.NAME);
             setScaling(bounds_transformed, data_bounds, monitor, count);
 
             destination.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
