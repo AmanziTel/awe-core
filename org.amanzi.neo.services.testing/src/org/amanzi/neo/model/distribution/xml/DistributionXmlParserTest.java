@@ -42,6 +42,7 @@ import org.junit.Test;
 public class DistributionXmlParserTest extends AbstractNeoServiceTest {
 
     private static final String DEF_DATA_DATA_TYPE = "NETWORK";
+    private static final String DEF_DATA_NAME = "test_distr";
     private static final String DEF_DATA_NODE_TYPE = "SECTOR";
     private static final String DEF_DATA_PROP_NAME = "azimut";
     private static final String DEF_BAR_NAME = "BAR NAME";
@@ -75,6 +76,7 @@ public class DistributionXmlParserTest extends AbstractNeoServiceTest {
         Distribution distr = new Distribution();
         Data data = new Data();
         data.setDataType(DEF_DATA_DATA_TYPE);
+        data.setName(DEF_DATA_NAME);
         data.setNodeType(DEF_DATA_NODE_TYPE);
         data.setPropertyName(DEF_DATA_PROP_NAME);
         distr.setData(data);

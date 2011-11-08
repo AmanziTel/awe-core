@@ -43,6 +43,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -56,6 +58,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Spinner;
@@ -129,6 +132,10 @@ public class DistributionAnalyzerView extends ViewPart {
     private static final Color COLOR_LESS = Color.BLUE;
 
     private static final Color COLOR_MORE = Color.GREEN;
+    
+    private static final String LOAD_XML_LABEL = "Load Distribution Xml";
+    
+    private static final String SELECT_XML_DIALOG_LABEL = "Select Distribution XML";
     
     @SuppressWarnings("rawtypes")
     private class DistributionDataset extends AbstractDataset implements CategoryDataset {
@@ -452,6 +459,16 @@ public class DistributionAnalyzerView extends ViewPart {
      * Button to choose Third Color option
      */
     private Button thirdColorButton;
+    
+    /*
+     * Action to load distribution xml;
+     */
+    private Action actLoadXml;
+    
+    /*
+     * Dialog for selecting distribution xml
+     */
+    private FileDialog xmlFileDialog;
 
     /**
      * Custom constructor
@@ -474,6 +491,9 @@ public class DistributionAnalyzerView extends ViewPart {
         createDistributionSelectionCombos(parent);
         createDistributionChart(parent);
         createColoringPropertiesControl(parent);
+        
+        createXmlFileDialog();
+        initMenuManager();
 
         addListeners();
 
@@ -483,6 +503,30 @@ public class DistributionAnalyzerView extends ViewPart {
         } catch (AWEException e) {
             showErrorMessage(e.getMessage());
         }
+    }
+    
+    private void createXmlFileDialog() {
+        xmlFileDialog = new FileDialog(getViewSite().getShell());
+        xmlFileDialog.setText(SELECT_XML_DIALOG_LABEL);
+        xmlFileDialog.setFilterExtensions(new String[] { "*.xml" });
+        xmlFileDialog.setFilterNames(new String[] { "XML File (*.xml)" });
+    } 
+    
+    private void initMenuManager() {
+        IMenuManager mm = getViewSite().getActionBars().getMenuManager();
+        actLoadXml = new Action(LOAD_XML_LABEL){
+            @Override
+            public void run(){
+                String selected = xmlFileDialog.open();
+                try {
+                    DistributionManager.getManager().createDistributionFromFile(selected);
+                } catch (Exception e) {
+                    showErrorMessage(e.getMessage());
+                }
+            }
+        };
+
+        mm.add(actLoadXml);
     }
 
     /**

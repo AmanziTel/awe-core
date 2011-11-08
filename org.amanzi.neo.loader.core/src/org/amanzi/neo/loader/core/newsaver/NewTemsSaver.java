@@ -14,6 +14,10 @@
 package org.amanzi.neo.loader.core.newsaver;
 
 import java.io.File;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -35,50 +39,15 @@ import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveRelationshipTypes;
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 /**
  * @author Vladislav_Kondratenko
  */
 public class NewTemsSaver extends AbstractDriveSaver {
-    // constants
-    public static final String LATITUDE = "lat";
-    public static final String LONGITUDE = "lon";
-    public static final String SECTOR_ID = "sector_id";
-    private static final String TIME = "time";
-    private static final String TIMESTAMP = "timestamp";
-    public static final String EVENT = "event";
 
-    public final static String BCCH = "bcch";
-    public static final String TCH = "tch";
-    public static final String SC = "sc";
-    public static final String PN = "PN";
-    public static final String ECIO = "ecio";
-    public static final String RSSI = "rssi";
-    public static final String MS = "ms";
-    public static final String MESSAGE_TYPE = "message_type";
-    public static final String ALL_RXLEV_FULL = "all_rxlev_full";
-    public static final String ALL_RXLEV_SUB = "all_rxlev_sub";
-    public static final String ALL_RXQUAL_FULL = "all_rxqual_full";
-    public static final String ALL_RXQUAL_SUB = "all_rxqual_sub";
-    public static final String ALL_SQI = "all_sqi";
-    public static final String ALL_SQI_MOS = "all_sqi_mos";
-    public static final String ALL_PILOT_SET_COUNT = "all_pilot_set_count";
-    public static final String CHANNEL = "channel";
-    public static final String CODE = "code";
-    public static final String MW = "mw";
-    public static final String DBM = "dbm";
-    // 12 posible headers
-    public static final String ALL_PILOT_SET_EC_IO = "all_pilot_set_ec_io_";
-    public static final String ALL_PILOT_SET_CHANNEL = "all_pilot_set_channel_";
-    public static final String ALL_PILOT_SET_PN = "all_pilot_set_pn_";
-
-    // Saver constants
     private final int MAX_TX_BEFORE_COMMIT = 1000;
     private static Logger LOGGER = Logger.getLogger(NewTemsSaver.class);
-    //
-    private Map<String, Integer> columnSynonyms;
 
     private IDriveModel model;
     private IDriveModel virtualModel;
@@ -90,19 +59,6 @@ public class NewTemsSaver extends AbstractDriveSaver {
     private String previous_time = null;
     private int previous_pn_code = -1;
     private IDataElement location;
-    private Map<String, Object> params = new HashMap<String, Object>();
-    /**
-     * contains appropriation of header synonyms and name inDB
-     * <p>
-     * <b>key</b>- name in db ,<br>
-     * <b>value</b>-file header key
-     * </p>
-     */
-    private Map<String, String> fileSynonyms = new HashMap<String, String>();
-    /**
-     * name inDB properties values
-     */
-    private List<String> headers;
 
     /**
      * @param value
@@ -138,6 +94,7 @@ public class NewTemsSaver extends AbstractDriveSaver {
         params.put(ECIO, getSynonymValuewithAutoparse(ECIO, value));
         params.put(RSSI, getSynonymValuewithAutoparse(RSSI, value));
         params.put(NewNetworkService.CELL_INDEX, getSynonymValuewithAutoparse(NewNetworkService.CELL_INDEX, value));
+        params.put(SECTOR_ID, getSynonymValuewithAutoparse(SECTOR_ID, value));
         params.put(MS, ms);
         removeEmpty(params);
         addedSynonyms();
@@ -149,25 +106,43 @@ public class NewTemsSaver extends AbstractDriveSaver {
     }
 
     /**
-     * @param params2
+     * Define timestamp.
+     * 
+     * @param workDate the work date
+     * @param time the time
+     * @return the long
      */
-    private void removeEmpty(Map<String, Object> params2) {
-        List<String> keyToDelete = new LinkedList<String>();
-        for (String key : params.keySet()) {
-            if (!isCorrect(params.get(key))) {
-                keyToDelete.add(key);
+    @SuppressWarnings("deprecation")
+    protected Long defineTimestamp(Calendar workDate, String time) {
+        if (time == null) {
+            return null;
+        }
+        SimpleDateFormat dfn = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss.SSS");
+        try {
+            Date datetime = dfn.parse(time);
+            return datetime.getTime();
+        } catch (ParseException e1) {
+            dfn = new SimpleDateFormat("HH:mm:ss.S");
+            try {
+                Date nodeDate = dfn.parse(time);
+                final int nodeHours = nodeDate.getHours();
+                if (hours != null && hours > nodeHours) {
+                    // next day
+                    workDate.add(Calendar.DAY_OF_MONTH, 1);
+                    this.workDate.add(Calendar.DAY_OF_MONTH, 1);
+                }
+                hours = nodeHours;
+                workDate.set(Calendar.HOUR_OF_DAY, nodeHours);
+                workDate.set(Calendar.MINUTE, nodeDate.getMinutes());
+                workDate.set(Calendar.SECOND, nodeDate.getSeconds());
+                return workDate.getTimeInMillis();
+
+            } catch (Exception e) {
+                LOGGER.error(String.format("Can't parse time: %s", time));
+
             }
         }
-        for (String key : keyToDelete) {
-            params.remove(key);
-        }
-    }
-
-    private boolean isCorrect(Object value) {
-        if (value == null || value.toString().isEmpty()) {
-            return false;
-        }
-        return true;
+        return 0l;
     }
 
     /**
@@ -267,32 +242,14 @@ public class NewTemsSaver extends AbstractDriveSaver {
         addedDatasetSynonyms(model, DriveNodeTypes.M, NewAbstractService.NAME, getHeaderBySynonym(TIME));
     }
 
-    private String getHeaderBySynonym(String synonymName) {
-        return headers.get(getHeaderId(fileSynonyms.get(synonymName)));
-    }
-
     private IDataElement addMeasurement(IDriveModel model, Map<String, Object> properties) throws AWEException {
         return model.addMeasurement(fileName, properties);
-    }
-
-    private Object getSynonymValuewithAutoparse(String synonym, List<String> value) {
-        return isCorrect(synonym, value) ? autoParse(synonym, getValueFromRow(synonym, value)) : null;
-    }
-
-    private String getValueFromRow(String synonym, List<String> value) {
-        return isCorrect(synonym, value) ? value.get(columnSynonyms.get(fileSynonyms.get(synonym))) : null;
-    }
-
-    private boolean isCorrect(String synonymName, List<String> row) {
-        return fileSynonyms.get(synonymName) != null && row.get(columnSynonyms.get(fileSynonyms.get(synonymName))) != null
-                && StringUtils.isNotEmpty(row.get(columnSynonyms.get(fileSynonyms.get(synonymName))));
     }
 
     @Override
     public void init(ConfigurationDataImpl configuration, CSVContainer dataElement) {
         Map<String, Object> rootElement = new HashMap<String, Object>();
         preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.DRIVE);
-        columnSynonyms = new HashMap<String, Integer>();
         setDbInstance();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
         commitTx();
@@ -378,9 +335,5 @@ public class NewTemsSaver extends AbstractDriveSaver {
                 }
             }
         }
-    }
-
-    private int getHeaderId(String header) {
-        return headers.indexOf(header);
     }
 }
