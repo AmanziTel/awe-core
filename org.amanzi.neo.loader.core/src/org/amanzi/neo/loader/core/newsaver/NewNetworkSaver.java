@@ -96,7 +96,7 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
      * @throws AWEException
      */
     private void createCity(List<String> row) throws AWEException {
-        if (!isCorrect(row, CITY)) {
+        if (!isCorrect(row, fileSynonyms.get(CITY))) {
             createMSC(null, row);
             return;
         }
@@ -110,7 +110,7 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
      * MSC->BSC->SITE->SECTOR nodes structure
      */
     private void createMSC(IDataElement root, List<String> row) throws AWEException {
-        if (!isCorrect(row, MSC)) {
+        if (!isCorrect(row, fileSynonyms.get(MSC))) {
             if (root == null) {
                 createSite(rootDataElement, row);
             } else {
@@ -131,7 +131,7 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
      * @throws AWEException
      */
     private void createBSC(IDataElement root, List<String> row) throws AWEException {
-        if (!isCorrect(row, BSC)) {
+        if (!isCorrect(row, fileSynonyms.get(BSC))) {
             if (root == null) {
                 createSite(null, row);
             } else {
@@ -155,7 +155,7 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
      * @throws AWEException
      */
     private void createSite(IDataElement root, List<String> row) throws AWEException {
-        if (!isCorrect(row, LAT) || !isCorrect(row, LON)) {
+        if (!isCorrect(row, fileSynonyms.get(LAT)) || !isCorrect(row, fileSynonyms.get(LON))) {
             LOGGER.info("Missing site name on line:" + lineCounter);
             return;
         }
@@ -174,8 +174,8 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
             addedDatasetSynonyms(model, NetworkElementNodeType.SITE, LON, headers.get(columnSynonyms.get(fileSynonyms.get(LON))));
             addedDatasetSynonyms(model, NetworkElementNodeType.SITE, LAT, headers.get(columnSynonyms.get(fileSynonyms.get(LAT))));
         }
-        setSynonymValue(row, LON);
-        setSynonymValue(row, LAT);
+        nullSynonymValue(row, LON);
+        nullSynonymValue(row, LAT);
         createSector(findedElement, row);
     }
 
@@ -288,14 +288,27 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
     }
 
     /**
-     * Checks for null or for empty
+     * Checks string value for null or for empty
+     * 
+     * @param value
+     * @return true if value is null or is empty
+     */
+    private boolean isCorrect(String value) {
+        if (value == null || value.equals("")) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Checks property for null or for empty
      * 
      * @param row
      * @param propertyName
      * @return true if it is null or is empty
      */
     private boolean isCorrect(List<String> row, String propertyName) {
-        if (fileSynonyms.get(propertyName) == null || getSynonymValue(row, propertyName) == null
+        if (propertyName == null || getSynonymValue(row, propertyName) == null
                 || StringUtils.isEmpty(getSynonymValue(row, propertyName))) {
             return false;
         }
@@ -328,7 +341,7 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
             }
             addedDatasetSynonyms(model, nodeType, NewAbstractService.NAME, headers.get(getHeaderId(fileSynonyms.get(type))));
         }
-        setSynonymValue(row, type);
+        nullSynonymValue(row, type);
         return findedElement;
     }
 
@@ -354,12 +367,12 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
      */
     private boolean collectSite(Map<String, Object> siteMap, List<String> row) {
         siteMap.put(NewAbstractService.TYPE, NetworkElementNodeType.SITE.getId());
-        siteMap.put(LON, autoParse(LON, getSynonymValue(row, LON)));
-        siteMap.put(LAT, autoParse(LAT, getSynonymValue(row, LAT)));
+        siteMap.put(LON, autoParse(LON, getSynonymValue(row, fileSynonyms.get(LON))));
+        siteMap.put(LAT, autoParse(LAT, getSynonymValue(row, fileSynonyms.get(LAT))));
         String siteName;
-        if (!isCorrect(row, SITE)) {
-            if (isCorrect(row, SECTOR)) {
-                siteName = getSynonymValue(row, SECTOR);
+        if (!isCorrect(row, fileSynonyms.get(SITE))) {
+            if (isCorrect(row, fileSynonyms.get(SECTOR))) {
+                siteName = getSynonymValue(row, fileSynonyms.get(SECTOR));
                 siteMap.put(NewAbstractService.NAME,
                         autoParse(NewAbstractService.NAME, siteName.substring(0, siteName.length() - 1)));
             } else {
@@ -369,8 +382,8 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
 
         } else {
             siteName = headers.get(getHeaderId((fileSynonyms.get(SITE))));
-            siteMap.put(NewAbstractService.NAME, getSynonymValue(row, SITE));
-            setSynonymValue(row, SITE);
+            siteMap.put(NewAbstractService.NAME, getSynonymValue(row, fileSynonyms.get(SITE)));
+            nullSynonymValue(row, SITE);
         }
         return true;
     }
@@ -385,9 +398,8 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
     private boolean collectSector(Map<String, Object> sectorMap, List<String> row) {
 
         for (String head : headers) {
-            if (row.get(columnSynonyms.get(head)) != null && !StringUtils.isEmpty(row.get(columnSynonyms.get(head)))
-                    && head != fileSynonyms.get(SECTOR)) {
-                sectorMap.put(head.toLowerCase(), autoParse(head.toLowerCase(), row.get(columnSynonyms.get(head))));
+            if (isCorrect(row, head) && head != fileSynonyms.get(SECTOR)) {
+                sectorMap.put(head.toLowerCase(), autoParse(head.toLowerCase(), getSynonymValue(row, head)));
                 if (fileSynonyms.containsValue(head)) {
                     for (String key : fileSynonyms.keySet()) {
                         if (head.equals(fileSynonyms.get(key))) {
@@ -398,13 +410,13 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
             }
         }
 
-        String sectorName = getSynonymValue(row, SECTOR) != null ? getSynonymValue(row, SECTOR).toString() : "";
+        String sector = getSynonymValue(row, fileSynonyms.get(SECTOR));
+        String sectorName = isCorrect(sector) ? sector.toString() : "";
         String ci = sectorMap.containsKey(NewNetworkService.CELL_INDEX) ? sectorMap.get(NewNetworkService.CELL_INDEX).toString()
                 : "";
         String lac = sectorMap.containsKey(NewNetworkService.LOCATION_AREA_CODE) ? sectorMap.get(
                 NewNetworkService.LOCATION_AREA_CODE).toString() : "";
-        if (((sectorName == null) || (sectorName.equals(StringUtils.EMPTY)))
-                && ((ci == null) || (ci.equals(StringUtils.EMPTY)) || (lac == null) || (lac.equals(StringUtils.EMPTY)))) {
+        if ((!isCorrect(sectorName)) && (!isCorrect(ci) || !isCorrect(lac))) {
             LOGGER.info("Sector should have Name or CI + LAC properties on line: " + lineCounter);
             return false;
         }
@@ -422,17 +434,17 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
      * @param synonym
      * @return synonym value
      */
-    private String getSynonymValue(List<String> row, String synonym) {
-        return row.get(columnSynonyms.get(fileSynonyms.get(synonym)));
+    private String getSynonymValue(List<String> row, String propertyName) {
+        return row.get(columnSynonyms.get(propertyName));
     }
 
     /**
-     * Set synonym value
+     * Null synonym value
      * 
      * @param row
-     * @param synonym
+     * @param synonymssaedwd
      */
-    private void setSynonymValue(List<String> row, String synonym) {
+    private void nullSynonymValue(List<String> row, String synonym) {
         row.set(columnSynonyms.get(fileSynonyms.get(synonym)), null);
     }
 
