@@ -19,7 +19,7 @@ import org.eclipse.ui.views.properties.IPropertySourceProvider;
 /**
  * Provider for PropertySource of Network Nodes
  * 
- * @author Lagutko_N
+ * @author Kasnitskij_V
  * @since 1.0.0
  */
 

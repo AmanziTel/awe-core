@@ -114,6 +114,28 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     }
 
     /**
+     * Use this constructor to create a drive model, based on a node, that already exists in the
+     * database.
+     * 
+     * @param driveRoot
+     */
+    public DriveModel(Node driveRoot) throws AWEException {
+        super(driveRoot, DatasetTypes.DRIVE);
+        // validate
+        if (driveRoot == null) {
+            throw new IllegalArgumentException("Network root is null.");
+        }
+        if (!DatasetTypes.DRIVE.getId().equals(driveRoot.getProperty(NewAbstractService.TYPE, null))) {
+            throw new IllegalArgumentException("Root node must be of type NETWORK.");
+        }
+
+        this.rootNode = driveRoot;
+        this.name = rootNode.getProperty(NewAbstractService.NAME, StringUtils.EMPTY).toString();
+        initializeStatistics();
+        initializeMultiPropertyIndexing();
+    }
+
+    /**
      * Constructor. Pass only rootNode, if you have one, <i>OR</i> all the other parameters.
      * 
      * @param parent a project node
@@ -297,8 +319,8 @@ public class DriveModel extends RenderableModel implements IDriveModel {
 
         Node m = dsServ.createNode(nodeType);
         dsServ.addChild(fileNode, m, null);
-        Long lat = (Long)params.get(LATITUDE);
-        Long lon = (Long)params.get(LONGITUDE);
+        Double lat = (Double)params.get(LATITUDE);
+        Double lon = (Double)params.get(LONGITUDE);
         Long tst = (Long)params.get(TIMESTAMP);
 
         if ((lat != null) && (lat != 0) && (lon != null) && (lon != 0)) {
@@ -386,7 +408,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
      * @param lon
      * @throws DatabaseException if errors occur in the database
      */
-    protected void createLocationNode(Node parent, long lat, long lon) throws DatabaseException {
+    protected void createLocationNode(Node parent, double lat, double lon) throws DatabaseException {
         LOGGER.debug("start createLocationNode(Node measurement, long lat, long lon)");
         // validate params
         if (parent == null) {

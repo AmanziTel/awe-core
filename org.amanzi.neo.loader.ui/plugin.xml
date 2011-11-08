@@ -72,7 +72,7 @@
                 </parameter>
              </command>
              <command
-                   commandId="org.amanzi.neo.loader.ui.commands.LaunchLoader"
+                   commandId="org.amanzi.neo.loader.ui.commands.LaunchLoaderNew"
                    icon="icons/16/dataset.png"
                    id="org.amanzi.neo.loader.ui.LoadLauncher"
                    tooltip="Load Dataset">
@@ -178,7 +178,7 @@
              saver="org.amanzi.neo.loader.core.saver.impl.TransmissionSaver"
              validator="org.amanzi.neo.loader.ui.validators.TransmissionDataValidator">
        </loader>
-       <loader
+ <!--      <loader
              description="Tems Data"
              gui="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard"
              parser="org.amanzi.neo.loader.core.parser.CSVParser"
@@ -186,6 +186,7 @@
              renderable="true"
              allowCreate="true">
        </loader>
+       -->
        <loader
              description="Romes Data"
              gui="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard"
@@ -369,6 +370,34 @@
             />
       </newloader>
      
+     <newloader
+             gui="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard"
+             id="newROMESLoader"
+             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoaderNew"
+             loader_data_type="TEMS"
+             loader_name="TEMS DATA LOADER"
+             loader_type="TEMS loader"
+             parser="org.amanzi.neo.loader.core.newparser.CommonCSVParser"
+             validator="org.amanzi.neo.loader.ui.validators.FakeValidator">
+               <saver 
+                id="org.amanzi.neo.loader.core.newsaver.NewTemsSaver"
+            	class="org.amanzi.neo.loader.core.newsaver.NewTemsSaver"
+            />
+      </newloader>
+       <newloader
+             gui="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard"
+             id="newTEMSLOADER"
+             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoaderNew"
+             loader_data_type="ROMES"
+             loader_name="ROMES DATA LOADER"
+             loader_type="ROMES loader"
+             parser="org.amanzi.neo.loader.core.newparser.CommonCSVParser"
+             validator="org.amanzi.neo.loader.ui.validators.FakeValidator">
+               <saver 
+                id="org.amanzi.neo.loader.core.newsaver.NewRomesSaver"
+            	class="org.amanzi.neo.loader.core.newsaver.NewRomesSaver"
+            />
+      </newloader>
    </extension>
 
 </plugin>
