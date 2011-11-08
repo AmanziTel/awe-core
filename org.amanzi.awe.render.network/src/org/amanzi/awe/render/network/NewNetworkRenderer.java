@@ -19,6 +19,9 @@ import java.awt.Point;
 import java.awt.geom.Arc2D;
 import java.awt.geom.GeneralPath;
 
+import org.amanzi.awe.neostyle.BaseNeoStyle;
+import org.amanzi.awe.neostyle.NetworkNeoStyle;
+import org.amanzi.awe.neostyle.NetworkNeoStyleContent;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewNetworkService;
 import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
@@ -27,6 +30,7 @@ import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.IRenderableModel;
+import org.apache.commons.lang.ObjectUtils;
 
 /**
  * TODO Purpose of
@@ -86,7 +90,7 @@ public class NewNetworkRenderer extends AbstractRenderer {
             destination.drawOval(point.x - size / 2, point.y - size / 2, size, size);
             break;
         case LARGE:
-            size = RenderOptions.large_sector_size / 4;
+            size = RenderOptions.large_sector_size / 3;
             destination.setColor(RenderOptions.border);
             destination.drawOval(point.x - size / 2, point.y - size / 2, size, size);
             destination.setColor(RenderOptions.site_fill);
@@ -121,5 +125,27 @@ public class NewNetworkRenderer extends AbstractRenderer {
 
             break;
         }
+    }
+
+    @Override
+    protected void setStyle(Graphics2D destination) {
+        super.setStyle(destination);
+
+        NetworkNeoStyle newStyle = (NetworkNeoStyle)getContext().getLayer().getStyleBlackboard().get(NetworkNeoStyleContent.ID);
+        if (ObjectUtils.equals(style, newStyle)) {
+            return;
+        }
+        style = newStyle;
+        RenderOptions.alpha = 255 - (int)((double)newStyle.getSymbolTransparency() / 100.0 * 255.0);
+        RenderOptions.border = changeColor(newStyle.getLine(), RenderOptions.alpha);
+        RenderOptions.large_sector_size = newStyle.getSymbolSize();
+        RenderOptions.sector_fill = changeColor(newStyle.getFill(), RenderOptions.alpha);
+        RenderOptions.site_fill = changeColor(newStyle.getSiteFill(), RenderOptions.alpha);
+
+        RenderOptions.maxSitesFull = newStyle.getSmallSymb();
+        RenderOptions.maxSitesLabel = newStyle.getLabeling();
+        RenderOptions.maxSitesLite = newStyle.getSmallestSymb();
+        RenderOptions.maxSymbolSize = newStyle.getMaximumSymbolSize();
+
     }
 }
