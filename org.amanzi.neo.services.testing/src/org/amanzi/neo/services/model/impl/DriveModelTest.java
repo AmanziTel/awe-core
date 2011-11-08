@@ -564,8 +564,8 @@ public class DriveModelTest extends AbstractNeoServiceTest {
         }
 
         Map<String, Object> params = new HashMap<String, Object>();
-        long lat = (long)(Math.random() * Long.MAX_VALUE);
-        long lon = (long)(Math.random() * Long.MAX_VALUE);
+        double lat = (double)(Math.random() * Long.MAX_VALUE);
+        double lon = (double)(Math.random() * Long.MAX_VALUE);
         params.put(DriveModel.LATITUDE, lat);
         params.put(DriveModel.LONGITUDE, lon);
         params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
@@ -646,8 +646,8 @@ public class DriveModelTest extends AbstractNeoServiceTest {
         }
 
         Map<String, Object> params = new HashMap<String, Object>();
-        params.put(DriveModel.LATITUDE, 0L);
-        params.put(DriveModel.LONGITUDE, 0L);
+        params.put(DriveModel.LATITUDE, 0.0);
+        params.put(DriveModel.LONGITUDE, 0.0);
         params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
         Node m = null;
         try {
