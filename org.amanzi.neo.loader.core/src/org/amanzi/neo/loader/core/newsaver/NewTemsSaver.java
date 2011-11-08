@@ -139,12 +139,35 @@ public class NewTemsSaver extends AbstractDriveSaver {
         params.put(RSSI, getSynonymValuewithAutoparse(RSSI, value));
         params.put(NewNetworkService.CELL_INDEX, getSynonymValuewithAutoparse(NewNetworkService.CELL_INDEX, value));
         params.put(MS, ms);
+        removeEmpty(params);
         addedSynonyms();
         IDataElement createdMeasurment = addMeasurement(model, params);
         location = model.getLocation(createdMeasurment);
         commitTx();
         createVirtualModelElement(value, ms, time, event, timestamp);
 
+    }
+
+    /**
+     * @param params2
+     */
+    private void removeEmpty(Map<String, Object> params2) {
+        List<String> keyToDelete = new LinkedList<String>();
+        for (String key : params.keySet()) {
+            if (!isCorrect(params.get(key))) {
+                keyToDelete.add(key);
+            }
+        }
+        for (String key : keyToDelete) {
+            params.remove(key);
+        }
+    }
+
+    private boolean isCorrect(Object value) {
+        if (value == null || value.toString().isEmpty()) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -175,7 +198,7 @@ public class NewTemsSaver extends AbstractDriveSaver {
         boolean changed = false;
         if (!ms.equals(this.previous_ms)) {
             changed = true;
-            this.previous_ms = (String)params.get(MS);
+            this.previous_ms = ms;
         }
         if (!time.equals(this.previous_time)) {
             changed = true;
@@ -194,16 +217,16 @@ public class NewTemsSaver extends AbstractDriveSaver {
                 // Delete invalid data, as you can have empty ec_io
                 // zero ec_io is correct, but empty ec_io is not
                 try {
-                    ec_io = (Integer)getSynonymValuewithAutoparse(ALL_PILOT_SET_CHANNEL + i, value);
+                    ec_io = (Integer)getSynonymValuewithAutoparse(ALL_PILOT_SET_EC_IO + i, value);
                     channel = (Integer)getSynonymValuewithAutoparse(ALL_PILOT_SET_CHANNEL + i, value);
-                    pn_code = (Integer)getSynonymValuewithAutoparse("ALL_PILOT_SET_PN" + i, value);
+                    pn_code = (Integer)getSynonymValuewithAutoparse(ALL_PILOT_SET_PN + i, value);
                     String chan_code = "" + channel + "\t" + pn_code;
                     if (!signals.containsKey(chan_code))
                         signals.put(chan_code, new float[2]);
                     signals.get(chan_code)[0] += Math.pow(10.0, ((ec_io) / 10.0));
                     signals.get(chan_code)[1] += 1;
                 } catch (Exception e) {
-                    LOGGER.error("Error parsing column " + i + " for EC/IO, Channel or PN: " + e.getMessage());
+                    LOGGER.error("Error parsing column " + i + " for EC/IO, Channel or PN: " + e.getMessage(), e);
                 }
             }
         }
@@ -236,21 +259,12 @@ public class NewTemsSaver extends AbstractDriveSaver {
     }
 
     private void addedSynonyms() {
-        addedDatasetSynonyms(model, DriveNodeTypes.M, TIME, getHeaderBySynonym(TIME));
-        addedDatasetSynonyms(model, DriveNodeTypes.M, MESSAGE_TYPE, getHeaderBySynonym(MESSAGE_TYPE));
-        addedDatasetSynonyms(model, DriveNodeTypes.M, LATITUDE, getHeaderBySynonym(LATITUDE));
-        addedDatasetSynonyms(model, DriveNodeTypes.M, LONGITUDE, getHeaderBySynonym(LONGITUDE));
-        addedDatasetSynonyms(model, DriveNodeTypes.M, EVENT, getHeaderBySynonym(EVENT));
-        addedDatasetSynonyms(model, DriveNodeTypes.M, BCCH, getHeaderBySynonym(BCCH));
-        addedDatasetSynonyms(model, DriveNodeTypes.M, TCH, getHeaderBySynonym(TCH));
-        addedDatasetSynonyms(model, DriveNodeTypes.M, SC, getHeaderBySynonym(SC));
-        addedDatasetSynonyms(model, DriveNodeTypes.M, NewNetworkService.CELL_INDEX,
-                getHeaderBySynonym(NewNetworkService.CELL_INDEX));
-        addedDatasetSynonyms(model, DriveNodeTypes.M, PN, getHeaderBySynonym(PN));
-        addedDatasetSynonyms(model, DriveNodeTypes.M, ECIO, getHeaderBySynonym(ECIO));
-        addedDatasetSynonyms(model, DriveNodeTypes.M, RSSI, getHeaderBySynonym(RSSI));
-        addedDatasetSynonyms(model, DriveNodeTypes.M, MS, getHeaderBySynonym(MS));
-
+        for (String key : params.keySet()) {
+            if (key != NewAbstractService.NAME && key != NewAbstractService.TYPE && key != TIMESTAMP) {
+                addedDatasetSynonyms(model, DriveNodeTypes.M, key, getHeaderBySynonym(key));
+            }
+        }
+        addedDatasetSynonyms(model, DriveNodeTypes.M, NewAbstractService.NAME, getHeaderBySynonym(TIME));
     }
 
     private String getHeaderBySynonym(String synonymName) {
@@ -277,16 +291,16 @@ public class NewTemsSaver extends AbstractDriveSaver {
     @Override
     public void init(ConfigurationDataImpl configuration, CSVContainer dataElement) {
         Map<String, Object> rootElement = new HashMap<String, Object>();
-        preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.NETWORK);
+        preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.DRIVE);
         columnSynonyms = new HashMap<String, Integer>();
         setDbInstance();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
         commitTx();
         try {
-            rootElement.put(INeoConstants.PROPERTY_NAME_NAME, configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK));
-            model = getActiveProject().getDataset(configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK), DriveTypes.TEMS);
-            virtualModel = model.getVirtualDataset(configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK), DriveTypes.MS);
-            modelMap.put(configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK), model);
+            rootElement.put(INeoConstants.PROPERTY_NAME_NAME, configuration.getDatasetNames().get(CONFIG_VALUE_DATASET));
+            model = getActiveProject().getDataset(configuration.getDatasetNames().get(CONFIG_VALUE_DATASET), DriveTypes.TEMS);
+            virtualModel = model.getVirtualDataset(configuration.getDatasetNames().get(CONFIG_VALUE_DATASET), DriveTypes.MS);
+            modelMap.put(configuration.getDatasetNames().get(CONFIG_VALUE_DATASET), model);
             createExportSynonymsForModels();
         } catch (AWEException e) {
             rollbackTx();
@@ -305,7 +319,7 @@ public class NewTemsSaver extends AbstractDriveSaver {
         commitTx();
         CSVContainer container = dataElement;
         try {
-            if (fileName != null && !fileName.equals(dataElement.getFile())) {
+            if ((fileName != null && !fileName.equals(dataElement.getFile().getName())) || (fileName == null)) {
                 fileName = dataElement.getFile().getName();
                 fileSynonyms.clear();
                 addedNewFileToModels(dataElement.getFile());
@@ -351,7 +365,7 @@ public class NewTemsSaver extends AbstractDriveSaver {
         for (String header : keySet) {
             for (String posibleHeader : preferenceStoreSynonyms.keySet()) {
                 for (String mask : preferenceStoreSynonyms.get(posibleHeader)) {
-                    if (header.toLowerCase().matches(mask.toLowerCase())) {
+                    if (header.toLowerCase().matches(mask.toLowerCase()) || header.toLowerCase().equals(mask.toLowerCase())) {
                         isAppropriation = true;
                         String name = posibleHeader.substring(0, posibleHeader.indexOf(DataLoadPreferenceManager.INFO_SEPARATOR));
                         fileSynonyms.put(name, header);

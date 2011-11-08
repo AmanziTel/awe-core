@@ -33,7 +33,7 @@ import org.apache.log4j.Logger;
 public abstract class AbstractDriveSaver extends AbstractSaver<NetworkModel, CSVContainer, ConfigurationDataImpl> {
     private static Logger LOGGER = Logger.getLogger(AbstractDriveSaver.class);
     protected Integer hours;
-    protected Calendar workDate;
+    protected Calendar workDate = Calendar.getInstance();
 
     /**
      * Convert milliwatss values to dBm
@@ -82,7 +82,7 @@ public abstract class AbstractDriveSaver extends AbstractSaver<NetworkModel, CSV
 
             }
         }
-        return null;
+        return 0l;
     }
 
     /**

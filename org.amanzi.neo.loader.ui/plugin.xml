@@ -72,7 +72,7 @@
                 </parameter>
              </command>
              <command
-                   commandId="org.amanzi.neo.loader.ui.commands.LaunchLoader"
+                   commandId="org.amanzi.neo.loader.ui.commands.LaunchLoaderNew"
                    icon="icons/16/dataset.png"
                    id="org.amanzi.neo.loader.ui.LoadLauncher"
                    tooltip="Load Dataset">
@@ -378,7 +378,7 @@
              loader_name="TEMS DATA LOADER"
              loader_type="TEMS loader"
              parser="org.amanzi.neo.loader.core.newparser.CommonCSVParser"
-           >
+             validator="org.amanzi.neo.loader.ui.validators.FakeValidator">
                <saver 
                 id="org.amanzi.neo.loader.core.newsaver.NewTemsSaver"
             	class="org.amanzi.neo.loader.core.newsaver.NewTemsSaver"

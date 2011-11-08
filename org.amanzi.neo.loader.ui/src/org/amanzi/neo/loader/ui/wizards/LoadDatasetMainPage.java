@@ -61,7 +61,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
 import org.neo4j.graphdb.Node;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * <p>
@@ -78,6 +77,7 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
     private static final String FMT_PAT_FILE = ".*(\\d{4}-\\d{2}-\\d{2}).*";
     private static final String CSV_PAT_FILE = ".*(\\d{2}/\\d{2}/\\d{4}).*";
     private final Set<String> restrictedNames = new HashSet<String>();
+    private Map<Object, String> names = new HashMap<Object, String>();
     /*
      * Minimum height of Shell
      */
@@ -213,12 +213,12 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
         Label ldataset = new Label(panel, SWT.NONE);
         ldataset.setText(NeoLoaderPluginMessages.NetworkSiteImportWizard_DATA_TYPE);
         cLoaders = new Combo(panel, SWT.NONE);
-        cLoaders.setItems(getLoadersDescriptions());
+        cLoaders.setItems(getNewLoadersDescriptions());
         cLoaders.addSelectionListener(new SelectionListener() {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                selectLoader(cLoaders.getSelectionIndex());
+                selectNewLoader(cLoaders.getSelectionIndex());
                 update();
             }
 
@@ -417,9 +417,9 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
 
     @Override
     protected void update() {
-        CoordinateReferenceSystem crs = getSelectedCRS();
-        selectCRS.setText(String.format("CRS: %s", crs.getName().toString()));
-        super.update();
+        // CoordinateReferenceSystem crs = getSelectedCRS();
+        // selectCRS.setText(String.format("CRS: %s", crs.getName().toString()));
+        super.updateNew();
     }
 
     /**
@@ -512,7 +512,8 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
      */
     protected void changeDatasetSelection() {
         datasetName = cDataset.getText();
-        getConfigurationData().setDbRootName(datasetName);
+        names.put("Dataset", datasetName);
+        getNewConfigurationData().setDatasetNames(names);
         update();
     }
 
@@ -680,7 +681,7 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
                 fileToLoad.add(new File(file));
             }
         }
-        getConfigurationData().setFileToLoad(fileToLoad);
+        getNewConfigurationData().setSourceFile(fileToLoad);
         update();
     }
 
@@ -699,6 +700,51 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
 
     @Override
     protected boolean validateConfigData(IConfiguration configurationData) {
-        return false;
+        String rootName = configurationData.getDatasetNames().get("Dataset");
+        if (StringUtils.isEmpty(rootName)) {
+            setMessage("Select dataset", DialogPage.ERROR);
+            return false;
+        }
+        java.util.List<File> files = configurationData.getFilesToLoad();
+        if (files == null || files.isEmpty()) {
+            setMessage("Select files for import", DialogPage.ERROR);
+            return false;
+        }
+        if (getNewSelectedLoader() == null) {
+            setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_TYPE, DialogPage.ERROR);
+            return false;
+        }
+        try {
+            names.put("Project", ProjectModel.getCurrentProjectModel().getName());
+        } catch (AWEException e) {
+            // TODO Handle AWEException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+        configurationData.setDatasetNames(names);
+        // configurationData.setCrs(getSelectedCRS());
+        // Calendar cl = configurationData.getDatasetNames().get("workdate");
+        // if (cl == null) {
+        // cl = Calendar.getInstance();
+        // cl.set(Calendar.HOUR, 0);
+        // cl.set(Calendar.MINUTE, 0);
+        // cl.set(Calendar.SECOND, 0);
+        // cl.set(Calendar.MILLISECOND, 0);
+        // configurationData.getAdditionalProperties().put("workdate", cl);
+        // }
+        // cl.set(Calendar.YEAR, date.getYear());
+        // cl.set(Calendar.MONTH, date.getMonth());
+        // cl.set(Calendar.DAY_OF_MONTH, date.getDay());
+
+        Result result = getNewSelectedLoader().getValidator().isValid(configurationData);
+        String messaString = getNewSelectedLoader().getValidator().getMessages();
+        if (result == Result.FAIL) {
+            setMessage(String.format(messaString, getNewSelectedLoader().getLoaderInfo().getName()), DialogPage.ERROR);
+            return false;
+        } else if (result == Result.UNKNOWN) {
+            setMessage(String.format(messaString, getNewSelectedLoader().getLoaderInfo().getName()), DialogPage.WARNING);
+        } else {
+            setMessage(""); //$NON-NLS-1$
+        }
+        return true;
     }
 }

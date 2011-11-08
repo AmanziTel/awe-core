@@ -125,7 +125,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         if (driveRoot == null) {
             throw new IllegalArgumentException("Network root is null.");
         }
-        if (!DatasetTypes.NETWORK.getId().equals(driveRoot.getProperty(NewAbstractService.TYPE, null))) {
+        if (!DatasetTypes.DRIVE.getId().equals(driveRoot.getProperty(NewAbstractService.TYPE, null))) {
             throw new IllegalArgumentException("Root node must be of type NETWORK.");
         }
 
@@ -319,8 +319,8 @@ public class DriveModel extends RenderableModel implements IDriveModel {
 
         Node m = dsServ.createNode(nodeType);
         dsServ.addChild(fileNode, m, null);
-        Long lat = (Long)params.get(LATITUDE);
-        Long lon = (Long)params.get(LONGITUDE);
+        Double lat = (Double)params.get(LATITUDE);
+        Double lon = (Double)params.get(LONGITUDE);
         Long tst = (Long)params.get(TIMESTAMP);
 
         if ((lat != null) && (lat != 0) && (lon != null) && (lon != 0)) {
@@ -408,7 +408,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
      * @param lon
      * @throws DatabaseException if errors occur in the database
      */
-    protected void createLocationNode(Node parent, long lat, long lon) throws DatabaseException {
+    protected void createLocationNode(Node parent, double lat, double lon) throws DatabaseException {
         LOGGER.debug("start createLocationNode(Node measurement, long lat, long lon)");
         // validate params
         if (parent == null) {
