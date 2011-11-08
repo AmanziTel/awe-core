@@ -51,17 +51,18 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
     protected double min_longitude = Double.MAX_VALUE;
     protected double max_longitude = -Double.MAX_VALUE;
     
-
     private Map<INodeType, List<MultiPropertyIndex< ? >>> indexes = new HashMap<INodeType, List<MultiPropertyIndex< ? >>>();
 
     private IndexService indexService = NeoServiceFactory.getInstance().getIndexService();
-
+    
     private NewDatasetService datasetService = NeoServiceFactory.getInstance().getNewDatasetService();
-
-    protected AbstractIndexedModel(Node rootNode) throws AWEException {
+    
+    protected AbstractIndexedModel(Node rootNode, INodeType nodeType) throws AWEException {
+        super(nodeType);
         this.rootNode = rootNode;
-
-        Node gis = datasetService.getGisNodeByDataset(rootNode);
+        
+        NewDatasetService dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
+        Node gis = dsServ.getGisNodeByDataset(rootNode);
         if (gis != null) {
             min_latitude = (Double)gis.getProperty(DriveModel.MIN_LATITUDE, min_latitude);
             min_longitude = (Double)gis.getProperty(DriveModel.MIN_LONGITUDE, min_longitude);
@@ -78,8 +79,8 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
      */
     protected void addLocationIndex(INodeType nodeType) throws AWEException {
         LOGGER.debug("addLocationIndex(" + nodeType + ")");
-
-        // since location index exist it should also be a GIS node
+        
+        //since location index exist it should also be a GIS node
         datasetService.getGisNodeByDataset(rootNode);
 
         // validate parameters

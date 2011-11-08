@@ -19,6 +19,7 @@ import java.util.List;
 import org.amanzi.neo.services.CorrelationService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewAbstractService;
+import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.ICorrelationModel;
@@ -41,7 +42,7 @@ public class CountersModel extends AbstractIndexedModel implements ICountersMode
     private CorrelationService crServ = NeoServiceFactory.getInstance().getNewCorrelationService();
 
     protected CountersModel(Node rootNode) throws AWEException {
-        super(rootNode);
+        super(rootNode, DatasetTypes.COUNTERS);
     }
 
     @Override

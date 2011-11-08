@@ -15,6 +15,7 @@ package org.amanzi.neo.model.distribution.impl;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeast;
@@ -26,7 +27,10 @@ import static org.mockito.Mockito.when;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+
+import net.refractions.udig.ui.PlatformGIS;
 
 import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.model.distribution.IDistribution;
@@ -44,6 +48,7 @@ import org.amanzi.neo.services.filters.Filter;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.apache.commons.lang.StringUtils;
+import org.geotools.brewer.color.BrewerPalette;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
@@ -73,6 +78,8 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
     private static final int[] BAR_COUNT = new int[] {10, 9, 8, 7, 6};
     
     private static final String DISTRIBUTION_PROPERTY_NAME = "property";
+    
+    private static final int PALETTE_INDEX = PlatformGIS.getColorBrewer().getPalettes().length / 2;
     
     /**
      *
@@ -114,7 +121,7 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
     @Test
     public void checkPropertiesForExistingDistributionModel() throws Exception {
         Node parentDistribution = getNode();
-        Node rootAggregation = getNode(DistributionNodeTypes.ROOT_AGGREGATION);
+        Node rootAggregation = getDistributionRootNode(true);
         IDistribution< ? > distributionType = getDistributionType();
         DistributionService service = getDistributionService(parentDistribution, rootAggregation, getDistributionBarNodes(), true, distributionType);
         DistributionModel.distributionService = service;
@@ -126,6 +133,9 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         assertNotNull("Root Node cannot be null", distribution.getRootNode());
         assertEquals("Incorrect distribution type", distributionType, distribution.getDistributionType());
         assertEquals("Incorrect Type of Distribution", DistributionNodeTypes.ROOT_AGGREGATION, distribution.getType());
+       
+        BrewerPalette palette = PlatformGIS.getColorBrewer().getPalettes()[PALETTE_INDEX];
+        assertEquals("Incorrect Palette for Distribution", palette, distribution.getPalette());
     }
     
     @Test
@@ -146,7 +156,7 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
     @Test
     public void checkPropertiesForNewDistributionModel() throws Exception {
         Node parentDistribution = getNode();
-        Node rootAggregation = getNode(DistributionNodeTypes.ROOT_AGGREGATION);
+        Node rootAggregation = getDistributionRootNode(false);
         IDistribution< ? > distributionType = getDistributionType();
         DistributionService service = getDistributionService(parentDistribution, rootAggregation, getDistributionBarNodes(), false, distributionType);
         DistributionModel.distributionService = service;
@@ -158,6 +168,7 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         assertNotNull("Root Node cannot be null", distribution.getRootNode());
         assertEquals("Incorrect distribution type", distributionType, distribution.getDistributionType());
         assertEquals("Incorrect Type of Distribution", DistributionNodeTypes.ROOT_AGGREGATION, distribution.getType());
+        assertNull("Incorrect initial Palette", distribution.getPalette());
     }
     
     @Test
@@ -515,7 +526,7 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         IDistributionalModel model = getDistributionalModel(parentDistribution);
         
         DistributionModel newDistribution = new DistributionModel(model, distributionType);
-        newDistribution.setSelectedColor(null);
+        newDistribution.setMiddleColor(null);
     }
     
     @Test
@@ -548,9 +559,151 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         
         assertEquals("Unexpected default left color", DistributionModel.DEFAULT_LEFT_COLOR, newDistribution.getLeftColor());
         assertEquals("Unexpected default right color", DistributionModel.DEFAULT_RIGHT_COLOR, newDistribution.getRightColor());
-        assertEquals("Unexpected default selected color", DistributionModel.DEFAULT_MIDDLE_COLOR, newDistribution.getSelectedColor());
+
+        assertEquals("Unexpected default selected color", DistributionModel.DEFAULT_MIDDLE_COLOR, newDistribution.getMiddleColor());
     }
     
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToUpdateBarWithoutBar() throws Exception {
+        Node parentDistribution = getNode();
+        Node rootAggregation = getNode(DistributionNodeTypes.ROOT_AGGREGATION);
+        List<Node> distributionBarNodes = getDistributionBarNodes();
+        IDistribution< ? > distributionType = getDistributionType();
+        DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, true, distributionType);
+        DistributionModel.distributionService = service;
+        IDistributionalModel model = getDistributionalModel(parentDistribution);
+        
+        DistributionModel distribution = new DistributionModel(model, distributionType);
+        distribution.updateBar(null);
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToUpdateBarWithoutName() throws Exception {
+        Node parentDistribution = getNode();
+        Node rootAggregation = getNode(DistributionNodeTypes.ROOT_AGGREGATION);
+        List<Node> distributionBarNodes = getDistributionBarNodes();
+        IDistribution< ? > distributionType = getDistributionType();
+        DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, true, distributionType);
+        DistributionModel.distributionService = service;
+        IDistributionalModel model = getDistributionalModel(parentDistribution);
+        
+        DistributionModel distribution = new DistributionModel(model, distributionType);
+        
+        DistributionBar bar = new DistributionBar();
+        bar.setName(null);
+        
+        distribution.updateBar(bar);
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToUpdateBarWithEmptyName() throws Exception {
+        Node parentDistribution = getNode();
+        Node rootAggregation = getNode(DistributionNodeTypes.ROOT_AGGREGATION);
+        List<Node> distributionBarNodes = getDistributionBarNodes();
+        IDistribution< ? > distributionType = getDistributionType();
+        DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, true, distributionType);
+        DistributionModel.distributionService = service;
+        IDistributionalModel model = getDistributionalModel(parentDistribution);
+        
+        DistributionModel distribution = new DistributionModel(model, distributionType);
+        
+        DistributionBar bar = new DistributionBar();
+        bar.setName(StringUtils.EMPTY);
+        
+        distribution.updateBar(bar);
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToUpdateBarWithNullRootElement() throws Exception {
+        Node parentDistribution = getNode();
+        Node rootAggregation = getNode(DistributionNodeTypes.ROOT_AGGREGATION);
+        List<Node> distributionBarNodes = getDistributionBarNodes();
+        IDistribution< ? > distributionType = getDistributionType();
+        DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, true, distributionType);
+        DistributionModel.distributionService = service;
+        IDistributionalModel model = getDistributionalModel(parentDistribution);
+        
+        DistributionModel distribution = new DistributionModel(model, distributionType);
+        
+        DistributionBar bar = new DistributionBar();
+        bar.setName(DISTRIBUTION_BAR_NAME_PREFIX);
+        bar.setRootElement(null);
+        
+        distribution.updateBar(bar);
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToUpdateBarWithNullNegativeCount() throws Exception {
+        Node parentDistribution = getNode();
+        Node rootAggregation = getNode(DistributionNodeTypes.ROOT_AGGREGATION);
+        List<Node> distributionBarNodes = getDistributionBarNodes();
+        IDistribution< ? > distributionType = getDistributionType();
+        DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, true, distributionType);
+        DistributionModel.distributionService = service;
+        IDistributionalModel model = getDistributionalModel(parentDistribution);
+        
+        DistributionModel distribution = new DistributionModel(model, distributionType);
+        
+        DistributionBar bar = new DistributionBar();
+        bar.setName(DISTRIBUTION_BAR_NAME_PREFIX);
+        bar.setRootElement(mock(IDataElement.class));
+        bar.setCount(-1);
+        
+        distribution.updateBar(bar);
+    }
+    
+    @Test
+    public void checkServiceActivityOnUpdate() throws Exception {
+        Node parentDistribution = getNode();
+        Node rootAggregation = getNode(DistributionNodeTypes.ROOT_AGGREGATION);
+        List<Node> distributionBarNodes = getDistributionBarNodes();
+        IDistribution< ? > distributionType = getDistributionType();
+        DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, true, distributionType);
+        DistributionModel.distributionService = service;
+        IDistributionalModel model = getDistributionalModel(parentDistribution);
+        IDistributionBar bar = getDistributionBar();
+        
+        DistributionModel distribution = new DistributionModel(model, distributionType);
+        distribution.updateBar(bar);
+        
+        verify(service).updateDistributionBar(eq(rootAggregation), eq(bar));
+    }
+    
+    @Test
+    public void checkServiceActivityOnUpdatePalette() throws Exception {
+        Node parentDistribution = getNode();
+        Node rootAggregation = getNode(DistributionNodeTypes.ROOT_AGGREGATION);
+        List<Node> distributionBarNodes = getDistributionBarNodes();
+        IDistribution< ? > distributionType = getDistributionType();
+        DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, true, distributionType);
+        DistributionModel.distributionService = service;
+        IDistributionalModel model = getDistributionalModel(parentDistribution);
+        
+        DistributionModel distribution = new DistributionModel(model, distributionType);
+        BrewerPalette palette = PlatformGIS.getColorBrewer().getPalettes()[0];
+        distribution.setPalette(palette);
+        distribution.finishUp();
+        
+        verify(service).updatePalette(eq(rootAggregation), eq(palette));
+    }
+    
+    @Test
+    public void checkServiceActivityOnNullPalette() throws Exception {
+        Node parentDistribution = getNode();
+        Node rootAggregation = getNode(DistributionNodeTypes.ROOT_AGGREGATION);
+        List<Node> distributionBarNodes = getDistributionBarNodes();
+        IDistribution< ? > distributionType = getDistributionType();
+        DistributionService service = getDistributionService(parentDistribution, rootAggregation, distributionBarNodes, true, distributionType);
+        DistributionModel.distributionService = service;
+        IDistributionalModel model = getDistributionalModel(parentDistribution);
+        
+        DistributionModel distribution = new DistributionModel(model, distributionType);
+        BrewerPalette palette = PlatformGIS.getColorBrewer().getPalettes()[0];
+        distribution.setPalette(null);
+        distribution.finishUp();
+        
+        verify(service, never()).updatePalette(eq(rootAggregation), eq(palette));
+    }
     
     /**
      * Returns mocked list of Distribution Bars
@@ -617,6 +770,22 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
     }
     
     /**
+     * Creates mocked root of aggregation
+     *
+     * @return
+     */
+    private Node getDistributionRootNode(boolean shouldExist) {
+        Node result = getNode(DistributionNodeTypes.ROOT_AGGREGATION);
+        
+        BrewerPalette palette = PlatformGIS.getColorBrewer().getPalettes()[PALETTE_INDEX];
+        if (shouldExist) {
+            when(result.getProperty(DistributionService.PALETTE, null)).thenReturn(palette.getName());
+        }
+        
+        return result;
+    }
+    
+    /**
      * Creates mocked Node
      *
      * @return
@@ -628,7 +797,7 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
             when(result.getProperty(NewAbstractService.TYPE, StringUtils.EMPTY)).thenReturn(nodeType.getId());
         }
         when(result.getProperty(DistributionService.COUNT, 0)).thenReturn(NUMBER_OF_DISTRIBUTION_BARS);
-        
+                
         return result;
     }
     
@@ -742,6 +911,15 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
                 result.add(element);
             }
         }
+        
+        return result;
+    }
+    
+    private IDistributionBar getDistributionBar() {
+        IDistributionBar result = mock(IDistributionBar.class);
+        
+        when(result.getName()).thenReturn(DISTRIBUTION_BAR_NAME_PREFIX);
+        when(result.getRootElement()).thenReturn(new DataElement(new HashMap<String, Object>()));
         
         return result;
     }

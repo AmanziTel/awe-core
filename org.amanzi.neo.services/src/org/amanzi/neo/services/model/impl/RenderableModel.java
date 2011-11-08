@@ -26,7 +26,6 @@ import org.apache.log4j.Logger;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.neo4j.graphdb.Node;
-import org.opengis.metadata.Identifier;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -54,8 +53,8 @@ public abstract class RenderableModel extends AbstractIndexedModel {
 
     private String crsCode;
 
-    protected RenderableModel(Node rootNode) throws AWEException {
-        super(rootNode);
+    protected RenderableModel(Node rootNode, INodeType nodeType) throws AWEException {
+        super(rootNode, nodeType);
         Node gis = datasetService.getGisNodeByDataset(rootNode);
         crsCode = StringUtils.EMPTY;
         if (gis != null) {

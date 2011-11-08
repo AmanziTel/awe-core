@@ -17,6 +17,8 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.refractions.udig.ui.PlatformGIS;
+
 import org.amanzi.neo.model.distribution.IDistribution;
 import org.amanzi.neo.model.distribution.IDistributionBar;
 import org.amanzi.neo.model.distribution.IDistributionModel;
@@ -26,15 +28,18 @@ import org.amanzi.neo.services.DistributionService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NodeTypeManager;
+import org.amanzi.neo.services.DistributionService.DistributionNodeTypes;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.impl.AbstractModel;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.utils.Pair;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.geotools.brewer.color.BrewerPalette;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -50,7 +55,7 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
     /**
      * Default color for Left Bar
      */
-    static final Color DEFAULT_LEFT_COLOR = Color.BLUE;
+    static final Color DEFAULT_LEFT_COLOR = Color.RED;
     
     /**
      * Default color for Right Bar
@@ -67,10 +72,19 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
      */
     static DistributionService distributionService = NeoServiceFactory.getInstance().getDistributionService();
     
+    /*
+     * Analyzed Model
+     */
     private IDistributionalModel analyzedModel;
     
+    /*
+     * Type of Distribution
+     */
     private IDistribution<?> distributionType;
     
+    /*
+     * Is Distribution Structure already exists in DB
+     */
     private boolean isExist = false;
     
     /*
@@ -93,6 +107,16 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
      */
     private Color selectedBarColor = DEFAULT_MIDDLE_COLOR;
     
+    /*
+     * Number of Bars 
+     */
+    private int barCount = 0;
+    
+    /*
+     * Palette of this Distribution
+     */
+    private BrewerPalette palette;
+    
     /**
      * Returns 
      * @param parentNode
@@ -100,6 +124,8 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
      * @throws DatabaseException
      */
     public DistributionModel(IDistributionalModel analyzedModel, IDistribution<?> distributionType) throws AWEException {
+        super(DistributionNodeTypes.ROOT_AGGREGATION);
+        
         LOGGER.debug("start new DistributionModel()");
         
         //validate input
@@ -134,6 +160,11 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
         this.leftBarColor = getColor(rootNode, DistributionService.LEFT_COLOR, DEFAULT_LEFT_COLOR);
         this.rightBarColor = getColor(rootNode, DistributionService.RIGHT_COLOR, DEFAULT_RIGHT_COLOR);
         this.selectedBarColor = getColor(rootNode, DistributionService.SELECTED_COLOR, DEFAULT_MIDDLE_COLOR);
+        
+        String paletteName = (String)rootNode.getProperty(DistributionService.PALETTE, null);
+        if (!StringUtils.isEmpty(paletteName)) {
+            this.palette = PlatformGIS.getColorBrewer().getPalette(paletteName);
+        }
         
         LOGGER.debug("finish new DistributionModel()");
     }
@@ -321,7 +352,31 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
     }
 
     @Override
-    public void updateBar(IDistributionBar bar) {
+    public void updateBar(IDistributionBar bar) throws AWEException {
+        LOGGER.debug("start updateBar(<" + bar + ">)");
+        
+        //check input
+        if (bar == null) {
+            LOGGER.error("Input bar cannot be null");
+            throw new IllegalArgumentException("Input bar cannot be null");
+        }
+        if (StringUtils.isEmpty(bar.getName())) {
+            LOGGER.error("New name of Bar cannot be null or empty");
+            throw new IllegalArgumentException("New name of Bar cannot be null or empty");
+        }
+        if (bar.getCount() < 0) {
+            LOGGER.error("New count of Bar cannot be less than zero");
+            throw new IllegalArgumentException("New count of Bar cannot be less than zero");
+        }
+        if (bar.getRootElement() == null) {
+            LOGGER.error("New rootElement of Bar cannot be null");
+            throw new IllegalArgumentException("New rootElement of Bar cannot be null");
+        }
+        
+        //update bar
+        distributionService.updateDistributionBar(getRootNode(), bar);
+        
+        LOGGER.debug("finish updateBar()");
     }
 
     @Override
@@ -340,6 +395,8 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
         }
     
         LOGGER.debug("finish getDistributionBars()");
+        
+        barCount = result.size();
         
         return result;
     }
@@ -392,12 +449,12 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
     }
 
     @Override
-    public Color getSelectedColor() {
+    public Color getMiddleColor() {
         return selectedBarColor;
     }
 
     @Override
-    public void setSelectedColor(Color selectedBarColor) {
+    public void setMiddleColor(Color selectedBarColor) {
         if (selectedBarColor == null) {
             LOGGER.error("Cannot set null for selectedBarColor");
             throw new IllegalArgumentException("Cannot set null for selectedBarColor");
@@ -409,7 +466,26 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
     @Override
     public void finishUp() throws AWEException {
         distributionService.updateSelectedBarColors(rootNode, leftBarColor, rightBarColor, selectedBarColor);
+        if (palette != null) {
+            distributionService.updatePalette(rootNode, palette);
+        }
         
         super.finishUp();
     }
+
+    @Override
+    public int getBarCount() {
+        return barCount; 
+    }
+
+    @Override
+    public BrewerPalette getPalette() {
+        return palette;
+    }
+
+    @Override
+    public void setPalette(BrewerPalette palette) {
+        this.palette = palette;
+    }
+
 }

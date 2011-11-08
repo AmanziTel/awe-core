@@ -15,6 +15,7 @@ package org.amanzi.neo.services.model;
 
 import java.util.Map;
 
+import org.amanzi.neo.model.distribution.IDistributionalModel;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 
@@ -27,7 +28,7 @@ import org.amanzi.neo.services.exceptions.DatabaseException;
  * @author grigoreva_a
  * @since 1.0.0
  */
-public interface INodeToNodeRelationsModel extends IPropertyStatisticalModel {
+public interface INodeToNodeRelationsModel extends IPropertyStatisticalModel, IDistributionalModel {
 
     public INodeToNodeRelationsType getNodeToNodeRelationsType();
 
@@ -62,7 +63,26 @@ public interface INodeToNodeRelationsModel extends IPropertyStatisticalModel {
      * @param properties
      * @param isReplace
      * @throws DatabaseException
+     * @throws AWEException
      */
     void updateRelationship(IDataElement serviceElement, IDataElement neighbourElement, Map<String, Object> properties,
-            boolean isReplace) throws DatabaseException;
+            boolean isReplace) throws DatabaseException, AWEException;
+
+    /**
+     * return service element by proxy
+     * 
+     * @param proxy proxy element
+     * @return service sector or null if not found
+     */
+    public IDataElement getServiceElementByProxy(IDataElement proxy);
+
+    /**
+     * try to find existed frequency element in db, if not foun -create new one.
+     * 
+     * @param frequency
+     * @return frequencyElement
+     * @throws DatabaseException
+     */
+    public IDataElement getFrequencyNode(int frequency) throws DatabaseException;
+
 }

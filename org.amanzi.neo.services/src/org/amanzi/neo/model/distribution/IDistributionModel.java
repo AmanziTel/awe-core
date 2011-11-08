@@ -19,6 +19,7 @@ import java.util.List;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IModel;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.geotools.brewer.color.BrewerPalette;
 
 /**
  * Distribution Model
@@ -55,7 +56,7 @@ public interface IDistributionModel extends IModel {
      *
      * @param bar 
      */
-    public void updateBar(IDistributionBar bar);
+    public void updateBar(IDistributionBar bar) throws AWEException;
     
     /**
      * Set this model as current/not-current distribution model of analyzed model
@@ -93,11 +94,31 @@ public interface IDistributionModel extends IModel {
      *
      * @return
      */
-    public Color getSelectedColor();
+    public Color getMiddleColor();
     
     /**
      * Set Color for Selected Bar
      */
-    public void setSelectedColor(Color selectedBarColor);
+    public void setMiddleColor(Color middleBarColor);
+    
+    /**
+     * Returns number of Bars in this distribution
+     */
+    public int getBarCount();
+    
+    /**
+     * Returns Palette of this Distribution
+     *
+     * @return
+     */
+    public BrewerPalette getPalette();
+    
+    /**
+     * Set Palette of this Distribution
+     *
+     * @param palette
+     */
+    public void setPalette(BrewerPalette palette);
+
 
 }

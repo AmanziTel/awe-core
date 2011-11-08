@@ -32,11 +32,26 @@ public interface ISelectionModel extends IDataModel {
      * @param element
      */
     public void linkToSector(IDataElement element) throws AWEException;
-    
+
     /**
      * Returns number of Nodes in current Selection Model
-     *
+     * 
      * @return
      */
     public int getSelectedNodesCount();
+
+    /**
+     * Check existing of selection link
+     * 
+     * @param element
+     * @return true if link exist
+     */
+    public boolean isExistSelectionLink(IDataElement element);
+
+    /**
+     * Delete selection link
+     * 
+     * @param element
+     */
+    void deleteSelectionLink(IDataElement element);
 }

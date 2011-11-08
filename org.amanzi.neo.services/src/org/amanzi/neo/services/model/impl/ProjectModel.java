@@ -21,14 +21,14 @@ import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
-import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
-import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.ProjectService;
+import org.amanzi.neo.services.ProjectService.ProjectNodeType;
 import org.amanzi.neo.services.enums.IDriveType;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.INetworkModel;
+import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
 import org.amanzi.neo.services.model.IProjectModel;
 import org.amanzi.neo.services.model.IRenderableModel;
 import org.apache.commons.lang.StringUtils;
@@ -44,11 +44,10 @@ import org.neo4j.graphdb.Node;
  * @since 1.0.0
  */
 public class ProjectModel extends AbstractModel implements IProjectModel {
-    
+
     /**
-     * Class that describes Distribution Item
-     * 
-     * It consist of DistributionalModel and Type of Node to Analyze
+     * Class that describes Distribution Item It consist of DistributionalModel and Type of Node to
+     * Analyze
      * 
      * @author gerzog
      * @since 1.0.0
@@ -100,6 +99,8 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
          * @return
          */
         public INodeType getNodeType() {
+            if (nodeType == null)
+                return model.getType();
             return nodeType;
         }
 
@@ -128,6 +129,8 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
      * @param name the name of the project.
      */
     public ProjectModel(String name) {
+        super(ProjectNodeType.PROJECT);
+
         if ((name == null) || (name.equals(StringUtils.EMPTY))) {
             throw new IllegalArgumentException("Name is null or empty.");
         }
@@ -145,6 +148,8 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
      * @param projectNode node for a Project
      */
     public ProjectModel(Node projectNode) {
+        super(ProjectNodeType.PROJECT);
+
         if (projectNode == null) {
             throw new IllegalArgumentException("Project node is null");
         }
@@ -376,18 +381,31 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
     }
 
     @Override
+    public Iterable<IDriveModel> findAllDriveModels() throws AWEException {
+        List<IDriveModel> datasets = new ArrayList<IDriveModel>();
+
+        List<Node> allNetworkNodes = null;
+        allNetworkNodes = dsServ.findAllDatasetsByType(getRootNode(), DatasetTypes.DRIVE);
+        for (Node networkRoot : allNetworkNodes) {
+            datasets.add(new DriveModel(networkRoot));
+        }
+
+        return datasets;
+    }
+
+    @Override
     public List<DistributionItem> getAllDistributionalModels() throws AWEException {
         List<DistributionItem> result = new ArrayList<DistributionItem>();
         // first add all NetworkModels and it's n2nrelationship models
         for (INetworkModel network : findAllNetworkModels()) {
             // create Distribution Items for all possible network Types
             for (INodeType nodeType : network.getNetworkStructure()) {
-                if (!nodeType.equals(NetworkElementNodeType.NETWORK)) {
-                    result.add(new DistributionItem(network, nodeType));
-                }
+                result.add(new DistributionItem(network, nodeType));
             }
-
             // create Distribution Items for n2n relationships
+            for (INodeToNodeRelationsModel n2nModel : network.getNodeToNodeModels()) {
+                result.add(new DistributionItem(n2nModel));
+            }
         }
 
         return result;

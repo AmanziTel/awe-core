@@ -16,6 +16,8 @@ package org.amanzi.neo.services;
 import java.awt.Color;
 import java.util.Iterator;
 
+import net.refractions.udig.ui.PlatformGIS;
+
 import org.amanzi.neo.model.distribution.IDistribution;
 import org.amanzi.neo.model.distribution.IDistributionBar;
 import org.amanzi.neo.services.enums.INodeType;
@@ -24,6 +26,7 @@ import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.geotools.brewer.color.BrewerPalette;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -81,6 +84,10 @@ public class DistributionService extends NewAbstractService {
      */
     public static final String SELECTED_COLOR = "selected_color";
     
+    /*
+     * Selected Palette property of Distribution Root node
+     */
+    public static final String PALETTE = "palette";
     
     /**
      * Node Types for Distribution Database Structure
@@ -170,6 +177,14 @@ public class DistributionService extends NewAbstractService {
         if (StringUtils.isEmpty(distribution.getName())) {
             LOGGER.error("Name of Distribution cannot be null or empty");
             throw new IllegalArgumentException("Name of Distribution cannot be null or empty");
+        }
+        if (StringUtils.isEmpty(distribution.getPropertyName())) {
+            LOGGER.error("PropertyName of Distribution cannot be null or empty");
+            throw new IllegalArgumentException("PropertyName of Distribution cannot be null or empty");
+        }
+        if (distribution.getNodeType() == null) {
+            LOGGER.error("NodeType of Distribution cannot be null or empty");
+            throw new IllegalArgumentException("NodeType of Distribution cannot be null or empty");
         }
         if (StringUtils.isEmpty(distribution.getPropertyName())) {
             LOGGER.error("PropertyName of Distribution cannot be null or empty");
@@ -618,6 +633,57 @@ public class DistributionService extends NewAbstractService {
         }
         
         LOGGER.debug("finish updateSelectedBarColors()");
+    }
+    
+    /**
+     * Updates Palette of selected Distribution Model
+     *
+     * @param rootAggregationNode
+     * @param palette
+     */
+    public void updatePalette(Node rootAggregationNode, BrewerPalette palette) throws DatabaseException {
+        LOGGER.debug("start updatePalette(<" + rootAggregationNode + ">, <" + palette + ">)");
+        
+        //check input
+        if (rootAggregationNode == null) {
+            LOGGER.error("Input rootAggregationNode cannot be null");
+            throw new IllegalArgumentException("Input rootAggregationNode cannot be null");
+        }
+        if (palette == null) {
+            LOGGER.error("Input palette cannot be null");
+            throw new IllegalArgumentException("Input palette cannot be null");
+        }
+        
+        //validate palette
+        boolean isValid = false;
+        for (BrewerPalette gisPalette : PlatformGIS.getColorBrewer().getPalettes()) {
+            if (gisPalette.getName().equals(palette.getName())) {
+                isValid = true;
+                break;
+            }
+        }
+        
+        if (!isValid) {
+            LOGGER.error("There is not such palette <" + palette + ">");
+            throw new IllegalArgumentException("There is not such palette <" + palette + ">");
+        }
+        
+        //update property
+        Transaction tx = graphDb.beginTx();
+        try {
+            
+            rootAggregationNode.setProperty(PALETTE, palette.getName());
+            
+            tx.success();
+        } catch (Exception e) {
+            tx.failure();
+            LOGGER.error("Error on updating Palette property of Node", e);
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
+        
+        LOGGER.debug("finish updatePalette()");
     }
 }
 

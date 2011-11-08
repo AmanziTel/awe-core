@@ -15,6 +15,7 @@ package org.amanzi.neo.services.model.impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -88,7 +89,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
      * @param networkRoot
      */
     public NetworkModel(Node networkRoot) throws AWEException {
-        super(networkRoot);
+        super(networkRoot, DatasetTypes.NETWORK);
         // validate
         if (networkRoot == null) {
             throw new IllegalArgumentException("Network root is null.");
@@ -118,9 +119,9 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
      * @throws DuplicateNodeNameException
      * @throws AWEException
      */
-    public NetworkModel(IDataElement project, IDataElement network, String name, String crsCode)
-            throws InvalidDatasetParameterException, DatasetTypeParameterException, DuplicateNodeNameException, AWEException {
-        super(null);
+    public NetworkModel(IDataElement project, IDataElement network, String name, String crsCode) throws InvalidDatasetParameterException,
+            DatasetTypeParameterException, DuplicateNodeNameException, AWEException {
+        super(null, DatasetTypes.NETWORK);
         // validate
         if (project == null) {
             throw new IllegalArgumentException("Parent is null.");
@@ -450,7 +451,22 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
 
     @Override
     public Iterable<ISelectionModel> getAllSelectionModels() throws AWEException {
-        return null;
+        Iterable<Node> nodes = nwServ.getAllSelectionModelsOfNetwork(rootNode);
+        List<ISelectionModel> models = new ArrayList<ISelectionModel>();
+        for (Node node : nodes) {
+            models.add(new SelectionModel(node));
+        }
+        return models;
+    }
+    
+    @Override
+    public Iterable<ISelectionModel> getAllSelectionModelsOfSector(IDataElement element) throws AWEException {
+        Iterable<Node> nodes = nwServ.getAllSelectionModelsOfSector(((DataElement)element).getNode());
+        List<ISelectionModel> models = new ArrayList<ISelectionModel>();
+        for (Node node : nodes) {
+            models.add(new SelectionModel(node));
+        }
+        return models;
     }
 
     @Override
@@ -521,6 +537,10 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         return currentNetworkStructure;
     }
 
+    public void setCurrentNetworkStructure(List<INodeType> currentNetworkStructure) {
+        this.currentNetworkStructure = currentNetworkStructure;
+    }
+
     @Override
     public IDataElement createElement(IDataElement parent, Map<String, Object> element, RelationshipType reltype)
             throws AWEException {
@@ -547,16 +567,20 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
 
             if (type.equals(NetworkElementNodeType.SECTOR)) {
                 Integer bsic = nwServ.getBsicProperty(element);
-
+                Integer bcch = element.get("bcchno") != null ? (Integer)element.get("bcchno") : null;
                 Object elName = element.get(NewAbstractService.NAME);
                 Object elCI = element.get(NewNetworkService.CELL_INDEX);
                 Object elLAC = element.get(NewNetworkService.LOCATION_AREA_CODE);
+
                 if (bsic == 0) {
                     node = nwServ.createSector(parentNode, getIndex(type), elName == null ? null : elName.toString(), elCI == null
                             ? null : elCI.toString(), elLAC == null ? null : elLAC.toString());
                 } else {
                     node = nwServ.createSector(parentNode, getIndex(type), elName == null ? null : elName.toString(), elCI == null
                             ? null : elCI.toString(), elLAC == null ? null : elLAC.toString(), bsic);
+                }
+                if (bcch != null) {
+                    nwServ.addNodeToIndex(node, getIndex(type), "bcchno", bcch);
                 }
             } else {
                 node = nwServ.createNetworkElement(parentNode, getIndex(type), element.get(NewAbstractService.NAME).toString(),
@@ -659,20 +683,13 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
      * return closest to servSector element
      */
     @Override
-    public IDataElement getClosestSector(IDataElement servSector, Integer bsic, Integer bcch) throws DatabaseException {
+    public IDataElement getClosestSectorByBsicBcch(IDataElement servSector, Integer bsic, Integer bcch) throws DatabaseException {
         Set<IDataElement> nodes = findSectorsByBsicBcch(bsic, bcch);
-        return getClosestNode(servSector, nodes, 30000);
+        return getClosestElement(servSector, nodes, 30000);
     }
 
-    /**
-     * return closest to serviceSector nodes
-     * 
-     * @param servSector
-     * @param nodes
-     * @param i
-     * @return
-     */
-    private IDataElement getClosestNode(IDataElement servSector, Set<IDataElement> candidates, int maxDistance) {
+    @Override
+    public IDataElement getClosestElement(IDataElement servSector, Set<IDataElement> candidates, int maxDistance) {
         Coordinate c = getCoordinate(servSector);
         CoordinateReferenceSystem crs = getCRS();
         if (c == null || crs == null) {
@@ -717,13 +734,34 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
      */
     private Set<IDataElement> findSectorsByBsicBcch(Integer bsic, Integer bcch) throws DatabaseException {
         Set<IDataElement> result = new LinkedHashSet<IDataElement>();
-        Iterator<Node> findedNodes = nwServ.findNetworkElementsByIndexName(getIndex(NetworkElementNodeType.SECTOR), "bsic", bsic);
+        Iterator<Node> findedNodes = nwServ.findByIndex(getIndex(NetworkElementNodeType.SECTOR), NewNetworkService.BSIC, bsic);
         while (findedNodes.hasNext()) {
             Node node = findedNodes.next();
             Integer bcchno = (Integer)node.getProperty("bcchno", null);
             if (ObjectUtils.equals(bcch, bcchno)) {
                 result.add(new DataElement(node));
             }
+        }
+        return result;
+    }
+
+    @Override
+    public Set<IDataElement> findElementByPropertyValue(INodeType type, String propertyName, Object propertyValue)
+            throws DatabaseException {
+        if (type == null) {
+            throw new IllegalArgumentException("type cann't be null");
+        }
+        if (propertyName == null) {
+            throw new IllegalArgumentException("propertyName cann't be null");
+        }
+        if (propertyValue == null) {
+            throw new IllegalArgumentException("propertyValue cann't be null");
+        }
+        Set<IDataElement> result = new HashSet<IDataElement>();
+        Iterator<Node> findedNodes = nwServ.findByIndex(getIndex(type), propertyName, propertyValue);
+        while (findedNodes.hasNext()) {
+            Node node = findedNodes.next();
+            result.add(new DataElement(node));
         }
         return result;
     }

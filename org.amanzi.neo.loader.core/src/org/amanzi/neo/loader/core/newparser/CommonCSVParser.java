@@ -16,14 +16,18 @@ package org.amanzi.neo.loader.core.newparser;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.amanzi.neo.loader.core.CountingFileInputStream;
 import org.amanzi.neo.loader.core.IConfiguration;
@@ -48,6 +52,7 @@ public class CommonCSVParser<T1 extends ISaver<IModel, CSVContainer, T2>, T2 ext
     protected int MINIMAL_SIZE = 2;
     protected Character delimeters;
     protected String[] possibleFieldSepRegexes = new String[] {"\t", ",", ";", " ", "\n"};
+    protected String[] probableSeparator = new String[] {"\t", "\n"};
     protected Character quoteCharacter = 0;
     private CSVContainer container;
     private CountingFileInputStream is;
@@ -114,6 +119,7 @@ public class CommonCSVParser<T1 extends ISaver<IModel, CSVContainer, T2>, T2 ext
                 tempFile = currentFile;
                 persentageOld = 0;
                 container.setHeaders(null);
+                container.setFile(tempFile);
             } catch (FileNotFoundException e) {
                 // TODO Handle FileNotFoundException
                 throw (RuntimeException)new RuntimeException().initCause(e);
@@ -155,10 +161,59 @@ public class CommonCSVParser<T1 extends ISaver<IModel, CSVContainer, T2>, T2 ext
      */
     private char getDelimiters(File file) {
         if (delimeters == null) {
-            String fieldSepRegex = LoaderUtils.defineDelimeters(file, MINIMAL_SIZE, possibleFieldSepRegexes);
-            delimeters = fieldSepRegex.charAt(0);
+            Map<String, Integer> fieldSepRegex = defineDelimeters(file, MINIMAL_SIZE, possibleFieldSepRegexes);
+            for (String sep : probableSeparator) {
+                if (fieldSepRegex.containsKey(sep) && fieldSepRegex.get(sep) > 1) {
+                    delimeters = sep.charAt(0);
+                }
+            }
+            if (delimeters == null) {
+                Object[] arr = fieldSepRegex.keySet().toArray();
+                delimeters = arr[arr.length - 1].toString().charAt(0);
+            }
         }
+
         return delimeters;
     }
 
+    /**
+     * Define delimeters.
+     * 
+     * @param file the file
+     * @param minSize the min size
+     * @param possibleFieldSepRegexes the possible field sep regexes
+     * @return the string
+     */
+    public Map<String, Integer> defineDelimeters(File file, int minSize, String[] possibleFieldSepRegexes) {
+        String fieldSepRegex = "\t";
+        BufferedReader read = null;
+        Map<String, Integer> seaprators = new LinkedHashMap<String, Integer>();
+        String line;
+        try {
+            read = new BufferedReader(new FileReader(file));
+            while ((line = read.readLine()) != null) {
+                int maxMatch = 0;
+                for (String regex : possibleFieldSepRegexes) {
+                    String[] fields = line.split(regex);
+                    if (fields.length > maxMatch) {
+                        maxMatch = fields.length;
+                        fieldSepRegex = regex;
+                        seaprators.put(fieldSepRegex, maxMatch);
+                    }
+                }
+                if (maxMatch >= minSize) {
+                    break;
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                read.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            };
+        }
+        return seaprators;
+    }
 }

@@ -10,8 +10,10 @@ import static org.mockito.Mockito.verify;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import junit.framework.Assert;
 
@@ -503,6 +505,77 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
 
         // verify
         context.assertIsSatisfied();
+    }
+
+    @Test
+    public void testFindElementByPropertyValue() {
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put(NewAbstractService.TYPE, NetworkElementNodeType.SITE.getId());
+        params.put(NewAbstractService.NAME, NetworkElementNodeType.SITE.getId());
+        params.put("lat", 1d);
+        params.put("lon", 2d);
+        IDataElement parentElement;
+        try {
+            parentElement = model.createElement(new DataElement(network), params);
+        } catch (AWEException e1) {
+            // TODO Handle AWEException
+            throw (RuntimeException)new RuntimeException().initCause(e1);
+        }
+        params.clear();
+        params.put(NewAbstractService.TYPE, NetworkElementNodeType.SECTOR.getId());
+        params.put(NewAbstractService.NAME, NetworkElementNodeType.SECTOR.getId());
+        params.put("bcchno", 12);
+        params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
+        DataElement element = new DataElement(params);
+
+        IDataElement newElement;
+        try {
+            newElement = model.createElement(parentElement, element);
+        } catch (AWEException e) {
+            LOGGER.error("Erorr while trying to Create element" + element, e);
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+        parentElement = newElement;
+
+        Set<IDataElement> testElement;
+        try {
+            testElement = model.findElementByPropertyValue(NetworkElementNodeType.SECTOR, "bcchno", 12);
+        } catch (AWEException e) {
+            LOGGER.error("Erorr while trying to found element", e);
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+        // object returned not null
+        assertNotNull(testElement);
+        // underlying node not null
+        assertNotNull(((DataElement)testElement.iterator().next()).getNode());
+
+    }
+
+    @Test
+    public void testGetClosestElement() {
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put(NewAbstractService.TYPE, NetworkElementNodeType.SITE.getId());
+        params.put(NewAbstractService.NAME, NetworkElementNodeType.SITE.getId());
+        params.put("lat", 107d);
+        params.put("lon", 24d);
+        IDataElement site1;
+        IDataElement site2;
+        try {
+            site1 = model.createElement(new DataElement(network), params);
+            params.put(NewAbstractService.TYPE, NetworkElementNodeType.SITE.getId());
+            params.put(NewAbstractService.NAME, NetworkElementNodeType.SITE.getId());
+            params.put("lat", 105d);
+            params.put("lon", 34d);
+            site2 = model.createElement(new DataElement(network), params);
+        } catch (AWEException e1) {
+            // TODO Handle AWEException
+            throw (RuntimeException)new RuntimeException().initCause(e1);
+        }
+        Set<IDataElement> testSet = new HashSet<IDataElement>();
+        testSet.add(site2);
+        IDataElement finded = model.getClosestElement(site1, testSet, Integer.MAX_VALUE);
+        // object returned not null
+        assertNotNull(finded);
     }
 
     @SuppressWarnings("unchecked")

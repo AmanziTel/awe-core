@@ -16,8 +16,12 @@ package org.amanzi.neo.services.model.impl;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.amanzi.neo.model.distribution.IDistribution;
+import org.amanzi.neo.model.distribution.IDistributionModel;
+import org.amanzi.neo.model.distribution.impl.DistributionModel;
 import org.amanzi.neo.services.CorrelationService.CorrelationNodeTypes;
 import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.NewNetworkService;
 import org.amanzi.neo.services.NodeTypeManager;
@@ -49,9 +53,9 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
     public static final String RELATION_TYPE = "rel_type";
 
     private static Logger LOGGER = Logger.getLogger(NodeToNodeRelationshipModel.class);
-
+    public static String FREQUENCY = "frequency";
     private INodeToNodeRelationsType relType;
-
+    private final Map<Integer, IDataElement> cache = new HashMap<Integer, IDataElement>();
     private NewDatasetService dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
     private NewNetworkService networkServ = NeoServiceFactory.getInstance().getNewNetworkService();
 
@@ -64,7 +68,7 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
      * @since 1.0.0
      */
     public enum N2NRelTypes implements INodeToNodeRelationsType {
-        NEIGHBOUR, INTERFERENCE_MATRIX, TRIANGULATION, SHADOW;
+        NEIGHBOUR, INTERFERENCE_MATRIX, TRIANGULATION, SHADOW, ILLEGAL_FREQUENCY, FREQUENCY_SPECTRUM, TRANSMISSION, EXCEPTION;
 
         @Override
         public String getId() {
@@ -82,7 +86,7 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
      * @since 1.0.0
      */
     public enum NodeToNodeTypes implements INodeType {
-        NODE2NODE, PROXY;
+        NODE2NODE, PROXY, FREQUENCY;
 
         static {
             NodeTypeManager.registerNodeType(CorrelationNodeTypes.class);
@@ -106,6 +110,8 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
      */
     public NodeToNodeRelationshipModel(IDataElement parent, INodeToNodeRelationsType relType, String name, INodeType nodeType)
             throws AWEException {
+        super(NodeToNodeTypes.NODE2NODE);
+        
         // validate parameters
         if (parent == null) {
             throw new IllegalArgumentException("Parent is null.");
@@ -126,8 +132,8 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
 
         this.nodeType = nodeType;
         this.relType = relType;
-        this.name = name;
-        Node root = dsServ.findNode(parentNode, relType, name, NodeToNodeTypes.NODE2NODE);
+        this.name = name + " " + relType.name();
+        Node root = dsServ.findNode(parentNode, relType, this.name, NodeToNodeTypes.NODE2NODE);
         if (root != null) {
             this.rootNode = root;
         } else {
@@ -139,12 +145,17 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
             params.put(RELATION_TYPE, this.relType.getId());
             params.put(PRIMARY_TYPE, nodeType.getId());
             dsServ.setProperties(rootNode, params);
+            if (this.relType == N2NRelTypes.FREQUENCY_SPECTRUM) {
+                loadCache();
+            }
         }
 
         initializeStatistics();
     }
 
     NodeToNodeRelationshipModel(Node n2nRoot) throws AWEException {
+        super(NodeToNodeTypes.NODE2NODE);
+        
         // validate
         if (n2nRoot == null) {
             throw new IllegalArgumentException("Node2node root is null.");
@@ -156,6 +167,31 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
         this.name = n2nRoot.getProperty(NewNetworkService.NAME).toString();
 
         initializeStatistics();
+    }
+
+    private void loadCache() {
+        cache.clear();
+        for (Node node : dsServ.getChildrenChainTraverser(rootNode)) {
+            cache.put((Integer)node.getProperty(FREQUENCY), new DataElement(node));
+        }
+    }
+
+    @Override
+    public IDataElement getFrequencyNode(int frequency) throws DatabaseException {
+        if (this.relType != N2NRelTypes.FREQUENCY_SPECTRUM) {
+            throw new IllegalAccessError("Frequency node can be get only from spectrum model");
+        }
+        IDataElement result = cache.get(frequency);
+        if (result != null) {
+            return result;
+        }
+        Node newNode = dsServ.createNode(NodeToNodeTypes.FREQUENCY);
+        newNode.setProperty(FREQUENCY, frequency);
+        newNode.setProperty(NewAbstractService.NAME, frequency);
+        dsServ.addChild(rootNode, newNode, null);
+        result = new DataElement(newNode);
+        cache.put(frequency, result);
+        return result;
     }
 
     @Override
@@ -206,11 +242,12 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
 
     @Override
     public void updateRelationship(IDataElement serviceElement, IDataElement neighbourElement, Map<String, Object> properties,
-            boolean isReplace) throws DatabaseException {
+            boolean isReplace) throws AWEException {
+        linkNode(serviceElement, neighbourElement, properties);
         Node serviceNode = ((DataElement)serviceElement).getNode();
         Node neighbourNode = ((DataElement)neighbourElement).getNode();
-        Node serviceProxy = findProxy(serviceNode);
-        Node neighbourProxy = findProxy(neighbourNode);
+        Node serviceProxy = getProxy(serviceNode);
+        Node neighbourProxy = getProxy(neighbourNode);
         Relationship rel = related(serviceProxy, neighbourProxy);
         NeoServiceFactory.getInstance().getNewNetworkService()
                 .completeProperties(rel, new DataElement(properties), isReplace, null);
@@ -276,6 +313,11 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
     }
 
     @Override
+    public IDataElement getServiceElementByProxy(IDataElement proxy) {
+        return new DataElement(networkServ.getServiceElementByProxy(((DataElement)proxy).getNode(), (N2NRelTypes)relType));
+    }
+
+    @Override
     public Iterable<IDataElement> getAllElementsByType(INodeType elementType) {
         if (elementType == null) {
             throw new IllegalArgumentException("Element type is null.");
@@ -285,4 +327,8 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
         return new DataElementIterable(dsServ.findAllN2NElements(getRootNode(), elementType, relType));
     }
 
+    @Override
+    public IDistributionModel getDistributionModel(IDistribution< ? > distributionType) throws AWEException {
+        return new DistributionModel(this, distributionType);
+    }
 }

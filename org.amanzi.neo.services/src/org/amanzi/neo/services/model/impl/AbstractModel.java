@@ -34,8 +34,8 @@ public abstract class AbstractModel implements IModel {
     protected INodeType nodeType;
     protected IVault statisticsVault;
     
-    public AbstractModel() {
-        
+    protected AbstractModel(INodeType nodeType) {
+        this.nodeType = nodeType;
     }
 
     @Override
