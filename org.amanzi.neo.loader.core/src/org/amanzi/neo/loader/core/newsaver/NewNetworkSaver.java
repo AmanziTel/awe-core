@@ -174,8 +174,8 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
             addedDatasetSynonyms(model, NetworkElementNodeType.SITE, LON, headers.get(columnSynonyms.get(fileSynonyms.get(LON))));
             addedDatasetSynonyms(model, NetworkElementNodeType.SITE, LAT, headers.get(columnSynonyms.get(fileSynonyms.get(LAT))));
         }
-        nullSynonymValue(row, LON);
-        nullSynonymValue(row, LAT);
+        resetRowValueBySynonym(row, LON);
+        resetRowValueBySynonym(row, LAT);
         createSector(findedElement, row);
     }
 
@@ -341,7 +341,7 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
             }
             addedDatasetSynonyms(model, nodeType, NewAbstractService.NAME, headers.get(getHeaderId(fileSynonyms.get(type))));
         }
-        nullSynonymValue(row, type);
+        resetRowValueBySynonym(row, type);
         return findedElement;
     }
 
@@ -383,7 +383,7 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
         } else {
             siteName = headers.get(getHeaderId((fileSynonyms.get(SITE))));
             siteMap.put(NewAbstractService.NAME, getSynonymValue(row, fileSynonyms.get(SITE)));
-            nullSynonymValue(row, SITE);
+            resetRowValueBySynonym(row, SITE);
         }
         return true;
     }
@@ -444,7 +444,7 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
      * @param row
      * @param synonymssaedwd
      */
-    private void nullSynonymValue(List<String> row, String synonym) {
+    private void resetRowValueBySynonym(List<String> row, String synonym) {
         row.set(columnSynonyms.get(fileSynonyms.get(synonym)), null);
     }
 

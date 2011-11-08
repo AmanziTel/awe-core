@@ -564,8 +564,8 @@ public class DriveModelTest extends AbstractNeoServiceTest {
         }
 
         Map<String, Object> params = new HashMap<String, Object>();
-        long lat = (long)(Math.random() * Long.MAX_VALUE);
-        long lon = (long)(Math.random() * Long.MAX_VALUE);
+        double lat = (double)(Math.random() * Long.MAX_VALUE);
+        double lon = (double)(Math.random() * Long.MAX_VALUE);
         params.put(DriveModel.LATITUDE, lat);
         params.put(DriveModel.LONGITUDE, lon);
         params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
@@ -581,8 +581,8 @@ public class DriveModelTest extends AbstractNeoServiceTest {
         // location node created
         Assert.assertNotNull(l);
         // location node properties correct
-        Assert.assertEquals(lat, l.getProperty(DriveModel.LATITUDE, 0L));
-        Assert.assertEquals(lon, l.getProperty(DriveModel.LONGITUDE, 0L));
+        Assert.assertEquals(lat, l.getProperty(DriveModel.LATITUDE, 0d));
+        Assert.assertEquals(lon, l.getProperty(DriveModel.LONGITUDE, 0d));
         // chain exists
         Assert.assertEquals(m, l.getRelationships(DriveRelationshipTypes.LOCATION, Direction.INCOMING).iterator().next()
                 .getOtherNode(l));
@@ -646,8 +646,8 @@ public class DriveModelTest extends AbstractNeoServiceTest {
         }
 
         Map<String, Object> params = new HashMap<String, Object>();
-        params.put(DriveModel.LATITUDE, 0L);
-        params.put(DriveModel.LONGITUDE, 0L);
+        params.put(DriveModel.LATITUDE, 0d);
+        params.put(DriveModel.LONGITUDE, 0d);
         params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
         Node m = null;
         try {

@@ -14,6 +14,7 @@
 package org.amanzi.neo.model.distribution.xml;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URL;
 
@@ -51,26 +52,47 @@ public class DistributionXmlParser {
 
     private Distribution xmlDistr;
 
+    public Distribution getXmlDistr() {
+        return xmlDistr;
+    }
+
     /**
-     * Take as a parameter url to xml resource, create new JAXBContext instance and Unmarshaller,
-     * parse stream from url and gets Distribution value. After check constraints,
+     * Constructor for DistributionXmlParser with ready distribution. Create DistributionXmlParser
+     * and check constraints.
+     * 
+     * @param distribution
+     * @throws DistributionXmlParsingException
+     */
+    public DistributionXmlParser(Distribution distribution) throws DistributionXmlParsingException {
+        this.xmlDistr = distribution;
+        checkConstraints(xmlDistr);
+    }
+
+    /**
+     * Constructor for DistributionXmlParser. Create new JAXBContext instance and Unmarshaller, get
+     * Distribution value by input stream with xml file. After check constraints,
      * DistributionXmlParsingException will be thrown if constraints violated
      * 
-     * @param url
+     * @param inputStream
+     * @param filename
      * @throws DistributionXmlParsingException
      * @throws IOException
      */
-    public DistributionXmlParser(URL url) throws DistributionXmlParsingException, IOException {
+    public DistributionXmlParser(InputStream inputStream, String filename) throws DistributionXmlParsingException, IOException {
         try {
             JAXBContext jc = JAXBContext.newInstance(ObjectFactory.class.getPackage().getName());
             Unmarshaller unmarshaller = jc.createUnmarshaller();
             @SuppressWarnings("unchecked")
-            JAXBElement<Distribution> jaxb = (JAXBElement<Distribution>)unmarshaller.unmarshal(url.openStream());
+            JAXBElement<Distribution> jaxb = (JAXBElement<Distribution>)unmarshaller.unmarshal(inputStream);
             xmlDistr = jaxb.getValue();
             checkConstraints(xmlDistr);
         } catch (JAXBException e) {
-            throw new DistributionXmlParsingException(url.getFile() + " unmarshalling was failed");
+            throw new DistributionXmlParsingException(filename + " unmarshalling was failed");
         }
+    }
+
+    public DistributionXmlParser(URL url) throws DistributionXmlParsingException, IOException {
+        this(url.openStream(), url.getFile());
     }
 
     public boolean checkCompatibility(IDistributionalModel model, INodeType nodeType, String propertyName) {
@@ -96,8 +118,8 @@ public class DistributionXmlParser {
     }
 
     /**
-     * Check mandatory fields of distr, if mandatory field is empty
-     * DistributionXmlParsingException will be thrown
+     * Check mandatory fields of distr, if mandatory field is empty DistributionXmlParsingException
+     * will be thrown
      * 
      * @param distr
      * @throws DistributionXmlParsingException
@@ -121,7 +143,7 @@ public class DistributionXmlParser {
 
     private static void checkFilterConstraints(org.amanzi.neo.model.distribution.xml.schema.Filter filter)
             throws DistributionXmlParsingException {
-        checkNull(filter.getNodeType(), filter.getNodeType());
+        checkNull(filter.getNodeType(), filter.getPropertyName());
         if (filter.getUnderlyingFilter() != null) {
             checkFilterConstraints(filter.getUnderlyingFilter());
         }
@@ -136,7 +158,8 @@ public class DistributionXmlParser {
     }
 
     /**
-     * Convert XML Filter Object to service Filter Object 
+     * Convert XML Filter Object to service Filter Object
+     * 
      * @param xmlFilter
      * @return
      */
