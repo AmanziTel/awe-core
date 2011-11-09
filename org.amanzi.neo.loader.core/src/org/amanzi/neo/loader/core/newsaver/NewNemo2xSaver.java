@@ -14,6 +14,7 @@
 package org.amanzi.neo.loader.core.newsaver;
 
 import java.io.File;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -21,6 +22,8 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -31,6 +34,7 @@ import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
 import org.amanzi.neo.loader.core.saver.nemo.NemoEvents;
 import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.NewDatasetService.DriveTypes;
 import org.amanzi.neo.services.exceptions.AWEException;
@@ -38,7 +42,11 @@ import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDriveModel;
+import org.amanzi.neo.services.model.INetworkModel;
+import org.amanzi.neo.services.model.impl.DataElement;
+import org.amanzi.neo.services.model.impl.DriveModel.DriveRelationshipTypes;
 import org.apache.log4j.Logger;
+import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
  * @author Vladislav_Kondratenko
@@ -56,6 +64,29 @@ public class NewNemo2xSaver extends AbstractDriveSaver {
     protected List<Map<String, Object>> subNodes;
     protected SimpleDateFormat timeFormat = new SimpleDateFormat(TIME_FORMAT);
     protected Set<IDataElement> locationDataElements = new HashSet<IDataElement>();
+    protected String EVENT_TYPE = "event_type";
+    protected IDataElement location;
+
+    protected NewNemo2xSaver(IDriveModel model, ConfigurationDataImpl config, GraphDatabaseService service) {
+        super(service);
+        preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.DRIVE);
+        columnSynonyms = new HashMap<String, Integer>();
+        setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
+        commitTx();
+        if (model != null) {
+            this.model = model;
+            modelMap.put(model.getName(), model);
+        } else {
+            init(config, null);
+        }
+    }
+
+    /**
+     * 
+     */
+    public NewNemo2xSaver() {
+        super();
+    }
 
     protected void addedNewFileToModels(File file) throws DatabaseException, DuplicateNodeNameException {
         model.addFile(file);
@@ -80,10 +111,170 @@ public class NewNemo2xSaver extends AbstractDriveSaver {
         }
     }
 
-    @Override
-    public void saveElement(CSVContainer dataElement) {
+    protected IDriveModel getVirtualModel() throws AWEException {
+        return model.getVirtualDataset(model.getName(), DriveTypes.MS);
     }
 
+    @Override
+    public void saveElement(CSVContainer dataElement) {
+        try {
+            commitTx();
+            CSVContainer container = dataElement;
+            if ((fileName != null && !fileName.equals(dataElement.getFile().getName())) || (fileName == null)) {
+                fileName = dataElement.getFile().getName();
+                addedNewFileToModels(dataElement.getFile());
+                lineCounter = 0l;
+
+            }
+            if (!container.getHeaders().isEmpty() && container.getValues().isEmpty()) {
+                buildModel(container.getHeaders());
+            } else if (!container.getHeaders().isEmpty() && !container.getValues().isEmpty()) {
+                buildModel(container.getValues());
+            }
+        } catch (DatabaseException e) {
+            LOGGER.error("Error while saving element on line " + lineCounter, e);
+            rollbackTx();
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        } catch (Exception e) {
+            LOGGER.error("Exception while saving element on line " + lineCounter, e);
+            commitTx();
+        }
+    }
+
+    /**
+     * Creates the sub nodes.
+     * 
+     * @param eventId the event id
+     * @param subNodes the sub nodes
+     * @param timestamp the timestamp
+     */
+    protected void createSubNodes(String eventId, List<Map<String, Object>> subNodes, long timestamp) {
+        if (subNodes == null) {
+            return;
+        }
+        for (Map<String, Object> propertyMap : subNodes) {
+            Iterator<Entry<String, Object>> iter = propertyMap.entrySet().iterator();
+            while (iter.hasNext()) {
+                Entry<String, Object> entry = iter.next();
+                if (entry.getValue() == null) {
+                    iter.remove();
+                }
+            }
+            if (propertyMap.isEmpty()) {
+                continue;
+            }
+            try {
+                if (propertyMap.containsKey(LATITUDE)) {
+                    propertyMap.remove(LATITUDE);
+                }
+                if (propertyMap.containsKey(LONGITUDE)) {
+                    propertyMap.remove(LONGITUDE);
+                }
+                propertyMap.put(TIMESTAMP, timestamp);
+                propertyMap.put(NewAbstractService.NAME, eventId);
+                getVirtualModel().getFile(fileName);
+                IDataElement createdElement = getVirtualModel().addMeasurement(fileName, propertyMap);
+                List<IDataElement> locList = new LinkedList<IDataElement>();
+                locList.add(location);
+                getVirtualModel().linkNode(createdElement, locList, DriveRelationshipTypes.LOCATION);
+            } catch (Exception e) {
+            }
+        }
+    }
+
+    /**
+     * @param headers
+     * @throws AWEException
+     */
+    private void buildModel(List<String> headers) throws AWEException {
+        String eventId = headers.get(0);
+        System.out.println("" + eventId);
+        NemoEvents event = NemoEvents.getEventById(eventId);
+        String time = headers.get(1);
+        String numberContextId = headers.get(2);
+        List<Integer> contextId = new ArrayList<Integer>();
+        Integer firstParamsId = 3;
+        if (!numberContextId.isEmpty()) {
+            int numContext = Integer.parseInt(numberContextId);
+            for (int i = 1; i <= numContext; i++) {
+                int value = 0;
+                String field = headers.get(firstParamsId++);
+                if (!field.isEmpty()) {
+                    try {
+                        value = Integer.parseInt(field);
+                    } catch (NumberFormatException e) {
+                        // TODO Handle NumberFormatException
+                        LOGGER.error("Wrong context id:" + field);
+                        value = 0;
+                    }
+                }
+                contextId.add(value);
+            }
+        }
+        ArrayList<String> parameters = new ArrayList<String>();
+        for (int i = firstParamsId; i < headers.size(); i++) {
+            parameters.add(headers.get(i));
+        }
+        // analyse
+        Map<String, Object> parsedParameters = analyseKnownParameters(headers, event, contextId, parameters);
+        if (parsedParameters == null) {
+            return;
+        }
+        long timestamp;
+        try {
+            timestamp = getTimeStamp(1, timeFormat.parse(time));
+        } catch (ParseException e) {
+            // some parameters do not have time
+            // NeoLoaderPlugin.error(e.getLocalizedMessage());
+            timestamp = 0;
+        }
+        parsedParameters.put(NewAbstractService.NAME, eventId);
+        parsedParameters.put(EVENT_TYPE, eventId);
+        parsedParameters.put(TIMESTAMP, timestamp);
+        removeEmpty(parsedParameters);
+        boolean isAlreadyCreated = false;
+        if ("GPS".equalsIgnoreCase(eventId)) {
+            Double longitude = (Double)parsedParameters.get(LONGITUDE);
+            Double latitude = (Double)parsedParameters.get(LATITUDE);
+            if (isCorrect(latitude) && latitude != 0d && isCorrect(longitude) && longitude != 0d) {
+                location = checkSameLocation(parsedParameters);
+                if (location != null) {
+                    parsedParameters.remove(LATITUDE);
+                    parsedParameters.remove(LONGITUDE);
+                }
+                IDataElement createdElement = model.addMeasurement(fileName, parsedParameters);
+                isAlreadyCreated = true;
+                if (location != null) {
+                    List<IDataElement> locList = new LinkedList<IDataElement>();
+                    locList.add(location);
+                    model.linkNode(createdElement, locList, DriveRelationshipTypes.LOCATION);
+                } else {
+                    IDataElement location = model.getLocation(createdElement);
+                    if (location != null) {
+                        locationDataElements.add(model.getLocation(createdElement));
+                    }
+                }
+            }
+        }
+        if (!isAlreadyCreated) {
+            IDataElement createdElement = model.addMeasurement(fileName, parsedParameters);
+            IDataElement location = model.getLocation(createdElement);
+            if (location != null) {
+                locationDataElements.add(model.getLocation(createdElement));
+            }
+        }
+        createSubNodes(eventId, subNodes, timestamp);
+    }
+
+    /**
+     * make appropriation with received event value row and properties name
+     * 
+     * @param element recieved row
+     * @param event defined event
+     * @param contextId
+     * @param parameters
+     * @return
+     */
     @SuppressWarnings("unchecked")
     protected Map<String, Object> analyseKnownParameters(List<String> element, NemoEvents event, List<Integer> contextId,
             ArrayList<String> parameters) {
