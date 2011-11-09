@@ -562,7 +562,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         if (parent == null) {
             throw new IllegalArgumentException("Parent is null.");
         }
-        LOGGER.info("getChildren(" + parent.toString() + ")");
+        LOGGER.debug("getChildren(" + parent.toString() + ")");
 
         Node parentNode = ((DataElement)parent).getNode();
         if (parentNode == null) {

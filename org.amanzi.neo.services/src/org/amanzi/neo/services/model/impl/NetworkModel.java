@@ -366,7 +366,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         if (parent == null) {
             parent = new DataElement(getRootNode());
         }
-        LOGGER.info("getChildren(" + parent.toString() + ")");
+        LOGGER.debug("getChildren(" + parent.toString() + ")");
 
         Node parentNode = ((DataElement)parent).getNode();
         if (parentNode == null) {

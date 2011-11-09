@@ -25,12 +25,18 @@ import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.internal.render.impl.RendererImpl;
 import net.refractions.udig.project.render.RenderException;
 
+import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.awe.models.catalog.neo.NewGeoResource;
 import org.amanzi.awe.neostyle.BaseNeoStyle;
 import org.amanzi.awe.neostyle.NetworkNeoStyle;
 import org.amanzi.awe.neostyle.NetworkNeoStyleContent;
+import org.amanzi.neo.core.NeoCorePlugin;
+import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
+import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
 import org.amanzi.neo.services.NewAbstractService;
+import org.amanzi.neo.services.NewNetworkService;
 import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
+import org.amanzi.neo.services.enums.GisTypes;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.IRenderableModel;
@@ -86,7 +92,8 @@ public class AbstractRenderer extends RendererImpl {
         double dataScaled = (bounds_transformed.getHeight() * bounds_transformed.getWidth())
                 / (data_bounds.getHeight() * data_bounds.getWidth());
 
-        double countScaled = dataScaled * count;
+        double countScaled = dataScaled * count / 2;
+        System.out.println(countScaled);
         RenderOptions.drawLabels = countScaled < RenderOptions.maxSitesLabel;
         if (countScaled < RenderOptions.maxSitesFull) {
             RenderOptions.scale = Scale.LARGE;
@@ -97,7 +104,9 @@ public class AbstractRenderer extends RendererImpl {
         }
         if (RenderOptions.scale.equals(Scale.LARGE) && RenderOptions.scaleSymbols) {
             RenderOptions.large_sector_size *= Math.sqrt(RenderOptions.maxSitesFull) / (3 * Math.sqrt(countScaled));
+            System.out.println(RenderOptions.large_sector_size);
             RenderOptions.large_sector_size = Math.min(RenderOptions.large_sector_size, RenderOptions.maxSymbolSize);
+            System.out.println(RenderOptions.large_sector_size);
         }
 
         bounds_transformed.expandBy(0.75 * (bounds_transformed.getHeight() + bounds_transformed.getWidth()));
@@ -138,7 +147,7 @@ public class AbstractRenderer extends RendererImpl {
 
         try {
 
-            // setStyle(destination);
+            setStyle(destination);
 
             // find a resource to render
             IRenderableModel model = resource.resolve(IRenderableModel.class, monitor);
@@ -148,7 +157,18 @@ public class AbstractRenderer extends RendererImpl {
             Envelope data_bounds = model.getBounds();
 
             // TODO: refactor
-            int count = ((INetworkModel)model).getPropertyCount(NetworkElementNodeType.SITE, NewAbstractService.NAME);
+            if (bounds_transformed == null) {
+                RenderOptions.scale = Scale.MEDIUM;
+            } else if (data_bounds != null && data_bounds.getHeight() > 0 && data_bounds.getWidth() > 0) {
+                long count = ((INetworkModel)model).getNodeCount(NetworkElementNodeType.SITE)/2;//TODO: /2 due to bugs
+                if (NeoLoaderPlugin.getDefault().getPreferenceStore().getBoolean(DataLoadPreferences.NETWORK_COMBINED_CALCULATION)) {
+                    double density = getAverageDensity(monitor);
+                    if (density > 0)
+                        count = (long)(density * data_bounds.getHeight() * data_bounds.getWidth());
+                }
+                setScaling(bounds_transformed, data_bounds, monitor, count);
+            }
+            int count = ((INetworkModel)model).getNodeCount(NetworkElementNodeType.SITE);
             setScaling(bounds_transformed, data_bounds, monitor, count);
 
             // TODO: selection
@@ -238,6 +258,16 @@ public class AbstractRenderer extends RendererImpl {
 
     protected Color changeColor(Color color, int toAlpha) {
         return new Color(color.getRed(), color.getGreen(), color.getBlue(), toAlpha);
+    }
+    
+    /**
+     * gets average count of geoNeo.getCount() from all resources in map
+     * 
+     * @param data_bounds
+     * @return average count
+     */
+    protected double getAverageDensity(IProgressMonitor monitor) {
+        return 0;
     }
 
 }
