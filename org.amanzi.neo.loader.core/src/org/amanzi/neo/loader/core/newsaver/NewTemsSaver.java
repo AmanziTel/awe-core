@@ -61,7 +61,7 @@ public class NewTemsSaver extends AbstractDriveSaver {
     private int previous_pn_code = -1;
     private IDataElement location;
 
-    protected NewTemsSaver(IDriveModel model, ConfigurationDataImpl config, GraphDatabaseService service) {
+    protected NewTemsSaver(IDriveModel model, IDriveModel virtualModel, ConfigurationDataImpl config, GraphDatabaseService service) {
         super(service);
         preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.DRIVE);
         columnSynonyms = new HashMap<String, Integer>();
@@ -69,6 +69,7 @@ public class NewTemsSaver extends AbstractDriveSaver {
         commitTx();
         if (model != null) {
             this.model = model;
+            this.virtualModel = virtualModel;
             modelMap.put(model.getName(), model);
         } else {
             init(config, null);
@@ -174,7 +175,7 @@ public class NewTemsSaver extends AbstractDriveSaver {
      */
     private void createVirtualModelElement(List<String> value, String ms, String time, String event, Long timestamp)
             throws AWEException {
-        params.clear();
+
         int channel = 0;
         int pn_code = 0;
         int ec_io = 0;
@@ -228,6 +229,7 @@ public class NewTemsSaver extends AbstractDriveSaver {
             }
         }
         if (!signals.isEmpty()) {
+            params.clear();
             TreeMap<Float, String> sorted_signals = new TreeMap<Float, String>();
             for (String chanCode : signals.keySet()) {
                 float[] signal = signals.get(chanCode);

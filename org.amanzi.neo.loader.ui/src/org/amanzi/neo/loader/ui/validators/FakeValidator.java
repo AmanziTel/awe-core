@@ -39,13 +39,13 @@ public class FakeValidator implements IValidator {
 
     @Override
     public Result isAppropriate(List<File> fileToLoad) {
-        message = "unknow data. you shoul select required loader";
+        message = "Cann't validate data.You may try to load data with selected loader";
         return Result.UNKNOWN;
     }
 
     @Override
     public Result isValid(IConfiguration config) {
-        message = "unknow data. you shoul select required loader";
+        message = "Cann't validate data.You may try to load data with selected loader";
         return Result.UNKNOWN;
     }
 
