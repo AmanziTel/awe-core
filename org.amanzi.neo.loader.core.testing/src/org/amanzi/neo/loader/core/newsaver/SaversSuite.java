@@ -28,6 +28,8 @@ import org.junit.runners.Suite.SuiteClasses;
 @RunWith(Suite.class)
 @SuiteClasses({org.amanzi.neo.loader.core.newsaver.NewNetworkSaverTesting.class,
         org.amanzi.neo.loader.core.newsaver.NewNeighbourSaverTesting.class,
+        org.amanzi.neo.loader.core.newsaver.NewTemsSaverTesting.class,
+        org.amanzi.neo.loader.core.newsaver.NewRomesSaverTesting.class,
         org.amanzi.neo.loader.core.newsaver.AutoParseTesting.class})
 public class SaversSuite {
 

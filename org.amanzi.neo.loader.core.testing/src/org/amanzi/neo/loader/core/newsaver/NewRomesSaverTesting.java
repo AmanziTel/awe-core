@@ -13,13 +13,14 @@
 
 package org.amanzi.neo.loader.core.newsaver;
 
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.any;
 
 import java.io.File;
 import java.io.IOException;
@@ -55,9 +56,9 @@ import org.neo4j.graphdb.Transaction;
 /**
  * @author Vladislav_Kondratenko
  */
-public class NewTemsSaverTesting extends AbstractAWETest {
-    private static Logger LOGGER = Logger.getLogger(NewTemsSaverTesting.class);
-    private NewTemsSaver temsSaver;
+public class NewRomesSaverTesting extends AbstractAWETest {
+    private static Logger LOGGER = Logger.getLogger(NewRomesSaverTesting.class);
+    private NewRomesSaver romesSaver;
     private static String PATH_TO_BASE = "";
     private IConfiguration config;
     private static final String NETWORK_KEY = "Network";
@@ -69,34 +70,11 @@ public class NewTemsSaverTesting extends AbstractAWETest {
     private static final String LATITUDE = "lat";
     private static final String LONGITUDE = "lon";
     private static final String SECTOR_ID = "sector_id";
-    private static String BCCH = "bcch";
-    private static final String TCH = "tch";
-    private static final String SC = "sc";
-    private static final String PN = "PN";
-    private static final String ECIO = "ecio";
-    private static final String RSSI = "rssi";
-    private static final String MS = "ms";
     private static final String MESSAGE_TYPE = "message_type";
-    private static final String ALL_RXLEV_FULL = "all_rxlev_full";
-    private static final String ALL_RXLEV_SUB = "all_rxlev_sub";
-    private static final String ALL_RXQUAL_FULL = "all_rxqual_full";
-    private static final String ALL_RXQUAL_SUB = "all_rxqual_sub";
-    private static final String ALL_SQI = "all_sqi";
-    private static final String ALL_SQI_MOS = "all_sqi_mos";
-    private static final String CHANNEL = "channel";
-    private static final String CODE = "code";
-    private static final String MW = "mw";
-    private static final String DBM = "dbm";
     private static final String PROJECT_NAME = "project";
-    private static final String ALL_PILOT_SET_EC_IO = "all_pilot_set_ec_io_";
-    private static final String ALL_PILOT_SET_CHANNEL = "all_pilot_set_channel_";
-    private static final String ALL_PILOT_SET_PN = "all_pilot_set_pn_";
-    private static final String ALL_PILOT_SET_COUNT = "all_pilot_set_count";
     private int MINIMAL_COLUMN_SIZE = 2;
     private static DataLoadPreferenceInitializer initializer;
     private final static Map<String, Object> collectedElement = new HashMap<String, Object>();
-    private final static Map<String, Object> msCollected1 = new HashMap<String, Object>();
-    private final static Map<String, Object> msCollected2 = new HashMap<String, Object>();
     private static DriveModel model;
     private static Long startTime;
     private GraphDatabaseService service;
@@ -108,35 +86,12 @@ public class NewTemsSaverTesting extends AbstractAWETest {
         collectedElement.put(LATITUDE, 12d);
         collectedElement.put(NewNetworkService.NAME, "Aug 6 12:13:14.15");
         collectedElement.put(LONGITUDE, 13d);
-        collectedElement.put(MS, "MS2");
         collectedElement.put(SECTOR_ID, "a1");
-        collectedElement.put(BCCH, 1);
-        collectedElement.put(TCH, 2);
-        collectedElement.put(SC, 2);
-        collectedElement.put(PN, 2);
-        collectedElement.put(ECIO, 2);
-        collectedElement.put(RSSI, 2);
         collectedElement.put(EVENT, "ev");
         collectedElement.put(MESSAGE_TYPE, "mt");
-        msCollected1.put(MW, 15.848932266235352d);
-        msCollected1.put(DBM, 12.0f);
-        msCollected1.put(CODE, 32);
-        msCollected1.put(NewAbstractService.TYPE, DriveNodeTypes.MS.getId());
-        msCollected1.put(NewAbstractService.NAME, 32);
-        msCollected1.put(CHANNEL, 22);
-        msCollected1.put(TIMESTAMP, 0l);
-
-        msCollected2.put(MW, 12.589254379272461d);
-        msCollected2.put(DBM, 11.0f);
-        msCollected2.put(CODE, 31);
-        msCollected2.put(NewAbstractService.TYPE, DriveNodeTypes.MS.getId());
-        msCollected2.put(NewAbstractService.NAME, 31);
-        msCollected2.put(CHANNEL, 21);
-        msCollected2.put(TIMESTAMP, 0l);
     }
 
     private HashMap<String, Object> hashMap = null;
-    private DriveModel virtualModel;
 
     @BeforeClass
     public static void prepare() {
@@ -161,7 +116,6 @@ public class NewTemsSaverTesting extends AbstractAWETest {
     @Before
     public void onStart() throws AWEException {
         model = mock(DriveModel.class);
-        virtualModel = mock(DriveModel.class);
         service = mock(GraphDatabaseService.class);
         tx = mock(Transaction.class);
         when(service.beginTx()).thenReturn(tx);
@@ -179,33 +133,13 @@ public class NewTemsSaverTesting extends AbstractAWETest {
         }
         fileList.add(testFile);
         config.setSourceFile(fileList);
-        temsSaver = new NewTemsSaver(model, virtualModel, (ConfigurationDataImpl)config, service);
+        romesSaver = new NewRomesSaver(model, (ConfigurationDataImpl)config, service);
         hashMap.put(TIME, "Aug 6 12:13:14.15");
         hashMap.put("latitude", "12");
         hashMap.put("longitude", "13");
-        hashMap.put(MS, "MS2");
         hashMap.put(EVENT, "ev");
         hashMap.put(SECTOR_ID, "a1");
-        hashMap.put(BCCH, "1");
-        hashMap.put(TCH, "2");
-        hashMap.put(SC, "2");
-        hashMap.put(PN, "2");
-        hashMap.put(ECIO, "2");
-        hashMap.put(RSSI, "2");
         hashMap.put(MESSAGE_TYPE, "mt");
-        hashMap.put(ALL_RXLEV_FULL, "2");
-        hashMap.put(ALL_RXLEV_SUB, "2");
-        hashMap.put(ALL_RXQUAL_SUB, "2");
-        hashMap.put(ALL_RXQUAL_FULL, "2");
-        hashMap.put(ALL_SQI, "2");
-        hashMap.put(ALL_SQI_MOS, "2");
-
-        for (int i = 1; i < 2; i++) {
-            hashMap.put(ALL_PILOT_SET_EC_IO + i, "1" + i);
-            hashMap.put(ALL_PILOT_SET_CHANNEL + i, "2" + i);
-            hashMap.put(ALL_PILOT_SET_PN + i, "3" + i);
-        }
-        hashMap.put(ALL_PILOT_SET_COUNT, "1");
 
     }
 
@@ -217,9 +151,8 @@ public class NewTemsSaverTesting extends AbstractAWETest {
         return values;
     }
 
-    @SuppressWarnings("unchecked")
     @Test
-    public void testSavingAllElement() {
+    public void testCreatingNewElement() {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setFile(config.getFilesToLoad().get(0));
@@ -233,35 +166,26 @@ public class NewTemsSaverTesting extends AbstractAWETest {
 
         try {
             when(model.addFile(eq(rowContainer.getFile()))).thenReturn(new DataElement(new HashMap<String, Object>()));
-            when(virtualModel.addFile(eq(rowContainer.getFile()))).thenReturn(new DataElement(new HashMap<String, Object>()));
-            temsSaver.saveElement(rowContainer);
+            romesSaver.saveElement(rowContainer);
             List<String> values = prepareValues(hashMap);
             rowContainer.setValues(values);
-            collectedElement.put(TIMESTAMP, temsSaver.defineTimestamp(workDate, collectedElement.get(TIME).toString()));
+            collectedElement.put(TIMESTAMP, romesSaver.defineTimestamp(workDate, collectedElement.get(TIME).toString()));
             createdMainElement.putAll(collectedElement);
             when(model.addMeasurement(eq(rowContainer.getFile().getName()), eq(collectedElement))).thenReturn(
                     new DataElement(createdMainElement));
-            when(virtualModel.addMeasurement(eq(rowContainer.getFile().getName()), eq(msCollected1))).thenReturn(
-                    new DataElement(msCollected1));
-            when(virtualModel.addMeasurement(eq(rowContainer.getFile().getName()), eq(msCollected2))).thenReturn(
-                    new DataElement(msCollected2));
-            when(model.addMeasurement(eq(rowContainer.getFile().getName()), eq(collectedElement))).thenReturn(
-                    new DataElement(createdMainElement));
             when(model.getLocation(new DataElement(eq(createdMainElement)))).thenReturn(new DataElement(location));
-            temsSaver.saveElement(rowContainer);
+            romesSaver.saveElement(rowContainer);
 
-            verify(virtualModel, atLeastOnce()).addMeasurement(eq(rowContainer.getFile().getName()), eq(msCollected2));
+            verify(model, atLeastOnce()).addMeasurement(eq(rowContainer.getFile().getName()), eq(collectedElement));
             verify(model).getLocation(new DataElement(eq(createdMainElement)));
-            verify(virtualModel).linkNode(new DataElement(eq(msCollected2)), any(List.class), eq(DriveRelationshipTypes.LOCATION));
         } catch (Exception e) {
             LOGGER.error(" testSavingAllElement error", e);
             Assert.fail("Exception while saving row");
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Test
-    public void testIfThereIsNoTimeValue() {
+    public void testIfThereAreNoTimeOrLatLonValues() {
         hashMap.remove(TIME);
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
@@ -276,23 +200,18 @@ public class NewTemsSaverTesting extends AbstractAWETest {
 
         try {
             when(model.addFile(eq(rowContainer.getFile()))).thenReturn(new DataElement(new HashMap<String, Object>()));
-            when(virtualModel.addFile(eq(rowContainer.getFile()))).thenReturn(new DataElement(new HashMap<String, Object>()));
-            temsSaver.saveElement(rowContainer);
+            romesSaver.saveElement(rowContainer);
             List<String> values = prepareValues(hashMap);
             rowContainer.setValues(values);
-            collectedElement.put(TIMESTAMP, temsSaver.defineTimestamp(workDate, collectedElement.get(TIME).toString()));
+            collectedElement.put(TIMESTAMP, romesSaver.defineTimestamp(workDate, collectedElement.get(TIME).toString()));
             createdMainElement.putAll(collectedElement);
             when(model.addMeasurement(eq(rowContainer.getFile().getName()), eq(collectedElement))).thenReturn(
                     new DataElement(createdMainElement));
-            when(virtualModel.addMeasurement(eq(rowContainer.getFile().getName()), eq(msCollected1))).thenReturn(
-                    new DataElement(msCollected1));
-            when(virtualModel.addMeasurement(eq(rowContainer.getFile().getName()), eq(msCollected2))).thenReturn(
-                    new DataElement(msCollected2));
-            when(model.addMeasurement(eq(rowContainer.getFile().getName()), eq(collectedElement))).thenReturn(
-                    new DataElement(createdMainElement));
             when(model.getLocation(new DataElement(eq(createdMainElement)))).thenReturn(new DataElement(location));
-            temsSaver.saveElement(rowContainer);
-            verify(virtualModel, never()).addMeasurement(any(String.class), any(Map.class));
+            romesSaver.saveElement(rowContainer);
+
+            verify(model, never()).addMeasurement(eq(rowContainer.getFile().getName()), eq(collectedElement));
+            verify(model, never()).getLocation(new DataElement(eq(createdMainElement)));
         } catch (Exception e) {
             LOGGER.error(" testSavingAllElement error", e);
             Assert.fail("Exception while saving row");
@@ -300,44 +219,41 @@ public class NewTemsSaverTesting extends AbstractAWETest {
     }
 
     @Test
-    public void testCanntFindPropertiesForVirtualDatasetElements() {
-        for (int i = 1; i < 2; i++) {
-            hashMap.remove(ALL_PILOT_SET_EC_IO + i);
-            hashMap.remove(ALL_PILOT_SET_CHANNEL + i);
-            hashMap.remove(ALL_PILOT_SET_PN + i);
-        }
-        hashMap.remove(ALL_PILOT_SET_COUNT);
+    public void testLinkNodes() {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setFile(config.getFilesToLoad().get(0));
         rowContainer.setHeaders(header);
+        collectedElement.put(TIMESTAMP, romesSaver.defineTimestamp(workDate, collectedElement.get(TIME).toString()));
         Map<String, Object> createdMainElement = new HashMap<String, Object>();
         createdMainElement.putAll(collectedElement);
         createdMainElement.put(NewAbstractService.TYPE, DriveNodeTypes.M.getId());
         Map<String, Object> location = new HashMap<String, Object>();
         location.put(LATITUDE, collectedElement.get(LATITUDE));
         location.put(LONGITUDE, collectedElement.get(LONGITUDE));
-
+        Map<String, Object> secondElement = new HashMap<String, Object>();
+        secondElement.putAll(collectedElement);
+        secondElement.remove(LATITUDE);
+        secondElement.remove(LONGITUDE);
+        Map<String, Object> createdSecondElement = new HashMap<String, Object>();
+        createdSecondElement.putAll(secondElement);
+        createdSecondElement.put(NewAbstractService.TYPE, DriveNodeTypes.M.getId());
         try {
             when(model.addFile(eq(rowContainer.getFile()))).thenReturn(new DataElement(new HashMap<String, Object>()));
-            when(virtualModel.addFile(eq(rowContainer.getFile()))).thenReturn(new DataElement(new HashMap<String, Object>()));
-            temsSaver.saveElement(rowContainer);
+            romesSaver.saveElement(rowContainer);
             List<String> values = prepareValues(hashMap);
             rowContainer.setValues(values);
-            collectedElement.put(TIMESTAMP, temsSaver.defineTimestamp(workDate, collectedElement.get(TIME).toString()));
-            createdMainElement.putAll(collectedElement);
             when(model.addMeasurement(eq(rowContainer.getFile().getName()), eq(collectedElement))).thenReturn(
                     new DataElement(createdMainElement));
-            when(virtualModel.addMeasurement(eq(rowContainer.getFile().getName()), eq(msCollected1))).thenReturn(
-                    new DataElement(msCollected1));
-            when(virtualModel.addMeasurement(eq(rowContainer.getFile().getName()), eq(msCollected2))).thenReturn(
-                    new DataElement(msCollected2));
-            when(model.addMeasurement(eq(rowContainer.getFile().getName()), eq(collectedElement))).thenReturn(
-                    new DataElement(createdMainElement));
+            when(model.addMeasurement(eq(rowContainer.getFile().getName()), eq(secondElement))).thenReturn(
+                    new DataElement(createdSecondElement));
             when(model.getLocation(new DataElement(eq(createdMainElement)))).thenReturn(new DataElement(location));
-            temsSaver.saveElement(rowContainer);
-            verify(model, atLeastOnce()).addMeasurement(eq(rowContainer.getFile().getName()), eq(collectedElement));
-            verify(model, atLeastOnce()).getLocation(new DataElement(eq(createdMainElement)));
+            romesSaver.saveElement(rowContainer);
+            romesSaver.saveElement(rowContainer);
+
+            verify(model, atLeastOnce()).addMeasurement(eq(rowContainer.getFile().getName()), eq(secondElement));
+            verify(model, atLeastOnce()).linkNode(new DataElement(eq(createdSecondElement)), any(List.class),
+                    eq(DriveRelationshipTypes.LOCATION));
         } catch (Exception e) {
             LOGGER.error(" testSavingAllElement error", e);
             Assert.fail("Exception while saving row");

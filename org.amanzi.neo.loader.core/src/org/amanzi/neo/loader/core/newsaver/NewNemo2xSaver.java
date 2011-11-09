@@ -42,8 +42,6 @@ import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDriveModel;
-import org.amanzi.neo.services.model.INetworkModel;
-import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveRelationshipTypes;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -188,7 +186,6 @@ public class NewNemo2xSaver extends AbstractDriveSaver {
      */
     private void buildModel(List<String> headers) throws AWEException {
         String eventId = headers.get(0);
-        System.out.println("" + eventId);
         NemoEvents event = NemoEvents.getEventById(eventId);
         String time = headers.get(1);
         String numberContextId = headers.get(2);
