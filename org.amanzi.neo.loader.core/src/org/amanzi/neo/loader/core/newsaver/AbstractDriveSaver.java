@@ -25,6 +25,7 @@ import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
 import org.amanzi.neo.services.model.impl.NetworkModel;
 import org.apache.log4j.Logger;
+import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
  * class contains common operation for tems romes saver
@@ -81,6 +82,20 @@ public abstract class AbstractDriveSaver extends AbstractSaver<NetworkModel, CSV
     protected Map<String, Integer> columnSynonyms = new HashMap<String, Integer>();
     protected Map<String, Object> params = new HashMap<String, Object>();
     protected List<String> headers;
+
+    /**
+     * @param service
+     */
+    protected AbstractDriveSaver(GraphDatabaseService service) {
+        super(service);
+    }
+
+    /**
+     * 
+     */
+    public AbstractDriveSaver() {
+        super();
+    }
 
     /**
      * Convert milliwatss values to dBm

@@ -40,6 +40,7 @@ import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveRelationshipTypes;
 import org.apache.log4j.Logger;
+import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
  * @author Vladislav_Kondratenko
@@ -59,6 +60,27 @@ public class NewTemsSaver extends AbstractDriveSaver {
     private String previous_time = null;
     private int previous_pn_code = -1;
     private IDataElement location;
+
+    protected NewTemsSaver(IDriveModel model, ConfigurationDataImpl config, GraphDatabaseService service) {
+        super(service);
+        preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.DRIVE);
+        columnSynonyms = new HashMap<String, Integer>();
+        setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
+        commitTx();
+        if (model != null) {
+            this.model = model;
+            modelMap.put(model.getName(), model);
+        } else {
+            init(config, null);
+        }
+    }
+
+    /**
+     * 
+     */
+    public NewTemsSaver() {
+        super();
+    }
 
     /**
      * @param value

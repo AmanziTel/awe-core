@@ -33,8 +33,10 @@ import org.amanzi.neo.services.NewDatasetService.DriveTypes;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataElement;
+import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveRelationshipTypes;
 import org.apache.log4j.Logger;
+import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
  * @author Vladislav_Kondratenko
@@ -43,6 +45,27 @@ public class NewNemo1xSaver extends NewNemo2xSaver {
     // Saver constants
 
     private static Logger LOGGER = Logger.getLogger(NewNemo1xSaver.class);
+
+    protected NewNemo1xSaver(IDriveModel model, ConfigurationDataImpl config, GraphDatabaseService service) {
+        super(model, config, service);
+        preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.DRIVE);
+        columnSynonyms = new HashMap<String, Integer>();
+        setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
+        commitTx();
+        if (model != null) {
+            this.model = model;
+            modelMap.put(model.getName(), model);
+        } else {
+            init(config, null);
+        }
+    }
+
+    /**
+     * 
+     */
+    public NewNemo1xSaver() {
+        super();
+    }
 
     @Override
     public void init(ConfigurationDataImpl configuration, CSVContainer dataElement) {
@@ -146,15 +169,15 @@ public class NewNemo1xSaver extends NewNemo2xSaver {
         parsedParameters.put(TIMESTAMP, timestamp);
         removeEmpty(parsedParameters);
 
-        IDataElement existedLocation = checkSameLocation(parsedParameters);
-        if (existedLocation != null) {
+        location = checkSameLocation(parsedParameters);
+        if (location != null) {
             parsedParameters.remove(LATITUDE);
             parsedParameters.remove(LONGITUDE);
         }
         IDataElement createdElement = model.addMeasurement(fileName, parsedParameters);
-        if (existedLocation != null) {
+        if (location != null) {
             List<IDataElement> locList = new LinkedList<IDataElement>();
-            locList.add(existedLocation);
+            locList.add(location);
             model.linkNode(createdElement, locList, DriveRelationshipTypes.LOCATION);
         } else {
             IDataElement location = model.getLocation(createdElement);
@@ -162,5 +185,7 @@ public class NewNemo1xSaver extends NewNemo2xSaver {
                 locationDataElements.add(model.getLocation(createdElement));
             }
         }
+        createSubNodes(eventId, subNodes, timestamp);
     }
+
 }
