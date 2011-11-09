@@ -13,14 +13,13 @@
 
 package org.amanzi.neo.loader.core.newsaver;
 
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.any;
 
 import java.io.File;
 import java.io.IOException;
@@ -218,6 +217,7 @@ public class NewRomesSaverTesting extends AbstractAWETest {
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testLinkNodes() {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
