@@ -84,6 +84,7 @@ public class NewNetworkTreeView extends ViewPart {
     public static final String DB_GRAPH_VIEW_ID = "org.neo4j.neoclipse.view.NeoGraphViewPart";
 
     public static final String SHOW_PROPERTIES = "Show properties";
+    public static final String EDIT_PROPERTIES = "Edit properties";
 
     /*
      * TreeViewer for database Nodes
@@ -101,6 +102,11 @@ public class NewNetworkTreeView extends ViewPart {
     private NeoServiceProviderUi neoServiceProvider;
 
     private Text tSearch;
+    
+    /*
+     * Show is properties-view editable 
+     */
+    private boolean isEditablePropertiesView;
 
     /**
      * The constructor.
@@ -151,8 +157,12 @@ public class NewNetworkTreeView extends ViewPart {
         if (select.isEnabled()){
             manager.add(select); 
         }
-        RenameAction reanmeAction = new RenameAction((IStructuredSelection)viewer.getSelection());
-        manager.add(reanmeAction);
+        
+        EditAction editAction = new EditAction((IStructuredSelection)viewer.getSelection());
+        manager.add(editAction);
+        
+        RenameAction renameAction = new RenameAction((IStructuredSelection)viewer.getSelection());
+        manager.add(renameAction);
 
         DeleteAction deleteAction = new DeleteAction((IStructuredSelection)viewer.getSelection());
         manager.add(deleteAction);
@@ -188,6 +198,7 @@ public class NewNetworkTreeView extends ViewPart {
             }
             enabled = selectedDataElements.size() > 0;
             text = SHOW_PROPERTIES;
+            isEditablePropertiesView = false;
         }
 
         @Override
@@ -203,6 +214,55 @@ public class NewNetworkTreeView extends ViewPart {
         @Override
         public void run() {
             try {
+            	isEditablePropertiesView = false;
+            	PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IPageLayout.ID_PROP_SHEET);
+            } catch (PartInitException e) {
+                NetworkTreePlugin.error(null, e);
+            }
+        }     
+    }
+    
+    private class EditAction extends Action {
+        private boolean enabled;
+        private final String text;
+        private Set<IDataElement> selectedDataElements = new HashSet<IDataElement>();
+
+        /**
+         * Constructor
+         * 
+         * @param selection - selection
+         */
+        @SuppressWarnings("rawtypes")
+		public EditAction(IStructuredSelection selection) {
+            Iterator it = selection.iterator();
+            while (it.hasNext()) {
+                Object elementObject = it.next();
+                if (elementObject instanceof INetworkModel) {
+                    continue;
+                } else {
+                    IDataElement element = (IDataElement)elementObject;
+                    selectedDataElements.add(element);
+                }
+            }
+            enabled = selectedDataElements.size() > 0;
+            text = EDIT_PROPERTIES;
+            isEditablePropertiesView = true;
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        @Override
+        public String getText() {
+            return text;
+        }
+
+        @Override
+        public void run() {
+            try {
+            	isEditablePropertiesView = true;
             	PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IPageLayout.ID_PROP_SHEET);
             } catch (PartInitException e) {
                 NetworkTreePlugin.error(null, e);
@@ -740,7 +800,10 @@ public class NewNetworkTreeView extends ViewPart {
 
     private IPropertySheetPage getPropertySheetPage() {
         if (propertySheetPage == null) {
-            propertySheetPage = new NewNetworkPropertySheetPage();
+            propertySheetPage = new NewNetworkPropertySheetPage(isEditablePropertiesView);
+        }
+        else {
+        	((NewNetworkPropertySheetPage)propertySheetPage).changeSourceProvider();
         }
 
         return propertySheetPage;

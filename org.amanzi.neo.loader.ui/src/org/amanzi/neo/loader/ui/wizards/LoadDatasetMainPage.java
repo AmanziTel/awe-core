@@ -39,7 +39,6 @@ import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.DialogPage;
-import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -60,7 +59,6 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
-import org.neo4j.graphdb.Node;
 
 /**
  * <p>
@@ -73,37 +71,16 @@ import org.neo4j.graphdb.Node;
 public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
     private static Logger LOGGER = Logger.getLogger(LoadDatasetMainPage.class);
     /** String ASC_PAT_FILE field */
-    private static final String ASC_PAT_FILE = ".*_(\\d{6})_.*";
-    private static final String FMT_PAT_FILE = ".*(\\d{4}-\\d{2}-\\d{2}).*";
-    private static final String CSV_PAT_FILE = ".*(\\d{2}/\\d{2}/\\d{4}).*";
+    // private static final String ASC_PAT_FILE = ".*_(\\d{6})_.*";
+    // private static final String FMT_PAT_FILE = ".*(\\d{4}-\\d{2}-\\d{2}).*";
+    // private static final String CSV_PAT_FILE = ".*(\\d{2}/\\d{2}/\\d{4}).*";
     private final Set<String> restrictedNames = new HashSet<String>();
     private Map<Object, String> names = new HashMap<Object, String>();
-    /*
-     * Minimum height of Shell
-     */
-    private static final int MINIMUM_HEIGHT = 400;
-
-    /*
-     * Minimum width of Shell
-     */
-    private static final int MINIMUM_WIDTH = 600;
-
-    /*
-     * Dataset field width
-     */
-    private static final int DATASET_WIDTH = 150;
 
     /*
      * Layout for One column and Fixed Width
      */
     private final static GridLayout layoutOneColumnNotFixedWidth = new GridLayout(1, false);
-
-    private static final int MAX_NEMO_LINE_READ = 50;
-
-    /*
-     * Shell of this Dialog
-     */
-    private Shell dialogShell;
 
     /*
      * Button for FileDialog
@@ -129,16 +106,6 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
      * List for files to load
      */
     private List filesToLoadList;
-
-    /*
-     * Load button
-     */
-    private Button loadButton;
-    /**
-     * file data
-     */
-    private Calendar workData = null;
-    private boolean applyToAll = false;
     /*
      * Maps for storing name of file and path to file
      */
@@ -151,21 +118,11 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
 
     private Combo cDataset;
     private String datasetName;
-    /*
-     * Default directory for file dialogs
-     */
-    private static String defaultDirectory = null;
-    /**
-     * wizard page if tems dialog was created from import wizard page
-     */
-    private WizardPage wizardPage = null;
 
     private final LinkedHashMap<String, IDriveModel> dataset = new LinkedHashMap<String, IDriveModel>();
 
     private Label ldataset;
-    private boolean addToSelect = false;
 
-    private Node rootNode;
     private Combo cLoaders;
     private DateTime date;
     private Button selectCRS;
@@ -173,7 +130,6 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
     public LoadDatasetMainPage() {
         super("mainDatasetPage");
         setTitle(NeoLoaderPluginMessages.TemsImportWizard_PAGE_DESCR);
-        rootNode = null;
     }
 
     @Override
