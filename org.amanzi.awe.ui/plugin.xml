@@ -14,5 +14,11 @@
             name="test">
       </page>
    </extension>
+   <extension
+         point="org.eclipse.ui.startup">
+      <startup
+            class="org.amanzi.awe.ui.UdigEventManager">
+      </startup>
+   </extension>
 
 </plugin>
