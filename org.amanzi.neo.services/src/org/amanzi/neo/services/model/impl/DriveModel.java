@@ -609,4 +609,14 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         }
         return null;
     }
+    
+    @Override
+    public CoordinateReferenceSystem updateCRS(String crsCode) {
+        return super.updateCRS(crsCode);
+    }
+    
+    @Override
+    public void setCRS(CoordinateReferenceSystem crs) {
+        super.setCRS(crs);
+    }
 }

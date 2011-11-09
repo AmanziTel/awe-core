@@ -21,12 +21,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.neo.core.utils.AbstractDialog;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.filters.Filter;
 import org.amanzi.neo.services.filters.FilterType;
+import org.amanzi.neo.services.model.IRenderableModel;
 import org.amanzi.neo.services.utils.Utils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.swt.SWT;
@@ -108,12 +108,12 @@ public class NetworkFilterDefiner extends AbstractDialog<IFilterWrapper> {
      * @param wrapperName the wrapper name
      * @param wrapper the wrapper
      */
-    public NetworkFilterDefiner(Shell parent, String title, GeoNeo resource, String wrapperName, FilterWrapperImpl<NetworkNeoStyle> wrapper) {
+    public NetworkFilterDefiner(Shell parent, String title, IRenderableModel resource, String wrapperName, FilterWrapperImpl<NetworkNeoStyle> wrapper) {
         super(parent, title, SWT.RESIZE | SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.CENTER);
         this.wrapperName = wrapperName;
         this.wrapper = wrapper;
         defaultStyle.setCurStyle(wrapper.getStyle());
-        defaultStyle.setGeoNeo(resource);
+        defaultStyle.setRenderableResource(resource);
         valueTypesMap.put("String", String.class);
         valueTypesMap.put("Integer", Integer.class);
         valueTypesMap.put("Double", Double.class);

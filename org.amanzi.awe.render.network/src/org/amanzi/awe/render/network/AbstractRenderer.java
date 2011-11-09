@@ -26,11 +26,15 @@ import net.refractions.udig.project.internal.render.impl.RendererImpl;
 import net.refractions.udig.project.render.RenderException;
 
 import org.amanzi.awe.models.catalog.neo.NewGeoResource;
+import org.amanzi.awe.neostyle.BaseNeoStyle;
+import org.amanzi.awe.neostyle.NetworkNeoStyle;
+import org.amanzi.awe.neostyle.NetworkNeoStyleContent;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.IRenderableModel;
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -55,6 +59,8 @@ import com.vividsolutions.jts.geom.Envelope;
  */
 public class AbstractRenderer extends RendererImpl {
 
+    protected static BaseNeoStyle style;
+
     public static class RenderOptions {
         public static Scale scale = Scale.MEDIUM;
         public static int alpha = (int)(0.6 * 255.0);
@@ -69,7 +75,7 @@ public class AbstractRenderer extends RendererImpl {
         public static int maxSitesLite = 1000;
         public static int maxSymbolSize = 40;
         public static boolean drawLabels = false;
-        public static boolean scaleSymbols = false;
+        public static boolean scaleSymbols = true;
     }
 
     protected enum Scale {
@@ -93,7 +99,6 @@ public class AbstractRenderer extends RendererImpl {
             RenderOptions.large_sector_size *= Math.sqrt(RenderOptions.maxSitesFull) / (3 * Math.sqrt(countScaled));
             RenderOptions.large_sector_size = Math.min(RenderOptions.large_sector_size, RenderOptions.maxSymbolSize);
         }
-        
 
         bounds_transformed.expandBy(0.75 * (bounds_transformed.getHeight() + bounds_transformed.getWidth()));
     }
@@ -132,6 +137,9 @@ public class AbstractRenderer extends RendererImpl {
         monitor.beginTask("render network sites and sectors: " + resource.getIdentifier(), IProgressMonitor.UNKNOWN);
 
         try {
+
+            // setStyle(destination);
+
             // find a resource to render
             IRenderableModel model = resource.resolve(IRenderableModel.class, monitor);
             // get rendering bounds and zoom
@@ -140,11 +148,8 @@ public class AbstractRenderer extends RendererImpl {
             Envelope data_bounds = model.getBounds();
 
             // TODO: refactor
-            int count = ((INetworkModel)model).getAllProperties(NetworkElementNodeType.SITE, NewAbstractService.NAME).size();
+            int count = ((INetworkModel)model).getPropertyCount(NetworkElementNodeType.SITE, NewAbstractService.NAME);
             setScaling(bounds_transformed, data_bounds, monitor, count);
-
-            destination.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            destination.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
             // TODO: selection
 
@@ -166,6 +171,11 @@ public class AbstractRenderer extends RendererImpl {
                 java.awt.Point p = getContext().worldToPixel(world_location);
 
                 renderElement(destination, p, element, model);
+
+                monitor.worked(1);
+                // count++;
+                if (monitor.isCanceled())
+                    break;
             }
 
         } catch (IOException e) {
@@ -178,6 +188,14 @@ public class AbstractRenderer extends RendererImpl {
             LOGGER.error("Could not set CRS transforms.", e);
             throw new RenderException(e);
         }
+    }
+
+    /**
+     *
+     */
+    protected void setStyle(Graphics2D destination) {
+        destination.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        destination.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
     }
 
     /**
@@ -216,6 +234,10 @@ public class AbstractRenderer extends RendererImpl {
             bounds_transformed = JTS.transform(bounds, transform_w2d);
         }
         return bounds_transformed;
+    }
+
+    protected Color changeColor(Color color, int toAlpha) {
+        return new Color(color.getRed(), color.getGreen(), color.getBlue(), toAlpha);
     }
 
 }

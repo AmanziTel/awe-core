@@ -56,23 +56,23 @@ public class NewNetworkPropertySource extends NodePropertySource implements IPro
      * @return the property descriptors
      */
     @SuppressWarnings({ "unused" })
-	public IPropertyDescriptor[] getPropertyDescriptors() {
+    public IPropertyDescriptor[] getPropertyDescriptors() {
         SelectionPropertyManager propertyManager = SelectionPropertyManager.getInstanse();
         
         List<INodeType> networkStructure = new ArrayList<INodeType>();
         NewDatasetService datasetService = NeoServiceFactory.getInstance().getNewDatasetService();
         Node parentNode = null;
         try {
-			parentNode = datasetService.getParent((Node)container, false);
-			while (datasetService.getParent(datasetService.getParent(parentNode, false), false) != null) {
-				parentNode = datasetService.getParent(parentNode, false);
-			}
-        	String networkName = parentNode.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
-			NetworkModel networkModel = (NetworkModel) ProjectModel.getCurrentProjectModel().findNetwork(networkName);
-			networkStructure = networkModel.getNetworkStructure();
-		} catch (AWEException e) {
-			e.printStackTrace();
-		}
+            parentNode = datasetService.getParent((Node)container, false);
+            while (datasetService.getParent(datasetService.getParent(parentNode, false), false) != null) {
+                parentNode = datasetService.getParent(parentNode, false);
+            }
+            String networkName = parentNode.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
+            NetworkModel networkModel = (NetworkModel) ProjectModel.getCurrentProjectModel().findNetwork(networkName);
+            networkStructure = networkModel.getNetworkStructure();
+        } catch (AWEException e) {
+            e.printStackTrace();
+        }
         
         List<IPropertyDescriptor> descs = new ArrayList<IPropertyDescriptor>();
         for (IPropertyDescriptor descriptor : getHeadPropertyDescriptors()) {
@@ -83,11 +83,11 @@ public class NewNetworkPropertySource extends NodePropertySource implements IPro
         for (String key : container.getPropertyKeys()) {
             Object value = container.getProperty(key);
             Class< ? > c = value.getClass();
-	        NodeTypes nt = NodeTypes.getNodeType(container,null);
-	        if(nt == null || nt.isPropertyEditable(key))
-	            descs.add(new PropertyDescriptor(key, key, PROPERTIES_CATEGORY));
-	        else
-	            descs.add(new PropertyDescriptor(key, key, NODE_CATEGORY));
+            NodeTypes nt = NodeTypes.getNodeType(container,null);
+            if(nt == null || nt.isPropertyEditable(key))
+                descs.add(new PropertyDescriptor(key, key, PROPERTIES_CATEGORY));
+            else
+                descs.add(new PropertyDescriptor(key, key, NODE_CATEGORY));
         }
         return descs.toArray(new IPropertyDescriptor[descs.size()]);
     }
