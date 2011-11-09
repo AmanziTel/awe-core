@@ -51,7 +51,7 @@ public abstract class RenderableModel extends AbstractIndexedModel {
     /** The field used in geo tools. Assignment not yet implemented.//TODO */
     protected CoordinateReferenceSystem crs;
 
-    private String crsCode;
+    protected String crsCode;
 
     protected RenderableModel(Node rootNode, INodeType nodeType) throws AWEException {
         super(rootNode, nodeType);

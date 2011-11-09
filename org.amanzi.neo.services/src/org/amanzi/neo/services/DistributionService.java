@@ -425,7 +425,7 @@ public class DistributionService extends NewAbstractService {
         } catch (Exception e) { 
             tx.failure();
             LOGGER.error("Error on creating Aggregation Relationship " +
-            		"between <" + barNode + "> and <" + sourceNode + ">", e);
+                    "between <" + barNode + "> and <" + sourceNode + ">", e);
             throw new DatabaseException(e);
         } finally {
             tx.finish();

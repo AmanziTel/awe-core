@@ -35,9 +35,32 @@ public class CSVContainer implements IData {
     private File file;
 
     /**
+     * name of parsed file
+     */
+    private File file;
+
+    /**
      * contain header values;
      */
     private List<String> headers;
+    /**
+     * contains first line of file;
+     */
+    private String firstLine = "";
+
+    /**
+     * @return Returns the firstLine.
+     */
+    public String getFirstLine() {
+        return firstLine;
+    }
+
+    /**
+     * @param firstLine The firstLine to set.
+     */
+    public void setFirstLine(String firstLine) {
+        this.firstLine = firstLine;
+    }
 
     public CSVContainer(int minimalLength) {
         super();

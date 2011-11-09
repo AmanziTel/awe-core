@@ -13,7 +13,6 @@
 
 package org.amanzi.awe.render.network;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.geom.Arc2D;

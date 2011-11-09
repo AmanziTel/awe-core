@@ -75,7 +75,7 @@ public class AbstractRenderer extends RendererImpl {
         public static int maxSitesLite = 1000;
         public static int maxSymbolSize = 40;
         public static boolean drawLabels = false;
-        public static boolean scaleSymbols = false;
+        public static boolean scaleSymbols = true;
     }
 
     protected enum Scale {
@@ -138,7 +138,7 @@ public class AbstractRenderer extends RendererImpl {
 
         try {
 
-            setStyle(destination);
+            // setStyle(destination);
 
             // find a resource to render
             IRenderableModel model = resource.resolve(IRenderableModel.class, monitor);

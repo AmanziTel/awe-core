@@ -581,8 +581,8 @@ public class DriveModelTest extends AbstractNeoServiceTest {
         // location node created
         Assert.assertNotNull(l);
         // location node properties correct
-        Assert.assertEquals(lat, l.getProperty(DriveModel.LATITUDE, 0L));
-        Assert.assertEquals(lon, l.getProperty(DriveModel.LONGITUDE, 0L));
+        Assert.assertEquals(lat, l.getProperty(DriveModel.LATITUDE, 0d));
+        Assert.assertEquals(lon, l.getProperty(DriveModel.LONGITUDE, 0d));
         // chain exists
         Assert.assertEquals(m, l.getRelationships(DriveRelationshipTypes.LOCATION, Direction.INCOMING).iterator().next()
                 .getOtherNode(l));

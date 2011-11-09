@@ -79,7 +79,7 @@ public class NewNetworkPropertySource extends NodePropertySource implements IPro
      * @return the property descriptors
      */
     @SuppressWarnings({ "unused", "rawtypes" })
-	public IPropertyDescriptor[] getPropertyDescriptors() {
+    public IPropertyDescriptor[] getPropertyDescriptors() {
         SelectionPropertyManager propertyManager = SelectionPropertyManager.getInstanse();
         
         // Kasnitskij_V:
@@ -89,7 +89,7 @@ public class NewNetworkPropertySource extends NodePropertySource implements IPro
         String[] allKeys; 
         DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
         try {
-        	
+            
             currentNetworkName = datasetService.findRootByChild((Node)container)
                                             .getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
         }

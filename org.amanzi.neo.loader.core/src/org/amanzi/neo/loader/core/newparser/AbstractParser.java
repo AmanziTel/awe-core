@@ -46,7 +46,7 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
     private double percentage = 0.0;
     protected File tempFile;
     private boolean isNewFile = false;
-    private int commonPercentage = 0;
+    private double commonPercentage = 0;
     protected boolean isCanceled = false;
 
     @Override
@@ -128,7 +128,7 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
             percentage += commonPercentage;
             isNewFile = false;
         }
-        commonPercentage += event.getPercentage() / 100;
+        commonPercentage = event.getPercentage() / 100;
         isCanceled = fireProgressEvent(new ProgressEventImpl(event.getProcessName(), (percentage + (event.getPercentage()) / 100)
                 / config.getFilesToLoad().size()));
         return isCanceled;

@@ -192,7 +192,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
      * Initializes location index for sector nodes.
      */
     private void initializeMultiPropertyIndexing() throws AWEException {
-        LOGGER.info("Initializing multi property index...");
+        LOGGER.info("Initializing multi proerty index...");
         addLocationIndex(DriveNodeTypes.MP);
         addTimestampIndex(primaryType);
     }

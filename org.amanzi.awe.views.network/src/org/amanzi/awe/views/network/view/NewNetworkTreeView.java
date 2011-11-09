@@ -73,8 +73,8 @@ import org.neo4j.graphdb.Transaction;
 
 public class NewNetworkTreeView extends ViewPart {
 
-	private static final String RENAME_MSG = "Enter new Name";
-	
+    private static final String RENAME_MSG = "Enter new Name";
+    
     /*
      * ID of this View
      */
@@ -178,7 +178,7 @@ public class NewNetworkTreeView extends ViewPart {
          * @param selection - selection
          */
         @SuppressWarnings("rawtypes")
-		public SelectAction(IStructuredSelection selection) {
+        public SelectAction(IStructuredSelection selection) {
             Iterator it = selection.iterator();
             while (it.hasNext()) {
                 Object elementObject = it.next();
@@ -238,8 +238,8 @@ public class NewNetworkTreeView extends ViewPart {
         public RenameAction(IStructuredSelection selection) {
             text = "Rename";
             enabled = selection.size() == 1 && 
-            		selection.getFirstElement() instanceof IDataElement
-            		&& !(selection.getFirstElement() instanceof INetworkModel);
+                    selection.getFirstElement() instanceof IDataElement
+                    && !(selection.getFirstElement() instanceof INetworkModel);
             if (enabled) {
                 dataElement = (IDataElement)selection.getFirstElement();
                 enabled = (dataElement.get(INeoConstants.PROPERTY_NAME_NAME) == null) ? false : true;
@@ -302,7 +302,7 @@ public class NewNetworkTreeView extends ViewPart {
         }
 
         @SuppressWarnings("rawtypes")
-		private DeleteAction(IStructuredSelection selection) {
+        private DeleteAction(IStructuredSelection selection) {
             interactive = true;
             dataElementsToDelete = new ArrayList<IDataElement>();
             Iterator iterator = selection.iterator();
@@ -764,7 +764,7 @@ public class NewNetworkTreeView extends ViewPart {
      * This is how the framework determines which interfaces we implement.
      */
     @SuppressWarnings("rawtypes")
-	@Override
+    @Override
     public Object getAdapter(final Class key) {
         if (key.equals(IPropertySheetPage.class)) {
             return getPropertySheetPage();
