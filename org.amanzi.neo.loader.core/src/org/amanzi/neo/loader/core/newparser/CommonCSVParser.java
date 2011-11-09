@@ -56,7 +56,6 @@ public class CommonCSVParser<T1 extends ISaver<IModel, CSVContainer, T2>, T2 ext
     private CountingFileInputStream is;
     private String charSetName = Charset.defaultCharset().name();
     protected BufferedReader reader;
-
     private double persentageOld = 0;
 
     /**
@@ -95,6 +94,9 @@ public class CommonCSVParser<T1 extends ISaver<IModel, CSVContainer, T2>, T2 ext
         ArrayList<String> header = new ArrayList<String>();
         try {
             while ((lineStr = reader.readLine()) != null) {
+                if (container.getFirstLine().isEmpty()) {
+                    container.setFirstLine(lineStr);
+                }
                 if (lineStr != null && !lineStr.isEmpty()) {
                     header.addAll(Arrays.asList(parser.parseLine(lineStr)));
                     if (header.size() >= MINIMAL_SIZE) {

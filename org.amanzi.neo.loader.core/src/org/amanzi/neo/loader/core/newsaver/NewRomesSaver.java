@@ -97,7 +97,6 @@ public class NewRomesSaver extends AbstractDriveSaver {
                 fileSynonyms.clear();
                 addedNewFileToModels(dataElement.getFile());
                 lineCounter = 0l;
-
             }
             if (fileSynonyms.isEmpty()) {
                 headers = container.getHeaders();
