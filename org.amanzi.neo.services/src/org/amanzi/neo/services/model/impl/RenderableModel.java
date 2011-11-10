@@ -89,6 +89,14 @@ public abstract class RenderableModel extends AbstractIndexedModel {
         }
         return null;
     }
+    
+    /**
+     * @param crs The crs to set.
+     */
+    public void setCRS(CoordinateReferenceSystem crs) {
+        this.crs = crs;
+        crsCode = "";// ToDO:
+    }
 
     @Override
     public abstract Iterable<IDataElement> getChildren(IDataElement parent);
@@ -107,11 +115,6 @@ public abstract class RenderableModel extends AbstractIndexedModel {
      * @return An envelope, representing the coordinate bounds for the data in current model.
      */
     public ReferencedEnvelope getBounds() {
-        try {
-            crs = CRS.decode(DEFAULT_EPSG);
-        } catch (NoSuchAuthorityCodeException e) {
-            LOGGER.error("Could not parse epsg.", e);
-        }
         return new ReferencedEnvelope(min_latitude, max_latitude, min_longitude, max_longitude, crs);
     }
 

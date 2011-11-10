@@ -366,7 +366,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         if (parent == null) {
             parent = new DataElement(getRootNode());
         }
-        LOGGER.info("getChildren(" + parent.toString() + ")");
+        LOGGER.debug("getChildren(" + parent.toString() + ")");
 
         Node parentNode = ((DataElement)parent).getNode();
         if (parentNode == null) {
@@ -771,6 +771,16 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         LOGGER.info("getNodeToNodeModels()");
 
         return getNodeToNodeModels(null);
+    }
+
+    @Override
+    public void setCRS(CoordinateReferenceSystem crs) {
+        super.setCRS(crs);
+    }
+
+    @Override
+    public CoordinateReferenceSystem updateCRS(String crsCode) {
+        return super.updateCRS(crsCode);
     }
 
 }
