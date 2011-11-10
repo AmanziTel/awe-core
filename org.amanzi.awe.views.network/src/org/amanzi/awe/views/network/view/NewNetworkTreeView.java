@@ -102,11 +102,6 @@ public class NewNetworkTreeView extends ViewPart {
     private NeoServiceProviderUi neoServiceProvider;
 
     private Text tSearch;
-    
-    /*
-     * Show is properties-view editable 
-     */
-    private boolean isEditablePropertiesView;
 
     /**
      * The constructor.
@@ -198,7 +193,6 @@ public class NewNetworkTreeView extends ViewPart {
             }
             enabled = selectedDataElements.size() > 0;
             text = SHOW_PROPERTIES;
-            isEditablePropertiesView = false;
         }
 
         @Override
@@ -214,7 +208,7 @@ public class NewNetworkTreeView extends ViewPart {
         @Override
         public void run() {
             try {
-            	isEditablePropertiesView = false;
+            	((NewNetworkPropertySheetPage)propertySheetPage).setEditableToPropertyView(false);
             	PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IPageLayout.ID_PROP_SHEET);
             } catch (PartInitException e) {
                 NetworkTreePlugin.error(null, e);
@@ -246,7 +240,6 @@ public class NewNetworkTreeView extends ViewPart {
             }
             enabled = selectedDataElements.size() > 0;
             text = EDIT_PROPERTIES;
-            isEditablePropertiesView = true;
         }
 
         @Override
@@ -262,8 +255,9 @@ public class NewNetworkTreeView extends ViewPart {
         @Override
         public void run() {
             try {
-            	isEditablePropertiesView = true;
             	PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IPageLayout.ID_PROP_SHEET);
+            	((NewNetworkPropertySheetPage)propertySheetPage).setEditableToPropertyView(true);
+            	((NewNetworkPropertySheetPage)propertySheetPage).reloadTable();
             } catch (PartInitException e) {
                 NetworkTreePlugin.error(null, e);
             }
@@ -800,10 +794,7 @@ public class NewNetworkTreeView extends ViewPart {
 
     private IPropertySheetPage getPropertySheetPage() {
         if (propertySheetPage == null) {
-            propertySheetPage = new NewNetworkPropertySheetPage(isEditablePropertiesView);
-        }
-        else {
-        	((NewNetworkPropertySheetPage)propertySheetPage).changeSourceProvider();
+            propertySheetPage = new NewNetworkPropertySheetPage();
         }
 
         return propertySheetPage;
