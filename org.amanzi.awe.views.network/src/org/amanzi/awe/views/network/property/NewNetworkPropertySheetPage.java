@@ -28,16 +28,23 @@ public class NewNetworkPropertySheetPage extends PropertySheetPage implements IS
     
     private NewNetworkPropertySourceProvider provider;
     
+    private boolean isEditablePropertiesView;
+    
     /**
      * Constructor. Sets SourceProvider for this Page 
      * 
      * @param viewer
      */
     
-    public NewNetworkPropertySheetPage() {
+    public NewNetworkPropertySheetPage(boolean isEditablePropertiesView) {
         super();        
-        provider = new NewNetworkPropertySourceProvider();
+        this.isEditablePropertiesView = isEditablePropertiesView;
+        provider = new NewNetworkPropertySourceProvider(isEditablePropertiesView);
         setPropertySourceProvider(provider);
+    }
+    
+    public void changeSourceProvider() {
+    	provider = new NewNetworkPropertySourceProvider(isEditablePropertiesView);
     }
     
     /**

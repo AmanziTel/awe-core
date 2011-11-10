@@ -82,10 +82,11 @@ public class NewNetworkPropertySource extends NodePropertySource implements IPro
         
         for (String key : container.getPropertyKeys()) {
             Object value = container.getProperty(key);
-            Class< ? > c = value.getClass();
+            Class< ? > klass = value.getClass();
 	        NodeTypes nt = NodeTypes.getNodeType(container,null);
-	        if(nt == null || nt.isPropertyEditable(key))
-	            descs.add(new PropertyDescriptor(key, key, PROPERTIES_CATEGORY));
+	        if(nt == null || nt.isPropertyEditable(key)) {
+        		descs.add(new PropertyDescriptor(key, key, PROPERTIES_CATEGORY));
+	        }
 	        else
 	            descs.add(new PropertyDescriptor(key, key, NODE_CATEGORY));
         }
