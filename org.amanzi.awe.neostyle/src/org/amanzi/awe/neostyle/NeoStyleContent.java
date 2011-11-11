@@ -19,8 +19,8 @@ import java.net.URL;
 import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.project.StyleContent;
 
-import org.amanzi.awe.catalog.neo.NeoGeoResource;
-import org.amanzi.neo.services.enums.GisTypes;
+import org.amanzi.awe.models.catalog.neo.NewGeoResource;
+import org.amanzi.neo.services.model.INetworkModel;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.ui.IMemento;
 
@@ -79,10 +79,9 @@ public class NeoStyleContent extends StyleContent {
     private static final String FONT_SIZE_SECTOR = "FONT_SIZE_SECTOR";
     private static final String SITE_NAME = "SITE_NAME";
     private static final String SECTOR_NAME = "SECTOR_NAME";
-    private static boolean SHOW_ALERTS=true;
+    private static boolean SHOW_ALERTS = true;
 
     // private static final String IS_NETWORK_STYLE = "IS_NETWORK";
-
 
     public NeoStyleContent() {
         super(ID);
@@ -90,9 +89,9 @@ public class NeoStyleContent extends StyleContent {
 
     @Override
     public Object createDefaultStyle(IGeoResource resource, Color colour, IProgressMonitor monitor) throws IOException {
-        if (resource.canResolve(NeoGeoResource.class)) {
-            NeoGeoResource res = resource.resolve(NeoGeoResource.class, monitor);
-            if (res.getGeoNeo(monitor).getGisType() != GisTypes.NETWORK) {
+        if (resource.canResolve(NewGeoResource.class)) {
+            NewGeoResource res = resource.resolve(NewGeoResource.class, monitor);
+            if (res instanceof INetworkModel) {
                 NeoStyle result = new NeoStyle(Color.BLACK, new Color(200, 128, 255, (int)(0.6 * 255.0)), Color.BLACK);
                 result.setSmallestSymb(DEF_SMALLEST_SYMB);
                 result.setSmallSymb(DEF_SMALL_SYMB);

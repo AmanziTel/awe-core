@@ -18,9 +18,9 @@ import java.util.List;
 
 import net.refractions.udig.project.ui.internal.dialogs.ColorEditor;
 
-import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.NodeTypes;
+import org.amanzi.neo.services.model.IRenderableModel;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -39,10 +39,10 @@ import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.ui.part.ViewPart;
 
 /**
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author TsAr
  * @since 1.0.0
  */
@@ -97,7 +97,7 @@ public class NetworkStyleDefiner extends ViewPart {
     private Label lSecondaryFontSize;
 
     private Label lSecondaryProperty;
-    
+
     private Label lSectorLabelTypeId;
     private Combo cSectorLabelTypeId;
 
@@ -105,15 +105,17 @@ public class NetworkStyleDefiner extends ViewPart {
 
     private Button bCorrelation;
 
-    private  NetworkNeoStyle curStyle;
-    private GeoNeo resource;
+    private NetworkNeoStyle curStyle;
+    private IRenderableModel resource;
 
-    public NetworkStyleDefiner(NetworkNeoStyle curStyle){
+    public NetworkStyleDefiner(NetworkNeoStyle curStyle) {
         this.curStyle = curStyle;
-        
+
     }
-    public NetworkStyleDefiner(){
-    }   
+
+    public NetworkStyleDefiner() {
+    }
+
     public NetworkNeoStyle getCurStyle() {
         return curStyle;
     }
@@ -122,7 +124,7 @@ public class NetworkStyleDefiner extends ViewPart {
         this.curStyle = curStyle;
     }
 
-    public void refresh(){
+    public void refresh() {
         cSecondaryFontSize.setItems(getDefaultFontItem());
         cEdFill.setColorValue(rgbFromColor(curStyle.getFill()));
         cEdLabel.setColorValue(rgbFromColor(curStyle.getLabel()));
@@ -151,10 +153,10 @@ public class NetworkStyleDefiner extends ViewPart {
         cMainProperty.setItems(getMainPropertyChoices());
         cSecondaryProperty.setText(curStyle.getSectorLabelProperty());
         cMainProperty.setText(curStyle.getMainProperty());
-              
+
     }
-   
-    public void preApply(){
+
+    public void preApply() {
         curStyle.setFill(colorFromRGB(cEdFill.getColorValue()));
         curStyle.setSiteFill(colorFromRGB(cEdFillSite.getColorValue()));
         curStyle.setLabel(colorFromRGB(cEdLabel.getColorValue()));
@@ -175,10 +177,11 @@ public class NetworkStyleDefiner extends ViewPart {
         curStyle.setIgnoreTransparency(bTransp.getSelection());
         curStyle.setDrawCorrelations(bCorrelation.getSelection());
     }
+
     @Override
     public void createPartControl(Composite parent) {
 
-        Composite pMain = parent;//new Composite(parent, SWT.FILL);
+        Composite pMain = parent;// new Composite(parent, SWT.FILL);
         FormLayout layout = new FormLayout();
         layout.marginHeight = 0;
         layout.marginWidth = 0;
@@ -191,7 +194,7 @@ public class NetworkStyleDefiner extends ViewPart {
         FormData formData = new FormData();
         formData.top = new FormAttachment(0, 5);
         formData.left = new FormAttachment(0, 5);
-        formData.right = new FormAttachment(90,-10);
+        formData.right = new FormAttachment(90, -10);
         xGroup.setLayout(new FormLayout());
         xGroup.setLayoutData(formData);
 
@@ -262,14 +265,14 @@ public class NetworkStyleDefiner extends ViewPart {
         cFontSize = new Combo(labelsGroup, SWT.DROP_DOWN | SWT.RIGHT);
         cFontSize.setItems(getDefaultFontItem());
         cFontSize.setLayoutData(new GridData(SWT.FILL | GridData.FILL_HORIZONTAL));
-        lSectorLabelTypeId= new Label(labelsGroup, SWT.NONE);
+        lSectorLabelTypeId = new Label(labelsGroup, SWT.NONE);
         lSectorLabelTypeId.setText(Messages.NetworkStyleDefiner_SectorLabelType);
         cSectorLabelTypeId = new Combo(labelsGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
         cSectorLabelTypeId.setLayoutData(new GridData(SWT.FILL | GridData.FILL_HORIZONTAL));
         lSecondaryProperty = new Label(labelsGroup, SWT.NONE);
         lSecondaryProperty.setText(Messages.Sector_Property);
         lSecondaryProperty.setLayoutData(new GridData(SWT.LEFT));
-        cSecondaryProperty = new Combo(labelsGroup, SWT.DROP_DOWN /*| SWT.READ_ONLY*/);
+        cSecondaryProperty = new Combo(labelsGroup, SWT.DROP_DOWN /* | SWT.READ_ONLY */);
         cSecondaryProperty.setLayoutData(new GridData(SWT.FILL | GridData.FILL_HORIZONTAL));
         lSecondaryFontSize = new Label(labelsGroup, SWT.NONE);
         lSecondaryFontSize.setText(Messages.Font_Size_Sector);
@@ -396,7 +399,6 @@ public class NetworkStyleDefiner extends ViewPart {
         formData.top = new FormAttachment(tTransparency, 5);
         bTransp.setLayoutData(formData);
 
-
         bCorrelation = new Button(grScale, SWT.CHECK);
         bCorrelation.setText(Messages.Draw_correlation);
         formData = new FormData();
@@ -462,12 +464,12 @@ public class NetworkStyleDefiner extends ViewPart {
             }
         });
         cSectorLabelTypeId.addSelectionListener(new SelectionListener() {
-            
+
             @Override
             public void widgetSelected(SelectionEvent e) {
                 setSectorLabelProperty(cSectorLabelTypeId.getText());
             }
-            
+
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {
                 widgetSelected(e);
@@ -475,45 +477,48 @@ public class NetworkStyleDefiner extends ViewPart {
         });
 
     }
+
     /**
      *
      */
     public void setSectorLabelProperty(String typeId) {
         cSecondaryProperty.setItems(getSecondaryPropertyChoices(typeId));
     }
+
     /**
-     *
      * @return
      */
     private String[] getDefaultSectorType() {
-        String[] result=new String[]{NodeTypes.SECTOR.getId(),NodeTypes.TRX.getId(),NodeTypes.FREQUENCY_PLAN.getId()};
+        String[] result = new String[] {NodeTypes.SECTOR.getId(), NodeTypes.TRX.getId(), NodeTypes.FREQUENCY_PLAN.getId()};
         return result;
     }
+
     /**
      * get array of sector names
-     * @param typeId 
      * 
+     * @param typeId
      * @return array
      */
     private String[] getSecondaryPropertyChoices(String typeId) {
         List<String> result = new ArrayList<String>();
         result.add(NetworkNeoStyleContent.DEF_NONE);
-        if (NodeTypes.SECTOR.getId().equals(typeId)){
+        if (NodeTypes.SECTOR.getId().equals(typeId)) {
             result.add(INeoConstants.PROPERTY_NAME_NAME);
             result.add(INeoConstants.PROPERTY_SECTOR_CI);
             result.add(INeoConstants.PROPERTY_SECTOR_LAC);
             result.add("vendor");
-        }else if (NodeTypes.TRX.getId().equals(typeId)){
+        } else if (NodeTypes.TRX.getId().equals(typeId)) {
             result.add("band");
             result.add(INeoConstants.PROPERTY_BCCH_NAME);
             result.add("hopping_type");
-        }else{
+        } else {
             result.add(INeoConstants.PROPERTY_SECTOR_ARFCN);
             result.add("hsn");
-            result.add(INeoConstants.PROPERTY_MAIO);       
+            result.add(INeoConstants.PROPERTY_MAIO);
         }
-            return result.toArray(new String[0]);
+        return result.toArray(new String[0]);
     }
+
     /**
      * get array of possible site names
      * 
@@ -522,9 +527,11 @@ public class NetworkStyleDefiner extends ViewPart {
     private String[] getMainPropertyChoices() {
         return new String[] {NetworkNeoStyleContent.DEF_NONE, NetworkNeoStyleContent.DEF_MAIN_PROPERTY, "lat", "lon"}; //$NON-NLS-1$ //$NON-NLS-2$
     }
+
     @Override
     public void setFocus() {
     }
+
     /**
      * gets sector font size
      * 
@@ -617,17 +624,19 @@ public class NetworkStyleDefiner extends ViewPart {
     private RGB rgbFromColor(java.awt.Color color) {
         return new RGB(color.getRed(), color.getGreen(), color.getBlue());
     }
+
     /**
-     *
      * @param resource
      */
-    public void setGeoNeo(GeoNeo resource) {
+    public void setRenderableResource(IRenderableModel resource) {
         this.resource = resource;
-        
+
     }
-    public GeoNeo getGeoNeo(){
+
+    public IRenderableModel getRenderableResource() {
         return resource;
     }
+
     private String[] getDefaultFontItem() {
 
         return FONT_SIZE_ARRAY;

@@ -54,7 +54,7 @@ public class NewNeighbourSaverTesting extends AbstractAWETest {
     private NewNetworkSaver networkSaver;
     private NewNeighboursSaver neighbourSaver;
     private static String PATH_TO_BASE = "";
-    private IConfiguration config;
+    private ConfigurationDataImpl config;
     private static final String NETWORK_KEY = "Network";
     private static final String NETWORK_NAME = "testNetwork";
     private static final String PROJECT_KEY = "Project";

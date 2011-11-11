@@ -36,6 +36,10 @@ public interface IRenderableModel extends IModel {
      * @param longitude
      */
     public void updateLocationBounds(double latitude, double longitude);
+    
+    public CoordinateReferenceSystem updateCRS(String crsCode);
+    
+    public void setCRS(CoordinateReferenceSystem crs);
 
     public double getMinLatitude();
 
