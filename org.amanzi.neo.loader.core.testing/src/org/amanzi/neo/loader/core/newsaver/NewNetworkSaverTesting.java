@@ -57,7 +57,7 @@ public class NewNetworkSaverTesting extends AbstractAWETest {
     private static Logger LOGGER = Logger.getLogger(NewNetworkSaverTesting.class);
     private NewNetworkSaver networkSaver;
     private static String PATH_TO_BASE = "";
-    private IConfiguration config;
+    private ConfigurationDataImpl config;
     private static final String NETWORK_KEY = "Network";
     private static final String NETWORK_NAME = "testNetwork";
     private static final String PROJECT_KEY = "Project";
