@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.services.model;
 
+import org.amanzi.neo.services.exceptions.AWEException;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -36,9 +37,9 @@ public interface IRenderableModel extends IModel {
      * @param longitude
      */
     public void updateLocationBounds(double latitude, double longitude);
-    
+
     public CoordinateReferenceSystem updateCRS(String crsCode);
-    
+
     public void setCRS(CoordinateReferenceSystem crs);
 
     public double getMinLatitude();
@@ -71,7 +72,7 @@ public interface IRenderableModel extends IModel {
      * @param bounds_transformed
      * @return
      */
-    public Iterable<IDataElement> getElements(Envelope bounds_transformed);
+    public Iterable<IDataElement> getElements(Envelope bounds_transformed) throws AWEException;
 
     /**
      * Find out coordinates from the defined element.

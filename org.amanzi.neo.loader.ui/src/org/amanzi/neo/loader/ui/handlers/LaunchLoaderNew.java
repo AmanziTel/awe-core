@@ -25,7 +25,7 @@ import org.amanzi.neo.loader.core.newparser.IParser;
 import org.amanzi.neo.loader.core.newsaver.IData;
 import org.amanzi.neo.loader.core.newsaver.ISaver;
 import org.amanzi.neo.loader.ui.loaders.LoaderNew;
-import org.amanzi.neo.loader.ui.wizards.IGraphicInterfaceForLoaders;
+import org.amanzi.neo.loader.ui.wizards.IGraphicInterfaceForLoadersNew;
 import org.amanzi.neo.services.model.IModel;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.commands.AbstractHandler;
@@ -54,7 +54,7 @@ public class LaunchLoaderNew extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent arg0) throws ExecutionException {
-        //TODO: LN: hard code!
+        // TODO: LN: hard code!
         guiId = arg0.getParameter("org.amanzi.neo.loader.ui.commands.guiId");
         if (StringUtils.isEmpty(guiId)) {
             // TODO add descriptions
@@ -89,7 +89,7 @@ public class LaunchLoaderNew extends AbstractHandler {
      * @param elements the elements
      * @return the wizard instance
      */
-    private IGraphicInterfaceForLoaders getWizardInstance(ExecutionEvent arg0, List<IConfigurationElement> elements) {
+    private IGraphicInterfaceForLoadersNew getWizardInstance(ExecutionEvent arg0, List<IConfigurationElement> elements) {
         Object wizard = null;
         IExtensionRegistry reg = Platform.getExtensionRegistry();
         IConfigurationElement[] extensions = reg.getConfigurationElementsFor("org.amanzi.neo.loader.ui.gui");
@@ -110,11 +110,11 @@ public class LaunchLoaderNew extends AbstractHandler {
         for (IConfigurationElement element : elements) {
             ILoaderNew<IData, IConfiguration> loader = defineLoader(element);
             if (loader != null) {
-                ((IGraphicInterfaceForLoaders)wizard).addNewLoader(loader, element.getChildren("pages"));
+                ((IGraphicInterfaceForLoadersNew)wizard).addNewLoader(loader, element.getChildren("pages"));
             }
         }
-        if (wizard instanceof IGraphicInterfaceForLoaders) {
-            IGraphicInterfaceForLoaders gui = (IGraphicInterfaceForLoaders)wizard;
+        if (wizard instanceof IGraphicInterfaceForLoadersNew) {
+            IGraphicInterfaceForLoadersNew gui = (IGraphicInterfaceForLoadersNew)wizard;
             // gui.setLoaders(loaders);
             return gui;
         } else {
@@ -145,8 +145,8 @@ public class LaunchLoaderNew extends AbstractHandler {
                 Class cl = LoaderNew.class;
                 loader = (ILoaderNew<IData, IConfiguration>)cl.newInstance();
             }
-            IParser<ISaver<IModel,? extends IData, IConfiguration>, IConfiguration,? extends IData> parser = defineParser(element);
-            List<ISaver<? extends IModel, IData, IConfiguration>> saver = defineSaver(element);
+            IParser<ISaver<IModel, ? extends IData, IConfiguration>, IConfiguration, ? extends IData> parser = defineParser(element);
+            List<ISaver< ? extends IModel, IData, IConfiguration>> saver = defineSaver(element);
             if (parser != null && saver != null) {
                 loader.setParser(parser);
                 loader.setSaver(saver);
@@ -156,7 +156,7 @@ public class LaunchLoaderNew extends AbstractHandler {
 
             }
         } catch (InstantiationException e) {
-            //TODO: LN: handle exceptions!!!!!
+            // TODO: LN: handle exceptions!!!!!
             // TODO Handle InstantiationException
             e.printStackTrace();
         } catch (IllegalAccessException e) {
@@ -191,13 +191,13 @@ public class LaunchLoaderNew extends AbstractHandler {
     }
 
     /**
-     * Define  savers.
+     * Define savers.
      * 
      * @param element the element
      * @return the i saver<? extends i data element>
      */
     @SuppressWarnings("unchecked")
-    private List<ISaver<? extends IModel, IData, IConfiguration>> defineSaver(IConfigurationElement element) {
+    private List<ISaver< ? extends IModel, IData, IConfiguration>> defineSaver(IConfigurationElement element) {
         List<IConfigurationElement> saverElements = new LinkedList<IConfigurationElement>();
         for (IConfigurationElement innerElement : element.getChildren()) {
             if (innerElement.getName().equals("saver")) {
@@ -206,7 +206,7 @@ public class LaunchLoaderNew extends AbstractHandler {
         }
         IExtensionRegistry reg = Platform.getExtensionRegistry();
         IConfigurationElement[] extensions = reg.getConfigurationElementsFor("org.amanzi.loader.core.newsaver");
-        List<ISaver<? extends IModel, IData, IConfiguration>> saverList = new LinkedList<ISaver<? extends IModel, IData, IConfiguration>>();
+        List<ISaver< ? extends IModel, IData, IConfiguration>> saverList = new LinkedList<ISaver< ? extends IModel, IData, IConfiguration>>();
         for (int i = 0; i < extensions.length; i++) {
             IConfigurationElement elementSaver = extensions[i];
             for (IConfigurationElement saver : saverElements) {
@@ -236,7 +236,8 @@ public class LaunchLoaderNew extends AbstractHandler {
      * @return the i parser<? extends i data element,? extends i configuration data>
      */
     @SuppressWarnings("unchecked")
-    private IParser<ISaver<IModel, ? extends IData, IConfiguration>, IConfiguration, ? extends IData> defineParser(IConfigurationElement element) {
+    private IParser<ISaver<IModel, ? extends IData, IConfiguration>, IConfiguration, ? extends IData> defineParser(
+            IConfigurationElement element) {
         String parserId = element.getAttribute("parser");
         IExtensionRegistry reg = Platform.getExtensionRegistry();
         IConfigurationElement[] extensions = reg.getConfigurationElementsFor("org.amanzi.loader.core.newparser");
@@ -244,7 +245,7 @@ public class LaunchLoaderNew extends AbstractHandler {
             IConfigurationElement elementParser = extensions[i];
             if (parserId.equals(elementParser.getAttribute("id"))) {
                 try {
-                    return (IParser<ISaver<IModel, ? extends IData, IConfiguration>, IConfiguration,? extends IData>)elementParser
+                    return (IParser<ISaver<IModel, ? extends IData, IConfiguration>, IConfiguration, ? extends IData>)elementParser
                             .createExecutableExtension("class");
                 } catch (Exception e) {
                     // TODO Handle CoreException

@@ -70,6 +70,7 @@ import org.eclipse.ui.IWorkbench;
  * @author tsinkel_a
  * @since 1.0.0
  */
+// TODO remove or replace with AbstractLoaderWizardNew after move to new architecture
 public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends Wizard
         implements
             IGraphicInterfaceForLoaders<T>,
@@ -377,11 +378,11 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
                         load(accessType, data, loader, monitor);
                     } else {
                         try {
-							newload(newloader, monitor);
-						} catch (AWEException e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
+                            newload(newloader, monitor);
+                        } catch (AWEException e1) {
+                            // TODO Auto-generated catch block
+                            e1.printStackTrace();
+                        }
                         try {
                             addDataToCatalog();
                         } catch (MalformedURLException e) {
@@ -446,7 +447,7 @@ public abstract class AbstractLoaderWizard<T extends IConfigurationData> extends
      * @param data the data
      * @param loader the loader
      * @param monitor the monitor
-     * @throws AWEException 
+     * @throws AWEException
      */
     protected void newload(final Map<ILoaderNew< ? extends IData, IConfiguration>, ? extends IConfiguration> loaders,
             IProgressMonitor monitor) throws AWEException {

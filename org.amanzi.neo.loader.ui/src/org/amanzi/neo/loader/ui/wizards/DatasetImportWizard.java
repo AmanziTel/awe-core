@@ -18,7 +18,6 @@ import java.util.List;
 
 import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
-import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.ILoaderNew;
 import org.amanzi.neo.loader.core.newsaver.IData;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
@@ -38,7 +37,7 @@ import org.eclipse.ui.IWorkbench;
  * @author tsinkel_a
  * @since 1.0.0
  */
-public class DatasetImportWizard extends AbstractLoaderWizard<CommonConfigData> {
+public class DatasetImportWizard extends AbstractLoaderWizardNew<ConfigurationDataImpl> {
     private CommonConfigData data;
     private ConfigurationDataImpl configData;
 
@@ -47,14 +46,6 @@ public class DatasetImportWizard extends AbstractLoaderWizard<CommonConfigData> 
         List<IWizardPage> result = new ArrayList<IWizardPage>();
         result.add(new LoadDatasetMainPage());
         return result;
-    }
-
-    @Override
-    public CommonConfigData getConfigurationData() {
-        if (data == null) {
-            data = new CommonConfigData();
-        }
-        return data;
     }
 
     @Override
@@ -75,15 +66,15 @@ public class DatasetImportWizard extends AbstractLoaderWizard<CommonConfigData> 
     }
 
     @Override
-    public void addNewLoader(ILoaderNew<IData, IConfiguration> loader, IConfigurationElement[] pageConfigElements) {
-        LoaderInfo<CommonConfigData> info = new LoaderInfo<CommonConfigData>();
+    public void addNewLoader(ILoaderNew<IData, ConfigurationDataImpl> loader, IConfigurationElement[] pageConfigElements) {
+        LoaderInfo<ConfigurationDataImpl> info = new LoaderInfo<ConfigurationDataImpl>();
         info.setAdditionalPages(pageConfigElements);
         newloaders.put(loader, info);
         requiredLoaders.put(loader, null);
     }
 
     @Override
-    public IConfiguration getNewConfigurationData() {
+    public ConfigurationDataImpl getNewConfigurationData() {
         if (getNewSelectedLoader() != null && configData != null) {
             requiredLoaders.put(getNewSelectedLoader(), configData);
         }

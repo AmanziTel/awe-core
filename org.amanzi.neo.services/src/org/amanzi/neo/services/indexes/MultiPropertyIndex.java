@@ -809,4 +809,16 @@ public class MultiPropertyIndex<E extends Object> {
         return (E)(node == null ? null : node.getProperty(property, null));
     }
     
+    @Override
+    public boolean equals(Object obj) {
+        if(!(obj instanceof MultiPropertyIndex<?>)){
+            return false;
+        }
+        return (this.name.equalsIgnoreCase(((MultiPropertyIndex<?>)obj).name));
+    }
+    
+    @Override
+    public int hashCode() {
+        return this.name.hashCode();
+    }
 }
