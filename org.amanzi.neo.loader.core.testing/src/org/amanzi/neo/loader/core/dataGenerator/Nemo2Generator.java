@@ -18,11 +18,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 import org.amanzi.neo.loader.core.saver.nemo.NemoEvents;
@@ -43,7 +40,7 @@ public class Nemo2Generator {
     public static Integer minIntegerValue = Integer.MIN_VALUE;
 
     // max integer value
-    public static Integer maxIntegerValue = Integer.MAX_VALUE-1;
+    public static Integer maxIntegerValue = Integer.MAX_VALUE - 1;
 
     // home property
     protected static final String USER_HOME = "user.home";
@@ -54,7 +51,7 @@ public class Nemo2Generator {
      * @return row
      */
     private String generateAG() {
-        String ag = generateFloat().toString();
+        String ag = generateFloat(-100, 100).toString();
         String str = NemoEvents.AG.getEventId() + ",,," + ag;
         return str;
     }
@@ -90,7 +87,7 @@ public class Nemo2Generator {
      * @return row
      */
     private String generateCL() {
-        String cl = generateFloat().toString();
+        String cl = generateFloat(-100, 100).toString();
         String str = NemoEvents.CL.getEventId() + ",,," + cl;
         return str;
     }
@@ -278,9 +275,11 @@ public class Nemo2Generator {
         return str;
     }
 
-    // םוע
+    // פאיכטך
     private String generateSTOP() {
-        String str = "11:10:30.065,,\"19.10.2009\"RRD,11:10:29.943,1,11,5,1,";
+        String timestamp = generateTimestamp();
+        String date = generateDate();
+        String str = NemoEvents.STOP.getEventId() + "," + timestamp + ",," + returnWordSoCalled(date);
         return str;
     }
 
@@ -312,8 +311,6 @@ public class Nemo2Generator {
         return str;
     }
 
-    // CAF
-
     private String generateDAC() {
         String str = NemoEvents.DAC.getEventId() + "," + generateTimestamp() + "," + generateContext();
         String applicationProtocol = generateInteger(0, 14).toString();
@@ -331,9 +328,46 @@ public class Nemo2Generator {
         return str;
     }
 
-    // בבבנננ
     private String generateDREQ() {
-        String str = ",10:30:31.351,2,5,5,3,2,20971520,\"ftp.adsl.hinet.net/test_020m.zip\",1";
+        String str = NemoEvents.DREQ.getEventId() + "," + generateTimestamp() + "," + generateContext();
+        Integer protocol = generateInteger(0, 14);
+        str = str + "," + protocol.toString();
+        String transfDir = generateInteger(1, 3).toString();
+        str = str + "," + transfDir;
+        if (protocol == 0 || protocol == 1 || protocol == 2) {
+            String fileSize = generateInteger(0, maxIntegerValue).toString();
+            String packetSize = generateInteger(0, maxIntegerValue).toString();
+            String rateLimit = generateInteger(0, maxIntegerValue).toString();
+            String pingSize = generateInteger(0, 100000).toString();
+            String pingRate = generateInteger(0, maxIntegerValue).toString();
+            String pingTimeout = generateInteger(0, maxIntegerValue).toString();
+            str = str + "," + fileSize + "," + packetSize + "," + rateLimit + "," + pingSize + "," + pingRate + "," + pingTimeout;
+        }
+        if (protocol == 3 || protocol == 4) {
+            String fileSize = generateInteger(0, maxIntegerValue).toString();
+            String fileName = "Data transfer filename";
+            String transfAtt = generateInteger(0, maxIntegerValue).toString();
+            str = str + "," + fileSize + "," + returnWordSoCalled(fileName) + "," + transfAtt;
+        }
+        if (protocol == 5 || protocol == 6 || protocol == 7 || protocol == 8 || protocol == 9 || protocol == 10) {
+            String fileSize = generateInteger(0, maxIntegerValue).toString();
+            String fileName = "Data transfer filename";
+            str = str + "," + fileSize + "," + returnWordSoCalled(fileName);
+        }
+        if (protocol == 11) {
+            String fileName = "Data transfer filename";
+            str = str + "," + returnWordSoCalled(fileName);
+        }
+        if (protocol == 12) {
+            String pingSize = generateInteger(0, 100000).toString();
+            String pingRate = generateInteger(0, maxIntegerValue).toString();
+            String pingTimeout = generateInteger(0, maxIntegerValue).toString();
+            str = str + "," + pingSize + "," + pingRate + "," + pingTimeout;
+        }
+        if (protocol == 13 || protocol == 14) {
+            String dataSize = generateInteger(0, maxIntegerValue).toString();
+            str = str + "," + dataSize;
+        }
         return str;
     }
 
@@ -415,60 +449,330 @@ public class Nemo2Generator {
         str = str + "," + applicationProtocol;
         if (protocol == 8 || protocol == 10) {
             str = str + generateContext();
-            // ןמסלמענועü
+            String numberOfContentElements = generateInteger(0, 10).toString();
+            String numberOfParametersPerContent = generateInteger(0, 10).toString();
+            String contentURL = "Content URL";
+            String contentType = generateInteger(1, 3).toString();
+            String contentSize = generateInteger(0, maxIntegerValue).toString();
+            str = str + "," + numberOfContentElements + "," + numberOfParametersPerContent + "," + returnWordSoCalled(contentURL)
+                    + "," + contentType + "," + contentSize;
         }
         return str;
     }
 
     private String generateCELLMEAS() {
-        String str = "CELLMEAS,10:19:59.946,,5,0,1,2,10762,-73.1,3,17,0,50001,10762,399,-7.7,0,-80.8,,,,,,,,,,114.0,1,50001,10762,428,-19.4,0,-92.5,,,,,,,,,,,1,50001,10762,269,-6.7,0,-79.8,,,,,,,,,,";
-        // ןמסלמענועü
-
+        String str = NemoEvents.CELLMEAS.getEventId() + "," + generateTimestamp() + ",,";
+        Integer system = generateTechnologySystems();
+        str = str + "," + system.toString();
+        if (system == 1) {
+            Integer numberOfHeadersParams = generateInteger(0, maxIntegerValue);
+            String headersParams = numberOfHeadersParams.toString();
+            Integer numberOfCells = generateInteger(0, maxIntegerValue);
+            String cells = numberOfCells.toString();
+            Integer numberOfParametersPerCell = numberOfHeadersParams / numberOfCells;
+            String parametersPerCell = numberOfParametersPerCell.toString();
+            String cellType = generateInteger(0, 1).toString();
+            // 0,...
+            String band = generateInteger(20001, 20015).toString();
+            String arfcn = generateInteger(0, maxIntegerValue).toString();
+            String bsic = generateInteger(0, 63).toString();
+            String rxLevFull = generateFloat(-120, -11).toString();
+            String rxLevSub = generateFloat(-120, -11).toString();
+            String c1 = generateFloat(-100, 100).toString();
+            String c2 = generateFloat(-100, 100).toString();
+            String c31 = generateFloat(-100, 100).toString();
+            String c32 = generateFloat(-100, 100).toString();
+            String hcsPriority = generateInteger(0, 7).toString();
+            String hcsThr = generateFloat(-110, -49).toString();
+            String cellID = generateInteger(0, 65535).toString();
+            String lac = generateInteger(0, 65535).toString();
+            String rac = generateInteger(0, maxIntegerValue).toString();
+            String srxlev = generateFloat(-107, -91).toString();
+            str = str + "," + headersParams + "," + cells + "," + parametersPerCell + "," + cellType + "," + band + "," + arfcn
+                    + "," + bsic + "," + rxLevFull + "," + rxLevSub + "," + c1 + "," + c2 + "," + c31 + "," + c32 + ","
+                    + hcsPriority + "," + hcsThr + "," + cellID + "," + lac + "," + rac + "," + srxlev;
+        }
+        if (system == 2) {
+            Integer numberOfHeadersParams = generateInteger(0, maxIntegerValue);
+            String headersParams = numberOfHeadersParams.toString();
+            Integer numberOfCells = generateInteger(0, maxIntegerValue);
+            String cells = numberOfCells.toString();
+            Integer numberOfParametersPerCell = numberOfHeadersParams / numberOfCells;
+            String parametersPerCell = numberOfParametersPerCell.toString();
+            String cellType = generateInteger(0, 1).toString();
+            // 0,...
+            String band = generateInteger(20001, 20015).toString();
+            String arfcn = generateInteger(0, maxIntegerValue).toString();
+            String lac = generateInteger(0, 65535).toString();
+            String rssi = generateFloat(-111, -11).toString();
+            String c1 = generateFloat(-100, 100).toString();
+            String c2 = generateFloat(-100, 100).toString();
+            String cc = generateInteger(0, 63).toString();
+            str = str + "," + headersParams + "," + cells + "," + parametersPerCell + "," + cellType + "," + band + "," + arfcn
+                    + "," + lac + "," + rssi + "," + c1 + "," + c2 + "," + cc;
+        }
+        if (system == 5) {
+            Integer numberOfHeadersParams = generateInteger(0, maxIntegerValue);
+            String headersParams = numberOfHeadersParams.toString();
+            Integer numberOfChs = generateInteger(0, maxIntegerValue);
+            String chs = numberOfChs.toString();
+            Integer numberOfParametersPerChs = numberOfHeadersParams / numberOfChs;
+            String parametrsPerChs = numberOfParametersPerChs.toString();
+            String ch = generateInteger(0, maxIntegerValue).toString();
+            String rssi = generateFloat(-100, 100).toString();
+            Integer numberOfCells = generateInteger(0, maxIntegerValue);
+            String cells = numberOfCells.toString();
+            Integer numberOfParametersPerCell = numberOfHeadersParams / numberOfCells;
+            String parametersPerCell = numberOfParametersPerCell.toString();
+            String cellType = generateInteger(0, 3).toString();
+            // 0,...
+            String band = generateInteger(20001, 20015).toString();
+            String ch2 = generateInteger(0, maxIntegerValue).toString();
+            String scr = generateInteger(0, 511).toString();
+            String ecn0 = generateFloat(-26, -1).toString();
+            String sttd = generateInteger(0, 1).toString();
+            String rscp = generateFloat(-150, -20).toString();
+            String secondaryScr = generateInteger(0, 15).toString();
+            String squal = generateFloat(-24, 23).toString();
+            String srxlev = generateFloat(-107, 89).toString();
+            String hqual = generateFloat(-32, 23).toString();
+            String hrxlev = generateFloat(-115, 89).toString();
+            String rqual = generateFloat(-200, 49).toString();
+            String rrxlev = generateFloat(-191, 24).toString();
+            String off = generateInteger(0, 255).toString();
+            String tm = generateFloat(0, 38399).toString();
+            String pathloss = generateFloat(0, 119).toString();
+            str = str + "," + headersParams + "," + chs + "," + parametrsPerChs + "," + ch + "," + rssi + "," + cells + ","
+                    + parametersPerCell + "," + cellType + "," + band + "," + ch2 + "," + scr + "," + ecn0 + "," + sttd + ","
+                    + rscp + "," + secondaryScr + "," + squal + "," + srxlev + "," + hqual + "," + hrxlev + "," + rqual + ","
+                    + rrxlev + "," + off + "," + tm + "," + pathloss;
+        }
+        if (system == 6) {
+            Integer numberOfHeadersParams = generateInteger(0, maxIntegerValue);
+            String headersParams = numberOfHeadersParams.toString();
+            Integer numberOfChs = generateInteger(0, maxIntegerValue);
+            String chs = numberOfChs.toString();
+            Integer numberOfParametersPerChs = numberOfHeadersParams / numberOfChs;
+            String parametrsPerChs = numberOfParametersPerChs.toString();
+            // 0,...
+            String band = generateInteger(20001, 20015).toString();
+            String ch = generateInteger(0, maxIntegerValue).toString();
+            String rssi = generateFloat(-100, 100).toString();
+            Integer numberOfCells = generateInteger(0, maxIntegerValue);
+            String cells = numberOfCells.toString();
+            Integer numberOfParametersPerCell = numberOfHeadersParams / numberOfCells;
+            String parametersPerCell = numberOfParametersPerCell.toString();
+            String cellType = generateInteger(0, 1).toString();
+            // 0,...
+            String band2 = generateInteger(20001, 20015).toString();
+            String ch2 = generateInteger(0, maxIntegerValue).toString();
+            String cellParamsID = generateInteger(0, 127).toString();
+            String rscp = generateFloat(-116, -21).toString();
+            String srxlev = generateFloat(-107, 89).toString();
+            String hrxlev = generateFloat(-115, 89).toString();
+            String rrxlev = generateFloat(-191, 24).toString();
+            String pathloss = generateFloat(46, 147).toString();
+            str = str + "," + headersParams + "," + chs + "," + parametrsPerChs + "," + band + "," + ch + "," + rssi + "," + cells
+                    + "," + parametersPerCell + "," + cellType + "," + band2 + "," + ch2 + "," + cellParamsID + "," + rscp + ","
+                    + srxlev + "," + hrxlev + "," + rrxlev + "," + pathloss;
+        }
+        if (system == 10 || system == 11) {
+            Integer numberOfHeadersParams = generateInteger(0, maxIntegerValue);
+            String headersParams = numberOfHeadersParams.toString();
+            Integer numberOfChs = generateInteger(0, maxIntegerValue);
+            String chs = numberOfChs.toString();
+            Integer numberOfParametersPerChs = numberOfHeadersParams / numberOfChs;
+            String parametrsPerChs = numberOfParametersPerChs.toString();
+            // 0,...
+            String band = generateInteger(20001, 20015).toString();
+            String ch = generateInteger(0, maxIntegerValue).toString();
+            String rxPower = generateFloat(-120, 29).toString();
+            String rx0Power = generateFloat(-120, 29).toString();
+            String rx1Power = generateFloat(-120, 29).toString();
+            Integer numberOfCells = generateInteger(0, maxIntegerValue);
+            String cells = numberOfCells.toString();
+            Integer numberOfParametersPerCell = numberOfHeadersParams / numberOfCells;
+            String parametersPerCell = numberOfParametersPerCell.toString();
+            String set = generateInteger(0, 3).toString();
+            // 0,...
+            String band2 = generateInteger(20001, 20015).toString();
+            String ch2 = generateInteger(0, maxIntegerValue).toString();
+            String pn = generateInteger(0, maxIntegerValue).toString();
+            String eci0 = generateFloat(-32, -1).toString();
+            String walsh = generateInteger(0, maxIntegerValue).toString();
+            String rscp = generateFloat(-150, -21).toString();
+            str = str + "," + headersParams + "," + chs + "," + parametrsPerChs + "," + band + "," + ch + "," + rxPower + ","
+                    + rx0Power + "," + rx1Power + "," + cells + "," + parametersPerCell + "," + set + "," + band2 + "," + ch2 + ","
+                    + pn + "," + eci0 + "," + walsh + "," + rscp;
+        }
+        if (system == 12) {
+            Integer numberOfHeadersParams = generateInteger(0, maxIntegerValue);
+            String headersParams = numberOfHeadersParams.toString();
+            Integer numberOfChs = generateInteger(0, maxIntegerValue);
+            String chs = numberOfChs.toString();
+            Integer numberOfParametersPerChs = numberOfHeadersParams / numberOfChs;
+            String parametrsPerChs = numberOfParametersPerChs.toString();
+            // 0,...
+            String band = generateInteger(20001, 20015).toString();
+            String ch = generateInteger(0, maxIntegerValue).toString();
+            String rxPower = generateFloat(-120, 29).toString();
+            String rx0Power = generateFloat(-120, 29).toString();
+            String rx1Power = generateFloat(-120, 29).toString();
+            Integer numberOfChs2 = generateInteger(0, maxIntegerValue);
+            String chs2 = numberOfChs2.toString();
+            Integer numberOfParametersPerChs2 = numberOfHeadersParams / numberOfChs2;
+            String parametrsPerChs2 = numberOfParametersPerChs2.toString();
+            String set = generateInteger(0, 3).toString();
+            String band2 = generateInteger(20001, 20015).toString();
+            String ch2 = generateInteger(0, maxIntegerValue).toString();
+            String pn = generateInteger(0, maxIntegerValue).toString();
+            String eci0 = generateFloat(-32, -1).toString();
+            String rscp = generateFloat(-150, -21).toString();
+            str = str + "," + headersParams + "," + chs + "," + parametrsPerChs + "," + band + "," + ch + "," + rxPower + ","
+                    + rx0Power + "," + rx1Power + "," + chs2 + "," + parametrsPerChs2 + "," + set + "," + band2 + "," + ch2 + ","
+                    + pn + "," + eci0 + "," + rscp;
+        }
+        if (system == 20) {
+            Integer numberOfHeadersParams = generateInteger(0, maxIntegerValue);
+            String headersParams = numberOfHeadersParams.toString();
+            Integer numberOfCells = generateInteger(0, maxIntegerValue);
+            String cells = numberOfCells.toString();
+            Integer numberOfParametersPerCell = numberOfHeadersParams / numberOfCells;
+            String parametersPerCell = numberOfParametersPerCell.toString();
+            String cellType = generateInteger(0, 1).toString();
+            // 0,...
+            String band = generateInteger(20001, 20015).toString();
+            String quality = generateFloat(0, 99).toString();
+            String channel = generateInteger(0, maxIntegerValue).toString();
+            String rssi = generateFloat(-100, 19).toString();
+            String ssid = returnWordSoCalled("WLAN service set identifier");
+            String macAddr = returnWordSoCalled("WLAN MAC address");
+            String security = generateInteger(0, 4).toString();
+            String maxTransferRate = generateInteger(0, maxIntegerValue).toString();
+            str = str + "," + headersParams + "," + cells + "," + parametersPerCell + "," + cellType + "," + band + "," + quality
+                    + "," + channel + "," + rssi + "," + ssid + "," + macAddr + "," + security + "," + maxTransferRate;
+        }
+        if (system == 21) {
+            Integer numberOfHeadersParams = generateInteger(0, maxIntegerValue);
+            String headersParams = numberOfHeadersParams.toString();
+            Integer numberOfCells = generateInteger(0, maxIntegerValue);
+            String cells = numberOfCells.toString();
+            Integer numberOfParametersPerCell = numberOfHeadersParams / numberOfCells;
+            String parametersPerCell = numberOfParametersPerCell.toString();
+            String cellType = generateInteger(0, 1).toString();
+            // 0,...
+            String band = generateInteger(20001, 20015).toString();
+            String quality = generateFloat(0, 99).toString();
+            String channel = generateInteger(0, maxIntegerValue).toString();
+            String rssi = generateFloat(-100, 19).toString();
+            String ssid = returnWordSoCalled("WLAN service set identifier");
+            String macAddr = returnWordSoCalled("WLAN MAC address");
+            str = str + "," + headersParams + "," + cells + "," + parametersPerCell + "," + cellType + "," + band + "," + ","
+                    + quality + "," + channel + "," + rssi + "," + ssid + "," + macAddr;
+        }
+        if (system == 25) {
+            Integer numberOfHeadersParams = generateInteger(0, maxIntegerValue);
+            String headersParams = numberOfHeadersParams.toString();
+            Integer numberOfCells = generateInteger(0, maxIntegerValue);
+            String cells = numberOfCells.toString();
+            Integer numberOfParametersPerCell = numberOfHeadersParams / numberOfCells;
+            String parametersPerCell = numberOfParametersPerCell.toString();
+            String cellType = generateInteger(0, 1).toString();
+            // 0,...
+            String band = generateInteger(20001, 20015).toString();
+            String frequency = generateFloat(-100, 100).toString();
+            String preambleIndex = generateInteger(0, 113).toString();
+            String bsID = returnWordSoCalled("WiMAX base station ID");
+            String rssi = generateFloat(-120, 19).toString();
+            String rssiDev = generateFloat(0, 49).toString();
+            String cinr = generateFloat(-32, 39).toString();
+            String cinrDev = generateFloat(0, 39).toString();
+            str = str + "," + headersParams + "," + cells + "," + parametersPerCell + "," + cellType + "," + band + "," + frequency
+                    + "," + preambleIndex + "," + bsID + "," + rssi + "," + rssiDev + "," + cinr + "," + cinrDev;
+        }
+        if (system == 51 || system == 52) {
+            Integer numberOfHeadersParams = generateInteger(0, maxIntegerValue);
+            String headersParams = numberOfHeadersParams.toString();
+            Integer numberOfCells = generateInteger(0, maxIntegerValue);
+            String cells = numberOfCells.toString();
+            Integer numberOfParametersPerCell = numberOfHeadersParams / numberOfCells;
+            String parametersPerCell = numberOfParametersPerCell.toString();
+            String cellType = generateInteger(0, 1).toString();
+            // 0,...
+            String band = generateInteger(20001, 20015).toString();
+            String ch = generateInteger(0, maxIntegerValue).toString();
+            String sat = generateInteger(0, 6).toString();
+            String rxLev = generateFloat(-120, -11).toString();
+            str = str + "," + headersParams + "," + cells + "," + parametersPerCell + "," + cellType + "," + band + "," + ch + ","
+                    + sat + "," + rxLev;
+        }
+        if (system == 53) {
+            Integer numberOfHeadersParams = generateInteger(0, maxIntegerValue);
+            String headersParams = numberOfHeadersParams.toString();
+            Integer numberOfCells = generateInteger(0, maxIntegerValue);
+            String cells = numberOfCells.toString();
+            Integer numberOfParametersPerCell = numberOfHeadersParams / numberOfCells;
+            String parametersPerCell = numberOfParametersPerCell.toString();
+            String cellType = generateInteger(0, 1).toString();
+            // 0,...
+            String band = generateInteger(20001, 20015).toString();
+            String ch = generateInteger(0, maxIntegerValue).toString();
+            String dcc = generateInteger(0, 255).toString();
+            String rxLev = generateFloat(-120, -11).toString();
+            str = str + "," + headersParams + "," + cells + "," + parametersPerCell + "," + cellType + "," + band + "," + ch + ","
+                    + dcc + "," + rxLev;
+        }
         return str;
     }
-    
-    private String generateADJMEAS(){
-        //ןמסלמענועü
+
+    private String generateADJMEAS() {
+        // ןמסלמענועü
         return null;
     }
 
-    //RXQ,PRXQ,FER,MSP,RLT,TAD,DSC,BEP,CI,TXPC
-    
-    private void generateAllEvents(boolean isPredefined,FileWriter wr) {
+    // RXQ,PRXQ,FER,MSP,RLT,TAD,DSC,BEP,CI,TXPC
+
+    private void generateAllEvents(boolean isPredefined, FileWriter wr) {
         if (isPredefined == false) {
-            addRowInFile(generatePRODUCT(),wr);
-            addRowInFile(generateAG(),wr);
-            addRowInFile(generateBF(),wr);
-            addRowInFile(generateCI(),wr);
-            addRowInFile(generateCL(),wr);
-            addRowInFile(generateDL(),wr);
-            addRowInFile(generateDN(),wr);
-            addRowInFile(generateDS(),wr);
-            addRowInFile(generateDT(),wr);
-            addRowInFile(generateFF(),wr);
-            addRowInFile(generateEI(),wr);
-            addRowInFile(generateHV(),wr);
-            addRowInFile(generateHW(),wr);
-            addRowInFile(generateSI(),wr);
-            addRowInFile(generateID(),wr);
-            addRowInFile(generateMF(),wr);
-            addRowInFile(generateML(),wr);
-            addRowInFile(generateNN(),wr);
-            addRowInFile(generatePC(),wr);
-            addRowInFile(generateSP(),wr);
-            addRowInFile(generateSW(),wr);
-            addRowInFile(generateTS(),wr);
-            addRowInFile(generateUT(),wr);
-            addRowInFile(generateVQ(),wr);
-            addRowInFile(generateSTART(),wr);
-            addRowInFile(generateDAC(),wr);
-            addRowInFile(generateDAF(),wr);
-            addRowInFile(generateDAD(),wr);
-            addRowInFile(generateDCOMP(),wr);
-            addRowInFile(generateDRATE(),wr);
-            addRowInFile(generatePER(),wr);
-            addRowInFile(generateRTT(),wr);
-            addRowInFile(generateSTOP(),wr);
+            addRowInFile(generatePRODUCT(), wr);
+            addRowInFile(generateAG(), wr);
+            addRowInFile(generateBF(), wr);
+            addRowInFile(generateCI(), wr);
+            addRowInFile(generateCL(), wr);
+            addRowInFile(generateDL(), wr);
+            addRowInFile(generateDN(), wr);
+            addRowInFile(generateDS(), wr);
+            addRowInFile(generateDT(), wr);
+            addRowInFile(generateFF(), wr);
+            addRowInFile(generateEI(), wr);
+            addRowInFile(generateHV(), wr);
+            addRowInFile(generateHW(), wr);
+            addRowInFile(generateSI(), wr);
+            addRowInFile(generateID(), wr);
+            addRowInFile(generateMF(), wr);
+            addRowInFile(generateML(), wr);
+            addRowInFile(generateNN(), wr);
+            addRowInFile(generatePC(), wr);
+            addRowInFile(generateSP(), wr);
+            addRowInFile(generateSW(), wr);
+            addRowInFile(generateTS(), wr);
+            addRowInFile(generateUT(), wr);
+            addRowInFile(generateVQ(), wr);
+            addRowInFile(generateSTART(), wr);
+            addRowInFile(generateCAA(), wr);
+            addRowInFile(generateCAC(), wr);
+            addRowInFile(generateDAC(), wr);
+            addRowInFile(generateDAF(), wr);
+            addRowInFile(generateDAD(), wr);
+            addRowInFile(generateDREQ(), wr);
+            addRowInFile(generateDCOMP(), wr);
+            addRowInFile(generateDRATE(), wr);
+            addRowInFile(generatePER(), wr);
+            addRowInFile(generateRTT(), wr);
+            addRowInFile(generateJITTER(), wr);
+            addRowInFile(generateDSS(), wr);
+            addRowInFile(generateDCONTENT(), wr);
+            addRowInFile(generateSTOP(), wr);
         }
     }
 
@@ -501,14 +805,14 @@ public class Nemo2Generator {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
     }
-    
-    public void addRowInFile(String row,FileWriter wr){
+
+    public void addRowInFile(String row, FileWriter wr) {
         try {
             wr.write(row);
             wr.write("\n");
         } catch (IOException e) {
             // TODO Handle IOException
-            throw (RuntimeException) new RuntimeException( ).initCause( e );
+            throw (RuntimeException)new RuntimeException().initCause(e);
         }
     }
 
@@ -530,8 +834,8 @@ public class Nemo2Generator {
      * 
      * @return float value
      */
-    private Float generateFloat() {
-        Integer intValue = generateInteger(-100, 100);
+    private Float generateFloat(Integer minIntegerValue, Integer maxIntegerValue) {
+        Integer intValue = generateInteger(minIntegerValue, maxIntegerValue);
         Float floatValue = rand.nextFloat();
         Float f = new Float(intValue);
         return f + floatValue;
@@ -574,6 +878,7 @@ public class Nemo2Generator {
         if (numberOfContextIDs == 0) {
             str = str + "";
         } else {
+            str = str + numberOfContextIDs.toString();
             String[] contextIDs = new String[numberOfContextIDs];
             for (int i = 0; i < numberOfContextIDs; i++) {
                 Integer id = generateInteger(0, 10);
@@ -587,6 +892,7 @@ public class Nemo2Generator {
                 str = str + "," + contextID;
             }
         }
+        System.out.println(str);
         return str;
     }
 
@@ -716,6 +1022,15 @@ public class Nemo2Generator {
             str = str + "," + dataTransferCause;
         }
         return str;
+    }
+
+    private Integer generateTechnologySystems() {
+        List<Integer> systems = new ArrayList<Integer>();
+        for (TechnologySystems system : TechnologySystems.values()) {
+            systems.add(system.getId());
+        }
+        int index = generateInteger(0, systems.size());
+        return systems.get(index);
     }
 
     /**
