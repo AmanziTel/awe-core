@@ -26,6 +26,7 @@ import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.indexes.MultiPropertyIndex;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -50,17 +51,17 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
     protected double max_latitude = -Double.MAX_VALUE;
     protected double min_longitude = Double.MAX_VALUE;
     protected double max_longitude = -Double.MAX_VALUE;
-    
+
     private Map<INodeType, List<MultiPropertyIndex< ? >>> indexes = new HashMap<INodeType, List<MultiPropertyIndex< ? >>>();
 
     private IndexService indexService = NeoServiceFactory.getInstance().getIndexService();
-    
+
     private NewDatasetService datasetService = NeoServiceFactory.getInstance().getNewDatasetService();
-    
+
     protected AbstractIndexedModel(Node rootNode, INodeType nodeType) throws AWEException {
         super(nodeType);
         this.rootNode = rootNode;
-        
+
         NewDatasetService dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
         Node gis = dsServ.getGisNodeByDataset(rootNode);
         if (gis != null) {
@@ -79,8 +80,8 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
      */
     protected void addLocationIndex(INodeType nodeType) throws AWEException {
         LOGGER.debug("addLocationIndex(" + nodeType + ")");
-        
-        //since location index exist it should also be a GIS node
+
+        // since location index exist it should also be a GIS node
         datasetService.getGisNodeByDataset(rootNode);
 
         // validate parameters
@@ -98,6 +99,23 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
         if (!indList.contains(index)) {
             indList.add(index);
         }
+    }
+    
+    protected Iterable<Node> getNodesInBounds(INodeType nodeType, double minLat, double minLon, double maxLat, double maxLon) throws AWEException{
+        //validate
+        if(nodeType == null){
+            throw new IllegalArgumentException("Node type is null.");
+        }
+        
+        List<MultiPropertyIndex< ? >> indList = indexes.get(nodeType);
+        if(indList == null){
+            return datasetService.emptyTraverser(rootNode);
+        }
+        MultiPropertyIndex<Double> locationIndex = indexService.createLocationIndex(rootNode, nodeType);
+        if (!indList.contains(locationIndex)) {
+            return datasetService.emptyTraverser(rootNode);
+        }
+        return locationIndex.searchTraverser(new Double[]{minLat, minLon}, new Double[]{maxLat, maxLon});
     }
 
     /**
@@ -234,6 +252,8 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
      */
     @Override
     public void finishUp() throws AWEException {
+        flushIndexes();
+
         Node rootNode = getRootNode();
 
         Map<String, Object> params = new HashMap<String, Object>();

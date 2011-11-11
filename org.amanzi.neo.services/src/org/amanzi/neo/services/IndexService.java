@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.services;
 
+import java.io.File;
 import java.io.IOException;
 
 import org.amanzi.neo.db.manager.NeoServiceProvider;
@@ -33,13 +34,12 @@ import org.neo4j.graphdb.Transaction;
  * @since 1.0.0
  */
 public class IndexService extends NewAbstractService {
-    
+
     private static final Logger LOGGER = Logger.getLogger(IndexService.class);
-    
 
     /**
      * Creates MultiPropertyIndex based on Timestamp property
-     *
+     * 
      * @param rootNode
      * @param nodeType
      * @return
@@ -47,15 +47,15 @@ public class IndexService extends NewAbstractService {
      */
     public MultiPropertyIndex<Long> createTimestampIndex(Node rootNode, INodeType nodeType) throws DatabaseException {
         Transaction tx = graphDb.beginTx();
-        
+
         try {
-            String indexName = getIndexKey(rootNode, nodeType);
+            String indexName = getIndexKey(rootNode, nodeType) + File.separator + "TIMESTAMP";
             MultiPropertyIndex<Long> result = new MultiPropertyIndex<Long>(indexName, new String[] {DriveModel.TIMESTAMP},
                     new MultiTimeIndexConverter(), 10);
             result.initialize(NeoServiceProvider.getProvider().getService(), rootNode);
-            
+
             tx.success();
-            
+
             return result;
         } catch (Exception e) {
             tx.failure();
@@ -67,10 +67,10 @@ public class IndexService extends NewAbstractService {
     }
 
     public MultiPropertyIndex<Double> createLocationIndex(Node rootNode, INodeType nodeType) throws DatabaseException {
-Transaction tx = graphDb.beginTx();
-        
+        Transaction tx = graphDb.beginTx();
+
         try {
-            String indexName = getIndexKey(rootNode, nodeType);
+            String indexName = getIndexKey(rootNode, nodeType) + File.separator + "LOCATION";
             MultiPropertyIndex<Double> result = new MultiPropertyIndex<Double>(indexName, new String[] {DriveModel.LATITUDE,
                     DriveModel.LONGITUDE}, new MultiDoubleConverter(0.001), 10);
             result.initialize(NeoServiceProvider.getProvider().getService(), rootNode);
