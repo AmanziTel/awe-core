@@ -16,7 +16,6 @@ package org.amanzi.neo.loader.ui.wizards;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -24,9 +23,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.amanzi.neo.db.manager.NeoServiceProvider;
-import org.amanzi.neo.loader.core.CommonConfigData;
-import org.amanzi.neo.loader.core.IConfiguration;
-import org.amanzi.neo.loader.core.IValidateResult;
+import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.IValidateResult.Result;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
@@ -68,7 +65,7 @@ import org.eclipse.swt.widgets.Shell;
  * @author tsinkel_a
  * @since 1.0.0
  */
-public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
+public class LoadDatasetMainPage extends LoaderPageNew<ConfigurationDataImpl> {
     private static Logger LOGGER = Logger.getLogger(LoadDatasetMainPage.class);
     /** String ASC_PAT_FILE field */
     // private static final String ASC_PAT_FILE = ".*_(\\d{6})_.*";
@@ -420,49 +417,6 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
         folderFilesList = createSelectionList(panel, NeoLoaderPluginMessages.DriveDialog_FilesToChooseListLabel);
     }
 
-    @Override
-    protected boolean validateConfigData(CommonConfigData configurationData) {
-        String rootName = configurationData.getDbRootName();
-        if (StringUtils.isEmpty(rootName)) {
-            setMessage("Select dataset", DialogPage.ERROR);
-            return false;
-        }
-        java.util.List<File> files = configurationData.getFileToLoad();
-        if (files == null || files.isEmpty()) {
-            setMessage("Select files for import", DialogPage.ERROR);
-            return false;
-        }
-        if (getSelectedLoader() == null) {
-            setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_TYPE, DialogPage.ERROR);
-            return false;
-        }
-        configurationData.setProjectName(LoaderUiUtils.getAweProjectName());
-        configurationData.setCrs(getSelectedCRS());
-        Calendar cl = (Calendar)configurationData.getAdditionalProperties().get("workdate");
-        if (cl == null) {
-            cl = Calendar.getInstance();
-            cl.set(Calendar.HOUR, 0);
-            cl.set(Calendar.MINUTE, 0);
-            cl.set(Calendar.SECOND, 0);
-            cl.set(Calendar.MILLISECOND, 0);
-            configurationData.getAdditionalProperties().put("workdate", cl);
-        }
-        cl.set(Calendar.YEAR, date.getYear());
-        cl.set(Calendar.MONTH, date.getMonth());
-        cl.set(Calendar.DAY_OF_MONTH, date.getDay());
-
-        IValidateResult result = getSelectedLoader().getValidator().validate(configurationData);
-        if (result.getResult() == Result.FAIL) {
-            setMessage(String.format(result.getMessages(), getSelectedLoader().getDescription()), DialogPage.ERROR);
-            return false;
-        } else if (result.getResult() == Result.UNKNOWN) {
-            setMessage(String.format(result.getMessages(), getSelectedLoader().getDescription()), DialogPage.WARNING);
-        } else {
-            setMessage(""); //$NON-NLS-1$
-        }
-        return true;
-    }
-
     /**
      * change dataset selection
      */
@@ -655,7 +609,7 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
     }
 
     @Override
-    protected boolean validateConfigData(IConfiguration configurationData) {
+    protected boolean validateConfigData(ConfigurationDataImpl configurationData) {
         String rootName = configurationData.getDatasetNames().get("Dataset");
         if (StringUtils.isEmpty(rootName)) {
             setMessage("Select dataset", DialogPage.ERROR);

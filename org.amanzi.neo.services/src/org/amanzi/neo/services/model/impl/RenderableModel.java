@@ -89,7 +89,7 @@ public abstract class RenderableModel extends AbstractIndexedModel {
         }
         return null;
     }
-    
+
     /**
      * @param crs The crs to set.
      */
@@ -115,7 +115,7 @@ public abstract class RenderableModel extends AbstractIndexedModel {
      * @return An envelope, representing the coordinate bounds for the data in current model.
      */
     public ReferencedEnvelope getBounds() {
-        return new ReferencedEnvelope(min_latitude, max_latitude, min_longitude, max_longitude, crs);
+        return new ReferencedEnvelope(min_longitude, max_longitude, min_latitude, max_latitude, crs);
     }
 
     @Override

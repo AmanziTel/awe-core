@@ -8461,4 +8461,12 @@ public enum NemoEvents {
 
         return Double.parseDouble(value);
     }
+
+    /**
+     *
+     * @return
+     */
+    public String getEventId() {
+        return eventId;
+    }
 }
