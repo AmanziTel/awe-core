@@ -18,16 +18,16 @@
          point="net.refractions.udig.style.styleConfigurator">
       <styleConfigurator
             class="org.amanzi.awe.neostyle.NeoStyleConfigurator"
-            id=".amanzi.awe.neostyle.NeoStyleConfigurator"
+            id="org.amanzi.awe.neostyle.NeoStyleConfigurator"
             label="Style"
-            requires="org.amanzi.awe.catalog.neo.NeoDriveGeoRes"
+            requires="org.amanzi.neo.services.model.IDriveModel"
             styleId="org.amanzi.awe.neostyle.style">
       </styleConfigurator>
       <styleConfigurator
             class="org.amanzi.awe.neostyle.NetworkNeoStyleConfigurator"
             id="org.amanzi.awe.neostyle.NetworkNeoStyleConfigurator"
             label="NetworkStyle"
-            requires="org.amanzi.awe.catalog.neo.NeoNetworkGeoRes"
+            requires="org.amanzi.neo.services.model.INetworkModel"
             styleId="org.amanzi.awe.neostyle.style.network">
       </styleConfigurator>
    </extension>

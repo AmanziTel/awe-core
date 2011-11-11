@@ -26,6 +26,7 @@ import org.eclipse.ui.views.properties.IPropertySourceProvider;
 public class NewNetworkPropertySourceProvider implements IPropertySourceProvider {
     
     private IDataElement lastRawObject;
+    private NewNetworkPropertySource propertySource;
     
     /**
      * Return PropertySource for given element
@@ -34,9 +35,23 @@ public class NewNetworkPropertySourceProvider implements IPropertySourceProvider
     public IPropertySource getPropertySource(Object element) {
         if (element instanceof IDataElement) {
             lastRawObject = (IDataElement)element;
-            return new NewNetworkPropertySource((IDataElement)element);            
+            propertySource = new NewNetworkPropertySource((IDataElement)element);
+            return propertySource;
         }
         return null;
+    }
+    
+    /**
+     * Allow to set is view of property is editable
+     * 
+     * @param isEditablePropertyView
+     */
+    public void setEditableToPropertyView(boolean isEditablePropertyView) {
+    	propertySource.setEditableToPropertyView(isEditablePropertyView);
+    }
+    
+    public void reloadTable() {
+    	propertySource.getPropertyDescriptors();
     }
     
     public IDataElement getLastRawObject() {

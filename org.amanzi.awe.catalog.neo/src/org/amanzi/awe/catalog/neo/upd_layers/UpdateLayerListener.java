@@ -30,7 +30,6 @@ import net.refractions.udig.project.internal.Map;
 import net.refractions.udig.project.internal.command.navigation.SetViewportCenterCommand;
 
 import org.amanzi.awe.catalog.neo.GeoNeo;
-import org.amanzi.awe.catalog.neo.NeoGeoResource;
 import org.amanzi.awe.catalog.neo.upd_layers.events.AddSelectionEvent;
 import org.amanzi.awe.catalog.neo.upd_layers.events.ChangeModelEvent;
 import org.amanzi.awe.catalog.neo.upd_layers.events.ChangeSelectionEvent;
@@ -38,6 +37,7 @@ import org.amanzi.awe.catalog.neo.upd_layers.events.RefreshPropertiesEvent;
 import org.amanzi.awe.catalog.neo.upd_layers.events.UpdateLayerEvent;
 import org.amanzi.awe.catalog.neo.upd_layers.events.UpdatePropertiesAndMapEvent;
 import org.amanzi.awe.catalog.neo.upd_layers.events.UpdatePropertiesEvent;
+import org.amanzi.awe.models.catalog.neo.NewGeoResource;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.ui.NeoUtils;
@@ -148,6 +148,7 @@ public class UpdateLayerListener {
 
         sendCenterComand(cr);
     }
+
     /**
      * Select nodes on map and adjust zoom
      * 
@@ -184,8 +185,9 @@ public class UpdateLayerListener {
         double margin = 0.05;
         double deltaLat = (maxLat - minLat) * margin;
         double deltaLon = (maxLon - minLon) * margin;
-        
-        sendChangeBBoxComand(new Coordinate(minLon - deltaLon, minLat - deltaLat), new Coordinate(maxLon + deltaLon, maxLat + deltaLat));
+
+        sendChangeBBoxComand(new Coordinate(minLon - deltaLon, minLat - deltaLat), new Coordinate(maxLon + deltaLon, maxLat
+                + deltaLat));
     }
 
     /**
@@ -210,36 +212,36 @@ public class UpdateLayerListener {
             e.printStackTrace();
         }
     }
+
     /**
      * Sends change BBox command
      * 
      * @param crd1 a left top corner coordinate
      * @param crd2 a right bottom corner coordinate
      */
-    private void sendChangeBBoxComand(Coordinate crd1,Coordinate crd2) {
+    private void sendChangeBBoxComand(Coordinate crd1, Coordinate crd2) {
         try {
-            
+
             NavigationCommandFactory factory = NavigationCommandFactory.getInstance();
             IMap m = layer.getMap();
             CoordinateReferenceSystem worldCrs = m.getViewportModel().getCRS();
             CoordinateReferenceSystem dataCRS = layer.getGeoResource().getInfo(null).getCRS();
-           
+
             Coordinate minCoord = new Coordinate();
             Coordinate maxCoord = new Coordinate();
             transformCoordinate(crd1, worldCrs, dataCRS, minCoord);
             transformCoordinate(crd2, worldCrs, dataCRS, maxCoord);
-            
-            NavCommand[] commands = new NavCommand[] {factory.createSetViewportBBoxCommand(new Envelope(minCoord,maxCoord))};
-            
+
+            NavCommand[] commands = new NavCommand[] {factory.createSetViewportBBoxCommand(new Envelope(minCoord, maxCoord))};
+
             ((Map)m).sendCommandASync(factory.createCompositeCommand(commands));
-            
+
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     /**
-     *
      * @param crd1
      * @param worldCrs
      * @param dataCRS
@@ -391,13 +393,14 @@ public class UpdateLayerListener {
     private void refreshProperties(RefreshPropertiesEvent event) throws IOException {
         if (isEventForThisLayer(event.getGisNode())) {
             GeoNeo geo = getGeoNeo();
-            geo.setPropertyToRefresh(event.getAggrNode(), event.getPropertyNode(), event.getMinSelNode(), event.getMaxSelNode(), event.getValues());
+            geo.setPropertyToRefresh(event.getAggrNode(), event.getPropertyNode(), event.getMinSelNode(), event.getMaxSelNode(),
+                    event.getValues());
             layer.refresh(null);
         }
     }
 
     private boolean isEventForThisLayer(Node gis) throws IOException {
-        IGeoResource resource = layer.findGeoResource(NeoGeoResource.class);
+        IGeoResource resource = layer.findGeoResource(NewGeoResource.class);
         return gis != null && resource.resolve(Node.class, null).equals(gis);
     }
 }

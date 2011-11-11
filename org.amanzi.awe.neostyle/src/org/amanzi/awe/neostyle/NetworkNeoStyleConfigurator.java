@@ -26,6 +26,7 @@ import net.refractions.udig.style.IStyleConfigurator;
 
 import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.neo.services.filters.Filter;
+import org.amanzi.neo.services.model.IRenderableModel;
 import org.eclipse.jface.viewers.CellLabelProvider;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
@@ -224,7 +225,7 @@ public class NetworkNeoStyleConfigurator extends IStyleConfigurator {
      * @param row
      */
     protected void editStyle(FilterRow row) {
-        NetworkFilterDefiner definer = new NetworkFilterDefiner(viewer.getControl().getShell(), "Edit filter", defaultStyle.getGeoNeo(), row.getName(), row.getWrapper());
+        NetworkFilterDefiner definer = new NetworkFilterDefiner(viewer.getControl().getShell(), "Edit filter", defaultStyle.getRenderableResource(), row.getName(), row.getWrapper());
         FilterModel model = NeoStylePlugin.getDefault().getFilterModel();
         Set<String> restr = new HashSet<String>();
         restr.addAll(model.getFilterNames());
@@ -246,7 +247,7 @@ public class NetworkNeoStyleConfigurator extends IStyleConfigurator {
      */
     protected void createNew() {
         FilterWrapperImpl<NetworkNeoStyle> wrapper = createDefWrapper();
-        NetworkFilterDefiner definer = new NetworkFilterDefiner(viewer.getControl().getShell(), "Create new filter", defaultStyle.getGeoNeo(), "new", wrapper);
+        NetworkFilterDefiner definer = new NetworkFilterDefiner(viewer.getControl().getShell(), "Create new filter", defaultStyle.getRenderableResource(), "new", wrapper);
         FilterModel model = NeoStylePlugin.getDefault().getFilterModel();
         definer.setRestrictedNames(model.getFilterNames());
         IFilterWrapper result = definer.open();
@@ -295,13 +296,13 @@ public class NetworkNeoStyleConfigurator extends IStyleConfigurator {
     protected void refresh() {
         curStyle = (NetworkNeoStyle)getStyleBlackboard().get(ID);
         defaultStyle.setCurStyle(curStyle);
-        GeoNeo resource;
+        IRenderableModel resource;
         try {
-            resource = getLayer().findGeoResource(GeoNeo.class).resolve(GeoNeo.class, null);
+            resource = getLayer().findGeoResource(IRenderableModel.class).resolve(IRenderableModel.class, null);
         } catch (IOException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
-        defaultStyle.setGeoNeo(resource);
+        defaultStyle.setRenderableResource(resource);
         defaultStyle.refresh();
         viewer.setInput(curStyle);
 

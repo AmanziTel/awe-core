@@ -40,6 +40,7 @@ import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveRelationshipTypes;
 import org.apache.log4j.Logger;
+import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
  * @author Vladislav_Kondratenko
@@ -53,6 +54,27 @@ public class NewRomesSaver extends AbstractDriveSaver {
     private IDriveModel model;
     private Long lineCounter = 0l;
     private String fileName;
+
+    protected NewRomesSaver(IDriveModel model, ConfigurationDataImpl config, GraphDatabaseService service) {
+        super(service);
+        preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.DRIVE);
+        columnSynonyms = new HashMap<String, Integer>();
+        setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
+        commitTx();
+        if (model != null) {
+            this.model = model;
+            modelMap.put(model.getName(), model);
+        } else {
+            init(config, null);
+        }
+    }
+
+    /**
+     * 
+     */
+    public NewRomesSaver() {
+        super();
+    }
 
     private void addedSynonyms() {
         for (String key : params.keySet()) {
@@ -141,6 +163,7 @@ public class NewRomesSaver extends AbstractDriveSaver {
         params.put(LATITUDE, latitude);
         params.put(LONGITUDE, longitude);
         params.put(EVENT, event);
+        params.put(NewAbstractService.NAME, time);
         params.put(SECTOR_ID, sector_id);
         for (String header : headers) {
             if (fileSynonyms.containsValue(header)) {
@@ -225,7 +248,7 @@ public class NewRomesSaver extends AbstractDriveSaver {
      * @return
      */
     @SuppressWarnings("deprecation")
-    private Long defineTimestamp(Calendar workDate, String time) {
+    protected Long defineTimestamp(Calendar workDate, String time) {
         if (time == null) {
             return null;
         }
@@ -255,7 +278,7 @@ public class NewRomesSaver extends AbstractDriveSaver {
 
             }
         }
-        return null;
+        return 0l;
 
     }
 

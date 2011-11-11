@@ -37,7 +37,7 @@ public class NewGeoResource extends IGeoResource {
     private IGeoResourceInfo resInfo;
     private URL url;
 
-    NewGeoResource(IService service, IRenderableModel source) {
+    protected NewGeoResource(IService service, IRenderableModel source) {
         // validate
         if (service == null) {
             throw new IllegalArgumentException("Geo service is null.");
@@ -54,10 +54,8 @@ public class NewGeoResource extends IGeoResource {
 
     private URL getURL(IService service, IRenderableModel source) {
         try {
-            URL result = new URL(service.getIdentifier().toString() +
-                    "#" + 
-                    ((IDataModel)source).getProject().getName() + File.separator
-                    + ((IDataModel)source).getName());
+            URL result = new URL(service.getIdentifier().toString() + "#" + ((IDataModel)source).getProject().getName()
+                    + File.separator + ((IDataModel)source).getName());
             return result;
         } catch (MalformedURLException e) {
             LOGGER.error("Could not build identifier url.", e);
@@ -97,18 +95,15 @@ public class NewGeoResource extends IGeoResource {
 
     @Override
     public <T> boolean canResolve(Class<T> adaptee) {
-        return adaptee.isAssignableFrom(INetworkModel.class) || adaptee.isAssignableFrom(IRenderableModel.class)
-                || adaptee.isAssignableFrom(IDriveModel.class) || super.canResolve(adaptee);
+        return (adaptee.isAssignableFrom(INetworkModel.class) && (source instanceof INetworkModel))
+                || adaptee.isAssignableFrom(IRenderableModel.class)
+                || (adaptee.isAssignableFrom(IDriveModel.class) && (source instanceof IDriveModel)) || super.canResolve(adaptee);
     }
 
     @Override
     public <T> T resolve(Class<T> adaptee, IProgressMonitor monitor) throws IOException {
-        // TODO: really?
-        if (adaptee.isAssignableFrom(INetworkModel.class)) {
-            return adaptee.cast(source);
-        } else if (adaptee.isAssignableFrom(IDriveModel.class)) {
-            return adaptee.cast(source);
-        } else if (adaptee.isAssignableFrom(IRenderableModel.class)) {
+        if ((adaptee.isAssignableFrom(INetworkModel.class)) || (adaptee.isAssignableFrom(IDriveModel.class))
+                || (adaptee.isAssignableFrom(IRenderableModel.class))) {
             return adaptee.cast(source);
         }
         return super.resolve(adaptee, monitor);

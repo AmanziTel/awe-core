@@ -35,9 +35,22 @@ public class NewNetworkPropertySheetPage extends PropertySheetPage implements IS
      */
     
     public NewNetworkPropertySheetPage() {
-        super();        
+        super();
         provider = new NewNetworkPropertySourceProvider();
         setPropertySourceProvider(provider);
+    }
+    
+    /**
+     * Allow to set is view of property is editable
+     * 
+     * @param isEditablePropertyView
+     */
+    public void setEditableToPropertyView(boolean isEditablePropertyView) {
+    	provider.setEditableToPropertyView(isEditablePropertyView);
+    }
+    
+    public void reloadTable() {
+    	provider.reloadTable();
     }
     
     /**

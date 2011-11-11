@@ -21,7 +21,9 @@ import net.refractions.udig.project.internal.Map;
 import net.refractions.udig.project.internal.ProjectPackage;
 
 import org.amanzi.awe.catalog.neo.NeoGeoResource;
+import org.amanzi.awe.models.catalog.neo.NewGeoResource;
 import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.model.IRenderableModel;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -53,7 +55,7 @@ public class MapCreateInterceptor implements MapInterceptor {
                 System.out.println(msg.getNotifier().getClass());
                 if (msg.getNotifier() instanceof Layer) {
                     Layer layer = (Layer)msg.getNotifier();
-                    if (layer.getGeoResource().canResolve(NeoGeoResource.class)) {
+                    if (layer.getGeoResource().canResolve(NewGeoResource.class)) {
                         System.out.println(msg.getFeatureID(Layer.class));
                         if (msg.getFeatureID(Layer.class) == ProjectPackage.LAYER__CRS) {
                             switch (msg.getEventType()) {
@@ -64,7 +66,7 @@ public class MapCreateInterceptor implements MapInterceptor {
                             }
                             case Notification.SET: {
                                 CoordinateReferenceSystem crs = (CoordinateReferenceSystem)msg.getNewValue();
-                                storeCrs(layer,crs);
+                                storeCrs(layer, crs);
                                 break;
                             }
                             }
@@ -72,30 +74,32 @@ public class MapCreateInterceptor implements MapInterceptor {
                     }
                 }
             }
-            
+
             private void storeCrs(Layer layer, final CoordinateReferenceSystem crs) {
 
                 try {
-                    final NeoGeoResource resource=layer.getGeoResource().resolve(NeoGeoResource.class, null);
-                    Job job=new Job("StoreCrs"){
+                    final NewGeoResource resource = layer.getGeoResource().resolve(NewGeoResource.class, null);
+                    Job job = new Job("StoreCrs") {
 
                         @Override
                         protected IStatus run(IProgressMonitor monitor) {
                             GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
                             Transaction tx = service.beginTx();
-                            try{
-                                NeoUtils.setCRS(resource.getGeoNeo(monitor).getMainGisNode(),crs,service);
-                                resource.getGeoNeo(monitor).getMainGisNode().setProperty(INeoConstants.PROPERTY_WKT_CRS, crs.toWKT());
+                            try {
+                                IRenderableModel model = resource.resolve(IRenderableModel.class, monitor);
+                                model.setCRS(crs);
+                                // resource.getGeoNeo(monitor).getMainGisNode().setProperty(INeoConstants.PROPERTY_WKT_CRS,
+                                // crs.toWKT());
                                 tx.success();
                                 return Status.OK_STATUS;
                             } catch (Exception e) {
                                 // TODO Handle IOException
-                                throw (RuntimeException) new RuntimeException( ).initCause( e );
-                            }finally{
-                               tx.finish(); 
+                                throw (RuntimeException)new RuntimeException().initCause(e);
+                            } finally {
+                                tx.finish();
                             }
                         }
-                        
+
                     };
                     job.schedule();
                     try {
@@ -103,12 +107,11 @@ public class MapCreateInterceptor implements MapInterceptor {
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    resource.updateCRS();
                     layer.refresh(null);
                 } catch (IOException e) {
-                    throw (RuntimeException) new RuntimeException( ).initCause( e );
+                    throw (RuntimeException)new RuntimeException().initCause(e);
                 }
-                
+
             }
         };
 

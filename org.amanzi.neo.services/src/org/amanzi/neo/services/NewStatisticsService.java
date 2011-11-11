@@ -61,6 +61,7 @@ public class NewStatisticsService extends NewAbstractService {
     private static final String PROP_STAT = "propStat";
     private static final String ROOT_NODE = "rootNode";
     private static final String VAULT = "vault";
+    private static final int MAX_PROPERTY_COUNT_TO_SAVE_STATISTICS = 150;
 
     private static Logger LOGGER = Logger.getLogger(NewStatisticsService.class);
     /**
@@ -378,13 +379,24 @@ public class NewStatisticsService extends NewAbstractService {
                 Node propStatNode = createNode(StatisticsNodeTypes.PROPERTY_STATISTICS);
                 vaultNode.createRelationshipTo(propStatNode, DatasetRelationTypes.CHILD);
                 propStatNode.setProperty(NAME, name);
-                propStatNode.setProperty(NUMBER, number);
                 propStatNode.setProperty(CLASS, className);
                 int count = 0;
-                for (Entry<Object, Integer> entry : propMap.entrySet()) {
-                    count++;
-                    propStatNode.setProperty(VALUE_NAME + count, entry.getKey());
-                    propStatNode.setProperty(COUNT_NAME + count, entry.getValue());
+                
+                // Kasnitskij_V:
+                // Save statistics only if count of properties less than 
+                // max allowed property count.
+                // In other case save only name with name of property,
+                // class with class of property and number with number equal with 0
+                if (propMap.size() < MAX_PROPERTY_COUNT_TO_SAVE_STATISTICS) {
+                    propStatNode.setProperty(NUMBER, number);
+                    for (Entry<Object, Integer> entry : propMap.entrySet()) {
+                        count++;
+                        propStatNode.setProperty(VALUE_NAME + count, entry.getKey());
+                        propStatNode.setProperty(COUNT_NAME + count, entry.getValue());
+                    }
+                }
+                else {
+                    propStatNode.setProperty(NUMBER, 0);
                 }
 
                 tx.success();
