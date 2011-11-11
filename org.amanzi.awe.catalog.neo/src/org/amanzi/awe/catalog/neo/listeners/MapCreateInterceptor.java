@@ -84,8 +84,8 @@ public class MapCreateInterceptor implements MapInterceptor {
                             GraphDatabaseService service = NeoServiceProviderUi.getProvider().getService();
                             Transaction tx = service.beginTx();
                             try{
-                                NeoUtils.setCRS(resource.getGeoNeo(monitor).getMainGisNode(),crs,service);
-                                resource.getGeoNeo(monitor).getMainGisNode().setProperty(INeoConstants.PROPERTY_WKT_CRS, crs.toWKT());
+//                                NeoUtils.setCRS(resource.getGeoNeo(monitor).getMainGisNode(),crs,service);
+//                                resource.getGeoNeo(monitor).getMainGisNode().setProperty(INeoConstants.PROPERTY_WKT_CRS, crs.toWKT());
                                 tx.success();
                                 return Status.OK_STATUS;
                             } catch (Exception e) {

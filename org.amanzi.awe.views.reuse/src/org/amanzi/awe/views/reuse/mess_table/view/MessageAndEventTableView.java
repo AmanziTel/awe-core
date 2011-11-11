@@ -31,7 +31,6 @@ import java.util.regex.Pattern;
 
 import org.amanzi.awe.views.reuse.Messages;
 import org.amanzi.awe.views.reuse.mess_table.DataTypes;
-import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
@@ -39,8 +38,6 @@ import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.events.ShowPreparedViewEvent;
-import org.amanzi.neo.services.events.ShowViewEvent;
-import org.amanzi.neo.services.events.UpdateDrillDownEvent;
 import org.amanzi.neo.services.events.UpdateViewEvent;
 import org.amanzi.neo.services.events.UpdateViewEventType;
 import org.amanzi.neo.services.network.FrequencyPlanModel;
@@ -604,11 +601,11 @@ public class MessageAndEventTableView extends ViewPart {
         }
         TableRowWrapper row = (TableRowWrapper)item.getData();
         Node node = row.getNode();
-        NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(
-                new UpdateDrillDownEvent(node, VIEW_ID));
+//        NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(
+//                new UpdateDrillDownEvent(node, VIEW_ID));
         String currentTreeView = isNetworkNode(node)?NETWORK_TREE_VIEW_ID:DRIVE_TREE_VIEW_ID;
-        NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(
-                new ShowViewEvent(currentTreeView));
+//        NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(
+//                new ShowViewEvent(currentTreeView));
     }
     
     /**
@@ -630,7 +627,7 @@ public class MessageAndEventTableView extends ViewPart {
         try {
             PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IPageLayout.ID_PROP_SHEET);
         } catch (PartInitException e) {
-            NeoCorePlugin.error(null, e);
+//            NeoCorePlugin.error(null, e);
         }
     }
     

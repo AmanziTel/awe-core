@@ -17,15 +17,12 @@ import java.util.List;
 
 import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
 import org.amanzi.awe.catalog.neo.upd_layers.events.UpdateLayerEvent;
-import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.utils.EditPropertiesPage.PropertyWrapper;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.IndexManager;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
-import org.amanzi.neo.services.events.UpdateDrillDownEvent;
 import org.amanzi.neo.services.statistic.IPropertyHeader;
 import org.amanzi.neo.services.statistic.PropertyHeader;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
@@ -49,7 +46,7 @@ import org.neo4j.graphdb.Transaction;
 public class CreateNewNodeWizard extends Wizard implements INewWizard {
 
     private final INodeType iNodeType;
-    private CreateNewNodeWizardPage page;
+//    private CreateNewNodeWizardPage page;
     private final Node sourceNode;
 
     /**
@@ -86,13 +83,13 @@ public class CreateNewNodeWizard extends Wizard implements INewWizard {
             parentnode.createRelationshipTo(targetNode, NetworkRelationshipTypes.CHILD);
 
             IPropertyHeader ph = PropertyHeader.getPropertyStatistic(network);
-            List<PropertyWrapper> properties = page.getProperties();
+//            List<PropertyWrapper> properties = page.getProperties();
             IndexManager indexManader = ds.getIndexManager(ds.findRootByChild(targetNode));
-            for (PropertyWrapper propertyWrapper : properties) {
-                targetNode.setProperty(propertyWrapper.getName(), propertyWrapper.getParsedValue());
-                ph.updateStatistic(iNodeType.getId(), propertyWrapper.getName(), propertyWrapper.getParsedValue(), null);
-                indexManader.updateIndexes(targetNode, propertyWrapper.getName(), null);
-            }
+//            for (PropertyWrapper propertyWrapper : properties) {
+//                targetNode.setProperty(propertyWrapper.getName(), propertyWrapper.getParsedValue());
+//                ph.updateStatistic(iNodeType.getId(), propertyWrapper.getName(), propertyWrapper.getParsedValue(), null);
+//                indexManader.updateIndexes(targetNode, propertyWrapper.getName(), null);
+//            }
 
             tx.success();
         } catch (Exception e) {
@@ -130,7 +127,7 @@ public class CreateNewNodeWizard extends Wizard implements INewWizard {
         Node gisNode = NeoUtils.findGisNodeByChild(sourceNode);
         NeoCatalogPlugin.getDefault().getLayerManager().sendUpdateMessage(new UpdateLayerEvent(gisNode));
         // TODO imho need to use service for updating Tree View
-        NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new UpdateDrillDownEvent(targetNode, "org.amanzi.neo.wizards.CreateNetworkWizard"));
+//        NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new UpdateDrillDownEvent(targetNode, "org.amanzi.neo.wizards.CreateNetworkWizard"));
 
         return true;
     }
@@ -140,12 +137,12 @@ public class CreateNewNodeWizard extends Wizard implements INewWizard {
         DatasetService ds = NeoServiceFactory.getInstance().getDatasetService();
         if (ds.getNodeType(sourceNode).equals(iNodeType)) {
             setWindowTitle("Copy node");
-            page = new CreateNewNodeWizardPage("Copy node", "Copy " + iNodeType.getId(), iNodeType, sourceNode);
-            addPage(page);
+//            page = new CreateNewNodeWizardPage("Copy node", "Copy " + iNodeType.getId(), iNodeType, sourceNode);
+//            addPage(page);
         } else {
             setWindowTitle("Create new node");
-            page = new CreateNewNodeWizardPage("Create new node", "Create new " + iNodeType.getId(), iNodeType, sourceNode);
-            addPage(page);
+//            page = new CreateNewNodeWizardPage("Create new node", "Create new " + iNodeType.getId(), iNodeType, sourceNode);
+//            addPage(page);
         }
     }
 

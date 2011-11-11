@@ -22,7 +22,6 @@ import net.refractions.udig.catalog.IService;
 import net.refractions.udig.internal.ui.UDIGApplication;
 import net.refractions.udig.internal.ui.UDIGWorkbenchAdvisor;
 
-import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.splash.ui.SplashPlugin;
 import org.apache.log4j.Logger;
@@ -89,7 +88,7 @@ public class Application extends UDIGApplication implements IApplication {
 		@Override
 	    public void initialize( IWorkbenchConfigurer configurer ) {
 			super.initialize(configurer);
-			NeoCorePlugin.getDefault().getInitializer().initializeDefaultPreferences();
+//			NeoCorePlugin.getDefault().getInitializer().initializeDefaultPreferences();
 			NeoServiceProviderUi.getProvider().getService();
             createService();
 			final String ICONS_PATH = "icons/full/";

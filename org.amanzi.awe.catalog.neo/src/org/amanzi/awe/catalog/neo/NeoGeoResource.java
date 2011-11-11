@@ -18,10 +18,7 @@ import java.net.URL;
 import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.catalog.ui.CatalogUIPlugin;
 
-import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.services.INeoConstants;
-import org.amanzi.neo.services.events.UpdateDatabaseEvent;
-import org.amanzi.neo.services.events.UpdateViewEventType;
 import org.amanzi.neo.services.ui.INeoServiceProviderListener;
 import org.amanzi.neo.services.ui.IconManager;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
@@ -45,7 +42,7 @@ public class NeoGeoResource extends IGeoResource implements INeoServiceProviderL
     private final String identifier;
 	private final NeoService service;
 	private final Node gisNode;
-	private GeoNeo geoNeo;
+//	private GeoNeo geoNeo;
     private URL identifierFull;
     private GraphDatabaseService graphDatabaseService;
 
@@ -54,7 +51,7 @@ public class NeoGeoResource extends IGeoResource implements INeoServiceProviderL
 		this.service = service;
         this.graphDatabaseService = neo;
 		this.gisNode = gisNode;
-		this.geoNeo = new GeoNeo(neo, this.gisNode);
+//		this.geoNeo = new GeoNeo(neo, this.gisNode);
 
 			URL serviceUrl = service.getIdentifier();
         identifier = serviceUrl + "#";// +
@@ -64,7 +61,7 @@ public class NeoGeoResource extends IGeoResource implements INeoServiceProviderL
 	public void updateCRS(){
 	    Transaction tx = graphDatabaseService.beginTx();
 	    try{
-	        geoNeo = new GeoNeo(graphDatabaseService, this.gisNode);
+//	        geoNeo = new GeoNeo(graphDatabaseService, this.gisNode);
 	        info=null;
 	    }finally{
 	        tx.finish();
@@ -77,8 +74,8 @@ public class NeoGeoResource extends IGeoResource implements INeoServiceProviderL
             URL url = new URL(identifier + this.gisNode.getProperty(INeoConstants.PROPERTY_NAME_NAME));
             if (identifierFull == null || !url.equals(identifierFull)) {
                 changeIconsId(url);
-                NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(
-                        new UpdateDatabaseEvent(UpdateViewEventType.GIS));
+//                NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(
+//                        new UpdateDatabaseEvent(UpdateViewEventType.GIS));
             }
             return url;
         } catch (Exception e) {
@@ -138,24 +135,26 @@ public class NeoGeoResource extends IGeoResource implements INeoServiceProviderL
 	 * @return
 	 * @throws IOException
 	 */
-	public GeoNeo getGeoNeo(IProgressMonitor monitor) throws IOException {
-		return geoNeo;
-	}
+//	public GeoNeo getGeoNeo(IProgressMonitor monitor) throws IOException {
+//		return geoNeo;
+//	}
 
 	@Override
     public <T> boolean canResolve(Class<T> adaptee) {
-		return adaptee.isAssignableFrom(GeoNeo.class)
- || adaptee.isAssignableFrom(Node.class) || super.canResolve(adaptee);
+//		return adaptee.isAssignableFrom(GeoNeo.class)
+// || adaptee.isAssignableFrom(Node.class) || super.canResolve(adaptee);
+	       return adaptee.isAssignableFrom(Node.class) || super.canResolve(adaptee);
+
 	}
 
 	@Override
     public <T> T resolve(Class<T> adaptee, IProgressMonitor monitor)
 			throws IOException {
-		if (adaptee.isAssignableFrom(GeoNeo.class)) {
-			return adaptee.cast(getGeoNeo(monitor));
-        } else if (adaptee.isAssignableFrom(Node.class)) {
-            return adaptee.cast(geoNeo.getMainGisNode());
-		}
+//		if (adaptee.isAssignableFrom(GeoNeo.class)) {
+//			return adaptee.cast(getGeoNeo(monitor));
+//        } else if (adaptee.isAssignableFrom(Node.class)) {
+//            return adaptee.cast(geoNeo.getMainGisNode());
+//		}
 		return super.resolve(adaptee, monitor);
 	}
 

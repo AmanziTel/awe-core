@@ -15,18 +15,13 @@ package org.amanzi.awe.views.reuse.testing;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 
 import org.amanzi.awe.views.reuse.Distribute;
-import org.amanzi.awe.views.reuse.Select;
-import org.amanzi.awe.views.reuse.views.ReuseAnalyserModel;
-import org.amanzi.neo.loader.NetworkLoader;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.statistic.PropertyHeader;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.amanzi.testing.CommonTestUtil;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -63,7 +58,7 @@ public class ReuseAnalyserTest {
             tx.success();
             tx.finish();
             tx=util.getNeo().beginTx();
-            ReuseAnalyserModel model = new ReuseAnalyserModel(new HashMap<String, String[]>(), propertyReturnableEvalvator, util.getNeo());
+//            ReuseAnalyserModel model = new ReuseAnalyserModel(new HashMap<String, String[]>(), propertyReturnableEvalvator, util.getNeo());
             
             for (String property: PropertyHeader.getPropertyStatistic(root).getNumericFields("-main-type-")){
                 for (Distribute distribute:Distribute.values()){
@@ -71,7 +66,7 @@ public class ReuseAnalyserTest {
                         //need additional requirements - this case do not work for all properties.
                         continue;
                     }
-                    model.findOrCreateAggregateNode(root, property, false, distribute.toString(), Select.EXISTS.toString(), new NullProgressMonitor());
+//                    model.findOrCreateAggregateNode(root, property, false, distribute.toString(), Select.EXISTS.toString(), new NullProgressMonitor());
                 }
             }
         }finally{
@@ -102,13 +97,14 @@ public class ReuseAnalyserTest {
      */
     private Node createStructure() throws IOException {
         //TODO use data generator for create file
-        NetworkLoader loader = new NetworkLoader(util.getNeo(), "../org.amanzi.awe.views.reuse.testing/files/network.csv", util.getIndex());
-        loader.setup();
-        loader.run(new NullProgressMonitor());
-        return loader.getNetworkNode();
+//        NetworkLoader loader = new NetworkLoader(util.getNeo(), "../org.amanzi.awe.views.reuse.testing/files/network.csv", util.getIndex());
+//        loader.setup();
+//        loader.run(new NullProgressMonitor());
+//        return loader.getNetworkNode();
 //        TEMSLoader loader = new TEMSLoader(util.getNeo(), "files/0904_90.FMT", "dataset",util.getIndex());
 //        loader.run(new NullProgressMonitor());
 //        return loader.getDatasetNode();
+        return null;
     }
     /**
      * Finish all tests.

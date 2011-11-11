@@ -4,16 +4,12 @@ import java.io.IOException;
 import java.net.URL;
 
 import org.amanzi.awe.views.kpi.KPIPlugin;
-import org.amanzi.integrator.awe.AWEProjectManager;
 import org.amanzi.scripting.jruby.ScriptUtils;
 import org.apache.log4j.Logger;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -24,8 +20,6 @@ import org.jruby.internal.runtime.ValueAccessor;
 import org.jruby.javasupport.JavaEmbedUtils;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.osgi.framework.BundleContext;
-import org.rubypeople.rdt.core.IRubyProject;
-import org.rubypeople.rdt.internal.ui.wizards.NewRubyElementCreationWizard;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -150,8 +144,8 @@ public class ReportPlugin extends AbstractUIPlugin {
         String[] loadPaths = new String[5];
         try {
             final String RUBY = "ruby";
-            String aweProjectName = AWEProjectManager.getActiveProjectName();
-            IRubyProject rubyProject = NewRubyElementCreationWizard.configureRubyProject(null, aweProjectName);
+//            String aweProjectName = AWEProjectManager.getActiveProjectName();
+//            IRubyProject rubyProject = NewRubyElementCreationWizard.configureRubyProject(null, aweProjectName);
             
             // path to 'ruby' folder of KPI plugin
             URL entry = Platform.getBundle(KPIPlugin.PLUGIN_ID).getEntry(RUBY);
@@ -159,10 +153,10 @@ public class ReportPlugin extends AbstractUIPlugin {
             LOGGER.debug("load paths:"+ loadPaths[0]);
            
             // path to project 'kpi' folder
-            final IProject project = rubyProject.getProject();
-            final IFolder kpiFolder = project.getFolder(new Path(KPIPlugin.KPI_FOLDER));
-            loadPaths[1]= kpiFolder.getLocation().toOSString();
-            LOGGER.debug("load paths:"+ loadPaths[1]);
+//            final IProject project = rubyProject.getProject();
+//            final IFolder kpiFolder = project.getFolder(new Path(KPIPlugin.KPI_FOLDER));
+//            loadPaths[1]= kpiFolder.getLocation().toOSString();
+//            LOGGER.debug("load paths:"+ loadPaths[1]);
             
             //path to Report plugin folders
             entry=Platform.getBundle(ReportPlugin.PLUGIN_ID).getEntry(RUBY);
@@ -170,21 +164,22 @@ public class ReportPlugin extends AbstractUIPlugin {
             LOGGER.debug("load paths:"+ loadPaths[2]);
             
             // path to project 'templates' folder
-            final IFolder templatesFolder = project.getFolder(new Path(ReportPlugin.TEMPLATES_FOLDER));
-            loadPaths[3]= templatesFolder.getLocation().toOSString();
-            LOGGER.debug("load paths:"+ loadPaths[3]);
+//            final IFolder templatesFolder = project.getFolder(new Path(ReportPlugin.TEMPLATES_FOLDER));
+//            loadPaths[3]= templatesFolder.getLocation().toOSString();
+//            LOGGER.debug("load paths:"+ loadPaths[3]);
             
             // path to project 'reports' folder
-            final IFolder reportsFolder = project.getFolder(new Path(ReportPlugin.REPORTS_FOLDER));
-            loadPaths[4]= reportsFolder.getLocation().toOSString();
-            LOGGER.debug("load paths:"+ loadPaths[4]);
+//            final IFolder reportsFolder = project.getFolder(new Path(ReportPlugin.REPORTS_FOLDER));
+//            loadPaths[4]= reportsFolder.getLocation().toOSString();
+//            LOGGER.debug("load paths:"+ loadPaths[4]);
         } catch (IOException e) {
             // TODO Handle IOException
             throw (RuntimeException)new RuntimeException().initCause(e);
-        } catch (CoreException e) {
-            // TODO Handle CoreException
-            throw (RuntimeException) new RuntimeException( ).initCause( e );
         }
+//        catch (CoreException e) {
+//            // TODO Handle CoreException
+//            throw (RuntimeException) new RuntimeException( ).initCause( e );
+//        }
         return loadPaths;
     }
 }

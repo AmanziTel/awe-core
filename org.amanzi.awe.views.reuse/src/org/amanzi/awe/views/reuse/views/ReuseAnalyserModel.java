@@ -29,7 +29,6 @@ import org.amanzi.awe.views.reuse.Properties;
 import org.amanzi.awe.views.reuse.Select;
 import org.amanzi.awe.views.reuse.range.Bar;
 import org.amanzi.awe.views.reuse.range.RangeModel;
-import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.CorrelationRelationshipTypes;
@@ -218,12 +217,12 @@ public class ReuseAnalyserModel {
             } catch (RuntimeException e) {
                 // TODO delete
                 e.printStackTrace();
-                NeoCorePlugin.error(e.getLocalizedMessage(), e);
+//                NeoCorePlugin.error(e.getLocalizedMessage(), e);
                 result.setProperty(INeoConstants.PROPERTY_CHART_ERROR_NAME, true);
                 result.setProperty(INeoConstants.PROPERTY_CHART_ERROR_DESCRIPTION, e.getLocalizedMessage());
                 throw e;
             } catch (StatisticCalculationException e) {
-                NeoCorePlugin.error(e.getLocalizedMessage(), e);
+//                NeoCorePlugin.error(e.getLocalizedMessage(), e);
                 result.setProperty(INeoConstants.PROPERTY_CHART_ERROR_NAME, true);
                 result.setProperty(INeoConstants.PROPERTY_CHART_ERROR_DESCRIPTION, e.getLocalizedMessage());
                 return result;
@@ -1308,12 +1307,12 @@ public class ReuseAnalyserModel {
             } catch (RuntimeException e) {
                 // TODO delete
                 e.printStackTrace();
-                NeoCorePlugin.error(e.getLocalizedMessage(), e);
+//                NeoCorePlugin.error(e.getLocalizedMessage(), e);
                 result.setProperty(INeoConstants.PROPERTY_CHART_ERROR_NAME, true);
                 result.setProperty(INeoConstants.PROPERTY_CHART_ERROR_DESCRIPTION, e.getLocalizedMessage());
                 throw e;
             } catch (StatisticCalculationException e) {
-                NeoCorePlugin.error(e.getLocalizedMessage(), e);
+//                NeoCorePlugin.error(e.getLocalizedMessage(), e);
                 result.setProperty(INeoConstants.PROPERTY_CHART_ERROR_NAME, true);
                 result.setProperty(INeoConstants.PROPERTY_CHART_ERROR_DESCRIPTION, e.getLocalizedMessage());
                 return result;

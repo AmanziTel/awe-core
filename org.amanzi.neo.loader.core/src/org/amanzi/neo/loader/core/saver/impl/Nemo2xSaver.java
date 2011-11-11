@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.amanzi.neo.core.utils.DriveEvents;
 import org.amanzi.neo.loader.core.parser.LineTransferData;
 import org.amanzi.neo.loader.core.saver.IStructuredSaver;
 import org.amanzi.neo.loader.core.saver.MetaData;
@@ -61,7 +60,7 @@ public class Nemo2xSaver extends DatasetSaver<LineTransferData> implements IStru
     private Node virtualDataset;
     private Node lastMsNode;
     private String virtualDatasetName;
-    protected DriveEvents driveEvents;
+//    protected DriveEvents driveEvents;
     protected List<Map<String, Object>> subNodes;
     protected  MetaData metadata=new MetaData("dataset", MetaData.SUB_TYPE,"nemo","version","2.01");
 
@@ -126,7 +125,7 @@ public class Nemo2xSaver extends DatasetSaver<LineTransferData> implements IStru
             lastMPNode = createMpLocation(lastMPNode, element, time, timestamp, lat, lon);
         }
         // create M node
-        createMNode(eventId, driveEvents, timestamp, parsedParameters);
+//        createMNode(eventId, driveEvents, timestamp, parsedParameters);
         // create subnodes
         createSubNodes(eventId, subNodes, timestamp);
 
@@ -153,7 +152,7 @@ public class Nemo2xSaver extends DatasetSaver<LineTransferData> implements IStru
         if (parParam.isEmpty()) {
             return null;
         }
-        driveEvents = (DriveEvents)parParam.remove(NemoEvents.DRIVE_EVENTS);
+//        driveEvents = (DriveEvents)parParam.remove(NemoEvents.DRIVE_EVENTS);
         subNodes = (List<Map<String, Object>>)parParam.remove(NemoEvents.SUB_NODES);
         // TODO check documentation
         if (subNodes != null) {
@@ -209,40 +208,40 @@ public class Nemo2xSaver extends DatasetSaver<LineTransferData> implements IStru
      * @param timestamp the timestamp
      * @param parsedParameters
      */
-    protected void createMNode(String eventId, DriveEvents driveEvents, long timestamp, Map<String, Object> parsedParameters) {
-        lastMNode = service.createMNode(parent, lastMNode);
-        statistic.updateTypeCount(rootname, NodeTypes.M.getId(), 1);
-        updateTx(1, 1);
-
-        if (timestamp != 0) {
-            setProperty(rootname, NodeTypes.M.getId(), lastMNode, INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
-        }
-        setProperty(rootname, NodeTypes.M.getId(), lastMNode, INeoConstants.PROPERTY_NAME_NAME, eventId);
-        setProperty(rootname, NodeTypes.M.getId(), lastMNode, INeoConstants.PROPERTY_TYPE_EVENT, eventId);
-        if (driveEvents != null) {
-            setProperty(rootname, NodeTypes.M.getId(), lastMNode, INeoConstants.PROPERTY_DRIVE_TYPE_EVENT, driveEvents.name());
-        }
-        for (Map.Entry<String, Object> entry : parsedParameters.entrySet()) {
-            if (lastMNode.hasProperty(entry.getKey())) {
-                continue;
-            }
-            setProperty(rootname, NodeTypes.M.getId(), lastMNode, entry.getKey(), entry.getValue());
-        }
-
-        if (lastMPNode != null) {
-            lastMNode.createRelationshipTo(lastMPNode, GeoNeoRelationshipTypes.LOCATION);
-            updateTx(0, 1);
-            if (timestamp != 0 && !lastMPNode.hasProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME)) {
-                setProperty(rootname, NodeTypes.MP.getId(), lastMPNode, INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
-                lastMPNode.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
-            }
-            if (driveEvents != null) {
-                getIndexService().index(lastMPNode, INeoConstants.EVENTS_LUCENE_INDEX_NAME, rootname);
-            }
-        }
-
-        index(lastMNode);
-    }
+//    protected void createMNode(String eventId, DriveEvents driveEvents, long timestamp, Map<String, Object> parsedParameters) {
+//        lastMNode = service.createMNode(parent, lastMNode);
+//        statistic.updateTypeCount(rootname, NodeTypes.M.getId(), 1);
+//        updateTx(1, 1);
+//
+//        if (timestamp != 0) {
+//            setProperty(rootname, NodeTypes.M.getId(), lastMNode, INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
+//        }
+//        setProperty(rootname, NodeTypes.M.getId(), lastMNode, INeoConstants.PROPERTY_NAME_NAME, eventId);
+//        setProperty(rootname, NodeTypes.M.getId(), lastMNode, INeoConstants.PROPERTY_TYPE_EVENT, eventId);
+//        if (driveEvents != null) {
+//            setProperty(rootname, NodeTypes.M.getId(), lastMNode, INeoConstants.PROPERTY_DRIVE_TYPE_EVENT, driveEvents.name());
+//        }
+//        for (Map.Entry<String, Object> entry : parsedParameters.entrySet()) {
+//            if (lastMNode.hasProperty(entry.getKey())) {
+//                continue;
+//            }
+//            setProperty(rootname, NodeTypes.M.getId(), lastMNode, entry.getKey(), entry.getValue());
+//        }
+//
+//        if (lastMPNode != null) {
+//            lastMNode.createRelationshipTo(lastMPNode, GeoNeoRelationshipTypes.LOCATION);
+//            updateTx(0, 1);
+//            if (timestamp != 0 && !lastMPNode.hasProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME)) {
+//                setProperty(rootname, NodeTypes.MP.getId(), lastMPNode, INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
+//                lastMPNode.setProperty(INeoConstants.PROPERTY_TIMESTAMP_NAME, timestamp);
+//            }
+//            if (driveEvents != null) {
+//                getIndexService().index(lastMPNode, INeoConstants.EVENTS_LUCENE_INDEX_NAME, rootname);
+//            }
+//        }
+//
+//        index(lastMNode);
+//    }
 
     /**
      * Creates the sub nodes.

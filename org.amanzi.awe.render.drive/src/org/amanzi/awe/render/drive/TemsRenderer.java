@@ -16,12 +16,10 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
-import java.awt.image.ImageObserver;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -46,7 +44,6 @@ import org.amanzi.awe.neostyle.NeoStyle;
 import org.amanzi.awe.neostyle.NeoStyleContent;
 import org.amanzi.awe.neostyle.NetworkNeoStyle;
 import org.amanzi.awe.neostyle.NetworkNeoStyleContent;
-import org.amanzi.neo.core.utils.DriveEvents;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.CorrelationRelationshipTypes;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
@@ -1732,27 +1729,27 @@ public class TemsRenderer extends RendererImpl implements Renderer {
 	private void renderEvents(Graphics2D g, GeoNode node, java.awt.Point p,
 			double theta) {
 		// null - use current transaction
-		DriveEvents event = DriveEvents.getWorstEvent(node.getNode(), null);
-		if (event == null || eventIconSize < eventIconSizes[0]) {
-			return;
-		}
-		Image eventImage = event.getEventIcon().getImage(eventIconSize);
-		if (eventImage != null) {
-			if (base_transform == null)
-				base_transform = g.getTransform();
-			g.setTransform(base_transform);
-			g.translate(p.x, p.y);
-			if (eventIconOffset > 0) {
-				g.rotate(-theta);
-			}
-
-			ImageObserver imOb = null;
-			final int width = eventImage.getWidth(imOb);
-			final int height = eventImage.getHeight(imOb);
-			g.drawImage(eventImage, -eventIconOffset - width / 2, -height / 2,
-					width, height, imOb);
-			return;
-		}
+//		DriveEvents event = DriveEvents.getWorstEvent(node.getNode(), null);
+//		if (event == null || eventIconSize < eventIconSizes[0]) {
+//			return;
+//		}
+//		Image eventImage = event.getEventIcon().getImage(eventIconSize);
+//		if (eventImage != null) {
+//			if (base_transform == null)
+//				base_transform = g.getTransform();
+//			g.setTransform(base_transform);
+//			g.translate(p.x, p.y);
+//			if (eventIconOffset > 0) {
+//				g.rotate(-theta);
+//			}
+//
+//			ImageObserver imOb = null;
+//			final int width = eventImage.getWidth(imOb);
+//			final int height = eventImage.getHeight(imOb);
+//			g.drawImage(eventImage, -eventIconOffset - width / 2, -height / 2,
+//					width, height, imOb);
+//			return;
+//		}
 	}
 
 	/**

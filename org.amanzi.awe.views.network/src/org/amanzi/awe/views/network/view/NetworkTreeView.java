@@ -12,10 +12,8 @@
  */
 package org.amanzi.awe.views.network.view;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -53,9 +51,6 @@ import org.amanzi.awe.views.network.NetworkTreePlugin;
 import org.amanzi.awe.views.network.property.NetworkPropertySheetPage;
 import org.amanzi.awe.views.network.proxy.NeoNode;
 import org.amanzi.awe.views.network.proxy.Root;
-import org.amanzi.integrator.awe.AWEProjectManager;
-import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.service.listener.NeoServiceProviderEventAdapter;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
@@ -64,9 +59,6 @@ import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.events.ShowPreparedViewEvent;
-import org.amanzi.neo.services.events.UpdateDatabaseEvent;
-import org.amanzi.neo.services.events.UpdateDrillDownEvent;
-import org.amanzi.neo.services.events.UpdateViewEventType;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoServicesUiPlugin;
 import org.amanzi.neo.services.ui.NeoUtils;
@@ -74,8 +66,6 @@ import org.apache.log4j.Logger;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
@@ -124,7 +114,6 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.FileStoreEditorInput;
-import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.neo4j.graphdb.Direction;
@@ -138,8 +127,6 @@ import org.neo4j.graphdb.TraversalPosition;
 import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
 import org.neo4j.neoclipse.Activator;
-import org.rubypeople.rdt.core.IRubyProject;
-import org.rubypeople.rdt.internal.ui.wizards.NewRubyElementCreationWizard;
 
 /**
  * This View contains a tree of objects found in the database. The tree is built based on the
@@ -186,7 +173,7 @@ public class NetworkTreeView extends ViewPart {
     /*
      * Listener for Neo-Database Events
      */
-    private NeoServiceEventListener neoEventListener;
+//    private NeoServiceEventListener neoEventListener;
 
     private Text tSearch;
     private Iterator<Node> searchIterator = new ArrayList<Node>().iterator();
@@ -226,8 +213,8 @@ public class NetworkTreeView extends ViewPart {
         });
 
         neoServiceProvider = NeoServiceProviderUi.getProvider();
-        neoEventListener = new NeoServiceEventListener();
-        neoServiceProvider.addServiceProviderListener(neoEventListener);
+//        neoEventListener = new NeoServiceEventListener();
+//        neoServiceProvider.addServiceProviderListener(neoEventListener);
         Transaction tx = neoServiceProvider.getService().beginTx();
         try {
             setProviders(neoServiceProvider);
@@ -757,9 +744,9 @@ public class NetworkTreeView extends ViewPart {
     private void showSelection(NeoNode nodeToSelect, boolean isDrillDoun) {
         try {
             if (isDrillDoun) {
-                NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new UpdateDrillDownEvent(nodeToSelect.getNode(), NetworkTreeView.NETWORK_TREE_VIEW_ID));
+//                NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new UpdateDrillDownEvent(nodeToSelect.getNode(), NetworkTreeView.NETWORK_TREE_VIEW_ID));
             } else {
-                NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new ShowPreparedViewEvent(DB_GRAPH_VIEW_ID, nodeToSelect.getNode()));
+//                NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new ShowPreparedViewEvent(DB_GRAPH_VIEW_ID, nodeToSelect.getNode()));
             }
             showThisView();
         } catch (Exception e) {
@@ -786,9 +773,9 @@ public class NetworkTreeView extends ViewPart {
             propertySheetPage.dispose();
         }
 
-        if (neoEventListener != null) {
-            neoServiceProvider.removeServiceProviderListener(neoEventListener);
-        }
+//        if (neoEventListener != null) {
+//            neoServiceProvider.removeServiceProviderListener(neoEventListener);
+//        }
         super.dispose();
     }
 
@@ -885,41 +872,41 @@ public class NetworkTreeView extends ViewPart {
      * @since 1.0.0
      */
 
-    private class NeoServiceEventListener extends NeoServiceProviderEventAdapter {
-
-        private boolean neoStopped = false;
-
-        public NeoServiceEventListener() {
-            neoServiceProvider.addServiceProviderListener(this);
-        }
-
-        @Override
-        public void onNeoStop(Object source) {
-            neoStopped = true;
-        }
-
-        @Override
-        public void onNeoStart(Object source) {
-            neoStopped = false;
-        }
-
-        /**
-         * If some data was committed to database than we must refresh content of TreeView
-         */
-        @Override
-        public void onNeoCommit(Object source) {
-            // TODO: Only modify part of tree specific to data modified
-            if (!neoStopped) {
-                if (!viewer.getControl().isDisposed()) {
-                    viewer.getControl().getDisplay().syncExec(new Runnable() {
-                        public void run() {
-                            NetworkTreeView.this.viewer.refresh();
-                        }
-                    });
-                }
-            }
-        }
-    }
+//    private class NeoServiceEventListener extends NeoServiceProviderEventAdapter {
+//
+//        private boolean neoStopped = false;
+//
+//        public NeoServiceEventListener() {
+//            neoServiceProvider.addServiceProviderListener(this);
+//        }
+//
+//        @Override
+//        public void onNeoStop(Object source) {
+//            neoStopped = true;
+//        }
+//
+//        @Override
+//        public void onNeoStart(Object source) {
+//            neoStopped = false;
+//        }
+//
+//        /**
+//         * If some data was committed to database than we must refresh content of TreeView
+//         */
+//        @Override
+//        public void onNeoCommit(Object source) {
+//            // TODO: Only modify part of tree specific to data modified
+//            if (!neoStopped) {
+//                if (!viewer.getControl().isDisposed()) {
+//                    viewer.getControl().getDisplay().syncExec(new Runnable() {
+//                        public void run() {
+//                            NetworkTreeView.this.viewer.refresh();
+//                        }
+//                    });
+//                }
+//            }
+//        }
+//    }
 
     /**
      * get coordinates of selected node if node do not contains coordinates, try to find it in
@@ -1008,7 +995,7 @@ public class NetworkTreeView extends ViewPart {
             try {
                 if (selectedNodes.size() > 1) {
                     PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView("org.amanzi.awe.views.reuse.views.MessageAndEventTableView");
-                    NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new ShowPreparedViewEvent("org.amanzi.awe.views.reuse.views.MessageAndEventTableView",selectedNodes));
+//                    NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new ShowPreparedViewEvent("org.amanzi.awe.views.reuse.views.MessageAndEventTableView",selectedNodes));
                 } else {
                     PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IPageLayout.ID_PROP_SHEET);
                 }
@@ -1068,7 +1055,7 @@ public class NetworkTreeView extends ViewPart {
 
         @Override
         public void run() {
-            NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new ShowPreparedViewEvent(N2N_VIEW_ID, getInputNodes(selection)));
+//            NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new ShowPreparedViewEvent(N2N_VIEW_ID, getInputNodes(selection)));
             /*
              * IViewPart transmissionView; try { transmissionView =
              * PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(
@@ -1120,7 +1107,7 @@ public class NetworkTreeView extends ViewPart {
 
         @Override
         public void run() {
-            NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new ShowPreparedViewEvent(NEIGHBOUR_VIEW_ID, getInputNodes(selection)));
+//            NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new ShowPreparedViewEvent(NEIGHBOUR_VIEW_ID, getInputNodes(selection)));
         }
 
         /**
@@ -1396,7 +1383,7 @@ public class NetworkTreeView extends ViewPart {
                         }
                         monitor.subTask("Deleting " + neoNode.toString());
                         Node node = neoNode.getNode();
-                        NeoCorePlugin.getDefault().getProjectService().deleteNode(node);
+//                        NeoCorePlugin.getDefault().getProjectService().deleteNode(node);
                         monitor.worked(1);
                     }
                     monitor.worked(1);
@@ -1424,7 +1411,7 @@ public class NetworkTreeView extends ViewPart {
                             }
                         }
 
-                        NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new UpdateDatabaseEvent(UpdateViewEventType.GIS));
+//                        NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new UpdateDatabaseEvent(UpdateViewEventType.GIS));
                     }
                     if (gisNode != null && (containsNetwork || containseDatasetNode)) {
                         NeoServiceProviderUi neoProvider = NeoServiceProviderUi.getProvider();
@@ -1968,41 +1955,41 @@ public class NetworkTreeView extends ViewPart {
                 sb.append("  end");
             }
             sb.append("\nend");
-            String aweProjectName = AWEProjectManager.getActiveProjectName();
-            IRubyProject rubyProject;
-            try {
-                rubyProject = NewRubyElementCreationWizard.configureRubyProject(null, aweProjectName);
-            } catch (CoreException e2) {
-                // TODO Handle CoreException
-                throw (RuntimeException)new RuntimeException().initCause(e2);
-            }
-
-            final IProject project = rubyProject.getProject();
+//            String aweProjectName = AWEProjectManager.getActiveProjectName();
+//            IRubyProject rubyProject;
+//            try {
+//                rubyProject = NewRubyElementCreationWizard.configureRubyProject(null, aweProjectName);
+//            } catch (CoreException e2) {
+//                // TODO Handle CoreException
+//                throw (RuntimeException)new RuntimeException().initCause(e2);
+//            }
+//
+//            final IProject project = rubyProject.getProject();
 
             // correct
             IFile file;
             int i = 0;
-            while ((file = project.getFile(new Path(("report" + i) + ".r"))).exists()) {
-                i++;
-            }
+//            while ((file = project.getFile(new Path(("report" + i) + ".r"))).exists()) {
+//                i++;
+//            }
             LOGGER.debug("Repost script:\n" + sb.toString());
-            InputStream is;
-            try {
-                is = new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
-                file.create(is, true, null);
-                is.close();
-            } catch (Exception e) {
-                // TODO Handle IOException
-                LOGGER.error(e.getMessage(), e);
-                throw (RuntimeException)new RuntimeException().initCause(e);
-            }
-            try {
-                getViewSite().getPage().openEditor(new FileEditorInput(file), "org.amanzi.awe.report.editor.ReportEditor");
-            } catch (PartInitException e) {
-                // TODO Handle PartInitException
-                LOGGER.error(e.getMessage(), e);
-                throw (RuntimeException)new RuntimeException().initCause(e);
-            }
+//            InputStream is;
+//            try {
+//                is = new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
+//                file.create(is, true, null);
+//                is.close();
+//            } catch (Exception e) {
+//                // TODO Handle IOException
+//                LOGGER.error(e.getMessage(), e);
+//                throw (RuntimeException)new RuntimeException().initCause(e);
+//            }
+//            try {
+//                getViewSite().getPage().openEditor(new FileEditorInput(file), "org.amanzi.awe.report.editor.ReportEditor");
+//            } catch (PartInitException e) {
+//                // TODO Handle PartInitException
+//                LOGGER.error(e.getMessage(), e);
+//                throw (RuntimeException)new RuntimeException().initCause(e);
+//            }
         }
 
         /**

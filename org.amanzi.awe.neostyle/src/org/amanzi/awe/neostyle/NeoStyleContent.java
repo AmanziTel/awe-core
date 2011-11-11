@@ -92,26 +92,26 @@ public class NeoStyleContent extends StyleContent {
     public Object createDefaultStyle(IGeoResource resource, Color colour, IProgressMonitor monitor) throws IOException {
         if (resource.canResolve(NeoGeoResource.class)) {
             NeoGeoResource res = resource.resolve(NeoGeoResource.class, monitor);
-            if (res.getGeoNeo(monitor).getGisType() != GisTypes.NETWORK) {
-                NeoStyle result = new NeoStyle(Color.BLACK, new Color(200, 128, 255, (int)(0.6 * 255.0)), Color.BLACK);
-                result.setSmallestSymb(DEF_SMALLEST_SYMB);
-                result.setSmallSymb(DEF_SMALL_SYMB);
-                result.setLabeling(DEF_LABELING);
-                result.setFixSymbolSize(DEF_FIX_SYMB_SIZE);
-                result.setSymbolSize(DEF_SYMB_SIZE_DRIVE);
-                result.setSymbolTransparency(DEF_TRANSPARENCY);
-                result.setSiteFill(DEF_COLOR_SITE);
-                result.setMaximumSymbolSize(DEF_MAXIMUM_SYMBOL_SIZE);
-                result.setDefaultBeamwidth(DEF_DEF_BEAMWIDTH);
-                result.setIconOffset(DEF_ICON_OFFSET);
-                result.setFontSize(DEF_FONT_SIZE);
-                result.setSectorFontSize(DEF_FONT_SIZE_SECTOR);
-                result.setMainProperty(DEF_MAIN_PROPERTY);
-                result.setSecondaryProperty(DEF_SECONDARY_PROPERTY);
-                result.setIgnoreTransparency(IGNORE_TRANSPARENCY);
-                result.setShowAlerts(SHOW_ALERTS);
-                return result;
-            }
+//            if (res.getGeoNeo(monitor).getGisType() != GisTypes.NETWORK) {
+//                NeoStyle result = new NeoStyle(Color.BLACK, new Color(200, 128, 255, (int)(0.6 * 255.0)), Color.BLACK);
+//                result.setSmallestSymb(DEF_SMALLEST_SYMB);
+//                result.setSmallSymb(DEF_SMALL_SYMB);
+//                result.setLabeling(DEF_LABELING);
+//                result.setFixSymbolSize(DEF_FIX_SYMB_SIZE);
+//                result.setSymbolSize(DEF_SYMB_SIZE_DRIVE);
+//                result.setSymbolTransparency(DEF_TRANSPARENCY);
+//                result.setSiteFill(DEF_COLOR_SITE);
+//                result.setMaximumSymbolSize(DEF_MAXIMUM_SYMBOL_SIZE);
+//                result.setDefaultBeamwidth(DEF_DEF_BEAMWIDTH);
+//                result.setIconOffset(DEF_ICON_OFFSET);
+//                result.setFontSize(DEF_FONT_SIZE);
+//                result.setSectorFontSize(DEF_FONT_SIZE_SECTOR);
+//                result.setMainProperty(DEF_MAIN_PROPERTY);
+//                result.setSecondaryProperty(DEF_SECONDARY_PROPERTY);
+//                result.setIgnoreTransparency(IGNORE_TRANSPARENCY);
+//                result.setShowAlerts(SHOW_ALERTS);
+//                return result;
+//            }
         }
         return null;
     }

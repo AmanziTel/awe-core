@@ -20,11 +20,13 @@ package org.amanzi.neo.services.listeners;
  * @author kostyukovich_n
  * @since 1.0.0
  */
-public class ProjectChangedEvent extends AbstractUIEvent {
+public class UpdateProjectDataEvent extends AbstractUIEvent {
     
     private String projectName;
     
-    public ProjectChangedEvent(String projectName) {
+    public UpdateProjectDataEvent() {}
+    
+    public UpdateProjectDataEvent(String projectName) {
         this.projectName = projectName;
     }
 

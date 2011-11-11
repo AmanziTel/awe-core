@@ -18,10 +18,6 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.preferences.NeoCorePreferencesConstants;
-import org.amanzi.neo.core.propertyFilter.OperationCase;
-import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.viewers.CellEditor;
@@ -88,7 +84,7 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
      */
     public PropertyFilterPage() {
         super();
-        setPreferenceStore(NeoCorePlugin.getDefault().getPreferenceStore());
+//        setPreferenceStore(NeoCorePlugin.getDefault().getPreferenceStore());
     }
 
     @Override
@@ -149,24 +145,24 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
      */
     private void formRulesList() {
         filterRules.clear();
-        String val = getPreferenceStore().getString(NeoCorePreferencesConstants.FILTER_RULES);
+//        String val = getPreferenceStore().getString(NeoCorePreferencesConstants.FILTER_RULES);
         int propertyIndex = indEncludance;
         RowWr wr = null;
-        for (String str : val.split(DataLoadPreferences.CRS_DELIMETERS)) {
-            if (propertyIndex == indEncludance) {
-                wr = new RowWr(null, "", "");
-                wr.setOperationCase(OperationCase.getEnumById(str));
-                propertyIndex = indDataset;
-            } else if (propertyIndex == indDataset) {
-                wr.setDataset(str);
-                propertyIndex = indProperty;
-            } else if (propertyIndex == indProperty) {
-                wr.setProperty(str);
-                propertyIndex = indEncludance;
-                filterRules.add(wr);
-            }
-        }
-        filterRules.add(new RowWr(OperationCase.NEW, "", ""));
+//        for (String str : val.split(DataLoadPreferences.CRS_DELIMETERS)) {
+//            if (propertyIndex == indEncludance) {
+//                wr = new RowWr(null, "", "");
+//                wr.setOperationCase(OperationCase.getEnumById(str));
+//                propertyIndex = indDataset;
+//            } else if (propertyIndex == indDataset) {
+//                wr.setDataset(str);
+//                propertyIndex = indProperty;
+//            } else if (propertyIndex == indProperty) {
+//                wr.setProperty(str);
+//                propertyIndex = indEncludance;
+//                filterRules.add(wr);
+//            }
+//        }
+//        filterRules.add(new RowWr(OperationCase.NEW, "", ""));
     }
 
     /**
@@ -236,8 +232,8 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
                 TableItem item = viewer.getTable().getItem(viewer.getTable().getSelectionIndex());
                 if (item != null) {
                     RowWr selectedRow = (RowWr)item.getData();
-                    if (selectedRow.getOperationCase() == OperationCase.NEW)
-                        return;
+//                    if (selectedRow.getOperationCase() == OperationCase.NEW)
+//                        return;
                     int selectedIndex = filterRules.indexOf(selectedRow);
                     if (selectedIndex == 0)
                         return;
@@ -264,8 +260,8 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
                 TableItem item = viewer.getTable().getItem(viewer.getTable().getSelectionIndex());
                 if (item != null) {
                     RowWr selectedRow = (RowWr)item.getData();
-                    if (selectedRow.getOperationCase() == OperationCase.NEW)
-                        return;
+//                    if (selectedRow.getOperationCase() == OperationCase.NEW)
+//                        return;
                     int selectedIndex = filterRules.indexOf(selectedRow);
                     if (selectedIndex == 0)
                         return;
@@ -288,8 +284,8 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
                 TableItem item = viewer.getTable().getItem(viewer.getTable().getSelectionIndex());
                 if (item != null) {
                     RowWr selectedRow = (RowWr)item.getData();
-                    if (selectedRow.getOperationCase() == OperationCase.NEW)
-                        return;
+//                    if (selectedRow.getOperationCase() == OperationCase.NEW)
+//                        return;
                     int selectedIndex = filterRules.indexOf(selectedRow);
                     if (selectedIndex == filterRules.size() - 2)
                         return;
@@ -313,8 +309,8 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
                 TableItem item = viewer.getTable().getItem(viewer.getTable().getSelectionIndex());
                 if (item != null) {
                     RowWr selectedRow = (RowWr)item.getData();
-                    if (selectedRow.getOperationCase() == OperationCase.NEW)
-                        return;
+//                    if (selectedRow.getOperationCase() == OperationCase.NEW)
+//                        return;
                     int selectedIndex = filterRules.indexOf(selectedRow);
                     if (selectedIndex == filterRules.size() - 2)
                         return;
@@ -340,7 +336,7 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
         if (item != null) {
             if (item.getBounds(indEncludance).contains(p)) {
                 RowWr row = (RowWr)item.getData();
-                row.setOperationCase(row.getOperationCase().nextCase());
+//                row.setOperationCase(row.getOperationCase().nextCase());
                 updateTable();
 
             }
@@ -354,13 +350,13 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
     public void updateTable() {
         List<RowWr> updatableFilterRules = new ArrayList<RowWr>(filterRules.size());
         for (RowWr row : filterRules) {
-            if (row.getOperationCase() != OperationCase.NEW) {
-                updatableFilterRules.add(row);
-            }
+//            if (row.getOperationCase() != OperationCase.NEW) {
+//                updatableFilterRules.add(row);
+//            }
         }
         filterRules.clear();
         filterRules.addAll(updatableFilterRules);
-        filterRules.add(new RowWr(OperationCase.NEW, "", ""));
+//        filterRules.add(new RowWr(OperationCase.NEW, "", ""));
         viewer.refresh();
     }
 
@@ -407,9 +403,9 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
      */
     private boolean isPageValid() {
         for (RowWr row : filterRules) {
-            if (row.getOperationCase() != OperationCase.NEW && row.getOperationCase() != OperationCase.REMOVE_CANDIDAT
-                    && !(row.isPropertyValid() && row.isDatasetValid()))
-                return false;
+//            if (row.getOperationCase() != OperationCase.NEW && row.getOperationCase() != OperationCase.REMOVE_CANDIDAT
+//                    && !(row.isPropertyValid() && row.isDatasetValid()))
+//                return false;
         }
         return true;
     }
@@ -418,23 +414,23 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
     public boolean performOk() {
         StringBuilder result = new StringBuilder();
         for (RowWr wr : filterRules) {
-            if (wr.getOperationCase() != OperationCase.NEW && wr.getOperationCase() != OperationCase.REMOVE_CANDIDAT) {
-                result.append(DataLoadPreferences.CRS_DELIMETERS);
-                result.append(wr.getOperationCase().getStringValue());
-                result.append(DataLoadPreferences.CRS_DELIMETERS);
-                result.append(wr.getDataset());
-                result.append(DataLoadPreferences.CRS_DELIMETERS);
-                result.append(wr.getProperty());
-            }
+//            if (wr.getOperationCase() != OperationCase.NEW && wr.getOperationCase() != OperationCase.REMOVE_CANDIDAT) {
+//                result.append(DataLoadPreferences.CRS_DELIMETERS);
+//                result.append(wr.getOperationCase().getStringValue());
+//                result.append(DataLoadPreferences.CRS_DELIMETERS);
+//                result.append(wr.getDataset());
+//                result.append(DataLoadPreferences.CRS_DELIMETERS);
+//                result.append(wr.getProperty());
+//            }
         }
-        String string = result.length() > 0 ? result.substring(NeoCorePreferencesConstants.CRS_DELIMETERS.length()) : result.toString();
-        getPreferenceStore().setValue(NeoCorePreferencesConstants.FILTER_RULES, string);
+//        String string = result.length() > 0 ? result.substring(NeoCorePreferencesConstants.CRS_DELIMETERS.length()) : result.toString();
+//        getPreferenceStore().setValue(NeoCorePreferencesConstants.FILTER_RULES, string);
         return true;
 
     }
 
     private class RowWr {
-        private OperationCase operationCase = OperationCase.NEW;
+//        private OperationCase operationCase = OperationCase.NEW;
         private String dataset = "";
         private String property = "";
         private boolean isDatasetValid = true;
@@ -444,27 +440,27 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
          * @param listName
          * @param properties
          */
-        public RowWr(OperationCase operationCase, String dataset, String property) {
-            super();
-            this.operationCase = operationCase;
-            this.dataset = dataset;
-            this.property = property;
-        }
+//        public RowWr(OperationCase operationCase, String dataset, String property) {
+//            super();
+//            this.operationCase = operationCase;
+//            this.dataset = dataset;
+//            this.property = property;
+//        }
 
         /**
          * @return Returns the operationCase.
          */
-        public OperationCase getOperationCase() {
-            return operationCase;
-        }
+//        public OperationCase getOperationCase() {
+//            return operationCase;
+//        }
 
         /**
          * @param operationCase The operationCase to set.
          */
-        public void setOperationCase(OperationCase operationCase) {
-            this.operationCase = operationCase;
-            setValid(isPageValid());
-        }
+//        public void setOperationCase(OperationCase operationCase) {
+//            this.operationCase = operationCase;
+//            setValid(isPageValid());
+//        }
 
         /**
          * @return Returns the dataset.
@@ -554,7 +550,8 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
         @Override
         protected boolean canEdit(Object element) {
             RowWr row = (RowWr)element;
-            return columnIndex != indEncludance && row.getOperationCase() != OperationCase.NEW;
+//            return columnIndex != indEncludance && row.getOperationCase() != OperationCase.NEW;
+            return false;
         }
 
         @Override
@@ -566,8 +563,8 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
         protected Object getValue(Object element) {
             RowWr row = (RowWr)element;
             switch (columnIndex) {
-            case indEncludance:
-                return row.getOperationCase().getStringValue();
+//            case indEncludance:
+//                return row.getOperationCase().getStringValue();
             case indDataset:
                 return row.getDataset();
             case indProperty:
@@ -614,11 +611,11 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
         @Override
         public Color getForeground(Object element) {
             RowWr row = (RowWr)element;
-            if (row.getOperationCase() == OperationCase.NEW || row.getOperationCase() == OperationCase.REMOVE_CANDIDAT)
-                return GRAY;
+//            if (row.getOperationCase() == OperationCase.NEW || row.getOperationCase() == OperationCase.REMOVE_CANDIDAT)
+//                return GRAY;
             switch (columnIndex) {
-            case indEncludance:
-                return row.getOperationCase() == OperationCase.INCLUDE ? GREEN : BLUE;
+//            case indEncludance:
+//                return row.getOperationCase() == OperationCase.INCLUDE ? GREEN : BLUE;
             case indDataset:
                 return row.isDatasetValid() ? BLACK : BAD_COLOR;
             case indProperty:
@@ -632,8 +629,8 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
         public String getText(Object element) {
             RowWr row = (RowWr)element;
             switch (columnIndex) {
-            case indEncludance:
-                return row.getOperationCase().getStringValue();
+//            case indEncludance:
+//                return row.getOperationCase().getStringValue();
             case indDataset:
                 return row.getDataset();
             case indProperty:
@@ -648,7 +645,7 @@ public class PropertyFilterPage extends PreferencePage implements IWorkbenchPref
     @Override
     protected void performDefaults() {
         super.performDefaults();
-        getPreferenceStore().setToDefault(NeoCorePreferencesConstants.FILTER_RULES);
+//        getPreferenceStore().setToDefault(NeoCorePreferencesConstants.FILTER_RULES);
         formRulesList();
         viewer.setInput("");
     }

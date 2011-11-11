@@ -25,11 +25,9 @@ import net.refractions.udig.project.ui.internal.dialogs.ColorEditor;
 
 import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
 import org.amanzi.awe.catalog.neo.upd_layers.events.UpdateLayerEvent;
-import org.amanzi.awe.filters.AbstractFilter;
 import org.amanzi.awe.filters.ChainRule;
 import org.amanzi.awe.filters.FilterUtil;
 import org.amanzi.awe.filters.tree.TreeNeoNode;
-import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.GisTypes;
@@ -1555,7 +1553,8 @@ public class FilterView extends ViewPart  implements INeoServiceProviderListener
                 if (relation == null) {
                     result = ""; //$NON-NLS-1$
                 } else {
-                    result = AbstractFilter.getInstance(relation.getOtherNode(data), graphDatabaseService).toString();
+                    result = "";
+//                    result = AbstractFilter.getInstance(relation.getOtherNode(data), graphDatabaseService).toString();
                 }
             } finally {
                 tx.finish();
@@ -1607,7 +1606,7 @@ public class FilterView extends ViewPart  implements INeoServiceProviderListener
                 try {
                     Transaction tx = NeoUtils.beginTx(graphDatabaseService);
                     try {
-                        NeoCorePlugin.getDefault().getProjectService().dirtyRemoveNodeFromStructure(node.getNode());
+//                        NeoCorePlugin.getDefault().getProjectService().dirtyRemoveNodeFromStructure(node.getNode());
                         // TODO use manager
                         // NodeDeletingManager deleteManager = new NodeDeletingManager(service);
                         // deleteManager.deleteNode(node.getNode());

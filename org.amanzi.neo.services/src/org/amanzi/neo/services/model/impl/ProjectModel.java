@@ -16,6 +16,8 @@ package org.amanzi.neo.services.model.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.refractions.udig.project.ui.ApplicationGIS;
+
 import org.amanzi.neo.model.distribution.IDistributionalModel;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewAbstractService;
@@ -341,10 +343,7 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
     public static IProjectModel getCurrentProjectModel() throws AWEException {
         ProjectService projectService = NeoServiceFactory.getInstance().getNewProjectService();
 
-        // TODO: LN: since for now we can't use
-        // ApplicationGIS.getActiveProject().getName()
-        // name of active project will be hard-coded
-        Node projectNode = projectService.getProject("project");
+        Node projectNode = projectService.getProject(ApplicationGIS.getActiveProject().getName());
 
         return new ProjectModel(projectNode);
     }

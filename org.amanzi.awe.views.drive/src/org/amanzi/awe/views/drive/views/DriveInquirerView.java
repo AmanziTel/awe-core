@@ -43,9 +43,6 @@ import net.refractions.udig.ui.graphics.Glyph;
 
 import org.amanzi.awe.catalog.neo.GeoConstant;
 import org.amanzi.awe.catalog.neo.GeoNeo;
-import org.amanzi.integrator.awe.AWEProjectManager;
-import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.propertyFilter.PropertyFilterModel;
 import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
@@ -60,9 +57,6 @@ import org.amanzi.neo.services.ui.NeoUtils;
 import org.amanzi.neo.services.utils.Pair;
 import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Preferences.IPropertyChangeListener;
 import org.eclipse.core.runtime.Preferences.PropertyChangeEvent;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -98,9 +92,7 @@ import org.eclipse.swt.widgets.Slider;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.ViewPart;
 import org.geotools.brewer.color.BrewerPalette;
 import org.jfree.chart.ChartUtilities;
@@ -134,8 +126,6 @@ import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.TraversalPosition;
 import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
-import org.rubypeople.rdt.core.IRubyProject;
-import org.rubypeople.rdt.internal.ui.wizards.NewRubyElementCreationWizard;
 
 /**
  * <p>
@@ -424,7 +414,7 @@ public class DriveInquirerView extends ViewPart implements IPropertyChangeListen
      * Init start data
      */
     private void init() {
-        NeoCorePlugin.getDefault().getPluginPreferences().addPropertyChangeListener(this);
+//        NeoCorePlugin.getDefault().getPluginPreferences().addPropertyChangeListener(this);
         addListeners();
         cDrive.setItems(getDriveItems());
 
@@ -439,7 +429,7 @@ public class DriveInquirerView extends ViewPart implements IPropertyChangeListen
 
     @Override
     public void dispose() {
-        NeoCorePlugin.getDefault().getPluginPreferences().removePropertyChangeListener(this);
+//        NeoCorePlugin.getDefault().getPluginPreferences().removePropertyChangeListener(this);
         super.dispose();
     }
 
@@ -548,7 +538,7 @@ public class DriveInquirerView extends ViewPart implements IPropertyChangeListen
             tx.success();
         } catch (Exception ex) {
             tx.failure();
-            NeoCorePlugin.error(null, ex);
+//            NeoCorePlugin.error(null, ex);
         } finally {
             NeoUtils.finishTx(tx);
         }
@@ -557,10 +547,10 @@ public class DriveInquirerView extends ViewPart implements IPropertyChangeListen
             for (Object savedProperty : savedProperties) {
                 savedList.add(savedProperty.toString());
             }
-            List<String> filteredList = new PropertyFilterModel().filerProperties(cDrive.getText(), savedList);
-            for (Object savedProperty : filteredList) {
-                propertyLists.put(savedProperty.toString(), Arrays.asList(savedProperty.toString().split(", ")));
-            }
+//            List<String> filteredList = new PropertyFilterModel().filerProperties(cDrive.getText(), savedList);
+//            for (Object savedProperty : filteredList) {
+//                propertyLists.put(savedProperty.toString(), Arrays.asList(savedProperty.toString().split(", ")));
+//            }
         }
 
         String[] array = propertyLists.keySet().toArray(new String[0]);
@@ -845,14 +835,14 @@ public class DriveInquirerView extends ViewPart implements IPropertyChangeListen
                 //                IPreferenceNode node = new PreferenceNode("1", page); //$NON-NLS-1$
                 // mgr.addToRoot(node);
                 Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
-                DriveInquirerPropertyConfig pdialog = new DriveInquirerPropertyConfig(shell, getGisDriveNode());;
-                if (pdialog.open() == SWT.OK) {
-                    formPropertyList();
-                    String[] result = propertyLists.keySet().toArray(new String[0]);
-                    Arrays.sort(result);
-                    cPropertyList.setItems(result);
-                    updatePropertyList();
-                }
+//                DriveInquirerPropertyConfig pdialog = new DriveInquirerPropertyConfig(shell, getGisDriveNode());;
+//                if (pdialog.open() == SWT.OK) {
+//                    formPropertyList();
+//                    String[] result = propertyLists.keySet().toArray(new String[0]);
+//                    Arrays.sort(result);
+//                    cPropertyList.setItems(result);
+//                    updatePropertyList();
+//                }
             }
 
             @Override
@@ -1023,21 +1013,21 @@ public class DriveInquirerView extends ViewPart implements IPropertyChangeListen
         // .append(dateStart.getHours()).append(":").append(dateStart.getMinutes()).append(":").append(dateStart.getSeconds())
         // .append("'\n    self.length='").append(sLength.getSelection()).append("'\n  end\nend");
 
-        String aweProjectName = AWEProjectManager.getActiveProjectName();
-        IRubyProject rubyProject;
-        try {
-            rubyProject = NewRubyElementCreationWizard.configureRubyProject(null, aweProjectName);
-        } catch (CoreException e2) {
-            // TODO Handle CoreException
-            throw (RuntimeException)new RuntimeException().initCause(e2);
-        }
-
-        final IProject project = rubyProject.getProject();
+//        String aweProjectName = AWEProjectManager.getActiveProjectName();
+//        IRubyProject rubyProject;
+//        try {
+//            rubyProject = NewRubyElementCreationWizard.configureRubyProject(null, aweProjectName);
+//        } catch (CoreException e2) {
+//            // TODO Handle CoreException
+//            throw (RuntimeException)new RuntimeException().initCause(e2);
+//        }
+//
+//        final IProject project = rubyProject.getProject();
         IFile file;
         int i = 0;
-        while ((file = project.getFile(new Path(("report" + i) + ".r"))).exists()) { //$NON-NLS-1$ //$NON-NLS-2$
-            i++;
-        }
+//        while ((file = project.getFile(new Path(("report" + i) + ".r"))).exists()) { //$NON-NLS-1$ //$NON-NLS-2$
+//            i++;
+//        }
         LOGGER.debug("Report script:\n" + sb.toString()); //$NON-NLS-1$
         InputStream is;
         try {
@@ -1046,22 +1036,22 @@ public class DriveInquirerView extends ViewPart implements IPropertyChangeListen
             // TODO Handle UnsupportedEncodingException
             throw (RuntimeException)new RuntimeException().initCause(e1);
         }
-        try {
-            file.create(is, true, null);
-            is.close();
-        } catch (CoreException e) {
-            // TODO Handle CoreException
-            throw (RuntimeException)new RuntimeException().initCause(e);
-        } catch (IOException e) {
-            // TODO Handle IOException
-            throw (RuntimeException)new RuntimeException().initCause(e);
-        }
-        try {
-            getViewSite().getPage().openEditor(new FileEditorInput(file), "org.amanzi.awe.report.editor.ReportEditor"); //$NON-NLS-1$
-        } catch (PartInitException e) {
-            // TODO Handle PartInitException
-            throw (RuntimeException)new RuntimeException().initCause(e);
-        }
+//        try {
+//            file.create(is, true, null);
+//            is.close();
+//        } catch (CoreException e) {
+//            // TODO Handle CoreException
+//            throw (RuntimeException)new RuntimeException().initCause(e);
+//        } catch (IOException e) {
+//            // TODO Handle IOException
+//            throw (RuntimeException)new RuntimeException().initCause(e);
+//        }
+//        try {
+//            getViewSite().getPage().openEditor(new FileEditorInput(file), "org.amanzi.awe.report.editor.ReportEditor"); //$NON-NLS-1$
+//        } catch (PartInitException e) {
+//            // TODO Handle PartInitException
+//            throw (RuntimeException)new RuntimeException().initCause(e);
+//        }
     }
 
     /**

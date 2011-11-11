@@ -37,7 +37,7 @@ import org.amanzi.neo.services.listeners.AbstractUIEvent;
 import org.amanzi.neo.services.listeners.AbstractUIEventType;
 import org.amanzi.neo.services.listeners.EventManager;
 import org.amanzi.neo.services.listeners.IEventListener;
-import org.amanzi.neo.services.listeners.ProjectChangedEvent;
+import org.amanzi.neo.services.listeners.UpdateProjectDataEvent;
 import org.amanzi.neo.services.model.IProjectModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.amanzi.neo.services.model.impl.ProjectModel.DistributionItem;
@@ -137,11 +137,11 @@ public class DistributionAnalyzerView extends ViewPart implements IEventListener
     private static final Color COLOR_LESS = Color.BLUE;
 
     private static final Color COLOR_MORE = Color.GREEN;
-    
+
     private static final String LOAD_XML_LABEL = "Load Distribution Xml";
-    
+
     private static final String SELECT_XML_DIALOG_LABEL = "Select Distribution XML";
-    
+
     @SuppressWarnings("rawtypes")
     private class DistributionDataset extends AbstractDataset implements CategoryDataset {
 
@@ -464,12 +464,12 @@ public class DistributionAnalyzerView extends ViewPart implements IEventListener
      * Button to choose Third Color option
      */
     private Button thirdColorButton;
-    
+
     /*
      * Action to load distribution xml;
      */
     private Action actLoadXml;
-    
+
     /*
      * Dialog for selecting distribution xml
      */
@@ -497,7 +497,7 @@ public class DistributionAnalyzerView extends ViewPart implements IEventListener
         createDistributionSelectionCombos(parent);
         createDistributionChart(parent);
         createColoringPropertiesControl(parent);
-        
+
         createXmlFileDialog();
         initMenuManager();
 
@@ -510,19 +510,19 @@ public class DistributionAnalyzerView extends ViewPart implements IEventListener
             showErrorMessage(e.getMessage());
         }
     }
-    
+
     private void createXmlFileDialog() {
         xmlFileDialog = new FileDialog(getViewSite().getShell());
         xmlFileDialog.setText(SELECT_XML_DIALOG_LABEL);
-        xmlFileDialog.setFilterExtensions(new String[] { "*.xml" });
-        xmlFileDialog.setFilterNames(new String[] { "XML File (*.xml)" });
-    } 
-    
+        xmlFileDialog.setFilterExtensions(new String[] {"*.xml"});
+        xmlFileDialog.setFilterNames(new String[] {"XML File (*.xml)"});
+    }
+
     private void initMenuManager() {
         IMenuManager mm = getViewSite().getActionBars().getMenuManager();
-        actLoadXml = new Action(LOAD_XML_LABEL){
+        actLoadXml = new Action(LOAD_XML_LABEL) {
             @Override
-            public void run(){
+            public void run() {
                 String selected = xmlFileDialog.open();
                 try {
                     DistributionManager.getManager().createDistributionFromFile(selected);
@@ -1441,10 +1441,10 @@ public class DistributionAnalyzerView extends ViewPart implements IEventListener
     }
 
     @Override
-    public void setFocus() {    
+    public void setFocus() {
     }
-    
-    private void showErrorMessage(final String message) {        
+
+    private void showErrorMessage(final String message) {
         showMessage(message, SWT.ICON_ERROR);
     }
 
@@ -1462,8 +1462,12 @@ public class DistributionAnalyzerView extends ViewPart implements IEventListener
 
     @Override
     public void handleEvent(AbstractUIEvent event) {
-        if (event instanceof ProjectChangedEvent) {
-            showMessage("New Project: " + ((ProjectChangedEvent)event).getProjectName(), SWT.ICON_INFORMATION);
+        if (event instanceof UpdateProjectDataEvent) {
+            try {
+                initializeFields();
+            } catch (AWEException e) {
+                showErrorMessage(e.getMessage());
+            }
         }
     }
 

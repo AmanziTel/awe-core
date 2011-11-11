@@ -35,7 +35,6 @@ import net.refractions.udig.ui.PlatformGIS;
 import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
 import org.amanzi.awe.catalog.neo.upd_layers.events.RefreshPropertiesEvent;
-import org.amanzi.awe.report.editor.ReportEditor;
 import org.amanzi.awe.views.reuse.Distribute;
 import org.amanzi.awe.views.reuse.Messages;
 import org.amanzi.awe.views.reuse.PreferenceInitializer;
@@ -44,16 +43,11 @@ import org.amanzi.awe.views.reuse.ReusePlugin;
 import org.amanzi.awe.views.reuse.Select;
 import org.amanzi.awe.views.reuse.range.RangeModel;
 import org.amanzi.awe.views.reuse.views.FrequencyPlanAnalyser.PropertyCategoryDataset;
-import org.amanzi.integrator.awe.AWEProjectManager;
-import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.core.preferences.NeoCorePreferencesConstants;
-import org.amanzi.neo.core.propertyFilter.PropertyFilterModel;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.GisTypes;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
-import org.amanzi.neo.services.events.ShowPreparedViewEvent;
 import org.amanzi.neo.services.statistic.IPropertyHeader;
 import org.amanzi.neo.services.statistic.ISelectionInformation;
 import org.amanzi.neo.services.statistic.PropertyHeader;
@@ -65,12 +59,9 @@ import org.amanzi.neo.services.utils.Pair;
 import org.amanzi.neo.services.utils.RunnableWithResult;
 import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.Assert;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Preferences.IPropertyChangeListener;
 import org.eclipse.core.runtime.Preferences.PropertyChangeEvent;
 import org.eclipse.core.runtime.Status;
@@ -99,7 +90,6 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.ViewPart;
 import org.geotools.brewer.color.BrewerPalette;
 import org.jfree.chart.ChartFactory;
@@ -124,8 +114,6 @@ import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.traversal.Evaluation;
 import org.neo4j.graphdb.traversal.Evaluator;
 import org.neo4j.neoclipse.property.NodeTypes;
-import org.rubypeople.rdt.core.IRubyProject;
-import org.rubypeople.rdt.internal.ui.wizards.NewRubyElementCreationWizard;
 
 /**
  * <p>
@@ -1131,7 +1119,7 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
     private void showInTreeView(ChartNode columnKey) {
         if (columnKey != null) {
             Node columnNode = columnKey.getNode();
-            NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new ShowPreparedViewEvent(DRIVE_ID, columnNode));
+//            NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new ShowPreparedViewEvent(DRIVE_ID, columnNode));
         }
     }
 
@@ -1476,14 +1464,14 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
                 }
             };
 
-            propertyList = new PropertyFilterModel().filerProperties(gisCombo.getText(), propertyList);
+//            propertyList = new PropertyFilterModel().filerProperties(gisCombo.getText(), propertyList);
             model = new ReuseAnalyserModel(aggregatedProperties, propertyReturnableEvalvator, NeoServiceProviderUi.getProvider().getService());
         } else {
             ISelectionInformation inf = (ISelectionInformation)root;
             propertyList = new ArrayList<String>();
             propertyList.addAll(inf.getPropertySet());
-            propertyList = new PropertyFilterModel().filerProperties(gisCombo.getText(), propertyList);
-            Collections.sort(propertyList);
+//            propertyList = new PropertyFilterModel().filerProperties(gisCombo.getText(), propertyList);
+//            Collections.sort(propertyList);
             model = new ReuseAnalyserModel(inf);
         }
         setVisibleForChart(false);
@@ -1975,20 +1963,20 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
         try {
             int i = 0;
             // find or create AWE and RDT project
-            String aweProjectName = AWEProjectManager.getActiveProjectName();
-            IRubyProject rubyProject;
-            try {
-                rubyProject = NewRubyElementCreationWizard.configureRubyProject(null, aweProjectName);
-            } catch (CoreException e2) {
-                // TODO Handle CoreException
-                throw (RuntimeException)new RuntimeException().initCause(e2);
-            }
+//            String aweProjectName = AWEProjectManager.getActiveProjectName();
+//            IRubyProject rubyProject;
+//            try {
+//                rubyProject = NewRubyElementCreationWizard.configureRubyProject(null, aweProjectName);
+//            } catch (CoreException e2) {
+//                // TODO Handle CoreException
+//                throw (RuntimeException)new RuntimeException().initCause(e2);
+//            }
 
-            final IProject project = rubyProject.getProject();
-
-            while ((file = project.getFile(new Path(("report" + i) + ".r"))).exists()) {
-                i++;
-            }
+//            final IProject project = rubyProject.getProject();
+//
+//            while ((file = project.getFile(new Path(("report" + i) + ".r"))).exists()) {
+//                i++;
+//            }
             // the following code depends on code from findOrCreateAggregateNodeInNewThread()
             final Select select = !cSelect.isEnabled() ? Select.EXISTS : Select.findSelectByValue(cSelect.getText());
             Distribute distr = Distribute.findEnumByValue(cDistribute.getText());
@@ -2019,9 +2007,9 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
             sb.append("  end\nend");
             LOGGER.debug("Report script:\n" + sb.toString());
             InputStream is = new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
-            file.create(is, true, null);
+//            file.create(is, true, null);
             is.close();
-            getViewSite().getPage().openEditor(new FileEditorInput(file), ReportEditor.class.getName());
+//            getViewSite().getPage().openEditor(new FileEditorInput(file), ReportEditor.class.getName());
         } catch (Exception e) {
             e.printStackTrace();
             showErrorDlg(e);
@@ -2048,23 +2036,23 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
 
     @Override
     public void propertyChange(PropertyChangeEvent event) {
-        if (event.getProperty().equals(NeoCorePreferencesConstants.FILTER_RULES)) {
-            int selectedGisInd = gisCombo.getSelectionIndex();
-            if (selectedGisInd < 0) {
-                propertyList = new ArrayList<String>();
-                setVisibleForChart(false);
-                tSelectedInformation.setText("");
-            } else {
-                Object root=members.get(gisCombo.getText());
-                cSelect.setEnabled(isAggregated(root));
-                formPropertyList(root);
-            }
-            Collections.sort(propertyList);
-            propertyCombo.setItems(propertyList.toArray(new String[] {}));
-        } else if (event.getProperty().equals(PreferenceInitializer.RV_MODELS)) {
+//        if (event.getProperty().equals(NeoCorePreferencesConstants.FILTER_RULES)) {
+//            int selectedGisInd = gisCombo.getSelectionIndex();
+//            if (selectedGisInd < 0) {
+//                propertyList = new ArrayList<String>();
+//                setVisibleForChart(false);
+//                tSelectedInformation.setText("");
+//            } else {
+//                Object root=members.get(gisCombo.getText());
+//                cSelect.setEnabled(isAggregated(root));
+//                formPropertyList(root);
+//            }
+//            Collections.sort(propertyList);
+//            propertyCombo.setItems(propertyList.toArray(new String[] {}));
+//        } else if (event.getProperty().equals(PreferenceInitializer.RV_MODELS)) {
             formDistribution();
             updateGisNode();
-        }
+//        }
     }
 
 
@@ -2106,13 +2094,13 @@ public class ReuseAnalyserView extends ViewPart implements IPropertyChangeListen
     @Override
     public void init(IViewSite site) throws PartInitException {
         super.init(site);
-        NeoCorePlugin.getDefault().getPluginPreferences().addPropertyChangeListener(this);
+//        NeoCorePlugin.getDefault().getPluginPreferences().addPropertyChangeListener(this);
         ReusePlugin.getDefault().getPluginPreferences().addPropertyChangeListener(this);
     }
 
     @Override
     public void dispose() {
-        NeoCorePlugin.getDefault().getPluginPreferences().removePropertyChangeListener(this);
+//        NeoCorePlugin.getDefault().getPluginPreferences().removePropertyChangeListener(this);
         ReusePlugin.getDefault().getPluginPreferences().removePropertyChangeListener(this);
         super.dispose();
     }

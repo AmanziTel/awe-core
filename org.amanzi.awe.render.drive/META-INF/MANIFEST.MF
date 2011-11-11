@@ -6,10 +6,11 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.amanzi.awe.render.drive.Activator
 Require-Bundle: org.eclipse.core.runtime,
  org.amanzi.awe.catalog.neo,
- org.amanzi.neo.core;bundle-version="1.0.0",
  org.amanzi.awe.neostyle;bundle-version="1.0.0",
  net.refractions.udig.mapgraphic;bundle-version="1.1.1",
- net.refractions.udig.project.ui;bundle-version="1.1.1"
+ net.refractions.udig.project.ui;bundle-version="1.1.1",
+ org.amanzi.neo.services;bundle-version="1.0.0",
+ org.amanzi.neo.services.ui;bundle-version="1.0.0"
 Eclipse-LazyStart: true
 Bundle-Vendor: amanzi.org
 Export-Package: org.amanzi.awe.render.drive

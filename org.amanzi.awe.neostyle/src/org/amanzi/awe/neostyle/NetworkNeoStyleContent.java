@@ -95,9 +95,9 @@ public class NetworkNeoStyleContent extends StyleContent{
         public Object createDefaultStyle(IGeoResource resource, Color colour, IProgressMonitor monitor) throws IOException {
             if (resource.canResolve(NeoGeoResource.class)) {
                 NeoGeoResource res = resource.resolve(NeoGeoResource.class, monitor);
-                if (res.getGeoNeo(monitor).getGisType() == GisTypes.NETWORK) {
-                    return createDefaultNetworkStyle();
-                } 
+//                if (res.getGeoNeo(monitor).getGisType() == GisTypes.NETWORK) {
+//                    return createDefaultNetworkStyle();
+//                } 
             }
             return null;
         }

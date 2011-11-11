@@ -50,7 +50,6 @@ import org.amanzi.awe.neostyle.NeoStyleContent;
 import org.amanzi.awe.neostyle.NetworkNeoStyle;
 import org.amanzi.awe.neostyle.NetworkNeoStyleContent;
 import org.amanzi.awe.ui.IGraphModel;
-import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
 import org.amanzi.neo.services.DatasetService;
@@ -971,7 +970,7 @@ public class NetworkRenderer extends RendererImpl {
             }
         } catch (IOException e) {
             // TODO Handle IOException
-            NeoCorePlugin.error(e.getLocalizedMessage(), e);
+//            NeoCorePlugin.error(e.getLocalizedMessage(), e);
             return 0;
         }
         return result / (double)count;

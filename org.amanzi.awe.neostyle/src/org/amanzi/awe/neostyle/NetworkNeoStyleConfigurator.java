@@ -224,21 +224,21 @@ public class NetworkNeoStyleConfigurator extends IStyleConfigurator {
      * @param row
      */
     protected void editStyle(FilterRow row) {
-        NetworkFilterDefiner definer = new NetworkFilterDefiner(viewer.getControl().getShell(), "Edit filter", defaultStyle.getGeoNeo(), row.getName(), row.getWrapper());
+//        NetworkFilterDefiner definer = new NetworkFilterDefiner(viewer.getControl().getShell(), "Edit filter", defaultStyle.getGeoNeo(), row.getName(), row.getWrapper());
         FilterModel model = NeoStylePlugin.getDefault().getFilterModel();
         Set<String> restr = new HashSet<String>();
         restr.addAll(model.getFilterNames());
         restr.remove(row.getName());
-        definer.setRestrictedNames(restr);
-        IFilterWrapper result = definer.open();
-        if (result != null) {
-            model.removeFilter(row.getName());
-            defaultStyle.getCurStyle().removeFilter(row.getName());
-            model.addFilter(definer.getWrapperName(), result);
-            defaultStyle.getCurStyle().addFilter(definer.getWrapperName(), result);
-            model.store();
-        }
-        viewer.setInput(defaultStyle.getCurStyle());
+//        definer.setRestrictedNames(restr);
+//        IFilterWrapper result = definer.open();
+//        if (result != null) {
+//            model.removeFilter(row.getName());
+//            defaultStyle.getCurStyle().removeFilter(row.getName());
+//            model.addFilter(definer.getWrapperName(), result);
+//            defaultStyle.getCurStyle().addFilter(definer.getWrapperName(), result);
+//            model.store();
+//        }
+//        viewer.setInput(defaultStyle.getCurStyle());
     }
 
     /**
@@ -246,15 +246,15 @@ public class NetworkNeoStyleConfigurator extends IStyleConfigurator {
      */
     protected void createNew() {
         FilterWrapperImpl<NetworkNeoStyle> wrapper = createDefWrapper();
-        NetworkFilterDefiner definer = new NetworkFilterDefiner(viewer.getControl().getShell(), "Create new filter", defaultStyle.getGeoNeo(), "new", wrapper);
+//        NetworkFilterDefiner definer = new NetworkFilterDefiner(viewer.getControl().getShell(), "Create new filter", defaultStyle.getGeoNeo(), "new", wrapper);
         FilterModel model = NeoStylePlugin.getDefault().getFilterModel();
-        definer.setRestrictedNames(model.getFilterNames());
-        IFilterWrapper result = definer.open();
-        if (result != null) {
-            model.addFilter(definer.getWrapperName(), result);
-            defaultStyle.getCurStyle().addFilter(definer.getWrapperName(), result);
-            model.store();
-        }
+//        definer.setRestrictedNames(model.getFilterNames());
+//        IFilterWrapper result = definer.open();
+//        if (result != null) {
+//            model.addFilter(definer.getWrapperName(), result);
+//            defaultStyle.getCurStyle().addFilter(definer.getWrapperName(), result);
+//            model.store();
+//        }
         viewer.setInput(defaultStyle.getCurStyle());
     }
 

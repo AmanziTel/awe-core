@@ -19,7 +19,6 @@ import java.util.HashSet;
 import org.amanzi.awe.views.drive.views.CorrelationList;
 import org.amanzi.awe.views.drive.views.CorrelationManager;
 import org.amanzi.awe.views.drive.views.DriveInquirerView;
-import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.services.events.NewCorrelationEvent;
 import org.amanzi.neo.services.events.UpdateViewEvent;
 import org.amanzi.neo.services.events.UpdateViewEventType;
@@ -64,7 +63,7 @@ public class DriveInquirerPlugin extends AbstractUIPlugin implements IUpdateView
     public void start(BundleContext context) throws Exception {
         super.start(context);
         plugin = this;
-        NeoCorePlugin.getDefault().getUpdateViewManager().addListener(this);
+//        NeoCorePlugin.getDefault().getUpdateViewManager().addListener(this);
     }
 
     /*

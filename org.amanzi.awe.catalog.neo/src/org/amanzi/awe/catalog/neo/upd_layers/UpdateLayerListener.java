@@ -17,9 +17,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
 
 import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.project.ILayer;
@@ -29,7 +27,6 @@ import net.refractions.udig.project.command.factory.NavigationCommandFactory;
 import net.refractions.udig.project.internal.Map;
 import net.refractions.udig.project.internal.command.navigation.SetViewportCenterCommand;
 
-import org.amanzi.awe.catalog.neo.GeoNeo;
 import org.amanzi.awe.catalog.neo.NeoGeoResource;
 import org.amanzi.awe.catalog.neo.upd_layers.events.AddSelectionEvent;
 import org.amanzi.awe.catalog.neo.upd_layers.events.ChangeModelEvent;
@@ -159,7 +156,7 @@ public class UpdateLayerListener {
         if (!isEventForThisLayer(gis)) {
             return;
         }
-        getGeoNeo().setSelectedNodes(new HashSet<Node>(event.getSelected()));
+//        getGeoNeo().setSelectedNodes(new HashSet<Node>(event.getSelected()));
         // find bounding box for selected data
         Double minLon = Double.MAX_VALUE;
         Double maxLon = Double.MIN_VALUE;
@@ -260,9 +257,9 @@ public class UpdateLayerListener {
      */
     private void changeModel(ChangeModelEvent event) throws IOException {
         Node gis = event.getGisNode();
-        GeoNeo geo = getGeoNeo();
+//        GeoNeo geo = getGeoNeo();
         if (gis != null && isEventForThisLayer(gis)) {
-            geo.setGraphModel(event.getModel());
+//            geo.setGraphModel(event.getModel());
             layer.refresh(null);
         }
     }
@@ -275,21 +272,21 @@ public class UpdateLayerListener {
      */
     private void changeSelection(ChangeSelectionEvent event) throws IOException {
         Node gis = event.getGisNode();
-        GeoNeo geo = getGeoNeo();
+//        GeoNeo geo = getGeoNeo();
         if (gis == null || isEventForThisLayer(gis)) {
             Collection<Node> nodes = event.getSelected();
-            Set<Node> prevSel = geo.getSelectedNodes();
-            if (!prevSel.equals(nodes)) {
-                final HashSet<Node> newNodes = new HashSet<Node>(nodes);
-                geo.setSelectedNodes(newNodes);
-                layer.refresh(null);
-            }
+//            Set<Node> prevSel = geo.getSelectedNodes();
+//            if (!prevSel.equals(nodes)) {
+//                final HashSet<Node> newNodes = new HashSet<Node>(nodes);
+//                geo.setSelectedNodes(newNodes);
+//                layer.refresh(null);
+//            }
         } else {
-            Set<Node> prevSel = geo.getSelectedNodes();
-            if (prevSel != null && !prevSel.isEmpty()) {
-                geo.setSelectedNodes(new HashSet<Node>());
-                layer.refresh(null);
-            }
+//            Set<Node> prevSel = geo.getSelectedNodes();
+//            if (prevSel != null && !prevSel.isEmpty()) {
+//                geo.setSelectedNodes(new HashSet<Node>());
+//                layer.refresh(null);
+//            }
         }
     }
 
@@ -301,10 +298,10 @@ public class UpdateLayerListener {
      */
     private void addSelection(AddSelectionEvent event) throws IOException {
         Node gis = event.getGisNode();
-        GeoNeo geo = getGeoNeo();
+//        GeoNeo geo = getGeoNeo();
         if (gis == null || isEventForThisLayer(gis)) {
             for (Node node : event.getSelected()) {
-                geo.addNodeToSelect(node);
+//                geo.addNodeToSelect(node);
             }
             layer.refresh(null);
         }
@@ -323,17 +320,17 @@ public class UpdateLayerListener {
         }
         // TODO: Lagutko: check is this cases can be united
         if (isEventForThisLayer(event.getGisNode())) {
-            GeoNeo geo = getGeoNeo();
-            geo.setProperties(values);
+//            GeoNeo geo = getGeoNeo();
+//            geo.setProperties(values);
 
             if (autoRefresh) {
                 layer.refresh(null);
             }
         } else if (event.isNeedClearOther()) {
-            GeoNeo geo = getGeoNeo();
-            for (String key : values.keySet()) {
-                geo.setProperty(key, null);
-            }
+//            GeoNeo geo = getGeoNeo();
+//            for (String key : values.keySet()) {
+//                geo.setProperty(key, null);
+//            }
 
             if (autoRefresh) {
                 layer.refresh(null);
@@ -341,22 +338,22 @@ public class UpdateLayerListener {
         }
     }
 
-    private GeoNeo getGeoNeo() throws IOException {
-        IGeoResource resourse = layer.findGeoResource(GeoNeo.class);
-        GeoNeo geo = resourse.resolve(GeoNeo.class, null);
-        return geo;
-    }
+//    private GeoNeo getGeoNeo() throws IOException {
+//        IGeoResource resourse = layer.findGeoResource(GeoNeo.class);
+//        GeoNeo geo = resourse.resolve(GeoNeo.class, null);
+//        return geo;
+//    }
 
     private void showOnMap(UpdatePropertiesAndMapEvent event) throws IOException {
         Node gis = event.getGisNode();
         if (!isEventForThisLayer(gis)) {
             return;
         }
-        try {
-            GeoNeo geo = getGeoNeo();
+//        try {
+//            GeoNeo geo = getGeoNeo();
             Collection<Node> selection = event.getSelection();
             if (selection != null) {
-                geo.setSelectedNodes(new HashSet<Node>(selection));
+//                geo.setSelectedNodes(new HashSet<Node>(selection));
             }
             IMap map = layer.getMap();
             CoordinateReferenceSystem crs = null;
@@ -381,17 +378,17 @@ public class UpdateLayerListener {
             } else {
                 layer.refresh(null);
             }
-        } catch (MalformedURLException e) {
-            throw (RuntimeException)new RuntimeException().initCause(e);
-        } catch (IOException e) {
-            throw (RuntimeException)new RuntimeException().initCause(e);
-        }
+//        } catch (MalformedURLException e) {
+//            throw (RuntimeException)new RuntimeException().initCause(e);
+//        } catch (IOException e) {
+//            throw (RuntimeException)new RuntimeException().initCause(e);
+//        }
     }
 
     private void refreshProperties(RefreshPropertiesEvent event) throws IOException {
         if (isEventForThisLayer(event.getGisNode())) {
-            GeoNeo geo = getGeoNeo();
-            geo.setPropertyToRefresh(event.getAggrNode(), event.getPropertyNode(), event.getMinSelNode(), event.getMaxSelNode(), event.getValues());
+//            GeoNeo geo = getGeoNeo();
+//            geo.setPropertyToRefresh(event.getAggrNode(), event.getPropertyNode(), event.getMinSelNode(), event.getMaxSelNode(), event.getValues());
             layer.refresh(null);
         }
     }

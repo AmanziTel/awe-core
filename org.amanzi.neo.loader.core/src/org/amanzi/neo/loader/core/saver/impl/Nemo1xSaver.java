@@ -117,7 +117,7 @@ public class Nemo1xSaver extends Nemo2xSaver {
                 }
             }
             // create M node
-            createMNode(eventId, driveEvents, timestamp, parsedParameters);
+//            createMNode(eventId, driveEvents, timestamp, parsedParameters);
             // create subnodes
             createSubNodes(eventId, subNodes, timestamp);
 

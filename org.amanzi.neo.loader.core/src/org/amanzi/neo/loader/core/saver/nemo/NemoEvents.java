@@ -23,8 +23,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.amanzi.neo.core.utils.DriveEvents;
-
 /**
  * <p>
  * Nemo events ver. 2.1
@@ -4384,7 +4382,7 @@ public enum NemoEvents {
         @Override
         public Map<String, Object> fill(String version, List<String> params) {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
-            parsedParameters.put(DRIVE_EVENTS, DriveEvents.HANDOVER_SUCCESS);
+//            parsedParameters.put(DRIVE_EVENTS, DriveEvents.HANDOVER_SUCCESS);
             if ("2.01".equals(version)) {
                 String key = "Handover context ID";
                 List<String> contextName = new ArrayList<String>(1);
@@ -4399,7 +4397,7 @@ public enum NemoEvents {
         public Map<String, Object> fill(String version, List<String> params) {
             Iterator<String> parameters = params.iterator();
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
-            parsedParameters.put(DRIVE_EVENTS, DriveEvents.HANDOVER_FAILURE);
+//            parsedParameters.put(DRIVE_EVENTS, DriveEvents.HANDOVER_FAILURE);
             if ("2.01".equals(version)) {
                 String key = "System";
                 final TechnologySystems system = TechnologySystems.getSystemById(getIntegerValue(parameters));
@@ -4502,7 +4500,7 @@ public enum NemoEvents {
                     Integer shoStatus = getIntegerValue(parameters);
                     parsedParameters.put("SHO status", shoStatus);
                     if (shoStatus != null) {
-                        parsedParameters.put(DRIVE_EVENTS, shoStatus == 1 ? DriveEvents.HANDOVER_SUCCESS : DriveEvents.HANDOVER_FAILURE);
+//                        parsedParameters.put(DRIVE_EVENTS, shoStatus == 1 ? DriveEvents.HANDOVER_SUCCESS : DriveEvents.HANDOVER_FAILURE);
                     }
                     parsedParameters.put("RRC cause", getIntegerValue(parameters));
                     Integer addCount = getIntegerValue(parameters);
@@ -4541,7 +4539,7 @@ public enum NemoEvents {
                 if (system == 12 || system == 13 || system == 20 || system == 21 || system == 31 || system == 33 || system == 34) {
                     Integer shoStatus = getIntegerValue(parameters);
                     if (shoStatus != null) {
-                        parsedParameters.put(DRIVE_EVENTS, shoStatus == 1 ? DriveEvents.HANDOVER_SUCCESS : DriveEvents.HANDOVER_FAILURE);
+//                        parsedParameters.put(DRIVE_EVENTS, shoStatus == 1 ? DriveEvents.HANDOVER_SUCCESS : DriveEvents.HANDOVER_FAILURE);
                     }
                     parsedParameters.put("SHO status", shoStatus);
                     parsedParameters.put("RRC cause", getIntegerValue(parameters));

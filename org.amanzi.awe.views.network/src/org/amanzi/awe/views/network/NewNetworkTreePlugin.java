@@ -17,7 +17,6 @@ import java.util.Collections;
 import java.util.HashSet;
 
 import org.amanzi.awe.views.network.view.NewNetworkTreeView;
-import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.services.events.NewShowPreparedViewEvent;
 import org.amanzi.neo.services.events.NewUpdateDrillDownEvent;
 import org.amanzi.neo.services.events.UpdateViewEvent;
@@ -69,7 +68,7 @@ public class NewNetworkTreePlugin extends AbstractUIPlugin implements IUpdateVie
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
-		NeoCorePlugin.getDefault().getUpdateViewManager().addListener(this);
+//		NeoCorePlugin.getDefault().getUpdateViewManager().addListener(this);
 	}
 
 	/*
@@ -77,7 +76,7 @@ public class NewNetworkTreePlugin extends AbstractUIPlugin implements IUpdateVie
 	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
 	 */
 	public void stop(BundleContext context) throws Exception {
-	    NeoCorePlugin.getDefault().getUpdateViewManager().removeListener(this);
+//	    NeoCorePlugin.getDefault().getUpdateViewManager().removeListener(this);
 		plugin = null;
 		super.stop(context);
 	}
@@ -149,7 +148,7 @@ public class NewNetworkTreePlugin extends AbstractUIPlugin implements IUpdateVie
             viewNetwork = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
                             .showView(NewNetworkTreeView.NETWORK_TREE_VIEW_ID);
         } catch (PartInitException e) {
-            NeoCorePlugin.error(e.getLocalizedMessage(), e);
+//            NeoCorePlugin.error(e.getLocalizedMessage(), e);
             viewNetwork = null;
         }
         return viewNetwork;

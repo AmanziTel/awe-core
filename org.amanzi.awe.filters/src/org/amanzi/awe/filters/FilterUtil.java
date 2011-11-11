@@ -93,18 +93,18 @@ public class FilterUtil {
      * @param service
      * @return
      */
-    public static AbstractFilter getFilterOfData(Node dataNode,  GraphDatabaseService service) {
-        Transaction tx = NeoUtils.beginTx(service);
-        try {
-            Relationship filterRelation = dataNode.getSingleRelationship(GeoNeoRelationshipTypes.USE_FILTER, Direction.OUTGOING);
-            if (filterRelation==null){
-                return null;
-            }
-            return AbstractFilter.getInstance(filterRelation.getOtherNode(dataNode), service);
-        } finally {
-            NeoUtils.finishTx(tx);
-        }
-    }
+//    public static AbstractFilter getFilterOfData(Node dataNode,  GraphDatabaseService service) {
+//        Transaction tx = NeoUtils.beginTx(service);
+//        try {
+//            Relationship filterRelation = dataNode.getSingleRelationship(GeoNeoRelationshipTypes.USE_FILTER, Direction.OUTGOING);
+//            if (filterRelation==null){
+//                return null;
+//            }
+//            return AbstractFilter.getInstance(filterRelation.getOtherNode(dataNode), service);
+//        } finally {
+//            NeoUtils.finishTx(tx);
+//        }
+//    }
 
     /**
      * get data node traverser of filter

@@ -23,6 +23,8 @@ import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
+import org.amanzi.neo.services.listeners.EventManager;
+import org.amanzi.neo.services.listeners.UpdateProjectDataEvent;
 import org.amanzi.neo.services.model.IDataModel;
 import org.amanzi.neo.services.model.IModel;
 import org.amanzi.neo.services.model.IProjectModel;
@@ -260,6 +262,7 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
         tx.finish();
         NeoServiceProvider.getProvider().commit();
         actionCount = 0;
+        EventManager.getInstance().notify(new UpdateProjectDataEvent());
     }
 
     protected IProjectModel getActiveProject() throws AWEException {

@@ -24,7 +24,6 @@ import java.util.Set;
 import org.amanzi.awe.views.neighbours.views.NeighboursView;
 import org.amanzi.awe.views.neighbours.views.Node2NodeViews;
 import org.amanzi.awe.views.neighbours.views.TransmissionView;
-import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.events.ShowPreparedViewEvent;
@@ -79,7 +78,7 @@ public class NeighboursPlugin extends AbstractUIPlugin implements IUpdateViewLis
     public void start(BundleContext context) throws Exception {
         super.start(context);
         plugin = this;
-        NeoCorePlugin.getDefault().getUpdateViewManager().addListener(this);
+//        NeoCorePlugin.getDefault().getUpdateViewManager().addListener(this);
     }
 
     /*
@@ -90,7 +89,7 @@ public class NeighboursPlugin extends AbstractUIPlugin implements IUpdateViewLis
 //        NeoServiceProviderUi.getProvider().rollback(); - rollback is not necessary.
         plugin = null;
         super.stop(context);
-        NeoCorePlugin.getDefault().getUpdateViewManager().removeListener(this);
+//        NeoCorePlugin.getDefault().getUpdateViewManager().removeListener(this);
     }
 
     /**
@@ -199,7 +198,7 @@ public class NeighboursPlugin extends AbstractUIPlugin implements IUpdateViewLis
                 try {
                     neighbourView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(Node2NodeViews.ID);
                 } catch (PartInitException e) {
-                    NeoCorePlugin.error(e.getLocalizedMessage(), e);
+//                    NeoCorePlugin.error(e.getLocalizedMessage(), e);
                     neighbourView = null;
                 }
                 if (neighbourView != null && nodes != null) {
@@ -288,7 +287,7 @@ public class NeighboursPlugin extends AbstractUIPlugin implements IUpdateViewLis
                 try {
                     neighbourView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(NeighboursView.ID);
                 } catch (PartInitException e) {
-                    NeoCorePlugin.error(e.getLocalizedMessage(), e);
+//                    NeoCorePlugin.error(e.getLocalizedMessage(), e);
                     neighbourView = null;
                 }
                 if (neighbourView != null && nodes != null) {
@@ -307,7 +306,7 @@ public class NeighboursPlugin extends AbstractUIPlugin implements IUpdateViewLis
                 try {
                     neighbourView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(TransmissionView.ID);
                 } catch (PartInitException e) {
-                    NeoCorePlugin.error(e.getLocalizedMessage(), e);
+//                    NeoCorePlugin.error(e.getLocalizedMessage(), e);
                     neighbourView = null;
                 }
                 if (neighbourView != null && nodes != null) {

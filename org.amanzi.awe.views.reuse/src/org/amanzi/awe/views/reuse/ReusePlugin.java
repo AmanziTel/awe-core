@@ -19,7 +19,6 @@ import java.util.HashSet;
 import org.amanzi.awe.views.reuse.mess_table.view.MessageAndEventTableView;
 import org.amanzi.awe.views.reuse.views.FrequencyPlanAnalyser;
 import org.amanzi.awe.views.reuse.views.ReuseAnalyserView;
-import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.model.distribution.impl.DistributionManager;
 import org.amanzi.neo.services.events.UpdateViewEvent;
 import org.amanzi.neo.services.events.UpdateViewEventType;
@@ -68,7 +67,7 @@ public class ReusePlugin extends AbstractUIPlugin implements IUpdateViewListener
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
-        NeoCorePlugin.getDefault().getUpdateViewManager().addListener(this);
+//        NeoCorePlugin.getDefault().getUpdateViewManager().addListener(this);
         
         DistributionManager.getManager().registerReusePlugin(this);
 	}
@@ -80,7 +79,7 @@ public class ReusePlugin extends AbstractUIPlugin implements IUpdateViewListener
 	public void stop(BundleContext context) throws Exception {
 		plugin = null;
 		super.stop(context);
-        NeoCorePlugin.getDefault().getUpdateViewManager().removeListener(this);
+//        NeoCorePlugin.getDefault().getUpdateViewManager().removeListener(this);
         
         DistributionManager.getManager().registerReusePlugin(this);
 	}

@@ -23,10 +23,8 @@ import org.amanzi.awe.awe.views.view.provider.NewNetworkTreeContentProvider;
 import org.amanzi.awe.awe.views.view.provider.NewNetworkTreeLabelProvider;
 import org.amanzi.awe.views.network.NetworkTreePlugin;
 import org.amanzi.awe.views.network.property.NewNetworkPropertySheetPage;
-import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.NodeTypes;
-import org.amanzi.neo.services.events.NewShowPreparedViewEvent;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
@@ -209,12 +207,12 @@ public class NewNetworkTreeView extends ViewPart {
                 if (selectedDataElements.size() > 1) {
                     PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
                             .showView("org.amanzi.awe.views.reuse.views.MessageAndEventTableView");
-                    NeoCorePlugin
-                            .getDefault()
-                            .getUpdateViewManager()
-                            .fireUpdateView(
-                                    new NewShowPreparedViewEvent("org.amanzi.awe.views.reuse.views.MessageAndEventTableView",
-                                            selectedDataElements));
+//                    NeoCorePlugin
+//                            .getDefault()
+//                            .getUpdateViewManager()
+//                            .fireUpdateView(
+//                                    new NewShowPreparedViewEvent("org.amanzi.awe.views.reuse.views.MessageAndEventTableView",
+//                                            selectedDataElements));
                 } else {
                     PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IPageLayout.ID_PROP_SHEET);
                 }
@@ -676,12 +674,12 @@ public class NewNetworkTreeView extends ViewPart {
         @Override
         public void run() {
             Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
-            NewSelectionListDialog pdialog = new NewSelectionListDialog(shell, network, "New selection list", SWT.OK);
-            if (pdialog.open() == SWT.OK) {
-
-            } else {
-
-            }
+//            NewSelectionListDialog pdialog = new NewSelectionListDialog(shell, network, "New selection list", SWT.OK);
+//            if (pdialog.open() == SWT.OK) {
+//
+//            } else {
+//
+//            }
         }
 
     }

@@ -35,12 +35,12 @@ public class NewTypeAction extends Action implements IViewActionDelegate{
     @Override
     public void run(IAction action) {
         Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
-        NewTypeDialog pdialog = new NewTypeDialog(shell, "New type", SWT.OK);
-        if (pdialog.open() == SWT.OK) {
-
-        }else{
-
-        }
+//        NewTypeDialog pdialog = new NewTypeDialog(shell, "New type", SWT.OK);
+//        if (pdialog.open() == SWT.OK) {
+//
+//        }else{
+//
+//        }
 
     }
 

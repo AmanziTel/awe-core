@@ -6,12 +6,13 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.amanzi.awe.statistics.StatisticPlugin
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
- org.amanzi.neo.core;bundle-version="1.0.0",
  org.amanzi.awe.views.kpi,
  org.jfree,
  org.amanzi.scripting.jruby,
  org.rubypeople.rdt.ui,
- net.refractions.udig.libs;bundle-version="1.1.1"
+ net.refractions.udig.libs;bundle-version="1.1.1",
+ org.amanzi.neo.services;bundle-version="1.0.0",
+ org.amanzi.neo.services.ui;bundle-version="1.0.0"
 Eclipse-LazyStart: true
 Eclipse-RegisterBuddy: org.amanzi.awe.views.kpi
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6

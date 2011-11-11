@@ -18,7 +18,6 @@ import java.util.HashSet;
 import net.refractions.udig.catalog.internal.ui.CatalogView;
 
 import org.amanzi.awe.catalog.neo.upd_layers.LayerUpdateManager;
-import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.services.events.UpdateViewEvent;
 import org.amanzi.neo.services.events.UpdateViewEventType;
 import org.amanzi.neo.services.ui.INeoServiceProviderListener;
@@ -61,7 +60,7 @@ public class NeoCatalogPlugin extends AbstractUIPlugin implements INeoServicePro
         super.start(context);
         plugin = this;
         NeoServiceProviderUi.getProvider().addServiceProviderListener(this);
-        NeoCorePlugin.getDefault().getUpdateViewManager().addListener(this);
+//        NeoCorePlugin.getDefault().getUpdateViewManager().addListener(this);
         layerManager = new LayerUpdateManager();
     }
 
@@ -73,7 +72,7 @@ public class NeoCatalogPlugin extends AbstractUIPlugin implements INeoServicePro
         plugin = null;
         super.stop(context);
         NeoServiceProviderUi.getProvider().removeServiceProviderListener(this);
-        NeoCorePlugin.getDefault().getUpdateViewManager().removeListener(this);
+//        NeoCorePlugin.getDefault().getUpdateViewManager().removeListener(this);
     }
 
     /**
