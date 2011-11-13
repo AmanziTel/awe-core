@@ -41,6 +41,7 @@ import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
+import org.amanzi.neo.services.indexes.MultiPropertyIndex;
 import org.amanzi.neo.services.model.ICorrelationModel;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
@@ -119,8 +120,8 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
      * @throws DuplicateNodeNameException
      * @throws AWEException
      */
-    public NetworkModel(IDataElement project, IDataElement network, String name, String crsCode) throws InvalidDatasetParameterException,
-            DatasetTypeParameterException, DuplicateNodeNameException, AWEException {
+    public NetworkModel(IDataElement project, IDataElement network, String name, String crsCode)
+            throws InvalidDatasetParameterException, DatasetTypeParameterException, DuplicateNodeNameException, AWEException {
         super(null, DatasetTypes.NETWORK);
         // validate
         if (project == null) {
@@ -169,7 +170,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
      */
     private void initializeMultiPropertyIndexing() throws AWEException {
         LOGGER.info("Initializing multi property index...");
-        addLocationIndex(NetworkElementNodeType.SECTOR);
+        addLocationIndex(NetworkElementNodeType.SITE);
     }
 
     @Override
@@ -458,7 +459,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         }
         return models;
     }
-    
+
     @Override
     public Iterable<ISelectionModel> getAllSelectionModelsOfSector(IDataElement element) throws AWEException {
         Iterable<Node> nodes = nwServ.getAllSelectionModelsOfSector(((DataElement)element).getNode());
@@ -653,9 +654,13 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         return new DistributionModel(this, distributionType);
     }
 
-    public Iterable<IDataElement> getElements(Envelope bounds_transformed) {
-        // currently return all elements
-        return new DataElementIterable(nwServ.findAllNetworkElements(rootNode, NetworkElementNodeType.SITE));
+    public Iterable<IDataElement> getElements(Envelope bounds_transformed) throws AWEException {
+
+        return new DataElementIterable(getNodesInBounds(NetworkElementNodeType.SITE, bounds_transformed.getMinY(),
+                bounds_transformed.getMinX(), bounds_transformed.getMaxY(), bounds_transformed.getMaxX()));
+        // // currently return all elements
+        // return new DataElementIterable(nwServ.findAllNetworkElements(rootNode,
+        // NetworkElementNodeType.SITE));
     }
 
     @Override
@@ -669,11 +674,11 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
                 .toString());
         switch (type) {
         case SITE:
-            return new Coordinate((Double)element.get(LATITUDE), (Double)element.get(LONGITUDE));
+            return new Coordinate((Double)element.get(LONGITUDE), (Double)element.get(LATITUDE));
 
         case SECTOR:
             IDataElement site = getParentElement(element);
-            return new Coordinate((Double)site.get(LATITUDE), (Double)site.get(LONGITUDE));
+            return new Coordinate((Double)site.get(LONGITUDE), (Double)site.get(LATITUDE));
         default:
             return null;
         }

@@ -84,7 +84,7 @@ public class NewNetworkTreeView extends ViewPart {
     public static final String DB_GRAPH_VIEW_ID = "org.neo4j.neoclipse.view.NeoGraphViewPart";
 
     public static final String SHOW_PROPERTIES = "Show properties";
-    public static final String EDIT_PROPERTIES = "Edit properties";
+    public static final String CHANGE_MODE_TO_SHOW_PROPERTIES = "Change mode (show/edit)";
 
     /*
      * TreeViewer for database Nodes
@@ -102,6 +102,11 @@ public class NewNetworkTreeView extends ViewPart {
     private NeoServiceProviderUi neoServiceProvider;
 
     private Text tSearch;
+    
+	/*
+	 * Variable show is view ready to edit property 
+	 */
+	private boolean isEditablePropertyView;
 
     /**
      * The constructor.
@@ -153,7 +158,7 @@ public class NewNetworkTreeView extends ViewPart {
             manager.add(select); 
         }
         
-        EditAction editAction = new EditAction((IStructuredSelection)viewer.getSelection());
+        ChangeModeAction editAction = new ChangeModeAction((IStructuredSelection)viewer.getSelection());
         manager.add(editAction);
         
         RenameAction renameAction = new RenameAction((IStructuredSelection)viewer.getSelection());
@@ -208,7 +213,7 @@ public class NewNetworkTreeView extends ViewPart {
         @Override
         public void run() {
             try {
-            	((NewNetworkPropertySheetPage)propertySheetPage).setEditableToPropertyView(false);
+            	PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IPageLayout.ID_PROP_SHEET);
             	PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IPageLayout.ID_PROP_SHEET);
             } catch (PartInitException e) {
                 NetworkTreePlugin.error(null, e);
@@ -216,7 +221,7 @@ public class NewNetworkTreeView extends ViewPart {
         }     
     }
     
-    private class EditAction extends Action {
+    private class ChangeModeAction extends Action {
         private boolean enabled;
         private final String text;
         private Set<IDataElement> selectedDataElements = new HashSet<IDataElement>();
@@ -227,7 +232,7 @@ public class NewNetworkTreeView extends ViewPart {
          * @param selection - selection
          */
         @SuppressWarnings("rawtypes")
-		public EditAction(IStructuredSelection selection) {
+		public ChangeModeAction(IStructuredSelection selection) {
             Iterator it = selection.iterator();
             while (it.hasNext()) {
                 Object elementObject = it.next();
@@ -239,7 +244,7 @@ public class NewNetworkTreeView extends ViewPart {
                 }
             }
             enabled = selectedDataElements.size() > 0;
-            text = EDIT_PROPERTIES;
+            text = CHANGE_MODE_TO_SHOW_PROPERTIES;
         }
 
         @Override
@@ -254,13 +259,8 @@ public class NewNetworkTreeView extends ViewPart {
 
         @Override
         public void run() {
-            try {
-            	PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IPageLayout.ID_PROP_SHEET);
-            	((NewNetworkPropertySheetPage)propertySheetPage).setEditableToPropertyView(true);
-            	((NewNetworkPropertySheetPage)propertySheetPage).reloadTable();
-            } catch (PartInitException e) {
-                NetworkTreePlugin.error(null, e);
-            }
+        	isEditablePropertyView = (isEditablePropertyView == true) ? false : true;
+            ((NewNetworkPropertySheetPage)propertySheetPage).setEditableToPropertyView(isEditablePropertyView);
         }     
     }
     

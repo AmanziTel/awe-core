@@ -15,6 +15,7 @@ package org.amanzi.awe.views.network.property;
 import org.amanzi.neo.services.model.IDataElement;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.IPropertySourceProvider;
+import org.neo4j.neoclipse.property.NodePropertySource;
 
 /**
  * Provider for PropertySource of Network Nodes
@@ -26,7 +27,8 @@ import org.eclipse.ui.views.properties.IPropertySourceProvider;
 public class NewNetworkPropertySourceProvider implements IPropertySourceProvider {
     
     private IDataElement lastRawObject;
-    private NewNetworkPropertySource propertySource;
+    private NodePropertySource propertySource;
+    private boolean isEditable;
     
     /**
      * Return PropertySource for given element
@@ -35,7 +37,12 @@ public class NewNetworkPropertySourceProvider implements IPropertySourceProvider
     public IPropertySource getPropertySource(Object element) {
         if (element instanceof IDataElement) {
             lastRawObject = (IDataElement)element;
-            propertySource = new NewNetworkPropertySource((IDataElement)element);
+            if (isEditable) {
+            	propertySource = new NewNetworkPropertySourceEditable((IDataElement)element);
+            }
+            else {
+            	propertySource = new NewNetworkPropertySource((IDataElement)element);
+            }
             return propertySource;
         }
         return null;
@@ -47,7 +54,7 @@ public class NewNetworkPropertySourceProvider implements IPropertySourceProvider
      * @param isEditablePropertyView
      */
     public void setEditableToPropertyView(boolean isEditablePropertyView) {
-    	propertySource.setEditableToPropertyView(isEditablePropertyView);
+    	isEditable = isEditablePropertyView;
     }
     
     public void reloadTable() {
