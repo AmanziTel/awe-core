@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.net.URL;
 
 import net.refractions.udig.catalog.IGeoResource;
+import net.refractions.udig.catalog.IGeoResourceInfo;
 import net.refractions.udig.catalog.ui.CatalogUIPlugin;
 
 import org.amanzi.neo.services.INeoConstants;
@@ -181,5 +182,9 @@ public class NeoGeoResource extends IGeoResource implements INeoServiceProviderL
 
     @Override
     public void onNeoRollback(Object source) {
+    }
+    @Override
+    protected IGeoResourceInfo createInfo(IProgressMonitor monitor) throws IOException {
+        return null;
     }
 }

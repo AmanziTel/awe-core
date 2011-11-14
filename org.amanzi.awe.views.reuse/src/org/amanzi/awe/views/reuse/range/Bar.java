@@ -204,7 +204,7 @@ public class Bar implements Serializable {
             boolean inmin=ois.readBoolean();
             double max = ois.readDouble();
             boolean inmax=ois.readBoolean();   
-            range=new NumberRange(min, inmin, max, inmax);
+            range=NumberRange.create(min, inmin, max, inmax);
         }
     }
 }

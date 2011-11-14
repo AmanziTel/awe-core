@@ -52,8 +52,8 @@ public class NeoCatalogStartup implements IStartup {
                 URL url = new URL("file://" + databaseLocation);
                 List<IService> services = CatalogPlugin.getDefault().getServiceFactory().createService(url);
                 for (IService service : services) {
-                    if (catalog.getById(IService.class, service.getIdentifier(), new NullProgressMonitor()) != null) {
-                        catalog.replace(service.getIdentifier(), service);
+                    if (catalog.getById(IService.class, service.getID(), new NullProgressMonitor()) != null) {
+                        catalog.replace(service.getID(), service);
                     } else {
                         catalog.add(service);
                     }

@@ -123,8 +123,8 @@ public class Application extends UDIGApplication implements IApplication {
                         new URL("file://" + databaseLocation));
                 for (IService service : services) {
                     LOGGER.debug("Found catalog service: " + service);
-                    if (catalog.getById(IService.class, service.getIdentifier(), new NullProgressMonitor()) != null) {
-                        catalog.replace(service.getIdentifier(), service);
+                    if (catalog.getById(IService.class, service.getID(), new NullProgressMonitor()) != null) {
+                        catalog.replace(service.getID(), service);
                     } else {
                         catalog.add(service);
                     }

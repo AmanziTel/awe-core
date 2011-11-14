@@ -177,12 +177,12 @@ public class Loader<T extends IDataElement, T2 extends IConfigurationData> imple
 
                     List<IService> services = CatalogPlugin.getDefault().getServiceFactory().createService(url);
                     for (IService service : services) {
-                        NeoService serviceold = catalog.getById(NeoService.class, service.getIdentifier(),
+                        NeoService serviceold = catalog.getById(NeoService.class, service.getID(),
                                 new NullProgressMonitor());
                         if (serviceold != null) {
                             // TODO refactor for working in 2 database modes
                             // serviceold.updateResource();
-                            catalog.replace(service.getIdentifier(), service);
+                            catalog.replace(service.getID(), service);
                         } else {
                             catalog.add(service);
                         }

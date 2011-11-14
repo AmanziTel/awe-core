@@ -59,7 +59,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.geotools.brewer.color.BrewerPalette;
-import org.geotools.feature.Feature;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
 import org.neo4j.graphdb.Direction;
@@ -73,6 +72,9 @@ import org.neo4j.graphdb.TraversalPosition;
 import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
 import org.neo4j.index.lucene.LuceneIndexService;
+import org.opengis.feature.Feature;
+import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.geometry.BoundingBox;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
@@ -80,6 +82,7 @@ import org.opengis.referencing.operation.TransformException;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
+import com.vividsolutions.jts.geom.Geometry;
 
 /**
  * <p>
@@ -198,11 +201,11 @@ public class TemsRenderer extends RendererImpl implements Renderer {
 		Envelope bounds_transformed = null;
 		if (bounds != null && transform_w2d != null) {
 			bounds_transformed = JTS.transform(bounds, transform_w2d);
-			final Feature geoFilter = (Feature) getContext().getLayer()
+			final org.opengis.feature.Feature geoFilter = (org.opengis.feature.Feature) getContext().getLayer()
 					.getBlackboard().get("GEO_FILTER");
 			if (geoFilter != null) {
-				bounds_transformed = bounds_transformed.intersection(geoFilter
-						.getBounds());
+			    BoundingBox bb = geoFilter.getBounds();
+				bounds_transformed = bounds_transformed.intersection(new Envelope(bb.getMinX(), bb.getMaxX(), bb.getMinY(), bb.getMaxY()));
 			}
 		}
 		return bounds_transformed;
@@ -659,10 +662,10 @@ public class TemsRenderer extends RendererImpl implements Renderer {
 			Coordinate world_location = new Coordinate();
 			// final Feature geoFilter = getContext().getFeaturesInBbox(layer,
 			// bbox);
-			final Feature geoFilter = (Feature) getContext().getLayer()
+			final SimpleFeature geoFilter = (SimpleFeature) getContext().getLayer()
 					.getBlackboard().get("GEO_FILTER");
 			if (geoFilter != null) {
-				final Coordinate[] coordinates = geoFilter.getDefaultGeometry()
+				final Coordinate[] coordinates = ((Geometry)geoFilter.getDefaultGeometry())
 						.getCoordinates();
 				final int n = coordinates.length;
 				xPoints = new int[n];
@@ -1166,8 +1169,8 @@ public class TemsRenderer extends RendererImpl implements Renderer {
 				final Feature geoFilter = (Feature) getContext().getLayer()
 						.getBlackboard().get("GEO_FILTER");
 				if (geoFilter != null) {
-					bounds_transformed = bounds_transformed
-							.intersection(geoFilter.getBounds());
+	                BoundingBox bb = geoFilter.getBounds();
+	                bounds_transformed = bounds_transformed.intersection(new Envelope(bb.getMinX(), bb.getMaxX(), bb.getMinY(), bb.getMaxY()));
 				}
 			}
 			Envelope data_bounds = networkGis.getBounds();

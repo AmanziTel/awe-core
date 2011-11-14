@@ -20,7 +20,7 @@ import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.nodes.AweProjectNode;
 import org.geotools.referencing.CRS;
 import org.neo4j.graphdb.Node;
-import org.opengis.referencing.NoSuchAuthorityCodeException;
+import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
@@ -75,7 +75,7 @@ public class UiService  {
         }
         try {
             return CRS.decode(epsg);
-        } catch (NoSuchAuthorityCodeException e) {
+        } catch (FactoryException e) {
             e.printStackTrace();
             return null;
         }

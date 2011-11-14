@@ -39,7 +39,7 @@ import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.geotools.referencing.CRS;
-import org.opengis.referencing.NoSuchAuthorityCodeException;
+import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
@@ -201,7 +201,7 @@ public abstract class LoaderPage<T extends IConfigurationData> extends WizardPag
     private CoordinateReferenceSystem getDefaultCRS() {
         try {
             return CRS.decode("EPSG:4326");
-        } catch (NoSuchAuthorityCodeException e) {
+        } catch (FactoryException e) {
             // TODO Handle NoSuchAuthorityCodeException
             throw (RuntimeException)new RuntimeException().initCause(e);
         }

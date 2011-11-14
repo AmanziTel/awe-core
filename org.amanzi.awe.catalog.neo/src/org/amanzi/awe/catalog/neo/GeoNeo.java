@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.amanzi.awe.ui.IGraphModel;
-import org.amanzi.neo.core.service.listener.NeoServiceProviderListener;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.CorrelationRelationshipTypes;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
@@ -58,7 +57,8 @@ import com.vividsolutions.jts.geom.Envelope;
  * 
  * @author craig
  */
-public class GeoNeo extends NeoServiceProviderListener {
+public class GeoNeo { 
+//extends NeoServiceProviderListener {
     private static final Logger LOGGER = Logger.getLogger(GeoNeo.class);
     /** String NEIGH_RELATION field */
     public static final String NEIGH_RELATION = "NEIGH_RELATION";
@@ -202,7 +202,7 @@ public class GeoNeo extends NeoServiceProviderListener {
      * @param gisNode
      */
     public GeoNeo(GraphDatabaseService neo, Node gisNode) {
-        this.graphDatabaseService = neo;
+//        this.graphDatabaseService = neo;
         this.gisNode = gisNode;
         this.name = this.gisNode.getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
         this.types = GisTypes.findGisTypeByHeader(this.gisNode.getProperty(INeoConstants.PROPERTY_GIS_TYPE_NAME).toString());
@@ -269,12 +269,13 @@ public class GeoNeo extends NeoServiceProviderListener {
 
     public Traverser makeGeoNeoTraverser(final Envelope searchBounds) {
         try {
-            MultiPropertyIndex<Double> index = new MultiPropertyIndex<Double>(graphDatabaseService, NeoUtils.getLocationIndexName(name),
-                    new String[] {INeoConstants.PROPERTY_LAT_NAME, INeoConstants.PROPERTY_LON_NAME},
-                    new MultiDoubleConverter(0.001),10);
-             return index.searchTraverser(new Double[] {searchBounds.getMinY(),
-             searchBounds.getMinX()}, new Double[] {
-             searchBounds.getMaxY(), searchBounds.getMaxX()});
+//            MultiPropertyIndex<Double> index = new MultiPropertyIndex<Double>(graphDatabaseService, NeoUtils.getLocationIndexName(name),
+//                    new String[] {INeoConstants.PROPERTY_LAT_NAME, INeoConstants.PROPERTY_LON_NAME},
+//                    new MultiDoubleConverter(0.001),10);
+//             return index.searchTraverser(new Double[] {searchBounds.getMinY(),
+//             searchBounds.getMinX()}, new Double[] {
+//             searchBounds.getMaxY(), searchBounds.getMaxX()});
+            return null;
 
         } catch (Exception e) {
             LOGGER.debug("GeoNeo: Failed to search location index, doing exhaustive search: " + e);
@@ -367,25 +368,25 @@ public class GeoNeo extends NeoServiceProviderListener {
             // Secondly, if bounds is still empty, try find all feature geometries and calculate
             // bounds
             if (this.bounds.isNull()) {
-                Transaction tx = this.graphDatabaseService.beginTx();
-                try {
-                    LOGGER.debug("Re-determining bounding box for gis data: " + this.name);
-                    // Try to create envelope from any data referenced by the gisNode
-                    for (GeoNode node : getGeoNodes(null)) {
-                        // TODO: support high dimensions
-                        this.bounds.expandToInclude(node.getCoords()[0], node.getCoords()[1]);
-                    }
-                    double bbox[] = new double[] {this.bounds.getMinX(), this.bounds.getMaxX(), this.bounds.getMinY(),
-                            this.bounds.getMaxY()};
-                    gisNode.setProperty(INeoConstants.PROPERTY_BBOX_NAME, bbox);
-                    tx.success();
-                } catch (Exception bbox_e) {
-                    System.err.println("Failed to interpret BBOX: " + bbox_e.getMessage());
-                    bbox_e.printStackTrace(System.err);
-                } finally {
-                    tx.finish();
-                    NeoServiceProviderUi.getProvider().commit();
-                }
+//                Transaction tx = this.graphDatabaseService.beginTx();
+//                try {
+//                    LOGGER.debug("Re-determining bounding box for gis data: " + this.name);
+//                    // Try to create envelope from any data referenced by the gisNode
+//                    for (GeoNode node : getGeoNodes(null)) {
+//                        // TODO: support high dimensions
+//                        this.bounds.expandToInclude(node.getCoords()[0], node.getCoords()[1]);
+//                    }
+//                    double bbox[] = new double[] {this.bounds.getMinX(), this.bounds.getMaxX(), this.bounds.getMinY(),
+//                            this.bounds.getMaxY()};
+//                    gisNode.setProperty(INeoConstants.PROPERTY_BBOX_NAME, bbox);
+//                    tx.success();
+//                } catch (Exception bbox_e) {
+//                    System.err.println("Failed to interpret BBOX: " + bbox_e.getMessage());
+//                    bbox_e.printStackTrace(System.err);
+//                } finally {
+//                    tx.finish();
+//                    NeoServiceProviderUi.getProvider().commit();
+//                }
             }
             // LOGGER.debug("Determined bounding box for " + this.name + ": " + this.bounds);
             // throw new RuntimeException("Escape a deadlock");

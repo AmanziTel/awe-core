@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 import net.refractions.udig.catalog.CatalogPlugin;
+import net.refractions.udig.catalog.ID;
 import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.catalog.IService;
 import net.refractions.udig.project.ILayer;
@@ -250,7 +251,7 @@ public class LoaderUiUtils extends LoaderUtils {
     public static IService getMapService() throws MalformedURLException {
         String databaseLocation = NeoServiceProviderUi.getProvider().getDefaultDatabaseLocation();
         URL url = new URL("file://" + databaseLocation);
-        IService curService = CatalogPlugin.getDefault().getLocalCatalog().getById(IService.class, url, null);
+        IService curService = CatalogPlugin.getDefault().getLocalCatalog().getById(IService.class, new ID(url), null);
         return curService;
     }
 

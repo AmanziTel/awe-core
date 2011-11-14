@@ -7,7 +7,8 @@ Bundle-Vendor: amanzi.org
 Require-Bundle: org.eclipse.core.runtime,
  org.amanzi.awe.startup.splash;bundle-version="1.0.0",
  org.amanzi.awe.ui;bundle-version="1.0.0",
- net.refractions.udig.project.ui;bundle-version="1.1.1"
+ net.refractions.udig.project.ui;bundle-version="1.1.1",
+ net.refractions.udig.catalog.ui
 Export-Package: org.amanzi.awe.catalog.neo;
   uses:="org.geotools.geometry.jts,
    org.eclipse.core.runtime,
@@ -22,4 +23,5 @@ Bundle-Activator: org.amanzi.awe.catalog.neo.NeoCatalogPlugin
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Eclipse-LazyStart: true
 Eclipse-ExtensibleAPI: true
+Import-Package: net.refractions.udig.catalog.ui
 

@@ -679,9 +679,9 @@ public class DistributionPreferences extends PreferencePage implements IWorkbenc
                                     boolean v2Incl = "]".equals(g2);
                                     NumberRange range;
                                     if (v1 <= v2) {
-                                        range = new NumberRange(v1, v1Incl, v2, v2Incl);
+                                        range = NumberRange.create(v1, v1Incl, v2, v2Incl);
                                     } else {
-                                        range = new NumberRange(v2, v2Incl, v1, v1Incl);
+                                        range = NumberRange.create(v2, v2Incl, v1, v1Incl);
                                     }
                                     bar.setRange(range);
                                 }
@@ -713,7 +713,7 @@ public class DistributionPreferences extends PreferencePage implements IWorkbenc
         System.out.println(matcher.group(4));
         System.out.println(matcher.group(6));
         System.out.println(matcher.group(7));
-        NumberRange r = new NumberRange(9, 10);
+        NumberRange r = NumberRange.create(9, 10);
         System.out.println(r.getMinimum());
         System.out.println(r.contains((Number)new Double(9.5)));
     }

@@ -15,13 +15,11 @@ package org.amanzi.awe.render.network;
 import java.io.IOException;
 
 import net.refractions.udig.catalog.IGeoResource;
+import net.refractions.udig.project.render.AbstractRenderMetrics;
 import net.refractions.udig.project.render.IRenderContext;
-import net.refractions.udig.project.render.IRenderMetrics;
 import net.refractions.udig.project.render.IRenderMetricsFactory;
 import net.refractions.udig.project.render.IRenderer;
 
-import org.amanzi.awe.catalog.neo.GeoNeo;
-import org.amanzi.neo.services.enums.GisTypes;
 import org.amanzi.neo.services.model.IRenderableModel;
 
 public class NetworkRenderMetricsFactory implements IRenderMetricsFactory {
@@ -47,7 +45,7 @@ public class NetworkRenderMetricsFactory implements IRenderMetricsFactory {
     /**
      * @return a NetworkRenderMetrics constructed on this context
      */
-    public IRenderMetrics createMetrics(IRenderContext context) {
+    public AbstractRenderMetrics createMetrics(IRenderContext context) {
         return new NetworkRenderMetrics(context, this);
     }
 

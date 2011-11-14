@@ -30,10 +30,11 @@ import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.swt.widgets.Display;
 import org.geotools.data.FeatureSource;
-import org.geotools.feature.Feature;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
-import org.geotools.feature.FeatureType;
+import org.opengis.feature.Feature;
+import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
@@ -90,16 +91,16 @@ public class GIS {
 
                         try {
                             while (features.hasNext()) {
-                                final Feature feature = features.next();
+                                final SimpleFeature feature = (SimpleFeature)features.next();
                                 LOGGER.debug("feature " + (feature == null ? null : feature));
                                 LOGGER.debug("ID " + feature.getID());
-                                FeatureType featureType = feature.getFeatureType();
+                                SimpleFeatureType featureType = feature.getFeatureType();
                                 
-                                for (int i=0;i<feature.getNumberOfAttributes();i++){
+                                for (int i=0;i<feature.getAttributeCount();i++){
                                     Object attribute = feature.getAttribute(i);
-                                    LOGGER.debug("attribute: "+ featureType.getAttributeType(i).getName()+"="+ attribute);
+                                    LOGGER.debug("attribute: "+ featureType.getDescriptor(i).getName()+"="+ attribute);
                                 }
-                                final Geometry defaultGeometry = feature.getDefaultGeometry();
+                                final Geometry defaultGeometry = (Geometry)feature.getDefaultGeometry();
                                 if (defaultGeometry!=null && defaultGeometry instanceof MultiPolygon){
                                     LOGGER.debug("[DEBUG] Geometry type=" + defaultGeometry.getGeometryType()+" "+(defaultGeometry == null ? null : defaultGeometry));
                                     final Envelope envelope = defaultGeometry.getEnvelopeInternal();

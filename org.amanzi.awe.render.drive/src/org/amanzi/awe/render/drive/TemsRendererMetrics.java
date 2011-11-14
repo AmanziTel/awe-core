@@ -12,16 +12,16 @@
  */
 package org.amanzi.awe.render.drive;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.media.jai.util.Range;
+import org.geotools.util.Range;
 
 import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.internal.render.Renderer;
 import net.refractions.udig.project.render.AbstractRenderMetrics;
 import net.refractions.udig.project.render.IRenderContext;
-import net.refractions.udig.project.render.IRenderMetrics;
 import net.refractions.udig.project.render.IRenderMetricsFactory;
 
 /**
@@ -32,14 +32,14 @@ import net.refractions.udig.project.render.IRenderMetricsFactory;
  * @author Cinkel_A
  * @since 1.0.0
  */
-public class TemsRendererMetrics extends AbstractRenderMetrics implements IRenderMetrics {
+public class TemsRendererMetrics extends AbstractRenderMetrics {
 
     /**
      * @param context
      * @param factory
      */
     public TemsRendererMetrics(IRenderContext context, IRenderMetricsFactory factory) {
-        super(context, factory);
+        super(context, factory, new ArrayList<String>());
     }
 
     @Override
@@ -58,8 +58,8 @@ public class TemsRendererMetrics extends AbstractRenderMetrics implements IRende
     }
 
     @Override
-    public Set<Range> getValidScaleRanges() {
-        return new HashSet<Range>();
+    public Set<Range<Double>> getValidScaleRanges() {
+        return new HashSet<Range<Double>>();
     }
 
 }

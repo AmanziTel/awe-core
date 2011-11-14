@@ -12,10 +12,9 @@
  */
 package org.amanzi.awe.render.network;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.media.jai.util.Range;
 
 import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.internal.render.Renderer;
@@ -24,6 +23,7 @@ import net.refractions.udig.project.render.IRenderContext;
 import net.refractions.udig.project.render.IRenderMetricsFactory;
 
 import org.amanzi.awe.neostyle.NeoStyleContent;
+import org.geotools.util.Range;
 
 public class NetworkRenderMetrics extends AbstractRenderMetrics {
 
@@ -33,7 +33,7 @@ public class NetworkRenderMetrics extends AbstractRenderMetrics {
      * @param factory
      */
     public NetworkRenderMetrics( IRenderContext context, IRenderMetricsFactory factory ) {
-        super(context, factory);
+        super(context, factory, new ArrayList<String>());
     }
 
     /**
@@ -61,7 +61,7 @@ public class NetworkRenderMetrics extends AbstractRenderMetrics {
     /**
      * @return a new empty HashSet<Range>
      */
-    public Set<Range> getValidScaleRanges() {
-        return new HashSet<Range>();
+    public Set<Range<Double>> getValidScaleRanges() {
+        return new HashSet<Range<Double>>();
     }
 }

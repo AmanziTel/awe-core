@@ -107,4 +107,9 @@ public class NewGeoService extends IService {
         return params;
     }
 
+    @Override
+    protected IServiceInfo createInfo(IProgressMonitor monitor) throws IOException {
+        return null;
+    }
+
 }

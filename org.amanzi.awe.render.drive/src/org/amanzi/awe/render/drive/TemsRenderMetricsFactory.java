@@ -15,8 +15,8 @@ package org.amanzi.awe.render.drive;
 import java.io.IOException;
 
 import net.refractions.udig.catalog.IGeoResource;
+import net.refractions.udig.project.render.AbstractRenderMetrics;
 import net.refractions.udig.project.render.IRenderContext;
-import net.refractions.udig.project.render.IRenderMetrics;
 import net.refractions.udig.project.render.IRenderMetricsFactory;
 import net.refractions.udig.project.render.IRenderer;
 
@@ -46,7 +46,7 @@ public class TemsRenderMetricsFactory implements IRenderMetricsFactory {
     }
 
     @Override
-    public IRenderMetrics createMetrics(IRenderContext context) {
+    public AbstractRenderMetrics createMetrics(IRenderContext context) {
         return new TemsRendererMetrics(context, this);
     }
 

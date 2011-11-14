@@ -33,6 +33,7 @@ import java.util.regex.Pattern;
 
 import net.refractions.udig.catalog.CatalogPlugin;
 import net.refractions.udig.catalog.ICatalog;
+import net.refractions.udig.catalog.ID;
 import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.catalog.IService;
 import net.refractions.udig.project.internal.Layer;
@@ -1424,7 +1425,7 @@ public class NetworkTreeView extends ViewPart {
                             // TODO Handle MalformedURLException
                             throw (RuntimeException)new RuntimeException().initCause(e);
                         }
-                        NeoService serv = catalog.getById(NeoService.class, url, monitor);
+                        NeoService serv = catalog.getById(NeoService.class, new ID(url), monitor);
                         catalog.remove(serv);
                         neoProvider.commit();
                         Transaction transaction = getService().beginTx();

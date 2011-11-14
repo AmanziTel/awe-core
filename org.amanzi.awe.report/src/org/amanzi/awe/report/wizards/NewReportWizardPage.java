@@ -13,8 +13,6 @@
 
 package org.amanzi.awe.report.wizards;
 
-import net.refractions.udig.project.internal.impl.RubyProjectImpl;
-
 import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -188,10 +186,6 @@ public class NewReportWizardPage extends WizardPage {
                 LOGGER.debug("container: " + container.getName());
                 containerName = container.getFullPath().toString();
 
-            } else if (obj instanceof RubyProjectImpl) {
-                RubyProjectImpl rpi = (RubyProjectImpl)obj;
-                if (!"".equals(rpi.getName()))
-                    containerName = rpi.getName();
             } else if (obj instanceof RubyProject) {
                 RubyProject rdtProject = (RubyProject)obj;
                 if (!"".equals(rdtProject.getElementName())) {
