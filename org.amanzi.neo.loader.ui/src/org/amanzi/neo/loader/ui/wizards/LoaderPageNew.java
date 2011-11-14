@@ -75,7 +75,7 @@ public abstract class LoaderPageNew<T extends IConfiguration> extends WizardPage
                 : DatabaseAccessType.EMBEDDED);
     }
 
-    protected ILoaderNew< ? extends IData, T> autodefineNew(IConfiguration data) {
+    protected ILoaderNew< ? extends IData, T> autodefineNew(T data) {
         ILoaderNew< ? extends IData, T> loader = getNewSelectedLoader();
         ILoaderNew< ? extends IData, T> candidate = null;
         if (loader != null) {

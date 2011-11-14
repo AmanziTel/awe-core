@@ -84,10 +84,12 @@ public class NewNetworkPropertySource extends NodePropertySource implements IPro
             Object value = container.getProperty(key);
             Class< ? > c = value.getClass();
             NodeTypes nt = NodeTypes.getNodeType(container,null);
-            if(nt == null || nt.isPropertyEditable(key))
+            if(nt == null || nt.isPropertyEditable(key)) {
                 descs.add(new PropertyDescriptor(key, key, PROPERTIES_CATEGORY));
-            else
+            }
+            else {
                 descs.add(new PropertyDescriptor(key, key, NODE_CATEGORY));
+            }
         }
         return descs.toArray(new IPropertyDescriptor[descs.size()]);
     }

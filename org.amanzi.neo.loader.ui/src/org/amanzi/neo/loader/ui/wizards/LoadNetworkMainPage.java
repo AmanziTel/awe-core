@@ -22,8 +22,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.amanzi.neo.db.manager.NeoServiceProvider;
-import org.amanzi.neo.loader.core.CommonConfigData;
-import org.amanzi.neo.loader.core.IConfiguration;
+import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.ILoaderNew;
 import org.amanzi.neo.loader.core.IValidateResult;
 import org.amanzi.neo.loader.core.IValidateResult.Result;
@@ -37,7 +36,6 @@ import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.IProjectModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
-import org.amanzi.neo.services.model.impl.NetworkModel;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.DialogPage;
@@ -61,7 +59,7 @@ import org.neo4j.graphdb.Node;
  * @author TsAr
  * @since 1.0.0
  */
-public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
+public class LoadNetworkMainPage extends LoaderPageNew<ConfigurationDataImpl> {
     private static Logger LOGGER = Logger.getLogger(LoadNetworkMainPage.class);
     /*
      * Names of supported files for Network
@@ -131,7 +129,7 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
 
         editor.getTextControl(main).addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
-                ILoaderNew< ? extends IData, IConfiguration> loader = setFileName(editor.getStringValue());
+                ILoaderNew< ? extends IData, ConfigurationDataImpl> loader = setFileName(editor.getStringValue());
                 network.setText(networkName);
                 changeNetworkName();
                 // updateCRS();
@@ -196,7 +194,7 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
      * @param fileName file name
      * @return configured loader or null if there was an error
      */
-    protected ILoaderNew< ? extends IData, IConfiguration> setFileName(String fileName) {
+    protected ILoaderNew< ? extends IData, ConfigurationDataImpl> setFileName(String fileName) {
         if (this.fileName != null && this.fileName.equals(fileName)) {
             return null;
         }
@@ -210,7 +208,7 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
 
         // config.getFilesToLoad()
         // configurationData.setRoot(new File(fileName));
-        ILoaderNew< ? extends IData, IConfiguration> loader = autodefineNew(getNewConfigurationData());
+        ILoaderNew< ? extends IData, ConfigurationDataImpl> loader = autodefineNew(getNewConfigurationData());
         int id = setSelectedLoaderNew(loader);
         if (id >= 0) {
             networkType.select(id);
@@ -229,10 +227,10 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
      */
     private String[] getRootItems() {
         members = new HashMap<String, Node>();
-    
+
         try {
             IProjectModel projectModel = ProjectModel.getCurrentProjectModel();
-        
+
             for (INetworkModel model : projectModel.findAllNetworkModels()) {
                 String id = model.getRootNode().getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
                 if (NodeTypes.NETWORK.checkNode(model.getRootNode())) { //$NON-NLS-1$
@@ -273,40 +271,6 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
         return networkName;
     }
 
-    @Override
-    protected boolean validateConfigData(CommonConfigData configurationData) {
-        // TODO must be refactoring after change loaders
-        if (fileName == null) {
-            setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_FILE, DialogPage.ERROR);
-            return false;
-        }
-        File file = new File(fileName);
-        if (!(file.isAbsolute() && file.exists())) {
-            setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_FILE, DialogPage.ERROR);
-            return false;
-        }
-        if (StringUtils.isEmpty(networkName)) {
-            setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_NETWORK, DialogPage.ERROR);
-            return false;
-        }
-        if (getNewSelectedLoader() == null) {
-            setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_TYPE, DialogPage.ERROR);
-            return false;
-        }
-        IValidateResult.Result result = getNewSelectedLoader().getValidator().isValid(getNewConfigurationData());
-        if (result == Result.FAIL) {
-            setMessage(String.format(getNewSelectedLoader().getValidator().getMessages(), getNewSelectedLoader().getLoaderInfo()
-                    .getName()), DialogPage.ERROR);
-            return false;
-        } else if (result == Result.UNKNOWN) {
-            setMessage(String.format(getNewSelectedLoader().getValidator().getMessages(), getNewSelectedLoader().getLoaderInfo()
-                    .getName()), DialogPage.WARNING);
-        } else {
-            setMessage(""); //$NON-NLS-1$
-        }
-        return true;
-    }
-
     protected void changeNetworkName() {
         networkName = network.getText();
         if (members != null && !members.isEmpty()) {
@@ -314,14 +278,12 @@ public class LoadNetworkMainPage extends LoaderPage<CommonConfigData> {
         }
         getNewConfigurationData().getDatasetNames().put("Network", networkName);
         getNewConfigurationData().getDatasetNames().put("Project", LoaderUiUtils.getAweProjectName());
-        getConfigurationData().setProjectName(LoaderUiUtils.getAweProjectName());
-        getConfigurationData().setDbRootName(networkName);
         updateLabelNetwDescr();
         update();
     }
 
     @Override
-    protected boolean validateConfigData(IConfiguration configurationData) {
+    protected boolean validateConfigData(ConfigurationDataImpl configurationData) {
         // TODO must be refactoring after change loaders
         if (fileName == null) {
             setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_FILE, DialogPage.ERROR);
