@@ -25,8 +25,6 @@ import java.util.Random;
 import org.amanzi.neo.loader.core.saver.nemo.NemoEvents;
 import org.amanzi.neo.loader.core.saver.nemo.TechnologySystems;
 
-import com.sun.org.apache.bcel.internal.generic.FDIV;
-
 /**
  * Class for generate nemo2 file
  * 
@@ -1059,55 +1057,55 @@ public class Nemo2Generator {
         }
         return str;
     }
-    
-    private String generateBER(){
+
+    private String generateBER() {
         String str = NemoEvents.BER.getEventId() + "," + generateTimestamp() + ",";
         Integer system = generateTechnologySystems();
         str = str + "," + system.toString();
-        if(system==2){
+        if (system == 2) {
             String ber = generateFloat(0, 99).toString();
-            str=str+","+ber;
+            str = str + "," + ber;
         }
-        if(system==5){
+        if (system == 5) {
             String pilotBer = generateFloat(0, 99).toString();
             String tfciBer = generateFloat(0, 99).toString();
-            str=str+","+pilotBer+","+tfciBer;
+            str = str + "," + pilotBer + "," + tfciBer;
         }
         return str;
     }
-    
-    private String generatePHRATE(){
+
+    private String generatePHRATE() {
         String str = NemoEvents.PHRATE.getEventId() + "," + generateTimestamp() + ",";
         Integer system = generateTechnologySystems();
         str = str + "," + system.toString();
-        if(system==5||system==6){
+        if (system == 5 || system == 6) {
             String dpdchRateUL = generateInteger(0, maxIntegerValue).toString();
-            str=str+","+dpdchRateUL;
+            str = str + "," + dpdchRateUL;
         }
         return str;
     }
-    
-    private String generateWLANRATE(){
+
+    private String generateWLANRATE() {
         String str = NemoEvents.WLANRATE.getEventId() + "," + generateTimestamp() + ",";
         Integer system = generateTechnologySystems();
         str = str + "," + system.toString();
         String wlanRateUl = generateInteger(0, maxIntegerValue).toString();
         String wlanRateDl = generateInteger(0, maxIntegerValue).toString();
-        str=str+","+wlanRateUl+","+wlanRateDl;
+        str = str + "," + wlanRateUl + "," + wlanRateDl;
         return str;
     }
-    
-    private String generatePPPRATE(){
+
+    private String generatePPPRATE() {
         String str = NemoEvents.PPPRATE.getEventId() + "," + generateTimestamp() + ",";
         String pppRateUl = generateInteger(0, maxIntegerValue).toString();
         String pppRateDl = generateInteger(0, maxIntegerValue).toString();
         String sentPppBytes = generateInteger(0, maxIntegerValue).toString();
         String recvPppBytes = generateInteger(0, maxIntegerValue).toString();
-        str=str+","+pppRateUl+","+pppRateDl+","+sentPppBytes+","+recvPppBytes;
+        str = str + "," + pppRateUl + "," + pppRateDl + "," + sentPppBytes + "," + recvPppBytes;
         return str;
     }
 
-    private String generateRLPRATE(){
+    private String generateRLPRATE() {
         String str = NemoEvents.RLPRATE.getEventId() + "," + generateTimestamp() + ",";
         Integer system = generateTechnologySystems();
         str = str + "," + system.toString();
@@ -1115,10 +1113,478 @@ public class Nemo2Generator {
         String rlpForRate = generateInteger(0, maxIntegerValue).toString();
         String rlpRevRetrRate = generateInteger(0, maxIntegerValue).toString();
         String rlpFwdRetrRate = generateInteger(0, maxIntegerValue).toString();
-        str=str+","+rlpRevRate+","+rlpForRate+","+rlpRevRetrRate+","+rlpFwdRetrRate;
+        str = str + "," + rlpRevRate + "," + rlpForRate + "," + rlpRevRetrRate + "," + rlpFwdRetrRate;
+        return str;
+    }
+
+    private String generateRLPSTATISTICS() {
+        String str = NemoEvents.RLPSTATISTICS.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = generateTechnologySystems();
+        str = str + "," + system.toString();
+        if (system == 10 || system == 11) {
+            String serviceID = generateInteger(0, maxIntegerValue).toString();
+            String resets = generateInteger(0, maxIntegerValue).toString();
+            String aborts = generateInteger(0, maxIntegerValue).toString();
+            String lastRTT = generateInteger(0, maxIntegerValue).toString();
+            String blockOfBytesUsed = generateInteger(0, 3).toString();
+            String rxNaks = generateInteger(0, maxIntegerValue).toString();
+            String largestConErasures = generateInteger(0, maxIntegerValue).toString();
+            String retransNotFound = generateInteger(0, maxIntegerValue).toString();
+            String rxRetransFrames = generateInteger(0, maxIntegerValue).toString();
+            String rxIdleFrames = generateInteger(0, maxIntegerValue).toString();
+            String rxFillFrames = generateInteger(0, maxIntegerValue).toString();
+            String rxBlankFrames = generateInteger(0, maxIntegerValue).toString();
+            String rxNullFrames = generateInteger(0, maxIntegerValue).toString();
+            String rxNewFrames = generateInteger(0, maxIntegerValue).toString();
+            String rxFundFrames = generateInteger(0, maxIntegerValue).toString();
+            String rxBytes = generateInteger(0, maxIntegerValue).toString();
+            String rxRLPErasures = generateInteger(0, maxIntegerValue).toString();
+            String rxMUXErasures = generateInteger(0, maxIntegerValue).toString();
+            String txNAKs = generateInteger(0, maxIntegerValue).toString();
+            String txRetransFrames = generateInteger(0, maxIntegerValue).toString();
+            String txIdleFrames = generateInteger(0, maxIntegerValue).toString();
+            String txNewFrames = generateInteger(0, maxIntegerValue).toString();
+            String txFundFrames = generateInteger(0, maxIntegerValue).toString();
+            String txBytes = generateInteger(0, maxIntegerValue).toString();
+            str = str + "," + serviceID + "," + resets + "," + aborts + "," + lastRTT + "," + blockOfBytesUsed + "," + rxNaks + ","
+                    + largestConErasures + "," + retransNotFound + "," + rxRetransFrames + "," + rxIdleFrames + "," + rxFillFrames
+                    + "," + rxBlankFrames + "," + rxNullFrames + "," + rxNewFrames + "," + rxFundFrames + "," + rxBytes + ","
+                    + rxRLPErasures + "," + rxMUXErasures + "," + txNAKs + "," + txRetransFrames + "," + txIdleFrames + ","
+                    + txNewFrames + "," + txFundFrames + "," + txBytes;
+        }
+        if (system == 12) {
+            String serviceID = generateInteger(0, maxIntegerValue).toString();
+            String rxNaks = generateInteger(0, maxIntegerValue).toString();
+            String rxNaksInBytes = generateInteger(0, maxIntegerValue).toString();
+            String retransNotFound = generateInteger(0, maxIntegerValue).toString();
+            String rxDupBytes = generateInteger(0, maxIntegerValue).toString();
+            String rxRetransBytes = generateInteger(0, maxIntegerValue).toString();
+            String rxNewBytes = generateInteger(0, maxIntegerValue).toString();
+            String rxBytes = generateInteger(0, maxIntegerValue).toString();
+            String rxNaks2 = generateInteger(0, maxIntegerValue).toString();
+            String txNaksInBytes = generateInteger(0, maxIntegerValue).toString();
+            String txRetransBytes = generateInteger(0, maxIntegerValue).toString();
+            String txNewBytes = generateInteger(0, maxIntegerValue).toString();
+            String txBytes = generateInteger(0, maxIntegerValue).toString();
+            String nakTimeouts = generateInteger(0, maxIntegerValue).toString();
+            String resetCount = generateInteger(0, maxIntegerValue).toString();
+            String atResetRequestCount = generateInteger(0, maxIntegerValue).toString();
+            String atResetAckCount = generateInteger(0, maxIntegerValue).toString();
+            String anResetRequestCount = generateInteger(0, maxIntegerValue).toString();
+            str = str + "," + serviceID + "," + rxNaks + "," + rxNaksInBytes + "," + retransNotFound + "," + rxDupBytes + ","
+                    + rxRetransBytes + "," + rxNewBytes + "," + rxBytes + "," + rxNaks2 + "," + txNaksInBytes + ","
+                    + txRetransBytes + "," + txNewBytes + "," + txBytes + "," + nakTimeouts + "," + resetCount + ","
+                    + atResetRequestCount + "," + atResetAckCount + "," + anResetRequestCount;
+        }
+        return str;
+    }
+
+    private String generateMEI() {
+        String str = NemoEvents.MEI.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = generateTechnologySystems();
+        str = str + "," + system.toString();
+        if (system == 5 || system == 6) {
+            // 21,22....
+            String measurementEvent = generateInteger(1, 10).toString();
+            str = str + "," + measurementEvent;
+        }
+        return str;
+    }
+
+    private String generateCQI() {
+        String str = NemoEvents.CQI.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = generateTechnologySystems();
+        str = str + "," + system.toString();
+        if (system == 5) {
+            Integer numberOfParams = generateInteger(1, maxIntegerValue);
+            String params = numberOfParams.toString();
+            String sampleDur = generateInteger(1, maxIntegerValue).toString();
+            String phReqRate = generateInteger(1, maxIntegerValue).toString();
+            String cqiRepetitions = generateInteger(1, 4).toString();
+            String cqiCucle = generateInteger(0, 160).toString();
+            Integer numberOfValues = generateInteger(1, maxIntegerValue);
+            String cqiValues = numberOfValues.toString();
+            Integer numberOfParamsPerCqi = numberOfParams / numberOfValues;
+            String paramsPerCqi = numberOfParamsPerCqi.toString();
+            String percentage = generateFloat(0, 99).toString();
+            String cqi = generateInteger(0, 30).toString();
+            str = str + "," + params + "," + sampleDur + "," + phReqRate + "," + cqiRepetitions + "," + cqiCucle + ","
+                    + numberOfValues + "," + cqiValues + "," + paramsPerCqi + "," + percentage + "," + cqi;
+        }
+        return str;
+    }
+
+    private String generateHARQI() {
+        String str = NemoEvents.HARQI.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = generateTechnologySystems();
+        str = str + "," + system.toString();
+        if (system == 5) {
+            Integer numberOfHeaderParams = generateInteger(1, maxIntegerValue);
+            String headerParams = numberOfHeaderParams.toString();
+            Integer numberOfHarqProcesses = generateInteger(1, maxIntegerValue);
+            String harqProcesses = numberOfHarqProcesses.toString();
+            Integer numberOfParamsPerHarqProcesses = numberOfHeaderParams / numberOfHarqProcesses;
+            String paramsPerHarqProcesses = numberOfParamsPerHarqProcesses.toString();
+            String harqID = generateInteger(0, 7).toString();
+            String harqDir = generateInteger(1, 2).toString();
+            String harqRate = generateInteger(0, maxIntegerValue).toString();
+            String harqPackets = generateInteger(0, maxIntegerValue).toString();
+            String harqBler = generateFloat(0, 99).toString();
+            str = str + "," + headerParams + "," + harqProcesses + "," + paramsPerHarqProcesses + "," + harqID + "," + harqDir
+                    + "," + harqRate + "," + harqPackets + "," + harqBler;
+        }
+        return str;
+    }
+
+    private String generateHSSCCHI() {
+        String str = NemoEvents.HSSCCHI.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = generateTechnologySystems();
+        str = str + "," + system.toString();
+        if (system == 5) {
+            Integer numberOfHeaderParams = generateInteger(1, maxIntegerValue);
+            String headerParams = numberOfHeaderParams.toString();
+            Integer numberOfChs = generateInteger(1, maxIntegerValue);
+            String chs = numberOfChs.toString();
+            Integer numberOfParamsPerChs = numberOfHeaderParams / numberOfChs;
+            String paramsPerHarqProcesses = numberOfParamsPerChs.toString();
+            String hsscchCode = generateInteger(0, 127).toString();
+            String hsdpaHSSCCHUsage = generateFloat(0, 99).toString();
+            str = str + "," + headerParams + "," + chs + "," + paramsPerHarqProcesses + "," + hsscchCode + "," + hsdpaHSSCCHUsage;
+        }
+        return str;
+    }
+
+    private String generatePLAID() {
+        String str = NemoEvents.PLAID.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = generateTechnologySystems();
+        str = str + "," + system.toString();
+        if (system == 5) {
+            Integer numberOfHeaderParams = generateInteger(1, maxIntegerValue);
+            String headerParams = numberOfHeaderParams.toString();
+            String sampleDuration = generateInteger(1, maxIntegerValue).toString();
+            String hsPDSCHRate = generateInteger(1, maxIntegerValue).toString();
+            Integer numberOfPLASets = generateInteger(1, maxIntegerValue);
+            String plaSets = numberOfPLASets.toString();
+            Integer numberOfParamsPerPLASets = numberOfHeaderParams / numberOfPLASets;
+            String paramsPerPLASets = numberOfParamsPerPLASets.toString();
+            String percentage = generateFloat(0, 99).toString();
+            String modulation = generateInteger(1, 2).toString();
+            String effectiveCoding = generateFloat(0, 0).toString();
+            String tbSize = generateInteger(1, maxIntegerValue).toString();
+            String stChCode = generateInteger(0, 15).toString();
+            String codes = generateInteger(1, 15).toString();
+            String retr = generateFloat(0, 99).toString();
+            str = str + "," + headerParams + "," + sampleDuration + "," + hsPDSCHRate + "," + plaSets + "," + paramsPerPLASets
+                    + "," + percentage + "," + modulation + "," + effectiveCoding + "," + tbSize + "," + stChCode + "," + codes
+                    + "," + retr;
+        }
+        if (system == 25) {
+            Integer numberOfHeaderParams = generateInteger(1, maxIntegerValue);
+            String headerParams = numberOfHeaderParams.toString();
+            String sampleDuration = generateInteger(1, maxIntegerValue).toString();
+            String burstCount = generateInteger(1, maxIntegerValue).toString();
+            Integer numberOfPLASets = generateInteger(1, maxIntegerValue);
+            String plaSets = numberOfPLASets.toString();
+            Integer numberOfParamsPerPLASets = numberOfHeaderParams / numberOfPLASets;
+            String paramsPerPLASets = numberOfParamsPerPLASets.toString();
+            String percentage = generateFloat(0, 99).toString();
+            String modulation = generateInteger(1, 2).toString();
+            String codingRate = generateInteger(1, 7).toString();
+            String codingType = generateInteger(1, 4).toString();
+            // 4,6
+            String repetitionCoding = generateInteger(1, 2).toString();
+            str = str + "," + headerParams + "," + sampleDuration + "," + burstCount + "," + plaSets + "," + paramsPerPLASets + ","
+                    + percentage + "," + modulation + "," + codingRate + "," + codingType + "," + repetitionCoding;
+        }
+        return str;
+    }
+
+    private String generatePLAIU() {
+        String str = NemoEvents.PLAIU.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = generateTechnologySystems();
+        str = str + "," + system.toString();
+        if (system == 5) {
+            Integer numberOfHeaderParams = generateInteger(1, maxIntegerValue);
+            String headerParams = numberOfHeaderParams.toString();
+            String sampleDuration = generateInteger(1, maxIntegerValue).toString();
+            String eDPDCHRate = generateInteger(1, maxIntegerValue).toString();
+            String limMaxPower = generateFloat(0, 99).toString();
+            String limGrant = generateFloat(0, 99).toString();
+            String limLackOfData = generateFloat(0, 99).toString();
+            String limByMux = generateFloat(0, 99).toString();
+            String limByHARQ = generateFloat(0, 99).toString();
+            Integer numberOfPLASets = generateInteger(1, maxIntegerValue);
+            String plaSets = numberOfPLASets.toString();
+            Integer numberOfParamsPerPLASets = numberOfHeaderParams / numberOfPLASets;
+            String paramsPerPLASets = numberOfParamsPerPLASets.toString();
+            String percentage = generateFloat(0, 99).toString();
+            String modulation = generateInteger(1, 2).toString();
+            String tbSize = generateInteger(1, maxIntegerValue).toString();
+            String eTFCI = generateInteger(0, 127).toString();
+            String sfs = generateInteger(1, 10).toString();
+            String retr = generateFloat(0, 99).toString();
+            String avgSGIndex = generateInteger(-1, 37).toString();
+            String avgSG = generateFloat(-10, 29).toString();
+            str = str + "," + headerParams + "," + sampleDuration + "," + eDPDCHRate + "," + limMaxPower + "," + limGrant + ","
+                    + limLackOfData + "," + limByMux + "," + limByHARQ + "," + plaSets + "," + paramsPerPLASets + "," + percentage
+                    + "," + modulation + "," + tbSize + "," + eTFCI + "," + sfs + "," + retr + "," + avgSGIndex + "," + avgSG;
+        }
+        if (system == 25) {
+            Integer numberOfHeaderParams = generateInteger(1, maxIntegerValue);
+            String headerParams = numberOfHeaderParams.toString();
+            String sampleDuration = generateInteger(1, maxIntegerValue).toString();
+            String burstCount = generateInteger(1, maxIntegerValue).toString();
+            Integer numberOfPLASets = generateInteger(1, maxIntegerValue);
+            String plaSets = numberOfPLASets.toString();
+            Integer numberOfParamsPerPLASets = numberOfHeaderParams / numberOfPLASets;
+            String paramsPerPLASets = numberOfParamsPerPLASets.toString();
+            String percentage = generateFloat(0, 99).toString();
+            String modulation = generateInteger(1, 3).toString();
+            String codingRate = generateInteger(1, 7).toString();
+            String codingType = generateInteger(1, 4).toString();
+            // 4,6
+            String repetitionCoding = generateInteger(1, 2).toString();
+            str = str + "," + headerParams + "," + sampleDuration + "," + burstCount + "," + plaSets + "," + paramsPerPLASets + ","
+                    + percentage + "," + modulation + "," + codingRate + "," + codingType + "," + repetitionCoding;
+        }
+        return str;
+    }
+
+    private String generateHBI() {
+        String str = NemoEvents.HBI.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = generateTechnologySystems();
+        str = str + "," + system.toString();
+        if (system == 5) {
+            String reportingInterval = generateInteger(1, maxIntegerValue).toString();
+            String happyBit = generateFloat(0, 99).toString();
+            String dtx = generateFloat(0, 99).toString();
+            str = str + "," + reportingInterval + "," + happyBit + "," + dtx;
+        }
+        return str;
+    }
+
+    private String generateMACERATE() {
+        String str = NemoEvents.MACERATE.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = generateTechnologySystems();
+        str = str + "," + system.toString();
+        if (system == 5) {
+            String macEBitrate = generateInteger(1, maxIntegerValue).toString();
+            String macEBlockrate = generateInteger(1, maxIntegerValue).toString();
+            String macEFirstRetr = generateFloat(0, 99).toString();
+            String macESecondRetr = generateFloat(0, 99).toString();
+            String macEThirdRetr = generateFloat(0, 99).toString();
+            str = str + "," + macEBitrate + "," + macEBlockrate + "," + macEFirstRetr + "," + macESecondRetr + "," + macEThirdRetr;
+        }
+        return str;
+    }
+
+    private String generateAGRANT() {
+        String str = NemoEvents.AGRANT.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = generateTechnologySystems();
+        str = str + "," + system.toString();
+        if (system == 5) {
+            String agchIndex = generateInteger(0, 31).toString();
+            String agchGrant = generateFloat(-10, 29).toString();
+            String agchScope = generateInteger(-1, 7).toString();
+            String agchSelector = generateInteger(1, 2).toString();
+            String eRNTISelector = generateInteger(1, 2).toString();
+            str = str + "," + agchIndex + "," + agchGrant + "," + agchScope + "," + agchSelector + "," + eRNTISelector;
+        }
+        return str;
+    }
+
+    private String generateSGRANT() {
+        String str = NemoEvents.SGRANT.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = generateTechnologySystems();
+        str = str + "," + system.toString();
+        if (system == 5) {
+            Integer numberOfHeaderParams = generateInteger(1, maxIntegerValue);
+            String headerParams = numberOfHeaderParams.toString();
+            String sampleDur = generateInteger(1, maxIntegerValue).toString();
+            String grantedRate = generateInteger(1, maxIntegerValue).toString();
+            Integer numberOfSGSets = generateInteger(1, maxIntegerValue);
+            String sgSets = numberOfSGSets.toString();
+            Integer numberOfParamsPerSGSets = numberOfHeaderParams / numberOfSGSets;
+            String paramsPerSgSets = numberOfParamsPerSGSets.toString();
+            String distribution = generateFloat(0, 99).toString();
+            String sgIndex = generateInteger(-1, 37).toString();
+            String servingGrant = generateFloat(-10, 29).toString();
+            str = str + "," + headerParams + "," + sampleDur + "," + grantedRate + "," + sgSets + "," + paramsPerSgSets + ","
+                    + distribution + "," + sgIndex + "," + servingGrant;
+        }
+        return str;
+    }
+
+    private String generateEDCHI() {
+        String str = NemoEvents.EDCHI.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = generateTechnologySystems();
+        str = str + "," + system.toString();
+        if (system == 5) {
+            Integer numberOfHeaderParams = generateInteger(1, maxIntegerValue);
+            String headerParams = numberOfHeaderParams.toString();
+            String nsACKs = generateFloat(0, 99).toString();
+            String nsGrantDown = generateFloat(0, 99).toString();
+            Integer numberOfCells = generateInteger(1, maxIntegerValue);
+            String cells = numberOfCells.toString();
+            Integer numberOfParamsPerCells = numberOfHeaderParams / numberOfCells;
+            String paramsPerCells = numberOfParamsPerCells.toString();
+            String hsupaChannel = generateInteger(1, maxIntegerValue).toString();
+            String hsupaSc = generateInteger(0, 511).toString();
+            String hsupaRls = generateInteger(0, 5).toString();
+            String ack = generateFloat(0, 99).toString();
+            String nack = generateFloat(0, 99).toString();
+            String dtx = generateFloat(0, 99).toString();
+            String grantUp = generateFloat(0, 99).toString();
+            String grantHold = generateFloat(0, 99).toString();
+            String grantDown = generateFloat(0, 99).toString();
+            str = str + "," + headerParams + "," + nsACKs + "," + nsGrantDown + "," + cells + "," + paramsPerCells + ","
+                    + hsupaChannel + "," + hsupaSc + "," + hsupaRls + "," + ack + "," + nack + "," + dtx + "," + grantUp + ","
+                    + grantHold + "," + grantDown;
+        }
+        return str;
+    }
+
+    private String generateHSUPASI() {
+        String str = NemoEvents.HSUPASI.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = generateTechnologySystems();
+        str = str + "," + system.toString();
+        if (system == 5) {
+            String dur = generateInteger(1, maxIntegerValue).toString();
+            String siCount = generateInteger(1, maxIntegerValue).toString();
+            String hlid = generateInteger(0, 15).toString();
+            String hlbs = generateInteger(0, 15).toString();
+            String tebs = generateInteger(0, 31).toString();
+            String tebsMin = generateInteger(0, 31).toString();
+            String tebsMax = generateInteger(0, 31).toString();
+            String uph = generateInteger(0, 31).toString();
+            String uphMin = generateInteger(0, 31).toString();
+            String uphMax = generateInteger(0, 31).toString();
+            str = str + "," + dur + "," + siCount + "," + hlid + "," + hlbs + "," + tebs + "," + tebsMin + "," + tebsMax + ","
+                    + uph + "," + uphMin + "," + uphMax;
+        }
+        return str;
+    }
+
+    private String generateDRCI() {
+        String str = NemoEvents.DRCI.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = generateTechnologySystems();
+        str = str + "," + system.toString();
+        Integer numberOfHeaderParams = generateInteger(1, maxIntegerValue);
+        String headerParams = numberOfHeaderParams.toString();
+        String sampleDuration = generateInteger(1, maxIntegerValue).toString();
+        Integer numberOfDRCSets = generateInteger(1, maxIntegerValue);
+        String drcSets = numberOfDRCSets.toString();
+        Integer numberOfParamsPerDRCSets = numberOfHeaderParams / numberOfDRCSets;
+        String paramsPerDRCSets = numberOfParamsPerDRCSets.toString();
+        String percentage = generateFloat(0, 99).toString();
+        String requestedRate = generateInteger(1, maxIntegerValue).toString();
+        String packetLength = generateInteger(0, 1).toString();
+        str = str + "," + headerParams + "," + sampleDuration + "," + drcSets + "," + paramsPerDRCSets + "," + percentage + ","
+                + requestedRate + "," + packetLength;
+        return str;
+    }
+
+    private String generateRDRC() {
+        String str = NemoEvents.RDRC.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = generateTechnologySystems();
+        str = str + "," + system.toString();
+        if (system == 12) {
+            String txRateLimit = generateInteger(0, 153600).toString();
+            String txCurrentRate = generateInteger(0, 153600).toString();
+            String combRAB = generateInteger(0, 1).toString();
+            String paMax = generateInteger(0, 153600).toString();
+            String randomVariable = generateInteger(0, 255).toString();
+            String transitionProbability = generateInteger(0, maxIntegerValue).toString();
+            String conditionRRI = generateInteger(0, 153600).toString();
+            String actualRRI = generateInteger(0, 153600).toString();
+            String paddingBytes = generateInteger(0, maxIntegerValue).toString();
+            str = str + "," + txRateLimit + "," + txCurrentRate + "," + combRAB + "," + paMax + "," + randomVariable + ","
+                    + transitionProbability + "," + conditionRRI + "," + actualRRI + "," + paddingBytes;
+        }
+        return str;
+    }
+
+    private String generateFDRC() {
+        String str = NemoEvents.FDRC.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = generateTechnologySystems();
+        str = str + "," + system.toString();
+        if (system == 12) {
+            String drcIndex = generateInteger(0, maxIntegerValue).toString();
+            String drcCover = generateInteger(0, 7).toString();
+            String dscValue = generateInteger(0, 7).toString();
+            String drcBoost = generateInteger(0, 1).toString();
+            String drcLockUpdSlot = generateInteger(0, maxIntegerValue).toString();
+            String ackChannelStatus = generateInteger(0, 1).toString();
+            String forcedACKNAKRatio = generateFloat(0, 99).toString();
+            String ackRatio = generateFloat(0, 99).toString();
+            String multiuserACKRatio = generateFloat(0, 99).toString();
+            str = str + "," + drcIndex + "," + drcCover + "," + dscValue + "," + drcBoost + "," + drcLockUpdSlot + ","
+                    + ackChannelStatus + "," + forcedACKNAKRatio + "," + ackRatio + "," + multiuserACKRatio;
+        }
+        return str;
+    }
+
+    // PHREF is not exist in NemoEvents
+    /*
+     * private String generatePHREF() { String str = NemoEvents.PHREF.getEventId() + "," +
+     * generateTimestamp() + ","; Integer system = generateTechnologySystems(); str = str + "," +
+     * system.toString(); if (system == 12) { String perInst = generateFloat(0, 99).toString();
+     * String perShort = generateFloat(0, 99).toString(); String perLong = generateFloat(0,
+     * 99).toString(); str = str + "," + perInst + "," + perShort + "," + perLong; } if(system==25){
+     * String fer = generateFloat(0, 99).toString(); str=str+","+fer; } return str; }
+     */
+
+    private String generateMARKOVMUX() {
+        String str = NemoEvents.MARKOVMUX.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = generateTechnologySystems();
+        str = str + "," + system.toString();
+        if (system == 10 || system == 11) {
+            Integer numberOfHeaderParams = generateInteger(1, maxIntegerValue);
+            String headerParams = numberOfHeaderParams.toString();
+            Integer numberOfFrames = generateInteger(1, maxIntegerValue);
+            String frames = numberOfFrames.toString();
+            Integer numberOfParamsPerFrames = numberOfHeaderParams / numberOfFrames;
+            String paramsPerFrames = numberOfParamsPerFrames.toString();
+            String mExpectetedMux = generateInteger(0, 9).toString();
+            String mActualMux = generateInteger(0, 38).toString();
+            str = str + "," + headerParams + "," + frames + "," + paramsPerFrames + "," + mExpectetedMux + "," + mActualMux;
+        }
+        return str;
+    }
+
+    private String generateMARKOVSTATS() {
+        String str = NemoEvents.MARKOVSTATS.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = generateTechnologySystems();
+        str = str + "," + system.toString();
+        Integer numberOfHeaderParams = generateInteger(1, maxIntegerValue);
+        String headerParams = numberOfHeaderParams.toString();
+        String mFer = generateFloat(0, 99).toString();
+        Integer numberOfExpectedValues = generateInteger(1, maxIntegerValue);
+        String expectedValues = numberOfExpectedValues.toString();
+        Integer numberOfParams = generateInteger(1, maxIntegerValue);
+        String params = numberOfParams.toString();
+        String mExpected = generateInteger(1, 4).toString();
+        String m11 = generateInteger(1, 4).toString();
+        String m12 = generateInteger(1, 4).toString();
+        String m14 = generateInteger(1, 4).toString();
+        String m18 = generateInteger(1, 4).toString();
+        String mErasures = generateInteger(1, 4).toString();
+        str = str + "," + headerParams + "," + mFer + "," + expectedValues + "," + params + "," + mExpected + "," + m11 + "," + m12
+                + "," + m14 + "," + m18 + "," + mErasures;
         return str;
     }
     
+    private String generateMER() {
+        String str = NemoEvents.MER.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = generateTechnologySystems();
+        str = str + "," + system.toString();
+        if (system == 2) {
+            String mer = generateFloat(0, 99).toString();
+            str = str + "," + mer;
+        }
+        return str;
+    }
+
     private void generateAllEvents(boolean isPredefined, FileWriter wr) {
         if (isPredefined == false) {
             addRowInFile(generatePRODUCT(), wr);
@@ -1177,6 +1643,26 @@ public class Nemo2Generator {
             addRowInFile(generateWLANRATE(), wr);
             addRowInFile(generatePPPRATE(), wr);
             addRowInFile(generateRLPRATE(), wr);
+            addRowInFile(generateRLPSTATISTICS(), wr);
+            addRowInFile(generateMEI(), wr);
+            addRowInFile(generateCQI(), wr);
+            addRowInFile(generateHARQI(), wr);
+            addRowInFile(generateHSSCCHI(), wr);
+            addRowInFile(generatePLAID(), wr);
+            addRowInFile(generatePLAIU(), wr);
+            addRowInFile(generateHBI(), wr);
+            addRowInFile(generateMACERATE(), wr);
+            addRowInFile(generateAGRANT(), wr);
+            addRowInFile(generateSGRANT(), wr);
+            addRowInFile(generateEDCHI(), wr);
+            addRowInFile(generateHSUPASI(), wr);
+            addRowInFile(generateDRCI(), wr);
+            addRowInFile(generateRDRC(), wr);
+            addRowInFile(generateFDRC(), wr);
+            // addRowInFile(generatePHREF(), wr);
+            addRowInFile(generateMARKOVMUX(), wr);
+            addRowInFile(generateMARKOVSTATS(), wr);
+            addRowInFile(generateMER(), wr);
             addRowInFile(generateSTOP(), wr);
         }
     }
