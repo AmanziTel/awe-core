@@ -161,6 +161,16 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
     public void renameElement(IDataElement elementToRename, String newName) throws AWEException;
 
     /**
+     * Update any property of a network element based of <code>IDataElement elementToUpdate</code> object.
+     *
+     * @param elementToUpdate Element to update
+     * @param propertyName Value of dataElement to update
+     * @param newValue New value of updating value
+     * @throws AWEException
+     */
+    public void updateElement(IDataElement elementToUpdate, String propertyName, Object newValue) throws AWEException;
+    
+    /**
      * complete existedElement with new property. if
      * 
      * @param existedElement

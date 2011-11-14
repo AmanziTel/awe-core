@@ -23,10 +23,8 @@ import org.amanzi.awe.awe.views.view.provider.NewNetworkTreeContentProvider;
 import org.amanzi.awe.awe.views.view.provider.NewNetworkTreeLabelProvider;
 import org.amanzi.awe.views.network.NetworkTreePlugin;
 import org.amanzi.awe.views.network.property.NewNetworkPropertySheetPage;
-import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.NodeTypes;
-import org.amanzi.neo.services.events.NewShowPreparedViewEvent;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
@@ -73,8 +71,8 @@ import org.neo4j.graphdb.Transaction;
 
 public class NewNetworkTreeView extends ViewPart {
 
-    private static final String RENAME_MSG = "Enter new Name";
-    
+	private static final String RENAME_MSG = "Enter new Name";
+	
     /*
      * ID of this View
      */
@@ -86,7 +84,8 @@ public class NewNetworkTreeView extends ViewPart {
     public static final String DB_GRAPH_VIEW_ID = "org.neo4j.neoclipse.view.NeoGraphViewPart";
 
     public static final String SHOW_PROPERTIES = "Show properties";
-    public static final String SHOW_EDIT_PROPERTY = "Show/edit property";
+    public static final String CHANGE_MODE_TO_JUST_SHOW_PROPERTIES = "Change mode to just show";
+    public static final String CHANGE_MODE_TO_EDIT_PROPERTIES = "Change mode to edit";
 
     /*
      * TreeViewer for database Nodes
@@ -104,6 +103,11 @@ public class NewNetworkTreeView extends ViewPart {
     private NeoServiceProviderUi neoServiceProvider;
 
     private Text tSearch;
+    
+	/*
+	 * Variable show is view ready to edit property 
+	 */
+	private boolean isEditablePropertyView;
 
     /**
      * The constructor.
@@ -154,8 +158,12 @@ public class NewNetworkTreeView extends ViewPart {
         if (select.isEnabled()){
             manager.add(select); 
         }
-        RenameAction reanmeAction = new RenameAction((IStructuredSelection)viewer.getSelection());
-        manager.add(reanmeAction);
+        
+        ChangeModeAction editAction = new ChangeModeAction((IStructuredSelection)viewer.getSelection());
+        manager.add(editAction);
+        
+        RenameAction renameAction = new RenameAction((IStructuredSelection)viewer.getSelection());
+        manager.add(renameAction);
 
         DeleteAction deleteAction = new DeleteAction((IStructuredSelection)viewer.getSelection());
         manager.add(deleteAction);
@@ -178,7 +186,7 @@ public class NewNetworkTreeView extends ViewPart {
          * @param selection - selection
          */
         @SuppressWarnings("rawtypes")
-        public SelectAction(IStructuredSelection selection) {
+		public SelectAction(IStructuredSelection selection) {
             Iterator it = selection.iterator();
             while (it.hasNext()) {
                 Object elementObject = it.next();
@@ -190,7 +198,7 @@ public class NewNetworkTreeView extends ViewPart {
                 }
             }
             enabled = selectedDataElements.size() > 0;
-            text = selectedDataElements.size() > 1 ? SHOW_PROPERTIES : SHOW_EDIT_PROPERTY;
+            text = SHOW_PROPERTIES;
         }
 
         @Override
@@ -206,21 +214,58 @@ public class NewNetworkTreeView extends ViewPart {
         @Override
         public void run() {
             try {
-                if (selectedDataElements.size() > 1) {
-                    PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
-                            .showView("org.amanzi.awe.views.reuse.views.MessageAndEventTableView");
-                    NeoCorePlugin
-                            .getDefault()
-                            .getUpdateViewManager()
-                            .fireUpdateView(
-                                    new NewShowPreparedViewEvent("org.amanzi.awe.views.reuse.views.MessageAndEventTableView",
-                                            selectedDataElements));
-                } else {
-                    PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IPageLayout.ID_PROP_SHEET);
-                }
+            	PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IPageLayout.ID_PROP_SHEET);
+            	PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IPageLayout.ID_PROP_SHEET);
             } catch (PartInitException e) {
                 NetworkTreePlugin.error(null, e);
             }
+        }     
+    }
+    
+    private class ChangeModeAction extends Action {
+        private boolean enabled;
+        private final String text;
+        private Set<IDataElement> selectedDataElements = new HashSet<IDataElement>();
+
+        /**
+         * Constructor
+         * 
+         * @param selection - selection
+         */
+        @SuppressWarnings("rawtypes")
+		public ChangeModeAction(IStructuredSelection selection) {
+            Iterator it = selection.iterator();
+            while (it.hasNext()) {
+                Object elementObject = it.next();
+                if (elementObject instanceof INetworkModel) {
+                    continue;
+                } else {
+                    IDataElement element = (IDataElement)elementObject;
+                    selectedDataElements.add(element);
+                }
+            }
+            enabled = selectedDataElements.size() > 0;
+            text = (isEditablePropertyView == false) ? 
+            		CHANGE_MODE_TO_EDIT_PROPERTIES : 
+            		CHANGE_MODE_TO_JUST_SHOW_PROPERTIES;
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        @Override
+        public String getText() {
+            return text;
+        }
+
+        @Override
+        public void run() {
+        	isEditablePropertyView = (isEditablePropertyView == true) ? false : true;
+            ((NewNetworkPropertySheetPage)propertySheetPage).setEditableToPropertyView(isEditablePropertyView);
+            IDataElement lastClickedElement = ((NewNetworkPropertySheetPage)propertySheetPage).getLastClickedElement();
+            selectDataElement(lastClickedElement);
         }     
     }
     
@@ -238,8 +283,8 @@ public class NewNetworkTreeView extends ViewPart {
         public RenameAction(IStructuredSelection selection) {
             text = "Rename";
             enabled = selection.size() == 1 && 
-                    selection.getFirstElement() instanceof IDataElement
-                    && !(selection.getFirstElement() instanceof INetworkModel);
+            		selection.getFirstElement() instanceof IDataElement
+            		&& !(selection.getFirstElement() instanceof INetworkModel);
             if (enabled) {
                 dataElement = (IDataElement)selection.getFirstElement();
                 enabled = (dataElement.get(INeoConstants.PROPERTY_NAME_NAME) == null) ? false : true;
@@ -302,7 +347,7 @@ public class NewNetworkTreeView extends ViewPart {
         }
 
         @SuppressWarnings("rawtypes")
-        private DeleteAction(IStructuredSelection selection) {
+		private DeleteAction(IStructuredSelection selection) {
             interactive = true;
             dataElementsToDelete = new ArrayList<IDataElement>();
             Iterator iterator = selection.iterator();
@@ -764,7 +809,7 @@ public class NewNetworkTreeView extends ViewPart {
      * This is how the framework determines which interfaces we implement.
      */
     @SuppressWarnings("rawtypes")
-    @Override
+	@Override
     public Object getAdapter(final Class key) {
         if (key.equals(IPropertySheetPage.class)) {
             return getPropertySheetPage();
