@@ -37,7 +37,6 @@ public class StatisticsVault implements IVault {
     private String type;
     private boolean isStatisticsChanged = false;
     private Map<String, NewPropertyStatistics> propertyStatisticsMap = new HashMap<String, NewPropertyStatistics>();
-    
     private static Logger LOGGER = Logger.getLogger(StatisticsVault.class);
 
     private static final String PARAM_NODE_TYPE = "nodeType";
@@ -236,8 +235,12 @@ public class StatisticsVault implements IVault {
         }
         try {
             NewPropertyStatistics propStat = ((StatisticsVault)vault).getPropertyStatistics(propName, oldPropValue.getClass());
-            propStat.updatePropertyMap(oldPropValue, -1);
-            propStat.updatePropertyMap(newPropValue, 1);
+            
+            // update statistics only if it was saved early 
+            if (propStat.getPropertyMap().containsKey(oldPropValue)) {
+                propStat.updatePropertyMap(oldPropValue, -1);
+                propStat.updatePropertyMap(newPropValue, 1);
+            }
         } catch (IndexPropertyException e) {
             this.setCount(this.getCount() + 1);
             LOGGER.error("IndexPropertyException: index property has wrong type");

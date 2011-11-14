@@ -84,7 +84,8 @@ public class NewNetworkTreeView extends ViewPart {
     public static final String DB_GRAPH_VIEW_ID = "org.neo4j.neoclipse.view.NeoGraphViewPart";
 
     public static final String SHOW_PROPERTIES = "Show properties";
-    public static final String CHANGE_MODE_TO_SHOW_PROPERTIES = "Change mode (show/edit)";
+    public static final String CHANGE_MODE_TO_JUST_SHOW_PROPERTIES = "Change mode to just show";
+    public static final String CHANGE_MODE_TO_EDIT_PROPERTIES = "Change mode to edit";
 
     /*
      * TreeViewer for database Nodes
@@ -244,7 +245,9 @@ public class NewNetworkTreeView extends ViewPart {
                 }
             }
             enabled = selectedDataElements.size() > 0;
-            text = CHANGE_MODE_TO_SHOW_PROPERTIES;
+            text = (isEditablePropertyView == false) ? 
+            		CHANGE_MODE_TO_EDIT_PROPERTIES : 
+            		CHANGE_MODE_TO_JUST_SHOW_PROPERTIES;
         }
 
         @Override
@@ -261,6 +264,8 @@ public class NewNetworkTreeView extends ViewPart {
         public void run() {
         	isEditablePropertyView = (isEditablePropertyView == true) ? false : true;
             ((NewNetworkPropertySheetPage)propertySheetPage).setEditableToPropertyView(isEditablePropertyView);
+            IDataElement lastClickedElement = ((NewNetworkPropertySheetPage)propertySheetPage).getLastClickedElement();
+            selectDataElement(lastClickedElement);
         }     
     }
     

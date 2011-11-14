@@ -260,7 +260,7 @@ public class NewNetworkService extends NewAbstractService {
             datasetService.addChild(parent, result);
             // set properties and index node
             if ((name != null) && (!name.equals(StringUtils.EMPTY))) {
-                setNameProperty(result, name);
+                setAnyProperty(result, NewAbstractService.NAME, name);
                 addNodeToIndex(result, index, NAME, name);
             }
             if ((ci != null) && (!ci.equals(StringUtils.EMPTY))) {
@@ -764,7 +764,7 @@ public class NewNetworkService extends NewAbstractService {
         try {
             result = createNode(elementType);
             datasetService.createRelationship(parent, result, relType);
-            setNameProperty(result, name);
+            setAnyProperty(result, NewAbstractService.NAME, name);
             addNodeToIndex(result, index, NAME, name);
             tx.success();
         } catch (Exception e) {

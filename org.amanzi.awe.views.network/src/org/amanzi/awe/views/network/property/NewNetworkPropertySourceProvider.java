@@ -57,10 +57,10 @@ public class NewNetworkPropertySourceProvider implements IPropertySourceProvider
     	isEditable = isEditablePropertyView;
     }
     
-    public void reloadTable() {
-    	propertySource.getPropertyDescriptors();
-    }
-    
+    /**
+     * Get last clicked element
+     * @return
+     */
     public IDataElement getLastRawObject() {
         return lastRawObject;
     }

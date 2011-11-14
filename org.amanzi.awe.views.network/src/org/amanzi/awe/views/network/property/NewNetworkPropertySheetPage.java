@@ -13,6 +13,7 @@
 package org.amanzi.awe.views.network.property;
 
 import org.amanzi.awe.views.network.view.NewNetworkTreeView;
+import org.amanzi.neo.services.model.IDataElement;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.views.properties.PropertySheetPage;
@@ -41,16 +42,20 @@ public class NewNetworkPropertySheetPage extends PropertySheetPage implements IS
     }
     
     /**
+     * Get last clicked element
+     * @return
+     */
+    public IDataElement getLastClickedElement() {
+    	return provider.getLastRawObject();
+    }
+    
+    /**
      * Allow to set is view of property is editable
      * 
      * @param isEditablePropertyView
      */
     public void setEditableToPropertyView(boolean isEditablePropertyView) {
     	provider.setEditableToPropertyView(isEditablePropertyView);
-    }
-    
-    public void reloadTable() {
-    	provider.reloadTable();
     }
     
     /**
