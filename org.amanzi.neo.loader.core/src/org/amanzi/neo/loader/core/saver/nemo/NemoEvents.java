@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.amanzi.neo.core.utils.DriveEvents;
+import org.amanzi.neo.loader.core.saver.DriveEvents;
 
 /**
  * <p>
@@ -470,7 +470,7 @@ public enum NemoEvents {
             return parsedParameters;
         }
     },
-    
+
     DAC("DAC") {
 
         @Override
@@ -2019,7 +2019,8 @@ public enum NemoEvents {
                     parsedParameters.put(key, getIntegerValue(parameters));
                     key = "UL pwr up %";
                     parsedParameters.put(key, getFloatValue(parameters));
-                } else if (system == 7 || system == 8 || system == 14 || system == 15 || system == 26 || system == 27 || system == 28 || system == 29 || system == 30) {
+                } else if (system == 7 || system == 8 || system == 14 || system == 15 || system == 26 || system == 27
+                        || system == 28 || system == 29 || system == 30) {
                     key = "TX power_f";// because the type of this property is different from TX
                     // power
                     parsedParameters.put(key, getFloatValue(parameters));
@@ -3437,7 +3438,8 @@ public enum NemoEvents {
                     parsedParameters.put("ARFCN", getIntegerValue(parameters));
                     parsedParameters.put("BSIC", getIntegerValue(parameters));
                     parsedParameters.put("RxLev", getFloatValue(parameters));
-                } else if (system == 4 || system == 5 || system == 6 || system == 9 || system == 10 || system == 23 || system == 24 || system == 25) {
+                } else if (system == 4 || system == 5 || system == 6 || system == 9 || system == 10 || system == 23 || system == 24
+                        || system == 25) {
                     parsedParameters.put("Channel", getIntegerValue(parameters));
                     parsedParameters.put("DCC", getIntegerValue(parameters));
                     parsedParameters.put("RXL", getFloatValue(parameters));
@@ -3453,7 +3455,8 @@ public enum NemoEvents {
                         parsedParameters.put("Carrier", getIntegerValue(parameters));
                         parsedParameters.put("RSSI", getFloatValue(parameters));
                     }
-                } else if (system == 12 || system == 13 || system == 20 || system == 21 || system == 31 || system == 33 || system == 34) {
+                } else if (system == 12 || system == 13 || system == 20 || system == 21 || system == 31 || system == 33
+                        || system == 34) {
                     final Integer channel = getIntegerValue(parameters);
                     if (channel != 0) {
                         parsedParameters.put("Channel", channel);
@@ -3528,7 +3531,8 @@ public enum NemoEvents {
                     parsedParameters.put("PN", getIntegerValue(parameters));
                     parsedParameters.put("Delay", getFloatValue(parameters));
 
-                } else if (system == 12 || system == 13 || system == 20 || system == 21 || system == 31 || system == 33 || system == 34) {
+                } else if (system == 12 || system == 13 || system == 20 || system == 21 || system == 31 || system == 33
+                        || system == 34) {
                     parsedParameters.put("Channel", getIntegerValue(parameters));
                     parsedParameters.put("RSSI", getFloatValue(parameters));
                     parsedParameters.put("Ch type", getIntegerValue(parameters));
@@ -4014,7 +4018,8 @@ public enum NemoEvents {
                         parsedSbParameters.put("Sample offset", getFloatValue(parameters));
                         parsedSbParameters.put("Sample", getFloatValue(parameters));
                     }
-                } else if (system.equals(TechnologySystems.CDMA_ONE) || system.equals(TechnologySystems.CDMA_ONE_X) || system.equals(TechnologySystems.EVDO)) {
+                } else if (system.equals(TechnologySystems.CDMA_ONE) || system.equals(TechnologySystems.CDMA_ONE_X)
+                        || system.equals(TechnologySystems.EVDO)) {
                     parsedParameters.put("#Header params", getIntegerValue(parameters));
                     getIntegerValue(parameters); // not need parameters count
                     Integer groupCount = getIntegerValue(parameters);
@@ -4406,7 +4411,8 @@ public enum NemoEvents {
                 parsedParameters.put(key, system.getName());
                 if (system.equals(TechnologySystems.GSM) || system.equals(TechnologySystems.GAN_WLAN)) {
                     parsedParameters.put("RR cause", getIntegerValue(parameters));
-                } else if (system.equals(TechnologySystems.TETRA) || system.equals(TechnologySystems.CDMA_ONE_X) || system.equals(TechnologySystems.DAMPS)) {
+                } else if (system.equals(TechnologySystems.TETRA) || system.equals(TechnologySystems.CDMA_ONE_X)
+                        || system.equals(TechnologySystems.DAMPS)) {
                     // 1 field reserved
                     getStringValue(parameters);
                 } else if (system.equals(TechnologySystems.UMTS_FDD) || system.equals(TechnologySystems.UMTS_TD_SCDMA)) {
@@ -4441,8 +4447,9 @@ public enum NemoEvents {
                 TechnologySystems system = TechnologySystems.getSystemById(systemKey);
                 parsedParameters.put(key, system.getName());
                 parsedParameters.put("#Params", getIntegerValue(parameters));
-                if (system.equals(TechnologySystems.GSM) || system.equals(TechnologySystems.TETRA) || system.equals(TechnologySystems.UMTS_FDD)
-                        || system.equals(TechnologySystems.UMTS_TD_SCDMA) || system.equals(TechnologySystems.GAN_WLAN)) {
+                if (system.equals(TechnologySystems.GSM) || system.equals(TechnologySystems.TETRA)
+                        || system.equals(TechnologySystems.UMTS_FDD) || system.equals(TechnologySystems.UMTS_TD_SCDMA)
+                        || system.equals(TechnologySystems.GAN_WLAN)) {
                     parsedParameters.put("Old LAC", getIntegerValue(parameters));
                     parsedParameters.put("Old CI", getIntegerValue(parameters));
                 }
@@ -4454,8 +4461,9 @@ public enum NemoEvents {
                 system = TechnologySystems.getSystemById(systemKey);
                 parsedParameters.put(key, system.getName());
                 parsedParameters.put("#Params", getIntegerValue(parameters));
-                if (system.equals(TechnologySystems.GSM) || system.equals(TechnologySystems.TETRA) || system.equals(TechnologySystems.UMTS_FDD)
-                        || system.equals(TechnologySystems.UMTS_TD_SCDMA) || system.equals(TechnologySystems.GAN_WLAN)) {
+                if (system.equals(TechnologySystems.GSM) || system.equals(TechnologySystems.TETRA)
+                        || system.equals(TechnologySystems.UMTS_FDD) || system.equals(TechnologySystems.UMTS_TD_SCDMA)
+                        || system.equals(TechnologySystems.GAN_WLAN)) {
                     parsedParameters.put("LAC", getIntegerValue(parameters));
                     parsedParameters.put("CI", getIntegerValue(parameters));
                 }
@@ -4502,7 +4510,8 @@ public enum NemoEvents {
                     Integer shoStatus = getIntegerValue(parameters);
                     parsedParameters.put("SHO status", shoStatus);
                     if (shoStatus != null) {
-                        parsedParameters.put(DRIVE_EVENTS, shoStatus == 1 ? DriveEvents.HANDOVER_SUCCESS : DriveEvents.HANDOVER_FAILURE);
+                        parsedParameters.put(DRIVE_EVENTS, shoStatus == 1 ? DriveEvents.HANDOVER_SUCCESS
+                                : DriveEvents.HANDOVER_FAILURE);
                     }
                     parsedParameters.put("RRC cause", getIntegerValue(parameters));
                     Integer addCount = getIntegerValue(parameters);
@@ -4541,7 +4550,8 @@ public enum NemoEvents {
                 if (system == 12 || system == 13 || system == 20 || system == 21 || system == 31 || system == 33 || system == 34) {
                     Integer shoStatus = getIntegerValue(parameters);
                     if (shoStatus != null) {
-                        parsedParameters.put(DRIVE_EVENTS, shoStatus == 1 ? DriveEvents.HANDOVER_SUCCESS : DriveEvents.HANDOVER_FAILURE);
+                        parsedParameters.put(DRIVE_EVENTS, shoStatus == 1 ? DriveEvents.HANDOVER_SUCCESS
+                                : DriveEvents.HANDOVER_FAILURE);
                     }
                     parsedParameters.put("SHO status", shoStatus);
                     parsedParameters.put("RRC cause", getIntegerValue(parameters));
@@ -4879,7 +4889,8 @@ public enum NemoEvents {
                     parsedParameters.put("T_COMP", getIntegerValue(parameters));
                     parsedParameters.put("P_REV", getIntegerValue(parameters));
                     parsedParameters.put("MIN_P_REV", getIntegerValue(parameters));
-                } else if (system == 12 || system == 13 || system == 20 || system == 21 || system == 31 || system == 33 || system == 34) {
+                } else if (system == 12 || system == 13 || system == 20 || system == 21 || system == 31 || system == 33
+                        || system == 34) {
                     parsedParameters.put("RRC state", getIntegerValue(parameters));
                     parsedParameters.put("Channel", getIntegerValue(parameters));
                     parsedParameters.put("CI", getIntegerValue(parameters));
@@ -5024,7 +5035,8 @@ public enum NemoEvents {
                     parsedParameters.put("#CS TSL DL", getIntegerValue(parameters));
                     parsedParameters.put("Modem type", getIntegerValue(parameters));
                     parsedParameters.put("Compression", getStringValue(parameters));
-                } else if (system == 12 || system == 13 || system == 20 || system == 21 || system == 31 || system == 33 || system == 34) {
+                } else if (system == 12 || system == 13 || system == 20 || system == 21 || system == 31 || system == 33
+                        || system == 34) {
                     parsedParameters.put("Initiator", getIntegerValue(parameters));
                     parsedParameters.put("Req. CS rate", getIntegerValue(parameters));
                     parsedParameters.put("Data mode", getIntegerValue(parameters));
@@ -5167,7 +5179,8 @@ public enum NemoEvents {
                 if (system == 1 || system == 2 || system == 3 || system == 22) {
                     parsedParameters.put("ARFCN", getIntegerValue(parameters));
                     parsedParameters.put("BSIC", getIntegerValue(parameters));
-                } else if (system == 12 || system == 13 || system == 20 || system == 21 || system == 31 || system == 33 || system == 34) {
+                } else if (system == 12 || system == 13 || system == 20 || system == 21 || system == 31 || system == 33
+                        || system == 34) {
                     parsedParameters.put("Channel", getIntegerValue(parameters));
                     parsedParameters.put("Scrambling code", getIntegerValue(parameters));
                 }
@@ -5216,7 +5229,8 @@ public enum NemoEvents {
                     parsedParameters.put("Channel", getIntegerValue(parameters));
                     parsedParameters.put("BSIC", getIntegerValue(parameters));
                     parsedParameters.put("RX level", getIntegerValue(parameters));
-                } else if (system == 12 || system == 13 || system == 20 || system == 21 || system == 31 || system == 33 || system == 34) {
+                } else if (system == 12 || system == 13 || system == 20 || system == 21 || system == 31 || system == 33
+                        || system == 34) {
                     parsedParameters.put("Channel", getIntegerValue(parameters));
                     parsedParameters.put("Scrambling code", getIntegerValue(parameters));
                     parsedParameters.put("Ec/N0", getIntegerValue(parameters));
@@ -6495,7 +6509,8 @@ public enum NemoEvents {
                 key = "System";
                 final TechnologySystems system = TechnologySystems.getSystemById(getIntegerValue(parameters));
                 parsedParameters.put(key, system.getName());
-                if (system.equals(TechnologySystems.GSM) || system.equals(TechnologySystems.UMTS_FDD) || system.equals(TechnologySystems.UMTS_TD_SCDMA)) {
+                if (system.equals(TechnologySystems.GSM) || system.equals(TechnologySystems.UMTS_FDD)
+                        || system.equals(TechnologySystems.UMTS_TD_SCDMA)) {
                     parsedParameters.put("Initiator", getIntegerValue(parameters));
                     parsedParameters.put("Protocol type", getIntegerValue(parameters));
                     parsedParameters.put("APN", getStringValue(parameters));
@@ -8121,9 +8136,9 @@ public enum NemoEvents {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
             if ("2.01".equals(version)) {
                 String key = "Lon.";
-                parsedParameters.put(key, getFloatValue(parameters));
+                parsedParameters.put(key, getDoubleValue(parameters));
                 key = "Lat.";
-                parsedParameters.put(key, getFloatValue(parameters));
+                parsedParameters.put(key, getDoubleValue(parameters));
                 key = "Height";
                 parsedParameters.put(key, getIntegerValue(parameters));
                 key = "Distance";
@@ -8429,5 +8444,29 @@ public enum NemoEvents {
         }
 
         return Float.parseFloat(value);
+    }
+
+    /**
+     * @param parameters2
+     * @return
+     */
+    protected static Double getDoubleValue(Iterator<String> parameters) {
+        if (parameters == null || !parameters.hasNext()) {
+            return null;
+        }
+        String value = parameters.next();
+        if (value.isEmpty()) {
+            return null;
+        }
+
+        return Double.parseDouble(value);
+    }
+
+    /**
+     *
+     * @return
+     */
+    public String getEventId() {
+        return eventId;
     }
 }

@@ -6,13 +6,23 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.amanzi.neo.db;bundle-version="1.0.0";visibility:=reexport,
  net.refractions.udig.libs;bundle-version="1.1.1",
- org.amanzi.log4j;bundle-version="1.2.12"
-Export-Package: org.amanzi.neo.services,
+ org.amanzi.log4j;bundle-version="1.2.12";visibility:=reexport,
+ org.eclipse.core.runtime;bundle-version="3.3.100",
+ net.refractions.udig.ui;bundle-version="1.1.1"
+Export-Package: org.amanzi.neo.model.distribution,
+ org.amanzi.neo.model.distribution.impl,
+ org.amanzi.neo.services,
  org.amanzi.neo.services.enums,
  org.amanzi.neo.services.exceptions,
  org.amanzi.neo.services.filters,
  org.amanzi.neo.services.filters.exceptions,
+ org.amanzi.neo.services.index.hilbert,
+ org.amanzi.neo.services.indexes,
  org.amanzi.neo.services.model,
- org.amanzi.neo.services.model.impl;x-friends:="org.amanzi.neo.services.testing,org.amanzi.testing.sanity",
+ org.amanzi.neo.services.model.impl,
  org.amanzi.neo.services.statistic,
+ org.amanzi.neo.services.statistic.internal,
+ org.amanzi.neo.services.synonyms,
  org.amanzi.neo.services.utils
+Bundle-ActivationPolicy: lazy
+Eclipse-ExtensibleAPI: true

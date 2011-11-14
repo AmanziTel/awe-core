@@ -15,14 +15,15 @@ package org.amanzi.neo.services.filters;
 
 import java.io.Serializable;
 
-import org.amanzi.neo.services.NeoServiceFactory;
-import org.amanzi.neo.services.NewDatasetService;
+import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.filters.exceptions.FilterTypeException;
 import org.amanzi.neo.services.filters.exceptions.NotComparebleException;
 import org.amanzi.neo.services.filters.exceptions.NotComparebleRuntimeException;
 import org.amanzi.neo.services.filters.exceptions.NullValueException;
+import org.amanzi.neo.services.model.IDataElement;
+import org.amanzi.neo.services.model.impl.DataElement;
 import org.neo4j.graphdb.Node;
 
 
@@ -49,7 +50,7 @@ public class Filter implements IFilter {
     
     private Serializable value;
     
-    private IFilter underlyingFilter;
+    private IFilter underlyingFilter; 
 
     public Filter(FilterType filterType, ExpressionType expressionType) {
         this.filterType = filterType;
@@ -95,9 +96,7 @@ public class Filter implements IFilter {
         boolean result = false;
         boolean supportedType = true;
         
-        NewDatasetService datasetService = NeoServiceFactory.getInstance().getNewDatasetService();
-        String sCurrentType = datasetService.getNodeType(node);
-        INodeType currentType = NodeTypeManager.getType(sCurrentType);
+        INodeType currentType = NodeTypeManager.getType(NewAbstractService.getNodeType(node));
         
         if ((currentType != null) && (nodeType != null) &&
                 (!currentType.equals(nodeType))) {
@@ -108,9 +107,14 @@ public class Filter implements IFilter {
         if (supportedType) {
             boolean hasProperty = node.hasProperty(propertyName);
             Object propertyValue = null;
+            Object compValue = null;
             //get property value
             if (hasProperty){
                 propertyValue = node.getProperty(propertyName);
+                compValue = propertyValue;
+                if (compValue instanceof Number) {
+                    compValue = new Double(((Number)compValue).doubleValue());
+                }
             }
             //compare
             switch (filterType) {
@@ -142,7 +146,7 @@ public class Filter implements IFilter {
                 }
 
                 result = false;
-                if (((Comparable<Serializable>)propertyValue).compareTo(value) > 0)
+                if (((Comparable<Serializable>)compValue).compareTo(value) > 0)
                     result = true;          
 
                 break;
@@ -159,7 +163,7 @@ public class Filter implements IFilter {
                 }
 
                 result = false;
-                if (((Comparable<Serializable>)propertyValue).compareTo(value) < 0)
+                if (((Comparable<Serializable>)compValue).compareTo(value) < 0)
                     result = true;                     
 
                 break;
@@ -173,7 +177,7 @@ public class Filter implements IFilter {
                     throw new NotComparebleException();
                 }
 
-                if (((Comparable<Serializable>)propertyValue).compareTo(value) > 0)
+                if (((Comparable<Serializable>)compValue).compareTo(value) > 0)
                     result = true;                     
                 break;
             case LESS_OR_EQUALS:
@@ -189,7 +193,7 @@ public class Filter implements IFilter {
                 catch(Exception e){
 
                 }
-                if (((Comparable<Serializable>)propertyValue).compareTo(value) < 0)
+                if (((Comparable<Serializable>)compValue).compareTo(value) < 0)
                     result = true;
                 break;
             case EMPTY:
@@ -242,4 +246,10 @@ public class Filter implements IFilter {
     public IFilter getUnderlyingFilter() {
         return underlyingFilter;
     }
+
+    @Override
+    public boolean check(IDataElement dataElement) throws NullValueException, NotComparebleException {
+        return check(((DataElement)dataElement).getNode());
+    }
+
 }

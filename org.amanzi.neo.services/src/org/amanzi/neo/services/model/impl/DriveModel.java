@@ -25,6 +25,8 @@ import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
+import org.amanzi.neo.services.NewDatasetService.DriveTypes;
+import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.enums.IDriveType;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
@@ -34,17 +36,17 @@ import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.model.ICorrelationModel;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDriveModel;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.geotools.referencing.CRS;
 import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.index.Index;
-import org.neo4j.graphdb.traversal.Evaluators;
-import org.neo4j.graphdb.traversal.TraversalDescription;
-import org.neo4j.kernel.Traversal;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Envelope;
 
 /**
  * <p>
@@ -59,14 +61,13 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     private static Logger LOGGER = Logger.getLogger(DriveModel.class);
 
     // private members
-    private GraphDatabaseService graphDb;
     private Index<Node> files;
     private int count = 0;
     private INodeType primaryType = DriveNodeTypes.M;
-    private IDriveType type;
+    private IDriveType driveType;
 
     private NewDatasetService dsServ;
-    private CorrelationService crServ = NeoServiceFactory.getInstance().getCorrelationService();
+    private CorrelationService crServ = NeoServiceFactory.getInstance().getNewCorrelationService();
 
     /**
      * <p>
@@ -76,12 +77,26 @@ public class DriveModel extends RenderableModel implements IDriveModel {
      * @author Ana Gr.
      * @since 1.0.0
      */
-    public static enum DriveNodeTypes implements INodeType {
-        FILE, M, MP;
+    public enum DriveNodeTypes implements INodeType {
+        FILE, M, MP, M_AGGR, MM, MS;
+
+        static {
+            NodeTypeManager.registerNodeType(DriveNodeTypes.class);
+        }
 
         @Override
         public String getId() {
             return name().toLowerCase();
+        }
+
+        public static DriveNodeTypes findById(String id) {
+            for (DriveNodeTypes driveNodeType : values()) {
+                if (driveNodeType.getId().equals(id)) {
+                    return driveNodeType;
+                }
+            }
+
+            return null;
         }
 
     }
@@ -99,6 +114,28 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     }
 
     /**
+     * Use this constructor to create a drive model, based on a node, that already exists in the
+     * database.
+     * 
+     * @param driveRoot
+     */
+    public DriveModel(Node driveRoot) throws AWEException {
+        super(driveRoot, DatasetTypes.DRIVE);
+        // validate
+        if (driveRoot == null) {
+            throw new IllegalArgumentException("Network root is null.");
+        }
+        if (!DatasetTypes.DRIVE.getId().equals(driveRoot.getProperty(NewAbstractService.TYPE, null))) {
+            throw new IllegalArgumentException("Root node must be of type NETWORK.");
+        }
+
+        this.rootNode = driveRoot;
+        this.name = rootNode.getProperty(NewAbstractService.NAME, StringUtils.EMPTY).toString();
+        initializeStatistics();
+        initializeMultiPropertyIndexing();
+    }
+
+    /**
      * Constructor. Pass only rootNode, if you have one, <i>OR</i> all the other parameters.
      * 
      * @param parent a project node
@@ -109,26 +146,27 @@ public class DriveModel extends RenderableModel implements IDriveModel {
      *         creation of nodes
      */
     public DriveModel(Node parent, Node rootNode, String name, IDriveType type) throws AWEException {
+        super(rootNode, DatasetTypes.DRIVE);
         // if root node is null, get one by name
         if (rootNode != null) {
-            graphDb = rootNode.getGraphDatabase();
             dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
 
             this.rootNode = rootNode;
             this.name = (String)rootNode.getProperty(NewAbstractService.NAME, null);
-            // this.type = TODO:
+            this.driveType = DriveTypes.valueOf(rootNode.getProperty(NewDatasetService.DRIVE_TYPE, StringUtils.EMPTY).toString());
         } else {
             // validate params
             if (parent == null) {
                 throw new IllegalArgumentException("Parent is null.");
             }
 
-            graphDb = parent.getGraphDatabase();
             dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
             this.rootNode = dsServ.getDataset(parent, name, DatasetTypes.DRIVE, type);
             this.name = name;
-            this.type = type;
+            this.driveType = type;
         }
+        initializeStatistics();
+        initializeMultiPropertyIndexing();
     }
 
     /**
@@ -151,20 +189,20 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     }
 
     /**
-     * Adds a new node of type DRIVE, creates VIRTUAL_DATASET relationship from root node of current
-     * DM, and creates and returns a new DM on base of newly created node.
-     * 
-     * @param name the name of new virtual dataset
-     * @param driveType the drive type of new virtual dataset (NB! not TYPE, TYPE is set to DRIVE)
-     * @return DriveModel based on new virtual dataset node
-     * @throws AWEException if parameters are null or empty or some errors occur in database during
-     *         creation of nodes
+     * Initializes location index for sector nodes.
      */
+    private void initializeMultiPropertyIndexing() throws AWEException {
+        LOGGER.info("Initializing multi proerty index...");
+        addLocationIndex(DriveNodeTypes.MP);
+        addTimestampIndex(primaryType);
+    }
+
+    @Override
     public DriveModel addVirtualDataset(String name, IDriveType driveType) throws AWEException {
         LOGGER.debug("start addVirtualDataset(String name, IDriveType driveType)");
 
         // validate params
-        if ((name == null) || (name.equals(""))) {
+        if ((name == null) || (name.equals(StringUtils.EMPTY))) {
             throw new IllegalNodeDataException("Name is null or empty.");
         }
         if (driveType == null) {
@@ -177,20 +215,14 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         Node virtual = dsServ.createNode(rootNode, DriveRelationshipTypes.VIRTUAL_DATASET, DatasetTypes.DRIVE);
         Map<String, Object> params = new HashMap<String, Object>();
         params.put(NewAbstractService.NAME, name);
-        params.put(DRIVE_TYPE, driveType.getId());
+        params.put(DRIVE_TYPE, driveType.name());
         dsServ.setProperties(virtual, params);
 
         DriveModel result = new DriveModel(null, virtual, name, null);
         return result;
     }
 
-    /**
-     * Looks for a virtual dataset node with the defined name, creates a DriveModel based on it, if
-     * found
-     * 
-     * @param name the name of virtual dataset node
-     * @return DriveModel based on the found node or null if search failed
-     */
+    @Override
     public IDriveModel findVirtualDataset(String name) {
         LOGGER.debug("start findVirtualDataset(String name)");
 
@@ -204,15 +236,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         return result;
     }
 
-    /**
-     * Looks for a virtual dataset node or creates a new one if nothing found. returns a new
-     * DriveModel based on resulting node.
-     * 
-     * @param name
-     * @param driveType used to create a new virtual dataset
-     * @return a DriveModel based on found or created virtual dataset node
-     * @throws AWEException if errors occurred during creation of new node
-     */
+    @Override
     public IDriveModel getVirtualDataset(String name, IDriveType driveType) throws AWEException {
         LOGGER.debug("start getVirtualDataset(String name, IDriveType driveType)");
 
@@ -223,15 +247,12 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         return result;
     }
 
-    /**
-     * @return a List<Node> containing DriveModels created on base of virtual dataset nodes in
-     *         current DriveModel
-     */
+    @Override
     public Iterable<IDriveModel> getVirtualDatasets() {
         LOGGER.debug("start getVirtualDatasets()");
 
         List<IDriveModel> result = new ArrayList<IDriveModel>();
-        for (Node node : getVirtualDatasetsTraversalDescription().traverse(rootNode).nodes()) {
+        for (Node node : dsServ.getVirtualDatasets(rootNode)) {
             try {
                 result.add(new DriveModel(null, node, null, null));
             } catch (AWEException e) {
@@ -241,25 +262,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         return result;
     }
 
-    /**
-     * @return TraversalDescription to iterate over virtual dataset nodes.
-     */
-    protected TraversalDescription getVirtualDatasetsTraversalDescription() {
-        LOGGER.debug("start getVirtualDatasetsTraversalDescription()");
-
-        return Traversal.description().breadthFirst().relationships(DriveRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING)
-                .evaluator(Evaluators.atDepth(1)).evaluator(Evaluators.excludeStartPosition());
-    }
-
-    /**
-     * Adds a FILE node to the drive model. FILE nodes are added to root node via
-     * CHILD-NEXT-...-NEXT chain. FILE nodes are indexed by NAME.
-     * 
-     * @param file a File object containing file name and path
-     * @return the newly created node
-     * @throws DatabaseException if errors occur in database
-     * @throws DuplicateNodeNameException when trying to add a file that already exists
-     */
+    @Override
     public IDataElement addFile(File file) throws DatabaseException, DuplicateNodeNameException {
         LOGGER.debug("start addFile(File file)");
 
@@ -286,39 +289,71 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         return new DataElement(fileNode);
     }
 
-    /**
-     * Adds a measurement node to a file node with defined filename. If params map contains lat and
-     * lon properties, also creates a location node. Use this method if you want to create a
-     * measurement with default type.
-     * 
-     * @param filename the name of file
-     * @param params a map containing parameters of the new measurement
-     * @return the newly created node
-     * @throws DatabaseException if errors occur in database
-     */
-    public IDataElement addMeasurement(String filename, Map<String, Object> params) throws DatabaseException {
+    @Override
+    public IDataElement addMeasurement(String filename, Map<String, Object> params) throws AWEException {
         return addMeasurement(filename, params, primaryType);
     }
 
-    /**
-     * Adds a measurement node to a file node with defined filename. If params map contains lat and
-     * lon properties, also creates a location node. Use this method if you want to create a
-     * measurement with type, that is different from drive model primary type.
-     * 
-     * @param filename the name of file
-     * @param params a map containing parameters of the new measurement
-     * @param nodeType the type of node to create
-     * @return the newly created node
-     * @throws DatabaseException if errors occur in database
-     */
-    public IDataElement addMeasurement(String filename, Map<String, Object> params, INodeType nodeType) throws DatabaseException {
+    @Override
+    public IDataElement addMeasurement(IDataElement file, Map<String, Object> params) throws AWEException {
+        return addMeasurement(file, params, primaryType);
+    }
+
+    @Override
+    public IDataElement addMeasurement(IDataElement file, Map<String, Object> params, INodeType nodeType) throws AWEException {
+
+        // validate parameters
+        if (file == null) {
+            throw new IllegalArgumentException("File element is null.");
+        }
+        Node fileNode = ((DataElement)file).getNode();
+        if (fileNode == null) {
+            throw new IllegalArgumentException("File node is null.");
+        }
+        if (params == null) {
+            throw new IllegalArgumentException("Parameter map is null.");
+        }
+        if (nodeType == null) {
+            throw new IllegalArgumentException("Node type is null.");
+        }
+
+        Node m = dsServ.createNode(nodeType);
+        dsServ.addChild(fileNode, m, null);
+        Double lat = (Double)params.get(LATITUDE);
+        Double lon = (Double)params.get(LONGITUDE);
+        Long tst = (Long)params.get(TIMESTAMP);
+
+        if ((lat != null) && (lat != 0) && (lon != null) && (lon != 0)) {
+            createLocationNode(m, lat, lon);
+            params.remove(LATITUDE);
+            params.remove(LONGITUDE);
+        }
+        if ((tst != null) && (tst != 0)) {
+            updateTimestamp(tst);
+        }
+        params.put(NewAbstractService.DATASET_ID, this.name);
+        dsServ.setProperties(m, params);
+        indexProperty(primaryType, params); // TODO: ??????????
+
+        count++;
+        Map<String, Object> prop = new HashMap<String, Object>();
+        prop.put(PRIMARY_TYPE, primaryType.getId());// TODO: ?????????????
+        prop.put(COUNT, count);
+        dsServ.setProperties(rootNode, prop);
+        indexProperty(primaryType, prop); // TODO: ???????????
+
+        return new DataElement(m);
+    }
+
+    @Override
+    public IDataElement addMeasurement(String filename, Map<String, Object> params, INodeType nodeType) throws AWEException {
         LOGGER.debug("start addMeasurement(String filename, Map<String, Object> params)");
 
         // measurements are added as c-n-n o file nodes
         // lat, lon properties are stored in a location node
 
         // validate params
-        if ((filename == null) || (filename.equals(""))) {
+        if ((filename == null) || (filename.equals(StringUtils.EMPTY))) {
             throw new IllegalArgumentException("Filename is null or empty.");
         }
         if (params == null) {
@@ -332,41 +367,12 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         if (fileNode == null) {
             throw new IllegalArgumentException("File node " + filename + " not found.");
         }
-        Node m = dsServ.createNode(nodeType);
-        dsServ.addChild(fileNode, m, null);
-        Long lat = (Long)params.get(LATITUDE);
-        Long lon = (Long)params.get(LONGITUDE);
-        Long tst = (Long)params.get(TIMESTAMP);
 
-        if ((lat != null) && (lat != 0) && (lon != null) && (lon != 0)) {
-            createLocationNode(m, lat, lon);
-            params.remove(LATITUDE);
-            params.remove(LONGITUDE);
-        }
-        if ((tst != null) && (tst != 0)) {
-            updateTimestamp(tst);
-        }
-        params.put(NewAbstractService.DATASET_ID, this.name);
-        dsServ.setProperties(m, params);
-
-        count++;
-        Map<String, Object> prop = new HashMap<String, Object>();
-        prop.put(PRIMARY_TYPE, primaryType.getId());// TODO: ?????????????
-        prop.put(COUNT, count);
-        dsServ.setProperties(rootNode, prop);
-
-        return new DataElement(m);
+        return addMeasurement(new DataElement(fileNode), params, nodeType);
     }
 
-    /**
-     * The method creates CALL_M relationships between <code>parent</code> node and
-     * <code>source</code> nodes.
-     * 
-     * @param parent a <code>DataElement</code>, that contains parent node.
-     * @param source list of <code>DataElement</code>s, containing <code>Node</code> objects.
-     * @throws DatabaseException if problems occur in database
-     */
-    public void linkNode(IDataElement parent, Iterable<IDataElement> source) throws DatabaseException {
+    @Override
+    public void linkNode(IDataElement parent, Iterable<IDataElement> source, RelationshipType rel) throws DatabaseException {
         // validate
         if (parent == null) {
             throw new IllegalArgumentException("Parent is null.");
@@ -388,7 +394,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
             if (node == null) {
                 throw new IllegalArgumentException("Source data element must contain nodes.");
             }
-            dsServ.createRelationship(parentNode, node, DriveRelationshipTypes.CALL_M);
+            dsServ.createRelationship(parentNode, node, rel);
         }
 
     }
@@ -402,7 +408,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
      * @param lon
      * @throws DatabaseException if errors occur in the database
      */
-    protected void createLocationNode(Node parent, long lat, long lon) throws DatabaseException {
+    protected void createLocationNode(Node parent, double lat, double lon) throws DatabaseException {
         LOGGER.debug("start createLocationNode(Node measurement, long lat, long lon)");
         // validate params
         if (parent == null) {
@@ -417,14 +423,17 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         updateLocationBounds(lat, lon);
     }
 
-    /**
-     * Finds a location node.
-     * 
-     * @param parent
-     * @return the found location node or null.
-     */
-    public IDataElement getLocation(Node parent) {
-        LOGGER.debug("start getLocation(Node measurement)");
+    @Override
+    public IDataElement getLocation(IDataElement parentElement) {
+        // validate
+        if (parentElement == null) {
+            throw new IllegalArgumentException("Parent element is null.");
+        }
+        Node parent = ((DataElement)parentElement).getNode();
+        if (parent == null) {
+            throw new IllegalArgumentException("Parent node is null.");
+        }
+        LOGGER.debug("start getLocation(IDataElement parentElement)");
 
         Iterator<Relationship> it = parent.getRelationships(DriveRelationshipTypes.LOCATION, Direction.OUTGOING).iterator();
         if (it.hasNext()) {
@@ -433,53 +442,37 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         return null;
     }
 
-    /**
-     * Looks up for a file node through index
-     * 
-     * @param name
-     * @return
-     */
+    @Override
     public IDataElement findFile(String name) {
         // validate parameters
-        if ((name == null) || (name.equals(""))) {
+        if ((name == null) || (name.equals(StringUtils.EMPTY))) {
             throw new IllegalArgumentException("Name is null or empty");
         }
         if (files == null) {
-            files = graphDb.index().forNodes(NewAbstractService.getIndexKey(rootNode, DriveNodeTypes.FILE));
+            files = dsServ.getIndexForNodes(rootNode, DriveNodeTypes.FILE);
         }
 
         Node fileNode = files.get(NewAbstractService.NAME, name).getSingle();
         return fileNode == null ? null : new DataElement(fileNode);
     }
 
-    /**
-     * Finds or creates a file with the defined name.
-     * 
-     * @param name
-     * @return FILE node
-     * @throws DatabaseException if errors occur in database
-     */
+    @Override
     public IDataElement getFile(String name) throws DatabaseException {
-        Node result = ((DataElement)findFile(name)).getNode();
+        IDataElement result = ((DataElement)findFile(name));
         if (result == null) {
             try {
-                result = ((DataElement)addFile(new File(name))).getNode();
+                result = ((DataElement)addFile(new File(name)));
             } catch (DuplicateNodeNameException e) {
                 // impossible
             }
         }
-        return new DataElement(result);
+        return result;
     }
 
-    /**
-     * Gets all measurements under defined file.
-     * 
-     * @param filename the name of the file
-     * @return and iterator over measurement nodes
-     */
+    @Override
     public Iterable<IDataElement> getMeasurements(String filename) {
         // validate
-        if ((filename == null) || (filename.equals(""))) {
+        if ((filename == null) || (filename.equals(StringUtils.EMPTY))) {
             throw new IllegalArgumentException("Filename is null or empty.");
         }
 
@@ -487,25 +480,23 @@ public class DriveModel extends RenderableModel implements IDriveModel {
                 new File(filename).getName()).getSingle()));
     }
 
-    /**
-     * @return an iterator over FILE nodes
-     */
+    @Override
     public Iterable<IDataElement> getFiles() {
         return new DataElementIterable(dsServ.getChildrenChainTraverser(rootNode));
     }
 
     @Override
     public IDriveType getDriveType() {
-        return type;
+        return driveType;
     }
 
     @Override
-    public CRS getCRS() {
-        return null;
+    public CoordinateReferenceSystem getCRS() {
+        return crs;
     }
 
     @Override
-    public Iterable<ICorrelationModel> getCorrelatedModels() {
+    public Iterable<ICorrelationModel> getCorrelatedModels() throws AWEException {
         List<ICorrelationModel> result = new ArrayList<ICorrelationModel>();
         for (Node network : crServ.getCorrelatedNetworks(getRootNode())) {
             result.add(new CorrelationModel(network, getRootNode()));
@@ -514,10 +505,10 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     }
 
     @Override
-    public ICorrelationModel getCorrelatedModel(String correlationModelName) {
+    public ICorrelationModel getCorrelatedModel(String correlationModelName) throws AWEException {
         ICorrelationModel result = null;
         for (Node network : crServ.getCorrelatedNetworks(getRootNode())) {
-            if (network.getProperty(NewAbstractService.NAME, "").equals(correlationModelName)) {
+            if (network.getProperty(NewAbstractService.NAME, StringUtils.EMPTY).equals(correlationModelName)) {
                 result = new CorrelationModel(network, getRootNode());
                 break;
             }
@@ -571,7 +562,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         if (parent == null) {
             throw new IllegalArgumentException("Parent is null.");
         }
-        LOGGER.info("getChildren(" + parent.toString() + ")");
+        LOGGER.debug("getChildren(" + parent.toString() + ")");
 
         Node parentNode = ((DataElement)parent).getNode();
         if (parentNode == null) {
@@ -597,9 +588,35 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         return new DataElementIterable(dsServ.findAllDatasetElements(getRootNode(), elementType));
     }
 
+    /**
+     * returns current primary node type
+     */
     @Override
-    public void finishUp() {
-        super.finishUp();
+    public INodeType getType() {
+        return primaryType;
+    }
 
+    @Override
+    public Iterable<IDataElement> getElements(Envelope bounds_transformed) {
+        return null;
+    }
+
+    @Override
+    public Coordinate getCoordinate(IDataElement element) {
+        IDataElement location = getLocation(element);
+        if (location != null) {
+            return new Coordinate((Long)location.get(LONGITUDE), (Long)location.get(LATITUDE));
+        }
+        return null;
+    }
+
+    @Override
+    public CoordinateReferenceSystem updateCRS(String crsCode) {
+        return super.updateCRS(crsCode);
+    }
+
+    @Override
+    public void setCRS(CoordinateReferenceSystem crs) {
+        super.setCRS(crs);
     }
 }

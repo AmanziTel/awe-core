@@ -5,6 +5,7 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
+import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.NewStatisticsService.StatisticsNodeTypes;
 import org.amanzi.neo.services.NewStatisticsService.StatisticsRelationships;
@@ -15,11 +16,10 @@ import org.amanzi.neo.services.exceptions.InvalidStatisticsParameterException;
 import org.amanzi.neo.services.exceptions.LoadVaultException;
 import org.amanzi.neo.services.statistic.IVault;
 import org.amanzi.neo.services.statistic.StatisticsVault;
-import org.amanzi.testing.AbstractAWETest;
+import org.amanzi.neo.services.statistic.internal.NewPropertyStatistics;
 import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -28,11 +28,12 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 
-public class NewStatisticsServiceTest extends AbstractAWETest {
+public class NewStatisticsServiceTest extends AbstractNeoServiceTest {
 
 	private final static String PROPERTIES = "PROPERTIES";
 	private final static String NEIGHBOURS = "Neighbours";
 	private final static String NETWORK = "Network";
+	private final static String SECTOR = "Sector";
 
 	private static Logger LOGGER = Logger
 			.getLogger(NewDatasetServiceTest.class);
@@ -41,6 +42,8 @@ public class NewStatisticsServiceTest extends AbstractAWETest {
 	public static final void beforeClass() {
 		clearDb();
 		initializeDb();
+		
+		new LogStarter().earlyStartup();
 	}
 
 	@AfterClass
@@ -53,10 +56,7 @@ public class NewStatisticsServiceTest extends AbstractAWETest {
 	private NewStatisticsService service = new NewStatisticsService();
 	private Node referenceNode = graphDatabaseService.getReferenceNode();
 
-	@Before
-	public final void before() {
-
-	}
+	
 
 	@After
 	public final void after() {
@@ -264,6 +264,158 @@ public class NewStatisticsServiceTest extends AbstractAWETest {
 		service.saveVault(referenceNode, propVault);
 		LOGGER.debug("finish saveVaultDuplicateStatisticsNegativeTest()");
 
+	}
+	
+	/**
+	 * testing method saveVault(Node rootNode, IVault vault)
+	 * 
+	 * @throws DatabaseException
+	 * @throws InvalidStatisticsParameterException
+	 * @throws DuplicateStatisticsException
+	 */
+	@Test
+	public void doubleSaveVaultPositiveTest() throws DatabaseException,
+			InvalidStatisticsParameterException, DuplicateStatisticsException {
+		LOGGER.debug("start doubleSaveVaultPositiveTest()");
+		StatisticsVault propVault = new StatisticsVault(PROPERTIES);
+		StatisticsVault neighboursSubVault = new StatisticsVault(NEIGHBOURS);
+		StatisticsVault networkSubVault = new StatisticsVault(NETWORK);
+		StatisticsVault sectorSubVault = new StatisticsVault(SECTOR);
+		
+		propVault.addSubVault(neighboursSubVault);
+		propVault.addSubVault(networkSubVault);
+		networkSubVault.addSubVault(sectorSubVault);
+		
+		// create PropertyStatistics
+		NewPropertyStatistics propStat = new NewPropertyStatistics("Counter",
+				Integer.class);
+		propStat.updatePropertyMap(1, 1);
+		propStat.updatePropertyMap(2, 1);
+		propStat.updatePropertyMap(1, 1);
+		// add PropertyStatistics to propertyVault
+		propVault.addPropertyStatistics(propStat);
+		
+		NewPropertyStatistics sectorStat = new NewPropertyStatistics("Sector counter", 
+				Integer.class);
+		sectorStat.updatePropertyMap(3, 5);
+		sectorStat.updatePropertyMap(4, 10);
+		// add PropertyStatistics to sectorVault
+		sectorSubVault.addPropertyStatistics(sectorStat);
+		
+		NewPropertyStatistics neighbourStat = new NewPropertyStatistics("Neighbours counter",
+				Integer.class);
+		neighbourStat.updatePropertyMap(2, 3);
+		neighbourStat.updatePropertyMap(3, 2);
+		// add PropertyStatistics to neighboursVault
+		neighboursSubVault.addPropertyStatistics(neighbourStat);
+		
+		// create spy object
+		NewStatisticsService mockService = Mockito.spy(service);
+
+		mockService.saveVault(referenceNode, propVault);
+		propVault.setIsStatisticsChanged(true);
+		mockService.saveVault(referenceNode, propVault);
+		// check whether the method savePropertyStatistics() offered
+		Mockito.verify(mockService, Mockito.times(6)).savePropertyStatistics(
+				(NewPropertyStatistics) Mockito.any(), (Node) Mockito.any());
+
+		boolean hasStatisticsRelationships = referenceNode.hasRelationship(
+				StatisticsRelationships.STATISTICS, Direction.OUTGOING);
+		Assert.assertTrue("not create StatisticsRelationships.STATISTICS",
+				hasStatisticsRelationships);
+
+		Node propVaultNode = referenceNode.getSingleRelationship(
+				StatisticsRelationships.STATISTICS, Direction.OUTGOING)
+				.getEndNode();
+		checkVaultNode(propVaultNode, PROPERTIES, StatisticsVault.class, 0, 2);
+
+		for (Node subVaultNode : service.getSubVaultNodes(propVaultNode)) {
+			if (subVaultNode.getProperty(NewStatisticsService.NAME).toString().equals(NEIGHBOURS)) {
+				checkVaultNode(subVaultNode, NEIGHBOURS, StatisticsVault.class, 0, 0);
+			}
+			else {
+				checkVaultNode(subVaultNode, NETWORK, StatisticsVault.class, 0, 1);
+			}
+ 		}
+		LOGGER.debug("finish doubleSaveVaultPositiveTest()");
+
+	}
+
+	/**
+	 * testing method saveVault(Node rootNode, IVault vault)
+	 * 
+	 * @throws DatabaseException
+	 * @throws InvalidStatisticsParameterException
+	 * @throws DuplicateStatisticsException
+	 */
+	@Test
+	public void deleteVaultPositiveTest() throws DatabaseException,
+			InvalidStatisticsParameterException, DuplicateStatisticsException {
+		LOGGER.debug("start doubleSaveVaultPositiveTest()");
+		StatisticsVault propVault = new StatisticsVault(PROPERTIES);
+		StatisticsVault neighboursSubVault = new StatisticsVault(NEIGHBOURS);
+		StatisticsVault networkSubVault = new StatisticsVault(NETWORK);
+		StatisticsVault sectorSubVault = new StatisticsVault(SECTOR);
+		
+		propVault.addSubVault(neighboursSubVault);
+		propVault.addSubVault(networkSubVault);
+		networkSubVault.addSubVault(sectorSubVault);
+		
+		// create PropertyStatistics
+		NewPropertyStatistics propStat = new NewPropertyStatistics("Counter",
+				Integer.class);
+		propStat.updatePropertyMap(1, 1);
+		propStat.updatePropertyMap(2, 1);
+		propStat.updatePropertyMap(1, 1);
+		// add PropertyStatistics to propertyVault
+		propVault.addPropertyStatistics(propStat);
+		
+		NewPropertyStatistics sectorStat = new NewPropertyStatistics("Sector counter", 
+				Integer.class);
+		sectorStat.updatePropertyMap(3, 5);
+		sectorStat.updatePropertyMap(4, 10);
+		// add PropertyStatistics to sectorVault
+		sectorSubVault.addPropertyStatistics(sectorStat);
+		
+		NewPropertyStatistics neighbourStat = new NewPropertyStatistics("Neighbours counter",
+				Integer.class);
+		neighbourStat.updatePropertyMap(2, 3);
+		neighbourStat.updatePropertyMap(3, 2);
+		// add PropertyStatistics to neighboursVault
+		neighboursSubVault.addPropertyStatistics(neighbourStat);
+		
+		// create spy object
+		NewStatisticsService mockService = Mockito.spy(service);
+
+		mockService.saveVault(referenceNode, propVault);
+		mockService.deleteVault(referenceNode);
+		// check whether the method savePropertyStatistics() offered
+		Mockito.verify(mockService, Mockito.times(3)).savePropertyStatistics(
+				(NewPropertyStatistics) Mockito.any(), (Node) Mockito.any());
+
+		boolean hasStatisticsRelationships = referenceNode.hasRelationship(
+				StatisticsRelationships.STATISTICS, Direction.OUTGOING);
+		Assert.assertFalse("not delete StatisticsRelationships.STATISTICS",
+				hasStatisticsRelationships);
+	}
+	
+	/**
+	 * testing method deleteVault(Node rootNode) when parameter
+	 * rootNode == null
+	 * 
+	 * @throws DatabaseException
+	 * @throws InvalidStatisticsParameterException
+	 * @throws DuplicateStatisticsException
+	 */
+	@Test(expected = InvalidStatisticsParameterException.class)
+	public void deleteVaultNullParameterRootNodeNegativeTest()
+			throws DatabaseException, InvalidStatisticsParameterException,
+			DuplicateStatisticsException {
+		LOGGER.debug("start deleteVaultNullParameterRootNodeNegativeTest()");
+		StatisticsVault propVault = new StatisticsVault(PROPERTIES);
+		service.saveVault(referenceNode, propVault);
+		service.deleteVault(null);
+		LOGGER.debug("finish deleteVaultNullParameterRootNodeNegativeTest()");
 	}
 
 	/**

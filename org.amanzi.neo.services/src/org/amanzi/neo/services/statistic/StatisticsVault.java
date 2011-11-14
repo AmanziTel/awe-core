@@ -13,15 +13,14 @@
 
 package org.amanzi.neo.services.statistic;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
-import org.amanzi.neo.services.NewPropertyStatistics;
-import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.IndexPropertyException;
 import org.amanzi.neo.services.exceptions.InvalidStatisticsParameterException;
+import org.amanzi.neo.services.statistic.internal.NewPropertyStatistics;
 import org.apache.log4j.Logger;
 
 /**
@@ -36,12 +35,11 @@ public class StatisticsVault implements IVault {
     private Map<String, IVault> subVaults = new HashMap<String, IVault>();
     private int count;
     private String type;
+    private boolean isStatisticsChanged = false;
     private Map<String, NewPropertyStatistics> propertyStatisticsMap = new HashMap<String, NewPropertyStatistics>();
-
+    
     private static Logger LOGGER = Logger.getLogger(StatisticsVault.class);
 
-    private static final String TRUE = "true";
-    private static final String FALSE = "false";
     private static final String PARAM_NODE_TYPE = "nodeType";
     private static final String PARAM_PROP_NAME = "propName";
     private static final String PARAM_PROP_VALUE = "propValue";
@@ -97,6 +95,7 @@ public class StatisticsVault implements IVault {
 
     @Override
     public void setCount(int count) {
+        isStatisticsChanged = true;
         this.count = count;
     }
 
@@ -152,6 +151,101 @@ public class StatisticsVault implements IVault {
 
     }
 
+    @Override
+    public void removeProperty(String nodeType, String propName, Object propValue) throws IndexPropertyException,
+            InvalidStatisticsParameterException {
+
+        LOGGER.debug("start method removeProperty(String nodeType, String propName, Object propValue)");
+
+        if (nodeType == null) {
+            LOGGER.error("InvalidStatisticsParameterException: parameter nodeType is null");
+            throw new InvalidStatisticsParameterException(PARAM_NODE_TYPE, nodeType);
+        }
+        if (propName == null) {
+            LOGGER.error("InvalidStatisticsParameterException: parameter propName is null");
+            throw new InvalidStatisticsParameterException(PARAM_PROP_NAME, propName);
+        }
+        if (propValue == null) {
+            LOGGER.error("InvalidStatisticsParameterException: parameter propValue is null");
+            throw new InvalidStatisticsParameterException(PARAM_PROP_VALUE, propValue);
+        }
+        if (nodeType.isEmpty()) {
+            LOGGER.error("InvalidStatisticsParameterException: parameter nodeType is empty String");
+            throw new InvalidStatisticsParameterException(PARAM_NODE_TYPE, nodeType);
+        }
+        if (propName.isEmpty()) {
+            LOGGER.error("InvalidStatisticsParameterException: parameter propName is empty String");
+            throw new InvalidStatisticsParameterException(PARAM_PROP_NAME, propName);
+        }
+
+        IVault vault;
+        if (this.getType().equals(nodeType)) {
+            vault = this;
+        } else {
+            this.setCount(this.getCount() - 1);
+            vault = this.getSubVault(nodeType);
+        }
+        try {
+            NewPropertyStatistics propStat = ((StatisticsVault)vault).getPropertyStatistics(propName, propValue.getClass());
+            propStat.updatePropertyMap(propValue, -1);
+            vault.setCount(vault.getCount() - 1);
+        } catch (IndexPropertyException e) {
+            this.setCount(this.getCount() + 1);
+            LOGGER.error("IndexPropertyException: index property has wrong type");
+            throw e;
+        }
+        LOGGER.debug("finish method removeProperty(String nodeType, String propName, Object propValue)");
+    }
+    
+    @Override
+    public void renamePropertyValue(String nodeType, String propName, Object oldPropValue, Object newPropValue) throws IndexPropertyException,
+            InvalidStatisticsParameterException {
+        
+        LOGGER.debug("start method renamePropertyValue(String nodeType, String propName, Object oldPropValue, Object newPropValue)");
+
+        if (nodeType == null) {
+            LOGGER.error("InvalidStatisticsParameterException: parameter nodeType is null");
+            throw new InvalidStatisticsParameterException(PARAM_NODE_TYPE, nodeType);
+        }
+        if (nodeType.isEmpty()) {
+            LOGGER.error("InvalidStatisticsParameterException: parameter nodeType is empty String");
+            throw new InvalidStatisticsParameterException(PARAM_NODE_TYPE, nodeType);
+        }
+        if (propName == null) {
+            LOGGER.error("InvalidStatisticsParameterException: parameter propName is null");
+            throw new InvalidStatisticsParameterException(PARAM_PROP_NAME, propName);
+        }
+        if (propName.isEmpty()) {
+            LOGGER.error("InvalidStatisticsParameterException: parameter propName is empty String");
+            throw new InvalidStatisticsParameterException(PARAM_PROP_NAME, propName);
+        }
+        if (oldPropValue == null) {
+            LOGGER.error("InvalidStatisticsParameterException: parameter oldPropValue is null");
+            throw new InvalidStatisticsParameterException(PARAM_PROP_VALUE, oldPropValue);
+        }
+        if (newPropValue == null) {
+            LOGGER.error("InvalidStatisticsParameterException: parameter newPropValue is null");
+            throw new InvalidStatisticsParameterException(PARAM_PROP_VALUE, newPropValue);
+        }
+
+        IVault vault;
+        if (this.getType().equals(nodeType)) {
+            vault = this;
+        } else {
+            vault = this.getSubVault(nodeType);
+        }
+        try {
+            NewPropertyStatistics propStat = ((StatisticsVault)vault).getPropertyStatistics(propName, oldPropValue.getClass());
+            propStat.updatePropertyMap(oldPropValue, -1);
+            propStat.updatePropertyMap(newPropValue, 1);
+        } catch (IndexPropertyException e) {
+            this.setCount(this.getCount() + 1);
+            LOGGER.error("IndexPropertyException: index property has wrong type");
+            throw e;
+        }
+        LOGGER.debug("finish method renamePropertyValue(String nodeType, String propName, Object oldPropValue, Object newPropValue)");
+    }
+
     /**
      * this method find propertyStatistics by name and check matches the types
      * 
@@ -163,10 +257,7 @@ public class StatisticsVault implements IVault {
     private NewPropertyStatistics getPropertyStatistics(String name, Class< ? > klass) throws IndexPropertyException {
         NewPropertyStatistics propStat = this.getPropertyStatisticsMap().get(name);
         if (propStat != null) {
-            if (propStat.getKlass().equals(klass)) {
-                return propStat;
-            }
-            throw new IndexPropertyException();
+            return propStat;
         } else {
             propStat = new NewPropertyStatistics(name, klass);
             this.addPropertyStatistics(propStat);
@@ -190,83 +281,394 @@ public class StatisticsVault implements IVault {
         return result;
     }
 
+    
+
     @Override
-    public Object parse(String nodeType, String propertyName, String propertyValue) throws AWEException {
-        LOGGER.debug("start method parse(String nodeType, String propertyName, String propertyValue)");
-        if (nodeType == null || nodeType.isEmpty()) {
-            LOGGER.error("InvalidStatisticsParameterException: parameter nodeType is null or Empty String");
-            throw new InvalidStatisticsParameterException(PARAM_NODE_TYPE, nodeType);
-        }
-        if (propertyName == null || propertyName.isEmpty()) {
-            LOGGER.error("InvalidStatisticsParameterException: parameter propertyName is null or Empty String");
-            throw new InvalidStatisticsParameterException(PARAM_PROP_NAME, propertyName);
-        }
-        if (propertyValue == null || propertyValue.isEmpty()) {
-            return null;
-        }
-
-        boolean hasPropStat;
-        IVault vault;
-
-        if (this.getType().equals(nodeType)) {
-            vault = this;
+    public int getNodeCount(String nodeType) {
+        if (this.type.equals(nodeType)) {
+            return this.count;
         } else {
-            vault = this.getSubVault(nodeType);
-        }
-
-        hasPropStat = vault.getPropertyStatisticsMap().containsKey(propertyName);
-        try {
-            if (hasPropStat) {
-                return vault.getPropertyStatisticsMap().get(propertyName).parseValue(propertyValue);
-            } else {
-                Object result = autoParse(propertyValue);
-                vault.addPropertyStatistics(new NewPropertyStatistics(propertyName, result.getClass()));
-                return result;
+            for (String type : this.subVaults.keySet()) {
+                if (type.equals(nodeType)) {
+                    return this.subVaults.get(type).getCount();
+                }
             }
-        } catch (AWEException e) {
-            LOGGER.error(e.getMessage());
-            throw e;
         }
+        return 0;
     }
 
-    /**
-     * this method try to parse String propValue if its type is unknown
-     * 
-     * @param propertyValue - String propValue
-     * @return Object parseValue
-     */
-    private Object autoParse(String propertyValue) {
+    @Override
+    public int getPropertyCount(String nodeType, String propertyName) {
+        Map<Object, Integer> allProperties = getAllProperties(nodeType, propertyName);
+        return allProperties.size();
+    }
 
-        try {
-            DecimalFormat format = new DecimalFormat();
-            char separator = format.getDecimalFormatSymbols().getDecimalSeparator();
-            if (propertyValue.indexOf(separator) != -1) {
-                Number numberValue = NumberFormat.getNumberInstance().parse(propertyValue);
-                int lastIndex = propertyValue.indexOf("e") + propertyValue.indexOf("E");
-                lastIndex = (lastIndex < 0) ? (propertyValue.length() - 1) : lastIndex;
+    @Override
+    public int getPropertyValueCount(String nodeType, String propertyName, Object propertyValue) {
+        int countOfPropertyValue = 0;
+        Map<Object, Integer> allProperties = getAllProperties(nodeType, propertyName);
+        for (Object propValue : allProperties.keySet()) {
+            if (propValue.toString().equals(propertyValue.toString())) {
+                countOfPropertyValue += allProperties.get(propValue);
+            }
+        }
+        return countOfPropertyValue;
+    }
 
-                Boolean isDouble = 7 < (lastIndex - propertyValue.indexOf(separator));
+    @Override
+    public Set<String> getAllPropertyNames(String nodeType) {
+        Set<String> result = new HashSet<String>();
+        
+        IVault subVault = subVaults.get(nodeType);
+        if (subVault != null) {
+            result.addAll(subVault.getPropertyStatisticsMap().keySet());
+        }
+        
+        return result;
+    }
 
-                if (isDouble) {
-                    return numberValue.doubleValue();
+    @Override
+    public Map<Object, Integer> getAllProperties(String nodeType, String propertyName) {
+        return getAllProperties(this, nodeType, propertyName);
+    }
+
+    private Map<Object, Integer> getAllProperties(IVault subVault, String nodeType, String propertyName) {
+        Map<Object, Integer> allProperties = new HashMap<Object, Integer>();
+        if (subVault.getSubVaults().size() != 0) {
+            for (String nameOfSubVault : subVault.getSubVaults().keySet()) {
+                IVault subV = subVault.getSubVaults().get(nameOfSubVault);
+                if (subV.getType().equals(nodeType)) {
+                    allProperties.putAll(getAllPropertiesWithName(subV, propertyName));
                 } else {
-                    return numberValue.floatValue();
-                }
-            } else {
-                try {
-                    return Integer.parseInt(propertyValue);
-                } catch (NumberFormatException e) {
-                    return Long.parseLong(propertyValue);
+                    allProperties.putAll(getAllProperties(subV, nodeType, propertyName));
                 }
             }
-        } catch (Exception e) {
-            if (propertyValue.equalsIgnoreCase(TRUE)) {
-                return Boolean.TRUE;
-            } else if (propertyValue.equalsIgnoreCase(FALSE)) {
-                return Boolean.FALSE;
+        } else {
+            for (IVault subSubVault : subVault.getSubVaults().values()) {
+                if (subSubVault.getType().equals(nodeType)) {
+                    allProperties.putAll(getAllPropertiesWithName(subSubVault, propertyName));
+                }
             }
-            return propertyValue;
         }
 
+        return allProperties;
     }
+
+    @Override
+    public Map<Object, Integer> getAllPropertiesWithName(String propertyName) {
+        return getAllPropertiesWithName(this, propertyName);
+    }
+
+    private Map<Object, Integer> getAllPropertiesWithName(IVault subVault, String propertyName) {
+        Map<Object, Integer> allProperties = new HashMap<Object, Integer>();
+        if (subVault.getSubVaults().values().size() != 0) {
+            for (String nameOfSubVault : subVault.getSubVaults().keySet()) {
+                IVault subV = subVault.getSubVaults().get(nameOfSubVault);
+                allProperties.putAll(getAllPropertiesWithName(subV, propertyName));
+            }
+        } else {
+            Map<String, NewPropertyStatistics> propertyStatisticMap = subVault.getPropertyStatisticsMap();
+            for (String property : propertyStatisticMap.keySet()) {
+                if (property.equals(propertyName)) {
+                    NewPropertyStatistics newPropertyStatistic = propertyStatisticMap.get(property);
+                    Map<Object, Integer> propertyMap = newPropertyStatistic.getPropertyMap();
+                    for (Object key : propertyMap.keySet()) {
+                        allProperties.put(key, propertyMap.get(key));
+                    }
+                }
+            }
+        }
+
+        return allProperties;
+    }
+
+    @Override
+    public Set<String> getAllProperties(String nodeType, Class< ? > klass) {
+        Set<String> result = new HashSet<String>();
+        
+        IVault subVault = subVaults.get(nodeType);
+        if (subVault != null) {
+            for (NewPropertyStatistics singleProperty : subVault.getPropertyStatisticsMap().values()) {
+                if (singleProperty.getKlass().equals(klass)) {
+                    result.add(singleProperty.getName());
+                }
+            }
+        }
+        
+        return result;
+    }
+
+    @Override
+    public void deletePropertiesWithNodeType(String nodeType) {
+        deletePropertiesWithNodeType(this, nodeType);
+    }
+
+    private void deletePropertiesWithNodeType(IVault vault, String nodeType) {
+        if (vault.getType().equals(nodeType)) {
+            vault.getSubVaults().remove(nodeType);
+        } else {
+            for (String tempNodeType : vault.getSubVaults().keySet()) {
+                IVault subVault = vault.getSubVaults().get(tempNodeType);
+                if (tempNodeType.equals(nodeType)) {
+                    vault.getSubVaults().remove(nodeType);
+                    break;
+                } else {
+                    deletePropertiesWithNodeType(subVault, nodeType);
+                }
+            }
+        }
+    }
+
+    @Override
+    public void deleteProperties(String propertyName) {
+        deleteProperties(this, propertyName);
+    }
+
+    private void deleteProperties(IVault vault, String propertyName) {
+        if (vault.getSubVaults().values().size() == 0) {
+            for (String property : vault.getPropertyStatisticsMap().keySet()) {
+                if (property.equals(propertyName)) {
+                    vault.getPropertyStatisticsMap().remove(propertyName);
+                    break;
+                }
+            }
+        } else {
+            for (String tempNodeType : vault.getSubVaults().keySet()) {
+                IVault subVault = vault.getSubVaults().get(tempNodeType);
+                if (subVault.getSubVaults().values().size() == 0) {
+                    for (String property : subVault.getPropertyStatisticsMap().keySet()) {
+                        if (property.equals(propertyName)) {
+                            subVault.getPropertyStatisticsMap().remove(propertyName);
+                            break;
+                        }
+                    }
+                } else {
+                    deleteProperties(subVault, propertyName);
+                }
+            }
+        }
+    }
+
+    @Override
+    public void deleteProperties(String nodeType, String propertyName) {
+        deleteProperties(this, nodeType, propertyName);
+    }
+
+    private void deleteProperties(IVault vault, String nodeType, String propertyName) {
+        if (vault.getSubVaults().values().size() == 0) {
+            if (vault.getType().equals(nodeType)) {
+                for (String property : vault.getPropertyStatisticsMap().keySet()) {
+                    if (property.equals(propertyName)) {
+                        vault.getPropertyStatisticsMap().remove(propertyName);
+                        break;
+                    }
+                }
+            }
+        } else {
+            for (String tempNodeType : vault.getSubVaults().keySet()) {
+                IVault subVault = vault.getSubVaults().get(tempNodeType);
+                if (subVault.getSubVaults().values().size() == 0) {
+                    if (subVault.getType().equals(nodeType)) {
+                        for (String property : subVault.getPropertyStatisticsMap().keySet()) {
+                            if (property.equals(propertyName)) {
+                                subVault.getPropertyStatisticsMap().remove(propertyName);
+                                break;
+                            }
+                        }
+                    }
+                } else {
+                    deleteProperties(subVault, nodeType, propertyName);
+                }
+            }
+        }
+    }
+
+    @Override
+    public void deleteProperties(String nodeType, String propertyName, Object propertyValue) {
+        deleteProperties(this, nodeType, propertyName, propertyValue);
+    }
+
+    private void deleteProperties(IVault vault, String nodeType, String propertyName, Object propertyValue) {
+        if (vault.getSubVaults().values().size() == 0) {
+            if (vault.getType().equals(nodeType)) {
+                for (String property : vault.getPropertyStatisticsMap().keySet()) {
+                    if (propertyName.equals(property)) {
+                        NewPropertyStatistics propertyStatistics = vault.getPropertyStatisticsMap().get(property);
+                        Map<Object, Integer> propertyMap = propertyStatistics.getPropertyMap();
+                        for (Object propValue : propertyMap.keySet()) {
+                            if (propValue.toString().equals(propertyValue.toString())) {
+                                propertyMap.remove(propValue);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            for (String tempNodeType : vault.getSubVaults().keySet()) {
+                IVault subVault = vault.getSubVaults().get(tempNodeType);
+                if (subVault.getSubVaults().values().size() == 0) {
+                    if (subVault.getType().equals(nodeType)) {
+                        for (String property : subVault.getPropertyStatisticsMap().keySet()) {
+                            if (propertyName.equals(property)) {
+                                NewPropertyStatistics propertyStatistics = subVault.getPropertyStatisticsMap().get(property);
+                                Map<Object, Integer> propertyMap = propertyStatistics.getPropertyMap();
+                                for (Object propValue : propertyMap.keySet()) {
+                                    if (propValue.toString().equals(propertyValue.toString())) {
+                                        propertyMap.remove(propValue);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    deleteProperties(subVault, nodeType, propertyName, propertyValue);
+                }
+            }
+        }
+    }
+
+    @Override
+    public void updatePropertiesCount(String nodeType, String propertyName, Object propertyValue, int newCount) {
+        updatePropertiesCount(this, nodeType, propertyName, propertyValue, newCount);
+    }
+
+    private void updatePropertiesCount(IVault vault, String nodeType, String propertyName, Object propertyValue, int newCount) {
+        if (vault.getSubVaults().values().size() == 0) {
+            if (vault.getType().equals(nodeType)) {
+                for (String property : vault.getPropertyStatisticsMap().keySet()) {
+                    if (propertyName.equals(property)) {
+                        NewPropertyStatistics propertyStatistics = vault.getPropertyStatisticsMap().get(property);
+                        Map<Object, Integer> propertyMap = propertyStatistics.getPropertyMap();
+                        for (Object propValue : propertyMap.keySet()) {
+                            if (propValue.toString().equals(propertyValue.toString())) {
+                                propertyMap.remove(propValue);
+                                propertyMap.put(propertyValue, newCount);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            for (String tempNodeType : vault.getSubVaults().keySet()) {
+                IVault subVault = vault.getSubVaults().get(tempNodeType);
+                if (subVault.getSubVaults().values().size() == 0) {
+                    if (subVault.getType().equals(nodeType)) {
+                        for (String property : subVault.getPropertyStatisticsMap().keySet()) {
+                            if (propertyName.equals(property)) {
+                                NewPropertyStatistics propertyStatistics = subVault.getPropertyStatisticsMap().get(property);
+                                Map<Object, Integer> propertyMap = propertyStatistics.getPropertyMap();
+                                for (Object propValue : propertyMap.keySet()) {
+                                    if (propValue.toString().equals(propertyValue.toString())) {
+                                        propertyMap.remove(propValue);
+                                        propertyMap.put(propertyValue, newCount);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    updatePropertiesCount(subVault, nodeType, propertyName, propertyValue, newCount);
+                }
+            }
+        }
+    }
+
+    @Override
+    public boolean isStatisticsChanged() {
+        return isStatisticsChanged;
+    }
+
+    @Override
+    public void setIsStatisticsChanged(boolean isStatisticsChanged) {
+        this.isStatisticsChanged = isStatisticsChanged;
+    }
+
+    @Override
+    public Number getMinValue(String nodeType, String propertyName) {
+        for (IVault mainVault : subVaults.values()) {
+            Number result = getMinValue(mainVault, nodeType, propertyName, false);
+            if (result != null)
+                return result;
+        }
+        return null;
+    }
+    
+    /**
+     * Recursive method to find minimum value
+     *
+     * @param vault This vault or sub-vault
+     * @param nodeType Type of node
+     * @param propertyName Name of property
+     * @return Minimum value of vault or sub-vaults or null
+     */
+    private Number getMinValue(IVault vault, String nodeType, String propertyName, boolean isNeedType) {
+        if (isNeedType || vault.getType().equals(nodeType)) {
+            isNeedType = true;
+            Map<String, NewPropertyStatistics> localPropertyStatisticsMap =
+                    vault.getPropertyStatisticsMap();
+            if (localPropertyStatisticsMap.keySet().contains(propertyName)) {
+                NewPropertyStatistics propertyStatistics = 
+                        localPropertyStatisticsMap.get(propertyName);
+                return propertyStatistics.getMinValue();
+            }
+            else {
+                for (IVault subVault : vault.getSubVaults().values()) {
+                    return getMinValue(subVault, nodeType, propertyName, isNeedType);
+                }
+            }
+        }
+        else {
+            for (IVault subVault : vault.getSubVaults().values()) {
+                return getMinValue(subVault, nodeType, propertyName, isNeedType);
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public Number getMaxValue(String nodeType, String propertyName) {
+        for (IVault mainVault : subVaults.values()) {
+            Number result = getMaxValue(mainVault, nodeType, propertyName, false);
+            if (result != null)
+                return result;
+        }
+        return null;
+    }
+    
+    /**
+     * Recursive method to find maximum value
+     *
+     * @param vault This vault or sub-vault
+     * @param nodeType Type of node
+     * @param propertyName Name of property
+     * @return Maximum value of vault or sub-vaults or null
+     */
+    private Number getMaxValue(IVault vault, String nodeType, String propertyName, boolean isNeedType) {
+        if (isNeedType || vault.getType().equals(nodeType)) {
+            isNeedType = true;
+            Map<String, NewPropertyStatistics> localPropertyStatisticsMap =
+                    vault.getPropertyStatisticsMap();
+            if (localPropertyStatisticsMap.keySet().contains(propertyName)) {
+                NewPropertyStatistics propertyStatistics = 
+                        localPropertyStatisticsMap.get(propertyName);
+                return propertyStatistics.getMaxValue();
+            }
+            else {
+                for (IVault subVault : vault.getSubVaults().values()) {
+                    return getMaxValue(subVault, nodeType, propertyName, isNeedType);
+                }
+            }
+        }
+        else {
+            for (IVault subVault : vault.getSubVaults().values()) {
+                return getMaxValue(subVault, nodeType, propertyName, isNeedType);
+            }
+        }
+        return null;
+    }
+
 }

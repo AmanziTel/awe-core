@@ -15,18 +15,21 @@ package org.amanzi.neo.services.model.impl;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.amanzi.neo.db.manager.DatabaseManagerFactory;
+import org.amanzi.neo.services.IndexService;
+import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewAbstractService;
+import org.amanzi.neo.services.NewDatasetService;
+import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.indexes.MultiPropertyIndex;
-import org.amanzi.neo.services.indexes.MultiPropertyIndex.MultiDoubleConverter;
-import org.amanzi.neo.services.indexes.MultiPropertyIndex.MultiTimeIndexConverter;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Transaction;
 
 /**
  * <p>
@@ -48,7 +51,25 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
     protected double min_longitude = Double.MAX_VALUE;
     protected double max_longitude = -Double.MAX_VALUE;
 
-    private Map<String, List<MultiPropertyIndex< ? >>> indexes;
+    private Map<INodeType, List<MultiPropertyIndex< ? >>> indexes = new HashMap<INodeType, List<MultiPropertyIndex< ? >>>();
+
+    private IndexService indexService = NeoServiceFactory.getInstance().getIndexService();
+
+    private NewDatasetService datasetService = NeoServiceFactory.getInstance().getNewDatasetService();
+
+    protected AbstractIndexedModel(Node rootNode, INodeType nodeType) throws AWEException {
+        super(nodeType);
+        this.rootNode = rootNode;
+
+        NewDatasetService dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
+        Node gis = dsServ.getGisNodeByDataset(rootNode);
+        if (gis != null) {
+            min_latitude = (Double)gis.getProperty(DriveModel.MIN_LATITUDE, min_latitude);
+            min_longitude = (Double)gis.getProperty(DriveModel.MIN_LONGITUDE, min_longitude);
+            max_latitude = (Double)gis.getProperty(DriveModel.MAX_LATITUDE, max_latitude);
+            max_longitude = (Double)gis.getProperty(DriveModel.MAX_LONGITUDE, max_longitude);
+        }
+    }
 
     /**
      * Creates and stores a location index for the defined node type.
@@ -56,25 +77,44 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
      * @param nodeType
      * @throws IOException if was unable to create an index in the database.
      */
-    protected void addLocationIndex(INodeType nodeType) throws IOException {
+    protected void addLocationIndex(INodeType nodeType) throws AWEException {
         LOGGER.debug("addLocationIndex(" + nodeType + ")");
+
+        // since location index exist it should also be a GIS node
+        datasetService.getGisNodeByDataset(rootNode);
 
         // validate parameters
         if (nodeType == null) {
             throw new IllegalArgumentException("Node type is null.");
         }
 
-        String typeName = nodeType.getId();
-        List<MultiPropertyIndex< ? >> indList = indexes.get(typeName);
+        List<MultiPropertyIndex< ? >> indList = indexes.get(nodeType);
         if (indList == null) {
             indList = new ArrayList<MultiPropertyIndex< ? >>();
-            indexes.put(typeName, indList);
+            indexes.put(nodeType, indList);
         }
 
-        MultiPropertyIndex<Double> index = createLocationIndex(nodeType);
+        MultiPropertyIndex<Double> index = indexService.createLocationIndex(rootNode, nodeType);
         if (!indList.contains(index)) {
             indList.add(index);
         }
+    }
+    
+    protected Iterable<Node> getNodesInBounds(INodeType nodeType, double minLat, double minLon, double maxLat, double maxLon) throws AWEException{
+        //validate
+        if(nodeType == null){
+            throw new IllegalArgumentException("Node type is null.");
+        }
+        
+        List<MultiPropertyIndex< ? >> indList = indexes.get(nodeType);
+        if(indList == null){
+            return datasetService.emptyTraverser(rootNode);
+        }
+        MultiPropertyIndex<Double> locationIndex = indexService.createLocationIndex(rootNode, nodeType);
+        if (!indList.contains(locationIndex)) {
+            return datasetService.emptyTraverser(rootNode);
+        }
+        return locationIndex.searchTraverser(new Double[]{minLat, minLon}, new Double[]{maxLat, maxLon});
     }
 
     /**
@@ -83,7 +123,7 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
      * @param nodeType
      * @throws IOException if was unable to create an index in the database.
      */
-    protected void addTimestampIndex(INodeType nodeType) throws IOException {
+    protected void addTimestampIndex(INodeType nodeType) throws AWEException {
         LOGGER.debug("addTimestampIndex(" + nodeType + ")");
 
         // validate parameters
@@ -91,14 +131,13 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
             throw new IllegalArgumentException("Node type is null.");
         }
 
-        String typeName = nodeType.getId();
-        List<MultiPropertyIndex< ? >> indList = indexes.get(typeName);
+        List<MultiPropertyIndex< ? >> indList = indexes.get(nodeType);
         if (indList == null) {
             indList = new ArrayList<MultiPropertyIndex< ? >>();
-            indexes.put(typeName, indList);
+            indexes.put(nodeType, indList);
         }
 
-        MultiPropertyIndex<Long> index = createTimestampIndex(nodeType);
+        MultiPropertyIndex<Long> index = indexService.createTimestampIndex(rootNode, nodeType);
         if (!indList.contains(index)) {
             indList.add(index);
         }
@@ -117,8 +156,8 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
             throw new IllegalArgumentException("Node is null.");
         }
 
-        String typeName = node.getProperty(NewAbstractService.TYPE, "").toString();
-        List<MultiPropertyIndex< ? >> indList = indexes.get(typeName);
+        INodeType type = NodeTypeManager.getType(node.getProperty(NewAbstractService.TYPE, StringUtils.EMPTY).toString());
+        List<MultiPropertyIndex< ? >> indList = indexes.get(type);
         if (indList != null) {
             for (MultiPropertyIndex< ? > index : indList) {
                 try {
@@ -141,22 +180,6 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
                 index.finishUp();
             }
         }
-    }
-
-    private MultiPropertyIndex<Long> createTimestampIndex(INodeType nodeType) throws IOException {
-        String indexName = NewAbstractService.getIndexKey(getRootNode(), nodeType);
-        MultiPropertyIndex<Long> result = new MultiPropertyIndex<Long>(indexName, new String[] {DriveModel.TIMESTAMP},
-                new MultiTimeIndexConverter(), 10);
-        result.initialize(DatabaseManagerFactory.getDatabaseManager().getDatabaseService(), getRootNode());
-        return result;
-    }
-
-    private MultiPropertyIndex<Double> createLocationIndex(INodeType nodeType) throws IOException {
-        String indexName = NewAbstractService.getIndexKey(getRootNode(), nodeType);
-        MultiPropertyIndex<Double> result = new MultiPropertyIndex<Double>(indexName, new String[] {DriveModel.LATITUDE,
-                DriveModel.LONGITUDE}, new MultiDoubleConverter(0.001), 10);
-        result.initialize(DatabaseManagerFactory.getDatabaseManager().getDatabaseService(), getRootNode());
-        return result;
     }
 
     /**
@@ -227,29 +250,25 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
      * Writes the stored values of timestamp, latitude and longitude to database.
      */
     @Override
-    public void finishUp() {
+    public void finishUp() throws AWEException {
+        flushIndexes();
 
-        Transaction tx = DatabaseManagerFactory.getDatabaseManager().getDatabaseService().beginTx();
-        try {
+        Node rootNode = getRootNode();
 
-            Node rootNode = getRootNode();
-            rootNode.setProperty(DriveModel.MIN_TIMESTAMP, min_timestamp);
-            rootNode.setProperty(DriveModel.MAX_TIMESTAMP, max_timestamp);
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put(DriveModel.MIN_TIMESTAMP, min_timestamp);
+        params.put(DriveModel.MAX_TIMESTAMP, max_timestamp);
+        datasetService.setProperties(rootNode, params);
 
-            // TODO: approve code
-            // Node gis =
-            // NeoServiceFactory.getInstance().getNewDatasetService().getGisNodeByDataset(rootNode);
-            // if (gis != null) {
-            // gis.setProperty(DriveModel.MIN_LATITUDE, min_latitude);
-            // gis.setProperty(DriveModel.MIN_LONGITUDE, min_longitude);
-            // gis.setProperty(DriveModel.MAX_LATITUDE, max_latitude);
-            // gis.setProperty(DriveModel.MAX_LONGITUDE, max_longitude);
-            // }
-            tx.success();
-        } catch (Exception e) {
-            // TODO: handle exception
-        } finally {
-            tx.finish();
+        Node gis = datasetService.getGisNodeByDataset(rootNode);
+        if (gis != null) {
+            params = new HashMap<String, Object>();
+            params.put(DriveModel.MIN_LATITUDE, min_latitude);
+            params.put(DriveModel.MIN_LONGITUDE, min_longitude);
+            params.put(DriveModel.MAX_LATITUDE, max_latitude);
+            params.put(DriveModel.MAX_LONGITUDE, max_longitude);
+            datasetService.setProperties(gis, params);
         }
+        super.finishUp();
     }
 }

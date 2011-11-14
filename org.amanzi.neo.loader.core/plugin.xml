@@ -3,8 +3,51 @@
 <plugin>
    <extension-point id="org.amanzi.loader.core.parser" name="Extension for Parsers" schema="schema/org.amanzi.loader.core.parser.exsd"/>
    <extension-point id="org.amanzi.loader.core.saver" name="Extension for Saver" schema="schema/org.amanzi.loader.core.saver.exsd"/>
+   <extension-point id="org.amanzi.loader.core.newparser" name="Extension for new Parsers" schema="schema/org.amanzi.loader.core.newparser.exsd"/>
+   <extension-point id="org.amanzi.loader.core.newsaver" name="Extension for new Saver" schema="schema/org.amanzi.loader.core.newsaver.exsd"/>
+   
+    <extension
+         point="org.amanzi.loader.core.newparser">
+      <newparser
+            class="org.amanzi.neo.loader.core.newparser.CommonCSVParser"
+            id="org.amanzi.neo.loader.core.newparser.CommonCSVParser">
+      </newparser>
+   </extension>
+   <extension
+         point="org.amanzi.loader.core.newsaver">
+       <newsaver
+            class="org.amanzi.neo.loader.core.newsaver.NewNetworkSaver"
+            id="org.amanzi.neo.loader.core.newsaver.NewNetworkSaver">
+      </newsaver>
+       <newsaver
+            class="org.amanzi.neo.loader.core.newsaver.SectorSelectionSaver"
+            id="org.amanzi.neo.loader.core.newsaver.SectorSelectionSaver">
+      </newsaver>
+       <newsaver
+            class="org.amanzi.neo.loader.core.newsaver.NewNeighboursSaver"
+            id="org.amanzi.neo.loader.core.newsaver.NewNeighboursSaver">
+      </newsaver>
+        <newsaver
+            class="org.amanzi.neo.loader.core.newsaver.NewTemsSaver"
+            id="org.amanzi.neo.loader.core.newsaver.NewTemsSaver">
+      </newsaver>
+       <newsaver
+            class="org.amanzi.neo.loader.core.newsaver.NewRomesSaver"
+            id="org.amanzi.neo.loader.core.newsaver.NewRomesSaver">
+      </newsaver>
+      <newsaver
+            class="org.amanzi.neo.loader.core.newsaver.NewNemo1xSaver"
+            id="org.amanzi.neo.loader.core.newsaver.NewNemo1xSaver">
+      </newsaver>
+         <newsaver
+            class="org.amanzi.neo.loader.core.newsaver.NewNemo2xSaver"
+            id="org.amanzi.neo.loader.core.newsaver.NewNemo2xSaver">
+      </newsaver>
+   </extension>
    <extension
          point="org.amanzi.loader.core.parser">
+    
+      
       <parser
             class="org.amanzi.neo.loader.core.parser.CSVParser"
             id="org.amanzi.neo.loader.core.parser.CSVParser">
@@ -20,6 +63,7 @@
             class="org.amanzi.neo.loader.core.saver.impl.NeighbourSaver"
             id="org.amanzi.neo.loader.core.saver.impl.NeighbourSaver">
       </saver>
+      
       <saver
             class="org.amanzi.neo.loader.core.saver.impl.Nemo1xSaver"
             id="org.amanzi.neo.loader.core.saver.impl.Nemo1xSaver">
@@ -31,6 +75,10 @@
       <saver
             class="org.amanzi.neo.loader.core.saver.impl.NetworkSiteSaver"
             id="org.amanzi.neo.loader.core.saver.impl.NetworkSiteSaver">
+      </saver>
+      <saver
+            class="org.amanzi.neo.loader.core.saver.impl.ProbeSaver"
+            id="org.amanzi.neo.loader.core.saver.impl.ProbeSaver">
       </saver>
       <saver
             class="org.amanzi.neo.loader.core.saver.impl.RomesSaver"
@@ -72,6 +120,8 @@
             class="org.amanzi.neo.loader.core.saver.network.TrxSaver"
             id="org.amanzi.neo.loader.core.saver.network.TrxSaver">
       </saver>
+   
+      
    </extension>
 
 </plugin>

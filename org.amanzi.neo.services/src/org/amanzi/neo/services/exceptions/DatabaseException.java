@@ -41,4 +41,14 @@ public class DatabaseException extends AWEException {
     public Throwable getCause() {
         return dbException;
     }
+    
+    @Override
+    public String getMessage() {
+        if (message == null) {
+            return dbException.getMessage();
+        } else {
+            return message;
+        }
+    }
+    
 }

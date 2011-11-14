@@ -14,13 +14,18 @@
 package org.amanzi.neo.services.model.impl;
 
 import org.amanzi.neo.services.CorrelationService;
+import org.amanzi.neo.services.CorrelationService.CorrelationNodeTypes;
 import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.ICorrelationModel;
+import org.amanzi.neo.services.model.IDataElement;
+import org.amanzi.neo.services.model.impl.DataModel.DataElementIterable;
 import org.neo4j.graphdb.Node;
 
 /**
- * TODO Purpose of
  * <p>
+ * Correlation model describes relationships between network elements and dataset nodes.
  * </p>
  * 
  * @author grigoreva_a
@@ -28,12 +33,19 @@ import org.neo4j.graphdb.Node;
  */
 public class CorrelationModel extends AbstractModel implements ICorrelationModel {
 
-    private CorrelationService crServ = NeoServiceFactory.getInstance().getCorrelationService();
+    private CorrelationService crServ = NeoServiceFactory.getInstance().getNewCorrelationService();
 
     private Node network = null;
     private Node dataset = null;
 
-    public CorrelationModel(Node network, Node dataset) {
+    /**
+     * Creates correlation model using network and dataset nodes.
+     * 
+     * @param network a network root node
+     * @param dataset a dataset root node
+     */
+    CorrelationModel(Node network, Node dataset) throws AWEException {
+        super(CorrelationNodeTypes.CORRELATION);
         // validate parameters
         if (network == null) {
             throw new IllegalArgumentException("Network is null.");
@@ -47,35 +59,66 @@ public class CorrelationModel extends AbstractModel implements ICorrelationModel
         this.rootNode = crServ.createCorrelation(network, dataset);
     }
 
-    @Override
-    public Node getNetwork() {
+    /**
+     * Creates correlation model using <code>DataElement</code>s, containing network and dataset
+     * nodes.
+     * 
+     * @param networkElement <code>DataElement</code>, containing a network root node
+     * @param datasetElement <code>DataElement</code>, containing a dataset root node
+     * @throws DatabaseException 
+     */
+    public CorrelationModel(IDataElement networkElement, IDataElement datasetElement) throws DatabaseException {
+        super(CorrelationNodeTypes.CORRELATION);
+        // validate parameters
+        if (networkElement == null) {
+            throw new IllegalArgumentException("Network is null.");
+        }
+        Node networkNode = ((DataElement)networkElement).getNode();
+        if (networkNode == null) {
+            throw new IllegalArgumentException("Network node is null.");
+        }
+        if (datasetElement == null) {
+            throw new IllegalArgumentException("Dataset is null.");
+        }
+        Node datasetNode = ((DataElement)datasetElement).getNode();
+        if (datasetNode == null) {
+            throw new IllegalArgumentException("Dataset node is null.");
+        }
 
-        return network;
+        this.network = networkNode;
+        this.dataset = datasetNode;
+        this.rootNode = crServ.createCorrelation(networkNode, datasetNode);
     }
 
     @Override
-    public Node getDataset() {
-        return dataset;
+    public IDataElement getNetwork() {
+
+        return new DataElement(network);
     }
 
     @Override
-    public Iterable<Node> getSectors() {
-        return crServ.getAllCorrelatedSectors(network, dataset);
+    public IDataElement getDataset() {
+        return new DataElement(dataset);
     }
 
     @Override
-    public Iterable<Node> getMeasurements() {
-        return crServ.getAllCorrelatedNodes(network, dataset);
+    public Iterable<IDataElement> getSectors() throws AWEException {
+        return new DataElementIterable(crServ.getAllCorrelatedSectors(network, dataset));
     }
 
     @Override
-    public Iterable<Node> getCorrelatedNodes(Node sector) {
-        return crServ.getCorrelatedNodes(network, sector, dataset);
+    public Iterable<IDataElement> getMeasurements() throws AWEException{
+        return new DataElementIterable(crServ.getAllCorrelatedNodes(network, dataset));
     }
 
     @Override
-    public Node getCorrelatedSector(Node measurement) {
-        return crServ.getCorrelatedSector(measurement, network);
+    public Iterable<IDataElement> getCorrelatedNodes(Node sector) {
+        return new DataElementIterable(crServ.getCorrelatedNodes(network, sector, dataset));
+    }
+
+    @Override
+    public IDataElement getCorrelatedSector(Node measurement) {
+        return new DataElement(crServ.getCorrelatedSector(measurement, network));
     }
 
 }

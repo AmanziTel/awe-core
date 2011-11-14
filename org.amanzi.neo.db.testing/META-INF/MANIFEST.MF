@@ -5,7 +5,7 @@ Bundle-SymbolicName: org.amanzi.neo.db.testing
 Bundle-Version: 1.1.0.qualifier
 Require-Bundle: org.junit,
  org.amanzi.neo.db;bundle-version="1.1.0",
- org.amanzi.testing;bundle-version="1.1.0"
+ org.amanzi.testing
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-Vendor: amanzi.org
 Export-Package: org.amanzi.neo.db.testing

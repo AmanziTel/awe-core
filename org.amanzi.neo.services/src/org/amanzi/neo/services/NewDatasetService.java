@@ -23,6 +23,9 @@ import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
+import org.amanzi.neo.services.model.impl.DriveModel.DriveRelationshipTypes;
+import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelTypes;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -56,8 +59,52 @@ public class NewDatasetService extends NewAbstractService {
     public final static String PROJECT_NODE = "project_node";
     public static final String LAST_CHILD_ID = "last_child_id";
     public static final String PARENT_ID = "parent_id";
+    /**
+     * TraversalDescription for Dataset nodes
+     */
+    private final TraversalDescription DATASET_TRAVERSAL_DESCRIPTION = Traversal.description()
+            .relationships(DatasetRelationTypes.DATASET, Direction.OUTGOING).evaluator(Evaluators.excludeStartPosition());
+    /**
+     * <code>TraversalDescription</code> to iterate over children in a chain
+     */
+    protected final TraversalDescription CHILDREN_CHAIN_TRAVERSAL_DESCRIPTION = Traversal.description().depthFirst()
+            .relationships(DatasetRelationTypes.NEXT, Direction.OUTGOING).evaluator(Evaluators.all());
+    /**
+     * <code>TraversalDescription</code> to iterate over children of a node
+     */
+    protected final TraversalDescription CHILDREN_TRAVERSAL_DESCRIPTION = Traversal.description().breadthFirst()
+            .relationships(DatasetRelationTypes.CHILD, Direction.OUTGOING).evaluator(Evaluators.excludeStartPosition())
+            .evaluator(Evaluators.atDepth(1));
+    /**
+     * <code>TraversalDescription</code> to iterate over dataset nodes
+     */
+    protected final TraversalDescription DATASET_ELEMENT_TRAVERSAL_DESCRIPTION = Traversal.description().depthFirst()
+            .relationships(DatasetRelationTypes.CHILD, Direction.OUTGOING)
+            .relationships(DatasetRelationTypes.NEXT, Direction.OUTGOING);
 
-    private Transaction tx;
+    /** <code>TraversalDescription</code> to iterate over n2n related nodes */
+    protected final TraversalDescription N2N_TRAVERSAL_DESCRIPTION = Traversal.description().breadthFirst()
+            .evaluator(Evaluators.excludeStartPosition()).evaluator(Evaluators.toDepth(1));
+
+    /** <code>TraversalDescription</code> to iterate over n2n related nodes */
+    protected final TraversalDescription ALL_N2N_TRAVERSAL_DESCRIPTION = Traversal.description().breadthFirst()
+            .relationships(N2NRelTypes.INTERFERENCE_MATRIX, Direction.OUTGOING)
+            .relationships(N2NRelTypes.NEIGHBOUR, Direction.OUTGOING).relationships(N2NRelTypes.SHADOW, Direction.OUTGOING)
+            .relationships(N2NRelTypes.TRIANGULATION, Direction.OUTGOING);
+
+    /** <code>TraversalDescription</code> for an empty iterator */
+    public static final TraversalDescription EMPTY_TRAVERSAL_DESCRIPTION = Traversal.description()
+            .evaluator(Evaluators.fromDepth(2)).evaluator(Evaluators.toDepth(1));
+
+    /** <code>TraversalDescription</code> to iterate over virtual dataset nodes. */
+    public static final TraversalDescription VIRTUAL_DATASET_TRAVERSAL_DESCRIPTION = Traversal.description().breadthFirst()
+            .relationships(DriveRelationshipTypes.VIRTUAL_DATASET, Direction.OUTGOING).evaluator(Evaluators.atDepth(1))
+            .evaluator(Evaluators.excludeStartPosition());
+    /**
+     * <code>TraversalDescription</code> to iterate over children of a node
+     */
+    protected final TraversalDescription FIRST_RELATION_TRAVERSAL_DESCRIPTION = Traversal.description().breadthFirst()
+            .evaluator(Evaluators.excludeStartPosition()).evaluator(Evaluators.atDepth(1));
 
     /**
      * <p>
@@ -68,7 +115,7 @@ public class NewDatasetService extends NewAbstractService {
      * @since 1.0.0
      */
     public enum DatasetRelationTypes implements RelationshipType {
-        PROJECT, DATASET, CHILD, NEXT;
+        PROJECT, DATASET, CHILD, NEXT, GIS;
     }
 
     /**
@@ -79,12 +126,20 @@ public class NewDatasetService extends NewAbstractService {
      * @author Kruglik_A
      * @since 1.0.0
      */
-    public enum DatasetTypes implements INodeType {
-        NETWORK, DRIVE, COUNTERS;
+    public static enum DatasetTypes implements INodeType {
+        NETWORK, DRIVE, COUNTERS, GIS;
+
+        static {
+            NodeTypeManager.registerNodeType(DatasetTypes.class);
+        }
 
         @Override
         public String getId() {
             return name().toLowerCase();
+        }
+
+        public static DatasetTypes[] getRenderableDatasets() {
+            return new DatasetTypes[] {NETWORK, DRIVE};
         }
     }
 
@@ -97,12 +152,7 @@ public class NewDatasetService extends NewAbstractService {
      * @since 1.0.0
      */
     public enum DriveTypes implements IDriveType {
-        NEMO_V1, NEMO_V2, TEMS, ROMES;
-
-        @Override
-        public String getId() {
-            return name();
-        }
+        NEMO_V1, NEMO_V2, TEMS, ROMES, AMS_CALLS, AMS, AMS_PESQ, MS;
     }
 
     /**
@@ -143,7 +193,7 @@ public class NewDatasetService extends NewAbstractService {
         @Override
         public Evaluation evaluate(Path arg0) {
             if (super.evaluate(arg0).includes()) {
-                if (driveType == null || driveType.getId().equals(arg0.endNode().getProperty(DRIVE_TYPE, ""))) {
+                if (driveType == null || driveType.name().equals(arg0.endNode().getProperty(DRIVE_TYPE, StringUtils.EMPTY))) {
                     return Evaluation.INCLUDE_AND_CONTINUE;
                 }
                 return Evaluation.EXCLUDE_AND_CONTINUE;
@@ -171,16 +221,6 @@ public class NewDatasetService extends NewAbstractService {
     }
 
     /**
-     * this method return TraversalDescription for Dataset nodes
-     * 
-     * @return TraversalDescription
-     */
-    private TraversalDescription getDatasetsTraversalDescription() {
-        return Traversal.description().relationships(DatasetRelationTypes.DATASET, Direction.OUTGOING)
-                .evaluator(Evaluators.excludeStartPosition());
-    }
-
-    /**
      * find dataset node by name and type
      * 
      * @param projectNode - node, which defines the project, within which will be implemented search
@@ -198,12 +238,12 @@ public class NewDatasetService extends NewAbstractService {
             DatasetTypeParameterException, DuplicateNodeNameException {
         LOGGER.debug("start findDataset(Node projectNode, String name, DatasetTypes type)");
 
-        if (name == "") {
-            LOGGER.error("InvalidDatasetParameterException: parameter name is empty string");
-            throw new InvalidDatasetParameterException(INeoConstants.PROPERTY_NAME_NAME, name);
-        }
         if (name == null) {
             LOGGER.error("InvalidDatasetParameterException: parameter name = null");
+            throw new InvalidDatasetParameterException(INeoConstants.PROPERTY_NAME_NAME, name);
+        }
+        if (name.equals(StringUtils.EMPTY)) {
+            LOGGER.error("InvalidDatasetParameterException: parameter name is empty string");
             throw new InvalidDatasetParameterException(INeoConstants.PROPERTY_NAME_NAME, name);
         }
         if (type == null) {
@@ -221,7 +261,7 @@ public class NewDatasetService extends NewAbstractService {
 
         }
 
-        Traverser tr = getDatasetsTraversalDescription().evaluator(new FilterDataset(name, type)).traverse(projectNode);
+        Traverser tr = DATASET_TRAVERSAL_DESCRIPTION.evaluator(new FilterDataset(name, type)).traverse(projectNode);
         Iterator<Node> iter = tr.nodes().iterator();
         LOGGER.debug("finish findDataset(Node projectNode, String name, DatasetTypes type)");
         if (iter.hasNext()) {
@@ -252,12 +292,13 @@ public class NewDatasetService extends NewAbstractService {
     public Node findDataset(Node projectNode, final String name, final DatasetTypes type, final IDriveType driveType)
             throws InvalidDatasetParameterException, DatasetTypeParameterException, DuplicateNodeNameException {
         LOGGER.debug("start findDataset(Node projectNode, String name, DatasetTypes type, DriveTypes driveType)");
-        if (name == "") {
-            LOGGER.error("InvalidDatasetParameterException: parameter name is empty string");
-            throw new InvalidDatasetParameterException(INeoConstants.PROPERTY_NAME_NAME, name);
-        }
+
         if (name == null) {
             LOGGER.error("InvalidDatasetParameterException: parameter name = null");
+            throw new InvalidDatasetParameterException(INeoConstants.PROPERTY_NAME_NAME, name);
+        }
+        if (name.equals(StringUtils.EMPTY)) {
+            LOGGER.error("InvalidDatasetParameterException: parameter name is empty string");
             throw new InvalidDatasetParameterException(INeoConstants.PROPERTY_NAME_NAME, name);
         }
         if (type == null) {
@@ -277,7 +318,7 @@ public class NewDatasetService extends NewAbstractService {
             throw new DatasetTypeParameterException(type);
         }
 
-        Traverser tr = getDatasetsTraversalDescription().evaluator(new FilterDataset(name, type, driveType)).traverse(projectNode);
+        Traverser tr = DATASET_TRAVERSAL_DESCRIPTION.evaluator(new FilterDataset(name, type, driveType)).traverse(projectNode);
         Iterator<Node> iter = tr.nodes().iterator();
         LOGGER.debug("finish findDataset(Node projectNode, String name, DatasetTypes type, DriveTypes driveType)");
         if (iter.hasNext()) {
@@ -308,12 +349,12 @@ public class NewDatasetService extends NewAbstractService {
     public Node createDataset(Node projectNode, String name, DatasetTypes type) throws InvalidDatasetParameterException,
             DatasetTypeParameterException, DuplicateNodeNameException, DatabaseException {
         LOGGER.debug("start createDataset(Node projectNode, String name, DatasetTypes type)");
-        if (name == "") {
-            LOGGER.error("InvalidDatasetParameterException: parameter name is empty string");
-            throw new InvalidDatasetParameterException(INeoConstants.PROPERTY_NAME_NAME, name);
-        }
         if (name == null) {
             LOGGER.error("InvalidDatasetParameterException: parameter name = null");
+            throw new InvalidDatasetParameterException(INeoConstants.PROPERTY_NAME_NAME, name);
+        }
+        if (name.equals(StringUtils.EMPTY)) {
+            LOGGER.error("InvalidDatasetParameterException: parameter name is empty string");
             throw new InvalidDatasetParameterException(INeoConstants.PROPERTY_NAME_NAME, name);
         }
         if (type == null) {
@@ -368,14 +409,14 @@ public class NewDatasetService extends NewAbstractService {
      *         already exists
      */
     public Node createDataset(Node projectNode, String name, DatasetTypes type, IDriveType driveType)
-            throws InvalidDatasetParameterException, DatasetTypeParameterException, DuplicateNodeNameException {
+            throws InvalidDatasetParameterException, DatasetTypeParameterException, DuplicateNodeNameException, DatabaseException {
         LOGGER.debug("start createDataset(Node projectNode, String name, DatasetTypes type, DriveTypes driveType)");
-        if (name == "") {
-            LOGGER.error("InvalidDatasetParameterException: parameter name is empty string");
-            throw new InvalidDatasetParameterException(INeoConstants.PROPERTY_NAME_NAME, name);
-        }
         if (name == null) {
             LOGGER.error("InvalidDatasetParameterException: parameter name = null");
+            throw new InvalidDatasetParameterException(INeoConstants.PROPERTY_NAME_NAME, name);
+        }
+        if (name.equals(StringUtils.EMPTY)) {
+            LOGGER.error("InvalidDatasetParameterException: parameter name is empty string");
             throw new InvalidDatasetParameterException(INeoConstants.PROPERTY_NAME_NAME, name);
         }
         if (type == null) {
@@ -405,12 +446,13 @@ public class NewDatasetService extends NewAbstractService {
             datasetNode = createNode(type);
             projectNode.createRelationshipTo(datasetNode, DatasetRelationTypes.DATASET);
             datasetNode.setProperty(NAME, name);
-            datasetNode.setProperty(DRIVE_TYPE, driveType.getId());
+            datasetNode.setProperty(DRIVE_TYPE, driveType.name());
             tx.success();
 
         } catch (Exception e) {
             tx.failure();
             LOGGER.error("Could not create dataset node.", e);
+            throw new DatabaseException(e);
         } finally {
             tx.finish();
         }
@@ -437,12 +479,12 @@ public class NewDatasetService extends NewAbstractService {
     public Node getDataset(Node projectNode, String name, DatasetTypes type) throws InvalidDatasetParameterException,
             DatasetTypeParameterException, DuplicateNodeNameException, DatabaseException {
         LOGGER.debug("start getDataset(Node projectNode, String name, DatasetTypes type)");
-        if (name == "") {
-            LOGGER.error("InvalidDatasetParameterException: parameter name is empty string");
-            throw new InvalidDatasetParameterException(INeoConstants.PROPERTY_NAME_NAME, name);
-        }
         if (name == null) {
             LOGGER.error("InvalidDatasetParameterException: parameter name = null");
+            throw new InvalidDatasetParameterException(INeoConstants.PROPERTY_NAME_NAME, name);
+        }
+        if (name.equals(StringUtils.EMPTY)) {
+            LOGGER.error("InvalidDatasetParameterException: parameter name is empty string");
             throw new InvalidDatasetParameterException(INeoConstants.PROPERTY_NAME_NAME, name);
         }
         if (type == null) {
@@ -482,15 +524,15 @@ public class NewDatasetService extends NewAbstractService {
      *         already exists
      */
     public Node getDataset(Node projectNode, String name, DatasetTypes type, IDriveType driveType)
-            throws InvalidDatasetParameterException, DatasetTypeParameterException, DuplicateNodeNameException {
+            throws InvalidDatasetParameterException, DatasetTypeParameterException, DuplicateNodeNameException, DatabaseException {
         LOGGER.debug("start getDataset(Node projectNode, String name, DatasetTypes type, DriveTypes driveType)");
 
-        if (name == "") {
-            LOGGER.error("InvalidDatasetParameterException: parameter name is empty string");
-            throw new InvalidDatasetParameterException(INeoConstants.PROPERTY_NAME_NAME, name);
-        }
         if (name == null) {
             LOGGER.error("InvalidDatasetParameterException: parameter name = null");
+            throw new InvalidDatasetParameterException(INeoConstants.PROPERTY_NAME_NAME, name);
+        }
+        if (name.equals(StringUtils.EMPTY)) {
+            LOGGER.error("InvalidDatasetParameterException: parameter name is empty string");
             throw new InvalidDatasetParameterException(INeoConstants.PROPERTY_NAME_NAME, name);
         }
         if (type == null) {
@@ -526,43 +568,15 @@ public class NewDatasetService extends NewAbstractService {
     public List<Node> findAllDatasets() {
         LOGGER.debug("start findAllDatasets()");
         List<Node> datasetList = new ArrayList<Node>();
-        TraversalDescription allProjects = new ProjectService().getProjectTraversalDescription();
+        TraversalDescription allProjects = NeoServiceFactory.getInstance().getNewProjectService().projectTraversalDescription;
 
         for (Node projectNode : allProjects.traverse(graphDb.getReferenceNode()).nodes()) {
-            Traverser tr = getDatasetsTraversalDescription().traverse(projectNode);
+            Traverser tr = DATASET_TRAVERSAL_DESCRIPTION.traverse(projectNode);
             for (Node dataset : tr.nodes()) {
                 datasetList.add(dataset);
             }
         }
         LOGGER.debug("finish findAllDatasets()");
-        return datasetList;
-    }
-
-    /**
-     * this method find all dataset nodes by type in all projects
-     * 
-     * @param type - dataset type
-     * @return List<Node> list of dataset nodes
-     * @throws InvalidDatasetParameterException this method may call exception if type == null
-     */
-    public List<Node> findAllDatasetsByType(DatasetTypes type) throws InvalidDatasetParameterException {
-        LOGGER.debug("start findAllDatasetsByType()");
-
-        if (type == null) {
-            LOGGER.error("InvalidDatasetParameterException: parameter type = null");
-            throw new InvalidDatasetParameterException(INeoConstants.PROPERTY_TYPE_NAME, type);
-        }
-
-        List<Node> datasetList = new ArrayList<Node>();
-        TraversalDescription allProjects = new ProjectService().getProjectTraversalDescription();
-
-        for (Node projectNode : allProjects.traverse(graphDb.getReferenceNode()).nodes()) {
-            Traverser tr = getDatasetsTraversalDescription().evaluator(new FilterNodesByType(type)).traverse(projectNode);
-            for (Node dataset : tr.nodes()) {
-                datasetList.add(dataset);
-            }
-        }
-        LOGGER.debug("finish findAllDatasetsByType()");
         return datasetList;
     }
 
@@ -581,7 +595,7 @@ public class NewDatasetService extends NewAbstractService {
             throw new InvalidDatasetParameterException(PROJECT_NODE, projectNode);
         }
         List<Node> datasetList = new ArrayList<Node>();
-        Traverser tr = getDatasetsTraversalDescription().traverse(projectNode);
+        Traverser tr = DATASET_TRAVERSAL_DESCRIPTION.traverse(projectNode);
         for (Node dataset : tr.nodes()) {
             datasetList.add(dataset);
         }
@@ -611,7 +625,7 @@ public class NewDatasetService extends NewAbstractService {
         }
 
         List<Node> datasetList = new ArrayList<Node>();
-        Traverser tr = getDatasetsTraversalDescription().evaluator(new FilterNodesByType(type)).traverse(projectNode);
+        Traverser tr = DATASET_TRAVERSAL_DESCRIPTION.evaluator(new FilterNodesByType(type)).traverse(projectNode);
         for (Node dataset : tr.nodes()) {
             datasetList.add(dataset);
         }
@@ -706,7 +720,7 @@ public class NewDatasetService extends NewAbstractService {
         }
 
         // create relationship
-        tx = graphDb.beginTx();
+        Transaction tx = graphDb.beginTx();
         try {
             parent.createRelationshipTo(child, DatasetRelationTypes.CHILD);
             tx.success();
@@ -750,7 +764,7 @@ public class NewDatasetService extends NewAbstractService {
      */
     private void insertChild(Node parent, Node child, Node linkTo, RelationshipType relationship) throws DatabaseException {
         LOGGER.debug("start insertChild(Node parent, Node child, Node linkTo, RelationshipType relationship)");
-        tx = graphDb.beginTx();
+        Transaction tx = graphDb.beginTx();
         try {
             linkTo.createRelationshipTo(child, relationship);
             updateProperties(parent, child);
@@ -786,16 +800,19 @@ public class NewDatasetService extends NewAbstractService {
             return graphDb.getNodeById(parent_id);
         }
         // else traverse database to find parent node
-        TraversalDescription tr = getChildrenChainTraversalDescription().relationships(DatasetRelationTypes.NEXT,
-                Direction.INCOMING).order(Traversal.postorderDepthFirst());
+        TraversalDescription tr = CHILDREN_CHAIN_TRAVERSAL_DESCRIPTION.relationships(DatasetRelationTypes.NEXT, Direction.INCOMING)
+                .order(Traversal.postorderDepthFirst());
         Iterable<Node> nodes = tr.traverse(child).nodes();
         for (Node node : nodes) {
             Node parent = getNextNode(node, DatasetRelationTypes.CHILD, Direction.INCOMING);
             if (parent == null) {
-                return null;
+                parent = getNextNode(node, DatasetRelationTypes.DATASET, Direction.INCOMING);
+                if (parent == null) {
+                    return null;
+                }
             }
             if (updateProperties) {
-                tx = graphDb.beginTx();
+                Transaction tx = graphDb.beginTx();
                 try {
                     child.setProperty(PARENT_ID, parent.getId());
                     tx.success();
@@ -833,10 +850,10 @@ public class NewDatasetService extends NewAbstractService {
         if (child == null) {
             return null;
         }
-        TraversalDescription tr = getChildrenChainTraversalDescription().order(Traversal.postorderDepthFirst());
+        TraversalDescription tr = CHILDREN_CHAIN_TRAVERSAL_DESCRIPTION.order(Traversal.postorderDepthFirst());
         Iterable<Node> nodes = tr.traverse(child).nodes();
         for (Node node : nodes) {
-            tx = graphDb.beginTx();
+            Transaction tx = graphDb.beginTx();
             try {
                 parent.setProperty(LAST_CHILD_ID, node.getId());
                 tx.success();
@@ -868,10 +885,10 @@ public class NewDatasetService extends NewAbstractService {
         try {
             Node firstChild = getNextNode(parent, DatasetRelationTypes.CHILD, Direction.OUTGOING);
             if (firstChild != null) {
-                return getChildrenChainTraversalDescription().traverse(firstChild).nodes();
+                return CHILDREN_CHAIN_TRAVERSAL_DESCRIPTION.traverse(firstChild).nodes();
             } else {
                 // a work-around to return an empty traverser
-                return getChildrenChainTraversalDescription().evaluator(Evaluators.atDepth(1)).evaluator(Evaluators.fromDepth(2))
+                return CHILDREN_CHAIN_TRAVERSAL_DESCRIPTION.evaluator(Evaluators.atDepth(1)).evaluator(Evaluators.fromDepth(2))
                         .traverse(parent).nodes();
             }
         } catch (DatabaseException e) {
@@ -894,72 +911,54 @@ public class NewDatasetService extends NewAbstractService {
             throw new IllegalArgumentException("parent is null");
         }
 
-        return getChildrenChainTraversalDescription().traverse(parent).nodes();
+        return CHILDREN_TRAVERSAL_DESCRIPTION.traverse(parent).nodes();
 
     }
 
     /**
-     * @return <code>TraversalDescription</code> to iterate over children in a chain
-     */
-    protected TraversalDescription getChildrenChainTraversalDescription() {
-        LOGGER.debug("start getChildrenChainTraversalDescription()");
-        return Traversal.description().depthFirst().relationships(DatasetRelationTypes.NEXT, Direction.OUTGOING)
-                .evaluator(Evaluators.all());
-    }
-
-    /**
-     * @return <code>TraversalDescription</code> to iterate over children of a node
-     */
-    protected TraversalDescription getChildrenTraversalDescription() {
-        LOGGER.debug("start getChildrenTraversalDescription()");
-        return Traversal.description().breadthFirst().relationships(DatasetRelationTypes.CHILD, Direction.OUTGOING)
-                .evaluator(Evaluators.excludeStartPosition()).evaluator(Evaluators.atDepth(1));
-    }
-
-    /**
-     * Safely get a node that is linked to <code>startNode</code> with the defined relationship.
-     * Assumed, that <code>startNode</code> has only one relationship of that kind
+     * Returns a traverser to iterate over nodes, that are linked to <code>parent</code> with
+     * relType relationship and
      * 
-     * @param startNode
-     * @param relationship
-     * @param direction
-     * @return the node on the other end of relationship from <code>startNode</code>
-     * @throws DatabaseException if there are more than one relationships
+     * @param parent
+     * @return
      */
-    private Node getNextNode(Node startNode, RelationshipType relationship, Direction direction) throws DatabaseException {
-        Node result = null;
-
-        Iterator<Relationship> rels = startNode.getRelationships(relationship, direction).iterator();
-        if (rels.hasNext()) {
-            result = rels.next().getOtherNode(startNode);
-        }
-        if (rels.hasNext()) {
-            // result is ambiguous
-            throw new DatabaseException("Errors exist in database structure");
+    public Iterable<Node> getFirstRelationTraverser(Node parent, RelationshipType relType, Direction direction) {
+        LOGGER.debug("start getChildrenTraverser(Node parent)");
+        // validate parameters
+        if (parent == null) {
+            throw new IllegalArgumentException("parent is null");
         }
 
-        return result;
+        return FIRST_RELATION_TRAVERSAL_DESCRIPTION.relationships(relType, direction).traverse(parent).nodes();
+
     }
 
     /**
-     * <Fully taken from old code> Gets the gis node by dataset.
+     * Gets the gis node by dataset, if it exists.
      * 
      * @param dataset the dataset
-     * @return the gis node by dataset
+     * @return the gis node by dataset or null
+     * @throws DatabaseException
      */
-    public Node getGisNodeByDataset(Node dataset) {
-        return dataset.getSingleRelationship(DatasetRelationTypes.NEXT, Direction.INCOMING).getStartNode();
+    public Node getGisNodeByDataset(Node dataset) throws DatabaseException {
+        if (dataset == null) {
+            return null;
+        }
+        Relationship rel = dataset.getSingleRelationship(DatasetRelationTypes.GIS, Direction.OUTGOING);
+        return rel == null ? createGisNode(dataset) : rel.getEndNode();
     }
 
     /**
-     * <Fully taken from old code> Gets the gis node by dataset.
+     * Create a gis node
      * 
-     * @param dataset the dataset
-     * @return the gis node by dataset
+     * @param dataset
+     * @return
+     * @throws DatabaseException
      */
-    public Node createGisNodeByDataset(Node dataset) {
-        // TODO: temporary solution
-        return dataset.getSingleRelationship(DatasetRelationTypes.NEXT, Direction.INCOMING).getStartNode();
+    private Node createGisNode(Node dataset) throws DatabaseException {
+        Node gis = createNode(DatasetTypes.GIS);
+        createRelationship(dataset, gis, DatasetRelationTypes.GIS);
+        return gis;
     }
 
     /**
@@ -978,13 +977,71 @@ public class NewDatasetService extends NewAbstractService {
             throw new IllegalArgumentException("Element type is null.");
         }
 
-        return getDatasetElementTraversalDescription().evaluator(new FilterNodesByType(elementType)).traverse(parent).nodes();
+        return DATASET_ELEMENT_TRAVERSAL_DESCRIPTION.evaluator(new FilterNodesByType(elementType)).traverse(parent).nodes();
     }
 
-    protected TraversalDescription getDatasetElementTraversalDescription() {
-        LOGGER.debug("start getNetworkElementTraversalDescription()");
-        return Traversal.description().depthFirst().relationships(DatasetRelationTypes.CHILD, Direction.OUTGOING)
-                .relationships(DatasetRelationTypes.NEXT, Direction.OUTGOING);
+    /**
+     * Traverses database to find all n2n elements of defined type
+     * 
+     * @param elementType
+     * @return an <code>Iterable</code> over found nodes
+     */
+    public Iterable<Node> findAllN2NElements(Node parent, INodeType elementType, RelationshipType relType) {
+        LOGGER.debug("start findAllNetworkElements(Node parent, INodeType elementType)");
+        // validate parameters
+        if (parent == null) {
+            throw new IllegalArgumentException("Parent is null.");
+        }
+        if (elementType == null) {
+            throw new IllegalArgumentException("Element type is null.");
+        }
+
+        return DATASET_ELEMENT_TRAVERSAL_DESCRIPTION.relationships(relType, Direction.INCOMING)
+                .evaluator(new FilterNodesByType(elementType)).traverse(parent).nodes();
+
+    }
+
+    /**
+     * @param n2nProxy
+     * @param nodeType
+     * @param relType
+     * @return
+     */
+    public Iterable<Relationship> findN2NRelationships(Node n2nProxy, RelationshipType relType) {
+        // validate parameters
+        if (n2nProxy == null) {
+            throw new IllegalArgumentException("N2N proxy is null.");
+        }
+        if (relType == null) {
+            throw new IllegalArgumentException("Relationship type is null.");
+        }
+
+        return N2N_TRAVERSAL_DESCRIPTION.relationships(relType, Direction.INCOMING).relationships(relType, Direction.OUTGOING)
+                .traverse(n2nProxy).relationships();
+    }
+
+    /**
+     * The method traverses database with a description, that will definitely return an empty
+     * iterator.
+     * 
+     * @param source a node to pass to {@link TraversalDescription#traverse(Node)} method, must not
+     *        be <code>null</code>
+     * @return a not-null iterable over nodes with no elements in it.
+     */
+    public Iterable<Node> emptyTraverser(Node source) {
+        // validate parameters
+        if (source == null) {
+            throw new IllegalArgumentException("Source node is null.");
+        }
+        return EMPTY_TRAVERSAL_DESCRIPTION.traverse(source).nodes();
+    }
+
+    public Iterable<Node> getVirtualDatasets(Node rootDataset) {
+        // validate
+        if (rootDataset == null) {
+            throw new IllegalArgumentException("Root dataset node is null.");
+        }
+        return VIRTUAL_DATASET_TRAVERSAL_DESCRIPTION.traverse(rootDataset).nodes();
     }
 
 }

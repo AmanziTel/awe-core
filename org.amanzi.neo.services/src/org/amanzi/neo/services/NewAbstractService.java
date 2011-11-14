@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.services;
 
+import java.util.Iterator;
 import java.util.Map;
 
 import org.amanzi.neo.db.manager.DatabaseManagerFactory;
@@ -20,13 +21,19 @@ import org.amanzi.neo.db.manager.events.DatabaseEvent;
 import org.amanzi.neo.db.manager.events.IDatabaseEventListener;
 import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
+import org.amanzi.neo.services.exceptions.InvalidStatisticsParameterException;
+import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
+import org.neo4j.graphdb.PropertyContainer;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
@@ -50,35 +57,19 @@ public abstract class NewAbstractService implements IDatabaseEventListener {
     public static final String NETWORK_ID = "network";
 
     private static Logger LOGGER = Logger.getLogger(NewAbstractService.class);
-
+    /**
+     * Traversal description for child elements
+     */
+    protected final TraversalDescription CHILD_ELEMENT_TRAVERSAL_DESCRIPTION = Traversal.description().depthFirst()
+            .relationships(DatasetRelationTypes.CHILD, Direction.OUTGOING);
     protected GraphDatabaseService graphDb;
-    private Transaction tx;
 
     /**
      * Sets service to use default <code>GraphDatabaseService</code> of the running application
      */
     public NewAbstractService() {
-        initDatabase();
-    }
-    
-    private void initDatabase() {
+        // TODO: get database service
         graphDb = DatabaseManagerFactory.getDatabaseManager().getDatabaseService();
-        DatabaseManagerFactory.getDatabaseManager().addDatabaseEventListener(this);
-    }
-    
-    private void shutdownDatabase() {
-        graphDb = null;
-    }
-    
-    public void onDatabaseEvent(DatabaseEvent event) {
-        switch (event.getEventType()) {
-        case BEFORE_SHUTDOWN:
-            shutdownDatabase();
-            break;
-        case AFTER_STARTUP:
-            initDatabase();
-            break;
-        }
     }
 
     /**
@@ -90,8 +81,8 @@ public abstract class NewAbstractService implements IDatabaseEventListener {
         this.graphDb = graphDb;
     }
 
-    public String getNodeType(Node node) {
-        return (String)node.getProperty(INeoConstants.PROPERTY_TYPE_NAME, "");
+    public static String getNodeType(Node node) {
+        return (String)node.getProperty(TYPE, StringUtils.EMPTY);
     }
 
     /**
@@ -107,7 +98,7 @@ public abstract class NewAbstractService implements IDatabaseEventListener {
         }
         // create node
         Node result = null;
-        tx = graphDb.beginTx();
+        Transaction tx = graphDb.beginTx();
         try {
             result = graphDb.createNode();
             result.setProperty(INeoConstants.PROPERTY_TYPE_NAME, nodeType.getId());
@@ -120,6 +111,72 @@ public abstract class NewAbstractService implements IDatabaseEventListener {
             tx.finish();
         }
         return result;
+    }
+
+    /**
+     * Manage index names for current model.
+     * 
+     * @param type the type of node to index
+     * @param rootNode Root-node
+     * @return the index name
+     * @throws DatabaseException
+     */
+    private Index<Node> getIndex(INodeType type, Node rootNode, Map<INodeType, Index<Node>> indexMap) throws DatabaseException {
+
+        Index<Node> result = indexMap.get(type.getId());
+        if (result == null) {
+            result = getIndex(rootNode, type);
+            if (result != null) {
+                indexMap.put(type, result);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Method delete node and all sub-nodes if they related with CHILD-relationships
+     * 
+     * @param nodeToDelete Node which need delete
+     * @throws DatabaseException
+     * @throws InvalidStatisticsParameterException
+     */
+    public void deleteOneNode(Node nodeToDelete, Node rootNode, Map<INodeType, Index<Node>> indexMap) throws AWEException {
+        LOGGER.debug("start method deleteOneNode(Node nodeToDelete)");
+
+        if (nodeToDelete == null) {
+            LOGGER.error("InvalidStatisticsParameterException: parameter nodeToDelete = null");
+            throw new InvalidStatisticsParameterException("nodeToDelete", nodeToDelete);
+        }
+
+        Transaction tx = graphDb.beginTx();
+        try {
+            Iterable<Relationship> childRelationships = nodeToDelete.getRelationships(Direction.OUTGOING);
+
+            for (Relationship rel : childRelationships) {
+                Node childNode = rel.getEndNode();
+                if (childNode != null) {
+                    rel.delete();
+                    removeIndexFromNode(childNode, rootNode, indexMap);
+                    childNode.delete();
+                }
+            }
+            Iterable<Relationship> incomingRelationships = nodeToDelete.getRelationships(Direction.INCOMING);
+            for (Relationship incomingRelationship : incomingRelationships) {
+                incomingRelationship.delete();
+            }
+            removeIndexFromNode(nodeToDelete, rootNode, indexMap);
+            nodeToDelete.delete();
+            tx.success();
+        } catch (Exception e) {
+            LOGGER.error("Could not delete node from database", e);
+            tx.failure();
+            throw new DatabaseException(e);
+
+        } finally {
+            tx.finish();
+
+        }
+        LOGGER.debug("finish method deleteOneNode(Node nodeToDelete)");
     }
 
     public Node createNode(Map<String, Object> params) throws DatabaseException {
@@ -150,7 +207,7 @@ public abstract class NewAbstractService implements IDatabaseEventListener {
         }
 
         Node result = createNode(nodeType);
-        tx = graphDb.beginTx();
+        Transaction tx = graphDb.beginTx();
         try {
             parent.createRelationshipTo(result, relType);
             tx.success();
@@ -164,7 +221,7 @@ public abstract class NewAbstractService implements IDatabaseEventListener {
         return result;
     }
 
-    public void createRelationship(Node parent, Node child, RelationshipType relType) throws DatabaseException {
+    public Relationship createRelationship(Node parent, Node child, RelationshipType relType) throws DatabaseException {
         // validate parameters
         if (parent == null) {
             throw new IllegalArgumentException("Parent is null.");
@@ -175,10 +232,10 @@ public abstract class NewAbstractService implements IDatabaseEventListener {
         if (relType == null) {
             throw new IllegalArgumentException("Relationship type is null.");
         }
-
-        tx = graphDb.beginTx();
+        Relationship result = null;
+        Transaction tx = graphDb.beginTx();
         try {
-            parent.createRelationshipTo(child, relType);
+            result = parent.createRelationshipTo(child, relType);
             tx.success();
         } catch (Exception e) {
             LOGGER.error("Could not create node.", e);
@@ -187,13 +244,14 @@ public abstract class NewAbstractService implements IDatabaseEventListener {
         } finally {
             tx.finish();
         }
+        return result;
     }
 
     /**
      * This method generates a string identifier for index for a specific network and a specific
      * type of nodes
      * 
-     * @param root a network node
+     * @param root a model root
      * @param nodeType type of nodes
      * @return a string specifying index name
      */
@@ -210,21 +268,46 @@ public abstract class NewAbstractService implements IDatabaseEventListener {
     }
 
     /**
+     * Generates a node index for the defined <code>root</code> node and <code>nodeType</code>. Your
+     * code should call this method only once for each pair of parameters, to minimize calls to
+     * database.
+     * 
+     * @param root a model root
+     * @param nodeType type of nodes
+     * @return <code>Index<Node></code> for the defined parameters
+     * @throws DatabaseException
+     */
+    public Index<Node> getIndex(Node root, INodeType nodeType) throws DatabaseException {
+        Transaction tx = graphDb.beginTx();
+        Index<Node> result = null;
+        try {
+            result = graphDb.index().forNodes(getIndexKey(root, nodeType));
+            tx.success();
+        } catch (Exception e) {
+            LOGGER.error("Could not index node", e);
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
+        return result;
+    }
+
+    /**
      * Sets NAME property at <code>node</code>
      * 
      * @param node
      * @param name
      * @throws IllegalNodeDataException if name is null or empty
      */
-    protected void setNameProperty(Node node, String name) throws IllegalNodeDataException, DatabaseException {
+    public void setNameProperty(Node node, String name) throws IllegalNodeDataException, DatabaseException {
         // validate parameters
-        if ((name == null) || name.equals("")) {
+        if ((name == null) || name.equals(StringUtils.EMPTY)) {
             throw new IllegalNodeDataException("Name cannot be empty.");
         }
         if (node == null) {
             throw new IllegalArgumentException("Node is null.");
         }
-        tx = graphDb.beginTx();
+        Transaction tx = graphDb.beginTx();
         try {
             node.setProperty(NAME, name);
             tx.success();
@@ -248,7 +331,7 @@ public abstract class NewAbstractService implements IDatabaseEventListener {
     public Index<Node> addNodeToIndex(Node node, String indexName, String propertyName, Object propertyValue)
             throws DatabaseException {
         Index<Node> index = null;
-        tx = graphDb.beginTx();
+        Transaction tx = graphDb.beginTx();
         try {
             index = graphDb.index().forNodes(indexName);
             index.add(node, propertyName, propertyValue);
@@ -262,9 +345,48 @@ public abstract class NewAbstractService implements IDatabaseEventListener {
         return index;
     }
 
+    /**
+     * Adds <code>node</code> to <code> indexName</code>. Does not validate arguments.
+     * 
+     * @param node
+     * @param indexName
+     * @param propertyName
+     * @param propertyValue
+     * @throws DatabaseException if something went wrong
+     */
+    public Index<Node> removeNodeFromIndex(Node node, Index<Node> index, String propertyName, Object propertyValue)
+            throws DatabaseException {
+        Transaction tx = graphDb.beginTx();
+        try {
+            index.remove(node, propertyName, propertyValue);
+            tx.success();
+        } catch (Exception e) {
+            LOGGER.error("Could not index node", e);
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
+        return index;
+    }
+
+    private void removeIndexFromNode(Node node, Node rootNode, Map<INodeType, Index<Node>> indexMap) throws DatabaseException {
+        Transaction tx = graphDb.beginTx();
+        try {
+            INodeType nodeType = NodeTypeManager.getType(node.getProperty(INeoConstants.PROPERTY_TYPE_NAME).toString());
+            Index<Node> index = getIndex(nodeType, rootNode, indexMap);
+            index.remove(node, NAME, node.getProperty(INeoConstants.PROPERTY_NAME_NAME));
+            tx.success();
+        } catch (Exception e) {
+            LOGGER.error("Could not index node", e);
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
+    }
+
     public Index<Node> addNodeToIndex(Node node, Index<Node> index, String propertyName, Object propertyValue)
             throws DatabaseException {
-        tx = graphDb.beginTx();
+        Transaction tx = graphDb.beginTx();
         try {
             index.add(node, propertyName, propertyValue);
             tx.success();
@@ -303,7 +425,7 @@ public abstract class NewAbstractService implements IDatabaseEventListener {
         @Override
         public Evaluation evaluate(Path path) {
             if (super.evaluate(path).includes()) {
-                if (path.endNode().getProperty(NewAbstractService.NAME, "").equals(name)) {
+                if (path.endNode().getProperty(NewAbstractService.NAME, StringUtils.EMPTY).equals(name)) {
                     return Evaluation.INCLUDE_AND_CONTINUE;
                 }
                 return Evaluation.EXCLUDE_AND_CONTINUE;
@@ -312,11 +434,6 @@ public abstract class NewAbstractService implements IDatabaseEventListener {
             return Evaluation.EXCLUDE_AND_CONTINUE;
 
         }
-    }
-    
-    protected TraversalDescription getChildElementTraversalDescription() {
-        LOGGER.debug("start getNetworkElementTraversalDescription()");
-        return Traversal.description().depthFirst().relationships(DatasetRelationTypes.CHILD, Direction.OUTGOING);
     }
 
     /**
@@ -327,7 +444,7 @@ public abstract class NewAbstractService implements IDatabaseEventListener {
      * @author Kruglik_A
      * @since 1.0.0
      */
-    public class FilterNodesByType implements Evaluator {
+    public static class FilterNodesByType implements Evaluator {
         /**
          * constructor for filter nodes by type
          * 
@@ -354,24 +471,25 @@ public abstract class NewAbstractService implements IDatabaseEventListener {
      * Property is not set, if its value is <code>null</code>. Property values should be of types,
      * that are accepted by the database (primitives or <code>String</code>).
      * 
-     * @param node the object to set properties
+     * @param dbElement the object to set properties (<code>Node</code> or <code>Relationship</code>
+     *        )
      * @param params notice that you may also pass a <code>DataElement</code> object.
      * @throws DatabaseException
      */
-    public void setProperties(Node node, Map<String, Object> params) throws DatabaseException {
+    public void setProperties(PropertyContainer dbElement, Map<String, Object> params) throws DatabaseException {
         // validate
-        if (node == null) {
+        if (dbElement == null) {
             throw new IllegalArgumentException("Node is null.");
         }
         if (params == null) {
             throw new IllegalArgumentException("Data element is null.");
         }
-        tx = graphDb.beginTx();
+        Transaction tx = graphDb.beginTx();
         try {
             for (String key : params.keySet()) {
                 Object value = params.get(key);
                 if (value != null) {
-                    node.setProperty(key, value);
+                    dbElement.setProperty(key, value);
                 }
             }
             tx.success();
@@ -384,4 +502,87 @@ public abstract class NewAbstractService implements IDatabaseEventListener {
         }
     }
 
+    /**
+     * This method looks through <code>Direction.OUTGOING</code> relationships with TYPE
+     * <code>relType</code> of <code>parent</code>, to find a node with the defined NAME and TYPE.
+     * 
+     * @param parent
+     * @param relType
+     * @param name
+     * @param nodeType
+     * @return the found node or <code>null</code>
+     */
+    public Node findNode(Node parent, RelationshipType relType, String name, INodeType nodeType) {
+        // validate parameters
+        if (parent == null) {
+            throw new IllegalArgumentException("Parent is null.");
+        }
+        if (relType == null) {
+            throw new IllegalArgumentException("Relationship type is null.");
+        }
+        if ((name == null) || (name.equals(StringUtils.EMPTY))) {
+            throw new IllegalArgumentException("Name is null or empty.");
+        }
+        if (nodeType == null) {
+            throw new IllegalArgumentException("Node type is null.");
+        }
+
+        Node result = null;
+        for (Relationship rel : parent.getRelationships(relType, Direction.OUTGOING)) {
+            Node node = rel.getEndNode();
+            if ((name.equals(node.getProperty(NAME, StringUtils.EMPTY))) && (nodeType.getId().equals(node.getProperty(TYPE, null)))) {
+                result = node;
+                break;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Creates Indexes
+     * 
+     * @param rootNode root node of indexed structure
+     * @param nodeType type of indexed node
+     * @return
+     */
+    public Index<Node> getIndexForNodes(Node rootNode, INodeType nodeType) {
+        return graphDb.index().forNodes(NewAbstractService.getIndexKey(rootNode, DriveNodeTypes.FILE));
+    }
+
+    /**
+     * Safely get a node that is linked to <code>startNode</code> with the defined relationship.
+     * Assumed, that <code>startNode</code> has only one relationship of that kind
+     * 
+     * @param startNode
+     * @param relationship
+     * @param direction
+     * @return the node on the other end of relationship from <code>startNode</code>
+     * @throws DatabaseException if there are more than one relationships
+     */
+    protected Node getNextNode(Node startNode, RelationshipType relationship, Direction direction) throws DatabaseException {
+        Node result = null;
+
+        Iterator<Relationship> rels = startNode.getRelationships(relationship, direction).iterator();
+        if (rels.hasNext()) {
+            result = rels.next().getOtherNode(startNode);
+        }
+        if (rels.hasNext()) {
+            // result is ambiguous
+            throw new DatabaseException("Errors exist in database structure");
+        }
+
+        return result;
+    }
+
+    @Override
+    public void onDatabaseEvent(DatabaseEvent event) {
+        switch (event.getEventType()) {
+        case BEFORE_SHUTDOWN:
+            graphDb = null;
+            break;
+        case AFTER_STARTUP:
+            graphDb = DatabaseManagerFactory.getDatabaseManager().getDatabaseService();
+            break;
+        }
+    }
 }

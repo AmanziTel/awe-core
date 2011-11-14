@@ -12,47 +12,23 @@
  */
 package org.amanzi.awe.views.reuse;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-
-import org.amanzi.awe.views.reuse.mess_table.view.MessageAndEventTableView;
-import org.amanzi.awe.views.reuse.views.FrequencyPlanAnalyser;
-import org.amanzi.awe.views.reuse.views.ReuseAnalyserView;
-import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.services.events.UpdateViewEvent;
-import org.amanzi.neo.services.events.UpdateViewEventType;
-import org.amanzi.neo.services.ui.IUpdateViewListener;
-import org.amanzi.neo.services.ui.utils.ActionUtil;
+import org.amanzi.neo.model.distribution.impl.DistributionManager;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.ui.IViewPart;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
 /**
  * The activator class controls the plug-in life cycle
  */
-public class ReusePlugin extends AbstractUIPlugin implements IUpdateViewListener {
-    private static final Collection<UpdateViewEventType> handedTypes;
-    static {
-        Collection<UpdateViewEventType> spr = new HashSet<UpdateViewEventType>();
-        spr.add(UpdateViewEventType.GIS);
-        spr.add(UpdateViewEventType.SELECT);
-        spr.add(UpdateViewEventType.NEIGHBOUR);
-        handedTypes = Collections.unmodifiableCollection(spr);
-    }
-    /** String VIEW_ID field */
-    public static final String REUSE_VIEW_ID = "org.amanzi.awe.views.reuse.views.ReuseAnalyserView";
-    public static final String FRQ_VIEW_ID = "org.amanzi.awe.views.reuse.views.FrequencyPlanAnalyser";
-    public static final String MESS_TABLE_VIEW_ID = "org.amanzi.awe.views.reuse.views.MessageAndEventTableView";
+public class ReusePlugin extends AbstractUIPlugin {
 
-    // The plug-in ID
+	// The plug-in ID
     public static final String PLUGIN_ID = "org.amanzi.awe.views.reuse";
 
 	// The shared instance
 	private static ReusePlugin plugin;
 
+    
 	/**
 	 * The constructor
 	 */
@@ -66,7 +42,8 @@ public class ReusePlugin extends AbstractUIPlugin implements IUpdateViewListener
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
-        NeoCorePlugin.getDefault().getUpdateViewManager().addListener(this);
+        
+        DistributionManager.getManager().registerReusePlugin(this);
 	}
 
 	/*
@@ -76,7 +53,8 @@ public class ReusePlugin extends AbstractUIPlugin implements IUpdateViewListener
 	public void stop(BundleContext context) throws Exception {
 		plugin = null;
 		super.stop(context);
-        NeoCorePlugin.getDefault().getUpdateViewManager().removeListener(this);
+        
+        DistributionManager.getManager().registerReusePlugin(this);
 	}
 
 	/**
@@ -97,40 +75,6 @@ public class ReusePlugin extends AbstractUIPlugin implements IUpdateViewListener
 	 */
 	public static ImageDescriptor getImageDescriptor(String path) {
 		return imageDescriptorFromPlugin(PLUGIN_ID, path);
-	}
-
-    /**
-     *updates ReuseAnalyserView
-     */
-    private void updateView() {
-        ActionUtil.getInstance().runTask(new Runnable() {
-
-            @Override
-            public void run() {
-                IViewPart reuseView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(REUSE_VIEW_ID);
-                if (reuseView != null) {
-                    ((ReuseAnalyserView)reuseView).updateGisNode();
-                }
-                reuseView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(FRQ_VIEW_ID);
-                if (reuseView != null) {
-                    ((FrequencyPlanAnalyser)reuseView).updateGisNode();
-                }
-                IViewPart tableView = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView(MESS_TABLE_VIEW_ID);
-                if (tableView != null) {
-                    ((MessageAndEventTableView )tableView).updateDatasetNodes();
-                }
-            }
-        }, true);
-    }
-
-    @Override
-    public void updateView(UpdateViewEvent event) {
-        updateView();
-    }
-
-    @Override
-    public Collection<UpdateViewEventType> getType() {
-        return handedTypes;
-    }
+	}    
 
 }

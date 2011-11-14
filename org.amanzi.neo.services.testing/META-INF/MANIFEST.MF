@@ -3,10 +3,9 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Testing
 Bundle-SymbolicName: org.amanzi.neo.services.testing
 Bundle-Version: 1.0.0.qualifier
+Fragment-Host: org.amanzi.neo.services;bundle-version="1.0.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Require-Bundle: org.amanzi.testing;bundle-version="1.0.0",
- org.amanzi.log4j;bundle-version="1.2.12",
- org.amanzi.neo.services;bundle-version="1.0.0"
-Export-Package: org.amanzi.neo.services
-Bundle-ClassPath: lib/mockito-all-1.9.0-rc1.jar,
- .
+Require-Bundle: org.junit4,
+ org.amanzi.testing;bundle-version="1.0.0",
+ org.amanzi.log4j,
+ net.refractions.udig.ui;bundle-version="1.1.1"

@@ -17,11 +17,14 @@ import java.util.Iterator;
 
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewDatasetService;
+import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDataModel;
+import org.amanzi.neo.services.model.IProjectModel;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.PropertyContainer;
 
 /**
  * TODO Purpose of
@@ -32,6 +35,13 @@ import org.neo4j.graphdb.Node;
  * @since 1.0.0
  */
 public abstract class DataModel extends AbstractModel implements IDataModel {
+
+    /**
+     * @param nodeType
+     */
+    protected DataModel(INodeType nodeType) {
+        super(nodeType);
+    }
 
     private static Logger LOGGER = Logger.getLogger(DataModel.class);
 
@@ -128,12 +138,12 @@ public abstract class DataModel extends AbstractModel implements IDataModel {
         return result;
     }
 
-    public class DataElementIterable implements Iterable<IDataElement> {
+    public static class DataElementIterable implements Iterable<IDataElement> {
         private class DataElementIterator implements Iterator<IDataElement> {
 
-            private Iterator<Node> it;
+            private Iterator<? extends PropertyContainer> it;
 
-            public DataElementIterator(Iterable<Node> nodeTraverse) {
+            public DataElementIterator(Iterable<? extends PropertyContainer> nodeTraverse) {
                 this.it = nodeTraverse.iterator();
             }
 
@@ -154,9 +164,9 @@ public abstract class DataModel extends AbstractModel implements IDataModel {
 
         }
 
-        private Iterable<Node> nodeTraverse;
+        private Iterable<? extends PropertyContainer> nodeTraverse;
 
-        public DataElementIterable(Iterable<Node> nodeTraverse) {
+        public DataElementIterable(Iterable<? extends PropertyContainer> nodeTraverse) {
             this.nodeTraverse = nodeTraverse;
         }
 
@@ -164,6 +174,18 @@ public abstract class DataModel extends AbstractModel implements IDataModel {
         public Iterator<IDataElement> iterator() {
             return new DataElementIterator(nodeTraverse);
         }
+    }
+
+    @Override
+    public IProjectModel getProject() {
+        Node project = null;
+        try {
+            project = dsServ.getParent(rootNode, false);
+        } catch (DatabaseException e) {
+            LOGGER.error("Could not get parent project node.", e);
+        }
+        ProjectModel model = project == null ? null : new ProjectModel(project);
+        return model;
     }
 
 }

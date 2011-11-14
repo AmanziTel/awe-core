@@ -13,27 +13,118 @@
 
 package org.amanzi.neo.services.model.impl;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.referencing.CRS;
+import org.neo4j.graphdb.Node;
+import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
- * TODO Purpose of
  * <p>
+ * This class holds basic implementation of methods, used by Classes, that implement
+ * <code>IRenderableModel</code> interface.
  * </p>
  * 
  * @author grigoreva_a
  * @since 1.0.0
  */
-public class RenderableModel extends AbstractIndexedModel {
-    // TODO: make it abstract?
-    @Override
-    public Iterable<IDataElement> getChildren(IDataElement parent) {
+public abstract class RenderableModel extends AbstractIndexedModel {
+
+    private static Logger LOGGER = Logger.getLogger(RenderableModel.class);
+
+    static final String DESCRIPTION = "description";
+    static final String CRS_NAME = "crs";
+
+    private NewDatasetService datasetService = NeoServiceFactory.getInstance().getNewDatasetService();
+
+    protected final static String DEFAULT_EPSG = "EPSG:31467";
+    /** The field used in geo tools. Assignment not yet implemented.//TODO */
+    protected CoordinateReferenceSystem crs;
+
+    protected String crsCode;
+
+    protected RenderableModel(Node rootNode, INodeType nodeType) throws AWEException {
+        super(rootNode, nodeType);
+        Node gis = datasetService.getGisNodeByDataset(rootNode);
+        crsCode = StringUtils.EMPTY;
+        if (gis != null) {
+            crsCode = gis.getProperty(CRS_NAME, StringUtils.EMPTY).toString();
+        }
+        try {
+            if (!crsCode.equals(StringUtils.EMPTY)) {
+                crsCode = DEFAULT_EPSG;
+            }
+            crs = CRS.decode(DEFAULT_EPSG);
+        } catch (FactoryException e) {
+            LOGGER.error("Could not parse epsg.", e);
+        }
+    }
+
+    /**
+     * Updates the model CRS and returns a <code>CoordinateReferenceSystem</code> object,
+     * representing the new value.
+     * 
+     * @param crsCode a string representing the new CRS - something like "EPSG:31247"
+     * @return the updated CRS as <code>CoordinateReferenceSystem</code> object
+     */
+    protected CoordinateReferenceSystem updateCRS(String crsCode) {
+        try {
+            crs = CRS.decode(crsCode);
+            this.crsCode = crsCode;
+            return crs;
+        } catch (FactoryException e) {
+            LOGGER.error("Could not parse epsg.", e);
+        }
         return null;
     }
 
+    /**
+     * @param crs The crs to set.
+     */
+    public void setCRS(CoordinateReferenceSystem crs) {
+        this.crs = crs;
+        crsCode = "";// ToDO:
+    }
+
     @Override
-    public Iterable<IDataElement> getAllElementsByType(INodeType elementType) {
-        return null;
+    public abstract Iterable<IDataElement> getChildren(IDataElement parent);
+
+    @Override
+    public abstract Iterable<IDataElement> getAllElementsByType(INodeType elementType);
+
+    /**
+     * @return A <code>String</code> description for use of geo tools;
+     */
+    public String getDescription() {
+        return this.rootNode.getProperty(DESCRIPTION, StringUtils.EMPTY).toString();
+    }
+
+    /**
+     * @return An envelope, representing the coordinate bounds for the data in current model.
+     */
+    public ReferencedEnvelope getBounds() {
+        return new ReferencedEnvelope(min_longitude, max_longitude, min_latitude, max_latitude, crs);
+    }
+
+    @Override
+    public void finishUp() throws AWEException {
+        Node gis = datasetService.getGisNodeByDataset(rootNode);
+        if (gis != null) {
+            Map<String, Object> params = new HashMap<String, Object>();
+            params.put(CRS_NAME, crsCode);
+            datasetService.setProperties(gis, params);
+        }
+        super.finishUp();
     }
 
 }

@@ -3,10 +3,10 @@ package org.amanzi.neo.services;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
-import org.amanzi.testing.AbstractAWETest;
 import org.apache.log4j.Logger;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -17,7 +17,7 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 
-public class ProjectServiceTest extends AbstractAWETest {
+public class ProjectServiceTest extends AbstractNeoServiceTest {
 	private static Logger LOGGER = Logger.getLogger(ProjectServiceTest.class);
 
 	private static ProjectService projectService;
@@ -29,8 +29,11 @@ public class ProjectServiceTest extends AbstractAWETest {
 	public static void setUpBeforeClass() throws Exception {
 		clearDb();
 		initializeDb();
+		
+		new LogStarter().earlyStartup();
+		
 		LOGGER.info("Database created in folder " + databasePath);
-		projectService = NeoServiceFactory.getInstance().getNewProjectService();
+		projectService = new ProjectService(graphDatabaseService);
 	}
 
 	@AfterClass

@@ -28,7 +28,7 @@ import org.neo4j.graphdb.Node;
  * @author tsinkel_a
  * @since 1.0.0
  */
-public interface IFilter extends Serializable {
+public interface IFilter extends ISimpleFilter {
 
     void setExpression(INodeType nodeType, String propertyName, Serializable value);
     
@@ -36,8 +36,8 @@ public interface IFilter extends Serializable {
 
     void addFilter(IFilter additionalFilter);
 
-    boolean check(Node node) throws NullValueException, NotComparebleException;
-
     INodeType getNodeType();
+    
+    boolean check(Node node) throws NullValueException, NotComparebleException;
 
 }

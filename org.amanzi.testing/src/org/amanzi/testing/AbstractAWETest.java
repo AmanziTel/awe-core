@@ -37,6 +37,8 @@ public abstract class AbstractAWETest {
     
     protected static GraphDatabaseService graphDatabaseService;
     
+    protected final static float DEFAULT_DOUBLE = 0.001f;
+    
     /**
      * Initialized Database on selected Directory
      */
@@ -44,6 +46,7 @@ public abstract class AbstractAWETest {
         LOGGER.info("Initialize Database");
         graphDatabaseService = new EmbeddedGraphDatabase(getDbLocation());
         DatabaseManagerFactory.getDatabaseManager().setDatabaseService(graphDatabaseService);
+        
         LOGGER.info("Database was successfully initialized");
     }
     
@@ -53,6 +56,7 @@ public abstract class AbstractAWETest {
     
     protected static void stopDb() {
         DatabaseManagerFactory.getDatabaseManager().shutdown();
+        graphDatabaseService = null;
     }
     
     /**

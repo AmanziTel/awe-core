@@ -6,23 +6,13 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: net.refractions.udig.libs;bundle-version="1.1.1",
  org.eclipse.core.runtime;bundle-version="3.3.100",
- org.amanzi.neo.core;bundle-version="1.0.0"
-Export-Package: au.com.bytecode.opencsv,
- au.com.bytecode.opencsv.bean,
- org.amanzi.neo.loader.core,
- org.amanzi.neo.loader.core.parser,
- org.amanzi.neo.loader.core.preferences,
- org.amanzi.neo.loader.core.saver,
- org.amanzi.neo.loader.core.saver.impl,
- org.amanzi.neo.loader.core.saver.network,
- org.amanzi.neo.loader.core.utils,
- org.apache.commons.io,
- org.apache.commons.io.comparator,
- org.apache.commons.io.filefilter,
- org.apache.commons.io.input,
- org.apache.commons.io.monitor,
- org.apache.commons.io.output
+ org.amanzi.neo.services;bundle-version="1.0.0"
+Export-Package: org.amanzi.neo.loader.core.newparser,
+ org.amanzi.neo.loader.core.newsaver
 Bundle-ClassPath: .,
  lib/opencsv-2.2.jar,
  lib/commons-io-2.0.1.jar
 Bundle-Vendor: amanzi.org
+Import-Package: org.eclipse.jface.preference
+Bundle-ActivationPolicy: lazy
+Eclipse-ExtensibleAPI: true

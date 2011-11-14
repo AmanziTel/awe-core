@@ -13,6 +13,19 @@
 
 package org.amanzi.neo.services.filters;
 
+import org.apache.commons.lang.StringUtils;
+
 public enum ExpressionType {
     OR, AND;
+    
+    public static ExpressionType getByName(String name) {
+        if (StringUtils.isEmpty(name))
+            return null;
+        for (ExpressionType expType : ExpressionType.values()) {
+            if (expType.name().toLowerCase().equals(name.toLowerCase())) {
+                return expType;
+            }
+        }
+        return null;
+    }
 }

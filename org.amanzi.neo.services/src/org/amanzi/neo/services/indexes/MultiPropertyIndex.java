@@ -435,7 +435,7 @@ public class MultiPropertyIndex<E extends Object> {
             while (toDelete.size() > 0) {
                 Node node = toDelete.remove(0);
                 for (Relationship rel : node.getRelationships(NeoIndexRelationshipTypes.IND_CHILD, Direction.OUTGOING)) {
-                    toDelete.add(rel.getEndNode());
+                    toDelete.add(rel.getEndNode());  
                     rel.delete();
                 }
                 node.delete();
@@ -805,4 +805,16 @@ public class MultiPropertyIndex<E extends Object> {
         return (E)(node == null ? null : node.getProperty(property, null));
     }
     
+    @Override
+    public boolean equals(Object obj) {
+        if(!(obj instanceof MultiPropertyIndex<?>)){
+            return false;
+        }
+        return (this.name.equalsIgnoreCase(((MultiPropertyIndex<?>)obj).name));
+    }
+    
+    @Override
+    public int hashCode() {
+        return this.name.hashCode();
+    }
 }
