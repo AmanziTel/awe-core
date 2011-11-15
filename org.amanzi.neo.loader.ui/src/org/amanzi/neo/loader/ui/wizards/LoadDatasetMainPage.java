@@ -448,7 +448,7 @@ public class LoadDatasetMainPage extends LoaderPageNew<ConfigurationDataImpl> {
                 String fn = dlg.open();
 
                 if (fn != null) {
-                    LoaderUiUtils.setDefaultDirectory(dlg.getFilterPath());
+                    setDefaultDirectory(dlg.getFilterPath());
                     for (String name : dlg.getFileNames()) {
                         addFileToLoad(name, dlg.getFilterPath(), true);
                         if (cDataset.getText().isEmpty()) {
