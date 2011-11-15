@@ -42,9 +42,6 @@ import org.neo4j.graphdb.Transaction;
  * @param <T3>
  */
 public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 extends IConfiguration> implements ISaver<T1, T2, T3> {
-    public static final String CONFIG_VALUE_PROJECT = "Project";
-    public static final String CONFIG_VALUE_NETWORK = "Network";
-    public static final String CONFIG_VALUE_DATASET = "Dataset";
     public static final String PROJECT_PROPERTY = "project";
     public static final String CONFIG_VALUE_CALLS = "Calls";
     public static final String CONFIG_VALUE_PESQ = "Pesq";

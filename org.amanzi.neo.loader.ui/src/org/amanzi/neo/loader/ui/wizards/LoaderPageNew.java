@@ -21,6 +21,8 @@ import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.ILoaderNew;
 import org.amanzi.neo.loader.core.IValidateResult.Result;
 import org.amanzi.neo.loader.core.newsaver.IData;
+import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
+import org.amanzi.neo.loader.core.preferences.PreferenceStore;
 import org.amanzi.neo.loader.ui.preferences.CommonCRSPreferencePage;
 import org.amanzi.neo.services.ui.utils.ActionUtil;
 import org.amanzi.neo.services.utils.RunnableWithResult;
@@ -53,6 +55,15 @@ public abstract class LoaderPageNew<T extends IConfiguration> extends WizardPage
      */
     protected LoaderPageNew(String pageName) {
         super(pageName);
+    }
+
+    /**
+     * set default directory
+     * 
+     * @param dirname
+     */
+    protected void setDefaultDirectory(String dirname) {
+        PreferenceStore.getPreferenceStore().setDefault(DataLoadPreferences.DEFAULT_DIRRECTORY_LOADER, dirname);
     }
 
     @Override
