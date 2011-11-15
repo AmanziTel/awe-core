@@ -25,7 +25,8 @@ public class PerspectiveFactory implements IPerspectiveFactory {
     private static final String PROJECTS = "net.refractions.udig.project.ui.projectExplorer"; //$NON-NLS-1$
     private static final String LAYERS = "net.refractions.udig.project.ui.layerManager"; //$NON-NLS-1$
     private static final String CATALOG = "net.refractions.udig.catalog.ui.CatalogView"; //$NON-NLS-1$
-    public static String NETWORK_VIEW_ID = "org.amanzi.awe.views.network.views.NetworkTreeView";
+    public static String NETWORK_VIEW_ID = "org.amanzi.awe.views.network.views.NewNetworkTreeView";
+    
     /** 
      * Creates the initial layout for a page.
      * <p>

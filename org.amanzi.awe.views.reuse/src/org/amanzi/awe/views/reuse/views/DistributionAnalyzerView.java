@@ -1463,11 +1463,17 @@ public class DistributionAnalyzerView extends ViewPart implements IEventListener
     @Override
     public void handleEvent(AbstractUIEvent event) {
         if (event instanceof UpdateProjectDataEvent) {
-            try {
-                initializeFields();
-            } catch (AWEException e) {
-                showErrorMessage(e.getMessage());
-            }
+            ActionUtil.getInstance().runTask(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        initializeFields();
+                    } catch (AWEException e) {
+                        showErrorMessage(e.getMessage());
+                    }
+                }
+            }, false);
         }
     }
 }
