@@ -86,6 +86,13 @@ public abstract class LoaderPageNew<T extends IConfiguration> extends WizardPage
                 : DatabaseAccessType.EMBEDDED);
     }
 
+    @SuppressWarnings("unchecked")
+    /**
+     * try to autodefine loader by seted information
+     *
+     * @param data
+     * @return
+     */
     protected ILoaderNew< ? extends IData, T> autodefineNew(T data) {
         ILoaderNew< ? extends IData, T> loader = getNewSelectedLoader();
         ILoaderNew< ? extends IData, T> candidate = null;
@@ -191,6 +198,7 @@ public abstract class LoaderPageNew<T extends IConfiguration> extends WizardPage
      * 
      * @return the loaders descriptions
      */
+    @SuppressWarnings("unchecked")
     protected String[] getNewLoadersDescriptions() {
         if (newloaders.isEmpty()) {
             AbstractLoaderWizardNew<T> wizard = (AbstractLoaderWizardNew<T>)getWizard();
@@ -212,6 +220,11 @@ public abstract class LoaderPageNew<T extends IConfiguration> extends WizardPage
         }
     }
 
+    /**
+     * select loader with appropriate with it number in combobox
+     * 
+     * @param selectionIndex
+     */
     protected void selectNewLoader(int selectionIndex) {
         ILoaderNew<IData, T> loader;
         if (selectionIndex < 0 || selectionIndex >= newloaders.size()) {
@@ -222,6 +235,13 @@ public abstract class LoaderPageNew<T extends IConfiguration> extends WizardPage
         setSelectedLoaderNew(loader);
     }
 
+    /**
+     * set the loader with which user will work;
+     * 
+     * @param loader
+     * @return
+     */
+    @SuppressWarnings("unchecked")
     protected int setSelectedLoaderNew(ILoaderNew< ? extends IData, T> loader) {
         AbstractLoaderWizardNew<T> wizard = (AbstractLoaderWizardNew<T>)getWizard();
         wizard.setSelectedLoaderNew(loader);
@@ -233,11 +253,16 @@ public abstract class LoaderPageNew<T extends IConfiguration> extends WizardPage
      * 
      * @return the selected loader
      */
+    @SuppressWarnings("unchecked")
     protected ILoaderNew< ? extends IData, T> getNewSelectedLoader() {
         AbstractLoaderWizardNew<T> wizard = (AbstractLoaderWizardNew<T>)getWizard();
         return wizard.getNewSelectedLoader();
     }
 
+    /**
+     * @return configuration data instance; if it is <code>NULL</code> return new one;
+     */
+    @SuppressWarnings("unchecked")
     public T getNewConfigurationData() {
         IWizard wizard = getWizard();
         return ((AbstractLoaderWizardNew<T>)wizard).getNewConfigurationData();
