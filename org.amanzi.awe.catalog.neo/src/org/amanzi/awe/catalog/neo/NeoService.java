@@ -21,6 +21,7 @@ import java.util.Map;
 
 import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.catalog.IService;
+import net.refractions.udig.catalog.IServiceInfo;
 
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.GisTypes;
@@ -186,6 +187,11 @@ public class NeoService extends IService  implements INeoServiceProviderListener
 
         public void updateResource() {
             members=null;
+        }
+
+        @Override
+        protected IServiceInfo createInfo(IProgressMonitor monitor) throws IOException {
+            return null;
         }
 
 }

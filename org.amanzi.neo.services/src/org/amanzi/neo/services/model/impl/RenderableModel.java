@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.neo4j.graphdb.Node;
+import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -67,7 +68,7 @@ public abstract class RenderableModel extends AbstractIndexedModel {
             }
             crs = CRS.decode(DEFAULT_EPSG);
             crsCode = DEFAULT_EPSG;
-        } catch (NoSuchAuthorityCodeException e) {
+        } catch (FactoryException e) {
             LOGGER.error("Could not parse epsg.", e);
         }
     }
@@ -84,7 +85,7 @@ public abstract class RenderableModel extends AbstractIndexedModel {
             crs = CRS.decode(crsCode);
             this.crsCode = crsCode;
             return crs;
-        } catch (NoSuchAuthorityCodeException e) {
+        } catch (FactoryException e) {
             LOGGER.error("Could not parse epsg.", e);
         }
         return null;

@@ -21,16 +21,12 @@ import java.io.IOException;
 
 import net.refractions.udig.project.ILayer;
 
-import org.amanzi.awe.catalog.neo.GeoNeo;
-import org.amanzi.awe.neostyle.BaseNeoStyle;
 import org.amanzi.awe.neostyle.NetworkNeoStyle;
 import org.amanzi.awe.neostyle.NetworkNeoStyleContent;
-import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewNetworkService;
 import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.NodeTypeManager;
-import org.amanzi.neo.services.enums.GisTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
@@ -174,7 +170,7 @@ public class NewNetworkRenderer extends AbstractRenderer {
             }
         } catch (IOException e) {
             // TODO Handle IOException
-            NeoCorePlugin.error(e.getLocalizedMessage(), e);
+//            NeoCorePlugin.error(e.getLocalizedMessage(), e);
             return 0;
         }
         return result / (double)count;

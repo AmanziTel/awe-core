@@ -109,4 +109,9 @@ public class NewGeoResource extends IGeoResource {
         return super.resolve(adaptee, monitor);
     }
 
+    @Override
+    protected IGeoResourceInfo createInfo(IProgressMonitor monitor) throws IOException {
+        return null;
+    }
+
 }
