@@ -261,5 +261,4 @@ public interface IVault {
      * @return Maximum value in statistics
      */
     public Number getMaxValue(String nodeType, String propertyName);
-
 }

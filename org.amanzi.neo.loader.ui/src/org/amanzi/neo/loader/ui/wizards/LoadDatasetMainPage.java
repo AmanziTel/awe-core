@@ -16,7 +16,6 @@ package org.amanzi.neo.loader.ui.wizards;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -24,9 +23,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.amanzi.neo.db.manager.NeoServiceProvider;
-import org.amanzi.neo.loader.core.CommonConfigData;
-import org.amanzi.neo.loader.core.IConfiguration;
-import org.amanzi.neo.loader.core.IValidateResult;
+import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.IValidateResult.Result;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
@@ -39,7 +36,6 @@ import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.DialogPage;
-import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -60,7 +56,6 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
-import org.neo4j.graphdb.Node;
 
 /**
  * <p>
@@ -70,40 +65,19 @@ import org.neo4j.graphdb.Node;
  * @author tsinkel_a
  * @since 1.0.0
  */
-public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
+public class LoadDatasetMainPage extends LoaderPageNew<ConfigurationDataImpl> {
     private static Logger LOGGER = Logger.getLogger(LoadDatasetMainPage.class);
     /** String ASC_PAT_FILE field */
-    private static final String ASC_PAT_FILE = ".*_(\\d{6})_.*";
-    private static final String FMT_PAT_FILE = ".*(\\d{4}-\\d{2}-\\d{2}).*";
-    private static final String CSV_PAT_FILE = ".*(\\d{2}/\\d{2}/\\d{4}).*";
+    // private static final String ASC_PAT_FILE = ".*_(\\d{6})_.*";
+    // private static final String FMT_PAT_FILE = ".*(\\d{4}-\\d{2}-\\d{2}).*";
+    // private static final String CSV_PAT_FILE = ".*(\\d{2}/\\d{2}/\\d{4}).*";
     private final Set<String> restrictedNames = new HashSet<String>();
     private Map<Object, String> names = new HashMap<Object, String>();
-    /*
-     * Minimum height of Shell
-     */
-    private static final int MINIMUM_HEIGHT = 400;
-
-    /*
-     * Minimum width of Shell
-     */
-    private static final int MINIMUM_WIDTH = 600;
-
-    /*
-     * Dataset field width
-     */
-    private static final int DATASET_WIDTH = 150;
 
     /*
      * Layout for One column and Fixed Width
      */
     private final static GridLayout layoutOneColumnNotFixedWidth = new GridLayout(1, false);
-
-    private static final int MAX_NEMO_LINE_READ = 50;
-
-    /*
-     * Shell of this Dialog
-     */
-    private Shell dialogShell;
 
     /*
      * Button for FileDialog
@@ -129,16 +103,6 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
      * List for files to load
      */
     private List filesToLoadList;
-
-    /*
-     * Load button
-     */
-    private Button loadButton;
-    /**
-     * file data
-     */
-    private Calendar workData = null;
-    private boolean applyToAll = false;
     /*
      * Maps for storing name of file and path to file
      */
@@ -151,21 +115,11 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
 
     private Combo cDataset;
     private String datasetName;
-    /*
-     * Default directory for file dialogs
-     */
-    private static String defaultDirectory = null;
-    /**
-     * wizard page if tems dialog was created from import wizard page
-     */
-    private WizardPage wizardPage = null;
 
     private final LinkedHashMap<String, IDriveModel> dataset = new LinkedHashMap<String, IDriveModel>();
 
     private Label ldataset;
-    private boolean addToSelect = false;
 
-    private Node rootNode;
     private Combo cLoaders;
     private DateTime date;
     private Button selectCRS;
@@ -173,7 +127,6 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
     public LoadDatasetMainPage() {
         super("mainDatasetPage");
         setTitle(NeoLoaderPluginMessages.TemsImportWizard_PAGE_DESCR);
-        rootNode = null;
     }
 
     @Override
@@ -464,49 +417,6 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
         folderFilesList = createSelectionList(panel, NeoLoaderPluginMessages.DriveDialog_FilesToChooseListLabel);
     }
 
-    @Override
-    protected boolean validateConfigData(CommonConfigData configurationData) {
-        String rootName = configurationData.getDbRootName();
-        if (StringUtils.isEmpty(rootName)) {
-            setMessage("Select dataset", DialogPage.ERROR);
-            return false;
-        }
-        java.util.List<File> files = configurationData.getFileToLoad();
-        if (files == null || files.isEmpty()) {
-            setMessage("Select files for import", DialogPage.ERROR);
-            return false;
-        }
-        if (getSelectedLoader() == null) {
-            setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_TYPE, DialogPage.ERROR);
-            return false;
-        }
-        configurationData.setProjectName(LoaderUiUtils.getAweProjectName());
-        configurationData.setCrs(getSelectedCRS());
-        Calendar cl = (Calendar)configurationData.getAdditionalProperties().get("workdate");
-        if (cl == null) {
-            cl = Calendar.getInstance();
-            cl.set(Calendar.HOUR, 0);
-            cl.set(Calendar.MINUTE, 0);
-            cl.set(Calendar.SECOND, 0);
-            cl.set(Calendar.MILLISECOND, 0);
-            configurationData.getAdditionalProperties().put("workdate", cl);
-        }
-        cl.set(Calendar.YEAR, date.getYear());
-        cl.set(Calendar.MONTH, date.getMonth());
-        cl.set(Calendar.DAY_OF_MONTH, date.getDay());
-
-        IValidateResult result = getSelectedLoader().getValidator().validate(configurationData);
-        if (result.getResult() == Result.FAIL) {
-            setMessage(String.format(result.getMessages(), getSelectedLoader().getDescription()), DialogPage.ERROR);
-            return false;
-        } else if (result.getResult() == Result.UNKNOWN) {
-            setMessage(String.format(result.getMessages(), getSelectedLoader().getDescription()), DialogPage.WARNING);
-        } else {
-            setMessage(""); //$NON-NLS-1$
-        }
-        return true;
-    }
-
     /**
      * change dataset selection
      */
@@ -699,7 +609,7 @@ public class LoadDatasetMainPage extends LoaderPage<CommonConfigData> {
     }
 
     @Override
-    protected boolean validateConfigData(IConfiguration configurationData) {
+    protected boolean validateConfigData(ConfigurationDataImpl configurationData) {
         String rootName = configurationData.getDatasetNames().get("Dataset");
         if (StringUtils.isEmpty(rootName)) {
             setMessage("Select dataset", DialogPage.ERROR);

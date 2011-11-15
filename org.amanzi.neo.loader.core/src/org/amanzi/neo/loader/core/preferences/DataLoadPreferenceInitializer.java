@@ -147,7 +147,6 @@ public class DataLoadPreferenceInitializer extends AbstractPreferenceInitializer
         pref.setDefault(DataLoadPreferences.REMOVE_SITE_NAME, false);
         pref.setDefault(DataLoadPreferences.NETWORK_COMBINED_CALCULATION, true);
         pref.setDefault(DataLoadPreferences.ZOOM_TO_LAYER, true);
-        pref.setDefault(DataLoadPreferences.ONE_NETWORK_PER_PROJECT, false);
         pref.setDefault(DataLoadPreferences.ADD_AMS_PROBES_TO_MAP, true);
         pref.setDefault(DataLoadPreferences.ADD_AMS_CALLS_TO_MAP, true);
         pref.setDefault(DataLoadPreferences.ADD_AMS_EVENTS_TO_MAP, true);
@@ -163,8 +162,8 @@ public class DataLoadPreferenceInitializer extends AbstractPreferenceInitializer
         pref.setDefault(DataLoadPreferences.NH_LATITUDE, "latitude, y_wert.*, SIT.*Y, northing, lat.*");
         pref.setDefault(DataLoadPreferences.NH_LONGITUDE, "longitude, x_wert.*, SIT.*X, easting, lon.*");
 
-        pref.setDefault(DataLoadPreferences.DR_LATITUDE, ".*latitude");
-        pref.setDefault(DataLoadPreferences.DR_LONGITUDE, ".*longitude");
+        pref.setDefault(DataLoadPreferences.DR_LATITUDE, ".*latitude.*");
+        pref.setDefault(DataLoadPreferences.DR_LONGITUDE, ".*longitude.*");
         pref.setDefault(DataLoadPreferences.DR_BCCH, "bcch");
         pref.setDefault(DataLoadPreferences.DR_CI, "ci");
         pref.setDefault(DataLoadPreferences.DR_EcIo, "ecio");

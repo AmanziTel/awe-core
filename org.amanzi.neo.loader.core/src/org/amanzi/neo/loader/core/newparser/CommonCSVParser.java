@@ -23,7 +23,6 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -31,7 +30,6 @@ import java.util.Map;
 
 import org.amanzi.neo.loader.core.CountingFileInputStream;
 import org.amanzi.neo.loader.core.IConfiguration;
-import org.amanzi.neo.loader.core.LoaderUtils;
 import org.amanzi.neo.loader.core.ProgressEventImpl;
 import org.amanzi.neo.loader.core.newsaver.ISaver;
 import org.amanzi.neo.services.model.IModel;
@@ -58,7 +56,6 @@ public class CommonCSVParser<T1 extends ISaver<IModel, CSVContainer, T2>, T2 ext
     private CountingFileInputStream is;
     private String charSetName = Charset.defaultCharset().name();
     protected BufferedReader reader;
-
     private double persentageOld = 0;
 
     /**
@@ -97,9 +94,16 @@ public class CommonCSVParser<T1 extends ISaver<IModel, CSVContainer, T2>, T2 ext
         ArrayList<String> header = new ArrayList<String>();
         try {
             while ((lineStr = reader.readLine()) != null) {
-                if (lineStr != null) {
+                if (container.getFirstLine().isEmpty()) {
+                    container.setFirstLine(lineStr);
+                }
+                if (lineStr != null && !lineStr.isEmpty()) {
                     header.addAll(Arrays.asList(parser.parseLine(lineStr)));
-                    break;
+                    if (header.size() >= MINIMAL_SIZE) {
+                        break;
+                    } else {
+                        header.clear();
+                    }
                 }
             }
             return header;

@@ -562,7 +562,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         if (parent == null) {
             throw new IllegalArgumentException("Parent is null.");
         }
-        LOGGER.info("getChildren(" + parent.toString() + ")");
+        LOGGER.debug("getChildren(" + parent.toString() + ")");
 
         Node parentNode = ((DataElement)parent).getNode();
         if (parentNode == null) {
@@ -605,8 +605,18 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     public Coordinate getCoordinate(IDataElement element) {
         IDataElement location = getLocation(element);
         if (location != null) {
-            return new Coordinate((Long)location.get(LATITUDE), (Long)location.get(LONGITUDE));
+            return new Coordinate((Long)location.get(LONGITUDE), (Long)location.get(LATITUDE));
         }
         return null;
+    }
+
+    @Override
+    public CoordinateReferenceSystem updateCRS(String crsCode) {
+        return super.updateCRS(crsCode);
+    }
+
+    @Override
+    public void setCRS(CoordinateReferenceSystem crs) {
+        super.setCRS(crs);
     }
 }

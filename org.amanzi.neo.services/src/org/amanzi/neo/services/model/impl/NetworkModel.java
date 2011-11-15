@@ -26,7 +26,6 @@ import java.util.Set;
 import org.amanzi.neo.model.distribution.IDistribution;
 import org.amanzi.neo.model.distribution.IDistributionModel;
 import org.amanzi.neo.model.distribution.impl.DistributionModel;
-import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService;
@@ -119,8 +118,8 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
      * @throws DuplicateNodeNameException
      * @throws AWEException
      */
-    public NetworkModel(IDataElement project, IDataElement network, String name, String crsCode) throws InvalidDatasetParameterException,
-            DatasetTypeParameterException, DuplicateNodeNameException, AWEException {
+    public NetworkModel(IDataElement project, IDataElement network, String name, String crsCode)
+            throws InvalidDatasetParameterException, DatasetTypeParameterException, DuplicateNodeNameException, AWEException {
         super(null, DatasetTypes.NETWORK);
         // validate
         if (project == null) {
@@ -169,7 +168,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
      */
     private void initializeMultiPropertyIndexing() throws AWEException {
         LOGGER.info("Initializing multi property index...");
-        addLocationIndex(NetworkElementNodeType.SECTOR);
+        addLocationIndex(NetworkElementNodeType.SITE);
     }
 
     @Override
@@ -187,7 +186,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
             throw new IllegalArgumentException("Node assotiated with DataElement is null.");
         }
         deleteSubElements(elementToDelete);
-        INodeType nodeType = NodeTypeManager.getType(elementToDelete.get(INeoConstants.PROPERTY_TYPE_NAME).toString());
+        INodeType nodeType = NodeTypeManager.getType(elementToDelete.get(NewAbstractService.TYPE).toString());
         removeProperty(nodeType, (DataElement)elementToDelete);
         nwServ.deleteOneNode(((DataElement)elementToDelete).getNode(), getRootNode(), indexMap);
         elementToDelete = null;
@@ -205,8 +204,8 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
             Node subNode = ((DataElement)childElement).getNode();
             if (subNode != null) {
                 deleteSubElements(childElement);
-                INodeType nodeType = NodeTypeManager.getType(childElement.get(INeoConstants.PROPERTY_TYPE_NAME).toString());
-                childElement.get(INeoConstants.PROPERTY_NAME_NAME);
+                INodeType nodeType = NodeTypeManager.getType(childElement.get(NewAbstractService.TYPE).toString());
+                childElement.get(NewAbstractService.NAME);
                 removeProperty(nodeType, (DataElement)childElement);
                 nwServ.deleteOneNode(subNode, getRootNode(), indexMap);
                 finishUp();
@@ -216,12 +215,37 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
 
     @Override
     public void renameElement(IDataElement elementToRename, String newName) throws AWEException {
-        String oldName = elementToRename.get(INeoConstants.PROPERTY_NAME_NAME).toString();
-        elementToRename.put(INeoConstants.PROPERTY_NAME_NAME, newName);
+        String oldName = elementToRename.get(NewAbstractService.NAME).toString();
+        elementToRename.put(NewAbstractService.NAME, newName);
         Node node = ((DataElement)elementToRename).getNode();
-        nwServ.setNameProperty(node, newName);
-        INodeType nodeType = NodeTypeManager.getType(elementToRename.get(INeoConstants.PROPERTY_TYPE_NAME).toString());
-        renameProperty(nodeType, INeoConstants.PROPERTY_NAME_NAME, oldName, newName);
+        INodeType nodeType = NodeTypeManager.getType(elementToRename.get(NewAbstractService.TYPE).toString());
+        
+        nwServ.removeNodeFromIndex(node, getIndex(nodeType), NewAbstractService.NAME, oldName);
+
+        nwServ.setAnyProperty(node, NewAbstractService.NAME, newName);
+        renameProperty(nodeType, NewAbstractService.NAME, oldName, newName);
+        
+        nwServ.addNodeToIndex(node, getIndex(nodeType), NewAbstractService.NAME, newName);
+        finishUp();
+    }
+    
+    @Override
+    public void updateElement(IDataElement elementToUpdate, String propertyName, Object newValue) throws AWEException {
+        String oldValue = elementToUpdate.get(propertyName).toString();
+        elementToUpdate.put(propertyName, newValue);
+        Node node = ((DataElement)elementToUpdate).getNode();
+        INodeType nodeType = NodeTypeManager.getType(elementToUpdate.get(NewAbstractService.TYPE).toString());
+        
+        if (nwServ.isIndexedProperties(propertyName)) {
+            nwServ.removeNodeFromIndex(node, getIndex(nodeType), propertyName, oldValue);
+        }
+        
+        nwServ.setAnyProperty(node, propertyName, newValue);
+        renameProperty(nodeType, propertyName, oldValue, newValue);
+        
+        if (nwServ.isIndexedProperties(propertyName)) {
+            nwServ.addNodeToIndex(node, getIndex(nodeType), propertyName, newValue);
+        }
         finishUp();
     }
 
@@ -366,7 +390,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         if (parent == null) {
             parent = new DataElement(getRootNode());
         }
-        LOGGER.info("getChildren(" + parent.toString() + ")");
+        LOGGER.debug("getChildren(" + parent.toString() + ")");
 
         Node parentNode = ((DataElement)parent).getNode();
         if (parentNode == null) {
@@ -458,7 +482,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         }
         return models;
     }
-    
+
     @Override
     public Iterable<ISelectionModel> getAllSelectionModelsOfSector(IDataElement element) throws AWEException {
         Iterable<Node> nodes = nwServ.getAllSelectionModelsOfSector(((DataElement)element).getNode());
@@ -483,7 +507,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
             throws AWEException {
         Node existedNode;
         existedNode = ((DataElement)existedElement).getNode();
-        INodeType nodeType = NodeTypeManager.getType(existedElement.get(INeoConstants.PROPERTY_TYPE_NAME).toString());
+        INodeType nodeType = NodeTypeManager.getType(existedElement.get(NewAbstractService.TYPE).toString());
         nwServ.completeProperties(existedNode, new DataElement(newPropertySet), isReplaceExisted, getIndex(nodeType));
         nwServ.setProperties(existedNode, newPropertySet);
         indexProperty(nodeType, newPropertySet);
@@ -653,9 +677,13 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         return new DistributionModel(this, distributionType);
     }
 
-    public Iterable<IDataElement> getElements(Envelope bounds_transformed) {
-        // currently return all elements
-        return new DataElementIterable(nwServ.findAllNetworkElements(rootNode, NetworkElementNodeType.SITE));
+    public Iterable<IDataElement> getElements(Envelope bounds_transformed) throws AWEException {
+
+        return new DataElementIterable(getNodesInBounds(NetworkElementNodeType.SITE, bounds_transformed.getMinY(),
+                bounds_transformed.getMinX(), bounds_transformed.getMaxY(), bounds_transformed.getMaxX()));
+        // // currently return all elements
+        // return new DataElementIterable(nwServ.findAllNetworkElements(rootNode,
+        // NetworkElementNodeType.SITE));
     }
 
     @Override
@@ -669,11 +697,11 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
                 .toString());
         switch (type) {
         case SITE:
-            return new Coordinate((Double)element.get(LATITUDE), (Double)element.get(LONGITUDE));
+            return new Coordinate((Double)element.get(LONGITUDE), (Double)element.get(LATITUDE));
 
         case SECTOR:
             IDataElement site = getParentElement(element);
-            return new Coordinate((Double)site.get(LATITUDE), (Double)site.get(LONGITUDE));
+            return new Coordinate((Double)site.get(LONGITUDE), (Double)site.get(LATITUDE));
         default:
             return null;
         }
@@ -771,6 +799,16 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         LOGGER.info("getNodeToNodeModels()");
 
         return getNodeToNodeModels(null);
+    }
+
+    @Override
+    public void setCRS(CoordinateReferenceSystem crs) {
+        super.setCRS(crs);
+    }
+
+    @Override
+    public CoordinateReferenceSystem updateCRS(String crsCode) {
+        return super.updateCRS(crsCode);
     }
 
 }

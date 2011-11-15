@@ -15,17 +15,20 @@ package org.amanzi.awe.views.network.property;
 import org.amanzi.neo.services.model.IDataElement;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.IPropertySourceProvider;
+import org.neo4j.neoclipse.property.NodePropertySource;
 
 /**
  * Provider for PropertySource of Network Nodes
  * 
- * @author Lagutko_N
+ * @author Kasnitskij_V
  * @since 1.0.0
  */
 
 public class NewNetworkPropertySourceProvider implements IPropertySourceProvider {
     
     private IDataElement lastRawObject;
+    private NodePropertySource propertySource;
+    private boolean isEditable;
     
     /**
      * Return PropertySource for given element
@@ -34,11 +37,30 @@ public class NewNetworkPropertySourceProvider implements IPropertySourceProvider
     public IPropertySource getPropertySource(Object element) {
         if (element instanceof IDataElement) {
             lastRawObject = (IDataElement)element;
-            return new NewNetworkPropertySource((IDataElement)element);            
+            if (isEditable) {
+            	propertySource = new NewNetworkPropertySourceEditable((IDataElement)element);
+            }
+            else {
+            	propertySource = new NewNetworkPropertySource((IDataElement)element);
+            }
+            return propertySource;
         }
         return null;
     }
     
+    /**
+     * Allow to set is view of property is editable
+     * 
+     * @param isEditablePropertyView
+     */
+    public void setEditableToPropertyView(boolean isEditablePropertyView) {
+    	isEditable = isEditablePropertyView;
+    }
+    
+    /**
+     * Get last clicked element
+     * @return
+     */
     public IDataElement getLastRawObject() {
         return lastRawObject;
     }

@@ -26,7 +26,6 @@ import org.apache.log4j.Logger;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.neo4j.graphdb.Node;
-import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -68,7 +67,7 @@ public abstract class RenderableModel extends AbstractIndexedModel {
             }
             crs = CRS.decode(DEFAULT_EPSG);
             crsCode = DEFAULT_EPSG;
-        } catch (FactoryException e) {
+        } catch (NoSuchAuthorityCodeException e) {
             LOGGER.error("Could not parse epsg.", e);
         }
     }
@@ -85,10 +84,18 @@ public abstract class RenderableModel extends AbstractIndexedModel {
             crs = CRS.decode(crsCode);
             this.crsCode = crsCode;
             return crs;
-        } catch (FactoryException e) {
+        } catch (NoSuchAuthorityCodeException e) {
             LOGGER.error("Could not parse epsg.", e);
         }
         return null;
+    }
+
+    /**
+     * @param crs The crs to set.
+     */
+    public void setCRS(CoordinateReferenceSystem crs) {
+        this.crs = crs;
+        crsCode = "";// ToDO:
     }
 
     @Override
@@ -108,12 +115,7 @@ public abstract class RenderableModel extends AbstractIndexedModel {
      * @return An envelope, representing the coordinate bounds for the data in current model.
      */
     public ReferencedEnvelope getBounds() {
-        try {
-            crs = CRS.decode(DEFAULT_EPSG);
-        } catch (FactoryException e) {
-            LOGGER.error("Could not parse epsg.", e);
-        }
-        return new ReferencedEnvelope(min_latitude, max_latitude, min_longitude, max_longitude, crs);
+        return new ReferencedEnvelope(min_longitude, max_longitude, min_latitude, max_latitude, crs);
     }
 
     @Override

@@ -25,15 +25,17 @@ import org.eclipse.ui.IWorkbenchWizard;
 
 /**
  * <p>
- *Interface for GUI which working with loaders
+ * Interface for GUI which working with loaders
  * </p>
+ * 
  * @author tsinkel_a
  * @since 1.0.0
  */
-public interface IGraphicInterfaceForLoaders<T extends IConfigurationData> extends IWorkbenchWizard ,IExecutableExtension {
+// TODO remove or replace with IGraphicInterfaceForLoadersNew after move to new architecture
+public interface IGraphicInterfaceForLoaders<T extends IConfigurationData> extends IWorkbenchWizard, IExecutableExtension {
 
+    void addLoader(ILoader< ? extends IDataElement, T> loader, IConfigurationElement[] pageConfigElements);
 
-    void addLoader(ILoader<? extends IDataElement,T>loader,IConfigurationElement[] pageConfigElements);
-    void addNewLoader(ILoaderNew<IData,IConfiguration> loader,IConfigurationElement[] pageConfigElements);
+    void addNewLoader(ILoaderNew<IData, IConfiguration> loader, IConfigurationElement[] pageConfigElements);
 
 }

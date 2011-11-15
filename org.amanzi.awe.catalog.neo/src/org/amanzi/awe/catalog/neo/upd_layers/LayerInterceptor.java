@@ -55,7 +55,7 @@ public class LayerInterceptor implements net.refractions.udig.project.intercepto
                 @Override
                 public void refresh(LayerEvent event) {
                     if (event.getType() == EventType.NAME) {
-                        changeGisName(fLayer);
+                        //changeGisName(fLayer); TODO:
                     }
                 }
             };
