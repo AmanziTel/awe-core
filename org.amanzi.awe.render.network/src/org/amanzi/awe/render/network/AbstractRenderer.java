@@ -198,9 +198,6 @@ public class AbstractRenderer extends RendererImpl {
 				}
 				setScaling(bounds_transformed, data_bounds, monitor, count);
 			}
-			int count = ((INetworkModel) model)
-					.getNodeCount(NetworkElementNodeType.SITE);
-			setScaling(bounds_transformed, data_bounds, monitor, count);
 
 			// TODO: selection
 
