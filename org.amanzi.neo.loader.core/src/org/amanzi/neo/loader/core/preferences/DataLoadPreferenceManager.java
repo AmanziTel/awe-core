@@ -40,6 +40,7 @@ public class DataLoadPreferenceManager {
     public final static String SITE = "site" + INFO_SEPARATOR;
     public final static String AZIMUTH = "azimuth" + INFO_SEPARATOR;
     public final static String BEAMWITH = "beamwidth" + INFO_SEPARATOR;
+    public final static String BCCH = "bcch";
     /*
      * drive constants
      */
@@ -53,7 +54,6 @@ public class DataLoadPreferenceManager {
     public static final String TIME = "time" + INFO_SEPARATOR + TEMS + INFO_SEPARATOR + ROMES;
     public static final String MESSAGE_TYPE = "message_type" + INFO_SEPARATOR + TEMS + INFO_SEPARATOR + ROMES;
 
-    public final static String BCCH = "bcch" + INFO_SEPARATOR + TEMS;
     public static final String TCH = "tch" + INFO_SEPARATOR + TEMS;
     public static final String SC = "sc" + INFO_SEPARATOR + TEMS;
     public static final String PN = "PN" + INFO_SEPARATOR + TEMS;
@@ -189,7 +189,7 @@ public class DataLoadPreferenceManager {
             driveMap = new HashMap<String, String[]>();
         }
         if (driveMap.isEmpty()) {
-            driveMap.put(BCCH, getPossibleHeaders(DataLoadPreferences.DR_BCCH));
+            driveMap.put(BCCH + INFO_SEPARATOR + TEMS, getPossibleHeaders(DataLoadPreferences.DR_BCCH));
             driveMap.put(ECIO, getPossibleHeaders(DataLoadPreferences.DR_EcIo));
             driveMap.put(PN, getPossibleHeaders(DataLoadPreferences.DR_PN));
             driveMap.put(RSSI, getPossibleHeaders(DataLoadPreferences.DR_RSSI));
@@ -236,6 +236,7 @@ public class DataLoadPreferenceManager {
             networkMap.put(CITY, getPossibleHeaders(DataLoadPreferences.NH_CITY));
             networkMap.put(MSC, getPossibleHeaders(DataLoadPreferences.NH_MSC));
             networkMap.put(BSC, getPossibleHeaders(DataLoadPreferences.NH_BSC));
+            networkMap.put(BCCH, getPossibleHeaders(DataLoadPreferences.NH_MSC));
             networkMap.put(SITE, getPossibleHeaders(DataLoadPreferences.NH_SITE));
             networkMap.put(SECTOR, getPossibleHeaders(DataLoadPreferences.NH_SECTOR));
             networkMap.put(AZIMUTH, getPossibleHeaders(DataLoadPreferences.NH_AZIMUTH));
@@ -248,6 +249,7 @@ public class DataLoadPreferenceManager {
             networkMap.put(DataLoadPreferences.MO + INFO_SEPARATOR, getPossibleHeaders(DataLoadPreferences.MO));
             networkMap.put(SITE, getPossibleHeaders(DataLoadPreferences.NH_SITE));
             networkMap.put(SECTOR, getPossibleHeaders(DataLoadPreferences.NH_SECTOR));
+            networkMap.put(BCCH, getPossibleHeaders(DataLoadPreferences.DR_BCCH));
             networkMap.put(DataLoadPreferences.CHGR + INFO_SEPARATOR, getPossibleHeaders(DataLoadPreferences.CHGR));
             networkMap.put(DataLoadPreferences.FHOP + INFO_SEPARATOR, getPossibleHeaders(DataLoadPreferences.FHOP));
         }
