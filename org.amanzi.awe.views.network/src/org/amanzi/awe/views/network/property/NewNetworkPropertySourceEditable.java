@@ -14,6 +14,7 @@ package org.amanzi.awe.views.network.property;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
 import org.amanzi.awe.catalog.neo.upd_layers.events.UpdateLayerEvent;
@@ -21,7 +22,10 @@ import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.IndexManager;
 import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService;
+import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
+import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.exceptions.AWEException;
@@ -32,7 +36,6 @@ import org.amanzi.neo.services.model.impl.NetworkModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.amanzi.neo.services.statistic.IPropertyHeader;
 import org.amanzi.neo.services.statistic.PropertyHeader;
-import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.SelectionPropertyManager;
 import org.amanzi.neo.services.utils.Utils;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -40,11 +43,8 @@ import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PropertyContainer;
-import org.neo4j.graphdb.Transaction;
 import org.neo4j.neoclipse.property.NodePropertySource;
 import org.neo4j.neoclipse.property.PropertyDescriptor;
-import org.neo4j.neoclipse.property.PropertyTransform;
-import org.neo4j.neoclipse.property.PropertyTransform.PropertyHandler;
 
 /**
  * Class that creates a properties of given DataElement.
@@ -123,7 +123,38 @@ public class NewNetworkPropertySourceEditable extends NodePropertySource impleme
     public void setPropertyValue(Object id, Object value) {
         INetworkModel networkModel = (INetworkModel)currentDataElement.get(INeoConstants.NETWORK_MODEL_NAME);
         try {
-            networkModel.updateElement(currentDataElement, id.toString(), value);
+        	boolean isReadyToUpdate = false;
+        	INodeType nodeType = NodeTypeManager.getType(currentDataElement.get(NewAbstractService.TYPE).toString());
+        	// if property is unique then find is exist some element with equal property
+        	if (networkModel.isUniqueProperties(id.toString())) {
+        		if (nodeType.equals(NetworkElementNodeType.SECTOR)) {
+        			IDataElement dataElement = networkModel.findSector(id.toString(), value.toString());
+        			if (dataElement == null) {
+        				isReadyToUpdate = true;
+        			}
+        			else {
+        				isReadyToUpdate = false;
+        			}
+        		}
+        		else {
+	            	Set<IDataElement> elements = networkModel.findElementByPropertyValue(nodeType, id.toString(), value);
+	            	if (elements.size() > 0) {
+	            		isReadyToUpdate = false;
+	            	}
+	            	else {
+	            		isReadyToUpdate = true;
+	            	}
+        		}
+        	}
+        	else {
+        		isReadyToUpdate = true;
+        	}
+        	if (isReadyToUpdate) {
+        		networkModel.updateElement(currentDataElement, id.toString(), value);
+        	}
+        	else {
+        		MessageDialog.openInformation(null, "Can not change property", "Can not change this property, because it property is unique");
+        	}
         } catch (AWEException e) {
             // TODO Handle AWEException
             throw (RuntimeException) new RuntimeException( ).initCause( e );

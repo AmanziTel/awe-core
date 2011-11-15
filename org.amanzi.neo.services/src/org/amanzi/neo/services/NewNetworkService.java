@@ -54,6 +54,7 @@ public class NewNetworkService extends NewAbstractService {
     public final static String CELL_INDEX = "ci";
     public final static String LOCATION_AREA_CODE = "lac";
     public final static String BSIC = "bsic";
+    public final static String BCCH = "bcch";
 
     public final static String SELECTION_RELATIONSHIP_INDEX = "selection_relationship";
 
@@ -337,7 +338,7 @@ public class NewNetworkService extends NewAbstractService {
         if (!((ci == null) || (ci.equals(StringUtils.EMPTY)))) {
             IndexHits<Node> cis = index.get(CELL_INDEX, ci);
             for (Node node : cis) {
-                if (lac.equals(node.getProperty(LOCATION_AREA_CODE, null))) {
+                if (lac.equals(node.getProperty(LOCATION_AREA_CODE, null).toString())) {
                     result = node;
                     break;
                 }
@@ -706,12 +707,13 @@ public class NewNetworkService extends NewAbstractService {
             if (existedNode instanceof Node && index != null) {
                 if (existedNode.getProperty(TYPE).equals(NetworkElementNodeType.SECTOR.getId())) {
                     int bsic = getBsicProperty(dataElement);
-                    Integer bcch = dataElement.get("bcchno") != null ? (Integer)dataElement.get("bcchno") : null;
+                    Integer bcch = dataElement.get(NewNetworkService.BCCH) != null ? 
+                            (Integer)dataElement.get(NewNetworkService.BCCH) : null;
                     if (bsic != 0) {
                         addNodeToIndex((Node)existedNode, index, BSIC, bsic);
                     }
                     if (bcch != null) {
-                        addNodeToIndex((Node)existedNode, index, "bcchno", bcch);
+                        addNodeToIndex((Node)existedNode, index, NewNetworkService.BCCH, bcch);
                     }
                 }
                 addNodeToIndex((Node)existedNode, index, NAME, existedNode.getProperty(NAME));

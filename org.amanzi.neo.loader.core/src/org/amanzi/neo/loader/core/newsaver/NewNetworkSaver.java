@@ -214,10 +214,11 @@ public class NewNetworkSaver extends AbstractSaver<NetworkModel, CSVContainer, C
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
         commitTx();
         try {
-            rootElement.put(NewAbstractService.NAME, configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK));
-            model = getActiveProject().getNetwork(configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK));
+            rootElement.put(NewAbstractService.NAME,
+                    configuration.getDatasetNames().get(ConfigurationDataImpl.NETWORK_PROPERTY_NAME));
+            model = getActiveProject().getNetwork(configuration.getDatasetNames().get(ConfigurationDataImpl.NETWORK_PROPERTY_NAME));
             rootDataElement = new DataElement(model.getRootNode());
-            modelMap.put(configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK), model);
+            modelMap.put(configuration.getDatasetNames().get(ConfigurationDataImpl.NETWORK_PROPERTY_NAME), model);
             createExportSynonymsForModels();
         } catch (AWEException e) {
             rollbackTx();

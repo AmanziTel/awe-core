@@ -15,6 +15,7 @@ package org.amanzi.neo.services.model.impl;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.model.IDataElement;
@@ -119,6 +120,14 @@ public class DataElement extends HashMap<String, Object> implements IDataElement
         }
         
         return false;
+    }
+    
+    @Override 
+    public Set<String> keySet() {
+        for (String property : propertyContainer.getPropertyKeys()) {
+            get(property);
+        }
+        return super.keySet();
     }
 
 }

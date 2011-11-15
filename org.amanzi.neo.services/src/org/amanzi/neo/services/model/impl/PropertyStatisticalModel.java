@@ -14,11 +14,13 @@
 package org.amanzi.neo.services.model.impl;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.NewNetworkService;
 import org.amanzi.neo.services.NewStatisticsService;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
@@ -46,7 +48,9 @@ public abstract class PropertyStatisticalModel extends DataModel implements IPro
 
     protected IVault statisticsVault;
 
-    protected ArrayList<String> notNecessaryListOfProperties = new ArrayList<String>();
+    protected List<String> notNecessaryListOfProperties = new ArrayList<String>();
+    
+    protected List<String> uniqueListOfProperties = new ArrayList<String>();
     
     /**
      * Method to fill properties which contains not need properties
@@ -60,12 +64,28 @@ public abstract class PropertyStatisticalModel extends DataModel implements IPro
     }
     
     /**
+     * Method to fill properties which should be unique in any network
+     */
+    private void fillListOfUniqueProperties() {
+        uniqueListOfProperties.add(NewNetworkService.NAME);
+        uniqueListOfProperties.add(NewNetworkService.CELL_INDEX + "_" + NewNetworkService.LOCATION_AREA_CODE);
+        uniqueListOfProperties.add(NewNetworkService.BSIC);
+        uniqueListOfProperties.add(NewNetworkService.BCCH);
+    }
+    
+    @Override
+    public boolean isUniqueProperties(String property) {
+        return uniqueListOfProperties.contains(property) ? true : false;
+    }
+    
+    /**
      * Method to initialize statistics from other models
      */
     protected void initializeStatistics() {
         try {
             statisticsVault = statisticsService.loadVault(getRootNode());
             fillListOfNotNecessaryProperties();
+            fillListOfUniqueProperties();
         } catch (AWEException e) {
 
         }

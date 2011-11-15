@@ -18,8 +18,6 @@ import java.util.List;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
 import org.amanzi.neo.services.exceptions.AWEException;
-import org.amanzi.neo.services.exceptions.DatabaseException;
-import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.ISelectionModel;
 import org.amanzi.neo.services.model.impl.NetworkModel;
@@ -57,7 +55,8 @@ public class SectorSelectionSaver extends AbstractSaver<NetworkModel, CSVContain
         setDbInstance();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
         try {
-            networkModel = getActiveProject().findNetwork(configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK));
+            networkModel = getActiveProject().findNetwork(
+                    configuration.getDatasetNames().get(ConfigurationDataImpl.NETWORK_PROPERTY_NAME));
 
             // selection data is a single file - so we can just get first element
             String selectionName = configuration.getFilesToLoad().get(0).getName();

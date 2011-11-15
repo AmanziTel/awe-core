@@ -215,7 +215,7 @@ public class LoadNetworkMainPage extends LoaderPageNew<ConfigurationDataImpl> {
         }
         update();
         // editor.store();
-        LoaderUiUtils.setDefaultDirectory(editor.getDefaulDirectory());
+        setDefaultDirectory(editor.getDefaulDirectory());
 
         return loader;
     }

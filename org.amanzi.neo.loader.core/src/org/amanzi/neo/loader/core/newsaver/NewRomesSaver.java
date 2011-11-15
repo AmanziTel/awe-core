@@ -94,9 +94,11 @@ public class NewRomesSaver extends AbstractDriveSaver {
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
         commitTx();
         try {
-            rootElement.put(INeoConstants.PROPERTY_NAME_NAME, configuration.getDatasetNames().get(CONFIG_VALUE_DATASET));
-            model = getActiveProject().getDataset(configuration.getDatasetNames().get(CONFIG_VALUE_DATASET), DriveTypes.TEMS);
-            modelMap.put(configuration.getDatasetNames().get(CONFIG_VALUE_DATASET), model);
+            rootElement.put(INeoConstants.PROPERTY_NAME_NAME,
+                    configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME));
+            model = getActiveProject().getDataset(configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME),
+                    DriveTypes.TEMS);
+            modelMap.put(configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME), model);
             createExportSynonymsForModels();
         } catch (AWEException e) {
             rollbackTx();
