@@ -16,13 +16,9 @@ package org.amanzi.neo.loader.ui.wizards;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
-import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.ILoaderNew;
 import org.amanzi.neo.loader.core.newsaver.IData;
-import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
-import org.amanzi.neo.loader.core.preferences.PreferenceStore;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.amanzi.neo.services.events.UpdateDatabaseEvent;
 import org.amanzi.neo.services.events.UpdateViewEventType;
@@ -40,9 +36,8 @@ import org.eclipse.ui.IWorkbench;
  * @author TsAr
  * @since 1.0.0
  */
-public class NetworkImportWizard extends AbstractLoaderWizard<CommonConfigData> {
+public class NetworkImportWizard extends AbstractLoaderWizardNew<ConfigurationDataImpl> {
 
-    private CommonConfigData data;
     private ConfigurationDataImpl configData;
 
     @Override
@@ -54,14 +49,6 @@ public class NetworkImportWizard extends AbstractLoaderWizard<CommonConfigData> 
     }
 
     @Override
-    public CommonConfigData getConfigurationData() {
-        if (data == null) {
-            data = new CommonConfigData();
-        }
-        return data;
-    }
-
-    @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         super.init(workbench, selection);
         setWindowTitle(NeoLoaderPluginMessages.NetworkSiteImportWizard_PAGE_TITLE);
@@ -69,15 +56,6 @@ public class NetworkImportWizard extends AbstractLoaderWizard<CommonConfigData> 
 
     @Override
     public boolean performFinish() {
-        if (getConfigurationData().getCharsetName() == null) {
-            String characterSet = null;
-            try {
-                characterSet = PreferenceStore.getPreferenceStore().getValue(DataLoadPreferences.DEFAULT_CHARSET);
-            } catch (Exception e) {
-                characterSet = null;
-            }
-            getConfigurationData().setCharsetName(characterSet);
-        }
         if (super.performFinish()) {
             NeoServicesUiPlugin.getDefault().getUpdateViewManager()
                     .fireUpdateView(new UpdateDatabaseEvent(UpdateViewEventType.GIS));
@@ -88,15 +66,15 @@ public class NetworkImportWizard extends AbstractLoaderWizard<CommonConfigData> 
     }
 
     @Override
-    public void addNewLoader(ILoaderNew<IData, IConfiguration> loader, IConfigurationElement[] pageConfigElements) {
-        LoaderInfo<CommonConfigData> info = new LoaderInfo<CommonConfigData>();
+    public void addNewLoader(ILoaderNew<IData, ConfigurationDataImpl> loader, IConfigurationElement[] pageConfigElements) {
+        LoaderInfo<ConfigurationDataImpl> info = new LoaderInfo<ConfigurationDataImpl>();
         info.setAdditionalPages(pageConfigElements);
         newloaders.put(loader, info);
         requiredLoaders.put(loader, null);
     }
 
     @Override
-    public IConfiguration getNewConfigurationData() {
+    public ConfigurationDataImpl getNewConfigurationData() {
         if (getNewSelectedLoader() != null && configData != null) {
             requiredLoaders.put(getNewSelectedLoader(), configData);
         }

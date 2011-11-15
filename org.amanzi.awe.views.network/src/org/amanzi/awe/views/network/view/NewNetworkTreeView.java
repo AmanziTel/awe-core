@@ -721,12 +721,12 @@ public class NewNetworkTreeView extends ViewPart {
         @Override
         public void run() {
             Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
-            NewSelectionListDialog pdialog = new NewSelectionListDialog(shell, network, "New selection list", SWT.OK);
-            if (pdialog.open() == SWT.OK) {
-
-            } else {
-
-            }
+//            NewSelectionListDialog pdialog = new NewSelectionListDialog(shell, network, "New selection list", SWT.OK);
+//            if (pdialog.open() == SWT.OK) {
+//
+//            } else {
+//
+//            }
         }
 
     }
