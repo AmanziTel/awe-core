@@ -40,7 +40,7 @@ public class DataLoadPreferenceManager {
     public final static String SITE = "site" + INFO_SEPARATOR;
     public final static String AZIMUTH = "azimuth" + INFO_SEPARATOR;
     public final static String BEAMWITH = "beamwidth" + INFO_SEPARATOR;
-    public final static String BCCH = "bcch";
+    public final static String BCCH = "bcch"+ INFO_SEPARATOR;;
     /*
      * drive constants
      */
