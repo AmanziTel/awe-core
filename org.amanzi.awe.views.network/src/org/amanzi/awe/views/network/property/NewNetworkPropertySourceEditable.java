@@ -16,14 +16,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
-import org.amanzi.awe.catalog.neo.upd_layers.events.UpdateLayerEvent;
-import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.INeoConstants;
-import org.amanzi.neo.services.IndexManager;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService;
+import org.amanzi.neo.services.NewNetworkService;
 import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.enums.INodeType;
@@ -34,15 +31,11 @@ import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.NetworkModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
-import org.amanzi.neo.services.statistic.IPropertyHeader;
-import org.amanzi.neo.services.statistic.PropertyHeader;
 import org.amanzi.neo.services.ui.SelectionPropertyManager;
-import org.amanzi.neo.services.utils.Utils;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.neoclipse.property.NodePropertySource;
 import org.neo4j.neoclipse.property.PropertyDescriptor;
 
@@ -55,6 +48,14 @@ import org.neo4j.neoclipse.property.PropertyDescriptor;
 
 public class NewNetworkPropertySourceEditable extends NodePropertySource implements IPropertySource {
     
+	private static String TITLE_COULD_NOT_CHANGE_PROPERTY = "Could not change property";
+	private static String MESSAGE_COULD_NOT_CHANGE_PROPERTY = "Could not change this property, because it property is unique.\n";
+	private static String PROPERTY_DEFINED_IN_ELEMENT = "In current moment this property define in element with type ";
+	private static String PROPERTY_DEFINED_IN_ELEMENT_CI_LAC = "In current moment properties ci+lac unique and define in element with type ";
+	
+	
+	private int countOfShowMessageDialog = 0;
+	
 	/**
 	 * Current data element on which user clicked
 	 */
@@ -121,137 +122,70 @@ public class NewNetworkPropertySourceEditable extends NodePropertySource impleme
      */
     @Override
     public void setPropertyValue(Object id, Object value) {
+    	countOfShowMessageDialog++;
+    	String propertyName = id.toString();
         INetworkModel networkModel = (INetworkModel)currentDataElement.get(INeoConstants.NETWORK_MODEL_NAME);
         try {
-        	boolean isReadyToUpdate = false;
+        	boolean isReadyToUpdate = true;
         	INodeType nodeType = NodeTypeManager.getType(currentDataElement.get(NewAbstractService.TYPE).toString());
+        	IDataElement dataElement = null;
+        	boolean isCIorLAC = false;
         	// if property is unique then find is exist some element with equal property
-        	if (networkModel.isUniqueProperties(id.toString())) {
+        	if (networkModel.isUniqueProperties(propertyName)) {
         		if (nodeType.equals(NetworkElementNodeType.SECTOR)) {
-        			IDataElement dataElement = networkModel.findSector(id.toString(), value.toString());
-        			if (dataElement == null) {
-        				isReadyToUpdate = true;
+        			// ci+lac in sector should be unique, not a ci_lac as parameter
+        			// but ci together with lac should be unique
+        			String ci_lac = null;
+        			if (propertyName.equals(NewNetworkService.CELL_INDEX)) {
+        				String lac = currentDataElement.get(NewNetworkService.LOCATION_AREA_CODE).toString();
+        				ci_lac = value.toString() + "_" + lac;
+        				isCIorLAC = true;
+        			}
+        			else if (propertyName.equals(NewNetworkService.LOCATION_AREA_CODE)) {
+        				String ci = currentDataElement.get(NewNetworkService.CELL_INDEX).toString();
+        				ci_lac = ci + "_" + value.toString();
+        				isCIorLAC = true;
+        			}
+        			if (isCIorLAC) {
+        				dataElement = networkModel.findSector(propertyName, ci_lac);
         			}
         			else {
+        				dataElement = networkModel.findSector(propertyName, value.toString());
+        			}
+        			if (dataElement != null) {
         				isReadyToUpdate = false;
         			}
         		}
         		else {
-	            	Set<IDataElement> elements = networkModel.findElementByPropertyValue(nodeType, id.toString(), value);
+	            	Set<IDataElement> elements = networkModel.findElementByPropertyValue(nodeType, propertyName, value);
 	            	if (elements.size() > 0) {
+	            		dataElement = elements.iterator().next();
 	            		isReadyToUpdate = false;
-	            	}
-	            	else {
-	            		isReadyToUpdate = true;
 	            	}
         		}
         	}
-        	else {
-        		isReadyToUpdate = true;
-        	}
         	if (isReadyToUpdate) {
-        		networkModel.updateElement(currentDataElement, id.toString(), value);
+        		networkModel.updateElement(currentDataElement, propertyName, value);
         	}
         	else {
-        		MessageDialog.openInformation(null, "Can not change property", "Can not change this property, because it property is unique");
+        		String propertyDefined = null;
+        		if (isCIorLAC) {
+        			propertyDefined = PROPERTY_DEFINED_IN_ELEMENT_CI_LAC;
+        		}
+        		else {
+        			propertyDefined = PROPERTY_DEFINED_IN_ELEMENT;
+        		}
+        		String message = MESSAGE_COULD_NOT_CHANGE_PROPERTY + propertyDefined +
+        				dataElement.get(NewNetworkService.TYPE) + " and name " + 
+        				dataElement.get(NewNetworkService.NAME);
+        		
+        		if (countOfShowMessageDialog % 2 == 1) {
+        			MessageDialog.openInformation(null, TITLE_COULD_NOT_CHANGE_PROPERTY, message);
+        		}
         	}
         } catch (AWEException e) {
             // TODO Handle AWEException
             throw (RuntimeException) new RuntimeException( ).initCause( e );
         }
-//        if (!((String)id).startsWith("delta_")) {
-//            Transaction tx = NeoServiceProviderUi.getProvider().getService().beginTx();
-//            try {
-//                DatasetService service = NeoServiceFactory.getInstance().getDatasetService();
-//
-//                Node root = service.findRootByChild((Node)container);
-//                Object oldValue=null;
-//                if (container.hasProperty((String)id)) {
-//                    oldValue=container.getProperty((String)id);
-//
-//                    // try to keep the same type as the previous value
-//                    Class< ? > c = container.getProperty((String)id).getClass();
-//                    PropertyHandler propertyHandler = PropertyTransform.getHandler(c);
-//                    if (propertyHandler == null) {
-//                        MessageDialog.openError(null, "Error", "No property handler was found for type " + c.getSimpleName() + ".");
-//                        return;
-//                    }
-//                    Object o = null;
-//                    try {
-//                        o = propertyHandler.parse(value);
-//                    } catch (Exception e) {
-//                        MessageDialog.openError(null, "Error", "Could not parse the input as type " + c.getSimpleName() + ".");
-//                        return;
-//                    }
-//                    if (o == null) {
-//                        MessageDialog.openError(null, "Error", "Input parsing resulted in null value.");
-//                        return;
-//                    }
-//                    try {
-//                        container.setProperty((String)id, o);
-//                    } catch (Exception e) {
-//                        MessageDialog.openError(null, "Error", "Error in Neo service: " + e.getMessage());
-//                    }
-//                    updateIndexes(root,container, (String)id,oldValue);
-//                } else {
-//                    // simply set the value
-//                    try {
-//                        container.setProperty((String)id, value);
-//                    } catch (Exception e) {
-//                        MessageDialog.openError(null, "Error", "Error in Neo service: " + e.getMessage());
-//                    }
-//                }
-//                tx.success();
-//                updateLayer();
-//                updateStatistics(root,container, (String)id,oldValue);
-//            } finally {
-//                tx.finish();
-//                NeoServiceProviderUi.getProvider().commit();
-//                updateLayer();
-//            }
-//        }
-    }
-    
-    /**
-     * Update statistics.
-     *
-     * @param container the container
-     * @param container 
-     * @param id the id
-     * @param oldValue the old value
-     */
-    private void updateStatistics(Node   root, PropertyContainer container, String id, Object oldValue) {
-        if (container instanceof Node){
-            DatasetService service = NeoServiceFactory.getInstance().getDatasetService();
-            if (root!=null){
-                IPropertyHeader stat = PropertyHeader.getPropertyStatistic(root);
-                stat.updateStatistic(service.getNodeType((Node)container).getId(), id, container.getProperty(id, null), oldValue);
-            }
-        }
-    }
-
-    /**
-     * Update indexes.
-     *
-     * @param container the container
-     * @param propertyName the property name
-     * @param oldValue the old value
-     */
-    private void updateIndexes(Node root,PropertyContainer container, String propertyName,Object oldValue) {
-        if (container instanceof Node){
-            DatasetService service = NeoServiceFactory.getInstance().getDatasetService();
-            if (root!=null){
-                IndexManager manager = service.getIndexManager(root);
-                manager.updateIndexes(container,propertyName,oldValue);
-            }
-        }
-    }
-
-    /**
-     * updates layer.
-     */
-    private void updateLayer() {
-        Node gisNode = Utils.findGisNodeByChild((Node)container);
-        NeoCatalogPlugin.getDefault().getLayerManager().sendUpdateMessage(new UpdateLayerEvent(gisNode));
     }
 }

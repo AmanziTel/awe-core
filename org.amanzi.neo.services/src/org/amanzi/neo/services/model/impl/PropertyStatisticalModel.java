@@ -68,7 +68,11 @@ public abstract class PropertyStatisticalModel extends DataModel implements IPro
      */
     private void fillListOfUniqueProperties() {
         uniqueListOfProperties.add(NewNetworkService.NAME);
-        uniqueListOfProperties.add(NewNetworkService.CELL_INDEX + "_" + NewNetworkService.LOCATION_AREA_CODE);
+        // ci and lac not unique by individual but
+        // ci+lac in binding is unique
+        uniqueListOfProperties.add(NewNetworkService.CELL_INDEX);
+        uniqueListOfProperties.add(NewNetworkService.LOCATION_AREA_CODE);
+        
         uniqueListOfProperties.add(NewNetworkService.BSIC);
         uniqueListOfProperties.add(NewNetworkService.BCCH);
     }

@@ -345,7 +345,12 @@ public class NewNetworkService extends NewAbstractService {
             }
         }
         if (result == null) {
-            result = index.get(NAME, name).getSingle();
+            try {
+                result = index.get(NAME, name).getSingle();
+            }
+            catch (NullPointerException e) {
+                result = null;
+            }
         }
         return result;
     }
