@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            name="Data base Project Explorer"
+            icon="icons/network.png"
+            category="org.amanzi.awe.script"
+            class="org.amanzi.awe.views.explorer.view.ProjectExplorerView"
+            id="org.amanzi.awe.views.explorer.view.ProjectExplorerView">
+      </view>
+      
+   </extension>
+  <!-- <extension
+            point="org.eclipse.ui.viewActions">
+         <viewContribution
+               targetID="org.amanzi.awe.views.explorer.view.ProjectExplorerView"
+               id="org.amanzi.awe.views.explorer.view.NewTypeAction0">
+            <action
+                  toolbarPath="additions"
+                  label="Label"
+                  class="org.amanzi.awe.views.network.view.NewTypeAction"
+                  icon="icons/add-type.gif"
+                  tooltip="Create new node type"
+                  style="push"
+                  id="org.amanzi.awe.views.network.view.NewTypeAction">
+
+            </action>
+            
+         </viewContribution>
+      </extension>-->
+   <extension
+          point= "org.eclipse.ui.menus" >
+       <menuContribution
+             locationURI="menu:org.eclipse.ui.main.menu">
+          <menu
+                id= "file"
+                label= "File" >
+             <menu
+                   id="ChangeActiveProject"
+                   label="Change active project">
+                <dynamic
+                      class="org.amanzi.awe.views.explorer.contributions.ProjectSelectionMenu"
+                      id="org.amanzi.awe.views.explorer.contributions.ProjectSelectionMenu">
+                </dynamic>
+             </menu>
+          </menu>
+       </menuContribution>
+    </extension>
+</plugin>
