@@ -40,7 +40,7 @@ public class DataLoadPreferenceManager {
     public final static String SITE = "site" + INFO_SEPARATOR;
     public final static String AZIMUTH = "azimuth" + INFO_SEPARATOR;
     public final static String BEAMWITH = "beamwidth" + INFO_SEPARATOR;
-    public final static String BCCH = "bcch"+ INFO_SEPARATOR;;
+    public final static String BCCH = "bcch" + INFO_SEPARATOR;;
     /*
      * drive constants
      */
@@ -198,26 +198,25 @@ public class DataLoadPreferenceManager {
             driveMap.put(NewNetworkService.CELL_INDEX + INFO_SEPARATOR, getPossibleHeaders(DataLoadPreferences.DR_CI));
             driveMap.put(LATITUDE, getPossibleHeaders(DataLoadPreferences.DR_LATITUDE));
             driveMap.put(LONGITUDE, getPossibleHeaders(DataLoadPreferences.DR_LONGITUDE));
-            driveMap.put(MS, new String[] {"ms", "MS"});
-            driveMap.put(EVENT, new String[] {"Event Type", "event_type", "event", "events"});
-            driveMap.put(SECTOR_ID, new String[] {"sector_id", ".*Cell Id.*", ".*Server.*Report.*CI.*"});
-            driveMap.put(ALL_RXLEV_FULL, new String[] {"All-RxLev Full", "all_rxlev_full"});
-            driveMap.put(ALL_RXLEV_SUB, new String[] {"All-RxLev Sub", "all_rxlev_sub"});
-            driveMap.put(ALL_RXQUAL_FULL, new String[] {"All-RxQual Full", "all_rxqual_full"});
-            driveMap.put(ALL_RXQUAL_SUB, new String[] {"All-RxQual Sub", "all_rxqual_sub"});
-            driveMap.put(ALL_PILOT_SET_COUNT, new String[] {"All-Pilot Set Count", "all_pilot_set_count"});
-            driveMap.put(ALL_SQI, new String[] {"All-SQI", "all_sqi"});
-            driveMap.put(ALL_SQI_MOS, new String[] {"All-SQI MOS", "all_sqi_mos"});
-            driveMap.put(TIME, new String[] {"time", "Timestamp.*", "timestamp.*"});
-            driveMap.put(MESSAGE_TYPE, new String[] {"Message type", "message_type"});
+            driveMap.put(MS, getPossibleHeaders(DataLoadPreferences.DR_MS));
+            driveMap.put(EVENT, getPossibleHeaders(DataLoadPreferences.DR_EVENT));
+            driveMap.put(SECTOR_ID, getPossibleHeaders(DataLoadPreferences.DR_SECTOR_ID));
+            driveMap.put(ALL_RXLEV_FULL, getPossibleHeaders(DataLoadPreferences.DR_ALL_RXLEV_FULL));
+            driveMap.put(ALL_RXLEV_SUB, getPossibleHeaders(DataLoadPreferences.DR_ALL_RXLEV_SUB));
+            driveMap.put(ALL_RXQUAL_FULL, getPossibleHeaders(DataLoadPreferences.DR_ALL_RXQUAL_FULL));
+            driveMap.put(ALL_RXQUAL_SUB, getPossibleHeaders(DataLoadPreferences.DR_ALL_RXQUAL_SUB));
+            driveMap.put(ALL_PILOT_SET_COUNT, getPossibleHeaders(DataLoadPreferences.DR_ALL_PILOT_SET_COUNT));
+            driveMap.put(ALL_SQI, getPossibleHeaders(DataLoadPreferences.DR_ALL_SQI));
+            driveMap.put(ALL_SQI_MOS, getPossibleHeaders(DataLoadPreferences.DR_ALL_SQI_MOS));
+            driveMap.put(TIME, getPossibleHeaders(DataLoadPreferences.DR_TIME));
+            driveMap.put(MESSAGE_TYPE, getPossibleHeaders(DataLoadPreferences.DR_MESSAGE_TYPE));
             for (int i = 0; i <= 12; i++) {
-                driveMap.put(ALL_PILOT_SET_EC_IO + i + INFO_SEPARATOR + TEMS, new String[] {"all_pilot_set_ecio_" + i,
-                        "all_pilot_set_ec_io_" + i, "All-Pilot Set Ec/Io[" + i + "]"});
-                driveMap.put(ALL_PILOT_SET_CHANNEL + i + INFO_SEPARATOR + TEMS, new String[] {"all_pilot_set_channel_" + i,
-                        "All-Pilot Set Channel[" + i + "]"});
-                driveMap.put(ALL_PILOT_SET_PN + i + INFO_SEPARATOR + TEMS, new String[] {"all_pilot_set_pn_" + i,
-                        "All-Pilot Set PN[" + i + "]"});
-
+                driveMap.put(ALL_PILOT_SET_EC_IO + i + INFO_SEPARATOR + TEMS,
+                        getPossibleHeaders(DataLoadPreferences.DR_ALL_PILOT_SET_EC_IO + i));
+                driveMap.put(ALL_PILOT_SET_CHANNEL + i + INFO_SEPARATOR + TEMS,
+                        getPossibleHeaders(DataLoadPreferences.DR_ALL_PILOT_SET_CHANNEL + i));
+                driveMap.put(ALL_PILOT_SET_PN + i + INFO_SEPARATOR + TEMS,
+                        getPossibleHeaders(DataLoadPreferences.DR_ALL_PILOT_SET_PN + i));
             }
         }
         return driveMap;
