@@ -90,7 +90,7 @@ public class IconManager implements IPropertyChangeListener {
 	 */
 	public static final String NEO_ROOT = "neo_root";
 
-	/*
+    /*
 	 * Instance of IconManager
 	 */
 	private static IconManager iconManager = null;

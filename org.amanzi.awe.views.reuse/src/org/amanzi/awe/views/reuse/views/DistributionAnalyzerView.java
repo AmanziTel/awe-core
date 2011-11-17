@@ -33,11 +33,9 @@ import org.amanzi.neo.model.distribution.IDistributionalModel;
 import org.amanzi.neo.model.distribution.impl.DistributionManager;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
-import org.amanzi.neo.services.listeners.AbstractUIEvent;
-import org.amanzi.neo.services.listeners.AbstractUIEventType;
 import org.amanzi.neo.services.listeners.EventManager;
+import org.amanzi.neo.services.listeners.EventUIType;
 import org.amanzi.neo.services.listeners.IEventListener;
-import org.amanzi.neo.services.listeners.UpdateProjectDataEvent;
 import org.amanzi.neo.services.model.IProjectModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.amanzi.neo.services.model.impl.ProjectModel.DistributionItem;
@@ -479,7 +477,7 @@ public class DistributionAnalyzerView extends ViewPart implements IEventListener
      * Custom constructor
      */
     public DistributionAnalyzerView() {
-        EventManager.getInstance().addListener(AbstractUIEventType.PROJECT_CHANGED, this); 
+        EventManager.getInstance().addListener(this, EventUIType.PROJECT_CHANGED); 
         UPDATE_BAR_COLORS_JOB.setSystem(true);
     }
 
@@ -1118,6 +1116,7 @@ public class DistributionAnalyzerView extends ViewPart implements IEventListener
 
         // run a job and wait until it finishes
         distributionJob.schedule();
+        EventManager.getInstance().notify(EventUIType.DISTRIBUTIONS_CHANGED);
     }
 
     /**
@@ -1194,6 +1193,7 @@ public class DistributionAnalyzerView extends ViewPart implements IEventListener
 
                 if (needRedraw) {
                     updateChartColors();
+                    EventManager.getInstance().notify(EventUIType.DISTRIBUTION_BAR_SELECTED, selectedBar);
                 }
 
                 // TODO: also it should open NetworkTreeView with this Distribution
@@ -1461,8 +1461,8 @@ public class DistributionAnalyzerView extends ViewPart implements IEventListener
     }
 
     @Override
-    public void handleEvent(AbstractUIEvent event) {
-        if (event instanceof UpdateProjectDataEvent) {
+    public void handleEvent(EventUIType eventType, Object data) {
+        if (eventType == EventUIType.PROJECT_CHANGED) {
             ActionUtil.getInstance().runTask(new Runnable() {
 
                 @Override

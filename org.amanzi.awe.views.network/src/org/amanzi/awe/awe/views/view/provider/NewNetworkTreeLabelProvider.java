@@ -12,6 +12,8 @@
  */
 package org.amanzi.awe.awe.views.view.provider;
 
+import org.amanzi.neo.model.distribution.IDistributionBar;
+import org.amanzi.neo.model.distribution.IDistributionModel;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
@@ -58,6 +60,10 @@ public class NewNetworkTreeLabelProvider extends LabelProvider {
         else if (element instanceof IDataElement) {
             return manager.getImage(((IDataElement)element).
             		get(INeoConstants.PROPERTY_TYPE_NAME).toString());
+        } else if (element instanceof IDistributionModel) {
+            return manager.getImage(IconManager.NEO_ROOT);
+        } else if (element instanceof IDistributionBar) {
+            return manager.getImage(IconManager.NETWORK_ICON);
         }
         
         return null;

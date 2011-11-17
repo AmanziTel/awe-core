@@ -3,7 +3,11 @@ package org.amanzi.awe.awe.views.view.provider;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 
+import org.amanzi.neo.model.distribution.IDistributionBar;
+import org.amanzi.neo.model.distribution.IDistributionModel;
+import org.amanzi.neo.model.distribution.impl.DistributionManager;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
@@ -54,6 +58,7 @@ public class NewNetworkTreeContentProvider implements IStructuredContentProvider
     public Object[] getChildren(Object parentElement) {
 
         ArrayList<IDataElement> dataElements = new ArrayList<IDataElement>();
+        List<Object> additionalObjects = new ArrayList<Object>();
         Iterable<IDataElement> children = null;
         if (parentElement instanceof INetworkModel) {
             children = ((INetworkModel)parentElement).getChildren(null);
@@ -63,6 +68,12 @@ public class NewNetworkTreeContentProvider implements IStructuredContentProvider
                 dataElement.put(INeoConstants.NETWORK_MODEL_NAME, parentElement);
                 dataElements.add(dataElement);
             }
+            try {
+                additionalObjects.addAll(DistributionManager.getManager().getAllDistributionModels((INetworkModel)parentElement));
+            } catch (AWEException e) {
+                throw (RuntimeException)new RuntimeException().initCause(e);
+            }
+
         } else if (parentElement instanceof IDataElement) {
             IDataElement child = (IDataElement)parentElement;
             INetworkModel localRootNetworkModel = (INetworkModel)(child).get(INeoConstants.NETWORK_MODEL_NAME);
@@ -73,9 +84,18 @@ public class NewNetworkTreeContentProvider implements IStructuredContentProvider
                 dataElement.put(INeoConstants.NETWORK_MODEL_NAME, rootNetworkModel);
                 dataElements.add(dataElement);
             }
+        } else if (parentElement instanceof IDistributionModel) {
+            try {
+                additionalObjects.addAll(((IDistributionModel)parentElement).getDistributionBars());
+            } catch (AWEException e) {
+                // TODO Handle AWEException
+                throw (RuntimeException) new RuntimeException( ).initCause( e );
+            }
         }
         Collections.sort(dataElements, new IDataElementComparator());
-        return dataElements.toArray();
+        List<Object> res = new ArrayList<Object>(dataElements);
+        res.addAll(additionalObjects);
+        return res.toArray();
     }
 
     /**
@@ -98,7 +118,12 @@ public class NewNetworkTreeContentProvider implements IStructuredContentProvider
 
     @Override
     public Object getParent(Object element) {
-        // TODO Need implement
+        if (element instanceof IDistributionModel) {
+            return ((IDistributionModel)element).getAnalyzedModel();
+        } else if (element instanceof IDistributionBar) {
+            return ((IDistributionBar)element).getDistribution();
+        }
+        // TODO implement for other elements
         return null;
     }
 
@@ -112,6 +137,15 @@ public class NewNetworkTreeContentProvider implements IStructuredContentProvider
             IDataElement child = (IDataElement)parentElement;
             INetworkModel localRootNetworkModel = (INetworkModel)(child).get(INeoConstants.NETWORK_MODEL_NAME);
             children = localRootNetworkModel.getChildren(child);
+        } else if (parentElement instanceof IDistributionModel ){
+            try {
+                return ((IDistributionModel)parentElement).getDistributionBars().size() > 0;
+            } catch (AWEException e) {
+                // TODO Handle AWEException
+                throw (RuntimeException) new RuntimeException( ).initCause( e );
+            }
+        } else {
+            return false;
         }
         if (children.iterator().hasNext()) {
             return true;

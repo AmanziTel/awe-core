@@ -61,6 +61,12 @@ public interface IDistributionBar extends Comparable<IDistributionBar> {
      * @return
      */
     public IDataElement getRootElement();
+        
+    /**
+     * Returns Distribution
+     * @return
+     */
+    public IDistributionModel getDistribution();
 
 }
 

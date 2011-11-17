@@ -152,7 +152,38 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
         //initialize other fields
         this.analyzedModel = analyzedModel;
         this.distributionType = distributionType;
-        this.name = distributionType.getPropertyName() + " - " + distributionType.getName();
+        
+        initParameters(rootNode);
+        
+        LOGGER.debug("finish new DistributionModel()");
+    }
+    
+    public DistributionModel(IDistributionalModel analyzedModel, Node rootNode) throws AWEException {
+        super(DistributionNodeTypes.ROOT_AGGREGATION);
+        
+        LOGGER.debug("start new DistributionModel()");
+        
+        //validate input
+        if (analyzedModel == null) {
+            LOGGER.error("Analyzed Model cannot be null");
+            throw new IllegalArgumentException("Analyzed Model cannot be null");
+        }
+        if (rootNode == null) {
+            LOGGER.error("Root Node cannot be null");
+            throw new IllegalArgumentException("Root Node cannot be null");
+        }
+        
+        isExist = true;
+        this.rootNode = rootNode;
+        this.analyzedModel = analyzedModel;
+        initParameters(rootNode);        
+        
+        LOGGER.debug("finish new DistributionModel()");
+                
+    }
+    
+    private void initParameters(Node rootNode) {
+        this.name = rootNode.getProperty(DistributionService.PROPERTY_NAME) + " - " + rootNode.getProperty(DistributionService.NAME); 
         this.nodeType = NodeTypeManager.getType(DistributionService.getNodeType(rootNode));
         this.count = (Integer)rootNode.getProperty(DistributionService.COUNT, 0);
         
@@ -166,7 +197,6 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
             this.palette = PlatformGIS.getColorBrewer().getPalette(paletteName);
         }
         
-        LOGGER.debug("finish new DistributionModel()");
     }
     
     @Override
@@ -189,7 +219,7 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
         //create root element
         DataElement rootElement = new DataElement(barNode);
         //create distribution bar
-        DistributionBar distributionBar = new DistributionBar(rootElement);
+        DistributionBar distributionBar = new DistributionBar(rootElement, this);
         
         //load properties
         Integer count = (Integer)rootElement.get(DistributionService.COUNT);
@@ -315,7 +345,7 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
      * @return
      */
     private DistributionBar createDistributionBar(IRange range) throws AWEException {
-        DistributionBar distributionBar = new DistributionBar();
+        DistributionBar distributionBar = new DistributionBar(this);
         if (range.getColor() != null) {
             distributionBar.setColor(range.getColor());
         }
@@ -488,4 +518,8 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
         this.palette = palette;
     }
 
+    @Override
+    public IDistributionalModel getAnalyzedModel() {
+        return analyzedModel;
+    }    
 }

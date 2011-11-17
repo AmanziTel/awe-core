@@ -15,13 +15,15 @@ package org.amanzi.neo.services.listeners;
 
 /**
  * <p>
- * Abstrac UI event
+ * Abstract UI event types
  * </p>
  * @author kostyukovich_n
  * @since 1.0.0
  */
-public abstract class AbstractUIEvent {
+public enum EventUIType {
     
-    public abstract AbstractUIEventType getType();
+    PROJECT_CHANGED,
+    DISTRIBUTIONS_CHANGED,
+    DISTRIBUTION_BAR_SELECTED
     
 }

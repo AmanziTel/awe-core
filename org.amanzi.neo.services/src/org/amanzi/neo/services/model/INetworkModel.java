@@ -33,7 +33,7 @@ import org.neo4j.graphdb.RelationshipType;
  * @since 1.0.0
  */
 
-public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IRenderableModel, IDistributionalModel {
+public interface INetworkModel extends IRenderableModel, IDistributionalModel {
 
     /**
      * Traverse database to find all correlation root nodes and create models based on them.
