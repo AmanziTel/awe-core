@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.amanzi.awe.views.explorer.ProjectExplorerPlugin;
-import org.amanzi.awe.views.explorer.property.ProjectDistributionPage;
 import org.amanzi.awe.views.explorer.property.ProjectPropertySheetPage;
 import org.amanzi.awe.views.explorer.providers.ProjectTreeContentProvider;
 import org.amanzi.awe.views.explorer.providers.ProjectTreeLabelProvider;
@@ -33,6 +32,8 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.InputDialog;
+import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -115,6 +116,20 @@ public class ProjectExplorerView extends ViewPart {
             tx.finish();
         }
         setLayout(parent);
+        addListeners(viewer);
+    }
+
+    /**
+     * @param viewer2
+     */
+    private void addListeners(final TreeViewer viewer) {
+        viewer.addDoubleClickListener(new IDoubleClickListener() {
+            @Override
+            public void doubleClick(DoubleClickEvent event) {
+                IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
+                System.out.println(selection.getFirstElement());
+            }
+        });
     }
 
     /**
@@ -134,7 +149,7 @@ public class ProjectExplorerView extends ViewPart {
     }
 
     private void fillContextMenu(IMenuManager manager) {
-        ShowViewAction select = new ShowViewAction((IStructuredSelection)viewer.getSelection());
+        ShowPropertiesViewAction select = new ShowPropertiesViewAction((IStructuredSelection)viewer.getSelection());
         if (select.isEnabled()) {
             manager.add(select);
         }
@@ -144,9 +159,6 @@ public class ProjectExplorerView extends ViewPart {
         }
         RenameAction renameAction = new RenameAction((IStructuredSelection)viewer.getSelection());
         manager.add(renameAction);
-
-        DeleteAction deleteAction = new DeleteAction((IStructuredSelection)viewer.getSelection());
-        manager.add(deleteAction);
 
     }
 
@@ -196,7 +208,7 @@ public class ProjectExplorerView extends ViewPart {
         }
     }
 
-    private class ShowViewAction extends Action {
+    private class ShowPropertiesViewAction extends Action {
         private boolean enabled;
         private final String text;
         private Set<IDataElement> selectedDataElements = new HashSet<IDataElement>();
@@ -207,7 +219,7 @@ public class ProjectExplorerView extends ViewPart {
          * @param selection - selection
          */
         @SuppressWarnings("rawtypes")
-        public ShowViewAction(IStructuredSelection selection) {
+        public ShowPropertiesViewAction(IStructuredSelection selection) {
             Iterator it = selection.iterator();
             while (it.hasNext()) {
                 Object elementObject = it.next();
@@ -235,7 +247,7 @@ public class ProjectExplorerView extends ViewPart {
         @Override
         public void run() {
             try {
-                PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(ReusePlugin.PLUGIN_ID);
+                // getPropertySheetPage();
                 PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IPageLayout.ID_PROP_SHEET);
             } catch (PartInitException e) {
                 ProjectExplorerPlugin.error(null, e);
@@ -299,114 +311,6 @@ public class ProjectExplorerView extends ViewPart {
             if (result == Dialog.CANCEL)
                 return oldName;
             return dialog.getValue();
-        }
-    }
-
-    /**
-     * Action to delete all selected nodes and their child nodes in the graph, but not nodes related
-     * by other geographic relationships. The result is designed to remove sub-tree's from the tree
-     * view, leaving remaining tree nodes in place.
-     * 
-     * @author Kasnitskij_V
-     * @since 1.0.0
-     */
-    private class DeleteAction extends Action {
-        private final List<IDataElement> elementToDelete;
-        private String text = null;
-        private boolean interactive = false;
-
-        private DeleteAction(List<IDataElement> nodesToDelete, String text) {
-            this.elementToDelete = nodesToDelete;
-            this.text = text;
-        }
-
-        @SuppressWarnings("rawtypes")
-        private DeleteAction(IStructuredSelection selection) {
-            interactive = true;
-            elementToDelete = new ArrayList<IDataElement>();
-            Iterator iterator = selection.iterator();
-            HashSet<String> nodeTypes = new HashSet<String>();
-            while (iterator.hasNext()) {
-                Object element = iterator.next();
-                if (element != null && element instanceof IDataElement && !(element instanceof IProjectModel)) {
-                    elementToDelete.add((IDataElement)element);
-                    nodeTypes.add(NeoUtils.getNodeType(((DataElement)element).getNode()));
-                }
-            }
-            String type = nodeTypes.size() == 1 ? nodeTypes.iterator().next() : "node";
-            switch (elementToDelete.size()) {
-            case 0:
-                text = "Select data elements to delete";
-                break;
-            case 1:
-                text = "Delete " + type + " '" + elementToDelete.get(0).toString() + "'";
-                break;
-            case 2:
-            case 3:
-            case 4:
-                for (IDataElement modelElement : elementToDelete) {
-                    if (text == null) {
-                        text = "Delete " + type + "s " + modelElement;
-                    } else {
-                        text += ", " + modelElement;
-                    }
-                }
-                break;
-            default:
-                text = "Delete " + elementToDelete.size() + " " + type + "s";
-                break;
-            }
-            // TODO: Find a more general solution
-            text = text.replaceAll("citys", "cities");
-        }
-
-        @Override
-        public void run() {
-
-            if (interactive) {
-                MessageBox msg = new MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.YES | SWT.NO);
-                msg.setText("Delete data element");
-                msg.setMessage(getText() + "?\n\nAll contained data will also be deleted!");
-                int result = msg.open();
-                if (result != SWT.YES) {
-                    return;
-                }
-            }
-
-            // Kasnitskij_V:
-            // It's need when user want to delete nodes using bad-way.
-            // For example, if we have a structure city->site->sector with values
-            // Dortmund->{AMZ000210, AMZ000234->{A0234, A0236, A0289}}
-            // and user choose to delete nodes Dortmund, AMZ000234, A0236.
-            // We should delete in start A0236, then AMZ000234 and
-            // all it remained nodes, and in the end - Dortmund and all it remained nodes
-            int countOfNodesToDelete = elementToDelete.size();
-            IDataElement[] dataElementsToDeleteArray = new IDataElement[countOfNodesToDelete];
-            elementToDelete.toArray(dataElementsToDeleteArray);
-
-            // for (int i = countOfNodesToDelete - 1; i >= 0; i--) {
-            // IDataElement dataElement = dataElementsToDeleteArray[i];
-            // INetworkModel networkModel =
-            // (INetworkModel)dataElement.get(INeoConstants.NETWORK_MODEL_NAME);
-            // try {
-            // networkModel.deleteElement(dataElement);
-            // } catch (AWEException e) {
-            // // TODO Handle AWEException
-            // throw (RuntimeException)new RuntimeException().initCause(e);
-            // }
-            // }
-
-            viewer.refresh();
-        }
-
-        @Override
-        public String getText() {
-            return text;
-        }
-
-        @Override
-        public boolean isEnabled() {
-            return elementToDelete.size() > 0;
         }
     }
 
@@ -477,24 +381,15 @@ public class ProjectExplorerView extends ViewPart {
         return propertySheetPage;
     }
 
-    private DistributionAnalyzerView getDistributionAnalyzerView() {
-        if (distributionPage == null) {
-            distributionPage = new ProjectDistributionPage();
-        }
-        return distributionPage;
-    }
-
     /**
      * This is how the framework determines which interfaces we implement.
      */
     @SuppressWarnings("rawtypes")
     @Override
     public Object getAdapter(final Class key) {
-        System.out.println(key);
+        // return super.getAdapter(key);
         if (key.equals(IPropertySheetPage.class)) {
             return getPropertySheetPage();
-        } else if (key.equals(DistributionAnalyzerView.class)) {
-            return getDistributionAnalyzerView();
         } else {
             return super.getAdapter(key);
         }
