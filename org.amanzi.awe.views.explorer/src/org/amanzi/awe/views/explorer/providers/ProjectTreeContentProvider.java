@@ -16,13 +16,21 @@ package org.amanzi.awe.views.explorer.providers;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
+import org.amanzi.neo.services.NewAbstractService;
+import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.IModel;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.IProjectModel;
+import org.amanzi.neo.services.model.impl.DataElement;
+import org.amanzi.neo.services.model.impl.DriveModel;
+import org.amanzi.neo.services.model.impl.NetworkModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.apache.commons.lang.ArrayUtils;
@@ -62,30 +70,72 @@ public class ProjectTreeContentProvider implements IStructuredContentProvider, I
 
     @Override
     public Object[] getChildren(Object parentElement) {
-        ArrayList<IModel> dataElements = new ArrayList<IModel>();
+        ArrayList<IDataElement> dataElements = new ArrayList<IDataElement>();
         ArrayList<IModel> modelMap = new ArrayList<IModel>();
         try {
             if (parentElement instanceof IProjectModel) {
                 addToModelCollection(((IProjectModel)parentElement).findAllNetworkModels(), modelMap);
                 addToModelCollection(((IProjectModel)parentElement).findAllDriveModels(), modelMap);
-            } else if (parentElement instanceof INetworkModel) {
-                INetworkModel parent = (INetworkModel)parentElement;
-                addToModelCollection(parent.getAllSelectionModels(), modelMap);
-                addToModelCollection(parent.getNodeToNodeModels(), modelMap);
-                addToModelCollection(parent.getCorrelationModels(), modelMap);
-            } else if (parentElement instanceof IDriveModel) {
-                IDriveModel parent = (IDriveModel)parentElement;
-                addToModelCollection(parent.getVirtualDatasets(), modelMap);
+            } else if (parentElement instanceof IDataElement) {
+                Map<String, IModel> models = getModelOfDataElement((IDataElement)parentElement);
+                if (models.containsKey(DatasetTypes.NETWORK.getId())) {
+                    addToModelCollection(((INetworkModel)models.get(DatasetTypes.NETWORK.getId())).getAllSelectionModels(),
+                            modelMap);
+                    addToModelCollection(((INetworkModel)models.get(DatasetTypes.NETWORK.getId())).getNodeToNodeModels(), modelMap);
+                    addToModelCollection(((INetworkModel)models.get(DatasetTypes.NETWORK.getId())).getCorrelationModels(), modelMap);
+                } else if (models.containsKey(DatasetTypes.DRIVE.getId())) {
+                    addToModelCollection(((IDriveModel)models.get(DatasetTypes.DRIVE.getId())).getVirtualDatasets(), modelMap);
+                }
             }
         } catch (AWEException e) {
             // TODO Handle AWEException
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
         for (IModel model : modelMap) {
-            dataElements.add(model);
+            dataElements.add(new DataElement(model.getRootNode()));
         }
-        Collections.sort(dataElements, new IModelComparator());
+        Collections.sort(dataElements, new IDataElementComparator());
         return dataElements.toArray();
+    }
+
+    private Map<String, IModel> getModelOfDataElement(IDataElement element) {
+        String type = element.get(NewAbstractService.TYPE).toString();
+        boolean isRequired = false;
+        Map<String, IModel> models = new HashMap<String, IModel>();
+        for (DatasetTypes dType : DatasetTypes.values()) {
+            if (dType.getId().equals(type)) {
+                isRequired = true;
+            }
+        }
+        if (!isRequired) {
+            return models;
+        }
+        DatasetTypes datasetType = DatasetTypes.valueOf(type.toUpperCase());
+        // NodeToNodeTypes rel = NodeToNodeTypes.valueOf(type.toUpperCase());
+
+        IModel model = null;
+        try {
+            if (datasetType != null) {
+
+                switch (datasetType) {
+                case NETWORK:
+                    model = new NetworkModel(((DataElement)element).getNode());
+                    break;
+                case DRIVE:
+                    model = new DriveModel(((DataElement)element).getNode());
+                }
+                models.put(datasetType.getId(), model);
+
+                // } else if (rel != null) {
+                // model = new NodeToNodeRelationshipModel(((DataElement)element).getNode());
+                // models.put(rel.name().toLowerCase(), model);
+            }
+
+        } catch (AWEException e) {
+            // TODO Handle AWEException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+        return models;
     }
 
     /**
@@ -108,11 +158,12 @@ public class ProjectTreeContentProvider implements IStructuredContentProvider, I
      * @author Kasnitskij_V
      * @since 1.0.0
      */
-    public static class IModelComparator implements Comparator<IModel> {
+    public static class IDataElementComparator implements Comparator<IDataElement> {
 
         @Override
-        public int compare(IModel dataElement1, IModel dataElement2) {
-            return dataElement1 == null ? -1 : dataElement2 == null ? 1 : dataElement1.getName().compareTo(dataElement1.getName());
+        public int compare(IDataElement dataElement1, IDataElement dataElement2) {
+            return dataElement1 == null ? -1 : dataElement2 == null ? 1 : dataElement1.get(NewAbstractService.NAME).toString()
+                    .compareTo(dataElement2.get(NewAbstractService.NAME).toString());
         }
 
     }
@@ -128,16 +179,18 @@ public class ProjectTreeContentProvider implements IStructuredContentProvider, I
         ArrayList<IModel> modelMap = new ArrayList<IModel>();
         try {
             if (parentElement instanceof IProjectModel) {
-                addToModelCollection(((IProjectModel)parentElement).findAllDriveModels(), modelMap);
                 addToModelCollection(((IProjectModel)parentElement).findAllNetworkModels(), modelMap);
-            } else if (parentElement instanceof INetworkModel) {
-                INetworkModel parent = (INetworkModel)parentElement;
-                addToModelCollection(parent.getAllSelectionModels(), modelMap);
-                addToModelCollection(parent.getNodeToNodeModels(), modelMap);
-                addToModelCollection(parent.getCorrelationModels(), modelMap);
-            } else if (parentElement instanceof IDriveModel) {
-                IDriveModel parent = (IDriveModel)parentElement;
-                addToModelCollection(parent.getVirtualDatasets(), modelMap);
+                addToModelCollection(((IProjectModel)parentElement).findAllDriveModels(), modelMap);
+            } else if (parentElement instanceof IDataElement) {
+                Map<String, IModel> models = getModelOfDataElement((IDataElement)parentElement);
+                if (models.containsKey(DatasetTypes.NETWORK.getId())) {
+                    addToModelCollection(((INetworkModel)models.get(DatasetTypes.NETWORK.getId())).getAllSelectionModels(),
+                            modelMap);
+                    addToModelCollection(((INetworkModel)models.get(DatasetTypes.NETWORK.getId())).getNodeToNodeModels(), modelMap);
+                    addToModelCollection(((INetworkModel)models.get(DatasetTypes.NETWORK.getId())).getCorrelationModels(), modelMap);
+                } else if (models.containsKey(DatasetTypes.DRIVE.getId())) {
+                    addToModelCollection(((IDriveModel)models.get(DatasetTypes.DRIVE.getId())).getVirtualDatasets(), modelMap);
+                }
             }
         } catch (AWEException e) {
             // TODO Handle AWEException

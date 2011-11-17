@@ -14,7 +14,10 @@
 package org.amanzi.awe.views.explorer.providers;
 
 import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.NewAbstractService;
+import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IModel;
+import org.amanzi.neo.services.model.IProjectModel;
 import org.amanzi.neo.services.ui.IconManager;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.Viewer;
@@ -42,8 +45,10 @@ public class ProjectTreeLabelProvider extends LabelProvider {
 
     @Override
     public String getText(Object element) {
-        if (element instanceof IModel) {
+        if (element instanceof IProjectModel) {
             return ((IModel)element).getName();
+        } else if (element instanceof IDataElement) {
+            return ((IDataElement)element).get(NewAbstractService.NAME).toString();
         } else
             return null;
     }
@@ -54,11 +59,10 @@ public class ProjectTreeLabelProvider extends LabelProvider {
      */
     public Image getImage(Object element) {
         // else search for image by given type
-        if (element instanceof IModel) {
-            return manager.getImage(((IModel)element).getRootNode().getProperty(INeoConstants.PROPERTY_TYPE_NAME).toString());
+        if (element instanceof IDataElement) {
+            return manager.getImage(((IDataElement)element).get(INeoConstants.PROPERTY_TYPE_NAME).toString());
         }
 
         return null;
     }
-
 }

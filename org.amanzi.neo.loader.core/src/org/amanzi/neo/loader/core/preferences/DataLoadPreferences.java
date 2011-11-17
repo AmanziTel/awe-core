@@ -53,6 +53,23 @@ public class DataLoadPreferences {
     public static final String DR_RSSI = "DR_RSSI";
     public static final String DR_CI = "DR_CI";
 
+    public static final String DR_MS = "DR_MS";
+    public static final String DR_EVENT = "DR_EVENT";
+    public static final String DR_SECTOR_ID = "DR_SECTOR_ID";
+    public static final String DR_ALL_RXLEV_FULL = "DR_ALL_RXLEV_FULL";
+    public static final String DR_ALL_RXLEV_SUB = "DR_ALL_RXLEV_SUB";
+    public static final String DR_ALL_RXQUAL_FULL = "DR_ALL_RXQUAL_FULL";
+    public static final String DR_ALL_RXQUAL_SUB = "DR_ALL_RXQUAL_SUB";
+    public static final String DR_ALL_PILOT_SET_COUNT = "DR_ALL_PILOT_SET_COUNT";
+    public static final String DR_ALL_SQI = "DR_ALL_SQI";
+    public static final String DR_ALL_SQI_MOS = "DR_ALL_SQI_MOS";
+    public static final String DR_TIME = "DR_TIME";
+    public static final String DR_MESSAGE_TYPE = "DR_MESSAGE_TYPE";
+
+    public static final String DR_ALL_PILOT_SET_EC_IO = "DR_ALL_PILOT_SET_EC_IO";
+    public static final String DR_ALL_PILOT_SET_CHANNEL = "DR_ALL_PILOT_SET_CHANNEL";
+    public static final String DR_ALL_PILOT_SET_PN = "DR_ALL_PILOT_SET_PN";
+
     // probe loader headers
     public static final String PR_NAME = "PR_NAME";
     public static final String PR_TYPE = "PR_TYPE";
@@ -96,7 +113,7 @@ public class DataLoadPreferences {
     public static final String RADIO_HEAD = "RADIO";
     public static final String XCEIVER_HEAD = "X-CEIVER";
     public static final String ADMINISTRATION_HEAD = "ADMINISTRATION";
-   
+
     public final static String MO = "MO";
     public final static String CHGR = "CHGR";
     public final static String FHOP = "FHOP";

@@ -14,12 +14,16 @@ import java.util.List;
 import java.util.Set;
 
 import org.amanzi.awe.views.explorer.ProjectExplorerPlugin;
+import org.amanzi.awe.views.explorer.property.ProjectDistributionPage;
+import org.amanzi.awe.views.explorer.property.ProjectPropertySheetPage;
 import org.amanzi.awe.views.explorer.providers.ProjectTreeContentProvider;
 import org.amanzi.awe.views.explorer.providers.ProjectTreeLabelProvider;
-import org.amanzi.neo.services.INeoConstants;
-import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.awe.views.reuse.ReusePlugin;
+import org.amanzi.awe.views.reuse.views.DistributionAnalyzerView;
+import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
+import org.amanzi.neo.services.model.IProjectModel;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoUtils;
@@ -44,6 +48,7 @@ import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
+import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.neo4j.graphdb.Transaction;
 
 /**
@@ -60,8 +65,7 @@ public class ProjectExplorerView extends ViewPart {
     public static final String PROJECT_EXPLORER_ID = "org.amanzi.awe.views.explorer.view.ProjectExplorer";
 
     public static final String SHOW_PROPERTIES = "Show properties";
-    public static final String CHANGE_MODE_TO_JUST_SHOW_PROPERTIES = "Change mode to just show";
-    public static final String CHANGE_MODE_TO_EDIT_PROPERTIES = "Change mode to edit";
+    public static final String DISTRIBUTION_ANALYSE = "Distribution analyse";
 
     /*
      * TreeViewer for database Nodes
@@ -78,9 +82,13 @@ public class ProjectExplorerView extends ViewPart {
     private NeoServiceProviderUi neoServiceProvider;
 
     /*
-     * Variable show is view ready to edit property
+     * PropertySheetPage for Properties of Nodes
      */
-    private boolean isEditablePropertyView;
+    private IPropertySheetPage propertySheetPage;
+    /*
+     * Distribution analyse view
+     */
+    private DistributionAnalyzerView distributionPage;
 
     /**
      * The constructor.
@@ -126,14 +134,14 @@ public class ProjectExplorerView extends ViewPart {
     }
 
     private void fillContextMenu(IMenuManager manager) {
-        SelectAction select = new SelectAction((IStructuredSelection)viewer.getSelection());
+        ShowViewAction select = new ShowViewAction((IStructuredSelection)viewer.getSelection());
         if (select.isEnabled()) {
             manager.add(select);
         }
-
-        ChangeModeAction editAction = new ChangeModeAction((IStructuredSelection)viewer.getSelection());
-        manager.add(editAction);
-
+        DistributionAction distributeAction = new DistributionAction((IStructuredSelection)viewer.getSelection());
+        if (distributeAction.isEnabled()) {
+            manager.add(distributeAction);
+        }
         RenameAction renameAction = new RenameAction((IStructuredSelection)viewer.getSelection());
         manager.add(renameAction);
 
@@ -142,7 +150,7 @@ public class ProjectExplorerView extends ViewPart {
 
     }
 
-    private class SelectAction extends Action {
+    private class DistributionAction extends Action {
         private boolean enabled;
         private final String text;
         private Set<IDataElement> selectedDataElements = new HashSet<IDataElement>();
@@ -153,11 +161,57 @@ public class ProjectExplorerView extends ViewPart {
          * @param selection - selection
          */
         @SuppressWarnings("rawtypes")
-        public SelectAction(IStructuredSelection selection) {
+        public DistributionAction(IStructuredSelection selection) {
             Iterator it = selection.iterator();
             while (it.hasNext()) {
                 Object elementObject = it.next();
-                if (elementObject instanceof INetworkModel) {
+                if (elementObject instanceof IProjectModel) {
+                    continue;
+                } else {
+                    IDataElement element = (IDataElement)elementObject;
+                    selectedDataElements.add(element);
+                }
+            }
+            enabled = selectedDataElements.size() > 0;
+            text = DISTRIBUTION_ANALYSE;
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        @Override
+        public String getText() {
+            return text;
+        }
+
+        @Override
+        public void run() {
+            try {
+                PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IPageLayout.ID_PROP_SHEET);
+            } catch (PartInitException e) {
+                ProjectExplorerPlugin.error(null, e);
+            }
+        }
+    }
+
+    private class ShowViewAction extends Action {
+        private boolean enabled;
+        private final String text;
+        private Set<IDataElement> selectedDataElements = new HashSet<IDataElement>();
+
+        /**
+         * Constructor
+         * 
+         * @param selection - selection
+         */
+        @SuppressWarnings("rawtypes")
+        public ShowViewAction(IStructuredSelection selection) {
+            Iterator it = selection.iterator();
+            while (it.hasNext()) {
+                Object elementObject = it.next();
+                if (elementObject instanceof IProjectModel) {
                     continue;
                 } else {
                     IDataElement element = (IDataElement)elementObject;
@@ -181,57 +235,11 @@ public class ProjectExplorerView extends ViewPart {
         @Override
         public void run() {
             try {
-                PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IPageLayout.ID_PROP_SHEET);
+                PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(ReusePlugin.PLUGIN_ID);
                 PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IPageLayout.ID_PROP_SHEET);
             } catch (PartInitException e) {
                 ProjectExplorerPlugin.error(null, e);
             }
-        }
-    }
-
-    private class ChangeModeAction extends Action {
-        private boolean enabled;
-        private final String text;
-        private Set<IDataElement> selectedDataElements = new HashSet<IDataElement>();
-
-        /**
-         * Constructor
-         * 
-         * @param selection - selection
-         */
-        @SuppressWarnings("rawtypes")
-        public ChangeModeAction(IStructuredSelection selection) {
-            Iterator it = selection.iterator();
-            while (it.hasNext()) {
-                Object elementObject = it.next();
-                if (elementObject instanceof INetworkModel) {
-                    continue;
-                } else {
-                    IDataElement element = (IDataElement)elementObject;
-                    selectedDataElements.add(element);
-                }
-            }
-            enabled = selectedDataElements.size() > 0;
-            text = (isEditablePropertyView == false) ? CHANGE_MODE_TO_EDIT_PROPERTIES : CHANGE_MODE_TO_JUST_SHOW_PROPERTIES;
-        }
-
-        @Override
-        public boolean isEnabled() {
-            return enabled;
-        }
-
-        @Override
-        public String getText() {
-            return text;
-        }
-
-        @Override
-        public void run() {
-            isEditablePropertyView = (isEditablePropertyView == true) ? false : true;
-            // ((NewNetworkPropertySheetPage)propertySheetPage).setEditableToPropertyView(isEditablePropertyView);
-            // IDataElement lastClickedElement =
-            // ((NewNetworkPropertySheetPage)propertySheetPage).getLastClickedElement();
-            // selectDataElement(lastClickedElement);
         }
     }
 
@@ -252,7 +260,7 @@ public class ProjectExplorerView extends ViewPart {
                     && !(selection.getFirstElement() instanceof INetworkModel);
             if (enabled) {
                 dataElement = (IDataElement)selection.getFirstElement();
-                enabled = (dataElement.get(INeoConstants.PROPERTY_NAME_NAME) == null) ? false : true;
+                enabled = (dataElement.get(NewAbstractService.NAME) == null) ? false : true;
             }
         }
 
@@ -268,14 +276,15 @@ public class ProjectExplorerView extends ViewPart {
 
         @Override
         public void run() {
-            String value = getNewName(dataElement.get(INeoConstants.PROPERTY_NAME_NAME).toString());
-            INetworkModel networkModel = (INetworkModel)dataElement.get(INeoConstants.NETWORK_MODEL_NAME);
-            try {
-                networkModel.renameElement(dataElement, value);
-            } catch (AWEException e) {
-                // TODO Handle AWEException
-                throw (RuntimeException)new RuntimeException().initCause(e);
-            }
+            String value = getNewName(dataElement.get(NewAbstractService.NAME).toString());
+            // INetworkModel networkModel =
+            // (INetworkModel)modelElement.get(INeoConstants.NETWORK_MODEL_NAME);
+            // try {
+            // networkModel.renameElement(networkModel, newName);
+            // } catch (AWEException e) {
+            // // TODO Handle AWEException
+            // throw (RuntimeException)new RuntimeException().initCause(e);
+            // }
             viewer.refresh();
         }
 
@@ -302,49 +311,49 @@ public class ProjectExplorerView extends ViewPart {
      * @since 1.0.0
      */
     private class DeleteAction extends Action {
-        private final List<IDataElement> dataElementsToDelete;
+        private final List<IDataElement> elementToDelete;
         private String text = null;
         private boolean interactive = false;
 
         private DeleteAction(List<IDataElement> nodesToDelete, String text) {
-            this.dataElementsToDelete = nodesToDelete;
+            this.elementToDelete = nodesToDelete;
             this.text = text;
         }
 
         @SuppressWarnings("rawtypes")
         private DeleteAction(IStructuredSelection selection) {
             interactive = true;
-            dataElementsToDelete = new ArrayList<IDataElement>();
+            elementToDelete = new ArrayList<IDataElement>();
             Iterator iterator = selection.iterator();
             HashSet<String> nodeTypes = new HashSet<String>();
             while (iterator.hasNext()) {
                 Object element = iterator.next();
-                if (element != null && element instanceof IDataElement && !(element instanceof INetworkModel)) {
-                    dataElementsToDelete.add((IDataElement)element);
+                if (element != null && element instanceof IDataElement && !(element instanceof IProjectModel)) {
+                    elementToDelete.add((IDataElement)element);
                     nodeTypes.add(NeoUtils.getNodeType(((DataElement)element).getNode()));
                 }
             }
             String type = nodeTypes.size() == 1 ? nodeTypes.iterator().next() : "node";
-            switch (dataElementsToDelete.size()) {
+            switch (elementToDelete.size()) {
             case 0:
                 text = "Select data elements to delete";
                 break;
             case 1:
-                text = "Delete " + type + " '" + dataElementsToDelete.get(0).toString() + "'";
+                text = "Delete " + type + " '" + elementToDelete.get(0).toString() + "'";
                 break;
             case 2:
             case 3:
             case 4:
-                for (IDataElement dataElement : dataElementsToDelete) {
+                for (IDataElement modelElement : elementToDelete) {
                     if (text == null) {
-                        text = "Delete " + type + "s " + dataElement;
+                        text = "Delete " + type + "s " + modelElement;
                     } else {
-                        text += ", " + dataElement;
+                        text += ", " + modelElement;
                     }
                 }
                 break;
             default:
-                text = "Delete " + dataElementsToDelete.size() + " " + type + "s";
+                text = "Delete " + elementToDelete.size() + " " + type + "s";
                 break;
             }
             // TODO: Find a more general solution
@@ -371,20 +380,21 @@ public class ProjectExplorerView extends ViewPart {
             // and user choose to delete nodes Dortmund, AMZ000234, A0236.
             // We should delete in start A0236, then AMZ000234 and
             // all it remained nodes, and in the end - Dortmund and all it remained nodes
-            int countOfNodesToDelete = dataElementsToDelete.size();
+            int countOfNodesToDelete = elementToDelete.size();
             IDataElement[] dataElementsToDeleteArray = new IDataElement[countOfNodesToDelete];
-            dataElementsToDelete.toArray(dataElementsToDeleteArray);
+            elementToDelete.toArray(dataElementsToDeleteArray);
 
-            for (int i = countOfNodesToDelete - 1; i >= 0; i--) {
-                IDataElement dataElement = dataElementsToDeleteArray[i];
-                INetworkModel networkModel = (INetworkModel)dataElement.get(INeoConstants.NETWORK_MODEL_NAME);
-                try {
-                    networkModel.deleteElement(dataElement);
-                } catch (AWEException e) {
-                    // TODO Handle AWEException
-                    throw (RuntimeException)new RuntimeException().initCause(e);
-                }
-            }
+            // for (int i = countOfNodesToDelete - 1; i >= 0; i--) {
+            // IDataElement dataElement = dataElementsToDeleteArray[i];
+            // INetworkModel networkModel =
+            // (INetworkModel)dataElement.get(INeoConstants.NETWORK_MODEL_NAME);
+            // try {
+            // networkModel.deleteElement(dataElement);
+            // } catch (AWEException e) {
+            // // TODO Handle AWEException
+            // throw (RuntimeException)new RuntimeException().initCause(e);
+            // }
+            // }
 
             viewer.refresh();
         }
@@ -396,7 +406,7 @@ public class ProjectExplorerView extends ViewPart {
 
         @Override
         public boolean isEnabled() {
-            return dataElementsToDelete.size() > 0;
+            return elementToDelete.size() > 0;
         }
     }
 
@@ -454,11 +464,39 @@ public class ProjectExplorerView extends ViewPart {
     }
 
     /**
+     * Returns (and creates is it need) property sheet page for this View
+     * 
+     * @return PropertySheetPage
+     */
+
+    private IPropertySheetPage getPropertySheetPage() {
+        if (propertySheetPage == null) {
+            propertySheetPage = new ProjectPropertySheetPage();
+        }
+
+        return propertySheetPage;
+    }
+
+    private DistributionAnalyzerView getDistributionAnalyzerView() {
+        if (distributionPage == null) {
+            distributionPage = new ProjectDistributionPage();
+        }
+        return distributionPage;
+    }
+
+    /**
      * This is how the framework determines which interfaces we implement.
      */
     @SuppressWarnings("rawtypes")
     @Override
     public Object getAdapter(final Class key) {
-        return super.getAdapter(key);
+        System.out.println(key);
+        if (key.equals(IPropertySheetPage.class)) {
+            return getPropertySheetPage();
+        } else if (key.equals(DistributionAnalyzerView.class)) {
+            return getDistributionAnalyzerView();
+        } else {
+            return super.getAdapter(key);
+        }
     }
 }

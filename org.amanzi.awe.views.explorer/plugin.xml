@@ -4,7 +4,7 @@
    <extension
          point="org.eclipse.ui.views">
       <view
-            name="Data base Project Explorer"
+            name="Database Project Explorer"
             icon="icons/network.png"
             category="org.amanzi.awe.script"
             class="org.amanzi.awe.views.explorer.view.ProjectExplorerView"
