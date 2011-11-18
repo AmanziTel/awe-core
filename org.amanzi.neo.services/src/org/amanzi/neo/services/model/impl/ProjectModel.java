@@ -32,6 +32,7 @@ import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
 import org.amanzi.neo.services.model.IProjectModel;
+import org.amanzi.neo.services.model.IPropertyStatisticalModel;
 import org.amanzi.neo.services.model.IRenderableModel;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -389,6 +390,21 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
             datasets.add(new DriveModel(networkRoot));
         }
 
+        return datasets;
+    }
+
+    @Override
+    public Iterable<IPropertyStatisticalModel> findAllModels() throws AWEException {
+        List<IPropertyStatisticalModel> datasets = new ArrayList<IPropertyStatisticalModel>();
+        Iterable<INetworkModel> networks = findAllNetworkModels();
+        for (IPropertyStatisticalModel model : networks) {
+            datasets.add(model);
+        }        
+        Iterable<IDriveModel> drives = findAllDriveModels();
+        for (IPropertyStatisticalModel model : drives) {
+            datasets.add(model);
+        }
+        // TODO add counters
         return datasets;
     }
 

@@ -147,7 +147,6 @@ public class DataLoadPreferenceInitializer extends AbstractPreferenceInitializer
         pref.setDefault(DataLoadPreferences.REMOVE_SITE_NAME, false);
         pref.setDefault(DataLoadPreferences.NETWORK_COMBINED_CALCULATION, true);
         pref.setDefault(DataLoadPreferences.ZOOM_TO_LAYER, true);
-        pref.setDefault(DataLoadPreferences.ONE_NETWORK_PER_PROJECT, false);
         pref.setDefault(DataLoadPreferences.ADD_AMS_PROBES_TO_MAP, true);
         pref.setDefault(DataLoadPreferences.ADD_AMS_CALLS_TO_MAP, true);
         pref.setDefault(DataLoadPreferences.ADD_AMS_EVENTS_TO_MAP, true);

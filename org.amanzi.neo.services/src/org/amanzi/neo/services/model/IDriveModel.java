@@ -32,7 +32,7 @@ import org.neo4j.graphdb.RelationshipType;
  * @author grigoreva_a
  * @since 1.0.0
  */
-public interface IDriveModel extends ICorrelatableModel, IDataModel, IRenderableModel, IPropertyStatisticalModel, ITimelineModel {
+public interface IDriveModel extends ICorrelatableModel, IRenderableModel, IPropertyStatisticalModel, ITimelineModel {
     /**
      * @return a List<Node> containing DriveModels created on base of virtual dataset nodes in
      *         current DriveModel

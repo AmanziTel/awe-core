@@ -39,6 +39,7 @@ import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoUtils;
+import org.amanzi.neo.services.ui.utils.ActionUtil;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
@@ -854,7 +855,14 @@ public class NewNetworkTreeView extends ViewPart implements IEventListener {
     @Override
     public void handleEvent(EventUIType eventType, Object data) {
         if (eventType == EventUIType.PROJECT_CHANGED || eventType == EventUIType.DISTRIBUTIONS_CHANGED) {
-            viewer.refresh();
+            ActionUtil.getInstance().runTask(new Runnable() {
+
+                @Override
+                public void run() {
+                    viewer.refresh();
+                }
+            }, false);
+
         } else if (eventType == EventUIType.DISTRIBUTION_BAR_SELECTED) {
             if (data instanceof IDistributionBar) {
                 viewer.setSelection(new StructuredSelection(data), true);
