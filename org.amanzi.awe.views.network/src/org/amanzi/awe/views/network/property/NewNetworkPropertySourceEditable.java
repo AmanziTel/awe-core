@@ -53,8 +53,7 @@ public class NewNetworkPropertySourceEditable extends NodePropertySource impleme
 	private static String PROPERTY_DEFINED_IN_ELEMENT = "In current moment this property define in element with type ";
 	private static String PROPERTY_DEFINED_IN_ELEMENT_CI_LAC = "In current moment properties ci+lac unique and define in element with type ";
 	
-	
-	private int countOfShowMessageDialog = 0;
+	public static boolean showMessageBox = true; 
 	
 	/**
 	 * Current data element on which user clicked
@@ -122,7 +121,6 @@ public class NewNetworkPropertySourceEditable extends NodePropertySource impleme
      */
     @Override
     public void setPropertyValue(Object id, Object value) {
-    	countOfShowMessageDialog++;
     	String propertyName = id.toString();
         INetworkModel networkModel = (INetworkModel)currentDataElement.get(INeoConstants.NETWORK_MODEL_NAME);
         try {
@@ -179,8 +177,12 @@ public class NewNetworkPropertySourceEditable extends NodePropertySource impleme
         				dataElement.get(NewNetworkService.TYPE) + " and name " + 
         				dataElement.get(NewNetworkService.NAME);
         		
-        		if (countOfShowMessageDialog % 2 == 1) {
-        			MessageDialog.openInformation(null, TITLE_COULD_NOT_CHANGE_PROPERTY, message);
+        		if (showMessageBox) {
+        			showMessageBox = false;
+        			synchronized (message) {
+        				MessageDialog.openWarning(null, TITLE_COULD_NOT_CHANGE_PROPERTY, message);
+        			}
+        			showMessageBox = true;
         		}
         	}
         } catch (AWEException e) {
