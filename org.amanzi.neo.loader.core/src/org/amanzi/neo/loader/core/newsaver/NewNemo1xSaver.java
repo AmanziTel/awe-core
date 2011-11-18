@@ -143,8 +143,8 @@ public class NewNemo1xSaver extends NewNemo2xSaver {
      */
     private void buildModel(List<String> value) throws AWEException {
         String eventId = value.get(0);
-        Object longitude = autoParse(LONGITUDE, value.get(1));
-        Object latitude = autoParse(LATITUDE, value.get(2));
+        Object longitude = autoParse(IDriveModel.LONGITUDE, value.get(1));
+        Object latitude = autoParse(IDriveModel.LATITUDE, value.get(2));
         String time = value.get(8);
         NemoEvents event = NemoEvents.getEventById(eventId);
         List<Integer> contextId = new ArrayList<Integer>();
@@ -157,8 +157,8 @@ public class NewNemo1xSaver extends NewNemo2xSaver {
             return;
         }
         if (isCorrect(latitude) && (Double)latitude != 0d && isCorrect(longitude) && (Double)longitude != 0d) {
-            parsedParameters.put(LATITUDE, latitude);
-            parsedParameters.put(LONGITUDE, longitude);
+            parsedParameters.put(IDriveModel.LATITUDE, latitude);
+            parsedParameters.put(IDriveModel.LONGITUDE, longitude);
         }
         parsedParameters.put(NewAbstractService.NAME, eventId);
 
@@ -173,8 +173,8 @@ public class NewNemo1xSaver extends NewNemo2xSaver {
 
         location = checkSameLocation(parsedParameters);
         if (location != null) {
-            parsedParameters.remove(LATITUDE);
-            parsedParameters.remove(LONGITUDE);
+            parsedParameters.remove(IDriveModel.LATITUDE);
+            parsedParameters.remove(IDriveModel.LONGITUDE);
         }
         IDataElement createdElement = model.addMeasurement(fileName, parsedParameters);
         if (location != null) {

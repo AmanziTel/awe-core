@@ -151,8 +151,8 @@ public class NewRomesSaver extends AbstractDriveSaver {
         String time = getValueFromRow(TIME, value);
         Long timestamp = defineTimestamp(workDate, time);
         String message_type = getValueFromRow(MESSAGE_TYPE, value);
-        Double latitude = getLatitude(getValueFromRow(LATITUDE, value));
-        Double longitude = getLongitude(getValueFromRow(LONGITUDE, value));
+        Double latitude = getLatitude(getValueFromRow(IDriveModel.LATITUDE, value));
+        Double longitude = getLongitude(getValueFromRow(IDriveModel.LONGITUDE, value));
         String event = getValueFromRow(EVENT, value);
         String sector_id = getValueFromRow(SECTOR_ID, value);
         if (time == null || latitude == null || longitude == null || timestamp == null) {
@@ -162,8 +162,8 @@ public class NewRomesSaver extends AbstractDriveSaver {
         params.put(TIME, time);
         params.put(TIMESTAMP, timestamp);
         params.put(MESSAGE_TYPE, message_type);
-        params.put(LATITUDE, latitude);
-        params.put(LONGITUDE, longitude);
+        params.put(IDriveModel.LATITUDE, latitude);
+        params.put(IDriveModel.LONGITUDE, longitude);
         params.put(EVENT, event);
         params.put(NewAbstractService.NAME, time);
         params.put(SECTOR_ID, sector_id);
@@ -171,7 +171,7 @@ public class NewRomesSaver extends AbstractDriveSaver {
             if (fileSynonyms.containsValue(header)) {
                 continue;
             }
-            String rowValue = getSynonymValue(value, header);
+            String rowValue = getValueFromRow(header, value);
             if (isCorrect(rowValue)) {
                 params.put(header, autoParse(header, rowValue));
             }
@@ -180,8 +180,8 @@ public class NewRomesSaver extends AbstractDriveSaver {
         removeEmpty(params);
         IDataElement existedLocation = checkSameLocation(params);
         if (existedLocation != null) {
-            params.remove(LATITUDE);
-            params.remove(LONGITUDE);
+            params.remove(IDriveModel.LATITUDE);
+            params.remove(IDriveModel.LONGITUDE);
         }
         IDataElement createdElement = model.addMeasurement(fileName, params);
         if (existedLocation != null) {
@@ -195,7 +195,8 @@ public class NewRomesSaver extends AbstractDriveSaver {
 
     private IDataElement checkSameLocation(Map<String, Object> params) {
         for (IDataElement location : locationDataElements) {
-            if (location.get(LATITUDE).equals(params.get(LATITUDE)) && location.get(LONGITUDE).equals(params.get(LONGITUDE))) {
+            if (location.get(IDriveModel.LATITUDE).equals(params.get(IDriveModel.LATITUDE))
+                    && location.get(IDriveModel.LONGITUDE).equals(params.get(IDriveModel.LONGITUDE))) {
                 return location;
             }
         }

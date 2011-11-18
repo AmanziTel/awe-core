@@ -39,6 +39,7 @@ import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveRelationshipTypes;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
 
@@ -97,16 +98,16 @@ public class NewTemsSaver extends AbstractDriveSaver {
 
         Long timestamp = defineTimestamp(workDate, time);
         String message_type = getValueFromRow(MESSAGE_TYPE, value);
-        Double latitude = getLatitude(getValueFromRow(LATITUDE, value));
-        Double longitude = getLongitude(getValueFromRow(LONGITUDE, value));
+        Double latitude = getLatitude(getValueFromRow(IDriveModel.LATITUDE, value));
+        Double longitude = getLongitude(getValueFromRow(IDriveModel.LONGITUDE, value));
         String event = getValueFromRow(EVENT, value);
         String ms = getValueFromRow(MS, value);
 
         params.put(TIME, time);
         params.put(NewNetworkService.NAME, time);
         params.put(TIMESTAMP, timestamp);
-        params.put(LATITUDE, latitude);
-        params.put(LONGITUDE, longitude);
+        params.put(IDriveModel.LATITUDE, latitude);
+        params.put(IDriveModel.LONGITUDE, longitude);
         params.put(MESSAGE_TYPE, message_type);
 
         params.put(EVENT, getSynonymValuewithAutoparse(EVENT, value));
@@ -218,7 +219,7 @@ public class NewTemsSaver extends AbstractDriveSaver {
                     ec_io = (Integer)getSynonymValuewithAutoparse(ALL_PILOT_SET_EC_IO + i, value);
                     channel = (Integer)getSynonymValuewithAutoparse(ALL_PILOT_SET_CHANNEL + i, value);
                     pn_code = (Integer)getSynonymValuewithAutoparse(ALL_PILOT_SET_PN + i, value);
-                    String chan_code = "" + channel + "\t" + pn_code;
+                    String chan_code = StringUtils.EMPTY + channel + "\t" + pn_code;
                     if (!signals.containsKey(chan_code))
                         signals.put(chan_code, new float[2]);
                     signals.get(chan_code)[0] += Math.pow(10.0, ((ec_io) / 10.0));
