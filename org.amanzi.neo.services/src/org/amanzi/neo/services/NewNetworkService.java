@@ -54,6 +54,7 @@ public class NewNetworkService extends NewAbstractService {
     public final static String CELL_INDEX = "ci";
     public final static String LOCATION_AREA_CODE = "lac";
     public final static String BSIC = "bsic";
+    public final static String BCCH = "bcch";
 
     public final static String SELECTION_RELATIONSHIP_INDEX = "selection_relationship";
 
@@ -99,13 +100,13 @@ public class NewNetworkService extends NewAbstractService {
     public enum NetworkRelationshipTypes implements RelationshipType {
         SELECTION_LIST, SELECTED, CHANNEL, TRX, FREQUENCY_ROOT, ENTRY_PLAN;
     }
-    
+
     /*
      * Traversal Description to find out all Selection List Nodes of sector
      */
     protected final static TraversalDescription ALL_SELECTION_LISTS_OF_SECTOR_TRAVERSER = Traversal.description().breadthFirst()
             .relationships(NetworkRelationshipTypes.SELECTED).evaluator(Evaluators.atDepth(1));
-    
+
     /*
      * Traversal Description to find out all Selection List Nodes
      */
@@ -116,7 +117,10 @@ public class NewNetworkService extends NewAbstractService {
      * Traversal Description to find all node2node relationship root nodes
      */
     protected final static TraversalDescription N2N_ROOT_TRAVERSER = Traversal.description().breadthFirst()
-            .relationships(N2NRelTypes.NEIGHBOUR).evaluator(Evaluators.excludeStartPosition());
+            .relationships(N2NRelTypes.EXCEPTION).relationships(N2NRelTypes.FREQUENCY_SPECTRUM)
+            .relationships(N2NRelTypes.ILLEGAL_FREQUENCY).relationships(N2NRelTypes.INTERFERENCE_MATRIX)
+            .relationships(N2NRelTypes.NEIGHBOUR).relationships(N2NRelTypes.SHADOW).relationships(N2NRelTypes.TRANSMISSION)
+            .relationships(N2NRelTypes.TRIANGULATION).evaluator(Evaluators.excludeStartPosition());
 
     public static final String SECTOR_COUNT = "sector_count";
 
@@ -337,14 +341,18 @@ public class NewNetworkService extends NewAbstractService {
         if (!((ci == null) || (ci.equals(StringUtils.EMPTY)))) {
             IndexHits<Node> cis = index.get(CELL_INDEX, ci);
             for (Node node : cis) {
-                if (lac.equals(node.getProperty(LOCATION_AREA_CODE, null))) {
+                if (lac.equals(node.getProperty(LOCATION_AREA_CODE, null).toString())) {
                     result = node;
                     break;
                 }
             }
         }
         if (result == null) {
-            result = index.get(NAME, name).getSingle();
+            try {
+                result = index.get(NAME, name).getSingle();
+            } catch (NullPointerException e) {
+                result = null;
+            }
         }
         return result;
     }
@@ -706,12 +714,13 @@ public class NewNetworkService extends NewAbstractService {
             if (existedNode instanceof Node && index != null) {
                 if (existedNode.getProperty(TYPE).equals(NetworkElementNodeType.SECTOR.getId())) {
                     int bsic = getBsicProperty(dataElement);
-                    Integer bcch = dataElement.get("bcchno") != null ? (Integer)dataElement.get("bcchno") : null;
+                    Integer bcch = dataElement.get(NewNetworkService.BCCH) != null ? (Integer)dataElement
+                            .get(NewNetworkService.BCCH) : null;
                     if (bsic != 0) {
                         addNodeToIndex((Node)existedNode, index, BSIC, bsic);
                     }
                     if (bcch != null) {
-                        addNodeToIndex((Node)existedNode, index, "bcchno", bcch);
+                        addNodeToIndex((Node)existedNode, index, NewNetworkService.BCCH, bcch);
                     }
                 }
                 addNodeToIndex((Node)existedNode, index, NAME, existedNode.getProperty(NAME));

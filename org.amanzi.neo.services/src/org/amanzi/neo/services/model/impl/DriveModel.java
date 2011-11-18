@@ -66,7 +66,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     private INodeType primaryType = DriveNodeTypes.M;
     private IDriveType driveType;
 
-    private NewDatasetService dsServ;
+    private NewDatasetService dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
     private CorrelationService crServ = NeoServiceFactory.getInstance().getNewCorrelationService();
 
     /**
@@ -160,7 +160,6 @@ public class DriveModel extends RenderableModel implements IDriveModel {
                 throw new IllegalArgumentException("Parent is null.");
             }
 
-            dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
             this.rootNode = dsServ.getDataset(parent, name, DatasetTypes.DRIVE, type);
             this.name = name;
             this.driveType = type;
@@ -618,5 +617,10 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     @Override
     public void setCRS(CoordinateReferenceSystem crs) {
         super.setCRS(crs);
+    }
+
+    @Override
+    public boolean isUniqueProperties(String property) {
+        return false;
     }
 }

@@ -33,7 +33,7 @@ import org.neo4j.graphdb.RelationshipType;
  * @since 1.0.0
  */
 
-public interface INetworkModel extends IRenderableModel, IDistributionalModel {
+public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IRenderableModel, IDistributionalModel {
 
     /**
      * Traverse database to find all correlation root nodes and create models based on them.
@@ -131,6 +131,16 @@ public interface INetworkModel extends IRenderableModel, IDistributionalModel {
      * @throws AWEException
      */
     public IDataElement findElement(Map<String, Object> params) throws AWEException;
+    
+    /**
+     * Find a sector in network by propertyName and propertyValue
+     *
+     * @param propertyName Name of property in sector
+     * @param propertyValue Value of property in sector 
+     * @return Found sector or null
+     * @throws AWEException
+     */
+    public IDataElement findSector(String propertyName, String propertyValue) throws AWEException;
 
     /**
      * Create a new network element based on <code>IDataElement element</code> object. MUST set NAME

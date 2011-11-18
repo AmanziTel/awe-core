@@ -68,7 +68,7 @@ public abstract class NewAbstractService {
     
     private void fillIndexedProperties() {
         indexedProperties.add(NewAbstractService.NAME);
-        indexedProperties.add("bcchno");
+        indexedProperties.add(NewNetworkService.BCCH);
         indexedProperties.add(NewNetworkService.BSIC);
         indexedProperties.add(NewNetworkService.CELL_INDEX);
         indexedProperties.add(NewNetworkService.LOCATION_AREA_CODE);;

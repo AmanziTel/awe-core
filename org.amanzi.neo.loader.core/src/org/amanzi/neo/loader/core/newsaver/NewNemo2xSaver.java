@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-//import org.amanzi.neo.core.utils.DriveEvents;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
 import org.amanzi.neo.loader.core.saver.nemo.NemoEvents;
@@ -164,11 +163,11 @@ public class NewNemo2xSaver extends AbstractDriveSaver {
                 continue;
             }
             try {
-                if (propertyMap.containsKey(LATITUDE)) {
-                    propertyMap.remove(LATITUDE);
+                if (propertyMap.containsKey(IDriveModel.LATITUDE)) {
+                    propertyMap.remove(IDriveModel.LATITUDE);
                 }
-                if (propertyMap.containsKey(LONGITUDE)) {
-                    propertyMap.remove(LONGITUDE);
+                if (propertyMap.containsKey(IDriveModel.LONGITUDE)) {
+                    propertyMap.remove(IDriveModel.LONGITUDE);
                 }
                 propertyMap.put(TIMESTAMP, timestamp);
                 propertyMap.put(NewAbstractService.NAME, eventId);
@@ -233,13 +232,13 @@ public class NewNemo2xSaver extends AbstractDriveSaver {
         removeEmpty(parsedParameters);
         boolean isAlreadyCreated = false;
         if ("GPS".equalsIgnoreCase(eventId)) {
-            Double longitude = (Double)parsedParameters.get(LONGITUDE);
-            Double latitude = (Double)parsedParameters.get(LATITUDE);
+            Double longitude = (Double)parsedParameters.get(IDriveModel.LONGITUDE);
+            Double latitude = (Double)parsedParameters.get(IDriveModel.LATITUDE);
             if (isCorrect(latitude) && latitude != 0d && isCorrect(longitude) && longitude != 0d) {
                 location = checkSameLocation(parsedParameters);
                 if (location != null) {
-                    parsedParameters.remove(LATITUDE);
-                    parsedParameters.remove(LONGITUDE);
+                    parsedParameters.remove(IDriveModel.LATITUDE);
+                    parsedParameters.remove(IDriveModel.LONGITUDE);
                 }
                 IDataElement createdElement = model.addMeasurement(fileName, parsedParameters);
                 isAlreadyCreated = true;
@@ -378,7 +377,8 @@ public class NewNemo2xSaver extends AbstractDriveSaver {
 
     protected IDataElement checkSameLocation(Map<String, Object> params) {
         for (IDataElement location : locationDataElements) {
-            if (location.get(LATITUDE).equals(params.get(LATITUDE)) && location.get(LONGITUDE).equals(params.get(LONGITUDE))) {
+            if (location.get(IDriveModel.LATITUDE).equals(params.get(IDriveModel.LATITUDE))
+                    && location.get(IDriveModel.LONGITUDE).equals(params.get(IDriveModel.LONGITUDE))) {
                 return location;
             }
         }
