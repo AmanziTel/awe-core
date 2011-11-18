@@ -53,6 +53,8 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
     private static final String TRUE = "true";
     private static final String FALSE = "false";
 
+  
+
     protected AbstractSaver(GraphDatabaseService service) {
         if (service != null) {
             database = service;
