@@ -89,10 +89,13 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<DriveModel> {
                                 isAppropriation = true;
                                 String name = posibleHeader.substring(0,
                                         posibleHeader.indexOf(DataLoadPreferenceManager.INFO_SEPARATOR));
-                                fileSynonyms.put(name, header);
+                                if (!fileSynonyms.containsKey(name))
+                                    fileSynonyms.put(name, header);
                             }
                         }
 
+                    }
+                    if (isAppropriation) {
                         break;
                     }
                 }
