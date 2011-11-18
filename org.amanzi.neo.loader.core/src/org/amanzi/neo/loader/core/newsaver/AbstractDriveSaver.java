@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceManager;
 import org.amanzi.neo.services.model.impl.DriveModel;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -30,6 +31,7 @@ import org.neo4j.graphdb.GraphDatabaseService;
  * @author Vladislav_Kondratenko
  */
 public abstract class AbstractDriveSaver extends AbstractCSVSaver<DriveModel> {
+    protected String DRIVE_TYPE_NAME = "";
     // constants
     protected final String SECTOR_ID = "sector_id";
     protected final String TIME = "time";
@@ -69,6 +71,37 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<DriveModel> {
      */
     protected AbstractDriveSaver(GraphDatabaseService service) {
         super(service);
+    }
+
+    /**
+     * make Appropriation with default synonyms and file header
+     * 
+     * @param keySet -header files;
+     */
+    protected void makeAppropriationWithSynonyms(List<String> keySet) {
+        boolean isAppropriation = false;
+        for (String header : keySet) {
+            for (String posibleHeader : preferenceStoreSynonyms.keySet()) {
+                for (String mask : preferenceStoreSynonyms.get(posibleHeader)) {
+                    if (header.toLowerCase().matches(mask.toLowerCase()) || header.toLowerCase().equals(mask.toLowerCase())) {
+                        for (String key : posibleHeader.split(DataLoadPreferenceManager.INFO_SEPARATOR)) {
+                            if (key.equalsIgnoreCase(DRIVE_TYPE_NAME)) {
+                                isAppropriation = true;
+                                String name = posibleHeader.substring(0,
+                                        posibleHeader.indexOf(DataLoadPreferenceManager.INFO_SEPARATOR));
+                                fileSynonyms.put(name, header);
+                            }
+                        }
+
+                        break;
+                    }
+                }
+                if (isAppropriation) {
+                    isAppropriation = false;
+                    break;
+                }
+            }
+        }
     }
 
     /**

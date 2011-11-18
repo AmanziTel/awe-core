@@ -27,7 +27,6 @@ import java.util.Set;
 
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
-import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceManager;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
@@ -57,6 +56,7 @@ public class NewRomesSaver extends AbstractDriveSaver {
 
     protected NewRomesSaver(IDriveModel model, ConfigurationDataImpl config, GraphDatabaseService service) {
         super(service);
+        DRIVE_TYPE_NAME = DriveTypes.ROMES.name();
         preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.DRIVE);
         columnSynonyms = new HashMap<String, Integer>();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
@@ -88,6 +88,7 @@ public class NewRomesSaver extends AbstractDriveSaver {
 
     @Override
     public void init(ConfigurationDataImpl configuration, CSVContainer dataElement) {
+        DRIVE_TYPE_NAME = DriveTypes.ROMES.name();
         Map<String, Object> rootElement = new HashMap<String, Object>();
         preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.DRIVE);
         setDbInstance();
@@ -201,48 +202,6 @@ public class NewRomesSaver extends AbstractDriveSaver {
             }
         }
         return null;
-    }
-
-    private void makeIndexAppropriation() {
-        for (String synonyms : fileSynonyms.keySet()) {
-            columnSynonyms.put(fileSynonyms.get(synonyms), getHeaderId(fileSynonyms.get(synonyms)));
-        }
-        for (String head : headers) {
-            if (!columnSynonyms.containsKey(head)) {
-                columnSynonyms.put(head, getHeaderId(head));
-            }
-        }
-    }
-
-    /**
-     * make Appropriation with default synonyms and file header
-     * 
-     * @param keySet -header files;
-     */
-    private void makeAppropriationWithSynonyms(List<String> keySet) {
-        boolean isAppropriation = false;
-        for (String header : keySet) {
-            for (String posibleHeader : preferenceStoreSynonyms.keySet()) {
-                for (String mask : preferenceStoreSynonyms.get(posibleHeader)) {
-                    if (header.toLowerCase().matches(mask.toLowerCase()) || header.toLowerCase().equals(mask.toLowerCase())) {
-                        for (String key : posibleHeader.split(DataLoadPreferenceManager.INFO_SEPARATOR)) {
-                            if (key.equalsIgnoreCase(DriveTypes.ROMES.name())) {
-                                isAppropriation = true;
-                                String name = posibleHeader.substring(0,
-                                        posibleHeader.indexOf(DataLoadPreferenceManager.INFO_SEPARATOR));
-                                fileSynonyms.put(name, header);
-                            }
-                        }
-
-                        break;
-                    }
-                }
-                if (isAppropriation) {
-                    isAppropriation = false;
-                    break;
-                }
-            }
-        }
     }
 
     /**
