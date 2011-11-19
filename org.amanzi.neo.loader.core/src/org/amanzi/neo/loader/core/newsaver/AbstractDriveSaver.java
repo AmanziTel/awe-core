@@ -73,6 +73,14 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<DriveModel> {
         super(service);
     }
 
+    protected void resetSynonymsMaps() {
+        if (!fileSynonyms.isEmpty()) {
+            fileSynonyms.clear();
+            columnSynonyms.clear();
+            headers.clear();
+        }
+    }
+
     /**
      * make Appropriation with default synonyms and file header
      * 

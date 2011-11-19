@@ -225,7 +225,7 @@ public class NewTemsSaver extends AbstractDriveSaver {
                     signals.get(chan_code)[0] += Math.pow(10.0, ((ec_io) / 10.0));
                     signals.get(chan_code)[1] += 1;
                 } catch (Exception e) {
-                    LOGGER.error("Error parsing column " + i + " for EC/IO, Channel or PN: " + e.getMessage(), e);
+                    LOGGER.error("Error parsing column " + i + " for EC/IO, Channel or PN: " + e.getMessage());
                 }
             }
         }
@@ -250,9 +250,11 @@ public class NewTemsSaver extends AbstractDriveSaver {
                 params.put(MW, mw);
                 params.put(TIMESTAMP, timestamp);
                 IDataElement virtualMeasurment = addMeasurement(virtualModel, params);
-                List<IDataElement> locationList = new LinkedList<IDataElement>();
-                locationList.add(location);
-                virtualModel.linkNode(virtualMeasurment, locationList, DriveRelationshipTypes.LOCATION);
+                if (location != null) {
+                    List<IDataElement> locationList = new LinkedList<IDataElement>();
+                    locationList.add(location);
+                    virtualModel.linkNode(virtualMeasurment, locationList, DriveRelationshipTypes.LOCATION);
+                }
                 commitTx();
             }
         }
@@ -307,8 +309,8 @@ public class NewTemsSaver extends AbstractDriveSaver {
         try {
             if ((fileName != null && !fileName.equals(dataElement.getFile().getName())) || (fileName == null)) {
                 fileName = dataElement.getFile().getName();
-                fileSynonyms.clear();
                 addedNewFileToModels(dataElement.getFile());
+                resetSynonymsMaps();
             }
             if (fileSynonyms.isEmpty()) {
                 headers = container.getHeaders();
