@@ -14,16 +14,14 @@
 package org.amanzi.neo.loader.core.newsaver;
 
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.amanzi.neo.loader.core.ConfigurationDataImpl;
-import org.amanzi.neo.loader.core.newparser.CSVContainer;
-import org.amanzi.neo.services.model.impl.NetworkModel;
+import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceManager;
+import org.amanzi.neo.services.model.impl.DriveModel;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
 
@@ -32,10 +30,9 @@ import org.neo4j.graphdb.GraphDatabaseService;
  * 
  * @author Vladislav_Kondratenko
  */
-public abstract class AbstractDriveSaver extends AbstractSaver<NetworkModel, CSVContainer, ConfigurationDataImpl> {
+public abstract class AbstractDriveSaver extends AbstractCSVSaver<DriveModel> {
+    protected String DRIVE_TYPE_NAME = "";
     // constants
-    protected final String LATITUDE = "lat";
-    protected final String LONGITUDE = "lon";
     protected final String SECTOR_ID = "sector_id";
     protected final String TIME = "time";
     protected final String TIMESTAMP = "timestamp";
@@ -68,26 +65,54 @@ public abstract class AbstractDriveSaver extends AbstractSaver<NetworkModel, CSV
     private static Logger LOGGER = Logger.getLogger(AbstractDriveSaver.class);
     protected Integer hours;
     protected Calendar workDate = Calendar.getInstance();
-    /**
-     * contains appropriation of header synonyms and name inDB
-     * <p>
-     * <b>key</b>- name in db ,<br>
-     * <b>value</b>-file header key
-     * </p>
-     */
-    protected Map<String, String> fileSynonyms = new HashMap<String, String>();
-    /**
-     * name inDB properties values
-     */
-    protected Map<String, Integer> columnSynonyms = new HashMap<String, Integer>();
-    protected Map<String, Object> params = new HashMap<String, Object>();
-    protected List<String> headers;
 
     /**
      * @param service
      */
     protected AbstractDriveSaver(GraphDatabaseService service) {
         super(service);
+    }
+
+    protected void resetSynonymsMaps() {
+        if (!fileSynonyms.isEmpty()) {
+            fileSynonyms.clear();
+            columnSynonyms.clear();
+            headers.clear();
+        }
+    }
+
+    /**
+     * make Appropriation with default synonyms and file header
+     * 
+     * @param keySet -header files;
+     */
+    protected void makeAppropriationWithSynonyms(List<String> keySet) {
+        boolean isAppropriation = false;
+        for (String header : keySet) {
+            for (String posibleHeader : preferenceStoreSynonyms.keySet()) {
+                for (String mask : preferenceStoreSynonyms.get(posibleHeader)) {
+                    if (header.toLowerCase().matches(mask.toLowerCase()) || header.toLowerCase().equals(mask.toLowerCase())) {
+                        for (String key : posibleHeader.split(DataLoadPreferenceManager.INFO_SEPARATOR)) {
+                            if (key.equalsIgnoreCase(DRIVE_TYPE_NAME)) {
+                                isAppropriation = true;
+                                String name = posibleHeader.substring(0,
+                                        posibleHeader.indexOf(DataLoadPreferenceManager.INFO_SEPARATOR));
+                                if (!fileSynonyms.containsKey(name))
+                                    fileSynonyms.put(name, header);
+                            }
+                        }
+
+                    }
+                    if (isAppropriation) {
+                        break;
+                    }
+                }
+                if (isAppropriation) {
+                    isAppropriation = false;
+                    break;
+                }
+            }
+        }
     }
 
     /**
@@ -176,76 +201,4 @@ public abstract class AbstractDriveSaver extends AbstractSaver<NetworkModel, CSV
         }
     }
 
-    /**
-     * get synonym row value and autoparse it
-     * 
-     * @param synonym
-     * @param value
-     * @return
-     */
-    protected Object getSynonymValuewithAutoparse(String synonym, List<String> value) {
-        return isCorrect(synonym, value) ? autoParse(synonym, getValueFromRow(synonym, value)) : null;
-    }
-
-    /**
-     * get value from row without autoparse (like a string)
-     * 
-     * @param synonym
-     * @param value
-     * @return
-     */
-    protected String getValueFromRow(String synonym, List<String> value) {
-        return isCorrect(synonym, value) ? value.get(columnSynonyms.get(fileSynonyms.get(synonym))) : null;
-    }
-
-    /**
-     * check if row value is correct
-     * 
-     * @param synonymName
-     * @param row
-     * @return
-     */
-    protected boolean isCorrect(String synonymName, List<String> row) {
-        return fileSynonyms.get(synonymName) != null
-                && isCorrect(row.get(columnSynonyms.get(fileSynonyms.get(synonymName))) != null);
-    }
-
-    /**
-     * get header name by synonymVale
-     * 
-     * @param synonymName
-     * @return
-     */
-    protected String getHeaderBySynonym(String synonymName) {
-        return headers.get(columnSynonyms.get((fileSynonyms.get(synonymName))));
-    }
-
-    /**
-     * check value for null or empty
-     * 
-     * @param value
-     * @return
-     */
-    protected boolean isCorrect(Object value) {
-        if (value == null || value.toString().isEmpty() || value.toString().equals("?")
-                || value.toString().equalsIgnoreCase("NULL")) {
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Get row value by header
-     * 
-     * @param row
-     * @param synonym
-     * @return synonym value
-     */
-    protected String getSynonymValue(List<String> row, String propertyName) {
-        return row.get(columnSynonyms.get(propertyName));
-    }
-
-    protected int getHeaderId(String header) {
-        return headers.indexOf(header);
-    }
 }

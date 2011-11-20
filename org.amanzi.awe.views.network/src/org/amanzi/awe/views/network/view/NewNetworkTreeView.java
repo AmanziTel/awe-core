@@ -215,7 +215,7 @@ public class NewNetworkTreeView extends ViewPart {
         public void run() {
             try {
             	PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IPageLayout.ID_PROP_SHEET);
-            	PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IPageLayout.ID_PROP_SHEET);
+//            	PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IPageLayout.ID_PROP_SHEET);
             } catch (PartInitException e) {
                 NetworkTreePlugin.error(null, e);
             }

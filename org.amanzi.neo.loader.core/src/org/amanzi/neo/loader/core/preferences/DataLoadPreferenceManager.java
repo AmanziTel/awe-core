@@ -19,10 +19,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.NewDatasetService.DriveTypes;
 import org.amanzi.neo.services.NewNetworkService;
 import org.amanzi.neo.services.enums.IDriveType;
+import org.amanzi.neo.services.model.IDriveModel;
 
 /**
  * @author Kondratenko_Vladislav
@@ -96,10 +98,11 @@ public class DataLoadPreferenceManager {
 
         if (preferenceInitializer == null) {
             preferenceInitializer = new DataLoadPreferenceInitializer();
-            predifinedPropertyType.put("lat", PossibleTypes.DOUBLE);
-            predifinedPropertyType.put("lon", PossibleTypes.DOUBLE);
+            predifinedPropertyType.put(IDriveModel.LATITUDE, PossibleTypes.DOUBLE);
+            predifinedPropertyType.put(IDriveModel.LONGITUDE, PossibleTypes.DOUBLE);
             predifinedPropertyType.put("beam", PossibleTypes.DOUBLE);
             predifinedPropertyType.put("azimuth", PossibleTypes.DOUBLE);
+            predifinedPropertyType.put(NewAbstractService.NAME, PossibleTypes.STRING);
         }
         preferenceInitializer.initializeDefaultPreferences();
     }
