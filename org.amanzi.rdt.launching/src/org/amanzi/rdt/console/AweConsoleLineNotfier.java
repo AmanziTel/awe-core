@@ -37,7 +37,7 @@ import org.eclipse.ui.console.TextConsole;
  */
 
 public class AweConsoleLineNotfier implements IPatternMatchListener,
-		IPropertyChangeListener {
+		IPropertyChangeListener  {
 	
 	/**
 	 * Listeners for notifier
