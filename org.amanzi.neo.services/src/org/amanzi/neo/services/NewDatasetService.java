@@ -56,6 +56,7 @@ public class NewDatasetService extends NewAbstractService {
      */
 
     public final static String DRIVE_TYPE = "drive_type";
+    public final static String PRIMARY_TYPE = "primary_type";
     public final static String PROJECT_NODE = "project_node";
     public static final String LAST_CHILD_ID = "last_child_id";
     public static final String PARENT_ID = "parent_id";
@@ -400,6 +401,7 @@ public class NewDatasetService extends NewAbstractService {
      * @param name - dataset name
      * @param type - dataset type
      * @param driveType - dataset drive type
+     * @param primaryType - dataset primary type
      * @return created dataset node
      * @throws InvalidDatasetParameterExceptionthis method may call exception if name == "" or name
      *         == null or type == null or driveType == null or projectNode == null
@@ -408,7 +410,7 @@ public class NewDatasetService extends NewAbstractService {
      * @throws DuplicateNodeNameException this method may call exception if dataset with that name
      *         already exists
      */
-    public Node createDataset(Node projectNode, String name, DatasetTypes type, IDriveType driveType)
+    public Node createDataset(Node projectNode, String name, DatasetTypes type, IDriveType driveType, INodeType primaryType)
             throws InvalidDatasetParameterException, DatasetTypeParameterException, DuplicateNodeNameException, DatabaseException {
         LOGGER.debug("start createDataset(Node projectNode, String name, DatasetTypes type, DriveTypes driveType)");
         if (name == null) {
@@ -431,6 +433,10 @@ public class NewDatasetService extends NewAbstractService {
             LOGGER.error("InvalidDatasetParameterException: parameter driveType = null");
             throw new InvalidDatasetParameterException(DRIVE_TYPE, driveType);
         }
+        if (primaryType == null) {
+            LOGGER.error("InvalidDatasetParameterException: parameter primaryType = null");
+            throw new InvalidDatasetParameterException(PRIMARY_TYPE, primaryType);
+        }
         if (type == DatasetTypes.NETWORK) {
             LOGGER.error("DatasetTypeParameterException: parameter driveType can not be NETWORC in this method");
             throw new DatasetTypeParameterException(type);
@@ -447,6 +453,7 @@ public class NewDatasetService extends NewAbstractService {
             projectNode.createRelationshipTo(datasetNode, DatasetRelationTypes.DATASET);
             datasetNode.setProperty(NAME, name);
             datasetNode.setProperty(DRIVE_TYPE, driveType.name());
+            datasetNode.setProperty(PRIMARY_TYPE, primaryType.getId());
             tx.success();
 
         } catch (Exception e) {
@@ -515,6 +522,7 @@ public class NewDatasetService extends NewAbstractService {
      * @param name - dataset name
      * @param type - dataset type
      * @param driveType - dataset drive type
+     * @param primaryType - dataset primary type
      * @return dataset node
      * @throws InvalidDatasetParameterException this method may call exception if name == "" or name
      *         == null or type == null or driveType == null or projectNode == null
@@ -523,7 +531,7 @@ public class NewDatasetService extends NewAbstractService {
      * @throws DuplicateNodeNameException this method may call exception if dataset with that name
      *         already exists
      */
-    public Node getDataset(Node projectNode, String name, DatasetTypes type, IDriveType driveType)
+    public Node getDataset(Node projectNode, String name, DatasetTypes type, IDriveType driveType, INodeType primaryType)
             throws InvalidDatasetParameterException, DatasetTypeParameterException, DuplicateNodeNameException, DatabaseException {
         LOGGER.debug("start getDataset(Node projectNode, String name, DatasetTypes type, DriveTypes driveType)");
 
@@ -547,6 +555,10 @@ public class NewDatasetService extends NewAbstractService {
             LOGGER.error("InvalidDatasetParameterException: parameter driveType = null");
             throw new InvalidDatasetParameterException(DRIVE_TYPE, driveType);
         }
+        if (primaryType == null) {
+            LOGGER.error("InvalidDatasetParameterException: parameter primaryType = null");
+            throw new InvalidDatasetParameterException(PRIMARY_TYPE, primaryType);
+        }
         if (type == DatasetTypes.NETWORK) {
             LOGGER.error("DatasetTypeParameterException: parameter driveType can not be NETWORC in this method");
             throw new DatasetTypeParameterException(type);
@@ -554,7 +566,7 @@ public class NewDatasetService extends NewAbstractService {
 
         Node datasetNode = findDataset(projectNode, name, type, driveType);
         if (datasetNode == null) {
-            datasetNode = createDataset(projectNode, name, type, driveType);
+            datasetNode = createDataset(projectNode, name, type, driveType, primaryType);
         }
         LOGGER.debug("finish getDataset(Node projectNode, String name, DatasetTypes type, DriveTypes driveType)");
         return datasetNode;

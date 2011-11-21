@@ -54,6 +54,7 @@ import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.indexes.MultiPropertyIndex;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
+import org.amanzi.neo.services.model.impl.PropertyStatisticalModel;
 import org.amanzi.neo.services.statistic.IPropertyHeader;
 import org.amanzi.neo.services.statistic.PropertyHeader;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
@@ -534,6 +535,7 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
      */
     private void formPropertyList() {
         propertyLists.clear();
+//        PropertyStatisticalModel statistics = getDriveModel()
         Object[] savedProperties = null;
         if (getDriveModel() == null)
             return;
