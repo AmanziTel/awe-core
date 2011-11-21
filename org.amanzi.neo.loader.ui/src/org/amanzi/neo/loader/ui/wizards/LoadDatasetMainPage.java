@@ -17,18 +17,14 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 
 import org.amanzi.neo.db.manager.NeoServiceProvider;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.IValidateResult.Result;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
-import org.amanzi.neo.services.INeoConstants;
-import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.IProjectModel;
@@ -71,7 +67,6 @@ public class LoadDatasetMainPage extends LoaderPageNew<ConfigurationDataImpl> {
     // private static final String ASC_PAT_FILE = ".*_(\\d{6})_.*";
     // private static final String FMT_PAT_FILE = ".*(\\d{4}-\\d{2}-\\d{2}).*";
     // private static final String CSV_PAT_FILE = ".*(\\d{2}/\\d{2}/\\d{4}).*";
-    private final Set<String> restrictedNames = new HashSet<String>();
     private Map<Object, String> names = new HashMap<Object, String>();
 
     /*
@@ -385,12 +380,8 @@ public class LoadDatasetMainPage extends LoaderPageNew<ConfigurationDataImpl> {
             IProjectModel projectModel = ProjectModel.getCurrentProjectModel();
 
             for (IDriveModel model : projectModel.findAllDriveModels()) {
-                String id = model.getRootNode().getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
-                if (NodeTypes.DRIVE.checkNode(model.getRootNode())) { //$NON-NLS-1$
-                    dataset.put(id, model);
-                } else {
-                    restrictedNames.add(id);
-                }
+                String id = model.getName();
+                dataset.put(id, model);
             }
         } catch (AWEException e) {
             LOGGER.error("Error while getRootItems work", e);
