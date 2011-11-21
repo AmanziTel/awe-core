@@ -13,8 +13,6 @@ public class AweUiPlugin extends AbstractUIPlugin {
 
 	// The shared instance
 	private static AweUiPlugin plugin;
-
-    private UiService uiService=new UiService();
 	
 	/**
 	 * The constructor
@@ -47,8 +45,5 @@ public class AweUiPlugin extends AbstractUIPlugin {
 	 */
 	public static AweUiPlugin getDefault() {
 		return plugin;
-	}
-	public UiService getUiService(){
-	   return uiService;
 	}
 }

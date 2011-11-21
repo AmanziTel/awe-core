@@ -1365,7 +1365,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
             networkService.completeProperties(rootNode, new DataElement(valuesMap), false, null);
         } catch (DatabaseException e) {
             Assert.fail("End with exception");
-            throw (RuntimeException)new RuntimeException().initCause(e);
+            LOGGER.error("End with exception", e);
         }
         assertTrue("Missing property: " + SECOND_PROPERTY, rootNode.hasProperty(SECOND_PROPERTY));
         assertTrue(SECOND_PROPERTY + "isn't equals" + NEW_NAME_VALUE, rootNode.getProperty(SECOND_PROPERTY).equals(NEW_NAME_VALUE));
@@ -1384,7 +1384,7 @@ public class NewNetworkServiceTest extends AbstractAWETest {
             networkService.completeProperties(rootNode, new DataElement(valuesMap), true, null);
         } catch (DatabaseException e) {
             Assert.fail("End with exception");
-            throw (RuntimeException)new RuntimeException().initCause(e);
+            LOGGER.error("End with exception", e);
         }
         assertTrue("Missing property: " + SECOND_PROPERTY, rootNode.hasProperty(SECOND_PROPERTY));
         assertTrue(SECOND_PROPERTY + "isn't equals" + NEW_NAME_VALUE, rootNode.getProperty(SECOND_PROPERTY).equals(NEW_NAME_VALUE));

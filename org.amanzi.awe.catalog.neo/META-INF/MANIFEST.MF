@@ -5,19 +5,12 @@ Bundle-SymbolicName: org.amanzi.awe.catalog.neo;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: amanzi.org
 Require-Bundle: org.eclipse.core.runtime,
- org.amanzi.neo.core,
- org.amanzi.awe.startup.splash;bundle-version="1.0.0",
  org.amanzi.awe.ui;bundle-version="1.0.0",
- net.refractions.udig.project.ui;bundle-version="1.1.1"
-Export-Package: org.amanzi.awe.catalog.neo;
-  uses:="org.geotools.geometry.jts,
-   org.eclipse.core.runtime,
-   net.refractions.udig.catalog,
-   com.vividsolutions.jts.geom,
-   org.opengis.referencing.crs,
-   org.neo4j.api.core",
- org.amanzi.awe.catalog.neo.upd_layers,
- org.amanzi.awe.catalog.neo.upd_layers.events
-Bundle-Activator: org.amanzi.awe.catalog.neo.NeoCatalogPlugin
-Eclipse-LazyStart: true
+ net.refractions.udig.project.ui;bundle-version="1.1.1",
+ org.amanzi.awe.startup.splash;bundle-version="1.0.0",
+ org.amanzi.neo.services;bundle-version="1.0.0"
+Export-Package: org.amanzi.awe.models.catalog.neo
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Eclipse-ExtensibleAPI: true
+Bundle-ActivationPolicy: lazy
+

@@ -49,7 +49,7 @@ public class NodeToNodeRelationshipModelTest extends AbstractNeoServiceTest {
         initializeDb();
 
         new LogStarter().earlyStartup();
-        
+
         dsServ = new NewDatasetService(graphDatabaseService);
         prServ = new ProjectService(graphDatabaseService);
         project = prServ.createProject("project");

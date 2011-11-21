@@ -8,9 +8,9 @@ Require-Bundle: org.eclipse.core.runtime,
  net.refractions.udig.project.ui,
  net.refractions.udig.style,
  org.amanzi.awe.catalog.neo,
- org.amanzi.neo.core,
- org.amanzi.awe.ui;bundle-version="1.0.0"
-Eclipse-LazyStart: true
+ org.amanzi.awe.ui;bundle-version="1.0.0",
+ org.amanzi.neo.services;bundle-version="1.0.0"
+Bundle-ActivationPolicy: lazy
 Eclipse-ExtensibleAPI: true
 Export-Package: org.amanzi.awe.neostyle
 Bundle-Vendor: amanzi.org

@@ -102,4 +102,13 @@ public interface IPropertyStatisticalModel extends IDataModel {
      * @return Maximum value in statistics
      */
     public Number getMaxValue(INodeType nodeType, String propertyName);
+    
+    /**
+     * Method show is property is unique property
+     *
+     * @param property Property to check
+     * @return True if property is unique, false - otherwise
+     */
+    public boolean isUniqueProperties(String property);
+
 }

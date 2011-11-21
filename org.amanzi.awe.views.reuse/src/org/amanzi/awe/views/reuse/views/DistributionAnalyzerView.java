@@ -33,6 +33,11 @@ import org.amanzi.neo.model.distribution.IDistributionalModel;
 import org.amanzi.neo.model.distribution.impl.DistributionManager;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.listeners.AbstractUIEvent;
+import org.amanzi.neo.services.listeners.AbstractUIEventType;
+import org.amanzi.neo.services.listeners.EventManager;
+import org.amanzi.neo.services.listeners.IEventListener;
+import org.amanzi.neo.services.listeners.ProjectChangedEvent;
 import org.amanzi.neo.services.model.IProjectModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.amanzi.neo.services.model.impl.ProjectModel.DistributionItem;
@@ -87,7 +92,7 @@ import org.jfree.experimental.chart.swt.ChartComposite;
  * @author gerzog
  * @since 1.0.0
  */
-public class DistributionAnalyzerView extends ViewPart {
+public class DistributionAnalyzerView extends ViewPart implements IEventListener {
 
     private static final String DATASET_LABEL = "Data";
 
@@ -474,6 +479,8 @@ public class DistributionAnalyzerView extends ViewPart {
      * Custom constructor
      */
     public DistributionAnalyzerView() {
+        EventManager.getInstance().addListener(AbstractUIEventType.PROJECT_CHANGED, this);
+
         UPDATE_BAR_COLORS_JOB.setSystem(true);
     }
 
@@ -1435,19 +1442,30 @@ public class DistributionAnalyzerView extends ViewPart {
     }
 
     @Override
-    public void setFocus() {
+    public void setFocus() {    
+    }
+    
+    private void showErrorMessage(final String message) {        
+        showMessage(message, SWT.ICON_ERROR);
     }
 
-    private void showErrorMessage(final String message) {
+    private void showMessage(final String message, final int style) {
         ActionUtil.getInstance().runTask(new Runnable() {
 
             @Override
             public void run() {
-                MessageBox msgBox = new MessageBox(Display.getCurrent().getActiveShell(), SWT.ICON_ERROR);
+                MessageBox msgBox = new MessageBox(Display.getCurrent().getActiveShell(), style);
                 msgBox.setMessage(message);
                 msgBox.open();
             }
         }, false);
+    }
+
+    @Override
+    public void handleEvent(AbstractUIEvent event) {
+        if (event instanceof ProjectChangedEvent) {
+            showMessage("New Project: " + ((ProjectChangedEvent)event).getProjectName(), SWT.ICON_INFORMATION);
+        }
     }
 
 }

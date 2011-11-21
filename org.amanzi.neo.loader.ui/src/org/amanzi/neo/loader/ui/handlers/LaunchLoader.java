@@ -89,8 +89,7 @@ public class LaunchLoader extends AbstractHandler {
      * @param elements the elements
      * @return the wizard instance
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    private IGraphicInterfaceForLoaders<?> getWizardInstance(ExecutionEvent arg0, List<IConfigurationElement> elements) {
+    private IGraphicInterfaceForLoaders getWizardInstance(ExecutionEvent arg0, List<IConfigurationElement> elements) {
 
         Object wizard = null;
         IExtensionRegistry reg = Platform.getExtensionRegistry();
@@ -116,7 +115,7 @@ public class LaunchLoader extends AbstractHandler {
             }
         }
         if (wizard instanceof IGraphicInterfaceForLoaders) {
-            IGraphicInterfaceForLoaders<?> gui = (IGraphicInterfaceForLoaders<?>)wizard;
+            IGraphicInterfaceForLoaders gui = (IGraphicInterfaceForLoaders)wizard;
             // gui.setLoaders(loaders);
             return gui;
         } else {
@@ -181,7 +180,6 @@ public class LaunchLoader extends AbstractHandler {
      * @param element the element
      * @return the i loader input validator
      */
-    @SuppressWarnings("unchecked")
     private ILoaderInputValidator< ? extends IConfigurationData> defineValidator(IConfigurationElement element) {
         String validatorClass = element.getAttribute("validator");
         if (StringUtils.isEmpty(validatorClass)) {
@@ -203,7 +201,6 @@ public class LaunchLoader extends AbstractHandler {
      * @param element the element
      * @return the i saver<? extends i data element>
      */
-    @SuppressWarnings("unchecked")
     private ISaver< ? extends IDataElement> defineSaver(IConfigurationElement element) {
         String saverId = element.getAttribute("saver");
         IExtensionRegistry reg = Platform.getExtensionRegistry();
@@ -229,7 +226,6 @@ public class LaunchLoader extends AbstractHandler {
      * @param element the element
      * @return the i parser<? extends i data element,? extends i configuration data>
      */
-    @SuppressWarnings("unchecked")
     private IParser< ? extends IDataElement, ? extends IConfigurationData> defineParser(IConfigurationElement element) {
         String parserId = element.getAttribute("parser");
         IExtensionRegistry reg = Platform.getExtensionRegistry();

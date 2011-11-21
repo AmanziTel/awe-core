@@ -4,11 +4,6 @@
    <extension
          point="net.refractions.udig.project.style">
       <style
-            class="org.amanzi.awe.neostyle.NeoStyleContent"
-            id="org.amanzi.awe.neostyle.style"
-            name="NeoStyle">
-      </style>
-      <style
             class="org.amanzi.awe.neostyle.NetworkNeoStyleContent"
             id="org.amanzi.awe.neostyle.style.network"
             name="NeoNetworkStyle">
@@ -17,17 +12,10 @@
    <extension
          point="net.refractions.udig.style.styleConfigurator">
       <styleConfigurator
-            class="org.amanzi.awe.neostyle.NeoStyleConfigurator"
-            id=".amanzi.awe.neostyle.NeoStyleConfigurator"
-            label="Style"
-            requires="org.amanzi.awe.catalog.neo.NeoDriveGeoRes"
-            styleId="org.amanzi.awe.neostyle.style">
-      </styleConfigurator>
-      <styleConfigurator
             class="org.amanzi.awe.neostyle.NetworkNeoStyleConfigurator"
             id="org.amanzi.awe.neostyle.NetworkNeoStyleConfigurator"
             label="NetworkStyle"
-            requires="org.amanzi.awe.catalog.neo.NeoNetworkGeoRes"
+            requires="org.amanzi.neo.services.model.INetworkModel"
             styleId="org.amanzi.awe.neostyle.style.network">
       </styleConfigurator>
    </extension>

@@ -8,8 +8,8 @@
             name="Drive"
             icon="icons/drive.png"
             category="org.amanzi.awe.script"
-            class="org.amanzi.awe.views.drive.views.DriveInquirerView"
-            id="org.amanzi.awe.views.drive.views.DriveInquirerView">
+            class="org.amanzi.awe.views.drive.views.NewDriveInquirerView"
+            id="org.amanzi.awe.views.drive.views.NewDriveInquirerView">
       </view>
    </extension>
       <extension
@@ -37,13 +37,13 @@
       <perspectiveExtension
             targetID="org.amanzi.awe.perspective">
          <view
-               id="org.amanzi.awe.views.drive.views.DriveInquirerView"
+               id="org.amanzi.awe.views.drive.views.NewDriveInquirerView"
                relationship="stack"
                relative="net.refractions.udig.catalog.ui.CatalogView"
                visible="true">
          </view>
          <viewShortcut
-               id="org.amanzi.awe.views.drive.views.DriveInquirerView">
+               id="org.amanzi.awe.views.drive.views.NewDriveInquirerView">
          </viewShortcut>
       </perspectiveExtension>
    </extension>

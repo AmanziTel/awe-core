@@ -332,6 +332,6 @@ public class ProjectModelTest extends AbstractNeoServiceTest {
 
             assertEquals("Unexepcted NodeType of Item", expectedNodeType, actualNodeType);
         }
-    }    
+    }
 
 }

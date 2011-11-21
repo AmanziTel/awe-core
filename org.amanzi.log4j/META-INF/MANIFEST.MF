@@ -5,7 +5,7 @@ Bundle-SymbolicName: org.amanzi.log4j;singleton:=true
 Bundle-Version: 1.2.12
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
- net.refractions.udig.libs;bundle-version="1.2.2";visibility:=reexport
+ net.refractions.udig.libs;visibility:=reexport
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ClassPath: .

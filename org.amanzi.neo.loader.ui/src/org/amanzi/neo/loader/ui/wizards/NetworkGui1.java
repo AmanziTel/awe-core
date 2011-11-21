@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import org.amanzi.neo.loader.core.CommonConfigData;
+import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.IValidateResult;
 import org.amanzi.neo.loader.core.IValidateResult.Result;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
@@ -160,6 +161,12 @@ public class NetworkGui1 extends AbstractMainPage<CommonConfigData> {
      */
     public String getSelectDataMsg() {
         return selectDataMsg;
+    }
+
+
+    @Override
+    protected boolean validateConfigData(IConfiguration configurationData) {
+        return false;
     }
 
 }

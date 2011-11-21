@@ -7,7 +7,7 @@
       <view
             name="Distribution Analyzer"
             icon="icons/distribution.png"
-            category="org.amanzi.awe.script"
+            category="org.amanzi.awe.views"
             class="org.amanzi.awe.views.reuse.views.DistributionAnalyzerView"
             id="org.amanzi.awe.views.reuse.views.DistributionAnalyzerView">
       </view>

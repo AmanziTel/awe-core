@@ -131,6 +131,16 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
      * @throws AWEException
      */
     public IDataElement findElement(Map<String, Object> params) throws AWEException;
+    
+    /**
+     * Find a sector in network by propertyName and propertyValue
+     *
+     * @param propertyName Name of property in sector
+     * @param propertyValue Value of property in sector 
+     * @return Found sector or null
+     * @throws AWEException
+     */
+    public IDataElement findSector(String propertyName, String propertyValue) throws AWEException;
 
     /**
      * Create a new network element based on <code>IDataElement element</code> object. MUST set NAME
@@ -161,6 +171,19 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
     public void renameElement(IDataElement elementToRename, String newName) throws AWEException;
 
     /**
+<<<<<<< HEAD
+=======
+     * Update any property of a network element based of <code>IDataElement elementToUpdate</code> object.
+     *
+     * @param elementToUpdate Element to update
+     * @param propertyName Value of dataElement to update
+     * @param newValue New value of updating value
+     * @throws AWEException
+     */
+    public void updateElement(IDataElement elementToUpdate, String propertyName, Object newValue) throws AWEException;
+    
+    /**
+>>>>>>> origin/models
      * complete existedElement with new property. if
      * 
      * @param existedElement

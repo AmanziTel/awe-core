@@ -56,7 +56,6 @@ public class CorrelationServiceTest extends AbstractNeoServiceTest {
 		initializeDb();
 
 		new LogStarter().earlyStartup();
-		
 		correlationServ = new CorrelationService(graphDatabaseService);
 		dsServ = new NewDatasetService(graphDatabaseService);
 		nwServ = new NewNetworkService(graphDatabaseService);

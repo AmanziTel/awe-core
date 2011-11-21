@@ -12,7 +12,7 @@
  */
 package org.amanzi.neo.loader.ui.preferences;
 
-import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
+import org.amanzi.neo.loader.core.preferences.PreferenceStore;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.IWorkbench;
@@ -39,6 +39,6 @@ public class SynonymLoaderPreferencePage extends FieldEditorPreferencePage imple
 
     @Override
     public IPreferenceStore getPreferenceStore() {
-        return NeoLoaderPlugin.getDefault().getPreferenceStore();
+        return (IPreferenceStore)PreferenceStore.getPreferenceStore();
     }
 }

@@ -26,7 +26,6 @@ import java.util.Set;
 import org.amanzi.neo.model.distribution.IDistribution;
 import org.amanzi.neo.model.distribution.IDistributionModel;
 import org.amanzi.neo.model.distribution.impl.DistributionModel;
-import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService;
@@ -187,7 +186,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
             throw new IllegalArgumentException("Node assotiated with DataElement is null.");
         }
         deleteSubElements(elementToDelete);
-        INodeType nodeType = NodeTypeManager.getType(elementToDelete.get(INeoConstants.PROPERTY_TYPE_NAME).toString());
+        INodeType nodeType = NodeTypeManager.getType(elementToDelete.get(NewAbstractService.TYPE).toString());
         removeProperty(nodeType, (DataElement)elementToDelete);
         nwServ.deleteOneNode(((DataElement)elementToDelete).getNode(), getRootNode(), indexMap);
         elementToDelete = null;
@@ -205,8 +204,8 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
             Node subNode = ((DataElement)childElement).getNode();
             if (subNode != null) {
                 deleteSubElements(childElement);
-                INodeType nodeType = NodeTypeManager.getType(childElement.get(INeoConstants.PROPERTY_TYPE_NAME).toString());
-                childElement.get(INeoConstants.PROPERTY_NAME_NAME);
+                INodeType nodeType = NodeTypeManager.getType(childElement.get(NewAbstractService.TYPE).toString());
+                childElement.get(NewAbstractService.NAME);
                 removeProperty(nodeType, (DataElement)childElement);
                 nwServ.deleteOneNode(subNode, getRootNode(), indexMap);
                 finishUp();
@@ -216,12 +215,38 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
 
     @Override
     public void renameElement(IDataElement elementToRename, String newName) throws AWEException {
-        String oldName = elementToRename.get(INeoConstants.PROPERTY_NAME_NAME).toString();
-        elementToRename.put(INeoConstants.PROPERTY_NAME_NAME, newName);
+        String oldName = elementToRename.get(NewAbstractService.NAME).toString();
+        elementToRename.put(NewAbstractService.NAME, newName);
         Node node = ((DataElement)elementToRename).getNode();
-        nwServ.setNameProperty(node, newName);
-        INodeType nodeType = NodeTypeManager.getType(elementToRename.get(INeoConstants.PROPERTY_TYPE_NAME).toString());
-        renameProperty(nodeType, INeoConstants.PROPERTY_NAME_NAME, oldName, newName);
+        //TODO: LN: we have a method to get Type in AbstractService
+        INodeType nodeType = NodeTypeManager.getType(elementToRename.get(NewAbstractService.TYPE).toString());
+        
+        nwServ.removeNodeFromIndex(node, getIndex(nodeType), NewAbstractService.NAME, oldName);
+
+        nwServ.setAnyProperty(node, NewAbstractService.NAME, newName);
+        renameProperty(nodeType, NewAbstractService.NAME, oldName, newName);
+        
+        nwServ.addNodeToIndex(node, getIndex(nodeType), NewAbstractService.NAME, newName);
+        finishUp();
+    }
+    
+    @Override
+    public void updateElement(IDataElement elementToUpdate, String propertyName, Object newValue) throws AWEException {
+        Object oldValue = elementToUpdate.get(propertyName);
+        elementToUpdate.put(propertyName, newValue);
+        Node node = ((DataElement)elementToUpdate).getNode();
+        INodeType nodeType = NodeTypeManager.getType(elementToUpdate.get(NewAbstractService.TYPE).toString());
+        
+        if (nwServ.isIndexedProperties(propertyName)) {
+            nwServ.removeNodeFromIndex(node, getIndex(nodeType), propertyName, oldValue);
+        }
+        
+        nwServ.setAnyProperty(node, propertyName, newValue);
+        renameProperty(nodeType, propertyName, oldValue, newValue);
+        
+        if (nwServ.isIndexedProperties(propertyName)) {
+            nwServ.addNodeToIndex(node, getIndex(nodeType), propertyName, newValue);
+        }
         finishUp();
     }
 
@@ -255,8 +280,27 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
 
         return node == null ? null : new DataElement(node);
     }
+    
+    @Override
+    public IDataElement findSector(String propertyName, String propertyValue) throws AWEException {
+        Node node = null;
+        if (propertyName.equals(NewNetworkService.NAME)) {
+            node = nwServ.findSector(getIndex(NetworkElementNodeType.SECTOR), propertyValue, null, null);
+        }
+        else if (propertyName.equals(NewNetworkService.CELL_INDEX) ||
+                propertyName.equals(NewNetworkService.LOCATION_AREA_CODE)) {
+            int underliningIndex = propertyValue.indexOf('_');
+            String ci = propertyValue.substring(0, underliningIndex);
+            String lac = propertyValue.substring(underliningIndex + 1, propertyValue.length());
+            node = nwServ.findSector(getIndex(NetworkElementNodeType.SECTOR), null, ci, lac);
+        }
+        if (node == null) {
+            return null;
+        }
+        DataElement dataElement = new DataElement(node);
+        return dataElement;
+    }
 
-    // get element
     /**
      * Find or create a network element, based on properties set in the <code>IDataElement</code>
      * object. Don't forget to set TYPE property.
@@ -483,7 +527,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
             throws AWEException {
         Node existedNode;
         existedNode = ((DataElement)existedElement).getNode();
-        INodeType nodeType = NodeTypeManager.getType(existedElement.get(INeoConstants.PROPERTY_TYPE_NAME).toString());
+        INodeType nodeType = NodeTypeManager.getType(existedElement.get(NewAbstractService.TYPE).toString());
         nwServ.completeProperties(existedNode, new DataElement(newPropertySet), isReplaceExisted, getIndex(nodeType));
         nwServ.setProperties(existedNode, newPropertySet);
         indexProperty(nodeType, newPropertySet);
@@ -567,7 +611,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
 
             if (type.equals(NetworkElementNodeType.SECTOR)) {
                 Integer bsic = nwServ.getBsicProperty(element);
-                Integer bcch = element.get("bcchno") != null ? (Integer)element.get("bcchno") : null;
+                Integer bcch = (Integer)element.get(NewNetworkService.BCCH);
                 Object elName = element.get(NewAbstractService.NAME);
                 Object elCI = element.get(NewNetworkService.CELL_INDEX);
                 Object elLAC = element.get(NewNetworkService.LOCATION_AREA_CODE);
@@ -580,7 +624,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
                             ? null : elCI.toString(), elLAC == null ? null : elLAC.toString(), bsic);
                 }
                 if (bcch != null) {
-                    nwServ.addNodeToIndex(node, getIndex(type), "bcchno", bcch);
+                    nwServ.addNodeToIndex(node, getIndex(type), NewNetworkService.BCCH, bcch);
                 }
             } else {
                 node = nwServ.createNetworkElement(parentNode, getIndex(type), element.get(NewAbstractService.NAME).toString(),
@@ -741,7 +785,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         Iterator<Node> findedNodes = nwServ.findByIndex(getIndex(NetworkElementNodeType.SECTOR), NewNetworkService.BSIC, bsic);
         while (findedNodes.hasNext()) {
             Node node = findedNodes.next();
-            Integer bcchno = (Integer)node.getProperty("bcchno", null);
+            Integer bcchno = (Integer)node.getProperty(NewNetworkService.BCCH, null);
             if (ObjectUtils.equals(bcch, bcchno)) {
                 result.add(new DataElement(node));
             }

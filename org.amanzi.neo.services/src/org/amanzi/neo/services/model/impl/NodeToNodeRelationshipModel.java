@@ -111,7 +111,7 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
     public NodeToNodeRelationshipModel(IDataElement parent, INodeToNodeRelationsType relType, String name, INodeType nodeType)
             throws AWEException {
         super(NodeToNodeTypes.NODE2NODE);
-        
+
         // validate parameters
         if (parent == null) {
             throw new IllegalArgumentException("Parent is null.");

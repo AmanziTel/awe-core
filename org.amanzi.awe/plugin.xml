@@ -141,5 +141,12 @@
          </property>
       </product>
    </extension>
+   <extension point="org.eclipse.ui.views">
+   	  <category
+            name="Amanzi"
+            id="org.amanzi.awe.views">
+      </category>
+   </extension>
+   
 
 </plugin>

@@ -8,7 +8,7 @@ Bundle-Vendor: amanzi.org
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.ui.console;bundle-version="3.2.1",
- org.apache.log4j;bundle-version="1.0.0"
+ org.amanzi.log4j;bundle-version="1.2.12"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Eclipse-LazyStart: true
 Export-Package: org.amanzi.awe.console

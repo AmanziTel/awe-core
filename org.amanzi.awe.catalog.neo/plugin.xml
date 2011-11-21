@@ -1,48 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.2"?>
 <plugin>
+ <extension
+         point="org.eclipse.ui.startup">
+         <startup class="org.amanzi.awe.catalog.neo.NeoCatalogStartup">
+         </startup>
+   </extension>
    <extension
          id="org.amanzi.awe.catalog.neo.ServiceExtensions"
          name="Neo4J Service Extensions"
          point="net.refractions.udig.catalog.ServiceExtension">
       <service
-            class="org.amanzi.awe.catalog.neo.NeoServiceExtension"
+            class="org.amanzi.awe.models.catalog.neo.NewGeoServiceExtension"
             id="org.amanzi.awe.catalog.neo.service"
             name="Neo4J Catalog Service Extension">
       </service>
    </extension>
-   <extension
-         point="net.refractions.udig.project.layerInterceptor">
-      <layerCreated
-            class="org.amanzi.awe.catalog.neo.upd_layers.LayerInterceptor"
-            id="org.amanzi.awe.catalog.neo.layerCreated"
-            name="Layer Interceptor">
-      </layerCreated>
-      <layerAdded
-            class="org.amanzi.awe.catalog.neo.upd_layers.LayerAddedInterceptor"
-            id="org.amanzi.awe.catalog.neo.LayerAddedInterceptor"
-            name="Layer Added Interceptor">
-      </layerAdded>
-      <layerRemoved
-            class="org.amanzi.awe.catalog.neo.upd_layers.LayerRemoveInterceptor"
-            id="org.amanzi.awe.catalog.neo.LayerRemoveInterceptor"
-            name="Layer Remove Interceptor">
-      </layerRemoved>
-   </extension>
-   <extension
-         point="net.refractions.udig.project.mapInterceptor">
-      <mapCreation
-            class="org.amanzi.awe.catalog.neo.listeners.MapCreateInterceptor"
-            id="org.amanzi.awe.catalog.neo.mapCreation1">
-      </mapCreation>
-   </extension>
-<!--
-   <extension
-         point="net.refractions.udig.project.mapInterceptor">
-      <layerAdded
-            class="org.amanzi.awe.catalog.neo.listeners.NeoLayerAdded"
-            id="org.amanzi.awe.catalog.neo.listeners.layerAdded">
-      </layerAdded>
-   </extension>
--->
 </plugin>

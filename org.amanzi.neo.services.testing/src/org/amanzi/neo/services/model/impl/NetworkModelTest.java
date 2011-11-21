@@ -522,7 +522,7 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
         params.clear();
         params.put(NewAbstractService.TYPE, NetworkElementNodeType.SECTOR.getId());
         params.put(NewAbstractService.NAME, NetworkElementNodeType.SECTOR.getId());
-        params.put("bcchno", 12);
+        params.put(NewNetworkService.BCCH, 12);
         params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
         DataElement element = new DataElement(params);
 
@@ -537,7 +537,7 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
 
         Set<IDataElement> testElement;
         try {
-            testElement = model.findElementByPropertyValue(NetworkElementNodeType.SECTOR, "bcchno", 12);
+            testElement = model.findElementByPropertyValue(NetworkElementNodeType.SECTOR, NewNetworkService.BCCH, 12);
         } catch (AWEException e) {
             LOGGER.error("Erorr while trying to found element", e);
             throw (RuntimeException)new RuntimeException().initCause(e);

@@ -1,35 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.2"?>
 <plugin>
-   <extension-point id="org.amanzi.awe.views.tree.handlers" name="Tree Handler" schema="schema/org.amanzi.awe.views.tree.handlers.exsd"/>
-
    <extension
          point="org.eclipse.ui.views">
       <view
             name="Network Tree"
             icon="icons/network.png"
-            category="org.amanzi.awe.script"
-            class="org.amanzi.awe.views.network.view.NetworkTreeView"
-            id="org.amanzi.awe.views.network.views.NetworkTreeView">
+            category="org.amanzi.awe.views"
+            class="org.amanzi.awe.views.network.view.NewNetworkTreeView"
+            id="org.amanzi.awe.views.network.views.NewNetworkTreeView">
       </view>
-      
    </extension>
-   <extension
-            point="org.eclipse.ui.viewActions">
-         <viewContribution
-               targetID="org.amanzi.awe.views.network.views.NetworkTreeView"
-               id="org.amanzi.awe.views.network.view.NewTypeAction0">
-            <action
-                  toolbarPath="additions"
-                  label="Label"
-                  class="org.amanzi.awe.views.network.view.NewTypeAction"
-                  icon="icons/add-type.gif"
-                  tooltip="Create new node type"
-                  style="push"
-                  id="org.amanzi.awe.views.network.view.NewTypeAction">
-
-            </action>
-            
-         </viewContribution>
-      </extension>
+   
 </plugin>

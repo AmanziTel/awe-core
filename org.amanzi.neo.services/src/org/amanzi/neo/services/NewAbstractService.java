@@ -13,7 +13,9 @@
 
 package org.amanzi.neo.services;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.amanzi.neo.db.manager.DatabaseManagerFactory;
@@ -63,6 +65,16 @@ public abstract class NewAbstractService implements IDatabaseEventListener {
     protected final TraversalDescription CHILD_ELEMENT_TRAVERSAL_DESCRIPTION = Traversal.description().depthFirst()
             .relationships(DatasetRelationTypes.CHILD, Direction.OUTGOING);
     protected GraphDatabaseService graphDb;
+    
+    private List<String> indexedProperties = new ArrayList<String>();
+    
+    private void fillIndexedProperties() {
+        indexedProperties.add(NewAbstractService.NAME);
+        indexedProperties.add(NewNetworkService.BCCH);
+        indexedProperties.add(NewNetworkService.BSIC);
+        indexedProperties.add(NewNetworkService.CELL_INDEX);
+        indexedProperties.add(NewNetworkService.LOCATION_AREA_CODE);;
+    }
 
     /**
      * Sets service to use default <code>GraphDatabaseService</code> of the running application
@@ -70,6 +82,7 @@ public abstract class NewAbstractService implements IDatabaseEventListener {
     public NewAbstractService() {
         // TODO: get database service
         graphDb = DatabaseManagerFactory.getDatabaseManager().getDatabaseService();
+        fillIndexedProperties();
     }
 
     /**
@@ -79,8 +92,19 @@ public abstract class NewAbstractService implements IDatabaseEventListener {
      */
     public NewAbstractService(GraphDatabaseService graphDb) {
         this.graphDb = graphDb;
+        fillIndexedProperties();
     }
 
+    /**
+     * Method show whether is property in indexed property
+     *
+     * @param name Indexed name of property
+     * @return
+     */
+    public boolean isIndexedProperties(String name) {
+        return indexedProperties.contains(name);
+    }
+    
     public static String getNodeType(Node node) {
         return (String)node.getProperty(TYPE, StringUtils.EMPTY);
     }
@@ -293,26 +317,28 @@ public abstract class NewAbstractService implements IDatabaseEventListener {
     }
 
     /**
-     * Sets NAME property at <code>node</code>
-     * 
+     * Sets any property at <code>node</code>
+     *
      * @param node
-     * @param name
-     * @throws IllegalNodeDataException if name is null or empty
+     * @param propertyName Name of property
+     * @param propertyValue Value of property
+     * @throws IllegalNodeDataException Exception throws if propertyName is null or empty
+     * @throws DatabaseException
      */
-    public void setNameProperty(Node node, String name) throws IllegalNodeDataException, DatabaseException {
+    public void setAnyProperty(Node node, String propertyName, Object propertyValue) throws IllegalNodeDataException, DatabaseException {
         // validate parameters
-        if ((name == null) || name.equals(StringUtils.EMPTY)) {
-            throw new IllegalNodeDataException("Name cannot be empty.");
+        if ((propertyName == null) || propertyName.equals(StringUtils.EMPTY)) {
+            throw new IllegalNodeDataException(propertyName + " cannot be empty.");
         }
         if (node == null) {
             throw new IllegalArgumentException("Node is null.");
         }
         Transaction tx = graphDb.beginTx();
         try {
-            node.setProperty(NAME, name);
+            node.setProperty(propertyName, propertyValue);
             tx.success();
         } catch (Exception e) {
-            LOGGER.error("Could not set name", e);
+            LOGGER.error("Could not set " + propertyName, e);
             throw new DatabaseException(e);
         } finally {
             tx.finish();
@@ -333,6 +359,9 @@ public abstract class NewAbstractService implements IDatabaseEventListener {
         Index<Node> index = null;
         Transaction tx = graphDb.beginTx();
         try {
+            if (!indexedProperties.contains(propertyName)) {
+                indexedProperties.add(propertyName);
+            }
             index = graphDb.index().forNodes(indexName);
             index.add(node, propertyName, propertyValue);
             tx.success();
@@ -388,6 +417,9 @@ public abstract class NewAbstractService implements IDatabaseEventListener {
             throws DatabaseException {
         Transaction tx = graphDb.beginTx();
         try {
+            if (!indexedProperties.contains(propertyName)) {
+                indexedProperties.add(propertyName);
+            }
             index.add(node, propertyName, propertyValue);
             tx.success();
         } catch (Exception e) {

@@ -14,12 +14,6 @@
 package org.amanzi.awe.neostyle;
 
 import java.awt.Color;
-import java.io.Serializable;
-import java.util.List;
-
-import org.amanzi.neo.services.IDatasetService;
-import org.apache.commons.lang.StringUtils;
-import org.neo4j.graphdb.Node;
 
 /**
  * <p>
@@ -28,19 +22,23 @@ import org.neo4j.graphdb.Node;
  * @author TsAr
  * @since 1.0.0
  */
-public class NetworkNeoStyle extends BaseNeoStyle implements Serializable{
-    /** long serialVersionUID field */
-    private static final long serialVersionUID = -7312398919809416135L;
-    private Color line;
+public class NetworkNeoStyle extends BaseNeoStyle {
+
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 6426890966777143171L;
+	
+	private Color line;
     private Color fill;
     private Color fillSite;
     private Color label;
     private Integer smallestSymb;
     private Integer smallSymb;
     private Integer labeling;
-    private boolean fixSymbolSize = NeoStyleContent.DEF_FIX_SYMB_SIZE;
-    private boolean ignoreTransparency = NeoStyleContent.IGNORE_TRANSPARENCY;
-    private boolean drawCorrelations = NeoStyleContent.DRAW_CORRELATIONS;
+    private boolean fixSymbolSize = NetworkNeoStyleContent.DEF_FIX_SYMB_SIZE;
+    private boolean ignoreTransparency = NetworkNeoStyleContent.IGNORE_TRANSPARENCY;
+    private boolean drawCorrelations = NetworkNeoStyleContent.DRAW_CORRELATIONS;
     private Integer symbolSize;
     private Integer symbolTransparency;
     private Integer maximumSymbolSize;
@@ -50,8 +48,7 @@ public class NetworkNeoStyle extends BaseNeoStyle implements Serializable{
     private String mainProperty;
     private String sectorLabelProperty;
     private String sectorLabelTypeId;
-
-
+    
     /**
      * @return Returns the main property to use for labelling.
      */
@@ -332,23 +329,5 @@ public class NetworkNeoStyle extends BaseNeoStyle implements Serializable{
         System.out.println("Set correlation "+drawCorrelations+" for "+this);
         this.drawCorrelations = drawCorrelations;
     }
-
-
-    public String getSectorLabel(Node sector, IDatasetService service) {
-        if (StringUtils.isEmpty(getSectorLabelProperty())||StringUtils.isEmpty(getSectorLabelTypeId())){
-            return "";
-        }
-        List<String>properties=service.getPropertyListOfSectorRoot(sector,getSectorLabelTypeId(),getSectorLabelProperty());
-        if (properties.size()==1){
-            return properties.iterator().next();
-        }else if (properties.isEmpty()){
-            return "";
-        }
-        String delim = ", ";
-        StringBuilder result=new StringBuilder();
-        for (String propertyValue:properties){
-            result.append(delim).append(propertyValue);
-        }
-        return result.substring(delim.length());
-    }
+    
 }

@@ -14,6 +14,7 @@
 package org.amanzi.neo.services.model.impl;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.amanzi.neo.model.distribution.IDistributionalModel;
@@ -44,6 +45,9 @@ import org.neo4j.graphdb.Node;
  * @since 1.0.0
  */
 public class ProjectModel extends AbstractModel implements IProjectModel {
+
+    private static String activeProjectName = "project";
+
 
     /**
      * Class that describes Distribution Item It consist of DistributionalModel and Type of Node to
@@ -332,6 +336,10 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
         return result;
     }
 
+    public static void setActiveProject(String projectName) {
+        activeProjectName = projectName;
+    }
+
     /**
      * Returns a DB Model of currently Active Project from uDIG
      * 
@@ -341,12 +349,28 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
     public static IProjectModel getCurrentProjectModel() throws AWEException {
         ProjectService projectService = NeoServiceFactory.getInstance().getNewProjectService();
 
+        Node projectNode = projectService.getProject(activeProjectName);
+
+        return new ProjectModel(projectNode);
+    }
+
+    /**
+     * find all existed project models.
+     * 
+     * @return Iterable of projectsModels
+     * @throws AWEException
+     */
+    public static Iterable<IProjectModel> findAllProjectModels() throws AWEException {
+        ProjectService projectService = NeoServiceFactory.getInstance().getNewProjectService();
+        List<IProjectModel> projectList = new LinkedList<IProjectModel>();
         // TODO: LN: since for now we can't use
         // ApplicationGIS.getActiveProject().getName()
         // name of active project will be hard-coded
-        Node projectNode = projectService.getProject("project");
+        for (Node projectNode : projectService.findAllProjects()) {
+            projectList.add(new ProjectModel(projectNode));
+        }
 
-        return new ProjectModel(projectNode);
+        return projectList;
     }
 
     @Override

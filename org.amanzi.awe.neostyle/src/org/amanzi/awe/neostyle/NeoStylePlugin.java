@@ -25,15 +25,12 @@ public class NeoStylePlugin extends AbstractUIPlugin {
 
 	// The shared instance
 	private static NeoStylePlugin plugin;
-	private FilterModel model;
 	/**
 	 * The constructor
 	 */
 	public NeoStylePlugin() {
 	}
-	public FilterModel getFilterModel(){
-	    return model;
-	}
+	
 	/*
 	 * (non-Javadoc)
 	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
@@ -41,7 +38,6 @@ public class NeoStylePlugin extends AbstractUIPlugin {
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
-		model=new FilterModel();
 	}
 
 	/*
@@ -50,7 +46,6 @@ public class NeoStylePlugin extends AbstractUIPlugin {
 	 */
 	public void stop(BundleContext context) throws Exception {
 		plugin = null;
-		model.dispose();
 		super.stop(context);
 	}
 

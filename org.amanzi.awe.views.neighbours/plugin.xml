@@ -5,81 +5,26 @@
    <extension
          point="org.eclipse.ui.views">
       <view
-            name="Neighbours"
-            icon="icons/neighbour.png"
-            category="org.amanzi.awe.script"
-            class="org.amanzi.awe.views.neighbours.views.NeighboursView"
-            id="org.amanzi.awe.views.neighbours.views.NeighboursView">
-      </view>
-      <view
-            category="org.amanzi.awe.script"
-            class="org.amanzi.awe.views.neighbours.views.Node2NodeViews"
-            icon="icons/neighbour.png"
-            id="org.amanzi.awe.views.neighbours.views.Node2NodeViews"
-            name="Neighbour and Interference Relations">
+            category="org.amanzi.awe.views"
+            class="org.amanzi.awe.views.neighbours.views.NodeToNodeRelationsView"
+            id="org.amanzi.awe.views.neighbours.views.NodeToNodeRelationsView"
+            name="Node To Node Relations">
       </view>
    </extension>
-   <extension
-         point="org.eclipse.ui.views">
-      <view
-            name="Transmission"
-            icon="icons/transmission.png"
-            category="org.amanzi.awe.script"
-            class="org.amanzi.awe.views.neighbours.views.TransmissionView"
-            id="org.amanzi.awe.views.neighbours.views.TransmissionView">
-      </view>
-   </extension>   
    <extension
          point="org.eclipse.ui.perspectiveExtensions">
       <perspectiveExtension
             targetID="org.amanzi.awe.perspective">
          <view
-               id="org.amanzi.awe.views.neighbours.views.Node2NodeViews"
+               id="org.amanzi.awe.views.neighbours.views.NodeToNodeRelationsView"
                minimized="false"
                relationship="stack"
-               relative="net.refractions.udig.catalog.ui.CatalogView"
-               visible="true">
+               relative="net.refractions.udig.catalog.ui.CatalogView">
          </view>
          <viewShortcut
-               id="org.amanzi.awe.views.neighbours.views.Node2NodeViews">
+               id="org.amanzi.awe.views.neighbours.views.NodeToNodeRelationsView">
          </viewShortcut>
       </perspectiveExtension>
-      <perspectiveExtension
-            targetID="org.amanzi.afp.perspective">
-                     <view
-               id="org.amanzi.awe.views.neighbours.views.Node2NodeViews"
-               minimized="false"
-               relationship="stack"
-               relative="net.refractions.udig.catalog.ui.CatalogView"
-               visible="true">
-         </view>
-         <viewShortcut
-               id="org.amanzi.awe.views.neighbours.views.Node2NodeViews">
-         </viewShortcut>
-      </perspectiveExtension>
-   </extension>
-   <extension
-         point="org.eclipse.core.runtime.preferences">
-      <initializer
-            class="org.amanzi.awe.views.neighbours.PreferenceInitializer">
-      </initializer>
-   </extension>
-   <extension
-         point="org.eclipse.ui.preferencePages">
-      <page
-            class="org.amanzi.awe.views.neighbours.views.N2NPreferencePage"
-            id="org.amanzi.awe.views.neighbours.views.N2NPreferencePage"
-            name="Relation view preferences">
-      </page>
-   </extension>
-   <extension
-         point="net.refractions.udig.mapgraphic.mapgraphic">
-      <mapGraphic
-            class="org.amanzi.awe.views.neighbours.legend.LegendRelations"
-            icon="icons/legend.gif"
-            id="relations legend"
-            name="Relations Legend">
-      </mapGraphic>
    </extension>
 
 </plugin>

@@ -18,10 +18,15 @@ import java.awt.Color;
 import org.amanzi.neo.services.model.IDataElement;
 
 /**
+<<<<<<< HEAD
  * TODO Purpose of 
  * <p>
  *
  * </p>
+=======
+ * Interface that represents Distribution Bar
+ * 
+>>>>>>> origin/models
  * @author lagutko_n
  * @since 1.0.0
  */

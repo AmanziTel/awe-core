@@ -269,6 +269,15 @@ public class DistributionManager {
         return result.toArray(new ChartType[0]);
     }
 
+    /**
+     * Creates Distribution from XML file
+     *
+     * @param path
+     * @throws FileNotFoundException
+     * @throws DistributionXmlParsingException
+     * @throws IOException
+     * @throws DatabaseException
+     */
     public void createDistributionFromFile(String path) throws FileNotFoundException, DistributionXmlParsingException, IOException,
             DatabaseException {
         DistributionXmlParser xmlParser = new DistributionXmlParser(new FileInputStream(path), path);
@@ -292,7 +301,11 @@ public class DistributionManager {
     }
 
     /**
+<<<<<<< HEAD
      * Tries to find String Distribution in Cache Creates new one if nothing found and put it to
+=======
+     * Tries to find Distribution for Strings and Enums in Cache Creates new one if nothing found and put it to
+>>>>>>> origin/models
      * cache
      * 
      * @param model
@@ -333,6 +346,16 @@ public class DistributionManager {
         return result.toString();
     }
 
+    /**
+     * Tries to find Distribution in Cache Creates new one if nothing found and put it to
+     * cache
+     *
+     * @param model
+     * @param nodeType
+     * @param propertyName
+     * @param distrType
+     * @return
+     */
     private IDistribution< ? > getNumberDistribution(IDistributionalModel model, INodeType nodeType, String propertyName,
             NumberDistributionType distrType) {
         String cacheKey = getNumberDistributionCacheKey(model, nodeType, propertyName, distrType);

@@ -52,7 +52,8 @@ public class NumberDistributionTest extends AbstractNeoServiceTest {
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        new LogStarter().earlyStartup();    }
+        new LogStarter().earlyStartup();    
+    }
 
     @Test(expected = IllegalArgumentException.class)
     public void tryToCreateWithoutNumberDistributionType() throws Exception {

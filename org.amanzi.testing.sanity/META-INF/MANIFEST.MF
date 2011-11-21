@@ -6,6 +6,5 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: amanzi.org
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.junit4;bundle-version="4.3.1",
- org.amanzi.neo.services.testing;bundle-version="1.0.0",
- org.amanzi.neo.db.testing;bundle-version="1.1.0"
+ org.amanzi.neo.db.testing
 Export-Package: org.amanzi.testing.sanity

@@ -21,6 +21,7 @@ import java.util.HashMap;
 import org.amanzi.neo.db.manager.DatabaseManager;
 import org.amanzi.neo.db.manager.DatabaseManager.DatabaseAccessType;
 import org.amanzi.neo.loader.core.CommonConfigData;
+import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
@@ -293,5 +294,11 @@ public class LoadOssMainPage extends LoaderPage<CommonConfigData>{
             return result.substring(index + 1);
         }
         return result;      
+    }
+
+
+    @Override
+    protected boolean validateConfigData(IConfiguration configurationData) {
+        return false;
     }
 }

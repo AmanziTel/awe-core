@@ -56,7 +56,6 @@ public class SelectionModelTest extends AbstractNeoServiceTest {
         clearDb();
         initializeDb();
         new LogStarter().earlyStartup();
-
         linkIndexes = graphDatabaseService.index().forRelationships(SELECTION_LIST_NAME);
     }
 
