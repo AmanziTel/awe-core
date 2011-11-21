@@ -237,6 +237,9 @@ public class NewPropertyStatistics {
         
         propertyMap.clear();
         propertyMap = newPropertyMap;
+        
+        minValue = (Comparable< ? >)changeTypeOfNewValue(minValue);
+        maxValue = (Comparable< ? >)changeTypeOfNewValue(maxValue);
     }
     
     /**
