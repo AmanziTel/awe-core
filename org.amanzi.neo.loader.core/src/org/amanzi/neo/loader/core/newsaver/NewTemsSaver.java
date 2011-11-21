@@ -205,7 +205,7 @@ public class NewTemsSaver extends AbstractDriveSaver {
         }
         if (pn_code != this.previous_pn_code) {
             if (this.previous_pn_code >= 0) {
-                LOGGER.error("SERVER CHANGED");
+                LOGGER.info("SERVER CHANGED");
             }
             changed = true;
             this.previous_pn_code = pn_code;
