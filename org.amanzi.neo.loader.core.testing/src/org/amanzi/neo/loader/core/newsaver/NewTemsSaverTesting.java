@@ -122,7 +122,7 @@ public class NewTemsSaverTesting extends AbstractAWETest {
         msCollected1.put(DBM, 12.0f);
         msCollected1.put(CODE, 32);
         msCollected1.put(NewAbstractService.TYPE, DriveNodeTypes.MS.getId());
-        msCollected1.put(NewAbstractService.NAME, 32);
+        msCollected1.put(NewAbstractService.NAME, "32");
         msCollected1.put(CHANNEL, 22);
         msCollected1.put(TIMESTAMP, 0l);
 
@@ -130,7 +130,7 @@ public class NewTemsSaverTesting extends AbstractAWETest {
         msCollected2.put(DBM, 11.0f);
         msCollected2.put(CODE, 31);
         msCollected2.put(NewAbstractService.TYPE, DriveNodeTypes.MS.getId());
-        msCollected2.put(NewAbstractService.NAME, 31);
+        msCollected2.put(NewAbstractService.NAME, "31");
         msCollected2.put(CHANNEL, 21);
         msCollected2.put(TIMESTAMP, 0l);
     }

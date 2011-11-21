@@ -45,13 +45,16 @@ public class Nemo2Generator {
     // home property
     protected static final String USER_HOME = "user.home";
 
+    // list of technology systems
+    private List<Integer> systems = new ArrayList<Integer>();
+
     /**
      * Generate #AG row
      * 
      * @return row
      */
     private String generateAG() {
-        String ag = generateFloat(-100, 100).toString();
+        String ag = generateFloat(0, 100).toString();
         String str = NemoEvents.AG.getEventId() + ",,," + ag;
         return str;
     }
@@ -62,7 +65,7 @@ public class Nemo2Generator {
      * @return row
      */
     private String generateBF() {
-        String btsFile = "BTS_name";
+        String btsFile = "BTS filename";
         String str = NemoEvents.BF.getEventId() + ",,," + returnWordSoCalled(btsFile);
         return str;
     }
@@ -87,7 +90,7 @@ public class Nemo2Generator {
      * @return row
      */
     private String generateCL() {
-        String cl = generateFloat(-100, 100).toString();
+        String cl = generateFloat(0, 100).toString();
         String str = NemoEvents.CL.getEventId() + ",,," + cl;
         return str;
     }
@@ -120,11 +123,11 @@ public class Nemo2Generator {
      * @return row
      */
     private String generateDS() {
-        Integer numberOfSystems = generateInteger(1, 65);
+        Integer numberOfSystems = systems.size();
         String numberOfSupportedSystems = numberOfSystems.toString();
         String[] supportedSystems = new String[numberOfSystems];
         for (int i = 0; i < numberOfSystems; i++) {
-            supportedSystems[i] = generateInteger(1, 65).toString();
+            supportedSystems[i] = systems.get(i).toString();
         }
         String str = NemoEvents.DS.getEventId() + ",,," + numberOfSupportedSystems;
         for (String system : supportedSystems) {
@@ -275,7 +278,6 @@ public class Nemo2Generator {
         return str;
     }
 
-    // файлик
     private String generateSTOP() {
         String timestamp = generateTimestamp();
         String date = generateDate();
@@ -285,7 +287,7 @@ public class Nemo2Generator {
 
     private String generateCAA() {
         String str = NemoEvents.CAA.getEventId() + "," + generateTimestamp() + "," + generateContext();
-        String system = generateInteger(1, 65).toString();
+        String system = generateTechnologySystems().toString();
         String callType = generateInteger(1, 9).toString();
         String direction = generateInteger(1, 2).toString();
         String number = "Called number";
@@ -295,21 +297,35 @@ public class Nemo2Generator {
 
     private String generateCAC() {
         String str = NemoEvents.CAC.getEventId() + "," + generateTimestamp() + "," + generateContext();
-        Integer system = generateInteger(1, 65);
+        Integer system = generateTechnologySystems();
         String strSystem = system.toString();
         String callType = generateInteger(1, 9).toString();
         String callStatus = generateInteger(1, 4).toString();
         str = str + "," + strSystem + "," + callType + "," + callStatus;
+        String parameters = "0";
         if (system == 1) {
             String tn = generateInteger(0, 7).toString();
-            str = str + "," + tn;
+            parameters = "1";
+            str = str + "," + parameters + "," + tn;
         }
         if (system == 2) {
             String tn = generateInteger(1, 4).toString();
-            str = str + "," + tn;
+            parameters = "1";
+            str = str + "," + parameters + "," + tn;
         }
         return str;
     }
+    
+    /*private String generateCAF(){
+        String str = NemoEvents.CAF.getEventId() + "," + generateTimestamp() + "," + generateContext();
+        Integer system = generateTechnologySystems();
+        String callType = generateInteger(1, 9).toString();
+        //11,20
+        String csFailStatus = generateInteger(1, 9).toString();
+        str = str + "," + system.toString() + "," + callType + "," + csFailStatus;
+        return str;
+    }
+    */
 
     private String generateDAC() {
         String str = NemoEvents.DAC.getEventId() + "," + generateTimestamp() + "," + generateContext();
@@ -462,7 +478,15 @@ public class Nemo2Generator {
 
     private String generateCELLMEAS() {
         String str = NemoEvents.CELLMEAS.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = generateTechnologySystems();
+        Integer choice = generateInteger(1, 2);
+        Integer idSystem = 0;
+        if (choice == 1) {
+            idSystem = generateInteger(0, 9);
+        }
+        if (choice == 2) {
+            idSystem = generateInteger(11, 13);
+        }
+        Integer system = systems.get(idSystem);
         str = str + "," + system.toString();
         if (system == 1) {
             Integer numberOfHeadersParams = generateInteger(0, maxIntegerValue);
@@ -478,10 +502,10 @@ public class Nemo2Generator {
             String bsic = generateInteger(0, 63).toString();
             String rxLevFull = generateFloat(-120, -11).toString();
             String rxLevSub = generateFloat(-120, -11).toString();
-            String c1 = generateFloat(-100, 100).toString();
-            String c2 = generateFloat(-100, 100).toString();
-            String c31 = generateFloat(-100, 100).toString();
-            String c32 = generateFloat(-100, 100).toString();
+            String c1 = generateFloat(0, 100).toString();
+            String c2 = generateFloat(0, 100).toString();
+            String c31 = generateFloat(0, 100).toString();
+            String c32 = generateFloat(0, 100).toString();
             String hcsPriority = generateInteger(0, 7).toString();
             String hcsThr = generateFloat(-110, -49).toString();
             String cellID = generateInteger(0, 65535).toString();
@@ -505,8 +529,8 @@ public class Nemo2Generator {
             String arfcn = generateInteger(0, maxIntegerValue).toString();
             String lac = generateInteger(0, 65535).toString();
             String rssi = generateFloat(-111, -11).toString();
-            String c1 = generateFloat(-100, 100).toString();
-            String c2 = generateFloat(-100, 100).toString();
+            String c1 = generateFloat(0, 100).toString();
+            String c2 = generateFloat(0, 100).toString();
             String cc = generateInteger(0, 63).toString();
             str = str + "," + headersParams + "," + cells + "," + parametersPerCell + "," + cellType + "," + band + "," + arfcn
                     + "," + lac + "," + rssi + "," + c1 + "," + c2 + "," + cc;
@@ -519,7 +543,7 @@ public class Nemo2Generator {
             Integer numberOfParametersPerChs = numberOfHeadersParams / numberOfChs;
             String parametrsPerChs = numberOfParametersPerChs.toString();
             String ch = generateInteger(0, maxIntegerValue).toString();
-            String rssi = generateFloat(-100, 100).toString();
+            String rssi = generateFloat(0, 100).toString();
             Integer numberOfCells = generateInteger(0, maxIntegerValue);
             String cells = numberOfCells.toString();
             Integer numberOfParametersPerCell = numberOfHeadersParams / numberOfCells;
@@ -557,7 +581,7 @@ public class Nemo2Generator {
             // 0,...
             String band = generateInteger(20001, 20015).toString();
             String ch = generateInteger(0, maxIntegerValue).toString();
-            String rssi = generateFloat(-100, 100).toString();
+            String rssi = generateFloat(0, 100).toString();
             Integer numberOfCells = generateInteger(0, maxIntegerValue);
             String cells = numberOfCells.toString();
             Integer numberOfParametersPerCell = numberOfHeadersParams / numberOfCells;
@@ -727,7 +751,7 @@ public class Nemo2Generator {
 
     private String generateADJMEAS() {
         String str = NemoEvents.ADJMEAS.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = generateTechnologySystems();
+        Integer system = 1;
         str = str + "," + system.toString();
         if (system == 1) {
             Integer numberOfHeadersParams = generateInteger(0, maxIntegerValue);
@@ -755,7 +779,13 @@ public class Nemo2Generator {
 
     private String generateRXQ() {
         String str = NemoEvents.RXQ.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = generateTechnologySystems();
+        Integer system = 1;
+        Integer choice = generateInteger(1, 2);
+        if (choice == 1) {
+            system = 1;
+        } else {
+            system = 53;
+        }
         str = str + "," + system.toString();
         if (system == 1) {
             String rxqFull = generateInteger(0, maxIntegerValue).toString();
@@ -771,7 +801,7 @@ public class Nemo2Generator {
 
     private String generatePRXQ() {
         String str = NemoEvents.PRXQ.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = generateTechnologySystems();
+        Integer system = 1;
         str = str + "," + system.toString();
         if (system == 1) {
             String rxq = generateInteger(0, 7).toString();
@@ -786,7 +816,12 @@ public class Nemo2Generator {
 
     private String generateFER() {
         String str = NemoEvents.FER.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = generateTechnologySystems();
+        Integer system = 1;
+        Integer choice = generateInteger(1, 2);
+        if (choice != 1) {
+            Integer systemID = generateInteger(2, 5);
+            system = systems.get(systemID);
+        }
         str = str + "," + system.toString();
         if (system == 1) {
             String ferFull = generateFloat(0, 99).toString();
@@ -809,7 +844,12 @@ public class Nemo2Generator {
 
     private String generateMSP() {
         String str = NemoEvents.MSP.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = generateTechnologySystems();
+        Integer system = 1;
+        Integer choice = generateInteger(1, 2);
+        if (choice == 2) {
+            Integer systemID = generateInteger(11, 13);
+            system = systems.get(systemID);
+        }
         str = str + "," + system.toString();
         if (system == 1 || system == 51 || system == 52 || system == 53) {
             String msp = generateInteger(0, 32).toString();
@@ -820,7 +860,7 @@ public class Nemo2Generator {
 
     private String generateRLT() {
         String str = NemoEvents.RLT.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = generateTechnologySystems();
+        Integer system = 1;
         str = str + "," + system.toString();
         if (system == 1) {
             String rlt = generateInteger(0, 64).toString();
@@ -831,7 +871,14 @@ public class Nemo2Generator {
 
     private String generateTAD() {
         String str = NemoEvents.TAD.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = generateTechnologySystems();
+        Integer system = 1;
+        Integer choice = generateInteger(1, 3);
+        if (choice == 2) {
+            system = systems.get(3);
+        }
+        if (choice == 3) {
+            system = systems.get(13);
+        }
         str = str + "," + system.toString();
         if (system == 1) {
             String ta = generateInteger(0, 63).toString();
@@ -850,7 +897,7 @@ public class Nemo2Generator {
 
     private String generateDSC() {
         String str = NemoEvents.DSC.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = generateTechnologySystems();
+        Integer system = 1;
         str = str + "," + system.toString();
         if (system == 1) {
             String dscCurrent = generateInteger(0, 45).toString();
@@ -862,7 +909,7 @@ public class Nemo2Generator {
 
     private String generateBEP() {
         String str = NemoEvents.BEP.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = generateTechnologySystems();
+        Integer system = 1;
         str = str + "," + system.toString();
         if (system == 1) {
             String gmskMeanBEP = generateInteger(0, 31).toString();
@@ -876,7 +923,14 @@ public class Nemo2Generator {
 
     private String generateCIEvent() {
         String str = NemoEvents.CI.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = generateTechnologySystems();
+        Integer system = 1;
+        Integer choice = generateInteger(1, 3);
+        if (choice == 2) {
+            system = systems.get(3);
+        }
+        if (choice == 3) {
+            system = systems.get(6);
+        }
         str = str + "," + system.toString();
         if (system == 1) {
             String ci = generateFloat(-10, 39).toString();
@@ -916,7 +970,12 @@ public class Nemo2Generator {
 
     private String generateTXPC() {
         String str = NemoEvents.TXPC.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = generateTechnologySystems();
+        Integer system = 25;
+        Integer choice = generateInteger(1, 2);
+        if (choice == 2) {
+            Integer systemID = generateInteger(2, 6);
+            system = systems.get(systemID);
+        }
         str = str + "," + system.toString();
         if (system == 2) {
             String txPower = generateFloat(-120, 29).toString();
@@ -1002,7 +1061,8 @@ public class Nemo2Generator {
 
     private String generateRXPC() {
         String str = NemoEvents.RXPC.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = generateTechnologySystems();
+        Integer systemID = generateInteger(2, 5);
+        Integer system = systems.get(systemID);
         str = str + "," + system.toString();
         if (system == 5) {
             String sirTarget = generateFloat(-32, 29).toString();
@@ -1060,7 +1120,11 @@ public class Nemo2Generator {
 
     private String generateBER() {
         String str = NemoEvents.BER.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = generateTechnologySystems();
+        Integer system = 2;
+        Integer choice = generateInteger(1, 2);
+        if (choice == 2) {
+            system = systems.get(2);
+        }
         str = str + "," + system.toString();
         if (system == 2) {
             String ber = generateFloat(0, 99).toString();
@@ -1076,7 +1140,7 @@ public class Nemo2Generator {
 
     private String generatePHRATE() {
         String str = NemoEvents.PHRATE.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = generateTechnologySystems();
+        Integer system = generateInteger(5, 6);
         str = str + "," + system.toString();
         if (system == 5 || system == 6) {
             String dpdchRateUL = generateInteger(0, maxIntegerValue).toString();
@@ -1087,7 +1151,7 @@ public class Nemo2Generator {
 
     private String generateWLANRATE() {
         String str = NemoEvents.WLANRATE.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = generateTechnologySystems();
+        Integer system = TechnologySystems.GAN_WLAN.getId();
         str = str + "," + system.toString();
         String wlanRateUl = generateInteger(0, maxIntegerValue).toString();
         String wlanRateDl = generateInteger(0, maxIntegerValue).toString();
@@ -1107,7 +1171,7 @@ public class Nemo2Generator {
 
     private String generateRLPRATE() {
         String str = NemoEvents.RLPRATE.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = generateTechnologySystems();
+        Integer system = generateInteger(10, 12);
         str = str + "," + system.toString();
         String rlpRevRate = generateInteger(0, maxIntegerValue).toString();
         String rlpForRate = generateInteger(0, maxIntegerValue).toString();
@@ -1119,7 +1183,7 @@ public class Nemo2Generator {
 
     private String generateRLPSTATISTICS() {
         String str = NemoEvents.RLPSTATISTICS.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = generateTechnologySystems();
+        Integer system = generateInteger(10, 12);
         str = str + "," + system.toString();
         if (system == 10 || system == 11) {
             String serviceID = generateInteger(0, maxIntegerValue).toString();
@@ -1181,7 +1245,7 @@ public class Nemo2Generator {
 
     private String generateMEI() {
         String str = NemoEvents.MEI.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = generateTechnologySystems();
+        Integer system = generateInteger(5, 6);
         str = str + "," + system.toString();
         if (system == 5 || system == 6) {
             // 21,22....
@@ -1193,7 +1257,7 @@ public class Nemo2Generator {
 
     private String generateCQI() {
         String str = NemoEvents.CQI.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = generateTechnologySystems();
+        Integer system = TechnologySystems.UMTS_FDD.getId();
         str = str + "," + system.toString();
         if (system == 5) {
             Integer numberOfParams = generateInteger(1, maxIntegerValue);
@@ -1216,7 +1280,7 @@ public class Nemo2Generator {
 
     private String generateHARQI() {
         String str = NemoEvents.HARQI.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = generateTechnologySystems();
+        Integer system = TechnologySystems.UMTS_FDD.getId();
         str = str + "," + system.toString();
         if (system == 5) {
             Integer numberOfHeaderParams = generateInteger(1, maxIntegerValue);
@@ -1238,7 +1302,7 @@ public class Nemo2Generator {
 
     private String generateHSSCCHI() {
         String str = NemoEvents.HSSCCHI.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = generateTechnologySystems();
+        Integer system = TechnologySystems.UMTS_FDD.getId();
         str = str + "," + system.toString();
         if (system == 5) {
             Integer numberOfHeaderParams = generateInteger(1, maxIntegerValue);
@@ -1256,7 +1320,11 @@ public class Nemo2Generator {
 
     private String generatePLAID() {
         String str = NemoEvents.PLAID.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = generateTechnologySystems();
+        Integer system = TechnologySystems.UMTS_FDD.getId();
+        Integer choice = generateInteger(1, 2);
+        if (choice == 2) {
+            system = TechnologySystems.WIMAX.getId();
+        }
         str = str + "," + system.toString();
         if (system == 5) {
             Integer numberOfHeaderParams = generateInteger(1, maxIntegerValue);
@@ -1301,7 +1369,11 @@ public class Nemo2Generator {
 
     private String generatePLAIU() {
         String str = NemoEvents.PLAIU.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = generateTechnologySystems();
+        Integer system = TechnologySystems.UMTS_FDD.getId();
+        Integer choice = generateInteger(1, 2);
+        if (choice == 2) {
+            system = TechnologySystems.WIMAX.getId();
+        }
         str = str + "," + system.toString();
         if (system == 5) {
             Integer numberOfHeaderParams = generateInteger(1, maxIntegerValue);
@@ -1352,7 +1424,7 @@ public class Nemo2Generator {
 
     private String generateHBI() {
         String str = NemoEvents.HBI.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = generateTechnologySystems();
+        Integer system = TechnologySystems.UMTS_FDD.getId();
         str = str + "," + system.toString();
         if (system == 5) {
             String reportingInterval = generateInteger(1, maxIntegerValue).toString();
@@ -1365,7 +1437,7 @@ public class Nemo2Generator {
 
     private String generateMACERATE() {
         String str = NemoEvents.MACERATE.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = generateTechnologySystems();
+        Integer system = TechnologySystems.UMTS_FDD.getId();
         str = str + "," + system.toString();
         if (system == 5) {
             String macEBitrate = generateInteger(1, maxIntegerValue).toString();
@@ -1380,7 +1452,7 @@ public class Nemo2Generator {
 
     private String generateAGRANT() {
         String str = NemoEvents.AGRANT.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = generateTechnologySystems();
+        Integer system = TechnologySystems.UMTS_FDD.getId();
         str = str + "," + system.toString();
         if (system == 5) {
             String agchIndex = generateInteger(0, 31).toString();
@@ -1395,7 +1467,7 @@ public class Nemo2Generator {
 
     private String generateSGRANT() {
         String str = NemoEvents.SGRANT.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = generateTechnologySystems();
+        Integer system = TechnologySystems.UMTS_FDD.getId();
         str = str + "," + system.toString();
         if (system == 5) {
             Integer numberOfHeaderParams = generateInteger(1, maxIntegerValue);
@@ -1417,7 +1489,7 @@ public class Nemo2Generator {
 
     private String generateEDCHI() {
         String str = NemoEvents.EDCHI.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = generateTechnologySystems();
+        Integer system = TechnologySystems.UMTS_FDD.getId();
         str = str + "," + system.toString();
         if (system == 5) {
             Integer numberOfHeaderParams = generateInteger(1, maxIntegerValue);
@@ -1446,7 +1518,7 @@ public class Nemo2Generator {
 
     private String generateHSUPASI() {
         String str = NemoEvents.HSUPASI.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = generateTechnologySystems();
+        Integer system = TechnologySystems.UMTS_FDD.getId();
         str = str + "," + system.toString();
         if (system == 5) {
             String dur = generateInteger(1, maxIntegerValue).toString();
@@ -1467,7 +1539,7 @@ public class Nemo2Generator {
 
     private String generateDRCI() {
         String str = NemoEvents.DRCI.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = generateTechnologySystems();
+        Integer system = TechnologySystems.EVDO.getId();
         str = str + "," + system.toString();
         Integer numberOfHeaderParams = generateInteger(1, maxIntegerValue);
         String headerParams = numberOfHeaderParams.toString();
@@ -1486,7 +1558,7 @@ public class Nemo2Generator {
 
     private String generateRDRC() {
         String str = NemoEvents.RDRC.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = generateTechnologySystems();
+        Integer system = TechnologySystems.EVDO.getId();
         str = str + "," + system.toString();
         if (system == 12) {
             String txRateLimit = generateInteger(0, 153600).toString();
@@ -1506,7 +1578,7 @@ public class Nemo2Generator {
 
     private String generateFDRC() {
         String str = NemoEvents.FDRC.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = generateTechnologySystems();
+        Integer system = TechnologySystems.EVDO.getId();
         str = str + "," + system.toString();
         if (system == 12) {
             String drcIndex = generateInteger(0, maxIntegerValue).toString();
@@ -1524,19 +1596,9 @@ public class Nemo2Generator {
         return str;
     }
 
-    // PHREF is not exist in NemoEvents
-    /*
-     * private String generatePHREF() { String str = NemoEvents.PHREF.getEventId() + "," +
-     * generateTimestamp() + ","; Integer system = generateTechnologySystems(); str = str + "," +
-     * system.toString(); if (system == 12) { String perInst = generateFloat(0, 99).toString();
-     * String perShort = generateFloat(0, 99).toString(); String perLong = generateFloat(0,
-     * 99).toString(); str = str + "," + perInst + "," + perShort + "," + perLong; } if(system==25){
-     * String fer = generateFloat(0, 99).toString(); str=str+","+fer; } return str; }
-     */
-
     private String generateMARKOVMUX() {
         String str = NemoEvents.MARKOVMUX.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = generateTechnologySystems();
+        Integer system = generateInteger(10, 11);
         str = str + "," + system.toString();
         if (system == 10 || system == 11) {
             Integer numberOfHeaderParams = generateInteger(1, maxIntegerValue);
@@ -1554,7 +1616,7 @@ public class Nemo2Generator {
 
     private String generateMARKOVSTATS() {
         String str = NemoEvents.MARKOVSTATS.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = generateTechnologySystems();
+        Integer system = generateInteger(10, 11);
         str = str + "," + system.toString();
         Integer numberOfHeaderParams = generateInteger(1, maxIntegerValue);
         String headerParams = numberOfHeaderParams.toString();
@@ -1573,15 +1635,1797 @@ public class Nemo2Generator {
                 + "," + m14 + "," + m18 + "," + mErasures;
         return str;
     }
-    
+
     private String generateMER() {
         String str = NemoEvents.MER.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = generateTechnologySystems();
+        Integer system = TechnologySystems.TETRA.getId();
         str = str + "," + system.toString();
         if (system == 2) {
             String mer = generateFloat(0, 99).toString();
             str = str + "," + mer;
         }
+        return str;
+    }
+
+    private String generateDVBI() {
+        String str = NemoEvents.DVBI.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = TechnologySystems.DVB_H.getId();
+        str = str + "," + system.toString();
+        if (system == 65) {
+            String serviceState = generateInteger(1, 2).toString();
+            String frequency = generateFloat(0, 100).toString();
+            String bandwidth = generateFloat(0, 100).toString();
+            String cellID = generateInteger(1, maxIntegerValue).toString();
+            // 4,8...
+            String txMode = generateInteger(2, 2).toString();
+            String modulation = generateInteger(1, 3).toString();
+            String codeRateLP = generateInteger(1, 5).toString();
+            String codeRateHP = generateInteger(0, 5).toString();
+            String guardTime = generateInteger(1, 4).toString();
+            String mpeFECCodeRateLP = generateInteger(0, 5).toString();
+            String mpeFECCodeRateHP = generateInteger(0, 5).toString();
+            String hierarchy = generateInteger(0, 1).toString();
+            str = str + "," + serviceState + "," + frequency + "," + bandwidth + "," + cellID + "," + txMode + "," + modulation
+                    + "," + codeRateLP + "," + codeRateHP + "," + guardTime + "," + mpeFECCodeRateLP + "," + mpeFECCodeRateHP + ","
+                    + hierarchy;
+        }
+        return str;
+    }
+
+    private String generateDVBFER() {
+        String str = NemoEvents.DVBFER.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = TechnologySystems.DVB_H.getId();
+        str = str + "," + system.toString();
+        if (system == 65) {
+            String fer = generateFloat(0, 99).toString();
+            String mfer = generateFloat(0, 99).toString();
+            String frameCount = generateInteger(1, maxIntegerValue).toString();
+            str = str + "," + fer + "," + mfer + "," + frameCount;
+        }
+        return str;
+    }
+
+    private String generateDVBBER() {
+        String str = NemoEvents.DVBBER.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = TechnologySystems.DVB_H.getId();
+        str = str + "," + system.toString();
+        if (system == 65) {
+            String ber = generateFloat(0, 99).toString();
+            String vber = generateFloat(0, 99).toString();
+            str = str + "," + ber + "," + vber;
+        }
+        return str;
+    }
+
+    private String generateDVBRXL() {
+        String str = NemoEvents.DVBRXL.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = TechnologySystems.DVB_H.getId();
+        str = str + "," + system.toString();
+        if (system == 65) {
+            Integer numberOfHeaderParams = generateInteger(1, maxIntegerValue);
+            String headerParams = numberOfHeaderParams.toString();
+            Integer numberOfChs = generateInteger(1, maxIntegerValue);
+            String chs = numberOfChs.toString();
+            Integer numberOfParamsPerChs = numberOfHeaderParams / numberOfChs;
+            String paramsPerChs = numberOfParamsPerChs.toString();
+            String frequency = generateFloat(0, 100).toString();
+            String rxLev = generateFloat(-111, -11).toString();
+            String cn = generateFloat(0, 39).toString();
+            String signalQuality = generateFloat(0, 99).toString();
+            str = str + "," + headerParams + "," + chs + "," + paramsPerChs + "," + frequency + "," + rxLev + "," + cn + ","
+                    + signalQuality;
+        }
+        return str;
+    }
+
+    private String generateDVBRATE() {
+        String str = NemoEvents.DVBRATE.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = TechnologySystems.DVB_H.getId();
+        str = str + "," + system.toString();
+        if (system == 65) {
+            String dvbHRate = generateInteger(1, maxIntegerValue).toString();
+            str = str + "," + dvbHRate;
+        }
+        return str;
+    }
+
+    private String generateFREQSCAN() {
+        String str = NemoEvents.FREQSCAN.getEventId() + "," + generateTimestamp() + ",";
+        Integer choice = generateInteger(1, 4);
+        Integer system = TechnologySystems.GSM.getId();
+        if (choice == 2) {
+            Integer systemID = generateInteger(2, 6);
+            system = systems.get(systemID);
+        }
+        if (choice == 3) {
+            system = TechnologySystems.WIMAX.getId();
+        }
+        if (choice == 4) {
+            Integer systemID = generateInteger(11, 13);
+            system = systems.get(systemID);
+        }
+        str = str + "," + system.toString();
+        if (system == 1) {
+            Integer numberOfHeaderParams = generateInteger(1, maxIntegerValue);
+            String headerParams = numberOfHeaderParams.toString();
+            Integer numberOfChs = generateInteger(1, maxIntegerValue);
+            String chs = numberOfChs.toString();
+            Integer numberOfParamsPerChs = numberOfHeaderParams / numberOfChs;
+            String paramsPerChs = numberOfParamsPerChs.toString();
+            String arfcn = generateInteger(1, maxIntegerValue).toString();
+            String bsic = generateInteger(0, 63).toString();
+            String rxLevel = generateFloat(-120, -11).toString();
+            String ci = generateFloat(-10, 39).toString();
+            str = str + "," + headerParams + "," + chs + "," + paramsPerChs + "," + arfcn + "," + bsic + "," + rxLevel + "," + ci;
+        }
+        if (system == 5 || system == 6) {
+            Integer numberOfHeaderParams = generateInteger(1, maxIntegerValue);
+            String headerParams = numberOfHeaderParams.toString();
+            Integer numberOfChs = generateInteger(1, maxIntegerValue);
+            String chs = numberOfChs.toString();
+            Integer numberOfParamsPerChs = numberOfHeaderParams / numberOfChs;
+            String paramsPerChs = numberOfParamsPerChs.toString();
+            String ch = generateInteger(1, maxIntegerValue).toString();
+            String rssi = generateFloat(-120, -11).toString();
+            str = str + "," + headerParams + "," + chs + "," + paramsPerChs + "," + ch + "," + rssi;
+        }
+        if (system == 10 || system == 11) {
+            Integer numberOfHeaderParams = generateInteger(1, maxIntegerValue);
+            String headerParams = numberOfHeaderParams.toString();
+            Integer numberOfChs = generateInteger(1, maxIntegerValue);
+            String chs = numberOfChs.toString();
+            Integer numberOfParamsPerChs = numberOfHeaderParams / numberOfChs;
+            String paramsPerChs = numberOfParamsPerChs.toString();
+            String ch = generateInteger(1, maxIntegerValue).toString();
+            String rssi = generateFloat(-120, -1).toString();
+            str = str + "," + headerParams + "," + chs + "," + paramsPerChs + "," + ch + "," + rssi;
+        }
+        if (system == 12) {
+            Integer numberOfHeaderParams = generateInteger(1, maxIntegerValue);
+            String headerParams = numberOfHeaderParams.toString();
+            Integer numberOfChs = generateInteger(1, maxIntegerValue);
+            String chs = numberOfChs.toString();
+            Integer numberOfParamsPerChs = numberOfHeaderParams / numberOfChs;
+            String paramsPerChs = numberOfParamsPerChs.toString();
+            String carrier = generateInteger(1, maxIntegerValue).toString();
+            String rssi = generateFloat(-120, -1).toString();
+            str = str + "," + headerParams + "," + chs + "," + paramsPerChs + "," + carrier + "," + rssi;
+        }
+        if (system == 25) {
+            Integer numberOfHeaderParams = generateInteger(1, maxIntegerValue);
+            String headerParams = numberOfHeaderParams.toString();
+            Integer numberOfChs = generateInteger(1, maxIntegerValue);
+            String chs = numberOfChs.toString();
+            Integer numberOfParamsPerChs = numberOfHeaderParams / numberOfChs;
+            String paramsPerChs = numberOfParamsPerChs.toString();
+            String frequency = generateInteger(1, maxIntegerValue).toString();
+            String rssi = generateFloat(-120, -1).toString();
+            str = str + "," + headerParams + "," + chs + "," + paramsPerChs + "," + frequency + "," + rssi;
+        }
+        if (system == 51 || system == 52) {
+            Integer numberOfHeaderParams = generateInteger(1, maxIntegerValue);
+            String headerParams = numberOfHeaderParams.toString();
+            Integer numberOfChs = generateInteger(1, maxIntegerValue);
+            String chs = numberOfChs.toString();
+            Integer numberOfParamsPerChs = numberOfHeaderParams / numberOfChs;
+            String paramsPerChs = numberOfParamsPerChs.toString();
+            String ch = generateInteger(1, maxIntegerValue).toString();
+            String sat = generateInteger(0, 6).toString();
+            String rxLevel = generateFloat(-120, -11).toString();
+            str = str + "," + headerParams + "," + chs + "," + paramsPerChs + "," + ch + "," + sat + "," + rxLevel;
+        }
+        if (system == 53) {
+            Integer numberOfHeaderParams = generateInteger(1, maxIntegerValue);
+            String headerParams = numberOfHeaderParams.toString();
+            Integer numberOfChs = generateInteger(1, maxIntegerValue);
+            String chs = numberOfChs.toString();
+            Integer numberOfParamsPerChs = numberOfHeaderParams / numberOfChs;
+            String paramsPerChs = numberOfParamsPerChs.toString();
+            String ch = generateInteger(1, maxIntegerValue).toString();
+            String dcc = generateInteger(0, 255).toString();
+            String rxLevel = generateFloat(-120, -11).toString();
+            str = str + "," + headerParams + "," + chs + "," + paramsPerChs + "," + ch + "," + dcc + "," + rxLevel;
+        }
+        return str;
+    }
+
+    private String generateSPECTRUMSCAN() {
+        String str = NemoEvents.SPECTRUMSCAN.getEventId() + "," + generateTimestamp() + ",";
+        String scanningMode = generateInteger(1, 1).toString();
+        Integer numberOfHeaderParams = generateInteger(1, maxIntegerValue);
+        String headerParams = numberOfHeaderParams.toString();
+        String bandwidth = generateFloat(0, 100).toString();
+        String sweepBandwidth = generateFloat(0, 100).toString();
+        String sweepFrequency = generateFloat(0, 100).toString();
+        String sweepTotalRxLevel = generateFloat(-120, -11).toString();
+        Integer numberOfFrequencies = generateInteger(1, maxIntegerValue);
+        String frequencies = numberOfFrequencies.toString();
+        Integer numberParamsPerFrequencies = numberOfHeaderParams / numberOfFrequencies;
+        String paramsPerFrequencies = numberParamsPerFrequencies.toString();
+        String frequency = generateFloat(0, 100).toString();
+        String rxLevel = generateFloat(-120, -11).toString();
+        str = str + "," + scanningMode + "," + headerParams + "," + bandwidth + "," + sweepBandwidth + "," + sweepFrequency + ","
+                + sweepTotalRxLevel + "," + frequencies + "," + paramsPerFrequencies + "," + frequency + "," + rxLevel;
+        return str;
+    }
+
+    private String generatePILOTSCAN() {
+        String str = NemoEvents.PILOTSCAN.getEventId() + "," + generateTimestamp() + ",";
+        Integer systemID = generateInteger(2, 6);
+        Integer system = systems.get(systemID);
+        str = str + "," + system.toString();
+        if (system == 5) {
+            Integer numberOfHeadersParams = generateInteger(1, maxIntegerValue);
+            String headerParams = numberOfHeadersParams.toString();
+            String ch = generateInteger(1, maxIntegerValue).toString();
+            String chType = generateInteger(1, 5).toString();
+            String rssi = generateFloat(-120, -11).toString();
+            Integer numberOfCells = generateInteger(1, maxIntegerValue);
+            String cells = numberOfCells.toString();
+            Integer numberParamsPerCells = numberOfHeadersParams / numberOfCells;
+            String paramsPerCells = numberParamsPerCells.toString();
+            String scr = generateInteger(0, 511).toString();
+            String ecn0 = generateFloat(-26, -1).toString();
+            String rscp = generateFloat(-150, -21).toString();
+            String sir = generateFloat(0, 29).toString();
+            String delay = generateFloat(0, 38399).toString();
+            String delaySpread = generateFloat(0, 100).toString();
+            str = str + "," + headerParams + "," + ch + "," + chType + "," + rssi + "," + cells + "," + paramsPerCells + "," + scr
+                    + "," + ecn0 + "," + rscp + "," + sir + "," + delay + "," + delaySpread;
+        }
+        if (system == 6) {
+            Integer numberOfHeadersParams = generateInteger(1, maxIntegerValue);
+            String headerParams = numberOfHeadersParams.toString();
+            String channelType = generateInteger(1, 2).toString();
+            Integer numberOfCells = generateInteger(1, maxIntegerValue);
+            String cells = numberOfCells.toString();
+            Integer numberParamsPerCells = numberOfHeadersParams / numberOfCells;
+            String paramsPerCells = numberParamsPerCells.toString();
+            String ch = generateInteger(1, maxIntegerValue).toString();
+            String cellParamsID = generateInteger(0, 127).toString();
+            String eci0 = generateFloat(-30, -1).toString();
+            String timeOffset = generateFloat(0, 6499).toString();
+            String sir = generateFloat(-30, 24).toString();
+            String rscp = generateFloat(-116, -21).toString();
+            String rssi = generateFloat(-120, -11).toString();
+            str = str + "," + headerParams + "," + channelType + "," + cells + "," + paramsPerCells + "," + ch + "," + cellParamsID
+                    + "," + eci0 + "," + timeOffset + "," + sir + "," + rscp + "," + rssi;
+        }
+        if (system == 10 || system == 11 || system == 12) {
+            Integer numberOfHeadersParams = generateInteger(1, maxIntegerValue);
+            String headerParams = numberOfHeadersParams.toString();
+            String ch = generateInteger(1, maxIntegerValue).toString();
+            String rssi = generateFloat(-120, -11).toString();
+            Integer numberOfCells = generateInteger(1, maxIntegerValue);
+            String cells = numberOfCells.toString();
+            Integer numberParamsPerCells = numberOfHeadersParams / numberOfCells;
+            String paramsPerCells = numberParamsPerCells.toString();
+            String pn = generateInteger(1, maxIntegerValue).toString();
+            String eci0 = generateFloat(-35, 2).toString();
+            String delay = generateFloat(0, 38399).toString();
+            str = str + "," + headerParams + "," + ch + "," + rssi + "," + cells + "," + paramsPerCells + "," + pn + "," + eci0
+                    + "," + delay;
+        }
+        return str;
+    }
+
+    private String generateOFDMSCAN() {
+        String str = NemoEvents.OFDMSCAN.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = TechnologySystems.WIMAX.getId();
+        Integer choice = generateInteger(1, 2);
+        if (choice == 2) {
+            system = TechnologySystems.DVB_H.getId();
+        }
+        str = str + "," + system.toString();
+        if (system == 25) {
+            Integer numberOfHeadersParams = generateInteger(1, maxIntegerValue);
+            String headerParams = numberOfHeadersParams.toString();
+            Integer numberOfFrequencies = generateInteger(1, maxIntegerValue);
+            String frequencies = numberOfFrequencies.toString();
+            Integer numberParamsPerFrequencies = numberOfHeadersParams / numberOfFrequencies;
+            String paramsPerFrequencies = numberParamsPerFrequencies.toString();
+            String frequency = generateFloat(0, 100).toString();
+            String rssi = generateFloat(-120, -11).toString();
+            Integer numberOfPreambles = generateInteger(1, maxIntegerValue);
+            String preambles = numberOfPreambles.toString();
+            Integer numberParamsPerPreambles = numberOfHeadersParams / numberOfPreambles;
+            String paramsPerPreambles = numberParamsPerPreambles.toString();
+            String frequency2 = generateFloat(0, 100).toString();
+            String preambleIndex = generateInteger(0, 113).toString();
+            String preambleRSSI = generateFloat(-120, -1).toString();
+            String cinr = generateFloat(-32, 39).toString();
+            String delay = generateFloat(0, 1054).toString();
+            str = str + "," + headerParams + "," + frequencies + "," + paramsPerFrequencies + "," + frequency + "," + rssi + ","
+                    + preambles + "," + paramsPerPreambles + "," + frequency2 + "," + preambleIndex + "," + preambleRSSI + ","
+                    + cinr + "," + delay;
+        }
+        if (system == 65) {
+            Integer numberOfHeadersParams = generateInteger(1, maxIntegerValue);
+            String headerParams = numberOfHeadersParams.toString();
+            Integer numberOfFrequencies = generateInteger(1, maxIntegerValue);
+            String frequencies = numberOfFrequencies.toString();
+            Integer numberParamsPerFrequencies = numberOfHeadersParams / numberOfFrequencies;
+            String paramsPerFrequencies = numberParamsPerFrequencies.toString();
+            String frequency = generateFloat(0, 100).toString();
+            String rssi = generateFloat(0, 100).toString();
+            String mer = generateFloat(0, 59).toString();
+            str = str + "," + headerParams + "," + frequencies + "," + paramsPerFrequencies + "," + frequency + "," + rssi + ","
+                    + mer;
+        }
+        return str;
+    }
+
+    private String generateTPROFSCAN() {
+        String str = NemoEvents.TPROFSCAN.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = TechnologySystems.UMTS_FDD.getId();
+        str = str + "," + system.toString();
+        if (system == 5) {
+            Integer numberOfHeadersParams = generateInteger(1, maxIntegerValue);
+            String headerParams = numberOfHeadersParams.toString();
+            String ch = generateInteger(0, maxIntegerValue).toString();
+            String rssi = generateFloat(-120, -1).toString();
+            String chType = generateInteger(1, 5).toString();
+            Integer numberOfSamples = generateInteger(1, maxIntegerValue);
+            Integer numberParamsPerSamples = numberOfHeadersParams / numberOfSamples;
+            String paramsPerSamples = numberParamsPerSamples.toString();
+            String samples = numberOfSamples.toString();
+            String chip = generateInteger(0, maxIntegerValue).toString();
+            String ecn0 = generateFloat(-26, -1).toString();
+            str = str + "," + headerParams + "," + ch + "," + rssi + "," + chType + "," + rssi + "," + paramsPerSamples + ","
+                    + samples + "," + chip + "," + ecn0;
+        }
+        return str;
+    }
+
+    private String generateDPROFSCAN() {
+        String str = NemoEvents.DPROFSCAN.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = TechnologySystems.UMTS_FDD.getId();
+        Integer choice = generateInteger(1, 3);
+        if (choice == 2) {
+            system = TechnologySystems.CDMA_ONE.getId();
+        }
+        if (choice == 3) {
+            system = TechnologySystems.CDMA_ONE_X.getId();
+        }
+        str = str + "," + system.toString();
+        if (system == 5) {
+            Integer numberOfHeadersParams = generateInteger(1, maxIntegerValue);
+            String headerParams = numberOfHeadersParams.toString();
+            String ch = generateInteger(0, maxIntegerValue).toString();
+            String scr = generateInteger(0, 511).toString();
+            String chType = generateInteger(1, 5).toString();
+            Integer numberOfSamples = generateInteger(1, maxIntegerValue);
+            Integer numberParamsPerSamples = numberOfHeadersParams / numberOfSamples;
+            String paramsPerSamples = numberParamsPerSamples.toString();
+            String samples = numberOfSamples.toString();
+            String sampleOffset = generateFloat(-550, 549).toString();
+            String sample = generateFloat(0, 100).toString();
+            str = str + "," + headerParams + "," + ch + "," + scr + "," + chType + "," + chType + "," + paramsPerSamples + ","
+                    + samples + "," + sampleOffset + "," + sample;
+        }
+        if (system == 10 || system == 11 || system == 12) {
+            Integer numberOfHeadersParams = generateInteger(1, maxIntegerValue);
+            String headerParams = numberOfHeadersParams.toString();
+            Integer numberOfSamples = generateInteger(1, maxIntegerValue);
+            Integer numberParamsPerSamples = numberOfHeadersParams / numberOfSamples;
+            String paramsPerSamples = numberParamsPerSamples.toString();
+            String samples = numberOfSamples.toString();
+            String sampleOffset = generateInteger(0, 32768).toString();
+            String sampleEnergy = generateFloat(-35, 2).toString();
+            str = str + "," + headerParams + "," + paramsPerSamples + "," + samples + "," + sampleOffset + "," + sampleEnergy;
+        }
+        return str;
+    }
+
+    private String generateFINGER() {
+        String str = NemoEvents.FINGER.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = TechnologySystems.UMTS_FDD.getId();
+        Integer choice = generateInteger(1, 4);
+        if (choice == 2) {
+            system = TechnologySystems.CDMA_ONE.getId();
+        }
+        if (choice == 3) {
+            system = TechnologySystems.CDMA_ONE_X.getId();
+        }
+        if (choice == 4) {
+            system = TechnologySystems.EVDO.getId();
+        }
+        str = str + "," + system.toString();
+        if (system == 5) {
+            Integer numberOfHeaderParams = generateInteger(0, maxIntegerValue);
+            String headerParams = numberOfHeaderParams.toString();
+            Integer numberOfFingers = generateInteger(0, maxIntegerValue);
+            String fingers = numberOfFingers.toString();
+            Integer numberHeaderParamsPerFingers = numberOfHeaderParams / numberOfFingers;
+            String paramsPerFingers = numberHeaderParamsPerFingers.toString();
+            String ch = generateInteger(0, maxIntegerValue).toString();
+            String scr = generateInteger(0, 511).toString();
+            String secondaryScr = generateInteger(0, 15).toString();
+            String ecn0 = generateFloat(-26, -1).toString();
+            String fingerAbsOffset = generateFloat(0, 100).toString();
+            String fingerRelOffset = generateFloat(0, 100).toString();
+            String fingerRSCP = generateFloat(0, 100).toString();
+            str = str + "," + headerParams + "," + fingers + "," + paramsPerFingers + "," + ch + "," + scr + "," + secondaryScr
+                    + "," + ecn0 + "," + fingerAbsOffset + "," + fingerRelOffset + "," + fingerRSCP;
+        }
+        if (system == 10 || system == 11) {
+            Integer numberOfHeaderParams = generateInteger(0, maxIntegerValue);
+            String headerParams = numberOfHeaderParams.toString();
+            String aggEcI0 = generateFloat(-32, -1).toString();
+            String antConfig = generateInteger(0, 4).toString();
+            Integer numberOfFingers = generateInteger(0, maxIntegerValue);
+            String fingers = numberOfFingers.toString();
+            Integer numberHeaderParamsPerFingers = numberOfHeaderParams / numberOfFingers;
+            String paramsPerFingers = numberHeaderParamsPerFingers.toString();
+            String pn = generateInteger(0, maxIntegerValue).toString();
+            String fingerAbsOffset = generateFloat(0, 100).toString();
+            String fingerLocked = generateInteger(0, 1).toString();
+            String ecI0 = generateFloat(-32, -1).toString();
+            String refFinger = generateInteger(0, 1).toString();
+            String assignedFinger = generateInteger(0, 1).toString();
+            String tdMode = generateInteger(0, 3).toString();
+            String tdPower = generateFloat(-9, -1).toString();
+            Integer s = (int)Math.pow(2, generateInteger(0, 21).doubleValue());
+            String subchannel = s.toString();
+            String lockedAntennas = generateInteger(0, 1).toString();
+            String rx0EcI0 = generateFloat(-32, -1).toString();
+            String rx1EcI0 = generateFloat(-32, -1).toString();
+            str = str + "," + headerParams + "," + aggEcI0 + "," + antConfig + "," + fingers + "," + paramsPerFingers + "," + pn
+                    + "," + fingerAbsOffset + "," + fingerLocked + "," + ecI0 + "," + refFinger + "," + assignedFinger + ","
+                    + tdMode + "," + tdPower + "," + subchannel + "," + lockedAntennas + "," + rx0EcI0 + "," + rx1EcI0;
+        }
+        if (system == 12) {
+            Integer numberOfHeaderParams = generateInteger(0, maxIntegerValue);
+            String headerParams = numberOfHeaderParams.toString();
+            String searcherState = generateInteger(0, 12).toString();
+            String mstr = generateInteger(0, maxIntegerValue).toString();
+            String mstrError = generateInteger(0, maxIntegerValue).toString();
+            String mstrPN = generateInteger(0, 511).toString();
+            String antConfig = generateInteger(0, 4).toString();
+            Integer numberOfFingers = generateInteger(0, maxIntegerValue);
+            String fingers = numberOfFingers.toString();
+            Integer numberHeaderParamsPerFingers = numberOfHeaderParams / numberOfFingers;
+            String paramsPerFingers = numberHeaderParamsPerFingers.toString();
+            String pn = generateInteger(0, maxIntegerValue).toString();
+            String fingerIndex = generateInteger(0, 11).toString();
+            String rpcCellIndex = generateInteger(1, 6).toString();
+            String aspIndex = generateInteger(1, 6).toString();
+            String ecI0 = generateFloat(-32, -1).toString();
+            String rx0EcI0 = generateFloat(-32, -1).toString();
+            String rx1EcI0 = generateFloat(-32, -1).toString();
+            String fingerLocked = generateInteger(0, 1).toString();
+            String fingerAbsOffset = generateFloat(0, 100).toString();
+            str = str + "," + headerParams + "," + searcherState + "," + mstr + "," + mstrError + "," + mstrPN + "," + antConfig
+                    + "," + fingers + "," + fingers + "," + paramsPerFingers + "," + pn + "," + fingerIndex + "," + rpcCellIndex
+                    + "," + aspIndex + "," + ecI0 + "," + rx0EcI0 + "," + rx1EcI0 + "," + fingerLocked + "," + fingerAbsOffset;
+        }
+        return str;
+    }
+
+    private String generateUISCAN() {
+        String str = NemoEvents.UISCAN.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = TechnologySystems.UMTS_FDD.getId();
+        str = str + "," + system.toString();
+        String arfcn = generateInteger(1, maxIntegerValue).toString();
+        String scr = generateInteger(0, 511).toString();
+        String ulInterf = generateFloat(-110, -53).toString();
+        str = str + "," + arfcn + "," + scr + "," + ulInterf;
+        return str;
+    }
+
+    private String generateCELLSCAN() {
+        String str = NemoEvents.CELLSCAN.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = TechnologySystems.GSM.getId();
+        Integer choice = generateInteger(1, 2);
+        if (choice == 2) {
+            system = TechnologySystems.UMTS_FDD.getId();
+        }
+        str = str + "," + system.toString();
+        if (system == 1) {
+            Integer numberOfHeadersParams = generateInteger(0, maxIntegerValue);
+            String headerParams = numberOfHeadersParams.toString();
+            Integer numberOfCells = generateInteger(0, maxIntegerValue);
+            String cells = numberOfCells.toString();
+            Integer numberOfParamsPerCells = numberOfHeadersParams / numberOfCells;
+            String paramsPerCells = numberOfParamsPerCells.toString();
+            String arfcn = generateInteger(0, maxIntegerValue).toString();
+            String bsic = generateInteger(0, 63).toString();
+            String mcc = generateInteger(0, 4095).toString();
+            String mnc = generateInteger(0, 999).toString();
+            String lac = generateInteger(0, 65535).toString();
+            String cellID = generateInteger(0, 65535).toString();
+            str = str + "," + headerParams + "," + cells + "," + paramsPerCells + "," + arfcn + "," + bsic + "," + mcc + "," + mnc
+                    + "," + lac + "," + cellID;
+        }
+        if (system == 5) {
+            Integer numberOfHeadersParams = generateInteger(0, maxIntegerValue);
+            String headerParams = numberOfHeadersParams.toString();
+            Integer numberOfCells = generateInteger(0, maxIntegerValue);
+            String cells = numberOfCells.toString();
+            Integer numberOfParamsPerCells = numberOfHeadersParams / numberOfCells;
+            String paramsPerCells = numberOfParamsPerCells.toString();
+            String arfcn = generateInteger(0, maxIntegerValue).toString();
+            String scr = generateInteger(0, 511).toString();
+            String mcc = generateInteger(0, 4095).toString();
+            String mnc = generateInteger(0, 999).toString();
+            String lac = generateInteger(0, 65535).toString();
+            String cellID = generateInteger(0, 268435455).toString();
+            str = str + "," + headerParams + "," + cells + "," + paramsPerCells + "," + arfcn + "," + scr + "," + mcc + "," + mnc
+                    + "," + lac + "," + cellID;
+        }
+        return str;
+    }
+
+    private String generateHOA() {
+        String str = NemoEvents.HOA.getEventId() + "," + generateTimestamp() + "," + generateContext();
+
+        return str;
+    }
+
+    private String generateHOS() {
+        String str = NemoEvents.HOS.getEventId() + "," + generateTimestamp() + "," + generateContext();
+        return str;
+    }
+
+    private String generateLUA() {
+        String str = NemoEvents.LUA.getEventId() + "," + generateTimestamp() + "," + generateContext();
+        Integer system = systems.get(generateInteger(0, 3));
+        Integer choice = generateInteger(1, 2);
+        if (choice == 2) {
+            system = TechnologySystems.GAN_WLAN.getId();
+        }
+        str = str + "," + system.toString();
+        String luaType;
+        if (system == 2) {
+            luaType = generateInteger(5, 10).toString();
+        } else {
+            luaType = generateInteger(1, 4).toString();
+        }
+        str = str + "," + luaType;
+        return str;
+    }
+
+    private String generateLUS() {
+        String str = NemoEvents.LUS.getEventId() + "," + generateTimestamp() + "," + generateContext();
+        Integer system = systems.get(generateInteger(0, 3));
+        Integer choice = generateInteger(1, 2);
+        if (choice == 2) {
+            system = TechnologySystems.GAN_WLAN.getId();
+        }
+        str = str + "," + system.toString();
+        String oldLAC = generateInteger(0, 65535).toString();
+        String lac = generateInteger(0, 65535).toString();
+        String mcc = generateInteger(0, 4095).toString();
+        String mnc = generateInteger(0, 999).toString();
+        str = str + "," + oldLAC + "," + lac + "," + mcc + "," + mnc;
+        return str;
+    }
+
+    private String generateLUF() {
+        String str = NemoEvents.LUF.getEventId() + "," + generateTimestamp() + "," + generateContext();
+        Integer system = systems.get(generateInteger(0, 3));
+        Integer choice = generateInteger(1, 2);
+        if (choice == 2) {
+            system = TechnologySystems.GAN_WLAN.getId();
+        }
+        str = str + "," + system.toString();
+        String lufStatus = generateInteger(1, 3).toString();
+        String oldLAC = generateInteger(0, 65535).toString();
+        str = str + "," + oldLAC + "," + lufStatus + "," + oldLAC;
+        if (system == 1 || system == 2 || system == 5 || system == 6 || system == 21) {
+            String mmCause = generateInteger(1, 17).toString();
+            str = str + "," + mmCause;
+        }
+        return str;
+    }
+
+    private String generateCHI() {
+        String str = NemoEvents.CHI.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = systems.get(generateInteger(0, 6));
+        Integer choice = generateInteger(1, 3);
+        if (choice == 2) {
+            system = systems.get(generateInteger(8, 9));
+        }
+        if (choice == 3) {
+            system = systems.get(generateInteger(11, 13));
+        }
+        if (system == 1) {
+            // 0,...
+            String band = generateInteger(20001, 20015).toString();
+            String chType = generateInteger(1, 2).toString();
+            String ch = generateInteger(1, maxIntegerValue).toString();
+            String cellID = generateInteger(0, 65535).toString();
+            String dtxUL = generateInteger(0, 1).toString();
+            String rltMax = generateInteger(4, 64).toString();
+            // 10,11,...
+            String extChType = generateInteger(1, 5).toString();
+            String tn = generateInteger(1, maxIntegerValue).toString();
+            String bcchCh = generateInteger(1, maxIntegerValue).toString();
+            str = str + "," + band + "," + chType + "," + ch + "," + cellID + "," + dtxUL + "," + rltMax + "," + extChType + ","
+                    + tn + "," + bcchCh;
+        }
+        if (system == 2) {
+            // 0,...
+            String band = generateInteger(20001, 20015).toString();
+            String subchannel = generateInteger(1, 2).toString();
+            String ch = generateInteger(1, maxIntegerValue).toString();
+            String lac = generateInteger(0, 65535).toString();
+            String extendedSubchannel = generateInteger(0, 7).toString();
+            String encryption = generateInteger(0, 1).toString();
+            String slotNumber = generateInteger(1, 4).toString();
+            str = str + "," + band + "," + subchannel + "," + ch + "," + ch + "," + lac + "," + extendedSubchannel + ","
+                    + encryption + "," + slotNumber;
+        }
+        if (system == 5) {
+            // 0,...
+            String band = generateInteger(20001, 20015).toString();
+            String rrcState = generateInteger(1, 5).toString();
+            String ch = generateInteger(1, maxIntegerValue).toString();
+            String cellID = generateInteger(0, 268435455).toString();
+            String lac = generateInteger(0, 65535).toString();
+            String additionWindow = generateFloat(-2, 13).toString();
+            String timeToTrigger1A = generateInteger(0, 5000).toString();
+            String dropWindow = generateFloat(0, 16).toString();
+            String timeToTrigger1B = generateInteger(0, 5000).toString();
+            String replacementWindow = generateFloat(0, 1).toString();
+            String timeToTrigger1C = generateInteger(0, 5000).toString();
+            String dlSF = generateInteger(0, 512).toString();
+            String minUlSF = generateInteger(4, 256).toString();
+            String drxCycle = generateInteger(0, 512).toString();
+            String maxTXPower = generateFloat(-50, 32).toString();
+            String treselection = generateInteger(1, maxIntegerValue).toString();
+            str = str + "," + band + "," + rrcState + "," + ch + "," + cellID + "," + lac + "," + additionWindow + ","
+                    + timeToTrigger1A + "," + dropWindow + "," + timeToTrigger1B + "," + replacementWindow + "," + timeToTrigger1C
+                    + "," + dlSF + "," + minUlSF + "," + drxCycle + "," + maxTXPower + "," + treselection;
+        }
+        if (system == 6) {
+            // 0,...
+            String band = generateInteger(20001, 20015).toString();
+            String rrcState = generateInteger(1, 5).toString();
+            String ch = generateInteger(1, maxIntegerValue).toString();
+            String cellParamsID = generateInteger(0, 127).toString();
+            String cellID = generateInteger(0, 268435455).toString();
+            String lac = generateInteger(0, 65535).toString();
+            String drxCycle = generateInteger(0, 512).toString();
+            String maxTXPower = generateFloat(-50, 32).toString();
+            String treselection = generateInteger(1, maxIntegerValue).toString();
+            str = str + "," + band + "," + rrcState + "," + ch + "," + cellParamsID + "," + cellID + "," + lac + "," + drxCycle
+                    + "," + maxTXPower + "," + drxCycle + "," + maxTXPower + "," + treselection;
+        }
+        if (system == 10 || system == 11) {
+            // 0,...
+            String band = generateInteger(20001, 20015).toString();
+            String chType = generateInteger(1, 4).toString();
+            String ch = generateInteger(1, maxIntegerValue).toString();
+            String mcc = generateInteger(0, 4095).toString();
+            String sid = generateInteger(1, maxIntegerValue).toString();
+            String nid = generateInteger(1, maxIntegerValue).toString();
+            String slottedMode = generateInteger(0, 1).toString();
+            String search_WIN_A = generateInteger(1, maxIntegerValue).toString();
+            String search_WIN_N = generateInteger(1, maxIntegerValue).toString();
+            String search_WIN_R = generateInteger(1, maxIntegerValue).toString();
+            String tADD = generateInteger(1, maxIntegerValue).toString();
+            String tDROP = generateInteger(1, maxIntegerValue).toString();
+            String tTDROP = generateInteger(1, maxIntegerValue).toString();
+            String tCOMP = generateInteger(1, maxIntegerValue).toString();
+            String pREV = generateInteger(1, 11).toString();
+            String minPREV = generateInteger(1, 11).toString();
+            str = str + "," + band + "," + chType + "," + ch + "," + mcc + "," + sid + "," + nid + "," + slottedMode + ","
+                    + search_WIN_A + "," + search_WIN_N + "," + search_WIN_R + "," + tADD + "," + tDROP + "," + tTDROP + ","
+                    + tCOMP + "," + pREV + "," + minPREV;
+        }
+        if (system == 12) {
+            // 0,...
+            String band = generateInteger(20001, 20015).toString();
+            str = str + "," + band;
+        }
+        if (system == 21) {
+            // 0,...
+            String band = generateInteger(20001, 20015).toString();
+            String cellID = generateInteger(0, 268435455).toString();
+            String lac = generateInteger(0, 65535).toString();
+            str = str + "," + band + "," + cellID + "," + lac;
+        }
+        if (system == 25) {
+            // 0,...
+            String band = generateInteger(20001, 20015).toString();
+            // 0,1,2,...
+            String macState = generateInteger(10, 17).toString();
+            String frequency = generateFloat(0, 100).toString();
+            String bsID = returnWordSoCalled("WiMAX base station ID");
+            String fttSize = generateInteger(1, maxIntegerValue).toString();
+            String bandwidth = generateFloat(-1, 100).toString();
+            String frameRatioDL = generateInteger(0, 100).toString();
+            String frameRatioUL = generateInteger(0, 100).toString();
+            String mapCoding = generateInteger(1, 5).toString();
+            Integer repetition = generateInteger(1, 3) * 2;
+            // 1
+            String mapRepetition = repetition.toString();
+            str = str + "," + band + "," + macState + "," + frequency + "," + bsID + "," + fttSize + "," + bandwidth + ","
+                    + frameRatioDL + "," + frameRatioUL + "," + mapCoding + "," + mapRepetition;
+        }
+        if (system == 51 || system == 52) {
+            // 0,...
+            String band = generateInteger(20001, 20015).toString();
+            String chType = generateInteger(1, 2).toString();
+            String ch = generateInteger(1, maxIntegerValue).toString();
+            str = str + "," + band + "," + chType + "," + ch;
+        }
+        if (system == 53) {
+            // 0,...
+            String band = generateInteger(20001, 20015).toString();
+            String chType = generateInteger(1, 3).toString();
+            String ch = generateInteger(1, maxIntegerValue).toString();
+            String nwType = generateInteger(1, maxIntegerValue).toString();
+            String psid1 = generateInteger(1, maxIntegerValue).toString();
+            String psid2 = generateInteger(1, maxIntegerValue).toString();
+            String psid3 = generateInteger(1, maxIntegerValue).toString();
+            String psid4 = generateInteger(1, maxIntegerValue).toString();
+            String lareg = generateInteger(0, 1).toString();
+            String rnum = generateInteger(1, maxIntegerValue).toString();
+            String pegPeriod = generateInteger(1, maxIntegerValue).toString();
+            str = str + "," + band + "," + chType + "," + ch + "," + nwType + "," + psid1 + "," + psid2 + "," + psid3 + "," + psid4
+                    + "," + lareg + "," + rnum + "," + pegPeriod;
+        }
+        return str;
+    }
+
+    private String generateGANCHI() {
+        String str = NemoEvents.GANCHI.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = TechnologySystems.GAN_WLAN.getId();
+        str = str + "," + system.toString();
+        if (system == 21) {
+            String headerParams = "7";
+            String ganState = generateInteger(1, 4).toString();
+            String ganChannel = generateInteger(0, 1023).toString();
+            String ganBSIC = generateInteger(0, 63).toString();
+            String ganCI = generateInteger(0, 65535).toString();
+            String ganLAC = generateInteger(0, 65535).toString();
+            String gancIP = returnWordSoCalled("GANC IP address");
+            String segwIP = returnWordSoCalled("GANC security gateway IP address");
+            str = str + "," + headerParams + "," + ganState + "," + ganChannel + "," + ganBSIC + "," + ganCI + "," + ganLAC + ","
+                    + gancIP + "," + segwIP;
+        }
+        return str;
+    }
+
+    private String generateSEI() {
+        String str = NemoEvents.SEI.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = generateTechnologySystems();
+        str = str + "," + system.toString();
+        String serviceStatus = generateInteger(1, 2).toString();
+        str = str + "," + serviceStatus;
+        if (system == 1 || system == 5 || system == 6) {
+            String lac = generateInteger(0, 65535).toString();
+            String mcc = generateInteger(0, 4095).toString();
+            String mnc = generateInteger(0, 999).toString();
+            str = str + "," + lac + "," + mcc + "," + mnc;
+        }
+        return str;
+    }
+
+    private String generateROAM() {
+        String str = NemoEvents.ROAM.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = TechnologySystems.GSM.getId();
+        Integer choice = generateInteger(1, 2);
+        if (choice == 2) {
+            system = generateInteger(5, 6);
+        }
+        str = str + "," + system.toString();
+        String roamingStatus = generateInteger(1, 2).toString();
+        str = str + "," + roamingStatus;
+        return str;
+    }
+
+    private String generateDCHR() {
+        String str = NemoEvents.DCHR.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = TechnologySystems.GSM.getId();
+        Integer choice = generateInteger(1, 2);
+        if (choice == 2) {
+            system = TechnologySystems.UMTS_FDD.getId();
+        }
+        str = str + "," + system.toString();
+        if (system == 1) {
+            String initiator = generateInteger(1, 2).toString();
+            String requestedCoding = generateInteger(1, 2).toString();
+            String requestedDataMode = generateInteger(0, 1).toString();
+            String requestedTSLUL = generateInteger(1, maxIntegerValue).toString();
+            String requestedTSLDL = generateInteger(1, maxIntegerValue).toString();
+            String modemType = generateInteger(0, 2).toString();
+            String compression = generateInteger(0, 3).toString();
+            str = str + "," + initiator + "," + requestedCoding + "," + requestedDataMode + "," + requestedTSLUL + ","
+                    + requestedTSLDL + "," + modemType + "," + compression;
+        }
+        if (system == 5) {
+            String initiator = generateInteger(1, 2).toString();
+            String reqCSRate = generateInteger(1, maxIntegerValue).toString();
+            String requestedDataMode = generateInteger(0, 1).toString();
+            String modemType = generateInteger(0, 2).toString();
+            String compression = generateInteger(0, 3).toString();
+            str = str + "," + initiator + "," + reqCSRate + "," + requestedDataMode + "," + modemType + "," + compression;
+        }
+        return str;
+    }
+
+    private String generateDCHI() {
+        String str = NemoEvents.DCHI.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = TechnologySystems.GSM.getId();
+        str = str + "," + system.toString();
+        if (system == 1) {
+            String coding = generateInteger(1, 2).toString();
+            String dataMode = generateInteger(0, 1).toString();
+            String csTSLUL = generateInteger(1, maxIntegerValue).toString();
+            String csTSLDL = generateInteger(1, maxIntegerValue).toString();
+            String csTNs = generateInteger(0, 7).toString();
+            String csTNs2 = generateInteger(0, 7).toString();
+            str = str + "," + coding + "," + dataMode + "," + csTSLUL + "," + csTSLDL + "," + csTNs + "," + csTNs2;
+        }
+        return str;
+    }
+
+    private String generateHOP() {
+        String str = NemoEvents.HOP.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = TechnologySystems.GSM.getId();
+        str = str + "," + system.toString();
+        if (system == 1) {
+            Integer hopping = generateInteger(1, 2);
+            String strHopping = hopping.toString();
+            str = str + "," + strHopping;
+            if (hopping == 1) {
+                String hsn = generateInteger(1, maxIntegerValue).toString();
+                String maio = generateInteger(1, maxIntegerValue).toString();
+                Integer numberOfHoppingChs = generateInteger(1, 50);
+                String hoppingChs = numberOfHoppingChs.toString();
+                str = str + "," + hsn + "," + maio + "," + hoppingChs;
+                for (int i = 0; i < numberOfHoppingChs; i++) {
+                    String channel = generateInteger(1, 100).toString();
+                    str = str + "," + channel;
+                }
+            }
+            if (hopping == 2) {
+                Integer numberOfHoppingChs = generateInteger(1, 50);
+                for (int i = 0; i < numberOfHoppingChs; i++) {
+                    String channel = generateInteger(1, 100).toString();
+                    str = str + "," + channel;
+                }
+            }
+        }
+        return str;
+    }
+
+    private String generateSERVCONF() {
+        String str = NemoEvents.SERVCONF.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = TechnologySystems.CDMA_ONE.getId();
+        Integer choice = generateInteger(1, 2);
+        if (choice == 2) {
+            system = TechnologySystems.CDMA_ONE_X.getId();
+        }
+        str = str + "," + system.toString();
+        if (system == 10 || system == 11) {
+            String so = generateInteger(1, maxIntegerValue).toString();
+            String ftType = generateInteger(0, 2).toString();
+            String rtType = generateInteger(0, 2).toString();
+            String encryptionMode = generateInteger(0, 1).toString();
+            String fFCHMUX = generateInteger(1, maxIntegerValue).toString();
+            String rFCHMUX = generateInteger(1, maxIntegerValue).toString();
+            String fFCHBitsPerFrame = generateInteger(1, maxIntegerValue).toString();
+            String rFCHBitsPerFrame = generateInteger(1, maxIntegerValue).toString();
+            String fFCHRC = generateInteger(1, 10).toString();
+            String rFCHRC = generateInteger(1, 10).toString();
+            String fDCCHRC = generateInteger(1, 10).toString();
+            String rDCCHRadioConfiguration = generateInteger(1, 10).toString();
+            String fSCHMUX = generateInteger(1, maxIntegerValue).toString();
+            String fSCHRC = generateInteger(1, 10).toString();
+            String fSCHCoding = generateInteger(0, 1).toString();
+            String fSCHFrameSize = generateInteger(0, 2).toString();
+            String fSCHFrameOffset = generateInteger(1, maxIntegerValue).toString();
+            Integer number = (int)Math.pow(2, Double.parseDouble(generateInteger(0, 5).toString()));
+            String fSCHMaxRate = number.toString();
+            String rSCHMUX = generateInteger(1, maxIntegerValue).toString();
+            String rSCHRC = generateInteger(1, maxIntegerValue).toString();
+            String rSCHCoding = generateInteger(0, 1).toString();
+            String rSCHFrameSize = generateInteger(0, 2).toString();
+            String rSCHFrameOffset = generateInteger(1, maxIntegerValue).toString();
+            Integer number2 = (int)Math.pow(2, Double.parseDouble(generateInteger(0, 5).toString()));
+            String rSCHMaxRate = number2.toString();
+            str = str + "," + so + "," + ftType + "," + rtType + "," + encryptionMode + "," + fFCHMUX + "," + rFCHMUX + ","
+                    + fFCHBitsPerFrame + "," + rFCHBitsPerFrame + "," + fFCHRC + "," + rFCHRC + "," + fDCCHRC + ","
+                    + rDCCHRadioConfiguration + "," + fSCHMUX + "," + fSCHRC + "," + fSCHCoding + "," + fSCHFrameSize + ","
+                    + fSCHFrameOffset + "," + fSCHMaxRate + "," + rSCHMUX + "," + rSCHRC + "," + rSCHCoding + "," + rSCHFrameSize
+                    + "," + rSCHFrameOffset + "," + rSCHMaxRate;
+        }
+        return str;
+    }
+
+    private String generateRACHI() {
+        String str = NemoEvents.RACHI.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = systems.get(generateInteger(2, 6));
+        str = str + "," + system.toString();
+        if (system == 5) {
+            String initTXPower = generateFloat(-99, 98).toString();
+            String preambleStep = generateFloat(0, 100).toString();
+            String preambleCount = generateInteger(0, 65).toString();
+            String rachTXPower = generateFloat(-99, 98).toString();
+            String maxPreamble = generateInteger(0, 64).toString();
+            String ulInterf = generateFloat(-110, -71).toString();
+            String aichStatus = generateInteger(0, 2).toString();
+            String dataGain = generateInteger(0, 15).toString();
+            String ctrlGain = generateInteger(0, 15).toString();
+            String powerOffset = generateFloat(-5, 9).toString();
+            String messageLength = generateInteger(5, 19).toString();
+            String preambleCycles = generateInteger(1, 32).toString();
+            str = str + "," + initTXPower + "," + preambleStep + "," + preambleCount + "," + rachTXPower + "," + maxPreamble + ","
+                    + ulInterf + "," + aichStatus + "," + dataGain + "," + ctrlGain + "," + powerOffset + "," + messageLength + ","
+                    + preambleCycles;
+        }
+        if (system == 6) {
+            String syncULInitPwr = generateFloat(-99, 98).toString();
+            String syncULStep = generateFloat(0, 2).toString();
+            String syncULCount = generateInteger(1, 8).toString();
+            String maxSyncULCount = generateInteger(1, 8).toString();
+            String syncULPower = generateFloat(-99, 98).toString();
+            String rachTXPower = generateFloat(-99, 98).toString();
+            String pccpchPathloss = generateFloat(46, 157).toString();
+            String rachStatus = generateInteger(0, 2).toString();
+            String desiredUpPCHRXPower = generateFloat(-120, -59).toString();
+            String desiredUpRACHRXPower = generateFloat(-120, -59).toString();
+            String messageLength = generateInteger(5, 20).toString();
+            String preambleCycles = generateInteger(1, 32).toString();
+            str = str + "," + syncULInitPwr + "," + syncULStep + "," + syncULCount + "," + maxSyncULCount + "," + syncULPower + ","
+                    + rachTXPower + "," + pccpchPathloss + "," + rachStatus + "," + desiredUpPCHRXPower + ","
+                    + desiredUpRACHRXPower + "," + messageLength + "," + preambleCycles;
+        }
+        if (system == 10 || system == 11) {
+            String nomPWR = generateInteger(1, maxIntegerValue).toString();
+            String initPWR = generateInteger(1, maxIntegerValue).toString();
+            String pwrStep = generateInteger(1, maxIntegerValue).toString();
+            String numStep = generateInteger(1, maxIntegerValue).toString();
+            String txLevel = generateFloat(0, 100).toString();
+            String probeCount = generateInteger(1, maxIntegerValue).toString();
+            String probeSeqCount = generateInteger(1, maxIntegerValue).toString();
+            String accessChNumber = generateInteger(1, maxIntegerValue).toString();
+            String randomDelay = generateInteger(1, maxIntegerValue).toString();
+            String accessRxLevel = generateFloat(0, 100).toString();
+            String psist = generateInteger(0, 255).toString();
+            String seqBackoff = generateInteger(0, 255).toString();
+            String probBackoff = generateInteger(0, 255).toString();
+            String interCorr = generateInteger(0, 255).toString();
+            String accessTXAdj = generateFloat(0, 100).toString();
+            str = str + "," + nomPWR + "," + initPWR + "," + pwrStep + "," + numStep + "," + txLevel + "," + probeCount + ","
+                    + probeSeqCount + "," + accessChNumber + "," + randomDelay + "," + accessRxLevel + "," + psist + ","
+                    + seqBackoff + "," + probBackoff + "," + interCorr + "," + accessTXAdj;
+        }
+        if (system == 12) {
+            String maxProbes = generateInteger(1, maxIntegerValue).toString();
+            String maxProbeSeqs = generateInteger(1, maxIntegerValue).toString();
+            String result = generateInteger(0, 3).toString();
+            String probes = generateInteger(1, maxIntegerValue).toString();
+            String probeSeqs = generateInteger(1, maxIntegerValue).toString();
+            String duration = generateInteger(1, maxIntegerValue).toString();
+            String accessPN = generateInteger(1, maxIntegerValue).toString();
+            String accessSectorId = generateInteger(0, 16777215).toString();
+            String accessColorCode = generateInteger(0, 255).toString();
+            str = str + "," + maxProbes + "," + maxProbeSeqs + "," + result + "," + probes + "," + probeSeqs + "," + duration + ","
+                    + accessPN + "," + accessSectorId + "," + accessColorCode;
+        }
+        return str;
+    }
+
+    private String generateVOCS() {
+        String str = NemoEvents.VOCS.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = TechnologySystems.CDMA_ONE.getId();
+        Integer choice = generateInteger(1, 2);
+        if (choice == 2) {
+            system = TechnologySystems.CDMA_ONE_X.getId();
+        }
+        str = str + "," + system.toString();
+        String vocRateFor = generateInteger(0, 6).toString();
+        String vocRateRev = generateInteger(0, 6).toString();
+        str = str + "," + vocRateFor + "," + vocRateRev;
+        return str;
+    }
+
+    private String generatePHCHI() {
+        String str = NemoEvents.PHCHI.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = systems.get(generateInteger(3, 5));
+        str = str + "," + system.toString();
+        if (system == 6) {
+            Integer headersParams = generateInteger(1, maxIntegerValue);
+            String strHeadersParams = headersParams.toString();
+            String ulRepetitionLenght = generateInteger(1, maxIntegerValue).toString();
+            String ulRepetitionPeriod = generateInteger(1, 64).toString();
+            String dlRepetitionLenght = generateInteger(1, maxIntegerValue).toString();
+            String dlRepetitionPeriod = generateInteger(1, 64).toString();
+            Integer numberOfChannel = generateInteger(1, maxIntegerValue);
+            String physicalChannels = numberOfChannel.toString();
+            Integer paramsPerChannel = headersParams / numberOfChannel;
+            String strParamsPerChannel = paramsPerChannel.toString();
+            String phChType = "1";
+            String direction = generateInteger(1, 3).toString();
+            String tsl = generateInteger(0, 6).toString();
+            Double sf = Math.pow(2, generateInteger(0, 4));
+            String strSf = sf.toString();
+            String chCode = generateInteger(0, 15).toString();
+            String midambleConfig = generateInteger(2, 16).toString();
+            String midambleShift = generateInteger(0, 15).toString();
+            str = str + "," + strHeadersParams + "," + ulRepetitionLenght + "," + ulRepetitionPeriod + "," + dlRepetitionLenght
+                    + "," + dlRepetitionPeriod + "," + physicalChannels + "," + strParamsPerChannel + "," + phChType + ","
+                    + direction + "," + tsl + "," + strSf + "," + chCode + "," + midambleConfig + "," + midambleShift;
+        }
+        if (system == 10 || system == 11) {
+            Integer headersParams = generateInteger(1, maxIntegerValue);
+            String strHeadersParams = headersParams.toString();
+            Integer numberOfChannel = generateInteger(1, maxIntegerValue);
+            String physicalChannels = numberOfChannel.toString();
+            Integer paramsPerChannel = headersParams / numberOfChannel;
+            String strParamsPerChannel = paramsPerChannel.toString();
+            String phType = generateInteger(0, 3).toString();
+            String direction = generateInteger(1, 3).toString();
+            String pn = generateInteger(0, 511).toString();
+            String walshCode = generateInteger(0, 127).toString();
+            String phRate = generateInteger(0, 4).toString();
+            String qofMaskId = generateInteger(0, 3).toString();
+            str = str + "," + strHeadersParams + "," + physicalChannels + "," + strParamsPerChannel + "," + phType + ","
+                    + direction + "," + pn + "," + walshCode + "," + phRate + "," + qofMaskId;
+        }
+        return str;
+    }
+
+    private String generateQPCHI() {
+        String str = NemoEvents.QPCHI.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = TechnologySystems.CDMA_ONE_X.getId();
+        str = str + "," + system.toString();
+        if (system == 11) {
+            Integer headersParams = generateInteger(1, maxIntegerValue);
+            String strHeadersParams = headersParams.toString();
+            String rate = generateInteger(4800, 9600).toString();
+            String slotNumber = generateInteger(0, 2047).toString();
+            String transferReason = generateInteger(0, 13).toString();
+            Integer numberOfConfigurations = generateInteger(1, maxIntegerValue);
+            String configurations = numberOfConfigurations.toString();
+            Integer paramsPerConfigurations = headersParams / numberOfConfigurations;
+            String strParamsPerConfigurations = paramsPerConfigurations.toString();
+            String pn = generateInteger(0, 511).toString();
+            String piWalsh = generateInteger(0, 128).toString();
+            String piPowerOffset = generateFloat(0, 100).toString();
+            String biSupported = generateInteger(0, 1).toString();
+            String biWalsh = generateInteger(0, 128).toString();
+            String biPwrLvl = generateFloat(0, 100).toString();
+            String cciSupported = generateInteger(0, 1).toString();
+            String cciWalsh = generateInteger(0, 128).toString();
+            String cciPwrLvl = generateFloat(0, 100).toString();
+            Integer numberOfIndicators = generateInteger(1, maxIntegerValue);
+            String indicators = numberOfIndicators.toString();
+            Integer paramsPerIndicators = headersParams / numberOfIndicators;
+            String strParamsPerIndicators = paramsPerIndicators.toString();
+            String status = generateInteger(0, 4).toString();
+            String type = generateInteger(0, 5).toString();
+            String thb = generateInteger(0, 255).toString();
+            String thi = generateInteger(0, 255).toString();
+            String position = generateInteger(0, 768).toString();
+            String indIAmp = generateInteger(0, maxIntegerValue).toString();
+            String indQAmp = generateInteger(0, maxIntegerValue).toString();
+            String comPilotEnergy = generateFloat(-35, 2).toString();
+            String divPilotEnergy = generateFloat(-35, 2).toString();
+            str = str + "," + strHeadersParams + "," + rate + "," + slotNumber + "," + transferReason + "," + configurations + ","
+                    + strParamsPerConfigurations + "," + pn + "," + piWalsh + "," + piPowerOffset + "," + biSupported + ","
+                    + biWalsh + "," + biPwrLvl + "," + cciSupported + "," + cciWalsh + "," + cciPwrLvl + "," + indicators + ","
+                    + strParamsPerIndicators + "," + status + "," + type + "," + thb + "," + thi + "," + position + "," + indIAmp
+                    + "," + indQAmp + "," + comPilotEnergy + "," + divPilotEnergy;
+        }
+        return str;
+    }
+
+    private String generateFCHPACKETS() {
+        String str = NemoEvents.FCHPACKETS.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = TechnologySystems.EVDO.getId();
+        str = str + "," + system.toString();
+        if (system == 12) {
+            String cC38400Good = generateInteger(0, maxIntegerValue).toString();
+            String cC38400Bad = generateInteger(0, maxIntegerValue).toString();
+            String cC76800Good = generateInteger(0, maxIntegerValue).toString();
+            String cC76800Bad = generateInteger(0, maxIntegerValue).toString();
+            String tC38400Good = generateInteger(0, maxIntegerValue).toString();
+            String tC38400Bad = generateInteger(0, maxIntegerValue).toString();
+            String tC76800Good = generateInteger(0, maxIntegerValue).toString();
+            String tC76800Bad = generateInteger(0, maxIntegerValue).toString();
+            String tC153600Good = generateInteger(0, maxIntegerValue).toString();
+            String tC153600Bad = generateInteger(0, maxIntegerValue).toString();
+            String t307200ShortGood = generateInteger(0, maxIntegerValue).toString();
+            String tC307200ShortBad = generateInteger(0, maxIntegerValue).toString();
+            String tC307200LongGood = generateInteger(0, maxIntegerValue).toString();
+            String tC307200LongBad = generateInteger(0, maxIntegerValue).toString();
+            String tC614400ShortGood = generateInteger(0, maxIntegerValue).toString();
+            String tC614400ShortBad = generateInteger(0, maxIntegerValue).toString();
+            String tC614400LongGood = generateInteger(0, maxIntegerValue).toString();
+            String tC614400LongBad = generateInteger(0, maxIntegerValue).toString();
+            String tC921600Good = generateInteger(0, maxIntegerValue).toString();
+            String tC921600Bad = generateInteger(0, maxIntegerValue).toString();
+            String tC1228800ShortGood = generateInteger(0, maxIntegerValue).toString();
+            String tC1228800ShortBad = generateInteger(0, maxIntegerValue).toString();
+            String tC1228800LongGood = generateInteger(0, maxIntegerValue).toString();
+            String tC1228800LongBad = generateInteger(0, maxIntegerValue).toString();
+            String tC1843200Good = generateInteger(0, maxIntegerValue).toString();
+            String tC1843200Bad = generateInteger(0, maxIntegerValue).toString();
+            String tC2457600Good = generateInteger(0, maxIntegerValue).toString();
+            String tC2457600Bad = generateInteger(0, maxIntegerValue).toString();
+            str = str + "," + cC38400Good + "," + cC38400Bad + "," + cC76800Good + "," + cC76800Bad + "," + tC38400Good + ","
+                    + tC38400Bad + "," + tC76800Good + "," + tC76800Bad + "," + tC153600Good + "," + tC153600Bad + ","
+                    + t307200ShortGood + "," + tC307200ShortBad + "," + tC307200LongGood + "," + tC307200LongBad + ","
+                    + tC614400ShortGood + "," + tC614400ShortBad + "," + tC614400LongGood + "," + tC614400LongBad + ","
+                    + tC921600Good + "," + tC921600Bad + "," + tC1228800ShortGood + "," + tC1228800ShortBad + ","
+                    + tC1228800LongGood + "," + tC1228800LongBad + "," + tC1843200Good + "," + tC1843200Bad + "," + tC2457600Good
+                    + "," + tC2457600Bad;
+        }
+        return str;
+    }
+
+    private String generateCONNECTIONC() {
+        String str = NemoEvents.CONNECTIONC.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = TechnologySystems.EVDO.getId();
+        str = str + "," + system.toString();
+        if (system == 12) {
+            String transactionID = generateInteger(0, maxIntegerValue).toString();
+            String messageSeq = generateInteger(0, maxIntegerValue).toString();
+            String connectionResult = generateInteger(0, 13).toString();
+            String recStatus = generateInteger(0, 2).toString();
+            String duration = generateInteger(0, maxIntegerValue).toString();
+            String pn = generateInteger(0, 511).toString();
+            String sectorID = generateInteger(0, maxIntegerValue).toString();
+            String cc = generateInteger(0, maxIntegerValue).toString();
+            String pnChanges = generateInteger(0, maxIntegerValue).toString();
+            str = str + "," + transactionID + "," + messageSeq + "," + connectionResult + "," + recStatus + "," + duration + ","
+                    + pn + "," + sectorID + "," + cc + "," + pnChanges;
+        }
+        return str;
+    }
+
+    private String generateCONNECTIOND() {
+        String str = NemoEvents.CONNECTIOND.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = TechnologySystems.EVDO.getId();
+        str = str + "," + system.toString();
+        String reason = generateInteger(0, 9).toString();
+        str = str + "," + reason;
+        return str;
+    }
+
+    private String generateSESSIONC() {
+        String str = NemoEvents.SESSIONC.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = TechnologySystems.EVDO.getId();
+        str = str + "," + system.toString();
+        String transactionID = generateInteger(1, maxIntegerValue).toString();
+        String result = generateInteger(0, 1).toString();
+        String rATI = generateInteger(1, maxIntegerValue).toString();
+        String duration = generateInteger(1, maxIntegerValue).toString();
+        String pn = generateInteger(0, 511).toString();
+        String cc = generateInteger(1, maxIntegerValue).toString();
+        String fullUATI = returnWordSoCalled("Session attempt full UATI");
+        str = str + "," + transactionID + "," + result + "," + rATI + "," + duration + "," + pn + "," + cc + "," + fullUATI;
+        return str;
+    }
+
+    private String generateTRCHI() {
+        String str = NemoEvents.TRCHI.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = generateInteger(5, 6);
+        str = str + "," + system.toString();
+        Integer headersParams = generateInteger(1, maxIntegerValue);
+        String strHeadersParams = headersParams.toString();
+        Integer trChs = generateInteger(1, maxIntegerValue);
+        Integer paramsPerTrChs = headersParams / trChs;
+        String strParamsPerTrChs = paramsPerTrChs.toString();
+        String strTrChs = trChs.toString();
+        str = str + "," + strHeadersParams + "," + trChs + "," + strParamsPerTrChs + "," + strTrChs;
+        if (system == 5 || system == 6) {
+            String trChID = generateInteger(0, 32).toString();
+            String cCTrChID = generateInteger(0, 5).toString();
+            String direction = generateInteger(0, 2).toString();
+            String trChType = generateInteger(0, 7).toString();
+            String trChCoding = generateInteger(0, 3).toString();
+            String crcLength = generateInteger(0, 24).toString();
+            String tti = generateInteger(0, 80).toString();
+            String rateMAttr = generateInteger(1, 256).toString();
+            str = str + "," + trChID + "," + cCTrChID + "," + direction + "," + trChType + "," + trChCoding + "," + crcLength + ","
+                    + tti + "," + rateMAttr;
+        }
+        return str;
+    }
+
+    private String generateRRA() {
+        String str = NemoEvents.RRA.getEventId() + "," + generateTimestamp() + "," + generateContext();
+        Integer system = generateInteger(5, 6);
+        str = str + "," + system.toString();
+        if (system == 5 || system == 6) {
+            String rrcEstCause = generateInteger(0, 19).toString();
+            str = str + "," + rrcEstCause;
+        }
+        return str;
+    }
+
+    private String generateRRC() {
+        String str = NemoEvents.RRC.getEventId() + "," + generateTimestamp() + "," + generateContext();
+        Integer system = generateInteger(5, 6);
+        str = str + "," + system.toString();
+        if (system == 5 || system == 6) {
+            String rrcAtt = generateInteger(1, 10).toString();
+            str = str + "," + rrcAtt;
+        }
+        return str;
+    }
+
+    private String generateRRF() {
+        String str = NemoEvents.RRF.getEventId() + "," + generateTimestamp() + "," + generateContext();
+        Integer system = generateInteger(5, 6);
+        str = str + "," + system.toString();
+        if (system == 5 || system == 6) {
+            String rrcAttAbort = generateInteger(1, 10).toString();
+            String rrcRejStatus = "1";
+            String rrcRejCause = generateInteger(0, 1).toString();
+            str = str + "," + rrcAttAbort + "," + rrcRejStatus + "," + rrcRejCause;
+        }
+        return str;
+    }
+
+    private String generateRRD() {
+        String str = NemoEvents.RRD.getEventId() + "," + generateTimestamp() + "," + generateContext();
+        Integer system = generateInteger(5, 6);
+        str = str + "," + system.toString();
+        if (system == 5 || system == 6) {
+            String rrcRelStatus = generateInteger(1, 2).toString();
+            // 1000
+            String rrcRelCause = generateInteger(0, 6).toString();
+            str = str + "," + rrcRelStatus + "," + rrcRelCause;
+        }
+        return str;
+    }
+
+    private String generateCIPI() {
+        String str = NemoEvents.CIPI.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = TechnologySystems.TETRA.getId();
+        str = str + "," + system.toString();
+        if (system == 2) {
+            String airEncryption = generateInteger(0, 2).toString();
+            String ksg = returnWordSoCalled("Ciphering KSG");
+            String sck = returnWordSoCalled("Ciphering SCK");
+            str = str + "," + airEncryption + "," + ksg + "," + sck;
+        }
+        return str;
+    }
+
+    private String generateL3SM() {
+        String str = NemoEvents.L3SM.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = systems.get(generateInteger(0, 5));
+        Integer choice = generateInteger(1, 4);
+        if (choice == 2) {
+            system = TechnologySystems.GAN_WLAN.getId();
+        }
+        if (choice == 3) {
+            system = TechnologySystems.AMPS.getId();
+        }
+        if (choice == 4) {
+            system = TechnologySystems.DAMPS.getId();
+        }
+        str = str + "," + system.toString();
+        if (system == 1) {
+            String direction = generateInteger(1, 3).toString();
+            String l3Msg = returnWordSoCalled("Layer3 message");
+            String subchannel = returnWordSoCalled("Layer3 subchannel");
+            String channel = generateInteger(1, maxIntegerValue).toString();
+            String bsic = generateInteger(0, 63).toString();
+            String type = generateInteger(1, 5).toString();
+            String l3Data = returnWordSoCalled("Layer3 data");
+            str = str + "," + direction + "," + l3Msg + "," + subchannel + "," + channel + "," + bsic + "," + type + "," + l3Data;
+        }
+        if (system == 2) {
+            String direction = generateInteger(1, 3).toString();
+            String l3Msg = returnWordSoCalled("Layer3 message");
+            String subchannel = returnWordSoCalled("Layer3 subchannel");
+            String bsic = returnWordSoCalled("Layer3 BSIC");
+            str = str + "," + direction + "," + l3Msg + "," + subchannel + "," + bsic;
+        }
+        if (system == 5 || system == 6) {
+            String direction = generateInteger(1, 3).toString();
+            String l3Msg = returnWordSoCalled("Layer3 message");
+            String subchannel = returnWordSoCalled("Layer3 subchannel");
+            String channel = generateInteger(1, maxIntegerValue).toString();
+            String sc = generateInteger(0, 511).toString();
+            String l3Data = returnWordSoCalled("Layer3 data");
+            str = str + "," + direction + "," + l3Msg + "," + subchannel + "," + channel + "," + sc + "," + l3Data;
+        }
+        if (system == 10 || system == 11) {
+            String direction = generateInteger(1, 3).toString();
+            String l3Msg = returnWordSoCalled("Layer3 message");
+            String channelType = returnWordSoCalled("Layer3 channel type");
+            String pREV = generateInteger(1, 11).toString();
+            String l3Data = returnWordSoCalled("Layer3 data");
+            str = str + "," + direction + "," + l3Msg + "," + channelType + "," + pREV + "," + l3Data;
+        }
+        if (system == 21) {
+            String direction = generateInteger(1, 3).toString();
+            String l3Msg = returnWordSoCalled("Layer3 message");
+            String l3Data = returnWordSoCalled("Layer3 data");
+            str = str + "," + direction + "," + l3Msg + "," + l3Data;
+        }
+        if (system == 51 || system == 53) {
+            String direction = generateInteger(1, 3).toString();
+            String l3Msg = returnWordSoCalled("Layer3 message");
+            String channelType = returnWordSoCalled("Layer3 channel type");
+            String l3Data = returnWordSoCalled("Layer3 data");
+            str = str + "," + direction + "," + l3Msg + "," + channelType + "," + l3Data;
+        }
+        return str;
+    }
+
+    private String generateL2SM() {
+        String str = NemoEvents.L2SM.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = TechnologySystems.GSM.getId();
+        str = str + "," + system.toString();
+        if (system == 1) {
+            String direction = generateInteger(1, 3).toString();
+            String l2Msg = returnWordSoCalled("Layer2 message");
+            String subchannel = returnWordSoCalled("Layer2 subchannel");
+            String arfcn = generateInteger(1, maxIntegerValue).toString();
+            String bsic = generateInteger(0, 63).toString();
+            String type = generateInteger(1, 5).toString();
+            String l2Data = returnWordSoCalled("Layer2 data");
+            str = str + "," + direction + "," + l2Msg + "," + subchannel + "," + arfcn + "," + bsic + "," + type + "," + l2Data;
+        }
+        return str;
+    }
+
+    private String generateRRCSM() {
+        String str = NemoEvents.RRCSM.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = generateInteger(5, 6);
+        str = str + "," + system.toString();
+        if (system == 5 || system == 6) {
+            String direction = generateInteger(1, 3).toString();
+            String rpcMsg = returnWordSoCalled("RRC message");
+            String subchannel = returnWordSoCalled("RRC subchannel");
+            String uarfcn = generateInteger(1, maxIntegerValue).toString();
+            String sc = generateInteger(0, 511).toString();
+            String rrcData = returnWordSoCalled("RRC data");
+            str = str + "," + direction + "," + rpcMsg + "," + subchannel + "," + uarfcn + "," + sc + "," + rrcData;
+        }
+        return str;
+    }
+
+    private String generateRLCSM() {
+        String str = NemoEvents.RLCSM.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = TechnologySystems.UMTS_FDD.getId();
+        str = str + "," + system.toString();
+        if (system == 5) {
+            String direction = generateInteger(1, 3).toString();
+            String rlcMsg = returnWordSoCalled("RLC message");
+            String subchannel = returnWordSoCalled("RLC subchannel");
+            String rb = generateInteger(0, 32).toString();
+            String rlcMode = generateInteger(0, 2).toString();
+            String lengthIndicator = generateInteger(0, 15).toString();
+            String rlcData = returnWordSoCalled("RLC data");
+            str = str + "," + direction + "," + rlcMsg + "," + subchannel + "," + rb + "," + rlcMode + "," + lengthIndicator + ","
+                    + rlcData;
+        }
+        return str;
+    }
+
+    private String generateMACSM() {
+        String str = NemoEvents.MACSM.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = TechnologySystems.GSM.getId();
+        Integer choice = generateInteger(1, 2);
+        if (choice == 2) {
+            system = TechnologySystems.WIMAX.getId();
+        }
+        str = str + "," + system.toString();
+        if (system == 1) {
+            String direction = generateInteger(1, 3).toString();
+            String rlcMacMsg = returnWordSoCalled("RLC/MAC message");
+            String subchannel = returnWordSoCalled("RLC/MAC subchannel");
+            String type = generateInteger(1, 5).toString();
+            String rlcMacData = returnWordSoCalled("RLC/MAC data");
+            str = str + "," + direction + "," + rlcMacMsg + "," + subchannel + "," + type + "," + rlcMacData;
+        }
+        if (system == 25) {
+            String direction = generateInteger(1, 3).toString();
+            String macMsg = returnWordSoCalled("MAC message");
+            String frameNumber = generateInteger(1, maxIntegerValue).toString();
+            String macData = returnWordSoCalled("MAC data");
+            String macVer = generateInteger(5, 6).toString();
+            str = str + "," + direction + "," + macMsg + "," + frameNumber + "," + macData + "," + macVer;
+        }
+        return str;
+    }
+
+    private String generateLLCSM() {
+        String str = NemoEvents.LLCSM.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = TechnologySystems.GSM.getId();
+        Integer choice = generateInteger(1, 2);
+        if (choice == 2) {
+            system = TechnologySystems.TETRA.getId();
+        }
+        str = str + "," + system.toString();
+        if (system == 1 || system == 2) {
+            String direction = generateInteger(1, 3).toString();
+            String llcMsg = returnWordSoCalled("LLC message");
+            String llcData = returnWordSoCalled("LLC data");
+            str = str + "," + direction + "," + llcMsg + "," + llcData;
+        }
+        return str;
+    }
+
+    private String generateSNPSM() {
+        String str = NemoEvents.SNPSM.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = TechnologySystems.EVDO.getId();
+        str = str + "," + system.toString();
+        if (system == 12) {
+            String direction = generateInteger(1, 3).toString();
+            String snpMsgName = returnWordSoCalled("SNP message name");
+            String snpChType = returnWordSoCalled("SNP channel type");
+            String snpLayer = returnWordSoCalled("SNP layer");
+            String protocolSubtype = generateInteger(1, maxIntegerValue).toString();
+            String snpData = returnWordSoCalled("SNP data");
+            str = str + "," + direction + "," + snpMsgName + "," + snpChType + "," + snpLayer + "," + protocolSubtype + ","
+                    + snpData;
+        }
+        return str;
+    }
+
+    private String generateRRLPSM() {
+        String str = NemoEvents.RRLPSM.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = TechnologySystems.GSM.getId();
+        str = str + "," + system.toString();
+        if (system == 1) {
+            String direction = generateInteger(1, 3).toString();
+            String rrlpMsg = returnWordSoCalled("RRLP message");
+            String subchannel = returnWordSoCalled("RRLP subchannel");
+            String rrlpData = returnWordSoCalled("RRLP data");
+            str = str + "," + direction + "," + rrlpMsg + "," + subchannel + "," + rrlpData;
+        }
+        return str;
+    }
+
+    private String generateGANSM() {
+        String str = NemoEvents.GANSM.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = TechnologySystems.GAN_WLAN.getId();
+        str = str + "," + system.toString();
+        if (system == 1) {
+            String direction = generateInteger(1, 3).toString();
+            String ganMsg = returnWordSoCalled("GAN message");
+            String subchannel = returnWordSoCalled("GAN subchannel");
+            String ganMsgData = returnWordSoCalled("GAN message data");
+            str = str + "," + direction + "," + ganMsg + "," + subchannel + "," + ganMsgData;
+        }
+        return str;
+    }
+
+    private String generateSIPSM() {
+        String str = NemoEvents.SIPSM.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = TechnologySystems.GSM.getId();
+        Integer choice = generateInteger(1, 2);
+        if (choice == 2) {
+            system = TechnologySystems.UMTS_FDD.getId();
+        }
+        str = str + "," + system.toString();
+        if (system == 1 || system == 5) {
+            String direction = generateInteger(1, 3).toString();
+            String sipMsgName = returnWordSoCalled("SIP message name");
+            String sipMsg = returnWordSoCalled("SIP message");
+            str = str + "," + direction + "," + sipMsgName + "," + sipMsg;
+        }
+        return str;
+    }
+
+    private String generateRTPSM() {
+        String str = NemoEvents.RTPSM.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = TechnologySystems.GSM.getId();
+        Integer choice = generateInteger(1, 3);
+        if (choice == 2) {
+            system = TechnologySystems.UMTS_FDD.getId();
+        }
+        if (choice == 3) {
+            system = TechnologySystems.GAN_WLAN.getId();
+        }
+        str = str + "," + system.toString();
+        if (system == 1 || system == 5 || system == 21) {
+            String direction = generateInteger(1, 3).toString();
+            String rtpMsgName = returnWordSoCalled("RTP message name");
+            String rtpMsgNr = generateInteger(0, 65535).toString();
+            String rtpMsg = returnWordSoCalled("RTP message");
+            str = str + "," + direction + "," + rtpMsgName + "," + rtpMsgNr + "," + rtpMsg;
+        }
+        return str;
+    }
+
+    private String generatePAC() {
+        String str = NemoEvents.PAC.getEventId() + "," + generateTimestamp() + "," + generateContext();
+        String system = generateTechnologySystems().toString();
+        String packetActState = generateInteger(1, 2).toString();
+        String ip = returnWordSoCalled("Packet protocol address");
+        str = str + "," + system + "," + packetActState + "," + ip;
+        return str;
+    }
+
+    private String generateGAA() {
+        String str = NemoEvents.GAA.getEventId() + "," + generateTimestamp() + "," + generateContext();
+        String system = generateTechnologySystems().toString();
+        str = str + "," + system;
+        return str;
+    }
+
+    private String generateGAF() {
+        String str = NemoEvents.GAF.getEventId() + "," + generateTimestamp() + "," + generateContext();
+        String system = generateTechnologySystems().toString();
+        String attachFail = generateInteger(1, 6).toString();
+        // ...
+        String attFailCause = generateInteger(7, 17).toString();
+        str = str + "," + system + "," + attachFail + "," + attFailCause;
+        return str;
+    }
+
+    private String generateGAC() {
+        String str = NemoEvents.GAC.getEventId() + "," + generateTimestamp() + "," + generateContext();
+        String system = generateTechnologySystems().toString();
+        str = str + "," + system;
+        return str;
+    }
+
+    private String generateAMRQ() {
+        String str = NemoEvents.AMRQ.getEventId() + "," + generateTimestamp() + ",";
+        String system = TechnologySystems.GSM.getName();
+        String amrQualEst = generateFloat(0, 39).toString();
+        str = str + "," + system + "," + amrQualEst;
+        return str;
+    }
+
+    private String generateAQI() {
+        String str = NemoEvents.AQI.getEventId() + "," + generateTimestamp() + ",";
+        String aqTypeDL = generateInteger(1, 5).toString();
+        String aqType = generateInteger(1, 5).toString();
+        String aqActivity = generateInteger(1, 2).toString();
+        String aqSynch = generateInteger(0, 1).toString();
+        str = str + "," + aqTypeDL + "," + aqType + "," + aqActivity + "," + aqSynch;
+        return str;
+    }
+
+    private String generateVRATE() {
+        String str = NemoEvents.VRATE.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = TechnologySystems.UMTS_FDD.getId();
+        str = str + "," + system.toString();
+        if (system == 5) {
+            String videoProtocol = generateInteger(1, maxIntegerValue).toString();
+            String videoRateUL = generateInteger(1, maxIntegerValue).toString();
+            String videoRateDL = generateInteger(1, maxIntegerValue).toString();
+            String videoFrameRateUL = generateInteger(1, maxIntegerValue).toString();
+            String videoFrameRateDL = generateInteger(1, maxIntegerValue).toString();
+            String videoFer = generateFloat(0, 99).toString();
+            String vqi = generateFloat(1, 4).toString();
+            str = str + "," + videoProtocol + "," + videoRateUL + "," + videoRateDL + "," + videoFrameRateUL + ","
+                    + videoFrameRateDL + "," + videoFer + "," + vqi;
+        }
+        return str;
+    }
+
+    private String generateMSGA() {
+        String str = NemoEvents.MSGA.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = generateTechnologySystems();
+        str = str + "," + system.toString();
+        Integer messageType = generateInteger(1, 2);
+        String message = messageType.toString();
+        str = str + "," + message;
+        if (messageType == 1) {
+            str = str + "," + generateContext();
+            String smsMsgType = generateInteger(1, 5).toString();
+            String smsNumber = returnWordSoCalled("SMS phone number");
+            String smsc = returnWordSoCalled("SMS service center address");
+            String smsCodingSch = generateInteger(0, 255).toString();
+            String smsMsgData = returnWordSoCalled("SMS message data");
+            str = str + "," + smsMsgType + "," + smsNumber + "," + smsc + "," + smsCodingSch + "," + smsMsgData;
+        }
+        if (messageType == 2) {
+            str = str + "," + generateContext();
+            String mmsMsgType = generateInteger(1, 4).toString();
+            String mmsSerCenter = returnWordSoCalled("MMS service center");
+            String mmsTrProtocol = generateInteger(1, 3).toString();
+            String mmsFiles = generateInteger(1, maxIntegerValue).toString();
+            String mmsFilename = returnWordSoCalled("MMS filename");
+            str = str + "," + mmsMsgType + "," + mmsSerCenter + "," + mmsTrProtocol + "," + mmsFiles + "," + mmsFilename;
+        }
+        return str;
+    }
+
+    private String generateMSGS() {
+        String str = NemoEvents.MSGS.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = generateTechnologySystems();
+        str = str + "," + system.toString();
+        Integer messageType = generateInteger(1, 2);
+        String message = messageType.toString();
+        str = str + "," + message;
+        if (messageType == 1) {
+            str = str + "," + generateContext();
+            String refNumber = generateInteger(1, maxIntegerValue).toString();
+            String smsMsgType = generateInteger(1, 5).toString();
+            str = str + "," + refNumber + "," + smsMsgType;
+        }
+        if (messageType == 2) {
+            str = str + "," + generateContext();
+            // ...
+            String mmsMsgID = returnWordSoCalled("MMS message ID");
+            String mmsMsgType = generateInteger(1, 4).toString();
+            str = str + "," + mmsMsgID + "," + mmsMsgType;
+        }
+        return str;
+    }
+
+    private String generateMSGF() {
+        String str = NemoEvents.MSGF.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = generateTechnologySystems();
+        str = str + "," + system.toString();
+        Integer messageType = generateInteger(1, 2);
+        String message = messageType.toString();
+        str = str + "," + message;
+        if (messageType == 1) {
+            str = str + "," + generateContext();
+            // ...
+            String smsCause = generateInteger(27, 30).toString();
+            String smsMsgType = generateInteger(1, 5).toString();
+            str = str + "," + smsCause + "," + smsMsgType;
+        }
+        if (messageType == 2) {
+            str = str + "," + generateContext();
+            // ...
+            String mmsCause = generateInteger(129, 136).toString();
+            String mmsMsgType = generateInteger(1, 4).toString();
+            str = str + "," + mmsCause + "," + mmsMsgType;
+        }
+        return str;
+    }
+
+    private String generatePTTA() {
+        String str = NemoEvents.PTTA.getEventId() + "," + generateTimestamp() + ",";
+        Integer pttTech = generateInteger(1, 2);
+        String ptt = pttTech.toString();
+        str = str + "," + ptt;
+        if (pttTech == 1) {
+            str = str + "," + generateContext();
+            String pocServer = returnWordSoCalled("POC server address");
+            str = str + "," + pocServer;
+        }
+        return str;
+    }
+
+    private String generatePTTF() {
+        String str = NemoEvents.PTTF.getEventId() + "," + generateTimestamp() + ",";
+        Integer pttTech = generateInteger(1, 2);
+        String ptt = pttTech.toString();
+        str = str + "," + ptt;
+        if (pttTech == 1) {
+            str = str + "," + generateContext();
+            String failStatus = generateInteger(1, 5).toString();
+            String failCause = generateInteger(1, maxIntegerValue).toString();
+            str = str + "," + failStatus + "," + failCause;
+        }
+        return str;
+    }
+
+    private String generatePTTC() {
+        String str = NemoEvents.PTTC.getEventId() + "," + generateTimestamp() + ",";
+        Integer pttTech = generateInteger(1, 2);
+        String ptt = pttTech.toString();
+        str = str + "," + ptt;
+        if (pttTech == 1) {
+            str = str + "," + generateContext();
+            String loginTime = generateInteger(1, maxIntegerValue).toString();
+            String groupAttachTime = generateInteger(1, maxIntegerValue).toString();
+            String pocServer = returnWordSoCalled("POC server address");
+            str = str + "," + loginTime + "," + groupAttachTime + "," + pocServer;
+        }
+        return str;
+    }
+
+    private String generatePTTD() {
+        String str = NemoEvents.PTTD.getEventId() + "," + generateTimestamp() + ",";
+        Integer pttTech = generateInteger(1, 2);
+        String ptt = pttTech.toString();
+        str = str + "," + ptt;
+        if (pttTech == 1) {
+            str = str + "," + generateContext();
+            String deactStatus = generateInteger(1, 3).toString();
+            String deactCause = generateInteger(1, maxIntegerValue).toString();
+            String deactTime = generateInteger(1, maxIntegerValue).toString();
+            str = str + "," + deactStatus + "," + deactCause + "," + deactTime;
+        }
+        return str;
+    }
+
+    private String generatePTTI() {
+        String str = NemoEvents.PTTI.getEventId() + "," + generateTimestamp() + ",";
+        Integer systemID = generateInteger(0, 3);
+        Integer system = systems.get(systemID);
+        str = str + "," + system.toString();
+        Integer pttTech = generateInteger(1, 2);
+        String ptt = pttTech.toString();
+        str = str + "," + ptt;
+        if (pttTech == 1) {
+            str = str + "," + generateContext();
+            String pttState = generateInteger(1, 4).toString();
+            String pttUserIdentity = returnWordSoCalled("Push-to-talk user identity");
+            String pttStatus = generateInteger(21, 24).toString();
+            str = str + "," + pttState + "," + pttUserIdentity + "," + pttStatus;
+        }
+        return str;
+    }
+
+    private String generateRTPJITTER() {
+        String str = NemoEvents.RTPJITTER.getEventId() + "," + generateTimestamp() + ",";
+        String rtpJitterType = generateInteger(1, maxIntegerValue).toString();
+        String rtpJitterDL = generateInteger(1, maxIntegerValue).toString();
+        String rtpJitterUL = generateInteger(1, maxIntegerValue).toString();
+        String rtpInterarrDL = generateInteger(1, maxIntegerValue).toString();
+        String rtpInterarrUL = generateInteger(1, maxIntegerValue).toString();
+        str = str + "," + rtpJitterType + "," + rtpJitterDL + "," + rtpJitterUL + "," + rtpInterarrDL + "," + rtpInterarrUL;
+        return str;
+    }
+
+    private String generateGPS() {
+        String str = NemoEvents.GPS.getEventId() + "," + generateTimestamp() + ",";
+        String lon = generateFloat(0, 100).toString();
+        String lat = generateFloat(0, 100).toString();
+        String height = generateInteger(1, maxIntegerValue).toString();
+        String distance = generateInteger(1, maxIntegerValue).toString();
+        String gpsFix = generateInteger(-1, 4).toString();
+        String satellites = generateInteger(1, maxIntegerValue).toString();
+        String velocity = generateInteger(1, maxIntegerValue).toString();
+        str = str + "," + lon + "," + lat + "," + height + "," + distance + "," + gpsFix + "," + satellites + "," + velocity;
+        return str;
+    }
+
+    private String generateTNOTE() {
+        String str = NemoEvents.TNOTE.getEventId() + "," + generateTimestamp() + ",";
+        String tNote = returnWordSoCalled("Textual note");
+        str = str + "," + tNote;
+        return str;
+    }
+
+    private String generateQNOTE() {
+        String str = NemoEvents.QNOTE.getEventId() + "," + generateTimestamp() + ",";
+        String id = generateInteger(0, maxIntegerValue).toString();
+        Integer parID = generateInteger(0, maxIntegerValue) - 1;
+        String parentID = parID.toString();
+        String question = returnWordSoCalled("Service quality question");
+        String answer = returnWordSoCalled("Service quality answer");
+        String description = returnWordSoCalled("Service quality description");
+        str = str + "," + id + "," + parentID + "," + question + "," + answer + "," + description;
+        return str;
+    }
+
+    private String generateQTRIGGER() {
+        String str = NemoEvents.QTRIGGER.getEventId() + "," + generateTimestamp() + ",";
+        String description = returnWordSoCalled("Service trigger description");
+        str = str + "," + description;
+        return str;
+    }
+
+    private String generateMARK() {
+        String str = NemoEvents.MARK.getEventId() + "," + generateTimestamp() + ",";
+        String markerSeq = generateInteger(0, maxIntegerValue).toString();
+        String marker = generateInteger(1, 9).toString();
+        str = str + "," + markerSeq + "," + marker;
+        return str;
+    }
+
+    private String generateERR() {
+        String str = NemoEvents.ERR.getEventId() + "," + generateTimestamp() + ",";
+        String error = returnWordSoCalled("Error text");
+        str = str + "," + error;
+        return str;
+    }
+
+    private String generateDATE() {
+        String str = NemoEvents.DATE.getEventId() + "," + generateTimestamp() + ",";
+        String date = returnWordSoCalled("Date");
+        str = str + "," + date;
+        return str;
+    }
+
+    private String generatePAUSE() {
+        String str = NemoEvents.PAUSE.getEventId() + "," + generateTimestamp() + ",,";
         return str;
     }
 
@@ -1663,6 +3507,44 @@ public class Nemo2Generator {
             addRowInFile(generateMARKOVMUX(), wr);
             addRowInFile(generateMARKOVSTATS(), wr);
             addRowInFile(generateMER(), wr);
+            addRowInFile(generateDVBI(), wr);
+            addRowInFile(generateDVBFER(), wr);
+            addRowInFile(generateDVBBER(), wr);
+            addRowInFile(generateDVBRXL(), wr);
+            addRowInFile(generateDVBRATE(), wr);
+            addRowInFile(generateFREQSCAN(), wr);
+            addRowInFile(generateSPECTRUMSCAN(), wr);
+            addRowInFile(generatePILOTSCAN(), wr);
+            addRowInFile(generateOFDMSCAN(), wr);
+            addRowInFile(generateTPROFSCAN(), wr);
+            addRowInFile(generateDPROFSCAN(), wr);
+            addRowInFile(generateFINGER(), wr);
+            addRowInFile(generateHOS(), wr);
+            addRowInFile(generateLUA(), wr);
+            addRowInFile(generateLUS(), wr);
+            addRowInFile(generateLUF(), wr);
+
+            addRowInFile(generateAMRQ(), wr);
+            addRowInFile(generateAQI(), wr);
+            addRowInFile(generateVRATE(), wr);
+            addRowInFile(generateMSGA(), wr);
+            addRowInFile(generateMSGS(), wr);
+            addRowInFile(generateMSGF(), wr);
+            addRowInFile(generatePTTA(), wr);
+            addRowInFile(generatePTTF(), wr);
+            addRowInFile(generatePTTC(), wr);
+            addRowInFile(generatePTTD(), wr);
+            addRowInFile(generatePTTI(), wr);
+            addRowInFile(generateRTPJITTER(), wr);
+            addRowInFile(generateGPS(), wr);
+            addRowInFile(generateTNOTE(), wr);
+            addRowInFile(generateQNOTE(), wr);
+            addRowInFile(generateQTRIGGER(), wr);
+            addRowInFile(generateMARK(), wr);
+            addRowInFile(generateERR(), wr);
+            addRowInFile(generateDATE(), wr);
+            addRowInFile(generatePAUSE(), wr);
+
             addRowInFile(generateSTOP(), wr);
         }
     }
@@ -1688,6 +3570,7 @@ public class Nemo2Generator {
     public void fillNemoFile(File nemoFile) {
         FileWriter wr;
         try {
+            createListOfSystems();
             wr = new FileWriter(nemoFile);
             generateAllEvents(false, wr);
             wr.close();
@@ -1915,12 +3798,14 @@ public class Nemo2Generator {
         return str;
     }
 
-    private Integer generateTechnologySystems() {
-        List<Integer> systems = new ArrayList<Integer>();
+    private void createListOfSystems() {
         for (TechnologySystems system : TechnologySystems.values()) {
             systems.add(system.getId());
         }
-        int index = generateInteger(0, systems.size());
+    }
+
+    private Integer generateTechnologySystems() {
+        int index = generateInteger(0, systems.size() - 1);
         return systems.get(index);
     }
 
@@ -1940,6 +3825,7 @@ public class Nemo2Generator {
          * File nemoFile = obj.createNemoFile(); obj.generateAllEvents(false);
          * obj.fillNemoFile(nemoFile);
          */
+
         File nemoFile = obj.createNemoFile();
         obj.fillNemoFile(nemoFile);
 

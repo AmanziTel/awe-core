@@ -40,7 +40,6 @@ import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
-import org.amanzi.neo.services.indexes.MultiPropertyIndex;
 import org.amanzi.neo.services.model.ICorrelationModel;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
@@ -287,7 +286,8 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         if (propertyName.equals(NewNetworkService.NAME)) {
             node = nwServ.findSector(getIndex(NetworkElementNodeType.SECTOR), propertyValue, null, null);
         }
-        else if (propertyName.equals("ci_lac")) {
+        else if (propertyName.equals(NewNetworkService.CELL_INDEX) ||
+                propertyName.equals(NewNetworkService.LOCATION_AREA_CODE)) {
             int underliningIndex = propertyValue.indexOf('_');
             String ci = propertyValue.substring(0, underliningIndex);
             String lac = propertyValue.substring(underliningIndex + 1, propertyValue.length());

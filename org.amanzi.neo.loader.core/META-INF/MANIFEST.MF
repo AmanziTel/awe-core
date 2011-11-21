@@ -29,6 +29,9 @@ Bundle-ClassPath: .,
  lib/opencsv-2.2.jar,
  lib/commons-io-2.0.1.jar
 Bundle-Vendor: amanzi.org
-Import-Package: org.eclipse.jface.preference
+Import-Package: org.amanzi.awe.console,
+ org.eclipse.jface.preference,
+ org.eclipse.jface.util,
+ org.eclipse.ui.plugin
 Eclipse-LazyStart: true
 Eclipse-ExtensibleAPI: true

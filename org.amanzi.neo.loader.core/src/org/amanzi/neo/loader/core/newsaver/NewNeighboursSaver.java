@@ -19,8 +19,7 @@ import java.util.Map;
 
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
-import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceManager;
-import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
@@ -34,12 +33,21 @@ import org.apache.log4j.Logger;
 /**
  * @author Kondratneko_Vladislav
  */
-public class NewNeighboursSaver extends AbstractSaver<NetworkModel, CSVContainer, ConfigurationDataImpl> {
+public class NewNeighboursSaver extends AbstractCSVSaver<NetworkModel> {
     private Long lineCounter = 0l;
     private INetworkModel networkModel;
     private INodeToNodeRelationsModel n2nModel;
-    private Map<String, Integer> columnSynonyms;
     private final int MAX_TX_BEFORE_COMMIT = 1000;
+    /*
+     * neighbours
+     */
+    public final static String NEIGHBOUR_SECTOR_CI = "neigh_sector_ci";
+    public final static String NEIGHBOUR_SECTOR_LAC = "neigh_sector_lac";
+    public final static String NEIGHBOUR_SECTOR_NAME = "neigh_sector_name";
+    public final static String SERVING_SECTOR_CI = "serv_sector_ci";
+    public final static String SERVING_SECTOR_LAC = "serv_sector_lac";
+    public final static String SERVING_SECTOR_NAME = "serv_sector_name";
+    private static Logger LOGGER = Logger.getLogger(NewNetworkSaver.class);
 
     protected NewNeighboursSaver(INodeToNodeRelationsModel model, INetworkModel networkModel, ConfigurationDataImpl data) {
         preferenceStoreSynonyms = preferenceManager.getNeighbourSynonyms();
@@ -72,27 +80,6 @@ public class NewNeighboursSaver extends AbstractSaver<NetworkModel, CSVContainer
         super();
     }
 
-    /*
-     * neighbours
-     */
-    public final static String NEIGHBOUR_SECTOR_CI = "neigh_sector_ci";
-    public final static String NEIGHBOUR_SECTOR_LAC = "neigh_sector_lac";
-    public final static String NEIGHBOUR_SECTOR_NAME = "neigh_sector_name";
-    public final static String SERVING_SECTOR_CI = "serv_sector_ci";
-    public final static String SERVING_SECTOR_LAC = "serv_sector_lac";
-    public final static String SERVING_SECTOR_NAME = "serv_sector_name";
-    /**
-     * contains appropriation of header synonyms and name inDB</br> <b>key</b>- name in db ,
-     * <b>value</b>-file header key
-     */
-    private Map<String, String> fileSynonyms = new HashMap<String, String>();
-    /**
-     * name inDB properties values
-     */
-    private List<String> headers;
-    private static Logger LOGGER = Logger.getLogger(NewNetworkSaver.class);
-    private Map<String, String[]> preferenceStoreSynonyms;
-
     @Override
     public void init(ConfigurationDataImpl configuration, CSVContainer dataElement) {
         Map<String, Object> rootElement = new HashMap<String, Object>();
@@ -102,7 +89,7 @@ public class NewNeighboursSaver extends AbstractSaver<NetworkModel, CSVContainer
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
         commitTx();
         try {
-            rootElement.put(INeoConstants.PROPERTY_NAME_NAME,
+            rootElement.put(NewAbstractService.NAME,
                     configuration.getDatasetNames().get(ConfigurationDataImpl.NETWORK_PROPERTY_NAME));
             networkModel = getActiveProject().getNetwork(
                     configuration.getDatasetNames().get(ConfigurationDataImpl.NETWORK_PROPERTY_NAME));
@@ -150,63 +137,23 @@ public class NewNeighboursSaver extends AbstractSaver<NetworkModel, CSVContainer
      * @throws DatabaseException
      */
     private void createNeighbour(List<String> row) throws AWEException {
-        String neighbSectorName = row.get(columnSynonyms.get(fileSynonyms.get(NEIGHBOUR_SECTOR_NAME)));
-        String serviceNeighName = row.get(columnSynonyms.get(fileSynonyms.get(SERVING_SECTOR_NAME)));
+        String neighbSectorName = getValueFromRow(NEIGHBOUR_SECTOR_NAME, row);
+        String serviceNeighName = getValueFromRow(SERVING_SECTOR_NAME, row);
         Map<String, Object> properties = new HashMap<String, Object>();
-        properties.put(INeoConstants.PROPERTY_TYPE_NAME, NetworkElementNodeType.SECTOR.getId());
-        properties.put(INeoConstants.PROPERTY_NAME_NAME, neighbSectorName);
+        properties.put(NewAbstractService.TYPE, NetworkElementNodeType.SECTOR.getId());
+        properties.put(NewAbstractService.NAME, neighbSectorName);
         IDataElement findedNeighSector = networkModel.findElement(properties);
-        properties.put(INeoConstants.PROPERTY_NAME_NAME, serviceNeighName);
+        properties.put(NewAbstractService.NAME, serviceNeighName);
         IDataElement findedServiceSector = networkModel.findElement(properties);
         for (String head : headers) {
             if (!fileSynonyms.containsValue(head)) {
-                properties.put(head.toLowerCase(), autoParse(head.toLowerCase(), row.get(columnSynonyms.get(head))));
+                properties.put(head.toLowerCase(), getSynonymValueWithAutoparse(head, row));
             }
         }
         if (findedNeighSector != null && findedServiceSector != null) {
             n2nModel.linkNode(findedServiceSector, findedNeighSector, properties);
         } else {
             LOGGER.warn("cann't find service or neighbour sector on line " + lineCounter);
-        }
-    }
-
-    private void makeIndexAppropriation() {
-        for (String synonyms : fileSynonyms.keySet()) {
-            columnSynonyms.put(fileSynonyms.get(synonyms), getHeaderId(fileSynonyms.get(synonyms)));
-        }
-        for (String head : headers) {
-            if (!columnSynonyms.containsKey(head)) {
-                columnSynonyms.put(head, getHeaderId(head));
-            }
-        }
-    }
-
-    private int getHeaderId(String header) {
-        return headers.indexOf(header);
-    }
-
-    /**
-     * make Appropriation with default synonyms and file header
-     * 
-     * @param keySet -header files;
-     */
-    private void makeAppropriationWithSynonyms(List<String> keySet) {
-        boolean isAppropriation = false;
-        for (String header : keySet) {
-            for (String posibleHeader : preferenceStoreSynonyms.keySet()) {
-                for (String mask : preferenceStoreSynonyms.get(posibleHeader)) {
-                    if (header.toLowerCase().matches(mask.toLowerCase())) {
-                        isAppropriation = true;
-                        String name = posibleHeader.substring(0, posibleHeader.indexOf(DataLoadPreferenceManager.INFO_SEPARATOR));
-                        fileSynonyms.put(name, header);
-                        break;
-                    }
-                }
-                if (isAppropriation) {
-                    isAppropriation = false;
-                    break;
-                }
-            }
         }
     }
 

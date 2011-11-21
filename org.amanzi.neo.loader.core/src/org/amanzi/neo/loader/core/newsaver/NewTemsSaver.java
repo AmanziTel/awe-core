@@ -26,7 +26,6 @@ import java.util.TreeMap;
 
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
-import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceManager;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
@@ -39,6 +38,7 @@ import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveRelationshipTypes;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
 
@@ -63,6 +63,7 @@ public class NewTemsSaver extends AbstractDriveSaver {
 
     protected NewTemsSaver(IDriveModel model, IDriveModel virtualModel, ConfigurationDataImpl config, GraphDatabaseService service) {
         super(service);
+        DRIVE_TYPE_NAME = DriveTypes.TEMS.name();
         preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.DRIVE);
         columnSynonyms = new HashMap<String, Integer>();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
@@ -89,42 +90,44 @@ public class NewTemsSaver extends AbstractDriveSaver {
      */
     private void buildModels(List<String> value) throws AWEException {
         params.clear();
-        String time = getValueFromRow(TIME, value);
+        Object time = getSynonymValueWithAutoparse(TIME, value);
         if (time == null) {
             LOGGER.error("There is no time value in row" + value);
             return;
         }
 
-        Long timestamp = defineTimestamp(workDate, time);
+        Long timestamp = defineTimestamp(workDate, time.toString());
         String message_type = getValueFromRow(MESSAGE_TYPE, value);
-        Double latitude = getLatitude(getValueFromRow(LATITUDE, value));
-        Double longitude = getLongitude(getValueFromRow(LONGITUDE, value));
+        Double latitude = getLatitude(getValueFromRow(IDriveModel.LATITUDE, value));
+        Double longitude = getLongitude(getValueFromRow(IDriveModel.LONGITUDE, value));
         String event = getValueFromRow(EVENT, value);
         String ms = getValueFromRow(MS, value);
 
         params.put(TIME, time);
         params.put(NewNetworkService.NAME, time);
         params.put(TIMESTAMP, timestamp);
-        params.put(LATITUDE, latitude);
-        params.put(LONGITUDE, longitude);
+        params.put(IDriveModel.LATITUDE, latitude);
+        params.put(IDriveModel.LONGITUDE, longitude);
         params.put(MESSAGE_TYPE, message_type);
 
-        params.put(EVENT, getSynonymValuewithAutoparse(EVENT, value));
-        params.put(BCCH, getSynonymValuewithAutoparse(BCCH, value));
-        params.put(TCH, getSynonymValuewithAutoparse(TCH, value));
-        params.put(SC, getSynonymValuewithAutoparse(SC, value));
-        params.put(PN, getSynonymValuewithAutoparse(PN, value));
-        params.put(ECIO, getSynonymValuewithAutoparse(ECIO, value));
-        params.put(RSSI, getSynonymValuewithAutoparse(RSSI, value));
-        params.put(NewNetworkService.CELL_INDEX, getSynonymValuewithAutoparse(NewNetworkService.CELL_INDEX, value));
-        params.put(SECTOR_ID, getSynonymValuewithAutoparse(SECTOR_ID, value));
+        params.put(EVENT, getSynonymValueWithAutoparse(EVENT, value));
+        params.put(BCCH, getSynonymValueWithAutoparse(BCCH, value));
+        params.put(TCH, getSynonymValueWithAutoparse(TCH, value));
+        params.put(SC, getSynonymValueWithAutoparse(SC, value));
+        params.put(PN, getSynonymValueWithAutoparse(PN, value));
+        params.put(ECIO, getSynonymValueWithAutoparse(ECIO, value));
+        params.put(RSSI, getSynonymValueWithAutoparse(RSSI, value));
+        params.put(NewNetworkService.CELL_INDEX, getSynonymValueWithAutoparse(NewNetworkService.CELL_INDEX, value));
+        params.put(SECTOR_ID, getSynonymValueWithAutoparse(SECTOR_ID, value));
         params.put(MS, ms);
         removeEmpty(params);
         addedSynonyms();
+        collectRemainProperties(params, value);
         IDataElement createdMeasurment = addMeasurement(model, params);
         location = model.getLocation(createdMeasurment);
         commitTx();
-        createVirtualModelElement(value, ms, time, event, timestamp);
+
+        createVirtualModelElement(value, ms, time.toString(), event, timestamp);
 
     }
 
@@ -181,10 +184,10 @@ public class NewTemsSaver extends AbstractDriveSaver {
         int ec_io = 0;
         int measurement_count = 0;
         try {
-            channel = (Integer)getSynonymValuewithAutoparse(ALL_PILOT_SET_CHANNEL + 1, value);
-            pn_code = (Integer)getSynonymValuewithAutoparse(ALL_PILOT_SET_PN + 1, value);
-            ec_io = (Integer)getSynonymValuewithAutoparse(ALL_PILOT_SET_EC_IO + 1, value);
-            measurement_count = (Integer)getSynonymValuewithAutoparse(ALL_PILOT_SET_COUNT, value);
+            channel = (Integer)getSynonymValueWithAutoparse(ALL_PILOT_SET_CHANNEL + 1, value);
+            pn_code = (Integer)getSynonymValueWithAutoparse(ALL_PILOT_SET_PN + 1, value);
+            ec_io = (Integer)getSynonymValueWithAutoparse(ALL_PILOT_SET_EC_IO + 1, value);
+            measurement_count = (Integer)getSynonymValueWithAutoparse(ALL_PILOT_SET_COUNT, value);
         } catch (Exception e) {
             LOGGER.error("Failed to parse a field on line " + lineCounter + ": " + e.getMessage());
             return;
@@ -204,7 +207,7 @@ public class NewTemsSaver extends AbstractDriveSaver {
         }
         if (pn_code != this.previous_pn_code) {
             if (this.previous_pn_code >= 0) {
-                LOGGER.error("SERVER CHANGED");
+                LOGGER.info("SERVER CHANGED");
             }
             changed = true;
             this.previous_pn_code = pn_code;
@@ -215,16 +218,16 @@ public class NewTemsSaver extends AbstractDriveSaver {
                 // Delete invalid data, as you can have empty ec_io
                 // zero ec_io is correct, but empty ec_io is not
                 try {
-                    ec_io = (Integer)getSynonymValuewithAutoparse(ALL_PILOT_SET_EC_IO + i, value);
-                    channel = (Integer)getSynonymValuewithAutoparse(ALL_PILOT_SET_CHANNEL + i, value);
-                    pn_code = (Integer)getSynonymValuewithAutoparse(ALL_PILOT_SET_PN + i, value);
-                    String chan_code = "" + channel + "\t" + pn_code;
+                    ec_io = (Integer)getSynonymValueWithAutoparse(ALL_PILOT_SET_EC_IO + i, value);
+                    channel = (Integer)getSynonymValueWithAutoparse(ALL_PILOT_SET_CHANNEL + i, value);
+                    pn_code = (Integer)getSynonymValueWithAutoparse(ALL_PILOT_SET_PN + i, value);
+                    String chan_code = StringUtils.EMPTY + channel + "\t" + pn_code;
                     if (!signals.containsKey(chan_code))
                         signals.put(chan_code, new float[2]);
                     signals.get(chan_code)[0] += Math.pow(10.0, ((ec_io) / 10.0));
                     signals.get(chan_code)[1] += 1;
                 } catch (Exception e) {
-                    LOGGER.error("Error parsing column " + i + " for EC/IO, Channel or PN: " + e.getMessage(), e);
+                    LOGGER.error("Error parsing column " + i + " for EC/IO, Channel or PN: " + e.getMessage());
                 }
             }
         }
@@ -249,9 +252,11 @@ public class NewTemsSaver extends AbstractDriveSaver {
                 params.put(MW, mw);
                 params.put(TIMESTAMP, timestamp);
                 IDataElement virtualMeasurment = addMeasurement(virtualModel, params);
-                List<IDataElement> locationList = new LinkedList<IDataElement>();
-                locationList.add(location);
-                virtualModel.linkNode(virtualMeasurment, locationList, DriveRelationshipTypes.LOCATION);
+                if (location != null) {
+                    List<IDataElement> locationList = new LinkedList<IDataElement>();
+                    locationList.add(location);
+                    virtualModel.linkNode(virtualMeasurment, locationList, DriveRelationshipTypes.LOCATION);
+                }
                 commitTx();
             }
         }
@@ -272,6 +277,7 @@ public class NewTemsSaver extends AbstractDriveSaver {
 
     @Override
     public void init(ConfigurationDataImpl configuration, CSVContainer dataElement) {
+        DRIVE_TYPE_NAME = DriveTypes.TEMS.name();
         Map<String, Object> rootElement = new HashMap<String, Object>();
         preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.DRIVE);
         setDbInstance();
@@ -305,8 +311,8 @@ public class NewTemsSaver extends AbstractDriveSaver {
         try {
             if ((fileName != null && !fileName.equals(dataElement.getFile().getName())) || (fileName == null)) {
                 fileName = dataElement.getFile().getName();
-                fileSynonyms.clear();
                 addedNewFileToModels(dataElement.getFile());
+                resetSynonymsMaps();
             }
             if (fileSynonyms.isEmpty()) {
                 headers = container.getHeaders();
@@ -328,39 +334,4 @@ public class NewTemsSaver extends AbstractDriveSaver {
         }
     }
 
-    private void makeIndexAppropriation() {
-        for (String synonyms : fileSynonyms.keySet()) {
-            columnSynonyms.put(fileSynonyms.get(synonyms), getHeaderId(fileSynonyms.get(synonyms)));
-        }
-        for (String head : headers) {
-            if (!columnSynonyms.containsKey(head)) {
-                columnSynonyms.put(head, getHeaderId(head));
-            }
-        }
-    }
-
-    /**
-     * make Appropriation with default synonyms and file header
-     * 
-     * @param keySet -header files;
-     */
-    private void makeAppropriationWithSynonyms(List<String> keySet) {
-        boolean isAppropriation = false;
-        for (String header : keySet) {
-            for (String posibleHeader : preferenceStoreSynonyms.keySet()) {
-                for (String mask : preferenceStoreSynonyms.get(posibleHeader)) {
-                    if (header.toLowerCase().matches(mask.toLowerCase()) || header.toLowerCase().equals(mask.toLowerCase())) {
-                        isAppropriation = true;
-                        String name = posibleHeader.substring(0, posibleHeader.indexOf(DataLoadPreferenceManager.INFO_SEPARATOR));
-                        fileSynonyms.put(name, header);
-                        break;
-                    }
-                }
-                if (isAppropriation) {
-                    isAppropriation = false;
-                    break;
-                }
-            }
-        }
-    }
 }

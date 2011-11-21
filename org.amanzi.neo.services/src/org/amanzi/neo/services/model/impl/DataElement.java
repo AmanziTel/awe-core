@@ -124,6 +124,9 @@ public class DataElement extends HashMap<String, Object> implements IDataElement
     
     @Override 
     public Set<String> keySet() {
+        if (propertyContainer == null) {
+            return super.keySet();
+        }
         for (String property : propertyContainer.getPropertyKeys()) {
             get(property);
         }
