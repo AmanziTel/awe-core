@@ -50,7 +50,8 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
      */
     protected boolean isCorrect(Object value) {
         if (value == null || value.toString().isEmpty() || value.toString().equals("?")
-                || value.toString().equalsIgnoreCase("NULL") || value.toString().equalsIgnoreCase("default")) {
+                || value.toString().equalsIgnoreCase("NULL") || value.toString().equalsIgnoreCase("default")
+                || value.toString().equalsIgnoreCase("--")) {
             return false;
         }
         return true;
@@ -124,6 +125,21 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
      */
     protected String getHeaderBySynonym(String synonymName) {
         return headers.get(columnSynonyms.get((fileSynonyms.get(synonymName))));
+    }
+
+    /**
+     * return synonym for header
+     * 
+     * @param header
+     * @return
+     */
+    protected String getSynonymForHeader(String header) {
+        for (String key : fileSynonyms.keySet()) {
+            if (fileSynonyms.get(key).equals(header)) {
+                return key;
+            }
+        }
+        return null;
     }
 
     /**

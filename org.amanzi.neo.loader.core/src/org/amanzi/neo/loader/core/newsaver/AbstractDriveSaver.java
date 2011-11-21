@@ -132,6 +132,19 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<DriveModel> {
         return (float)(10.0 * Math.log10(mw));
     }
 
+    void collectRemainProperties(Map<String, Object> properties, List<String> row) {
+        for (String head : headers) {
+            if (isCorrect(head, row)) {
+                if (!properties.containsKey(head)) {
+                    if ((fileSynonyms.containsValue(head) && properties.containsKey(getSynonymForHeader(head)))) {
+                        continue;
+                    }
+                    properties.put(head.toLowerCase(), getSynonymValuewithAutoparse(head, row));
+                }
+            }
+        }
+    }
+
     /**
      * Gets the longitude.
      * 

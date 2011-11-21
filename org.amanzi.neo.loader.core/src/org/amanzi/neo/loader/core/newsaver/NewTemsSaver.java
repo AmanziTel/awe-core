@@ -122,9 +122,11 @@ public class NewTemsSaver extends AbstractDriveSaver {
         params.put(MS, ms);
         removeEmpty(params);
         addedSynonyms();
+        collectRemainProperties(params, value);
         IDataElement createdMeasurment = addMeasurement(model, params);
         location = model.getLocation(createdMeasurment);
         commitTx();
+
         createVirtualModelElement(value, ms, time.toString(), event, timestamp);
 
     }
