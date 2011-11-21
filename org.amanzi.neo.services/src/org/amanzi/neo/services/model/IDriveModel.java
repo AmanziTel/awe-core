@@ -40,6 +40,13 @@ public interface IDriveModel extends ICorrelatableModel, IDataModel, IRenderable
     public Iterable<IDriveModel> getVirtualDatasets();
 
     public IDriveType getDriveType();
+    
+    /**
+     * Get primary type of drive model nodes
+     *
+     * @return Primary type of drive model nodes
+     */
+    public INodeType getPrimaryType();
 
     /**
      * Adds a new node of type DRIVE, creates VIRTUAL_DATASET relationship from root node of current

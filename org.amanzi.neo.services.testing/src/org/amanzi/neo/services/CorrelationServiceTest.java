@@ -22,6 +22,7 @@ import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.DriveModel;
+import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
 import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -79,7 +80,7 @@ public class CorrelationServiceTest extends AbstractNeoServiceTest {
 			network = dsServ.createDataset(project, "network",
 					DatasetTypes.NETWORK);
 			dataset = dsServ.createDataset(project, "dataset",
-					DatasetTypes.DRIVE, DriveTypes.ROMES);
+					DatasetTypes.DRIVE, DriveTypes.ROMES, DriveNodeTypes.M);
 		} catch (AWEException e) {
 			LOGGER.error("Could not create test nodes.", e);
 		}
@@ -509,7 +510,7 @@ public class CorrelationServiceTest extends AbstractNeoServiceTest {
 		for (int i = 0; i < 7; i++) {
 			try {
 				Node ds = dsServ.createDataset(project, "dataset" + i,
-						DatasetTypes.DRIVE, DriveTypes.ROMES);
+						DatasetTypes.DRIVE, DriveTypes.ROMES, DriveNodeTypes.M);
 
 				// create correlations
 				correlationServ.createCorrelation(network, ds);
@@ -546,10 +547,10 @@ public class CorrelationServiceTest extends AbstractNeoServiceTest {
 		List<Node> nws = new ArrayList<Node>();
 		try {
 			ds1 = dsServ.createDataset(project, "dataset1", DatasetTypes.DRIVE,
-					DriveTypes.ROMES);
+					DriveTypes.ROMES, DriveNodeTypes.M);
 
 			ds2 = dsServ.createDataset(project, "dataset2", DatasetTypes.DRIVE,
-					DriveTypes.ROMES);
+					DriveTypes.ROMES, DriveNodeTypes.M);
 
 			// create correlations
 			correlationServ.createCorrelation(network, ds1);

@@ -49,11 +49,13 @@ import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.GisTypes;
+import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.enums.NetworkRelationshipTypes;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.indexes.MultiPropertyIndex;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
+import org.amanzi.neo.services.model.impl.PropertyStatisticalModel;
 import org.amanzi.neo.services.statistic.IPropertyHeader;
 import org.amanzi.neo.services.statistic.PropertyHeader;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
@@ -534,6 +536,14 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
      */
     private void formPropertyList() {
         propertyLists.clear();
+        IDriveModel currentDriveModel = getDriveModel();
+        INodeType primaryTypeOfModel = null;
+        
+        String[] statistics = null;
+        if (currentDriveModel != null) {
+            primaryTypeOfModel = currentDriveModel.getPrimaryType();
+        	statistics = currentDriveModel.getAllProperties(primaryTypeOfModel, Number.class);
+        }
         Object[] savedProperties = null;
         if (getDriveModel() == null)
             return;

@@ -34,6 +34,7 @@ import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
 import org.amanzi.neo.services.model.ICorrelationModel;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
+import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
 import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelTypes;
 import org.apache.log4j.Logger;
 import org.jmock.Expectations;
@@ -387,7 +388,7 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
         List<Node> datasets = new ArrayList<Node>();
         try {
             for (int i = 0; i < 4; i++) {
-                Node dataset = dsServ.createDataset(project, "network" + i, DatasetTypes.DRIVE, DriveTypes.values()[0]);
+                Node dataset = dsServ.createDataset(project, "network" + i, DatasetTypes.DRIVE, DriveTypes.values()[0], DriveNodeTypes.M);
                 datasets.add(dataset);
                 new CorrelationModel(network, dataset);
             }
