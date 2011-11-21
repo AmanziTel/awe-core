@@ -139,7 +139,7 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<DriveModel> {
                     if ((fileSynonyms.containsValue(head) && properties.containsKey(getSynonymForHeader(head)))) {
                         continue;
                     }
-                    properties.put(head.toLowerCase(), getSynonymValuewithAutoparse(head, row));
+                    properties.put(head.toLowerCase(), getSynonymValueWithAutoparse(head, row));
                 }
             }
         }

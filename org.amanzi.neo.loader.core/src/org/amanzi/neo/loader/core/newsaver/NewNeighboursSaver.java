@@ -147,7 +147,7 @@ public class NewNeighboursSaver extends AbstractCSVSaver<NetworkModel> {
         IDataElement findedServiceSector = networkModel.findElement(properties);
         for (String head : headers) {
             if (!fileSynonyms.containsValue(head)) {
-                properties.put(head.toLowerCase(), getSynonymValuewithAutoparse(head, row));
+                properties.put(head.toLowerCase(), getSynonymValueWithAutoparse(head, row));
             }
         }
         if (findedNeighSector != null && findedServiceSector != null) {

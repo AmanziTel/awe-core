@@ -78,7 +78,7 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
      * @param value
      * @return
      */
-    protected Object getSynonymValuewithAutoparse(String synonym, List<String> value) {
+    protected Object getSynonymValueWithAutoparse(String synonym, List<String> value) {
         Object findedValue = getValueFromRow(synonym, value);
         if (findedValue == null) {
             return null;

@@ -290,7 +290,7 @@ public class NewNetworkSaver extends AbstractCSVSaver<NetworkModel> {
      */
     private void collectMainElements(Map<String, Object> mapProperty, List<String> row, INodeType nodeType, String type) {
         mapProperty.put(NewAbstractService.TYPE, nodeType.getId());
-        mapProperty.put(NewAbstractService.NAME, getSynonymValuewithAutoparse(type, row));
+        mapProperty.put(NewAbstractService.NAME, getSynonymValueWithAutoparse(type, row));
     }
 
     /**
@@ -302,12 +302,12 @@ public class NewNetworkSaver extends AbstractCSVSaver<NetworkModel> {
      */
     private boolean collectSite(Map<String, Object> siteMap, List<String> row) {
         siteMap.put(NewAbstractService.TYPE, NetworkElementNodeType.SITE.getId());
-        siteMap.put(INetworkModel.LONGITUDE, getSynonymValuewithAutoparse(INetworkModel.LONGITUDE, row));
-        siteMap.put(INetworkModel.LATITUDE, getSynonymValuewithAutoparse(INetworkModel.LATITUDE, row));
+        siteMap.put(INetworkModel.LONGITUDE, getSynonymValueWithAutoparse(INetworkModel.LONGITUDE, row));
+        siteMap.put(INetworkModel.LATITUDE, getSynonymValueWithAutoparse(INetworkModel.LATITUDE, row));
         String siteName;
         if (!isCorrect(SITE, row)) {
             if (isCorrect(SECTOR, row)) {
-                siteName = getSynonymValuewithAutoparse(SECTOR, row).toString();
+                siteName = getSynonymValueWithAutoparse(SECTOR, row).toString();
                 siteMap.put(NewAbstractService.NAME,
                         autoParse(NewAbstractService.NAME, siteName.substring(0, siteName.length() - 1)));
             } else {
@@ -316,7 +316,7 @@ public class NewNetworkSaver extends AbstractCSVSaver<NetworkModel> {
             }
 
         } else {
-            siteName = getSynonymValuewithAutoparse(SITE, row).toString();
+            siteName = getSynonymValueWithAutoparse(SITE, row).toString();
             siteMap.put(NewAbstractService.NAME, siteName);
             resetRowValueBySynonym(row, SITE);
         }
@@ -334,7 +334,7 @@ public class NewNetworkSaver extends AbstractCSVSaver<NetworkModel> {
 
         for (String head : headers) {
             if (isCorrect(head, row) && !head.equals(fileSynonyms.get(SECTOR))) {
-                sectorMap.put(head.toLowerCase(), getSynonymValuewithAutoparse(head, row));
+                sectorMap.put(head.toLowerCase(), getSynonymValueWithAutoparse(head, row));
                 if (fileSynonyms.containsValue(head)) {
                     for (String key : fileSynonyms.keySet()) {
                         if (head.equals(fileSynonyms.get(key))) {
@@ -344,7 +344,7 @@ public class NewNetworkSaver extends AbstractCSVSaver<NetworkModel> {
                 }
             }
         }
-        String sector = getSynonymValuewithAutoparse(SECTOR, row).toString();
+        String sector = getSynonymValueWithAutoparse(SECTOR, row).toString();
         String sectorName = isCorrect(sector) ? sector.toString() : StringUtils.EMPTY;
         String ci = sectorMap.containsKey(NewNetworkService.CELL_INDEX) ? sectorMap.get(NewNetworkService.CELL_INDEX).toString()
                 : StringUtils.EMPTY;
