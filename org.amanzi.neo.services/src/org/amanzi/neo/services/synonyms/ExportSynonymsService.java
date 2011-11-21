@@ -73,13 +73,6 @@ public class ExportSynonymsService extends NewAbstractService {
     }
 
     /**
-     * Constructor for Testing. Initializes with provided GraphDBService
-     */
-    public ExportSynonymsService(GraphDatabaseService dbService) {
-        super(dbService);
-    }
-
-    /**
      * Wrapper for all Export Synonyms of Dataset
      * 
      * @author lagutko_n

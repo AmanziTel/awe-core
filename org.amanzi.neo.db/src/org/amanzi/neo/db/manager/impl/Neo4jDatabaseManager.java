@@ -70,7 +70,7 @@ public class Neo4jDatabaseManager implements IDatabaseManager {
     /*
      * Listeners for Database Events       
      */
-    private ArrayList<IDatabaseEventListener> listeners = new ArrayList<IDatabaseEventListener>();
+    private static ArrayList<IDatabaseEventListener> listeners = new ArrayList<IDatabaseEventListener>();
 
     /**
      * Full constructor - need on input all parameters of Database
@@ -196,7 +196,9 @@ public class Neo4jDatabaseManager implements IDatabaseManager {
     public void setDatabaseService(GraphDatabaseService service) {
         shutdown();
 
+        fireEvent(EventType.BEFORE_STARTUP);
         dbService = service;
+        fireEvent(EventType.AFTER_STARTUP);
     }
 
     /**
@@ -253,7 +255,6 @@ public class Neo4jDatabaseManager implements IDatabaseManager {
             fireEvent(EventType.AFTER_SHUTDOWN);
         }
 
-        listeners.clear();
         dbService = null;
     }
 

@@ -91,16 +91,6 @@ public class ProjectService extends NewAbstractService {
     }
 
     /**
-     * Constructs a <code>ProjectService</code> instance, that uses the defined
-     * <code>GraphDatabaseService</code>
-     * 
-     * @param graphDb - <code>GraphDatabaseService</code> to use
-     */
-    public ProjectService(GraphDatabaseService graphDb) {
-        super(graphDb);
-    }
-
-    /**
      * Creates a <i>project</i> node with the defined name, sets project type to
      * <code>ProjectNodeType.PROJECT</code> and creates <code>ProjectRelationshipType.PROJECT</code>
      * relationship from reference node to the project node

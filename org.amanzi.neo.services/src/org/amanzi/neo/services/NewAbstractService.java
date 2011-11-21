@@ -82,16 +82,7 @@ public abstract class NewAbstractService implements IDatabaseEventListener {
     public NewAbstractService() {
         // TODO: get database service
         graphDb = DatabaseManagerFactory.getDatabaseManager().getDatabaseService();
-        fillIndexedProperties();
-    }
-
-    /**
-     * Sets service to use the defined <code>GraphDatabaseService</code>
-     * 
-     * @param graphDb - <code>GraphDatabaseService</code> to use
-     */
-    public NewAbstractService(GraphDatabaseService graphDb) {
-        this.graphDb = graphDb;
+        DatabaseManagerFactory.getDatabaseManager().addDatabaseEventListener(this);
         fillIndexedProperties();
     }
 

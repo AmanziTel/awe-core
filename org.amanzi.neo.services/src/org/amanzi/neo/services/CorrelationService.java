@@ -83,14 +83,6 @@ public class CorrelationService extends NewAbstractService {
         }
     }
 
-    /**
-     * @param graphDatabaseService
-     */
-    public CorrelationService(GraphDatabaseService graphDatabaseService) {
-        super(graphDatabaseService);
-        LOGGER.info("Create CorrelationService");
-    }
-
     public CorrelationService() {
         super();
         LOGGER.info("Create CorrelationService");

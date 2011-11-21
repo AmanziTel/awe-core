@@ -23,8 +23,7 @@ public class ProjectServiceTest extends AbstractNeoServiceTest {
 	private static ProjectService projectService;
 	private static final String prName = "Project";
 	private static final String databasePath = getDbLocation();
-	private static Transaction tx;
-
+	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		clearDb();
@@ -33,7 +32,7 @@ public class ProjectServiceTest extends AbstractNeoServiceTest {
 		new LogStarter().earlyStartup();
 		
 		LOGGER.info("Database created in folder " + databasePath);
-		projectService = new ProjectService(graphDatabaseService);
+		projectService = NeoServiceFactory.getInstance().getNewProjectService();
 	}
 
 	@AfterClass
@@ -94,7 +93,7 @@ public class ProjectServiceTest extends AbstractNeoServiceTest {
 			Node project = projectService.createProject(prName + "1");
 
 			// create a node of another type with the same name
-			tx = graphDatabaseService.beginTx();
+			Transaction tx = graphDatabaseService.beginTx();
 			graphDatabaseService.createNode().setProperty(
 					NewAbstractService.NAME, prName + "1");
 			tx.success();

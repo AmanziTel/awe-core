@@ -10,6 +10,7 @@ import junit.framework.Assert;
 
 import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.services.AbstractNeoServiceTest;
+import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;
@@ -50,8 +51,8 @@ public class NodeToNodeRelationshipModelTest extends AbstractNeoServiceTest {
 
         new LogStarter().earlyStartup();
 
-        dsServ = new NewDatasetService(graphDatabaseService);
-        prServ = new ProjectService(graphDatabaseService);
+        dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
+        prServ = NeoServiceFactory.getInstance().getNewProjectService();
         project = prServ.createProject("project");
     }
 

@@ -130,11 +130,6 @@ public class NewNetworkService extends NewAbstractService {
         datasetService = NeoServiceFactory.getInstance().getNewDatasetService();
     }
 
-    public NewNetworkService(GraphDatabaseService graphDb) {
-        super(graphDb);
-        datasetService = NeoServiceFactory.getInstance().getNewDatasetService();
-    }
-
     /**
      * Creates a new network element of defined <code>elementType</code>, sets its <code>name</code>
      * property, adds this element to index <code>indexName</code>, and attaches this element to

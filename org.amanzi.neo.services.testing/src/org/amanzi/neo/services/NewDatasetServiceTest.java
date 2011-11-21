@@ -50,19 +50,17 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
         clearDb();
     }
 
-    private Transaction tx;
     private NewDatasetService service;
 
     @Before
     public void before() {
-        service = new NewDatasetService(graphDatabaseService);
+        service = NeoServiceFactory.getInstance().getNewDatasetService();
         initProjectNode();
     }
 
     @After
     public final void after() {
         cleanReferenceNode();
-
     }
 
     /**
@@ -95,7 +93,7 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
      * create Project node in database
      */
     private void initProjectNode() {
-        tx = graphDatabaseService.beginTx();
+        Transaction tx = graphDatabaseService.beginTx();
         try {
             projectNode = graphDatabaseService.createNode();
             graphDatabaseService.getReferenceNode().createRelationshipTo(projectNode, DatasetRelationTypes.PROJECT);
@@ -117,7 +115,7 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
      */
     private Node initDatasetNode(String name, DatasetTypes type, DriveTypes driveType) {
         Node datasetNode = null;
-        tx = graphDatabaseService.beginTx();
+        Transaction tx = graphDatabaseService.beginTx();
         try {
             datasetNode = graphDatabaseService.createNode();
             projectNode.createRelationshipTo(datasetNode, DatasetRelationTypes.DATASET);
@@ -136,7 +134,7 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
      * removes reference node relationships
      */
     private void cleanReferenceNode() {
-        tx = graphDatabaseService.beginTx();
+        Transaction tx = graphDatabaseService.beginTx();
         try {
 
             Iterator<Relationship> iter = graphDatabaseService.getReferenceNode().getRelationships().iterator();
@@ -1094,7 +1092,7 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
             LOGGER.error("could not add child", e);
         }
         // remove last_child_id from parent
-        tx = graphDatabaseService.beginTx();
+        Transaction tx = graphDatabaseService.beginTx();
         try {
             parent.removeProperty(NewDatasetService.LAST_CHILD_ID);
             tx.success();
@@ -1125,7 +1123,7 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
     @Test
     public void testAddChildNoPreset() {
         // remove last_child_id from parent
-        tx = graphDatabaseService.beginTx();
+        Transaction tx = graphDatabaseService.beginTx();
         try {
             parent.removeProperty(NewDatasetService.LAST_CHILD_ID);
             tx.success();
@@ -1162,7 +1160,7 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
             LOGGER.error("could not add child", e);
         }
         // reset last_child_id
-        tx = graphDatabaseService.beginTx();
+        Transaction tx = graphDatabaseService.beginTx();
         try {
             parent.setProperty(NewDatasetService.LAST_CHILD_ID, parent.getId());
             tx.success();
@@ -1261,7 +1259,7 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
             LOGGER.error("could not add child", e);
         }
         // remove parent_id
-        tx = graphDatabaseService.beginTx();
+        Transaction tx = graphDatabaseService.beginTx();
         try {
             child.removeProperty(NewDatasetService.PARENT_ID);
             tx.success();
@@ -1296,7 +1294,7 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
             LOGGER.error("could not add child", e);
         }
         // remove parent_id
-        tx = graphDatabaseService.beginTx();
+        Transaction tx = graphDatabaseService.beginTx();
         try {
             child.removeProperty(NewDatasetService.PARENT_ID);
             tx.success();
@@ -1411,7 +1409,7 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
             LOGGER.error("could not add child", e);
         }
         // remove last_child_id from parent
-        tx = graphDatabaseService.beginTx();
+        Transaction tx = graphDatabaseService.beginTx();
         try {
             parent.removeProperty(NewDatasetService.LAST_CHILD_ID);
             tx.success();
@@ -1719,7 +1717,7 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
         List<Node> ms = new ArrayList<Node>();
         List<Node> mps = new ArrayList<Node>();
 
-        tx = graphDatabaseService.beginTx();
+        Transaction tx = graphDatabaseService.beginTx();
         try {
             for (Node[] nodds : nodes) {
                 for (Node node : nodds) {
@@ -1818,7 +1816,7 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
     }
 
     private Node getNewChild() {
-        tx = graphDatabaseService.beginTx();
+        Transaction tx = graphDatabaseService.beginTx();
         Node child = null;
         try {
             child = graphDatabaseService.createNode();

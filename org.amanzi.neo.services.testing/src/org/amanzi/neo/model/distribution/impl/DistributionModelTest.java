@@ -49,6 +49,7 @@ import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.apache.commons.lang.StringUtils;
 import org.geotools.brewer.color.BrewerPalette;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
@@ -87,7 +88,15 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
      */
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
+    	clearDb();
+    	initializeDb();
         new LogStarter().earlyStartup();
+    }
+    
+    @AfterClass
+    public static void tearDownClass() throws Exception {
+    	stopDb();
+    	clearDb();
     }
 
     @Test(expected = IllegalArgumentException.class)

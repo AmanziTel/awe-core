@@ -24,6 +24,7 @@ import junit.framework.Assert;
 
 import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.services.AbstractNeoServiceTest;
+import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.enums.INodeType;
@@ -95,7 +96,7 @@ public class ExportSynonymsServiceTest extends AbstractNeoServiceTest {
      */
     @Before
     public void setUp() throws Exception {
-        synonymsService = new ExportSynonymsService(graphDatabaseService);
+        synonymsService = NeoServiceFactory.getInstance().getExportSynonymsService();
     }
 
     /**

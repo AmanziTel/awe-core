@@ -256,16 +256,6 @@ public class DistributionService extends NewAbstractService {
     }
 
     /**
-     * Constructor for testing
-     * 
-     * @param service test DB service
-     */
-    public DistributionService(GraphDatabaseService service) {
-        super(service);
-        datasetService = new NewDatasetService(service);
-    }
-
-    /**
      * Searches for a Root Aggregation Node
      * 
      * @param parentNode parent node of Distribution

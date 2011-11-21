@@ -152,7 +152,7 @@ public class DistributionServiceTest extends AbstractNeoServiceTest {
      */
     @Before
     public void setUp() throws Exception {
-        distributionService = new DistributionService(graphDatabaseService);
+        distributionService = NeoServiceFactory.getInstance().getDistributionService();
         distribution = getDistribution(DISTRIBUTION_NAME);
     }
 
@@ -269,7 +269,7 @@ public class DistributionServiceTest extends AbstractNeoServiceTest {
         Iterator<Relationship> relationships = result.getRelationships().iterator();
         Relationship relationship = relationships.next();
 
-        assertEquals("Invalid type of reationship", DistributionRelationshipTypes.ROOT_AGGREGATION, relationship.getType());
+        assertEquals("Invalid type of reationship", DistributionRelationshipTypes.ROOT_AGGREGATION.name(), relationship.getType().name());
         assertEquals("Invalid Direction of relationship", result, relationship.getEndNode());
         assertEquals("Invalid start node of relationship", parentNode, relationship.getStartNode());
     }

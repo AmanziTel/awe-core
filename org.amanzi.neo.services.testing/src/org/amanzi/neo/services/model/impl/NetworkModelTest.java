@@ -19,6 +19,7 @@ import junit.framework.Assert;
 
 import org.amanzi.neo.services.AbstractNeoServiceTest;
 import org.amanzi.neo.services.CorrelationServiceTest;
+import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
@@ -63,8 +64,8 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
         clearDb();
         initializeDb();
 
-        dsServ = new NewDatasetService(graphDatabaseService);
-        prServ = new ProjectService(graphDatabaseService);
+        dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
+        prServ = NeoServiceFactory.getInstance().getNewProjectService();
     }
 
     @AfterClass
@@ -114,7 +115,7 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
         assertEquals(min_lat, model.getMinLatitude(), DEFAULT_DOUBLE);
         assertEquals(max_lat, model.getMaxLatitude(), DEFAULT_DOUBLE);
         assertEquals(min_lon, model.getMinLongitude(), DEFAULT_DOUBLE);
-        assertEquals(max_lon, model.getMinLongitude(), DEFAULT_DOUBLE);
+        assertEquals(max_lon, model.getMaxLongitude(), DEFAULT_DOUBLE);
     }
 
     @Test

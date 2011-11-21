@@ -14,6 +14,7 @@ import org.amanzi.neo.services.AbstractNeoServiceTest;
 import org.amanzi.neo.services.CorrelationService;
 import org.amanzi.neo.services.CorrelationService.Correlations;
 import org.amanzi.neo.services.CorrelationServiceTest;
+import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.NewDatasetService.DriveTypes;
@@ -56,10 +57,10 @@ public class CorrelationModelTest extends AbstractNeoServiceTest {
 		clearDb();
 		initializeDb();
 
-		correlationServ = new CorrelationService(graphDatabaseService);
-		dsServ = new NewDatasetService(graphDatabaseService);
-		nwServ = new NewNetworkService(graphDatabaseService);
-		prServ = new ProjectService(graphDatabaseService);
+		correlationServ = NeoServiceFactory.getInstance().getCorrelationService();
+		dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
+		nwServ = NeoServiceFactory.getInstance().getNewNetworkService();
+		prServ = NeoServiceFactory.getInstance().getNewProjectService();
 	}
 
 	@AfterClass

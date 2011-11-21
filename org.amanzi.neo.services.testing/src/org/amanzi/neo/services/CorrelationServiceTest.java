@@ -23,7 +23,6 @@ import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.DriveModel;
 import org.apache.log4j.Logger;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -31,7 +30,6 @@ import org.junit.Test;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
 
 public class CorrelationServiceTest extends AbstractNeoServiceTest {
@@ -39,7 +37,6 @@ public class CorrelationServiceTest extends AbstractNeoServiceTest {
 	private static Logger LOGGER = Logger
 			.getLogger(CorrelationServiceTest.class);
 
-	private Transaction tx;
 	private static CorrelationService correlationServ;
 	private static NewDatasetService dsServ;
 	private static NewNetworkService nwServ;
@@ -56,10 +53,10 @@ public class CorrelationServiceTest extends AbstractNeoServiceTest {
 		initializeDb();
 
 		new LogStarter().earlyStartup();
-		correlationServ = new CorrelationService(graphDatabaseService);
-		dsServ = new NewDatasetService(graphDatabaseService);
-		nwServ = new NewNetworkService(graphDatabaseService);
-		prServ = new ProjectService(graphDatabaseService);
+		correlationServ = NeoServiceFactory.getInstance().getCorrelationService();
+		dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
+		nwServ = NeoServiceFactory.getInstance().getNewNetworkService();
+		prServ = NeoServiceFactory.getInstance().getNewProjectService();
 	}
 
 	@AfterClass
@@ -70,7 +67,6 @@ public class CorrelationServiceTest extends AbstractNeoServiceTest {
 
 	@Before
 	public final void before() {
-		tx = graphDatabaseService.beginTx();
 		try {
 			count++;
 			project = prServ.createProject("project" + count);
@@ -81,12 +77,6 @@ public class CorrelationServiceTest extends AbstractNeoServiceTest {
 		} catch (AWEException e) {
 			LOGGER.error("Could not create test nodes.", e);
 		}
-	}
-
-	@After
-	public final void after() {
-		tx.failure();
-		tx.finish();
 	}
 
 	@Test
@@ -512,15 +502,12 @@ public class CorrelationServiceTest extends AbstractNeoServiceTest {
 				// create correlations
 				correlationServ.createCorrelation(network, ds);
 				dss.add(ds);
-				tx.success();
-				tx.finish();
 			} catch (AWEException e) {
 				LOGGER.error("Could not create dataset.", e);
 				fail();
 			}
 
 		}
-		tx = graphDatabaseService.beginTx();
 		// iterator returned
 		Iterable<Node> it = null;
 		try {
@@ -559,16 +546,12 @@ public class CorrelationServiceTest extends AbstractNeoServiceTest {
 			correlationServ.createCorrelation(network1, ds2);
 
 			nws.add(network);
-			nws.add(network1);
-
-			tx.success();
-			tx.finish();
+			nws.add(network1);			
 		} catch (AWEException e) {
 			LOGGER.error("Could not create dataset.", e);
 			fail();
 		}
 
-		tx = graphDatabaseService.beginTx();
 		// iterator returned
 		Iterable<Node> it = null;
 		try {

@@ -212,15 +212,6 @@ public class NewDatasetService extends NewAbstractService {
     }
 
     /**
-     * constructor for testing
-     * 
-     * @param service
-     */
-    public NewDatasetService(GraphDatabaseService service) {
-        super(service);
-    }
-
-    /**
      * find dataset node by name and type
      * 
      * @param projectNode - node, which defines the project, within which will be implemented search
