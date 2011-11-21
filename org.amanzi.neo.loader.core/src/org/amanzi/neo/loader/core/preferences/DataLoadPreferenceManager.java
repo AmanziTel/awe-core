@@ -42,7 +42,8 @@ public class DataLoadPreferenceManager {
     public final static String SITE = "site" + INFO_SEPARATOR;
     public final static String AZIMUTH = "azimuth" + INFO_SEPARATOR;
     public final static String BEAMWITH = "beamwidth" + INFO_SEPARATOR;
-    public final static String BCCH = "bcch" + INFO_SEPARATOR;;
+    public final static String BCCH = "bcch" + INFO_SEPARATOR;
+    public final static String IS_BCCH = "isBcch" + INFO_SEPARATOR;;
     /*
      * drive constants
      */
@@ -82,7 +83,18 @@ public class DataLoadPreferenceManager {
     public final static String SERVING_SECTOR_CI = "serv_sector_ci" + INFO_SEPARATOR;
     public final static String SERVING_SECTOR_LAC = "serv_sector_lac" + INFO_SEPARATOR;
     public final static String SERVING_SECTOR_NAME = "serv_sector_name" + INFO_SEPARATOR;
+    public final static String CO = "co" + INFO_SEPARATOR;
+    public final static String ADJ = "adj" + INFO_SEPARATOR;
 
+    // Interferer
+    public final static String INT_SERV_NAME = "interfering_sector" + INFO_SEPARATOR;
+
+    // FREQUENCY constraints
+    public static String FR_TRX_ID = "trx_id" + INFO_SEPARATOR;
+    public static String FR_CH_TYPE = "channel type" + INFO_SEPARATOR;
+    public static String FR_FREQUENCY = "frequency" + INFO_SEPARATOR;
+    public static String FR_PENALTY = "penalty" + INFO_SEPARATOR;
+    public static String FR_SCALLING_FACTOR = "scalling_factor" + INFO_SEPARATOR;
     /*
      * synonyms map
      */
@@ -90,6 +102,8 @@ public class DataLoadPreferenceManager {
     private static Map<String, String[]> networkMap;
     private static Map<String, String[]> driveMap;
     private static Map<String, String[]> neighMap;
+    private static Map<String, String[]> interferMap;
+    private static Map<String, String[]> frequencyMap;
     // private static Map<String, String[]> countMap;
 
     public static Map<String, PossibleTypes> predifinedPropertyType = new HashMap<String, PossibleTypes>();
@@ -238,7 +252,8 @@ public class DataLoadPreferenceManager {
             networkMap.put(CITY, getPossibleHeaders(DataLoadPreferences.NH_CITY));
             networkMap.put(MSC, getPossibleHeaders(DataLoadPreferences.NH_MSC));
             networkMap.put(BSC, getPossibleHeaders(DataLoadPreferences.NH_BSC));
-            networkMap.put(BCCH, getPossibleHeaders(DataLoadPreferences.NH_MSC));
+            networkMap.put(BCCH, getPossibleHeaders(DataLoadPreferences.DR_BCCH));
+            networkMap.put(IS_BCCH, getPossibleHeaders(DataLoadPreferences.DR_IS_BCCH));
             networkMap.put(SITE, getPossibleHeaders(DataLoadPreferences.NH_SITE));
             networkMap.put(SECTOR, getPossibleHeaders(DataLoadPreferences.NH_SECTOR));
             networkMap.put(AZIMUTH, getPossibleHeaders(DataLoadPreferences.NH_AZIMUTH));
@@ -292,8 +307,37 @@ public class DataLoadPreferenceManager {
             neighMap.put(NEIGHBOUR_SECTOR_CI, getPossibleHeaders(DataLoadPreferences.NE_NBR_CI));
             neighMap.put(NEIGHBOUR_SECTOR_LAC, getPossibleHeaders(DataLoadPreferences.NE_NBR_LAC));
             neighMap.put(NEIGHBOUR_SECTOR_NAME, getPossibleHeaders(DataLoadPreferences.NE_NBR_NAME));
+            neighMap.put(CO, getPossibleHeaders(DataLoadPreferences.NE_SRV_CO));
+            neighMap.put(ADJ, getPossibleHeaders(DataLoadPreferences.NE_SRV_ADJ));
         }
         return neighMap;
+    }
+
+    public Map<String, String[]> getInterfererSunonyms() {
+        if (interferMap == null) {
+            interferMap = new HashMap<String, String[]>();
+        }
+        if (interferMap.isEmpty()) {
+            interferMap.put(SERVING_SECTOR_NAME, getPossibleHeaders(DataLoadPreferences.NE_SRV_NAME));
+            interferMap.put(INT_SERV_NAME, getPossibleHeaders(DataLoadPreferences.INT_SERV_NAME));
+            interferMap.put(CO, getPossibleHeaders(DataLoadPreferences.NE_SRV_CO));
+            interferMap.put(ADJ, getPossibleHeaders(DataLoadPreferences.NE_SRV_ADJ));
+        }
+        return interferMap;
+    }
+
+    public Map<String, String[]> getFrequencySynonyms() {
+        if (frequencyMap == null) {
+            frequencyMap = new HashMap<String, String[]>();
+        }
+        if (frequencyMap.isEmpty()) {
+            frequencyMap.put(FR_CH_TYPE, getPossibleHeaders(DataLoadPreferences.FR_CH_TYPE));
+            frequencyMap.put(FR_FREQUENCY, getPossibleHeaders(DataLoadPreferences.FR_FREQUENCY));
+            frequencyMap.put(FR_PENALTY, getPossibleHeaders(DataLoadPreferences.FR_PENALTY));
+            frequencyMap.put(FR_SCALLING_FACTOR, getPossibleHeaders(DataLoadPreferences.FR_SCALLING_FACTOR));
+            frequencyMap.put(FR_TRX_ID, getPossibleHeaders(DataLoadPreferences.FR_TRX_ID));
+        }
+        return frequencyMap;
     }
 
     /**

@@ -88,7 +88,7 @@ public class NewTemsSaver extends AbstractDriveSaver {
      * @param value
      * @throws AWEException
      */
-    private void buildModels(List<String> value) throws AWEException {
+    protected void saveLine(List<String> value) throws AWEException {
         params.clear();
         Object time = getSynonymValueWithAutoparse(TIME, value);
         if (time == null) {
@@ -264,7 +264,8 @@ public class NewTemsSaver extends AbstractDriveSaver {
 
     private void addedSynonyms() {
         for (String key : params.keySet()) {
-            if (key != NewAbstractService.NAME && key != NewAbstractService.TYPE && key != TIMESTAMP) {
+            if (key != NewAbstractService.NAME && key != NewAbstractService.TYPE && key != TIMESTAMP
+                    && fileSynonyms.containsKey(key)) {
                 addedDatasetSynonyms(model, DriveNodeTypes.M, key, getHeaderBySynonym(key));
             }
         }
@@ -322,7 +323,7 @@ public class NewTemsSaver extends AbstractDriveSaver {
             } else {
                 lineCounter++;
                 List<String> value = container.getValues();
-                buildModels(value);
+                saveLine(value);
             }
         } catch (DatabaseException e) {
             LOGGER.error("Error while saving element on line " + lineCounter, e);

@@ -51,9 +51,9 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Transaction;
 
 /**
- * @author Vladislav_Kondratenko
+ * @author Vladislav_Kondrateno
  */
-public class NewNeighbourSaverTesting extends AbstractAWETest {
+public class FreuencyConstraintTesting extends AbstractAWETest {
     private static Logger LOGGER = Logger.getLogger(NewNetworkSaverTesting.class);
     private NewNeighboursSaver neighboursSaver;
     private static String PATH_TO_BASE = "";

@@ -46,6 +46,7 @@ public class DataLoadPreferences {
     public static final String DR_LATITUDE = "DR_LATITUDE";
     public static final String DR_LONGITUDE = "DR_LONGITUDE";
     public static final String DR_BCCH = "DR_BCCH";
+    public static final String DR_IS_BCCH = "DR_IS_BCCH";
     public static final String DR_TCH = "DR_TCH";
     public static final String DR_SC = "DR_SC";
     public static final String DR_PN = "DR_PN";
@@ -90,6 +91,16 @@ public class DataLoadPreferences {
     public static final String NE_NBR_CI = "NE_NBR_CI";
     public static final String NE_NBR_LAC = "NE_NBR_LAC";
     public static final String NE_NBR_NAME = "NE_NBR_NAME";
+
+    // Interference
+    public static String INT_SERV_NAME = "INT_SERV_NAME";
+
+    // frequency contrainst
+    public static String FR_TRX_ID = "FR_TRX_ID";
+    public static String FR_CH_TYPE = "FR_CH_TYPE";
+    public static String FR_FREQUENCY = "FR_FREQUENCY";
+    public static String FR_PENALTY = "FR_PENALTY";
+    public static String FR_SCALLING_FACTOR = "FR_SCALLING_FACTOR";
 
     // transmission loader headers
     public static final String TR_SITE_ID_SERV = "TR_SITE_ID_SERV";

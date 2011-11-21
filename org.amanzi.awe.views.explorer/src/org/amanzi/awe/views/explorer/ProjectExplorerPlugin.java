@@ -18,18 +18,15 @@ import java.util.HashSet;
 
 import org.amanzi.awe.views.explorer.view.ProjectExplorerView;
 import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.services.events.NewShowPreparedViewEvent;
 import org.amanzi.neo.services.events.NewUpdateDrillDownEvent;
 import org.amanzi.neo.services.events.UpdateViewEvent;
 import org.amanzi.neo.services.events.UpdateViewEventType;
-import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.ui.IUpdateViewListener;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.ui.IViewPart;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
@@ -119,7 +116,7 @@ public class ProjectExplorerPlugin extends AbstractUIPlugin implements IUpdateVi
             updateView((NewUpdateDrillDownEvent)event);
             break;
         case SHOW_PREPARED_VIEW:
-            showPreparedView((NewShowPreparedViewEvent)event);
+            // showPreparedView((NewShowPreparedViewEvent)event);
             break;
         default:
             IViewPart projectExplorer = findExplorer();
@@ -130,44 +127,9 @@ public class ProjectExplorerPlugin extends AbstractUIPlugin implements IUpdateVi
         }
     }
 
-    private void updateView(NewUpdateDrillDownEvent event) {
-        String source = event.getSource();
-        if (!source.equals(ProjectExplorerView.PROJECT_EXPLORER_ID) && !source.equals(DRIVE_TREE_VIEW_ID)) {
-            IDataElement node = event.getDataElements().get(0);
-            IViewPart viewNetwork = findExplorer();
-            if (viewNetwork != null) {
-                ProjectExplorerView networkView = (ProjectExplorerView)viewNetwork;
-                networkView.selectDataElement(node);
-            }
-        }
-    }
-
-    private IViewPart showProjectExplorer() {
-        IViewPart viewNetwork;
-        try {
-            viewNetwork = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
-                    .showView(ProjectExplorerView.PROJECT_EXPLORER_ID);
-        } catch (PartInitException e) {
-            NeoCorePlugin.error(e.getLocalizedMessage(), e);
-            viewNetwork = null;
-        }
-        return viewNetwork;
-    }
-
     private IViewPart findExplorer() {
         return PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
                 .findView(ProjectExplorerView.PROJECT_EXPLORER_ID);
-    }
-
-    private void showPreparedView(NewShowPreparedViewEvent event) {
-        if (event.isViewNeedUpdate(ProjectExplorerView.PROJECT_EXPLORER_ID)) {
-            IDataElement dataElement = event.getDataElements().get(0);
-            IViewPart viewNetwork = showProjectExplorer();
-            if (viewNetwork != null) {
-                ProjectExplorerView networkView = (ProjectExplorerView)viewNetwork;
-                networkView.selectDataElement(dataElement);
-            }
-        }
     }
 
     @Override

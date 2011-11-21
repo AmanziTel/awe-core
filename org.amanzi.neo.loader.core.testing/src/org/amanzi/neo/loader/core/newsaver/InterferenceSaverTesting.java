@@ -53,9 +53,9 @@ import org.neo4j.graphdb.Transaction;
 /**
  * @author Vladislav_Kondratenko
  */
-public class NewNeighbourSaverTesting extends AbstractAWETest {
+public class InterferenceSaverTesting extends AbstractAWETest {
     private static Logger LOGGER = Logger.getLogger(NewNetworkSaverTesting.class);
-    private NewNeighboursSaver neighboursSaver;
+    private NewInterferenceSaver interferenceSaver;
     private static String PATH_TO_BASE = "";
     private ConfigurationDataImpl config;
     private static final String NETWORK_KEY = "Network";
@@ -120,14 +120,16 @@ public class NewNeighbourSaverTesting extends AbstractAWETest {
         }
         fileList.add(testFile);
         config.setSourceFile(fileList);
-        neighboursSaver = new NewNeighboursSaver(node2model, networkModel, config, service);
-        hashMap.put("Serving Sector", "sector1");
-        hashMap.put("Neighbour", "sector2");
-        hashMap.put("ci", "3.123");
-        hashMap.put("lac", "2.1234");
+        interferenceSaver = new NewInterferenceSaver(node2model, networkModel, config, service);
+        hashMap.put("Serving Sector ", "bsc1");
+        hashMap.put("Interfering Sector", "site1");
+        hashMap.put("co", "3.123");
+        hashMap.put("adj", "2.1234");
+        hashMap.put("source", "sector1");
 
-        properties.put("ci", "3.123");
-        properties.put("lac", "2.1234");
+        properties.put("co", "3.123");
+        properties.put("adj", "2.1234");
+        properties.put("source", "sector1");
 
     }
 
@@ -144,13 +146,12 @@ public class NewNeighbourSaverTesting extends AbstractAWETest {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
-        neighboursSaver.saveElement(rowContainer);
         List<String> values = prepareValues(hashMap);
         rowContainer.setValues(values);
         try {
             when(networkModel.findElement(SECTOR1)).thenReturn(new DataElement(SECTOR1));
             when(networkModel.findElement(SECTOR2)).thenReturn(new DataElement(SECTOR2));
-            neighboursSaver.saveElement(rowContainer);
+            interferenceSaver.saveElement(rowContainer);
             verify(node2model).linkNode(new DataElement(SECTOR1), new DataElement(SECTOR2), eq(properties));
         } catch (Exception e) {
             LOGGER.error(" testNeighbourNetworkSaver error", e);
@@ -158,7 +159,6 @@ public class NewNeighbourSaverTesting extends AbstractAWETest {
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testIfOneSectorNotFound() {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
@@ -169,7 +169,7 @@ public class NewNeighbourSaverTesting extends AbstractAWETest {
         try {
             when(networkModel.findElement(SECTOR1)).thenReturn(null);
             when(networkModel.findElement(SECTOR2)).thenReturn(new DataElement(SECTOR2));
-            neighboursSaver.saveElement(rowContainer);
+            interferenceSaver.saveElement(rowContainer);
             verify(node2model, never()).linkNode(any(IDataElement.class), any(IDataElement.class), any(Map.class));
         } catch (Exception e) {
             LOGGER.error(" testNeighbourNetworkSaver error", e);
@@ -177,9 +177,8 @@ public class NewNeighbourSaverTesting extends AbstractAWETest {
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Test
-    public void testIfThereIsNotEnoughtProperties() {
+    public void testIfThereIsNoEnoughtProperties() {
         hashMap.remove("Serving Sector");
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
@@ -189,7 +188,7 @@ public class NewNeighbourSaverTesting extends AbstractAWETest {
         try {
             when(networkModel.findElement(SECTOR1)).thenReturn(null);
             when(networkModel.findElement(SECTOR2)).thenReturn(new DataElement(SECTOR2));
-            neighboursSaver.saveElement(rowContainer);
+            interferenceSaver.saveElement(rowContainer);
             verify(node2model, never()).linkNode(any(IDataElement.class), any(IDataElement.class), any(Map.class));
         } catch (Exception e) {
             LOGGER.error(" testNeighbourNetworkSaver error", e);
@@ -203,12 +202,12 @@ public class NewNeighbourSaverTesting extends AbstractAWETest {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
-        neighboursSaver.saveElement(rowContainer);
+        interferenceSaver.saveElement(rowContainer);
         List<String> values = prepareValues(hashMap);
         try {
             rowContainer.setValues(values);
             when(networkModel.findElement(any(Map.class))).thenThrow(new DatabaseException("required exception"));
-            neighboursSaver.saveElement(rowContainer);
+            interferenceSaver.saveElement(rowContainer);
         } catch (Exception e) {
             verify(tx, never()).success();
             verify(tx, atLeastOnce()).failure();
@@ -222,12 +221,12 @@ public class NewNeighbourSaverTesting extends AbstractAWETest {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
-        neighboursSaver.saveElement(rowContainer);
+        interferenceSaver.saveElement(rowContainer);
         List<String> values = prepareValues(hashMap);
         try {
             rowContainer.setValues(values);
             when(networkModel.findElement(any(Map.class))).thenThrow(new IllegalArgumentException("required exception"));
-            neighboursSaver.saveElement(rowContainer);
+            interferenceSaver.saveElement(rowContainer);
         } catch (Exception e) {
             verify(tx, times(2)).success();
             verify(tx, never()).failure();
