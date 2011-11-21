@@ -438,4 +438,11 @@ public abstract class AbstractLoaderWizardNew<T extends IConfiguration> extends 
     public Map<ILoaderNew< ? extends IData, T>, T> getRequiredLoaders() {
         return requiredLoaders;
     }
+
+	@Override
+	public void setInitializationData(IConfigurationElement config,
+			String propertyName, Object data) throws CoreException {
+		// TODO Auto-generated method stub
+		
+	}
 }

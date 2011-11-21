@@ -22,5 +22,7 @@ package org.amanzi.neo.services.model;
  * @since 1.0.0
  */
 public interface INetworkType {
+    
+    public String getId();
 
 }

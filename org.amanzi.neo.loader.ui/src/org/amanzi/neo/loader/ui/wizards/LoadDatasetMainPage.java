@@ -17,18 +17,14 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 
-import org.amanzi.neo.db.manager.NeoServiceProvider;
+import org.amanzi.neo.db.manager.DatabaseManagerFactory;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.IValidateResult.Result;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
-import org.amanzi.neo.services.INeoConstants;
-import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.IProjectModel;
@@ -67,11 +63,7 @@ import org.eclipse.swt.widgets.Shell;
  */
 public class LoadDatasetMainPage extends LoaderPageNew<ConfigurationDataImpl> {
     private static Logger LOGGER = Logger.getLogger(LoadDatasetMainPage.class);
-    /** String ASC_PAT_FILE field */
-    // private static final String ASC_PAT_FILE = ".*_(\\d{6})_.*";
-    // private static final String FMT_PAT_FILE = ".*(\\d{4}-\\d{2}-\\d{2}).*";
-    // private static final String CSV_PAT_FILE = ".*(\\d{2}/\\d{2}/\\d{4}).*";
-    private final Set<String> restrictedNames = new HashSet<String>();
+        
     private Map<Object, String> names = new HashMap<Object, String>();
 
     /*
@@ -204,21 +196,6 @@ public class LoadDatasetMainPage extends LoaderPageNew<ConfigurationDataImpl> {
         dCombo.top = new FormAttachment(0, 2);
         // dCombo.right = new FormAttachment(100, -2);
         date.setLayoutData(dCombo);
-        final Button batchMode = new Button(parent, SWT.CHECK);
-        batchMode.addSelectionListener(new SelectionListener() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                setAccessType(batchMode.getSelection());
-            }
-
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-                widgetSelected(e);
-            }
-        });
-        batchMode.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
-        batchMode.setText("batch mode");
     }
 
     /**
@@ -385,12 +362,8 @@ public class LoadDatasetMainPage extends LoaderPageNew<ConfigurationDataImpl> {
             IProjectModel projectModel = ProjectModel.getCurrentProjectModel();
 
             for (IDriveModel model : projectModel.findAllDriveModels()) {
-                String id = model.getRootNode().getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
-                if (NodeTypes.DRIVE.checkNode(model.getRootNode())) { //$NON-NLS-1$
-                    dataset.put(id, model);
-                } else {
-                    restrictedNames.add(id);
-                }
+                String id = model.getName();
+                dataset.put(id, model);
             }
         } catch (AWEException e) {
             LOGGER.error("Error while getRootItems work", e);
@@ -399,7 +372,9 @@ public class LoadDatasetMainPage extends LoaderPageNew<ConfigurationDataImpl> {
 
         String[] result = dataset.keySet().toArray(new String[] {});
         Arrays.sort(result);
-        NeoServiceProvider.getProvider().commit();
+        
+        DatabaseManagerFactory.getDatabaseManager().commit();
+        
         return result;
     }
 
@@ -448,7 +423,8 @@ public class LoadDatasetMainPage extends LoaderPageNew<ConfigurationDataImpl> {
                 String fn = dlg.open();
 
                 if (fn != null) {
-                    setDefaultDirectory(dlg.getFilterPath());
+                    LoaderUiUtils.setDefaultDirectory(dlg.getFilterPath());
+                    
                     for (String name : dlg.getFileNames()) {
                         addFileToLoad(name, dlg.getFilterPath(), true);
                         if (cDataset.getText().isEmpty()) {

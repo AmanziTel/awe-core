@@ -15,14 +15,10 @@ package org.amanzi.neo.loader.ui.wizards;
 
 import java.util.ArrayList;
 
-import org.amanzi.neo.db.manager.DatabaseManager;
-import org.amanzi.neo.db.manager.DatabaseManager.DatabaseAccessType;
 import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.ILoaderNew;
 import org.amanzi.neo.loader.core.IValidateResult.Result;
 import org.amanzi.neo.loader.core.newsaver.IData;
-import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
-import org.amanzi.neo.loader.core.preferences.PreferenceStore;
 import org.amanzi.neo.loader.ui.preferences.CommonCRSPreferencePage;
 import org.amanzi.neo.services.ui.utils.ActionUtil;
 import org.amanzi.neo.services.utils.RunnableWithResult;
@@ -37,7 +33,7 @@ import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.geotools.referencing.CRS;
-import org.opengis.referencing.NoSuchAuthorityCodeException;
+import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
@@ -57,15 +53,6 @@ public abstract class LoaderPageNew<T extends IConfiguration> extends WizardPage
         super(pageName);
     }
 
-    /**
-     * set default directory
-     * 
-     * @param dirname
-     */
-    protected void setDefaultDirectory(String dirname) {
-        PreferenceStore.getPreferenceStore().setDefault(DataLoadPreferences.DEFAULT_DIRRECTORY_LOADER, dirname);
-    }
-
     @Override
     public void setInitializationData(IConfigurationElement config, String propertyName, Object data) throws CoreException {
         if ("title".equals(propertyName)) {
@@ -74,16 +61,6 @@ public abstract class LoaderPageNew<T extends IConfiguration> extends WizardPage
         if ("description".equals(propertyName)) {
             setDescription(String.valueOf(data));
         }
-    }
-
-    /**
-     * Sets the access type.
-     * 
-     * @param batchMode the new access type
-     */
-    protected void setAccessType(final boolean batchMode) {
-        ((AbstractLoaderWizard< ? >)getWizard()).setAccessType(batchMode ? DatabaseManager.DatabaseAccessType.BATCH
-                : DatabaseAccessType.EMBEDDED);
     }
 
     @SuppressWarnings("unchecked")
@@ -123,7 +100,7 @@ public abstract class LoaderPageNew<T extends IConfiguration> extends WizardPage
     *
     */
     protected void selectCRS() {
-        CoordinateReferenceSystem result = ActionUtil.getInstance().runTaskWithResult(
+    	CoordinateReferenceSystem result = ActionUtil.getInstance().runTaskWithResult(
                 new RunnableWithResult<CoordinateReferenceSystem>() {
 
                     private CoordinateReferenceSystem result;
@@ -183,7 +160,7 @@ public abstract class LoaderPageNew<T extends IConfiguration> extends WizardPage
     private CoordinateReferenceSystem getDefaultCRS() {
         try {
             return CRS.decode("EPSG:4326");
-        } catch (NoSuchAuthorityCodeException e) {
+        } catch (FactoryException e) {
             // TODO Handle NoSuchAuthorityCodeException
             throw (RuntimeException)new RuntimeException().initCause(e);
         }

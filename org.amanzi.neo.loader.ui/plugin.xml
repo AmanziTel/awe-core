@@ -39,13 +39,7 @@
        </command>   
        
     </extension>
-    <extension
-          point="org.eclipse.ui.handlers">       
-       <handler
-             class="org.amanzi.neo.loader.ui.handlers.LaunchLoader"
-             commandId="org.amanzi.neo.loader.ui.commands.LaunchLoader">
-       </handler>
-    </extension>
+    
    <extension
           point="org.eclipse.ui.handlers">       
        <handler
@@ -119,10 +113,6 @@
     <extension
           point="org.amanzi.neo.loader.ui.gui">
        <GUI
-             class="org.amanzi.neo.loader.ui.wizards.OssImportWizard"
-             id="org.amanzi.neo.loader.ui.wizards.OssImportWizard">
-       </GUI>
-       <GUI
              class="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
              id="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard">
        </GUI>
@@ -130,192 +120,15 @@
              class="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard"
              id="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard">
        </GUI>
-       <GUI
-             class="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard"
-             id="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard">
-       </GUI>
-       <GUI
-             class="org.amanzi.neo.loader.ui.wizards.NetworkConfigurationImportWizard"
-             id="org.amanzi.neo.loader.ui.wizards.NetworkConfigurationImportWizard">
-       </GUI>
     </extension>
-    <extension
-          point="org.amanzi.neo.loader.ui.loaders">
-       <loader
-             allowCreate="true"
-             config="org.amanzi.neo.loader.ui.validators.NetworkSectorDataValidator"
-             description="Network Sector Data"
-             gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
-             parser="org.amanzi.neo.loader.core.parser.CSVParser"
-             renderable="true"
-             saver="org.amanzi.neo.loader.core.saver.impl.NetworkSaver"
-             validator="org.amanzi.neo.loader.ui.validators.NetworkSectorDataValidator">
-       </loader>
-    <!--   <loader
-             description="Network Site Data"
-             gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
-             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
-             parser="org.amanzi.neo.loader.core.parser.CSVParser"
-             saver="org.amanzi.neo.loader.core.saver.impl.NetworkSiteSaver"
-             validator="org.amanzi.neo.loader.ui.validators.NetworkSiteDataValidator"
-             renderable="true"
-             allowCreate="true">
-       </loader>
-       -->
-       <loader
-             description="Neighbour Loader"
-             gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
-             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
-             parser="org.amanzi.neo.loader.core.parser.CSVParser"
-             saver="org.amanzi.neo.loader.core.saver.impl.NeighbourSaver"
-             validator="org.amanzi.neo.loader.ui.validators.NeighbourDataValidator">
-       </loader>
-       <loader
-             description="Transmission Loader"
-             gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
-             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
-             parser="org.amanzi.neo.loader.core.parser.CSVParser"
-             saver="org.amanzi.neo.loader.core.saver.impl.TransmissionSaver"
-             validator="org.amanzi.neo.loader.ui.validators.TransmissionDataValidator">
-       </loader>
- <!--      <loader
-             description="Tems Data"
-             gui="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard"
-             parser="org.amanzi.neo.loader.core.parser.CSVParser"
-             saver="org.amanzi.neo.loader.core.saver.impl.TemsSaver"
-             renderable="true"
-             allowCreate="true">
-       </loader>
-       -->
-       <loader
-             description="Romes Data"
-             gui="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard"
-             parser="org.amanzi.neo.loader.core.parser.CSVParser"
-             saver="org.amanzi.neo.loader.core.saver.impl.RomesSaver"
-             renderable="true"
-             allowCreate="true">
-       </loader>
-       <loader
-             description="Nemo data v1.86"
-             gui="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard"
-             parser="org.amanzi.neo.loader.core.parser.LineParser"
-             saver="org.amanzi.neo.loader.core.saver.impl.Nemo1xSaver"
-             renderable="true"
-             allowCreate="true">
-       </loader>
-       <loader
-             description="Nemo data v2.01"
-             gui="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard"
-             parser="org.amanzi.neo.loader.core.parser.LineParser"
-             saver="org.amanzi.neo.loader.core.saver.impl.Nemo2xSaver"
-             renderable="true"
-             allowCreate="true">
-       </loader>
-       <loader
-             description="Network Selection"
-             gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
-             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
-             parser="org.amanzi.neo.loader.core.parser.LineParser"
-             saver="org.amanzi.neo.loader.core.saver.impl.NetworkSelectionSaver"
-             validator="org.amanzi.neo.loader.ui.validators.ExistNetworkValidator">
-       </loader>
-       <loader
-             description="Traffic data"
-             gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
-             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
-             parser="org.amanzi.neo.loader.core.parser.CSVParser"
-             saver="org.amanzi.neo.loader.core.saver.network.TrafficDataSaver"
-             validator="org.amanzi.neo.loader.ui.validators.TrafficDataValidator">
-       </loader>
-       <loader
-             description="Frequency constraints data"
-             gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
-             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
-             parser="org.amanzi.neo.loader.core.parser.CSVParser"
-             saver="org.amanzi.neo.loader.core.saver.network.FrequencyConstraintsSaver"
-             validator="org.amanzi.neo.loader.ui.validators.FrequencyConstraintsDataValidator">
-       </loader>
-	   <loader
-          description="Separation constraints data"
-          gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
-          loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
-          parser="org.amanzi.neo.loader.core.parser.CSVParser"
-          saver="org.amanzi.neo.loader.core.saver.network.SeparationConstraintsSaver"
-          validator="org.amanzi.neo.loader.ui.validators.SeparationConstraintsDataValidator">
-       </loader>
-       <loader
-             description="Interference Matrix"
-             gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
-             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
-             parser="org.amanzi.neo.loader.core.parser.CSVParser"
-             saver="org.amanzi.neo.loader.core.saver.network.InterferenceMatrixSaver"
-             validator="org.amanzi.neo.loader.ui.validators.InterferenceMatrixValidator">
-       </loader>
- 	   <loader
-           description="TRX data"
-           gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
-           loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
-           parser="org.amanzi.neo.loader.core.parser.CSVParser"
-           saver="org.amanzi.neo.loader.core.saver.network.TrxSaver"
-           validator="org.amanzi.neo.loader.ui.validators.TrxDataValidator">
-       </loader>
-    </extension>
-
+    
    <extension
          point="org.eclipse.ui.preferencePages">
-      <page
-            class="org.amanzi.neo.loader.ui.preferences.DataLoadPreferencePage"
-            id="org.amanzi.neo.loader.ui.preferences.DataLoadPreferencePage"
-            name="Amanzi Data">
-      </page>
-      <page
-      		class="org.amanzi.neo.loader.ui.preferences.SynonymLoaderPreferencePage"
-      		id="org.amanzi.neo.loader.ui.preferences.SynonymsPreferencePage"
-      		name="Synonyms"
-      		category="org.amanzi.neo.loader.ui.preferences.DataLoadPreferencePage">
-      </page>
-       <page
-            class="org.amanzi.neo.loader.ui.preferences.ImportSynonymsPreferencePage"
-            id="org.amanzi.neo.loader.ui.preferences.CommonSynonymsPreferencePage"
-            name="Import synonyms data"
-            category="org.amanzi.neo.loader.ui.preferences.SynonymsPreferencePage">
-      </page>
-      <page
-            class="org.amanzi.neo.loader.ui.preferences.NetworkLoaderPreferencePage"
-            id="org.amanzi.neo.loader.ui.preferences.NetworkLoaderPreferencePage"
-            name="Network data"
-            category="org.amanzi.neo.loader.ui.preferences.SynonymsPreferencePage">
-      </page>
-      <page
-            class="org.amanzi.neo.loader.ui.preferences.DriveLoaderPreferencePage"
-            id="org.amanzi.neo.loader.ui.preferences.DriveLoaderPreferencePage"
-            name="Drive data"
-            category="org.amanzi.neo.loader.ui.preferences.SynonymsPreferencePage">
-      </page>
       <page
             class="org.amanzi.neo.loader.ui.preferences.CommonCRSPreferencePage"
             id="org.amanzi.neo.loader.ui.preferences.CommonCRSPreferencePage"
             name="Common CRS"
             category="org.amanzi.neo.loader.ui.preferences.DataLoadPreferencePage">
-      </page>
-
-	  <page
-            class="org.amanzi.neo.loader.ui.preferences.NeighbourLoaderPreferencePage"
-            id="org.amanzi.neo.loader.ui.preferences.NeighbourLoaderPreferencePage"
-            name="Neighbour lists"
-            category="org.amanzi.neo.loader.ui.preferences.SynonymsPreferencePage">
-      </page>
-      <page
-            class="org.amanzi.neo.loader.ui.preferences.ProbeLoaderPreferencePage"
-            id="org.amanzi.neo.loader.ui.preferences.ProbeLoaderPreferencePage"
-            name="Probe data"
-            category="org.amanzi.neo.loader.ui.preferences.SynonymsPreferencePage">
-      </page>
-      <page
-            class="org.amanzi.neo.loader.ui.preferences.TransmissionLoaderPreferencePage"
-            id="org.amanzi.neo.loader.ui.preferences.TransmissionLoaderPreferencePage"
-            name="Transmission lists"
-            category="org.amanzi.neo.loader.ui.preferences.SynonymsPreferencePage">
       </page>
    </extension>
    <extension
@@ -353,20 +166,6 @@
                <saver 
                id="org.amanzi.neo.loader.core.newsaver.NewNetworkSaver"
             	class="org.amanzi.neo.loader.core.newsaver.NewNetworkSaver"
-            />
-      </newloader>
-    <newloader
-             gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
-             id="NewNetworkSelectionLoader"
-             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoaderNew"
-             loader_data_type="Selection"
-             loader_name="SelectionDataLoader"
-             loader_type="sector selection loader"
-             parser="org.amanzi.neo.loader.core.newparser.CommonCSVParser"
-             validator="org.amanzi.neo.loader.ui.validators.SectorSelectionDataValidator">
-               <saver 
-                id="org.amanzi.neo.loader.core.newsaver.SectorSelectionSaver"
-            	class="org.amanzi.neo.loader.core.newsaver.SectorSelectionSaver"
             />
       </newloader>
      

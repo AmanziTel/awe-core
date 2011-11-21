@@ -16,12 +16,10 @@ package org.amanzi.neo.loader.ui.wizards;
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
-import org.amanzi.neo.db.manager.NeoServiceProvider;
+import org.amanzi.neo.db.manager.DatabaseManagerFactory;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.ILoaderNew;
 import org.amanzi.neo.loader.core.IValidateResult;
@@ -29,11 +27,9 @@ import org.amanzi.neo.loader.core.IValidateResult.Result;
 import org.amanzi.neo.loader.core.newsaver.IData;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
-import org.amanzi.neo.services.INeoConstants;
-import org.amanzi.neo.services.enums.NetworkTypes;
-import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.INetworkModel;
+import org.amanzi.neo.services.model.INetworkType;
 import org.amanzi.neo.services.model.IProjectModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.apache.commons.lang.StringUtils;
@@ -50,7 +46,6 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
-import org.neo4j.graphdb.Node;
 
 /**
  * <p>
@@ -78,9 +73,9 @@ public class LoadNetworkMainPage extends LoaderPageNew<ConfigurationDataImpl> {
     private Composite main;
     protected Combo network;
     private FileFieldEditorExt editor;
-    private HashMap<String, Node> members;
-    private final Set<String> restrictedNames = new HashSet<String>();
-    protected Node networkNode;
+    private HashMap<String, INetworkModel> members;
+    
+    protected INetworkModel networkModel;
     private Label labNetworkDescr;
     private Combo networkType;
     protected String networkName = ""; //$NON-NLS-1$
@@ -91,7 +86,7 @@ public class LoadNetworkMainPage extends LoaderPageNew<ConfigurationDataImpl> {
     public LoadNetworkMainPage() {
         super("mainNetworkPage");
         setTitle(NeoLoaderPluginMessages.NetworkSiteImportWizard_PAGE_DESCR);
-        networkNode = null;
+        networkModel = null;
     }
 
     @Override
@@ -129,7 +124,6 @@ public class LoadNetworkMainPage extends LoaderPageNew<ConfigurationDataImpl> {
 
         editor.getTextControl(main).addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
-                ILoaderNew< ? extends IData, ConfigurationDataImpl> loader = setFileName(editor.getStringValue());
                 network.setText(networkName);
                 changeNetworkName();
                 // updateCRS();
@@ -179,8 +173,8 @@ public class LoadNetworkMainPage extends LoaderPageNew<ConfigurationDataImpl> {
      */
     protected void updateLabelNetwDescr() {
         String text = ""; //$NON-NLS-1$
-        if (networkNode != null) {
-            NetworkTypes type = NetworkTypes.getNodeType(networkNode);
+        if (networkModel != null) {
+            INetworkType type = networkModel.getNetworkType();
             if (type != null) {
                 text = "Network type: " + type.getId(); //$NON-NLS-1$
             }
@@ -215,7 +209,7 @@ public class LoadNetworkMainPage extends LoaderPageNew<ConfigurationDataImpl> {
         }
         update();
         // editor.store();
-        setDefaultDirectory(editor.getDefaulDirectory());
+        LoaderUiUtils.setDefaultDirectory(editor.getDefaulDirectory());
 
         return loader;
     }
@@ -226,18 +220,15 @@ public class LoadNetworkMainPage extends LoaderPageNew<ConfigurationDataImpl> {
      * @return array of GIS nodes
      */
     private String[] getRootItems() {
-        members = new HashMap<String, Node>();
+        members = new HashMap<String, INetworkModel>();
 
         try {
             IProjectModel projectModel = ProjectModel.getCurrentProjectModel();
 
             for (INetworkModel model : projectModel.findAllNetworkModels()) {
-                String id = model.getRootNode().getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
-                if (NodeTypes.NETWORK.checkNode(model.getRootNode())) { //$NON-NLS-1$
-                    members.put(id, model.getRootNode());
-                } else {
-                    restrictedNames.add(id);
-                }
+                String id = model.getName();
+                members.put(id, model);
+                
             }
         } catch (AWEException e) {
             LOGGER.error("Error while getRootItems work", e);
@@ -246,7 +237,9 @@ public class LoadNetworkMainPage extends LoaderPageNew<ConfigurationDataImpl> {
 
         String[] result = members.keySet().toArray(new String[] {});
         Arrays.sort(result);
-        NeoServiceProvider.getProvider().commit();
+        
+        DatabaseManagerFactory.getDatabaseManager().commit();
+        
         return result;
     }
 
@@ -255,13 +248,6 @@ public class LoadNetworkMainPage extends LoaderPageNew<ConfigurationDataImpl> {
      */
     public String getFileName() {
         return fileName;
-    }
-
-    /**
-     * @return Returns the networkNode.
-     */
-    public Node getNetworkNode() {
-        return networkNode;
     }
 
     /**
@@ -274,10 +260,9 @@ public class LoadNetworkMainPage extends LoaderPageNew<ConfigurationDataImpl> {
     protected void changeNetworkName() {
         networkName = network.getText();
         if (members != null && !members.isEmpty()) {
-            networkNode = members.get(networkName);
+            networkModel = members.get(networkName);
         }
         getNewConfigurationData().getDatasetNames().put("Network", networkName);
-        getNewConfigurationData().getDatasetNames().put("Project", LoaderUiUtils.getAweProjectName());
         updateLabelNetwDescr();
         update();
     }
@@ -314,7 +299,6 @@ public class LoadNetworkMainPage extends LoaderPageNew<ConfigurationDataImpl> {
             setMessage(""); //$NON-NLS-1$
         }
         getNewConfigurationData().getDatasetNames().put("Network", networkName);
-        getNewConfigurationData().getDatasetNames().put("Project", LoaderUiUtils.getAweProjectName());
         List<File> files = new LinkedList<File>();
         files.add(file);
         getNewConfigurationData().setSourceFile(files);

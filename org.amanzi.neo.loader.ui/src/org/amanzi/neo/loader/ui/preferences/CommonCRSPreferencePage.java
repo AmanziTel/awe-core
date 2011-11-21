@@ -204,7 +204,7 @@ public class CommonCRSPreferencePage extends PreferencePage implements IWorkbenc
                 try {
                     crs = CRS.parseWKT(wkt);
                 } catch (FactoryException e) {
-                    NeoLoaderPlugin.exception(e);
+                    
                     continue;
                 }
                 crsList.put(crs.getName().toString(), crs);

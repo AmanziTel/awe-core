@@ -11,7 +11,8 @@ Require-Bundle: net.refractions.udig.libs;bundle-version="1.1.1",
 Export-Package: org.amanzi.neo.loader.core,
  org.amanzi.neo.loader.core.newparser,
  org.amanzi.neo.loader.core.newsaver,
- org.amanzi.neo.loader.core.parser
+ org.amanzi.neo.loader.core.parser,
+ org.amanzi.neo.loader.core.preferences
 Bundle-ClassPath: .,
  lib/opencsv-2.2.jar,
  lib/commons-io-2.0.1.jar

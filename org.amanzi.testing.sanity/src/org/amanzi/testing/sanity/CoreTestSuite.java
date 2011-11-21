@@ -26,8 +26,7 @@ import org.junit.runners.Suite.SuiteClasses;
  * @since 1.0.0
  */
 @RunWith(Suite.class)
-@SuiteClasses({org.amanzi.neo.db.testing.DbTestSuite.class,
-               org.amanzi.neo.services.NeoServiceSuite.class})
+@SuiteClasses({})
 public class CoreTestSuite {
 
 }

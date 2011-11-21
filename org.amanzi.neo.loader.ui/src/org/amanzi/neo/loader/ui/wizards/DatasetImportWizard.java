@@ -16,14 +16,11 @@ package org.amanzi.neo.loader.ui.wizards;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.ILoaderNew;
 import org.amanzi.neo.loader.core.newsaver.IData;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
-import org.amanzi.neo.services.events.UpdateDatabaseEvent;
-import org.amanzi.neo.services.events.UpdateViewEventType;
-import org.amanzi.neo.services.ui.NeoServicesUiPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
@@ -38,7 +35,7 @@ import org.eclipse.ui.IWorkbench;
  * @since 1.0.0
  */
 public class DatasetImportWizard extends AbstractLoaderWizardNew<ConfigurationDataImpl> {
-    private CommonConfigData data;
+    
     private ConfigurationDataImpl configData;
 
     @Override
@@ -57,8 +54,6 @@ public class DatasetImportWizard extends AbstractLoaderWizardNew<ConfigurationDa
     @Override
     public boolean performFinish() {
         if (super.performFinish()) {
-            NeoServicesUiPlugin.getDefault().getUpdateViewManager()
-                    .fireUpdateView(new UpdateDatabaseEvent(UpdateViewEventType.GIS));
             return true;
         } else {
             return false;

@@ -13,10 +13,7 @@
 
 package org.amanzi.neo.loader.ui;
 
-import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.loader.core.preferences.PreferenceStore;
-import org.amanzi.neo.services.ui.NeoServicesUiPlugin;
-import org.amanzi.neo.services.ui.UpdateViewManager;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -77,62 +74,5 @@ public class NeoLoaderPlugin extends AbstractUIPlugin {
      */
     public static NeoLoaderPlugin getDefault() {
         return plugin;
-    }
-
-    /**
-     * Print debug message
-     * 
-     * @param line
-     */
-
-    public static void debug(String line) {
-        AweConsolePlugin.debug(line);
-    }
-
-    /**
-     * Print info message
-     * 
-     * @param line
-     */
-
-    public static void info(String line) {
-        AweConsolePlugin.info(line);
-    }
-
-    /**
-     * Print a notification message
-     * 
-     * @param line
-     */
-
-    public static void notify(String line) {
-        AweConsolePlugin.notify(line);
-    }
-
-    /**
-     * Print an error message
-     * 
-     * @param line
-     */
-
-    public static void error(String line) {
-        AweConsolePlugin.error(line);
-    }
-
-    /**
-     * Print an exception
-     * 
-     * @param line
-     */
-
-    public static void exception(Exception e) {
-        AweConsolePlugin.exception(e);
-    }
-
-    /**
-     * @return UpdateBDManager
-     */
-    public UpdateViewManager getUpdateViewManager() {
-        return NeoServicesUiPlugin.getDefault().getUpdateViewManager();
     }
 }

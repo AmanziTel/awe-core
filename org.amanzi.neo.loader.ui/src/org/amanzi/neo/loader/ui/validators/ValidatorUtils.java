@@ -15,17 +15,11 @@ package org.amanzi.neo.loader.ui.validators;
 
 import java.io.File;
 
-import org.amanzi.awe.ui.AweUiPlugin;
-import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.core.IValidateResult;
 import org.amanzi.neo.loader.core.IValidateResult.Result;
 import org.amanzi.neo.loader.core.LoaderUtils;
 import org.amanzi.neo.loader.core.ValidateResultImpl;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
-import org.amanzi.neo.services.DatasetService;
-import org.amanzi.neo.services.NeoServiceFactory;
-import org.neo4j.graphdb.Node;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * <p>
@@ -77,24 +71,6 @@ public class ValidatorUtils {
     }
 
     /**
-     * Check root exist.
-     * 
-     * @param data the data
-     * @return validation result
-     */
-    public static IValidateResult checkRootExist(CommonConfigData data) {
-        if (data.getProjectName() == null || data.getDbRootName() == null)
-            return new ValidateResultImpl(Result.FAIL, " is not found.");
-        DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
-        Node root = datasetService.findRoot(data.getProjectName(), data.getDbRootName());
-        if (root == null) {
-            return new ValidateResultImpl(Result.FAIL, String.format(" '%s' is not found. ", data.getDbRootName())
-                    + "For loader '%s' network should exist.");
-        }
-        return new ValidateResultImpl(Result.SUCCESS, "");
-    }
-
-    /**
      * Gets the data map.
      * 
      * @param file the file
@@ -129,32 +105,5 @@ public class ValidatorUtils {
             }
         }
         return result;
-    }
-
-    public static CoordinateReferenceSystem defineCRS(File file, int size, String[] constants, String[] possibleFieldSepRegexes,
-            boolean convertConstants) {
-        String[][] dataMap = ValidatorUtils.getDataMap(file, size, constants, possibleFieldSepRegexes, convertConstants);
-        if (dataMap == null) {
-            return null;
-        }
-        Double lat = null;
-        Double lon = null;
-        String hint = null;
-        for (int i = 0; i < dataMap.length; i++) {
-            try {
-                lat = Double.parseDouble(dataMap[i][0]);
-                lon = Double.parseDouble(dataMap[i][1]);
-                if (lat != null && lon != null) {
-                    break;
-                }
-            } catch (Exception e) {
-                if (dataMap[i][0].contains("wert")) {
-                    hint = "germany";
-                }
-                lat = null;
-                lon = null;
-            }
-        }
-        return AweUiPlugin.getDefault().getUiService().defineCRS(lat, lon, hint);
     }
 }
