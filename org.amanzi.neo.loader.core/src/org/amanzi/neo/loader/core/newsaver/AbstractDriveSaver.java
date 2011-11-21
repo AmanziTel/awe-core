@@ -73,6 +73,14 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<DriveModel> {
         super(service);
     }
 
+    protected void resetSynonymsMaps() {
+        if (!fileSynonyms.isEmpty()) {
+            fileSynonyms.clear();
+            columnSynonyms.clear();
+            headers.clear();
+        }
+    }
+
     /**
      * make Appropriation with default synonyms and file header
      * 
@@ -89,10 +97,13 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<DriveModel> {
                                 isAppropriation = true;
                                 String name = posibleHeader.substring(0,
                                         posibleHeader.indexOf(DataLoadPreferenceManager.INFO_SEPARATOR));
-                                fileSynonyms.put(name, header);
+                                if (!fileSynonyms.containsKey(name))
+                                    fileSynonyms.put(name, header);
                             }
                         }
 
+                    }
+                    if (isAppropriation) {
                         break;
                     }
                 }
@@ -119,6 +130,19 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<DriveModel> {
      */
     protected final float mw2dbm(double mw) {
         return (float)(10.0 * Math.log10(mw));
+    }
+
+    void collectRemainProperties(Map<String, Object> properties, List<String> row) {
+        for (String head : headers) {
+            if (isCorrect(head, row)) {
+                if (!properties.containsKey(head)) {
+                    if ((fileSynonyms.containsValue(head) && properties.containsKey(getSynonymForHeader(head)))) {
+                        continue;
+                    }
+                    properties.put(head.toLowerCase(), getSynonymValueWithAutoparse(head, row));
+                }
+            }
+        }
     }
 
     /**

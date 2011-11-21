@@ -7,25 +7,20 @@
  */
 package org.amanzi.awe.views.explorer.view;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 import org.amanzi.awe.views.explorer.ProjectExplorerPlugin;
 import org.amanzi.awe.views.explorer.property.ProjectPropertySheetPage;
 import org.amanzi.awe.views.explorer.providers.ProjectTreeContentProvider;
 import org.amanzi.awe.views.explorer.providers.ProjectTreeLabelProvider;
-import org.amanzi.awe.views.reuse.ReusePlugin;
 import org.amanzi.awe.views.reuse.views.DistributionAnalyzerView;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.IProjectModel;
-import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
-import org.amanzi.neo.services.ui.NeoUtils;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
@@ -44,7 +39,6 @@ import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;

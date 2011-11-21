@@ -179,6 +179,7 @@ public class NewRomesSaver extends AbstractDriveSaver {
         }
         addedSynonyms();
         removeEmpty(params);
+        collectRemainProperties(params, value);
         IDataElement existedLocation = checkSameLocation(params);
         if (existedLocation != null) {
             params.remove(IDriveModel.LATITUDE);
