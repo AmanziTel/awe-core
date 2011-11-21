@@ -25,7 +25,6 @@ import org.amanzi.neo.services.NewNetworkService;
 import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
-import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.impl.DataElement;
@@ -40,7 +39,6 @@ import org.neo4j.graphdb.GraphDatabaseService;
  * @author Kondratenko_Vladislav
  */
 public class NewNetworkSaver extends AbstractCSVSaver<NetworkModel> {
-    private static Logger LOGGER = Logger.getLogger(NewNetworkSaver.class);
     private Long lineCounter = 0l;
     private INetworkModel model;
     private final String CI_LAC = "CI_LAC";
@@ -51,6 +49,8 @@ public class NewNetworkSaver extends AbstractCSVSaver<NetworkModel> {
     private final String MSC = "msc";
     private final String SECTOR = "sector";
     private final String SITE = "site";
+
+    private static Logger LOGGER = Logger.getLogger(NewNetworkSaver.class);
 
     protected NewNetworkSaver(INetworkModel model, ConfigurationDataImpl config, GraphDatabaseService service) {
         super(service);
@@ -81,7 +81,8 @@ public class NewNetworkSaver extends AbstractCSVSaver<NetworkModel> {
      * @param row
      * @throws AWEException
      */
-    private void createCity(List<String> row) throws AWEException {
+    @Override
+    protected void saveLine(List<String> row) throws AWEException {
         if (!isCorrect(CITY, row)) {
             createMSC(null, row);
             return;
@@ -207,31 +208,6 @@ public class NewNetworkSaver extends AbstractCSVSaver<NetworkModel> {
             rollbackTx();
             LOGGER.error("Exception on creating root Model", e);
             throw new RuntimeException(e);
-        }
-    }
-
-    @Override
-    public void saveElement(CSVContainer dataElement) {
-        commitTx();
-        CSVContainer container = dataElement;
-        try {
-            if (fileSynonyms.isEmpty()) {
-                headers = container.getHeaders();
-                makeAppropriationWithSynonyms(headers);
-                makeIndexAppropriation();
-                lineCounter++;
-            } else {
-                lineCounter++;
-                List<String> value = container.getValues();
-                createCity(value);
-            }
-        } catch (DatabaseException e) {
-            LOGGER.error("Error while saving element on line " + lineCounter, e);
-            rollbackTx();
-            throw (RuntimeException)new RuntimeException().initCause(e);
-        } catch (Exception e) {
-            LOGGER.error("Exception while saving element on line " + lineCounter, e);
-            commitTx();
         }
     }
 

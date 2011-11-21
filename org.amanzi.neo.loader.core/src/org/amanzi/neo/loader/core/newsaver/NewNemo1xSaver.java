@@ -116,7 +116,7 @@ public class NewNemo1xSaver extends NewNemo2xSaver {
                 }
                 lineCounter++;
                 List<String> value = container.getValues();
-                buildModel(value);
+                saveLine(value);
             }
         } catch (DatabaseException e) {
             LOGGER.error("Error while saving element on line " + lineCounter, e);
@@ -137,11 +137,8 @@ public class NewNemo1xSaver extends NewNemo2xSaver {
         return "1.86";
     }
 
-    /**
-     * @param value
-     * @throws AWEException
-     */
-    private void buildModel(List<String> value) throws AWEException {
+    @Override
+    protected void saveLine(List<String> value) throws AWEException {
         String eventId = value.get(0);
         Object longitude = autoParse(IDriveModel.LONGITUDE, value.get(1));
         Object latitude = autoParse(IDriveModel.LATITUDE, value.get(2));

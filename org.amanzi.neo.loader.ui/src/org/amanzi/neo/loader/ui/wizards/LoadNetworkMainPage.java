@@ -16,10 +16,8 @@ package org.amanzi.neo.loader.ui.wizards;
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 import org.amanzi.neo.db.manager.NeoServiceProvider;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
@@ -29,9 +27,7 @@ import org.amanzi.neo.loader.core.IValidateResult.Result;
 import org.amanzi.neo.loader.core.newsaver.IData;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
-import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.NetworkTypes;
-import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.IProjectModel;
@@ -79,7 +75,6 @@ public class LoadNetworkMainPage extends LoaderPageNew<ConfigurationDataImpl> {
     protected Combo network;
     private FileFieldEditorExt editor;
     private HashMap<String, Node> members;
-    private final Set<String> restrictedNames = new HashSet<String>();
     protected Node networkNode;
     private Label labNetworkDescr;
     private Combo networkType;
@@ -232,12 +227,8 @@ public class LoadNetworkMainPage extends LoaderPageNew<ConfigurationDataImpl> {
             IProjectModel projectModel = ProjectModel.getCurrentProjectModel();
 
             for (INetworkModel model : projectModel.findAllNetworkModels()) {
-                String id = model.getRootNode().getProperty(INeoConstants.PROPERTY_NAME_NAME).toString();
-                if (NodeTypes.NETWORK.checkNode(model.getRootNode())) { //$NON-NLS-1$
-                    members.put(id, model.getRootNode());
-                } else {
-                    restrictedNames.add(id);
-                }
+                String id = model.getName();
+                members.put(id, model.getRootNode());
             }
         } catch (AWEException e) {
             LOGGER.error("Error while getRootItems work", e);
