@@ -35,17 +35,16 @@ import org.amanzi.neo.loader.core.newparser.CSVContainer;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceInitializer;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.NewAbstractService;
+import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
+import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataElement;
-import org.amanzi.neo.services.model.INetworkModel;
-import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.NetworkModel;
-import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel;
-import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.NodeToNodeTypes;
 import org.amanzi.testing.AbstractAWETest;
 import org.apache.log4j.Logger;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -53,68 +52,63 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Transaction;
 
 /**
- * @author Vladislav_Kondrateno
+ * @author Vladislav_Kondratenko
  */
-public class FreuencyConstraintTesting extends AbstractAWETest {
-    private static Logger LOGGER = Logger.getLogger(NewNetworkSaverTesting.class);
-    private NewFrequencyConstraintSaver frequSaver;
+public class SeparationConstraintsSaverTesting extends AbstractAWETest {
+    private static Logger LOGGER = Logger.getLogger(TrafficSaverTesting.class);
+    private TrafficSaver trafficSaver;
     private static String PATH_TO_BASE = "";
     private ConfigurationDataImpl config;
     private static final String NETWORK_KEY = "Network";
     private static final String NETWORK_NAME = "testNetwork";
     private static final String PROJECT_KEY = "Project";
     private static final String PROJECT_NAME = "project";
+
+    private static final String SECTOR_PARAM = "sector";
+    private static final String SECTOR_VALUE = "s1";
+    private static final String SEPARATION_PARAM = "separation";
+    private static final Integer SEPARATION_VALUE = 123;
     private int MINIMAL_COLUMN_SIZE = 2;
     private static DataLoadPreferenceInitializer initializer;
-    private static final String SECTOR = "sector";
-    private static final String TRX_ID = "trx_id";
-    private static final String CHANNEL_TYPE = "fhannelType";
-    private static final String FREQUENCY = "frequency";
-    private static final String TYPE = "fype";
-    private static final String PENALTY = "penalty";
-    private final static Map<String, Object> SECTOR1 = new HashMap<String, Object>();
-    private final static Map<String, Object> FREQUENCY_NODE = new HashMap<String, Object>();
-    private final static Map<String, Object> properties = new HashMap<String, Object>();
-    private final static Integer FREQUENCY_VALUE = 12;
-    private INetworkModel networkModel;
-    private INodeToNodeRelationsModel node2model;
-    private INodeToNodeRelationsModel frequencySpectrum;
+    private final static Map<String, Object> COMPLETED_SECTOR = new HashMap<String, Object>();
+    private final static Map<String, Object> COLLECTED_SECTOR = new HashMap<String, Object>();
+    private static NetworkModel model;
+    private static Long startTime;
     private GraphDatabaseService service;
     private Transaction tx;
-    private static Long startTime;
     static {
         PATH_TO_BASE = System.getProperty("user.home");
-        SECTOR1.put(SECTOR.toLowerCase(), "sector1");
-        SECTOR1.put("type", "sector");
-        FREQUENCY_NODE.put(NewAbstractService.NAME, FREQUENCY_VALUE);
-        FREQUENCY_NODE.put(FREQUENCY, FREQUENCY_VALUE);
-        FREQUENCY_NODE.put(NewAbstractService.TYPE, NodeToNodeTypes.FREQUENCY.getId());
+        COMPLETED_SECTOR.put(SECTOR_PARAM, SECTOR_VALUE);
+        COMPLETED_SECTOR.put(SEPARATION_PARAM, SEPARATION_VALUE);
+        COLLECTED_SECTOR.put(NewAbstractService.NAME, SECTOR_VALUE);
+        COLLECTED_SECTOR.put(NewAbstractService.TYPE, NetworkElementNodeType.SECTOR.getId());
     }
+
     private HashMap<String, Object> hashMap = null;
 
     @BeforeClass
     public static void prepare() {
+        new LogStarter().earlyStartup();
         clearDb();
         initializeDb();
+
         initializer = new DataLoadPreferenceInitializer();
         initializer.initializeDefaultPreferences();
-        new LogStarter().earlyStartup();
         NeoServiceFactory.getInstance().clear();
         startTime = System.currentTimeMillis();
+
     }
 
     @AfterClass
     public static void tearDownAfterClass() throws Exception {
         stopDb();
         clearDb();
-        LOGGER.info("NewNeighbourSaverTesting finished in " + (System.currentTimeMillis() - startTime));
+        LOGGER.info("NewNetworkSaverTesting finished in " + (System.currentTimeMillis() - startTime));
     }
 
     @Before
-    public void onStart() {
-        networkModel = mock(NetworkModel.class);
-        node2model = mock(NodeToNodeRelationshipModel.class);
-        frequencySpectrum = mock(NodeToNodeRelationshipModel.class);
+    public void onStart() throws AWEException {
+        model = mock(NetworkModel.class);
         service = mock(GraphDatabaseService.class);
         tx = mock(Transaction.class);
         when(service.beginTx()).thenReturn(tx);
@@ -132,17 +126,9 @@ public class FreuencyConstraintTesting extends AbstractAWETest {
         }
         fileList.add(testFile);
         config.setSourceFile(fileList);
-        frequSaver = new NewFrequencyConstraintSaver(node2model, frequencySpectrum, networkModel, config, service);
-        hashMap.put(SECTOR, "sector1");
-        hashMap.put(CHANNEL_TYPE, "type");
-        hashMap.put(PENALTY, "12.2");
-        hashMap.put(FREQUENCY, 12);
-        hashMap.put(TRX_ID, "a");
-        hashMap.put(TYPE, "type");
-
-        properties.put(CHANNEL_TYPE, "type");
-        properties.put(PENALTY, 12.2d);
-        properties.put(TYPE, "type");
+        trafficSaver = new TrafficSaver(model, (ConfigurationDataImpl)config, service);
+        hashMap.put(SECTOR_PARAM, SECTOR_VALUE);
+        hashMap.put(SEPARATION_PARAM, SEPARATION_VALUE);
     }
 
     private List<String> prepareValues(HashMap<String, Object> map) {
@@ -154,88 +140,65 @@ public class FreuencyConstraintTesting extends AbstractAWETest {
     }
 
     @Test
-    public void testCreateFrequencyForSingleTRX() {
+    public void testCompleteingElement() {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
-        frequSaver.saveElement(rowContainer);
+        trafficSaver.saveElement(rowContainer);
         List<String> values = prepareValues(hashMap);
         rowContainer.setValues(values);
-        List<IDataElement> findedTRX = new LinkedList<IDataElement>();
-        Map<String, Object> findedTrx = new HashMap<String, Object>();
-        findedTrx.put("name", "a");
-        findedTrx.put("trx_id", "a");
-        findedTRX.add(new DataElement(findedTrx));
+
         try {
-            when(networkModel.findElement(SECTOR1)).thenReturn(new DataElement(SECTOR1));
-            when(networkModel.getChildren(new DataElement(eq(SECTOR1)))).thenReturn(findedTRX);
-            frequSaver.saveElement(rowContainer);
-            when(frequencySpectrum.getFrequencyNode(eq(FREQUENCY_VALUE))).thenReturn(new DataElement(FREQUENCY_NODE));
-            verify(node2model).linkNode(eq(findedTRX.get(0)), new DataElement(eq(FREQUENCY_NODE)), eq(properties));
+            when(model.findElement(eq(COLLECTED_SECTOR))).thenReturn(new DataElement(COLLECTED_SECTOR));
+            when(model.completeProperties(new DataElement(eq(COLLECTED_SECTOR)), eq(COMPLETED_SECTOR), any(Boolean.class)))
+                    .thenReturn(new DataElement(COLLECTED_SECTOR));
+            trafficSaver.saveElement(rowContainer);
+            verify(model, atLeastOnce()).completeProperties(new DataElement(eq(COLLECTED_SECTOR)), eq(COMPLETED_SECTOR),
+                    any(Boolean.class));
         } catch (Exception e) {
-            LOGGER.error(" testNeighbourNetworkSaver error", e);
-            e.printStackTrace();
+            LOGGER.error(" testCompleteingElement error", e);
+            Assert.fail("Exception while saving row");
         }
     }
 
     @Test
-    public void testCreateFrequencyForAllTRX() {
-        hashMap.put(TRX_ID, "*");
+    public void testIfSectorNotFound() {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
-        frequSaver.saveElement(rowContainer);
+        trafficSaver.saveElement(rowContainer);
         List<String> values = prepareValues(hashMap);
         rowContainer.setValues(values);
-        List<IDataElement> findedTRX = new LinkedList<IDataElement>();
-        Map<String, Object> findedTrx = new HashMap<String, Object>();
-        findedTrx.put("name", "a");
-        findedTrx.put("trx_id", "a");
-        findedTRX.add(new DataElement(findedTrx));
-        findedTrx = new HashMap<String, Object>();
-        findedTrx.put("name", "b");
-        findedTrx.put("trx_id", "b");
-        findedTRX.add(new DataElement(findedTrx));
         try {
-            when(networkModel.findElement(SECTOR1)).thenReturn(new DataElement(SECTOR1));
-            when(networkModel.getChildren(new DataElement(eq(SECTOR1)))).thenReturn(findedTRX);
-            frequSaver.saveElement(rowContainer);
-            when(frequencySpectrum.getFrequencyNode(eq(FREQUENCY_VALUE))).thenReturn(new DataElement(FREQUENCY_NODE));
-            verify(node2model, times(2)).linkNode(any(IDataElement.class), new DataElement(eq(FREQUENCY_NODE)), eq(properties));
+            when(model.findElement(eq(COLLECTED_SECTOR))).thenReturn(null);
+            when(model.completeProperties(new DataElement(eq(COLLECTED_SECTOR)), eq(COMPLETED_SECTOR), any(Boolean.class)))
+                    .thenReturn(new DataElement(COLLECTED_SECTOR));
+            trafficSaver.saveElement(rowContainer);
+            verify(model, never()).completeProperties(any(IDataElement.class), any(Map.class), any(Boolean.class));
         } catch (Exception e) {
-            LOGGER.error(" testNeighbourNetworkSaver error", e);
-            e.printStackTrace();
+            LOGGER.error(" testIfSectorNotFound error", e);
+            Assert.fail("Exception while saving row");
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Test
-    public void testCreateFrequencyIfSectorNotFound() {
-        hashMap.put(TRX_ID, "*");
+    public void testIfThereIsNoValue() {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
-        frequSaver.saveElement(rowContainer);
+        trafficSaver.saveElement(rowContainer);
         List<String> values = prepareValues(hashMap);
         rowContainer.setValues(values);
-        List<IDataElement> findedTRX = new LinkedList<IDataElement>();
-        Map<String, Object> findedTrx = new HashMap<String, Object>();
-        findedTrx.put("name", "a");
-        findedTrx.put("trx_id", "a");
-        findedTRX.add(new DataElement(findedTrx));
-        findedTrx = new HashMap<String, Object>();
-        findedTrx.put("name", "b");
-        findedTrx.put("trx_id", "b");
-        findedTRX.add(new DataElement(findedTrx));
+        COMPLETED_SECTOR.remove(SEPARATION_PARAM);
         try {
-            when(networkModel.findElement(SECTOR1)).thenReturn(null);
-            when(networkModel.getChildren(new DataElement(eq(SECTOR1)))).thenReturn(findedTRX);
-            frequSaver.saveElement(rowContainer);
-            when(frequencySpectrum.getFrequencyNode(eq(FREQUENCY_VALUE))).thenReturn(new DataElement(FREQUENCY_NODE));
-            verify(node2model, never()).linkNode(any(IDataElement.class), any(IDataElement.class), any(Map.class));
+            when(model.findElement(eq(COLLECTED_SECTOR))).thenReturn(null);
+            when(model.completeProperties(new DataElement(eq(COLLECTED_SECTOR)), eq(COMPLETED_SECTOR), any(Boolean.class)))
+                    .thenReturn(new DataElement(COLLECTED_SECTOR));
+            trafficSaver.saveElement(rowContainer);
+            verify(model, never()).completeProperties(any(IDataElement.class), any(Map.class), any(Boolean.class));
         } catch (Exception e) {
-            LOGGER.error(" testNeighbourNetworkSaver error", e);
-            e.printStackTrace();
+            LOGGER.error(" testIfThereIsNoValue error", e);
+            Assert.fail("Exception while saving row");
         }
     }
 
@@ -245,12 +208,12 @@ public class FreuencyConstraintTesting extends AbstractAWETest {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
-        frequSaver.saveElement(rowContainer);
+        trafficSaver.saveElement(rowContainer);
         List<String> values = prepareValues(hashMap);
         try {
             rowContainer.setValues(values);
-            when(networkModel.findElement(any(Map.class))).thenThrow(new DatabaseException("required exception"));
-            frequSaver.saveElement(rowContainer);
+            when(model.findElement(any(Map.class))).thenThrow(new DatabaseException("required exception"));
+            trafficSaver.saveElement(rowContainer);
         } catch (Exception e) {
             verify(tx, never()).success();
             verify(tx, atLeastOnce()).failure();
@@ -264,16 +227,17 @@ public class FreuencyConstraintTesting extends AbstractAWETest {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
-        frequSaver.saveElement(rowContainer);
+        trafficSaver.saveElement(rowContainer);
         List<String> values = prepareValues(hashMap);
         try {
             rowContainer.setValues(values);
-            when(networkModel.findElement(any(Map.class))).thenThrow(new IllegalArgumentException("required exception"));
-            frequSaver.saveElement(rowContainer);
+            when(model.findElement(any(Map.class))).thenThrow(new IllegalArgumentException("required exception"));
+            trafficSaver.saveElement(rowContainer);
         } catch (Exception e) {
             verify(tx, times(2)).success();
             verify(tx, never()).failure();
             verify(tx, times(3)).finish();
         }
     }
+
 }

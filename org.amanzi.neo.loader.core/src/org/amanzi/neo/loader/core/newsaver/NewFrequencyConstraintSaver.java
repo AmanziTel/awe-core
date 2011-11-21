@@ -39,9 +39,10 @@ public class NewFrequencyConstraintSaver extends AbstractN2NSaver {
 
     private INodeToNodeRelationsModel frSpectrum;
 
-    protected NewFrequencyConstraintSaver(INodeToNodeRelationsModel model, INetworkModel networkModel, ConfigurationDataImpl data,
-            GraphDatabaseService service) {
+    protected NewFrequencyConstraintSaver(INodeToNodeRelationsModel model, INodeToNodeRelationsModel frspectrum,
+            INetworkModel networkModel, ConfigurationDataImpl data, GraphDatabaseService service) {
         super(model, networkModel, data, service);
+        this.frSpectrum = frspectrum;
     }
 
     public NewFrequencyConstraintSaver() {

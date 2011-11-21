@@ -33,6 +33,7 @@ public class DataLoadPluginSynonyms extends NLS {
     public static String NH_SECTOR_LAC;
     public static String NH_LATITUDE;
     public static String NH_LONGITUDE;
+    public static String NH_SEPARATION;
 
     public static String DR_LATITUDE;
     public static String DR_LONGITUDE;

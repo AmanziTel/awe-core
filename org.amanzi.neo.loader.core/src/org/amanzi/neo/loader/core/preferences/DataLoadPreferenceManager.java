@@ -43,7 +43,9 @@ public class DataLoadPreferenceManager {
     public final static String AZIMUTH = "azimuth" + INFO_SEPARATOR;
     public final static String BEAMWITH = "beamwidth" + INFO_SEPARATOR;
     public final static String BCCH = "bcch" + INFO_SEPARATOR;
-    public final static String IS_BCCH = "isBcch" + INFO_SEPARATOR;;
+    public final static String IS_BCCH = "isBcch" + INFO_SEPARATOR;
+    public final static String SEPARATION = "separation" + INFO_SEPARATOR;
+
     /*
      * drive constants
      */
@@ -249,6 +251,7 @@ public class DataLoadPreferenceManager {
             networkMap = new HashMap<String, String[]>();
         }
         if (networkMap.isEmpty()) {
+            networkMap.put(SEPARATION, getPossibleHeaders(DataLoadPreferences.NH_SEPARATION));
             networkMap.put(CITY, getPossibleHeaders(DataLoadPreferences.NH_CITY));
             networkMap.put(MSC, getPossibleHeaders(DataLoadPreferences.NH_MSC));
             networkMap.put(BSC, getPossibleHeaders(DataLoadPreferences.NH_BSC));

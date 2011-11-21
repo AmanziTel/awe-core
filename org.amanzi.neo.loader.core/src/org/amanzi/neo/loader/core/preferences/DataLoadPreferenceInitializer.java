@@ -161,6 +161,7 @@ public class DataLoadPreferenceInitializer extends AbstractPreferenceInitializer
         pref.setDefault(DataLoadPreferences.NH_SECTOR_LAC, DataLoadPluginSynonyms.NH_SECTOR_LAC);
         pref.setDefault(DataLoadPreferences.NH_LATITUDE, DataLoadPluginSynonyms.NH_LATITUDE);
         pref.setDefault(DataLoadPreferences.NH_LONGITUDE, DataLoadPluginSynonyms.NH_LONGITUDE);
+        pref.setDefault(DataLoadPreferences.NH_SEPARATION, DataLoadPluginSynonyms.NH_SEPARATION);
 
         pref.setDefault(DataLoadPreferences.DR_LATITUDE, DataLoadPluginSynonyms.DR_LATITUDE);
         pref.setDefault(DataLoadPreferences.DR_LONGITUDE, DataLoadPluginSynonyms.DR_LONGITUDE);
