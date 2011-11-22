@@ -16,7 +16,6 @@ package org.amanzi.neo.loader.ui.wizards;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.amanzi.neo.loader.core.CommonConfigData;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.ILoaderNew;
 import org.amanzi.neo.loader.core.newsaver.IData;
@@ -38,7 +37,6 @@ import org.eclipse.ui.IWorkbench;
  * @since 1.0.0
  */
 public class DatasetImportWizard extends AbstractLoaderWizardNew<ConfigurationDataImpl> {
-    private CommonConfigData data;
     private ConfigurationDataImpl configData;
 
     @Override

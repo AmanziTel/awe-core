@@ -33,7 +33,7 @@ import org.neo4j.graphdb.Transaction;
 
 public class NodeToNodeRelationshipModelTest extends AbstractNeoServiceTest {
 
-    private static Logger LOGGER = Logger.getLogger(NodeToNodeRelationshipModelTest.class);
+    private static final Logger LOGGER = Logger.getLogger(NodeToNodeRelationshipModelTest.class);
 
     private Transaction tx;
     private static int count = 0;

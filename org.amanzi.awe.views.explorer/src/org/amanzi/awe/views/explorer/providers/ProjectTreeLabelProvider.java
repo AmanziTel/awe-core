@@ -20,6 +20,8 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.graphics.Image;
 
 /**
+ * label provider for project explorer
+ * 
  * @author Vladislav_Kondratenko
  */
 public class ProjectTreeLabelProvider extends LabelProvider {

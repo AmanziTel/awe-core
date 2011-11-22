@@ -31,10 +31,10 @@ import org.apache.log4j.Logger;
  * @author Kondratenko_Vladislav
  */
 public class NetworkValidator implements IValidator {
+    private static final Logger LOGGER = Logger.getLogger(NetworkValidator.class);
     private String[] possibleFieldSepRegexes = new String[] {"\t", ",", ";"};
     private Result result = Result.FAIL;
     private String message = "";
-    private static Logger LOGGER = Logger.getLogger(NetworkValidator.class);
 
     @Override
     public Result getResult() {

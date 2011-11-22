@@ -38,14 +38,15 @@ import org.apache.log4j.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
+ * saver for nemo 1.86 data
+ * 
  * @author Vladislav_Kondratenko
  */
-public class NewNemo1xSaver extends NewNemo2xSaver {
-    // Saver constants
+public class Nemo1xSaver extends Nemo2xSaver {
 
-    private static Logger LOGGER = Logger.getLogger(NewNemo1xSaver.class);
+    private static final Logger LOGGER = Logger.getLogger(Nemo1xSaver.class);
 
-    protected NewNemo1xSaver(IDriveModel model, ConfigurationDataImpl config, GraphDatabaseService service) {
+    protected Nemo1xSaver(IDriveModel model, ConfigurationDataImpl config, GraphDatabaseService service) {
         super(model, config, service);
         preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.DRIVE);
         columnSynonyms = new HashMap<String, Integer>();
@@ -62,7 +63,7 @@ public class NewNemo1xSaver extends NewNemo2xSaver {
     /**
      * 
      */
-    public NewNemo1xSaver() {
+    public Nemo1xSaver() {
         super();
     }
 
@@ -89,12 +90,7 @@ public class NewNemo1xSaver extends NewNemo2xSaver {
         commitTx();
         CSVContainer container = dataElement;
         try {
-            if ((fileName != null && !fileName.equals(dataElement.getFile().getName())) || (fileName == null)) {
-                fileName = dataElement.getFile().getName();
-                addedNewFileToModels(dataElement.getFile());
-                lineCounter = 0l;
-
-            }
+            checkForNewFile(dataElement);
             if (workDate == null) {
                 workDate = new GregorianCalendar();
                 Date date;
