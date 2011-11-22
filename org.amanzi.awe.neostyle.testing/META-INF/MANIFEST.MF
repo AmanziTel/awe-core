@@ -7,3 +7,4 @@ Fragment-Host: org.amanzi.awe.neostyle;bundle-version="1.0.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.junit4,
  org.amanzi.testing;bundle-version="1.0.0"
+Import-Package: org.amanzi.neo.services
