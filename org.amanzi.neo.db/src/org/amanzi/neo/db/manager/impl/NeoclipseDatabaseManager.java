@@ -65,7 +65,18 @@ public class NeoclipseDatabaseManager implements IDatabaseManager {
 	@Override
     public GraphDatabaseService getDatabaseService() {
         if (databaseService == null) {
-            neoclipseManager.executeTask(new GetDatabaseTask(), "Get Database Service");
+        	try {
+        		neoclipseManager.startGraphDbService();
+        		//wait until db started
+        		do {
+        			//wait a little
+        			Thread.sleep(100);
+        		} while (!neoclipseManager.isRunning());
+        		
+        		neoclipseManager.executeTask(new GetDatabaseTask(), "Get Database Service");
+        	} catch (Exception e) {
+        		//TODO: handle error
+        	}
         }
         
         return databaseService;
