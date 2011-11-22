@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.loader.core.newsaver;
 
+import java.io.File;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -21,6 +22,10 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.amanzi.neo.loader.core.newparser.CSVContainer;
+import org.amanzi.neo.services.exceptions.DatabaseException;
+import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
+import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.impl.DriveModel;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -31,39 +36,38 @@ import org.neo4j.graphdb.GraphDatabaseService;
  * @author Vladislav_Kondratenko
  */
 public abstract class AbstractDriveSaver extends AbstractCSVSaver<DriveModel> {
+
+    private static final Logger LOGGER = Logger.getLogger(AbstractDriveSaver.class);
+    protected String DRIVE_TYPE_NAME = "";
+    protected String fileName;
     // constants
-    protected final String LATITUDE = "lat";
-    protected final String LONGITUDE = "lon";
-    protected final String SECTOR_ID = "sector_id";
-    protected final String TIME = "time";
-    protected final String TIMESTAMP = "timestamp";
-    protected final String EVENT = "event";
-
-    protected static String BCCH = "bcch";
-    protected final String TCH = "tch";
-    protected final String SC = "sc";
-    protected final String PN = "PN";
-    protected final String ECIO = "ecio";
-    protected final String RSSI = "rssi";
-    protected final String MS = "ms";
-    protected final String MESSAGE_TYPE = "message_type";
-    protected final String ALL_RXLEV_FULL = "all_rxlev_full";
-    protected final String ALL_RXLEV_SUB = "all_rxlev_sub";
-    protected final String ALL_RXQUAL_FULL = "all_rxqual_full";
-    protected final String ALL_RXQUAL_SUB = "all_rxqual_sub";
-    protected final String ALL_SQI = "all_sqi";
-    protected final String ALL_SQI_MOS = "all_sqi_mos";
-    protected final String ALL_PILOT_SET_COUNT = "all_pilot_set_count";
-    protected final String CHANNEL = "channel";
-    protected final String CODE = "code";
-    protected final String MW = "mw";
-    protected final String DBM = "dbm";
+    protected final static String SECTOR_ID = "sector_id";
+    protected final static String TIME = "time";
+    protected final static String TIMESTAMP = "timestamp";
+    protected final static String EVENT = "event";
+    protected IDriveModel driveModel;
+    protected final static String TCH = "tch";
+    protected final static String SC = "sc";
+    protected final static String PN = "PN";
+    protected final static String ECIO = "ecio";
+    protected final static String RSSI = "rssi";
+    protected final static String MS = "ms";
+    protected final static String MESSAGE_TYPE = "message_type";
+    protected final static String ALL_RXLEV_FULL = "all_rxlev_full";
+    protected final static String ALL_RXLEV_SUB = "all_rxlev_sub";
+    protected final static String ALL_RXQUAL_FULL = "all_rxqual_full";
+    protected final static String ALL_RXQUAL_SUB = "all_rxqual_sub";
+    protected final static String ALL_SQI = "all_sqi";
+    protected final static String ALL_SQI_MOS = "all_sqi_mos";
+    protected final static String ALL_PILOT_SET_COUNT = "all_pilot_set_count";
+    protected final static String CHANNEL = "channel";
+    protected final static String CODE = "code";
+    protected final static String MW = "mw";
+    protected final static String DBM = "dbm";
     // 12 posible headers
-    protected final String ALL_PILOT_SET_EC_IO = "all_pilot_set_ec_io_";
-    protected final String ALL_PILOT_SET_CHANNEL = "all_pilot_set_channel_";
-    protected final String ALL_PILOT_SET_PN = "all_pilot_set_pn_";
-
-    private static Logger LOGGER = Logger.getLogger(AbstractDriveSaver.class);
+    protected final static String ALL_PILOT_SET_EC_IO = "all_pilot_set_ec_io_";
+    protected final static String ALL_PILOT_SET_CHANNEL = "all_pilot_set_channel_";
+    protected final static String ALL_PILOT_SET_PN = "all_pilot_set_pn_";
     protected Integer hours;
     protected Calendar workDate = Calendar.getInstance();
     /**
@@ -87,12 +91,20 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<DriveModel> {
     protected AbstractDriveSaver(GraphDatabaseService service) {
         super(service);
     }
-
+    
     /**
      * 
      */
     public AbstractDriveSaver() {
         super();
+    }
+    
+    protected void resetSynonymsMaps() {
+        if (!fileSynonyms.isEmpty()) {
+            fileSynonyms.clear();
+            columnSynonyms.clear();
+            headers.clear();
+        }
     }
 
     /**
@@ -103,6 +115,20 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<DriveModel> {
      */
     protected final float mw2dbm(double mw) {
         return (float)(10.0 * Math.log10(mw));
+    }
+
+    void collectRemainProperties(Map<String, Object> properties, List<String> row) {
+        for (String head : headers) {
+            if (isCorrect(head, row)) {
+                if (!properties.containsKey(head)) {
+                    if ((fileSynonyms.containsValue(head) && properties.containsKey(getSynonymForHeader(head)))) {
+                        continue;
+                    }
+                    properties.put(head.toLowerCase(), getSynonymValueWithAutoparse(head, row));
+                }
+            }
+        }
+        
     }
 
     /**
@@ -155,6 +181,17 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<DriveModel> {
             }
         }
         return null;
+    }
+
+    protected abstract void addedNewFileToModels(File file) throws DatabaseException, DuplicateNodeNameException;
+
+    protected void checkForNewFile(CSVContainer dataElement) throws DatabaseException, DuplicateNodeNameException {
+        if ((fileName != null && !fileName.equals(dataElement.getFile().getName())) || (fileName == null)) {
+            fileName = dataElement.getFile().getName();
+            addedNewFileToModels(dataElement.getFile());
+            resetSynonymsMaps();
+            lineCounter = 0l;
+        }
     }
 
     /**

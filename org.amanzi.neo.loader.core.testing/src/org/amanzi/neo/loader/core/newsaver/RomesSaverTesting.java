@@ -54,9 +54,9 @@ import org.neo4j.graphdb.Transaction;
 /**
  * @author Vladislav_Kondratenko
  */
-public class NewRomesSaverTesting extends AbstractAWETest {
-    private static Logger LOGGER = Logger.getLogger(NewRomesSaverTesting.class);
-    private NewRomesSaver romesSaver;
+public class RomesSaverTesting extends AbstractAWETest {
+    private static final Logger LOGGER = Logger.getLogger(RomesSaverTesting.class);
+    private RomesSaver romesSaver;
     private static String PATH_TO_BASE = "";
     private IConfiguration config;
     private static final String NETWORK_KEY = "Network";
@@ -87,6 +87,7 @@ public class NewRomesSaverTesting extends AbstractAWETest {
         collectedElement.put(SECTOR_ID, "a1");
         collectedElement.put(EVENT, "ev");
         collectedElement.put(MESSAGE_TYPE, "mt");
+        collectedElement.put(NewAbstractService.TYPE, DriveNodeTypes.M.getId());
     }
 
     private HashMap<String, Object> hashMap = null;
@@ -130,7 +131,7 @@ public class NewRomesSaverTesting extends AbstractAWETest {
         }
         fileList.add(testFile);
         config.setSourceFile(fileList);
-        romesSaver = new NewRomesSaver(model, (ConfigurationDataImpl)config, service);
+        romesSaver = new RomesSaver(model, (ConfigurationDataImpl)config, service);
         hashMap.put(TIME, "Aug 6 12:13:14.15");
         hashMap.put("latitude", "12");
         hashMap.put("longitude", "13");

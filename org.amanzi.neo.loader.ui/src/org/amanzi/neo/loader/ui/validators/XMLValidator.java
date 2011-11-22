@@ -36,9 +36,9 @@ import org.apache.log4j.Logger;
  * @author Kondratenko_Vladislav
  */
 public class XMLValidator implements IValidator {
+    private static final Logger LOGGER = Logger.getLogger(XMLValidator.class);
     Result result = Result.FAIL;
     String message = "";
-    private static Logger LOGGER = Logger.getLogger(XMLValidator.class);
 
     /**
      * check correct file extension

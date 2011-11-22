@@ -6,30 +6,12 @@
       <view
             name="Database Project Explorer"
             icon="icons/network.png"
-            category="org.amanzi.awe.script"
+            category="org.amanzi.awe.views"
             class="org.amanzi.awe.views.explorer.view.ProjectExplorerView"
             id="org.amanzi.awe.views.explorer.view.ProjectExplorerView">
       </view>
       
    </extension>
-  <!-- <extension
-            point="org.eclipse.ui.viewActions">
-         <viewContribution
-               targetID="org.amanzi.awe.views.explorer.view.ProjectExplorerView"
-               id="org.amanzi.awe.views.explorer.view.NewTypeAction0">
-            <action
-                  toolbarPath="additions"
-                  label="Label"
-                  class="org.amanzi.awe.views.network.view.NewTypeAction"
-                  icon="icons/add-type.gif"
-                  tooltip="Create new node type"
-                  style="push"
-                  id="org.amanzi.awe.views.network.view.NewTypeAction">
-
-            </action>
-            
-         </viewContribution>
-      </extension>-->
    <extension
           point= "org.eclipse.ui.menus" >
        <menuContribution

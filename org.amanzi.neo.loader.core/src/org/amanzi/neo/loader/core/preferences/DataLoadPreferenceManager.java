@@ -45,7 +45,13 @@ public class DataLoadPreferenceManager {
     public final static String BCCH = "bcch" + INFO_SEPARATOR;
     public final static String IS_BCCH = "isBcch" + INFO_SEPARATOR;
     public final static String SEPARATION = "separation" + INFO_SEPARATOR;
-
+    public final static String HSN = "hsn" + INFO_SEPARATOR;
+    public final static String EXTENDED = "extended" + INFO_SEPARATOR;
+    public final static String TRX_ID = "trx_id" + INFO_SEPARATOR;
+    public final static String BAND = "band" + INFO_SEPARATOR;
+    public final static String HOPPING_TYPE = "hopping_type" + INFO_SEPARATOR;
+    public final static String SUBCELL = "subcell" + INFO_SEPARATOR;
+    private static final String TRAFFIC = "traffic" + INFO_SEPARATOR;
     /*
      * drive constants
      */
@@ -92,7 +98,6 @@ public class DataLoadPreferenceManager {
     public final static String INT_SERV_NAME = "interfering_sector" + INFO_SEPARATOR;
 
     // FREQUENCY constraints
-    public static String FR_TRX_ID = "trx_id" + INFO_SEPARATOR;
     public static String FR_CH_TYPE = "channel type" + INFO_SEPARATOR;
     public static String FR_FREQUENCY = "frequency" + INFO_SEPARATOR;
     public static String FR_PENALTY = "penalty" + INFO_SEPARATOR;
@@ -251,12 +256,19 @@ public class DataLoadPreferenceManager {
             networkMap = new HashMap<String, String[]>();
         }
         if (networkMap.isEmpty()) {
+            networkMap.put(TRAFFIC, getPossibleHeaders(DataLoadPreferences.NH_TRAFFIC));
             networkMap.put(SEPARATION, getPossibleHeaders(DataLoadPreferences.NH_SEPARATION));
+            networkMap.put(SUBCELL, getPossibleHeaders(DataLoadPreferences.NH_SUBCELL));
+            networkMap.put(BAND, getPossibleHeaders(DataLoadPreferences.NH_BAND));
+            networkMap.put(EXTENDED, getPossibleHeaders(DataLoadPreferences.NH_EXTENDED));
             networkMap.put(CITY, getPossibleHeaders(DataLoadPreferences.NH_CITY));
             networkMap.put(MSC, getPossibleHeaders(DataLoadPreferences.NH_MSC));
             networkMap.put(BSC, getPossibleHeaders(DataLoadPreferences.NH_BSC));
             networkMap.put(BCCH, getPossibleHeaders(DataLoadPreferences.DR_BCCH));
             networkMap.put(IS_BCCH, getPossibleHeaders(DataLoadPreferences.DR_IS_BCCH));
+            networkMap.put(HSN, getPossibleHeaders(DataLoadPreferences.NH_HSN));
+            networkMap.put(TRX_ID, getPossibleHeaders(DataLoadPreferences.NH_TRX_ID));
+            networkMap.put(HOPPING_TYPE, getPossibleHeaders(DataLoadPreferences.NH_HOPPING_TYPE));
             networkMap.put(SITE, getPossibleHeaders(DataLoadPreferences.NH_SITE));
             networkMap.put(SECTOR, getPossibleHeaders(DataLoadPreferences.NH_SECTOR));
             networkMap.put(AZIMUTH, getPossibleHeaders(DataLoadPreferences.NH_AZIMUTH));
@@ -338,7 +350,7 @@ public class DataLoadPreferenceManager {
             frequencyMap.put(FR_FREQUENCY, getPossibleHeaders(DataLoadPreferences.FR_FREQUENCY));
             frequencyMap.put(FR_PENALTY, getPossibleHeaders(DataLoadPreferences.FR_PENALTY));
             frequencyMap.put(FR_SCALLING_FACTOR, getPossibleHeaders(DataLoadPreferences.FR_SCALLING_FACTOR));
-            frequencyMap.put(FR_TRX_ID, getPossibleHeaders(DataLoadPreferences.FR_TRX_ID));
+            frequencyMap.put(TRX_ID, getPossibleHeaders(DataLoadPreferences.FR_TRX_ID));
         }
         return frequencyMap;
     }

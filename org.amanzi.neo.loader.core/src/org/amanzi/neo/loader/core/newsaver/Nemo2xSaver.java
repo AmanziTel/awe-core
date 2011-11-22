@@ -46,17 +46,18 @@ import org.apache.log4j.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
+ * saver for 2.01 data
+ * 
  * @author Vladislav_Kondratenko
  */
-public class NewNemo2xSaver extends AbstractDriveSaver {
+public class Nemo2xSaver extends AbstractDriveSaver {
+    private static final Logger LOGGER = Logger.getLogger(Nemo2xSaver.class);
     protected static final SimpleDateFormat EVENT_DATE_FORMAT = new SimpleDateFormat("dd.MM.yyyy");
     protected static final String TIME_FORMAT = "HH:mm:ss.S";
     protected Calendar workDate;
     protected IDriveModel model;
     protected final int MAX_TX_BEFORE_COMMIT = 1000;
-    private static Logger LOGGER = Logger.getLogger(NewNemo2xSaver.class);
-    protected String fileName;
-    protected long lineCounter = 0l;
+
     protected DriveEvents driveEvents;
     protected List<Map<String, Object>> subNodes;
     protected SimpleDateFormat timeFormat = new SimpleDateFormat(TIME_FORMAT);
@@ -64,7 +65,7 @@ public class NewNemo2xSaver extends AbstractDriveSaver {
     protected String EVENT_TYPE = "event_type";
     protected IDataElement location;
 
-    protected NewNemo2xSaver(IDriveModel model, ConfigurationDataImpl config, GraphDatabaseService service) {
+    protected Nemo2xSaver(IDriveModel model, ConfigurationDataImpl config, GraphDatabaseService service) {
         super(service);
         preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.DRIVE);
         columnSynonyms = new HashMap<String, Integer>();
@@ -81,7 +82,7 @@ public class NewNemo2xSaver extends AbstractDriveSaver {
     /**
      * 
      */
-    public NewNemo2xSaver() {
+    public Nemo2xSaver() {
         super();
     }
 
@@ -116,12 +117,7 @@ public class NewNemo2xSaver extends AbstractDriveSaver {
         try {
             commitTx();
             CSVContainer container = dataElement;
-            if ((fileName != null && !fileName.equals(dataElement.getFile().getName())) || (fileName == null)) {
-                fileName = dataElement.getFile().getName();
-                addedNewFileToModels(dataElement.getFile());
-                lineCounter = 0l;
-
-            }
+            checkForNewFile(dataElement);
             if (!container.getHeaders().isEmpty() && container.getValues().isEmpty()) {
                 saveLine(container.getHeaders());
             } else if (!container.getHeaders().isEmpty() && !container.getValues().isEmpty()) {
@@ -160,11 +156,11 @@ public class NewNemo2xSaver extends AbstractDriveSaver {
                 continue;
             }
             try {
-                if (propertyMap.containsKey(LATITUDE)) {
-                    propertyMap.remove(LATITUDE);
+                if (propertyMap.containsKey(IDriveModel.LATITUDE)) {
+                    propertyMap.remove(IDriveModel.LATITUDE);
                 }
-                if (propertyMap.containsKey(LONGITUDE)) {
-                    propertyMap.remove(LONGITUDE);
+                if (propertyMap.containsKey(IDriveModel.LONGITUDE)) {
+                    propertyMap.remove(IDriveModel.LONGITUDE);
                 }
                 propertyMap.put(TIMESTAMP, timestamp);
                 propertyMap.put(NewAbstractService.NAME, eventId);
@@ -226,13 +222,13 @@ public class NewNemo2xSaver extends AbstractDriveSaver {
         removeEmpty(parsedParameters);
         boolean isAlreadyCreated = false;
         if ("GPS".equalsIgnoreCase(eventId)) {
-            Double longitude = (Double)parsedParameters.get(LONGITUDE);
-            Double latitude = (Double)parsedParameters.get(LATITUDE);
+            Double longitude = (Double)parsedParameters.get(IDriveModel.LONGITUDE);
+            Double latitude = (Double)parsedParameters.get(IDriveModel.LATITUDE);
             if (isCorrect(latitude) && latitude != 0d && isCorrect(longitude) && longitude != 0d) {
                 location = checkSameLocation(parsedParameters);
                 if (location != null) {
-                    parsedParameters.remove(LATITUDE);
-                    parsedParameters.remove(LONGITUDE);
+                    parsedParameters.remove(IDriveModel.LATITUDE);
+                    parsedParameters.remove(IDriveModel.LONGITUDE);
                 }
                 IDataElement createdElement = model.addMeasurement(fileName, parsedParameters);
                 isAlreadyCreated = true;
@@ -371,7 +367,7 @@ public class NewNemo2xSaver extends AbstractDriveSaver {
 
     protected IDataElement checkSameLocation(Map<String, Object> params) {
         for (IDataElement location : locationDataElements) {
-            if (location.get(LATITUDE).equals(params.get(LATITUDE)) && location.get(LONGITUDE).equals(params.get(LONGITUDE))) {
+            if (location.get(IDriveModel.LATITUDE).equals(params.get(IDriveModel.LATITUDE)) && location.get(IDriveModel.LONGITUDE).equals(params.get(IDriveModel.LONGITUDE))) {
                 return location;
             }
         }

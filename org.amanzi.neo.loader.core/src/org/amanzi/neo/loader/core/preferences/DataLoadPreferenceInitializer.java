@@ -94,6 +94,13 @@ public class DataLoadPreferenceInitializer extends AbstractPreferenceInitializer
         pref.setDefault(DataLoadPreferences.NH_LATITUDE, DataLoadPluginSynonyms.NH_LATITUDE);
         pref.setDefault(DataLoadPreferences.NH_LONGITUDE, DataLoadPluginSynonyms.NH_LONGITUDE);
         pref.setDefault(DataLoadPreferences.NH_SEPARATION, DataLoadPluginSynonyms.NH_SEPARATION);
+        pref.setDefault(DataLoadPreferences.NH_BAND, DataLoadPluginSynonyms.NH_BAND);
+        pref.setDefault(DataLoadPreferences.NH_EXTENDED, DataLoadPluginSynonyms.NH_EXTENDED);
+        pref.setDefault(DataLoadPreferences.NH_TRX_ID, DataLoadPluginSynonyms.NH_TRX_ID);
+        pref.setDefault(DataLoadPreferences.NH_HOPPING_TYPE, DataLoadPluginSynonyms.NH_HOPPING_TYPE);
+        pref.setDefault(DataLoadPreferences.NH_HSN, DataLoadPluginSynonyms.NH_HSN);
+        pref.setDefault(DataLoadPreferences.NH_SUBCELL, DataLoadPluginSynonyms.NH_SUBCELL);
+        pref.setDefault(DataLoadPreferences.NH_TRAFFIC, DataLoadPluginSynonyms.NH_TRAFFIC);
 
         pref.setDefault(DataLoadPreferences.DR_LATITUDE, DataLoadPluginSynonyms.DR_LATITUDE);
         pref.setDefault(DataLoadPreferences.DR_LONGITUDE, DataLoadPluginSynonyms.DR_LONGITUDE);

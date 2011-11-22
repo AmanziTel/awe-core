@@ -54,9 +54,9 @@ import org.neo4j.graphdb.Transaction;
 /**
  * @author Vladislav_Kondratenko
  */
-public class NewTemsSaverTesting extends AbstractAWETest {
-    private static Logger LOGGER = Logger.getLogger(NewTemsSaverTesting.class);
-    private NewTemsSaver temsSaver;
+public class TemsSaverTesting extends AbstractAWETest {
+    private static final Logger LOGGER = Logger.getLogger(TemsSaverTesting.class);
+    private TemsSaver temsSaver;
     private static String PATH_TO_BASE = "";
     private IConfiguration config;
     private static final String NETWORK_KEY = "Network";
@@ -117,6 +117,7 @@ public class NewTemsSaverTesting extends AbstractAWETest {
         collectedElement.put(RSSI, 2);
         collectedElement.put(EVENT, "ev");
         collectedElement.put(MESSAGE_TYPE, "mt");
+        collectedElement.put(NewAbstractService.TYPE, DriveNodeTypes.M.getId());
         msCollected1.put(MW, 15.848932266235352d);
         msCollected1.put(DBM, 12.0f);
         msCollected1.put(CODE, 32);
@@ -176,7 +177,7 @@ public class NewTemsSaverTesting extends AbstractAWETest {
         }
         fileList.add(testFile);
         config.setSourceFile(fileList);
-        temsSaver = new NewTemsSaver(model, virtualModel, (ConfigurationDataImpl)config, service);
+        temsSaver = new TemsSaver(model, virtualModel, (ConfigurationDataImpl)config, service);
         hashMap.put(TIME, "Aug 6 12:13:14.15");
         hashMap.put("latitude", "12");
         hashMap.put("longitude", "13");

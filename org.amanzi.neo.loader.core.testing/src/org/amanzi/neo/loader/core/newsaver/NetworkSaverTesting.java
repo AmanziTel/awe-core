@@ -51,9 +51,9 @@ import org.neo4j.graphdb.Transaction;
 /**
  * @author Kondratenko_Vladsialv
  */
-public class NewNetworkSaverTesting extends AbstractAWETest {
-    private static Logger LOGGER = Logger.getLogger(NewNetworkSaverTesting.class);
-    private NewNetworkSaver networkSaver;
+public class NetworkSaverTesting extends AbstractAWETest {
+    private static final Logger LOGGER = Logger.getLogger(NetworkSaverTesting.class);
+    private NetworkSaver networkSaver;
     private static String PATH_TO_BASE = "";
     private ConfigurationDataImpl config;
     private static final String NETWORK_KEY = "Network";
@@ -77,8 +77,8 @@ public class NewNetworkSaverTesting extends AbstractAWETest {
         BSC.put("type", "bsc");
         SITE.put("name", "site1");
         SITE.put("type", "site");
-        SITE.put("lat", Float.valueOf("3.123"));
-        SITE.put("lon", Float.valueOf("2.1234"));
+        SITE.put("lat", 3.123);
+        SITE.put("lon", 2.1234);
         SECTOR.put("name", "sector1");
         SECTOR.put("type", "sector1");
         MSC.put("name", "msc1");
@@ -128,7 +128,7 @@ public class NewNetworkSaverTesting extends AbstractAWETest {
         }
         fileList.add(testFile);
         config.setSourceFile(fileList);
-        networkSaver = new NewNetworkSaver(model, (ConfigurationDataImpl)config, service);
+        networkSaver = new NetworkSaver(model, (ConfigurationDataImpl)config, service);
         hashMap.put("bsc", "bsc1");
         hashMap.put("site", "site1");
         hashMap.put("city", "city1");
@@ -236,6 +236,7 @@ public class NewNetworkSaverTesting extends AbstractAWETest {
         hashMap.remove("bsc");
         hashMap.remove("city");
         hashMap.remove("site");
+        SITE.put("name", "sector");
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);

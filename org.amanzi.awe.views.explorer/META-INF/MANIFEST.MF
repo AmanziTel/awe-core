@@ -4,21 +4,12 @@ Bundle-Name: Explorer
 Bundle-SymbolicName: org.amanzi.awe.views.explorer;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Require-Bundle: net.refractions.udig.style.sld,
- org.eclipse.ui,
- org.eclipse.core.runtime,
- net.refractions.udig.project;visibility:=reexport,
- net.refractions.udig.core,
- org.eclipse.jface,
+Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.gef,
- net.refractions.udig.ui;visibility:=reexport,
- org.eclipse.emf.edit.ui,
- net.refractions.udig.catalog.ui;visibility:=reexport,
  net.refractions.udig.project.edit,
  org.eclipse.ui.cheatsheets,
  org.eclipse.core.expressions,
  com.lowagie.itext,
  org.amanzi.neo.services;bundle-version="1.0.0",
  net.refractions.udig.project.ui
-Eclipse-LazyStart: true
-Eclipse-RegisterBuddy: org.amanzi.integrator.awe
+Bundle-ActivationPolicy: lazy

@@ -54,7 +54,7 @@ import org.neo4j.graphdb.Transaction;
  * @author Vladislav_Kondratenko
  */
 public class TrafficSaverTesting extends AbstractAWETest {
-    private static Logger LOGGER = Logger.getLogger(TrafficSaverTesting.class);
+    private static final Logger LOGGER = Logger.getLogger(TrafficSaverTesting.class);
     private TrafficSaver trafficSaver;
     private static String PATH_TO_BASE = "";
     private ConfigurationDataImpl config;

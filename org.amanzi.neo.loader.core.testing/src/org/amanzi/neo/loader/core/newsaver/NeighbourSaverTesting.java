@@ -52,9 +52,9 @@ import org.neo4j.graphdb.Transaction;
 /**
  * @author Vladislav_Kondratenko
  */
-public class NewNeighbourSaverTesting extends AbstractAWETest {
-    private static Logger LOGGER = Logger.getLogger(NewNetworkSaverTesting.class);
-    private NewNeighboursSaver neighboursSaver;
+public class NeighbourSaverTesting extends AbstractAWETest {
+    private static final Logger LOGGER = Logger.getLogger(NeighbourSaverTesting.class);
+    private NeighboursSaver neighboursSaver;
     private static String PATH_TO_BASE = "";
     private ConfigurationDataImpl config;
     private static final String NETWORK_KEY = "Network";
@@ -118,7 +118,7 @@ public class NewNeighbourSaverTesting extends AbstractAWETest {
         }
         fileList.add(testFile);
         config.setSourceFile(fileList);
-        neighboursSaver = new NewNeighboursSaver(node2model, networkModel, config, service);
+        neighboursSaver = new NeighboursSaver(node2model, networkModel, config, service);
         hashMap.put("Serving Sector", "sector1");
         hashMap.put("Neighbour", "sector2");
         hashMap.put("ci", "3.123");

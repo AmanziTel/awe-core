@@ -38,14 +38,15 @@ import org.apache.log4j.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
+ * saver for nemo 1.86 data
+ * 
  * @author Vladislav_Kondratenko
  */
-public class NewNemo1xSaver extends NewNemo2xSaver {
-    // Saver constants
+public class Nemo1xSaver extends Nemo2xSaver {
 
-    private static Logger LOGGER = Logger.getLogger(NewNemo1xSaver.class);
+    private static final Logger LOGGER = Logger.getLogger(Nemo1xSaver.class);
 
-    protected NewNemo1xSaver(IDriveModel model, ConfigurationDataImpl config, GraphDatabaseService service) {
+    protected Nemo1xSaver(IDriveModel model, ConfigurationDataImpl config, GraphDatabaseService service) {
         super(model, config, service);
         preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.DRIVE);
         columnSynonyms = new HashMap<String, Integer>();
@@ -62,7 +63,7 @@ public class NewNemo1xSaver extends NewNemo2xSaver {
     /**
      * 
      */
-    public NewNemo1xSaver() {
+    public Nemo1xSaver() {
         super();
     }
 
@@ -89,12 +90,7 @@ public class NewNemo1xSaver extends NewNemo2xSaver {
         commitTx();
         CSVContainer container = dataElement;
         try {
-            if ((fileName != null && !fileName.equals(dataElement.getFile().getName())) || (fileName == null)) {
-                fileName = dataElement.getFile().getName();
-                addedNewFileToModels(dataElement.getFile());
-                lineCounter = 0l;
-
-            }
+            checkForNewFile(dataElement);
             if (workDate == null) {
                 workDate = new GregorianCalendar();
                 Date date;
@@ -136,8 +132,8 @@ public class NewNemo1xSaver extends NewNemo2xSaver {
     @Override
     protected void saveLine(List<String> value) throws AWEException {
         String eventId = value.get(0);
-        Object longitude = autoParse(LONGITUDE, value.get(1));
-        Object latitude = autoParse(LATITUDE, value.get(2));
+        Object longitude = autoParse(IDriveModel.LONGITUDE, value.get(1));
+        Object latitude = autoParse(IDriveModel.LATITUDE, value.get(2));
         String time = value.get(8);
         NemoEvents event = NemoEvents.getEventById(eventId);
         List<Integer> contextId = new ArrayList<Integer>();
@@ -150,8 +146,8 @@ public class NewNemo1xSaver extends NewNemo2xSaver {
             return;
         }
         if (isCorrect(latitude) && (Double)latitude != 0d && isCorrect(longitude) && (Double)longitude != 0d) {
-            parsedParameters.put(LATITUDE, latitude);
-            parsedParameters.put(LONGITUDE, longitude);
+            parsedParameters.put(IDriveModel.LATITUDE, latitude);
+            parsedParameters.put(IDriveModel.LONGITUDE, longitude);
         }
         parsedParameters.put(NewAbstractService.NAME, eventId);
 
@@ -166,8 +162,8 @@ public class NewNemo1xSaver extends NewNemo2xSaver {
 
         location = checkSameLocation(parsedParameters);
         if (location != null) {
-            parsedParameters.remove(LATITUDE);
-            parsedParameters.remove(LONGITUDE);
+            parsedParameters.remove(IDriveModel.LATITUDE);
+            parsedParameters.remove(IDriveModel.LONGITUDE);
         }
         IDataElement createdElement = model.addMeasurement(fileName, parsedParameters);
         if (location != null) {

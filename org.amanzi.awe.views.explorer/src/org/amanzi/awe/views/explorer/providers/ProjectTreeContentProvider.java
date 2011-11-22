@@ -33,20 +33,21 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
 /**
+ * content provider for project explorer
+ * 
  * @author Vladislav_Kondratenko
  */
 public class ProjectTreeContentProvider implements IStructuredContentProvider, ITreeContentProvider {
+	
+    private static final Logger LOGGER = Logger.getLogger(ProjectTreeContentProvider.class);
     
     /**
      * Constructor of ContentProvider
      * 
      * @param neoProvider neoServiceProvider for this ContentProvider
      */
-
     public ProjectTreeContentProvider() {
     }
-    
-    private static Logger LOGGER = Logger.getLogger(ProjectTreeContentProvider.class);
     
     @Override
     public void dispose() {
@@ -75,11 +76,15 @@ public class ProjectTreeContentProvider implements IStructuredContentProvider, I
             addToModelCollection(project.findAllDriveModels(), modelMap);
         } else if (parentElement instanceof INetworkModel) {
             INetworkModel networkModel = ((INetworkModel)parentElement);
+            // add all selection model
             addToModelCollection(networkModel.getAllSelectionModels(), modelMap);
+            // add all n2n models
             addToModelCollection(networkModel.getNodeToNodeModels(), modelMap);
+            // add all corelation models
             addToModelCollection(networkModel.getCorrelationModels(), modelMap);
         } else if (parentElement instanceof IDriveModel) {
             IDriveModel driveModel = ((IDriveModel)parentElement);
+            // add virtual datasets
             addToModelCollection(driveModel.getVirtualDatasets(), modelMap);
         }
         return modelMap;

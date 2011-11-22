@@ -62,7 +62,9 @@ import org.eclipse.swt.widgets.Shell;
  * @since 1.0.0
  */
 public class LoadDatasetMainPage extends LoaderPageNew<ConfigurationDataImpl> {
-    private static Logger LOGGER = Logger.getLogger(LoadDatasetMainPage.class);
+
+	private static final Logger LOGGER = Logger.getLogger(LoadDatasetMainPage.class);
+    
     private Map<Object, String> names = new HashMap<Object, String>();
 
     /*

@@ -54,8 +54,8 @@ import org.neo4j.graphdb.Transaction;
  * @author Vladislav_Kondratenko
  */
 public class SeparationConstraintsSaverTesting extends AbstractAWETest {
-    private static Logger LOGGER = Logger.getLogger(TrafficSaverTesting.class);
-    private TrafficSaver trafficSaver;
+    private static final Logger LOGGER = Logger.getLogger(SeparationConstraintsSaverTesting.class);
+    private SeparationCostraintSaver separationSaver;
     private static String PATH_TO_BASE = "";
     private ConfigurationDataImpl config;
     private static final String NETWORK_KEY = "Network";
@@ -77,10 +77,11 @@ public class SeparationConstraintsSaverTesting extends AbstractAWETest {
     private Transaction tx;
     static {
         PATH_TO_BASE = System.getProperty("user.home");
-        COMPLETED_SECTOR.put(SECTOR_PARAM, SECTOR_VALUE);
         COMPLETED_SECTOR.put(SEPARATION_PARAM, SEPARATION_VALUE);
+        COMPLETED_SECTOR.put(NewAbstractService.TYPE, NetworkElementNodeType.SECTOR.getId());
         COLLECTED_SECTOR.put(NewAbstractService.NAME, SECTOR_VALUE);
         COLLECTED_SECTOR.put(NewAbstractService.TYPE, NetworkElementNodeType.SECTOR.getId());
+
     }
 
     private HashMap<String, Object> hashMap = null;
@@ -124,7 +125,7 @@ public class SeparationConstraintsSaverTesting extends AbstractAWETest {
         }
         fileList.add(testFile);
         config.setSourceFile(fileList);
-        trafficSaver = new TrafficSaver(model, (ConfigurationDataImpl)config, service);
+        separationSaver = new SeparationCostraintSaver(model, (ConfigurationDataImpl)config, service);
         hashMap.put(SECTOR_PARAM, SECTOR_VALUE);
         hashMap.put(SEPARATION_PARAM, SEPARATION_VALUE);
     }
@@ -142,7 +143,7 @@ public class SeparationConstraintsSaverTesting extends AbstractAWETest {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
-        trafficSaver.saveElement(rowContainer);
+        separationSaver.saveElement(rowContainer);
         List<String> values = prepareValues(hashMap);
         rowContainer.setValues(values);
 
@@ -150,7 +151,7 @@ public class SeparationConstraintsSaverTesting extends AbstractAWETest {
             when(model.findElement(eq(COLLECTED_SECTOR))).thenReturn(new DataElement(COLLECTED_SECTOR));
             when(model.completeProperties(new DataElement(eq(COLLECTED_SECTOR)), eq(COMPLETED_SECTOR), any(Boolean.class)))
                     .thenReturn(new DataElement(COLLECTED_SECTOR));
-            trafficSaver.saveElement(rowContainer);
+            separationSaver.saveElement(rowContainer);
             verify(model, atLeastOnce()).completeProperties(new DataElement(eq(COLLECTED_SECTOR)), eq(COMPLETED_SECTOR),
                     any(Boolean.class));
         } catch (Exception e) {
@@ -165,14 +166,14 @@ public class SeparationConstraintsSaverTesting extends AbstractAWETest {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
-        trafficSaver.saveElement(rowContainer);
+        separationSaver.saveElement(rowContainer);
         List<String> values = prepareValues(hashMap);
         rowContainer.setValues(values);
         try {
             when(model.findElement(eq(COLLECTED_SECTOR))).thenReturn(null);
             when(model.completeProperties(new DataElement(eq(COLLECTED_SECTOR)), eq(COMPLETED_SECTOR), any(Boolean.class)))
                     .thenReturn(new DataElement(COLLECTED_SECTOR));
-            trafficSaver.saveElement(rowContainer);
+            separationSaver.saveElement(rowContainer);
             verify(model, never()).completeProperties(any(IDataElement.class), any(Map.class), any(Boolean.class));
         } catch (Exception e) {
             LOGGER.error(" testIfSectorNotFound error", e);
@@ -186,7 +187,7 @@ public class SeparationConstraintsSaverTesting extends AbstractAWETest {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
-        trafficSaver.saveElement(rowContainer);
+        separationSaver.saveElement(rowContainer);
         List<String> values = prepareValues(hashMap);
         rowContainer.setValues(values);
         COMPLETED_SECTOR.remove(SEPARATION_PARAM);
@@ -194,7 +195,7 @@ public class SeparationConstraintsSaverTesting extends AbstractAWETest {
             when(model.findElement(eq(COLLECTED_SECTOR))).thenReturn(null);
             when(model.completeProperties(new DataElement(eq(COLLECTED_SECTOR)), eq(COMPLETED_SECTOR), any(Boolean.class)))
                     .thenReturn(new DataElement(COLLECTED_SECTOR));
-            trafficSaver.saveElement(rowContainer);
+            separationSaver.saveElement(rowContainer);
             verify(model, never()).completeProperties(any(IDataElement.class), any(Map.class), any(Boolean.class));
         } catch (Exception e) {
             LOGGER.error(" testIfThereIsNoValue error", e);
@@ -208,12 +209,12 @@ public class SeparationConstraintsSaverTesting extends AbstractAWETest {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
-        trafficSaver.saveElement(rowContainer);
+        separationSaver.saveElement(rowContainer);
         List<String> values = prepareValues(hashMap);
         try {
             rowContainer.setValues(values);
             when(model.findElement(any(Map.class))).thenThrow(new DatabaseException("required exception"));
-            trafficSaver.saveElement(rowContainer);
+            separationSaver.saveElement(rowContainer);
         } catch (Exception e) {
             verify(tx, never()).success();
             verify(tx, atLeastOnce()).failure();
@@ -227,12 +228,12 @@ public class SeparationConstraintsSaverTesting extends AbstractAWETest {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
-        trafficSaver.saveElement(rowContainer);
+        separationSaver.saveElement(rowContainer);
         List<String> values = prepareValues(hashMap);
         try {
             rowContainer.setValues(values);
             when(model.findElement(any(Map.class))).thenThrow(new IllegalArgumentException("required exception"));
-            trafficSaver.saveElement(rowContainer);
+            separationSaver.saveElement(rowContainer);
         } catch (Exception e) {
             verify(tx, times(2)).success();
             verify(tx, never()).failure();

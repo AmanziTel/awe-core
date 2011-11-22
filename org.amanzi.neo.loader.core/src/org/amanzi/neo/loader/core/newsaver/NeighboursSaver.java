@@ -14,7 +14,6 @@
 package org.amanzi.neo.loader.core.newsaver;
 
 import java.util.HashMap;
-import java.util.List;
 
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
@@ -25,43 +24,46 @@ import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelType
 import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
- * @author Vladislav_Kondratenko
+ * @author Kondratneko_Vladislav
  */
-public class NewFrequencyConstraintSaver extends AbstractN2NSaver {
+public class NeighboursSaver extends AbstractN2NSaver {
     /*
-     * FREQUENCY constraints
+     * neighbours
      */
-    public static String FR_TRX_ID = "trx_id";
-    public static String FR_CH_TYPE = "channel type";
-    public static String FR_FREQUENCY = "frequency";
-    public static String FR_PENALTY = "penalty";
-    public static String FR_SCALLING_FACTOR = "scalling_factor";
+    public final static String NEIGHBOUR_SECTOR_NAME = "neigh_sector_name";
+    public final static String SERVING_SECTOR_NAME = "serv_sector_name";
 
-    private INodeToNodeRelationsModel frSpectrum;
-
-    protected NewFrequencyConstraintSaver(INodeToNodeRelationsModel model, INodeToNodeRelationsModel frspectrum,
-            INetworkModel networkModel, ConfigurationDataImpl data, GraphDatabaseService service) {
+    protected NeighboursSaver(INodeToNodeRelationsModel model, INetworkModel networkModel, ConfigurationDataImpl data,
+            GraphDatabaseService service) {
         super(model, networkModel, data, service);
-        this.frSpectrum = frspectrum;
     }
 
-    public NewFrequencyConstraintSaver() {
+    /**
+     * 
+     */
+    public NeighboursSaver() {
         super();
     }
 
     @Override
-    protected INodeToNodeRelationsModel getNode2NodeModel(String name) throws AWEException {
-        frSpectrum = networkModel.getNodeToNodeModel(N2NRelTypes.FREQUENCY_SPECTRUM, name, NetworkElementNodeType.SECTOR);
-        return networkModel.getNodeToNodeModel(N2NRelTypes.ILLEGAL_FREQUENCY, name, NetworkElementNodeType.SECTOR);
-    }
-
-    @Override
     protected void initSynonyms() {
-        preferenceStoreSynonyms = preferenceManager.getFrequencySynonyms();
+        preferenceStoreSynonyms = preferenceManager.getNeighbourSynonyms();
         columnSynonyms = new HashMap<String, Integer>();
     }
 
     @Override
-    protected void saveLine(List<String> row) throws AWEException {
+    protected INodeToNodeRelationsModel getNode2NodeModel(String name) throws AWEException {
+        return networkModel.getNodeToNodeModel(N2NRelTypes.NEIGHBOUR, name, NetworkElementNodeType.SECTOR);
     }
+
+    @Override
+    protected String getSourceElementName() {
+        return SERVING_SECTOR_NAME;
+    }
+
+    @Override
+    protected String getNeighborElementName() {
+        return NEIGHBOUR_SECTOR_NAME;
+    }
+
 }

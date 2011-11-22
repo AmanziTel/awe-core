@@ -18,11 +18,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
-import org.amanzi.neo.loader.core.newparser.CSVContainer;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.NewNetworkService;
 import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
+import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
@@ -38,28 +38,25 @@ import org.neo4j.graphdb.GraphDatabaseService;
  * 
  * @author Kondratenko_Vladislav
  */
-public class NewNetworkSaver extends AbstractCSVSaver<NetworkModel> {
-    private Long lineCounter = 0l;
-    private INetworkModel model;
+public class NetworkSaver extends AbstractCSVSaver<NetworkModel> {
     private final String CI_LAC = "CI_LAC";
-    private IDataElement rootDataElement;
-    private final int MAX_TX_BEFORE_COMMIT = 1000;
-    private final String CITY = "city";
-    private final String BSC = "bsc";
-    private final String MSC = "msc";
-    private final String SECTOR = "sector";
-    private final String SITE = "site";
 
-    private static Logger LOGGER = Logger.getLogger(NewNetworkSaver.class);
+    private final static String CITY = NetworkElementNodeType.CITY.getId();
+    private final static String BSC = NetworkElementNodeType.BSC.getId();
+    private final static String MSC = NetworkElementNodeType.MSC.getId();
+    private final static String SECTOR = NetworkElementNodeType.SECTOR.getId();
+    private final static String SITE = NetworkElementNodeType.SITE.getId();
+    private final static String[] DEFAULT_NETWORK_STRUCTURE = {CITY, MSC, BSC, SITE, SECTOR};
+    private static final Logger LOGGER = Logger.getLogger(NetworkSaver.class);
 
-    protected NewNetworkSaver(INetworkModel model, ConfigurationDataImpl config, GraphDatabaseService service) {
+    protected NetworkSaver(INetworkModel model, ConfigurationDataImpl config, GraphDatabaseService service) {
         super(service);
         preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.NETWORK);
         columnSynonyms = new HashMap<String, Integer>();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
         commitTx();
         if (model != null) {
-            this.model = model;
+            this.networkModel = model;
             rootDataElement = new DataElement(model.getRootNode());
             modelMap.put(model.getName(), model);
         } else {
@@ -70,7 +67,7 @@ public class NewNetworkSaver extends AbstractCSVSaver<NetworkModel> {
     /**
      * 
      */
-    public NewNetworkSaver() {
+    public NetworkSaver() {
         super();
     }
 
@@ -83,51 +80,20 @@ public class NewNetworkSaver extends AbstractCSVSaver<NetworkModel> {
      */
     @Override
     protected void saveLine(List<String> row) throws AWEException {
-        if (!isCorrect(CITY, row)) {
-            createMSC(null, row);
-            return;
-        }
-
-        IDataElement findedElement = createMainElements(row, rootDataElement, NetworkElementNodeType.CITY, CITY);
-        createMSC(findedElement, row);
-    }
-
-    /**
-     * find or create BSC node from row properties and pass the action down the chain, for creation
-     * MSC->BSC->SITE->SECTOR nodes structure
-     */
-    private void createMSC(IDataElement root, List<String> row) throws AWEException {
-        if (!isCorrect(MSC, row)) {
-            if (root == null) {
-                createSite(rootDataElement, row);
+        IDataElement parentElement = rootDataElement;
+        for (String stuctureElement : DEFAULT_NETWORK_STRUCTURE) {
+            if (stuctureElement.equals(CITY) || stuctureElement.equals(MSC) || stuctureElement.equals(BSC)) {
+                if (isCorrect(stuctureElement, row)) {
+                    // create city msc bsc elements
+                    parentElement = createMainElements(row, parentElement, NodeTypeManager.getType(stuctureElement),
+                            stuctureElement);
+                }
+            } else if (stuctureElement.equals(SITE)) {
+                parentElement = createSite(parentElement, row);
             } else {
-                createSite(root, row);
+                createSector(parentElement, row);
             }
-            return;
         }
-
-        IDataElement findedElement = createMainElements(row, root, NetworkElementNodeType.MSC, MSC);
-        createBSC(findedElement, row);
-    }
-
-    /**
-     * find or create BSC node from row properties and pass the action down the chain, for creation
-     * BSC->SITE->SECTOR nodes structure
-     * 
-     * @param row
-     * @throws AWEException
-     */
-    private void createBSC(IDataElement root, List<String> row) throws AWEException {
-        if (!isCorrect(BSC, row)) {
-            if (root == null) {
-                createSite(null, row);
-            } else {
-                createSite(root, row);
-            }
-            return;
-        }
-        IDataElement findedElement = createMainElements(row, root, NetworkElementNodeType.BSC, BSC);
-        createSite(findedElement, row);
     }
 
     /**
@@ -137,31 +103,29 @@ public class NewNetworkSaver extends AbstractCSVSaver<NetworkModel> {
      * @param row
      * @throws AWEException
      */
-    private void createSite(IDataElement root, List<String> row) throws AWEException {
+    private IDataElement createSite(IDataElement root, List<String> row) throws AWEException {
         if (!isCorrect(INetworkModel.LATITUDE, row) || !isCorrect(INetworkModel.LONGITUDE, row)) {
             LOGGER.info("Missing site name on line:" + lineCounter);
-            return;
+            return null;
         }
 
         Map<String, Object> siteMap = new HashMap<String, Object>();
         if (!collectSite(siteMap, row)) {
-            return;
+            return null;
         }
 
         IDataElement findedElement;
-        findedElement = model.findElement(siteMap);
+        findedElement = networkModel.findElement(siteMap);
         if (findedElement == null) {
-            findedElement = model.createElement(root, siteMap);
-            addedDatasetSynonyms(model, NetworkElementNodeType.SITE, NewAbstractService.NAME,
+            findedElement = networkModel.createElement(root, siteMap);
+            // add synonyms
+            addedDatasetSynonyms(networkModel, NetworkElementNodeType.SITE, NewAbstractService.NAME,
                     columnSynonyms.get(fileSynonyms.get(SITE)) == null ? SITE : getHeaderBySynonym(SITE));
-            addedDatasetSynonyms(model, NetworkElementNodeType.SITE, INetworkModel.LONGITUDE,
-                    getHeaderBySynonym(INetworkModel.LONGITUDE));
-            addedDatasetSynonyms(model, NetworkElementNodeType.SITE, INetworkModel.LATITUDE,
-                    getHeaderBySynonym(INetworkModel.LATITUDE));
+            addSynonyms(networkModel, siteMap);
         }
         resetRowValueBySynonym(row, INetworkModel.LONGITUDE);
         resetRowValueBySynonym(row, INetworkModel.LATITUDE);
-        createSector(findedElement, row);
+        return findedElement;
     }
 
     /**
@@ -172,6 +136,10 @@ public class NewNetworkSaver extends AbstractCSVSaver<NetworkModel> {
      * @throws AWEException
      */
     private void createSector(IDataElement root, List<String> row) throws AWEException {
+        if (root == null) {
+            LOGGER.info("there is no parent element for sector on line: " + lineCounter);
+            return;
+        }
         if (!isCorrect(SECTOR, row)) {
             return;
         }
@@ -180,34 +148,12 @@ public class NewNetworkSaver extends AbstractCSVSaver<NetworkModel> {
             return;
         }
 
-        IDataElement findedElement = model.findElement(sectorMap);
+        IDataElement findedElement = networkModel.findElement(sectorMap);
         if (findedElement == null) {
-            model.createElement(root, sectorMap);
-            addedDatasetSynonyms(model, NetworkElementNodeType.SECTOR, NewAbstractService.NAME, getHeaderBySynonym(SECTOR));
+            networkModel.createElement(root, sectorMap);
+            addSynonyms(networkModel, sectorMap);
         } else {
             LOGGER.info("sector" + sectorMap.get(CI_LAC.toLowerCase()) + " is already exist;line: " + lineCounter);
-        }
-    }
-
-    @Override
-    public void init(ConfigurationDataImpl configuration, CSVContainer dataElement) {
-        Map<String, Object> rootElement = new HashMap<String, Object>();
-        preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.NETWORK);
-        columnSynonyms = new HashMap<String, Integer>();
-        setDbInstance();
-        setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
-        commitTx();
-        try {
-            rootElement.put(NewAbstractService.NAME,
-                    configuration.getDatasetNames().get(ConfigurationDataImpl.NETWORK_PROPERTY_NAME));
-            model = getActiveProject().getNetwork(configuration.getDatasetNames().get(ConfigurationDataImpl.NETWORK_PROPERTY_NAME));
-            rootDataElement = new DataElement(model.getRootNode());
-            modelMap.put(configuration.getDatasetNames().get(ConfigurationDataImpl.NETWORK_PROPERTY_NAME), model);
-            createExportSynonymsForModels();
-        } catch (AWEException e) {
-            rollbackTx();
-            LOGGER.error("Exception on creating root Model", e);
-            throw new RuntimeException(e);
         }
     }
 
@@ -228,15 +174,15 @@ public class NewNetworkSaver extends AbstractCSVSaver<NetworkModel> {
         collectMainElements(mapProperty, row, nodeType, type);
 
         IDataElement findedElement;
-        findedElement = model.findElement(mapProperty);
+        findedElement = networkModel.findElement(mapProperty);
         if (findedElement == null) {
             if (root != null) {
-                findedElement = model.createElement(root, mapProperty);
+                findedElement = networkModel.createElement(root, mapProperty);
             } else {
-                findedElement = model.createElement(rootDataElement, mapProperty);
+                findedElement = networkModel.createElement(rootDataElement, mapProperty);
             }
-            addedDatasetSynonyms(model, nodeType, NewAbstractService.NAME, getHeaderBySynonym(type));
         }
+        addSynonyms(networkModel, mapProperty);
         resetRowValueBySynonym(row, type);
         return findedElement;
     }
@@ -292,20 +238,7 @@ public class NewNetworkSaver extends AbstractCSVSaver<NetworkModel> {
      * @return true if sector is collected
      */
     private boolean collectSector(Map<String, Object> sectorMap, List<String> row) {
-
-        for (String head : headers) {
-            if (isCorrect(head, row) && !head.equals(fileSynonyms.get(SECTOR))) {
-                sectorMap.put(head.toLowerCase(), getSynonymValuewithAutoparse(head, row));
-                if (fileSynonyms.containsValue(head)) {
-                    for (String key : fileSynonyms.keySet()) {
-                        if (head.equals(fileSynonyms.get(key))) {
-                            addedDatasetSynonyms(model, NetworkElementNodeType.SECTOR, key, head);
-                        }
-                    }
-                }
-            }
-        }
-        String sector = getSynonymValuewithAutoparse(SECTOR, row).toString();
+        String sector = getSynonymValueWithAutoparse(SECTOR, row).toString();
         String sectorName = isCorrect(sector) ? sector.toString() : StringUtils.EMPTY;
         String ci = sectorMap.containsKey(NewNetworkService.CELL_INDEX) ? sectorMap.get(NewNetworkService.CELL_INDEX).toString()
                 : StringUtils.EMPTY;

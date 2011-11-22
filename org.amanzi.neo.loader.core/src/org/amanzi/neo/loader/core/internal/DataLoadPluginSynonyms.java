@@ -34,6 +34,13 @@ public class DataLoadPluginSynonyms extends NLS {
     public static String NH_LATITUDE;
     public static String NH_LONGITUDE;
     public static String NH_SEPARATION;
+    public static String NH_BAND;
+    public static String NH_TRX_ID;
+    public static String NH_EXTENDED;
+    public static String NH_HOPPING_TYPE;
+    public static String NH_HSN;
+    public static String NH_SUBCELL;
+    public static String NH_TRAFFIC;
 
     public static String DR_LATITUDE;
     public static String DR_LONGITUDE;
