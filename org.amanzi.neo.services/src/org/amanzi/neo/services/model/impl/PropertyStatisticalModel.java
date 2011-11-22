@@ -94,7 +94,7 @@ public abstract class PropertyStatisticalModel extends DataModel implements IPro
             //TODO: LN: handle exception
         }
     }
-
+    
     /**
      * Method to add property in statistics by type of node and name of property
      *

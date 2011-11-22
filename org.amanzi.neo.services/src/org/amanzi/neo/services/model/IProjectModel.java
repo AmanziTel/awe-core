@@ -135,6 +135,14 @@ public interface IProjectModel extends IModel {
     public Iterable<INetworkModel> findAllNetworkModels() throws AWEException;
 
     /**
+     * Looks up for all models related to this Project
+     * 
+     * @return
+     * @throws AWEException
+     */
+    public Iterable<IPropertyStatisticalModel> findAllModels() throws AWEException;
+
+    /**
      * Collects list of all models that are available for Distribution Analysis
      * 
      * @return

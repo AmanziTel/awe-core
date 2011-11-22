@@ -18,7 +18,6 @@ import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IModel;
 import org.amanzi.neo.services.model.IProjectModel;
-import org.amanzi.neo.services.ui.IconManager;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.graphics.Image;
@@ -28,19 +27,13 @@ import org.eclipse.swt.graphics.Image;
  */
 public class ProjectTreeLabelProvider extends LabelProvider {
 
-    /*
-     * Icon manager
-     */
-    private IconManager manager;
-
     /**
      * Constructor. Gets an instance of IconManager
      * 
      * @param viewer of this LabelProvider
      */
     public ProjectTreeLabelProvider(Viewer viewer) {
-        manager = IconManager.getIconManager();
-        manager.addViewer(viewer);
+        
     }
 
     @Override
@@ -59,10 +52,7 @@ public class ProjectTreeLabelProvider extends LabelProvider {
      */
     public Image getImage(Object element) {
         // else search for image by given type
-        if (element instanceof IDataElement) {
-            return manager.getImage(((IDataElement)element).get(INeoConstants.PROPERTY_TYPE_NAME).toString());
-        }
-
-        return null;
+        
+    	return null;
     }
 }

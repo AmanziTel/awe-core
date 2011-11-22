@@ -172,7 +172,10 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
 
     /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> origin/events
      * Update any property of a network element based of <code>IDataElement elementToUpdate</code> object.
      *
      * @param elementToUpdate Element to update
@@ -183,7 +186,10 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
     public void updateElement(IDataElement elementToUpdate, String propertyName, Object newValue) throws AWEException;
     
     /**
+<<<<<<< HEAD
 >>>>>>> origin/models
+=======
+>>>>>>> origin/events
      * complete existedElement with new property. if
      * 
      * @param existedElement

@@ -35,22 +35,24 @@ public class EventManager {
         return instance;
     }
 
-    private HashMap<AbstractUIEventType, Set<IEventListener>> listeners;
+    private HashMap<EventUIType, Set<IEventListener>> listeners;
 
     private EventManager() {
-        listeners = new HashMap<AbstractUIEventType, Set<IEventListener>>();
+        listeners = new HashMap<EventUIType, Set<IEventListener>>();
     }
 
-    public void addListener(AbstractUIEventType eventType, IEventListener listener) {
-        Set<IEventListener> list = listeners.get(eventType);
-        if (list == null) {
-            list = new HashSet<IEventListener>();
-            listeners.put(eventType, list);
+    public void addListener(IEventListener listener, EventUIType... eventTypes) {
+        for (EventUIType type : eventTypes) {
+            Set<IEventListener> list = listeners.get(type);
+            if (list == null) {
+                list = new HashSet<IEventListener>();
+                listeners.put(type, list);
+            }
+            list.add(listener);
         }
-        list.add(listener);
     }
 
-    public void removeListener(AbstractUIEventType eventType, IEventListener listener) {
+    public void removeListener(EventUIType eventType, IEventListener listener) {
         Set<IEventListener> list = listeners.get(eventType);
         if (list == null)
             return;
@@ -60,12 +62,16 @@ public class EventManager {
         }
     }
     
-    public void notify(AbstractUIEvent event) {
-        Set<IEventListener> list = listeners.get(event.getType());
+    public void notify(EventUIType eventType) {
+        notify(eventType, null);
+    }
+
+    public void notify(EventUIType eventType, Object data) {
+        Set<IEventListener> list = listeners.get(eventType);
         if (list == null)
             return;
         for (IEventListener listener : list) {
-            listener.handleEvent(event);
+            listener.handleEvent(eventType, data);
         }
     }
 }

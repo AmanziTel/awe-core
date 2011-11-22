@@ -16,11 +16,8 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URL;
 
-import org.amanzi.integrator.awe.AWEProjectManager;
-import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.scripting.jruby.ScriptUtils;
 import org.apache.log4j.Logger;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -35,8 +32,6 @@ import org.jruby.internal.runtime.ValueAccessor;
 import org.jruby.javasupport.JavaEmbedUtils;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.osgi.framework.BundleContext;
-import org.rubypeople.rdt.core.IRubyProject;
-import org.rubypeople.rdt.internal.ui.wizards.NewRubyElementCreationWizard;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -80,7 +75,7 @@ public class KPIPlugin extends AbstractUIPlugin {
     public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
-        NeoServiceProviderUi.getProvider().getService();
+//        NeoServiceProviderUi.getProvider().getService();
 	}
 
     /**
@@ -95,20 +90,20 @@ public class KPIPlugin extends AbstractUIPlugin {
         config.setOutput(getOutputStream());
         runtime = Ruby.newInstance(config);
         String[] loadPaths=new String[3];
-        try {
-            String aweProjectName = AWEProjectManager.getActiveProjectName();
-            IRubyProject rubyProject = NewRubyElementCreationWizard.configureRubyProject(null, aweProjectName);
-            String location = rubyProject.getResource().getLocation().toOSString();
-            LOGGER.debug("[DEBUG] rubyProjectlocation " + location);
+//        try {
+//            String aweProjectName = AWEProjectManager.getActiveProjectName();
+//            IRubyProject rubyProject = NewRubyElementCreationWizard.configureRubyProject(null, aweProjectName);
+//            String location = rubyProject.getResource().getLocation().toOSString();
+//            LOGGER.debug("[DEBUG] rubyProjectlocation " + location);
             URL entry = Platform.getBundle(KPIPlugin.PLUGIN_ID).getEntry("ruby");
             loadPaths[0] = FileLocator.resolve(entry).getFile();
-            loadPaths[1]=location;
-            loadPaths[2]=rubyProject.getProject().getLocation().toOSString();
+//            loadPaths[1]=location;
+//            loadPaths[2]=rubyProject.getProject().getLocation().toOSString();
 //            Platform.getBundle("").getE
-        } catch (CoreException e1) {
-            // TODO Handle CoreException
-            throw (RuntimeException) new RuntimeException( ).initCause( e1 );
-        }
+//        } catch (CoreException e1) {
+//            // TODO Handle CoreException
+//            throw (RuntimeException) new RuntimeException( ).initCause( e1 );
+//        }
         IRubyObject rubyObject = JavaEmbedUtils.javaToRuby(runtime, ScriptUtils.getJRubyHome());
         runtime.getGlobalVariables().define("$" + JRUBY_PATH_RUBY_NAME, new ValueAccessor(rubyObject));
         

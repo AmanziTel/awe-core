@@ -50,7 +50,8 @@ public class NewNeighboursSaver extends AbstractSaver<NetworkModel, CSVContainer
             n2nModel = model;
             if (networkModel == null) {
                 try {
-                    this.networkModel = getActiveProject().getNetwork(data.getDatasetNames().get(CONFIG_VALUE_NETWORK));
+                    this.networkModel = getActiveProject().getNetwork(
+                            data.getDatasetNames().get(ConfigurationDataImpl.NETWORK_PROPERTY_NAME));
                     networkModel = this.networkModel;
                 } catch (AWEException e) {
                     throw (RuntimeException)new RuntimeException().initCause(e);
@@ -101,8 +102,10 @@ public class NewNeighboursSaver extends AbstractSaver<NetworkModel, CSVContainer
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
         commitTx();
         try {
-            rootElement.put(INeoConstants.PROPERTY_NAME_NAME, configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK));
-            networkModel = getActiveProject().getNetwork(configuration.getDatasetNames().get(CONFIG_VALUE_NETWORK));
+            rootElement.put(INeoConstants.PROPERTY_NAME_NAME,
+                    configuration.getDatasetNames().get(ConfigurationDataImpl.NETWORK_PROPERTY_NAME));
+            networkModel = getActiveProject().getNetwork(
+                    configuration.getDatasetNames().get(ConfigurationDataImpl.NETWORK_PROPERTY_NAME));
             n2nModel = networkModel.getNodeToNodeModel(N2NRelTypes.NEIGHBOUR, configuration.getFilesToLoad().get(0).getName(),
                     NetworkElementNodeType.SECTOR);
             modelMap.put(networkModel.getName(), networkModel);

@@ -35,8 +35,6 @@ import org.geotools.data.FeatureStore;
 import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.shapefile.ShapefileDataStoreFactory;
 import org.geotools.feature.FeatureCollection;
-import org.geotools.feature.FeatureType;
-import org.geotools.feature.GeometryAttributeType;
 import org.geotools.filter.AttributeExpression;
 import org.geotools.filter.BBoxExpression;
 import org.geotools.filter.FilterFactory;
@@ -45,6 +43,8 @@ import org.geotools.filter.FilterType;
 import org.geotools.filter.GeometryFilter;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
+import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 
@@ -67,9 +67,9 @@ public class ShapeExportOp implements IOp {
         }else{
             source = (FeatureSource) target;
         }
-        FeatureType featureType = source.getSchema();
-        GeometryAttributeType geometryType = featureType.getDefaultGeometry();
-        CoordinateReferenceSystem crs = geometryType.getCoordinateSystem();
+        SimpleFeatureType featureType = (SimpleFeatureType)source.getSchema();
+        GeometryDescriptor geomDescr = featureType.getGeometryDescriptor();
+        CoordinateReferenceSystem crs = geomDescr.getCoordinateReferenceSystem();
         String typeName = featureType.getTypeName();
         String filename = typeName.replace(':', '_');
         URL directory = FileLocator.toFileURL(Platform.getInstanceLocation().getURL());
@@ -116,7 +116,7 @@ public class ShapeExportOp implements IOp {
             GeometryFilter geometryFilter = ff.createGeometryFilter(FilterType.GEOMETRY_BBOX);
             geometryFilter.addRightGeometry(bboxExpression);
             AttributeExpression featureExpression = ff
-                    .createAttributeExpression(geometryType.getName());
+                    .createAttributeExpression(geomDescr.getLocalName());
             geometryFilter.addLeftGeometry(featureExpression);
             features = source.getFeatures(geometryFilter);
         }else{

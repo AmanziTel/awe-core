@@ -207,11 +207,11 @@ public class NewPropertyStatistics {
         if (klass.equals(Long.class)) {
             value = Long.parseLong(valueInStringFormat);
         }
-        if (klass.equals(Float.class)) {
-            value = Float.parseFloat(valueInStringFormat);
-        }
         if (klass.equals(Double.class)) {
             value = Double.parseDouble(valueInStringFormat);
+        }
+        if (klass.equals(Float.class)) {
+            value = Float.parseFloat(valueInStringFormat);
         }
         if (klass.equals(String.class)) {
             value = valueInStringFormat;

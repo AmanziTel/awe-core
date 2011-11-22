@@ -33,7 +33,6 @@ import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
 import org.amanzi.neo.loader.core.saver.DriveEvents;
 import org.amanzi.neo.loader.core.saver.nemo.NemoEvents;
-import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.NewDatasetService.DriveTypes;
@@ -92,15 +91,14 @@ public class NewNemo2xSaver extends AbstractDriveSaver {
 
     @Override
     public void init(ConfigurationDataImpl configuration, CSVContainer dataElement) {
-        Map<String, Object> rootElement = new HashMap<String, Object>();
         preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.DRIVE);
         setDbInstance();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
         commitTx();
         try {
-            rootElement.put(INeoConstants.PROPERTY_NAME_NAME, configuration.getDatasetNames().get(CONFIG_VALUE_DATASET));
-            model = getActiveProject().getDataset(configuration.getDatasetNames().get(CONFIG_VALUE_DATASET), DriveTypes.TEMS);
-            modelMap.put(configuration.getDatasetNames().get(CONFIG_VALUE_DATASET), model);
+            model = getActiveProject().getDataset(configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME),
+                    DriveTypes.TEMS);
+            modelMap.put(configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME), model);
             createExportSynonymsForModels();
         } catch (AWEException e) {
             rollbackTx();

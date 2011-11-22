@@ -831,4 +831,9 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         return super.updateCRS(crsCode);
     }
 
+    @Override
+    public boolean isUniqueProperties(String property) {
+        return false;
+    }
+
 }

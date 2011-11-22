@@ -52,8 +52,6 @@ public class Application extends UDIGApplication implements IApplication {
 		public String getInitialWindowPerspectiveId() {
 			return PerspectiveFactory.AWE_PERSPECTIVE;
 		}        
-		
-
 	}
 
 }

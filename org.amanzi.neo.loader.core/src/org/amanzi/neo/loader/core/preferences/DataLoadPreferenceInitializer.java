@@ -80,7 +80,6 @@ public class DataLoadPreferenceInitializer extends AbstractPreferenceInitializer
         pref.setDefault(DataLoadPreferences.REMOVE_SITE_NAME, false);
         pref.setDefault(DataLoadPreferences.NETWORK_COMBINED_CALCULATION, true);
         pref.setDefault(DataLoadPreferences.ZOOM_TO_LAYER, true);
-        pref.setDefault(DataLoadPreferences.ONE_NETWORK_PER_PROJECT, false);
         pref.setDefault(DataLoadPreferences.ADD_AMS_PROBES_TO_MAP, true);
         pref.setDefault(DataLoadPreferences.ADD_AMS_CALLS_TO_MAP, true);
         pref.setDefault(DataLoadPreferences.ADD_AMS_EVENTS_TO_MAP, true);
@@ -158,7 +157,6 @@ public class DataLoadPreferenceInitializer extends AbstractPreferenceInitializer
         pref.setDefault(DataLoadPreferences.MO, DataLoadPluginSynonyms.MO);
         pref.setDefault(DataLoadPreferences.CHGR, DataLoadPluginSynonyms.CHGR);
         pref.setDefault(DataLoadPreferences.FHOP, DataLoadPluginSynonyms.FHOP);
-
         // pref.setDefault(DataLoadPreferences.PROPERY_LISTS,
         // "dbm--DELIMETER--dbm--DELIMETER--dbm+mw--DELIMETER--dbm,mw");
         pref.setDefault(DataLoadPreferences.DEFAULT_CHARSET, Charset.defaultCharset().name());

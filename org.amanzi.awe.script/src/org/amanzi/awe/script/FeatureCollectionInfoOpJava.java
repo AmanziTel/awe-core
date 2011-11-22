@@ -20,8 +20,8 @@ import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.widgets.Display;
 import org.geotools.data.FeatureSource;
-import org.geotools.feature.Feature;
 import org.geotools.feature.FeatureCollection;
+import org.opengis.feature.simple.SimpleFeature;
 
 public class FeatureCollectionInfoOpJava implements IOp {
     private static final Logger LOGGER = Logger.getLogger(FeatureCollectionInfoOpJava.class);
@@ -37,7 +37,7 @@ public class FeatureCollectionInfoOpJava implements IOp {
             monitor.beginTask("Java iteration", features.size());
             LOGGER.debug("Java iterating over "+features.size()+" features:");
             while(featureIterator.hasNext()){
-                Feature feature = (Feature)featureIterator.next();
+                SimpleFeature feature = (SimpleFeature)featureIterator.next();
                 if(count<10){
                     LOGGER.debug("    "+feature.getID());
                 }

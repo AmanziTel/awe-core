@@ -24,7 +24,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.amanzi.integrator.awe.AWEProjectManager;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.enums.GisTypes;
@@ -36,9 +35,7 @@ import org.amanzi.neo.services.utils.Pair;
 import org.amanzi.scripting.jruby.ScriptUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
@@ -78,8 +75,6 @@ import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.TraversalPosition;
 import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
-import org.rubypeople.rdt.core.IRubyProject;
-import org.rubypeople.rdt.internal.ui.wizards.NewRubyElementCreationWizard;
 
 
 
@@ -730,56 +725,56 @@ public class KpiView extends ViewPart {
                             LOGGER.debug(formulaName);
                             LOGGER.debug(parameters);
 
-                            String aweProjectName = AWEProjectManager.getActiveProjectName();
-                            IRubyProject rubyProject = NewRubyElementCreationWizard.configureRubyProject(null, aweProjectName);
-                            IFolder folder = rubyProject.getProject().getFolder(new Path(KPIPlugin.KPI_FOLDER));
+//                            String aweProjectName = AWEProjectManager.getActiveProjectName();
+//                            IRubyProject rubyProject = NewRubyElementCreationWizard.configureRubyProject(null, aweProjectName);
+//                            IFolder folder = rubyProject.getProject().getFolder(new Path(KPIPlugin.KPI_FOLDER));
 
-                            if (!folder.exists()) {
-                                folder.create(false, true, null);
-                            }
+//                            if (!folder.exists()) {
+//                                folder.create(false, true, null);
+//                            }
                             // update formula script file
-                            IFile formulaScript = folder.getFile(fileName);
-                            if (!formulaScript.exists()) {
-                                ByteArrayInputStream is = new ByteArrayInputStream(scriptText.getBytes());
-                                formulaScript.create(is, true, null);
-                                is.close();
-                                LOGGER.debug("Formula script was created");
-                            } else {
-                                ByteArrayInputStream is = new ByteArrayInputStream(scriptText.getBytes());
-                                formulaScript.setContents(is, IFile.FORCE, null);
-                            }
+//                            IFile formulaScript = folder.getFile(fileName);
+//                            if (!formulaScript.exists()) {
+//                                ByteArrayInputStream is = new ByteArrayInputStream(scriptText.getBytes());
+//                                formulaScript.create(is, true, null);
+//                                is.close();
+//                                LOGGER.debug("Formula script was created");
+//                            } else {
+//                                ByteArrayInputStream is = new ByteArrayInputStream(scriptText.getBytes());
+//                                formulaScript.setContents(is, IFile.FORCE, null);
+//                            }
                             String methodText = KPIUtils.generateRubyMethod(formulaName, parameters);
                             if (btnElements.getSelection()){
-                                IFile elementsScript = folder.getFile(KPIUtils.ELEMENT_FORMULAS_SCRIPT);
-                                createOrUpdateScript(methodText, elementsScript);
+//                                IFile elementsScript = folder.getFile(KPIUtils.ELEMENT_FORMULAS_SCRIPT);
+//                                createOrUpdateScript(methodText, elementsScript);
                             }else if (btnCollections.getSelection()){
-                                IFile collectionsScript = folder.getFile(KPIUtils.COLLECTION_FORMULAS_SCRIPT);
-                                createOrUpdateScript(methodText, collectionsScript);
+//                                IFile collectionsScript = folder.getFile(KPIUtils.COLLECTION_FORMULAS_SCRIPT);
+//                                createOrUpdateScript(methodText, collectionsScript);
                             }else{
                                 LOGGER.debug("Warning: Neither element type nor collection type selected!");
                             }
-                            IFile initScript = folder.getFile(INIT_SCRIPT);
-                            if (!initScript.exists()){
-                                String initScriptText=KPIUtils.generateInitScript();
-                                ByteArrayInputStream is = new ByteArrayInputStream(initScriptText.getBytes());
-                                initScript.create(is, true, null);
-                                is.close();
-                                IFile elementsScript = folder.getFile(KPIUtils.ELEMENT_FORMULAS_SCRIPT);
-                                if (!elementsScript.exists()) {
-                                    createEmptyScriptFile(elementsScript);
-                                } 
-                                IFile collectionsScript = folder.getFile(KPIUtils.COLLECTION_FORMULAS_SCRIPT);
-                                if (!collectionsScript.exists()) {
-                                    createEmptyScriptFile(collectionsScript);
-                                } 
-                                testInitScriptAndRun(initScriptText);
-                                LOGGER.debug("Init script was created");
-                            }else{
-                                StringBuffer sb = new StringBuffer();
-                                KPIUtils.readContentToStringBuffer(initScript.getContents(), sb);
-                                testInitScriptAndRun(sb.toString());
-                                
-                            }
+//                            IFile initScript = folder.getFile(INIT_SCRIPT);
+//                            if (!initScript.exists()){
+//                                String initScriptText=KPIUtils.generateInitScript();
+//                                ByteArrayInputStream is = new ByteArrayInputStream(initScriptText.getBytes());
+//                                initScript.create(is, true, null);
+//                                is.close();
+//                                IFile elementsScript = folder.getFile(KPIUtils.ELEMENT_FORMULAS_SCRIPT);
+//                                if (!elementsScript.exists()) {
+//                                    createEmptyScriptFile(elementsScript);
+//                                } 
+//                                IFile collectionsScript = folder.getFile(KPIUtils.COLLECTION_FORMULAS_SCRIPT);
+//                                if (!collectionsScript.exists()) {
+//                                    createEmptyScriptFile(collectionsScript);
+//                                } 
+//                                testInitScriptAndRun(initScriptText);
+//                                LOGGER.debug("Init script was created");
+//                            }else{
+//                                StringBuffer sb = new StringBuffer();
+//                                KPIUtils.readContentToStringBuffer(initScript.getContents(), sb);
+//                                testInitScriptAndRun(sb.toString());
+//                                
+//                            }
 
                     }
                 } catch (Exception e1) {

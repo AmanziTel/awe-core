@@ -236,13 +236,11 @@ public class StatisticsVault implements IVault {
         }
         try {
             NewPropertyStatistics propStat = ((StatisticsVault)vault).getPropertyStatistics(propName, oldPropValue.getClass());
-
             // update statistics only if it was saved early 
             if (propStat.getPropertyMap().containsKey(oldPropValue)) {
                 propStat.updatePropertyMap(oldPropValue, -1);
                 propStat.updatePropertyMap(newPropValue, 1);
             }
-
         } catch (IndexPropertyException e) {
             this.setCount(this.getCount() + 1);
             LOGGER.error("IndexPropertyException: index property has wrong type");

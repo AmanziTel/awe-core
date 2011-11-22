@@ -16,6 +16,7 @@ package org.amanzi.neo.model.distribution.impl;
 import java.awt.Color;
 
 import org.amanzi.neo.model.distribution.IDistributionBar;
+import org.amanzi.neo.model.distribution.IDistributionModel;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.neo4j.graphdb.Node;
@@ -38,12 +39,15 @@ public class DistributionBar implements IDistributionBar {
     
     private IDataElement rootElement;
     
-    public DistributionBar(IDataElement rootElement) {
+    private IDistributionModel distribution;
+    
+    public DistributionBar(IDataElement rootElement, IDistributionModel distribution) {
         this.rootElement = rootElement;
+        this.distribution = distribution;
     }
     
-    public DistributionBar() {
-        
+    public DistributionBar(IDistributionModel distribution) {
+        this.distribution = distribution;
     }
     
     @Override
@@ -125,4 +129,9 @@ public class DistributionBar implements IDistributionBar {
         
         return new Long(thisRoot.getId()).compareTo(new Long(anotherRoot.getId()));
     }
+
+    @Override
+    public IDistributionModel getDistribution() {
+        return distribution;
+    }    
 }

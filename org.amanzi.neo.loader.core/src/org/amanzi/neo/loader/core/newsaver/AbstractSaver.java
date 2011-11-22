@@ -16,7 +16,6 @@ package org.amanzi.neo.loader.core.newsaver;
 import java.util.HashMap;
 import java.util.Map;
 
-
 import org.amanzi.neo.db.manager.DatabaseManagerFactory;
 import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceManager;
@@ -42,9 +41,6 @@ import org.neo4j.graphdb.Transaction;
  * @param <T3>
  */
 public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 extends IConfiguration> implements ISaver<T1, T2, T3> {
-    public static final String CONFIG_VALUE_PROJECT = "Project";
-    public static final String CONFIG_VALUE_NETWORK = "Network";
-    public static final String CONFIG_VALUE_DATASET = "Dataset";
     public static final String PROJECT_PROPERTY = "project";
     public static final String CONFIG_VALUE_CALLS = "Calls";
     public static final String CONFIG_VALUE_PESQ = "Pesq";
@@ -55,6 +51,8 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
     protected Map<IModel, ExportSynonyms> synonymsMap = new HashMap<IModel, ExportSynonyms>();
     private static final String TRUE = "true";
     private static final String FALSE = "false";
+
+  
 
     protected AbstractSaver(GraphDatabaseService service) {
         if (service != null) {

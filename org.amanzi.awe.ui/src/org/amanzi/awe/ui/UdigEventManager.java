@@ -17,7 +17,7 @@ import net.refractions.udig.project.IProject;
 import net.refractions.udig.project.internal.impl.ProjectRegistryImpl;
 
 import org.amanzi.neo.services.listeners.EventManager;
-import org.amanzi.neo.services.listeners.ProjectChangedEvent;
+import org.amanzi.neo.services.listeners.EventUIType;
 import org.eclipse.emf.common.notify.Adapter;
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.Notifier;
@@ -49,7 +49,7 @@ public class UdigEventManager implements IStartup {
             public void notifyChanged(Notification arg0) {
                 if (arg0.getEventType() == Notification.SET) {
                     IProject project = (IProject)arg0.getNewValue();
-                    EventManager.getInstance().notify(new ProjectChangedEvent(project.getName()));
+                    EventManager.getInstance().notify(EventUIType.PROJECT_CHANGED, project.getName());
                 }
             }
 

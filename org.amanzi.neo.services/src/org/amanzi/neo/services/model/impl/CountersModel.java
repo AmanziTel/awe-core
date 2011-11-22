@@ -96,4 +96,9 @@ public class CountersModel extends AbstractIndexedModel implements ICountersMode
         return null;
     }
 
+    @Override
+    public boolean isUniqueProperties(String property) {
+        return false;
+    }
+
 }

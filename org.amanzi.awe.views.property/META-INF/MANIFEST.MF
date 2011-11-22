@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Property
+Bundle-SymbolicName: org.amanzi.awe.views.property;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: org.amanzi.awe.views.property.PropertyPlugin
+Bundle-Vendor: amanzi.org
+Require-Bundle: org.eclipse.core.runtime,
+ org.amanzi.awe.ui;bundle-version="1.0.0",
+ net.refractions.udig.project.ui;bundle-version="1.2.0",
+ org.amanzi.neo.services;bundle-version="1.0.0"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-ActivationPolicy: lazy
+Export-Package: org.amanzi.awe.views.property.views

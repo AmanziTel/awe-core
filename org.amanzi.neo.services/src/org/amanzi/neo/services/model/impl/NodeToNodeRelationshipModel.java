@@ -153,9 +153,9 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
         initializeStatistics();
     }
 
-    NodeToNodeRelationshipModel(Node n2nRoot) throws AWEException {
+    public NodeToNodeRelationshipModel(Node n2nRoot) throws AWEException {
         super(NodeToNodeTypes.NODE2NODE);
-        
+
         // validate
         if (n2nRoot == null) {
             throw new IllegalArgumentException("Node2node root is null.");
@@ -330,5 +330,10 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
     @Override
     public IDistributionModel getDistributionModel(IDistribution< ? > distributionType) throws AWEException {
         return new DistributionModel(this, distributionType);
+    }
+
+    @Override
+    public boolean isUniqueProperties(String property) {
+        return false;
     }
 }

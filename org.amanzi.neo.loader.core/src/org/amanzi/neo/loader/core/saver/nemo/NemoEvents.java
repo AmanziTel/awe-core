@@ -4389,7 +4389,7 @@ public enum NemoEvents {
         @Override
         public Map<String, Object> fill(String version, List<String> params) {
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
-            parsedParameters.put(DRIVE_EVENTS, DriveEvents.HANDOVER_SUCCESS);
+//            parsedParameters.put(DRIVE_EVENTS, DriveEvents.HANDOVER_SUCCESS);
             if ("2.01".equals(version)) {
                 String key = "Handover context ID";
                 List<String> contextName = new ArrayList<String>(1);
@@ -4404,7 +4404,7 @@ public enum NemoEvents {
         public Map<String, Object> fill(String version, List<String> params) {
             Iterator<String> parameters = params.iterator();
             Map<String, Object> parsedParameters = new LinkedHashMap<String, Object>();
-            parsedParameters.put(DRIVE_EVENTS, DriveEvents.HANDOVER_FAILURE);
+//            parsedParameters.put(DRIVE_EVENTS, DriveEvents.HANDOVER_FAILURE);
             if ("2.01".equals(version)) {
                 String key = "System";
                 final TechnologySystems system = TechnologySystems.getSystemById(getIntegerValue(parameters));

@@ -20,7 +20,6 @@ import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.ILoaderNew;
 import org.amanzi.neo.loader.core.newsaver.IData;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
@@ -35,8 +34,8 @@ import org.eclipse.ui.IWorkbench;
  * @since 1.0.0
  */
 public class DatasetImportWizard extends AbstractLoaderWizardNew<ConfigurationDataImpl> {
-    
-    private ConfigurationDataImpl configData;
+
+	private ConfigurationDataImpl configData;
 
     @Override
     protected List<IWizardPage> getMainPagesList() {

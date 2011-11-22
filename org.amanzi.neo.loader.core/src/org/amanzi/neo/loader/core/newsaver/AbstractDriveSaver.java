@@ -21,9 +21,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.amanzi.neo.loader.core.ConfigurationDataImpl;
-import org.amanzi.neo.loader.core.newparser.CSVContainer;
-import org.amanzi.neo.services.model.impl.NetworkModel;
+import org.amanzi.neo.services.model.impl.DriveModel;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
 
@@ -32,7 +30,7 @@ import org.neo4j.graphdb.GraphDatabaseService;
  * 
  * @author Vladislav_Kondratenko
  */
-public abstract class AbstractDriveSaver extends AbstractSaver<NetworkModel, CSVContainer, ConfigurationDataImpl> {
+public abstract class AbstractDriveSaver extends AbstractCSVSaver<DriveModel> {
     // constants
     protected final String LATITUDE = "lat";
     protected final String LONGITUDE = "lon";
@@ -177,17 +175,6 @@ public abstract class AbstractDriveSaver extends AbstractSaver<NetworkModel, CSV
     }
 
     /**
-     * get synonym row value and autoparse it
-     * 
-     * @param synonym
-     * @param value
-     * @return
-     */
-    protected Object getSynonymValuewithAutoparse(String synonym, List<String> value) {
-        return isCorrect(synonym, value) ? autoParse(synonym, getValueFromRow(synonym, value)) : null;
-    }
-
-    /**
      * get value from row without autoparse (like a string)
      * 
      * @param synonym
@@ -248,4 +235,5 @@ public abstract class AbstractDriveSaver extends AbstractSaver<NetworkModel, CSV
     protected int getHeaderId(String header) {
         return headers.indexOf(header);
     }
+    
 }

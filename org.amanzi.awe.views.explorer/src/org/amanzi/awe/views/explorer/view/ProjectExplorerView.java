@@ -12,15 +12,12 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.amanzi.awe.views.explorer.ProjectExplorerPlugin;
-import org.amanzi.awe.views.explorer.property.ProjectPropertySheetPage;
 import org.amanzi.awe.views.explorer.providers.ProjectTreeContentProvider;
 import org.amanzi.awe.views.explorer.providers.ProjectTreeLabelProvider;
-import org.amanzi.awe.views.reuse.views.DistributionAnalyzerView;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.IProjectModel;
-import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
@@ -43,8 +40,6 @@ import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
-import org.eclipse.ui.views.properties.IPropertySheetPage;
-import org.neo4j.graphdb.Transaction;
 
 /**
  * @author Vladislav_Kondratenko
@@ -67,24 +62,6 @@ public class ProjectExplorerView extends ViewPart {
      */
     protected TreeViewer viewer;
 
-    /*
-     * PropertySheetPage for Properties of Nodes
-     */
-
-    /*
-     * NeoService provider
-     */
-    private NeoServiceProviderUi neoServiceProvider;
-
-    /*
-     * PropertySheetPage for Properties of Nodes
-     */
-    private IPropertySheetPage propertySheetPage;
-    /*
-     * Distribution analyse view
-     */
-    private DistributionAnalyzerView distributionPage;
-
     /**
      * The constructor.
      */
@@ -99,17 +76,11 @@ public class ProjectExplorerView extends ViewPart {
 
         viewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
 
-        neoServiceProvider = NeoServiceProviderUi.getProvider();
-        Transaction tx = neoServiceProvider.getService().beginTx();
-        try {
-            setProviders(neoServiceProvider);
-            viewer.setInput(getSite());
-            hookContextMenu();
-            getSite().setSelectionProvider(viewer);
-        } finally {
-            tx.finish();
-        }
-        setLayout(parent);
+		setProviders();
+		viewer.setInput(getSite());
+		hookContextMenu();
+		getSite().setSelectionProvider(viewer);
+		setLayout(parent);
         addListeners(viewer);
     }
 
@@ -282,15 +253,7 @@ public class ProjectExplorerView extends ViewPart {
 
         @Override
         public void run() {
-            String value = getNewName(dataElement.get(NewAbstractService.NAME).toString());
-            // INetworkModel networkModel =
-            // (INetworkModel)modelElement.get(INeoConstants.NETWORK_MODEL_NAME);
-            // try {
-            // networkModel.renameElement(networkModel, newName);
-            // } catch (AWEException e) {
-            // // TODO Handle AWEException
-            // throw (RuntimeException)new RuntimeException().initCause(e);
-            // }
+            
             viewer.refresh();
         }
 
@@ -332,8 +295,8 @@ public class ProjectExplorerView extends ViewPart {
      * @param neoServiceProvider
      */
 
-    protected void setProviders(NeoServiceProviderUi neoServiceProvider) {
-        viewer.setContentProvider(new ProjectTreeContentProvider(neoServiceProvider));
+    protected void setProviders() {
+        viewer.setContentProvider(new ProjectTreeContentProvider());
         viewer.setLabelProvider(new ProjectTreeLabelProvider(viewer));
     }
 
@@ -359,33 +322,5 @@ public class ProjectExplorerView extends ViewPart {
         viewer.refresh();
         viewer.reveal(dataElement);
         viewer.setSelection(new StructuredSelection(new Object[] {dataElement}));
-    }
-
-    /**
-     * Returns (and creates is it need) property sheet page for this View
-     * 
-     * @return PropertySheetPage
-     */
-
-    private IPropertySheetPage getPropertySheetPage() {
-        if (propertySheetPage == null) {
-            propertySheetPage = new ProjectPropertySheetPage();
-        }
-
-        return propertySheetPage;
-    }
-
-    /**
-     * This is how the framework determines which interfaces we implement.
-     */
-    @SuppressWarnings("rawtypes")
-    @Override
-    public Object getAdapter(final Class key) {
-        // return super.getAdapter(key);
-        if (key.equals(IPropertySheetPage.class)) {
-            return getPropertySheetPage();
-        } else {
-            return super.getAdapter(key);
-        }
-    }
+    }    
 }

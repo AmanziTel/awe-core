@@ -49,7 +49,8 @@ public class ProjectSelectionMenu extends CompoundContributionItem {
                 menuItem.setText(projectModel.getName());
                 menuItem.addSelectionListener(new SelectionAdapter() {
                     public void widgetSelected(SelectionEvent e) {
-                        ProjectModel.setActiveProject(((MenuItem)e.getSource()).getText());
+                    	//TODO: LN: should be thrown Event
+//                        ProjectModel.setActiveProject(((MenuItem)e.getSource()).getText());
                     }
                 });
             }

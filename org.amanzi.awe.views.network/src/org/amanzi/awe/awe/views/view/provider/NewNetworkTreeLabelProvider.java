@@ -30,7 +30,6 @@ public class NewNetworkTreeLabelProvider extends LabelProvider {
      * Subclasses may override.
      */
     public Image getImage(Object element) {
-       
         
         return null;
     }

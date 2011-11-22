@@ -202,4 +202,15 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
             }
         }
     }
+    
+    /**
+     * get synonym row value and autoparse it
+     * 
+     * @param synonym
+     * @param value
+     * @return
+     */
+    protected Object getSynonymValuewithAutoparse(String synonym, List<String> value) {
+        return isCorrect(synonym, value) ? autoParse(synonym, getValueFromRow(synonym, value)) : null;
+    }
 }

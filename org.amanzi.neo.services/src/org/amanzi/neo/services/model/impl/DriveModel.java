@@ -618,4 +618,9 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     public void setCRS(CoordinateReferenceSystem crs) {
         super.setCRS(crs);
     }
+
+    @Override
+    public boolean isUniqueProperties(String property) {
+        return false;
+    }
 }

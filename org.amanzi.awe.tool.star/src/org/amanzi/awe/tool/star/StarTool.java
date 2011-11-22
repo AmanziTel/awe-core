@@ -37,11 +37,9 @@ import net.refractions.udig.project.ui.render.displayAdapter.MapMouseEvent;
 import net.refractions.udig.project.ui.render.displayAdapter.ViewportPane;
 import net.refractions.udig.project.ui.tool.AbstractModalTool;
 
-import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
-import org.amanzi.neo.services.events.UpdateDrillDownEvent;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.NeoUtils;
 import org.apache.log4j.Logger;
@@ -356,7 +354,7 @@ public class StarTool extends AbstractModalTool {
         }
         Node nodeToSelect = NeoUtils.getNodeById(selectedPair.getRight());
 
-        NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new UpdateDrillDownEvent(nodeToSelect, START_TOOL_ID));
+//        NeoCorePlugin.getDefault().getUpdateViewManager().fireUpdateView(new UpdateDrillDownEvent(nodeToSelect, START_TOOL_ID));
         // sets focus
         // if (viewNetwork != null) {
         // viewNetwork.setFocus();

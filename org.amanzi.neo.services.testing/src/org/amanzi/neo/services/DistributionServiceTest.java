@@ -24,14 +24,17 @@ import static org.mockito.Mockito.when;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import net.refractions.udig.ui.PlatformGIS;
 
 import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.model.distribution.IDistribution;
 import org.amanzi.neo.model.distribution.IDistributionBar;
+import org.amanzi.neo.model.distribution.IDistributionModel;
 import org.amanzi.neo.model.distribution.impl.DistributionBar;
 import org.amanzi.neo.model.distribution.xml.schema.Bar;
 import org.amanzi.neo.model.distribution.xml.schema.Bars;
@@ -162,6 +165,36 @@ public class DistributionServiceTest extends AbstractNeoServiceTest {
     @After
     public void tearDown() throws Exception {
         cleanUpReferenceNode();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToFindRootAggregationNodesWithoutParentNode() throws Exception {
+        distributionService.findRootAggregationNodes(null);
+    }
+    
+    public void checkFindRootAggregationNodesCount() throws Exception {
+        Node parentNode = getParentNode();
+        for (int i = 0; i < NUMBER_OF_ROOT_AGGREGATIONS; i ++) {
+            createRootAggregationNode(parentNode, DISTRIBUTION_NAME + i);
+        }
+        
+        List<Node> res = distributionService.findRootAggregationNodes(parentNode);
+        
+        assertEquals("Search found incorrect count of nodes", NUMBER_OF_ROOT_AGGREGATIONS, res.size());        
+    }
+
+    public void checkFindRootAggregationNodes() throws Exception {
+        Node parentNode = getParentNode();
+        Set<Node> nodes = new HashSet<Node>();
+        for (int i = 0; i < NUMBER_OF_ROOT_AGGREGATIONS; i ++) {
+            nodes.add(createRootAggregationNode(parentNode, DISTRIBUTION_NAME + i));
+        }
+        
+        List<Node> res = distributionService.findRootAggregationNodes(parentNode);
+        for (Node node : res) {
+            assertTrue("Search found incorrect node", nodes.contains(node));
+            nodes.remove(node);
+        }        
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -1024,7 +1057,7 @@ public class DistributionServiceTest extends AbstractNeoServiceTest {
      * @return
      */
     private DistributionBar getDistributionBarInstance(Node barNode, String name, boolean createRootElement) {
-        DistributionBar result = new DistributionBar();
+        DistributionBar result = new DistributionBar(mock(IDistributionModel.class));
 
         if (createRootElement) {
             result.setRootElement(new DataElement(barNode));
@@ -1171,7 +1204,7 @@ public class DistributionServiceTest extends AbstractNeoServiceTest {
     }
 
     private DistributionBar getDistributionBar(String name) {
-        DistributionBar bar = new DistributionBar();
+        DistributionBar bar = new DistributionBar(mock(IDistributionModel.class));
 
         bar.setColor(DEFAULT_BAR_COLOR);
         bar.setCount(DEFAULT_BAR_COUNT);

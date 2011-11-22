@@ -17,15 +17,11 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 
 import net.refractions.udig.mapgraphic.MapGraphic;
 import net.refractions.udig.mapgraphic.MapGraphicContext;
-import net.refractions.udig.ui.PlatformGIS;
 import net.refractions.udig.ui.graphics.ViewportGraphics;
-
-import org.amanzi.neo.core.utils.DriveEvents;
 
 public class LegendDrive implements MapGraphic {
 
@@ -60,17 +56,17 @@ public class LegendDrive implements MapGraphic {
         int longestRow = 0; // used to calculate the width of the graphic
         final int[] numberOfEntries = new int[1]; // total number of entries to draw
         numberOfEntries[0] = 0;
-        for (DriveEvents event : DriveEvents.values()) {
-
-            String text = event.getDescription();
-            Rectangle2D bounds = graphics.getStringBounds(text);
-            int length = indentSize + imageWidth + horizontalSpacing + (int)bounds.getWidth();
-
-            if (length > longestRow) {
-                longestRow = length;
-            }
-            numberOfEntries[0]++;
-        }
+//        for (DriveEvents event : DriveEvents.values()) {
+//
+//            String text = event.getDescription();
+//            Rectangle2D bounds = graphics.getStringBounds(text);
+//            int length = indentSize + imageWidth + horizontalSpacing + (int)bounds.getWidth();
+//
+//            if (length > longestRow) {
+//                longestRow = length;
+//            }
+//            numberOfEntries[0]++;
+//        }
 
         if (numberOfEntries[0] == 0) {
             // nothing to draw!
@@ -117,23 +113,23 @@ public class LegendDrive implements MapGraphic {
         final int[] y = new int[1];
         y[0] = locationStyle.y + verticalMargin;
 
-        for (DriveEvents event : DriveEvents.values()) {
-            final BufferedImage awtIcon = (BufferedImage)event.getEventIcon().getImage(16);
-            final String layerName = event.getDescription();
-
-            PlatformGIS.syncInDisplayThread(new Runnable() {
-                public void run() {
-
-                    drawRow(graphics, x[0], y[0], awtIcon, layerName, false);
-
-                    y[0] += rowHeight;
-                    if ((rowsDrawn[0] + 1) < numberOfEntries[0]) {
-                        y[0] += verticalSpacing;
-                    }
-                    rowsDrawn[0]++;
-                }
-            });
-        }
+//        for (DriveEvents event : DriveEvents.values()) {
+//            final BufferedImage awtIcon = (BufferedImage)event.getEventIcon().getImage(16);
+//            final String layerName = event.getDescription();
+//
+//            PlatformGIS.syncInDisplayThread(new Runnable() {
+//                public void run() {
+//
+//                    drawRow(graphics, x[0], y[0], awtIcon, layerName, false);
+//
+//                    y[0] += rowHeight;
+//                    if ((rowsDrawn[0] + 1) < numberOfEntries[0]) {
+//                        y[0] += verticalSpacing;
+//                    }
+//                    rowsDrawn[0]++;
+//                }
+//            });
+//        }
     }
 
     private void drawRow(ViewportGraphics graphics, int x, int y, RenderedImage icon, String text, boolean indent) {

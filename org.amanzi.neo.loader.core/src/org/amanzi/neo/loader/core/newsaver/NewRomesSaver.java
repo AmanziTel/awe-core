@@ -27,8 +27,6 @@ import java.util.Set;
 
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
-import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceManager;
-import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.NewDatasetService.DriveTypes;
@@ -88,15 +86,14 @@ public class NewRomesSaver extends AbstractDriveSaver {
 
     @Override
     public void init(ConfigurationDataImpl configuration, CSVContainer dataElement) {
-        Map<String, Object> rootElement = new HashMap<String, Object>();
         preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.DRIVE);
         setDbInstance();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
         commitTx();
         try {
-            rootElement.put(INeoConstants.PROPERTY_NAME_NAME, configuration.getDatasetNames().get(CONFIG_VALUE_DATASET));
-            model = getActiveProject().getDataset(configuration.getDatasetNames().get(CONFIG_VALUE_DATASET), DriveTypes.TEMS);
-            modelMap.put(configuration.getDatasetNames().get(CONFIG_VALUE_DATASET), model);
+            model = getActiveProject().getDataset(configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME),
+                    DriveTypes.TEMS);
+            modelMap.put(configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME), model);
             createExportSynonymsForModels();
         } catch (AWEException e) {
             rollbackTx();
@@ -149,8 +146,8 @@ public class NewRomesSaver extends AbstractDriveSaver {
         String time = getValueFromRow(TIME, value);
         Long timestamp = defineTimestamp(workDate, time);
         String message_type = getValueFromRow(MESSAGE_TYPE, value);
-        Double latitude = getLatitude(getValueFromRow(LATITUDE, value));
-        Double longitude = getLongitude(getValueFromRow(LONGITUDE, value));
+        Double latitude = getLatitude(getValueFromRow(IDriveModel.LATITUDE, value));
+        Double longitude = getLongitude(getValueFromRow(IDriveModel.LONGITUDE, value));
         String event = getValueFromRow(EVENT, value);
         String sector_id = getValueFromRow(SECTOR_ID, value);
         if (time == null || latitude == null || longitude == null || timestamp == null) {
@@ -160,8 +157,8 @@ public class NewRomesSaver extends AbstractDriveSaver {
         params.put(TIME, time);
         params.put(TIMESTAMP, timestamp);
         params.put(MESSAGE_TYPE, message_type);
-        params.put(LATITUDE, latitude);
-        params.put(LONGITUDE, longitude);
+        params.put(IDriveModel.LATITUDE, latitude);
+        params.put(IDriveModel.LONGITUDE, longitude);
         params.put(EVENT, event);
         params.put(NewAbstractService.NAME, time);
         params.put(SECTOR_ID, sector_id);
@@ -169,7 +166,7 @@ public class NewRomesSaver extends AbstractDriveSaver {
             if (fileSynonyms.containsValue(header)) {
                 continue;
             }
-            String rowValue = getSynonymValue(value, header);
+            String rowValue = getValueFromRow(header, value);
             if (isCorrect(rowValue)) {
                 params.put(header, autoParse(header, rowValue));
             }
@@ -178,8 +175,8 @@ public class NewRomesSaver extends AbstractDriveSaver {
         removeEmpty(params);
         IDataElement existedLocation = checkSameLocation(params);
         if (existedLocation != null) {
-            params.remove(LATITUDE);
-            params.remove(LONGITUDE);
+            params.remove(IDriveModel.LATITUDE);
+            params.remove(IDriveModel.LONGITUDE);
         }
         IDataElement createdElement = model.addMeasurement(fileName, params);
         if (existedLocation != null) {
@@ -193,53 +190,12 @@ public class NewRomesSaver extends AbstractDriveSaver {
 
     private IDataElement checkSameLocation(Map<String, Object> params) {
         for (IDataElement location : locationDataElements) {
-            if (location.get(LATITUDE).equals(params.get(LATITUDE)) && location.get(LONGITUDE).equals(params.get(LONGITUDE))) {
+            if (location.get(IDriveModel.LATITUDE).equals(params.get(IDriveModel.LATITUDE))
+                    && location.get(IDriveModel.LONGITUDE).equals(params.get(IDriveModel.LONGITUDE))) {
                 return location;
             }
         }
         return null;
-    }
-
-    private void makeIndexAppropriation() {
-        for (String synonyms : fileSynonyms.keySet()) {
-            columnSynonyms.put(fileSynonyms.get(synonyms), getHeaderId(fileSynonyms.get(synonyms)));
-        }
-        for (String head : headers) {
-            if (!columnSynonyms.containsKey(head)) {
-                columnSynonyms.put(head, getHeaderId(head));
-            }
-        }
-    }
-
-    /**
-     * make Appropriation with default synonyms and file header
-     * 
-     * @param keySet -header files;
-     */
-    private void makeAppropriationWithSynonyms(List<String> keySet) {
-        boolean isAppropriation = false;
-        for (String header : keySet) {
-            for (String posibleHeader : preferenceStoreSynonyms.keySet()) {
-                for (String mask : preferenceStoreSynonyms.get(posibleHeader)) {
-                    if (header.toLowerCase().matches(mask.toLowerCase()) || header.toLowerCase().equals(mask.toLowerCase())) {
-                        for (String key : posibleHeader.split(DataLoadPreferenceManager.INFO_SEPARATOR)) {
-                            if (key.equalsIgnoreCase(DriveTypes.ROMES.name())) {
-                                isAppropriation = true;
-                                String name = posibleHeader.substring(0,
-                                        posibleHeader.indexOf(DataLoadPreferenceManager.INFO_SEPARATOR));
-                                fileSynonyms.put(name, header);
-                            }
-                        }
-
-                        break;
-                    }
-                }
-                if (isAppropriation) {
-                    isAppropriation = false;
-                    break;
-                }
-            }
-        }
     }
 
     /**

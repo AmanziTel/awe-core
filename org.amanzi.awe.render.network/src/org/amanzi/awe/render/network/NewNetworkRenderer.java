@@ -171,6 +171,7 @@ public class NewNetworkRenderer extends AbstractRenderer {
         } catch (IOException e) {
             // TODO Handle IOException
             //TODO: LN: error in Log and Console
+//            NeoCorePlugin.error(e.getLocalizedMessage(), e);
             return 0;
         }
         return result / (double)count;

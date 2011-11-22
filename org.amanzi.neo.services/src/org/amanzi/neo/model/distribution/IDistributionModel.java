@@ -120,5 +120,9 @@ public interface IDistributionModel extends IModel {
      */
     public void setPalette(BrewerPalette palette);
 
-
+    /**
+     * Returns Analyzed Model
+     * @return
+     */
+    public IDistributionalModel getAnalyzedModel();
 }

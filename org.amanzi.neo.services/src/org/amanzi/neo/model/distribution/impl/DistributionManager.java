@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.amanzi.neo.model.distribution.IDistribution;
 import org.amanzi.neo.model.distribution.IDistribution.ChartType;
+import org.amanzi.neo.model.distribution.IDistributionModel;
 import org.amanzi.neo.model.distribution.IDistributionalModel;
 import org.amanzi.neo.model.distribution.types.impl.EnumeratedDistribution;
 import org.amanzi.neo.model.distribution.types.impl.NumberDistribution;
@@ -40,6 +41,7 @@ import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.Plugin;
+import org.neo4j.graphdb.Node;
 
 /**
  * Manager for Distribution types
@@ -283,6 +285,15 @@ public class DistributionManager {
         DistributionXmlParser xmlParser = new DistributionXmlParser(new FileInputStream(path), path);
         distributionService.createUserDefinedDistribution(xmlParser.getXmlDistr());
     }
+    
+    public List<IDistributionModel> getAllDistributionModels(IDistributionalModel analyzedModel) throws AWEException {
+        List<IDistributionModel> res = new ArrayList<IDistributionModel>();
+        List<Node> nodes = distributionService.findRootAggregationNodes(analyzedModel.getRootNode());
+        for (Node node : nodes) {
+            res.add(new DistributionModel(analyzedModel, node));
+        }
+        return res;
+    }
 
     /**
      * Computes key of String Distribution in Cache
@@ -301,11 +312,7 @@ public class DistributionManager {
     }
 
     /**
-<<<<<<< HEAD
-     * Tries to find String Distribution in Cache Creates new one if nothing found and put it to
-=======
      * Tries to find Distribution for Strings and Enums in Cache Creates new one if nothing found and put it to
->>>>>>> origin/models
      * cache
      * 
      * @param model

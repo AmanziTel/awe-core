@@ -21,7 +21,6 @@ import java.util.List;
 import org.amanzi.awe.views.network.view.NetworkTreeView;
 import org.amanzi.awe.views.tree.drive.views.DriveTreeView;
 import org.amanzi.awe.views.tree.drive.views.StatisticsNeoNode;
-import org.amanzi.neo.core.NeoCorePlugin;
 import org.amanzi.neo.services.events.ShowPreparedViewEvent;
 import org.amanzi.neo.services.events.UpdateDrillDownEvent;
 import org.amanzi.neo.services.events.UpdateViewEvent;
@@ -71,7 +70,7 @@ public class DriveViewPlugin extends AbstractUIPlugin implements IUpdateViewList
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
-		NeoCorePlugin.getDefault().getUpdateViewManager().addListener(this);
+//		NeoCorePlugin.getDefault().getUpdateViewManager().addListener(this);
 	}
 
 	/*
@@ -79,7 +78,7 @@ public class DriveViewPlugin extends AbstractUIPlugin implements IUpdateViewList
 	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
 	 */
 	public void stop(BundleContext context) throws Exception {
-	    NeoCorePlugin.getDefault().getUpdateViewManager().removeListener(this);
+//	    NeoCorePlugin.getDefault().getUpdateViewManager().removeListener(this);
 		plugin = null;
 		super.stop(context);
 	}
@@ -139,7 +138,7 @@ public class DriveViewPlugin extends AbstractUIPlugin implements IUpdateViewList
             viewNetwork = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
                             .showView(DriveTreeView.ID);
         } catch (PartInitException e) {
-            NeoCorePlugin.error(e.getLocalizedMessage(), e);
+//            NeoCorePlugin.error(e.getLocalizedMessage(), e);
             viewNetwork = null;
         }
         return viewNetwork;

@@ -22,11 +22,6 @@ import java.util.Date;
 
 import org.amanzi.awe.report.ReportPlugin;
 import org.amanzi.awe.report.editor.ReportEditor;
-import org.amanzi.integrator.awe.AWEProjectManager;
-import org.amanzi.neo.core.NeoCorePlugin;
-import org.amanzi.neo.services.AweProjectService;
-import org.amanzi.neo.services.nodes.AweProjectNode;
-import org.amanzi.neo.services.nodes.RubyProjectNode;
 import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -127,11 +122,11 @@ public class NewReportWizard extends NewRubyElementCreationWizard implements INe
         if (!resource.exists() || !(resource instanceof IContainer)) {
             throwCoreException("Container \"" + containerName + "\" does not exist.");
         }
-        final AweProjectService projectService = NeoCorePlugin.getDefault().getProjectService();
-        final String aweProjectName = AWEProjectManager.getAWEprojectNameFromResource(resource.getProject());
-        final AweProjectNode aweProject = projectService.findOrCreateAweProject(aweProjectName);
-        final RubyProjectNode rubyProject = projectService.findOrCreateRubyProject(aweProject, resource.getProject().getName());
-        projectService.findOrCreateReport(rubyProject, fileName.replaceAll("\\." + NewReportWizardPage.REPORT_FILE_EXTENSION, ""));
+//        final AweProjectService projectService = NeoCorePlugin.getDefault().getProjectService();
+//        final String aweProjectName = AWEProjectManager.getAWEprojectNameFromResource(resource.getProject());
+//        final AweProjectNode aweProject = projectService.findOrCreateAweProject(aweProjectName);
+//        final RubyProjectNode rubyProject = projectService.findOrCreateRubyProject(aweProject, resource.getProject().getName());
+//        projectService.findOrCreateReport(rubyProject, fileName.replaceAll("\\." + NewReportWizardPage.REPORT_FILE_EXTENSION, ""));
 
         monitor.worked(1);
         monitor.setTaskName("Opening report for editing...");

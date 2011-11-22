@@ -22,6 +22,6 @@ package org.amanzi.neo.services.listeners;
  */
 public interface IEventListener {
     
-    public void handleEvent(AbstractUIEvent event);
+    public void handleEvent(EventUIType event, Object data);
     
 }

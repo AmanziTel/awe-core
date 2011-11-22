@@ -26,7 +26,6 @@ import java.util.TreeMap;
 
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
-import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceManager;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
@@ -39,6 +38,7 @@ import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveRelationshipTypes;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
 
@@ -97,16 +97,16 @@ public class NewTemsSaver extends AbstractDriveSaver {
 
         Long timestamp = defineTimestamp(workDate, time);
         String message_type = getValueFromRow(MESSAGE_TYPE, value);
-        Double latitude = getLatitude(getValueFromRow(LATITUDE, value));
-        Double longitude = getLongitude(getValueFromRow(LONGITUDE, value));
+        Double latitude = getLatitude(getValueFromRow(IDriveModel.LATITUDE, value));
+        Double longitude = getLongitude(getValueFromRow(IDriveModel.LONGITUDE, value));
         String event = getValueFromRow(EVENT, value);
         String ms = getValueFromRow(MS, value);
 
         params.put(TIME, time);
         params.put(NewNetworkService.NAME, time);
         params.put(TIMESTAMP, timestamp);
-        params.put(LATITUDE, latitude);
-        params.put(LONGITUDE, longitude);
+        params.put(IDriveModel.LATITUDE, latitude);
+        params.put(IDriveModel.LONGITUDE, longitude);
         params.put(MESSAGE_TYPE, message_type);
 
         params.put(EVENT, getSynonymValuewithAutoparse(EVENT, value));
@@ -218,7 +218,7 @@ public class NewTemsSaver extends AbstractDriveSaver {
                     ec_io = (Integer)getSynonymValuewithAutoparse(ALL_PILOT_SET_EC_IO + i, value);
                     channel = (Integer)getSynonymValuewithAutoparse(ALL_PILOT_SET_CHANNEL + i, value);
                     pn_code = (Integer)getSynonymValuewithAutoparse(ALL_PILOT_SET_PN + i, value);
-                    String chan_code = "" + channel + "\t" + pn_code;
+                    String chan_code = StringUtils.EMPTY + channel + "\t" + pn_code;
                     if (!signals.containsKey(chan_code))
                         signals.put(chan_code, new float[2]);
                     signals.get(chan_code)[0] += Math.pow(10.0, ((ec_io) / 10.0));
@@ -278,10 +278,13 @@ public class NewTemsSaver extends AbstractDriveSaver {
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
         commitTx();
         try {
-            rootElement.put(INeoConstants.PROPERTY_NAME_NAME, configuration.getDatasetNames().get(CONFIG_VALUE_DATASET));
-            model = getActiveProject().getDataset(configuration.getDatasetNames().get(CONFIG_VALUE_DATASET), DriveTypes.TEMS);
-            virtualModel = model.getVirtualDataset(configuration.getDatasetNames().get(CONFIG_VALUE_DATASET), DriveTypes.MS);
-            modelMap.put(configuration.getDatasetNames().get(CONFIG_VALUE_DATASET), model);
+            rootElement.put(INeoConstants.PROPERTY_NAME_NAME,
+                    configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME));
+            model = getActiveProject().getDataset(configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME),
+                    DriveTypes.TEMS);
+            virtualModel = model.getVirtualDataset(
+                    configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME), DriveTypes.MS);
+            modelMap.put(configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME), model);
             createExportSynonymsForModels();
         } catch (AWEException e) {
             rollbackTx();
@@ -322,42 +325,6 @@ public class NewTemsSaver extends AbstractDriveSaver {
         } catch (Exception e) {
             LOGGER.error("Exception while saving element on line " + lineCounter, e);
             commitTx();
-        }
-    }
-
-    private void makeIndexAppropriation() {
-        for (String synonyms : fileSynonyms.keySet()) {
-            columnSynonyms.put(fileSynonyms.get(synonyms), getHeaderId(fileSynonyms.get(synonyms)));
-        }
-        for (String head : headers) {
-            if (!columnSynonyms.containsKey(head)) {
-                columnSynonyms.put(head, getHeaderId(head));
-            }
-        }
-    }
-
-    /**
-     * make Appropriation with default synonyms and file header
-     * 
-     * @param keySet -header files;
-     */
-    private void makeAppropriationWithSynonyms(List<String> keySet) {
-        boolean isAppropriation = false;
-        for (String header : keySet) {
-            for (String posibleHeader : preferenceStoreSynonyms.keySet()) {
-                for (String mask : preferenceStoreSynonyms.get(posibleHeader)) {
-                    if (header.toLowerCase().matches(mask.toLowerCase()) || header.toLowerCase().equals(mask.toLowerCase())) {
-                        isAppropriation = true;
-                        String name = posibleHeader.substring(0, posibleHeader.indexOf(DataLoadPreferenceManager.INFO_SEPARATOR));
-                        fileSynonyms.put(name, header);
-                        break;
-                    }
-                }
-                if (isAppropriation) {
-                    isAppropriation = false;
-                    break;
-                }
-            }
         }
     }
 }

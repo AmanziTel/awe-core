@@ -35,7 +35,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.geotools.brewer.color.BrewerPalette;
 import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
 import org.neo4j.graphdb.Relationship;
@@ -953,4 +952,34 @@ public class DistributionService extends NewAbstractService {
     public Node getReferenceNode() {
         return graphDb.getReferenceNode();
     }
+    
+    /**
+     * Searches for a Root Aggregation Nodes
+     * 
+     * @param parentNode parent node of Distribution
+     * @param distributionName name of Distribution
+     * @return
+     */
+    public List<Node> findRootAggregationNodes(Node parentNode) {
+        LOGGER.debug("start findRootAggregationNodes(<" + parentNode + ">)");
+
+        // validate input
+        if (parentNode == null) {
+            LOGGER.error("Parent Node cannot be null");
+            throw new IllegalArgumentException("Parent Node cannot be null");
+        }
+
+        List<Node> result = new ArrayList<Node>();
+
+        for (Relationship aggregationRelationships : parentNode.getRelationships(DistributionRelationshipTypes.ROOT_AGGREGATION,
+                Direction.OUTGOING)) {
+            result.add(aggregationRelationships.getEndNode());
+
+        }
+
+        LOGGER.debug("finish findRootAggregationNodes()");
+
+        return result;
+    }
+
 }

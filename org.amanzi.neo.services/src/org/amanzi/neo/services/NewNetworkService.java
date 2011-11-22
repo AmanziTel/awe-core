@@ -29,7 +29,6 @@ import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelType
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Relationship;
@@ -345,7 +344,11 @@ public class NewNetworkService extends NewAbstractService {
             }
         }
         if (result == null) {
-            result = index.get(NAME, name).getSingle();
+            try {
+                result = index.get(NAME, name).getSingle();
+            } catch (NullPointerException e) {
+                result = null;
+            }
         }
         return result;
     }
@@ -707,9 +710,7 @@ public class NewNetworkService extends NewAbstractService {
             if (existedNode instanceof Node && index != null) {
                 if (existedNode.getProperty(TYPE).equals(NetworkElementNodeType.SECTOR.getId())) {
                     int bsic = getBsicProperty(dataElement);
-                    //TODO: LN: double get from Map, refactor
-                    Integer bcch = dataElement.get(NewNetworkService.BCCH) != null ? (Integer)dataElement
-                            .get(NewNetworkService.BCCH) : null;
+                    Integer bcch = (Integer)dataElement.get(NewNetworkService.BCCH);
                     if (bsic != 0) {
                         addNodeToIndex((Node)existedNode, index, BSIC, bsic);
                     }

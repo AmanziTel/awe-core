@@ -102,13 +102,21 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
     @Test(expected = IllegalArgumentException.class)
     public void tryToCreatesDistributionWithoutAnalyzedModel() throws Exception {
         new DistributionModel(null, getDistributionType());
+        new DistributionModel(null, getNode());
     }
     
     @Test(expected = IllegalArgumentException.class)
     public void tryToCreateDistributionWithoutDistributionType() throws Exception {
         IDistributionalModel model = getDistributionalModel();
         
-        new DistributionModel(model, null);
+        new DistributionModel(model, (IDistribution<?>)null);
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void tryToCreateDistributionWithoutRootNode() throws Exception {
+        IDistributionalModel model = getDistributionalModel();
+        
+        new DistributionModel(model, (Node)null);
     }
     
     @Test
@@ -597,7 +605,7 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         
         DistributionModel distribution = new DistributionModel(model, distributionType);
         
-        DistributionBar bar = new DistributionBar();
+        DistributionBar bar = new DistributionBar(distribution);
         bar.setName(null);
         
         distribution.updateBar(bar);
@@ -615,7 +623,7 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         
         DistributionModel distribution = new DistributionModel(model, distributionType);
         
-        DistributionBar bar = new DistributionBar();
+        DistributionBar bar = new DistributionBar(distribution);
         bar.setName(StringUtils.EMPTY);
         
         distribution.updateBar(bar);
@@ -633,7 +641,7 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         
         DistributionModel distribution = new DistributionModel(model, distributionType);
         
-        DistributionBar bar = new DistributionBar();
+        DistributionBar bar = new DistributionBar(distribution);
         bar.setName(DISTRIBUTION_BAR_NAME_PREFIX);
         bar.setRootElement(null);
         
@@ -652,7 +660,7 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         
         DistributionModel distribution = new DistributionModel(model, distributionType);
         
-        DistributionBar bar = new DistributionBar();
+        DistributionBar bar = new DistributionBar(distribution);
         bar.setName(DISTRIBUTION_BAR_NAME_PREFIX);
         bar.setRootElement(mock(IDataElement.class));
         bar.setCount(-1);
@@ -805,6 +813,8 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
             when(result.getProperty(NewAbstractService.TYPE, StringUtils.EMPTY)).thenReturn(nodeType.getId());
         }
         when(result.getProperty(DistributionService.COUNT, 0)).thenReturn(NUMBER_OF_DISTRIBUTION_BARS);
+        when(result.getProperty(DistributionService.PROPERTY_NAME)).thenReturn(DISTRIBUTION_PROPERTY_NAME);
+        when(result.getProperty(DistributionService.NAME)).thenReturn(DEFAULT_DISTRIBUTION_NAME);
                 
         return result;
     }

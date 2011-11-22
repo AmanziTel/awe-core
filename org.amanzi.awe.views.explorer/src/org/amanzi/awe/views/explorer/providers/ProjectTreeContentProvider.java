@@ -28,11 +28,7 @@ import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.IModel;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.IProjectModel;
-import org.amanzi.neo.services.model.impl.DataElement;
-import org.amanzi.neo.services.model.impl.DriveModel;
-import org.amanzi.neo.services.model.impl.NetworkModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
-import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.apache.commons.lang.ArrayUtils;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -42,20 +38,14 @@ import org.eclipse.jface.viewers.Viewer;
  * @author Vladislav_Kondratenko
  */
 public class ProjectTreeContentProvider implements IStructuredContentProvider, ITreeContentProvider {
-    /*
-     * NeoServiceProvider
-     */
-
-    protected NeoServiceProviderUi neoServiceProvider;
-
+    
     /**
      * Constructor of ContentProvider
      * 
      * @param neoProvider neoServiceProvider for this ContentProvider
      */
 
-    public ProjectTreeContentProvider(NeoServiceProviderUi neoProvider) {
-        this.neoServiceProvider = neoProvider;
+    public ProjectTreeContentProvider() {
     }
 
     @Override
@@ -92,7 +82,7 @@ public class ProjectTreeContentProvider implements IStructuredContentProvider, I
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
         for (IModel model : modelMap) {
-            dataElements.add(new DataElement(model.getRootNode()));
+//            dataElements.add(new DataElement(model.getRootNode()));
         }
         Collections.sort(dataElements, new IDataElementComparator());
         return dataElements.toArray();
@@ -114,15 +104,15 @@ public class ProjectTreeContentProvider implements IStructuredContentProvider, I
         // NodeToNodeTypes rel = NodeToNodeTypes.valueOf(type.toUpperCase());
 
         IModel model = null;
-        try {
+//        try {
             if (datasetType != null) {
 
                 switch (datasetType) {
                 case NETWORK:
-                    model = new NetworkModel(((DataElement)element).getNode());
+//                    model = new NetworkModel(((DataElement)element).getNode());
                     break;
                 case DRIVE:
-                    model = new DriveModel(((DataElement)element).getNode());
+//                    model = new DriveModel(((DataElement)element).getNode());
                 }
                 models.put(datasetType.getId(), model);
 
@@ -131,10 +121,10 @@ public class ProjectTreeContentProvider implements IStructuredContentProvider, I
                 // models.put(rel.name().toLowerCase(), model);
             }
 
-        } catch (AWEException e) {
-            // TODO Handle AWEException
-            throw (RuntimeException)new RuntimeException().initCause(e);
-        }
+//        } catch (AWEException e) {
+//            // TODO Handle AWEException
+//            throw (RuntimeException)new RuntimeException().initCause(e);
+//        }
         return models;
     }
 
