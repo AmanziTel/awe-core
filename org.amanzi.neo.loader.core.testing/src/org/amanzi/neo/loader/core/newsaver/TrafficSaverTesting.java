@@ -161,6 +161,7 @@ public class TrafficSaverTesting extends AbstractAWETest {
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testIfSectorNotFound() {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
@@ -181,6 +182,7 @@ public class TrafficSaverTesting extends AbstractAWETest {
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testIfThereIsNoValue() {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);

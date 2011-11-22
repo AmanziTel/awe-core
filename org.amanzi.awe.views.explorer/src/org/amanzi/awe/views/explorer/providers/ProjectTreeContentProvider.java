@@ -27,6 +27,7 @@ import org.amanzi.neo.services.model.IProjectModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
@@ -80,7 +81,7 @@ public class ProjectTreeContentProvider implements IStructuredContentProvider, I
         try {
             modelMap.addAll(collectModelMap(parentElement));
         } catch (AWEException e) {
-            LOGGER.error("error while building tree", e);
+            MessageDialog.openError(null, "Error", "Couldn't get children elements for" + parentElement);
         }
         Collections.sort(modelMap, new IModelComparator());
         return modelMap.toArray();
@@ -127,6 +128,7 @@ public class ProjectTreeContentProvider implements IStructuredContentProvider, I
         try {
             modelMap.addAll(collectModelMap(parentElement));
         } catch (AWEException e) {
+            MessageDialog.openError(null, "Error", "Couldn't check for child models");
             LOGGER.error("error while checking for children", e);
         }
         if (modelMap != null && !modelMap.isEmpty()) {
@@ -143,7 +145,7 @@ public class ProjectTreeContentProvider implements IStructuredContentProvider, I
         try {
             projectModels = ProjectModel.getCurrentProjectModel();
         } catch (AWEException e) {
-            LOGGER.error("error while getting project ", e);
+            MessageDialog.openError(null, "Error", "Couldn't get element" + projectModels);
         }
 
         Object[] projectModelsInObject = new Object[0];
