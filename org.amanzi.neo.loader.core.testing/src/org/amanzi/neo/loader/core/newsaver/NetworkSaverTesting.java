@@ -13,172 +13,289 @@
 
 package org.amanzi.neo.loader.core.newsaver;
 
-import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.HashMap;
-import java.util.Set;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
-import org.amanzi.neo.db.manager.DatabaseManager;
-import org.amanzi.neo.loader.core.parser.BaseTransferData;
+import org.amanzi.log4j.LogStarter;
+import org.amanzi.neo.loader.core.ConfigurationDataImpl;
+import org.amanzi.neo.loader.core.newparser.CSVContainer;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceInitializer;
-import org.amanzi.neo.loader.core.saver.impl.NetworkSaver;
-import org.amanzi.neo.services.enums.NodeTypes;
-import org.amanzi.neo.services.statistic.internal.DatasetStatistic;
-import org.amanzi.neo.services.statistic.internal.StatisticRelationshipTypes;
-import org.amanzi.neo.services.ui.NeoServiceProviderUi;
-import org.junit.After;
+import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.exceptions.DatabaseException;
+import org.amanzi.neo.services.model.IDataElement;
+import org.amanzi.neo.services.model.impl.DataElement;
+import org.amanzi.neo.services.model.impl.NetworkModel;
+import org.amanzi.testing.AbstractAWETest;
+import org.apache.log4j.Logger;
+import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
-import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
-import org.neo4j.kernel.EmbeddedGraphDatabase;
+import org.neo4j.graphdb.Transaction;
 
 /**
- * TODO Purpose of 
- * <p>
- *
- * </p>
- * @author Kasnitskij_V
- * @since 1.0.0
+ * @author Kondratenko_Vladsialv
  */
-public class NetworkSaverTesting {
+public class NetworkSaverTesting extends AbstractAWETest {
+    private static final Logger LOGGER = Logger.getLogger(NetworkSaverTesting.class);
     private NetworkSaver networkSaver;
-    private ArrayList<BaseTransferData> listOfBTD;
     private static String PATH_TO_BASE = "";
-    static
-    {
-    		PATH_TO_BASE = System.getProperty("user.home") + "/database";
+    private ConfigurationDataImpl config;
+    private static final String NETWORK_KEY = "Network";
+    private static final String NETWORK_NAME = "testNetwork";
+    private static final String PROJECT_KEY = "Project";
+    private static final String PROJECT_NAME = "project";
+    private int MINIMAL_COLUMN_SIZE = 2;
+    private static DataLoadPreferenceInitializer initializer;
+    private final static Map<String, Object> BSC = new HashMap<String, Object>();
+    private final static Map<String, Object> SITE = new HashMap<String, Object>();
+    private final static Map<String, Object> SECTOR = new HashMap<String, Object>();
+    private final static Map<String, Object> MSC = new HashMap<String, Object>();
+    private final static Map<String, Object> CITY = new HashMap<String, Object>();
+    private static NetworkModel model;
+    private static Long startTime;
+    private GraphDatabaseService service;
+    private Transaction tx;
+    static {
+        PATH_TO_BASE = System.getProperty("user.home");
+        BSC.put("name", "bsc1");
+        BSC.put("type", "bsc");
+        SITE.put("name", "site1");
+        SITE.put("type", "site");
+        SITE.put("lat", 3.123);
+        SITE.put("lon", 2.1234);
+        SECTOR.put("name", "sector1");
+        SECTOR.put("type", "sector1");
+        MSC.put("name", "msc1");
+        MSC.put("type", "msc");
+        CITY.put("name", "city1");
+        CITY.put("type", "city");
     }
-    
-    private HashMap<String, String> hashMap = null;
-    private GraphDatabaseService graphDatabaseService = null;
-    private String projectName = "projectName";
-    private String rootName = "rootName";
-    private int partOfProjectName = 0;
 
-    @SuppressWarnings("deprecation")
-    @Before
-    public void onStart() {
-        listOfBTD = new ArrayList<BaseTransferData>();
-        networkSaver = new NetworkSaver();
-        hashMap = new HashMap<String, String>();
-        graphDatabaseService = new EmbeddedGraphDatabase(PATH_TO_BASE);
-        NeoServiceProviderUi.initProvider(graphDatabaseService, PATH_TO_BASE);
-        DatabaseManager.setDatabaseAndIndexServices(graphDatabaseService, NeoServiceProviderUi.getProvider().getIndexService());
-        
-        DataLoadPreferenceInitializer initializer = new DataLoadPreferenceInitializer();
+    private HashMap<String, Object> hashMap = null;
+
+    @BeforeClass
+    public static void prepare() {
+        new LogStarter().earlyStartup();
+        clearDb();
+        initializeDb();
+
+        initializer = new DataLoadPreferenceInitializer();
         initializer.initializeDefaultPreferences();
-        
-        BaseTransferData data = new BaseTransferData();
-        data.setProjectName(projectName + partOfProjectName++);
-        data.setRootName(rootName);
+        NeoServiceFactory.getInstance().clear();
+        startTime = System.currentTimeMillis();
+
+    }
+
+    @AfterClass
+    public static void tearDownAfterClass() throws Exception {
+        stopDb();
+        clearDb();
+        LOGGER.info("NewNetworkSaverTesting finished in " + (System.currentTimeMillis() - startTime));
+    }
+
+    @Before
+    public void onStart() throws AWEException {
+        model = mock(NetworkModel.class);
+        service = mock(GraphDatabaseService.class);
+        tx = mock(Transaction.class);
+        when(service.beginTx()).thenReturn(tx);
+        hashMap = new HashMap<String, Object>();
+        config = new ConfigurationDataImpl();
+        config.getDatasetNames().put(NETWORK_KEY, NETWORK_NAME);
+        config.getDatasetNames().put(PROJECT_KEY, PROJECT_NAME);
+        List<File> fileList = new LinkedList<File>();
+        File testFile = new File(PATH_TO_BASE + "/testFile.txt");
+        try {
+            testFile.createNewFile();
+        } catch (IOException e) {
+            LOGGER.error(" onStart error while trying to create file", e);
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+        fileList.add(testFile);
+        config.setSourceFile(fileList);
+        networkSaver = new NetworkSaver(model, (ConfigurationDataImpl)config, service);
         hashMap.put("bsc", "bsc1");
         hashMap.put("site", "site1");
+        hashMap.put("city", "city1");
+        hashMap.put("msc", "msc1");
         hashMap.put("lat", "3.123");
         hashMap.put("lon", "2.1234");
         hashMap.put("sector", "sector1");
         hashMap.put("ci", "120");
         hashMap.put("lac", "332");
         hashMap.put("beamwidth", "3");
-        data.putAll(hashMap);
-        
-        networkSaver.init(data);
-        networkSaver.save(data);
-        
-        for (int i = 0; i < 20; i++) {
-            BaseTransferData data2 = new BaseTransferData();
-            hashMap.clear();
-            hashMap.put("bsc", "bsc1");
-            hashMap.put("site", "site" + (int)(i / 5));
-            hashMap.put("lat", (new Double((3.1 + (i / 5)))).toString());
-            hashMap.put("lon", (new Double((2.2 + (i / 5)))).toString());
-            hashMap.put("sector", "sector" + i);
-            hashMap.put("ci", (new Integer((120 + i))).toString());
-            hashMap.put("lac", (new Integer((330 + i))).toString());
-            hashMap.put("beamwidth", (new Integer((i))).toString());
-            data2.putAll(hashMap);
-            
-            networkSaver.save(data2); 
-            listOfBTD.add(data2);
-        }
-        
-        DatasetStatistic st = new DatasetStatistic(networkSaver.getRootNode());
-        st.save();
-        st.init();
+
     }
-    
+
+    private List<String> prepareValues(HashMap<String, Object> map) {
+        List<String> values = new LinkedList<String>();
+        for (String key : map.keySet()) {
+            values.add(map.get(key).toString());
+        }
+        return values;
+    }
+
+    @SuppressWarnings("unchecked")
     @Test
-    public void correctWorkOfStatisticTest() {
-        Relationship relation = networkSaver.getRootNode().getSingleRelationship(StatisticRelationshipTypes.STATISTIC_PROP, Direction.OUTGOING);
-        for (Relationship rel : networkSaver.getRootNode().getRelationships()) {
-        	System.out.println(rel.getType());
+    public void testForSavingAllElements() {
+        CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
+        List<String> header = new LinkedList<String>(hashMap.keySet());
+        rowContainer.setHeaders(header);
+        networkSaver.saveElement(rowContainer);
+        List<String> values = prepareValues(hashMap);
+        rowContainer.setValues(values);
+
+        try {
+            when(model.findElement(BSC)).thenReturn(null);
+            when(model.createElement(any(IDataElement.class), eq(BSC))).thenReturn(new DataElement(BSC));
+            when(model.findElement(SITE)).thenReturn(null);
+            when(model.createElement(any(IDataElement.class), eq(SITE))).thenReturn(new DataElement(SITE));
+            when(model.findElement(SECTOR)).thenReturn(null);
+            when(model.createElement(any(IDataElement.class), eq(SECTOR))).thenReturn(new DataElement(SECTOR));
+            when(model.findElement(MSC)).thenReturn(null);
+            when(model.createElement(any(IDataElement.class), eq(MSC))).thenReturn(new DataElement(MSC));
+            when(model.findElement(CITY)).thenReturn(null);
+            when(model.createElement(any(IDataElement.class), eq(CITY))).thenReturn(new DataElement(CITY));
+            networkSaver.saveElement(rowContainer);
+            verify(model, times(5)).createElement(any(IDataElement.class), any(Map.class));
+        } catch (Exception e) {
+            LOGGER.error(" testForSavingAllElements error", e);
+            Assert.fail("Exception while saving row");
         }
-        assertTrue(relation != null);
     }
-    
+
+    @SuppressWarnings("unchecked")
     @Test
-    public void getRootNodeTest() {
-        Node rootNode = networkSaver.getRootNode();
-        assertTrue(rootNode.getId() == 1);
-        assertTrue(rootNode.getProperty("name").equals(rootName));
-        assertTrue(rootNode.getProperty("type").equals(NodeTypes.NETWORK.getId()));
+    public void testForSavingSITESECTOR() {
+        hashMap.remove("msc");
+        hashMap.remove("bsc");
+        hashMap.remove("city");
+        CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
+        List<String> header = new LinkedList<String>(hashMap.keySet());
+        rowContainer.setHeaders(header);
+        networkSaver.saveElement(rowContainer);
+        List<String> values = prepareValues(hashMap);
+        rowContainer.setValues(values);
+
+        try {
+            when(model.findElement(SITE)).thenReturn(null);
+            when(model.createElement(any(IDataElement.class), eq(SITE))).thenReturn(new DataElement(SITE));
+            when(model.findElement(SECTOR)).thenReturn(null);
+            when(model.createElement(any(IDataElement.class), eq(SECTOR))).thenReturn(new DataElement(SECTOR));
+            networkSaver.saveElement(rowContainer);
+            verify(model, times(2)).createElement(any(IDataElement.class), any(Map.class));
+        } catch (Exception e) {
+            LOGGER.error(" testForSavingSITESECTOR error", e);
+            Assert.fail("Exception while saving row");
+        }
     }
-    
+
+    @SuppressWarnings("unchecked")
     @Test
-    public void getPossibleHeadersTest() {
-        for (BaseTransferData data : listOfBTD) {
-            Set<String> set = data.keySet();
-            assertTrue(set.contains("sector") == true);
-            assertTrue(set.contains("site") == true);
-            assertTrue(set.contains("beamwidth") == true);
-            assertTrue(set.contains("lon") == true);
-            assertTrue(set.contains("ci") == true);
-            assertTrue(set.contains("bsc") == true);
-            assertTrue(set.contains("lac") == true);
-            assertTrue(set.contains("lat") == true);
+    public void testForTyingToSaveOnlySector() {
+        hashMap.remove("msc");
+        hashMap.remove("bsc");
+        hashMap.remove("city");
+        hashMap.remove("site");
+        hashMap.remove("lat");
+        hashMap.remove("lon");
+        CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
+        List<String> header = new LinkedList<String>(hashMap.keySet());
+        rowContainer.setHeaders(header);
+        networkSaver.saveElement(rowContainer);
+        List<String> values = prepareValues(hashMap);
+        rowContainer.setValues(values);
+        try {
+            networkSaver.saveElement(rowContainer);
+            verify(model, never()).createElement(any(IDataElement.class), any(Map.class));
+        } catch (Exception e) {
+            LOGGER.error(" testForTyingToSaveOnlySector error", e);
+            Assert.fail("Exception while saving row");
         }
     }
-    
-    @After
-    public void onFinish() {
-        NeoServiceProviderUi.getProvider().getIndexService().shutdown();
-        graphDatabaseService.shutdown();
-        
-        File file = new File(PATH_TO_BASE);
-        deleteFolder(file);
-    }
-    
-    /**
-     * Delete all folder
-     *
-     * @param file File with path to delete
-     */
-    private void deleteFolder(File file)
-    {
-        if(!file.exists())
-            return;
-        if(file.isDirectory())
-        {
-            for(File f : file.listFiles())
-                deleteFolder(f);
-            file.delete();
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testForTyingToSaveSectorAndSiteWithLatAndLon() {
+        hashMap.remove("msc");
+        hashMap.remove("bsc");
+        hashMap.remove("city");
+        hashMap.remove("site");
+        SITE.put("name", "sector");
+        CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
+        List<String> header = new LinkedList<String>(hashMap.keySet());
+        rowContainer.setHeaders(header);
+        networkSaver.saveElement(rowContainer);
+        List<String> values = prepareValues(hashMap);
+        rowContainer.setValues(values);
+        try {
+            when(model.findElement(SITE)).thenReturn(null);
+            when(model.createElement(any(IDataElement.class), eq(SITE))).thenReturn(new DataElement(SITE));
+            when(model.findElement(SECTOR)).thenReturn(null);
+            when(model.createElement(any(IDataElement.class), eq(SECTOR))).thenReturn(new DataElement(SECTOR));
+
+            networkSaver.saveElement(rowContainer);
+            networkSaver.finishUp();
+            verify(model, times(2)).createElement(any(IDataElement.class), any(Map.class));
+            verify(tx, atLeastOnce()).success();
+        } catch (Exception e) {
+            LOGGER.error(" testForTyingToSaveSectorAndSiteWithLatAndLon error", e);
+            Assert.fail("Exception while saving row");
         }
-        else
-        {
-            file.delete();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testTransactionRollBackIfDatabaseExceptionThrow() {
+        CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
+        List<String> header = new LinkedList<String>(hashMap.keySet());
+        rowContainer.setHeaders(header);
+        networkSaver.saveElement(rowContainer);
+        List<String> values = prepareValues(hashMap);
+        try {
+            rowContainer.setValues(values);
+            when(model.findElement(any(Map.class))).thenThrow(new DatabaseException("required exception"));
+            networkSaver.saveElement(rowContainer);
+        } catch (Exception e) {
+            verify(tx, never()).success();
+            verify(tx, atLeastOnce()).failure();
+            verify(tx, times(1)).finish();
         }
     }
-    
-    /**
-     * method to get network saver
-     *
-     * @return
-     */
-    public NetworkSaver getNetworkSaver() {
-        return networkSaver;
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testTransactionContiniousIfRestExceptionThrow() {
+        CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
+        List<String> header = new LinkedList<String>(hashMap.keySet());
+        rowContainer.setHeaders(header);
+        networkSaver.saveElement(rowContainer);
+        List<String> values = prepareValues(hashMap);
+        try {
+            rowContainer.setValues(values);
+            when(model.findElement(any(Map.class))).thenThrow(new IllegalArgumentException("required exception"));
+            networkSaver.saveElement(rowContainer);
+        } catch (Exception e) {
+            verify(tx, times(2)).success();
+            verify(tx, never()).failure();
+            verify(tx, times(3)).finish();
+        }
     }
 }

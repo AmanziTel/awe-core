@@ -26,7 +26,6 @@ import java.util.Map;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
 import org.amanzi.neo.loader.core.saver.nemo.NemoEvents;
-import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.NewDatasetService.DriveTypes;
@@ -39,14 +38,15 @@ import org.apache.log4j.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
+ * saver for nemo 1.86 data
+ * 
  * @author Vladislav_Kondratenko
  */
-public class NewNemo1xSaver extends NewNemo2xSaver {
-    // Saver constants
+public class Nemo1xSaver extends Nemo2xSaver {
 
-    private static Logger LOGGER = Logger.getLogger(NewNemo1xSaver.class);
+    private static final Logger LOGGER = Logger.getLogger(Nemo1xSaver.class);
 
-    protected NewNemo1xSaver(IDriveModel model, ConfigurationDataImpl config, GraphDatabaseService service) {
+    protected Nemo1xSaver(IDriveModel model, ConfigurationDataImpl config, GraphDatabaseService service) {
         super(model, config, service);
         preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.DRIVE);
         columnSynonyms = new HashMap<String, Integer>();
@@ -63,20 +63,17 @@ public class NewNemo1xSaver extends NewNemo2xSaver {
     /**
      * 
      */
-    public NewNemo1xSaver() {
+    public Nemo1xSaver() {
         super();
     }
 
     @Override
     public void init(ConfigurationDataImpl configuration, CSVContainer dataElement) {
-        Map<String, Object> rootElement = new HashMap<String, Object>();
         preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.DRIVE);
         setDbInstance();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
         commitTx();
         try {
-            rootElement.put(INeoConstants.PROPERTY_NAME_NAME,
-                    configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME));
             model = getActiveProject().getDataset(configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME),
                     DriveTypes.NEMO_V1);
             modelMap.put(configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME), model);
@@ -93,12 +90,7 @@ public class NewNemo1xSaver extends NewNemo2xSaver {
         commitTx();
         CSVContainer container = dataElement;
         try {
-            if ((fileName != null && !fileName.equals(dataElement.getFile().getName())) || (fileName == null)) {
-                fileName = dataElement.getFile().getName();
-                addedNewFileToModels(dataElement.getFile());
-                lineCounter = 0l;
-
-            }
+            checkForNewFile(dataElement);
             if (workDate == null) {
                 workDate = new GregorianCalendar();
                 Date date;

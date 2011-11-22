@@ -42,19 +42,16 @@ import org.apache.log4j.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
+ * saver for romves data
+ * 
  * @author Vladislav_Kondratenko
  */
-public class NewRomesSaver extends AbstractDriveSaver {
+public class RomesSaver extends AbstractDriveSaver {
     // Saver constants
-    private final int MAX_TX_BEFORE_COMMIT = 1000;
-    private static Logger LOGGER = Logger.getLogger(NewRomesSaver.class);
-
+    private static final Logger LOGGER = Logger.getLogger(RomesSaver.class);
     private Set<IDataElement> locationDataElements = new HashSet<IDataElement>();
-    private IDriveModel model;
-    private Long lineCounter = 0l;
-    private String fileName;
 
-    protected NewRomesSaver(IDriveModel model, ConfigurationDataImpl config, GraphDatabaseService service) {
+    protected RomesSaver(IDriveModel model, ConfigurationDataImpl config, GraphDatabaseService service) {
         super(service);
         DRIVE_TYPE_NAME = DriveTypes.ROMES.name();
         preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.DRIVE);
@@ -62,7 +59,7 @@ public class NewRomesSaver extends AbstractDriveSaver {
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
         commitTx();
         if (model != null) {
-            this.model = model;
+            this.driveModel = model;
             modelMap.put(model.getName(), model);
         } else {
             init(config, null);
@@ -72,18 +69,8 @@ public class NewRomesSaver extends AbstractDriveSaver {
     /**
      * 
      */
-    public NewRomesSaver() {
+    public RomesSaver() {
         super();
-    }
-
-    private void addedSynonyms() {
-        for (String key : params.keySet()) {
-            if (fileSynonyms.containsKey(key)
-                    && (key != NewAbstractService.NAME && key != NewAbstractService.TYPE && key != TIMESTAMP)) {
-                addedDatasetSynonyms(model, DriveNodeTypes.M, key, getHeaderBySynonym(key));
-            }
-        }
-        addedDatasetSynonyms(model, DriveNodeTypes.M, NewAbstractService.NAME, getHeaderBySynonym(TIME));
     }
 
     @Override
@@ -97,9 +84,9 @@ public class NewRomesSaver extends AbstractDriveSaver {
         try {
             rootElement.put(INeoConstants.PROPERTY_NAME_NAME,
                     configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME));
-            model = getActiveProject().getDataset(configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME),
-                    DriveTypes.TEMS);
-            modelMap.put(configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME), model);
+            driveModel = getActiveProject().getDataset(
+                    configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME), DriveTypes.TEMS);
+            modelMap.put(configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME), driveModel);
             createExportSynonymsForModels();
         } catch (AWEException e) {
             rollbackTx();
@@ -108,8 +95,9 @@ public class NewRomesSaver extends AbstractDriveSaver {
         }
     }
 
-    private void addedNewFileToModels(File file) throws DatabaseException, DuplicateNodeNameException {
-        model.addFile(file);
+    @Override
+    protected void addedNewFileToModels(File file) throws DatabaseException, DuplicateNodeNameException {
+        driveModel.addFile(file);
     }
 
     @Override
@@ -117,12 +105,7 @@ public class NewRomesSaver extends AbstractDriveSaver {
         commitTx();
         CSVContainer container = dataElement;
         try {
-            if ((fileName != null && !fileName.equals(dataElement.getFile().getName())) || (fileName == null)) {
-                fileName = dataElement.getFile().getName();
-                fileSynonyms.clear();
-                addedNewFileToModels(dataElement.getFile());
-                lineCounter = 0l;
-            }
+            checkForNewFile(dataElement);
             if (fileSynonyms.isEmpty()) {
                 headers = container.getHeaders();
                 makeAppropriationWithSynonyms(headers);
@@ -160,6 +143,39 @@ public class NewRomesSaver extends AbstractDriveSaver {
             LOGGER.info(String.format("Line %s not saved.", lineCounter));
             return;
         }
+        collectMElement(time, timestamp, message_type, latitude, longitude, event, sector_id);
+
+        removeEmpty(params);
+        collectRemainProperties(params, value);
+        addSynonyms(driveModel, params);
+        IDataElement existedLocation = checkSameLocation(params);
+        if (existedLocation != null) {
+            params.remove(IDriveModel.LATITUDE);
+            params.remove(IDriveModel.LONGITUDE);
+        }
+        IDataElement createdElement = driveModel.addMeasurement(fileName, params);
+        if (existedLocation != null) {
+            List<IDataElement> locList = new LinkedList<IDataElement>();
+            locList.add(existedLocation);
+            driveModel.linkNode(createdElement, locList, DriveRelationshipTypes.LOCATION);
+        } else {
+            locationDataElements.add(driveModel.getLocation(createdElement));
+        }
+    }
+
+    /**
+     * collect M element from required values
+     * 
+     * @param time
+     * @param timestamp
+     * @param message_type
+     * @param latitude
+     * @param longitude
+     * @param event
+     * @param sector_id
+     */
+    private void collectMElement(String time, Long timestamp, String message_type, Double latitude, Double longitude, String event,
+            String sector_id) {
         params.put(TIME, time);
         params.put(TIMESTAMP, timestamp);
         params.put(MESSAGE_TYPE, message_type);
@@ -168,31 +184,7 @@ public class NewRomesSaver extends AbstractDriveSaver {
         params.put(EVENT, event);
         params.put(NewAbstractService.NAME, time);
         params.put(SECTOR_ID, sector_id);
-        for (String header : headers) {
-            if (fileSynonyms.containsValue(header)) {
-                continue;
-            }
-            String rowValue = getValueFromRow(header, value);
-            if (isCorrect(rowValue)) {
-                params.put(header, autoParse(header, rowValue));
-            }
-        }
-        addedSynonyms();
-        removeEmpty(params);
-        collectRemainProperties(params, value);
-        IDataElement existedLocation = checkSameLocation(params);
-        if (existedLocation != null) {
-            params.remove(IDriveModel.LATITUDE);
-            params.remove(IDriveModel.LONGITUDE);
-        }
-        IDataElement createdElement = model.addMeasurement(fileName, params);
-        if (existedLocation != null) {
-            List<IDataElement> locList = new LinkedList<IDataElement>();
-            locList.add(existedLocation);
-            model.linkNode(createdElement, locList, DriveRelationshipTypes.LOCATION);
-        } else {
-            locationDataElements.add(model.getLocation(createdElement));
-        }
+        params.put(NewAbstractService.TYPE, DriveNodeTypes.M.getId());
     }
 
     private IDataElement checkSameLocation(Map<String, Object> params) {

@@ -18,7 +18,6 @@ import java.util.List;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
 import org.amanzi.neo.services.exceptions.AWEException;
-import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.ISelectionModel;
 import org.amanzi.neo.services.model.impl.NetworkModel;
 import org.apache.log4j.Logger;
@@ -26,20 +25,16 @@ import org.apache.log4j.Logger;
 /**
  * @author Kondratenko_Vladislav
  */
-public class SectorSelectionSaver extends AbstractSaver<NetworkModel, CSVContainer, ConfigurationDataImpl> {
+public class SectorSelectionSaver extends AbstractCSVSaver<NetworkModel> {
 
     protected static final Logger LOGGER = Logger.getLogger(SectorSelectionSaver.class);
 
     /*
      * Selection Model to create
      */
-    private ISelectionModel model;
+    private ISelectionModel selectionModel;
 
     private int lineCounter = 0;
-    /*
-     * Network Model to get Sectors
-     */
-    private INetworkModel networkModel;
 
     /*
      * List of Headers
@@ -61,7 +56,7 @@ public class SectorSelectionSaver extends AbstractSaver<NetworkModel, CSVContain
             // selection data is a single file - so we can just get first element
             String selectionName = configuration.getFilesToLoad().get(0).getName();
 
-            model = networkModel.getSelectionModel(selectionName);
+            selectionModel = networkModel.getSelectionModel(selectionName);
         } catch (AWEException e) {
             LOGGER.info("Error while creating Selection Model ", e);
             throw (RuntimeException)new RuntimeException().initCause(e);
@@ -89,5 +84,9 @@ public class SectorSelectionSaver extends AbstractSaver<NetworkModel, CSVContain
             rollbackTx();
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
+    }
+
+    @Override
+    protected void saveLine(List<String> value) throws AWEException {
     }
 }

@@ -29,31 +29,34 @@ import org.apache.log4j.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
- * saver for traffic data
+ * saver for separation constraint data
  * 
  * @author Vladislav_Kondratenko
  */
-public class TrafficSaver extends AbstractCSVSaver<NetworkModel> {
-    private static final Logger LOGGER = Logger.getLogger(TrafficSaver.class);
+public class SeparationCostraintSaver extends AbstractCSVSaver<NetworkModel> {
+    private static final Logger LOGGER = Logger.getLogger(SeparationCostraintSaver.class);
     private static final String SECTOR = "sector";
-    private static final String TRAFFIC = "traffic";
+    private static final String SEPARATION = "separation";
     private static Map<String, Object> SECTOR_MAP = new HashMap<String, Object>();
 
-    protected TrafficSaver(INetworkModel model, ConfigurationDataImpl config, GraphDatabaseService service) {
+    protected SeparationCostraintSaver(INetworkModel model, ConfigurationDataImpl config, GraphDatabaseService service) {
         super(service);
         preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.NETWORK);
         columnSynonyms = new HashMap<String, Integer>();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
         commitTx();
         if (model != null) {
-            this.networkModel = model;
+            networkModel = model;
             modelMap.put(model.getName(), model);
         } else {
             init(config, null);
         }
     }
 
-    public TrafficSaver() {
+    /**
+     * 
+     */
+    public SeparationCostraintSaver() {
         super();
     }
 
@@ -69,10 +72,12 @@ public class TrafficSaver extends AbstractCSVSaver<NetworkModel> {
             LOGGER.error("cann't find sector " + SECTOR_MAP);
             return;
         }
-        if (isCorrect(TRAFFIC, value)) {
-            SECTOR_MAP.put(TRAFFIC, getSynonymValueWithAutoparse(TRAFFIC, value));
-            networkModel.completeProperties(findedSector, SECTOR_MAP, true);
-            addSynonyms(networkModel, SECTOR_MAP);
+        if (isCorrect(SEPARATION, value)) {
+            Map<String, Object> collectedParameters = new HashMap<String, Object>();
+            collectedParameters.put(SEPARATION, getSynonymValueWithAutoparse(SEPARATION, value));
+            networkModel.completeProperties(findedSector, collectedParameters, false);
+            collectedParameters.put(NewAbstractService.TYPE, NetworkElementNodeType.SECTOR.getId());
+            addSynonyms(networkModel, collectedParameters);
         } else {
             LOGGER.error("traffic property not found on line:" + lineCounter);
         }

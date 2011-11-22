@@ -42,6 +42,13 @@ public class DataLoadPreferences {
     public static final String NH_LATITUDE = "NH_LATITUDE";
     public static final String NH_LONGITUDE = "NH_LONGITUDE";
     public static final String NH_SEPARATION = "NH_SEPARATION";
+    public static final String NH_BAND = "NH_BAND";
+    public static final String NH_TRX_ID = "NH_TRX_ID";
+    public static final String NH_EXTENDED = "NH_EXTENDED";
+    public static final String NH_HOPPING_TYPE = "NH_HOPPING_TYPE";
+    public static final String NH_HSN = "NH_HSN";
+    public static final String NH_SUBCELL = "NH_SUBCELL";
+    public static final String NH_TRAFFIC = "NH_TRAFFIC";
     public static final String DEFAULT_CHARSET = "DEFAULT_CHARSET";
 
     // drive loader headers

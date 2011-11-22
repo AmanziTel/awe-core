@@ -177,7 +177,7 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
     }
 
     @Override
-    public IDataElement getFrequencyNode(int frequency) throws DatabaseException {
+    public IDataElement getFrequencyElement(int frequency) throws DatabaseException {
         if (this.relType != N2NRelTypes.FREQUENCY_SPECTRUM) {
             throw new IllegalAccessError("Frequency node can be get only from spectrum model");
         }
@@ -331,4 +331,5 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
     public IDistributionModel getDistributionModel(IDistribution< ? > distributionType) throws AWEException {
         return new DistributionModel(this, distributionType);
     }
+
 }
