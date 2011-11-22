@@ -33,6 +33,9 @@ import org.amanzi.neo.services.model.impl.NetworkModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.amanzi.neo.services.ui.SelectionPropertyManager;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.neo4j.graphdb.Node;
@@ -180,14 +183,20 @@ public class NewNetworkPropertySourceEditable extends NodePropertySource impleme
         		if (showMessageBox) {
         			showMessageBox = false;
         			synchronized (message) {
-        				MessageDialog.openWarning(null, TITLE_COULD_NOT_CHANGE_PROPERTY, message);
+        				// if we will use this code then we will get a critical error
+                        MessageBox msg = new MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.OK);
+                        msg.setText(TITLE_COULD_NOT_CHANGE_PROPERTY);
+                        msg.setMessage(message);
+                        int result = msg.open();
+                        if (result != SWT.OK) {
+                            return;
+                        }
         			}
         			showMessageBox = true;
         		}
         	}
         } catch (AWEException e) {
-            // TODO Handle AWEException
-            throw (RuntimeException) new RuntimeException( ).initCause( e );
+            MessageDialog.openError(null, TITLE_COULD_NOT_CHANGE_PROPERTY, TITLE_COULD_NOT_CHANGE_PROPERTY + "\n" + e);
         }
     }
 }

@@ -175,6 +175,12 @@ public class NewNetworkTreeView extends ViewPart {
         createSubmenuCreateSelectionList((IStructuredSelection)viewer.getSelection(), manager);
     }
     
+    /**
+     * Class uses when user click on data element
+     * 
+     * @author Kasnitskij_V
+     *
+     */
     private class SelectAction extends Action {
         private boolean enabled;
         private final String text;
@@ -215,13 +221,18 @@ public class NewNetworkTreeView extends ViewPart {
         public void run() {
             try {
             	PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IPageLayout.ID_PROP_SHEET);
-//            	PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IPageLayout.ID_PROP_SHEET);
             } catch (PartInitException e) {
                 NetworkTreePlugin.error(null, e);
             }
         }     
     }
     
+    /**
+     * Class uses when user change mode from edit to just show or back to front
+     * 
+     * @author Kasnitskij_V
+     *
+     */
     private class ChangeModeAction extends Action {
         private boolean enabled;
         private final String text;
@@ -308,8 +319,7 @@ public class NewNetworkTreeView extends ViewPart {
             try {
                 networkModel.renameElement(dataElement, value);
             } catch (AWEException e) {
-                // TODO Handle AWEException
-                throw (RuntimeException) new RuntimeException( ).initCause( e );
+                MessageDialog.openError(null, "Could not rename!", e.toString());
             }
             viewer.refresh();
         }

@@ -11,6 +11,7 @@ import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.apache.commons.lang.ArrayUtils;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
@@ -22,9 +23,8 @@ import org.eclipse.jface.viewers.Viewer;
  * @since 1.0.0
  */
 public class NewNetworkTreeContentProvider implements IStructuredContentProvider, ITreeContentProvider {
-    /*
-     * NeoServiceProvider
-     */
+    
+	private static String COULD_NOT_GET_ALL_NETWORK_MODELS = "Could not get all network models";
 
     protected NeoServiceProviderUi neoServiceProvider;
 
@@ -55,24 +55,21 @@ public class NewNetworkTreeContentProvider implements IStructuredContentProvider
 
         ArrayList<IDataElement> dataElements = new ArrayList<IDataElement>();
         Iterable<IDataElement> children = null;
+        Object networkModel = null;
         if (parentElement instanceof INetworkModel) {
             children = ((INetworkModel)parentElement).getChildren(null);
             rootNetworkModel = (INetworkModel)parentElement;
-            for (IDataElement dataElement : children) {
-                // add network model to data element
-                dataElement.put(INeoConstants.NETWORK_MODEL_NAME, parentElement);
-                dataElements.add(dataElement);
-            }
+            networkModel = parentElement;
         } else if (parentElement instanceof IDataElement) {
             IDataElement child = (IDataElement)parentElement;
             INetworkModel localRootNetworkModel = (INetworkModel)(child).get(INeoConstants.NETWORK_MODEL_NAME);
             children = localRootNetworkModel.getChildren(child);
-
-            for (IDataElement dataElement : children) {
-                // add network model to data element
-                dataElement.put(INeoConstants.NETWORK_MODEL_NAME, rootNetworkModel);
-                dataElements.add(dataElement);
-            }
+            networkModel = rootNetworkModel;
+        }
+        for (IDataElement dataElement : children) {
+            // add network model to data element
+            dataElement.put(INeoConstants.NETWORK_MODEL_NAME, networkModel);
+            dataElements.add(dataElement);
         }
         Collections.sort(dataElements, new IDataElementComparator());
         return dataElements.toArray();
@@ -90,8 +87,9 @@ public class NewNetworkTreeContentProvider implements IStructuredContentProvider
 
         @Override
         public int compare(IDataElement dataElement1, IDataElement dataElement2) {
-            return dataElement1 == null ? -1 : dataElement2 == null ? 1 : dataElement1.get(INeoConstants.PROPERTY_NAME_NAME)
-                    .toString().compareTo(dataElement2.get(INeoConstants.PROPERTY_NAME_NAME).toString());
+            return dataElement1 == null ? -1 : dataElement2 == null ? 1 : 
+            	dataElement1.get(INeoConstants.PROPERTY_NAME_NAME).toString().compareTo(
+            			dataElement2.get(INeoConstants.PROPERTY_NAME_NAME).toString());
         }
 
     }
@@ -127,7 +125,8 @@ public class NewNetworkTreeContentProvider implements IStructuredContentProvider
         try {
             networkModels = ProjectModel.getCurrentProjectModel().findAllNetworkModels();
         } catch (AWEException e) {
-            throw (RuntimeException)new RuntimeException().initCause(e);
+            MessageDialog.openError(null, "Error", COULD_NOT_GET_ALL_NETWORK_MODELS);
+            return null;
         }
 
         Object[] networkModelsInObjects = new Object[0];
