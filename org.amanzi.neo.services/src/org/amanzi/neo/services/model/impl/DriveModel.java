@@ -131,6 +131,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
 
         this.rootNode = driveRoot;
         this.name = rootNode.getProperty(NewAbstractService.NAME, StringUtils.EMPTY).toString();
+        this.primaryType = DriveNodeTypes.findById(rootNode.getProperty(NewDatasetService.PRIMARY_TYPE).toString());
         initializeStatistics();
         initializeMultiPropertyIndexing();
     }
@@ -142,10 +143,11 @@ public class DriveModel extends RenderableModel implements IDriveModel {
      * @param rootNode a drive node
      * @param name the name of root node of the new drive model
      * @param type the type of root node of the new drive model
+     * @param primaryType the primary type of root node of the new drive model
      * @throws AWEException if parameters are null or empty or some errors occur in database during
      *         creation of nodes
      */
-    public DriveModel(Node parent, Node rootNode, String name, IDriveType type) throws AWEException {
+    public DriveModel(Node parent, Node rootNode, String name, IDriveType type, INodeType primaryType) throws AWEException {
         super(rootNode, DatasetTypes.DRIVE);
         // if root node is null, get one by name
         if (rootNode != null) {
@@ -160,10 +162,11 @@ public class DriveModel extends RenderableModel implements IDriveModel {
                 throw new IllegalArgumentException("Parent is null.");
             }
 
-            this.rootNode = dsServ.getDataset(parent, name, DatasetTypes.DRIVE, type);
+            this.rootNode = dsServ.getDataset(parent, name, DatasetTypes.DRIVE, type, primaryType);
             this.name = name;
             this.driveType = type;
         }
+        this.primaryType = primaryType;
         initializeStatistics();
         initializeMultiPropertyIndexing();
     }
@@ -180,11 +183,8 @@ public class DriveModel extends RenderableModel implements IDriveModel {
      * @param primaryType
      * @throws AWEException
      */
-    public DriveModel(Node parent, Node rootNode, String name, IDriveType type, INodeType primaryType) throws AWEException {
-        this(parent, rootNode, name, type);
-        if (primaryType != null) {
-            this.primaryType = primaryType;
-        }
+    public DriveModel(Node parent, Node rootNode, String name, IDriveType type) throws AWEException {
+        this(parent, rootNode, name, type, DriveNodeTypes.M);
     }
 
     /**
@@ -591,7 +591,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
      * returns current primary node type
      */
     @Override
-    public INodeType getType() {
+    public INodeType getPrimaryType() {
         return primaryType;
     }
 

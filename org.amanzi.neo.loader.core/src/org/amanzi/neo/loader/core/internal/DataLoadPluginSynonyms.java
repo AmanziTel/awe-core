@@ -33,10 +33,12 @@ public class DataLoadPluginSynonyms extends NLS {
     public static String NH_SECTOR_LAC;
     public static String NH_LATITUDE;
     public static String NH_LONGITUDE;
+    public static String NH_SEPARATION;
 
     public static String DR_LATITUDE;
     public static String DR_LONGITUDE;
     public static String DR_BCCH;
+    public static String DR_IS_BCCH;
     public static String DR_CI;
     public static String DR_EcIo;
     public static String DR_PN;
@@ -116,6 +118,14 @@ public class DataLoadPluginSynonyms extends NLS {
     public static String NE_NBR_CI;
     public static String NE_NBR_NAME;
     public static String NE_NBR_LAC;
+
+    public static String INT_SERV_NAME;
+
+    public static String FR_TRX_ID;
+    public static String FR_CH_TYPE;
+    public static String FR_FREQUENCY;
+    public static String FR_PENALTY;
+    public static String FR_SCALLING_FACTOR;
 
     public static String TR_SITE_ID_SERV;
     public static String TR_SITE_NO_SERV;

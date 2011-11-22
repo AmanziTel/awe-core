@@ -196,14 +196,24 @@ public class NewTemsSaverTesting extends AbstractAWETest {
         hashMap.put(ALL_RXQUAL_FULL, "2");
         hashMap.put(ALL_SQI, "2");
         hashMap.put(ALL_SQI_MOS, "2");
+        collectedElement.put(ALL_RXLEV_FULL, 2);
+        collectedElement.put(ALL_RXLEV_SUB, 2);
+        collectedElement.put(ALL_RXQUAL_SUB, 2);
+        collectedElement.put(ALL_RXQUAL_FULL, 2);
+        collectedElement.put(ALL_SQI, 2);
+        collectedElement.put(ALL_SQI_MOS, 2);
+        collectedElement.put(RSSI, 2);
 
         for (int i = 1; i < 2; i++) {
             hashMap.put(ALL_PILOT_SET_EC_IO + i, "1" + i);
             hashMap.put(ALL_PILOT_SET_CHANNEL + i, "2" + i);
             hashMap.put(ALL_PILOT_SET_PN + i, "3" + i);
+            collectedElement.put(ALL_PILOT_SET_EC_IO + i, Integer.parseInt("1" + i));
+            collectedElement.put(ALL_PILOT_SET_CHANNEL + i, Integer.parseInt("2" + i));
+            collectedElement.put(ALL_PILOT_SET_PN + i, Integer.parseInt("3" + i));
         }
         hashMap.put(ALL_PILOT_SET_COUNT, "1");
-
+        collectedElement.put(ALL_PILOT_SET_COUNT, 1);
     }
 
     private List<String> prepareValues(HashMap<String, Object> map) {
@@ -302,8 +312,12 @@ public class NewTemsSaverTesting extends AbstractAWETest {
             hashMap.remove(ALL_PILOT_SET_EC_IO + i);
             hashMap.remove(ALL_PILOT_SET_CHANNEL + i);
             hashMap.remove(ALL_PILOT_SET_PN + i);
+            collectedElement.remove(ALL_PILOT_SET_CHANNEL + i);
+            collectedElement.remove(ALL_PILOT_SET_EC_IO + i);
+            collectedElement.remove(ALL_PILOT_SET_PN + i);
         }
         hashMap.remove(ALL_PILOT_SET_COUNT);
+        collectedElement.remove(ALL_PILOT_SET_COUNT);
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setFile(config.getFilesToLoad().get(0));

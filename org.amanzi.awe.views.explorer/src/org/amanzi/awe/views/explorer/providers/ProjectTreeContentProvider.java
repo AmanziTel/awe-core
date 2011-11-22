@@ -16,20 +16,18 @@ package org.amanzi.awe.views.explorer.providers;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
+import java.util.List;
 
-import org.amanzi.neo.services.NewAbstractService;
-import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.exceptions.AWEException;
-import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.IModel;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.IProjectModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.log4j.Logger;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
@@ -47,7 +45,9 @@ public class ProjectTreeContentProvider implements IStructuredContentProvider, I
 
     public ProjectTreeContentProvider() {
     }
-
+    
+    private static Logger LOGGER = Logger.getLogger(ProjectTreeContentProvider.class);
+    
     @Override
     public void dispose() {
 
@@ -58,74 +58,43 @@ public class ProjectTreeContentProvider implements IStructuredContentProvider, I
 
     }
 
-    @Override
-    public Object[] getChildren(Object parentElement) {
-        ArrayList<IDataElement> dataElements = new ArrayList<IDataElement>();
+    /**
+     * collect models of current selected element
+     * 
+     * @param parentElement
+     * @return
+     * @throws AWEException
+     */
+    private List<IModel> collectModelMap(Object parentElement) throws AWEException {
         ArrayList<IModel> modelMap = new ArrayList<IModel>();
-        try {
-            if (parentElement instanceof IProjectModel) {
-                addToModelCollection(((IProjectModel)parentElement).findAllNetworkModels(), modelMap);
-                addToModelCollection(((IProjectModel)parentElement).findAllDriveModels(), modelMap);
-            } else if (parentElement instanceof IDataElement) {
-                Map<String, IModel> models = getModelOfDataElement((IDataElement)parentElement);
-                if (models.containsKey(DatasetTypes.NETWORK.getId())) {
-                    addToModelCollection(((INetworkModel)models.get(DatasetTypes.NETWORK.getId())).getAllSelectionModels(),
-                            modelMap);
-                    addToModelCollection(((INetworkModel)models.get(DatasetTypes.NETWORK.getId())).getNodeToNodeModels(), modelMap);
-                    addToModelCollection(((INetworkModel)models.get(DatasetTypes.NETWORK.getId())).getCorrelationModels(), modelMap);
-                } else if (models.containsKey(DatasetTypes.DRIVE.getId())) {
-                    addToModelCollection(((IDriveModel)models.get(DatasetTypes.DRIVE.getId())).getVirtualDatasets(), modelMap);
-                }
-            }
-        } catch (AWEException e) {
-            // TODO Handle AWEException
-            throw (RuntimeException)new RuntimeException().initCause(e);
+        if (parentElement instanceof IProjectModel) {
+            IProjectModel project = ((IProjectModel)parentElement);
+            // add all networkModel model
+            addToModelCollection(project.findAllNetworkModels(), modelMap);
+            // add all drive model
+            addToModelCollection(project.findAllDriveModels(), modelMap);
+        } else if (parentElement instanceof INetworkModel) {
+            INetworkModel networkModel = ((INetworkModel)parentElement);
+            addToModelCollection(networkModel.getAllSelectionModels(), modelMap);
+            addToModelCollection(networkModel.getNodeToNodeModels(), modelMap);
+            addToModelCollection(networkModel.getCorrelationModels(), modelMap);
+        } else if (parentElement instanceof IDriveModel) {
+            IDriveModel driveModel = ((IDriveModel)parentElement);
+            addToModelCollection(driveModel.getVirtualDatasets(), modelMap);
         }
-        for (IModel model : modelMap) {
-//            dataElements.add(new DataElement(model.getRootNode()));
-        }
-        Collections.sort(dataElements, new IDataElementComparator());
-        return dataElements.toArray();
+        return modelMap;
     }
 
-    private Map<String, IModel> getModelOfDataElement(IDataElement element) {
-        String type = element.get(NewAbstractService.TYPE).toString();
-        boolean isRequired = false;
-        Map<String, IModel> models = new HashMap<String, IModel>();
-        for (DatasetTypes dType : DatasetTypes.values()) {
-            if (dType.getId().equals(type)) {
-                isRequired = true;
-            }
+    @Override
+    public Object[] getChildren(Object parentElement) {
+        ArrayList<IModel> modelMap = new ArrayList<IModel>();
+        try {
+            modelMap.addAll(collectModelMap(parentElement));
+        } catch (AWEException e) {
+            MessageDialog.openError(null, "Error", "Couldn't get children elements for" + parentElement);
         }
-        if (!isRequired) {
-            return models;
-        }
-        DatasetTypes datasetType = DatasetTypes.valueOf(type.toUpperCase());
-        // NodeToNodeTypes rel = NodeToNodeTypes.valueOf(type.toUpperCase());
-
-        IModel model = null;
-//        try {
-            if (datasetType != null) {
-
-                switch (datasetType) {
-                case NETWORK:
-//                    model = new NetworkModel(((DataElement)element).getNode());
-                    break;
-                case DRIVE:
-//                    model = new DriveModel(((DataElement)element).getNode());
-                }
-                models.put(datasetType.getId(), model);
-
-                // } else if (rel != null) {
-                // model = new NodeToNodeRelationshipModel(((DataElement)element).getNode());
-                // models.put(rel.name().toLowerCase(), model);
-            }
-
-//        } catch (AWEException e) {
-//            // TODO Handle AWEException
-//            throw (RuntimeException)new RuntimeException().initCause(e);
-//        }
-        return models;
+        Collections.sort(modelMap, new IModelComparator());
+        return modelMap.toArray();
     }
 
     /**
@@ -148,12 +117,11 @@ public class ProjectTreeContentProvider implements IStructuredContentProvider, I
      * @author Kasnitskij_V
      * @since 1.0.0
      */
-    public static class IDataElementComparator implements Comparator<IDataElement> {
+    public static class IModelComparator implements Comparator<IModel> {
 
         @Override
-        public int compare(IDataElement dataElement1, IDataElement dataElement2) {
-            return dataElement1 == null ? -1 : dataElement2 == null ? 1 : dataElement1.get(NewAbstractService.NAME).toString()
-                    .compareTo(dataElement2.get(NewAbstractService.NAME).toString());
+        public int compare(IModel dataElement1, IModel dataElement2) {
+            return dataElement1 == null ? -1 : dataElement2 == null ? 1 : dataElement1.getName().compareTo(dataElement2.getName());
         }
 
     }
@@ -168,23 +136,10 @@ public class ProjectTreeContentProvider implements IStructuredContentProvider, I
     public boolean hasChildren(Object parentElement) {
         ArrayList<IModel> modelMap = new ArrayList<IModel>();
         try {
-            if (parentElement instanceof IProjectModel) {
-                addToModelCollection(((IProjectModel)parentElement).findAllNetworkModels(), modelMap);
-                addToModelCollection(((IProjectModel)parentElement).findAllDriveModels(), modelMap);
-            } else if (parentElement instanceof IDataElement) {
-                Map<String, IModel> models = getModelOfDataElement((IDataElement)parentElement);
-                if (models.containsKey(DatasetTypes.NETWORK.getId())) {
-                    addToModelCollection(((INetworkModel)models.get(DatasetTypes.NETWORK.getId())).getAllSelectionModels(),
-                            modelMap);
-                    addToModelCollection(((INetworkModel)models.get(DatasetTypes.NETWORK.getId())).getNodeToNodeModels(), modelMap);
-                    addToModelCollection(((INetworkModel)models.get(DatasetTypes.NETWORK.getId())).getCorrelationModels(), modelMap);
-                } else if (models.containsKey(DatasetTypes.DRIVE.getId())) {
-                    addToModelCollection(((IDriveModel)models.get(DatasetTypes.DRIVE.getId())).getVirtualDatasets(), modelMap);
-                }
-            }
+            modelMap.addAll(collectModelMap(parentElement));
         } catch (AWEException e) {
-            // TODO Handle AWEException
-            throw (RuntimeException)new RuntimeException().initCause(e);
+            MessageDialog.openError(null, "Error", "Couldn't check for child models");
+            LOGGER.error("error while checking for children", e);
         }
         if (modelMap != null && !modelMap.isEmpty()) {
             return true;
@@ -196,11 +151,11 @@ public class ProjectTreeContentProvider implements IStructuredContentProvider, I
     @Override
     public Object[] getElements(Object inputElement) {
 
-        IProjectModel projectModels;
+        IProjectModel projectModels = null;
         try {
             projectModels = ProjectModel.getCurrentProjectModel();
         } catch (AWEException e) {
-            throw (RuntimeException)new RuntimeException().initCause(e);
+            MessageDialog.openError(null, "Error", "Couldn't get element" + projectModels);
         }
 
         Object[] projectModelsInObject = new Object[0];

@@ -13,11 +13,7 @@
 
 package org.amanzi.awe.views.explorer.providers;
 
-import org.amanzi.neo.services.INeoConstants;
-import org.amanzi.neo.services.NewAbstractService;
-import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IModel;
-import org.amanzi.neo.services.model.IProjectModel;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.graphics.Image;
@@ -38,10 +34,8 @@ public class ProjectTreeLabelProvider extends LabelProvider {
 
     @Override
     public String getText(Object element) {
-        if (element instanceof IProjectModel) {
+        if (element instanceof IModel) {
             return ((IModel)element).getName();
-        } else if (element instanceof IDataElement) {
-            return ((IDataElement)element).get(NewAbstractService.NAME).toString();
         } else
             return null;
     }

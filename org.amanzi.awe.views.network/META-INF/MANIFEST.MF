@@ -11,7 +11,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui.ide,
  org.eclipse.core.filesystem,
  org.amanzi.awe.ui;bundle-version="1.0.0",
- org.amanzi.neo.services;bundle-version="1.0.0"
+ org.amanzi.neo.services;bundle-version="1.0.0",
+ org.amanzi.neo.services.ui;bundle-version="1.0.0"
 Bundle-ActivationPolicy: lazy
 Export-Package: org.amanzi.awe.awe.views.view.provider,
  org.amanzi.awe.views.network,

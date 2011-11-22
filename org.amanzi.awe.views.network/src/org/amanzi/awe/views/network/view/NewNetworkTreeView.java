@@ -53,6 +53,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.PartInitException;
@@ -76,11 +77,6 @@ public class NewNetworkTreeView extends ViewPart implements IEventListener {
      * ID of this View
      */
     public static final String NETWORK_TREE_VIEW_ID = "org.amanzi.awe.views.network.views.NetworkTreeView";
-
-    public static final String TRANSMISSION_VIEW_ID = "org.amanzi.awe.views.neighbours.views.TransmissionView";
-    public static final String NEIGHBOUR_VIEW_ID = "org.amanzi.awe.views.neighbours.views.NeighboursView";
-    public static final String N2N_VIEW_ID = "org.amanzi.awe.views.neighbours.views.Node2NodeViews";
-    public static final String DB_GRAPH_VIEW_ID = "org.neo4j.neoclipse.view.NeoGraphViewPart";
 
     public static final String SHOW_PROPERTIES = "Show properties";
     public static final String CHANGE_MODE_TO_JUST_SHOW_PROPERTIES = "Change mode to just show";
@@ -178,8 +174,15 @@ public class NewNetworkTreeView extends ViewPart implements IEventListener {
         createSubmenuAddToSelectionList((IStructuredSelection)viewer.getSelection(), manager);
 
         createSubmenuDeleteFromSelectionList((IStructuredSelection)viewer.getSelection(), manager);
+        
+        createSubmenuCreateSelectionList((IStructuredSelection)viewer.getSelection(), manager);
     }
 
+    /**
+     * Class uses when user click on data element
+     * 
+     * @author Kasnitskij_V
+     */
     private class SelectAction extends Action {
         private boolean enabled;
         private final String text;
@@ -225,7 +228,7 @@ public class NewNetworkTreeView extends ViewPart implements IEventListener {
             }
         }
     }
-    
+
     private class RenameAction extends Action {
 
         private boolean enabled;
@@ -264,8 +267,7 @@ public class NewNetworkTreeView extends ViewPart implements IEventListener {
             try {
                 networkModel.renameElement(dataElement, value);
             } catch (AWEException e) {
-                // TODO Handle AWEException
-                throw (RuntimeException)new RuntimeException().initCause(e);
+                MessageDialog.openError(null, "Could not rename!", e.toString());
             }
             viewer.refresh();
         }
@@ -391,6 +393,72 @@ public class NewNetworkTreeView extends ViewPart implements IEventListener {
         public boolean isEnabled() {
             return dataElementsToDelete.size() > 0;
         }
+    }
+
+    /**
+     * Creates submenu - Create selection List
+     * 
+     * @param selection
+     * @param manager
+     */
+    @SuppressWarnings("rawtypes")
+    private void createSubmenuCreateSelectionList(IStructuredSelection selection, IMenuManager manager) {
+        if (selection.size() == 1) {
+            Iterator it = selection.iterator();
+            Object elementObject = it.next();
+            if (elementObject instanceof INetworkModel) {
+                CreateSelectionList createSelectionList = new CreateSelectionList((IStructuredSelection)viewer.getSelection());
+                manager.add(createSelectionList);
+            }
+        }
+    }
+    
+    /**
+     * Action for creating of selection list
+     * 
+     * @author Ladornaya_A
+     * @since 1.0.0
+     */
+    private class CreateSelectionList extends Action {
+
+        private boolean enabled;
+        private final String text;
+        private INetworkModel network;
+
+        /**
+         * Constructor
+         * 
+         * @param selection - selection
+         */
+        public CreateSelectionList(IStructuredSelection selection) {
+            text = "Create selection list";
+            enabled = selection.size() == 1 && selection.getFirstElement() instanceof INetworkModel;
+            if (enabled) {
+                network = (INetworkModel)selection.getFirstElement();
+            }
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        @Override
+        public String getText() {
+            return text;
+        }
+
+        @Override
+        public void run() {
+            Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+            NewSelectionListDialog pdialog = new NewSelectionListDialog(shell, network, "New selection list", SWT.OK);
+            if (pdialog.open() == SWT.OK) {
+
+            } else {
+
+            }
+        }
+
     }
 
     /**

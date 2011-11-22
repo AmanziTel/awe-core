@@ -20,13 +20,21 @@ import java.util.Map;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceManager;
+import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IModel;
+import org.apache.log4j.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
  * @author Vladislav_Kondratenko
  */
 public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<T1, CSVContainer, ConfigurationDataImpl> {
+    private static Logger LOGGER = Logger.getLogger(AbstractCSVSaver.class);
+    /**
+     * line number
+     */
+    protected Long lineCounter = 0l;
     /**
      * contains appropriation of header synonyms and name inDB
      * <p>
@@ -39,7 +47,13 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
      * name inDB properties values
      */
     protected Map<String, Integer> columnSynonyms = new HashMap<String, Integer>();
+    /**
+     * collected parameters
+     */
     protected Map<String, Object> params = new HashMap<String, Object>();
+    /**
+     * file headers
+     */
     protected List<String> headers;
 
     /**
@@ -85,6 +99,39 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
         } else
             return autoParse(synonym, findedValue.toString());
     }
+
+    @Override
+    public void saveElement(CSVContainer dataElement) {
+        commitTx();
+        CSVContainer container = dataElement;
+        try {
+            if (fileSynonyms.isEmpty()) {
+                headers = container.getHeaders();
+                makeAppropriationWithSynonyms(headers);
+                makeIndexAppropriation();
+                lineCounter++;
+            } else {
+                lineCounter++;
+                List<String> value = container.getValues();
+                saveLine(value);
+            }
+        } catch (DatabaseException e) {
+            LOGGER.error("Error while saving element on line " + lineCounter, e);
+            rollbackTx();
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        } catch (Exception e) {
+            LOGGER.error("Exception while saving element on line " + lineCounter, e);
+            commitTx();
+        }
+    }
+
+    /**
+     * save parsed line from csv container
+     * 
+     * @param value
+     * @throws AWEException
+     */
+    protected abstract void saveLine(List<String> value) throws AWEException;
 
     /**
      * get value from row without autoparse (like a string)

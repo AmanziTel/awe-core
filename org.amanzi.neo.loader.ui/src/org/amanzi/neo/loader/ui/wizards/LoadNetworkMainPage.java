@@ -221,14 +221,11 @@ public class LoadNetworkMainPage extends LoaderPageNew<ConfigurationDataImpl> {
      */
     private String[] getRootItems() {
         members = new HashMap<String, INetworkModel>();
-
         try {
             IProjectModel projectModel = ProjectModel.getCurrentProjectModel();
-
             for (INetworkModel model : projectModel.findAllNetworkModels()) {
                 String id = model.getName();
                 members.put(id, model);
-                
             }
         } catch (AWEException e) {
             LOGGER.error("Error while getRootItems work", e);

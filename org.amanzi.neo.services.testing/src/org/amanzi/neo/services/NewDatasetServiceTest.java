@@ -404,7 +404,7 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
     public void createDatasetWithDriveTypeTest() throws InvalidDatasetParameterException, DatasetTypeParameterException,
             DuplicateNodeNameException, DatabaseException {
 
-        Node actualDataset = service.createDataset(projectNode, NAME_1, DatasetTypes.DRIVE, DriveTypes.NEMO_V1);
+        Node actualDataset = service.createDataset(projectNode, NAME_1, DatasetTypes.DRIVE, DriveTypes.NEMO_V1, DriveNodeTypes.M);
 
         boolean hasRelation = actualDataset.hasRelationship(DatasetRelationTypes.DATASET, Direction.INCOMING);
         Assert.assertTrue("not create DATASET relation", hasRelation);
@@ -430,7 +430,7 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
     @Test(expected = InvalidDatasetParameterException.class)
     public void createDatasetWithDriveTypeExeptionNameTest() throws InvalidDatasetParameterException,
             DatasetTypeParameterException, DuplicateNodeNameException, DatabaseException {
-        service.createDataset(projectNode, null, DatasetTypes.NETWORK, DriveTypes.NEMO_V1);
+        service.createDataset(projectNode, null, DatasetTypes.NETWORK, DriveTypes.NEMO_V1, DriveNodeTypes.M);
 
     }
 
@@ -444,7 +444,7 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
     @Test(expected = DatasetTypeParameterException.class)
     public void createDatasetWithDriveTypeExeptionDatasetTypeTest() throws InvalidDatasetParameterException,
             DatasetTypeParameterException, DuplicateNodeNameException, DatabaseException {
-        service.createDataset(projectNode, NAME_1, DatasetTypes.NETWORK, DriveTypes.NEMO_V1);
+        service.createDataset(projectNode, NAME_1, DatasetTypes.NETWORK, DriveTypes.NEMO_V1, DriveNodeTypes.M);
 
     }
 
@@ -459,7 +459,7 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
     @Test(expected = InvalidDatasetParameterException.class)
     public void createDatasetWithDriveTypeExeptionTypeTest() throws InvalidDatasetParameterException, DatabaseException,
             DatasetTypeParameterException, DuplicateNodeNameException {
-        service.createDataset(projectNode, NAME_1, null, DriveTypes.NEMO_V1);
+        service.createDataset(projectNode, NAME_1, null, DriveTypes.NEMO_V1, DriveNodeTypes.M);
 
     }
 
@@ -474,7 +474,7 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
     @Test(expected = InvalidDatasetParameterException.class)
     public void createDatasetWithDriveTypeExeptionProjectNodeTest() throws InvalidDatasetParameterException, DatabaseException,
             DatasetTypeParameterException, DuplicateNodeNameException {
-        service.createDataset(null, NAME_1, DatasetTypes.DRIVE, DriveTypes.NEMO_V1);
+        service.createDataset(null, NAME_1, DatasetTypes.DRIVE, DriveTypes.NEMO_V1, DriveNodeTypes.M);
 
     }
 
@@ -489,7 +489,7 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
     @Test(expected = InvalidDatasetParameterException.class)
     public void createDatasetWithDriveTypeExeptionEmptyNameTest() throws InvalidDatasetParameterException, DatabaseException,
             DatasetTypeParameterException, DuplicateNodeNameException {
-        service.createDataset(projectNode, "", DatasetTypes.DRIVE, DriveTypes.NEMO_V1);
+        service.createDataset(projectNode, "", DatasetTypes.DRIVE, DriveTypes.NEMO_V1, DriveNodeTypes.M);
 
     }
 
@@ -506,7 +506,7 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
             DatasetTypeParameterException, DuplicateNodeNameException {
 
         initDatasetNode(NAME_1, DatasetTypes.DRIVE, DriveTypes.ROMES);
-        service.createDataset(projectNode, NAME_1, DatasetTypes.DRIVE, DriveTypes.ROMES);
+        service.createDataset(projectNode, NAME_1, DatasetTypes.DRIVE, DriveTypes.ROMES, DriveNodeTypes.M);
 
     }
 
@@ -769,7 +769,7 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
 
         Node datasetNode = initDatasetNode(NAME_1, DatasetTypes.DRIVE, DriveTypes.NEMO_V1);
 
-        Node checkNode = service.getDataset(projectNode, NAME_1, DatasetTypes.DRIVE, DriveTypes.NEMO_V1);
+        Node checkNode = service.getDataset(projectNode, NAME_1, DatasetTypes.DRIVE, DriveTypes.NEMO_V1, DriveNodeTypes.M);
 
         Assert.assertTrue("method findDataset() return wrong node", datasetNode.equals(checkNode));
 
@@ -787,7 +787,7 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
     public void getDatasetWithDriveTypeCreateTest() throws InvalidDatasetParameterException, DatabaseException,
             DatasetTypeParameterException, DuplicateNodeNameException {
 
-        Node actualDataset = service.getDataset(projectNode, NAME_1, DatasetTypes.DRIVE, DriveTypes.NEMO_V1);
+        Node actualDataset = service.getDataset(projectNode, NAME_1, DatasetTypes.DRIVE, DriveTypes.NEMO_V1, DriveNodeTypes.M);
 
         boolean hasRelation = actualDataset.hasRelationship(DatasetRelationTypes.DATASET, Direction.INCOMING);
         Assert.assertTrue("not create DATASET relation", hasRelation);
@@ -813,7 +813,7 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
     @Test(expected = DatasetTypeParameterException.class)
     public void getDatasetWithDriveTypeNetworkTest() throws InvalidDatasetParameterException, DatabaseException,
             DatasetTypeParameterException, DuplicateNodeNameException {
-        service.getDataset(projectNode, NAME_1, DatasetTypes.NETWORK, DriveTypes.NEMO_V1);
+        service.getDataset(projectNode, NAME_1, DatasetTypes.NETWORK, DriveTypes.NEMO_V1, DriveNodeTypes.M);
 
     }
 
@@ -828,7 +828,7 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
     @Test(expected = InvalidDatasetParameterException.class)
     public void getDatasetWithDriveTypeExeptionNameTest() throws InvalidDatasetParameterException, DatabaseException,
             DatasetTypeParameterException, DuplicateNodeNameException {
-        service.getDataset(projectNode, null, DatasetTypes.DRIVE, DriveTypes.NEMO_V1);
+        service.getDataset(projectNode, null, DatasetTypes.DRIVE, DriveTypes.NEMO_V1, DriveNodeTypes.M);
 
     }
 
@@ -843,7 +843,7 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
     @Test(expected = InvalidDatasetParameterException.class)
     public void getDatasetWithDriveTypeExeptionTypeTest() throws InvalidDatasetParameterException, DatabaseException,
             DatasetTypeParameterException, DuplicateNodeNameException {
-        service.getDataset(projectNode, NAME_1, null, DriveTypes.NEMO_V1);
+        service.getDataset(projectNode, NAME_1, null, DriveTypes.NEMO_V1, DriveNodeTypes.M);
 
     }
 
@@ -858,7 +858,7 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
     @Test(expected = InvalidDatasetParameterException.class)
     public void getDatasetWithDriveTypeExeptionDriveTypeTest() throws InvalidDatasetParameterException, DatabaseException,
             DatasetTypeParameterException, DuplicateNodeNameException {
-        service.getDataset(projectNode, NAME_1, DatasetTypes.DRIVE, null);
+        service.getDataset(projectNode, NAME_1, DatasetTypes.DRIVE, null, DriveNodeTypes.M);
 
     }
 
@@ -873,7 +873,7 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
     @Test(expected = InvalidDatasetParameterException.class)
     public void getDatasetWithDriveTypeExeptionProjectNodeTest() throws InvalidDatasetParameterException, DatabaseException,
             DatasetTypeParameterException, DuplicateNodeNameException {
-        service.getDataset(null, NAME_1, DatasetTypes.DRIVE, DriveTypes.NEMO_V1);
+        service.getDataset(null, NAME_1, DatasetTypes.DRIVE, DriveTypes.NEMO_V1, DriveNodeTypes.M);
 
     }
 
@@ -888,7 +888,7 @@ public class NewDatasetServiceTest extends AbstractNeoServiceTest {
     @Test(expected = InvalidDatasetParameterException.class)
     public void getDatasetWithDriveTypeExeptionEmptyNameTest() throws InvalidDatasetParameterException, DatabaseException,
             DatasetTypeParameterException, DuplicateNodeNameException {
-        service.getDataset(projectNode, "", DatasetTypes.DRIVE, DriveTypes.NEMO_V1);
+        service.getDataset(projectNode, "", DatasetTypes.DRIVE, DriveTypes.NEMO_V1, DriveNodeTypes.M);
 
     }
 

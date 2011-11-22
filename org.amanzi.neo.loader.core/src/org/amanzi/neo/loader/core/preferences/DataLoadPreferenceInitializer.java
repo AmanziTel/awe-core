@@ -93,16 +93,20 @@ public class DataLoadPreferenceInitializer extends AbstractPreferenceInitializer
         pref.setDefault(DataLoadPreferences.NH_SECTOR_LAC, DataLoadPluginSynonyms.NH_SECTOR_LAC);
         pref.setDefault(DataLoadPreferences.NH_LATITUDE, DataLoadPluginSynonyms.NH_LATITUDE);
         pref.setDefault(DataLoadPreferences.NH_LONGITUDE, DataLoadPluginSynonyms.NH_LONGITUDE);
+        pref.setDefault(DataLoadPreferences.NH_SEPARATION, DataLoadPluginSynonyms.NH_SEPARATION);
 
         pref.setDefault(DataLoadPreferences.DR_LATITUDE, DataLoadPluginSynonyms.DR_LATITUDE);
         pref.setDefault(DataLoadPreferences.DR_LONGITUDE, DataLoadPluginSynonyms.DR_LONGITUDE);
         pref.setDefault(DataLoadPreferences.DR_BCCH, DataLoadPluginSynonyms.DR_BCCH);
+        pref.setDefault(DataLoadPreferences.DR_IS_BCCH, DataLoadPluginSynonyms.DR_IS_BCCH);
         pref.setDefault(DataLoadPreferences.DR_CI, DataLoadPluginSynonyms.DR_CI);
         pref.setDefault(DataLoadPreferences.DR_EcIo, DataLoadPluginSynonyms.DR_EcIo);
         pref.setDefault(DataLoadPreferences.DR_PN, DataLoadPluginSynonyms.DR_PN);
         pref.setDefault(DataLoadPreferences.DR_RSSI, DataLoadPluginSynonyms.DR_RSSI);
         pref.setDefault(DataLoadPreferences.DR_SC, DataLoadPluginSynonyms.DR_SC);
         pref.setDefault(DataLoadPreferences.DR_TCH, DataLoadPluginSynonyms.DR_TCH);
+
+        pref.setDefault(DataLoadPreferences.INT_SERV_NAME, DataLoadPluginSynonyms.INT_SERV_NAME);
 
         pref.setDefault(DataLoadPreferences.DR_MS, DataLoadPluginSynonyms.DR_MS);
         pref.setDefault(DataLoadPreferences.DR_EVENT, DataLoadPluginSynonyms.DR_EVENT);
@@ -143,6 +147,14 @@ public class DataLoadPreferenceInitializer extends AbstractPreferenceInitializer
         pref.setDefault(DataLoadPreferences.NE_NBR_CI, DataLoadPluginSynonyms.NE_NBR_CI);
         pref.setDefault(DataLoadPreferences.NE_NBR_NAME, DataLoadPluginSynonyms.NE_NBR_NAME);
         pref.setDefault(DataLoadPreferences.NE_NBR_LAC, DataLoadPluginSynonyms.NE_NBR_LAC);
+
+        pref.setDefault(DataLoadPreferences.INT_SERV_NAME, DataLoadPluginSynonyms.INT_SERV_NAME);
+
+        pref.setDefault(DataLoadPreferences.FR_CH_TYPE, DataLoadPluginSynonyms.FR_CH_TYPE);
+        pref.setDefault(DataLoadPreferences.FR_FREQUENCY, DataLoadPluginSynonyms.FR_FREQUENCY);
+        pref.setDefault(DataLoadPreferences.FR_PENALTY, DataLoadPluginSynonyms.FR_PENALTY);
+        pref.setDefault(DataLoadPreferences.FR_SCALLING_FACTOR, DataLoadPluginSynonyms.FR_SCALLING_FACTOR);
+        pref.setDefault(DataLoadPreferences.FR_TRX_ID, DataLoadPluginSynonyms.FR_TRX_ID);
 
         pref.setDefault(DataLoadPreferences.TR_SITE_ID_SERV, DataLoadPluginSynonyms.TR_SITE_ID_SERV);
         pref.setDefault(DataLoadPreferences.TR_SITE_NO_SERV, DataLoadPluginSynonyms.TR_SITE_NO_SERV);

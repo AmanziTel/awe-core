@@ -70,7 +70,7 @@ public class DriveModelTest extends AbstractNeoServiceTest {
         try {
             project = prServ.createProject("project" + count++);
             dsName = "dataset" + count;
-            dataset = dsServ.createDataset(project, dsName, DatasetTypes.DRIVE, DriveTypes.values()[0]);
+            dataset = dsServ.createDataset(project, dsName, DatasetTypes.DRIVE, DriveTypes.values()[0], DriveNodeTypes.M);
         } catch (AWEException e) {
         }
     }

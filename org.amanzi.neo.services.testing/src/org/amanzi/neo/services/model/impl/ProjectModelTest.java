@@ -31,6 +31,7 @@ import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.INetworkModel;
+import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
 import org.amanzi.neo.services.model.impl.ProjectModel.DistributionItem;
 import org.apache.log4j.Logger;
 import org.junit.AfterClass;
@@ -119,8 +120,8 @@ public class ProjectModelTest extends AbstractNeoServiceTest {
         Assert.assertEquals("dataset", dm.getName());
         // drive type correct
         Assert.assertEquals(DriveTypes.values()[0], dm.getDriveType());
-        // type correct
-        Assert.assertEquals(NetworkElementNodeType.values()[0], dm.getType());
+        // primary type correct
+        Assert.assertEquals(NetworkElementNodeType.BSC, dm.getPrimaryType());
     }
 
     @Test
@@ -191,8 +192,10 @@ public class ProjectModelTest extends AbstractNeoServiceTest {
         Assert.assertEquals("dataset", dm.getName());
         // drive type correct
         Assert.assertEquals(DriveTypes.values()[0], dm.getDriveType());
+        // type correct
+        Assert.assertEquals(DatasetTypes.DRIVE, dm.getType());
         // primary type correct
-        Assert.assertEquals(NetworkElementNodeType.values()[0], dm.getType());
+        Assert.assertEquals(NetworkElementNodeType.BSC, dm.getPrimaryType());
     }
 
     @Test
@@ -209,7 +212,7 @@ public class ProjectModelTest extends AbstractNeoServiceTest {
         // drive type correct
         Assert.assertEquals(DriveTypes.values()[0], dm.getDriveType());
         // primary type correct
-        Assert.assertEquals(NetworkElementNodeType.values()[0], dm.getType());
+        Assert.assertEquals(NetworkElementNodeType.BSC, dm.getPrimaryType());
     }
 
     @Test

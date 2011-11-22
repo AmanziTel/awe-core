@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
-import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
@@ -26,46 +26,31 @@ import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
 import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelTypes;
-import org.apache.log4j.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
- * @author Kondratneko_Vladislav
+ * @author Vladislav_Kondratenko
  */
-public class NewNeighboursSaver extends AbstractN2NSaver {
+public class NewInterferenceSaver extends AbstractN2NSaver {
     /*
      * neighbours
      */
-    public final static String NEIGHBOUR_SECTOR_CI = "neigh_sector_ci";
-    public final static String NEIGHBOUR_SECTOR_LAC = "neigh_sector_lac";
-    public final static String NEIGHBOUR_SECTOR_NAME = "neigh_sector_name";
-    public final static String SERVING_SECTOR_CI = "serv_sector_ci";
-    public final static String SERVING_SECTOR_LAC = "serv_sector_lac";
+    public final static String INTERFERE_SECTOR_NAME = "interfering_sector";
     public final static String SERVING_SECTOR_NAME = "serv_sector_name";
 
-    protected NewNeighboursSaver(INodeToNodeRelationsModel model, INetworkModel networkModel, ConfigurationDataImpl data,
+    protected NewInterferenceSaver(INodeToNodeRelationsModel model, INetworkModel networkModel, ConfigurationDataImpl data,
             GraphDatabaseService service) {
         super(model, networkModel, data, service);
     }
 
-    /**
-     * 
-     */
-    public NewNeighboursSaver() {
+    public NewInterferenceSaver() {
         super();
     }
-    
-    /**
-     * contains appropriation of header synonyms and name inDB</br> <b>key</b>- name in db ,
-     * <b>value</b>-file header key
-     */
-    private Map<String, String> fileSynonyms = new HashMap<String, String>();
-    /**
-     * name inDB properties values
-     */
-    private List<String> headers;
-    private static Logger LOGGER = Logger.getLogger(NewNetworkSaver.class);
-    private Map<String, String[]> preferenceStoreSynonyms;
+
+    @Override
+    protected INodeToNodeRelationsModel getNode2NodeModel(String name) throws AWEException {
+        return networkModel.getNodeToNodeModel(N2NRelTypes.INTERFERENCE_MATRIX, name, NetworkElementNodeType.SECTOR);
+    }
 
     @Override
     protected void initSynonyms() {
@@ -81,16 +66,16 @@ public class NewNeighboursSaver extends AbstractN2NSaver {
      */
     @Override
     protected void saveLine(List<String> row) throws AWEException {
-        String neighbSectorName = getValueFromRow(NEIGHBOUR_SECTOR_NAME, row);
+        String neighbSectorName = getValueFromRow(INTERFERE_SECTOR_NAME, row);
         String serviceNeighName = getValueFromRow(SERVING_SECTOR_NAME, row);
         Map<String, Object> properties = new HashMap<String, Object>();
-        properties.put(INeoConstants.PROPERTY_TYPE_NAME, NetworkElementNodeType.SECTOR.getId());
-        properties.put(INeoConstants.PROPERTY_NAME_NAME, neighbSectorName);
+        properties.put(NewAbstractService.TYPE, NetworkElementNodeType.SECTOR.getId());
+        properties.put(NewAbstractService.NAME, neighbSectorName);
         IDataElement findedNeighSector = networkModel.findElement(properties);
-        properties.put(INeoConstants.PROPERTY_NAME_NAME, serviceNeighName);
+        properties.put(NewAbstractService.NAME, serviceNeighName);
         IDataElement findedServiceSector = networkModel.findElement(properties);
         for (String head : headers) {
-            if (fileSynonyms.containsValue(head) && !fileSynonyms.get(NEIGHBOUR_SECTOR_NAME).equals(head)
+            if (fileSynonyms.containsValue(head) && !fileSynonyms.get(INTERFERE_SECTOR_NAME).equals(head)
                     && !fileSynonyms.get(SERVING_SECTOR_NAME).equals(head)) {
                 properties.put(head.toLowerCase(), getSynonymValueWithAutoparse(head, row));
             }
@@ -100,11 +85,6 @@ public class NewNeighboursSaver extends AbstractN2NSaver {
         } else {
             LOGGER.warn("cann't find service or neighbour sector on line " + lineCounter);
         }
-    }
-
-    @Override
-    protected INodeToNodeRelationsModel getNode2NodeModel(String name) throws AWEException {
-        return networkModel.getNodeToNodeModel(N2NRelTypes.NEIGHBOUR, name, NetworkElementNodeType.SECTOR);
     }
 
 }

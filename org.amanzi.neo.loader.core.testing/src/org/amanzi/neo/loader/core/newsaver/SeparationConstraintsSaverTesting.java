@@ -33,16 +33,17 @@ import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceInitializer;
+import org.amanzi.neo.services.NewAbstractService;
+import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
+import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataElement;
-import org.amanzi.neo.services.model.INetworkModel;
-import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.NetworkModel;
-import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel;
 import org.amanzi.testing.AbstractAWETest;
 import org.apache.log4j.Logger;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -52,55 +53,60 @@ import org.neo4j.graphdb.Transaction;
 /**
  * @author Vladislav_Kondratenko
  */
-public class NewNeighbourSaverTesting extends AbstractAWETest {
-    private static Logger LOGGER = Logger.getLogger(NewNetworkSaverTesting.class);
-    private NewNeighboursSaver neighboursSaver;
+public class SeparationConstraintsSaverTesting extends AbstractAWETest {
+    private static Logger LOGGER = Logger.getLogger(TrafficSaverTesting.class);
+    private TrafficSaver trafficSaver;
     private static String PATH_TO_BASE = "";
     private ConfigurationDataImpl config;
     private static final String NETWORK_KEY = "Network";
     private static final String NETWORK_NAME = "testNetwork";
     private static final String PROJECT_KEY = "Project";
     private static final String PROJECT_NAME = "project";
+
+    private static final String SECTOR_PARAM = "sector";
+    private static final String SECTOR_VALUE = "s1";
+    private static final String SEPARATION_PARAM = "separation";
+    private static final Integer SEPARATION_VALUE = 123;
     private int MINIMAL_COLUMN_SIZE = 2;
     private static DataLoadPreferenceInitializer initializer;
-    private final static Map<String, Object> SECTOR1 = new HashMap<String, Object>();
-    private final static Map<String, Object> SECTOR2 = new HashMap<String, Object>();
-    private final static Map<String, Object> properties = new HashMap<String, Object>();
-    private INetworkModel networkModel;
-    private INodeToNodeRelationsModel node2model;
+    private final static Map<String, Object> COMPLETED_SECTOR = new HashMap<String, Object>();
+    private final static Map<String, Object> COLLECTED_SECTOR = new HashMap<String, Object>();
+    private static NetworkModel model;
+    private static Long startTime;
     private GraphDatabaseService service;
     private Transaction tx;
-    private static Long startTime;
     static {
         PATH_TO_BASE = System.getProperty("user.home");
-        SECTOR1.put("name", "sector1");
-        SECTOR1.put("type", "sector");
-        SECTOR2.put("name", "sector2");
-        SECTOR2.put("type", "sector");
+        COMPLETED_SECTOR.put(SECTOR_PARAM, SECTOR_VALUE);
+        COMPLETED_SECTOR.put(SEPARATION_PARAM, SEPARATION_VALUE);
+        COLLECTED_SECTOR.put(NewAbstractService.NAME, SECTOR_VALUE);
+        COLLECTED_SECTOR.put(NewAbstractService.TYPE, NetworkElementNodeType.SECTOR.getId());
     }
+
     private HashMap<String, Object> hashMap = null;
 
     @BeforeClass
     public static void prepare() {
+        new LogStarter().earlyStartup();
         clearDb();
         initializeDb();
+
         initializer = new DataLoadPreferenceInitializer();
         initializer.initializeDefaultPreferences();
-        new LogStarter().earlyStartup();
         startTime = System.currentTimeMillis();
+
     }
 
     @AfterClass
     public static void tearDownAfterClass() throws Exception {
         stopDb();
         clearDb();
-        LOGGER.info("NewNeighbourSaverTesting finished in " + (System.currentTimeMillis() - startTime));
+        LOGGER.info("NewNetworkSaverTesting finished in " + (System.currentTimeMillis() - startTime));
     }
 
     @Before
-    public void onStart() {
-        networkModel = mock(NetworkModel.class);
-        node2model = mock(NodeToNodeRelationshipModel.class);
+    public void onStart() throws AWEException {
+        model = mock(NetworkModel.class);
         service = mock(GraphDatabaseService.class);
         tx = mock(Transaction.class);
         when(service.beginTx()).thenReturn(tx);
@@ -118,15 +124,9 @@ public class NewNeighbourSaverTesting extends AbstractAWETest {
         }
         fileList.add(testFile);
         config.setSourceFile(fileList);
-        neighboursSaver = new NewNeighboursSaver(node2model, networkModel, config, service);
-        hashMap.put("Serving Sector", "sector1");
-        hashMap.put("Neighbour", "sector2");
-        hashMap.put("ci", "3.123");
-        hashMap.put("lac", "2.1234");
-
-        properties.put("ci", "3.123");
-        properties.put("lac", "2.1234");
-
+        trafficSaver = new TrafficSaver(model, (ConfigurationDataImpl)config, service);
+        hashMap.put(SECTOR_PARAM, SECTOR_VALUE);
+        hashMap.put(SEPARATION_PARAM, SEPARATION_VALUE);
     }
 
     private List<String> prepareValues(HashMap<String, Object> map) {
@@ -138,60 +138,67 @@ public class NewNeighbourSaverTesting extends AbstractAWETest {
     }
 
     @Test
-    public void testLinkSectors() {
+    public void testCompleteingElement() {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
-        neighboursSaver.saveElement(rowContainer);
+        trafficSaver.saveElement(rowContainer);
         List<String> values = prepareValues(hashMap);
         rowContainer.setValues(values);
+
         try {
-            when(networkModel.findElement(SECTOR1)).thenReturn(new DataElement(SECTOR1));
-            when(networkModel.findElement(SECTOR2)).thenReturn(new DataElement(SECTOR2));
-            neighboursSaver.saveElement(rowContainer);
-            verify(node2model).linkNode(new DataElement(SECTOR1), new DataElement(SECTOR2), eq(properties));
+            when(model.findElement(eq(COLLECTED_SECTOR))).thenReturn(new DataElement(COLLECTED_SECTOR));
+            when(model.completeProperties(new DataElement(eq(COLLECTED_SECTOR)), eq(COMPLETED_SECTOR), any(Boolean.class)))
+                    .thenReturn(new DataElement(COLLECTED_SECTOR));
+            trafficSaver.saveElement(rowContainer);
+            verify(model, atLeastOnce()).completeProperties(new DataElement(eq(COLLECTED_SECTOR)), eq(COMPLETED_SECTOR),
+                    any(Boolean.class));
         } catch (Exception e) {
-            LOGGER.error(" testNeighbourNetworkSaver error", e);
-            e.printStackTrace();
+            LOGGER.error(" testCompleteingElement error", e);
+            Assert.fail("Exception while saving row");
         }
     }
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testIfOneSectorNotFound() {
+    public void testIfSectorNotFound() {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
+        trafficSaver.saveElement(rowContainer);
         List<String> values = prepareValues(hashMap);
         rowContainer.setValues(values);
         try {
-            when(networkModel.findElement(SECTOR1)).thenReturn(null);
-            when(networkModel.findElement(SECTOR2)).thenReturn(new DataElement(SECTOR2));
-            neighboursSaver.saveElement(rowContainer);
-            verify(node2model, never()).linkNode(any(IDataElement.class), any(IDataElement.class), any(Map.class));
+            when(model.findElement(eq(COLLECTED_SECTOR))).thenReturn(null);
+            when(model.completeProperties(new DataElement(eq(COLLECTED_SECTOR)), eq(COMPLETED_SECTOR), any(Boolean.class)))
+                    .thenReturn(new DataElement(COLLECTED_SECTOR));
+            trafficSaver.saveElement(rowContainer);
+            verify(model, never()).completeProperties(any(IDataElement.class), any(Map.class), any(Boolean.class));
         } catch (Exception e) {
-            LOGGER.error(" testNeighbourNetworkSaver error", e);
-            e.printStackTrace();
+            LOGGER.error(" testIfSectorNotFound error", e);
+            Assert.fail("Exception while saving row");
         }
     }
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testIfThereIsNotEnoughtProperties() {
-        hashMap.remove("Serving Sector");
+    public void testIfThereIsNoValue() {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
+        trafficSaver.saveElement(rowContainer);
         List<String> values = prepareValues(hashMap);
         rowContainer.setValues(values);
+        COMPLETED_SECTOR.remove(SEPARATION_PARAM);
         try {
-            when(networkModel.findElement(SECTOR1)).thenReturn(null);
-            when(networkModel.findElement(SECTOR2)).thenReturn(new DataElement(SECTOR2));
-            neighboursSaver.saveElement(rowContainer);
-            verify(node2model, never()).linkNode(any(IDataElement.class), any(IDataElement.class), any(Map.class));
+            when(model.findElement(eq(COLLECTED_SECTOR))).thenReturn(null);
+            when(model.completeProperties(new DataElement(eq(COLLECTED_SECTOR)), eq(COMPLETED_SECTOR), any(Boolean.class)))
+                    .thenReturn(new DataElement(COLLECTED_SECTOR));
+            trafficSaver.saveElement(rowContainer);
+            verify(model, never()).completeProperties(any(IDataElement.class), any(Map.class), any(Boolean.class));
         } catch (Exception e) {
-            LOGGER.error(" testNeighbourNetworkSaver error", e);
-            e.printStackTrace();
+            LOGGER.error(" testIfThereIsNoValue error", e);
+            Assert.fail("Exception while saving row");
         }
     }
 
@@ -201,12 +208,12 @@ public class NewNeighbourSaverTesting extends AbstractAWETest {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
-        neighboursSaver.saveElement(rowContainer);
+        trafficSaver.saveElement(rowContainer);
         List<String> values = prepareValues(hashMap);
         try {
             rowContainer.setValues(values);
-            when(networkModel.findElement(any(Map.class))).thenThrow(new DatabaseException("required exception"));
-            neighboursSaver.saveElement(rowContainer);
+            when(model.findElement(any(Map.class))).thenThrow(new DatabaseException("required exception"));
+            trafficSaver.saveElement(rowContainer);
         } catch (Exception e) {
             verify(tx, never()).success();
             verify(tx, atLeastOnce()).failure();
@@ -220,16 +227,17 @@ public class NewNeighbourSaverTesting extends AbstractAWETest {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
-        neighboursSaver.saveElement(rowContainer);
+        trafficSaver.saveElement(rowContainer);
         List<String> values = prepareValues(hashMap);
         try {
             rowContainer.setValues(values);
-            when(networkModel.findElement(any(Map.class))).thenThrow(new IllegalArgumentException("required exception"));
-            neighboursSaver.saveElement(rowContainer);
+            when(model.findElement(any(Map.class))).thenThrow(new IllegalArgumentException("required exception"));
+            trafficSaver.saveElement(rowContainer);
         } catch (Exception e) {
             verify(tx, times(2)).success();
             verify(tx, never()).failure();
             verify(tx, times(3)).finish();
         }
     }
+
 }
