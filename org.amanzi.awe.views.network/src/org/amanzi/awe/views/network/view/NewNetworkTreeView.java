@@ -24,6 +24,8 @@ import org.amanzi.awe.awe.views.view.provider.NewNetworkTreeLabelProvider;
 import org.amanzi.awe.views.network.NetworkTreePlugin;
 import org.amanzi.awe.views.network.property.NewNetworkPropertySheetPage;
 import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
+import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
@@ -493,7 +495,7 @@ public class NewNetworkTreeView extends ViewPart {
             } else {
                 IDataElement element = (IDataElement)elementObject;
                 selectedNodes.add(element);
-                if (!NeoUtils.getNodeType(((DataElement)element).getNode()).equals(NodeTypes.SECTOR.getId())) {
+                if (!NodeTypeManager.getType(element).getId().equals(NetworkElementNodeType.SECTOR.getId())) {
                     isSector = false;
                 }
                 network = (INetworkModel)((DataElement)element).get(INeoConstants.NETWORK_MODEL_NAME);
@@ -529,8 +531,6 @@ public class NewNetworkTreeView extends ViewPart {
     }
 
     /**
-<<<<<<< HEAD
-=======
      * Method create submenu - Delete from selection list
      * 
      * @param selection
@@ -553,7 +553,7 @@ public class NewNetworkTreeView extends ViewPart {
             Object elementObject = it.next();
             if (!(elementObject instanceof INetworkModel)) {
                 element = (IDataElement)elementObject;
-                if (!NeoUtils.getNodeType(((DataElement)element).getNode()).equals(NodeTypes.SECTOR.getId())) {
+                if (!NodeTypeManager.getType(element).getId().equals(NetworkElementNodeType.SECTOR.getId())) {
                     isSector = false;
                 }
                 isNetwork = false;
@@ -580,7 +580,6 @@ public class NewNetworkTreeView extends ViewPart {
     }
 
     /**
->>>>>>> 872543a1a468ec5d3545ee31e062298907bce7dd
      * Action for adding of sectors to selection list
      * 
      * @author Ladornaya_A

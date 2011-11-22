@@ -54,7 +54,7 @@ public class Nemo2Generator {
      * @return row
      */
     private String generateAG() {
-        String ag = generateFloat(0, 100).toString();
+        Float ag = generateFloat(0, 100);
         String str = NemoEvents.AG.getEventId() + ",,," + ag;
         return str;
     }
@@ -90,7 +90,7 @@ public class Nemo2Generator {
      * @return row
      */
     private String generateCL() {
-        String cl = generateFloat(0, 100).toString();
+        Float cl = generateFloat(0, 100);
         String str = NemoEvents.CL.getEventId() + ",,," + cl;
         return str;
     }
@@ -142,7 +142,7 @@ public class Nemo2Generator {
      * @return row
      */
     private String generateDT() {
-        String deviceType = generateInteger(0, 1).toString();
+        Integer deviceType = generateInteger(0, 1);
         String str = NemoEvents.DT.getEventId() + ",,," + deviceType;
         return str;
     }
@@ -202,30 +202,55 @@ public class Nemo2Generator {
         return str;
     }
 
+    /**
+     * Generate #MF row
+     * 
+     * @return row
+     */
     private String generateMF() {
         String mapFile = "Map filename";
         String str = NemoEvents.MF.getEventId() + ",,," + returnWordSoCalled(mapFile);
         return str;
     }
 
+    /**
+     * Generate #ML row
+     * 
+     * @return row
+     */
     private String generateML() {
         String measurementLabel = "Measurement label";
         String str = NemoEvents.ML.getEventId() + ",,," + returnWordSoCalled(measurementLabel);
         return str;
     }
 
+    /**
+     * Generate #NN row
+     * 
+     * @return row
+     */
     private String generateNN() {
         String networkName = "Network name";
         String str = NemoEvents.NN.getEventId() + ",,," + returnWordSoCalled(networkName);
         return str;
     }
 
+    /**
+     * Generate #PC row
+     * 
+     * @return row
+     */
     private String generatePC() {
-        String packetCaptureState = generateInteger(0, 1).toString();
+        Integer packetCaptureState = generateInteger(0, 1);
         String str = NemoEvents.PC.getEventId() + ",,," + packetCaptureState;
         return str;
     }
 
+    /**
+     * Generate #PRODUCT row
+     * 
+     * @return row
+     */
     private String generatePRODUCT() {
         String productName = "Product name";
         String productVersion = "Product version";
@@ -234,43 +259,78 @@ public class Nemo2Generator {
         return str;
     }
 
+    /**
+     * Generate #SI row
+     * 
+     * @return row
+     */
     private String generateSI() {
         String subscriberIdentity = "Subscriber identity";
         String str = NemoEvents.SI.getEventId() + ",,," + returnWordSoCalled(subscriberIdentity);
         return str;
     }
 
+    /**
+     * Generate #SP row
+     * 
+     * @return row
+     */
     private String generateSP() {
         String subscriberPhoneNumber = "Subscriber phone number";
         String str = NemoEvents.SP.getEventId() + ",,," + returnWordSoCalled(subscriberPhoneNumber);
         return str;
     }
 
+    /**
+     * Generate #SW row
+     * 
+     * @return row
+     */
     private String generateSW() {
         String deviceSoftwareVersion = "Device software version";
         String str = NemoEvents.SW.getEventId() + ",,," + returnWordSoCalled(deviceSoftwareVersion);
         return str;
     }
 
+    /**
+     * Generate #TS row
+     * 
+     * @return row
+     */
     private String generateTS() {
         String testScriptFilename = "Test script filename";
         String str = NemoEvents.TS.getEventId() + ",,," + returnWordSoCalled(testScriptFilename);
         return str;
     }
 
+    /**
+     * Generate #UT row
+     * 
+     * @return row
+     */
     private String generateUT() {
-        String gapToUTC = generateInteger(-720, 720).toString();
+        Integer gapToUTC = generateInteger(-720, 720);
         String str = NemoEvents.UT.getEventId() + ",,," + gapToUTC;
         return str;
     }
 
+    /**
+     * Generate #VQ row
+     * 
+     * @return row
+     */
     private String generateVQ() {
-        String vqType = generateInteger(0, 4).toString();
+        Integer vqType = generateInteger(0, 4);
         String vqVersion = "Voice quality version";
         String str = NemoEvents.VQ.getEventId() + ",,," + vqType + "," + returnWordSoCalled(vqVersion);
         return str;
     }
 
+    /**
+     * Generate #START row
+     * 
+     * @return row
+     */
     private String generateSTART() {
         String timestamp = generateTimestamp();
         String date = generateDate();
@@ -278,6 +338,11 @@ public class Nemo2Generator {
         return str;
     }
 
+    /**
+     * Generate #STOP row
+     * 
+     * @return row
+     */
     private String generateSTOP() {
         String timestamp = generateTimestamp();
         String date = generateDate();
@@ -285,34 +350,43 @@ public class Nemo2Generator {
         return str;
     }
 
+    /**
+     * Generate CAA row
+     * 
+     * @return row
+     */
     private String generateCAA() {
         String str = NemoEvents.CAA.getEventId() + "," + generateTimestamp() + "," + generateContext(1);
-        String system = generateTechnologySystems().toString();
-        String callType = generateInteger(1, 9).toString();
-        String direction = generateInteger(1, 2).toString();
+        Integer system = generateTechnologySystems();
+        Integer callType = generateInteger(1, 9);
+        Integer direction = generateInteger(1, 2);
         String number = "Called number";
         str = str + "," + system + "," + callType + "," + direction + "," + returnWordSoCalled(number);
         return str;
     }
 
+    /**
+     * Generate CAC row
+     * 
+     * @return row
+     */
     private String generateCAC() {
         String str = NemoEvents.CAC.getEventId() + "," + generateTimestamp() + "," + generateContext(1);
         Integer system = generateTechnologySystems();
-        String strSystem = system.toString();
-        String callType = generateInteger(1, 9).toString();
-        String callStatus = generateInteger(1, 4).toString();
-        str = str + "," + strSystem + "," + callType + "," + callStatus;
+        Integer callType = generateInteger(1, 9);
+        Integer callStatus = generateInteger(1, 4);
+        str = str + "," + system + "," + callType + "," + callStatus;
         String parameters = "0";
         if (system == 1 || system == 2) {
             parameters = "1";
         }
         str = str + "," + parameters;
         if (system == 1) {
-            String tn = generateInteger(0, 7).toString();
+            Integer tn = generateInteger(0, 7);
             str = str + "," + tn;
         }
         if (system == 2) {
-            String tn = generateInteger(1, 4).toString();
+            Integer tn = generateInteger(1, 4);
             str = str + "," + tn;
         }
         return str;
@@ -360,46 +434,66 @@ public class Nemo2Generator {
      * hostAddress + "," + hostPort; return str; }
      */
 
+    /**
+     * Generate DAC row
+     * 
+     * @return row
+     */
     private String generateDAC() {
         String str = NemoEvents.DAC.getEventId() + "," + generateTimestamp() + "," + generateContext(1);
-        String applicationProtocol = generateInteger(0, 14).toString();
+        Integer applicationProtocol = generateInteger(0, 14);
         str = str + "," + applicationProtocol;
         return str;
     }
 
+    /**
+     * Generate DAF row
+     * 
+     * @return row
+     */
     private String generateDAF() {
         String str = NemoEvents.DAF.getEventId() + "," + generateTimestamp() + "," + generateContext(1) + generateDataOfProtocol();
         return str;
     }
 
+    /**
+     * Generate DAD row
+     * 
+     * @return row
+     */
     private String generateDAD() {
         String str = NemoEvents.DAD.getEventId() + "," + generateTimestamp() + "," + generateContext(1) + generateDataOfProtocol();
         return str;
     }
 
+    /**
+     * Generate DREQ row
+     * 
+     * @return row
+     */
     private String generateDREQ() {
         String str = NemoEvents.DREQ.getEventId() + "," + generateTimestamp() + "," + generateContext(2);
         Integer protocol = generateInteger(0, 14);
-        str = str + "," + protocol.toString();
-        String transfDir = generateInteger(1, 3).toString();
+        str = str + "," + protocol;
+        Integer transfDir = generateInteger(1, 3);
         str = str + "," + transfDir;
         if (protocol == 0 || protocol == 1 || protocol == 2) {
-            String fileSize = generateInteger(0, maxIntegerValue).toString();
-            String packetSize = generateInteger(0, maxIntegerValue).toString();
-            String rateLimit = generateInteger(0, maxIntegerValue).toString();
-            String pingSize = generateInteger(0, 100000).toString();
-            String pingRate = generateInteger(0, maxIntegerValue).toString();
-            String pingTimeout = generateInteger(0, maxIntegerValue).toString();
+            Integer fileSize = generateInteger(0, maxIntegerValue);
+            Integer packetSize = generateInteger(0, maxIntegerValue);
+            Integer rateLimit = generateInteger(0, maxIntegerValue);
+            Integer pingSize = generateInteger(0, 100000);
+            Integer pingRate = generateInteger(0, maxIntegerValue);
+            Integer pingTimeout = generateInteger(0, maxIntegerValue);
             str = str + "," + fileSize + "," + packetSize + "," + rateLimit + "," + pingSize + "," + pingRate + "," + pingTimeout;
         }
         if (protocol == 3 || protocol == 4) {
-            String fileSize = generateInteger(0, maxIntegerValue).toString();
+            Integer fileSize = generateInteger(0, maxIntegerValue);
             String fileName = "Data transfer filename";
-            String transfAtt = generateInteger(0, maxIntegerValue).toString();
+            Integer transfAtt = generateInteger(0, maxIntegerValue);
             str = str + "," + fileSize + "," + returnWordSoCalled(fileName) + "," + transfAtt;
         }
         if (protocol == 5 || protocol == 6 || protocol == 7 || protocol == 8 || protocol == 9 || protocol == 10) {
-            String fileSize = generateInteger(0, maxIntegerValue).toString();
+            Integer fileSize = generateInteger(0, maxIntegerValue);
             String fileName = "Data transfer filename";
             str = str + "," + fileSize + "," + returnWordSoCalled(fileName);
         }
@@ -408,103 +502,134 @@ public class Nemo2Generator {
             str = str + "," + returnWordSoCalled(fileName);
         }
         if (protocol == 12) {
-            String pingSize = generateInteger(0, 100000).toString();
-            String pingRate = generateInteger(0, maxIntegerValue).toString();
-            String pingTimeout = generateInteger(0, maxIntegerValue).toString();
+            Integer pingSize = generateInteger(0, 100000);
+            Integer pingRate = generateInteger(0, maxIntegerValue);
+            Integer pingTimeout = generateInteger(0, maxIntegerValue);
             str = str + "," + pingSize + "," + pingRate + "," + pingTimeout;
         }
         if (protocol == 13 || protocol == 14) {
-            String dataSize = generateInteger(0, maxIntegerValue).toString();
+            Integer dataSize = generateInteger(0, maxIntegerValue);
             str = str + "," + dataSize;
         }
         return str;
     }
 
+    /**
+     * Generate DCOMP row
+     * 
+     * @return row
+     */
     private String generateDCOMP() {
         String str = NemoEvents.DCOMP.getEventId() + "," + generateTimestamp() + "," + generateContext(1)
                 + generateDataOfProtocol2();
-        String ipAccessTime = generateInteger(0, maxIntegerValue).toString();
-        String ipTermTime = generateInteger(0, maxIntegerValue).toString();
-        String bytesUL = generateInteger(0, maxIntegerValue).toString();
-        String bytesDL = generateInteger(0, maxIntegerValue).toString();
+        Integer ipAccessTime = generateInteger(0, maxIntegerValue);
+        Integer ipTermTime = generateInteger(0, maxIntegerValue);
+        Integer bytesUL = generateInteger(0, maxIntegerValue);
+        Integer bytesDL = generateInteger(0, maxIntegerValue);
         str = str + "," + ipAccessTime + "," + ipTermTime + "," + bytesUL + "," + bytesDL;
         return str;
     }
 
+    /**
+     * Generate DRATE row
+     * 
+     * @return row
+     */
     private String generateDRATE() {
         String str = NemoEvents.DRATE.getEventId() + "," + generateTimestamp() + "," + generateContext(1);
-        String applicationProtocol = generateInteger(0, 14).toString();
-        String appRateUL = generateInteger(0, maxIntegerValue).toString();
-        String appRateDL = generateInteger(0, maxIntegerValue).toString();
-        String bytesUL = generateInteger(0, maxIntegerValue).toString();
-        String bytesDL = generateInteger(0, maxIntegerValue).toString();
+        Integer applicationProtocol = generateInteger(0, 14);
+        Integer appRateUL = generateInteger(0, maxIntegerValue);
+        Integer appRateDL = generateInteger(0, maxIntegerValue);
+        Integer bytesUL = generateInteger(0, maxIntegerValue);
+        Integer bytesDL = generateInteger(0, maxIntegerValue);
         str = str + "," + applicationProtocol + "," + appRateUL + "," + appRateDL + "," + bytesUL + "," + bytesDL;
         return str;
     }
 
+    /**
+     * Generate PER row
+     * 
+     * @return row
+     */
     private String generatePER() {
         String str = NemoEvents.PER.getEventId() + "," + generateTimestamp() + "," + generateContext(1);
-        String applicationProtocol = generateInteger(0, 14).toString();
-        String perUL = generateInteger(0, 100).toString();
-        String perDL = generateInteger(0, 100).toString();
+        Integer applicationProtocol = generateInteger(0, 14);
+        Float perUL = generateFloat(0, 99);
+        Float perDL = generateFloat(0, 99);
         str = str + "," + applicationProtocol + "," + perUL + "," + perDL;
         return str;
     }
 
+    /**
+     * Generate RTT row
+     * 
+     * @return row
+     */
     private String generateRTT() {
         String str = NemoEvents.RTT.getEventId() + "," + generateTimestamp() + "," + generateContext(1);
         Integer protocol = generateInteger(0, 14);
-        String applicationProtocol = protocol.toString();
-        str = str + "," + applicationProtocol;
+        str = str + "," + protocol;
         if (protocol == 12) {
-            String pingSize = generateInteger(0, 100000).toString();
-            String pingRTT = generateInteger(0, maxIntegerValue).toString();
+            Integer pingSize = generateInteger(0, 100000);
+            Integer pingRTT = generateInteger(0, maxIntegerValue);
             str = str + "," + pingSize + "," + pingRTT;
         }
         return str;
     }
 
+    /**
+     * Generate JITTER row
+     * 
+     * @return row
+     */
     private String generateJITTER() {
         String str = NemoEvents.JITTER.getEventId() + "," + generateTimestamp() + "," + generateContext(1);
         Integer protocol = generateInteger(0, 14);
-        String applicationProtocol = protocol.toString();
-        str = str + "," + applicationProtocol;
+        str = str + "," + protocol;
         if (protocol == 13 || protocol == 14) {
-            String jitterUl = generateInteger(0, maxIntegerValue).toString();
-            String jitterDl = generateInteger(0, maxIntegerValue).toString();
+            Integer jitterUl = generateInteger(0, maxIntegerValue);
+            Integer jitterDl = generateInteger(0, maxIntegerValue);
             str = str + "," + jitterUl + "," + jitterDl;
         }
         return str;
     }
 
+    /**
+     * Generate DSS row
+     * 
+     * @return row
+     */
     private String generateDSS() {
         String str = NemoEvents.DSS.getEventId() + "," + generateTimestamp() + ",";
         Integer protocol = generateInteger(0, 14);
-        String applicationProtocol = protocol.toString();
-        str = str + "," + applicationProtocol;
+        str = str + "," + protocol;
         if (protocol == 9) {
             str = str + generateContext(1);
-            String streamState = generateInteger(1, 3).toString();
-            String streamBandwidth = generateInteger(0, maxIntegerValue).toString();
+            Integer streamState = generateInteger(1, 3);
+            Integer streamBandwidth = generateInteger(0, maxIntegerValue);
             str = str + "," + streamState + "," + streamBandwidth;
         }
         return str;
     }
 
+    /**
+     * Generate DCONTENT row
+     * 
+     * @return row
+     */
     private String generateDCONTENT() {
         String str = NemoEvents.DCONTENT.getEventId() + "," + generateTimestamp() + ",";
         Integer protocol = generateInteger(0, 14);
-        String applicationProtocol = protocol.toString();
-        str = str + "," + applicationProtocol;
+        str = str + "," + protocol;
         if (protocol == 8 || protocol == 10) {
             str = str + generateContext(1);
-            String numberOfContentElements = generateInteger(0, 10).toString();
+            Integer numberOfContentElements = generateInteger(0, 10);
             str = str + "," + numberOfContentElements;
-            for (int i = 0; i < Integer.parseInt(numberOfContentElements); i++) {
+            for (int i = 0; i < numberOfContentElements; i++) {
                 String numberOfParametersPerContent = "3";
                 String contentURL = "Content URL";
-                String contentType = generateInteger(1, 3).toString();
-                String contentSize = generateInteger(0, maxIntegerValue).toString();
+                Integer contentType = generateInteger(1, 3);
+                Integer contentSize = generateInteger(0, maxIntegerValue);
                 str = str + "," + numberOfParametersPerContent + "," + returnWordSoCalled(contentURL) + "," + contentType + ","
                         + contentSize;
             }
@@ -4693,7 +4818,7 @@ public class Nemo2Generator {
             if (choice == 3) {
                 lockedSystem = TechnologySystems.UMTS_TD_SCDMA.getId();
             }
-            str = str + "," + lockedSystem;
+            str = str + "," + params + "," + lockedSystem;
         }
         if (lockType == 4) {
             Integer params = 1;
@@ -4742,6 +4867,10 @@ public class Nemo2Generator {
             addRowInFile(generateSTART(), wr);
             addRowInFile(generateCAA(), wr);
             addRowInFile(generateCAC(), wr);
+            // addRowInFile(generateCAF(), wr);
+            // addRowInFile(generateCAD(), wr);
+            // addRowInFile(generateVCHI(), wr);
+            // addRowInFile(generateDAA(), wr);
             addRowInFile(generateDAC(), wr);
             addRowInFile(generateDAF(), wr);
             addRowInFile(generateDAD(), wr);
@@ -4753,63 +4882,81 @@ public class Nemo2Generator {
             addRowInFile(generateJITTER(), wr);
             addRowInFile(generateDSS(), wr);
             addRowInFile(generateDCONTENT(), wr);
-            addRowInFile(generateCELLMEAS(), wr);
-            addRowInFile(generateADJMEAS(), wr);
-            addRowInFile(generateRXQ(), wr);
-            addRowInFile(generatePRXQ(), wr);
-            addRowInFile(generateFER(), wr);
-            addRowInFile(generateMSP(), wr);
-            addRowInFile(generateRLT(), wr);
-            addRowInFile(generateTAD(), wr);
-            addRowInFile(generateDSC(), wr);
-            addRowInFile(generateBEP(), wr);
-            addRowInFile(generateCIEvent(), wr);
-            addRowInFile(generateTXPC(), wr);
-            addRowInFile(generateRXPC(), wr);
-            addRowInFile(generateBER(), wr);
-            addRowInFile(generatePHRATE(), wr);
-            addRowInFile(generateWLANRATE(), wr);
-            addRowInFile(generatePPPRATE(), wr);
-            addRowInFile(generateRLPRATE(), wr);
-            addRowInFile(generateRLPSTATISTICS(), wr);
-            addRowInFile(generateMEI(), wr);
-            addRowInFile(generateCQI(), wr);
-            addRowInFile(generateHARQI(), wr);
-            addRowInFile(generateHSSCCHI(), wr);
-            addRowInFile(generatePLAID(), wr);
-            addRowInFile(generatePLAIU(), wr);
-            addRowInFile(generateHBI(), wr);
-            addRowInFile(generateMACERATE(), wr);
-            addRowInFile(generateAGRANT(), wr);
-            addRowInFile(generateSGRANT(), wr);
-            addRowInFile(generateEDCHI(), wr);
-            addRowInFile(generateHSUPASI(), wr);
-            addRowInFile(generateDRCI(), wr);
-            addRowInFile(generateRDRC(), wr);
-            addRowInFile(generateFDRC(), wr);
-            // addRowInFile(generatePHREF(), wr);
-            addRowInFile(generateMARKOVMUX(), wr);
-            addRowInFile(generateMARKOVSTATS(), wr);
-            addRowInFile(generateMER(), wr);
-            addRowInFile(generateDVBI(), wr);
-            addRowInFile(generateDVBFER(), wr);
-            addRowInFile(generateDVBBER(), wr);
-            addRowInFile(generateDVBRXL(), wr);
-            addRowInFile(generateDVBRATE(), wr);
-            addRowInFile(generateFREQSCAN(), wr);
-            addRowInFile(generateSPECTRUMSCAN(), wr);
-            addRowInFile(generatePILOTSCAN(), wr);
-            addRowInFile(generateOFDMSCAN(), wr);
-            addRowInFile(generateTPROFSCAN(), wr);
-            addRowInFile(generateDPROFSCAN(), wr);
-            addRowInFile(generateFINGER(), wr);
-            addRowInFile(generateHOS(), wr);
-            addRowInFile(generateLUA(), wr);
-            addRowInFile(generateLUS(), wr);
-            addRowInFile(generateLUF(), wr);
 
+            /*
+             * addRowInFile(generateCELLMEAS(), wr); addRowInFile(generateADJMEAS(), wr);
+             * addRowInFile(generateRXQ(), wr); addRowInFile(generatePRXQ(), wr);
+             * addRowInFile(generateFER(), wr); addRowInFile(generateMSP(), wr);
+             * addRowInFile(generateRLT(), wr); addRowInFile(generateTAD(), wr);
+             * addRowInFile(generateDSC(), wr); addRowInFile(generateBEP(), wr);
+             * addRowInFile(generateCIEvent(), wr); addRowInFile(generateTXPC(), wr);
+             * addRowInFile(generateRXPC(), wr); addRowInFile(generateBER(), wr);
+             * addRowInFile(generatePHRATE(), wr); addRowInFile(generateWLANRATE(), wr);
+             * addRowInFile(generatePPPRATE(), wr); addRowInFile(generateRLPRATE(), wr);
+             * addRowInFile(generateRLPSTATISTICS(), wr); addRowInFile(generateMEI(), wr);
+             * addRowInFile(generateCQI(), wr); addRowInFile(generateHARQI(), wr);
+             * addRowInFile(generateHSSCCHI(), wr); addRowInFile(generatePLAID(), wr);
+             * addRowInFile(generatePLAIU(), wr); addRowInFile(generateHBI(), wr);
+             * addRowInFile(generateMACERATE(), wr); addRowInFile(generateAGRANT(), wr);
+             * addRowInFile(generateSGRANT(), wr); addRowInFile(generateEDCHI(), wr);
+             * addRowInFile(generateHSUPASI(), wr); addRowInFile(generateDRCI(), wr);
+             * addRowInFile(generateRDRC(), wr); addRowInFile(generateFDRC(), wr); //
+             * addRowInFile(generatePHREF(), wr); addRowInFile(generateMARKOVMUX(), wr);
+             * addRowInFile(generateMARKOVSTATS(), wr); addRowInFile(generateMER(), wr);
+             * addRowInFile(generateDVBI(), wr); addRowInFile(generateDVBFER(), wr);
+             * addRowInFile(generateDVBBER(), wr); addRowInFile(generateDVBRXL(), wr);
+             * addRowInFile(generateDVBRATE(), wr); addRowInFile(generateFREQSCAN(), wr);
+             * addRowInFile(generateSPECTRUMSCAN(), wr); addRowInFile(generatePILOTSCAN(), wr);
+             * addRowInFile(generateOFDMSCAN(), wr); addRowInFile(generateTPROFSCAN(), wr);
+             * addRowInFile(generateDPROFSCAN(), wr); addRowInFile(generateFINGER(), wr);
+             * addRowInFile(generateHOS(), wr); addRowInFile(generateLUA(), wr);
+             * addRowInFile(generateLUS(), wr); addRowInFile(generateLUF(), wr);
+             */
+
+            addRowInFile(generateRRA(), wr);
+            addRowInFile(generateRRC(), wr);
+            addRowInFile(generateRRF(), wr);
+            addRowInFile(generateRRD(), wr);
+            addRowInFile(generateCIPI(), wr);
+            addRowInFile(generateL3SM(), wr);
+            addRowInFile(generateL2SM(), wr);
+            addRowInFile(generateRRCSM(), wr);
+            addRowInFile(generateRLCSM(), wr);
+            addRowInFile(generateMACSM(), wr);
+            addRowInFile(generateLLCSM(), wr);
+            addRowInFile(generateSNPSM(), wr);
+            addRowInFile(generateRRLPSM(), wr);
+            addRowInFile(generateGANSM(), wr);
+            addRowInFile(generateSIPSM(), wr);
+            addRowInFile(generateRTPSM(), wr);
+            addRowInFile(generatePAA(), wr);
+            addRowInFile(generatePAF(), wr);
+            addRowInFile(generatePAC(), wr);
+            addRowInFile(generatePAD(), wr);
+            addRowInFile(generateQSPR(), wr);
+            addRowInFile(generateQSPN(), wr);
+            // addRowInFile(generatePCHI(), wr);
+            addRowInFile(generateGAA(), wr);
+            addRowInFile(generateGAF(), wr);
+            addRowInFile(generateGAC(), wr);
+            addRowInFile(generateGAD(), wr);
+            addRowInFile(generateRLCBLER(), wr);
+            addRowInFile(generateRLCRATE(), wr);
+            addRowInFile(generateLLCRATE(), wr);
+            addRowInFile(generateRUA(), wr);
+            addRowInFile(generateRUS(), wr);
+            addRowInFile(generateRUF(), wr);
+            addRowInFile(generateTBFI(), wr);
+            addRowInFile(generateTBFULE(), wr);
+            addRowInFile(generateMACRATE(), wr);
+            addRowInFile(generateMACBLER(), wr);
+            addRowInFile(generateAMRI(), wr);
             addRowInFile(generateAMRQ(), wr);
+            addRowInFile(generateAQUL(), wr);
+            addRowInFile(generateAQDL(), wr);
+            addRowInFile(generateAMRS(), wr);
             addRowInFile(generateAQI(), wr);
+            addRowInFile(generateVQDL(), wr);
             addRowInFile(generateVRATE(), wr);
             addRowInFile(generateMSGA(), wr);
             addRowInFile(generateMSGS(), wr);
@@ -4828,7 +4975,8 @@ public class Nemo2Generator {
             addRowInFile(generateERR(), wr);
             addRowInFile(generateDATE(), wr);
             addRowInFile(generatePAUSE(), wr);
-
+            addRowInFile(generateAPP(), wr);
+            addRowInFile(generateLOCK(), wr);
             addRowInFile(generateSTOP(), wr);
         }
     }
@@ -4890,6 +5038,8 @@ public class Nemo2Generator {
     /**
      * Generate float value
      * 
+     * @param minIntegerValue
+     * @param maxIntegerValue
      * @return float value
      */
     private Float generateFloat(Integer minIntegerValue, Integer maxIntegerValue) {
@@ -4928,7 +5078,7 @@ public class Nemo2Generator {
     /**
      * Generate context
      * 
-     * @return context
+     * @return context row
      */
     private String generateContext(Integer numberOfContextIDs) {
         String str = "";
@@ -5086,6 +5236,11 @@ public class Nemo2Generator {
         }
     }
 
+    /**
+     * Generate Technology System
+     * 
+     * @return id of system
+     */
     private Integer generateTechnologySystems() {
         int index = generateInteger(0, systems.size() - 1);
         return systems.get(index);
@@ -5103,14 +5258,8 @@ public class Nemo2Generator {
 
     public static void main(String[] args) throws IOException {
         Nemo2Generator obj = new Nemo2Generator();
-        /*
-         * File nemoFile = obj.createNemoFile(); obj.generateAllEvents(false);
-         * obj.fillNemoFile(nemoFile);
-         */
-
         File nemoFile = obj.createNemoFile();
         obj.fillNemoFile(nemoFile);
-
     }
 
 }

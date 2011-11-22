@@ -159,6 +159,7 @@ public class InterferenceSaverTesting extends AbstractAWETest {
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testIfOneSectorNotFound() {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
@@ -177,6 +178,7 @@ public class InterferenceSaverTesting extends AbstractAWETest {
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testIfThereIsNoEnoughtProperties() {
         hashMap.remove("Serving Sector");

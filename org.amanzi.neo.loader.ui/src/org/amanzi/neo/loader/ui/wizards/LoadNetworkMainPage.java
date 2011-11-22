@@ -222,10 +222,8 @@ public class LoadNetworkMainPage extends LoaderPageNew<ConfigurationDataImpl> {
      */
     private String[] getRootItems() {
         members = new HashMap<String, Node>();
-
         try {
             IProjectModel projectModel = ProjectModel.getCurrentProjectModel();
-
             for (INetworkModel model : projectModel.findAllNetworkModels()) {
                 String id = model.getName();
                 members.put(id, model.getRootNode());
