@@ -127,9 +127,9 @@ public class NewNemo2xSaver extends AbstractDriveSaver {
 
             }
             if (!container.getHeaders().isEmpty() && container.getValues().isEmpty()) {
-                buildModel(container.getHeaders());
+                saveLine(container.getHeaders());
             } else if (!container.getHeaders().isEmpty() && !container.getValues().isEmpty()) {
-                buildModel(container.getValues());
+                saveLine(container.getValues());
             }
         } catch (DatabaseException e) {
             LOGGER.error("Error while saving element on line " + lineCounter, e);
@@ -182,11 +182,8 @@ public class NewNemo2xSaver extends AbstractDriveSaver {
         }
     }
 
-    /**
-     * @param headers
-     * @throws AWEException
-     */
-    private void buildModel(List<String> headers) throws AWEException {
+    @Override
+    protected void saveLine(List<String> headers) throws AWEException {
         String eventId = headers.get(0);
         NemoEvents event = NemoEvents.getEventById(eventId);
         String time = headers.get(1);

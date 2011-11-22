@@ -88,9 +88,9 @@ public class NewTemsSaver extends AbstractDriveSaver {
      * @param value
      * @throws AWEException
      */
-    private void buildModels(List<String> value) throws AWEException {
+    protected void saveLine(List<String> value) throws AWEException {
         params.clear();
-        Object time = getSynonymValuewithAutoparse(TIME, value);
+        Object time = getSynonymValueWithAutoparse(TIME, value);
         if (time == null) {
             LOGGER.error("There is no time value in row" + value);
             return;
@@ -110,21 +110,23 @@ public class NewTemsSaver extends AbstractDriveSaver {
         params.put(IDriveModel.LONGITUDE, longitude);
         params.put(MESSAGE_TYPE, message_type);
 
-        params.put(EVENT, getSynonymValuewithAutoparse(EVENT, value));
-        params.put(BCCH, getSynonymValuewithAutoparse(BCCH, value));
-        params.put(TCH, getSynonymValuewithAutoparse(TCH, value));
-        params.put(SC, getSynonymValuewithAutoparse(SC, value));
-        params.put(PN, getSynonymValuewithAutoparse(PN, value));
-        params.put(ECIO, getSynonymValuewithAutoparse(ECIO, value));
-        params.put(RSSI, getSynonymValuewithAutoparse(RSSI, value));
-        params.put(NewNetworkService.CELL_INDEX, getSynonymValuewithAutoparse(NewNetworkService.CELL_INDEX, value));
-        params.put(SECTOR_ID, getSynonymValuewithAutoparse(SECTOR_ID, value));
+        params.put(EVENT, getSynonymValueWithAutoparse(EVENT, value));
+        params.put(BCCH, getSynonymValueWithAutoparse(BCCH, value));
+        params.put(TCH, getSynonymValueWithAutoparse(TCH, value));
+        params.put(SC, getSynonymValueWithAutoparse(SC, value));
+        params.put(PN, getSynonymValueWithAutoparse(PN, value));
+        params.put(ECIO, getSynonymValueWithAutoparse(ECIO, value));
+        params.put(RSSI, getSynonymValueWithAutoparse(RSSI, value));
+        params.put(NewNetworkService.CELL_INDEX, getSynonymValueWithAutoparse(NewNetworkService.CELL_INDEX, value));
+        params.put(SECTOR_ID, getSynonymValueWithAutoparse(SECTOR_ID, value));
         params.put(MS, ms);
         removeEmpty(params);
         addedSynonyms();
+        collectRemainProperties(params, value);
         IDataElement createdMeasurment = addMeasurement(model, params);
         location = model.getLocation(createdMeasurment);
         commitTx();
+
         createVirtualModelElement(value, ms, time.toString(), event, timestamp);
 
     }
@@ -182,10 +184,10 @@ public class NewTemsSaver extends AbstractDriveSaver {
         int ec_io = 0;
         int measurement_count = 0;
         try {
-            channel = (Integer)getSynonymValuewithAutoparse(ALL_PILOT_SET_CHANNEL + 1, value);
-            pn_code = (Integer)getSynonymValuewithAutoparse(ALL_PILOT_SET_PN + 1, value);
-            ec_io = (Integer)getSynonymValuewithAutoparse(ALL_PILOT_SET_EC_IO + 1, value);
-            measurement_count = (Integer)getSynonymValuewithAutoparse(ALL_PILOT_SET_COUNT, value);
+            channel = (Integer)getSynonymValueWithAutoparse(ALL_PILOT_SET_CHANNEL + 1, value);
+            pn_code = (Integer)getSynonymValueWithAutoparse(ALL_PILOT_SET_PN + 1, value);
+            ec_io = (Integer)getSynonymValueWithAutoparse(ALL_PILOT_SET_EC_IO + 1, value);
+            measurement_count = (Integer)getSynonymValueWithAutoparse(ALL_PILOT_SET_COUNT, value);
         } catch (Exception e) {
             LOGGER.error("Failed to parse a field on line " + lineCounter + ": " + e.getMessage());
             return;
@@ -205,7 +207,7 @@ public class NewTemsSaver extends AbstractDriveSaver {
         }
         if (pn_code != this.previous_pn_code) {
             if (this.previous_pn_code >= 0) {
-                LOGGER.error("SERVER CHANGED");
+                LOGGER.info("SERVER CHANGED");
             }
             changed = true;
             this.previous_pn_code = pn_code;
@@ -216,9 +218,9 @@ public class NewTemsSaver extends AbstractDriveSaver {
                 // Delete invalid data, as you can have empty ec_io
                 // zero ec_io is correct, but empty ec_io is not
                 try {
-                    ec_io = (Integer)getSynonymValuewithAutoparse(ALL_PILOT_SET_EC_IO + i, value);
-                    channel = (Integer)getSynonymValuewithAutoparse(ALL_PILOT_SET_CHANNEL + i, value);
-                    pn_code = (Integer)getSynonymValuewithAutoparse(ALL_PILOT_SET_PN + i, value);
+                    ec_io = (Integer)getSynonymValueWithAutoparse(ALL_PILOT_SET_EC_IO + i, value);
+                    channel = (Integer)getSynonymValueWithAutoparse(ALL_PILOT_SET_CHANNEL + i, value);
+                    pn_code = (Integer)getSynonymValueWithAutoparse(ALL_PILOT_SET_PN + i, value);
                     String chan_code = StringUtils.EMPTY + channel + "\t" + pn_code;
                     if (!signals.containsKey(chan_code))
                         signals.put(chan_code, new float[2]);
@@ -262,7 +264,8 @@ public class NewTemsSaver extends AbstractDriveSaver {
 
     private void addedSynonyms() {
         for (String key : params.keySet()) {
-            if (key != NewAbstractService.NAME && key != NewAbstractService.TYPE && key != TIMESTAMP) {
+            if (key != NewAbstractService.NAME && key != NewAbstractService.TYPE && key != TIMESTAMP
+                    && fileSynonyms.containsKey(key)) {
                 addedDatasetSynonyms(model, DriveNodeTypes.M, key, getHeaderBySynonym(key));
             }
         }
@@ -320,7 +323,7 @@ public class NewTemsSaver extends AbstractDriveSaver {
             } else {
                 lineCounter++;
                 List<String> value = container.getValues();
-                buildModels(value);
+                saveLine(value);
             }
         } catch (DatabaseException e) {
             LOGGER.error("Error while saving element on line " + lineCounter, e);

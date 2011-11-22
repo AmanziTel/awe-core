@@ -132,7 +132,7 @@ public class NewRomesSaver extends AbstractDriveSaver {
             } else if (container.getValues().size() == headers.size()) {
                 lineCounter++;
                 List<String> value = container.getValues();
-                buildModel(value);
+                saveLine(value);
             }
         } catch (DatabaseException e) {
             LOGGER.error("Error while saving element on line " + lineCounter, e);
@@ -148,7 +148,7 @@ public class NewRomesSaver extends AbstractDriveSaver {
      * @param value
      * @throws AWEException
      */
-    private void buildModel(List<String> value) throws AWEException {
+    protected void saveLine(List<String> value) throws AWEException {
         String time = getValueFromRow(TIME, value);
         Long timestamp = defineTimestamp(workDate, time);
         String message_type = getValueFromRow(MESSAGE_TYPE, value);
@@ -179,6 +179,7 @@ public class NewRomesSaver extends AbstractDriveSaver {
         }
         addedSynonyms();
         removeEmpty(params);
+        collectRemainProperties(params, value);
         IDataElement existedLocation = checkSameLocation(params);
         if (existedLocation != null) {
             params.remove(IDriveModel.LATITUDE);

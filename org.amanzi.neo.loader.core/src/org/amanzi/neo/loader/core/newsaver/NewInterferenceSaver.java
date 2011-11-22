@@ -29,29 +29,27 @@ import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelType
 import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
- * @author Kondratneko_Vladislav
+ * @author Vladislav_Kondratenko
  */
-public class NewNeighboursSaver extends AbstractN2NSaver {
+public class NewInterferenceSaver extends AbstractN2NSaver {
     /*
      * neighbours
      */
-    public final static String NEIGHBOUR_SECTOR_CI = "neigh_sector_ci";
-    public final static String NEIGHBOUR_SECTOR_LAC = "neigh_sector_lac";
-    public final static String NEIGHBOUR_SECTOR_NAME = "neigh_sector_name";
-    public final static String SERVING_SECTOR_CI = "serv_sector_ci";
-    public final static String SERVING_SECTOR_LAC = "serv_sector_lac";
+    public final static String INTERFERE_SECTOR_NAME = "interfering_sector";
     public final static String SERVING_SECTOR_NAME = "serv_sector_name";
 
-    protected NewNeighboursSaver(INodeToNodeRelationsModel model, INetworkModel networkModel, ConfigurationDataImpl data,
+    protected NewInterferenceSaver(INodeToNodeRelationsModel model, INetworkModel networkModel, ConfigurationDataImpl data,
             GraphDatabaseService service) {
         super(model, networkModel, data, service);
     }
 
-    /**
-     * 
-     */
-    public NewNeighboursSaver() {
+    public NewInterferenceSaver() {
         super();
+    }
+
+    @Override
+    protected INodeToNodeRelationsModel getNode2NodeModel(String name) throws AWEException {
+        return networkModel.getNodeToNodeModel(N2NRelTypes.INTERFERENCE_MATRIX, name, NetworkElementNodeType.SECTOR);
     }
 
     @Override
@@ -68,7 +66,7 @@ public class NewNeighboursSaver extends AbstractN2NSaver {
      */
     @Override
     protected void saveLine(List<String> row) throws AWEException {
-        String neighbSectorName = getValueFromRow(NEIGHBOUR_SECTOR_NAME, row);
+        String neighbSectorName = getValueFromRow(INTERFERE_SECTOR_NAME, row);
         String serviceNeighName = getValueFromRow(SERVING_SECTOR_NAME, row);
         Map<String, Object> properties = new HashMap<String, Object>();
         properties.put(NewAbstractService.TYPE, NetworkElementNodeType.SECTOR.getId());
@@ -77,7 +75,7 @@ public class NewNeighboursSaver extends AbstractN2NSaver {
         properties.put(NewAbstractService.NAME, serviceNeighName);
         IDataElement findedServiceSector = networkModel.findElement(properties);
         for (String head : headers) {
-            if (fileSynonyms.containsValue(head) && !fileSynonyms.get(NEIGHBOUR_SECTOR_NAME).equals(head)
+            if (fileSynonyms.containsValue(head) && !fileSynonyms.get(INTERFERE_SECTOR_NAME).equals(head)
                     && !fileSynonyms.get(SERVING_SECTOR_NAME).equals(head)) {
                 properties.put(head.toLowerCase(), getSynonymValueWithAutoparse(head, row));
             }
@@ -87,11 +85,6 @@ public class NewNeighboursSaver extends AbstractN2NSaver {
         } else {
             LOGGER.warn("cann't find service or neighbour sector on line " + lineCounter);
         }
-    }
-
-    @Override
-    protected INodeToNodeRelationsModel getNode2NodeModel(String name) throws AWEException {
-        return networkModel.getNodeToNodeModel(N2NRelTypes.NEIGHBOUR, name, NetworkElementNodeType.SECTOR);
     }
 
 }

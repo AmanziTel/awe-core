@@ -54,7 +54,7 @@ public class RomesDriveModelSaverTest extends AbstractAWETest {
         saver = new RomesDriveModelSaver<BaseTransferData>();
         project = NeoServiceFactory.getInstance().getNewProjectService().getProject(projectName);
         rootDataset = NeoServiceFactory.getInstance().getNewDatasetService()
-                .getDataset(project, rootName, DatasetTypes.DRIVE, DriveTypes.ROMES);
+                .getDataset(project, rootName, DatasetTypes.DRIVE, DriveTypes.ROMES, DriveNodeTypes.M);
     }
 
     @After
