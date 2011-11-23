@@ -1,7 +1,6 @@
 package org.amanzi.awe.console;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintStream;
 
 import org.apache.log4j.Logger;
@@ -18,15 +17,18 @@ import org.osgi.framework.BundleContext;
  * The activator class controls the plug-in life cycle
  */
 public class AweConsolePlugin extends AbstractUIPlugin {
+    
     private static final Logger LOGGER = Logger.getLogger(AweConsolePlugin.class);
-	// The plug-in ID
+
+    // The plug-in ID
 	public static final String PLUGIN_ID = "org.amanzi.awe.console";
-    /** String DEFAULT_CHARSET field */
+    
+	/** String DEFAULT_CHARSET field */
     public static final String DEFAULT_CHARSET = "UTF-8";
+    
     /*
      * Name of console
      */
-    
     private static String CONSOLE_NAME = "AWE Console";
     
     
@@ -39,33 +41,29 @@ public class AweConsolePlugin extends AbstractUIPlugin {
     /*
      * Is console visible
      */
-    
     private static boolean isVisible = false;
     
     /*
      * Console for NeoLoaderPlugin
      */
-    
     private MessageConsole pluginConsole;
     
     /*
      * Console's output
      */
-    
     private MessageConsoleStream consoleStream;
 
     
     /*
      * Logging properties
      */
-    public static boolean debug = false;
+    private static boolean debug = false;
     private static boolean verbose = true;  
     
 
 	// The shared instance
 	private static AweConsolePlugin plugin;
 	
-
 
 	/*
 	 * (non-Javadoc)
@@ -146,7 +144,7 @@ public class AweConsolePlugin extends AbstractUIPlugin {
      * @param line
      */
     
-    public static void debug(String line) {
+    public void debug(String line) {
         if (loggingPossible) {
             if (debug) {
                 getDefault().printToStream(line);
@@ -161,15 +159,13 @@ public class AweConsolePlugin extends AbstractUIPlugin {
      * 
      * @param line
      */
-    
-    public static void info(String line) {
+    public void info(String line) {
         if (loggingPossible) {
             if (verbose || debug) {
                 getDefault().printToStream(line);
             }
         } else {
-            //LOGGER.info(line);
-            System.out.println(line);
+            LOGGER.info(line);
         }
     }
     
@@ -178,13 +174,11 @@ public class AweConsolePlugin extends AbstractUIPlugin {
      * 
      * @param line
      */
-    
     public static void notify(String line) {
         if (loggingPossible) {
             getDefault().printToStream(line);
         } else {
-            //LOGGER.warn(line);
-            System.out.println(line);
+            LOGGER.warn(line);
         }
     }
     
@@ -193,12 +187,11 @@ public class AweConsolePlugin extends AbstractUIPlugin {
      * 
      * @param line
      */
-    
     public static void error(String line) {
         if (loggingPossible) {
             getDefault().printToStream(line);
         } else {
-            System.err.println(line);
+            LOGGER.error(line);
         }
     }
     
@@ -212,16 +205,10 @@ public class AweConsolePlugin extends AbstractUIPlugin {
         if (loggingPossible) {
             getDefault().printException(e);
         } else {
-            e.printStackTrace(System.out);
+            LOGGER.error(e.getMessage(), e);
         }
     }
-    public OutputStream getPrintStream(){
-        if (loggingPossible){
-            pluginConsole.activate();
-            return consoleStream;
-        }
-        return System.out;
-    }
+    
     /** Print a message to Console */
     private boolean printToStream(final String line) {
         if (loggingPossible) {

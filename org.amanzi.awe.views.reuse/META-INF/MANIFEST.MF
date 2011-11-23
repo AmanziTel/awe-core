@@ -7,7 +7,8 @@ Bundle-Activator: org.amanzi.awe.views.reuse.ReusePlugin
 Require-Bundle: net.refractions.udig.project.ui;bundle-version="1.1.1",
  org.jfree;bundle-version="1.0.0",
  org.amanzi.neo.services;bundle-version="1.0.0",
- org.amanzi.neo.services.ui;bundle-version="1.0.0"
+ org.amanzi.neo.services.ui;bundle-version="1.0.0",
+ org.amanzi.awe.console;bundle-version="1.0.0"
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .
 Export-Package: org.amanzi.awe.views.reuse,

@@ -12,26 +12,26 @@
  */
 package org.amanzi.awe.render.network;
 
-import org.eclipse.core.runtime.Plugin;
+import org.amanzi.awe.console.AweConsolePlugin;
 import org.osgi.framework.BundleContext;
 
 /**
  * The activator class controls the plug-in life cycle
  */
-public class Activator extends Plugin {
+public class NetworkRendererPlugin extends AweConsolePlugin {
 
 	// The plug-in ID
 	public static final String PLUGIN_ID = "org.amanzi.awe.render.network";
 
 	// The shared instance
-	private static Activator plugin;
+	private static NetworkRendererPlugin plugin;
 
     // private Transaction currentTransaction;
 	
 	/**
 	 * The constructor
 	 */
-	public Activator() {
+	public NetworkRendererPlugin() {
 	}
 
 	/**
@@ -57,7 +57,7 @@ public class Activator extends Plugin {
 	/**
 	 * @return the shared instance
 	 */
-	public static Activator getDefault() {
+	public static NetworkRendererPlugin getDefault() {
 		return plugin;
 	}
 

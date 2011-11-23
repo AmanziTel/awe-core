@@ -13,10 +13,10 @@
 
 package org.amanzi.neo.loader.ui;
 
+import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.loader.core.preferences.PreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -27,7 +27,7 @@ import org.osgi.framework.BundleContext;
  * @author lagutko_n
  * @since 1.0.0
  */
-public class NeoLoaderPlugin extends AbstractUIPlugin {
+public class NeoLoaderPlugin extends AweConsolePlugin {
 
     /*
      * Plugin variable

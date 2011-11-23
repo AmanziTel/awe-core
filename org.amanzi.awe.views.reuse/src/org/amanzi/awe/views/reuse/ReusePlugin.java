@@ -12,15 +12,15 @@
  */
 package org.amanzi.awe.views.reuse;
 
+import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.model.distribution.impl.DistributionManager;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
 /**
  * The activator class controls the plug-in life cycle
  */
-public class ReusePlugin extends AbstractUIPlugin {
+public class ReusePlugin extends AweConsolePlugin {
 
 	// The plug-in ID
     public static final String PLUGIN_ID = "org.amanzi.awe.views.reuse";
