@@ -28,15 +28,15 @@ import org.amanzi.neo.services.model.IRenderableModel;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 
-public class NewGeoResource extends IGeoResource {
+public class GeoResource extends IGeoResource {
 
-    private static Logger LOGGER = Logger.getLogger(NewGeoResource.class);
+    private static Logger LOGGER = Logger.getLogger(GeoResource.class);
 
     private IRenderableModel source;
     private IService service;
     private URL url;
 
-    protected NewGeoResource(IService service, IRenderableModel source) {
+    protected GeoResource(IService service, IRenderableModel source) {
         // validate
         if (service == null) {
             throw new IllegalArgumentException("Geo service is null.");
@@ -74,7 +74,7 @@ public class NewGeoResource extends IGeoResource {
 
     @Override
     public IGeoResourceInfo createInfo(IProgressMonitor monitor) throws IOException {
-    	return new NewGeoResourceInfo(this.source, monitor);
+    	return new GeoResourceInfo(this.source, monitor);
     }
 
     @Override

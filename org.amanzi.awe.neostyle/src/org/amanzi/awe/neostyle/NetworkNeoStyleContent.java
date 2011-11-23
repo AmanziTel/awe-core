@@ -20,8 +20,8 @@ import java.net.URL;
 import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.project.StyleContent;
 
-import org.amanzi.awe.models.catalog.neo.NewGeoResource;
 import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
+import org.amanzi.awe.models.catalog.neo.GeoResource;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.ui.IMemento;
@@ -90,8 +90,8 @@ public class NetworkNeoStyleContent extends StyleContent {
 
     @Override
     public Object createDefaultStyle(IGeoResource resource, Color colour, IProgressMonitor monitor) throws IOException {
-        if (resource.canResolve(NewGeoResource.class)) {
-            NewGeoResource res = resource.resolve(NewGeoResource.class, monitor);
+        if (resource.canResolve(GeoResource.class)) {
+            GeoResource res = resource.resolve(GeoResource.class, monitor);
             if (res.canResolve(INetworkModel.class)) {
                 return createDefaultNetworkStyle();
             }

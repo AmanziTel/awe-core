@@ -24,7 +24,7 @@ import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.internal.render.impl.RendererImpl;
 import net.refractions.udig.project.render.RenderException;
 
-import org.amanzi.awe.models.catalog.neo.NewGeoResource;
+import org.amanzi.awe.models.catalog.neo.GeoResource;
 import org.amanzi.awe.neostyle.BaseNeoStyle;
 import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
@@ -119,7 +119,7 @@ public class AbstractRenderer extends RendererImpl {
 	public void render(Graphics2D destination, IProgressMonitor monitor)
 			throws RenderException {
 		ILayer layer = getContext().getLayer();
-		IGeoResource resource = layer.findGeoResource(NewGeoResource.class);
+		IGeoResource resource = layer.findGeoResource(GeoResource.class);
 		// c+v
 		layer.getMap().getBlackboard().get(BLACKBOARD_NODE_LIST);
 		if (resource != null) {
