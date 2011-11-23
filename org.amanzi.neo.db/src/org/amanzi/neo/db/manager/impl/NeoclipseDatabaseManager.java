@@ -15,8 +15,6 @@ package org.amanzi.neo.db.manager.impl;
 
 import java.util.Map;
 
-import org.amanzi.neo.db.manager.IDatabaseManager;
-import org.amanzi.neo.db.manager.events.IDatabaseEventListener;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.neoclipse.Activator;
 import org.neo4j.neoclipse.graphdb.GraphDbServiceManager;
@@ -28,7 +26,7 @@ import org.neo4j.neoclipse.graphdb.GraphRunnable;
  * @author gerzog
  * @since 1.0.0
  */
-public class NeoclipseDatabaseManager implements IDatabaseManager {
+public class NeoclipseDatabaseManager extends AbstractDatabaseManager {
     
     /**
      * Neoclipse Task to get Database Service
@@ -93,12 +91,12 @@ public class NeoclipseDatabaseManager implements IDatabaseManager {
     }
 
     @Override
-    public void commit() {
+    public void commitMainTransaction() {
         neoclipseManager.commit();
     }
 
     @Override
-    public void rollback() {
+    public void rollbackMainTransaction() {
         neoclipseManager.rollback();
     }
 
@@ -115,14 +113,6 @@ public class NeoclipseDatabaseManager implements IDatabaseManager {
     @Override
     public void shutdown() {
         neoclipseManager.shutdownGraphDbService();
-    }
-
-    @Override
-    public void addDatabaseEventListener(IDatabaseEventListener listener) {
-    }
-
-    @Override
-    public void removeDatabaseEventListener(IDatabaseEventListener listener) {
     }
 
 }

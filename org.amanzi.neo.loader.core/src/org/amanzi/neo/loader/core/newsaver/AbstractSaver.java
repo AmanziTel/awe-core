@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.amanzi.neo.db.manager.DatabaseManagerFactory;
+import org.amanzi.neo.db.manager.IDatabaseManager;
 import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceManager;
 import org.amanzi.neo.services.enums.INodeType;
@@ -30,7 +31,6 @@ import org.amanzi.neo.services.synonyms.ExportSynonymsManager;
 import org.amanzi.neo.services.synonyms.ExportSynonymsService.ExportSynonymType;
 import org.amanzi.neo.services.synonyms.ExportSynonymsService.ExportSynonyms;
 import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Transaction;
 
 /**
  * contains common methods for all savers
@@ -52,21 +52,17 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
     private static final String TRUE = "true";
     private static final String FALSE = "false";
 
-  
-
-    protected AbstractSaver(GraphDatabaseService service) {
-        if (service != null) {
-            database = service;
-        } else {
-            setDbInstance();
-        }
-    }
-
-    /**
-     * 
+    /*
+     * Database Manager
      */
-    public AbstractSaver() {
-        super();
+    private static IDatabaseManager dbManager = DatabaseManagerFactory.getDatabaseManager();
+  
+    protected AbstractSaver(GraphDatabaseService service) {
+        
+    }
+    
+    protected AbstractSaver() {
+        
     }
 
     /**
@@ -176,27 +172,11 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
      * action threshold for commit
      */
     private int commitTxCount;
-    /**
-     * graph database instance
-     */
-    private GraphDatabaseService database;
-    /**
-     * top level trasnaction
-     */
-    private Transaction tx;
+    
     /**
      * transactions count
      */
     private int actionCount;
-
-    /**
-     * Initialize database;
-     */
-    protected void setDbInstance() {
-        if (database == null) {
-            database = DatabaseManagerFactory.getDatabaseManager().getDatabaseService();
-        }
-    }
 
     /**
      * set how much transactions should gone before reopening
@@ -212,24 +192,15 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
      * transaction more than commitTxCount and open new;
      */
     protected void commitTx() {
-        actionCount++;
-        if (actionCount > commitTxCount) {
-            tx.success();
-            tx.finish();
-            tx = null;
+        if (++actionCount > commitTxCount) {
+            dbManager.commitThreadTransaction();
             actionCount = 0;
         }
-        if (tx == null) {
-            tx = database.beginTx();
-        }
-
     }
 
     protected void rollbackTx() {
-        tx.failure();
+        dbManager.rollbackThreadTransaction();
         actionCount = 0;
-        tx.finish();
-        tx = null;
     }
 
     @Override
@@ -238,14 +209,17 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
             dataModel.finishUp();
         }
         saveSynonym();
-        tx.success();
-        tx.finish();
-        DatabaseManagerFactory.getDatabaseManager().commit();
+        dbManager.finishThreadTransaction();
+        dbManager.commitMainTransaction();
         actionCount = 0;
     }
 
     protected IProjectModel getActiveProject() throws AWEException {
         return ProjectModel.getCurrentProjectModel();
-
+    }
+    
+    @Override
+    public void init(T3 configuration, T2 dataElement) {
+        DatabaseManagerFactory.getDatabaseManager().startThreadTransaction();
     }
 }

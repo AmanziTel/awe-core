@@ -374,7 +374,7 @@ public class LoadDatasetMainPage extends LoaderPageNew<ConfigurationDataImpl> {
         String[] result = dataset.keySet().toArray(new String[] {});
         Arrays.sort(result);
         
-        DatabaseManagerFactory.getDatabaseManager().commit();
+        DatabaseManagerFactory.getDatabaseManager().commitMainTransaction();
         
         return result;
     }

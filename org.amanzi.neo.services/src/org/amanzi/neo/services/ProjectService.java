@@ -126,8 +126,8 @@ public class ProjectService extends NewAbstractService {
         } finally {
             tx.finish();
         }
-        // TODO: Fake
-        DatabaseManagerFactory.getDatabaseManager().commit();
+
+        DatabaseManagerFactory.getDatabaseManager().commitMainTransaction();
         LOGGER.debug("Finished createProject");
         return result;
     }

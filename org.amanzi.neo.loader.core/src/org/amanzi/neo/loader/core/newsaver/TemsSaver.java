@@ -292,9 +292,10 @@ public class TemsSaver extends AbstractDriveSaver {
 
     @Override
     public void init(ConfigurationDataImpl configuration, CSVContainer dataElement) {
+        super.init(configuration, dataElement);
+        
         Map<String, Object> rootElement = new HashMap<String, Object>();
         preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.DRIVE);
-        setDbInstance();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
         commitTx();
         try {

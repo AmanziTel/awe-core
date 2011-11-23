@@ -78,12 +78,32 @@ public interface IDatabaseManager {
      * Commits all Transactions
      * 
      */
-    public void commit();
+    public void commitMainTransaction();
 
     /**
      * Rolls back all Transactions
      */
-    public void rollback();
+    public void rollbackMainTransaction();
+    
+    /**
+     * Start transaction in current Thread
+     */
+    public void startThreadTransaction();
+    
+    /**
+     * Commit transaction in current Thread
+     */
+    public void commitThreadTransaction();
+    
+    /**
+     * Rollsback transaction in current Thread
+     */
+    public void rollbackThreadTransaction();
+    
+    /**
+     * Finishes transaction in current Thread
+     */
+    public void finishThreadTransaction();
     
     /**
      * Returns type of Database Connection

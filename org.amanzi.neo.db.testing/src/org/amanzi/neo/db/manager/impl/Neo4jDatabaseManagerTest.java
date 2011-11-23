@@ -301,7 +301,7 @@ public class Neo4jDatabaseManagerTest {
     public void checkBeforeAndAfterFullCommitEvent() {
         Neo4jDatabaseManager dbManager = getMockDbManagerForEvents(EventActionType.FULL_COMMIT, EventType.BEFORE_FULL_COMMIT, EventType.AFTER_FULL_COMMIT);
         
-        dbManager.commit();
+        dbManager.commitMainTransaction();
         
         context.assertIsSatisfied();
     }
@@ -310,7 +310,7 @@ public class Neo4jDatabaseManagerTest {
     public void checkBeforeAndAfterFullRollbackEvent() {
         Neo4jDatabaseManager dbManager = getMockDbManagerForEvents(EventActionType.FULL_ROLLBACK, EventType.BEFORE_FULL_ROLLBACK, EventType.AFTER_FULL_ROLLBACK);
         
-        dbManager.rollback();
+        dbManager.rollbackMainTransaction();
         
         context.assertIsSatisfied();
     }

@@ -14,14 +14,10 @@
 package org.amanzi.neo.db.manager.impl;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.amanzi.neo.db.manager.IDatabaseManager;
 import org.amanzi.neo.db.manager.events.DatabaseEvent.EventType;
-import org.amanzi.neo.db.manager.events.DatabaseEvent;
-import org.amanzi.neo.db.manager.events.IDatabaseEventListener;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
@@ -33,7 +29,7 @@ import org.neo4j.kernel.EmbeddedReadOnlyGraphDatabase;
  * @author gerzog
  * @since 1.0.0
  */
-public class Neo4jDatabaseManager implements IDatabaseManager {
+public class Neo4jDatabaseManager extends AbstractDatabaseManager {
 
     private final static Logger LOGGER = Logger.getLogger(Neo4jDatabaseManager.class);
 
@@ -67,11 +63,6 @@ public class Neo4jDatabaseManager implements IDatabaseManager {
      */
     private GraphDatabaseService dbService;
     
-    /*
-     * Listeners for Database Events       
-     */
-    private static ArrayList<IDatabaseEventListener> listeners = new ArrayList<IDatabaseEventListener>();
-
     /**
      * Full constructor - need on input all parameters of Database
      * 
@@ -168,7 +159,7 @@ public class Neo4jDatabaseManager implements IDatabaseManager {
     }
 
     @Override
-    public void commit() {
+    public void commitMainTransaction() {
         LOGGER.info("Commit with Database Manager");
         
         fireEvent(EventType.BEFORE_FULL_COMMIT);
@@ -178,7 +169,7 @@ public class Neo4jDatabaseManager implements IDatabaseManager {
     }
 
     @Override
-    public void rollback() {
+    public void rollbackMainTransaction() {
         LOGGER.info("Commit with Database Manager");
         
         fireEvent(EventType.BEFORE_FULL_ROLLBACK);
@@ -259,25 +250,21 @@ public class Neo4jDatabaseManager implements IDatabaseManager {
     }
 
     @Override
-    public void addDatabaseEventListener(IDatabaseEventListener listener) {
-        listeners.add(listener);
-    }
+	public void startThreadTransaction() {
+		// TODO Auto-generated method stub
+		
+	}
 
-    @Override
-    public void removeDatabaseEventListener(IDatabaseEventListener listener) {
-        listeners.remove(listener);
-    }
-    
-    /**
-     * Fires database event for listeners
-     *
-     * @param eventType type of event
-     */
-    private void fireEvent(EventType eventType) {
-        DatabaseEvent event = new DatabaseEvent(eventType);
-        for (IDatabaseEventListener listener : listeners) {
-            listener.onDatabaseEvent(event);
-        }
-    }
+	@Override
+	public void commitThreadTransaction() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void rollbackThreadTransaction() {
+		// TODO Auto-generated method stub
+		
+	}
 
 }

@@ -69,8 +69,8 @@ public class Nemo1xSaver extends Nemo2xSaver {
 
     @Override
     public void init(ConfigurationDataImpl configuration, CSVContainer dataElement) {
+        super.init(configuration, dataElement);
         preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.DRIVE);
-        setDbInstance();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
         commitTx();
         try {

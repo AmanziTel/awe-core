@@ -42,7 +42,6 @@ public abstract class AbstractN2NSaver extends AbstractCSVSaver<NetworkModel> {
             GraphDatabaseService service) {
         super(service);
         initSynonyms();
-        setDbInstance();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
         if (model != null) {
             n2nModel = model;
@@ -99,9 +98,9 @@ public abstract class AbstractN2NSaver extends AbstractCSVSaver<NetworkModel> {
 
     @Override
     public void init(ConfigurationDataImpl configuration, CSVContainer dataElement) {
+        super.init(configuration, dataElement);
         Map<String, Object> rootElement = new HashMap<String, Object>();
         initSynonyms();
-        setDbInstance();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
         commitTx();
         try {

@@ -235,7 +235,7 @@ public class LoadNetworkMainPage extends LoaderPageNew<ConfigurationDataImpl> {
         String[] result = members.keySet().toArray(new String[] {});
         Arrays.sort(result);
         
-        DatabaseManagerFactory.getDatabaseManager().commit();
+        DatabaseManagerFactory.getDatabaseManager().commitMainTransaction();
         
         return result;
     }

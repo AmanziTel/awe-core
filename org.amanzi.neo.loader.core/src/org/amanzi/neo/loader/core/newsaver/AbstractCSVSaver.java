@@ -121,11 +121,10 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
 
     @Override
     public void init(ConfigurationDataImpl configuration, CSVContainer dataElement) {
+        super.init(configuration, dataElement);
         preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.NETWORK);
         columnSynonyms = new HashMap<String, Integer>();
-        setDbInstance();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
-        commitTx();
         try {
             networkModel = getActiveProject().getNetwork(
                     configuration.getDatasetNames().get(ConfigurationDataImpl.NETWORK_PROPERTY_NAME));
