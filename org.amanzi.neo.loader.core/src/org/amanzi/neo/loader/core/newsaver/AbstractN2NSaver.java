@@ -144,5 +144,6 @@ public abstract class AbstractN2NSaver extends AbstractCSVSaver<NetworkModel> {
     protected abstract INodeToNodeRelationsModel getNode2NodeModel(String name) throws AWEException;
 
     //TODO: LN: comments
+    //TODO: LN: this method is never used 
     protected abstract void initSynonyms();
 }

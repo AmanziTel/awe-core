@@ -182,11 +182,6 @@ public class Nemo1xSaver extends Nemo2xSaver {
         if (location != null) {
             List<IDataElement> locList = new LinkedList<IDataElement>();
             locList.add(location);
-            //TODO: LN: it's not a better way to save locations
-            //location already created by addMeasurement method
-            //so you should refactor addMeasurement to support 
-            //situation when location have many measurement
-            //but not to do something that called in Russian as 'костыль'
             model.linkNode(createdElement, locList, DriveRelationshipTypes.LOCATION);
         } else {
             IDataElement location = model.getLocation(createdElement);

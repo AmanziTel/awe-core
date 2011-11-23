@@ -399,7 +399,6 @@ public class Nemo2xSaver extends AbstractDriveSaver {
      * @return the version
      */
     protected String getVersion() {
-        //TODO: LN: string to const
         return "2.01";
     }
 }

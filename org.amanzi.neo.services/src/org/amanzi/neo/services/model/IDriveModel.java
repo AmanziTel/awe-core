@@ -39,6 +39,7 @@ public interface IDriveModel extends ICorrelatableModel, IDataModel, IRenderable
      */
     public Iterable<IDriveModel> getVirtualDatasets();
 
+    //TODO: LN: comments
     public IDriveType getDriveType();
     
     /**
@@ -184,6 +185,7 @@ public interface IDriveModel extends ICorrelatableModel, IDataModel, IRenderable
      */
     public Iterable<IDataElement> getMeasurements(String filename);
 
+    //TODO: LN: comments
     /**
      * @return an iterator over FILE nodes
      */

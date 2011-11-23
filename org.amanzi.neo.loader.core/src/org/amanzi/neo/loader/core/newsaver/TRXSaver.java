@@ -117,7 +117,6 @@ public class TRXSaver extends AbstractCSVSaver<NetworkModel> {
 
         Integer arfcn = null;
         for (int i = 0; i < 63; i++) {
-            //TODO: LN: move ARFCN + " " + (i + 1) to method and use StringBuilder
             arfcn = (Integer)getSynonymValueWithAutoparse(ARFCN + " " + (i + 1), value);
             if (arfcn != null) {
                 arfcnArray[i] = arfcn;

@@ -186,10 +186,10 @@ public class NewNetworkPropertySourceEditable extends NodePropertySource impleme
                         if (result != SWT.OK) {
                             return;
                         }
-        			}
-        			showMessageBox = true;
-        		}
-        	}
+                    }
+                    showMessageBox = true;
+                }
+            }
         } catch (AWEException e) {
             MessageDialog.openError(null, TITLE_COULD_NOT_CHANGE_PROPERTY, TITLE_COULD_NOT_CHANGE_PROPERTY + "\n" + e);
         }

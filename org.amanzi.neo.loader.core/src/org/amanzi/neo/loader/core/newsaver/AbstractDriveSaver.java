@@ -35,7 +35,6 @@ import org.neo4j.graphdb.GraphDatabaseService;
  * 
  * @author Vladislav_Kondratenko
  */
-//TODO: LN: why DriveModel, but not IDriveModel?
 public abstract class AbstractDriveSaver extends AbstractCSVSaver<DriveModel> {
     private static final Logger LOGGER = Logger.getLogger(AbstractDriveSaver.class);
     

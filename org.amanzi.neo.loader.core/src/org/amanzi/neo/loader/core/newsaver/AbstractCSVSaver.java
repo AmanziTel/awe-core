@@ -276,7 +276,6 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
      * @param row
      * @param synonymssaedwd
      */
-    //TODO: LN: what this method do? 
     protected void resetRowValueBySynonym(List<String> row, String synonym) {
         row.set(columnSynonyms.get(fileSynonyms.get(synonym)), null);
     }

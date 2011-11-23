@@ -31,7 +31,7 @@ public class InterferenceSaver extends AbstractN2NSaver {
     /*
      * neighbours
      */
-    public final static String INTERFERING_SECTOR_NAME = "interfering_sector";
+    public final static String INTERFERE_SECTOR_NAME = "interfering_sector";
     public final static String SERVING_SECTOR_NAME = "serv_sector_name";
 
     protected InterferenceSaver(INodeToNodeRelationsModel model, INetworkModel networkModel, ConfigurationDataImpl data,
@@ -62,7 +62,7 @@ public class InterferenceSaver extends AbstractN2NSaver {
 
     @Override
     protected String getNeighborElementName() {
-        return INTERFERING_SECTOR_NAME;
+        return INTERFERE_SECTOR_NAME;
     }
 
 }

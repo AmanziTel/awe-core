@@ -140,7 +140,6 @@ public class FrequencyConstraintSaver extends AbstractN2NSaver {
         return requiredTrx;
     }
 
-    //TODO: LN: comments
     /**
      *
      */
@@ -169,13 +168,11 @@ public class FrequencyConstraintSaver extends AbstractN2NSaver {
         RELATIONS_PROPERTIES.put(FR_SCALLING_FACTOR, getSynonymValueWithAutoparse(FR_SCALLING_FACTOR, row));
     }
 
-    //TODO: LN: why null? 
     @Override
     protected String getSourceElementName() {
         return null;
     }
 
-    //TODO: LN: why null? 
     @Override
     protected String getNeighborElementName() {
         return null;

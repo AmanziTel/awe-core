@@ -331,7 +331,6 @@ public class TemsSaver extends AbstractDriveSaver {
         virtualModel.addFile(file);
     }
 
-    //TODO: LN: duplicated logic in saveElement
     @Override
     public void saveElement(CSVContainer dataElement) {
         commitTx();

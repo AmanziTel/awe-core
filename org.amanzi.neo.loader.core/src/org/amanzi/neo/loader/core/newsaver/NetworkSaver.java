@@ -202,7 +202,6 @@ public class NetworkSaver extends AbstractCSVSaver<NetworkModel> {
                 findedElement = networkModel.createElement(rootDataElement, mapProperty);
             }
         }
-        //TODO: LN: WTF? 
         addSynonyms(networkModel, mapProperty);
         resetRowValueBySynonym(row, type);
         return findedElement;

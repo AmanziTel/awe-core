@@ -243,7 +243,7 @@ public class RomesSaver extends AbstractDriveSaver {
 
             } catch (Exception e) {
                 LOGGER.error(String.format("Can't parse time: %s", time));
-                //TODO: LN: why exception didn't logged?
+
             }
         }
         return 0l;
