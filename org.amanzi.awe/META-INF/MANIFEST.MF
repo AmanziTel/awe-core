@@ -6,8 +6,7 @@ Bundle-Version: 1.1.0.qualifier
 Bundle-Activator: org.amanzi.awe.Activator
 Bundle-Vendor: amanzi.org
 Require-Bundle: net.refractions.udig.ui,
- net.refractions.udig.catalog,
- org.neo4j.neoclipse;bundle-version="1.4.0";resolution:=optional
+ net.refractions.udig.catalog
 Bundle-ActivationPolicy: lazy
 Export-Package: org.amanzi.awe
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6

@@ -4,9 +4,7 @@ Bundle-Name: Ui
 Bundle-SymbolicName: org.amanzi.neo.services.ui
 Bundle-Version: 1.0.0.qualifier
 Require-Bundle: org.eclipse.ui,
- org.eclipse.core.runtime,
- org.amanzi.neo.services;bundle-version="1.0.0",
- net.refractions.udig.libs;bundle-version="1.1.1"
+ org.amanzi.neo.services;bundle-version="1.0.0"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: org.amanzi.neo.services.ui.utils

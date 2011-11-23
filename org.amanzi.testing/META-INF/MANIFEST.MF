@@ -5,10 +5,9 @@ Bundle-SymbolicName: org.amanzi.testing
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: amanzi.org
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Require-Bundle: org.junit4;bundle-version="4.3.1",
- org.amanzi.log4j;bundle-version="1.2.12",
- org.amanzi.neo.db;bundle-version="1.0.0",
- org.neo4j;bundle-version="1.4.1";visibility:=reexport
+Require-Bundle: org.junit4;bundle-version="4.3.1";visibility:=reexport,
+ org.neo4j;bundle-version="1.4.1";visibility:=reexport,
+ org.amanzi.neo.db;bundle-version="1.1.0"
 Export-Package: bsh,
  net.sf.cglib.asm,
  net.sf.cglib.asm.attrs,

@@ -4,11 +4,9 @@ Bundle-Name: Drive
 Bundle-SymbolicName: org.amanzi.awe.neostyle;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.amanzi.awe.neostyle.NeoStylePlugin
-Require-Bundle: org.eclipse.core.runtime,
- net.refractions.udig.project.ui,
+Require-Bundle: net.refractions.udig.project.ui,
  net.refractions.udig.style,
  org.amanzi.awe.catalog.neo,
- org.amanzi.awe.ui;bundle-version="1.0.0",
  org.amanzi.neo.services;bundle-version="1.0.0"
 Bundle-ActivationPolicy: lazy
 Eclipse-ExtensibleAPI: true

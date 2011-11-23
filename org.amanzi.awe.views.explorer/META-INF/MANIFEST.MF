@@ -4,12 +4,8 @@ Bundle-Name: Explorer
 Bundle-SymbolicName: org.amanzi.awe.views.explorer;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Require-Bundle: org.eclipse.core.runtime,
- org.eclipse.gef,
+Require-Bundle: org.eclipse.gef,
  net.refractions.udig.project.edit,
- org.eclipse.ui.cheatsheets,
- org.eclipse.core.expressions,
- com.lowagie.itext,
  org.amanzi.neo.services;bundle-version="1.0.0",
  net.refractions.udig.project.ui
 Bundle-ActivationPolicy: lazy

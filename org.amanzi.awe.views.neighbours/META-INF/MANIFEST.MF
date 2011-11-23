@@ -5,11 +5,8 @@ Bundle-SymbolicName: org.amanzi.awe.views.neighbours; singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.amanzi.awe.views.neighbours.NeighboursPlugin
 Bundle-Vendor: amanzi.org
-Require-Bundle: org.eclipse.core.runtime,
- org.amanzi.neo.services;bundle-version="1.0.0",
- org.eclipse.jface;bundle-version="3.6.0",
+Require-Bundle: org.amanzi.neo.services;bundle-version="1.0.0",
  org.eclipse.ui;bundle-version="3.6.0",
- org.amanzi.awe;bundle-version="1.1.0",
  org.neo4j;bundle-version="1.4.1"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ActivationPolicy: lazy

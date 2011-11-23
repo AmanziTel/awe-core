@@ -5,11 +5,10 @@ Bundle-SymbolicName: org.amanzi.awe.render.network;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.amanzi.awe.render.network.Activator
 Bundle-Vendor: amanzi.org
-Require-Bundle: org.eclipse.core.runtime,
- org.eclipse.ui,
- net.refractions.udig.project,
+Require-Bundle: net.refractions.udig.project,
  org.amanzi.awe.catalog.neo,
  org.amanzi.awe.neostyle;bundle-version="1.0.0",
- org.amanzi.neo.services;bundle-version="1.0.0"
+ org.amanzi.neo.services;bundle-version="1.0.0",
+ org.eclipse.ui;bundle-version="3.7.0"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6

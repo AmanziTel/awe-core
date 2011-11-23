@@ -3,9 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Log4j
 Bundle-SymbolicName: org.amanzi.log4j;singleton:=true
 Bundle-Version: 1.2.12
-Require-Bundle: org.eclipse.ui,
- org.eclipse.core.runtime,
- net.refractions.udig.libs;visibility:=reexport
+Require-Bundle: net.refractions.udig.libs;visibility:=reexport,
+ org.eclipse.ui;bundle-version="3.7.0"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ClassPath: .
