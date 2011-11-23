@@ -1,9 +1,0 @@
-Manifest-Version: 1.0
-Bundle-ManifestVersion: 2
-Bundle-Name: Testing Suite for OpenSource Core
-Bundle-SymbolicName: org.amanzi.awe.core.testing.suite
-Bundle-Version: 1.1.0.qualifier
-Bundle-Vendor: amanzi.org
-Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Require-Bundle: org.junit;bundle-version="4.8.2",
- org.amanzi.neo.db.testing;bundle-version="1.1.0"

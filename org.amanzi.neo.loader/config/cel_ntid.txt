@@ -1,4 +1,0 @@
-# Cell IDs
-1	SITE_ID
-2	CELL_ID
-3	CELL

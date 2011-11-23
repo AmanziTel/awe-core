@@ -1,4 +1,0 @@
-# Site IDs
-1	BSC_ID
-2	SITE_ID
-3	SITE
