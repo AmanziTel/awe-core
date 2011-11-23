@@ -24,5 +24,6 @@ package org.amanzi.neo.services.model;
  */
 public interface ICountersModel extends ICorrelatableModel, ITimelineModel {
 
+    //TODO: LN: comments
     public ICountersType getCountersType();
 }

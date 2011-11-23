@@ -25,6 +25,8 @@ import org.amanzi.neo.model.distribution.IDistributionBar;
 import org.amanzi.neo.model.distribution.IDistributionModel;
 import org.amanzi.neo.model.distribution.IDistributionalModel;
 import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
+import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.listeners.EventManager;
 import org.amanzi.neo.services.listeners.EventUIType;
@@ -491,10 +493,9 @@ public class NewNetworkTreeView extends ViewPart implements IEventListener {
             } else {
                 IDataElement element = (IDataElement)elementObject;
                 selectedNodes.add(element);
-                //TODO: LN: do not use raw Nodes
-//                if (!NeoUtils.getNodeType(((DataElement)element).getNode()).equals(NodeTypes.SECTOR.getId())) {
-//                    isSector = false;
-//                }
+                if (!NodeTypeManager.getType(element).getId().equals(NetworkElementNodeType.SECTOR.getId())) {
+                    isSector = false;
+                }
                 network = (INetworkModel)((DataElement)element).get(INeoConstants.NETWORK_MODEL_NAME);
                 if (firstNode) {
                     nameNetwork = network.getName();
@@ -528,7 +529,7 @@ public class NewNetworkTreeView extends ViewPart implements IEventListener {
     }
 
     /**
-     * <<<<<<< HEAD ======= Method create submenu - Delete from selection list
+     * Method create submenu - Delete from selection list
      * 
      * @param selection
      * @param manager
@@ -550,9 +551,9 @@ public class NewNetworkTreeView extends ViewPart implements IEventListener {
             Object elementObject = it.next();
             if (!(elementObject instanceof INetworkModel)) {
                 element = (IDataElement)elementObject;
-//                if (!NeoUtils.getNodeType(((DataElement)element).getNode()).equals(NodeTypes.SECTOR.getId())) {
-//                    isSector = false;
-//                }
+                if (!NodeTypeManager.getType(element).getId().equals(NetworkElementNodeType.SECTOR.getId())) {
+                    isSector = false;
+                }
                 isNetwork = false;
             }
             if (!isNetwork && isSector) {
@@ -577,8 +578,12 @@ public class NewNetworkTreeView extends ViewPart implements IEventListener {
     }
 
     /**
+<<<<<<< HEAD
      * >>>>>>> 872543a1a468ec5d3545ee31e062298907bce7dd Action for adding of sectors to selection
      * list
+=======
+     * Action for adding of sectors to selection list
+>>>>>>> refs/remotes/origin/models
      * 
      * @author Ladornaya_A
      * @since 1.0.0

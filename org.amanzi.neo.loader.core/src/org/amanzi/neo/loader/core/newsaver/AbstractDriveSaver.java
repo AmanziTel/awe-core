@@ -38,6 +38,8 @@ import org.neo4j.graphdb.GraphDatabaseService;
 public abstract class AbstractDriveSaver extends AbstractCSVSaver<DriveModel> {
 
     private static final Logger LOGGER = Logger.getLogger(AbstractDriveSaver.class);
+    
+    //TODO: LN: comments!!!!
     protected String DRIVE_TYPE_NAME = "";
     protected String fileName;
     // constants
@@ -69,6 +71,8 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<DriveModel> {
     protected final static String ALL_PILOT_SET_CHANNEL = "all_pilot_set_channel_";
     protected final static String ALL_PILOT_SET_PN = "all_pilot_set_pn_";
     protected Integer hours;
+    
+    //TODO: LN: maybe final? 
     protected Calendar workDate = Calendar.getInstance();
     /**
      * contains appropriation of header synonyms and name inDB
@@ -99,6 +103,7 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<DriveModel> {
         super();
     }
     
+    //TODO: LN: comments
     protected void resetSynonymsMaps() {
         if (!fileSynonyms.isEmpty()) {
             fileSynonyms.clear();
@@ -107,6 +112,7 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<DriveModel> {
         }
     }
 
+    //TODO: LN: duplicated with AbstractCSVSaver method
     /**
      * Convert milliwatss values to dBm
      * 
@@ -117,6 +123,7 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<DriveModel> {
         return (float)(10.0 * Math.log10(mw));
     }
 
+    //TODO: LN: comments
     void collectRemainProperties(Map<String, Object> properties, List<String> row) {
         for (String head : headers) {
             if (isCorrect(head, row)) {
@@ -144,6 +151,7 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<DriveModel> {
         try {
             return Double.valueOf(stringValue);
         } catch (NumberFormatException e) {
+            //TODO: LN: to constant
             Pattern p = Pattern.compile("^([+-]{0,1}\\d+(\\.\\d+)*)([NESW]{0,1})$");
             Matcher m = p.matcher(stringValue);
             if (m.matches()) {
@@ -170,6 +178,7 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<DriveModel> {
         try {
             return Double.valueOf(stringValue);
         } catch (NumberFormatException e) {
+            //TODO: LN: to constant
             Pattern p = Pattern.compile("^([+-]{0,1}\\d+(\\.\\d+)*)([NESW]{0,1})$");
             Matcher m = p.matcher(stringValue);
             if (m.matches()) {
@@ -183,12 +192,17 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<DriveModel> {
         return null;
     }
 
+    //TODO: LN: comments
     protected abstract void addedNewFileToModels(File file) throws DatabaseException, DuplicateNodeNameException;
 
+    //TODO: LN: comments
     protected void checkForNewFile(CSVContainer dataElement) throws DatabaseException, DuplicateNodeNameException {
         if ((fileName != null && !fileName.equals(dataElement.getFile().getName())) || (fileName == null)) {
             fileName = dataElement.getFile().getName();
             addedNewFileToModels(dataElement.getFile());
+            //TODO: LN: do we need to reset synonyms for each file? 
+            //since we can't load multi-files for different data all synonyms will be 
+            //the same for all files
             resetSynonymsMaps();
             lineCounter = 0l;
         }

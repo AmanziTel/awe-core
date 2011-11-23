@@ -52,6 +52,9 @@ import org.neo4j.graphdb.GraphDatabaseService;
  */
 public class Nemo2xSaver extends AbstractDriveSaver {
     private static final Logger LOGGER = Logger.getLogger(Nemo2xSaver.class);
+    
+    //TODO: LN: comments
+    //TODO: LN: string to const
     protected static final SimpleDateFormat EVENT_DATE_FORMAT = new SimpleDateFormat("dd.MM.yyyy");
     protected static final String TIME_FORMAT = "HH:mm:ss.S";
     protected Calendar workDate;
@@ -79,6 +82,7 @@ public class Nemo2xSaver extends AbstractDriveSaver {
         }
     }
 
+    //TODO: LN: comments
     /**
      * 
      */
@@ -86,6 +90,7 @@ public class Nemo2xSaver extends AbstractDriveSaver {
         super();
     }
 
+    //TODO: LN: comments
     protected void addedNewFileToModels(File file) throws DatabaseException, DuplicateNodeNameException {
         model.addFile(file);
     }
@@ -95,7 +100,7 @@ public class Nemo2xSaver extends AbstractDriveSaver {
         super.init(configuration, dataElement);
         preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.DRIVE);
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
-        commitTx();
+        
         try {
             model = getActiveProject().getDataset(configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME),
                     DriveTypes.TEMS);
@@ -104,10 +109,12 @@ public class Nemo2xSaver extends AbstractDriveSaver {
         } catch (AWEException e) {
             rollbackTx();
             LOGGER.error("Exception on creating root Model", e);
+            //TODO: LN: do not use RuntimeException
             throw new RuntimeException(e);
         }
     }
 
+    //TODO: LN: comments
     protected IDriveModel getVirtualModel() throws AWEException {
         return model.getVirtualDataset(model.getName(), DriveTypes.MS);
     }
@@ -126,6 +133,7 @@ public class Nemo2xSaver extends AbstractDriveSaver {
         } catch (DatabaseException e) {
             LOGGER.error("Error while saving element on line " + lineCounter, e);
             rollbackTx();
+            //TODO: LN: do not throw Runtime
             throw (RuntimeException)new RuntimeException().initCause(e);
         } catch (Exception e) {
             LOGGER.error("Exception while saving element on line " + lineCounter, e);
@@ -168,6 +176,7 @@ public class Nemo2xSaver extends AbstractDriveSaver {
                 IDataElement createdElement = getVirtualModel().addMeasurement(fileName, propertyMap);
                 List<IDataElement> locList = new LinkedList<IDataElement>();
                 locList.add(location);
+                //TODO: LN: same as for Nemo1xSaver
                 getVirtualModel().linkNode(createdElement, locList, DriveRelationshipTypes.LOCATION);
             } catch (Exception e) {
             }
@@ -176,6 +185,7 @@ public class Nemo2xSaver extends AbstractDriveSaver {
 
     @Override
     protected void saveLine(List<String> headers) throws AWEException {
+        //TODO: LN: magic numbers
         String eventId = headers.get(0);
         NemoEvents event = NemoEvents.getEventById(eventId);
         String time = headers.get(1);
@@ -221,6 +231,7 @@ public class Nemo2xSaver extends AbstractDriveSaver {
         parsedParameters.put(TIMESTAMP, timestamp);
         removeEmpty(parsedParameters);
         boolean isAlreadyCreated = false;
+        //TODO: LN: string to const
         if ("GPS".equalsIgnoreCase(eventId)) {
             Double longitude = (Double)parsedParameters.get(IDriveModel.LONGITUDE);
             Double latitude = (Double)parsedParameters.get(IDriveModel.LATITUDE);
@@ -235,6 +246,7 @@ public class Nemo2xSaver extends AbstractDriveSaver {
                 if (location != null) {
                     List<IDataElement> locList = new LinkedList<IDataElement>();
                     locList.add(location);
+                    //TODO: LN: see Nemo1xSaver
                     model.linkNode(createdElement, locList, DriveRelationshipTypes.LOCATION);
                 } else {
                     IDataElement location = model.getLocation(createdElement);
@@ -278,6 +290,7 @@ public class Nemo2xSaver extends AbstractDriveSaver {
             parParam = event.fill(getVersion(), parameters);
         } catch (Exception e1) {
             LOGGER.error(String.format("Line %s not parsed", element.toString()));
+            //TODO: LN: do not use printStackTrace
             e1.printStackTrace();
             // exception(e1);
             return null;
@@ -315,6 +328,7 @@ public class Nemo2xSaver extends AbstractDriveSaver {
             workDate = new GregorianCalendar();
             Date date;
             try {
+                //TODO: LN: string to const
                 date = EVENT_DATE_FORMAT.parse((String)parParam.get("Date"));
 
             } catch (Exception e) {
@@ -342,6 +356,7 @@ public class Nemo2xSaver extends AbstractDriveSaver {
      * @return edited String
      */
     protected final static String cleanHeader(String header) {
+        //TODO: LN: string to const
         return header.replaceAll("[\\s\\-\\[\\]\\(\\)\\/\\.\\\\\\:\\#]+", "_").replaceAll("[^\\w]+", "_").replaceAll("_+", "_")
                 .replaceAll("\\_$", "").toLowerCase();
     }
@@ -357,6 +372,7 @@ public class Nemo2xSaver extends AbstractDriveSaver {
         if (nodeDate == null || workDate == null) {
             return 0L;
         }
+        //TODO: LN: do not use deprecated methods
         final int nodeHours = nodeDate.getHours();
         workDate.set(Calendar.HOUR_OF_DAY, nodeHours);
         workDate.set(Calendar.MINUTE, nodeDate.getMinutes());
@@ -366,6 +382,8 @@ public class Nemo2xSaver extends AbstractDriveSaver {
     }
 
     protected IDataElement checkSameLocation(Map<String, Object> params) {
+        //TODO: LN: you can use 'equals' for double
+        //use delta, for example it should be less 0.00001
         for (IDataElement location : locationDataElements) {
             if (location.get(IDriveModel.LATITUDE).equals(params.get(IDriveModel.LATITUDE)) && location.get(IDriveModel.LONGITUDE).equals(params.get(IDriveModel.LONGITUDE))) {
                 return location;

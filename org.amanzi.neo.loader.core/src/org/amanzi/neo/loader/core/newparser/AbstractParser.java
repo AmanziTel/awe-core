@@ -29,6 +29,7 @@ import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.ISafeRunnable;
 import org.eclipse.core.runtime.SafeRunner;
 
+//TODO: LN: comments
 /**
  * TODO Purpose of
  * <p>
@@ -40,6 +41,7 @@ import org.eclipse.core.runtime.SafeRunner;
 public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2>, T2 extends IConfiguration, T3 extends IData>
         implements
             IParser<T1, T2, T3> {
+    //TODO: LN: comments
     protected static Logger LOGGER;
     private final List<ILoaderProgressListener> listeners = new ArrayList<ILoaderProgressListener>();
     protected final int PERCENTAGE_FIRE = 2;

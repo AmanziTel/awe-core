@@ -30,11 +30,13 @@ import org.amanzi.neo.services.model.impl.NetworkModel;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
 
+//TODO: LN: comments
 /**
  * @author Vladislav_Kondratenko
  */
 public abstract class AbstractN2NSaver extends AbstractCSVSaver<NetworkModel> {
     protected static final Logger LOGGER = Logger.getLogger(AbstractN2NSaver.class);
+    // TODO: LN: comments
     protected INetworkModel networkModel;
     protected INodeToNodeRelationsModel n2nModel;
 
@@ -62,6 +64,7 @@ public abstract class AbstractN2NSaver extends AbstractCSVSaver<NetworkModel> {
 
     }
 
+    // TODO: LN: comments
     /**
      * 
      */
@@ -78,12 +81,18 @@ public abstract class AbstractN2NSaver extends AbstractCSVSaver<NetworkModel> {
     protected void saveLine(List<String> row) throws AWEException {
         String neighbSectorName = getValueFromRow(getNeighborElementName(), row);
         String serviceNeighName = getValueFromRow(getSourceElementName(), row);
+        
         Map<String, Object> properties = new HashMap<String, Object>();
+        
         properties.put(NewAbstractService.TYPE, NetworkElementNodeType.SECTOR.getId());
         properties.put(NewAbstractService.NAME, neighbSectorName);
+        //TODO: LN: why not use networkModel.findElementByPropertyValue? 
+        //creation of map takes much more memory and time
         IDataElement findedNeighSector = networkModel.findElement(properties);
+        
         properties.put(NewAbstractService.NAME, serviceNeighName);
         IDataElement findedServiceSector = networkModel.findElement(properties);
+        
         for (String head : headers) {
             if (fileSynonyms.containsValue(head)) {
                 properties.put(head.toLowerCase(), getSynonymValueWithAutoparse(head, row));
@@ -102,7 +111,6 @@ public abstract class AbstractN2NSaver extends AbstractCSVSaver<NetworkModel> {
         Map<String, Object> rootElement = new HashMap<String, Object>();
         initSynonyms();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
-        commitTx();
         try {
             rootElement.put(NewAbstractService.NAME,
                     configuration.getDatasetNames().get(ConfigurationDataImpl.NETWORK_PROPERTY_NAME));
@@ -115,6 +123,7 @@ public abstract class AbstractN2NSaver extends AbstractCSVSaver<NetworkModel> {
         } catch (AWEException e) {
             rollbackTx();
             LOGGER.error("Exception on creating root Model", e);
+            //TODO: LN: do not throw RuntimeException
             throw new RuntimeException(e);
         }
     }
@@ -129,7 +138,10 @@ public abstract class AbstractN2NSaver extends AbstractCSVSaver<NetworkModel> {
      */
     protected abstract String getNeighborElementName();
 
+    //TODO: LN: comments
     protected abstract INodeToNodeRelationsModel getNode2NodeModel(String name) throws AWEException;
 
+    //TODO: LN: comments
+    //TODO: LN: this method is never used 
     protected abstract void initSynonyms();
 }

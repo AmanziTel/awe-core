@@ -23,6 +23,7 @@ import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
 import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelTypes;
 import org.neo4j.graphdb.GraphDatabaseService;
 
+//TODO: LN: comments
 /**
  * @author Vladislav_Kondratenko
  */
@@ -38,6 +39,7 @@ public class InterferenceSaver extends AbstractN2NSaver {
         super(model, networkModel, data, service);
     }
 
+    //TODO: LN: comments
     public InterferenceSaver() {
         super();
     }

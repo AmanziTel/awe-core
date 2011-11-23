@@ -13,7 +13,8 @@
 
 package org.amanzi.neo.loader.core.newsaver;
 
-import static org.amanzi.neo.services.NewNetworkService.*;
+import static org.amanzi.neo.services.NewNetworkService.BCCH;
+
 import java.io.File;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -27,7 +28,6 @@ import java.util.TreeMap;
 
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
-import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.NewDatasetService.DriveTypes;
@@ -50,6 +50,7 @@ import org.neo4j.graphdb.GraphDatabaseService;
  */
 public class TemsSaver extends AbstractDriveSaver {
 
+    //TODO: LN: comments
     private static final Logger LOGGER = Logger.getLogger(TemsSaver.class);
 
     private IDriveModel virtualModel;
@@ -74,6 +75,7 @@ public class TemsSaver extends AbstractDriveSaver {
         }
     }
 
+    //TODO: LN: comments
     /**
      * 
      */
@@ -141,6 +143,7 @@ public class TemsSaver extends AbstractDriveSaver {
         params.put(MS, ms);
     }
 
+    //TODO: LN: duplicated with Romes
     /**
      * Define timestamp.
      * 
@@ -194,14 +197,16 @@ public class TemsSaver extends AbstractDriveSaver {
         int ec_io = 0;
         int measurement_count = 0;
         try {
-            channel = (Integer)getSynonymValuewithAutoparse(ALL_PILOT_SET_CHANNEL + 1, value);
-            pn_code = (Integer)getSynonymValuewithAutoparse(ALL_PILOT_SET_PN + 1, value);
-            ec_io = (Integer)getSynonymValuewithAutoparse(ALL_PILOT_SET_EC_IO + 1, value);
-            measurement_count = (Integer)getSynonymValuewithAutoparse(ALL_PILOT_SET_COUNT, value);
+            //TODO: LN: what is '+1'
+            channel = (Integer)getSynonymValueWithAutoparse(ALL_PILOT_SET_CHANNEL + 1, value);
+            pn_code = (Integer)getSynonymValueWithAutoparse(ALL_PILOT_SET_PN + 1, value);
+            ec_io = (Integer)getSynonymValueWithAutoparse(ALL_PILOT_SET_EC_IO + 1, value);
+            measurement_count = (Integer)getSynonymValueWithAutoparse(ALL_PILOT_SET_COUNT, value);
         } catch (Exception e) {
             LOGGER.error("Failed to parse a field on line " + lineCounter + ": " + e.getMessage());
             return;
         }
+        //TODO: LN: what is '12'? 
         if (measurement_count > 12) {
             LOGGER.error("Measurement count " + measurement_count + " > 12");
             measurement_count = 12;
@@ -222,6 +227,8 @@ public class TemsSaver extends AbstractDriveSaver {
             changed = true;
             this.previous_pn_code = pn_code;
         }
+        //TODO: LN: make a class for Signals 
+        //it's very hard to understand logic
         HashMap<String, float[]> signals = new HashMap<String, float[]>();
         if (measurement_count > 0 && (changed || (event != null && event.length() > 0))) {
             for (int i = 1; i <= measurement_count; i++) {
@@ -237,7 +244,8 @@ public class TemsSaver extends AbstractDriveSaver {
                     signals.get(chan_code)[0] += Math.pow(10.0, ((ec_io) / 10.0));
                     signals.get(chan_code)[1] += 1;
                 } catch (Exception e) {
-                    LOGGER.error("Error parsing column " + i + " for EC/IO, Channel or PN: " + e.getMessage(), e);
+                    //TODO: LN: why there is no exception in log?
+                    LOGGER.error("Error parsing column " + i + " for EC/IO, Channel or PN: " + e.getMessage());
                 }
             }
         }
@@ -294,13 +302,13 @@ public class TemsSaver extends AbstractDriveSaver {
     public void init(ConfigurationDataImpl configuration, CSVContainer dataElement) {
         super.init(configuration, dataElement);
         
-        Map<String, Object> rootElement = new HashMap<String, Object>();
+        //TODO: LN: it can be moved to constructor
+        DRIVE_TYPE_NAME = DriveTypes.TEMS.name();
+
         preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.DRIVE);
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
-        commitTx();
+        
         try {
-            rootElement.put(INeoConstants.PROPERTY_NAME_NAME,
-                    configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME));
             driveModel = getActiveProject().getDataset(
                     configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME), DriveTypes.TEMS);
             virtualModel = driveModel.getVirtualDataset(
@@ -339,6 +347,7 @@ public class TemsSaver extends AbstractDriveSaver {
         } catch (DatabaseException e) {
             LOGGER.error("Error while saving element on line " + lineCounter, e);
             rollbackTx();
+            //TODO: LN: runtime exception
             throw (RuntimeException)new RuntimeException().initCause(e);
         } catch (Exception e) {
             LOGGER.error("Exception while saving element on line " + lineCounter, e);

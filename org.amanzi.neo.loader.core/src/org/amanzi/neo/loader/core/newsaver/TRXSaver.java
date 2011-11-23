@@ -38,6 +38,7 @@ import org.neo4j.graphdb.GraphDatabaseService;
  * @author Vladislav_Kondratenko
  */
 public class TRXSaver extends AbstractCSVSaver<NetworkModel> {
+    //TODO: LN: comments
     private static final Logger LOGGER = Logger.getLogger(TRXSaver.class);
     private static final String SECTOR = "sector";
     private static final String SUBCELL = "subcell";
@@ -69,6 +70,7 @@ public class TRXSaver extends AbstractCSVSaver<NetworkModel> {
         }
     }
 
+    //TODO: LN: comments
     /**
      * 
      */
@@ -85,6 +87,7 @@ public class TRXSaver extends AbstractCSVSaver<NetworkModel> {
                     NetworkRelationshipTypes.FREQUENCY_ROOT);
         }
         clearElementMaps();
+        //TODO: LN: what is 63? 
         arfcnArray = new Integer[63];
         String sectorName = (String)getSynonymValueWithAutoparse(SECTOR, value);
         collectSectorElement(sectorName);
@@ -93,6 +96,7 @@ public class TRXSaver extends AbstractCSVSaver<NetworkModel> {
         Integer trxId = (Integer)getSynonymValueWithAutoparse(TRXID, value);
         String band = getSynonymValueWithAutoparse(BAND, value).toString();
         String extended = null;
+        //TODO: LN: what is 900? Make a Enum for Band in Services plugin for example
         if (band.equals("900")) {
             extended = (String)getSynonymValueWithAutoparse(EXTENDED, value);
 

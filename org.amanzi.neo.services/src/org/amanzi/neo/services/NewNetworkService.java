@@ -87,7 +87,6 @@ public class NewNetworkService extends NewAbstractService {
         public String getId() {
             return name().toLowerCase();
         }
-
     }
 
     /**

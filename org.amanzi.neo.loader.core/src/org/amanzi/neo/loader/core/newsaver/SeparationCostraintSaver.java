@@ -34,6 +34,7 @@ import org.neo4j.graphdb.GraphDatabaseService;
  * @author Vladislav_Kondratenko
  */
 public class SeparationCostraintSaver extends AbstractCSVSaver<NetworkModel> {
+    //TODO: LN: comments
     private static final Logger LOGGER = Logger.getLogger(SeparationCostraintSaver.class);
     private static final String SECTOR = "sector";
     private static final String SEPARATION = "separation";

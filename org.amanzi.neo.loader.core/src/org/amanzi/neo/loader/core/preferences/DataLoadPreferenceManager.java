@@ -26,6 +26,7 @@ import org.amanzi.neo.services.NewNetworkService;
 import org.amanzi.neo.services.enums.IDriveType;
 import org.amanzi.neo.services.model.IDriveModel;
 
+//TODO: LN: comments
 /**
  * @author Kondratenko_Vladislav
  */
@@ -137,6 +138,7 @@ public class DataLoadPreferenceManager {
         if (text == null) {
             return new String[0];
         }
+        //TODO: LN: separator to const
         String[] array = text.split(",");
         List<String> result = new ArrayList<String>();
         for (String string : array) {
@@ -158,11 +160,13 @@ public class DataLoadPreferenceManager {
         switch (type) {
         case NETWORK:
             networkMap = getNetworkPosibleValues();
+            //TODO: LN: duplicated line
             updateSynonyms(networkMap, newSynonyms);
             break;
         case DRIVE:
             driveMap = getDrivePosibleValues();
             updateSynonyms(driveMap, newSynonyms);
+            break;
         case COUNTERS:
         }
     }
@@ -171,11 +175,13 @@ public class DataLoadPreferenceManager {
         switch (type) {
         case NETWORK:
             networkMap = getNetworkPosibleValues();
+            //TODO: LN: duplicated line
             removeSynonym(networkMap, key);
             break;
         case DRIVE:
             driveMap = getDrivePosibleValues();
             removeSynonym(driveMap, key);
+            break;
         case COUNTERS:
         }
     }
@@ -341,6 +347,7 @@ public class DataLoadPreferenceManager {
         return interferMap;
     }
 
+    //TODO: LN: why for Network and Drive we have one method but for different N2N - many methods? 
     public Map<String, String[]> getFrequencySynonyms() {
         if (frequencyMap == null) {
             frequencyMap = new HashMap<String, String[]>();

@@ -60,6 +60,7 @@ public class Nemo1xSaver extends Nemo2xSaver {
         }
     }
 
+    //TODO: LN: comments
     /**
      * 
      */
@@ -72,7 +73,6 @@ public class Nemo1xSaver extends Nemo2xSaver {
         super.init(configuration, dataElement);
         preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.DRIVE);
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
-        commitTx();
         try {
             model = getActiveProject().getDataset(configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME),
                     DriveTypes.NEMO_V1);
@@ -81,10 +81,13 @@ public class Nemo1xSaver extends Nemo2xSaver {
         } catch (AWEException e) {
             rollbackTx();
             LOGGER.error("Exception on creating root Model", e);
+            //TODO: LN: do not throw Runtime Exception
             throw new RuntimeException(e);
         }
     }
 
+    //TODO: LN: do not re-write super-method, make it configurable to 
+    //have no code duplication
     @Override
     public void saveElement(CSVContainer dataElement) {
         commitTx();
@@ -95,6 +98,9 @@ public class Nemo1xSaver extends Nemo2xSaver {
                 workDate = new GregorianCalendar();
                 Date date;
                 try {
+                    //TODO: LN: date to Constrant
+                    //TODO: LN: SimpleDataFormat to constant
+                    //TODO: LN: WTF in split? 
                     date = new SimpleDateFormat("dd.MM.yyyy").parse(container.getFirstLine().split("     ")[2]);
                 } catch (Exception e) {
                     LOGGER.error("Wrong time format\n" + e.getLocalizedMessage(), e);
@@ -103,6 +109,7 @@ public class Nemo1xSaver extends Nemo2xSaver {
                 workDate.setTime(date);
             }
             if (!container.getValues().isEmpty()) {
+                //TODO: LN: start symbol to constant
                 if (container.getValues().get(0).startsWith("#")) {
                     return;
                 }
@@ -113,6 +120,7 @@ public class Nemo1xSaver extends Nemo2xSaver {
         } catch (DatabaseException e) {
             LOGGER.error("Error while saving element on line " + lineCounter, e);
             rollbackTx();
+            //TODO: LN: do not use Runtime
             throw (RuntimeException)new RuntimeException().initCause(e);
         } catch (Exception e) {
             LOGGER.error("Exception while saving element on line " + lineCounter, e);
@@ -126,11 +134,13 @@ public class Nemo1xSaver extends Nemo2xSaver {
      * @return the version
      */
     protected String getVersion() {
+        //TODO: LN: to const 
         return "1.86";
     }
 
     @Override
     protected void saveLine(List<String> value) throws AWEException {
+        //TODO: LN: what is this magic numbers? 0, 1, 2, 8, 9
         String eventId = value.get(0);
         Object longitude = autoParse(IDriveModel.LONGITUDE, value.get(1));
         Object latitude = autoParse(IDriveModel.LATITUDE, value.get(2));
@@ -145,6 +155,7 @@ public class Nemo1xSaver extends Nemo2xSaver {
         if (parsedParameters == null) {
             return;
         }
+        //TODO: LN: what is 0d? 
         if (isCorrect(latitude) && (Double)latitude != 0d && isCorrect(longitude) && (Double)longitude != 0d) {
             parsedParameters.put(IDriveModel.LATITUDE, latitude);
             parsedParameters.put(IDriveModel.LONGITUDE, longitude);
@@ -153,6 +164,7 @@ public class Nemo1xSaver extends Nemo2xSaver {
 
         long timestamp;
         try {
+            //TODO: LN: what is '1'? it dind't used in getTimeStamp method
             timestamp = getTimeStamp(1, timeFormat.parse(time));
         } catch (ParseException e) {
             timestamp = 0;

@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.services.model;
 
+//TODO: LN: comments
 /**
  * TODO Purpose of
  * <p>
@@ -23,5 +24,6 @@ package org.amanzi.neo.services.model;
  */
 public interface IDriveInqurirerModel {
 
+    //TODO: LN: comments
     public void setAnalyzisProperties(String[] properties);
 }

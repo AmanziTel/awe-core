@@ -34,12 +34,17 @@ import org.amanzi.neo.services.model.impl.DataElement;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
 
+//TODO: LN: comment
 /**
  * @author Vladislav_Kondratenko
  */
 public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<T1, CSVContainer, ConfigurationDataImpl> {
     private static final Logger LOGGER = Logger.getLogger(AbstractCSVSaver.class);
+    
+    //TODO: LN: comment
     protected final int MAX_TX_BEFORE_COMMIT = 1000;
+    
+    //TODO: LN: why Abstract CSV Saver have NetworkModel??? this Saver is parametrized we can use T1
     protected INetworkModel networkModel;
     protected IDataElement rootDataElement;
     /**
@@ -74,6 +79,7 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
      * @return
      */
     protected boolean isCorrect(Object value) {
+        //TODO: LN: move strings to constants
         if (value == null || value.toString().isEmpty() || value.toString().equals("?")
                 || value.toString().equalsIgnoreCase("NULL") || value.toString().equalsIgnoreCase("default")
                 || value.toString().equalsIgnoreCase("--") || value.toString().equalsIgnoreCase("N/A")) {
@@ -105,6 +111,7 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
         }
     }
 
+    //TODO: LN: do not use constructore with Service
     /**
      * @param service
      */
@@ -112,6 +119,7 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
         super(service);
     }
 
+    //TODO: LN: comment, also do we need emtpy constructor? 
     /**
      * 
      */
@@ -128,12 +136,14 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
         try {
             networkModel = getActiveProject().getNetwork(
                     configuration.getDatasetNames().get(ConfigurationDataImpl.NETWORK_PROPERTY_NAME));
+            //TODO: LN: do not use DataElement!!! 
             rootDataElement = new DataElement(networkModel.getRootNode());
             modelMap.put(configuration.getDatasetNames().get(ConfigurationDataImpl.NETWORK_PROPERTY_NAME), networkModel);
             createExportSynonymsForModels();
         } catch (AWEException e) {
             rollbackTx();
             LOGGER.error("Exception on creating root Model", e);
+            //TODO: LN: do not use RuntimeException!!!
             throw new RuntimeException(e);
         }
     }
@@ -162,6 +172,7 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
                 headers = container.getHeaders();
                 makeAppropriationWithSynonyms(headers);
                 makeIndexAppropriation();
+                //TODO: LN: lineCounter++ and container.getHeaders() duplicated
                 lineCounter++;
             } else {
                 lineCounter++;
@@ -171,6 +182,7 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
         } catch (DatabaseException e) {
             LOGGER.error("Error while saving element on line " + lineCounter, e);
             rollbackTx();
+            //TODO: LN: do not use RuntimeException!!!
             throw (RuntimeException)new RuntimeException().initCause(e);
         } catch (Exception e) {
             LOGGER.error("Exception while saving element on line " + lineCounter, e);
@@ -209,6 +221,7 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
      * @return
      */
     protected boolean isCorrect(String synonymName, List<String> row) {
+        //TODO: LN: few duplication with getValueFromRow, please investigate
         String requiredHeader = synonymName;
         if (fileSynonyms.containsKey(synonymName)) {
             requiredHeader = fileSynonyms.get(synonymName);
@@ -266,10 +279,12 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
         row.set(columnSynonyms.get(fileSynonyms.get(synonym)), null);
     }
 
+    //TODO: LN: comments
     protected int getHeaderId(String header) {
         return headers.indexOf(header);
     }
 
+    //TODO: LN: comments
     protected void makeIndexAppropriation() {
         for (String synonyms : fileSynonyms.keySet()) {
             columnSynonyms.put(fileSynonyms.get(synonyms), getHeaderId(fileSynonyms.get(synonyms)));

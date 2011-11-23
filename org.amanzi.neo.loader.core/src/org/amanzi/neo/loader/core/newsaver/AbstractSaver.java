@@ -41,14 +41,21 @@ import org.neo4j.graphdb.GraphDatabaseService;
  * @param <T3>
  */
 public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 extends IConfiguration> implements ISaver<T1, T2, T3> {
+    
+    //TODO: LN: comments
     public static final String PROJECT_PROPERTY = "project";
     public static final String CONFIG_VALUE_CALLS = "Calls";
     public static final String CONFIG_VALUE_PESQ = "Pesq";
     protected final static ExportSynonymsManager exportManager = ExportSynonymsManager.getManager();
     protected static DataLoadPreferenceManager preferenceManager = new DataLoadPreferenceManager();
     protected Map<String, String[]> preferenceStoreSynonyms;
+    
+    //TODO: LN: in modelMap we use Name of Model and Model instance
+    //why not use list of Models? and then just model.getName()
     protected Map<String, IDataModel> modelMap = new HashMap<String, IDataModel>();
     protected Map<IModel, ExportSynonyms> synonymsMap = new HashMap<IModel, ExportSynonyms>();
+    
+    //TODO: LN: comments, WTF?????? 
     private static final String TRUE = "true";
     private static final String FALSE = "false";
 

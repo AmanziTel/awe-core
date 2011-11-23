@@ -17,6 +17,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.model.IDataElement;
 
 /**
  * <p>
@@ -70,6 +71,16 @@ public class NodeTypeManager {
             }
         }
         return result;
+    }
+    
+    /**
+     * Returns type of element
+     *
+     * @param element
+     * @return type
+     */
+    public static INodeType getType(IDataElement element){
+        return getType(element.get(NewAbstractService.TYPE).toString());
     }
 
     private static final class StringToEnumConverter<T extends Enum> {
