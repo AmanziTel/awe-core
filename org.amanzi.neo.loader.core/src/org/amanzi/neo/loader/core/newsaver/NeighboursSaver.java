@@ -23,6 +23,7 @@ import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
 import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelTypes;
 import org.neo4j.graphdb.GraphDatabaseService;
 
+//TODO: LN: comments
 /**
  * @author Kondratneko_Vladislav
  */

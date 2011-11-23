@@ -34,6 +34,7 @@ import org.neo4j.graphdb.GraphDatabaseService;
  * @author Vladislav_Kondratenko
  */
 public class TrafficSaver extends AbstractCSVSaver<NetworkModel> {
+    //TODO: LN: comments
     private static final Logger LOGGER = Logger.getLogger(TrafficSaver.class);
     private static final String SECTOR = "sector";
     private static final String TRAFFIC = "traffic";
@@ -53,6 +54,7 @@ public class TrafficSaver extends AbstractCSVSaver<NetworkModel> {
         }
     }
 
+    //TODO: LN: comments
     public TrafficSaver() {
         super();
     }
@@ -64,6 +66,7 @@ public class TrafficSaver extends AbstractCSVSaver<NetworkModel> {
         }
         SECTOR_MAP.clear();
         collectSector(value);
+        //TODO: LN: use findElementByPropertyValue
         IDataElement findedSector = networkModel.findElement(SECTOR_MAP);
         if (findedSector == null) {
             LOGGER.error("cann't find sector " + SECTOR_MAP);

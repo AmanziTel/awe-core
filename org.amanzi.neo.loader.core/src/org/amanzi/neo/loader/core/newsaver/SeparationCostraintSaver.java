@@ -34,6 +34,7 @@ import org.neo4j.graphdb.GraphDatabaseService;
  * @author Vladislav_Kondratenko
  */
 public class SeparationCostraintSaver extends AbstractCSVSaver<NetworkModel> {
+    //TODO: LN: comments
     private static final Logger LOGGER = Logger.getLogger(SeparationCostraintSaver.class);
     private static final String SECTOR = "sector";
     private static final String SEPARATION = "separation";
@@ -53,6 +54,7 @@ public class SeparationCostraintSaver extends AbstractCSVSaver<NetworkModel> {
         }
     }
 
+    //TODO: LN: comments
     /**
      * 
      */
@@ -60,6 +62,7 @@ public class SeparationCostraintSaver extends AbstractCSVSaver<NetworkModel> {
         super();
     }
 
+    //TODO: LN: comments
     protected void saveLine(List<String> value) throws AWEException {
         if (!isCorrect(SECTOR, value)) {
             LOGGER.error("cant find sector column on line: " + lineCounter);
@@ -67,6 +70,7 @@ public class SeparationCostraintSaver extends AbstractCSVSaver<NetworkModel> {
         }
         SECTOR_MAP.clear();
         collectSector(value);
+        //TODO: LN: use findElementByPropertyValue
         IDataElement findedSector = networkModel.findElement(SECTOR_MAP);
         if (findedSector == null) {
             LOGGER.error("cann't find sector " + SECTOR_MAP);
@@ -76,6 +80,7 @@ public class SeparationCostraintSaver extends AbstractCSVSaver<NetworkModel> {
             Map<String, Object> collectedParameters = new HashMap<String, Object>();
             collectedParameters.put(SEPARATION, getSynonymValueWithAutoparse(SEPARATION, value));
             networkModel.completeProperties(findedSector, collectedParameters, false);
+            //TODO: LN: why type is also putted? is should came from find
             collectedParameters.put(NewAbstractService.TYPE, NetworkElementNodeType.SECTOR.getId());
             addSynonyms(networkModel, collectedParameters);
         } else {

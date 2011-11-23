@@ -18,6 +18,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.amanzi.neo.loader.core.newsaver.IData;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * common row container contains temporary <b>HEADERS</b> and <b>ROW</b> information
@@ -41,7 +42,7 @@ public class CSVContainer implements IData {
     /**
      * contains first line of file;
      */
-    private String firstLine = "";
+    private String firstLine = StringUtils.EMPTY;
 
     /**
      * @return Returns the firstLine.

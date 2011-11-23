@@ -250,6 +250,7 @@ public class DataLoadPreferenceInitializer extends AbstractPreferenceInitializer
         pref.setDefault(DataLoadPreferences.DEFAULT_CHARSET, Charset.defaultCharset().name());
         StringBuilder def;
         try {
+            //TODO: LN: to constants
             def = new StringBuilder(CRS.decode("EPSG:4326").toWKT()).append(DataLoadPreferences.CRS_DELIMETERS)
                     .append(CRS.decode("EPSG:31467").toWKT()).append(DataLoadPreferences.CRS_DELIMETERS)
                     .append(CRS.decode("EPSG:3021").toWKT());

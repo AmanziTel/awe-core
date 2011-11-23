@@ -39,6 +39,8 @@ import org.neo4j.graphdb.GraphDatabaseService;
  * @author Kondratenko_Vladislav
  */
 public class NetworkSaver extends AbstractCSVSaver<NetworkModel> {
+
+    // TODO: LN: comments
     private final String CI_LAC = "CI_LAC";
 
     private final static String CITY = NetworkElementNodeType.CITY.getId();
@@ -64,6 +66,7 @@ public class NetworkSaver extends AbstractCSVSaver<NetworkModel> {
         }
     }
 
+    // TODO: LN: comments
     /**
      * 
      */
@@ -81,6 +84,20 @@ public class NetworkSaver extends AbstractCSVSaver<NetworkModel> {
     @Override
     protected void saveLine(List<String> row) throws AWEException {
         IDataElement parentElement = rootDataElement;
+
+        // TODO: LN: WHY STRINGS?????????????????? we have Enum for this
+        // working with switch and enums much more faster
+        // than with string:
+        // for (NetworkElementNodeType type : DEFAULT_NETWORK_STRUCTURE) {
+        // switch (type) {
+        // case MSC:
+        // case BSC:
+        // case CITY:
+        // ..
+        // break;
+        // case SECTOR:
+        // ..
+        // break;
         for (String stuctureElement : DEFAULT_NETWORK_STRUCTURE) {
             if (stuctureElement.equals(CITY) || stuctureElement.equals(MSC) || stuctureElement.equals(BSC)) {
                 if (isCorrect(stuctureElement, row)) {
@@ -153,6 +170,7 @@ public class NetworkSaver extends AbstractCSVSaver<NetworkModel> {
             networkModel.createElement(root, sectorMap);
             addSynonyms(networkModel, sectorMap);
         } else {
+            // TODO: LN: use also Name
             LOGGER.info("sector" + sectorMap.get(CI_LAC.toLowerCase()) + " is already exist;line: " + lineCounter);
         }
     }
@@ -174,14 +192,17 @@ public class NetworkSaver extends AbstractCSVSaver<NetworkModel> {
         collectMainElements(mapProperty, row, nodeType, type);
 
         IDataElement findedElement;
+        // TODO: LN: use findElementByPropertyValue
         findedElement = networkModel.findElement(mapProperty);
         if (findedElement == null) {
             if (root != null) {
                 findedElement = networkModel.createElement(root, mapProperty);
             } else {
+                // TODO: LN: refactor rootDataElement - in case of
                 findedElement = networkModel.createElement(rootDataElement, mapProperty);
             }
         }
+        //TODO: LN: WTF? 
         addSynonyms(networkModel, mapProperty);
         resetRowValueBySynonym(row, type);
         return findedElement;
@@ -244,6 +265,8 @@ public class NetworkSaver extends AbstractCSVSaver<NetworkModel> {
                 : StringUtils.EMPTY;
         String lac = sectorMap.containsKey(NewNetworkService.LOCATION_AREA_CODE) ? sectorMap.get(
                 NewNetworkService.LOCATION_AREA_CODE).toString() : StringUtils.EMPTY;
+        //TODO: LN: we don't need this check
+        //service method will check it
         if ((!isCorrect(sectorName)) && (!isCorrect(ci) || !isCorrect(lac))) {
             LOGGER.info("Sector should have Name or CI + LAC properties on line: " + lineCounter);
             return false;

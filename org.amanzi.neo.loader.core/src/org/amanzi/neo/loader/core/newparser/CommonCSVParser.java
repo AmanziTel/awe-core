@@ -46,6 +46,7 @@ public class CommonCSVParser<T1 extends ISaver<IModel, CSVContainer, T2>, T2 ext
         extends
             AbstractParser<T1, T2, CSVContainer> {
 
+    //TODO: LN: comments
     protected CSVParser parser;
     protected int MINIMAL_SIZE = 2;
     protected Character delimeters;
@@ -89,6 +90,7 @@ public class CommonCSVParser<T1 extends ISaver<IModel, CSVContainer, T2>, T2 ext
      */
     private List<String> parseHeaders(File file) {
         char delim = getDelimiters(file);
+        //TODO: LN: '\\' to const
         parser = new CSVParser(delim, quoteCharacter, '\\', false, true);
         String lineStr;
         ArrayList<String> header = new ArrayList<String>();
@@ -189,6 +191,7 @@ public class CommonCSVParser<T1 extends ISaver<IModel, CSVContainer, T2>, T2 ext
      * @return the string
      */
     public Map<String, Integer> defineDelimeters(File file, int minSize, String[] possibleFieldSepRegexes) {
+        //TODO: LN: to const
         String fieldSepRegex = "\t";
         BufferedReader read = null;
         Map<String, Integer> seaprators = new LinkedHashMap<String, Integer>();
@@ -210,11 +213,13 @@ public class CommonCSVParser<T1 extends ISaver<IModel, CSVContainer, T2>, T2 ext
                 }
             }
         } catch (IOException e) {
+            //TODO: LN: exception to log
             e.printStackTrace();
         } finally {
             try {
                 read.close();
             } catch (IOException e) {
+                //TODO: LN: exception to log
                 e.printStackTrace();
             };
         }

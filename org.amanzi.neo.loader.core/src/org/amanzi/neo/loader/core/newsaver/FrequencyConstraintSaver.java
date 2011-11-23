@@ -28,6 +28,7 @@ import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
 import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelTypes;
 import org.neo4j.graphdb.GraphDatabaseService;
 
+//TODO: LN: comments
 /**
  * saver for frequency constraint data
  * 
@@ -43,6 +44,8 @@ public class FrequencyConstraintSaver extends AbstractN2NSaver {
     private static final String FR_PENALTY = "penalty";
     private static final String FR_SCALLING_FACTOR = "scalling_factor";
     private static final String SECTOR = "sector";
+    
+    //TODO: LN: comments
     private Map<String, Object> SECTOR_MAP = new HashMap<String, Object>();
     private Map<String, Object> TRX_MAP = new HashMap<String, Object>();
     private Map<String, Object> RELATIONS_PROPERTIES = new HashMap<String, Object>();
@@ -52,10 +55,12 @@ public class FrequencyConstraintSaver extends AbstractN2NSaver {
         super(model, networkModel, data, service);
     }
 
+    //TODO: LN: comments
     public FrequencyConstraintSaver() {
         super();
     }
 
+    
     @Override
     protected INodeToNodeRelationsModel getNode2NodeModel(String name) throws AWEException {
         return networkModel.getNodeToNodeModel(N2NRelTypes.FREQUENCY_SPECTRUM, name, NetworkElementNodeType.SECTOR);
@@ -86,6 +91,7 @@ public class FrequencyConstraintSaver extends AbstractN2NSaver {
 
         collectTrxMap(row);
         String trxId = TRX_MAP.get(FR_TRX_ID).toString();
+        //TODO: LN: see findElementByPropertyValue
         IDataElement findedSector = networkModel.findElement(SECTOR_MAP);
         if (findedSector == null) {
             LOGGER.error("sector " + SECTOR_MAP + " not found");
@@ -94,7 +100,7 @@ public class FrequencyConstraintSaver extends AbstractN2NSaver {
         // link trx elements and frequency spectrum element
         List<IDataElement> listTRX = getRequiredTrxs(trxId, findedSector);
         if (listTRX.size() == 0) {
-            LOGGER.info("There ara not trx for sector " + SECTOR_MAP);
+            LOGGER.info("There are no trx for sector " + SECTOR_MAP);
             return;
         }
         for (IDataElement trx : listTRX) {
@@ -121,6 +127,8 @@ public class FrequencyConstraintSaver extends AbstractN2NSaver {
      * @param findedSector
      * @return
      */
+    //TODO: LN: why not use Integer as trxId and null as '*'? 
+    //in this case you don't need to use toString() all the time
     private List<IDataElement> getRequiredTrxs(String trxId, IDataElement findedSector) {
         Iterable<IDataElement> listTRX = networkModel.getChildren(findedSector);
         List<IDataElement> requiredTrx = new LinkedList<IDataElement>();
@@ -132,6 +140,7 @@ public class FrequencyConstraintSaver extends AbstractN2NSaver {
         return requiredTrx;
     }
 
+    //TODO: LN: comments
     /**
      *
      */
@@ -160,11 +169,13 @@ public class FrequencyConstraintSaver extends AbstractN2NSaver {
         RELATIONS_PROPERTIES.put(FR_SCALLING_FACTOR, getSynonymValueWithAutoparse(FR_SCALLING_FACTOR, row));
     }
 
+    //TODO: LN: why null? 
     @Override
     protected String getSourceElementName() {
         return null;
     }
 
+    //TODO: LN: why null? 
     @Override
     protected String getNeighborElementName() {
         return null;

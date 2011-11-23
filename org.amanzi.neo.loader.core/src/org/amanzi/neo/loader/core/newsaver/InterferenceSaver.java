@@ -23,6 +23,7 @@ import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
 import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelTypes;
 import org.neo4j.graphdb.GraphDatabaseService;
 
+//TODO: LN: comments
 /**
  * @author Vladislav_Kondratenko
  */
@@ -30,7 +31,7 @@ public class InterferenceSaver extends AbstractN2NSaver {
     /*
      * neighbours
      */
-    public final static String INTERFERE_SECTOR_NAME = "interfering_sector";
+    public final static String INTERFERING_SECTOR_NAME = "interfering_sector";
     public final static String SERVING_SECTOR_NAME = "serv_sector_name";
 
     protected InterferenceSaver(INodeToNodeRelationsModel model, INetworkModel networkModel, ConfigurationDataImpl data,
@@ -38,6 +39,7 @@ public class InterferenceSaver extends AbstractN2NSaver {
         super(model, networkModel, data, service);
     }
 
+    //TODO: LN: comments
     public InterferenceSaver() {
         super();
     }
@@ -60,7 +62,7 @@ public class InterferenceSaver extends AbstractN2NSaver {
 
     @Override
     protected String getNeighborElementName() {
-        return INTERFERE_SECTOR_NAME;
+        return INTERFERING_SECTOR_NAME;
     }
 
 }

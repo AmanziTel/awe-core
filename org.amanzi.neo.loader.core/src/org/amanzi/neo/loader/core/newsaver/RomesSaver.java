@@ -49,6 +49,7 @@ import org.neo4j.graphdb.GraphDatabaseService;
 public class RomesSaver extends AbstractDriveSaver {
     // Saver constants
     private static final Logger LOGGER = Logger.getLogger(RomesSaver.class);
+    //TODO: LN: comments
     private Set<IDataElement> locationDataElements = new HashSet<IDataElement>();
 
     protected RomesSaver(IDriveModel model, ConfigurationDataImpl config, GraphDatabaseService service) {
@@ -66,6 +67,7 @@ public class RomesSaver extends AbstractDriveSaver {
         }
     }
 
+    //TODO: LN: comments
     /**
      * 
      */
@@ -76,6 +78,7 @@ public class RomesSaver extends AbstractDriveSaver {
     @Override
     public void init(ConfigurationDataImpl configuration, CSVContainer dataElement) {
         DRIVE_TYPE_NAME = DriveTypes.ROMES.name();
+        //TODO: LN: what is the rootElement? 
         Map<String, Object> rootElement = new HashMap<String, Object>();
         preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.DRIVE);
         setDbInstance();
@@ -91,6 +94,7 @@ public class RomesSaver extends AbstractDriveSaver {
         } catch (AWEException e) {
             rollbackTx();
             LOGGER.error("Exception on creating root Model", e);
+            //TODO: LN: do not throw Runtime
             throw new RuntimeException(e);
         }
     }
@@ -100,6 +104,7 @@ public class RomesSaver extends AbstractDriveSaver {
         driveModel.addFile(file);
     }
 
+    //TODO: LN: duplicated logic
     @Override
     public void saveElement(CSVContainer dataElement) {
         commitTx();
@@ -127,6 +132,7 @@ public class RomesSaver extends AbstractDriveSaver {
         }
     }
 
+    //TODO: LN: comments
     /**
      * @param value
      * @throws AWEException
@@ -157,6 +163,7 @@ public class RomesSaver extends AbstractDriveSaver {
         if (existedLocation != null) {
             List<IDataElement> locList = new LinkedList<IDataElement>();
             locList.add(existedLocation);
+            //TODO: LN: see Nemo1xSaver
             driveModel.linkNode(createdElement, locList, DriveRelationshipTypes.LOCATION);
         } else {
             locationDataElements.add(driveModel.getLocation(createdElement));
@@ -187,6 +194,8 @@ public class RomesSaver extends AbstractDriveSaver {
         params.put(NewAbstractService.TYPE, DriveNodeTypes.M.getId());
     }
 
+    //TODO: LN: duplicated method
+    //we can't use equals for Double
     private IDataElement checkSameLocation(Map<String, Object> params) {
         for (IDataElement location : locationDataElements) {
             if (location.get(IDriveModel.LATITUDE).equals(params.get(IDriveModel.LATITUDE))
@@ -197,6 +206,7 @@ public class RomesSaver extends AbstractDriveSaver {
         return null;
     }
 
+    //TODO: LN: seem to be duplicated 
     /**
      * @param workDate
      * @param time
@@ -207,11 +217,13 @@ public class RomesSaver extends AbstractDriveSaver {
         if (time == null) {
             return null;
         }
+        //TODO: LN: to constant
         SimpleDateFormat dfn = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss.SSS");
         try {
             Date datetime = dfn.parse(time);
             return datetime.getTime();
         } catch (ParseException e1) {
+            //TODO: LN: to constant
             dfn = new SimpleDateFormat("HH:mm:ss");
             try {
                 // TODO: Lagutko: refactor to not use DEPRECATED methods
@@ -223,6 +235,7 @@ public class RomesSaver extends AbstractDriveSaver {
                     this.workDate.add(Calendar.DAY_OF_MONTH, 1);
                 }
                 hours = nodeHours;
+                //TODO: LN: we have method for this
                 workDate.set(Calendar.HOUR_OF_DAY, nodeHours);
                 workDate.set(Calendar.MINUTE, nodeDate.getMinutes());
                 workDate.set(Calendar.SECOND, nodeDate.getSeconds());
@@ -230,7 +243,7 @@ public class RomesSaver extends AbstractDriveSaver {
 
             } catch (Exception e) {
                 LOGGER.error(String.format("Can't parse time: %s", time));
-
+                //TODO: LN: why exception didn't logged?
             }
         }
         return 0l;
