@@ -150,6 +150,7 @@ public interface IDriveModel extends ICorrelatableModel, IRenderableModel, IProp
      * @param source list of <code>DataElement</code>s, containing <code>Node</code> objects.
      * @throws DatabaseException if problems occur in database
      */
+    @Deprecated
     public void linkNode(IDataElement parent, Iterable<IDataElement> source, RelationshipType rel) throws DatabaseException;
 
     /**

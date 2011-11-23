@@ -61,8 +61,7 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
         super(nodeType);
         this.rootNode = rootNode;
 
-        NewDatasetService dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
-        Node gis = dsServ.getGisNodeByDataset(rootNode);
+        Node gis = datasetService.getGisNodeByDataset(rootNode);
         if (gis != null) {
             min_latitude = (Double)gis.getProperty(DriveModel.MIN_LATITUDE, min_latitude);
             min_longitude = (Double)gis.getProperty(DriveModel.MIN_LONGITUDE, min_longitude);

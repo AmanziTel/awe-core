@@ -171,11 +171,6 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
     public void renameElement(IDataElement elementToRename, String newName) throws AWEException;
 
     /**
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> origin/events
      * Update any property of a network element based of <code>IDataElement elementToUpdate</code> object.
      *
      * @param elementToUpdate Element to update
@@ -186,10 +181,6 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
     public void updateElement(IDataElement elementToUpdate, String propertyName, Object newValue) throws AWEException;
     
     /**
-<<<<<<< HEAD
->>>>>>> origin/models
-=======
->>>>>>> origin/events
      * complete existedElement with new property. if
      * 
      * @param existedElement
@@ -212,6 +203,7 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
      * @return <code>DataElement</code> object, created on base of the new network node.
      * @throws AWEException
      */
+    @Deprecated
     public IDataElement createElement(IDataElement parent, Map<String, Object> element, RelationshipType type) throws AWEException;
 
     /**
@@ -222,6 +214,7 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
      * @param rel
      * @throws AWEException
      */
+    @Deprecated
     public void createRelationship(IDataElement parent, IDataElement child, RelationshipType rel) throws AWEException;
 
     /**
