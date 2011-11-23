@@ -28,7 +28,7 @@ import org.junit.Test;
 public class NewGeoReosurceTest {
 
     /**
-     * Test method for {@link org.amanzi.awe.models.catalog.neo.NewGeoResource#getStatus()}.
+     * Test method for {@link org.amanzi.awe.models.catalog.neo.GeoResource#getStatus()}.
      */
     @Test
     public void testGetStatus() {
@@ -36,7 +36,7 @@ public class NewGeoReosurceTest {
     }
 
     /**
-     * Test method for {@link org.amanzi.awe.models.catalog.neo.NewGeoResource#getMessage()}.
+     * Test method for {@link org.amanzi.awe.models.catalog.neo.GeoResource#getMessage()}.
      */
     @Test
     public void testGetMessage() {
@@ -44,7 +44,7 @@ public class NewGeoReosurceTest {
     }
 
     /**
-     * Test method for {@link org.amanzi.awe.models.catalog.neo.NewGeoResource#getInfo(org.eclipse.core.runtime.IProgressMonitor)}.
+     * Test method for {@link org.amanzi.awe.models.catalog.neo.GeoResource#getInfo(org.eclipse.core.runtime.IProgressMonitor)}.
      */
     @Test
     public void testGetInfoIProgressMonitor() {
@@ -52,7 +52,7 @@ public class NewGeoReosurceTest {
     }
 
     /**
-     * Test method for {@link org.amanzi.awe.models.catalog.neo.NewGeoResource#service(org.eclipse.core.runtime.IProgressMonitor)}.
+     * Test method for {@link org.amanzi.awe.models.catalog.neo.GeoResource#service(org.eclipse.core.runtime.IProgressMonitor)}.
      */
     @Test
     public void testServiceIProgressMonitor() {
@@ -60,7 +60,7 @@ public class NewGeoReosurceTest {
     }
 
     /**
-     * Test method for {@link org.amanzi.awe.models.catalog.neo.NewGeoResource#getIdentifier()}.
+     * Test method for {@link org.amanzi.awe.models.catalog.neo.GeoResource#getIdentifier()}.
      */
     @Test
     public void testGetIdentifier() {
@@ -68,7 +68,7 @@ public class NewGeoReosurceTest {
     }
 
     /**
-     * Test method for {@link org.amanzi.awe.models.catalog.neo.NewGeoResource#canResolve(java.lang.Class)}.
+     * Test method for {@link org.amanzi.awe.models.catalog.neo.GeoResource#canResolve(java.lang.Class)}.
      */
     @Test
     public void testCanResolveClassOfT() {
@@ -76,7 +76,7 @@ public class NewGeoReosurceTest {
     }
 
     /**
-     * Test method for {@link org.amanzi.awe.models.catalog.neo.NewGeoResource#resolve(java.lang.Class, org.eclipse.core.runtime.IProgressMonitor)}.
+     * Test method for {@link org.amanzi.awe.models.catalog.neo.GeoResource#resolve(java.lang.Class, org.eclipse.core.runtime.IProgressMonitor)}.
      */
     @Test
     public void testResolveClassOfTIProgressMonitor() {

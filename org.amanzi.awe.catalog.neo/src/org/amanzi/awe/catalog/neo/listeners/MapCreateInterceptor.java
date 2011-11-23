@@ -21,7 +21,7 @@ import net.refractions.udig.project.internal.Map;
 import net.refractions.udig.project.internal.ProjectPackage;
 
 import org.amanzi.awe.catalog.neo.NeoGeoResource;
-import org.amanzi.awe.models.catalog.neo.NewGeoResource;
+import org.amanzi.awe.models.catalog.neo.GeoResource;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.model.IRenderableModel;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
@@ -55,7 +55,7 @@ public class MapCreateInterceptor implements MapInterceptor {
                 System.out.println(msg.getNotifier().getClass());
                 if (msg.getNotifier() instanceof Layer) {
                     Layer layer = (Layer)msg.getNotifier();
-                    if (layer.getGeoResource().canResolve(NewGeoResource.class)) {
+                    if (layer.getGeoResource().canResolve(GeoResource.class)) {
                         System.out.println(msg.getFeatureID(Layer.class));
                         if (msg.getFeatureID(Layer.class) == ProjectPackage.LAYER__CRS) {
                             switch (msg.getEventType()) {
@@ -78,7 +78,7 @@ public class MapCreateInterceptor implements MapInterceptor {
             private void storeCrs(Layer layer, final CoordinateReferenceSystem crs) {
 
                 try {
-                    final NewGeoResource resource = layer.getGeoResource().resolve(NewGeoResource.class, null);
+                    final GeoResource resource = layer.getGeoResource().resolve(GeoResource.class, null);
                     Job job = new Job("StoreCrs") {
 
                         @Override

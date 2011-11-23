@@ -34,7 +34,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
  * @author grigoreva_a
  * @since 1.0.0
  */
-public class NewGeoServiceExtension implements ServiceExtension {
+public class GeoServiceExtension implements ServiceExtension {
     private static final String NEOSTORE_DIR = "neostore";
     private static final String FILE_PROTOCOL = "file";
     /* Neo4J service key, URL to the Neo4J database and gis node */
@@ -84,7 +84,7 @@ public class NewGeoServiceExtension implements ServiceExtension {
         // check for the property service key
         if (params.containsKey(URL_KEY)) {
             // found it, create the service handle
-            return new NewGeoService(params);
+            return new GeoService(params);
         }
 
         // key not found

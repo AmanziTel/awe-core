@@ -24,7 +24,7 @@ import net.refractions.udig.project.ui.internal.dialogs.ColorEditor;
 import net.refractions.udig.style.IStyleConfigurator;
 
 import org.amanzi.awe.catalog.neo.GeoNeo;
-import org.amanzi.awe.models.catalog.neo.NewGeoResource;
+import org.amanzi.awe.models.catalog.neo.GeoResource;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.IRenderableModel;
 import org.amanzi.neo.services.statistic.PropertyHeader;
@@ -537,7 +537,7 @@ public class NeoStyleConfigurator extends IStyleConfigurator {
     @Override
     public void focus(Layer layer1) {
         try {
-            IRenderableModel geoNeo = layer1.findGeoResource(NewGeoResource.class).resolve(IRenderableModel.class, null);
+            IRenderableModel geoNeo = layer1.findGeoResource(GeoResource.class).resolve(IRenderableModel.class, null);
             isNetwork = geoNeo instanceof INetworkModel;
 
         } catch (IOException e) {

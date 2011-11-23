@@ -28,7 +28,7 @@ import org.junit.Test;
 public class NewGeoServiceTest {
 
     /**
-     * Test method for {@link org.amanzi.awe.models.catalog.neo.NewGeoService#NewGeoService(java.util.Map)}.
+     * Test method for {@link org.amanzi.awe.models.catalog.neo.GeoService#NewGeoService(java.util.Map)}.
      */
     @Test
     public void testNewGeoService() {
@@ -36,7 +36,7 @@ public class NewGeoServiceTest {
     }
 
     /**
-     * Test method for {@link org.amanzi.awe.models.catalog.neo.NewGeoService#getStatus()}.
+     * Test method for {@link org.amanzi.awe.models.catalog.neo.GeoService#getStatus()}.
      */
     @Test
     public void testGetStatus() {
@@ -44,7 +44,7 @@ public class NewGeoServiceTest {
     }
 
     /**
-     * Test method for {@link org.amanzi.awe.models.catalog.neo.NewGeoService#getMessage()}.
+     * Test method for {@link org.amanzi.awe.models.catalog.neo.GeoService#getMessage()}.
      */
     @Test
     public void testGetMessage() {
@@ -52,7 +52,7 @@ public class NewGeoServiceTest {
     }
 
     /**
-     * Test method for {@link org.amanzi.awe.models.catalog.neo.NewGeoService#getIdentifier()}.
+     * Test method for {@link org.amanzi.awe.models.catalog.neo.GeoService#getIdentifier()}.
      */
     @Test
     public void testGetIdentifier() {
@@ -60,7 +60,7 @@ public class NewGeoServiceTest {
     }
 
     /**
-     * Test method for {@link org.amanzi.awe.models.catalog.neo.NewGeoService#resources(org.eclipse.core.runtime.IProgressMonitor)}.
+     * Test method for {@link org.amanzi.awe.models.catalog.neo.GeoService#resources(org.eclipse.core.runtime.IProgressMonitor)}.
      */
     @Test
     public void testResourcesIProgressMonitor() {
@@ -68,7 +68,7 @@ public class NewGeoServiceTest {
     }
 
     /**
-     * Test method for {@link org.amanzi.awe.models.catalog.neo.NewGeoService#getInfo(org.eclipse.core.runtime.IProgressMonitor)}.
+     * Test method for {@link org.amanzi.awe.models.catalog.neo.GeoService#getInfo(org.eclipse.core.runtime.IProgressMonitor)}.
      */
     @Test
     public void testGetInfoIProgressMonitor() {
@@ -76,7 +76,7 @@ public class NewGeoServiceTest {
     }
 
     /**
-     * Test method for {@link org.amanzi.awe.models.catalog.neo.NewGeoService#getConnectionParams()}.
+     * Test method for {@link org.amanzi.awe.models.catalog.neo.GeoService#getConnectionParams()}.
      */
     @Test
     public void testGetConnectionParams() {

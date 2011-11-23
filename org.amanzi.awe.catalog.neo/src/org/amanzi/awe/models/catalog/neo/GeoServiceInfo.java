@@ -15,10 +15,10 @@ package org.amanzi.awe.models.catalog.neo;
 import net.refractions.udig.catalog.IService;
 import net.refractions.udig.catalog.IServiceInfo;
 
-public class NewGeoServiceInfo extends IServiceInfo {
+public class GeoServiceInfo extends IServiceInfo {
     private IService service;
 
-    public NewGeoServiceInfo(IService service) {
+    public GeoServiceInfo(IService service) {
         this.service = service;
         this.title = this.service.getIdentifier().toString();
         this.description = "Neo4J Database (" + this.title + ")";

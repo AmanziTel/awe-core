@@ -21,7 +21,7 @@ import net.refractions.udig.project.LayerEvent.EventType;
 import net.refractions.udig.project.internal.Layer;
 
 import org.amanzi.awe.catalog.neo.NeoGeoResource;
-import org.amanzi.awe.models.catalog.neo.NewGeoResource;
+import org.amanzi.awe.models.catalog.neo.GeoResource;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.ui.NeoServiceProviderUi;
 import org.amanzi.neo.services.ui.utils.ActionUtil;
@@ -49,7 +49,7 @@ public class LayerInterceptor implements net.refractions.udig.project.intercepto
 
     @Override
     public void run(Layer layer) {
-        if (layer.findGeoResource(NewGeoResource.class) != null) {// TODO: verify
+        if (layer.findGeoResource(GeoResource.class) != null) {// TODO: verify
             final Layer fLayer = layer;
             ILayerListener renameNameListener = new ILayerListener() {
                 @Override

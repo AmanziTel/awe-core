@@ -21,11 +21,11 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.ImageData;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 
-public class NewGeoResourceInfo extends IGeoResourceInfo {
+public class GeoResourceInfo extends IGeoResourceInfo {
 
-    private NewGeoResource source;// TODO: need this?
+    private GeoResource source;// TODO: need this?
 
-    NewGeoResourceInfo(NewGeoResource source, IRenderableModel sourceModel, IProgressMonitor monitor) {
+    GeoResourceInfo(GeoResource source, IRenderableModel sourceModel, IProgressMonitor monitor) {
         // validate
         if (source == null) {
             throw new IllegalArgumentException("Source is null.");

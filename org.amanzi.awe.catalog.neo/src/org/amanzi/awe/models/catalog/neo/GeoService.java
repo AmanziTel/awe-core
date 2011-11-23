@@ -30,9 +30,9 @@ import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 
-public class NewGeoService extends IService {
+public class GeoService extends IService {
 
-    private static Logger LOGGER = Logger.getLogger(NewGeoService.class);
+    private static Logger LOGGER = Logger.getLogger(GeoService.class);
 
     private List<IGeoResource> members;
     private Throwable message;
@@ -42,9 +42,9 @@ public class NewGeoService extends IService {
     private final Class<Object> type;
 
     @SuppressWarnings("unchecked")
-    NewGeoService(Map<String, Serializable> params) {
+    GeoService(Map<String, Serializable> params) {
         this.params = params;
-        url = (URL)params.get(NewGeoServiceExtension.URL_KEY);
+        url = (URL)params.get(GeoServiceExtension.URL_KEY);
         type = (Class<Object>)params.get(NeoServiceExtension.CLASS_KEY);
     }
 
@@ -77,7 +77,7 @@ public class NewGeoService extends IService {
                 try {
                     // TODO: current project or all the projects?
                     for (IRenderableModel model : ProjectModel.getCurrentProjectModel().getAllRenderableModels()) {
-                        result.add(new NewGeoResource(this, model));
+                        result.add(new GeoResource(this, model));
                     }
                 } catch (AWEException e) {
                     LOGGER.error("Could not create a list of resources.", e);
@@ -95,7 +95,7 @@ public class NewGeoService extends IService {
         if (info == null) {
             synchronized (this) {
                 if (info == null) {
-                    info = new NewGeoServiceInfo(this);
+                    info = new GeoServiceInfo(this);
                 }
             }
         }

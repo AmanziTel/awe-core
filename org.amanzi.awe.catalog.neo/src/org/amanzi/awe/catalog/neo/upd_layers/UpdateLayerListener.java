@@ -37,7 +37,7 @@ import org.amanzi.awe.catalog.neo.upd_layers.events.RefreshPropertiesEvent;
 import org.amanzi.awe.catalog.neo.upd_layers.events.UpdateLayerEvent;
 import org.amanzi.awe.catalog.neo.upd_layers.events.UpdatePropertiesAndMapEvent;
 import org.amanzi.awe.catalog.neo.upd_layers.events.UpdatePropertiesEvent;
-import org.amanzi.awe.models.catalog.neo.NewGeoResource;
+import org.amanzi.awe.models.catalog.neo.GeoResource;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.enums.GeoNeoRelationshipTypes;
 import org.amanzi.neo.services.ui.NeoUtils;
@@ -400,7 +400,7 @@ public class UpdateLayerListener {
     }
 
     private boolean isEventForThisLayer(Node gis) throws IOException {
-        IGeoResource resource = layer.findGeoResource(NewGeoResource.class);
+        IGeoResource resource = layer.findGeoResource(GeoResource.class);
         return gis != null && resource.resolve(Node.class, null).equals(gis);
     }
 }
