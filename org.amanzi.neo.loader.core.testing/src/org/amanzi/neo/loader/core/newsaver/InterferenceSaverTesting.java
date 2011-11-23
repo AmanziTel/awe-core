@@ -54,8 +54,8 @@ import org.neo4j.graphdb.Transaction;
  * @author Vladislav_Kondratenko
  */
 public class InterferenceSaverTesting extends AbstractAWETest {
-    private static Logger LOGGER = Logger.getLogger(NewNetworkSaverTesting.class);
-    private NewInterferenceSaver interferenceSaver;
+    private static final Logger LOGGER = Logger.getLogger(InterferenceSaverTesting.class);
+    private InterferenceSaver interferenceSaver;
     private static String PATH_TO_BASE = "";
     private ConfigurationDataImpl config;
     private static final String NETWORK_KEY = "Network";
@@ -120,7 +120,7 @@ public class InterferenceSaverTesting extends AbstractAWETest {
         }
         fileList.add(testFile);
         config.setSourceFile(fileList);
-        interferenceSaver = new NewInterferenceSaver(node2model, networkModel, config, service);
+        interferenceSaver = new InterferenceSaver(node2model, networkModel, config, service);
         hashMap.put("Serving Sector ", "bsc1");
         hashMap.put("Interfering Sector", "site1");
         hashMap.put("co", "3.123");

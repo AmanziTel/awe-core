@@ -123,15 +123,10 @@ public class Nemo2Generator {
      * @return row
      */
     private String generateDS() {
-        Integer numberOfSystems = systems.size();
-        String numberOfSupportedSystems = numberOfSystems.toString();
-        String[] supportedSystems = new String[numberOfSystems];
-        for (int i = 0; i < numberOfSystems; i++) {
-            supportedSystems[i] = systems.get(i).toString();
-        }
-        String str = NemoEvents.DS.getEventId() + ",,," + numberOfSupportedSystems;
-        for (String system : supportedSystems) {
-            str = str + "," + system;
+        Integer numberOfSystems = TechnologySystems.values().length;
+        String str = NemoEvents.DS.getEventId() + ",,," + numberOfSystems;
+        for (TechnologySystems system : TechnologySystems.values()) {
+            str = str + "," + system.getId();
         }
         return str;
     }
@@ -332,9 +327,8 @@ public class Nemo2Generator {
      * @return row
      */
     private String generateSTART() {
-        String timestamp = generateTimestamp();
         String date = generateDate();
-        String str = NemoEvents.START.getEventId() + "," + timestamp + ",," + returnWordSoCalled(date);
+        String str = NemoEvents.START.getEventId() + "," + generateTimestamp() + ",," + returnWordSoCalled(date);
         return str;
     }
 
@@ -344,9 +338,8 @@ public class Nemo2Generator {
      * @return row
      */
     private String generateSTOP() {
-        String timestamp = generateTimestamp();
         String date = generateDate();
-        String str = NemoEvents.STOP.getEventId() + "," + timestamp + ",," + returnWordSoCalled(date);
+        String str = NemoEvents.STOP.getEventId() + "," + generateTimestamp() + ",," + returnWordSoCalled(date);
         return str;
     }
 
@@ -624,19 +617,23 @@ public class Nemo2Generator {
         if (protocol == 8 || protocol == 10) {
             str = str + generateContext(1);
             Integer numberOfContentElements = generateInteger(0, 10);
-            str = str + "," + numberOfContentElements;
+            Integer numberOfParametersPerContent = 3;
+            str = str + "," + numberOfContentElements + "," + numberOfParametersPerContent;
             for (int i = 0; i < numberOfContentElements; i++) {
-                String numberOfParametersPerContent = "3";
                 String contentURL = "Content URL";
                 Integer contentType = generateInteger(1, 3);
                 Integer contentSize = generateInteger(0, maxIntegerValue);
-                str = str + "," + numberOfParametersPerContent + "," + returnWordSoCalled(contentURL) + "," + contentType + ","
-                        + contentSize;
+                str = str + "," + returnWordSoCalled(contentURL) + "," + contentType + "," + contentSize;
             }
         }
         return str;
     }
 
+    /**
+     * Generate CELLMEAS row
+     * 
+     * @return row
+     */
     private String generateCELLMEAS() {
         String str = NemoEvents.CELLMEAS.getEventId() + "," + generateTimestamp() + ",";
         Integer choice = generateInteger(1, 2);
@@ -648,495 +645,544 @@ public class Nemo2Generator {
             idSystem = generateInteger(11, 13);
         }
         Integer system = systems.get(idSystem);
-        str = str + "," + system.toString();
+        str = str + "," + system;
         if (system == 1) {
-            Integer numberOfHeadersParams = generateInteger(0, maxIntegerValue);
-            String headersParams = numberOfHeadersParams.toString();
-            Integer numberOfCells = generateInteger(0, maxIntegerValue);
-            String cells = numberOfCells.toString();
-            Integer numberOfParametersPerCell = numberOfHeadersParams / numberOfCells;
-            String parametersPerCell = numberOfParametersPerCell.toString();
-            String cellType = generateInteger(0, 1).toString();
-            // 0,...
-            String band = generateInteger(20001, 20015).toString();
-            String arfcn = generateInteger(0, maxIntegerValue).toString();
-            String bsic = generateInteger(0, 63).toString();
-            String rxLevFull = generateFloat(-120, -11).toString();
-            String rxLevSub = generateFloat(-120, -11).toString();
-            String c1 = generateFloat(0, 100).toString();
-            String c2 = generateFloat(0, 100).toString();
-            String c31 = generateFloat(0, 100).toString();
-            String c32 = generateFloat(0, 100).toString();
-            String hcsPriority = generateInteger(0, 7).toString();
-            String hcsThr = generateFloat(-110, -49).toString();
-            String cellID = generateInteger(0, 65535).toString();
-            String lac = generateInteger(0, 65535).toString();
-            String rac = generateInteger(0, maxIntegerValue).toString();
-            String srxlev = generateFloat(-107, -91).toString();
-            str = str + "," + headersParams + "," + cells + "," + parametersPerCell + "," + cellType + "," + band + "," + arfcn
-                    + "," + bsic + "," + rxLevFull + "," + rxLevSub + "," + c1 + "," + c2 + "," + c31 + "," + c32 + ","
-                    + hcsPriority + "," + hcsThr + "," + cellID + "," + lac + "," + rac + "," + srxlev;
+            Integer numberOfHeadersParams = 0;
+            Integer numberOfCells = generateInteger(0, 10);
+            Integer numberOfParametersPerCell = 16;
+            str = str + "," + numberOfHeadersParams + "," + numberOfCells + "," + numberOfParametersPerCell;
+            for (int i = 0; i < numberOfCells; i++) {
+                Integer cellType = generateInteger(0, 1);
+                // 0,...
+                Integer band = generateInteger(20001, 20015);
+                Integer arfcn = generateInteger(0, maxIntegerValue);
+                Integer bsic = generateInteger(0, 63);
+                Float rxLevFull = generateFloat(-120, -11);
+                Float rxLevSub = generateFloat(-120, -11);
+                Float c1 = generateFloat(0, 100);
+                Float c2 = generateFloat(0, 100);
+                Float c31 = generateFloat(0, 100);
+                Float c32 = generateFloat(0, 100);
+                Integer hcsPriority = generateInteger(0, 7);
+                Float hcsThr = generateFloat(-110, -49);
+                Integer cellID = generateInteger(0, 65535);
+                Integer lac = generateInteger(0, 65535);
+                Integer rac = generateInteger(0, maxIntegerValue);
+                Float srxlev = generateFloat(-107, -91);
+                str = str + "," + cellType + "," + band + "," + arfcn + "," + bsic + "," + rxLevFull + "," + rxLevSub + "," + c1
+                        + "," + c2 + "," + c31 + "," + c32 + "," + hcsPriority + "," + hcsThr + "," + cellID + "," + lac + ","
+                        + rac + "," + srxlev;
+            }
         }
         if (system == 2) {
-            Integer numberOfHeadersParams = generateInteger(0, maxIntegerValue);
-            String headersParams = numberOfHeadersParams.toString();
-            Integer numberOfCells = generateInteger(0, maxIntegerValue);
-            String cells = numberOfCells.toString();
-            Integer numberOfParametersPerCell = numberOfHeadersParams / numberOfCells;
-            String parametersPerCell = numberOfParametersPerCell.toString();
-            String cellType = generateInteger(0, 1).toString();
-            // 0,...
-            String band = generateInteger(20001, 20015).toString();
-            String arfcn = generateInteger(0, maxIntegerValue).toString();
-            String lac = generateInteger(0, 65535).toString();
-            String rssi = generateFloat(-111, -11).toString();
-            String c1 = generateFloat(0, 100).toString();
-            String c2 = generateFloat(0, 100).toString();
-            String cc = generateInteger(0, 63).toString();
-            str = str + "," + headersParams + "," + cells + "," + parametersPerCell + "," + cellType + "," + band + "," + arfcn
-                    + "," + lac + "," + rssi + "," + c1 + "," + c2 + "," + cc;
+            Integer numberOfHeadersParams = 0;
+            Integer numberOfCells = generateInteger(0, 10);
+            Integer numberOfParametersPerCell = 8;
+            str = str + "," + numberOfHeadersParams + "," + numberOfCells + "," + numberOfParametersPerCell;
+            for (int i = 0; i < numberOfCells; i++) {
+                Integer cellType = generateInteger(0, 1);
+                // 0,...
+                Integer band = generateInteger(20001, 20015);
+                Integer arfcn = generateInteger(0, maxIntegerValue);
+                Integer lac = generateInteger(0, 65535);
+                Float rssi = generateFloat(-111, -11);
+                Float c1 = generateFloat(0, 100);
+                Float c2 = generateFloat(0, 100);
+                Integer cc = generateInteger(0, 63);
+                str = str + "," + cellType + "," + band + "," + arfcn + "," + lac + "," + rssi + "," + c1 + "," + c2 + "," + cc;
+            }
         }
         if (system == 5) {
-            Integer numberOfHeadersParams = generateInteger(0, maxIntegerValue);
-            String headersParams = numberOfHeadersParams.toString();
-            Integer numberOfChs = generateInteger(0, maxIntegerValue);
-            String chs = numberOfChs.toString();
-            Integer numberOfParametersPerChs = numberOfHeadersParams / numberOfChs;
-            String parametrsPerChs = numberOfParametersPerChs.toString();
-            String ch = generateInteger(0, maxIntegerValue).toString();
-            String rssi = generateFloat(0, 100).toString();
-            Integer numberOfCells = generateInteger(0, maxIntegerValue);
-            String cells = numberOfCells.toString();
-            Integer numberOfParametersPerCell = numberOfHeadersParams / numberOfCells;
-            String parametersPerCell = numberOfParametersPerCell.toString();
-            String cellType = generateInteger(0, 3).toString();
-            // 0,...
-            String band = generateInteger(20001, 20015).toString();
-            String ch2 = generateInteger(0, maxIntegerValue).toString();
-            String scr = generateInteger(0, 511).toString();
-            String ecn0 = generateFloat(-26, -1).toString();
-            String sttd = generateInteger(0, 1).toString();
-            String rscp = generateFloat(-150, -20).toString();
-            String secondaryScr = generateInteger(0, 15).toString();
-            String squal = generateFloat(-24, 23).toString();
-            String srxlev = generateFloat(-107, 89).toString();
-            String hqual = generateFloat(-32, 23).toString();
-            String hrxlev = generateFloat(-115, 89).toString();
-            String rqual = generateFloat(-200, 49).toString();
-            String rrxlev = generateFloat(-191, 24).toString();
-            String off = generateInteger(0, 255).toString();
-            String tm = generateFloat(0, 38399).toString();
-            String pathloss = generateFloat(0, 119).toString();
-            str = str + "," + headersParams + "," + chs + "," + parametrsPerChs + "," + ch + "," + rssi + "," + cells + ","
-                    + parametersPerCell + "," + cellType + "," + band + "," + ch2 + "," + scr + "," + ecn0 + "," + sttd + ","
-                    + rscp + "," + secondaryScr + "," + squal + "," + srxlev + "," + hqual + "," + hrxlev + "," + rqual + ","
-                    + rrxlev + "," + off + "," + tm + "," + pathloss;
+            Integer numberOfHeadersParams = 0;
+            Integer numberOfChs = generateInteger(0, 10);
+            Integer numberOfParametersPerChs = 2;
+            str = str + "," + numberOfHeadersParams + "," + numberOfChs + "," + numberOfParametersPerChs;
+            for (int i = 0; i < numberOfChs; i++) {
+                Integer ch = generateInteger(0, maxIntegerValue);
+                Float rssi = generateFloat(0, 100);
+                str = str + "," + ch + "," + rssi;
+            }
+            Integer numberOfCells = generateInteger(0, 10);
+            Integer numberOfParametersPerCell = 17;
+            str = str + "," + numberOfCells + "," + numberOfParametersPerCell;
+            for (int j = 0; j < numberOfCells; j++) {
+                Integer cellType = generateInteger(0, 3);
+                // 0,...
+                Integer band = generateInteger(20001, 20015);
+                Integer ch2 = generateInteger(0, maxIntegerValue);
+                Integer scr = generateInteger(0, 511);
+                Float ecn0 = generateFloat(-26, -1);
+                Integer sttd = generateInteger(0, 1);
+                Float rscp = generateFloat(-150, -20);
+                Integer secondaryScr = generateInteger(0, 15);
+                Float squal = generateFloat(-24, 23);
+                Float srxlev = generateFloat(-107, 89);
+                Float hqual = generateFloat(-32, 23);
+                Float hrxlev = generateFloat(-115, 89);
+                Float rqual = generateFloat(-200, 49);
+                Float rrxlev = generateFloat(-191, 24);
+                Integer off = generateInteger(0, 255);
+                Float tm = generateFloat(0, 38399);
+                Float pathloss = generateFloat(0, 119);
+                str = str + "," + cellType + "," + band + "," + ch2 + "," + scr + "," + ecn0 + "," + sttd + "," + rscp + ","
+                        + secondaryScr + "," + squal + "," + srxlev + "," + hqual + "," + hrxlev + "," + rqual + "," + rrxlev + ","
+                        + off + "," + tm + "," + pathloss;
+            }
         }
         if (system == 6) {
-            Integer numberOfHeadersParams = generateInteger(0, maxIntegerValue);
-            String headersParams = numberOfHeadersParams.toString();
-            Integer numberOfChs = generateInteger(0, maxIntegerValue);
-            String chs = numberOfChs.toString();
-            Integer numberOfParametersPerChs = numberOfHeadersParams / numberOfChs;
-            String parametrsPerChs = numberOfParametersPerChs.toString();
-            // 0,...
-            String band = generateInteger(20001, 20015).toString();
-            String ch = generateInteger(0, maxIntegerValue).toString();
-            String rssi = generateFloat(0, 100).toString();
-            Integer numberOfCells = generateInteger(0, maxIntegerValue);
-            String cells = numberOfCells.toString();
-            Integer numberOfParametersPerCell = numberOfHeadersParams / numberOfCells;
-            String parametersPerCell = numberOfParametersPerCell.toString();
-            String cellType = generateInteger(0, 1).toString();
-            // 0,...
-            String band2 = generateInteger(20001, 20015).toString();
-            String ch2 = generateInteger(0, maxIntegerValue).toString();
-            String cellParamsID = generateInteger(0, 127).toString();
-            String rscp = generateFloat(-116, -21).toString();
-            String srxlev = generateFloat(-107, 89).toString();
-            String hrxlev = generateFloat(-115, 89).toString();
-            String rrxlev = generateFloat(-191, 24).toString();
-            String pathloss = generateFloat(46, 147).toString();
-            str = str + "," + headersParams + "," + chs + "," + parametrsPerChs + "," + band + "," + ch + "," + rssi + "," + cells
-                    + "," + parametersPerCell + "," + cellType + "," + band2 + "," + ch2 + "," + cellParamsID + "," + rscp + ","
-                    + srxlev + "," + hrxlev + "," + rrxlev + "," + pathloss;
+            Integer numberOfHeadersParams = 0;
+            Integer numberOfChs = generateInteger(0, 10);
+            Integer numberOfParametersPerChs = 3;
+            str = str + "," + numberOfHeadersParams + "," + numberOfChs + "," + numberOfParametersPerChs;
+            for (int i = 0; i < numberOfChs; i++) {
+                // 0,...
+                Integer band = generateInteger(20001, 20015);
+                Integer ch = generateInteger(0, maxIntegerValue);
+                Float rssi = generateFloat(0, 100);
+                str = str + "," + band + "," + ch + "," + rssi;
+            }
+            Integer numberOfCells = generateInteger(0, 10);
+            Integer numberOfParametersPerCell = 9;
+            str = str + "," + numberOfCells + "," + numberOfParametersPerCell;
+            for (int j = 0; j < numberOfCells; j++) {
+                Integer cellType = generateInteger(0, 1);
+                // 0,...
+                Integer band2 = generateInteger(20001, 20015);
+                Integer ch2 = generateInteger(0, maxIntegerValue);
+                Integer cellParamsID = generateInteger(0, 127);
+                Float rscp = generateFloat(-116, -21);
+                Float srxlev = generateFloat(-107, 89);
+                Float hrxlev = generateFloat(-115, 89);
+                Float rrxlev = generateFloat(-191, 24);
+                Float pathloss = generateFloat(46, 147);
+                str = str + "," + cellType + "," + band2 + "," + ch2 + "," + cellParamsID + "," + rscp + "," + srxlev + ","
+                        + hrxlev + "," + rrxlev + "," + pathloss;
+            }
         }
         if (system == 10 || system == 11) {
-            Integer numberOfHeadersParams = generateInteger(0, maxIntegerValue);
-            String headersParams = numberOfHeadersParams.toString();
-            Integer numberOfChs = generateInteger(0, maxIntegerValue);
-            String chs = numberOfChs.toString();
-            Integer numberOfParametersPerChs = numberOfHeadersParams / numberOfChs;
-            String parametrsPerChs = numberOfParametersPerChs.toString();
-            // 0,...
-            String band = generateInteger(20001, 20015).toString();
-            String ch = generateInteger(0, maxIntegerValue).toString();
-            String rxPower = generateFloat(-120, 29).toString();
-            String rx0Power = generateFloat(-120, 29).toString();
-            String rx1Power = generateFloat(-120, 29).toString();
-            Integer numberOfCells = generateInteger(0, maxIntegerValue);
-            String cells = numberOfCells.toString();
-            Integer numberOfParametersPerCell = numberOfHeadersParams / numberOfCells;
-            String parametersPerCell = numberOfParametersPerCell.toString();
-            String set = generateInteger(0, 3).toString();
-            // 0,...
-            String band2 = generateInteger(20001, 20015).toString();
-            String ch2 = generateInteger(0, maxIntegerValue).toString();
-            String pn = generateInteger(0, maxIntegerValue).toString();
-            String eci0 = generateFloat(-32, -1).toString();
-            String walsh = generateInteger(0, maxIntegerValue).toString();
-            String rscp = generateFloat(-150, -21).toString();
-            str = str + "," + headersParams + "," + chs + "," + parametrsPerChs + "," + band + "," + ch + "," + rxPower + ","
-                    + rx0Power + "," + rx1Power + "," + cells + "," + parametersPerCell + "," + set + "," + band2 + "," + ch2 + ","
-                    + pn + "," + eci0 + "," + walsh + "," + rscp;
+            Integer numberOfHeadersParams = 0;
+            Integer numberOfChs = generateInteger(0, 10);
+            Integer numberOfParametersPerChs = 5;
+            str = str + "," + numberOfHeadersParams + "," + numberOfChs + "," + numberOfParametersPerChs;
+            for (int i = 0; i < numberOfChs; i++) {
+                // 0,...
+                Integer band = generateInteger(20001, 20015);
+                Integer ch = generateInteger(0, maxIntegerValue);
+                Float rxPower = generateFloat(-120, 29);
+                Float rx0Power = generateFloat(-120, 29);
+                Float rx1Power = generateFloat(-120, 29);
+                str = str + "," + band + "," + ch + "," + rxPower + "," + rx0Power + "," + rx1Power;
+            }
+            Integer numberOfCells = generateInteger(0, 10);
+            Integer numberOfParametersPerCell = 7;
+            str = str + "," + numberOfCells + "," + numberOfParametersPerCell;
+            for (int j = 0; j < numberOfCells; j++) {
+                Integer set = generateInteger(0, 3);
+                // 0,...
+                Integer band2 = generateInteger(20001, 20015);
+                Integer ch2 = generateInteger(0, maxIntegerValue);
+                Integer pn = generateInteger(0, maxIntegerValue);
+                Float eci0 = generateFloat(-32, -1);
+                Integer walsh = generateInteger(0, maxIntegerValue);
+                Float rscp = generateFloat(-150, -21);
+                str = str + "," + set + "," + band2 + "," + ch2 + "," + pn + "," + eci0 + "," + walsh + "," + rscp;
+            }
         }
         if (system == 12) {
-            Integer numberOfHeadersParams = generateInteger(0, maxIntegerValue);
-            String headersParams = numberOfHeadersParams.toString();
-            Integer numberOfChs = generateInteger(0, maxIntegerValue);
-            String chs = numberOfChs.toString();
-            Integer numberOfParametersPerChs = numberOfHeadersParams / numberOfChs;
-            String parametrsPerChs = numberOfParametersPerChs.toString();
-            // 0,...
-            String band = generateInteger(20001, 20015).toString();
-            String ch = generateInteger(0, maxIntegerValue).toString();
-            String rxPower = generateFloat(-120, 29).toString();
-            String rx0Power = generateFloat(-120, 29).toString();
-            String rx1Power = generateFloat(-120, 29).toString();
-            Integer numberOfChs2 = generateInteger(0, maxIntegerValue);
-            String chs2 = numberOfChs2.toString();
-            Integer numberOfParametersPerChs2 = numberOfHeadersParams / numberOfChs2;
-            String parametrsPerChs2 = numberOfParametersPerChs2.toString();
-            String set = generateInteger(0, 3).toString();
-            String band2 = generateInteger(20001, 20015).toString();
-            String ch2 = generateInteger(0, maxIntegerValue).toString();
-            String pn = generateInteger(0, maxIntegerValue).toString();
-            String eci0 = generateFloat(-32, -1).toString();
-            String rscp = generateFloat(-150, -21).toString();
-            str = str + "," + headersParams + "," + chs + "," + parametrsPerChs + "," + band + "," + ch + "," + rxPower + ","
-                    + rx0Power + "," + rx1Power + "," + chs2 + "," + parametrsPerChs2 + "," + set + "," + band2 + "," + ch2 + ","
-                    + pn + "," + eci0 + "," + rscp;
+            Integer numberOfHeadersParams = 0;
+            Integer numberOfChs = generateInteger(0, 10);
+            Integer numberOfParametersPerChs = 5;
+            str = str + "," + numberOfHeadersParams + "," + numberOfChs + "," + numberOfParametersPerChs;
+            for (int i = 0; i < numberOfChs; i++) {
+                // 0,...
+                Integer band = generateInteger(20001, 20015);
+                Integer ch = generateInteger(0, maxIntegerValue);
+                Float rxPower = generateFloat(-120, 29);
+                Float rx0Power = generateFloat(-120, 29);
+                Float rx1Power = generateFloat(-120, 29);
+                str = str + "," + band + "," + ch + "," + rxPower + "," + rx0Power + "," + rx1Power;
+            }
+            Integer numberOfChs2 = generateInteger(0, 10);
+            Integer numberOfParametersPerChs2 = 6;
+            str = str + "," + numberOfChs2 + "," + numberOfParametersPerChs2;
+            for (int j = 0; j < numberOfChs2; j++) {
+                Integer set = generateInteger(0, 3);
+                Integer band2 = generateInteger(20001, 20015);
+                Integer ch2 = generateInteger(0, maxIntegerValue);
+                Integer pn = generateInteger(0, maxIntegerValue);
+                Float eci0 = generateFloat(-32, -1);
+                Float rscp = generateFloat(-150, -21);
+                str = str + "," + set + "," + band2 + "," + ch2 + "," + pn + "," + eci0 + "," + rscp;
+            }
         }
         if (system == 20) {
-            Integer numberOfHeadersParams = generateInteger(0, maxIntegerValue);
-            String headersParams = numberOfHeadersParams.toString();
-            Integer numberOfCells = generateInteger(0, maxIntegerValue);
-            String cells = numberOfCells.toString();
-            Integer numberOfParametersPerCell = numberOfHeadersParams / numberOfCells;
-            String parametersPerCell = numberOfParametersPerCell.toString();
-            String cellType = generateInteger(0, 1).toString();
-            // 0,...
-            String band = generateInteger(20001, 20015).toString();
-            String quality = generateFloat(0, 99).toString();
-            String channel = generateInteger(0, maxIntegerValue).toString();
-            String rssi = generateFloat(-100, 19).toString();
-            String ssid = returnWordSoCalled("WLAN service set identifier");
-            String macAddr = returnWordSoCalled("WLAN MAC address");
-            String security = generateInteger(0, 4).toString();
-            String maxTransferRate = generateInteger(0, maxIntegerValue).toString();
-            str = str + "," + headersParams + "," + cells + "," + parametersPerCell + "," + cellType + "," + band + "," + quality
-                    + "," + channel + "," + rssi + "," + ssid + "," + macAddr + "," + security + "," + maxTransferRate;
+            Integer numberOfHeadersParams = 0;
+            Integer numberOfCells = generateInteger(0, 10);
+            Integer numberOfParametersPerCell = 9;
+            str = str + "," + numberOfHeadersParams + "," + numberOfCells + "," + numberOfParametersPerCell;
+            for (int i = 0; i < numberOfCells; i++) {
+                Integer cellType = generateInteger(0, 1);
+                // 0,...
+                Integer band = generateInteger(20001, 20015);
+                Float quality = generateFloat(0, 99);
+                Integer channel = generateInteger(0, maxIntegerValue);
+                Float rssi = generateFloat(-100, 19);
+                String ssid = returnWordSoCalled("WLAN service set identifier");
+                String macAddr = returnWordSoCalled("WLAN MAC address");
+                Integer security = generateInteger(0, 4);
+                Integer maxTransferRate = generateInteger(0, maxIntegerValue);
+                str = str + "," + cellType + "," + band + "," + quality + "," + channel + "," + rssi + "," + ssid + "," + macAddr
+                        + "," + security + "," + maxTransferRate;
+            }
         }
         if (system == 21) {
-            Integer numberOfHeadersParams = generateInteger(0, maxIntegerValue);
-            String headersParams = numberOfHeadersParams.toString();
-            Integer numberOfCells = generateInteger(0, maxIntegerValue);
-            String cells = numberOfCells.toString();
-            Integer numberOfParametersPerCell = numberOfHeadersParams / numberOfCells;
-            String parametersPerCell = numberOfParametersPerCell.toString();
-            String cellType = generateInteger(0, 1).toString();
-            // 0,...
-            String band = generateInteger(20001, 20015).toString();
-            String quality = generateFloat(0, 99).toString();
-            String channel = generateInteger(0, maxIntegerValue).toString();
-            String rssi = generateFloat(-100, 19).toString();
-            String ssid = returnWordSoCalled("WLAN service set identifier");
-            String macAddr = returnWordSoCalled("WLAN MAC address");
-            str = str + "," + headersParams + "," + cells + "," + parametersPerCell + "," + cellType + "," + band + "," + ","
-                    + quality + "," + channel + "," + rssi + "," + ssid + "," + macAddr;
+            Integer numberOfHeadersParams = 0;
+            Integer numberOfCells = generateInteger(0, 10);
+            Integer numberOfParametersPerCell = 7;
+            str = str + "," + numberOfHeadersParams + "," + numberOfCells + "," + numberOfParametersPerCell;
+            for (int i = 0; i < numberOfCells; i++) {
+                Integer cellType = generateInteger(0, 1);
+                // 0,...
+                Integer band = generateInteger(20001, 20015);
+                Float quality = generateFloat(0, 99);
+                Integer channel = generateInteger(0, maxIntegerValue);
+                Float rssi = generateFloat(-100, 19);
+                String ssid = returnWordSoCalled("WLAN service set identifier");
+                String macAddr = returnWordSoCalled("WLAN MAC address");
+                str = str + "," + cellType + "," + band + "," + "," + quality + "," + channel + "," + rssi + "," + ssid + ","
+                        + macAddr;
+            }
         }
         if (system == 25) {
-            Integer numberOfHeadersParams = generateInteger(0, maxIntegerValue);
-            String headersParams = numberOfHeadersParams.toString();
-            Integer numberOfCells = generateInteger(0, maxIntegerValue);
-            String cells = numberOfCells.toString();
-            Integer numberOfParametersPerCell = numberOfHeadersParams / numberOfCells;
-            String parametersPerCell = numberOfParametersPerCell.toString();
-            String cellType = generateInteger(0, 1).toString();
-            // 0,...
-            String band = generateInteger(20001, 20015).toString();
-            String frequency = generateFloat(-100, 100).toString();
-            String preambleIndex = generateInteger(0, 113).toString();
-            String bsID = returnWordSoCalled("WiMAX base station ID");
-            String rssi = generateFloat(-120, 19).toString();
-            String rssiDev = generateFloat(0, 49).toString();
-            String cinr = generateFloat(-32, 39).toString();
-            String cinrDev = generateFloat(0, 39).toString();
-            str = str + "," + headersParams + "," + cells + "," + parametersPerCell + "," + cellType + "," + band + "," + frequency
-                    + "," + preambleIndex + "," + bsID + "," + rssi + "," + rssiDev + "," + cinr + "," + cinrDev;
+            Integer numberOfHeadersParams = 0;
+            Integer numberOfCells = generateInteger(0, 10);
+            Integer numberOfParametersPerCell = 9;
+            str = str + "," + numberOfHeadersParams + "," + numberOfCells + "," + numberOfParametersPerCell;
+            for (int i = 0; i < numberOfCells; i++) {
+                Integer cellType = generateInteger(0, 1);
+                // 0,...
+                Integer band = generateInteger(20001, 20015);
+                Float frequency = generateFloat(-100, 100);
+                Integer preambleIndex = generateInteger(0, 113);
+                String bsID = returnWordSoCalled("WiMAX base station ID");
+                Float rssi = generateFloat(-120, 19);
+                Float rssiDev = generateFloat(0, 49);
+                Float cinr = generateFloat(-32, 39);
+                Float cinrDev = generateFloat(0, 39);
+                str = str + "," + cellType + "," + band + "," + frequency + "," + preambleIndex + "," + bsID + "," + rssi + ","
+                        + rssiDev + "," + cinr + "," + cinrDev;
+            }
         }
         if (system == 51 || system == 52) {
-            Integer numberOfHeadersParams = generateInteger(0, maxIntegerValue);
-            String headersParams = numberOfHeadersParams.toString();
-            Integer numberOfCells = generateInteger(0, maxIntegerValue);
-            String cells = numberOfCells.toString();
-            Integer numberOfParametersPerCell = numberOfHeadersParams / numberOfCells;
-            String parametersPerCell = numberOfParametersPerCell.toString();
-            String cellType = generateInteger(0, 1).toString();
-            // 0,...
-            String band = generateInteger(20001, 20015).toString();
-            String ch = generateInteger(0, maxIntegerValue).toString();
-            String sat = generateInteger(0, 6).toString();
-            String rxLev = generateFloat(-120, -11).toString();
-            str = str + "," + headersParams + "," + cells + "," + parametersPerCell + "," + cellType + "," + band + "," + ch + ","
-                    + sat + "," + rxLev;
+            Integer numberOfHeadersParams = 0;
+            Integer numberOfCells = generateInteger(0, 10);
+            Integer numberOfParametersPerCell = 5;
+            str = str + "," + numberOfHeadersParams + "," + numberOfCells + "," + numberOfParametersPerCell;
+            for (int i = 0; i < numberOfCells; i++) {
+                Integer cellType = generateInteger(0, 1);
+                // 0,...
+                Integer band = generateInteger(20001, 20015);
+                Integer ch = generateInteger(0, maxIntegerValue);
+                Integer sat = generateInteger(0, 6);
+                Float rxLev = generateFloat(-120, -11);
+                str = str + "," + cellType + "," + band + "," + ch + "," + sat + "," + rxLev;
+            }
         }
         if (system == 53) {
-            Integer numberOfHeadersParams = generateInteger(0, maxIntegerValue);
-            String headersParams = numberOfHeadersParams.toString();
-            Integer numberOfCells = generateInteger(0, maxIntegerValue);
-            String cells = numberOfCells.toString();
-            Integer numberOfParametersPerCell = numberOfHeadersParams / numberOfCells;
-            String parametersPerCell = numberOfParametersPerCell.toString();
-            String cellType = generateInteger(0, 1).toString();
-            // 0,...
-            String band = generateInteger(20001, 20015).toString();
-            String ch = generateInteger(0, maxIntegerValue).toString();
-            String dcc = generateInteger(0, 255).toString();
-            String rxLev = generateFloat(-120, -11).toString();
-            str = str + "," + headersParams + "," + cells + "," + parametersPerCell + "," + cellType + "," + band + "," + ch + ","
-                    + dcc + "," + rxLev;
-        }
-        return str;
-    }
-
-    private String generateADJMEAS() {
-        String str = NemoEvents.ADJMEAS.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = 1;
-        str = str + "," + system.toString();
-        if (system == 1) {
-            String headersParams = "0";
-            Integer numberOfChs = generateInteger(0, 10);
-            String chs = numberOfChs.toString();
-            str = str + "," + headersParams + "," + chs;
-            for (int i = 0; i < numberOfChs; i++) {
-                String parametrsPerChs = "11";
-                String caChannel = generateInteger(0, maxIntegerValue).toString();
-                String caMinimum = generateFloat(-100, 99).toString();
-                String rssi = generateFloat(-120, -11).toString();
-                String ca1 = generateFloat(-100, 99).toString();
-                String rssi1 = generateFloat(-120, -11).toString();
-                String ca11 = generateFloat(-100, 99).toString();
-                String rssi11 = generateFloat(-120, -11).toString();
-                String ca2 = generateFloat(-100, 99).toString();
-                String rssi2 = generateFloat(-120, -11).toString();
-                String ca22 = generateFloat(-100, 99).toString();
-                String rssi22 = generateFloat(-120, -11).toString();
-                str = str + "," + parametrsPerChs + "," + caChannel + "," + caMinimum + "," + rssi + "," + ca1 + "," + rssi1 + ","
-                        + ca11 + "," + rssi11 + "," + ca2 + "," + rssi2 + "," + ca22 + "," + rssi22;
+            Integer numberOfHeadersParams = 0;
+            Integer numberOfCells = generateInteger(0, 10);
+            Integer numberOfParametersPerCell = 5;
+            str = str + "," + numberOfHeadersParams + "," + numberOfCells + "," + numberOfParametersPerCell;
+            for (int i = 0; i < numberOfCells; i++) {
+                Integer cellType = generateInteger(0, 1);
+                // 0,...
+                Integer band = generateInteger(20001, 20015);
+                Integer ch = generateInteger(0, maxIntegerValue);
+                Integer dcc = generateInteger(0, 255);
+                Float rxLev = generateFloat(-120, -11);
+                str = str + "," + cellType + "," + band + "," + ch + "," + dcc + "," + rxLev;
             }
         }
         return str;
     }
 
+    /**
+     * Generate ADJMEAS row
+     * 
+     * @return row
+     */
+    private String generateADJMEAS() {
+        String str = NemoEvents.ADJMEAS.getEventId() + "," + generateTimestamp() + ",";
+        Integer system = TechnologySystems.GSM.getId();
+        str = str + "," + system;
+        Integer headersParams = 0;
+        Integer numberOfChs = generateInteger(0, 10);
+        Integer parametrsPerChs = 11;
+        str = str + "," + headersParams + "," + numberOfChs + "," + parametrsPerChs;
+        for (int i = 0; i < numberOfChs; i++) {
+            Integer caChannel = generateInteger(0, maxIntegerValue);
+            Float caMinimum = generateFloat(-100, 99);
+            Float rssi = generateFloat(-120, -11);
+            Float ca1 = generateFloat(-100, 99);
+            Float rssi1 = generateFloat(-120, -11);
+            Float ca11 = generateFloat(-100, 99);
+            Float rssi11 = generateFloat(-120, -11);
+            Float ca2 = generateFloat(-100, 99);
+            Float rssi2 = generateFloat(-120, -11);
+            Float ca22 = generateFloat(-100, 99);
+            Float rssi22 = generateFloat(-120, -11);
+            str = str + "," + caChannel + "," + caMinimum + "," + rssi + "," + ca1 + "," + rssi1 + "," + ca11 + "," + rssi11 + ","
+                    + ca2 + "," + rssi2 + "," + ca22 + "," + rssi22;
+        }
+        return str;
+    }
+
+    /**
+     * Generate RXQ row
+     * 
+     * @return row
+     */
     private String generateRXQ() {
         String str = NemoEvents.RXQ.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = 1;
+        Integer system = null;
         Integer choice = generateInteger(1, 2);
         if (choice == 1) {
-            system = 1;
+            system = TechnologySystems.GSM.getId();
         } else {
-            system = 53;
+            system = TechnologySystems.DAMPS.getId();
         }
         str = str + "," + system.toString();
         if (system == 1) {
-            String rxqFull = generateInteger(0, maxIntegerValue).toString();
-            String rxqSub = generateInteger(0, maxIntegerValue).toString();
+            Integer rxqFull = generateInteger(0, maxIntegerValue);
+            Integer rxqSub = generateInteger(0, maxIntegerValue);
             str = str + "," + rxqFull + "," + rxqSub;
         }
         if (system == 53) {
-            String berClass = generateInteger(0, 7).toString();
+            Integer berClass = generateInteger(0, 7);
             str = str + "," + berClass;
         }
         return str;
     }
 
+    /**
+     * Generate PRXQ row
+     * 
+     * @return row
+     */
     private String generatePRXQ() {
         String str = NemoEvents.PRXQ.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = 1;
-        str = str + "," + system.toString();
+        Integer system = TechnologySystems.GSM.getId();
+        str = str + "," + system;
         if (system == 1) {
-            String rxq = generateInteger(0, 7).toString();
-            String cValue = generateFloat(-120, -49).toString();
-            String signVar = generateFloat(0, 15).toString();
-            String tslResults = generateInteger(0, maxIntegerValue).toString();
-            String tslInterf = generateFloat(-28, -1).toString();
-            str = str + "," + rxq + "," + cValue + "," + signVar + "," + tslResults + "," + tslInterf;
+            Integer rxq = generateInteger(0, 7);
+            Float cValue = generateFloat(-120, -49);
+            Float signVar = generateFloat(0, 15);
+            Integer tslResults = generateInteger(0, 10);
+            str = str + "," + rxq + "," + cValue + "," + signVar + "," + tslResults;
+            for (int i = 0; i < tslResults; i++) {
+                Float tslInterf = generateFloat(-28, -1);
+                str = str + "," + tslInterf;
+            }
         }
         return str;
     }
 
     private String generateFER() {
         String str = NemoEvents.FER.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = 1;
+        Integer system = TechnologySystems.GSM.getId();
         Integer choice = generateInteger(1, 2);
         if (choice != 1) {
             Integer systemID = generateInteger(2, 5);
             system = systems.get(systemID);
         }
-        str = str + "," + system.toString();
+        str = str + "," + system;
         if (system == 1) {
-            String ferFull = generateFloat(0, 99).toString();
-            String ferSub = generateFloat(0, 99).toString();
-            String ferTch = generateFloat(0, 99).toString();
+            Float ferFull = generateFloat(0, 99);
+            Float ferSub = generateFloat(0, 99);
+            Float ferTch = generateFloat(0, 99);
             str = str + "," + ferFull + "," + ferSub + "," + ferTch;
         }
         if (system == 5 || system == 6) {
-            String fer = generateFloat(0, 99).toString();
+            Float fer = generateFloat(0, 99);
             str = str + "," + fer;
         }
         if (system == 10 || system == 11) {
-            String ferDec = generateFloat(0, 99).toString();
-            String ferFFCHTarget = generateFloat(0, 99).toString();
-            String ferFSCHTarget = generateFloat(0, 99).toString();
+            Float ferDec = generateFloat(0, 99);
+            Float ferFFCHTarget = generateFloat(0, 99);
+            Float ferFSCHTarget = generateFloat(0, 99);
             str = str + "," + ferDec + "," + ferFFCHTarget + "," + ferFSCHTarget;
         }
         return str;
     }
 
+    /**
+     * Generate MSP row
+     * 
+     * @return row
+     */
     private String generateMSP() {
         String str = NemoEvents.MSP.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = 1;
-        Integer choice = generateInteger(1, 2);
-        if (choice == 2) {
-            Integer systemID = generateInteger(11, 13);
-            system = systems.get(systemID);
+        Integer system = null;
+        Integer choice = generateInteger(1, 3);
+        if (choice == 1) {
+            system = TechnologySystems.GSM.getId();
         }
-        str = str + "," + system.toString();
-        if (system == 1 || system == 51 || system == 52 || system == 53) {
-            String msp = generateInteger(0, 32).toString();
+        if (choice == 2) {
+            system = TechnologySystems.DAMPS.getId();
+        }
+        if (choice == 3) {
+            system = TechnologySystems.AMPS.getId();
+        }
+        str = str + "," + system;
+        if (system == 1 || system == 51 || system == 53) {
+            Integer msp = generateInteger(0, 32);
             str = str + "," + msp;
         }
         return str;
     }
 
+    /**
+     * Generate RLT row
+     * 
+     * @return row
+     */
     private String generateRLT() {
         String str = NemoEvents.RLT.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = 1;
-        str = str + "," + system.toString();
-        if (system == 1) {
-            String rlt = generateInteger(0, 64).toString();
-            str = str + "," + rlt;
-        }
+        Integer system = TechnologySystems.GSM.getId();
+        str = str + "," + system;
+        Integer rlt = generateInteger(0, 64);
+        str = str + "," + rlt;
         return str;
     }
 
+    /**
+     * Generate TAD row
+     * 
+     * @return row
+     */
     private String generateTAD() {
         String str = NemoEvents.TAD.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = 1;
+        Integer system = null;
         Integer choice = generateInteger(1, 3);
+        if (choice == 1) {
+            system = TechnologySystems.GSM.getId();
+        }
         if (choice == 2) {
-            system = systems.get(3);
+            system = TechnologySystems.UMTS_TD_SCDMA.getId();
         }
         if (choice == 3) {
-            system = systems.get(13);
+            system = TechnologySystems.DAMPS.getId();
         }
-        str = str + "," + system.toString();
+        str = str + "," + system;
         if (system == 1) {
-            String ta = generateInteger(0, 63).toString();
+            Integer ta = generateInteger(0, 63);
             str = str + "," + ta;
         }
         if (system == 6) {
-            String ta = generateFloat(-16, 239).toString();
+            Float ta = generateFloat(-16, 239);
             str = str + "," + ta;
         }
         if (system == 53) {
-            String tal = generateInteger(0, 30).toString();
+            Integer tal = generateInteger(0, 30);
             str = str + "," + tal;
         }
         return str;
     }
 
+    /**
+     * Generate DSC row
+     * 
+     * @return row
+     */
     private String generateDSC() {
         String str = NemoEvents.DSC.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = 1;
-        str = str + "," + system.toString();
-        if (system == 1) {
-            String dscCurrent = generateInteger(0, 45).toString();
-            String dscMax = generateInteger(0, 45).toString();
-            str = str + "," + dscCurrent + "," + dscMax;
-        }
+        Integer system = TechnologySystems.GSM.getId();
+        str = str + "," + system;
+        Integer dscCurrent = generateInteger(0, 45);
+        Integer dscMax = generateInteger(0, 45);
+        str = str + "," + dscCurrent + "," + dscMax;
         return str;
     }
 
+    /**
+     * Generate BEP row
+     * 
+     * @return row
+     */
     private String generateBEP() {
         String str = NemoEvents.BEP.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = 1;
-        str = str + "," + system.toString();
+        Integer system = TechnologySystems.GSM.getId();
+        str = str + "," + system;
         if (system == 1) {
-            String gmskMeanBEP = generateInteger(0, 31).toString();
-            String gmskCvBEP = generateInteger(0, 7).toString();
-            String pskMeanBEP = generateInteger(0, 31).toString();
-            String pskCvBEP = generateInteger(0, 7).toString();
+            Integer gmskMeanBEP = generateInteger(0, 31);
+            Integer gmskCvBEP = generateInteger(0, 7);
+            Integer pskMeanBEP = generateInteger(0, 31);
+            Integer pskCvBEP = generateInteger(0, 7);
             str = str + "," + gmskMeanBEP + "," + gmskCvBEP + "," + pskMeanBEP + "," + pskCvBEP;
         }
         return str;
     }
 
+    /**
+     * Generate CI row
+     * 
+     * @return row
+     */
     private String generateCIEvent() {
         String str = NemoEvents.CI.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = 1;
+        Integer system = TechnologySystems.GSM.getId();
         Integer choice = generateInteger(1, 3);
         if (choice == 2) {
-            system = systems.get(3);
+            system = TechnologySystems.UMTS_TD_SCDMA.getId();
         }
         if (choice == 3) {
-            system = systems.get(6);
+            system = TechnologySystems.EVDO.getId();
         }
-        str = str + "," + system.toString();
+        str = str + "," + system;
         if (system == 1) {
-            String ci = generateFloat(-10, 39).toString();
+            Float ci = generateFloat(-10, 39);
             Integer tslResults = generateInteger(0, 10);
             str = str + "," + ci + "," + tslResults;
             for (int i = 0; i < tslResults; i++) {
-                String timeslotCI = generateFloat(-10, 39).toString();
+                Float timeslotCI = generateFloat(-10, 39);
                 str = str + "," + timeslotCI;
             }
             Integer numberOfChs = generateInteger(0, 10);
-            String chs = numberOfChs.toString();
-            str = str + "," + chs;
+            Integer numberOfParametersPerChs = 3;
+            str = str + "," + numberOfChs + "," + numberOfParametersPerChs;
             for (int j = 0; j < numberOfChs; j++) {
-                Integer numberOfParametersPerChs = 3;
-                String parametrsPerChs = numberOfParametersPerChs.toString();
-                String arfcn = generateInteger(0, maxIntegerValue).toString();
-                String ci2 = generateFloat(-10, 39).toString();
-                String rssi = generateFloat(0, 100).toString();
-                str = str + "," + parametrsPerChs + "," + arfcn + "," + ci2 + "," + rssi;
+                Integer arfcn = generateInteger(0, maxIntegerValue);
+                Float ci2 = generateFloat(-10, 39);
+                Float rssi = generateFloat(0, 100);
+                str = str + "," + arfcn + "," + ci2 + "," + rssi;
             }
         }
         if (system == 6) {
-            String ci = generateFloat(-30, 39).toString();
-            String headersParams = "0";
+            Float ci = generateFloat(-30, 39);
+            Integer headersParams = 0;
             Integer numberOfActSetPNs = generateInteger(0, 10);
-            String chs = numberOfActSetPNs.toString();
-            str = str + "," + ci + "," + headersParams + "," + chs;
+            Integer numberOfParametersPerPilots = 7;
+            str = str + "," + ci + "," + headersParams + "," + numberOfActSetPNs + "," + numberOfParametersPerPilots;
             for (int i = 0; i < numberOfActSetPNs; i++) {
-                Integer numberOfParametersPerPilots = 7;
-                String parametersPerPilots = numberOfParametersPerPilots.toString();
-                String pn = generateInteger(0, 511).toString();
-                String sinr = generateFloat(-28, 14).toString();
-                String macIndex = generateInteger(0, 255).toString();
-                String drcCover = generateInteger(0, 7).toString();
-                String rpcCellIndex = generateInteger(0, 15).toString();
-                String drcLock = generateInteger(0, 1).toString();
-                String rab = generateInteger(0, 1).toString();
-                str = str + "," + parametersPerPilots + "," + pn + "," + sinr + "," + macIndex + "," + drcCover + ","
-                        + rpcCellIndex + "," + drcLock + "," + rab;
+                Integer pn = generateInteger(0, 511);
+                Float sinr = generateFloat(-28, 14);
+                Integer macIndex = generateInteger(0, 255);
+                Integer drcCover = generateInteger(0, 7);
+                Integer rpcCellIndex = generateInteger(0, 15);
+                Integer drcLock = generateInteger(0, 1);
+                Integer rab = generateInteger(0, 1);
+                str = str + "," + pn + "," + sinr + "," + macIndex + "," + drcCover + "," + rpcCellIndex + "," + drcLock + ","
+                        + rab;
             }
         }
         return str;
     }
 
+    /**
+     * Generate TXPC row
+     * 
+     * @return row
+     */
     private String generateTXPC() {
         String str = NemoEvents.TXPC.getEventId() + "," + generateTimestamp() + ",";
         Integer system = 25;
@@ -1145,144 +1191,148 @@ public class Nemo2Generator {
             Integer systemID = generateInteger(2, 6);
             system = systems.get(systemID);
         }
-        str = str + "," + system.toString();
+        str = str + "," + system;
         if (system == 2) {
-            String txPower = generateFloat(-120, 29).toString();
-            String pwrCtrlAlg = generateInteger(0, 1).toString();
-            String txPowerChange = generateFloat(-30, 29).toString();
+            Float txPower = generateFloat(-120, 29);
+            Integer pwrCtrlAlg = generateInteger(0, 1);
+            Float txPowerChange = generateFloat(-30, 29);
             str = str + "," + txPower + "," + pwrCtrlAlg + "," + txPowerChange;
         }
         if (system == 5) {
-            String txPower = generateFloat(-120, 29).toString();
-            String pwrCtrlAlg = generateInteger(0, 1).toString();
-            String pwrCtrlStep = generateInteger(1, 2).toString();
-            String comprMode = generateInteger(0, 1).toString();
-            String ulPwrUp = generateInteger(0, maxIntegerValue).toString();
-            String ulPwrDown = generateInteger(0, maxIntegerValue).toString();
-            String ulPwrUpProcent = generateFloat(0, 99).toString();
+            Float txPower = generateFloat(-120, 29);
+            Integer pwrCtrlAlg = generateInteger(0, 1);
+            Integer pwrCtrlStep = generateInteger(1, 2);
+            Integer comprMode = generateInteger(0, 1);
+            Integer ulPwrUp = generateInteger(0, maxIntegerValue);
+            Integer ulPwrDown = generateInteger(0, maxIntegerValue);
+            Float ulPwrUpProcent = generateFloat(0, 99);
             str = str + "," + txPower + "," + pwrCtrlAlg + "," + pwrCtrlStep + "," + comprMode + "," + ulPwrUp + "," + ulPwrDown
                     + "," + ulPwrUpProcent;
         }
         if (system == 6) {
-            String txPower = generateFloat(-99, 98).toString();
-            String pwrCtrlStep = generateInteger(1, 3).toString();
-            String ulPwrUp = generateInteger(0, maxIntegerValue).toString();
-            String ulPwrDown = generateInteger(0, maxIntegerValue).toString();
-            String ulPwrUpProcent = generateFloat(0, 99).toString();
+            Float txPower = generateFloat(-99, 98);
+            Integer pwrCtrlStep = generateInteger(1, 3);
+            Integer ulPwrUp = generateInteger(0, maxIntegerValue);
+            Integer ulPwrDown = generateInteger(0, maxIntegerValue);
+            Float ulPwrUpProcent = generateFloat(0, 99);
             str = str + "," + txPower + "," + pwrCtrlStep + "," + ulPwrUp + "," + ulPwrDown + "," + ulPwrUpProcent;
         }
         if (system == 11) {
-            String txPower = generateFloat(-99, 98).toString();
-            String pwrCtrlStep = generateInteger(0, 2).toString();
-            String ulPwrUp = generateInteger(0, maxIntegerValue).toString();
-            String ulPwrDown = generateInteger(0, maxIntegerValue).toString();
-            String ulPwrUpProcent = generateFloat(0, 99).toString();
-            String txAdjust = generateFloat(0, 100).toString();
-            String txPwrLimit = generateFloat(0, 100).toString();
-            String maxPowerLimited = generateInteger(0, 2).toString();
-            String r1 = generateFloat(0, 100).toString();
-            String r2 = generateFloat(0, 100).toString();
-            String r3 = generateFloat(0, 100).toString();
-            String r4 = generateFloat(0, 100).toString();
+            Float txPower = generateFloat(-99, 98);
+            Integer pwrCtrlStep = generateInteger(0, 2);
+            Integer ulPwrUp = generateInteger(0, maxIntegerValue);
+            Integer ulPwrDown = generateInteger(0, maxIntegerValue);
+            Float ulPwrUpProcent = generateFloat(0, 99);
+            Float txAdjust = generateFloat(0, 100);
+            Float txPwrLimit = generateFloat(0, 100);
+            Integer maxPowerLimited = generateInteger(0, 2);
+            Float r1 = generateFloat(0, 100);
+            Float r2 = generateFloat(0, 100);
+            Float r3 = generateFloat(0, 100);
+            Float r4 = generateFloat(0, 100);
             str = str + "," + txPower + "," + pwrCtrlStep + "," + ulPwrUp + "," + ulPwrDown + "," + ulPwrUpProcent + "," + txAdjust
                     + "," + txPwrLimit + "," + maxPowerLimited + "," + r1 + "," + r2 + "," + r3 + "," + r4;
         }
         if (system == 12) {
-            String txPower = generateFloat(-99, 98).toString();
-            String ulPwrUp = generateInteger(0, maxIntegerValue).toString();
-            String ulPwrHold = generateInteger(0, maxIntegerValue).toString();
-            String ulPwrDown = generateInteger(0, maxIntegerValue).toString();
-            String ulPwrUpProcent = generateFloat(0, 99).toString();
-            String txAdjust = generateFloat(0, 100).toString();
-            String txPilot = generateFloat(-99, 98).toString();
-            String txOpenLoopPower = generateFloat(-99, 98).toString();
-            String drcPilot = generateFloat(0, 100).toString();
-            String ackPilot = generateFloat(0, 100).toString();
-            String dataPilot = generateFloat(0, 100).toString();
-            String paMax = generateFloat(0, 100).toString();
-            String drcLockPeriod = generateInteger(8, 8).toString();
-            String txThrottle = generateFloat(0, 98).toString();
-            String txMaxPowerUsage = generateFloat(0, 99).toString();
-            String txMinPowerUsage = generateFloat(0, 99).toString();
-            String transmissionMode = generateInteger(0, 1).toString();
-            String physicalLayerPacketSize = generateInteger(0, maxIntegerValue).toString();
-            String rriPilot = generateFloat(0, 100).toString();
-            String dscPilot = generateFloat(0, 100).toString();
-            String auxData = generateFloat(0, 100).toString();
+            Float txPower = generateFloat(-99, 98);
+            Integer ulPwrUp = generateInteger(0, maxIntegerValue);
+            Integer ulPwrHold = generateInteger(0, maxIntegerValue);
+            Integer ulPwrDown = generateInteger(0, maxIntegerValue);
+            Float ulPwrUpProcent = generateFloat(0, 99);
+            Float txAdjust = generateFloat(0, 100);
+            Float txPilot = generateFloat(-99, 98);
+            Float txOpenLoopPower = generateFloat(-99, 98);
+            Float drcPilot = generateFloat(0, 100);
+            Float ackPilot = generateFloat(0, 100);
+            Float dataPilot = generateFloat(0, 100);
+            Float paMax = generateFloat(0, 100);
+            Integer drcLockPeriod = generateInteger(8, 8);
+            Float txThrottle = generateFloat(0, 98);
+            Float txMaxPowerUsage = generateFloat(0, 99);
+            Float txMinPowerUsage = generateFloat(0, 99);
+            Integer transmissionMode = generateInteger(0, 1);
+            Integer physicalLayerPacketSize = generateInteger(0, maxIntegerValue);
+            Float rriPilot = generateFloat(0, 100);
+            Float dscPilot = generateFloat(0, 100);
+            Float auxData = generateFloat(0, 100);
             str = str + "," + txPower + "," + ulPwrUp + "," + ulPwrHold + "," + ulPwrDown + "," + ulPwrUpProcent + "," + txAdjust
                     + "," + txPilot + "," + txOpenLoopPower + "," + drcPilot + "," + ackPilot + "," + dataPilot + "," + paMax + ","
                     + drcLockPeriod + "," + txThrottle + "," + txMaxPowerUsage + "," + txMinPowerUsage + "," + transmissionMode
                     + "," + physicalLayerPacketSize + "," + rriPilot + "," + dscPilot + "," + auxData;
         }
         if (system == 25) {
-            String txPower = generateFloat(-99, 98).toString();
-            String txRefPower = generateFloat(-99, 98).toString();
-            String txPowerHeadroom = generateFloat(0, 98).toString();
-            String txPowerBSOffset = generateFloat(-99, 98).toString();
-            String txPowerIrMax = generateFloat(-99, 98).toString();
-            String bsEIRP = generateFloat(-99, 98).toString();
-            String bsN = generateFloat(-128, -2).toString();
+            Float txPower = generateFloat(-99, 98);
+            Float txRefPower = generateFloat(-99, 98);
+            Float txPowerHeadroom = generateFloat(0, 98);
+            Float txPowerBSOffset = generateFloat(-99, 98);
+            Float txPowerIrMax = generateFloat(-99, 98);
+            Float bsEIRP = generateFloat(-99, 98);
+            Float bsN = generateFloat(-128, -2);
             str = str + "," + txPower + "," + txRefPower + "," + txPowerHeadroom + "," + txPowerBSOffset + "," + txPowerIrMax + ","
                     + bsEIRP + "," + bsN;
         }
         return str;
     }
 
+    /**
+     * Generate RXPC row
+     * 
+     * @return row
+     */
     private String generateRXPC() {
         String str = NemoEvents.RXPC.getEventId() + "," + generateTimestamp() + ",";
         Integer systemID = generateInteger(2, 5);
         Integer system = systems.get(systemID);
         str = str + "," + system.toString();
         if (system == 5) {
-            String sirTarget = generateFloat(-32, 29).toString();
-            String sir = generateFloat(-32, 29).toString();
-            String bsDivState = generateInteger(0, 2).toString();
-            String dlPwrUp = generateInteger(0, maxIntegerValue).toString();
-            String dlPwrDown = generateInteger(0, maxIntegerValue).toString();
-            String dlPwrUpProcent = generateFloat(0, 99).toString();
-            String dpcMode = generateInteger(0, 1).toString();
+            Float sirTarget = generateFloat(-32, 29);
+            Float sir = generateFloat(-32, 29);
+            Integer bsDivState = generateInteger(0, 2);
+            Integer dlPwrUp = generateInteger(0, maxIntegerValue);
+            Integer dlPwrDown = generateInteger(0, maxIntegerValue);
+            Float dlPwrUpProcent = generateFloat(0, 99);
+            Integer dpcMode = generateInteger(0, 1);
             str = str + "," + sirTarget + "," + sir + "," + bsDivState + "," + dlPwrUp + "," + dlPwrDown + "," + dlPwrUpProcent
                     + "," + dpcMode;
         }
         if (system == 6) {
-            String headerParams = "0";
+            Integer headerParams = 0;
             str = str + "," + headerParams;
-            String sirTarget = generateFloat(-32, 29).toString();
-            String sir = generateFloat(-32, 29).toString();
-            String dlPwrUp = generateInteger(0, maxIntegerValue).toString();
-            String dlPwrDown = generateInteger(0, maxIntegerValue).toString();
-            String dlPwrUpProcent = generateFloat(0, 99).toString();
+            Float sirTarget = generateFloat(-32, 29);
+            Float sir = generateFloat(-32, 29);
+            Integer dlPwrUp = generateInteger(0, maxIntegerValue);
+            Integer dlPwrDown = generateInteger(0, maxIntegerValue);
+            Float dlPwrUpProcent = generateFloat(0, 99);
             Integer numberOfTimeslots = generateInteger(0, maxIntegerValue);
-            String timeslots = numberOfTimeslots.toString();
-            str = str + "," + sirTarget + "," + sir + "," + dlPwrUp + "," + dlPwrDown + "," + dlPwrUpProcent + "," + timeslots;
+            Integer numberOfParametersPerTimeslots = 3;
+            str = str + "," + sirTarget + "," + sir + "," + dlPwrUp + "," + dlPwrDown + "," + dlPwrUpProcent + ","
+                    + numberOfTimeslots + "," + numberOfParametersPerTimeslots;
             for (int i = 0; i < numberOfTimeslots; i++) {
-                Integer numberOfParametersPerTimeslots = 3;
-                String parametersPerTimeslots = numberOfParametersPerTimeslots.toString();
-                String tsl = generateInteger(0, 6).toString();
-                String iscp = generateFloat(-116, -26).toString();
-                String rscp = generateFloat(-116, -26).toString();
-                str = str + "," + parametersPerTimeslots + "," + tsl + "," + iscp + "," + rscp;
+                Integer tsl = generateInteger(0, 6);
+                Float iscp = generateFloat(-116, -26);
+                Float rscp = generateFloat(-116, -26);
+                str = str + "," + tsl + "," + iscp + "," + rscp;
             }
         }
         if (system == 11) {
-            String fpcMode = generateInteger(0, 7).toString();
-            String fpcSubChannel = generateInteger(0, 1).toString();
-            String fpcGain = generateFloat(0, 100).toString();
-            String dlPwrUp = generateInteger(0, maxIntegerValue).toString();
-            String dlPwrDown = generateInteger(0, maxIntegerValue).toString();
-            String dlPwrUpProcent = generateFloat(0, 99).toString();
-            String f1 = generateFloat(0, 99).toString();
-            String f2 = generateFloat(0, 99).toString();
-            String f3 = generateFloat(0, 99).toString();
-            String f4 = generateFloat(0, 99).toString();
-            String f5 = generateFloat(0, 99).toString();
-            String f6 = generateFloat(0, 99).toString();
-            String f7 = generateFloat(0, 99).toString();
-            String f8 = generateFloat(0, 99).toString();
-            String f9 = generateFloat(0, 99).toString();
-            String f10 = generateFloat(0, 99).toString();
-            String f11 = generateFloat(0, 99).toString();
-            String f12 = generateFloat(0, 99).toString();
+            Integer fpcMode = generateInteger(0, 7);
+            Integer fpcSubChannel = generateInteger(0, 1);
+            Float fpcGain = generateFloat(0, 100);
+            Integer dlPwrUp = generateInteger(0, maxIntegerValue);
+            Integer dlPwrDown = generateInteger(0, maxIntegerValue);
+            Float dlPwrUpProcent = generateFloat(0, 99);
+            Float f1 = generateFloat(0, 99);
+            Float f2 = generateFloat(0, 99);
+            Float f3 = generateFloat(0, 99);
+            Float f4 = generateFloat(0, 99);
+            Float f5 = generateFloat(0, 99);
+            Float f6 = generateFloat(0, 99);
+            Float f7 = generateFloat(0, 99);
+            Float f8 = generateFloat(0, 99);
+            Float f9 = generateFloat(0, 99);
+            Float f10 = generateFloat(0, 99);
+            Float f11 = generateFloat(0, 99);
+            Float f12 = generateFloat(0, 99);
             str = str + "," + fpcMode + "," + fpcSubChannel + "," + fpcGain + "," + dlPwrUp + "," + dlPwrDown + ","
                     + dlPwrUpProcent + "," + f1 + "," + f2 + "," + f3 + "," + f4 + "," + f5 + "," + f6 + "," + f7 + "," + f8 + ","
                     + f9 + "," + f10 + "," + f11 + "," + f12;
@@ -1290,98 +1340,131 @@ public class Nemo2Generator {
         return str;
     }
 
+    /**
+     * Generate BER row
+     * 
+     * @return row
+     */
     private String generateBER() {
         String str = NemoEvents.BER.getEventId() + "," + generateTimestamp() + ",";
-        Integer system = 2;
+        Integer system = null;
         Integer choice = generateInteger(1, 2);
-        if (choice == 2) {
-            system = systems.get(2);
+        if (choice == 1) {
+            system = TechnologySystems.TETRA.getId();
         }
-        str = str + "," + system.toString();
+        if (choice == 2) {
+            system = TechnologySystems.UMTS_FDD.getId();
+        }
+        str = str + "," + system;
         if (system == 2) {
-            String ber = generateFloat(0, 99).toString();
+            Float ber = generateFloat(0, 99);
             str = str + "," + ber;
         }
         if (system == 5) {
-            String pilotBer = generateFloat(0, 99).toString();
-            String tfciBer = generateFloat(0, 99).toString();
+            Float pilotBer = generateFloat(0, 99);
+            Float tfciBer = generateFloat(0, 99);
             str = str + "," + pilotBer + "," + tfciBer;
         }
         return str;
     }
 
+    /**
+     * Generate PHRATE row
+     * 
+     * @return row
+     */
     private String generatePHRATE() {
         String str = NemoEvents.PHRATE.getEventId() + "," + generateTimestamp() + ",";
         Integer system = generateInteger(5, 6);
-        str = str + "," + system.toString();
+        str = str + "," + system;
         if (system == 5 || system == 6) {
-            String dpdchRateUL = generateInteger(0, maxIntegerValue).toString();
+            Integer dpdchRateUL = generateInteger(0, maxIntegerValue);
             str = str + "," + dpdchRateUL;
         }
         return str;
     }
 
+    /**
+     * Generate WLANRATE row
+     * 
+     * @return row
+     */
     private String generateWLANRATE() {
         String str = NemoEvents.WLANRATE.getEventId() + "," + generateTimestamp() + ",";
         Integer system = TechnologySystems.GAN_WLAN.getId();
-        str = str + "," + system.toString();
-        String wlanRateUl = generateInteger(0, maxIntegerValue).toString();
-        String wlanRateDl = generateInteger(0, maxIntegerValue).toString();
+        str = str + "," + system;
+        Integer wlanRateUl = generateInteger(0, maxIntegerValue);
+        Integer wlanRateDl = generateInteger(0, maxIntegerValue);
         str = str + "," + wlanRateUl + "," + wlanRateDl;
         return str;
     }
 
+    /**
+     * Generate PPPRATE row
+     * 
+     * @return row
+     */
     private String generatePPPRATE() {
         String str = NemoEvents.PPPRATE.getEventId() + "," + generateTimestamp() + ",";
-        String pppRateUl = generateInteger(0, maxIntegerValue).toString();
-        String pppRateDl = generateInteger(0, maxIntegerValue).toString();
-        String sentPppBytes = generateInteger(0, maxIntegerValue).toString();
-        String recvPppBytes = generateInteger(0, maxIntegerValue).toString();
+        Integer pppRateUl = generateInteger(0, maxIntegerValue);
+        Integer pppRateDl = generateInteger(0, maxIntegerValue);
+        Integer sentPppBytes = generateInteger(0, maxIntegerValue);
+        Integer recvPppBytes = generateInteger(0, maxIntegerValue);
         str = str + "," + pppRateUl + "," + pppRateDl + "," + sentPppBytes + "," + recvPppBytes;
         return str;
     }
 
+    /**
+     * Generate RLPRATE row
+     * 
+     * @return row
+     */
     private String generateRLPRATE() {
         String str = NemoEvents.RLPRATE.getEventId() + "," + generateTimestamp() + ",";
         Integer system = generateInteger(10, 12);
-        str = str + "," + system.toString();
-        String rlpRevRate = generateInteger(0, maxIntegerValue).toString();
-        String rlpForRate = generateInteger(0, maxIntegerValue).toString();
-        String rlpRevRetrRate = generateInteger(0, maxIntegerValue).toString();
-        String rlpFwdRetrRate = generateInteger(0, maxIntegerValue).toString();
+        str = str + "," + system;
+        Integer rlpRevRate = generateInteger(0, maxIntegerValue);
+        Integer rlpForRate = generateInteger(0, maxIntegerValue);
+        Integer rlpRevRetrRate = generateInteger(0, maxIntegerValue);
+        Integer rlpFwdRetrRate = generateInteger(0, maxIntegerValue);
         str = str + "," + rlpRevRate + "," + rlpForRate + "," + rlpRevRetrRate + "," + rlpFwdRetrRate;
         return str;
     }
 
+    /**
+     * Generate RLPSTATISTICS row
+     * 
+     * @return row
+     */
     private String generateRLPSTATISTICS() {
         String str = NemoEvents.RLPSTATISTICS.getEventId() + "," + generateTimestamp() + ",";
         Integer system = generateInteger(10, 12);
-        str = str + "," + system.toString();
+        str = str + "," + system;
         if (system == 10 || system == 11) {
-            String serviceID = generateInteger(0, maxIntegerValue).toString();
-            String resets = generateInteger(0, maxIntegerValue).toString();
-            String aborts = generateInteger(0, maxIntegerValue).toString();
-            String lastRTT = generateInteger(0, maxIntegerValue).toString();
-            String blockOfBytesUsed = generateInteger(0, 3).toString();
-            String rxNaks = generateInteger(0, maxIntegerValue).toString();
-            String largestConErasures = generateInteger(0, maxIntegerValue).toString();
-            String retransNotFound = generateInteger(0, maxIntegerValue).toString();
-            String rxRetransFrames = generateInteger(0, maxIntegerValue).toString();
-            String rxIdleFrames = generateInteger(0, maxIntegerValue).toString();
-            String rxFillFrames = generateInteger(0, maxIntegerValue).toString();
-            String rxBlankFrames = generateInteger(0, maxIntegerValue).toString();
-            String rxNullFrames = generateInteger(0, maxIntegerValue).toString();
-            String rxNewFrames = generateInteger(0, maxIntegerValue).toString();
-            String rxFundFrames = generateInteger(0, maxIntegerValue).toString();
-            String rxBytes = generateInteger(0, maxIntegerValue).toString();
-            String rxRLPErasures = generateInteger(0, maxIntegerValue).toString();
-            String rxMUXErasures = generateInteger(0, maxIntegerValue).toString();
-            String txNAKs = generateInteger(0, maxIntegerValue).toString();
-            String txRetransFrames = generateInteger(0, maxIntegerValue).toString();
-            String txIdleFrames = generateInteger(0, maxIntegerValue).toString();
-            String txNewFrames = generateInteger(0, maxIntegerValue).toString();
-            String txFundFrames = generateInteger(0, maxIntegerValue).toString();
-            String txBytes = generateInteger(0, maxIntegerValue).toString();
+            Integer serviceID = generateInteger(0, maxIntegerValue);
+            Integer resets = generateInteger(0, maxIntegerValue);
+            Integer aborts = generateInteger(0, maxIntegerValue);
+            Integer lastRTT = generateInteger(0, maxIntegerValue);
+            Integer blockOfBytesUsed = generateInteger(0, 3);
+            Integer rxNaks = generateInteger(0, maxIntegerValue);
+            Integer largestConErasures = generateInteger(0, maxIntegerValue);
+            Integer retransNotFound = generateInteger(0, maxIntegerValue);
+            Integer rxRetransFrames = generateInteger(0, maxIntegerValue);
+            Integer rxIdleFrames = generateInteger(0, maxIntegerValue);
+            Integer rxFillFrames = generateInteger(0, maxIntegerValue);
+            Integer rxBlankFrames = generateInteger(0, maxIntegerValue);
+            Integer rxNullFrames = generateInteger(0, maxIntegerValue);
+            Integer rxNewFrames = generateInteger(0, maxIntegerValue);
+            Integer rxFundFrames = generateInteger(0, maxIntegerValue);
+            Integer rxBytes = generateInteger(0, maxIntegerValue);
+            Integer rxRLPErasures = generateInteger(0, maxIntegerValue);
+            Integer rxMUXErasures = generateInteger(0, maxIntegerValue);
+            Integer txNAKs = generateInteger(0, maxIntegerValue);
+            Integer txRetransFrames = generateInteger(0, maxIntegerValue);
+            Integer txIdleFrames = generateInteger(0, maxIntegerValue);
+            Integer txNewFrames = generateInteger(0, maxIntegerValue);
+            Integer txFundFrames = generateInteger(0, maxIntegerValue);
+            Integer txBytes = generateInteger(0, maxIntegerValue);
             str = str + "," + serviceID + "," + resets + "," + aborts + "," + lastRTT + "," + blockOfBytesUsed + "," + rxNaks + ","
                     + largestConErasures + "," + retransNotFound + "," + rxRetransFrames + "," + rxIdleFrames + "," + rxFillFrames
                     + "," + rxBlankFrames + "," + rxNullFrames + "," + rxNewFrames + "," + rxFundFrames + "," + rxBytes + ","
@@ -1389,24 +1472,24 @@ public class Nemo2Generator {
                     + txNewFrames + "," + txFundFrames + "," + txBytes;
         }
         if (system == 12) {
-            String serviceID = generateInteger(0, maxIntegerValue).toString();
-            String rxNaks = generateInteger(0, maxIntegerValue).toString();
-            String rxNaksInBytes = generateInteger(0, maxIntegerValue).toString();
-            String retransNotFound = generateInteger(0, maxIntegerValue).toString();
-            String rxDupBytes = generateInteger(0, maxIntegerValue).toString();
-            String rxRetransBytes = generateInteger(0, maxIntegerValue).toString();
-            String rxNewBytes = generateInteger(0, maxIntegerValue).toString();
-            String rxBytes = generateInteger(0, maxIntegerValue).toString();
-            String rxNaks2 = generateInteger(0, maxIntegerValue).toString();
-            String txNaksInBytes = generateInteger(0, maxIntegerValue).toString();
-            String txRetransBytes = generateInteger(0, maxIntegerValue).toString();
-            String txNewBytes = generateInteger(0, maxIntegerValue).toString();
-            String txBytes = generateInteger(0, maxIntegerValue).toString();
-            String nakTimeouts = generateInteger(0, maxIntegerValue).toString();
-            String resetCount = generateInteger(0, maxIntegerValue).toString();
-            String atResetRequestCount = generateInteger(0, maxIntegerValue).toString();
-            String atResetAckCount = generateInteger(0, maxIntegerValue).toString();
-            String anResetRequestCount = generateInteger(0, maxIntegerValue).toString();
+            Integer serviceID = generateInteger(0, maxIntegerValue);
+            Integer rxNaks = generateInteger(0, maxIntegerValue);
+            Integer rxNaksInBytes = generateInteger(0, maxIntegerValue);
+            Integer retransNotFound = generateInteger(0, maxIntegerValue);
+            Integer rxDupBytes = generateInteger(0, maxIntegerValue);
+            Integer rxRetransBytes = generateInteger(0, maxIntegerValue);
+            Integer rxNewBytes = generateInteger(0, maxIntegerValue);
+            Integer rxBytes = generateInteger(0, maxIntegerValue);
+            Integer rxNaks2 = generateInteger(0, maxIntegerValue);
+            Integer txNaksInBytes = generateInteger(0, maxIntegerValue);
+            Integer txRetransBytes = generateInteger(0, maxIntegerValue);
+            Integer txNewBytes = generateInteger(0, maxIntegerValue);
+            Integer txBytes = generateInteger(0, maxIntegerValue);
+            Integer nakTimeouts = generateInteger(0, maxIntegerValue);
+            Integer resetCount = generateInteger(0, maxIntegerValue);
+            Integer atResetRequestCount = generateInteger(0, maxIntegerValue);
+            Integer atResetAckCount = generateInteger(0, maxIntegerValue);
+            Integer anResetRequestCount = generateInteger(0, maxIntegerValue);
             str = str + "," + serviceID + "," + rxNaks + "," + rxNaksInBytes + "," + retransNotFound + "," + rxDupBytes + ","
                     + rxRetransBytes + "," + rxNewBytes + "," + rxBytes + "," + rxNaks2 + "," + txNaksInBytes + ","
                     + txRetransBytes + "," + txNewBytes + "," + txBytes + "," + nakTimeouts + "," + resetCount + ","
@@ -1415,86 +1498,105 @@ public class Nemo2Generator {
         return str;
     }
 
+    /**
+     * Generate MEI row
+     * 
+     * @return row
+     */
     private String generateMEI() {
         String str = NemoEvents.MEI.getEventId() + "," + generateTimestamp() + ",";
         Integer system = generateInteger(5, 6);
-        str = str + "," + system.toString();
+        str = str + "," + system;
         if (system == 5 || system == 6) {
             // 21,22....
-            String measurementEvent = generateInteger(1, 10).toString();
+            Integer measurementEvent = generateInteger(1, 10);
             str = str + "," + measurementEvent;
         }
         return str;
     }
 
+    /**
+     * Generate CQI row
+     * 
+     * @return row
+     */
     private String generateCQI() {
         String str = NemoEvents.CQI.getEventId() + "," + generateTimestamp() + ",";
         Integer system = TechnologySystems.UMTS_FDD.getId();
-        str = str + "," + system.toString();
+        str = str + "," + system;
         if (system == 5) {
-            String params = "4";
-            String sampleDur = generateInteger(1, maxIntegerValue).toString();
-            String phReqRate = generateInteger(1, maxIntegerValue).toString();
-            String cqiRepetitions = generateInteger(1, 4).toString();
-            String cqiCucle = generateInteger(0, 160).toString();
+            Integer params = 4;
+            Integer sampleDur = generateInteger(1, maxIntegerValue);
+            Integer phReqRate = generateInteger(1, maxIntegerValue);
+            Integer cqiRepetitions = generateInteger(1, 4);
+            Integer cqiCucle = generateInteger(0, 160);
             Integer numberOfValues = generateInteger(1, 10);
-            String cqiValues = numberOfValues.toString();
             Integer numberOfParamsPerCqi = 2;
-            String paramsPerCqi = numberOfParamsPerCqi.toString();
-            str = str + "," + params + "," + sampleDur + "," + phReqRate + "," + cqiRepetitions + "," + cqiCucle + "," + cqiValues
-                    + "," + paramsPerCqi;
+            str = str + "," + params + "," + sampleDur + "," + phReqRate + "," + cqiRepetitions + "," + cqiCucle + ","
+                    + numberOfValues + "," + numberOfParamsPerCqi;
             for (int i = 0; i < numberOfValues; i++) {
-                String percentage = generateFloat(0, 99).toString();
-                String cqi = generateInteger(0, 30).toString();
+                Float percentage = generateFloat(0, 99);
+                Integer cqi = generateInteger(0, 30);
                 str = str + "," + percentage + "," + cqi;
             }
         }
         return str;
     }
 
+    /**
+     * Generate HARQI row
+     * 
+     * @return row
+     */
     private String generateHARQI() {
         String str = NemoEvents.HARQI.getEventId() + "," + generateTimestamp() + ",";
         Integer system = TechnologySystems.UMTS_FDD.getId();
-        str = str + "," + system.toString();
+        str = str + "," + system;
         if (system == 5) {
-            String headerParams = "0";
+            Integer headerParams = 0;
             Integer numberOfHarqProcesses = generateInteger(0, 10);
-            String harqProcesses = numberOfHarqProcesses.toString();
             Integer numberOfParamsPerHarqProcesses = 5;
-            String paramsPerHarqProcesses = numberOfParamsPerHarqProcesses.toString();
-            str = str + "," + headerParams + "," + harqProcesses + "," + paramsPerHarqProcesses;
+            str = str + "," + headerParams + "," + numberOfHarqProcesses + "," + numberOfParamsPerHarqProcesses;
             for (int i = 0; i < numberOfHarqProcesses; i++) {
-                String harqID = generateInteger(0, 7).toString();
-                String harqDir = generateInteger(1, 2).toString();
-                String harqRate = generateInteger(0, maxIntegerValue).toString();
-                String harqPackets = generateInteger(0, maxIntegerValue).toString();
-                String harqBler = generateFloat(0, 99).toString();
+                Integer harqID = generateInteger(0, 7);
+                Integer harqDir = generateInteger(1, 2);
+                Integer harqRate = generateInteger(0, maxIntegerValue);
+                Integer harqPackets = generateInteger(0, maxIntegerValue);
+                Float harqBler = generateFloat(0, 99);
                 str = str + "," + harqID + "," + harqDir + "," + harqRate + "," + harqPackets + "," + harqBler;
             }
         }
         return str;
     }
 
+    /**
+     * Generate HSSCCHI row
+     * 
+     * @return row
+     */
     private String generateHSSCCHI() {
         String str = NemoEvents.HSSCCHI.getEventId() + "," + generateTimestamp() + ",";
         Integer system = TechnologySystems.UMTS_FDD.getId();
-        str = str + "," + system.toString();
+        str = str + "," + system;
         if (system == 5) {
-            String headerParams = "0";
+            Integer headerParams = 0;
             Integer numberOfChs = generateInteger(1, 10);
-            String chs = numberOfChs.toString();
             Integer numberOfParamsPerChs = 2;
-            String paramsPerHarqProcesses = numberOfParamsPerChs.toString();
-            str = str + "," + headerParams + "," + chs + "," + paramsPerHarqProcesses;
+            str = str + "," + headerParams + "," + numberOfChs + "," + numberOfParamsPerChs;
             for (int i = 0; i < numberOfChs; i++) {
-                String hsscchCode = generateInteger(0, 127).toString();
-                String hsdpaHSSCCHUsage = generateFloat(0, 99).toString();
+                Integer hsscchCode = generateInteger(0, 127);
+                Float hsdpaHSSCCHUsage = generateFloat(0, 99);
                 str = str + "," + hsscchCode + "," + hsdpaHSSCCHUsage;
             }
         }
         return str;
     }
 
+    /**
+     * Generate PLAID row
+     * 
+     * @return row
+     */
     private String generatePLAID() {
         String str = NemoEvents.PLAID.getEventId() + "," + generateTimestamp() + ",";
         Integer system = TechnologySystems.UMTS_FDD.getId();
@@ -1502,48 +1604,53 @@ public class Nemo2Generator {
         if (choice == 2) {
             system = TechnologySystems.WIMAX.getId();
         }
-        str = str + "," + system.toString();
+        str = str + "," + system;
         if (system == 5) {
-            Integer numberOfHeaderParams = generateInteger(1, maxIntegerValue);
-            String headerParams = numberOfHeaderParams.toString();
-            String sampleDuration = generateInteger(1, maxIntegerValue).toString();
-            String hsPDSCHRate = generateInteger(1, maxIntegerValue).toString();
-            Integer numberOfPLASets = generateInteger(1, maxIntegerValue);
-            String plaSets = numberOfPLASets.toString();
-            Integer numberOfParamsPerPLASets = numberOfHeaderParams / numberOfPLASets;
-            String paramsPerPLASets = numberOfParamsPerPLASets.toString();
-            String percentage = generateFloat(0, 99).toString();
-            String modulation = generateInteger(1, 2).toString();
-            String effectiveCoding = generateFloat(0, 0).toString();
-            String tbSize = generateInteger(1, maxIntegerValue).toString();
-            String stChCode = generateInteger(0, 15).toString();
-            String codes = generateInteger(1, 15).toString();
-            String retr = generateFloat(0, 99).toString();
-            str = str + "," + headerParams + "," + sampleDuration + "," + hsPDSCHRate + "," + plaSets + "," + paramsPerPLASets
-                    + "," + percentage + "," + modulation + "," + effectiveCoding + "," + tbSize + "," + stChCode + "," + codes
-                    + "," + retr;
+            Integer numberOfHeaderParams = 2;
+            Integer sampleDuration = generateInteger(1, maxIntegerValue);
+            Integer hsPDSCHRate = generateInteger(1, maxIntegerValue);
+            Integer numberOfPLASets = generateInteger(0, 10);
+            Integer numberOfParamsPerPLASets = 7;
+            str = str + "," + numberOfHeaderParams + "," + sampleDuration + "," + hsPDSCHRate + "," + numberOfPLASets + ","
+                    + numberOfParamsPerPLASets;
+            for (int i = 0; i < numberOfPLASets; i++) {
+                Float percentage = generateFloat(0, 99);
+                Integer modulation = generateInteger(1, 2);
+                Float effectiveCoding = generateFloat(0, 0);
+                Integer tbSize = generateInteger(1, maxIntegerValue);
+                Integer stChCode = generateInteger(0, 15);
+                Integer codes = generateInteger(1, 15);
+                Float retr = generateFloat(0, 99);
+                str = str + "," + percentage + "," + modulation + "," + effectiveCoding + "," + tbSize + "," + stChCode + ","
+                        + codes + "," + retr;
+            }
         }
         if (system == 25) {
-            Integer numberOfHeaderParams = generateInteger(1, maxIntegerValue);
-            String headerParams = numberOfHeaderParams.toString();
-            String sampleDuration = generateInteger(1, maxIntegerValue).toString();
-            String burstCount = generateInteger(1, maxIntegerValue).toString();
-            Integer numberOfPLASets = generateInteger(1, maxIntegerValue);
-            String plaSets = numberOfPLASets.toString();
-            Integer numberOfParamsPerPLASets = numberOfHeaderParams / numberOfPLASets;
-            String paramsPerPLASets = numberOfParamsPerPLASets.toString();
-            String percentage = generateFloat(0, 99).toString();
-            String modulation = generateInteger(1, 2).toString();
-            String codingRate = generateInteger(1, 7).toString();
-            String codingType = generateInteger(1, 4).toString();
-            // 4,6
-            String repetitionCoding = generateInteger(1, 2).toString();
-            str = str + "," + headerParams + "," + sampleDuration + "," + burstCount + "," + plaSets + "," + paramsPerPLASets + ","
-                    + percentage + "," + modulation + "," + codingRate + "," + codingType + "," + repetitionCoding;
+            Integer numberOfHeaderParams = 2;
+            Integer sampleDuration = generateInteger(1, maxIntegerValue);
+            Integer burstCount = generateInteger(1, maxIntegerValue);
+            Integer numberOfPLASets = generateInteger(1, 10);
+            Integer numberOfParamsPerPLASets = 5;
+            str = str + "," + numberOfHeaderParams + "," + sampleDuration + "," + burstCount + "," + numberOfPLASets + ","
+                    + numberOfParamsPerPLASets;
+            for (int i = 0; i < numberOfPLASets; i++) {
+                Float percentage = generateFloat(0, 99);
+                Integer modulation = generateInteger(1, 2);
+                Integer codingRate = generateInteger(1, 7);
+                Integer codingType = generateInteger(1, 4);
+                // 4,6
+                Integer repetitionCoding = generateInteger(1, 2);
+                str = str + "," + percentage + "," + modulation + "," + codingRate + "," + codingType + "," + repetitionCoding;
+            }
         }
         return str;
     }
 
+    /**
+     * Generate PLAIU row
+     * 
+     * @return row
+     */
     private String generatePLAIU() {
         String str = NemoEvents.PLAIU.getEventId() + "," + generateTimestamp() + ",";
         Integer system = TechnologySystems.UMTS_FDD.getId();
@@ -1551,143 +1658,166 @@ public class Nemo2Generator {
         if (choice == 2) {
             system = TechnologySystems.WIMAX.getId();
         }
-        str = str + "," + system.toString();
+        str = str + "," + system;
         if (system == 5) {
-            Integer numberOfHeaderParams = generateInteger(1, maxIntegerValue);
-            String headerParams = numberOfHeaderParams.toString();
-            String sampleDuration = generateInteger(1, maxIntegerValue).toString();
-            String eDPDCHRate = generateInteger(1, maxIntegerValue).toString();
-            String limMaxPower = generateFloat(0, 99).toString();
-            String limGrant = generateFloat(0, 99).toString();
-            String limLackOfData = generateFloat(0, 99).toString();
-            String limByMux = generateFloat(0, 99).toString();
-            String limByHARQ = generateFloat(0, 99).toString();
-            Integer numberOfPLASets = generateInteger(1, maxIntegerValue);
-            String plaSets = numberOfPLASets.toString();
-            Integer numberOfParamsPerPLASets = numberOfHeaderParams / numberOfPLASets;
-            String paramsPerPLASets = numberOfParamsPerPLASets.toString();
-            String percentage = generateFloat(0, 99).toString();
-            String modulation = generateInteger(1, 2).toString();
-            String tbSize = generateInteger(1, maxIntegerValue).toString();
-            String eTFCI = generateInteger(0, 127).toString();
-            String sfs = generateInteger(1, 10).toString();
-            String retr = generateFloat(0, 99).toString();
-            String avgSGIndex = generateInteger(-1, 37).toString();
-            String avgSG = generateFloat(-10, 29).toString();
-            str = str + "," + headerParams + "," + sampleDuration + "," + eDPDCHRate + "," + limMaxPower + "," + limGrant + ","
-                    + limLackOfData + "," + limByMux + "," + limByHARQ + "," + plaSets + "," + paramsPerPLASets + "," + percentage
-                    + "," + modulation + "," + tbSize + "," + eTFCI + "," + sfs + "," + retr + "," + avgSGIndex + "," + avgSG;
+            Integer numberOfHeaderParams = 7;
+            Integer sampleDuration = generateInteger(1, maxIntegerValue);
+            Integer eDPDCHRate = generateInteger(1, maxIntegerValue);
+            Float limMaxPower = generateFloat(0, 99);
+            Float limGrant = generateFloat(0, 99);
+            Float limLackOfData = generateFloat(0, 99);
+            Float limByMux = generateFloat(0, 99);
+            Float limByHARQ = generateFloat(0, 99);
+            Integer numberOfPLASets = generateInteger(1, 10);
+            Integer numberOfParamsPerPLASets = 8;
+            str = str + "," + numberOfHeaderParams + "," + sampleDuration + "," + eDPDCHRate + "," + limMaxPower + "," + limGrant
+                    + "," + limLackOfData + "," + limByMux + "," + limByHARQ + "," + numberOfPLASets + ","
+                    + numberOfParamsPerPLASets;
+            for (int i = 0; i < numberOfPLASets; i++) {
+                Float percentage = generateFloat(0, 99);
+                Integer modulation = generateInteger(1, 2);
+                Integer tbSize = generateInteger(1, maxIntegerValue);
+                Integer eTFCI = generateInteger(0, 127);
+                Integer sfs = generateInteger(1, 10);
+                Float retr = generateFloat(0, 99);
+                Integer avgSGIndex = generateInteger(-1, 37);
+                Float avgSG = generateFloat(-10, 29);
+                str = str + "," + percentage + "," + modulation + "," + tbSize + "," + eTFCI + "," + sfs + "," + retr + ","
+                        + avgSGIndex + "," + avgSG;
+            }
         }
         if (system == 25) {
-            Integer numberOfHeaderParams = generateInteger(1, maxIntegerValue);
-            String headerParams = numberOfHeaderParams.toString();
-            String sampleDuration = generateInteger(1, maxIntegerValue).toString();
-            String burstCount = generateInteger(1, maxIntegerValue).toString();
-            Integer numberOfPLASets = generateInteger(1, maxIntegerValue);
-            String plaSets = numberOfPLASets.toString();
-            Integer numberOfParamsPerPLASets = numberOfHeaderParams / numberOfPLASets;
-            String paramsPerPLASets = numberOfParamsPerPLASets.toString();
-            String percentage = generateFloat(0, 99).toString();
-            String modulation = generateInteger(1, 3).toString();
-            String codingRate = generateInteger(1, 7).toString();
-            String codingType = generateInteger(1, 4).toString();
-            // 4,6
-            String repetitionCoding = generateInteger(1, 2).toString();
-            str = str + "," + headerParams + "," + sampleDuration + "," + burstCount + "," + plaSets + "," + paramsPerPLASets + ","
-                    + percentage + "," + modulation + "," + codingRate + "," + codingType + "," + repetitionCoding;
+            Integer numberOfHeaderParams = 2;
+            Integer sampleDuration = generateInteger(1, maxIntegerValue);
+            Integer burstCount = generateInteger(1, maxIntegerValue);
+            Integer numberOfPLASets = generateInteger(1, 10);
+            Integer numberOfParamsPerPLASets = 5;
+            str = str + "," + numberOfHeaderParams + "," + sampleDuration + "," + burstCount + "," + numberOfPLASets + ","
+                    + numberOfParamsPerPLASets;
+            for (int i = 0; i < numberOfPLASets; i++) {
+                Float percentage = generateFloat(0, 99);
+                Integer modulation = generateInteger(1, 3);
+                Integer codingRate = generateInteger(1, 7);
+                Integer codingType = generateInteger(1, 4);
+                // 4,6
+                Integer repetitionCoding = generateInteger(1, 2);
+                str = str + "," + percentage + "," + modulation + "," + codingRate + "," + codingType + "," + repetitionCoding;
+            }
         }
         return str;
     }
 
+    /**
+     * Generate HBI row
+     * 
+     * @return row
+     */
     private String generateHBI() {
         String str = NemoEvents.HBI.getEventId() + "," + generateTimestamp() + ",";
         Integer system = TechnologySystems.UMTS_FDD.getId();
-        str = str + "," + system.toString();
+        str = str + "," + system;
         if (system == 5) {
-            String reportingInterval = generateInteger(1, maxIntegerValue).toString();
-            String happyBit = generateFloat(0, 99).toString();
-            String dtx = generateFloat(0, 99).toString();
+            Integer reportingInterval = generateInteger(1, maxIntegerValue);
+            Float happyBit = generateFloat(0, 99);
+            Float dtx = generateFloat(0, 99);
             str = str + "," + reportingInterval + "," + happyBit + "," + dtx;
         }
         return str;
     }
 
+    /**
+     * Generate MACERATE row
+     * 
+     * @return row
+     */
     private String generateMACERATE() {
         String str = NemoEvents.MACERATE.getEventId() + "," + generateTimestamp() + ",";
         Integer system = TechnologySystems.UMTS_FDD.getId();
         str = str + "," + system.toString();
         if (system == 5) {
-            String macEBitrate = generateInteger(1, maxIntegerValue).toString();
-            String macEBlockrate = generateInteger(1, maxIntegerValue).toString();
-            String macEFirstRetr = generateFloat(0, 99).toString();
-            String macESecondRetr = generateFloat(0, 99).toString();
-            String macEThirdRetr = generateFloat(0, 99).toString();
+            Integer macEBitrate = generateInteger(1, maxIntegerValue);
+            Integer macEBlockrate = generateInteger(1, maxIntegerValue);
+            Float macEFirstRetr = generateFloat(0, 99);
+            Float macESecondRetr = generateFloat(0, 99);
+            Float macEThirdRetr = generateFloat(0, 99);
             str = str + "," + macEBitrate + "," + macEBlockrate + "," + macEFirstRetr + "," + macESecondRetr + "," + macEThirdRetr;
         }
         return str;
     }
 
+    /**
+     * Generate AGRANT row
+     * 
+     * @return row
+     */
     private String generateAGRANT() {
         String str = NemoEvents.AGRANT.getEventId() + "," + generateTimestamp() + ",";
         Integer system = TechnologySystems.UMTS_FDD.getId();
         str = str + "," + system.toString();
         if (system == 5) {
-            String agchIndex = generateInteger(0, 31).toString();
-            String agchGrant = generateFloat(-10, 29).toString();
-            String agchScope = generateInteger(-1, 7).toString();
-            String agchSelector = generateInteger(1, 2).toString();
-            String eRNTISelector = generateInteger(1, 2).toString();
+            Integer agchIndex = generateInteger(0, 31);
+            Float agchGrant = generateFloat(-10, 29);
+            Integer agchScope = generateInteger(-1, 7);
+            Integer agchSelector = generateInteger(1, 2);
+            Integer eRNTISelector = generateInteger(1, 2);
             str = str + "," + agchIndex + "," + agchGrant + "," + agchScope + "," + agchSelector + "," + eRNTISelector;
         }
         return str;
     }
 
+    /**
+     * Generate SGRANT row
+     * 
+     * @return row
+     */
     private String generateSGRANT() {
         String str = NemoEvents.SGRANT.getEventId() + "," + generateTimestamp() + ",";
         Integer system = TechnologySystems.UMTS_FDD.getId();
-        str = str + "," + system.toString();
+        str = str + "," + system;
         if (system == 5) {
-            String headerParams = "0";
-            String sampleDur = generateInteger(1, maxIntegerValue).toString();
-            String grantedRate = generateInteger(1, maxIntegerValue).toString();
+            Integer headerParams = 2;
+            Integer sampleDur = generateInteger(1, maxIntegerValue);
+            Integer grantedRate = generateInteger(1, maxIntegerValue);
             Integer numberOfSGSets = generateInteger(1, 10);
-            String sgSets = numberOfSGSets.toString();
             Integer numberOfParamsPerSGSets = 3;
-            String paramsPerSgSets = numberOfParamsPerSGSets.toString();
-            str = str + "," + headerParams + "," + sampleDur + "," + grantedRate + "," + sgSets + "," + paramsPerSgSets;
-            for (int i = 0; i < numberOfParamsPerSGSets; i++) {
-                String distribution = generateFloat(0, 99).toString();
-                String sgIndex = generateInteger(-1, 37).toString();
-                String servingGrant = generateFloat(-10, 29).toString();
+            str = str + "," + headerParams + "," + sampleDur + "," + grantedRate + "," + numberOfSGSets + ","
+                    + numberOfParamsPerSGSets;
+            for (int i = 0; i < numberOfSGSets; i++) {
+                Float distribution = generateFloat(0, 99);
+                Integer sgIndex = generateInteger(-1, 37);
+                Float servingGrant = generateFloat(-10, 29);
                 str = str + "," + distribution + "," + sgIndex + "," + servingGrant;
             }
         }
         return str;
     }
 
+    /**
+     * Generate EDCHI row
+     * 
+     * @return row
+     */
     private String generateEDCHI() {
         String str = NemoEvents.EDCHI.getEventId() + "," + generateTimestamp() + ",";
         Integer system = TechnologySystems.UMTS_FDD.getId();
-        str = str + "," + system.toString();
+        str = str + "," + system;
         if (system == 5) {
-            String headerParams = "0";
-            String nsACKs = generateFloat(0, 99).toString();
-            String nsGrantDown = generateFloat(0, 99).toString();
+            Integer headerParams = 2;
+            Float nsACKs = generateFloat(0, 99);
+            Float nsGrantDown = generateFloat(0, 99);
             Integer numberOfCells = generateInteger(1, 10);
-            String cells = numberOfCells.toString();
             Integer numberOfParamsPerCells = 9;
-            String paramsPerCells = numberOfParamsPerCells.toString();
-            str = str + "," + headerParams + "," + nsACKs + "," + nsGrantDown + "," + cells + "," + paramsPerCells;
+            str = str + "," + headerParams + "," + nsACKs + "," + nsGrantDown + "," + numberOfCells + "," + numberOfParamsPerCells;
             for (int i = 0; i < numberOfCells; i++) {
-                String hsupaChannel = generateInteger(1, maxIntegerValue).toString();
-                String hsupaSc = generateInteger(0, 511).toString();
-                String hsupaRls = generateInteger(0, 5).toString();
-                String ack = generateFloat(0, 99).toString();
-                String nack = generateFloat(0, 99).toString();
-                String dtx = generateFloat(0, 99).toString();
-                String grantUp = generateFloat(0, 99).toString();
-                String grantHold = generateFloat(0, 99).toString();
-                String grantDown = generateFloat(0, 99).toString();
+                Integer hsupaChannel = generateInteger(1, maxIntegerValue);
+                Integer hsupaSc = generateInteger(0, 511);
+                Integer hsupaRls = generateInteger(0, 5);
+                Float ack = generateFloat(0, 99);
+                Float nack = generateFloat(0, 99);
+                Float dtx = generateFloat(0, 99);
+                Float grantUp = generateFloat(0, 99);
+                Float grantHold = generateFloat(0, 99);
+                Float grantDown = generateFloat(0, 99);
                 str = str + "," + hsupaChannel + "," + hsupaSc + "," + hsupaRls + "," + ack + "," + nack + "," + dtx + ","
                         + grantUp + "," + grantHold + "," + grantDown;
             }
@@ -1695,81 +1825,99 @@ public class Nemo2Generator {
         return str;
     }
 
+    /**
+     * Generate HSUPASI row
+     * 
+     * @return row
+     */
     private String generateHSUPASI() {
         String str = NemoEvents.HSUPASI.getEventId() + "," + generateTimestamp() + ",";
         Integer system = TechnologySystems.UMTS_FDD.getId();
-        str = str + "," + system.toString();
+        str = str + "," + system;
         if (system == 5) {
-            String dur = generateInteger(1, maxIntegerValue).toString();
-            String siCount = generateInteger(1, maxIntegerValue).toString();
-            String hlid = generateInteger(0, 15).toString();
-            String hlbs = generateInteger(0, 15).toString();
-            String tebs = generateInteger(0, 31).toString();
-            String tebsMin = generateInteger(0, 31).toString();
-            String tebsMax = generateInteger(0, 31).toString();
-            String uph = generateInteger(0, 31).toString();
-            String uphMin = generateInteger(0, 31).toString();
-            String uphMax = generateInteger(0, 31).toString();
+            Integer dur = generateInteger(1, maxIntegerValue);
+            Integer siCount = generateInteger(1, maxIntegerValue);
+            Integer hlid = generateInteger(0, 15);
+            Integer hlbs = generateInteger(0, 15);
+            Integer tebs = generateInteger(0, 31);
+            Integer tebsMin = generateInteger(0, 31);
+            Integer tebsMax = generateInteger(0, 31);
+            Integer uph = generateInteger(0, 31);
+            Integer uphMin = generateInteger(0, 31);
+            Integer uphMax = generateInteger(0, 31);
             str = str + "," + dur + "," + siCount + "," + hlid + "," + hlbs + "," + tebs + "," + tebsMin + "," + tebsMax + ","
                     + uph + "," + uphMin + "," + uphMax;
         }
         return str;
     }
 
+    /**
+     * Generate DRCI row
+     * 
+     * @return row
+     */
     private String generateDRCI() {
         String str = NemoEvents.DRCI.getEventId() + "," + generateTimestamp() + ",";
         Integer system = TechnologySystems.EVDO.getId();
-        str = str + "," + system.toString();
-        String headerParams = "0";
-        String sampleDuration = generateInteger(1, maxIntegerValue).toString();
+        str = str + "," + system;
+        Integer headerParams = 1;
+        Integer sampleDuration = generateInteger(1, maxIntegerValue);
         Integer numberOfDRCSets = generateInteger(1, 10);
-        String drcSets = numberOfDRCSets.toString();
         Integer numberOfParamsPerDRCSets = 3;
-        String paramsPerDRCSets = numberOfParamsPerDRCSets.toString();
-        str = str + "," + headerParams + "," + sampleDuration + "," + drcSets + "," + paramsPerDRCSets;
+        str = str + "," + headerParams + "," + sampleDuration + "," + numberOfDRCSets + "," + numberOfParamsPerDRCSets;
         for (int i = 0; i < numberOfDRCSets; i++) {
-            String percentage = generateFloat(0, 99).toString();
-            String requestedRate = generateInteger(1, maxIntegerValue).toString();
-            String packetLength = generateInteger(0, 1).toString();
+            Float percentage = generateFloat(0, 99);
+            Integer requestedRate = generateInteger(1, maxIntegerValue);
+            Integer packetLength = generateInteger(0, 1);
             str = str + "," + percentage + "," + requestedRate + "," + packetLength;
         }
         return str;
     }
 
+    /**
+     * Generate RDRC row
+     * 
+     * @return row
+     */
     private String generateRDRC() {
         String str = NemoEvents.RDRC.getEventId() + "," + generateTimestamp() + ",";
         Integer system = TechnologySystems.EVDO.getId();
-        str = str + "," + system.toString();
+        str = str + "," + system;
         if (system == 12) {
-            String txRateLimit = generateInteger(0, 153600).toString();
-            String txCurrentRate = generateInteger(0, 153600).toString();
-            String combRAB = generateInteger(0, 1).toString();
-            String paMax = generateInteger(0, 153600).toString();
-            String randomVariable = generateInteger(0, 255).toString();
-            String transitionProbability = generateInteger(0, maxIntegerValue).toString();
-            String conditionRRI = generateInteger(0, 153600).toString();
-            String actualRRI = generateInteger(0, 153600).toString();
-            String paddingBytes = generateInteger(0, maxIntegerValue).toString();
+            Integer txRateLimit = generateInteger(0, 153600);
+            Integer txCurrentRate = generateInteger(0, 153600);
+            Integer combRAB = generateInteger(0, 1);
+            Integer paMax = generateInteger(0, 153600);
+            Integer randomVariable = generateInteger(0, 255);
+            Integer transitionProbability = generateInteger(0, maxIntegerValue);
+            Integer conditionRRI = generateInteger(0, 153600);
+            Integer actualRRI = generateInteger(0, 153600);
+            Integer paddingBytes = generateInteger(0, maxIntegerValue);
             str = str + "," + txRateLimit + "," + txCurrentRate + "," + combRAB + "," + paMax + "," + randomVariable + ","
                     + transitionProbability + "," + conditionRRI + "," + actualRRI + "," + paddingBytes;
         }
         return str;
     }
 
+    /**
+     * Generate FDRC row
+     * 
+     * @return row
+     */
     private String generateFDRC() {
         String str = NemoEvents.FDRC.getEventId() + "," + generateTimestamp() + ",";
         Integer system = TechnologySystems.EVDO.getId();
-        str = str + "," + system.toString();
+        str = str + "," + system;
         if (system == 12) {
-            String drcIndex = generateInteger(0, maxIntegerValue).toString();
-            String drcCover = generateInteger(0, 7).toString();
-            String dscValue = generateInteger(0, 7).toString();
-            String drcBoost = generateInteger(0, 1).toString();
-            String drcLockUpdSlot = generateInteger(0, maxIntegerValue).toString();
-            String ackChannelStatus = generateInteger(0, 1).toString();
-            String forcedACKNAKRatio = generateFloat(0, 99).toString();
-            String ackRatio = generateFloat(0, 99).toString();
-            String multiuserACKRatio = generateFloat(0, 99).toString();
+            Integer drcIndex = generateInteger(0, maxIntegerValue);
+            Integer drcCover = generateInteger(0, 7);
+            Integer dscValue = generateInteger(0, 7);
+            Integer drcBoost = generateInteger(0, 1);
+            Integer drcLockUpdSlot = generateInteger(0, maxIntegerValue);
+            Integer ackChannelStatus = generateInteger(0, 1);
+            Float forcedACKNAKRatio = generateFloat(0, 99);
+            Float ackRatio = generateFloat(0, 99);
+            Float multiuserACKRatio = generateFloat(0, 99);
             str = str + "," + drcIndex + "," + drcCover + "," + dscValue + "," + drcBoost + "," + drcLockUpdSlot + ","
                     + ackChannelStatus + "," + forcedACKNAKRatio + "," + ackRatio + "," + multiuserACKRatio;
         }
@@ -1787,78 +1935,94 @@ public class Nemo2Generator {
      * str; }
      */
 
+    /**
+     * Generate MARKOVMUX row
+     * 
+     * @return row
+     */
     private String generateMARKOVMUX() {
         String str = NemoEvents.MARKOVMUX.getEventId() + "," + generateTimestamp() + ",";
         Integer system = generateInteger(10, 11);
-        str = str + "," + system.toString();
+        str = str + "," + system;
         if (system == 10 || system == 11) {
-            String headerParams = "0";
+            Integer headerParams = 0;
             Integer numberOfFrames = generateInteger(1, 10);
-            String frames = numberOfFrames.toString();
             Integer numberOfParamsPerFrames = 2;
-            String paramsPerFrames = numberOfParamsPerFrames.toString();
-            str = str + "," + headerParams + "," + frames + "," + paramsPerFrames;
+            str = str + "," + headerParams + "," + numberOfFrames + "," + numberOfParamsPerFrames;
             for (int i = 0; i < numberOfFrames; i++) {
-                String mExpectetedMux = generateInteger(0, 9).toString();
-                String mActualMux = generateInteger(0, 38).toString();
+                Integer mExpectetedMux = generateInteger(0, 9);
+                Integer mActualMux = generateInteger(0, 38);
                 str = str + "," + mExpectetedMux + "," + mActualMux;
             }
         }
         return str;
     }
 
+    /**
+     * Generate MARKOVSTATS row
+     * 
+     * @return row
+     */
     private String generateMARKOVSTATS() {
         String str = NemoEvents.MARKOVSTATS.getEventId() + "," + generateTimestamp() + ",";
         Integer system = generateInteger(10, 11);
-        str = str + "," + system.toString();
-        String headerParams = "0";
-        String mFer = generateFloat(0, 99).toString();
+        str = str + "," + system;
+        Integer headerParams = 1;
+        Float mFer = generateFloat(0, 99);
         Integer numberOfExpectedValues = generateInteger(1, 10);
-        String expectedValues = numberOfExpectedValues.toString();
         Integer numberOfParams = 6;
-        String params = numberOfParams.toString();
-        str = str + "," + headerParams + "," + mFer + "," + expectedValues + "," + params;
+        str = str + "," + headerParams + "," + mFer + "," + numberOfExpectedValues + "," + numberOfParams;
         for (int i = 0; i < numberOfExpectedValues; i++) {
-            String mExpected = generateInteger(1, 4).toString();
-            String m11 = generateInteger(1, 4).toString();
-            String m12 = generateInteger(1, 4).toString();
-            String m14 = generateInteger(1, 4).toString();
-            String m18 = generateInteger(1, 4).toString();
-            String mErasures = generateInteger(1, 4).toString();
+            Integer mExpected = generateInteger(1, 4);
+            Integer m11 = generateInteger(1, 4);
+            Integer m12 = generateInteger(1, 4);
+            Integer m14 = generateInteger(1, 4);
+            Integer m18 = generateInteger(1, 4);
+            Integer mErasures = generateInteger(1, 4);
             str = str + "," + mExpected + "," + m11 + "," + m12 + "," + m14 + "," + m18 + "," + mErasures;
         }
         return str;
     }
 
+    /**
+     * Generate MER row
+     * 
+     * @return row
+     */
     private String generateMER() {
         String str = NemoEvents.MER.getEventId() + "," + generateTimestamp() + ",";
         Integer system = TechnologySystems.TETRA.getId();
-        str = str + "," + system.toString();
+        str = str + "," + system;
         if (system == 2) {
-            String mer = generateFloat(0, 99).toString();
+            Float mer = generateFloat(0, 99);
             str = str + "," + mer;
         }
         return str;
     }
 
+    /**
+     * Generate DVBI row
+     * 
+     * @return row
+     */
     private String generateDVBI() {
         String str = NemoEvents.DVBI.getEventId() + "," + generateTimestamp() + ",";
         Integer system = TechnologySystems.DVB_H.getId();
-        str = str + "," + system.toString();
+        str = str + "," + system;
         if (system == 65) {
-            String serviceState = generateInteger(1, 2).toString();
-            String frequency = generateFloat(0, 100).toString();
-            String bandwidth = generateFloat(0, 100).toString();
-            String cellID = generateInteger(1, maxIntegerValue).toString();
+            Integer serviceState = generateInteger(1, 2);
+            Float frequency = generateFloat(0, 100);
+            Float bandwidth = generateFloat(0, 100);
+            Integer cellID = generateInteger(1, maxIntegerValue);
             // 4,8...
-            String txMode = generateInteger(2, 2).toString();
-            String modulation = generateInteger(1, 3).toString();
-            String codeRateLP = generateInteger(1, 5).toString();
-            String codeRateHP = generateInteger(0, 5).toString();
-            String guardTime = generateInteger(1, 4).toString();
-            String mpeFECCodeRateLP = generateInteger(0, 5).toString();
-            String mpeFECCodeRateHP = generateInteger(0, 5).toString();
-            String hierarchy = generateInteger(0, 1).toString();
+            Integer txMode = generateInteger(2, 2);
+            Integer modulation = generateInteger(1, 3);
+            Integer codeRateLP = generateInteger(1, 5);
+            Integer codeRateHP = generateInteger(0, 5);
+            Integer guardTime = generateInteger(1, 4);
+            Integer mpeFECCodeRateLP = generateInteger(0, 5);
+            Integer mpeFECCodeRateHP = generateInteger(0, 5);
+            Integer hierarchy = generateInteger(0, 1);
             str = str + "," + serviceState + "," + frequency + "," + bandwidth + "," + cellID + "," + txMode + "," + modulation
                     + "," + codeRateLP + "," + codeRateHP + "," + guardTime + "," + mpeFECCodeRateLP + "," + mpeFECCodeRateHP + ","
                     + hierarchy;
@@ -1866,64 +2030,87 @@ public class Nemo2Generator {
         return str;
     }
 
+    /**
+     * Generate DVBFER row
+     * 
+     * @return row
+     */
     private String generateDVBFER() {
         String str = NemoEvents.DVBFER.getEventId() + "," + generateTimestamp() + ",";
         Integer system = TechnologySystems.DVB_H.getId();
-        str = str + "," + system.toString();
+        str = str + "," + system;
         if (system == 65) {
-            String fer = generateFloat(0, 99).toString();
-            String mfer = generateFloat(0, 99).toString();
-            String frameCount = generateInteger(1, maxIntegerValue).toString();
+            Float fer = generateFloat(0, 99);
+            Float mfer = generateFloat(0, 99);
+            Integer frameCount = generateInteger(1, maxIntegerValue);
             str = str + "," + fer + "," + mfer + "," + frameCount;
         }
         return str;
     }
 
+    /**
+     * Generate DVBBER row
+     * 
+     * @return row
+     */
     private String generateDVBBER() {
         String str = NemoEvents.DVBBER.getEventId() + "," + generateTimestamp() + ",";
         Integer system = TechnologySystems.DVB_H.getId();
-        str = str + "," + system.toString();
+        str = str + "," + system;
         if (system == 65) {
-            String ber = generateFloat(0, 99).toString();
-            String vber = generateFloat(0, 99).toString();
+            Float ber = generateFloat(0, 99);
+            Float vber = generateFloat(0, 99);
             str = str + "," + ber + "," + vber;
         }
         return str;
     }
 
+    /**
+     * Generate DVBRXL row
+     * 
+     * @return row
+     */
     private String generateDVBRXL() {
         String str = NemoEvents.DVBRXL.getEventId() + "," + generateTimestamp() + ",";
         Integer system = TechnologySystems.DVB_H.getId();
-        str = str + "," + system.toString();
+        str = str + "," + system;
         if (system == 65) {
-            String headerParams = "0";
+            Integer headerParams = 0;
             Integer numberOfChs = generateInteger(1, 10);
-            String chs = numberOfChs.toString();
             Integer numberOfParamsPerChs = 4;
-            String paramsPerChs = numberOfParamsPerChs.toString();
-            str = str + "," + headerParams + "," + chs + "," + paramsPerChs;
+            str = str + "," + headerParams + "," + numberOfChs + "," + numberOfParamsPerChs;
             for (int i = 0; i < numberOfChs; i++) {
-                String frequency = generateFloat(0, 100).toString();
-                String rxLev = generateFloat(-111, -11).toString();
-                String cn = generateFloat(0, 39).toString();
-                String signalQuality = generateFloat(0, 99).toString();
+                Float frequency = generateFloat(0, 100);
+                Float rxLev = generateFloat(-111, -11);
+                Float cn = generateFloat(0, 39);
+                Float signalQuality = generateFloat(0, 99);
                 str = str + "," + frequency + "," + rxLev + "," + cn + "," + signalQuality;
             }
         }
         return str;
     }
 
+    /**
+     * Generate DVBRATE row
+     * 
+     * @return row
+     */
     private String generateDVBRATE() {
         String str = NemoEvents.DVBRATE.getEventId() + "," + generateTimestamp() + ",";
         Integer system = TechnologySystems.DVB_H.getId();
-        str = str + "," + system.toString();
+        str = str + "," + system;
         if (system == 65) {
-            String dvbHRate = generateInteger(1, maxIntegerValue).toString();
+            Integer dvbHRate = generateInteger(1, maxIntegerValue);
             str = str + "," + dvbHRate;
         }
         return str;
     }
 
+    /**
+     * Generate FREQSCAN row
+     * 
+     * @return row
+     */
     private String generateFREQSCAN() {
         String str = NemoEvents.FREQSCAN.getEventId() + "," + generateTimestamp() + ",";
         Integer choice = generateInteger(1, 4);
@@ -1939,179 +2126,184 @@ public class Nemo2Generator {
             Integer systemID = generateInteger(11, 13);
             system = systems.get(systemID);
         }
-        str = str + "," + system.toString();
+        str = str + "," + system;
         if (system == 1) {
-            Integer numberOfHeaderParams = generateInteger(1, maxIntegerValue);
-            String headerParams = numberOfHeaderParams.toString();
-            Integer numberOfChs = generateInteger(1, maxIntegerValue);
-            String chs = numberOfChs.toString();
-            Integer numberOfParamsPerChs = numberOfHeaderParams / numberOfChs;
-            String paramsPerChs = numberOfParamsPerChs.toString();
-            String arfcn = generateInteger(1, maxIntegerValue).toString();
-            String bsic = generateInteger(0, 63).toString();
-            String rxLevel = generateFloat(-120, -11).toString();
-            String ci = generateFloat(-10, 39).toString();
-            str = str + "," + headerParams + "," + chs + "," + paramsPerChs + "," + arfcn + "," + bsic + "," + rxLevel + "," + ci;
+            Integer numberOfHeaderParams = 0;
+            Integer numberOfChs = generateInteger(1, 10);
+            Integer numberOfParamsPerChs = 4;
+            str = str + "," + numberOfHeaderParams + "," + numberOfChs + "," + numberOfParamsPerChs;
+            for (int i = 0; i < numberOfChs; i++) {
+                Integer arfcn = generateInteger(1, maxIntegerValue);
+                Integer bsic = generateInteger(0, 63);
+                Float rxLevel = generateFloat(-120, -11);
+                Float ci = generateFloat(-10, 39);
+                str = str + "," + arfcn + "," + bsic + "," + rxLevel + "," + ci;
+            }
         }
         if (system == 5 || system == 6) {
-            Integer numberOfHeaderParams = generateInteger(1, maxIntegerValue);
-            String headerParams = numberOfHeaderParams.toString();
-            Integer numberOfChs = generateInteger(1, maxIntegerValue);
-            String chs = numberOfChs.toString();
-            Integer numberOfParamsPerChs = numberOfHeaderParams / numberOfChs;
-            String paramsPerChs = numberOfParamsPerChs.toString();
-            String ch = generateInteger(1, maxIntegerValue).toString();
-            String rssi = generateFloat(-120, -11).toString();
-            str = str + "," + headerParams + "," + chs + "," + paramsPerChs + "," + ch + "," + rssi;
+            Integer numberOfHeaderParams = 0;
+            Integer numberOfChs = generateInteger(1, 10);
+            Integer numberOfParamsPerChs = 2;
+            str = str + "," + numberOfHeaderParams + "," + numberOfChs + "," + numberOfParamsPerChs;
+            for (int i = 0; i < numberOfChs; i++) {
+                Integer ch = generateInteger(1, maxIntegerValue);
+                Float rssi = generateFloat(-120, -11);
+                str = str + "," + ch + "," + rssi;
+            }
         }
         if (system == 10 || system == 11) {
-            Integer numberOfHeaderParams = generateInteger(1, maxIntegerValue);
-            String headerParams = numberOfHeaderParams.toString();
-            Integer numberOfChs = generateInteger(1, maxIntegerValue);
-            String chs = numberOfChs.toString();
-            Integer numberOfParamsPerChs = numberOfHeaderParams / numberOfChs;
-            String paramsPerChs = numberOfParamsPerChs.toString();
-            String ch = generateInteger(1, maxIntegerValue).toString();
-            String rssi = generateFloat(-120, -1).toString();
-            str = str + "," + headerParams + "," + chs + "," + paramsPerChs + "," + ch + "," + rssi;
+            Integer numberOfHeaderParams = 0;
+            Integer numberOfChs = generateInteger(1, 10);
+            Integer numberOfParamsPerChs = 2;
+            str = str + "," + numberOfHeaderParams + "," + numberOfChs + "," + numberOfParamsPerChs;
+            for (int i = 0; i < numberOfChs; i++) {
+                Integer ch = generateInteger(1, maxIntegerValue);
+                Float rssi = generateFloat(-120, -1);
+                str = str + "," + ch + "," + rssi;
+            }
         }
         if (system == 12) {
-            Integer numberOfHeaderParams = generateInteger(1, maxIntegerValue);
-            String headerParams = numberOfHeaderParams.toString();
-            Integer numberOfChs = generateInteger(1, maxIntegerValue);
-            String chs = numberOfChs.toString();
-            Integer numberOfParamsPerChs = numberOfHeaderParams / numberOfChs;
-            String paramsPerChs = numberOfParamsPerChs.toString();
-            String carrier = generateInteger(1, maxIntegerValue).toString();
-            String rssi = generateFloat(-120, -1).toString();
-            str = str + "," + headerParams + "," + chs + "," + paramsPerChs + "," + carrier + "," + rssi;
+            Integer numberOfHeaderParams = 0;
+            Integer numberOfChs = generateInteger(1, 10);
+            Integer numberOfParamsPerChs = 2;
+            str = str + "," + numberOfHeaderParams + "," + numberOfChs + "," + numberOfParamsPerChs;
+            for (int i = 0; i < numberOfChs; i++) {
+                Integer carrier = generateInteger(1, maxIntegerValue);
+                Float rssi = generateFloat(-120, -1);
+                str = str + "," + carrier + "," + rssi;
+            }
         }
         if (system == 25) {
-            Integer numberOfHeaderParams = generateInteger(1, maxIntegerValue);
-            String headerParams = numberOfHeaderParams.toString();
-            Integer numberOfChs = generateInteger(1, maxIntegerValue);
-            String chs = numberOfChs.toString();
-            Integer numberOfParamsPerChs = numberOfHeaderParams / numberOfChs;
-            String paramsPerChs = numberOfParamsPerChs.toString();
-            String frequency = generateInteger(1, maxIntegerValue).toString();
-            String rssi = generateFloat(-120, -1).toString();
-            str = str + "," + headerParams + "," + chs + "," + paramsPerChs + "," + frequency + "," + rssi;
+            Integer numberOfHeaderParams = 0;
+            Integer numberOfChs = generateInteger(1, 10);
+            Integer numberOfParamsPerChs = 2;
+            str = str + "," + numberOfHeaderParams + "," + numberOfChs + "," + numberOfParamsPerChs;
+            for (int i = 0; i < numberOfChs; i++) {
+                Integer frequency = generateInteger(1, maxIntegerValue);
+                Float rssi = generateFloat(-120, -1);
+                str = str + "," + frequency + "," + rssi;
+            }
         }
         if (system == 51 || system == 52) {
-            Integer numberOfHeaderParams = generateInteger(1, maxIntegerValue);
-            String headerParams = numberOfHeaderParams.toString();
-            Integer numberOfChs = generateInteger(1, maxIntegerValue);
-            String chs = numberOfChs.toString();
-            Integer numberOfParamsPerChs = numberOfHeaderParams / numberOfChs;
-            String paramsPerChs = numberOfParamsPerChs.toString();
-            String ch = generateInteger(1, maxIntegerValue).toString();
-            String sat = generateInteger(0, 6).toString();
-            String rxLevel = generateFloat(-120, -11).toString();
-            str = str + "," + headerParams + "," + chs + "," + paramsPerChs + "," + ch + "," + sat + "," + rxLevel;
+            Integer numberOfHeaderParams = 0;
+            Integer numberOfChs = generateInteger(1, 10);
+            Integer numberOfParamsPerChs = 3;
+            str = str + "," + numberOfHeaderParams + "," + numberOfChs + "," + numberOfParamsPerChs;
+            for (int i = 0; i < numberOfChs; i++) {
+                Integer ch = generateInteger(1, maxIntegerValue);
+                Integer sat = generateInteger(0, 6);
+                Float rxLevel = generateFloat(-120, -11);
+                str = str + "," + ch + "," + sat + "," + rxLevel;
+            }
         }
         if (system == 53) {
-            Integer numberOfHeaderParams = generateInteger(1, maxIntegerValue);
-            String headerParams = numberOfHeaderParams.toString();
-            Integer numberOfChs = generateInteger(1, maxIntegerValue);
-            String chs = numberOfChs.toString();
-            Integer numberOfParamsPerChs = numberOfHeaderParams / numberOfChs;
-            String paramsPerChs = numberOfParamsPerChs.toString();
-            String ch = generateInteger(1, maxIntegerValue).toString();
-            String dcc = generateInteger(0, 255).toString();
-            String rxLevel = generateFloat(-120, -11).toString();
-            str = str + "," + headerParams + "," + chs + "," + paramsPerChs + "," + ch + "," + dcc + "," + rxLevel;
+            Integer numberOfHeaderParams = 0;
+            Integer numberOfChs = generateInteger(1, 10);
+            Integer numberOfParamsPerChs = 3;
+            str = str + "," + numberOfHeaderParams + "," + numberOfChs + "," + numberOfParamsPerChs;
+            for (int i = 0; i < numberOfChs; i++) {
+                Integer ch = generateInteger(1, maxIntegerValue);
+                Integer dcc = generateInteger(0, 255);
+                Float rxLevel = generateFloat(-120, -11);
+                str = str + "," + ch + "," + dcc + "," + rxLevel;
+            }
         }
         return str;
     }
 
+    /**
+     * Generate SPECTRUMSCAN row
+     * 
+     * @return row
+     */
     private String generateSPECTRUMSCAN() {
         String str = NemoEvents.SPECTRUMSCAN.getEventId() + "," + generateTimestamp() + ",";
-        String scanningMode = generateInteger(1, 1).toString();
-        String headerParams = "0";
-        String bandwidth = generateFloat(0, 100).toString();
-        String sweepBandwidth = generateFloat(0, 100).toString();
-        String sweepFrequency = generateFloat(0, 100).toString();
-        String sweepTotalRxLevel = generateFloat(-120, -11).toString();
-        Integer numberOfFrequencies = generateInteger(1, maxIntegerValue);
-        String frequencies = numberOfFrequencies.toString();
+        Integer scanningMode = generateInteger(1, 1);
+        Integer headerParams = 4;
+        Float bandwidth = generateFloat(0, 100);
+        Float sweepBandwidth = generateFloat(0, 100);
+        Float sweepFrequency = generateFloat(0, 100);
+        Float sweepTotalRxLevel = generateFloat(-120, -11);
+        Integer numberOfFrequencies = generateInteger(1, 10);
         Integer numberParamsPerFrequencies = 2;
-        String paramsPerFrequencies = numberParamsPerFrequencies.toString();
         str = str + "," + scanningMode + "," + headerParams + "," + bandwidth + "," + sweepBandwidth + "," + sweepFrequency + ","
-                + sweepTotalRxLevel + "," + frequencies + "," + paramsPerFrequencies;
+                + sweepTotalRxLevel + "," + numberOfFrequencies + "," + numberParamsPerFrequencies;
         for (int i = 0; i < numberOfFrequencies; i++) {
-            String frequency = generateFloat(0, 100).toString();
-            String rxLevel = generateFloat(-120, -11).toString();
+            Float frequency = generateFloat(0, 100);
+            Float rxLevel = generateFloat(-120, -11);
             str = str + "," + frequency + "," + rxLevel;
         }
         return str;
     }
 
+    /**
+     * Generate PILOTSCAN row
+     * 
+     * @return row
+     */
     private String generatePILOTSCAN() {
         String str = NemoEvents.PILOTSCAN.getEventId() + "," + generateTimestamp() + ",";
         Integer systemID = generateInteger(2, 6);
         Integer system = systems.get(systemID);
-        str = str + "," + system.toString();
+        str = str + "," + system;
         if (system == 5) {
-            Integer numberOfHeadersParams = 0;
-            String headerParams = numberOfHeadersParams.toString();
-            String ch = generateInteger(1, maxIntegerValue).toString();
-            String chType = generateInteger(1, 5).toString();
-            String rssi = generateFloat(-120, -11).toString();
+            Integer numberOfHeadersParams = 3;
+            Integer ch = generateInteger(1, maxIntegerValue);
+            Integer chType = generateInteger(1, 5);
+            Float rssi = generateFloat(-120, -11);
             Integer numberOfCells = generateInteger(1, 10);
-            String cells = numberOfCells.toString();
             Integer numberParamsPerCells = 6;
-            String paramsPerCells = numberParamsPerCells.toString();
-            str = str + "," + headerParams + "," + ch + "," + chType + "," + rssi + "," + cells + "," + paramsPerCells;
+            str = str + "," + numberOfHeadersParams + "," + ch + "," + chType + "," + rssi + "," + numberOfCells + ","
+                    + numberParamsPerCells;
             for (int i = 0; i < numberOfCells; i++) {
-                String scr = generateInteger(0, 511).toString();
-                String ecn0 = generateFloat(-26, -1).toString();
-                String rscp = generateFloat(-150, -21).toString();
-                String sir = generateFloat(0, 29).toString();
-                String delay = generateFloat(0, 38399).toString();
-                String delaySpread = generateFloat(0, 100).toString();
+                Integer scr = generateInteger(0, 511);
+                Float ecn0 = generateFloat(-26, -1);
+                Float rscp = generateFloat(-150, -21);
+                Float sir = generateFloat(0, 29);
+                Float delay = generateFloat(0, 38399);
+                Float delaySpread = generateFloat(0, 100);
                 str = str + "," + scr + "," + ecn0 + "," + rscp + "," + sir + "," + delay + "," + delaySpread;
             }
         }
         if (system == 6) {
-            Integer numberOfHeadersParams = 0;
-            String headerParams = numberOfHeadersParams.toString();
-            String channelType = generateInteger(1, 2).toString();
+            Integer numberOfHeadersParams = 1;
+            Integer channelType = generateInteger(1, 2);
             Integer numberOfCells = generateInteger(1, 10);
-            String cells = numberOfCells.toString();
             Integer numberParamsPerCells = 7;
-            String paramsPerCells = numberParamsPerCells.toString();
-            str = str + "," + headerParams + "," + channelType + "," + cells + "," + paramsPerCells;
+            str = str + "," + numberOfHeadersParams + "," + channelType + "," + numberOfCells + "," + numberParamsPerCells;
             for (int i = 0; i < numberOfCells; i++) {
-                String ch = generateInteger(1, maxIntegerValue).toString();
-                String cellParamsID = generateInteger(0, 127).toString();
-                String eci0 = generateFloat(-30, -1).toString();
-                String timeOffset = generateFloat(0, 6499).toString();
-                String sir = generateFloat(-30, 24).toString();
-                String rscp = generateFloat(-116, -21).toString();
-                String rssi = generateFloat(-120, -11).toString();
+                Integer ch = generateInteger(1, maxIntegerValue);
+                Integer cellParamsID = generateInteger(0, 127);
+                Float eci0 = generateFloat(-30, -1);
+                Float timeOffset = generateFloat(0, 6499);
+                Float sir = generateFloat(-30, 24);
+                Float rscp = generateFloat(-116, -21);
+                Float rssi = generateFloat(-120, -11);
                 str = str + "," + ch + "," + cellParamsID + "," + eci0 + "," + timeOffset + "," + sir + "," + rscp + "," + rssi;
             }
         }
         if (system == 10 || system == 11 || system == 12) {
-            Integer numberOfHeadersParams = 0;
-            String headerParams = numberOfHeadersParams.toString();
-            String ch = generateInteger(1, maxIntegerValue).toString();
-            String rssi = generateFloat(-120, -11).toString();
+            Integer numberOfHeadersParams = 2;
+            Integer ch = generateInteger(1, maxIntegerValue);
+            Float rssi = generateFloat(-120, -11);
             Integer numberOfCells = generateInteger(1, 10);
-            String cells = numberOfCells.toString();
             Integer numberParamsPerCells = 3;
-            String paramsPerCells = numberParamsPerCells.toString();
-            str = str + "," + headerParams + "," + ch + "," + rssi + "," + cells + "," + paramsPerCells;
+            str = str + "," + numberOfHeadersParams + "," + ch + "," + rssi + "," + numberOfCells + "," + numberParamsPerCells;
             for (int i = 0; i < numberOfCells; i++) {
-                String pn = generateInteger(1, maxIntegerValue).toString();
-                String eci0 = generateFloat(-35, 2).toString();
-                String delay = generateFloat(0, 38399).toString();
+                Integer pn = generateInteger(1, maxIntegerValue);
+                Float eci0 = generateFloat(-35, 2);
+                Float delay = generateFloat(0, 38399);
                 str = str + "," + pn + "," + eci0 + "," + delay;
             }
         }
         return str;
     }
 
+    /**
+     * Generate OFDMSCAN row
+     * 
+     * @return row
+     */
     private String generateOFDMSCAN() {
         String str = NemoEvents.OFDMSCAN.getEventId() + "," + generateTimestamp() + ",";
         Integer system = TechnologySystems.WIMAX.getId();
@@ -2119,67 +2311,76 @@ public class Nemo2Generator {
         if (choice == 2) {
             system = TechnologySystems.DVB_H.getId();
         }
-        str = str + "," + system.toString();
+        str = str + "," + system;
         if (system == 25) {
-            Integer numberOfHeadersParams = generateInteger(1, maxIntegerValue);
-            String headerParams = numberOfHeadersParams.toString();
-            Integer numberOfFrequencies = generateInteger(1, maxIntegerValue);
-            String frequencies = numberOfFrequencies.toString();
-            Integer numberParamsPerFrequencies = numberOfHeadersParams / numberOfFrequencies;
-            String paramsPerFrequencies = numberParamsPerFrequencies.toString();
-            String frequency = generateFloat(0, 100).toString();
-            String rssi = generateFloat(-120, -11).toString();
-            Integer numberOfPreambles = generateInteger(1, maxIntegerValue);
-            String preambles = numberOfPreambles.toString();
-            Integer numberParamsPerPreambles = numberOfHeadersParams / numberOfPreambles;
-            String paramsPerPreambles = numberParamsPerPreambles.toString();
-            String frequency2 = generateFloat(0, 100).toString();
-            String preambleIndex = generateInteger(0, 113).toString();
-            String preambleRSSI = generateFloat(-120, -1).toString();
-            String cinr = generateFloat(-32, 39).toString();
-            String delay = generateFloat(0, 1054).toString();
-            str = str + "," + headerParams + "," + frequencies + "," + paramsPerFrequencies + "," + frequency + "," + rssi + ","
-                    + preambles + "," + paramsPerPreambles + "," + frequency2 + "," + preambleIndex + "," + preambleRSSI + ","
-                    + cinr + "," + delay;
+            Integer numberOfHeadersParams = 0;
+            Integer numberOfFrequencies = generateInteger(1, 10);
+            Integer numberParamsPerFrequencies = 2;
+            str = str + "," + numberOfHeadersParams + "," + numberOfFrequencies + "," + numberParamsPerFrequencies;
+            for (int i = 0; i < numberOfFrequencies; i++) {
+                Float frequency = generateFloat(0, 100);
+                Float rssi = generateFloat(-120, -11);
+                str = str + "," + frequency + "," + rssi;
+            }
+            Integer numberOfPreambles = generateInteger(1, 10);
+            Integer numberParamsPerPreambles = 5;
+            str = str + "," + numberOfPreambles + "," + numberParamsPerPreambles;
+            for (int j = 0; j < numberOfPreambles; j++) {
+                Float frequency2 = generateFloat(0, 100);
+                Integer preambleIndex = generateInteger(0, 113);
+                Float preambleRSSI = generateFloat(-120, -1);
+                Float cinr = generateFloat(-32, 39);
+                Float delay = generateFloat(0, 1054);
+                str = str + "," + frequency2 + "," + preambleIndex + "," + preambleRSSI + "," + cinr + "," + delay;
+            }
         }
         if (system == 65) {
-            Integer numberOfHeadersParams = generateInteger(1, maxIntegerValue);
-            String headerParams = numberOfHeadersParams.toString();
-            Integer numberOfFrequencies = generateInteger(1, maxIntegerValue);
-            String frequencies = numberOfFrequencies.toString();
-            Integer numberParamsPerFrequencies = numberOfHeadersParams / numberOfFrequencies;
-            String paramsPerFrequencies = numberParamsPerFrequencies.toString();
-            String frequency = generateFloat(0, 100).toString();
-            String rssi = generateFloat(0, 100).toString();
-            String mer = generateFloat(0, 59).toString();
-            str = str + "," + headerParams + "," + frequencies + "," + paramsPerFrequencies + "," + frequency + "," + rssi + ","
-                    + mer;
+            Integer numberOfHeadersParams = 0;
+            Integer numberOfFrequencies = generateInteger(1, 10);
+            Integer numberParamsPerFrequencies = 3;
+            str = str + "," + numberOfHeadersParams + "," + numberOfFrequencies + "," + numberParamsPerFrequencies;
+            for (int i = 0; i < numberOfFrequencies; i++) {
+                Float frequency = generateFloat(0, 100);
+                Float rssi = generateFloat(0, 100);
+                Float mer = generateFloat(0, 59);
+                str = str + "," + frequency + "," + rssi + "," + mer;
+            }
         }
         return str;
     }
 
+    /**
+     * Generate TPROFSCAN row
+     * 
+     * @return row
+     */
     private String generateTPROFSCAN() {
         String str = NemoEvents.TPROFSCAN.getEventId() + "," + generateTimestamp() + ",";
         Integer system = TechnologySystems.UMTS_FDD.getId();
-        str = str + "," + system.toString();
+        str = str + "," + system;
         if (system == 5) {
-            Integer numberOfHeadersParams = 0;
-            String headerParams = numberOfHeadersParams.toString();
-            String ch = generateInteger(0, maxIntegerValue).toString();
-            String rssi = generateFloat(-120, -1).toString();
-            String chType = generateInteger(1, 5).toString();
+            Integer numberOfHeadersParams = 3;
+            Integer ch = generateInteger(0, maxIntegerValue);
+            Float rssi = generateFloat(-120, -1);
+            Integer chType = generateInteger(1, 5);
+            Integer numberParamsPerSamples = 2;
             Integer numberOfSamples = generateInteger(1, 10);
-            Integer numberParamsPerSamples = numberOfHeadersParams / numberOfSamples;
-            String paramsPerSamples = numberParamsPerSamples.toString();
-            String samples = numberOfSamples.toString();
-            String chip = generateInteger(0, maxIntegerValue).toString();
-            String ecn0 = generateFloat(-26, -1).toString();
-            str = str + "," + headerParams + "," + ch + "," + rssi + "," + chType + "," + rssi + "," + paramsPerSamples + ","
-                    + samples + "," + chip + "," + ecn0;
+            str = str + "," + numberOfHeadersParams + "," + ch + "," + rssi + "," + chType + "," + numberParamsPerSamples + ","
+                    + numberOfSamples;
+            for (int i = 0; i < numberOfSamples; i++) {
+                Integer chip = generateInteger(0, maxIntegerValue);
+                Float ecn0 = generateFloat(-26, -1);
+                str = str + "," + chip + "," + ecn0;
+            }
         }
         return str;
     }
 
+    /**
+     * Generate DPROFSCAN row
+     * 
+     * @return row
+     */
     private String generateDPROFSCAN() {
         String str = NemoEvents.DPROFSCAN.getEventId() + "," + generateTimestamp() + ",";
         Integer system = TechnologySystems.UMTS_FDD.getId();
@@ -2190,36 +2391,41 @@ public class Nemo2Generator {
         if (choice == 3) {
             system = TechnologySystems.CDMA_ONE_X.getId();
         }
-        str = str + "," + system.toString();
+        str = str + "," + system;
         if (system == 5) {
-            Integer numberOfHeadersParams = generateInteger(1, maxIntegerValue);
-            String headerParams = numberOfHeadersParams.toString();
-            String ch = generateInteger(0, maxIntegerValue).toString();
-            String scr = generateInteger(0, 511).toString();
-            String chType = generateInteger(1, 5).toString();
-            Integer numberOfSamples = generateInteger(1, maxIntegerValue);
-            Integer numberParamsPerSamples = numberOfHeadersParams / numberOfSamples;
-            String paramsPerSamples = numberParamsPerSamples.toString();
-            String samples = numberOfSamples.toString();
-            String sampleOffset = generateFloat(-550, 549).toString();
-            String sample = generateFloat(0, 100).toString();
-            str = str + "," + headerParams + "," + ch + "," + scr + "," + chType + "," + chType + "," + paramsPerSamples + ","
-                    + samples + "," + sampleOffset + "," + sample;
+            Integer numberOfHeadersParams = 3;
+            Integer ch = generateInteger(0, maxIntegerValue);
+            Integer scr = generateInteger(0, 511);
+            Integer chType = generateInteger(1, 5);
+            Integer numberParamsPerSamples = 2;
+            Integer numberOfSamples = generateInteger(1, 10);
+            str = str + "," + numberOfHeadersParams + "," + ch + "," + scr + "," + chType + "," + numberParamsPerSamples + ","
+                    + numberOfSamples;
+            for (int i = 0; i < numberOfSamples; i++) {
+                Float sampleOffset = generateFloat(-550, 549);
+                Float sample = generateFloat(0, 100);
+                str = str + "," + sampleOffset + "," + sample;
+            }
         }
         if (system == 10 || system == 11 || system == 12) {
-            Integer numberOfHeadersParams = generateInteger(1, maxIntegerValue);
-            String headerParams = numberOfHeadersParams.toString();
-            Integer numberOfSamples = generateInteger(1, maxIntegerValue);
-            Integer numberParamsPerSamples = numberOfHeadersParams / numberOfSamples;
-            String paramsPerSamples = numberParamsPerSamples.toString();
-            String samples = numberOfSamples.toString();
-            String sampleOffset = generateInteger(0, 32768).toString();
-            String sampleEnergy = generateFloat(-35, 2).toString();
-            str = str + "," + headerParams + "," + paramsPerSamples + "," + samples + "," + sampleOffset + "," + sampleEnergy;
+            Integer numberOfHeadersParams = 0;
+            Integer numberParamsPerSamples = 2;
+            Integer numberOfSamples = generateInteger(1, 10);
+            str = str + "," + numberOfHeadersParams + "," + numberParamsPerSamples + "," + numberOfSamples;
+            for (int i = 0; i < numberOfSamples; i++) {
+                Integer sampleOffset = generateInteger(0, 32768);
+                Float sampleEnergy = generateFloat(-35, 2);
+                str = str + "," + sampleOffset + "," + sampleEnergy;
+            }
         }
         return str;
     }
 
+    /**
+     * Generate FINGER row
+     * 
+     * @return row
+     */
     private String generateFINGER() {
         String str = NemoEvents.FINGER.getEventId() + "," + generateTimestamp() + ",";
         Integer system = TechnologySystems.UMTS_FDD.getId();
@@ -2233,89 +2439,104 @@ public class Nemo2Generator {
         if (choice == 4) {
             system = TechnologySystems.EVDO.getId();
         }
-        str = str + "," + system.toString();
+        str = str + "," + system;
         if (system == 5) {
-            Integer numberOfHeaderParams = generateInteger(0, maxIntegerValue);
-            String headerParams = numberOfHeaderParams.toString();
-            Integer numberOfFingers = generateInteger(0, maxIntegerValue);
-            String fingers = numberOfFingers.toString();
-            Integer numberHeaderParamsPerFingers = numberOfHeaderParams / numberOfFingers;
-            String paramsPerFingers = numberHeaderParamsPerFingers.toString();
-            String ch = generateInteger(0, maxIntegerValue).toString();
-            String scr = generateInteger(0, 511).toString();
-            String secondaryScr = generateInteger(0, 15).toString();
-            String ecn0 = generateFloat(-26, -1).toString();
-            String fingerAbsOffset = generateFloat(0, 100).toString();
-            String fingerRelOffset = generateFloat(0, 100).toString();
-            String fingerRSCP = generateFloat(0, 100).toString();
-            str = str + "," + headerParams + "," + fingers + "," + paramsPerFingers + "," + ch + "," + scr + "," + secondaryScr
-                    + "," + ecn0 + "," + fingerAbsOffset + "," + fingerRelOffset + "," + fingerRSCP;
+            Integer numberOfHeaderParams = 0;
+            Integer numberOfFingers = generateInteger(0, 10);
+            Integer numberHeaderParamsPerFingers = 7;
+            str = str + "," + numberOfHeaderParams + "," + numberOfFingers + "," + numberHeaderParamsPerFingers;
+            for (int i = 0; i < numberOfFingers; i++) {
+                Integer ch = generateInteger(0, maxIntegerValue);
+                Integer scr = generateInteger(0, 511);
+                Integer secondaryScr = generateInteger(0, 15);
+                Float ecn0 = generateFloat(-26, -1);
+                Float fingerAbsOffset = generateFloat(0, 100);
+                Float fingerRelOffset = generateFloat(0, 100);
+                Float fingerRSCP = generateFloat(0, 100);
+                str = str + "," + ch + "," + scr + "," + secondaryScr + "," + ecn0 + "," + fingerAbsOffset + "," + fingerRelOffset
+                        + "," + fingerRSCP;
+            }
         }
         if (system == 10 || system == 11) {
-            Integer numberOfHeaderParams = generateInteger(0, maxIntegerValue);
-            String headerParams = numberOfHeaderParams.toString();
-            String aggEcI0 = generateFloat(-32, -1).toString();
-            String antConfig = generateInteger(0, 4).toString();
-            Integer numberOfFingers = generateInteger(0, maxIntegerValue);
-            String fingers = numberOfFingers.toString();
-            Integer numberHeaderParamsPerFingers = numberOfHeaderParams / numberOfFingers;
-            String paramsPerFingers = numberHeaderParamsPerFingers.toString();
-            String pn = generateInteger(0, maxIntegerValue).toString();
-            String fingerAbsOffset = generateFloat(0, 100).toString();
-            String fingerLocked = generateInteger(0, 1).toString();
-            String ecI0 = generateFloat(-32, -1).toString();
-            String refFinger = generateInteger(0, 1).toString();
-            String assignedFinger = generateInteger(0, 1).toString();
-            String tdMode = generateInteger(0, 3).toString();
-            String tdPower = generateFloat(-9, -1).toString();
-            Integer s = (int)Math.pow(2, generateInteger(0, 21).doubleValue());
-            String subchannel = s.toString();
-            String lockedAntennas = generateInteger(0, 1).toString();
-            String rx0EcI0 = generateFloat(-32, -1).toString();
-            String rx1EcI0 = generateFloat(-32, -1).toString();
-            str = str + "," + headerParams + "," + aggEcI0 + "," + antConfig + "," + fingers + "," + paramsPerFingers + "," + pn
-                    + "," + fingerAbsOffset + "," + fingerLocked + "," + ecI0 + "," + refFinger + "," + assignedFinger + ","
-                    + tdMode + "," + tdPower + "," + subchannel + "," + lockedAntennas + "," + rx0EcI0 + "," + rx1EcI0;
+            Integer numberOfHeaderParams = 2;
+            Float aggEcI0 = generateFloat(-32, -1);
+            Integer antConfig = generateInteger(0, 4);
+            Integer numberOfFingers = generateInteger(0, 10);
+            Integer numberHeaderParamsPerFingers = 12;
+            str = str + "," + numberOfHeaderParams + "," + aggEcI0 + "," + antConfig + "," + numberOfFingers + ","
+                    + numberHeaderParamsPerFingers;
+            for (int i = 0; i < numberOfFingers; i++) {
+                Integer pn = generateInteger(0, maxIntegerValue);
+                Float fingerAbsOffset = generateFloat(0, 100);
+                Integer fingerLocked = generateInteger(0, 1);
+                Float ecI0 = generateFloat(-32, -1);
+                Integer refFinger = generateInteger(0, 1);
+                Integer assignedFinger = generateInteger(0, 1);
+                Integer tdMode = generateInteger(0, 3);
+                Float tdPower = generateFloat(-9, -1);
+                Integer subchannel = Integer.parseInt(String.valueOf(Math.pow(2, generateInteger(0, 21).doubleValue())));
+                Integer lockedAntennas = generateInteger(0, 1);
+                Float rx0EcI0 = generateFloat(-32, -1);
+                Float rx1EcI0 = generateFloat(-32, -1);
+                str = str + "," + pn + "," + fingerAbsOffset + "," + fingerLocked + "," + ecI0 + "," + refFinger + ","
+                        + assignedFinger + "," + tdMode + "," + tdPower + "," + subchannel + "," + lockedAntennas + "," + rx0EcI0
+                        + "," + rx1EcI0;
+            }
         }
         if (system == 12) {
-            Integer numberOfHeaderParams = generateInteger(0, maxIntegerValue);
-            String headerParams = numberOfHeaderParams.toString();
-            String searcherState = generateInteger(0, 12).toString();
-            String mstr = generateInteger(0, maxIntegerValue).toString();
-            String mstrError = generateInteger(0, maxIntegerValue).toString();
-            String mstrPN = generateInteger(0, 511).toString();
-            String antConfig = generateInteger(0, 4).toString();
-            Integer numberOfFingers = generateInteger(0, maxIntegerValue);
-            String fingers = numberOfFingers.toString();
-            Integer numberHeaderParamsPerFingers = numberOfHeaderParams / numberOfFingers;
-            String paramsPerFingers = numberHeaderParamsPerFingers.toString();
-            String pn = generateInteger(0, maxIntegerValue).toString();
-            String fingerIndex = generateInteger(0, 11).toString();
-            String rpcCellIndex = generateInteger(1, 6).toString();
-            String aspIndex = generateInteger(1, 6).toString();
-            String ecI0 = generateFloat(-32, -1).toString();
-            String rx0EcI0 = generateFloat(-32, -1).toString();
-            String rx1EcI0 = generateFloat(-32, -1).toString();
-            String fingerLocked = generateInteger(0, 1).toString();
-            String fingerAbsOffset = generateFloat(0, 100).toString();
-            str = str + "," + headerParams + "," + searcherState + "," + mstr + "," + mstrError + "," + mstrPN + "," + antConfig
-                    + "," + fingers + "," + fingers + "," + paramsPerFingers + "," + pn + "," + fingerIndex + "," + rpcCellIndex
-                    + "," + aspIndex + "," + ecI0 + "," + rx0EcI0 + "," + rx1EcI0 + "," + fingerLocked + "," + fingerAbsOffset;
+            Integer numberOfHeaderParams = 5;
+            Integer searcherState = generateInteger(0, 12);
+            Integer mstr = generateInteger(0, maxIntegerValue);
+            Integer mstrError = generateInteger(0, maxIntegerValue);
+            Integer mstrPN = generateInteger(0, 511);
+            Integer antConfig = generateInteger(0, 4);
+            Integer numberOfFingers = generateInteger(0, 10);
+            Integer numberHeaderParamsPerFingers = 9;
+            str = str + "," + numberOfHeaderParams + "," + searcherState + "," + mstr + "," + mstrError + "," + mstrPN + ","
+                    + antConfig + "," + numberOfFingers + "," + numberHeaderParamsPerFingers;
+            for (int i = 0; i < numberOfFingers; i++) {
+                Integer pn = generateInteger(0, maxIntegerValue);
+                Integer fingerIndex = generateInteger(0, 11);
+                Integer rpcCellIndex = generateInteger(1, 6);
+                Integer aspIndex = generateInteger(1, 6);
+                Float ecI0 = generateFloat(-32, -1);
+                Float rx0EcI0 = generateFloat(-32, -1);
+                Float rx1EcI0 = generateFloat(-32, -1);
+                Integer fingerLocked = generateInteger(0, 1);
+                Float fingerAbsOffset = generateFloat(0, 100);
+                str = str + "," + pn + "," + fingerIndex + "," + rpcCellIndex + "," + aspIndex + "," + ecI0 + "," + rx0EcI0 + ","
+                        + rx1EcI0 + "," + fingerLocked + "," + fingerAbsOffset;
+            }
         }
         return str;
     }
 
+    /**
+     * Generate UISCAN row
+     * 
+     * @return row
+     */
     private String generateUISCAN() {
         String str = NemoEvents.UISCAN.getEventId() + "," + generateTimestamp() + ",";
         Integer system = TechnologySystems.UMTS_FDD.getId();
-        str = str + "," + system.toString();
-        String arfcn = generateInteger(1, maxIntegerValue).toString();
-        String scr = generateInteger(0, 511).toString();
-        String ulInterf = generateFloat(-110, -53).toString();
-        str = str + "," + arfcn + "," + scr + "," + ulInterf;
+        str = str + "," + system;
+        Integer paramsPerCells = 3;
+        Integer cells = generateInteger(0, 10);
+        str = str + "," + paramsPerCells + "," + cells;
+        for (int i = 0; i < cells; i++) {
+            Integer arfcn = generateInteger(1, maxIntegerValue);
+            Integer scr = generateInteger(0, 511);
+            Float ulInterf = generateFloat(-110, -53);
+            str = str + "," + arfcn + "," + scr + "," + ulInterf;
+        }
         return str;
     }
 
+    /**
+     * Generate CELLSCAN row
+     * 
+     * @return row
+     */
     private String generateCELLSCAN() {
         String str = NemoEvents.CELLSCAN.getEventId() + "," + generateTimestamp() + ",";
         Integer system = TechnologySystems.GSM.getId();
@@ -2323,90 +2544,116 @@ public class Nemo2Generator {
         if (choice == 2) {
             system = TechnologySystems.UMTS_FDD.getId();
         }
-        str = str + "," + system.toString();
+        str = str + "," + system;
         if (system == 1) {
-            Integer numberOfHeadersParams = generateInteger(0, maxIntegerValue);
-            String headerParams = numberOfHeadersParams.toString();
-            Integer numberOfCells = generateInteger(0, maxIntegerValue);
-            String cells = numberOfCells.toString();
-            Integer numberOfParamsPerCells = numberOfHeadersParams / numberOfCells;
-            String paramsPerCells = numberOfParamsPerCells.toString();
-            String arfcn = generateInteger(0, maxIntegerValue).toString();
-            String bsic = generateInteger(0, 63).toString();
-            String mcc = generateInteger(0, 4095).toString();
-            String mnc = generateInteger(0, 999).toString();
-            String lac = generateInteger(0, 65535).toString();
-            String cellID = generateInteger(0, 65535).toString();
-            str = str + "," + headerParams + "," + cells + "," + paramsPerCells + "," + arfcn + "," + bsic + "," + mcc + "," + mnc
-                    + "," + lac + "," + cellID;
+            Integer numberOfHeadersParams = 0;
+            Integer numberOfCells = generateInteger(0, 10);
+            Integer numberOfParamsPerCells = 6;
+            str = str + "," + numberOfHeadersParams + "," + numberOfCells + "," + numberOfParamsPerCells;
+            for (int i = 0; i < numberOfCells; i++) {
+                Integer arfcn = generateInteger(0, maxIntegerValue);
+                Integer bsic = generateInteger(0, 63);
+                Integer mcc = generateInteger(0, 4095);
+                Integer mnc = generateInteger(0, 999);
+                Integer lac = generateInteger(0, 65535);
+                Integer cellID = generateInteger(0, 65535);
+                str = str + "," + arfcn + "," + bsic + "," + mcc + "," + mnc + "," + lac + "," + cellID;
+            }
         }
         if (system == 5) {
-            Integer numberOfHeadersParams = generateInteger(0, maxIntegerValue);
-            String headerParams = numberOfHeadersParams.toString();
-            Integer numberOfCells = generateInteger(0, maxIntegerValue);
-            String cells = numberOfCells.toString();
-            Integer numberOfParamsPerCells = numberOfHeadersParams / numberOfCells;
-            String paramsPerCells = numberOfParamsPerCells.toString();
-            String arfcn = generateInteger(0, maxIntegerValue).toString();
-            String scr = generateInteger(0, 511).toString();
-            String mcc = generateInteger(0, 4095).toString();
-            String mnc = generateInteger(0, 999).toString();
-            String lac = generateInteger(0, 65535).toString();
-            String cellID = generateInteger(0, 268435455).toString();
-            str = str + "," + headerParams + "," + cells + "," + paramsPerCells + "," + arfcn + "," + scr + "," + mcc + "," + mnc
-                    + "," + lac + "," + cellID;
+            Integer numberOfHeadersParams = 0;
+            Integer numberOfCells = generateInteger(0, 10);
+            Integer numberOfParamsPerCells = 6;
+            str = str + "," + numberOfHeadersParams + "," + numberOfCells + "," + numberOfParamsPerCells;
+            for (int i = 0; i < numberOfCells; i++) {
+                Integer arfcn = generateInteger(0, maxIntegerValue);
+                Integer scr = generateInteger(0, 511);
+                Integer mcc = generateInteger(0, 4095);
+                Integer mnc = generateInteger(0, 999);
+                Integer lac = generateInteger(0, 65535);
+                Integer cellID = generateInteger(0, 268435455);
+                str = str + "," + arfcn + "," + scr + "," + mcc + "," + mnc + "," + lac + "," + cellID;
+            }
         }
         return str;
     }
 
+    /**
+     * Generate HOA row
+     * 
+     * @return row
+     */
     private String generateHOA() {
         String str = NemoEvents.HOA.getEventId() + "," + generateTimestamp() + "," + generateContext(1);
-        Integer system = generateTechnologySystems();
-        String headerParams = generateInteger(0, 10).toString();
+        Integer headerParams = 1;
         // 201,202,...
-        String hoaType = generateInteger(101, 104).toString();
-        String numberOfCurrentSystemParams = generateInteger(1, 2).toString();
-        str = str + "," + headerParams + "," + hoaType + "," + system.toString() + "," + numberOfCurrentSystemParams;
+        Integer hoaType = generateInteger(101, 104);
+        Integer system = generateTechnologySystems();
+        str = str + "," + headerParams + "," + hoaType + "," + system;
         if (system == 1 || system == 2 || system == 53) {
-            String chNumber = generateInteger(1, maxIntegerValue).toString();
-            String tsl = generateInteger(0, 7).toString();
-            str = str + "," + chNumber + "," + tsl;
+            Integer numberOfCurrentSystemParameters = 2;
+            Integer chNumber = generateInteger(1, maxIntegerValue);
+            Integer tsl = generateInteger(0, 7);
+            str = str + "," + numberOfCurrentSystemParameters + "," + chNumber + "," + tsl;
         }
         if (system == 5) {
-            String chNumber = generateInteger(1, maxIntegerValue).toString();
-            String sc = generateInteger(0, 511).toString();
-            str = str + "," + chNumber + "," + sc;
+            Integer numberOfCurrentSystemParameters = 2;
+            Integer chNumber = generateInteger(1, maxIntegerValue);
+            Integer sc = generateInteger(0, 511);
+            str = str + "," + numberOfCurrentSystemParameters + "," + chNumber + "," + sc;
         }
         if (system == 6) {
-            String chNumber = generateInteger(1, maxIntegerValue).toString();
-            String cellParamsID = generateInteger(0, 127).toString();
-            str = str + "," + chNumber + "," + cellParamsID;
+            Integer numberOfCurrentSystemParameters = 2;
+            Integer chNumber = generateInteger(1, maxIntegerValue);
+            Integer cellParamsID = generateInteger(0, 127);
+            str = str + "," + numberOfCurrentSystemParameters + "," + chNumber + "," + cellParamsID;
         }
         if (system == 10 || system == 11 || system == 12) {
-            String chNumber = generateInteger(1, maxIntegerValue).toString();
-            str = str + "," + chNumber;
+            Integer numberOfCurrentSystemParameters = 1;
+            Integer chNumber = generateInteger(1, maxIntegerValue);
+            str = str + "," + numberOfCurrentSystemParameters + "," + chNumber;
+        }
+        if (system == 21) {
+            Integer numberOfCurrentSystemParameters = 0;
+            str = str + "," + numberOfCurrentSystemParameters;
         }
         system = generateTechnologySystems();
-        String numberOfAttemptedSystemParams = generateInteger(1, 2).toString();
-        str = str + "," + system.toString() + numberOfAttemptedSystemParams;
+        str = str + "," + system;
         if (system == 1 || system == 2 || system == 53) {
-            String attCh = generateInteger(1, maxIntegerValue).toString();
-            String attTsl = generateInteger(0, 7).toString();
-            str = str + "," + attCh + "," + attTsl;
+            Integer numberOfAttemptedSystemParams = 2;
+            Integer attCh = generateInteger(1, maxIntegerValue);
+            Integer attTsl = generateInteger(0, 7);
+            str = str + "," + numberOfAttemptedSystemParams + "," + attCh + "," + attTsl;
         }
         if (system == 5) {
-            String attCh = generateInteger(1, maxIntegerValue).toString();
-            String attSc = generateInteger(0, 511).toString();
-            str = str + "," + attCh + "," + attSc;
+            Integer numberOfAttemptedSystemParams = 2;
+            Integer attCh = generateInteger(1, maxIntegerValue);
+            Integer attSc = generateInteger(0, 511);
+            str = str + "," + numberOfAttemptedSystemParams + "," + attCh + "," + attSc;
         }
         if (system == 6) {
-            String attCh = generateInteger(1, maxIntegerValue).toString();
-            String attCellParamsID = generateInteger(0, 127).toString();
-            str = str + "," + attCh + "," + attCellParamsID;
+            Integer numberOfAttemptedSystemParams = 2;
+            Integer attCh = generateInteger(1, maxIntegerValue);
+            Integer attCellParamsID = generateInteger(0, 127);
+            str = str + "," + numberOfAttemptedSystemParams + "," + attCh + "," + attCellParamsID;
+        }
+        if (system == 10 || system == 11 || system == 12) {
+            Integer numberOfAttemptedSystemParams = 1;
+            Integer attCh = generateInteger(1, maxIntegerValue);
+            str = str + "," + numberOfAttemptedSystemParams + "," + attCh;
+        }
+        if (system == 21) {
+            Integer numberOfAttemptedSystemParams = 0;
+            str = str + "," + numberOfAttemptedSystemParams;
         }
         return str;
     }
 
+    /**
+     * Generate HOS row
+     * 
+     * @return row
+     */
     private String generateHOS() {
         String str = NemoEvents.HOS.getEventId() + "," + generateTimestamp() + "," + generateContext(1);
         return str;
@@ -2415,10 +2662,9 @@ public class Nemo2Generator {
     private String generateHOF() {
         String str = NemoEvents.HOF.getEventId() + "," + generateTimestamp() + "," + generateContext(1);
         Integer system = generateTechnologySystems();
-        str = str + "," + system.toString();
         if (system == 1 || system == 21) {
             // 65,95,...
-            String rrCause = generateInteger(0, 12).toString();
+            Integer rrCause = generateInteger(0, 12);
             str = str + "," + rrCause;
         }
         if (system == 2 || system == 11 || system == 53) {
@@ -2426,47 +2672,49 @@ public class Nemo2Generator {
             str = str + "," + reserved;
         }
         if (system == 5 || system == 6) {
-            String rrcCause = generateInteger(0, 10).toString();
+            Integer rrcCause = generateInteger(0, 10);
             str = str + "," + rrcCause;
         }
         return str;
     }
 
+    /**
+     * Generate CREL row
+     * 
+     * @return row
+     */
     private String generateCREL() {
         String str = NemoEvents.CREL.getEventId() + "," + generateTimestamp() + ",";
-        Integer headerParams = generateInteger(0, 10);
-        str = str + "," + headerParams.toString();
-        for (int i = 0; i < headerParams; i++) {
-            Integer param = generateInteger(0, 10);
-            String strParam = param.toString();
-            if (param == 0) {
-                strParam = "";
-            }
-            str = str + "," + strParam;
-        }
+        Integer headerParams = 0;
+        str = str + "," + headerParams;
         Integer oldSystem = TechnologySystems.GAN_WLAN.getId();
         Integer choice = generateInteger(1, 2);
         if (choice == 2) {
             oldSystem = systems.get(generateInteger(0, 3));
         }
-        str = str + "," + oldSystem.toString();
-        String params = "2";
-        String oldLAC = generateInteger(0, 65535).toString();
-        String oldCI = generateInteger(0, maxIntegerValue).toString();
+        str = str + "," + oldSystem;
+        Integer params = 2;
+        Integer oldLAC = generateInteger(0, 65535);
+        Integer oldCI = generateInteger(0, maxIntegerValue);
         str = str + "," + params + "," + oldLAC + "," + oldCI;
         Integer system = TechnologySystems.GAN_WLAN.getId();
         Integer choice2 = generateInteger(1, 2);
         if (choice2 == 2) {
             system = systems.get(generateInteger(0, 3));
         }
-        str = str + "," + system.toString();
-        String params2 = "2";
-        String lac = generateInteger(0, 65535).toString();
-        String ci = generateInteger(0, maxIntegerValue).toString();
+        str = str + "," + system;
+        Integer params2 = 2;
+        Integer lac = generateInteger(0, 65535);
+        Integer ci = generateInteger(0, maxIntegerValue);
         str = str + "," + params2 + "," + lac + "," + ci;
         return str;
     }
 
+    /**
+     * Generate SHO row
+     * 
+     * @return row
+     */
     private String generateSHO() {
         String str = NemoEvents.SHO.getEventId() + "," + generateTimestamp() + ",";
         Integer system = TechnologySystems.UMTS_FDD.getId();
@@ -2474,19 +2722,19 @@ public class Nemo2Generator {
         if (choice == 2) {
             system = generateInteger(10, 11);
         }
-        str = str + "," + system.toString();
+        str = str + "," + system;
         if (system == 5) {
-            String shoStatus = generateInteger(1, 2).toString();
-            String rrcCause = generateInteger(0, 10).toString();
+            Integer shoStatus = generateInteger(1, 2);
+            Integer rrcCause = generateInteger(0, 10);
             Integer numberOfSCsAdded = generateInteger(1, 10);
             Integer numberOfSCsRemoved = generateInteger(1, 10);
             str = str + "," + shoStatus + "," + rrcCause + "," + numberOfSCsAdded + "," + numberOfSCsRemoved;
             for (int i = 0; i < numberOfSCsAdded; i++) {
-                String addedSC = generateInteger(1, 100).toString();
+                Integer addedSC = generateInteger(1, 100);
                 str = str + "," + addedSC;
             }
             for (int j = 0; j < numberOfSCsRemoved; j++) {
-                String removeSC = generateInteger(1, 100).toString();
+                Integer removeSC = generateInteger(1, 100);
                 str = str + "," + removeSC;
             }
         }
@@ -2495,17 +2743,22 @@ public class Nemo2Generator {
             Integer numberOfPilotRemoved = generateInteger(1, 10);
             str = str + "," + numberOfPilotAdded + "," + numberOfPilotRemoved;
             for (int i = 0; i < numberOfPilotAdded; i++) {
-                String addedPN = generateInteger(1, 100).toString();
+                Integer addedPN = generateInteger(1, 100);
                 str = str + "," + addedPN;
             }
             for (int j = 0; j < numberOfPilotRemoved; j++) {
-                String removePN = generateInteger(1, 100).toString();
+                Integer removePN = generateInteger(1, 100);
                 str = str + "," + removePN;
             }
         }
         return str;
     }
 
+    /**
+     * Generate LUA row
+     * 
+     * @return row
+     */
     private String generateLUA() {
         String str = NemoEvents.LUA.getEventId() + "," + generateTimestamp() + "," + generateContext(1);
         Integer system = systems.get(generateInteger(0, 3));
@@ -2513,17 +2766,22 @@ public class Nemo2Generator {
         if (choice == 2) {
             system = TechnologySystems.GAN_WLAN.getId();
         }
-        str = str + "," + system.toString();
-        String luaType;
+        str = str + "," + system;
+        Integer luaType = null;
         if (system == 2) {
-            luaType = generateInteger(5, 10).toString();
+            luaType = generateInteger(5, 10);
         } else {
-            luaType = generateInteger(1, 4).toString();
+            luaType = generateInteger(1, 4);
         }
         str = str + "," + luaType;
         return str;
     }
 
+    /**
+     * Generate LUS row
+     * 
+     * @return row
+     */
     private String generateLUS() {
         String str = NemoEvents.LUS.getEventId() + "," + generateTimestamp() + "," + generateContext(1);
         Integer system = systems.get(generateInteger(0, 3));
@@ -2531,15 +2789,20 @@ public class Nemo2Generator {
         if (choice == 2) {
             system = TechnologySystems.GAN_WLAN.getId();
         }
-        str = str + "," + system.toString();
-        String oldLAC = generateInteger(0, 65535).toString();
-        String lac = generateInteger(0, 65535).toString();
-        String mcc = generateInteger(0, 4095).toString();
-        String mnc = generateInteger(0, 999).toString();
+        str = str + "," + system;
+        Integer oldLAC = generateInteger(0, 65535);
+        Integer lac = generateInteger(0, 65535);
+        Integer mcc = generateInteger(0, 4095);
+        Integer mnc = generateInteger(0, 999);
         str = str + "," + oldLAC + "," + lac + "," + mcc + "," + mnc;
         return str;
     }
 
+    /**
+     * Generate LUF row
+     * 
+     * @return
+     */
     private String generateLUF() {
         String str = NemoEvents.LUF.getEventId() + "," + generateTimestamp() + "," + generateContext(1);
         Integer system = systems.get(generateInteger(0, 3));
@@ -2547,17 +2810,22 @@ public class Nemo2Generator {
         if (choice == 2) {
             system = TechnologySystems.GAN_WLAN.getId();
         }
-        str = str + "," + system.toString();
-        String lufStatus = generateInteger(1, 3).toString();
-        String oldLAC = generateInteger(0, 65535).toString();
+        str = str + "," + system;
+        Integer lufStatus = generateInteger(1, 3);
+        Integer oldLAC = generateInteger(0, 65535);
         str = str + "," + oldLAC + "," + lufStatus + "," + oldLAC;
         if (system == 1 || system == 2 || system == 5 || system == 6 || system == 21) {
-            String mmCause = generateInteger(1, 17).toString();
+            Integer mmCause = generateInteger(1, 17);
             str = str + "," + mmCause;
         }
         return str;
     }
 
+    /**
+     * Generate CHI row
+     * 
+     * @return row
+     */
     private String generateCHI() {
         String str = NemoEvents.CHI.getEventId() + "," + generateTimestamp() + ",";
         Integer system = systems.get(generateInteger(0, 6));
@@ -2570,113 +2838,113 @@ public class Nemo2Generator {
         }
         if (system == 1) {
             // 0,...
-            String band = generateInteger(20001, 20015).toString();
-            String chType = generateInteger(1, 2).toString();
-            String ch = generateInteger(1, maxIntegerValue).toString();
-            String cellID = generateInteger(0, 65535).toString();
-            String dtxUL = generateInteger(0, 1).toString();
-            String rltMax = generateInteger(4, 64).toString();
+            Integer band = generateInteger(20001, 20015);
+            Integer chType = generateInteger(1, 2);
+            Integer ch = generateInteger(1, maxIntegerValue);
+            Integer cellID = generateInteger(0, 65535);
+            Integer dtxUL = generateInteger(0, 1);
+            Integer rltMax = generateInteger(4, 64);
             // 10,11,...
-            String extChType = generateInteger(1, 5).toString();
-            String tn = generateInteger(1, maxIntegerValue).toString();
-            String bcchCh = generateInteger(1, maxIntegerValue).toString();
+            Integer extChType = generateInteger(1, 5);
+            Integer tn = generateInteger(1, maxIntegerValue);
+            Integer bcchCh = generateInteger(1, maxIntegerValue);
             str = str + "," + band + "," + chType + "," + ch + "," + cellID + "," + dtxUL + "," + rltMax + "," + extChType + ","
                     + tn + "," + bcchCh;
         }
         if (system == 2) {
             // 0,...
-            String band = generateInteger(20001, 20015).toString();
-            String subchannel = generateInteger(1, 2).toString();
-            String ch = generateInteger(1, maxIntegerValue).toString();
-            String lac = generateInteger(0, 65535).toString();
-            String extendedSubchannel = generateInteger(0, 7).toString();
-            String encryption = generateInteger(0, 1).toString();
-            String slotNumber = generateInteger(1, 4).toString();
+            Integer band = generateInteger(20001, 20015);
+            Integer subchannel = generateInteger(1, 2);
+            Integer ch = generateInteger(1, maxIntegerValue);
+            Integer lac = generateInteger(0, 65535);
+            Integer extendedSubchannel = generateInteger(0, 7);
+            Integer encryption = generateInteger(0, 1);
+            Integer slotNumber = generateInteger(1, 4);
             str = str + "," + band + "," + subchannel + "," + ch + "," + ch + "," + lac + "," + extendedSubchannel + ","
                     + encryption + "," + slotNumber;
         }
         if (system == 5) {
             // 0,...
-            String band = generateInteger(20001, 20015).toString();
-            String rrcState = generateInteger(1, 5).toString();
-            String ch = generateInteger(1, maxIntegerValue).toString();
-            String cellID = generateInteger(0, 268435455).toString();
-            String lac = generateInteger(0, 65535).toString();
-            String additionWindow = generateFloat(-2, 13).toString();
-            String timeToTrigger1A = generateInteger(0, 5000).toString();
-            String dropWindow = generateFloat(0, 16).toString();
-            String timeToTrigger1B = generateInteger(0, 5000).toString();
-            String replacementWindow = generateFloat(0, 1).toString();
-            String timeToTrigger1C = generateInteger(0, 5000).toString();
-            String dlSF = generateInteger(0, 512).toString();
-            String minUlSF = generateInteger(4, 256).toString();
-            String drxCycle = generateInteger(0, 512).toString();
-            String maxTXPower = generateFloat(-50, 32).toString();
-            String treselection = generateInteger(1, maxIntegerValue).toString();
+            Integer band = generateInteger(20001, 20015);
+            Integer rrcState = generateInteger(1, 5);
+            Integer ch = generateInteger(1, maxIntegerValue);
+            Integer cellID = generateInteger(0, 268435455);
+            Integer lac = generateInteger(0, 65535);
+            Float additionWindow = generateFloat(-2, 13);
+            Integer timeToTrigger1A = generateInteger(0, 5000);
+            Float dropWindow = generateFloat(0, 16);
+            Integer timeToTrigger1B = generateInteger(0, 5000);
+            Float replacementWindow = generateFloat(0, 1);
+            Integer timeToTrigger1C = generateInteger(0, 5000);
+            Integer dlSF = generateInteger(0, 512);
+            Integer minUlSF = generateInteger(4, 256);
+            Integer drxCycle = generateInteger(0, 512);
+            Float maxTXPower = generateFloat(-50, 32);
+            Integer treselection = generateInteger(1, maxIntegerValue);
             str = str + "," + band + "," + rrcState + "," + ch + "," + cellID + "," + lac + "," + additionWindow + ","
                     + timeToTrigger1A + "," + dropWindow + "," + timeToTrigger1B + "," + replacementWindow + "," + timeToTrigger1C
                     + "," + dlSF + "," + minUlSF + "," + drxCycle + "," + maxTXPower + "," + treselection;
         }
         if (system == 6) {
             // 0,...
-            String band = generateInteger(20001, 20015).toString();
-            String rrcState = generateInteger(1, 5).toString();
-            String ch = generateInteger(1, maxIntegerValue).toString();
-            String cellParamsID = generateInteger(0, 127).toString();
-            String cellID = generateInteger(0, 268435455).toString();
-            String lac = generateInteger(0, 65535).toString();
-            String drxCycle = generateInteger(0, 512).toString();
-            String maxTXPower = generateFloat(-50, 32).toString();
-            String treselection = generateInteger(1, maxIntegerValue).toString();
+            Integer band = generateInteger(20001, 20015);
+            Integer rrcState = generateInteger(1, 5);
+            Integer ch = generateInteger(1, maxIntegerValue);
+            Integer cellParamsID = generateInteger(0, 127);
+            Integer cellID = generateInteger(0, 268435455);
+            Integer lac = generateInteger(0, 65535);
+            Integer drxCycle = generateInteger(0, 512);
+            Float maxTXPower = generateFloat(-50, 32);
+            Integer treselection = generateInteger(1, maxIntegerValue);
             str = str + "," + band + "," + rrcState + "," + ch + "," + cellParamsID + "," + cellID + "," + lac + "," + drxCycle
                     + "," + maxTXPower + "," + drxCycle + "," + maxTXPower + "," + treselection;
         }
         if (system == 10 || system == 11) {
             // 0,...
-            String band = generateInteger(20001, 20015).toString();
-            String chType = generateInteger(1, 4).toString();
-            String ch = generateInteger(1, maxIntegerValue).toString();
-            String mcc = generateInteger(0, 4095).toString();
-            String sid = generateInteger(1, maxIntegerValue).toString();
-            String nid = generateInteger(1, maxIntegerValue).toString();
-            String slottedMode = generateInteger(0, 1).toString();
-            String search_WIN_A = generateInteger(1, maxIntegerValue).toString();
-            String search_WIN_N = generateInteger(1, maxIntegerValue).toString();
-            String search_WIN_R = generateInteger(1, maxIntegerValue).toString();
-            String tADD = generateInteger(1, maxIntegerValue).toString();
-            String tDROP = generateInteger(1, maxIntegerValue).toString();
-            String tTDROP = generateInteger(1, maxIntegerValue).toString();
-            String tCOMP = generateInteger(1, maxIntegerValue).toString();
-            String pREV = generateInteger(1, 11).toString();
-            String minPREV = generateInteger(1, 11).toString();
+            Integer band = generateInteger(20001, 20015);
+            Integer chType = generateInteger(1, 4);
+            Integer ch = generateInteger(1, maxIntegerValue);
+            Integer mcc = generateInteger(0, 4095);
+            Integer sid = generateInteger(1, maxIntegerValue);
+            Integer nid = generateInteger(1, maxIntegerValue);
+            Integer slottedMode = generateInteger(0, 1);
+            Integer search_WIN_A = generateInteger(1, maxIntegerValue);
+            Integer search_WIN_N = generateInteger(1, maxIntegerValue);
+            Integer search_WIN_R = generateInteger(1, maxIntegerValue);
+            Integer tADD = generateInteger(1, maxIntegerValue);
+            Integer tDROP = generateInteger(1, maxIntegerValue);
+            Integer tTDROP = generateInteger(1, maxIntegerValue);
+            Integer tCOMP = generateInteger(1, maxIntegerValue);
+            Integer pREV = generateInteger(1, 11);
+            Integer minPREV = generateInteger(1, 11);
             str = str + "," + band + "," + chType + "," + ch + "," + mcc + "," + sid + "," + nid + "," + slottedMode + ","
                     + search_WIN_A + "," + search_WIN_N + "," + search_WIN_R + "," + tADD + "," + tDROP + "," + tTDROP + ","
                     + tCOMP + "," + pREV + "," + minPREV;
         }
         if (system == 12) {
             // 0,...
-            String band = generateInteger(20001, 20015).toString();
+            Integer band = generateInteger(20001, 20015);
             str = str + "," + band;
         }
         if (system == 21) {
             // 0,...
-            String band = generateInteger(20001, 20015).toString();
-            String cellID = generateInteger(0, 268435455).toString();
-            String lac = generateInteger(0, 65535).toString();
+            Integer band = generateInteger(20001, 20015);
+            Integer cellID = generateInteger(0, 268435455);
+            Integer lac = generateInteger(0, 65535);
             str = str + "," + band + "," + cellID + "," + lac;
         }
         if (system == 25) {
             // 0,...
-            String band = generateInteger(20001, 20015).toString();
+            Integer band = generateInteger(20001, 20015);
             // 0,1,2,...
-            String macState = generateInteger(10, 17).toString();
-            String frequency = generateFloat(0, 100).toString();
+            Integer macState = generateInteger(10, 17);
+            Float frequency = generateFloat(0, 100);
             String bsID = returnWordSoCalled("WiMAX base station ID");
-            String fttSize = generateInteger(1, maxIntegerValue).toString();
-            String bandwidth = generateFloat(-1, 100).toString();
-            String frameRatioDL = generateInteger(0, 100).toString();
-            String frameRatioUL = generateInteger(0, 100).toString();
-            String mapCoding = generateInteger(1, 5).toString();
+            Integer fttSize = generateInteger(1, maxIntegerValue);
+            Float bandwidth = generateFloat(-1, 100);
+            Integer frameRatioDL = generateInteger(0, 100);
+            Integer frameRatioUL = generateInteger(0, 100);
+            Integer mapCoding = generateInteger(1, 5);
             Integer repetition = generateInteger(1, 3) * 2;
             // 1
             String mapRepetition = repetition.toString();
@@ -2685,41 +2953,46 @@ public class Nemo2Generator {
         }
         if (system == 51 || system == 52) {
             // 0,...
-            String band = generateInteger(20001, 20015).toString();
-            String chType = generateInteger(1, 2).toString();
-            String ch = generateInteger(1, maxIntegerValue).toString();
+            Integer band = generateInteger(20001, 20015);
+            Integer chType = generateInteger(1, 2);
+            Integer ch = generateInteger(1, maxIntegerValue);
             str = str + "," + band + "," + chType + "," + ch;
         }
         if (system == 53) {
             // 0,...
-            String band = generateInteger(20001, 20015).toString();
-            String chType = generateInteger(1, 3).toString();
-            String ch = generateInteger(1, maxIntegerValue).toString();
-            String nwType = generateInteger(1, maxIntegerValue).toString();
-            String psid1 = generateInteger(1, maxIntegerValue).toString();
-            String psid2 = generateInteger(1, maxIntegerValue).toString();
-            String psid3 = generateInteger(1, maxIntegerValue).toString();
-            String psid4 = generateInteger(1, maxIntegerValue).toString();
-            String lareg = generateInteger(0, 1).toString();
-            String rnum = generateInteger(1, maxIntegerValue).toString();
-            String pegPeriod = generateInteger(1, maxIntegerValue).toString();
+            Integer band = generateInteger(20001, 20015);
+            Integer chType = generateInteger(1, 3);
+            Integer ch = generateInteger(1, maxIntegerValue);
+            Integer nwType = generateInteger(1, maxIntegerValue);
+            Integer psid1 = generateInteger(1, maxIntegerValue);
+            Integer psid2 = generateInteger(1, maxIntegerValue);
+            Integer psid3 = generateInteger(1, maxIntegerValue);
+            Integer psid4 = generateInteger(1, maxIntegerValue);
+            Integer lareg = generateInteger(0, 1);
+            Integer rnum = generateInteger(1, maxIntegerValue);
+            Integer pegPeriod = generateInteger(1, maxIntegerValue);
             str = str + "," + band + "," + chType + "," + ch + "," + nwType + "," + psid1 + "," + psid2 + "," + psid3 + "," + psid4
                     + "," + lareg + "," + rnum + "," + pegPeriod;
         }
         return str;
     }
 
+    /**
+     * Generate GANCHI row
+     * 
+     * @return row
+     */
     private String generateGANCHI() {
         String str = NemoEvents.GANCHI.getEventId() + "," + generateTimestamp() + ",";
         Integer system = TechnologySystems.GAN_WLAN.getId();
-        str = str + "," + system.toString();
+        str = str + "," + system;
         if (system == 21) {
-            String headerParams = "7";
-            String ganState = generateInteger(1, 4).toString();
-            String ganChannel = generateInteger(0, 1023).toString();
-            String ganBSIC = generateInteger(0, 63).toString();
-            String ganCI = generateInteger(0, 65535).toString();
-            String ganLAC = generateInteger(0, 65535).toString();
+            Integer headerParams = 7;
+            Integer ganState = generateInteger(1, 4);
+            Integer ganChannel = generateInteger(0, 1023);
+            Integer ganBSIC = generateInteger(0, 63);
+            Integer ganCI = generateInteger(0, 65535);
+            Integer ganLAC = generateInteger(0, 65535);
             String gancIP = returnWordSoCalled("GANC IP address");
             String segwIP = returnWordSoCalled("GANC security gateway IP address");
             str = str + "," + headerParams + "," + ganState + "," + ganChannel + "," + ganBSIC + "," + ganCI + "," + ganLAC + ","
@@ -2728,21 +3001,31 @@ public class Nemo2Generator {
         return str;
     }
 
+    /**
+     * Generate SEI row
+     * 
+     * @return row
+     */
     private String generateSEI() {
         String str = NemoEvents.SEI.getEventId() + "," + generateTimestamp() + ",";
         Integer system = generateTechnologySystems();
-        str = str + "," + system.toString();
-        String serviceStatus = generateInteger(1, 2).toString();
+        str = str + "," + system;
+        Integer serviceStatus = generateInteger(1, 2);
         str = str + "," + serviceStatus;
         if (system == 1 || system == 5 || system == 6) {
-            String lac = generateInteger(0, 65535).toString();
-            String mcc = generateInteger(0, 4095).toString();
-            String mnc = generateInteger(0, 999).toString();
+            Integer lac = generateInteger(0, 65535);
+            Integer mcc = generateInteger(0, 4095);
+            Integer mnc = generateInteger(0, 999);
             str = str + "," + lac + "," + mcc + "," + mnc;
         }
         return str;
     }
 
+    /**
+     * Generate ROAM row
+     * 
+     * @return row
+     */
     private String generateROAM() {
         String str = NemoEvents.ROAM.getEventId() + "," + generateTimestamp() + ",";
         Integer system = TechnologySystems.GSM.getId();
@@ -2750,8 +3033,8 @@ public class Nemo2Generator {
         if (choice == 2) {
             system = generateInteger(5, 6);
         }
-        str = str + "," + system.toString();
-        String roamingStatus = generateInteger(1, 2).toString();
+        str = str + "," + system;
+        Integer roamingStatus = generateInteger(1, 2);
         str = str + "," + roamingStatus;
         return str;
     }
@@ -4882,36 +5165,70 @@ public class Nemo2Generator {
             addRowInFile(generateJITTER(), wr);
             addRowInFile(generateDSS(), wr);
             addRowInFile(generateDCONTENT(), wr);
-
-            /*
-             * addRowInFile(generateCELLMEAS(), wr); addRowInFile(generateADJMEAS(), wr);
-             * addRowInFile(generateRXQ(), wr); addRowInFile(generatePRXQ(), wr);
-             * addRowInFile(generateFER(), wr); addRowInFile(generateMSP(), wr);
-             * addRowInFile(generateRLT(), wr); addRowInFile(generateTAD(), wr);
-             * addRowInFile(generateDSC(), wr); addRowInFile(generateBEP(), wr);
-             * addRowInFile(generateCIEvent(), wr); addRowInFile(generateTXPC(), wr);
-             * addRowInFile(generateRXPC(), wr); addRowInFile(generateBER(), wr);
-             * addRowInFile(generatePHRATE(), wr); addRowInFile(generateWLANRATE(), wr);
-             * addRowInFile(generatePPPRATE(), wr); addRowInFile(generateRLPRATE(), wr);
-             * addRowInFile(generateRLPSTATISTICS(), wr); addRowInFile(generateMEI(), wr);
-             * addRowInFile(generateCQI(), wr); addRowInFile(generateHARQI(), wr);
-             * addRowInFile(generateHSSCCHI(), wr); addRowInFile(generatePLAID(), wr);
-             * addRowInFile(generatePLAIU(), wr); addRowInFile(generateHBI(), wr);
-             * addRowInFile(generateMACERATE(), wr); addRowInFile(generateAGRANT(), wr);
-             * addRowInFile(generateSGRANT(), wr); addRowInFile(generateEDCHI(), wr);
-             * addRowInFile(generateHSUPASI(), wr); addRowInFile(generateDRCI(), wr);
-             * addRowInFile(generateRDRC(), wr); addRowInFile(generateFDRC(), wr); //
-             * addRowInFile(generatePHREF(), wr); addRowInFile(generateMARKOVMUX(), wr);
-             * addRowInFile(generateMARKOVSTATS(), wr); addRowInFile(generateMER(), wr);
-             * addRowInFile(generateDVBI(), wr); addRowInFile(generateDVBFER(), wr);
-             * addRowInFile(generateDVBBER(), wr); addRowInFile(generateDVBRXL(), wr);
-             * addRowInFile(generateDVBRATE(), wr); addRowInFile(generateFREQSCAN(), wr);
-             * addRowInFile(generateSPECTRUMSCAN(), wr); addRowInFile(generatePILOTSCAN(), wr);
-             * addRowInFile(generateOFDMSCAN(), wr); addRowInFile(generateTPROFSCAN(), wr);
-             * addRowInFile(generateDPROFSCAN(), wr); addRowInFile(generateFINGER(), wr);
-             * addRowInFile(generateHOS(), wr); addRowInFile(generateLUA(), wr);
-             * addRowInFile(generateLUS(), wr); addRowInFile(generateLUF(), wr);
-             */
+            addRowInFile(generateCELLMEAS(), wr);
+            addRowInFile(generateADJMEAS(), wr);
+            addRowInFile(generateRXQ(), wr);
+            addRowInFile(generatePRXQ(), wr);
+            addRowInFile(generateFER(), wr);
+            addRowInFile(generateMSP(), wr);
+            addRowInFile(generateRLT(), wr);
+            addRowInFile(generateTAD(), wr);
+            addRowInFile(generateDSC(), wr);
+            addRowInFile(generateBEP(), wr);
+            addRowInFile(generateCIEvent(), wr);
+            addRowInFile(generateTXPC(), wr);
+            addRowInFile(generateRXPC(), wr);
+            addRowInFile(generateBER(), wr);
+            addRowInFile(generatePHRATE(), wr);
+            addRowInFile(generateWLANRATE(), wr);
+            addRowInFile(generatePPPRATE(), wr);
+            addRowInFile(generateRLPRATE(), wr);
+            addRowInFile(generateRLPSTATISTICS(), wr);
+            addRowInFile(generateMEI(), wr);
+            addRowInFile(generateCQI(), wr);
+            addRowInFile(generateHARQI(), wr);
+            addRowInFile(generateHSSCCHI(), wr);
+            addRowInFile(generatePLAID(), wr);
+            addRowInFile(generatePLAIU(), wr);
+            addRowInFile(generateHBI(), wr);
+            addRowInFile(generateMACERATE(), wr);
+            addRowInFile(generateAGRANT(), wr);
+            addRowInFile(generateSGRANT(), wr);
+            addRowInFile(generateEDCHI(), wr);
+            addRowInFile(generateHSUPASI(), wr);
+            addRowInFile(generateDRCI(), wr);
+            addRowInFile(generateRDRC(), wr);
+            addRowInFile(generateFDRC(), wr);
+            // addRowInFile(generatePHREF(), wr);
+            addRowInFile(generateMARKOVMUX(), wr);
+            addRowInFile(generateMARKOVSTATS(), wr);
+            addRowInFile(generateMER(), wr);
+            addRowInFile(generateDVBI(), wr);
+            addRowInFile(generateDVBFER(), wr);
+            addRowInFile(generateDVBBER(), wr);
+            addRowInFile(generateDVBRXL(), wr);
+            addRowInFile(generateDVBRATE(), wr);
+            addRowInFile(generateFREQSCAN(), wr);
+            addRowInFile(generateSPECTRUMSCAN(), wr);
+            addRowInFile(generatePILOTSCAN(), wr);
+            addRowInFile(generateOFDMSCAN(), wr);
+            addRowInFile(generateTPROFSCAN(), wr);
+            addRowInFile(generateDPROFSCAN(), wr);
+            addRowInFile(generateFINGER(), wr);
+            addRowInFile(generateUISCAN(), wr);
+            addRowInFile(generateCELLSCAN(), wr);
+            addRowInFile(generateHOA(), wr);
+            addRowInFile(generateHOS(), wr);
+            addRowInFile(generateHOF(), wr);
+            addRowInFile(generateCREL(), wr);
+            addRowInFile(generateSHO(), wr);
+            addRowInFile(generateLUA(), wr);
+            addRowInFile(generateLUS(), wr);
+            addRowInFile(generateLUF(), wr);
+            addRowInFile(generateCHI(), wr);
+            addRowInFile(generateGANCHI(), wr);
+            addRowInFile(generateSEI(), wr);
+            addRowInFile(generateROAM(), wr);
 
             addRowInFile(generateRRA(), wr);
             addRowInFile(generateRRC(), wr);
@@ -5012,6 +5329,12 @@ public class Nemo2Generator {
         }
     }
 
+    /**
+     * Addes row in file
+     *
+     * @param row
+     * @param wr
+     */
     public void addRowInFile(String row, FileWriter wr) {
         try {
             wr.write(row);
@@ -5105,50 +5428,49 @@ public class Nemo2Generator {
     private String generateDataOfProtocol() {
         String str = "";
         Integer protocol = generateInteger(0, 14);
-        String applicationProtocol = protocol.toString();
         Integer dataFailStatus = generateInteger(1, 5);
-        str = str + "," + applicationProtocol + "," + dataFailStatus.toString();
+        str = str + "," + protocol + "," + dataFailStatus;
         if (dataFailStatus == 5) {
             String reserved = "n/a";
             str = str + "," + reserved;
         }
         if (dataFailStatus == 2) {
             // 10004,...
-            String socketCause = generateInteger(10035, 11031).toString();
+            Integer socketCause = generateInteger(10035, 11031);
             str = str + "," + socketCause;
         }
         if (protocol == 0 || protocol == 1 || protocol == 2) {
-            String dataTransferCause = "1";
+            Integer dataTransferCause = 1;
             str = str + "," + dataTransferCause;
         }
         if (protocol == 3) {
             // 1,2,...
-            String ftpCause = generateInteger(500, 504).toString();
+            Integer ftpCause = generateInteger(500, 504);
             str = str + "," + ftpCause;
         }
         if (protocol == 4) {
             // 1,2,...
-            String httpCause = generateInteger(200, 206).toString();
+            Integer httpCause = generateInteger(200, 206);
             str = str + "," + httpCause;
         }
         if (protocol == 5) {
             // 1,2,5,...
-            String smptCause = generateInteger(500, 504).toString();
+            Integer smptCause = generateInteger(500, 504);
             str = str + "," + smptCause;
         }
         if (protocol == 6) {
             // 1,2,6,...
-            String pop3Cause = generateInteger(1, 2).toString();
+            Integer pop3Cause = generateInteger(1, 2);
             str = str + "," + pop3Cause;
         }
         if (protocol == 7 || protocol == 8) {
             // 100,101,200,...
-            String cause = generateInteger(0, 9).toString();
+            Integer cause = generateInteger(0, 9);
             str = str + "," + cause;
         }
         if (protocol == 9) {
             // ...
-            String streamingCause = generateInteger(65489, 65535).toString();
+            Integer streamingCause = generateInteger(65489, 65535);
             str = str + "," + streamingCause;
         }
         if (protocol == 11) {
@@ -5169,67 +5491,69 @@ public class Nemo2Generator {
     private String generateDataOfProtocol2() {
         String str = "";
         Integer protocol = generateInteger(0, 14);
-        String applicationProtocol = protocol.toString();
         Integer dataFailStatus = generateInteger(1, 4);
-        str = str + "," + applicationProtocol + "," + dataFailStatus.toString();
+        str = str + "," + protocol + "," + dataFailStatus;
         if (dataFailStatus == 1) {
             String reserved = "n/a";
             str = str + "," + reserved;
         }
         if (dataFailStatus == 2) {
             // 10004,...
-            String socketCause = generateInteger(10035, 11031).toString();
+            Integer socketCause = generateInteger(10035, 11031);
             str = str + "," + socketCause;
         }
         if (protocol == 0 || protocol == 1 || protocol == 2) {
-            String dataTransferCause = "1";
+            Integer dataTransferCause = 1;
             str = str + "," + dataTransferCause;
         }
         if (protocol == 3) {
             // 1,2,...
-            String ftpCause = generateInteger(500, 504).toString();
+            Integer ftpCause = generateInteger(500, 504);
             str = str + "," + ftpCause;
         }
         if (protocol == 4) {
             // 1,2,...
-            String httpCause = generateInteger(200, 206).toString();
+            Integer httpCause = generateInteger(200, 206);
             str = str + "," + httpCause;
         }
         if (protocol == 5) {
             // 1,2,5,...
-            String smptCause = generateInteger(500, 504).toString();
+            Integer smptCause = generateInteger(500, 504);
             str = str + "," + smptCause;
         }
         if (protocol == 6) {
             // 1,2,6,...
-            String pop3Cause = generateInteger(1, 2).toString();
+            Integer pop3Cause = generateInteger(1, 2);
             str = str + "," + pop3Cause;
         }
         if (protocol == 7 || protocol == 8) {
             // 100,101,200,...
-            String cause = generateInteger(0, 9).toString();
+            Integer cause = generateInteger(0, 9);
             str = str + "," + cause;
         }
         if (protocol == 9) {
             // ...
-            String streamingCause = generateInteger(65489, 65535).toString();
+            Integer streamingCause = generateInteger(65489, 65535);
             str = str + "," + streamingCause;
         }
         if (protocol == 11) {
-            String dataTransferCause = "1";
+            Integer dataTransferCause = 1;
             str = str + "," + dataTransferCause;
         }
         if (protocol == 12) {
-            String icmpPingCause = "2";
+            Integer icmpPingCause = 2;
             str = str + "," + icmpPingCause;
         }
         if (protocol == 13 || protocol == 14) {
-            String dataTransferCause = "1";
+            Integer dataTransferCause = 1;
             str = str + "," + dataTransferCause;
         }
         return str;
     }
 
+    /**
+     * Create list of systems
+     */
     private void createListOfSystems() {
         for (TechnologySystems system : TechnologySystems.values()) {
             systems.add(system.getId());

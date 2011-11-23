@@ -14,12 +14,16 @@
 package org.amanzi.neo.loader.core.newsaver;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
 import org.amanzi.neo.services.NewAbstractService;
+import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.exceptions.DatabaseException;
+import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
 import org.amanzi.neo.services.model.impl.NetworkModel;
@@ -27,13 +31,15 @@ import org.apache.log4j.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
+ * common actions for N2N models saver. Used for: NEIGHBORS, INTERFERENCE MATRIX, FREQUENCY
+ * CONSTRAINTS.
+ * 
  * @author Vladislav_Kondratenko
  */
 public abstract class AbstractN2NSaver extends AbstractCSVSaver<NetworkModel> {
-    protected static Logger LOGGER = Logger.getLogger(AbstractN2NSaver.class);
+    protected static final Logger LOGGER = Logger.getLogger(AbstractN2NSaver.class);
     protected INetworkModel networkModel;
     protected INodeToNodeRelationsModel n2nModel;
-    protected final int MAX_TX_BEFORE_COMMIT = 1000;
 
     protected AbstractN2NSaver(INodeToNodeRelationsModel model, INetworkModel networkModel, ConfigurationDataImpl data,
             GraphDatabaseService service) {
@@ -66,6 +72,34 @@ public abstract class AbstractN2NSaver extends AbstractCSVSaver<NetworkModel> {
     public AbstractN2NSaver() {
     }
 
+    /**
+     * try create a neighbour relationship between sectors
+     * 
+     * @param value
+     * @throws DatabaseException
+     */
+    @Override
+    protected void saveLine(List<String> row) throws AWEException {
+        String neighbSectorName = getValueFromRow(getNeighborElementName(), row);
+        String serviceNeighName = getValueFromRow(getSourceElementName(), row);
+        Map<String, Object> properties = new HashMap<String, Object>();
+        properties.put(NewAbstractService.TYPE, NetworkElementNodeType.SECTOR.getId());
+        properties.put(NewAbstractService.NAME, neighbSectorName);
+        IDataElement findedNeighSector = networkModel.findElement(properties);
+        properties.put(NewAbstractService.NAME, serviceNeighName);
+        IDataElement findedServiceSector = networkModel.findElement(properties);
+        for (String head : headers) {
+            if (fileSynonyms.containsValue(head)) {
+                properties.put(head.toLowerCase(), getSynonymValueWithAutoparse(head, row));
+            }
+        }
+        if (findedNeighSector != null && findedServiceSector != null) {
+            n2nModel.linkNode(findedServiceSector, findedNeighSector, properties);
+        } else {
+            LOGGER.warn("cann't find service or neighbour sector on line " + lineCounter);
+        }
+    }
+
     @Override
     public void init(ConfigurationDataImpl configuration, CSVContainer dataElement) {
         Map<String, Object> rootElement = new HashMap<String, Object>();
@@ -88,6 +122,16 @@ public abstract class AbstractN2NSaver extends AbstractCSVSaver<NetworkModel> {
             throw new RuntimeException(e);
         }
     }
+
+    /**
+     * @return name of source element
+     */
+    protected abstract String getSourceElementName();
+
+    /**
+     * @return name of neighbor element
+     */
+    protected abstract String getNeighborElementName();
 
     protected abstract INodeToNodeRelationsModel getNode2NodeModel(String name) throws AWEException;
 

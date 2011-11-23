@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.loader.core.newsaver;
 
+import static org.amanzi.neo.services.NewNetworkService.*;
 import java.io.File;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -43,25 +44,22 @@ import org.apache.log4j.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
+ * tems data saver
+ * 
  * @author Vladislav_Kondratenko
  */
-public class NewTemsSaver extends AbstractDriveSaver {
+public class TemsSaver extends AbstractDriveSaver {
 
-    private final int MAX_TX_BEFORE_COMMIT = 1000;
-    private static Logger LOGGER = Logger.getLogger(NewTemsSaver.class);
+    private static final Logger LOGGER = Logger.getLogger(TemsSaver.class);
 
-    private IDriveModel model;
     private IDriveModel virtualModel;
-
-    private Long lineCounter = 0l;
-    private String fileName;
 
     private String previous_ms = null;
     private String previous_time = null;
     private int previous_pn_code = -1;
     private IDataElement location;
 
-    protected NewTemsSaver(IDriveModel model, IDriveModel virtualModel, ConfigurationDataImpl config, GraphDatabaseService service) {
+    protected TemsSaver(IDriveModel model, IDriveModel virtualModel, ConfigurationDataImpl config, GraphDatabaseService service) {
         super(service);
         DRIVE_TYPE_NAME = DriveTypes.TEMS.name();
         preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.DRIVE);
@@ -69,7 +67,7 @@ public class NewTemsSaver extends AbstractDriveSaver {
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
         commitTx();
         if (model != null) {
-            this.model = model;
+            this.driveModel = model;
             this.virtualModel = virtualModel;
             modelMap.put(model.getName(), model);
         } else {
@@ -80,14 +78,11 @@ public class NewTemsSaver extends AbstractDriveSaver {
     /**
      * 
      */
-    public NewTemsSaver() {
+    public TemsSaver() {
         super();
     }
 
-    /**
-     * @param value
-     * @throws AWEException
-     */
+    @Override
     protected void saveLine(List<String> value) throws AWEException {
         params.clear();
         Object time = getSynonymValueWithAutoparse(TIME, value);
@@ -103,14 +98,39 @@ public class NewTemsSaver extends AbstractDriveSaver {
         String event = getValueFromRow(EVENT, value);
         String ms = getValueFromRow(MS, value);
 
+        collectMElement(time, latitude, longitude, message_type, timestamp, value, ms, event);
+
+        removeEmpty(params);
+        collectRemainProperties(params, value);
+        IDataElement createdMeasurment = addMeasurement(driveModel, params);
+        location = driveModel.getLocation(createdMeasurment);
+        commitTx();
+        addSynonyms(driveModel, params);
+        createVirtualModelElement(value, ms, time.toString(), event, timestamp);
+
+    }
+
+    /**
+     * collect properties map for M element, from required values;
+     * 
+     * @param time
+     * @param latitude
+     * @param longitude
+     * @param message_type
+     * @param timestamp
+     * @param ms
+     * @param event
+     */
+    private void collectMElement(Object time, Double latitude, Double longitude, String message_type, Long timestamp,
+            List<String> value, String ms, String event) {
         params.put(TIME, time);
         params.put(NewNetworkService.NAME, time);
         params.put(TIMESTAMP, timestamp);
         params.put(IDriveModel.LATITUDE, latitude);
         params.put(IDriveModel.LONGITUDE, longitude);
         params.put(MESSAGE_TYPE, message_type);
-
-        params.put(EVENT, getSynonymValueWithAutoparse(EVENT, value));
+        params.put(NewNetworkService.TYPE, DriveNodeTypes.M.getId());
+        params.put(EVENT, event);
         params.put(BCCH, getSynonymValueWithAutoparse(BCCH, value));
         params.put(TCH, getSynonymValueWithAutoparse(TCH, value));
         params.put(SC, getSynonymValueWithAutoparse(SC, value));
@@ -120,15 +140,6 @@ public class NewTemsSaver extends AbstractDriveSaver {
         params.put(NewNetworkService.CELL_INDEX, getSynonymValueWithAutoparse(NewNetworkService.CELL_INDEX, value));
         params.put(SECTOR_ID, getSynonymValueWithAutoparse(SECTOR_ID, value));
         params.put(MS, ms);
-        removeEmpty(params);
-        addedSynonyms();
-        collectRemainProperties(params, value);
-        IDataElement createdMeasurment = addMeasurement(model, params);
-        location = model.getLocation(createdMeasurment);
-        commitTx();
-
-        createVirtualModelElement(value, ms, time.toString(), event, timestamp);
-
     }
 
     /**
@@ -243,15 +254,11 @@ public class NewTemsSaver extends AbstractDriveSaver {
                 float[] signal = signals.get(chanCode);
                 double mw = signal[0] / signal[1];
                 String[] cc = chanCode.split("\\t");
-                params.put(NewAbstractService.TYPE, DriveNodeTypes.MS.getId());
-                params.put(CHANNEL, autoParse(CHANNEL, cc[0]));
-                params.put(CODE, autoParse(CODE, cc[1]));
-                params.put(NewAbstractService.NAME, autoParse(NewAbstractService.NAME, cc[1]));
+
                 float dbm = mw2dbm(mw);
-                params.put(DBM, dbm);
-                params.put(MW, mw);
-                params.put(TIMESTAMP, timestamp);
+                collectMsElement(cc, dbm, mw, timestamp);
                 IDataElement virtualMeasurment = addMeasurement(virtualModel, params);
+
                 if (location != null) {
                     List<IDataElement> locationList = new LinkedList<IDataElement>();
                     locationList.add(location);
@@ -262,14 +269,22 @@ public class NewTemsSaver extends AbstractDriveSaver {
         }
     }
 
-    private void addedSynonyms() {
-        for (String key : params.keySet()) {
-            if (key != NewAbstractService.NAME && key != NewAbstractService.TYPE && key != TIMESTAMP
-                    && fileSynonyms.containsKey(key)) {
-                addedDatasetSynonyms(model, DriveNodeTypes.M, key, getHeaderBySynonym(key));
-            }
-        }
-        addedDatasetSynonyms(model, DriveNodeTypes.M, NewAbstractService.NAME, getHeaderBySynonym(TIME));
+    /**
+     * collect ms element in virual model
+     * 
+     * @param cc
+     * @param dbm
+     * @param mw
+     * @param timestamp
+     */
+    private void collectMsElement(String[] cc, float dbm, double mw, Long timestamp) {
+        params.put(NewAbstractService.TYPE, DriveNodeTypes.MS.getId());
+        params.put(CHANNEL, autoParse(CHANNEL, cc[0]));
+        params.put(CODE, autoParse(CODE, cc[1]));
+        params.put(NewAbstractService.NAME, autoParse(NewAbstractService.NAME, cc[1]));
+        params.put(DBM, dbm);
+        params.put(MW, mw);
+        params.put(TIMESTAMP, timestamp);
     }
 
     private IDataElement addMeasurement(IDriveModel model, Map<String, Object> properties) throws AWEException {
@@ -287,11 +302,11 @@ public class NewTemsSaver extends AbstractDriveSaver {
         try {
             rootElement.put(INeoConstants.PROPERTY_NAME_NAME,
                     configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME));
-            model = getActiveProject().getDataset(configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME),
-                    DriveTypes.TEMS);
-            virtualModel = model.getVirtualDataset(
+            driveModel = getActiveProject().getDataset(
+                    configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME), DriveTypes.TEMS);
+            virtualModel = driveModel.getVirtualDataset(
                     configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME), DriveTypes.MS);
-            modelMap.put(configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME), model);
+            modelMap.put(configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME), driveModel);
             createExportSynonymsForModels();
         } catch (AWEException e) {
             rollbackTx();
@@ -300,8 +315,9 @@ public class NewTemsSaver extends AbstractDriveSaver {
         }
     }
 
-    private void addedNewFileToModels(File file) throws DatabaseException, DuplicateNodeNameException {
-        model.addFile(file);
+    @Override
+    protected void addedNewFileToModels(File file) throws DatabaseException, DuplicateNodeNameException {
+        driveModel.addFile(file);
         virtualModel.addFile(file);
     }
 
@@ -310,11 +326,7 @@ public class NewTemsSaver extends AbstractDriveSaver {
         commitTx();
         CSVContainer container = dataElement;
         try {
-            if ((fileName != null && !fileName.equals(dataElement.getFile().getName())) || (fileName == null)) {
-                fileName = dataElement.getFile().getName();
-                addedNewFileToModels(dataElement.getFile());
-                resetSynonymsMaps();
-            }
+            checkForNewFile(dataElement);
             if (fileSynonyms.isEmpty()) {
                 headers = container.getHeaders();
                 makeAppropriationWithSynonyms(headers);

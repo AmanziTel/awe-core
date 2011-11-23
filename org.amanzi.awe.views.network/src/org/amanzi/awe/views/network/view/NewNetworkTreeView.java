@@ -26,7 +26,6 @@ import org.amanzi.awe.views.network.property.NewNetworkPropertySheetPage;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.NodeTypeManager;
-import org.amanzi.neo.services.enums.NodeTypes;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;

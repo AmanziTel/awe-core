@@ -26,11 +26,18 @@ import org.junit.runners.Suite.SuiteClasses;
  * @since 1.0.0
  */
 @RunWith(Suite.class)
-@SuiteClasses({org.amanzi.neo.loader.core.newsaver.NewNetworkSaverTesting.class,
-        org.amanzi.neo.loader.core.newsaver.NewNeighbourSaverTesting.class,
-        org.amanzi.neo.loader.core.newsaver.NewTemsSaverTesting.class,
-        org.amanzi.neo.loader.core.newsaver.NewRomesSaverTesting.class,
-        org.amanzi.neo.loader.core.newsaver.AutoParseTesting.class})
+@SuiteClasses({
+        org.amanzi.neo.loader.core.newsaver.SeparationConstraintsSaverTesting.class,
+        org.amanzi.neo.loader.core.newsaver.FreuencyConstraintTesting.class,
+        org.amanzi.neo.loader.core.newsaver.InterferenceSaverTesting.class,
+        org.amanzi.neo.loader.core.newsaver.NetworkSaverTesting.class,
+        org.amanzi.neo.loader.core.newsaver.TRXSaverTesting.class,
+        org.amanzi.neo.loader.core.newsaver.NeighbourSaverTesting.class,
+        org.amanzi.neo.loader.core.newsaver.TemsSaverTesting.class,
+        org.amanzi.neo.loader.core.newsaver.RomesSaverTesting.class,
+        org.amanzi.neo.loader.core.newsaver.AutoParseTesting.class
+        }
+)
 public class SaversSuite {
 
 }

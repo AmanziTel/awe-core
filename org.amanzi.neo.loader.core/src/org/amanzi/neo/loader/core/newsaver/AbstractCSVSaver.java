@@ -14,23 +14,39 @@
 package org.amanzi.neo.loader.core.newsaver;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceManager;
+import org.amanzi.neo.services.NewAbstractService;
+import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
+import org.amanzi.neo.services.NodeTypeManager;
+import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
+import org.amanzi.neo.services.model.IDataElement;
+import org.amanzi.neo.services.model.IDataModel;
 import org.amanzi.neo.services.model.IModel;
+import org.amanzi.neo.services.model.INetworkModel;
+import org.amanzi.neo.services.model.impl.DataElement;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
+ * class represent common actions for csv files savers. Used by: TEMS, ROMES, TRX, TRAFFIC,
+ * NEIGHBORS, INTERFERENCE MATRIX, FREQUENCY CONSTRAINTS, NEMO1x, NEMO2x, SEPARATION CONSTRAINT
+ * savers
+ * 
  * @author Vladislav_Kondratenko
  */
 public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<T1, CSVContainer, ConfigurationDataImpl> {
-    private static Logger LOGGER = Logger.getLogger(AbstractCSVSaver.class);
+    private static final Logger LOGGER = Logger.getLogger(AbstractCSVSaver.class);
+    protected final int MAX_TX_BEFORE_COMMIT = 1000;
+    protected INetworkModel networkModel;
+    protected IDataElement rootDataElement;
     /**
      * line number
      */
@@ -65,10 +81,33 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
     protected boolean isCorrect(Object value) {
         if (value == null || value.toString().isEmpty() || value.toString().equals("?")
                 || value.toString().equalsIgnoreCase("NULL") || value.toString().equalsIgnoreCase("default")
-                || value.toString().equalsIgnoreCase("--")) {
+                || value.toString().equalsIgnoreCase("---") || value.toString().equalsIgnoreCase("N/A")) {
             return false;
         }
         return true;
+    }
+
+    /**
+     * collect synonyms from element properties
+     * 
+     * @param nodeType
+     * @param collectedName
+     */
+    protected void addSynonyms(IDataModel model, Map<String, Object> collectedName) {
+        String string_type = collectedName.get(NewAbstractService.TYPE).toString();
+        INodeType type = NodeTypeManager.getType(string_type);
+        for (String name : collectedName.keySet()) {
+            String headerName = getHeaderBySynonym(name);
+            if (headerName != null && !name.equals(NewAbstractService.NAME) && !name.equals(NewAbstractService.TYPE)) {
+                addedDatasetSynonyms(model, type, headerName, name);
+            } else if (name.equals(NewAbstractService.NAME)) {
+                headerName = getHeaderBySynonym(string_type);
+                if (headerName != null) {
+                    addedDatasetSynonyms(model, type, NewAbstractService.NAME, headerName);
+                }
+            }
+
+        }
     }
 
     /**
@@ -83,6 +122,26 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
      */
     public AbstractCSVSaver() {
         super();
+    }
+
+    @Override
+    public void init(ConfigurationDataImpl configuration, CSVContainer dataElement) {
+        preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.NETWORK);
+        columnSynonyms = new HashMap<String, Integer>();
+        setDbInstance();
+        setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
+        commitTx();
+        try {
+            networkModel = getActiveProject().getNetwork(
+                    configuration.getDatasetNames().get(ConfigurationDataImpl.NETWORK_PROPERTY_NAME));
+            rootDataElement = new DataElement(networkModel.getRootNode());
+            modelMap.put(configuration.getDatasetNames().get(ConfigurationDataImpl.NETWORK_PROPERTY_NAME), networkModel);
+            createExportSynonymsForModels();
+        } catch (AWEException e) {
+            rollbackTx();
+            LOGGER.error("Exception on creating root Model", e);
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -171,7 +230,10 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
      * @return
      */
     protected String getHeaderBySynonym(String synonymName) {
-        return headers.get(columnSynonyms.get((fileSynonyms.get(synonymName))));
+        if (fileSynonyms.containsKey(synonymName)) {
+            return headers.get(columnSynonyms.get((fileSynonyms.get(synonymName))));
+        }
+        return null;
     }
 
     /**
@@ -247,6 +309,23 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
                     break;
                 }
             }
+        }
+    }
+
+    /**
+     * remove incorrect values from properties collection
+     * 
+     * @param params2
+     */
+    protected void removeEmpty(Map<String, Object> params2) {
+        List<String> keyToDelete = new LinkedList<String>();
+        for (String key : params.keySet()) {
+            if (!isCorrect(params.get(key))) {
+                keyToDelete.add(key);
+            }
+        }
+        for (String key : keyToDelete) {
+            params.remove(key);
         }
     }
 }

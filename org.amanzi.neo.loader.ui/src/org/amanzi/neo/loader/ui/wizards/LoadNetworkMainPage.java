@@ -56,7 +56,7 @@ import org.neo4j.graphdb.Node;
  * @since 1.0.0
  */
 public class LoadNetworkMainPage extends LoaderPageNew<ConfigurationDataImpl> {
-    private static Logger LOGGER = Logger.getLogger(LoadNetworkMainPage.class);
+    private static final Logger LOGGER = Logger.getLogger(LoadNetworkMainPage.class);
     /*
      * Names of supported files for Network
      */

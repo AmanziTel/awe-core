@@ -62,7 +62,7 @@ import org.eclipse.swt.widgets.Shell;
  * @since 1.0.0
  */
 public class LoadDatasetMainPage extends LoaderPageNew<ConfigurationDataImpl> {
-    private static Logger LOGGER = Logger.getLogger(LoadDatasetMainPage.class);
+    private static final Logger LOGGER = Logger.getLogger(LoadDatasetMainPage.class);
     /** String ASC_PAT_FILE field */
     // private static final String ASC_PAT_FILE = ".*_(\\d{6})_.*";
     // private static final String FMT_PAT_FILE = ".*(\\d{4}-\\d{2}-\\d{2}).*";

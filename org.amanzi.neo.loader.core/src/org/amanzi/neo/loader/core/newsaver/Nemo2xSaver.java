@@ -33,7 +33,6 @@ import org.amanzi.neo.core.utils.DriveEvents;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
 import org.amanzi.neo.loader.core.saver.nemo.NemoEvents;
-import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.NewDatasetService.DriveTypes;
@@ -47,17 +46,18 @@ import org.apache.log4j.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
+ * saver for 2.01 data
+ * 
  * @author Vladislav_Kondratenko
  */
-public class NewNemo2xSaver extends AbstractDriveSaver {
+public class Nemo2xSaver extends AbstractDriveSaver {
+    private static final Logger LOGGER = Logger.getLogger(Nemo2xSaver.class);
     protected static final SimpleDateFormat EVENT_DATE_FORMAT = new SimpleDateFormat("dd.MM.yyyy");
     protected static final String TIME_FORMAT = "HH:mm:ss.S";
     protected Calendar workDate;
     protected IDriveModel model;
     protected final int MAX_TX_BEFORE_COMMIT = 1000;
-    private static Logger LOGGER = Logger.getLogger(NewNemo2xSaver.class);
-    protected String fileName;
-    protected long lineCounter = 0l;
+
     protected DriveEvents driveEvents;
     protected List<Map<String, Object>> subNodes;
     protected SimpleDateFormat timeFormat = new SimpleDateFormat(TIME_FORMAT);
@@ -65,7 +65,7 @@ public class NewNemo2xSaver extends AbstractDriveSaver {
     protected String EVENT_TYPE = "event_type";
     protected IDataElement location;
 
-    protected NewNemo2xSaver(IDriveModel model, ConfigurationDataImpl config, GraphDatabaseService service) {
+    protected Nemo2xSaver(IDriveModel model, ConfigurationDataImpl config, GraphDatabaseService service) {
         super(service);
         preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.DRIVE);
         columnSynonyms = new HashMap<String, Integer>();
@@ -82,7 +82,7 @@ public class NewNemo2xSaver extends AbstractDriveSaver {
     /**
      * 
      */
-    public NewNemo2xSaver() {
+    public Nemo2xSaver() {
         super();
     }
 
@@ -92,14 +92,11 @@ public class NewNemo2xSaver extends AbstractDriveSaver {
 
     @Override
     public void init(ConfigurationDataImpl configuration, CSVContainer dataElement) {
-        Map<String, Object> rootElement = new HashMap<String, Object>();
         preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.DRIVE);
         setDbInstance();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
         commitTx();
         try {
-            rootElement.put(INeoConstants.PROPERTY_NAME_NAME,
-                    configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME));
             model = getActiveProject().getDataset(configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME),
                     DriveTypes.TEMS);
             modelMap.put(configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME), model);
@@ -120,12 +117,7 @@ public class NewNemo2xSaver extends AbstractDriveSaver {
         try {
             commitTx();
             CSVContainer container = dataElement;
-            if ((fileName != null && !fileName.equals(dataElement.getFile().getName())) || (fileName == null)) {
-                fileName = dataElement.getFile().getName();
-                addedNewFileToModels(dataElement.getFile());
-                lineCounter = 0l;
-
-            }
+            checkForNewFile(dataElement);
             if (!container.getHeaders().isEmpty() && container.getValues().isEmpty()) {
                 saveLine(container.getHeaders());
             } else if (!container.getHeaders().isEmpty() && !container.getValues().isEmpty()) {

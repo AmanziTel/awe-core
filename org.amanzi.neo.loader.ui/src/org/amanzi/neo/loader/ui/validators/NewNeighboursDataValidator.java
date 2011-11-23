@@ -29,10 +29,10 @@ import org.apache.log4j.Logger;
  * @author Kondratenko_Vladislav
  */
 public class NewNeighboursDataValidator implements IValidator {
+    private static final Logger LOGGER = Logger.getLogger(NewNeighboursDataValidator.class);
     private String[] possibleFieldSepRegexes = new String[] {"\t", ",", ";"};
     private Result result = Result.FAIL;
     private String message = "";
-    private static Logger LOGGER = Logger.getLogger(NewNeighboursDataValidator.class);
 
     @Override
     public Result getResult() {
