@@ -16,8 +16,8 @@ package org.amanzi.awe.ui;
 import net.refractions.udig.project.IProject;
 import net.refractions.udig.project.internal.impl.ProjectRegistryImpl;
 
-import org.amanzi.neo.services.listeners.EventManager;
-import org.amanzi.neo.services.listeners.EventUIType;
+import org.amanzi.neo.services.ui.events.EventManager;
+import org.amanzi.neo.services.ui.events.EventUIType;
 import org.eclipse.emf.common.notify.Adapter;
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.Notifier;

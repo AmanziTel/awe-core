@@ -11,17 +11,19 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.services.listeners;
+package org.amanzi.neo.services.ui.events;
 
 /**
  * <p>
- *
+ * Abstract UI event types
  * </p>
  * @author kostyukovich_n
  * @since 1.0.0
  */
-public interface IEventListener {
+public enum EventUIType {
     
-    public void handleEvent(EventUIType event, Object data);
+    PROJECT_CHANGED,
+    DISTRIBUTIONS_CHANGED,
+    DISTRIBUTION_BAR_SELECTED
     
 }

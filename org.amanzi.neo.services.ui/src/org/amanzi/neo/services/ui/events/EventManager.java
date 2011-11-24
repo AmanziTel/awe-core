@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.services.listeners;
+package org.amanzi.neo.services.ui.events;
 
 import java.util.HashMap;
 import java.util.HashSet;
