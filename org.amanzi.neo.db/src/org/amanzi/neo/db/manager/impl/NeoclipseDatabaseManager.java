@@ -16,6 +16,7 @@ package org.amanzi.neo.db.manager.impl;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.codehaus.groovy.tools.shell.util.NoExitSecurityManager;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.neoclipse.Activator;
 import org.neo4j.neoclipse.graphdb.GraphDbServiceManager;
@@ -67,13 +68,14 @@ public class NeoclipseDatabaseManager extends AbstractDatabaseManager {
 	public GraphDatabaseService getDatabaseService() {
 		if (databaseService == null) {
 			try {
-				neoclipseManager.startGraphDbService().get();
-				// wait until db started
+			    if (!neoclipseManager.isRunning()) {
+			        neoclipseManager.startGraphDbService().get();
+			    }
 
 				neoclipseManager.executeTask(new GetDatabaseTask(),
 						"Get Database Service");
 			} catch (Exception e) {
-				LOGGER.error("ERROR while trying to get database instance", e);
+				LOGGER.fatal("ERROR while trying to get database instance", e);
 			}
 		}
 

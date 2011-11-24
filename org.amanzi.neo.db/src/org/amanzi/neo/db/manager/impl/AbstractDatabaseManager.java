@@ -94,7 +94,7 @@ public abstract class AbstractDatabaseManager implements IDatabaseManager {
 
 		// commiting current transaction
 		Transaction tx = transactionMap.get();
-		tx.failure();
+		tx.success();
 		tx.finish();
 
 		transactionMap.remove();

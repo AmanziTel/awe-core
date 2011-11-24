@@ -1,1 +1,0 @@
-windows:File::Stat#grpowned? returns false if the file exist
