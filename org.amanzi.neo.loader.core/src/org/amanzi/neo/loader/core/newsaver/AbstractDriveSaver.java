@@ -14,7 +14,10 @@
 package org.amanzi.neo.loader.core.newsaver;
 
 import java.io.File;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -23,10 +26,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
+import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
+import org.amanzi.neo.services.NewDatasetService.DriveTypes;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
+import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDriveModel;
-import org.amanzi.neo.services.model.impl.DriveModel;
+import org.amanzi.neo.services.model.impl.DriveModel.DriveRelationshipTypes;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
 
@@ -35,256 +41,300 @@ import org.neo4j.graphdb.GraphDatabaseService;
  * 
  * @author Vladislav_Kondratenko
  */
-public abstract class AbstractDriveSaver extends AbstractCSVSaver<DriveModel> {
+public abstract class AbstractDriveSaver extends AbstractCSVSaver<IDriveModel> {
 
-    private static final Logger LOGGER = Logger.getLogger(AbstractDriveSaver.class);
-    
-    //TODO: LN: comments!!!!
-    protected String DRIVE_TYPE_NAME = "";
-    protected String fileName;
-    // constants
-    protected final static String SECTOR_ID = "sector_id";
-    protected final static String TIME = "time";
-    protected final static String TIMESTAMP = "timestamp";
-    protected final static String EVENT = "event";
-    protected IDriveModel driveModel;
-    protected final static String TCH = "tch";
-    protected final static String SC = "sc";
-    protected final static String PN = "PN";
-    protected final static String ECIO = "ecio";
-    protected final static String RSSI = "rssi";
-    protected final static String MS = "ms";
-    protected final static String MESSAGE_TYPE = "message_type";
-    protected final static String ALL_RXLEV_FULL = "all_rxlev_full";
-    protected final static String ALL_RXLEV_SUB = "all_rxlev_sub";
-    protected final static String ALL_RXQUAL_FULL = "all_rxqual_full";
-    protected final static String ALL_RXQUAL_SUB = "all_rxqual_sub";
-    protected final static String ALL_SQI = "all_sqi";
-    protected final static String ALL_SQI_MOS = "all_sqi_mos";
-    protected final static String ALL_PILOT_SET_COUNT = "all_pilot_set_count";
-    protected final static String CHANNEL = "channel";
-    protected final static String CODE = "code";
-    protected final static String MW = "mw";
-    protected final static String DBM = "dbm";
-    // 12 posible headers
-    protected final static String ALL_PILOT_SET_EC_IO = "all_pilot_set_ec_io_";
-    protected final static String ALL_PILOT_SET_CHANNEL = "all_pilot_set_channel_";
-    protected final static String ALL_PILOT_SET_PN = "all_pilot_set_pn_";
-    protected Integer hours;
-    
-    //TODO: LN: maybe final? 
-    protected Calendar workDate = Calendar.getInstance();
-    /**
-     * contains appropriation of header synonyms and name inDB
-     * <p>
-     * <b>key</b>- name in db ,<br>
-     * <b>value</b>-file header key
-     * </p>
-     */
-    protected Map<String, String> fileSynonyms = new HashMap<String, String>();
-    /**
-     * name inDB properties values
-     */
-    protected Map<String, Integer> columnSynonyms = new HashMap<String, Integer>();
-    protected Map<String, Object> params = new HashMap<String, Object>();
-    protected List<String> headers;
+	private static final Logger LOGGER = Logger
+			.getLogger(AbstractDriveSaver.class);
 
-    /**
-     * @param service
-     */
-    protected AbstractDriveSaver(GraphDatabaseService service) {
-        super(service);
-    }
-    
-    /**
+	// Drive type name
+	protected DriveTypes DRIVE_TYPE = null;
+	// Name of handling file
+	protected String fileName;
+	// constants
+	protected final static String SECTOR_ID = "sector_id";
+	protected final static String TIME = "time";
+	protected final static String TIMESTAMP = "timestamp";
+	protected final static String EVENT = "event";
+	protected final static String TCH = "tch";
+	protected final static String SC = "sc";
+	protected final static String PN = "PN";
+	protected final static String ECIO = "ecio";
+	protected final static String RSSI = "rssi";
+	protected final static String MS = "ms";
+	protected final static String MESSAGE_TYPE = "message_type";
+	protected final static String ALL_RXLEV_FULL = "all_rxlev_full";
+	protected final static String ALL_RXLEV_SUB = "all_rxlev_sub";
+	protected final static String ALL_RXQUAL_FULL = "all_rxqual_full";
+	protected final static String ALL_RXQUAL_SUB = "all_rxqual_sub";
+	protected final static String ALL_SQI = "all_sqi";
+	protected final static String ALL_SQI_MOS = "all_sqi_mos";
+	protected final static String ALL_PILOT_SET_COUNT = "all_pilot_set_count";
+	protected final static String CHANNEL = "channel";
+	protected final static String CODE = "code";
+	protected final static String MW = "mw";
+	protected final static String DBM = "dbm";
+
+	/*
+	 * refular expression pattern for converting lattitude and longitude
+	 */
+	protected final static Pattern LONGITUDE_PATTERN = Pattern
+			.compile("^([+-]{0,1}\\d+(\\.\\d+)*)([NESW]{0,1})$");
+	protected final static Pattern LATITUDE_PATTERN = Pattern
+			.compile("^([+-]{0,1}\\d+(\\.\\d+)*)([NESW]{0,1})$");
+
+	/*
+	 * date format pattern
+	 */
+	protected final static SimpleDateFormat DATE_FORMAT_WITH_TIME_DATE = new SimpleDateFormat(
+			"dd/MM/yyyy hh:mm:ss.SSS");
+	protected final static SimpleDateFormat DATE_FORMAT_TIME = new SimpleDateFormat(
+			"HH:mm:ss");
+	// 12 posible headers
+	protected final static String ALL_PILOT_SET_EC_IO = "all_pilot_set_ec_io_";
+	protected final static String ALL_PILOT_SET_CHANNEL = "all_pilot_set_channel_";
+	protected final static String ALL_PILOT_SET_PN = "all_pilot_set_pn_";
+	protected Integer hours;
+
+	protected Calendar workDate = Calendar.getInstance();
+	/**
+	 * contains appropriation of header synonyms and name inDB
+	 * <p>
+	 * <b>key</b>- name in db ,<br>
+	 * <b>value</b>-file header key
+	 * </p>
+	 */
+	protected Map<String, String> fileSynonyms = new HashMap<String, String>();
+	/**
+	 * name inDB properties values
+	 */
+	protected Map<String, Integer> columnSynonyms = new HashMap<String, Integer>();
+	protected Map<String, Object> params = new HashMap<String, Object>();
+	protected List<String> headers;
+
+	/**
+	 * @param service
+	 */
+	protected AbstractDriveSaver(GraphDatabaseService service) {
+		super(service);
+	}
+
+	/**
      * 
      */
-    public AbstractDriveSaver() {
-        super();
-    }
-    
-    //TODO: LN: comments
-    protected void resetSynonymsMaps() {
-        if (!fileSynonyms.isEmpty()) {
-            fileSynonyms.clear();
-            columnSynonyms.clear();
-            headers.clear();
-        }
-    }
+	public AbstractDriveSaver() {
+		super();
+	}
 
-    //TODO: LN: duplicated with AbstractCSVSaver method
-    /**
-     * Convert milliwatss values to dBm
-     * 
-     * @param milliwatts
-     * @return dBm
-     */
-    protected final float mw2dbm(double mw) {
-        return (float)(10.0 * Math.log10(mw));
-    }
+	/**
+	 * reset synonyms maps
+	 */
+	protected void resetSynonymsMaps() {
+		if (!fileSynonyms.isEmpty()) {
+			fileSynonyms.clear();
+			columnSynonyms.clear();
+			headers.clear();
+		}
+	}
 
-    //TODO: LN: comments
-    void collectRemainProperties(Map<String, Object> properties, List<String> row) {
-        for (String head : headers) {
-            if (isCorrect(head, row)) {
-                if (!properties.containsKey(head)) {
-                    if ((fileSynonyms.containsValue(head) && properties.containsKey(getSynonymForHeader(head)))) {
-                        continue;
-                    }
-                    properties.put(head.toLowerCase(), getSynonymValueWithAutoparse(head, row));
-                }
-            }
-        }
-        
-    }
+	/**
+	 * Convert milliwatss values to dBm
+	 * 
+	 * @param milliwatts
+	 * @return dBm
+	 */
+	protected final float mw2dbm(double mw) {
+		return (float) (10.0 * Math.log10(mw));
+	}
 
-    /**
-     * Gets the longitude.
-     * 
-     * @param stringValue the string value
-     * @return the longitude
-     */
-    protected Double getLongitude(String stringValue) {
-        if (stringValue == null) {
-            return null;
-        }
-        try {
-            return Double.valueOf(stringValue);
-        } catch (NumberFormatException e) {
-            //TODO: LN: to constant
-            Pattern p = Pattern.compile("^([+-]{0,1}\\d+(\\.\\d+)*)([NESW]{0,1})$");
-            Matcher m = p.matcher(stringValue);
-            if (m.matches()) {
-                try {
-                    return Double.valueOf(m.group(1));
-                } catch (NumberFormatException e2) {
-                    LOGGER.error(String.format("Can't get Longitude from: %s", stringValue));
-                }
-            }
-        }
-        return null;
-    }
+	/**
+	 * collect not handled properties
+	 * 
+	 * @param properties
+	 * @param row
+	 */
+	protected void collectRemainProperties(Map<String, Object> properties,
+			List<String> row) {
+		for (String head : headers) {
+			if (isCorrect(head, row)) {
+				if (!properties.containsKey(head)) {
+					if ((fileSynonyms.containsValue(head) && properties
+							.containsKey(getSynonymForHeader(head)))) {
+						continue;
+					}
+					properties.put(head.toLowerCase(),
+							getSynonymValueWithAutoparse(head, row));
+				}
+			}
+		}
 
-    /**
-     * Gets the latitude.
-     * 
-     * @param stringValue the string value
-     * @return the latitude
-     */
-    protected Double getLatitude(String stringValue) {
-        if (stringValue == null) {
-            return null;
-        }
-        try {
-            return Double.valueOf(stringValue);
-        } catch (NumberFormatException e) {
-            //TODO: LN: to constant
-            Pattern p = Pattern.compile("^([+-]{0,1}\\d+(\\.\\d+)*)([NESW]{0,1})$");
-            Matcher m = p.matcher(stringValue);
-            if (m.matches()) {
-                try {
-                    return Double.valueOf(m.group(1));
-                } catch (NumberFormatException e2) {
-                    LOGGER.error(String.format("Can't get Latitude from: %s", stringValue));
-                }
-            }
-        }
-        return null;
-    }
+	}
 
-    //TODO: LN: comments
-    protected abstract void addedNewFileToModels(File file) throws DatabaseException, DuplicateNodeNameException;
+	/**
+	 * Gets the longitude.
+	 * 
+	 * @param stringValue
+	 *            the string value
+	 * @return the longitude
+	 */
+	protected Double getLongitude(String stringValue) {
+		if (stringValue == null) {
+			return null;
+		}
+		try {
+			return Double.valueOf(stringValue);
+		} catch (NumberFormatException e) {
+			Matcher m = LONGITUDE_PATTERN.matcher(stringValue);
+			if (m.matches()) {
+				try {
+					return Double.valueOf(m.group(1));
+				} catch (NumberFormatException e2) {
+					LOGGER.error(String.format("Can't get Longitude from: %s",
+							stringValue));
+				}
+			}
+		}
+		return null;
+	}
 
-    //TODO: LN: comments
-    protected void checkForNewFile(CSVContainer dataElement) throws DatabaseException, DuplicateNodeNameException {
-        if ((fileName != null && !fileName.equals(dataElement.getFile().getName())) || (fileName == null)) {
-            fileName = dataElement.getFile().getName();
-            addedNewFileToModels(dataElement.getFile());
-            //TODO: LN: do we need to reset synonyms for each file? 
-            //since we can't load multi-files for different data all synonyms will be 
-            //the same for all files
-            resetSynonymsMaps();
-            lineCounter = 0l;
-        }
-    }
+	/**
+	 * Gets the latitude.
+	 * 
+	 * @param stringValue
+	 *            the string value
+	 * @return the latitude
+	 */
+	protected Double getLatitude(String stringValue) {
+		if (stringValue == null) {
+			return null;
+		}
+		try {
+			return Double.valueOf(stringValue);
+		} catch (NumberFormatException e) {
+			// TODO: LN: to constant
 
-    /**
-     * remove empty or null values from params Map
-     * 
-     * @param params2
-     */
-    protected void removeEmpty(Map<String, Object> params2) {
-        List<String> keyToDelete = new LinkedList<String>();
-        for (String key : params.keySet()) {
-            if (!isCorrect(params.get(key))) {
-                keyToDelete.add(key);
-            }
-        }
-        for (String key : keyToDelete) {
-            params.remove(key);
-        }
-    }
+			Matcher m = LATITUDE_PATTERN.matcher(stringValue);
+			if (m.matches()) {
+				try {
+					return Double.valueOf(m.group(1));
+				} catch (NumberFormatException e2) {
+					LOGGER.error(String.format("Can't get Latitude from: %s",
+							stringValue));
+				}
+			}
+		}
+		return null;
+	}
 
-    /**
-     * get value from row without autoparse (like a string)
-     * 
-     * @param synonym
-     * @param value
-     * @return
-     */
-    protected String getValueFromRow(String synonym, List<String> value) {
-        return isCorrect(synonym, value) ? value.get(columnSynonyms.get(fileSynonyms.get(synonym))) : null;
-    }
+	/**
+	 * added file element to models
+	 * 
+	 * @param file
+	 * @throws DatabaseException
+	 * @throws DuplicateNodeNameException
+	 */
+	protected abstract void addedNewFileToModels(File file)
+			throws DatabaseException, DuplicateNodeNameException;
 
-    /**
-     * check if row value is correct
-     * 
-     * @param synonymName
-     * @param row
-     * @return
-     */
-    protected boolean isCorrect(String synonymName, List<String> row) {
-        return fileSynonyms.get(synonymName) != null
-                && isCorrect(row.get(columnSynonyms.get(fileSynonyms.get(synonymName))) != null);
-    }
+	/**
+	 * check if there is new file handling reset prepare synonymsand add new
+	 * file to model, also reset lineCounter
+	 * 
+	 * @param dataElement
+	 * @throws DatabaseException
+	 * @throws DuplicateNodeNameException
+	 */
+	protected void checkForNewFile(CSVContainer dataElement)
+			throws DatabaseException, DuplicateNodeNameException {
+		if ((fileName != null && !fileName.equals(dataElement.getFile()
+				.getName())) || (fileName == null)) {
+			fileName = dataElement.getFile().getName();
+			addedNewFileToModels(dataElement.getFile());
+			resetSynonymsMaps();
+			lineCounter = 0l;
+		}
+	}
 
-    /**
-     * get header name by synonymVale
-     * 
-     * @param synonymName
-     * @return
-     */
-    protected String getHeaderBySynonym(String synonymName) {
-        return headers.get(columnSynonyms.get((fileSynonyms.get(synonymName))));
-    }
+	/**
+	 * try to parse time string to timestamp
+	 * 
+	 * @param workDate
+	 * @param time
+	 * @return
+	 */
+	@SuppressWarnings("deprecation")
+	protected Long defineTimestamp(Calendar workDate, String time) {
+		if (time == null) {
+			return null;
+		}
+		try {
+			Date datetime = DATE_FORMAT_WITH_TIME_DATE.parse(time);
+			return datetime.getTime();
+		} catch (ParseException e1) {
+			try {
+				// TODO: Lagutko: refactor to not use DEPRECATED methods
+				Date nodeDate = DATE_FORMAT_TIME.parse(time);
+				final int nodeHours = nodeDate.getHours();
+				if (hours != null && hours > nodeHours) {
+					// next day
+					workDate.add(Calendar.DAY_OF_MONTH, 1);
+					this.workDate.add(Calendar.DAY_OF_MONTH, 1);
+				}
+				hours = nodeHours;
+				// TODO: LN: we have method for this
+				workDate.set(Calendar.HOUR_OF_DAY, nodeHours);
+				workDate.set(Calendar.MINUTE, nodeDate.getMinutes());
+				workDate.set(Calendar.SECOND, nodeDate.getSeconds());
+				return workDate.getTimeInMillis();
 
-    /**
-     * check value for null or empty
-     * 
-     * @param value
-     * @return
-     */
-    protected boolean isCorrect(Object value) {
-        if (value == null || value.toString().isEmpty() || value.toString().equals("?")
-                || value.toString().equalsIgnoreCase("NULL")) {
-            return false;
-        }
-        return true;
-    }
+			} catch (Exception e) {
+				LOGGER.error(String.format("Can't parse time: %s", time));
 
-    /**
-     * Get row value by header
-     * 
-     * @param row
-     * @param synonym
-     * @return synonym value
-     */
-    protected String getSynonymValue(List<String> row, String propertyName) {
-        return row.get(columnSynonyms.get(propertyName));
-    }
+			}
+		}
+		return 0l;
 
-    protected int getHeaderId(String header) {
-        return headers.indexOf(header);
-    }
-    
+	}
+
+	@Override
+	protected Map<String, String[]> initializeSynonyms() {
+		return preferenceManager.getSynonyms(DatasetTypes.DRIVE);
+
+	}
+
+	@Override
+	protected void commonLinePreparationActions(CSVContainer dataElement)
+			throws Exception {
+		checkForNewFile(dataElement);
+	}
+
+	/**
+	 * link new created element with existed location element;
+	 * 
+	 * @param createdElement
+	 * @param locList
+	 * @throws DatabaseException
+	 */
+	protected void linkWithLocationElement(IDataElement createdElement,
+			Iterable<IDataElement> locList) throws DatabaseException {
+		parametrizedModel.linkNode(createdElement, locList,
+				DriveRelationshipTypes.LOCATION);
+	}
+
+	/**
+	 * remove incorrect values from params Map
+	 * 
+	 * @param params2
+	 */
+	protected void removeEmpty(Map<String, Object> params2) {
+		List<String> keyToDelete = new LinkedList<String>();
+		for (String key : params.keySet()) {
+			if (!isCorrect(params.get(key))) {
+				keyToDelete.add(key);
+			}
+		}
+		for (String key : keyToDelete) {
+			params.remove(key);
+		}
+	}
+
 }

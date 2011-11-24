@@ -30,89 +30,96 @@ import org.neo4j.graphdb.Transaction;
  */
 public abstract class AbstractDatabaseManager implements IDatabaseManager {
 
-    private static final Logger LOGGER = Logger.getLogger(AbstractDatabaseManager.class);
+	private static final Logger LOGGER = Logger
+			.getLogger(AbstractDatabaseManager.class);
 
-    /*
-     * Map of Transactions-per-Thread
-     */
-    private ThreadLocal<Transaction> transactionMap;
+	/*
+	 * Map of Transactions-per-Thread
+	 */
+	private ThreadLocal<Transaction> transactionMap = new ThreadLocal<Transaction>();
 
-    /*
-     * Listeners for Database Events
-     */
-    private static ArrayList<IDatabaseEventListener> listeners = new ArrayList<IDatabaseEventListener>();
+	/*
+	 * Listeners for Database Events
+	 */
+	private static ArrayList<IDatabaseEventListener> listeners = new ArrayList<IDatabaseEventListener>();
 
-    @Override
-    public void startThreadTransaction() {
-        LOGGER.info("Creating Transaction for Thread <" + Thread.currentThread() + ">");
+	@Override
+	public void startThreadTransaction() {
+		LOGGER.info("Creating Transaction for Thread <"
+				+ Thread.currentThread() + ">");
 
-        if (transactionMap.get() != null) {
-            LOGGER.error("Transaction for Thread <" + Thread.currentThread() + "> alread exists");
-            // TODO: LN: throw Exception
-        }
+		if (transactionMap.get() != null) {
+			LOGGER.error("Transaction for Thread <" + Thread.currentThread()
+					+ "> alread exists");
+			// TODO: LN: throw Exception
+		}
 
-        transactionMap.set(getDatabaseService().beginTx());
-    }
+		transactionMap.set(getDatabaseService().beginTx());
+	}
 
-    @Override
-    public void commitThreadTransaction() {
-        LOGGER.info("Commiting Transaction for Thread <" + Thread.currentThread() + ">");
+	@Override
+	public void commitThreadTransaction() {
+		LOGGER.info("Commiting Transaction for Thread <"
+				+ Thread.currentThread() + ">");
 
-        // commiting current transaction
-        Transaction tx = transactionMap.get();
-        tx.success();
-        tx.finish();
+		// commiting current transaction
+		Transaction tx = transactionMap.get();
+		tx.success();
+		tx.finish();
 
-        // creating new one
-        tx = getDatabaseService().beginTx();
-        transactionMap.set(tx);
-    }
+		// creating new one
+		tx = getDatabaseService().beginTx();
+		transactionMap.set(tx);
+	}
 
-    @Override
-    public void rollbackThreadTransaction() {
-        LOGGER.info("Rolling back Transaction for Thread <" + Thread.currentThread() + ">");
+	@Override
+	public void rollbackThreadTransaction() {
+		LOGGER.info("Rolling back Transaction for Thread <"
+				+ Thread.currentThread() + ">");
 
-        // commiting current transaction
-        Transaction tx = transactionMap.get();
-        tx.failure();
-        tx.finish();
+		// commiting current transaction
+		Transaction tx = transactionMap.get();
+		tx.failure();
+		tx.finish();
 
-        // creating new one
-        tx = getDatabaseService().beginTx();
-        transactionMap.set(tx);
-    }
+		// creating new one
+		tx = getDatabaseService().beginTx();
+		transactionMap.set(tx);
+	}
 
-    @Override
-    public void finishThreadTransaction() {
-        LOGGER.info("Finishing Transaction for Thread <" + Thread.currentThread() + ">");
+	@Override
+	public void finishThreadTransaction() {
+		LOGGER.info("Finishing Transaction for Thread <"
+				+ Thread.currentThread() + ">");
 
-        // commiting current transaction
-        Transaction tx = transactionMap.get();
-        tx.failure();
-        tx.finish();
+		// commiting current transaction
+		Transaction tx = transactionMap.get();
+		tx.failure();
+		tx.finish();
 
-        transactionMap.remove();
-    }
+		transactionMap.remove();
+	}
 
-    @Override
-    public void addDatabaseEventListener(IDatabaseEventListener listener) {
-        listeners.add(listener);
-    }
+	@Override
+	public void addDatabaseEventListener(IDatabaseEventListener listener) {
+		listeners.add(listener);
+	}
 
-    @Override
-    public void removeDatabaseEventListener(IDatabaseEventListener listener) {
-        listeners.remove(listener);
-    }
+	@Override
+	public void removeDatabaseEventListener(IDatabaseEventListener listener) {
+		listeners.remove(listener);
+	}
 
-    /**
-     * Fires database event for listeners
-     * 
-     * @param eventType type of event
-     */
-    protected void fireEvent(EventType eventType) {
-        DatabaseEvent event = new DatabaseEvent(eventType);
-        for (IDatabaseEventListener listener : listeners) {
-            listener.onDatabaseEvent(event);
-        }
-    }
+	/**
+	 * Fires database event for listeners
+	 * 
+	 * @param eventType
+	 *            type of event
+	 */
+	protected void fireEvent(EventType eventType) {
+		DatabaseEvent event = new DatabaseEvent(eventType);
+		for (IDatabaseEventListener listener : listeners) {
+			listener.onDatabaseEvent(event);
+		}
+	}
 }

@@ -13,9 +13,10 @@
 
 package org.amanzi.neo.loader.core.newsaver;
 
-import java.util.HashMap;
+import java.util.Map;
 
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
+import org.amanzi.neo.loader.core.newparser.CSVContainer;
 import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.INetworkModel;
@@ -27,43 +28,52 @@ import org.neo4j.graphdb.GraphDatabaseService;
  * @author Kondratneko_Vladislav
  */
 public class NeighboursSaver extends AbstractN2NSaver {
-    /*
-     * neighbours
-     */
-    public final static String NEIGHBOUR_SECTOR_NAME = "neigh_sector_name";
-    public final static String SERVING_SECTOR_NAME = "serv_sector_name";
+	/*
+	 * neighbours
+	 */
+	public final static String NEIGHBOUR_SECTOR_NAME = "neigh_sector_name";
+	public final static String SERVING_SECTOR_NAME = "serv_sector_name";
 
-    protected NeighboursSaver(INodeToNodeRelationsModel model, INetworkModel networkModel, ConfigurationDataImpl data,
-            GraphDatabaseService service) {
-        super(model, networkModel, data, service);
-    }
+	protected NeighboursSaver(INodeToNodeRelationsModel model,
+			INetworkModel networkModel, ConfigurationDataImpl data,
+			GraphDatabaseService service) {
+		super(model, networkModel, data, service);
+	}
 
-    /**
-     * 
-     */
-    public NeighboursSaver() {
-        super();
-    }
+	/**
+	 * create class instance
+	 */
+	public NeighboursSaver() {
+		super();
+	}
 
-    @Override
-    protected void initSynonyms() {
-        preferenceStoreSynonyms = preferenceManager.getNeighbourSynonyms();
-        columnSynonyms = new HashMap<String, Integer>();
-    }
+	@Override
+	protected Map<String, String[]> initializeSynonyms() {
+		return preferenceStoreSynonyms = preferenceManager
+				.getNeighbourSynonyms();
+	}
 
-    @Override
-    protected INodeToNodeRelationsModel getNode2NodeModel(String name) throws AWEException {
-        return networkModel.getNodeToNodeModel(N2NRelTypes.NEIGHBOUR, name, NetworkElementNodeType.SECTOR);
-    }
+	@Override
+	protected INodeToNodeRelationsModel getNode2NodeModel(String name)
+			throws AWEException {
+		return parametrizedModel.getNodeToNodeModel(N2NRelTypes.NEIGHBOUR,
+				name, NetworkElementNodeType.SECTOR);
+	}
 
-    @Override
-    protected String getSourceElementName() {
-        return SERVING_SECTOR_NAME;
-    }
+	@Override
+	protected String getSourceElementName() {
+		return SERVING_SECTOR_NAME;
+	}
 
-    @Override
-    protected String getNeighborElementName() {
-        return NEIGHBOUR_SECTOR_NAME;
-    }
+	@Override
+	protected String getNeighborElementName() {
+		return NEIGHBOUR_SECTOR_NAME;
+	}
+
+	@Override
+	protected void commonLinePreparationActions(CSVContainer dataElement)
+			throws Exception {
+
+	}
 
 }

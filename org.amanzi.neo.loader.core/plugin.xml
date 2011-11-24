@@ -11,31 +11,67 @@
             id="org.amanzi.neo.loader.core.newparser.CommonCSVParser">
       </newparser>
    </extension>
+   <!-- new savers config -->
    <extension
          point="org.amanzi.loader.core.newsaver">
-       <newsaver
+      <newsaver
             class="org.amanzi.neo.loader.core.newsaver.NetworkSaver"
-            id="org.amanzi.neo.loader.core.newsaver.NewNetworkSaver">
+            id="org.amanzi.neo.loader.core.newsaver.NetworkSaver">
       </newsaver>
-       <newsaver
-            class="org.amanzi.neo.loader.core.newsaver.NeighboursSaver"
-            id="org.amanzi.neo.loader.core.newsaver.NewNeighboursSaver">
+       
+      <newsaver
+            class="org.amanzi.neo.loader.core.newsaver.SectorSelectionSaver"
+            id="org.amanzi.neo.loader.core.newsaver.SectorSelectionSaver">
       </newsaver>
-        <newsaver
+       
+      <newsaver
+            class="org.amanzi.neo.loader.core.newsaver.NeighborsSaver"
+            id="org.amanzi.neo.loader.core.newsaver.NeighboursSaver">
+      </newsaver>
+      
+      <newsaver
             class="org.amanzi.neo.loader.core.newsaver.TemsSaver"
-            id="org.amanzi.neo.loader.core.newsaver.NewTemsSaver">
+            id="org.amanzi.neo.loader.core.newsaver.TemsSaver">
       </newsaver>
-       <newsaver
+      
+      <newsaver
             class="org.amanzi.neo.loader.core.newsaver.RomesSaver"
-            id="org.amanzi.neo.loader.core.newsaver.NewRomesSaver">
+            id="org.amanzi.neo.loader.core.newsaver.RomesSaver">
       </newsaver>
+      
       <newsaver
             class="org.amanzi.neo.loader.core.newsaver.Nemo1xSaver"
-            id="org.amanzi.neo.loader.core.newsaver.NewNemo1xSaver">
+            id="org.amanzi.neo.loader.core.newsaver.Nemo1xSaver">
       </newsaver>
-         <newsaver
+      
+      <newsaver
             class="org.amanzi.neo.loader.core.newsaver.Nemo2xSaver"
-            id="org.amanzi.neo.loader.core.newsaver.NewNemo2xSaver">
+            id="org.amanzi.neo.loader.core.newsaver.Nemo2xSaver">
+      </newsaver>
+      
+      <newsaver
+            class="org.amanzi.neo.loader.core.newsaver.TRXSaver"
+            id="org.amanzi.neo.loader.core.newsaver.TRXSaver">
+      </newsaver>
+      
+      <newsaver
+            class="org.amanzi.neo.loader.core.newsaver.TrafficSaver"
+            id="org.amanzi.neo.loader.core.newsaver.TrafficSaver">
+      </newsaver>
+      
+      <newsaver
+            class="org.amanzi.neo.loader.core.newsaver.SeparationCostraintSaver"
+            id="org.amanzi.neo.loader.core.newsaver.SeparationCostraintSaver">
+      </newsaver>
+      
+       <newsaver
+            class="org.amanzi.neo.loader.core.newsaver.FrequencyConstraintSaver"
+            id="org.amanzi.neo.loader.core.newsaver.FrequencyConstraintSaver">
+      </newsaver>
+      
+      <newsaver
+            class="org.amanzi.neo.loader.core.newsaver.InterferenceSaver"
+            id="org.amanzi.neo.loader.core.newsaver.InterferenceSaver">
       </newsaver>
    </extension>
 

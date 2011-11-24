@@ -17,67 +17,74 @@ import java.io.File;
 import java.util.List;
 
 import org.amanzi.neo.loader.core.IConfiguration;
-import org.amanzi.neo.loader.core.IValidator;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.IProjectModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
-import org.apache.log4j.Logger;
 
 /**
  * check common Network validation methods
  * 
  * @author Kondratenko_Vladislav
  */
-public class NetworkValidator implements IValidator {
-    private static final Logger LOGGER = Logger.getLogger(NetworkValidator.class);
-    private String[] possibleFieldSepRegexes = new String[] {"\t", ",", ";"};
-    private Result result = Result.FAIL;
-    private String message = "";
+public class NetworkValidator extends AbstractNetworkValidator {
 
-    @Override
-    public Result getResult() {
-        return result;
-    }
+	/**
+     * 
+     */
+	public NetworkValidator() {
+		super();
+	}
 
-    @Override
-    public String getMessages() {
-        return message;
-    }
+	@Override
+	public Result isAppropriate(List<File> fileToLoad) {
+		for (File f : fileToLoad) {
+			result = ValidatorUtils.checkFileAndHeaders(
+					f,
+					3,
+					new String[] { DataLoadPreferences.NH_LATITUDE,
+							DataLoadPreferences.NH_LONGITUDE,
+							DataLoadPreferences.NH_SECTOR },
+					possibleFieldSepRegexes).getResult();
+			if (result == Result.FAIL) {
+				message = "File" + f.getName()
+						+ " doesn't contain correct header";
+				return result;
+			}
+		}
 
-    @Override
-    public Result isAppropriate(List<File> fileToLoad) {
-        for (File f : fileToLoad) {
-            result = ValidatorUtils
-                    .checkFileAndHeaders(f, 2, new String[] {DataLoadPreferences.NH_SECTOR}, possibleFieldSepRegexes).getResult();
-            return result;
-        }
+		return result;
+	}
 
-        return Result.FAIL;
-    }
+	@Override
+	public Result isValid(IConfiguration config) {
+		if (config.getDatasetNames().get(IConfiguration.PROJECT_PROPERTY_NAME) == null) {
+			message = String.format("there is no project name");
+			return Result.FAIL;
+		}
+		if (result == Result.SUCCESS) {
+			try {
+				IProjectModel projectModel = ProjectModel
+						.getCurrentProjectModel();
+				String networkName = config.getDatasetNames().get(
+						IConfiguration.NETWORK_PROPERTY_NAME);
+				INetworkModel network = projectModel.findNetwork(networkName);
+				if (network == null) {
+					result = Result.SUCCESS;
+					return result;
+				} else {
+					message = String.format(
+							"Network %s is already exist in database",
+							networkName);
+				}
+			} catch (AWEException e) {
+				LOGGER.error("Error while Sector selection data validate", e);
+				return Result.FAIL;
+			}
+		}
 
-    @Override
-    public Result isValid(IConfiguration config) {
-        if (config.getDatasetNames().get("Project") == null) {
-            return Result.FAIL;
-        }
-        if (result == Result.SUCCESS) {
-
-            try {
-                IProjectModel projectModel = ProjectModel.getCurrentProjectModel();
-                INetworkModel network = projectModel.findNetwork(config.getDatasetNames().get("Network"));
-                if (network == null) {
-                    result = Result.SUCCESS;
-                    return result;
-                }
-            } catch (AWEException e) {
-                LOGGER.error("Error while network data validate", e);
-                throw (RuntimeException)new RuntimeException().initCause(e);
-            }
-        }
-        message = String.format("Network %s is already exists in db ", config.getDatasetNames().get("Network"));
-        return Result.FAIL;
-    }
+		return Result.FAIL;
+	}
 
 }

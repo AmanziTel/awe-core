@@ -24,7 +24,6 @@ import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
-import org.amanzi.neo.services.model.impl.NetworkModel;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
 
@@ -33,56 +32,60 @@ import org.neo4j.graphdb.GraphDatabaseService;
  * 
  * @author Vladislav_Kondratenko
  */
-public class TrafficSaver extends AbstractCSVSaver<NetworkModel> {
-    private static final Logger LOGGER = Logger.getLogger(TrafficSaver.class);
-    private static final String SECTOR = "sector";
-    private static final String TRAFFIC = "traffic";
-    private static Map<String, Object> SECTOR_MAP = new HashMap<String, Object>();
+public class TrafficSaver extends AbstractNetworkSaver {
+	private static final Logger LOGGER = Logger.getLogger(TrafficSaver.class);
+	private static final String SECTOR = "sector";
+	private static final String TRAFFIC = "traffic";
+	private static Map<String, Object> SECTOR_MAP = new HashMap<String, Object>();
 
-    protected TrafficSaver(INetworkModel model, ConfigurationDataImpl config, GraphDatabaseService service) {
-        super(service);
-        preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.NETWORK);
-        columnSynonyms = new HashMap<String, Integer>();
-        setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
-        commitTx();
-        if (model != null) {
-            this.networkModel = model;
-            modelMap.put(model.getName(), model);
-        } else {
-            init(config, null);
-        }
-    }
+	protected TrafficSaver(INetworkModel model, ConfigurationDataImpl config,
+			GraphDatabaseService service) {
+		super(service);
+		preferenceStoreSynonyms = preferenceManager
+				.getSynonyms(DatasetTypes.NETWORK);
+		columnSynonyms = new HashMap<String, Integer>();
+		setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
+		commitTx();
+		if (model != null) {
+			this.parametrizedModel = model;
+			useableModels.add(model);
+		}
+	}
 
-    public TrafficSaver() {
-        super();
-    }
+	public TrafficSaver() {
+		super();
+	}
 
-    protected void saveLine(List<String> value) throws AWEException {
-        if (!isCorrect(SECTOR, value)) {
-            LOGGER.error("cant find sector column on line: " + lineCounter);
-            return;
-        }
-        SECTOR_MAP.clear();
-        collectSector(value);
-        IDataElement findedSector = networkModel.findElement(SECTOR_MAP);
-        if (findedSector == null) {
-            LOGGER.error("cann't find sector " + SECTOR_MAP);
-            return;
-        }
-        if (isCorrect(TRAFFIC, value)) {
-            SECTOR_MAP.put(TRAFFIC, getSynonymValueWithAutoparse(TRAFFIC, value));
-            networkModel.completeProperties(findedSector, SECTOR_MAP, true);
-            addSynonyms(networkModel, SECTOR_MAP);
-        } else {
-            LOGGER.error("traffic property not found on line:" + lineCounter);
-        }
-    }
+	protected void saveLine(List<String> value) throws AWEException {
+		if (!isCorrect(SECTOR, value)) {
+			LOGGER.error("cant find sector column on line: " + lineCounter);
+			return;
+		}
+		SECTOR_MAP.clear();
+		collectSector(value);
+		IDataElement findedSector = parametrizedModel.findElement(SECTOR_MAP);
+		if (findedSector == null) {
+			LOGGER.error("cann't find sector " + SECTOR_MAP);
+			return;
+		}
+		if (isCorrect(TRAFFIC, value)) {
+			SECTOR_MAP.put(TRAFFIC,
+					getSynonymValueWithAutoparse(TRAFFIC, value));
+			parametrizedModel
+					.completeProperties(findedSector, SECTOR_MAP, true);
+			addSynonyms(parametrizedModel, SECTOR_MAP);
+		} else {
+			LOGGER.error("traffic property not found on line:" + lineCounter);
+		}
+	}
 
-    /**
-     * collect sector to find
-     */
-    private void collectSector(List<String> value) {
-        SECTOR_MAP.put(NewAbstractService.NAME, getSynonymValueWithAutoparse(SECTOR, value));
-        SECTOR_MAP.put(NewAbstractService.TYPE, NetworkElementNodeType.SECTOR.getId());
-    }
+	/**
+	 * collect sector to find
+	 */
+	private void collectSector(List<String> value) {
+		SECTOR_MAP.put(NewAbstractService.NAME,
+				getSynonymValueWithAutoparse(SECTOR, value));
+		SECTOR_MAP.put(NewAbstractService.TYPE,
+				NetworkElementNodeType.SECTOR.getId());
+	}
 }
