@@ -9,3 +9,4 @@ Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: org.amanzi.neo.services.ui.events,
  org.amanzi.neo.services.ui.utils
+Bundle-Vendor: amanzi.org

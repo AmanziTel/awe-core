@@ -24,3 +24,4 @@ Export-Package: org.amanzi.neo.model.distribution,
  org.amanzi.neo.services.utils
 Bundle-ActivationPolicy: lazy
 Eclipse-ExtensibleAPI: true
+Bundle-Vendor: amanzi.org
