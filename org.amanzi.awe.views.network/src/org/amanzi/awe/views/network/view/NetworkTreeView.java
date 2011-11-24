@@ -19,8 +19,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.amanzi.awe.awe.views.view.provider.NewNetworkTreeContentProvider;
-import org.amanzi.awe.awe.views.view.provider.NewNetworkTreeLabelProvider;
+import org.amanzi.awe.awe.views.view.provider.NetworkTreeContentProvider;
+import org.amanzi.awe.awe.views.view.provider.NetworkTreeLabelProvider;
 import org.amanzi.neo.model.distribution.IDistributionBar;
 import org.amanzi.neo.model.distribution.IDistributionModel;
 import org.amanzi.neo.model.distribution.IDistributionalModel;
@@ -71,7 +71,7 @@ import org.eclipse.ui.part.ViewPart;
  * @since 1.0.0
  */
 
-public class NewNetworkTreeView extends ViewPart implements IEventListener {
+public class NetworkTreeView extends ViewPart implements IEventListener {
 
     private static final String RENAME_MSG = "Enter new Name";
 
@@ -94,7 +94,7 @@ public class NewNetworkTreeView extends ViewPart implements IEventListener {
     /**
      * The constructor.
      */
-    public NewNetworkTreeView() {
+    public NetworkTreeView() {
         EventManager.getInstance().addListener(this, EventUIType.PROJECT_CHANGED, EventUIType.DISTRIBUTIONS_CHANGED,
                 EventUIType.DISTRIBUTION_BAR_SELECTED);
     }
@@ -153,7 +153,7 @@ public class NewNetworkTreeView extends ViewPart implements IEventListener {
         menuMgr.setRemoveAllWhenShown(true);
         menuMgr.addMenuListener(new IMenuListener() {
             public void menuAboutToShow(IMenuManager manager) {
-                NewNetworkTreeView.this.fillContextMenu(manager);
+                NetworkTreeView.this.fillContextMenu(manager);
             }
         });
         Menu menu = menuMgr.createContextMenu(viewer.getControl());
@@ -453,7 +453,7 @@ public class NewNetworkTreeView extends ViewPart implements IEventListener {
         @Override
         public void run() {
             Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
-            NewSelectionListDialog pdialog = new NewSelectionListDialog(shell, network, "New selection list", SWT.OK);
+            SelectionListDialog pdialog = new SelectionListDialog(shell, network, "New selection list", SWT.OK);
             if (pdialog.open() == SWT.OK) {
 
             } else {
@@ -726,8 +726,8 @@ public class NewNetworkTreeView extends ViewPart implements IEventListener {
      */
 
     protected void setProviders() {
-        viewer.setContentProvider(new NewNetworkTreeContentProvider());
-        viewer.setLabelProvider(new NewNetworkTreeLabelProvider());
+        viewer.setContentProvider(new NetworkTreeContentProvider());
+        viewer.setLabelProvider(new NetworkTreeLabelProvider());
     }
 
     @Override

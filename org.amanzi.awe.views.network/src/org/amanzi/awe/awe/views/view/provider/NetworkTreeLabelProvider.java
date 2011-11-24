@@ -22,7 +22,7 @@ import org.eclipse.swt.graphics.Image;
  * @since 1.0.0
  */
 
-public class NewNetworkTreeLabelProvider extends LabelProvider {
+public class NetworkTreeLabelProvider extends LabelProvider {
     
     /**
      * The <code>LabelProvider</code> implementation of this

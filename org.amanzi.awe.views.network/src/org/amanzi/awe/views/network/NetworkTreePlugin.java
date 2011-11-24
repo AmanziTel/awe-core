@@ -21,7 +21,7 @@ import org.osgi.framework.BundleContext;
 /**
  * The activator class controls the plug-in life cycle
  */
-public class NewNetworkTreePlugin extends AbstractUIPlugin {
+public class NetworkTreePlugin extends AbstractUIPlugin {
     
     public static final String DRIVE_TREE_VIEW_ID = "org.amanzi.awe.views.tree.drive.views.DriveTreeView";
     
@@ -29,12 +29,12 @@ public class NewNetworkTreePlugin extends AbstractUIPlugin {
 	public static final String PLUGIN_ID = "org.amanzi.awe.networktree";
 
 	// The shared instance
-	private static NewNetworkTreePlugin plugin;
+	private static NetworkTreePlugin plugin;
 	
 	/**
 	 * The constructor
 	 */
-	public NewNetworkTreePlugin() {
+	public NetworkTreePlugin() {
 	}
 
 	/*
@@ -60,7 +60,7 @@ public class NewNetworkTreePlugin extends AbstractUIPlugin {
 	 *
 	 * @return the shared instance
 	 */
-	public static NewNetworkTreePlugin getDefault() {
+	public static NetworkTreePlugin getDefault() {
 		return plugin;
 	}
 
