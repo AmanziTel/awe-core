@@ -156,11 +156,11 @@ public class NetworkSaverTesting extends AbstractAWETest {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
-        networkSaver.saveElement(rowContainer);
-        List<String> values = prepareValues(hashMap);
-        rowContainer.setValues(values);
-
         try {
+            networkSaver.saveElement(rowContainer);
+            List<String> values = prepareValues(hashMap);
+            rowContainer.setValues(values);
+
             when(model.findElement(BSC)).thenReturn(null);
             when(model.createElement(any(IDataElement.class), eq(BSC))).thenReturn(new DataElement(BSC));
             when(model.findElement(SITE)).thenReturn(null);
@@ -188,11 +188,11 @@ public class NetworkSaverTesting extends AbstractAWETest {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
-        networkSaver.saveElement(rowContainer);
-        List<String> values = prepareValues(hashMap);
-        rowContainer.setValues(values);
-
         try {
+            networkSaver.saveElement(rowContainer);
+            List<String> values = prepareValues(hashMap);
+            rowContainer.setValues(values);
+
             when(model.findElement(SITE)).thenReturn(null);
             when(model.createElement(any(IDataElement.class), eq(SITE))).thenReturn(new DataElement(SITE));
             when(model.findElement(SECTOR)).thenReturn(null);
@@ -217,10 +217,10 @@ public class NetworkSaverTesting extends AbstractAWETest {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
-        networkSaver.saveElement(rowContainer);
-        List<String> values = prepareValues(hashMap);
-        rowContainer.setValues(values);
         try {
+            networkSaver.saveElement(rowContainer);
+            List<String> values = prepareValues(hashMap);
+            rowContainer.setValues(values);
             networkSaver.saveElement(rowContainer);
             verify(model, never()).createElement(any(IDataElement.class), any(Map.class));
         } catch (Exception e) {
@@ -240,10 +240,10 @@ public class NetworkSaverTesting extends AbstractAWETest {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
-        networkSaver.saveElement(rowContainer);
-        List<String> values = prepareValues(hashMap);
-        rowContainer.setValues(values);
         try {
+            networkSaver.saveElement(rowContainer);
+            List<String> values = prepareValues(hashMap);
+            rowContainer.setValues(values);
             when(model.findElement(SITE)).thenReturn(null);
             when(model.createElement(any(IDataElement.class), eq(SITE))).thenReturn(new DataElement(SITE));
             when(model.findElement(SECTOR)).thenReturn(null);
@@ -265,9 +265,9 @@ public class NetworkSaverTesting extends AbstractAWETest {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
-        networkSaver.saveElement(rowContainer);
-        List<String> values = prepareValues(hashMap);
         try {
+            networkSaver.saveElement(rowContainer);
+            List<String> values = prepareValues(hashMap);
             rowContainer.setValues(values);
             when(model.findElement(any(Map.class))).thenThrow(new DatabaseException("required exception"));
             networkSaver.saveElement(rowContainer);
@@ -284,9 +284,9 @@ public class NetworkSaverTesting extends AbstractAWETest {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
-        networkSaver.saveElement(rowContainer);
-        List<String> values = prepareValues(hashMap);
         try {
+            networkSaver.saveElement(rowContainer);
+            List<String> values = prepareValues(hashMap);
             rowContainer.setValues(values);
             when(model.findElement(any(Map.class))).thenThrow(new IllegalArgumentException("required exception"));
             networkSaver.saveElement(rowContainer);

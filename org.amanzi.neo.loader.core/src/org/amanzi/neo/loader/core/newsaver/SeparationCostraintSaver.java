@@ -33,69 +33,60 @@ import org.neo4j.graphdb.GraphDatabaseService;
  * @author Vladislav_Kondratenko
  */
 public class SeparationCostraintSaver extends AbstractNetworkSaver {
-	private static final Logger LOGGER = Logger
-			.getLogger(SeparationCostraintSaver.class);
-	/*
-	 * maps for elements properties collection
-	 */
-	private static final String SECTOR = "sector";
-	private static final String SEPARATION = "separation";
-	private static Map<String, Object> SECTOR_MAP = new HashMap<String, Object>();
+    private static final Logger LOGGER = Logger.getLogger(SeparationCostraintSaver.class);
+    /*
+     * maps for elements properties collection
+     */
+    private static final String SECTOR = "sector";
+    private static final String SEPARATION = "separation";
+    private static Map<String, Object> SECTOR_MAP = new HashMap<String, Object>();
 
-	protected SeparationCostraintSaver(INetworkModel model,
-			ConfigurationDataImpl config, GraphDatabaseService service) {
-		super(service);
-		preferenceStoreSynonyms = preferenceManager
-				.getSynonyms(DatasetTypes.NETWORK);
-		columnSynonyms = new HashMap<String, Integer>();
-		setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
-		commitTx();
-		if (model != null) {
-			parametrizedModel = model;
-			useableModels.add(model);
-		}
-	}
+    protected SeparationCostraintSaver(INetworkModel model, ConfigurationDataImpl config, GraphDatabaseService service) {
+        preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.NETWORK);
+        columnSynonyms = new HashMap<String, Integer>();
+        setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
+        commitTx();
+        if (model != null) {
+            parametrizedModel = model;
+            useableModels.add(model);
+        }
+    }
 
-	/**
-	 * create class instance
-	 */
-	public SeparationCostraintSaver() {
-		super();
-	}
+    /**
+     * create class instance
+     */
+    public SeparationCostraintSaver() {
+        super();
+    }
 
-	protected void saveLine(List<String> value) throws AWEException {
-		if (!isCorrect(SECTOR, value)) {
-			LOGGER.error("cant find sector column on line: " + lineCounter);
-			return;
-		}
-		SECTOR_MAP.clear();
-		collectSector(value);
-		IDataElement findedSector = parametrizedModel.findElement(SECTOR_MAP);
-		if (findedSector == null) {
-			LOGGER.error("cann't find sector " + SECTOR_MAP);
-			return;
-		}
-		if (isCorrect(SEPARATION, value)) {
-			Map<String, Object> collectedParameters = new HashMap<String, Object>();
-			collectedParameters.put(SEPARATION,
-					getSynonymValueWithAutoparse(SEPARATION, value));
-			parametrizedModel.completeProperties(findedSector,
-					collectedParameters, false);
-			collectedParameters.put(NewAbstractService.TYPE,
-					NetworkElementNodeType.SECTOR.getId());
-			addSynonyms(parametrizedModel, collectedParameters);
-		} else {
-			LOGGER.error("traffic property not found on line:" + lineCounter);
-		}
-	}
+    protected void saveLine(List<String> value) throws AWEException {
+        if (!isCorrect(SECTOR, value)) {
+            LOGGER.error("cant find sector column on line: " + lineCounter);
+            return;
+        }
+        SECTOR_MAP.clear();
+        collectSector(value);
+        IDataElement findedSector = parametrizedModel.findElement(SECTOR_MAP);
+        if (findedSector == null) {
+            LOGGER.error("cann't find sector " + SECTOR_MAP);
+            return;
+        }
+        if (isCorrect(SEPARATION, value)) {
+            Map<String, Object> collectedParameters = new HashMap<String, Object>();
+            collectedParameters.put(SEPARATION, getSynonymValueWithAutoparse(SEPARATION, value));
+            parametrizedModel.completeProperties(findedSector, collectedParameters, false);
+            collectedParameters.put(NewAbstractService.TYPE, NetworkElementNodeType.SECTOR.getId());
+            addSynonyms(parametrizedModel, collectedParameters);
+        } else {
+            LOGGER.error("traffic property not found on line:" + lineCounter);
+        }
+    }
 
-	/**
-	 * collect sector to find
-	 */
-	private void collectSector(List<String> value) {
-		SECTOR_MAP.put(NewAbstractService.NAME,
-				getSynonymValueWithAutoparse(SECTOR, value));
-		SECTOR_MAP.put(NewAbstractService.TYPE,
-				NetworkElementNodeType.SECTOR.getId());
-	}
+    /**
+     * collect sector to find
+     */
+    private void collectSector(List<String> value) {
+        SECTOR_MAP.put(NewAbstractService.NAME, getSynonymValueWithAutoparse(SECTOR, value));
+        SECTOR_MAP.put(NewAbstractService.TYPE, NetworkElementNodeType.SECTOR.getId());
+    }
 }

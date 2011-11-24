@@ -40,132 +40,113 @@ import org.neo4j.graphdb.GraphDatabaseService;
  * @author Vladislav_Kondratenko
  */
 public class RomesSaver extends AbstractDriveSaver {
-	// Saver constants
-	private static final Logger LOGGER = Logger.getLogger(RomesSaver.class);
-	// TODO: LN: comments
-	private Set<IDataElement> locationDataElements = new HashSet<IDataElement>();
-
-	protected RomesSaver(IDriveModel model, ConfigurationDataImpl config,
-			GraphDatabaseService service) {
-		super(service);
-		preferenceStoreSynonyms = preferenceManager
-				.getSynonyms(DatasetTypes.DRIVE);
-		columnSynonyms = new HashMap<String, Integer>();
-		setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
-		commitTx();
-		if (model != null) {
-			this.parametrizedModel = model;
-			useableModels.add(model);
-		}
-	}
-
-	// TODO: LN: comments
-	/**
-     * 
+    private static final Logger LOGGER = Logger.getLogger(RomesSaver.class);
+    /**
+     * collection of new created locations element
      */
-	public RomesSaver() {
-		super();
-		DRIVE_TYPE = DriveTypes.ROMES;
-	}
+    private Set<IDataElement> locationDataElements = new HashSet<IDataElement>();
 
-	@Override
-	protected void addedNewFileToModels(File file) throws DatabaseException,
-			DuplicateNodeNameException {
-		parametrizedModel.addFile(file);
-	}
+    protected RomesSaver(IDriveModel model, ConfigurationDataImpl config, GraphDatabaseService service) {
+        preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.DRIVE);
+        columnSynonyms = new HashMap<String, Integer>();
+        setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
+        commitTx();
+        if (model != null) {
+            this.parametrizedModel = model;
+            useableModels.add(model);
+        }
+    }
 
-	// TODO: LN: comments
-	/**
-	 * @param value
-	 * @throws AWEException
-	 */
-	protected void saveLine(List<String> value) throws AWEException {
-		String time = getValueFromRow(TIME, value);
-		Long timestamp = defineTimestamp(workDate, time);
-		String message_type = getValueFromRow(MESSAGE_TYPE, value);
-		Double latitude = getLatitude(getValueFromRow(IDriveModel.LATITUDE,
-				value));
-		Double longitude = getLongitude(getValueFromRow(IDriveModel.LONGITUDE,
-				value));
-		String event = getValueFromRow(EVENT, value);
-		String sector_id = getValueFromRow(SECTOR_ID, value);
-		if (time == null || latitude == null || longitude == null
-				|| timestamp == null) {
-			LOGGER.info(String.format("Line %s not saved.", lineCounter));
-			return;
-		}
-		collectMElement(time, timestamp, message_type, latitude, longitude,
-				event, sector_id);
+    /**
+     * create class instants
+     */
+    public RomesSaver() {
+        super();
+        DRIVE_TYPE = DriveTypes.ROMES;
+    }
 
-		removeEmpty(params);
-		collectRemainProperties(params, value);
-		addSynonyms(parametrizedModel, params);
-		IDataElement existedLocation = checkForSameLocation(params);
-		if (existedLocation != null) {
-			params.remove(IDriveModel.LATITUDE);
-			params.remove(IDriveModel.LONGITUDE);
-		}
-		IDataElement createdElement = parametrizedModel.addMeasurement(
-				fileName, params);
-		if (existedLocation != null) {
-			List<IDataElement> locList = new LinkedList<IDataElement>();
-			locList.add(existedLocation);
-			linkWithLocationElement(createdElement, locList);
-		} else {
-			locationDataElements.add(parametrizedModel
-					.getLocation(createdElement));
-		}
-	}
+    @Override
+    protected void addedNewFileToModels(File file) throws DatabaseException, DuplicateNodeNameException {
+        parametrizedModel.addFile(file);
+    }
 
-	/**
-	 * collect M element from required values
-	 * 
-	 * @param time
-	 * @param timestamp
-	 * @param message_type
-	 * @param latitude
-	 * @param longitude
-	 * @param event
-	 * @param sector_id
-	 */
-	private void collectMElement(String time, Long timestamp,
-			String message_type, Double latitude, Double longitude,
-			String event, String sector_id) {
-		params.put(TIME, time);
-		params.put(TIMESTAMP, timestamp);
-		params.put(MESSAGE_TYPE, message_type);
-		params.put(IDriveModel.LATITUDE, latitude);
-		params.put(IDriveModel.LONGITUDE, longitude);
-		params.put(EVENT, event);
-		params.put(NewAbstractService.NAME, time);
-		params.put(SECTOR_ID, sector_id);
-		params.put(NewAbstractService.TYPE, DriveNodeTypes.M.getId());
-	}
+    @Override
+    protected void saveLine(List<String> value) throws AWEException {
+        String time = getValueFromRow(TIME, value);
+        Long timestamp = defineTimestamp(workDate, time);
+        String message_type = getValueFromRow(MESSAGE_TYPE, value);
+        Double latitude = getLatitude(getValueFromRow(IDriveModel.LATITUDE, value));
+        Double longitude = getLongitude(getValueFromRow(IDriveModel.LONGITUDE, value));
+        String event = getValueFromRow(EVENT, value);
+        String sector_id = getValueFromRow(SECTOR_ID, value);
+        if (time == null || latitude == null || longitude == null || timestamp == null) {
+            LOGGER.info(String.format("Line %s not saved.", lineCounter));
+            return;
+        }
+        collectMElement(time, timestamp, message_type, latitude, longitude, event, sector_id);
 
-	/**
-	 * check for same located element
-	 * 
-	 * @param params
-	 * @return
-	 */
-	private IDataElement checkForSameLocation(Map<String, Object> params) {
-		for (IDataElement location : locationDataElements) {
-			if (location.get(IDriveModel.LATITUDE) == params
-					.get(IDriveModel.LATITUDE)
-					&& location.get(IDriveModel.LONGITUDE) == params
-							.get(IDriveModel.LONGITUDE)) {
-				return location;
-			}
-		}
-		return null;
-	}
+        removeEmpty(params);
+        collectRemainProperties(params, value);
+        addSynonyms(parametrizedModel, params);
+        IDataElement existedLocation = checkForSameLocation(params);
+        if (existedLocation != null) {
+            params.remove(IDriveModel.LATITUDE);
+            params.remove(IDriveModel.LONGITUDE);
+        }
+        IDataElement createdElement = parametrizedModel.addMeasurement(fileName, params);
+        if (existedLocation != null) {
+            List<IDataElement> locList = new LinkedList<IDataElement>();
+            locList.add(existedLocation);
+            linkWithLocationElement(createdElement, locList);
+        } else {
+            locationDataElements.add(parametrizedModel.getLocation(createdElement));
+        }
+    }
 
-	@Override
-	protected void initializeNecessaryModels() throws AWEException {
-		parametrizedModel = getActiveProject().getDataset(
-				configuration.getDatasetNames().get(
-						ConfigurationDataImpl.DATASET_PROPERTY_NAME),
-				DriveTypes.ROMES);
+    /**
+     * collect M element from required values
+     * 
+     * @param time
+     * @param timestamp
+     * @param message_type
+     * @param latitude
+     * @param longitude
+     * @param event
+     * @param sector_id
+     */
+    private void collectMElement(String time, Long timestamp, String message_type, Double latitude, Double longitude, String event,
+            String sector_id) {
+        params.put(TIME, time);
+        params.put(TIMESTAMP, timestamp);
+        params.put(MESSAGE_TYPE, message_type);
+        params.put(IDriveModel.LATITUDE, latitude);
+        params.put(IDriveModel.LONGITUDE, longitude);
+        params.put(EVENT, event);
+        params.put(NewAbstractService.NAME, time);
+        params.put(SECTOR_ID, sector_id);
+        params.put(NewAbstractService.TYPE, DriveNodeTypes.M.getId());
+    }
 
-	}
+    /**
+     * check for same located element
+     * 
+     * @param params
+     * @return
+     */
+    private IDataElement checkForSameLocation(Map<String, Object> params) {
+        for (IDataElement location : locationDataElements) {
+            if (location.get(IDriveModel.LATITUDE) == params.get(IDriveModel.LATITUDE)
+                    && location.get(IDriveModel.LONGITUDE) == params.get(IDriveModel.LONGITUDE)) {
+                return location;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    protected void initializeNecessaryModels() throws AWEException {
+        parametrizedModel = getActiveProject().getDataset(
+                configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME), DriveTypes.ROMES);
+
+    }
 }

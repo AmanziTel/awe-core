@@ -23,24 +23,24 @@ import org.amanzi.neo.services.model.IModel;
  * @author Kondratenko_Vladislav
  */
 public interface ISaver<M extends IModel, D extends IData, C extends IConfiguration> {
-	/**
-	 * initialize required saver data;
-	 * 
-	 * @param configuration
-	 * @param dataElement
-	 */
-	public void init(C configuration, D dataElement) throws Exception;
+    /**
+     * initialize required saver data;
+     * 
+     * @param configuration
+     * @param dataElement
+     */
+    public void init(C configuration, D dataElement) throws Exception;
 
-	/**
-	 * save dataElement to database;
-	 * 
-	 * @param dataElement
-	 * @throws AWEException
-	 */
-	public void saveElement(D dataElement) throws AWEException;
+    /**
+     * save dataElement to database;
+     * 
+     * @param dataElement
+     * @throws AWEException
+     */
+    public void saveElement(D dataElement) throws AWEException;
 
-	/**
-	 * common finishing actions
-	 */
-	public void finishUp() throws AWEException;
+    /**
+     * common finishing actions
+     */
+    public void finishUp() throws AWEException;
 }

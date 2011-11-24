@@ -29,44 +29,42 @@ import org.amanzi.neo.services.model.IModel;
  * 
  * @author Kondratenko_Vladislav
  */
-public interface IParser<T1 extends ISaver<? extends IModel, T3, T2>, T2 extends IConfiguration, T3 extends IData> {
-	/**
-	 * initialize required parser data;
-	 * 
-	 * @param configuration
-	 *            common configuration data
-	 * @param saver
-	 *            which saver use for saving data to database
-	 */
-	public void init(T2 configuration, List<T1> saver);
+public interface IParser<T1 extends ISaver< ? extends IModel, T3, T2>, T2 extends IConfiguration, T3 extends IData> {
+    /**
+     * initialize required parser data;
+     * 
+     * @param configuration common configuration data
+     * @param saver which saver use for saving data to database
+     */
+    public void init(T2 configuration, List<T1> saver);
 
-	/**
-	 * run parser and save parsed files in database. For saving data parser use
-	 * saver which it was initialize in <B>init</B> method;
-	 * 
-	 * @throws AWEException
-	 */
-	public void run() throws DatabaseException, AWEException;
+    /**
+     * run parser and save parsed files in database. For saving data parser use saver which it was
+     * initialize in <B>init</B> method;
+     * 
+     * @throws AWEException
+     */
+    public void run() throws DatabaseException, AWEException;
 
-	/**
-	 * set progress bar to loader
-	 * 
-	 * @param listener
-	 */
-	void addProgressListener(ILoaderProgressListener listener);
+    /**
+     * set progress bar to loader
+     * 
+     * @param listener
+     */
+    void addProgressListener(ILoaderProgressListener listener);
 
-	/**
-	 * remove progress Monitor
-	 * 
-	 * @param listener
-	 */
-	void removeProgressListener(ILoaderProgressListener listener);
+    /**
+     * remove progress Monitor
+     * 
+     * @param listener
+     */
+    void removeProgressListener(ILoaderProgressListener listener);
 
-	/**
-	 * update progress monitor
-	 * 
-	 * @param event
-	 * @return
-	 */
-	boolean fireProgressEvent(IProgressEvent event);
+    /**
+     * update progress monitor
+     * 
+     * @param event
+     * @return
+     */
+    boolean fireProgressEvent(IProgressEvent event);
 }

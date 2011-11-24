@@ -143,11 +143,10 @@ public class SeparationConstraintsSaverTesting extends AbstractAWETest {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
-        separationSaver.saveElement(rowContainer);
-        List<String> values = prepareValues(hashMap);
-        rowContainer.setValues(values);
-
         try {
+            separationSaver.saveElement(rowContainer);
+            List<String> values = prepareValues(hashMap);
+            rowContainer.setValues(values);
             when(model.findElement(eq(COLLECTED_SECTOR))).thenReturn(new DataElement(COLLECTED_SECTOR));
             when(model.completeProperties(new DataElement(eq(COLLECTED_SECTOR)), eq(COMPLETED_SECTOR), any(Boolean.class)))
                     .thenReturn(new DataElement(COLLECTED_SECTOR));
@@ -166,10 +165,10 @@ public class SeparationConstraintsSaverTesting extends AbstractAWETest {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
-        separationSaver.saveElement(rowContainer);
-        List<String> values = prepareValues(hashMap);
-        rowContainer.setValues(values);
         try {
+            separationSaver.saveElement(rowContainer);
+            List<String> values = prepareValues(hashMap);
+            rowContainer.setValues(values);
             when(model.findElement(eq(COLLECTED_SECTOR))).thenReturn(null);
             when(model.completeProperties(new DataElement(eq(COLLECTED_SECTOR)), eq(COMPLETED_SECTOR), any(Boolean.class)))
                     .thenReturn(new DataElement(COLLECTED_SECTOR));
@@ -187,11 +186,11 @@ public class SeparationConstraintsSaverTesting extends AbstractAWETest {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
-        separationSaver.saveElement(rowContainer);
-        List<String> values = prepareValues(hashMap);
-        rowContainer.setValues(values);
-        COMPLETED_SECTOR.remove(SEPARATION_PARAM);
         try {
+            separationSaver.saveElement(rowContainer);
+            List<String> values = prepareValues(hashMap);
+            rowContainer.setValues(values);
+            COMPLETED_SECTOR.remove(SEPARATION_PARAM);
             when(model.findElement(eq(COLLECTED_SECTOR))).thenReturn(null);
             when(model.completeProperties(new DataElement(eq(COLLECTED_SECTOR)), eq(COMPLETED_SECTOR), any(Boolean.class)))
                     .thenReturn(new DataElement(COLLECTED_SECTOR));
@@ -209,9 +208,10 @@ public class SeparationConstraintsSaverTesting extends AbstractAWETest {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
-        separationSaver.saveElement(rowContainer);
-        List<String> values = prepareValues(hashMap);
         try {
+            separationSaver.saveElement(rowContainer);
+            List<String> values = prepareValues(hashMap);
+
             rowContainer.setValues(values);
             when(model.findElement(any(Map.class))).thenThrow(new DatabaseException("required exception"));
             separationSaver.saveElement(rowContainer);
@@ -228,9 +228,9 @@ public class SeparationConstraintsSaverTesting extends AbstractAWETest {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
-        separationSaver.saveElement(rowContainer);
-        List<String> values = prepareValues(hashMap);
         try {
+            separationSaver.saveElement(rowContainer);
+            List<String> values = prepareValues(hashMap);
             rowContainer.setValues(values);
             when(model.findElement(any(Map.class))).thenThrow(new IllegalArgumentException("required exception"));
             separationSaver.saveElement(rowContainer);

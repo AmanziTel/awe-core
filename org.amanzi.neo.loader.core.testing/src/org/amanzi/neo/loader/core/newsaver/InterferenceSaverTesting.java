@@ -202,9 +202,9 @@ public class InterferenceSaverTesting extends AbstractAWETest {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
-        interferenceSaver.saveElement(rowContainer);
-        List<String> values = prepareValues(hashMap);
         try {
+            interferenceSaver.saveElement(rowContainer);
+            List<String> values = prepareValues(hashMap);
             rowContainer.setValues(values);
             when(networkModel.findElement(any(Map.class))).thenThrow(new DatabaseException("required exception"));
             interferenceSaver.saveElement(rowContainer);
@@ -221,9 +221,9 @@ public class InterferenceSaverTesting extends AbstractAWETest {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
-        interferenceSaver.saveElement(rowContainer);
-        List<String> values = prepareValues(hashMap);
         try {
+            interferenceSaver.saveElement(rowContainer);
+            List<String> values = prepareValues(hashMap);
             rowContainer.setValues(values);
             when(networkModel.findElement(any(Map.class))).thenThrow(new IllegalArgumentException("required exception"));
             interferenceSaver.saveElement(rowContainer);

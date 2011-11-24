@@ -154,15 +154,15 @@ public class FreuencyConstraintTesting extends AbstractAWETest {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
-        frequSaver.saveElement(rowContainer);
-        List<String> values = prepareValues(hashMap);
-        rowContainer.setValues(values);
-        List<IDataElement> findedTRX = new LinkedList<IDataElement>();
-        Map<String, Object> findedTrx = new HashMap<String, Object>();
-        findedTrx.put("name", "1");
-        findedTrx.put("trx_id", 1);
-        findedTRX.add(new DataElement(findedTrx));
         try {
+            frequSaver.saveElement(rowContainer);
+            List<String> values = prepareValues(hashMap);
+            rowContainer.setValues(values);
+            List<IDataElement> findedTRX = new LinkedList<IDataElement>();
+            Map<String, Object> findedTrx = new HashMap<String, Object>();
+            findedTrx.put("name", "1");
+            findedTrx.put("trx_id", 1);
+            findedTRX.add(new DataElement(findedTrx));
             when(networkModel.findElement(eq(SECTOR1))).thenReturn(new DataElement(SECTOR1));
             when(networkModel.getChildren(new DataElement(eq(SECTOR1)))).thenReturn(findedTRX);
             frequSaver.saveElement(rowContainer);
@@ -180,19 +180,20 @@ public class FreuencyConstraintTesting extends AbstractAWETest {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
-        frequSaver.saveElement(rowContainer);
-        List<String> values = prepareValues(hashMap);
-        rowContainer.setValues(values);
-        List<IDataElement> findedTRX = new LinkedList<IDataElement>();
-        Map<String, Object> findedTrx = new HashMap<String, Object>();
-        findedTrx.put("name", "1");
-        findedTrx.put("trx_id", 1);
-        findedTRX.add(new DataElement(findedTrx));
-        findedTrx = new HashMap<String, Object>();
-        findedTrx.put("name", "2");
-        findedTrx.put("trx_id", 2);
-        findedTRX.add(new DataElement(findedTrx));
         try {
+            frequSaver.saveElement(rowContainer);
+            List<String> values = prepareValues(hashMap);
+            rowContainer.setValues(values);
+            List<IDataElement> findedTRX = new LinkedList<IDataElement>();
+            Map<String, Object> findedTrx = new HashMap<String, Object>();
+            findedTrx.put("name", "1");
+            findedTrx.put("trx_id", 1);
+            findedTRX.add(new DataElement(findedTrx));
+            findedTrx = new HashMap<String, Object>();
+            findedTrx.put("name", "2");
+            findedTrx.put("trx_id", 2);
+            findedTRX.add(new DataElement(findedTrx));
+
             when(networkModel.findElement(eq(SECTOR1))).thenReturn(new DataElement(SECTOR1));
             when(networkModel.getChildren(new DataElement(eq(SECTOR1)))).thenReturn(findedTRX);
             frequSaver.saveElement(rowContainer);
@@ -211,19 +212,19 @@ public class FreuencyConstraintTesting extends AbstractAWETest {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
-        frequSaver.saveElement(rowContainer);
-        List<String> values = prepareValues(hashMap);
-        rowContainer.setValues(values);
-        List<IDataElement> findedTRX = new LinkedList<IDataElement>();
-        Map<String, Object> findedTrx = new HashMap<String, Object>();
-        findedTrx.put("name", "1");
-        findedTrx.put("trx_id", 1);
-        findedTRX.add(new DataElement(findedTrx));
-        findedTrx = new HashMap<String, Object>();
-        findedTrx.put("name", "2");
-        findedTrx.put("trx_id", 2);
-        findedTRX.add(new DataElement(findedTrx));
         try {
+            frequSaver.saveElement(rowContainer);
+            List<String> values = prepareValues(hashMap);
+            rowContainer.setValues(values);
+            List<IDataElement> findedTRX = new LinkedList<IDataElement>();
+            Map<String, Object> findedTrx = new HashMap<String, Object>();
+            findedTrx.put("name", "1");
+            findedTrx.put("trx_id", 1);
+            findedTRX.add(new DataElement(findedTrx));
+            findedTrx = new HashMap<String, Object>();
+            findedTrx.put("name", "2");
+            findedTrx.put("trx_id", 2);
+            findedTRX.add(new DataElement(findedTrx));
             when(networkModel.findElement(eq(SECTOR1))).thenReturn(new DataElement(SECTOR1));
             when(networkModel.getChildren(new DataElement(eq(SECTOR1)))).thenReturn(findedTRX);
             frequSaver.saveElement(rowContainer);
@@ -241,9 +242,10 @@ public class FreuencyConstraintTesting extends AbstractAWETest {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
-        frequSaver.saveElement(rowContainer);
-        List<String> values = prepareValues(hashMap);
         try {
+            frequSaver.saveElement(rowContainer);
+            List<String> values = prepareValues(hashMap);
+
             rowContainer.setValues(values);
             when(networkModel.findElement(any(Map.class))).thenThrow(new DatabaseException("required exception"));
             frequSaver.saveElement(rowContainer);
@@ -260,9 +262,9 @@ public class FreuencyConstraintTesting extends AbstractAWETest {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
-        frequSaver.saveElement(rowContainer);
-        List<String> values = prepareValues(hashMap);
         try {
+            frequSaver.saveElement(rowContainer);
+            List<String> values = prepareValues(hashMap);
             rowContainer.setValues(values);
             when(networkModel.findElement(any(Map.class))).thenThrow(new IllegalArgumentException("required exception"));
             frequSaver.saveElement(rowContainer);

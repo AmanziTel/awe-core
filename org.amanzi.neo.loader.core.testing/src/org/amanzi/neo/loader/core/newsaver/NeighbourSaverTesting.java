@@ -142,10 +142,10 @@ public class NeighbourSaverTesting extends AbstractAWETest {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
-        neighboursSaver.saveElement(rowContainer);
-        List<String> values = prepareValues(hashMap);
-        rowContainer.setValues(values);
         try {
+            neighboursSaver.saveElement(rowContainer);
+            List<String> values = prepareValues(hashMap);
+            rowContainer.setValues(values);
             when(networkModel.findElement(SECTOR1)).thenReturn(new DataElement(SECTOR1));
             when(networkModel.findElement(SECTOR2)).thenReturn(new DataElement(SECTOR2));
             neighboursSaver.saveElement(rowContainer);
@@ -201,9 +201,10 @@ public class NeighbourSaverTesting extends AbstractAWETest {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
-        neighboursSaver.saveElement(rowContainer);
-        List<String> values = prepareValues(hashMap);
         try {
+            neighboursSaver.saveElement(rowContainer);
+            List<String> values = prepareValues(hashMap);
+
             rowContainer.setValues(values);
             when(networkModel.findElement(any(Map.class))).thenThrow(new DatabaseException("required exception"));
             neighboursSaver.saveElement(rowContainer);
@@ -220,9 +221,9 @@ public class NeighbourSaverTesting extends AbstractAWETest {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
-        neighboursSaver.saveElement(rowContainer);
-        List<String> values = prepareValues(hashMap);
         try {
+            neighboursSaver.saveElement(rowContainer);
+            List<String> values = prepareValues(hashMap);
             rowContainer.setValues(values);
             when(networkModel.findElement(any(Map.class))).thenThrow(new IllegalArgumentException("required exception"));
             neighboursSaver.saveElement(rowContainer);

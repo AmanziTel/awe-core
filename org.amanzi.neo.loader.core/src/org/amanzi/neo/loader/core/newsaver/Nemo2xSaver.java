@@ -51,394 +51,348 @@ import org.neo4j.graphdb.GraphDatabaseService;
  * @author Vladislav_Kondratenko
  */
 public class Nemo2xSaver extends AbstractDriveSaver {
-	private static final Logger LOGGER = Logger.getLogger(Nemo2xSaver.class);
+    private static final Logger LOGGER = Logger.getLogger(Nemo2xSaver.class);
 
-	// Constatnts
-	protected static final SimpleDateFormat EVENT_DATE_FORMAT = new SimpleDateFormat(
-			"dd.MM.yyyy");
-	protected static final String REPLACEMENT_PATTERN_1 = "[\\s\\-\\[\\]\\(\\)\\/\\.\\\\\\:\\#]+";
-	protected static final String REPLACEMENT_PATTERN_2 = "[^\\w]+";
-	protected static final String REPLACEMENT_PATTERN_4 = "\\_$";
-	protected static final String REPLACEMENT_PATTERN_3 = "_+";
-	protected static final String UNDERSCORE = "_";
-	protected String EVENT_TYPE = "event_type";
-	private static final String GPS_EVENT = "GPS";
-	private static final String NEMO_V2_VERSION = "2.01";
-	/*
-	 * index number
-	 */
-	private static final int EVENT_ID_INDEX = 0;
-	private static final int TIME_INDEX = 1;
-	private static final int NUMBER_CONTEXT_ID_INDEX = 2;
-	private static final int FIRST_PARAMETER_INDEX = 3;
+    // Constants
+    protected static final SimpleDateFormat EVENT_DATE_FORMAT = new SimpleDateFormat("dd.MM.yyyy");
+    protected static final String REPLACEMENT_PATTERN_1 = "[\\s\\-\\[\\]\\(\\)\\/\\.\\\\\\:\\#]+";
+    protected static final String REPLACEMENT_PATTERN_2 = "[^\\w]+";
+    protected static final String REPLACEMENT_PATTERN_4 = "\\_$";
+    protected static final String REPLACEMENT_PATTERN_3 = "_+";
+    protected static final String UNDERSCORE = "_";
+    protected String EVENT_TYPE = "event_type";
+    private static final String GPS_EVENT = "GPS";
+    private static final String NEMO_V2_VERSION = "2.01";
+    /*
+     * index number
+     */
+    private static final int EVENT_ID_INDEX = 0;
+    private static final int TIME_INDEX = 1;
+    private static final int NUMBER_CONTEXT_ID_INDEX = 2;
+    private static final int FIRST_PARAMETER_INDEX = 3;
 
-	protected static final SimpleDateFormat timeFormat = new SimpleDateFormat(
-			"HH:mm:ss.S");
+    protected static final SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss.S");
 
-	protected Calendar workDate;
-	protected DriveEvents driveEvents;
-	protected List<Map<String, Object>> subNodes;
+    protected Calendar workDate;
+    protected DriveEvents driveEvents;
+    protected List<Map<String, Object>> subNodes;
 
-	/**
-	 * virtual model for parameterizedModel
-	 */
-	protected IDriveModel virtualModel;
-	/**
-	 * list of all created location elements
-	 */
-	protected Set<IDataElement> locationDataElements = new HashSet<IDataElement>();
+    /**
+     * virtual model for parameterizedModel
+     */
+    protected IDriveModel virtualModel;
+    /**
+     * list of all created location elements
+     */
+    protected Set<IDataElement> locationDataElements = new HashSet<IDataElement>();
 
-	/**
-	 * curent created location element
-	 */
-	protected IDataElement location;
+    /**
+     * curent created location element
+     */
+    protected IDataElement location;
 
-	protected Nemo2xSaver(IDriveModel model, ConfigurationDataImpl config,
-			GraphDatabaseService service) {
-		super(service);
-		preferenceStoreSynonyms = preferenceManager
-				.getSynonyms(DatasetTypes.DRIVE);
-		columnSynonyms = new HashMap<String, Integer>();
-		setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
-		commitTx();
-		if (model != null) {
-			parametrizedModel = model;
-			useableModels.add(model);
-		}
-	}
+    protected Nemo2xSaver(IDriveModel model, ConfigurationDataImpl config, GraphDatabaseService service) {
+        preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.DRIVE);
+        columnSynonyms = new HashMap<String, Integer>();
+        setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
+        commitTx();
+        if (model != null) {
+            parametrizedModel = model;
+            useableModels.add(model);
+        }
+    }
 
-	/**
-	 * create instance of nemo2xsaver
-	 */
-	public Nemo2xSaver() {
-		super();
-	}
+    /**
+     * create instance of nemo2xsaver
+     */
+    public Nemo2xSaver() {
+        super();
+    }
 
-	@Override
-	protected void addedNewFileToModels(File file) throws DatabaseException,
-			DuplicateNodeNameException {
-		parametrizedModel.addFile(file);
-	}
+    @Override
+    protected void addedNewFileToModels(File file) throws DatabaseException, DuplicateNodeNameException {
+        parametrizedModel.addFile(file);
+    }
 
-	/**
-	 * return virtual model for parametrizedModel
-	 * 
-	 * @return
-	 * @throws AWEException
-	 */
-	private IDriveModel getVirtualModel() throws AWEException {
-		return parametrizedModel.getVirtualDataset(parametrizedModel.getName(),
-				DriveTypes.MS);
-	}
+    /**
+     * return virtual model for parametrizedModel
+     * 
+     * @return
+     * @throws AWEException
+     */
+    private IDriveModel getVirtualModel() throws AWEException {
+        return parametrizedModel.getVirtualDataset(parametrizedModel.getName(), DriveTypes.MS);
+    }
 
-	@Override
-	protected boolean handleHeaders(CSVContainer dataElement) throws Exception {
-		if (!dataElement.getHeaders().isEmpty()
-				&& dataElement.getValues().isEmpty()) {
-			saveLine(dataElement.getHeaders());
-			return false;
-		}
-		return true;
-	}
+    @Override
+    protected boolean handleHeaders(CSVContainer dataElement) throws Exception {
+        if (!dataElement.getHeaders().isEmpty() && dataElement.getValues().isEmpty()) {
+            saveLine(dataElement.getHeaders());
+            return false;
+        }
+        return true;
+    }
 
-	@Override
-	protected void handleLine(CSVContainer dataElement) throws AWEException {
-		if (!dataElement.getHeaders().isEmpty()
-				&& !dataElement.getValues().isEmpty()) {
-			saveLine(dataElement.getValues());
-		}
-	}
+    @Override
+    protected void handleLine(CSVContainer dataElement) throws AWEException {
+        if (!dataElement.getHeaders().isEmpty() && !dataElement.getValues().isEmpty()) {
+            saveLine(dataElement.getValues());
+        }
+    }
 
-	/**
-	 * Creates the sub nodes.
-	 * 
-	 * @param eventId
-	 *            the event id
-	 * @param subNodes
-	 *            the sub nodes
-	 * @param timestamp
-	 *            the timestamp
-	 */
-	protected void createSubNodes(String eventId,
-			List<Map<String, Object>> subNodes, long timestamp) {
-		if (subNodes == null) {
-			return;
-		}
-		for (Map<String, Object> propertyMap : subNodes) {
-			Iterator<Entry<String, Object>> iter = propertyMap.entrySet()
-					.iterator();
-			while (iter.hasNext()) {
-				Entry<String, Object> entry = iter.next();
-				if (entry.getValue() == null) {
-					iter.remove();
-				}
-			}
-			if (propertyMap.isEmpty()) {
-				continue;
-			}
-			try {
-				if (propertyMap.containsKey(IDriveModel.LATITUDE)) {
-					propertyMap.remove(IDriveModel.LATITUDE);
-				}
-				if (propertyMap.containsKey(IDriveModel.LONGITUDE)) {
-					propertyMap.remove(IDriveModel.LONGITUDE);
-				}
-				propertyMap.put(TIMESTAMP, timestamp);
-				propertyMap.put(NewAbstractService.NAME, eventId);
-				virtualModel.getFile(fileName);
-				IDataElement createdElement = getVirtualModel().addMeasurement(
-						fileName, propertyMap);
-				List<IDataElement> locList = new LinkedList<IDataElement>();
-				locList.add(location);
-				linkWithLocationElement(createdElement, locList);
-			} catch (Exception e) {
-			}
-		}
-	}
+    /**
+     * Creates the sub nodes.
+     * 
+     * @param eventId the event id
+     * @param subNodes the sub nodes
+     * @param timestamp the timestamp
+     */
+    protected void createSubNodes(String eventId, List<Map<String, Object>> subNodes, long timestamp) {
+        if (subNodes == null) {
+            return;
+        }
+        for (Map<String, Object> propertyMap : subNodes) {
+            Iterator<Entry<String, Object>> iter = propertyMap.entrySet().iterator();
+            while (iter.hasNext()) {
+                Entry<String, Object> entry = iter.next();
+                if (entry.getValue() == null) {
+                    iter.remove();
+                }
+            }
+            if (propertyMap.isEmpty()) {
+                continue;
+            }
+            try {
+                if (propertyMap.containsKey(IDriveModel.LATITUDE)) {
+                    propertyMap.remove(IDriveModel.LATITUDE);
+                }
+                if (propertyMap.containsKey(IDriveModel.LONGITUDE)) {
+                    propertyMap.remove(IDriveModel.LONGITUDE);
+                }
+                propertyMap.put(TIMESTAMP, timestamp);
+                propertyMap.put(NewAbstractService.NAME, eventId);
+                virtualModel.getFile(fileName);
+                IDataElement createdElement = getVirtualModel().addMeasurement(fileName, propertyMap);
+                List<IDataElement> locList = new LinkedList<IDataElement>();
+                locList.add(location);
+                linkWithLocationElement(createdElement, locList);
+            } catch (Exception e) {
+            }
+        }
+    }
 
-	@Override
-	protected void saveLine(List<String> headers) throws AWEException {
-		// TODO: LN: magic numbers
-		String eventId = headers.get(EVENT_ID_INDEX);
-		NemoEvents event = NemoEvents.getEventById(eventId);
-		String time = headers.get(TIME_INDEX);
-		String numberContextId = headers.get(NUMBER_CONTEXT_ID_INDEX);
-		List<Integer> contextId = new ArrayList<Integer>();
-		Integer firstParamsId = FIRST_PARAMETER_INDEX;
-		if (!numberContextId.isEmpty()) {
-			int numContext = Integer.parseInt(numberContextId);
-			for (int i = 1; i <= numContext; i++) {
-				int value = 0;
-				String field = headers.get(firstParamsId++);
-				if (!field.isEmpty()) {
-					try {
-						value = Integer.parseInt(field);
-					} catch (NumberFormatException e) {
-						LOGGER.error("Wrong context id:" + field);
-						value = 0;
-					}
-				}
-				contextId.add(value);
-			}
-		}
-		ArrayList<String> parameters = new ArrayList<String>();
-		for (int i = firstParamsId; i < headers.size(); i++) {
-			parameters.add(headers.get(i));
-		}
-		// analyse
-		Map<String, Object> parsedParameters = analyseKnownParameters(headers,
-				event, contextId, parameters);
-		if (parsedParameters == null) {
-			return;
-		}
-		long timestamp;
-		try {
-			timestamp = getTimeStamp(timeFormat.parse(time));
-		} catch (ParseException e) {
-			timestamp = 0;
-		}
-		parsedParameters.put(NewAbstractService.NAME, eventId);
-		parsedParameters.put(EVENT_TYPE, eventId);
-		parsedParameters.put(TIMESTAMP, timestamp);
-		removeEmpty(parsedParameters);
-		boolean isAlreadyCreated = false;
-		if (GPS_EVENT.equalsIgnoreCase(eventId)) {
-			Double longitude = (Double) parsedParameters
-					.get(IDriveModel.LONGITUDE);
-			Double latitude = (Double) parsedParameters
-					.get(IDriveModel.LATITUDE);
-			if (isCorrect(latitude) && latitude != 0d && isCorrect(longitude)
-					&& longitude != 0d) {
-				location = checkSameLocation(parsedParameters);
-				if (location != null) {
-					parsedParameters.remove(IDriveModel.LATITUDE);
-					parsedParameters.remove(IDriveModel.LONGITUDE);
-				}
-				IDataElement createdElement = parametrizedModel.addMeasurement(
-						fileName, parsedParameters);
-				isAlreadyCreated = true;
-				if (location != null) {
-					List<IDataElement> locList = new LinkedList<IDataElement>();
-					locList.add(location);
-					linkWithLocationElement(createdElement, locList);
-				} else {
-					IDataElement location = parametrizedModel
-							.getLocation(createdElement);
-					if (location != null) {
-						locationDataElements.add(parametrizedModel
-								.getLocation(createdElement));
-					}
-				}
-			}
-		}
-		if (!isAlreadyCreated) {
-			IDataElement createdElement = parametrizedModel.addMeasurement(
-					fileName, parsedParameters);
-			IDataElement location = parametrizedModel
-					.getLocation(createdElement);
-			if (location != null) {
-				locationDataElements.add(parametrizedModel
-						.getLocation(createdElement));
-			}
-		}
-		createSubNodes(eventId, subNodes, timestamp);
-	}
+    @Override
+    protected void saveLine(List<String> headers) throws AWEException {
+        String eventId = headers.get(EVENT_ID_INDEX);
+        NemoEvents event = NemoEvents.getEventById(eventId);
+        String time = headers.get(TIME_INDEX);
+        String numberContextId = headers.get(NUMBER_CONTEXT_ID_INDEX);
+        List<Integer> contextId = new ArrayList<Integer>();
+        Integer firstParamsId = FIRST_PARAMETER_INDEX;
+        if (!numberContextId.isEmpty()) {
+            int numContext = Integer.parseInt(numberContextId);
+            for (int i = 1; i <= numContext; i++) {
+                int value = 0;
+                String field = headers.get(firstParamsId++);
+                if (!field.isEmpty()) {
+                    try {
+                        value = Integer.parseInt(field);
+                    } catch (NumberFormatException e) {
+                        LOGGER.error("Wrong context id:" + field);
+                        value = 0;
+                    }
+                }
+                contextId.add(value);
+            }
+        }
+        ArrayList<String> parameters = new ArrayList<String>();
+        for (int i = firstParamsId; i < headers.size(); i++) {
+            parameters.add(headers.get(i));
+        }
+        // analyse
+        Map<String, Object> parsedParameters = analyseKnownParameters(headers, event, contextId, parameters);
+        if (parsedParameters == null) {
+            return;
+        }
+        long timestamp;
+        try {
+            timestamp = getTimeStamp(timeFormat.parse(time));
+        } catch (ParseException e) {
+            timestamp = 0;
+        }
+        parsedParameters.put(NewAbstractService.NAME, eventId);
+        parsedParameters.put(EVENT_TYPE, eventId);
+        parsedParameters.put(TIMESTAMP, timestamp);
+        removeEmpty(parsedParameters);
+        boolean isAlreadyCreated = false;
+        if (GPS_EVENT.equalsIgnoreCase(eventId)) {
+            Double longitude = (Double)parsedParameters.get(IDriveModel.LONGITUDE);
+            Double latitude = (Double)parsedParameters.get(IDriveModel.LATITUDE);
+            if (isCorrect(latitude) && latitude != 0d && isCorrect(longitude) && longitude != 0d) {
+                location = checkSameLocation(parsedParameters);
+                if (location != null) {
+                    parsedParameters.remove(IDriveModel.LATITUDE);
+                    parsedParameters.remove(IDriveModel.LONGITUDE);
+                }
+                IDataElement createdElement = parametrizedModel.addMeasurement(fileName, parsedParameters);
+                isAlreadyCreated = true;
+                if (location != null) {
+                    List<IDataElement> locList = new LinkedList<IDataElement>();
+                    locList.add(location);
+                    linkWithLocationElement(createdElement, locList);
+                } else {
+                    IDataElement location = parametrizedModel.getLocation(createdElement);
+                    if (location != null) {
+                        locationDataElements.add(parametrizedModel.getLocation(createdElement));
+                    }
+                }
+            }
+        }
+        if (!isAlreadyCreated) {
+            IDataElement createdElement = parametrizedModel.addMeasurement(fileName, parsedParameters);
+            IDataElement location = parametrizedModel.getLocation(createdElement);
+            if (location != null) {
+                locationDataElements.add(parametrizedModel.getLocation(createdElement));
+            }
+        }
+        createSubNodes(eventId, subNodes, timestamp);
+    }
 
-	/**
-	 * make appropriation with received event value row and properties name
-	 * 
-	 * @param element
-	 *            recieved row
-	 * @param event
-	 *            defined event
-	 * @param contextId
-	 * @param parameters
-	 * @return
-	 */
-	@SuppressWarnings("unchecked")
-	protected Map<String, Object> analyseKnownParameters(List<String> element,
-			NemoEvents event, List<Integer> contextId,
-			ArrayList<String> parameters) {
-		if (parameters.isEmpty()) {
-			return null;
-		}
+    /**
+     * make appropriation with received event value row and properties name
+     * 
+     * @param element recieved row
+     * @param event defined event
+     * @param contextId
+     * @param parameters
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    protected Map<String, Object> analyseKnownParameters(List<String> element, NemoEvents event, List<Integer> contextId,
+            ArrayList<String> parameters) {
+        if (parameters.isEmpty()) {
+            return null;
+        }
 
-		if (event == null) {
-			return null;
-		}
-		Map<String, Object> parParam;
-		try {
-			parParam = event.fill(getVersion(), parameters);
-		} catch (Exception e1) {
-			LOGGER.error(String.format("Line %s not parsed", element.toString()));
-			return null;
-		}
-		if (parParam.isEmpty()) {
-			return null;
-		}
-		driveEvents = (DriveEvents) parParam.remove(NemoEvents.DRIVE_EVENTS);
-		subNodes = (List<Map<String, Object>>) parParam
-				.remove(NemoEvents.SUB_NODES);
-		// TODO check documentation
-		if (subNodes != null) {
-			// store in parameters like prop1,prop2...
-			int i = 0;
-			for (Map<String, Object> oneSet : subNodes) {
-				i++;
-				for (Map.Entry<String, Object> entry : oneSet.entrySet()) {
-					parParam.put(new StringBuilder(entry.getKey()).append(i)
-							.toString(), entry.getValue());
-				}
-			}
-			subNodes.clear();
-		}
-		// add context field
-		if (parParam.containsKey(NemoEvents.FIRST_CONTEXT_NAME)) {
-			List<String> contextName = (List<String>) parParam
-					.get(NemoEvents.FIRST_CONTEXT_NAME);
-			parParam.remove(NemoEvents.FIRST_CONTEXT_NAME);
-			if (contextId != null) {
-				for (int i = 0; i < contextId.size() && i < contextName.size(); i++) {
-					if (contextId.get(i) != 0) {
-						parParam.put(contextName.get(i), contextId.get(i));
-					}
-				}
-			}
-		}
-		if (workDate == null && event == NemoEvents.START) {
-			workDate = new GregorianCalendar();
-			Date date;
-			try {
-				// TODO: LN: string to const
-				date = EVENT_DATE_FORMAT.parse((String) parParam.get("Date"));
+        if (event == null) {
+            return null;
+        }
+        Map<String, Object> parParam;
+        try {
+            parParam = event.fill(getVersion(), parameters);
+        } catch (Exception e1) {
+            LOGGER.error(String.format("Line %s not parsed", element.toString()));
+            return null;
+        }
+        if (parParam.isEmpty()) {
+            return null;
+        }
+        driveEvents = (DriveEvents)parParam.remove(NemoEvents.DRIVE_EVENTS);
+        subNodes = (List<Map<String, Object>>)parParam.remove(NemoEvents.SUB_NODES);
+        if (subNodes != null) {
+            // store in parameters like prop1,prop2...
+            int i = 0;
+            for (Map<String, Object> oneSet : subNodes) {
+                i++;
+                for (Map.Entry<String, Object> entry : oneSet.entrySet()) {
+                    parParam.put(new StringBuilder(entry.getKey()).append(i).toString(), entry.getValue());
+                }
+            }
+            subNodes.clear();
+        }
+        // add context field
+        if (parParam.containsKey(NemoEvents.FIRST_CONTEXT_NAME)) {
+            List<String> contextName = (List<String>)parParam.get(NemoEvents.FIRST_CONTEXT_NAME);
+            parParam.remove(NemoEvents.FIRST_CONTEXT_NAME);
+            if (contextId != null) {
+                for (int i = 0; i < contextId.size() && i < contextName.size(); i++) {
+                    if (contextId.get(i) != 0) {
+                        parParam.put(contextName.get(i), contextId.get(i));
+                    }
+                }
+            }
+        }
+        if (workDate == null && event == NemoEvents.START) {
+            workDate = new GregorianCalendar();
+            Date date;
+            try {
+                // TODO: LN: string to const
+                date = EVENT_DATE_FORMAT.parse((String)parParam.get("Date"));
 
-			} catch (Exception e) {
-				LOGGER.error("Wrong time format" + e.getLocalizedMessage());
-				date = new Date();
-			}
-			workDate.setTime(date);
-		}
-		// Pechko_E make property names Ruby-compatible
-		Set<Entry<String, Object>> entrySet = parParam.entrySet();
-		// TODO Check may be a new map is unnecessary and we can use
-		// parsedParameters
-		Map<String, Object> parsedParameters = new HashMap<String, Object>(
-				parParam.size());
-		for (Entry<String, Object> entry : entrySet) {
-			parsedParameters.put(cleanHeader(entry.getKey()), entry.getValue());
-		}
-		return parsedParameters;
-	}
+            } catch (Exception e) {
+                LOGGER.error("Wrong time format" + e.getLocalizedMessage());
+                date = new Date();
+            }
+            workDate.setTime(date);
+        }
+        // Pechko_E make property names Ruby-compatible
+        Set<Entry<String, Object>> entrySet = parParam.entrySet();
+        Map<String, Object> parsedParameters = new HashMap<String, Object>(parParam.size());
+        for (Entry<String, Object> entry : entrySet) {
+            parsedParameters.put(cleanHeader(entry.getKey()), entry.getValue());
+        }
+        return parsedParameters;
+    }
 
-	/**
-	 * Converts to lower case and replaces all illegal characters with '_' and
-	 * removes trailing '_'. This is useful for creating a version of a header
-	 * or property name that can be used as a variable or method name in
-	 * programming code, notably in Ruby DSL code.
-	 * 
-	 * @param original
-	 *            header String
-	 * @return edited String
-	 */
-	protected final static String cleanHeader(String header) {
-		return header.replaceAll(REPLACEMENT_PATTERN_1, UNDERSCORE)
-				.replaceAll(REPLACEMENT_PATTERN_2, UNDERSCORE)
-				.replaceAll(REPLACEMENT_PATTERN_3, UNDERSCORE)
-				.replaceAll(REPLACEMENT_PATTERN_4, StringUtils.EMPTY)
-				.toLowerCase();
-	}
+    /**
+     * Converts to lower case and replaces all illegal characters with '_' and removes trailing '_'.
+     * This is useful for creating a version of a header or property name that can be used as a
+     * variable or method name in programming code, notably in Ruby DSL code.
+     * 
+     * @param original header String
+     * @return edited String
+     */
+    protected final static String cleanHeader(String header) {
+        return header.replaceAll(REPLACEMENT_PATTERN_1, UNDERSCORE).replaceAll(REPLACEMENT_PATTERN_2, UNDERSCORE)
+                .replaceAll(REPLACEMENT_PATTERN_3, UNDERSCORE).replaceAll(REPLACEMENT_PATTERN_4, StringUtils.EMPTY).toLowerCase();
+    }
 
-	/**
-	 * get Timestamp of nodeDate
-	 * 
-	 * @param nodeDate
-	 *            date of node
-	 * @return long (0 if nodeDate==null)
-	 */
-	@SuppressWarnings("deprecation")
-	protected long getTimeStamp(Date nodeDate) {
-		if (nodeDate == null || workDate == null) {
-			return 0L;
-		}
-		// TODO: LN: do not use deprecated methods
-		final int nodeHours = nodeDate.getHours();
-		workDate.set(Calendar.HOUR_OF_DAY, nodeHours);
-		workDate.set(Calendar.MINUTE, nodeDate.getMinutes());
-		workDate.set(Calendar.SECOND, nodeDate.getSeconds());
-		final long timestamp = workDate.getTimeInMillis();
-		return timestamp;
-	}
+    /**
+     * get Timestamp of nodeDate
+     * 
+     * @param nodeDate date of node
+     * @return long (0 if nodeDate==null)
+     */
+    @SuppressWarnings("deprecation")
+    protected long getTimeStamp(Date nodeDate) {
+        if (nodeDate == null || workDate == null) {
+            return 0L;
+        }
+        // TODO: LN: do not use deprecated methods
+        final int nodeHours = nodeDate.getHours();
+        workDate.set(Calendar.HOUR_OF_DAY, nodeHours);
+        workDate.set(Calendar.MINUTE, nodeDate.getMinutes());
+        workDate.set(Calendar.SECOND, nodeDate.getSeconds());
+        final long timestamp = workDate.getTimeInMillis();
+        return timestamp;
+    }
 
-	protected IDataElement checkSameLocation(Map<String, Object> params) {
-		// TODO: LN: you can use 'equals' for double
-		// use delta, for example it should be less 0.00001
-		for (IDataElement location : locationDataElements) {
-			if (location.get(IDriveModel.LATITUDE).equals(
-					params.get(IDriveModel.LATITUDE))
-					&& location.get(IDriveModel.LONGITUDE).equals(
-							params.get(IDriveModel.LONGITUDE))) {
-				return location;
-			}
-		}
-		return null;
-	}
+    protected IDataElement checkSameLocation(Map<String, Object> params) {
+        // TODO: LN: you can use 'equals' for double
+        // use delta, for example it should be less 0.00001
+        for (IDataElement location : locationDataElements) {
+            if (location.get(IDriveModel.LATITUDE).equals(params.get(IDriveModel.LATITUDE))
+                    && location.get(IDriveModel.LONGITUDE).equals(params.get(IDriveModel.LONGITUDE))) {
+                return location;
+            }
+        }
+        return null;
+    }
 
-	/**
-	 * Gets the version.
-	 * 
-	 * @return the version
-	 */
-	protected String getVersion() {
-		return NEMO_V2_VERSION;
-	}
+    /**
+     * Gets the version.
+     * 
+     * @return the version
+     */
+    protected String getVersion() {
+        return NEMO_V2_VERSION;
+    }
 
-	@Override
-	protected void initializeNecessaryModels() throws AWEException {
-		parametrizedModel = getActiveProject().getDataset(
-				configuration.getDatasetNames().get(
-						ConfigurationDataImpl.DATASET_PROPERTY_NAME),
-				DriveTypes.NEMO_V2);
-		virtualModel = getVirtualModel();
+    @Override
+    protected void initializeNecessaryModels() throws AWEException {
+        parametrizedModel = getActiveProject().getDataset(
+                configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME), DriveTypes.NEMO_V2);
+        virtualModel = getVirtualModel();
 
-	}
+    }
 }

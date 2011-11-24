@@ -180,11 +180,11 @@ public class TRXSaverTesting extends AbstractAWETest {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
-        trxSaver.saveElement(rowContainer);
-        List<String> values = prepareValues(hashMap);
-        rowContainer.setValues(values);
-        List<IDataElement> trxList = new LinkedList<IDataElement>();
         try {
+            trxSaver.saveElement(rowContainer);
+            List<String> values = prepareValues(hashMap);
+            rowContainer.setValues(values);
+            List<IDataElement> trxList = new LinkedList<IDataElement>();
             when(networkModel.findElement(eq(SECTOR))).thenReturn(new DataElement(SECTOR));
             when(networkModel.getChildren(new DataElement(eq(SECTOR)))).thenReturn(trxList);
             when(networkModel.createElement(new DataElement(eq(SECTOR)), eq(TRX))).thenReturn(new DataElement(TRX));
@@ -206,12 +206,12 @@ public class TRXSaverTesting extends AbstractAWETest {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
-        trxSaver.saveElement(rowContainer);
-        List<String> values = prepareValues(hashMap);
-        rowContainer.setValues(values);
-        List<IDataElement> trxList = new LinkedList<IDataElement>();
-        trxList.add(new DataElement(TRX));
         try {
+            trxSaver.saveElement(rowContainer);
+            List<String> values = prepareValues(hashMap);
+            rowContainer.setValues(values);
+            List<IDataElement> trxList = new LinkedList<IDataElement>();
+            trxList.add(new DataElement(TRX));
             when(networkModel.findElement(eq(SECTOR))).thenReturn(new DataElement(SECTOR));
             when(networkModel.getChildren(new DataElement(eq(SECTOR)))).thenReturn(trxList);
             when(networkModel.createElement(new DataElement(eq(SECTOR)), eq(TRX))).thenReturn(new DataElement(TRX));
@@ -231,11 +231,11 @@ public class TRXSaverTesting extends AbstractAWETest {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
-        trxSaver.saveElement(rowContainer);
-        List<String> values = prepareValues(hashMap);
-        rowContainer.setValues(values);
-        List<IDataElement> trxList = new LinkedList<IDataElement>();
         try {
+            trxSaver.saveElement(rowContainer);
+            List<String> values = prepareValues(hashMap);
+            rowContainer.setValues(values);
+            List<IDataElement> trxList = new LinkedList<IDataElement>();
             when(networkModel.findElement(eq(SECTOR))).thenReturn(null);
             when(networkModel.createElement(new DataElement(eq(SECTOR)), eq(TRX))).thenReturn(new DataElement(TRX));
             when(networkModel.getChildren(new DataElement(eq(SECTOR)))).thenReturn(trxList);
@@ -255,9 +255,9 @@ public class TRXSaverTesting extends AbstractAWETest {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
-        trxSaver.saveElement(rowContainer);
-        List<String> values = prepareValues(hashMap);
         try {
+            trxSaver.saveElement(rowContainer);
+            List<String> values = prepareValues(hashMap);
             rowContainer.setValues(values);
             when(networkModel.findElement(any(Map.class))).thenThrow(new DatabaseException("required exception"));
             trxSaver.saveElement(rowContainer);
@@ -274,9 +274,9 @@ public class TRXSaverTesting extends AbstractAWETest {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
         List<String> header = new LinkedList<String>(hashMap.keySet());
         rowContainer.setHeaders(header);
-        trxSaver.saveElement(rowContainer);
-        List<String> values = prepareValues(hashMap);
         try {
+            trxSaver.saveElement(rowContainer);
+            List<String> values = prepareValues(hashMap);
             rowContainer.setValues(values);
             when(networkModel.findElement(any(Map.class))).thenThrow(new IllegalArgumentException("required exception"));
             trxSaver.saveElement(rowContainer);

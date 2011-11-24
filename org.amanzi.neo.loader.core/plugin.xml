@@ -26,7 +26,7 @@
        
       <newsaver
             class="org.amanzi.neo.loader.core.newsaver.NeighborsSaver"
-            id="org.amanzi.neo.loader.core.newsaver.NeighboursSaver">
+            id="org.amanzi.neo.loader.core.newsaver.NeighborsSaver">
       </newsaver>
       
       <newsaver

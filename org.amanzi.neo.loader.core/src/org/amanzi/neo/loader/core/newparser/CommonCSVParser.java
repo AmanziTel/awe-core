@@ -45,27 +45,33 @@ import au.com.bytecode.opencsv.CSVParser;
 public class CommonCSVParser<T1 extends ISaver<IModel, CSVContainer, T2>, T2 extends IConfiguration>
         extends
             AbstractParser<T1, T2, CSVContainer> {
+    private static final Logger LOGGER = Logger.getLogger(CommonCSVParser.class);
 
-    //TODO: LN: comments
-    protected CSVParser parser;
+    // constants
     protected int MINIMAL_SIZE = 2;
+    private static final char ESCAPE_SYMBOL = '\\';
+    private String charSetName = Charset.defaultCharset().name();
+
     protected Character delimeters;
     protected String[] possibleFieldSepRegexes = new String[] {"\t", ",", ";", " ", "\n"};
+    // high priority separator with
     protected String[] probableSeparator = new String[] {"\t", "\n"};
+    private int TABULATION_SEPARATOR_INDEX = 0;
     protected Character quoteCharacter = 0;
+
+    // common parser variables
+    protected CSVParser parser;
     private CSVContainer container;
     private CountingFileInputStream is;
-    private String charSetName = Charset.defaultCharset().name();
     protected BufferedReader reader;
     private double persentageOld = 0;
 
     /**
-     * 
+     * create class instance
      */
     public CommonCSVParser() {
         super();
         try {
-            LOGGER = Logger.getLogger(CommonCSVParser.class);
             container = new CSVContainer(MINIMAL_SIZE);
             if (currentFile != null) {
                 is = new CountingFileInputStream(currentFile);
@@ -90,8 +96,7 @@ public class CommonCSVParser<T1 extends ISaver<IModel, CSVContainer, T2>, T2 ext
      */
     private List<String> parseHeaders(File file) {
         char delim = getDelimiters(file);
-        //TODO: LN: '\\' to const
-        parser = new CSVParser(delim, quoteCharacter, '\\', false, true);
+        parser = new CSVParser(delim, quoteCharacter, ESCAPE_SYMBOL, false, true);
         String lineStr;
         ArrayList<String> header = new ArrayList<String>();
         try {
@@ -191,8 +196,7 @@ public class CommonCSVParser<T1 extends ISaver<IModel, CSVContainer, T2>, T2 ext
      * @return the string
      */
     public Map<String, Integer> defineDelimeters(File file, int minSize, String[] possibleFieldSepRegexes) {
-        //TODO: LN: to const
-        String fieldSepRegex = "\t";
+        String fieldSepRegex = possibleFieldSepRegexes[TABULATION_SEPARATOR_INDEX];
         BufferedReader read = null;
         Map<String, Integer> seaprators = new LinkedHashMap<String, Integer>();
         String line;
@@ -213,13 +217,12 @@ public class CommonCSVParser<T1 extends ISaver<IModel, CSVContainer, T2>, T2 ext
                 }
             }
         } catch (IOException e) {
-            //TODO: LN: exception to log
-            e.printStackTrace();
+            LOGGER.error("Cann't define delimeters", e);
         } finally {
             try {
                 read.close();
             } catch (IOException e) {
-                //TODO: LN: exception to log
+                LOGGER.error("Cann't close read stream", e);
                 e.printStackTrace();
             };
         }

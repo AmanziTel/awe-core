@@ -21,53 +21,52 @@ import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
 import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelTypes;
+import org.apache.log4j.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
 
-//TODO: LN: comments
 /**
+ * interference matrix saver
+ * 
  * @author Vladislav_Kondratenko
  */
 public class InterferenceSaver extends AbstractN2NSaver {
-	/*
-	 * neighbours
-	 */
-	public final static String INTERFERE_SECTOR_NAME = "interfering_sector";
-	public final static String SERVING_SECTOR_NAME = "serv_sector_name";
 
-	protected InterferenceSaver(INodeToNodeRelationsModel model,
-			INetworkModel networkModel, ConfigurationDataImpl data,
-			GraphDatabaseService service) {
-		super(model, networkModel, data, service);
-	}
+    /*
+     * neighbours
+     */
+    public final static String INTERFERE_SECTOR_NAME = "interfering_sector";
+    public final static String SERVING_SECTOR_NAME = "serv_sector_name";
 
-	/**
-	 * create class instance
-	 */
-	public InterferenceSaver() {
-		super();
-	}
+    protected InterferenceSaver(INodeToNodeRelationsModel model, INetworkModel networkModel, ConfigurationDataImpl data,
+            GraphDatabaseService service) {
+        super(model, networkModel, data, service);
+    }
 
-	@Override
-	protected INodeToNodeRelationsModel getNode2NodeModel(String name)
-			throws AWEException {
-		return parametrizedModel.getNodeToNodeModel(
-				N2NRelTypes.INTERFERENCE_MATRIX, name,
-				NetworkElementNodeType.SECTOR);
-	}
+    /**
+     * create class instance
+     */
+    public InterferenceSaver() {
+        super();
+    }
 
-	@Override
-	protected Map<String, String[]> initializeSynonyms() {
-		return preferenceManager.getInterfererSunonyms();
-	}
+    @Override
+    protected INodeToNodeRelationsModel getNode2NodeModel(String name) throws AWEException {
+        return parametrizedModel.getNodeToNodeModel(N2NRelTypes.INTERFERENCE_MATRIX, name, NetworkElementNodeType.SECTOR);
+    }
 
-	@Override
-	protected String getSourceElementName() {
-		return SERVING_SECTOR_NAME;
-	}
+    @Override
+    protected Map<String, String[]> initializeSynonyms() {
+        return preferenceManager.getInterfererSunonyms();
+    }
 
-	@Override
-	protected String getNeighborElementName() {
-		return INTERFERE_SECTOR_NAME;
-	}
+    @Override
+    protected String getSourceElementName() {
+        return SERVING_SECTOR_NAME;
+    }
+
+    @Override
+    protected String getNeighborElementName() {
+        return INTERFERE_SECTOR_NAME;
+    }
 
 }

@@ -36,253 +36,216 @@ import org.neo4j.graphdb.GraphDatabaseService;
  * @author Kondratenko_Vladislav
  */
 public class NetworkSaver extends AbstractNetworkSaver {
-	private static final Logger LOGGER = Logger.getLogger(NetworkSaver.class);
+    private static final Logger LOGGER = Logger.getLogger(NetworkSaver.class);
 
-	// Constants
-	private final static int SECTOR_STRUCTURE_ID = 5;
-	// Default network structure
-	private final static NetworkElementNodeType[] DEFAULT_NETWORK_STRUCTURE = {
-			NetworkElementNodeType.CITY, NetworkElementNodeType.MSC,
-			NetworkElementNodeType.BSC, NetworkElementNodeType.SITE,
-			NetworkElementNodeType.SECTOR };
+    // Constants
+    private final static int SECTOR_STRUCTURE_ID = 5;
+    // Default network structure
+    private final static NetworkElementNodeType[] DEFAULT_NETWORK_STRUCTURE = {NetworkElementNodeType.CITY,
+            NetworkElementNodeType.MSC, NetworkElementNodeType.BSC, NetworkElementNodeType.SITE, NetworkElementNodeType.SECTOR};
 
-	protected NetworkSaver(INetworkModel model, ConfigurationDataImpl config,
-			GraphDatabaseService service) {
-		super(service);
-		preferenceStoreSynonyms = preferenceManager
-				.getSynonyms(DatasetTypes.NETWORK);
-		columnSynonyms = new HashMap<String, Integer>();
-		setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
-		commitTx();
-		if (model != null) {
-			this.parametrizedModel = model;
-			useableModels.add(model);
-		}
-	}
+    protected NetworkSaver(INetworkModel model, ConfigurationDataImpl config, GraphDatabaseService service) {
+        preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.NETWORK);
+        columnSynonyms = new HashMap<String, Integer>();
+        setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
+        commitTx();
+        if (model != null) {
+            this.parametrizedModel = model;
+            useableModels.add(model);
+        }
+    }
 
-	/**
-	 * initialize saver
-	 */
-	public NetworkSaver() {
-		super();
-	}
+    /**
+     * initialize saver
+     */
+    public NetworkSaver() {
+        super();
+    }
 
-	/**
-	 * find or create city node from row properties and pass the action down the
-	 * chain, for creation CITY->MSC->BSC->SITE->SECTOR nodes
-	 * 
-	 * @param row
-	 * @throws AWEException
-	 */
-	@Override
-	protected void saveLine(List<String> row) throws AWEException {
-		IDataElement parentElement = null;
-		for (NetworkElementNodeType stuctureElement : DEFAULT_NETWORK_STRUCTURE) {
-			switch (stuctureElement) {
-			case CITY:
-			case MSC:
-			case BSC:
-				if (isCorrect(stuctureElement.getId(), row)) {
-					// create city msc bsc elements
-					parentElement = createMainElements(row, parentElement,
-							stuctureElement, stuctureElement.getId());
-				}
-				break;
-			case SITE:
-				parentElement = createSite(parentElement, row,
-						stuctureElement.getId());
-				break;
-			case SECTOR:
-				createSector(parentElement, row, stuctureElement.getId());
-				break;
-			default:
-				break;
-			}
+    /**
+     * find or create city node from row properties and pass the action down the chain, for creation
+     * CITY->MSC->BSC->SITE->SECTOR nodes
+     * 
+     * @param row
+     * @throws AWEException
+     */
+    @Override
+    protected void saveLine(List<String> row) throws AWEException {
+        IDataElement parentElement = null;
+        for (NetworkElementNodeType stuctureElement : DEFAULT_NETWORK_STRUCTURE) {
+            switch (stuctureElement) {
+            case CITY:
+            case MSC:
+            case BSC:
+                if (isCorrect(stuctureElement.getId(), row)) {
+                    // create city msc bsc elements
+                    parentElement = createMainElements(row, parentElement, stuctureElement, stuctureElement.getId());
+                }
+                break;
+            case SITE:
+                parentElement = createSite(parentElement, row, stuctureElement.getId());
+                break;
+            case SECTOR:
+                createSector(parentElement, row, stuctureElement.getId());
+                break;
+            default:
+                break;
+            }
 
-		}
-	}
+        }
+    }
 
-	/**
-	 * find or create site node and pass the action down the chain for creation
-	 * sector nodes.
-	 * 
-	 * @param city
-	 *            node
-	 * @param row
-	 * @param siteElementId
-	 * @throws AWEException
-	 */
-	private IDataElement createSite(IDataElement root, List<String> row,
-			String siteElementId) throws AWEException {
-		if (!isCorrect(INetworkModel.LATITUDE, row)
-				|| !isCorrect(INetworkModel.LONGITUDE, row)) {
-			LOGGER.info("Missing site name on line:" + lineCounter);
-			return null;
-		}
+    /**
+     * find or create site node and pass the action down the chain for creation sector nodes.
+     * 
+     * @param city node
+     * @param row
+     * @param siteElementId
+     * @throws AWEException
+     */
+    private IDataElement createSite(IDataElement root, List<String> row, String siteElementId) throws AWEException {
+        if (!isCorrect(INetworkModel.LATITUDE, row) || !isCorrect(INetworkModel.LONGITUDE, row)) {
+            LOGGER.info("Missing site name on line:" + lineCounter);
+            return null;
+        }
 
-		Map<String, Object> siteMap = new HashMap<String, Object>();
-		if (!collectSite(siteMap, row, siteElementId)) {
-			return null;
-		}
+        Map<String, Object> siteMap = new HashMap<String, Object>();
+        if (!collectSite(siteMap, row, siteElementId)) {
+            return null;
+        }
 
-		IDataElement findedElement;
-		findedElement = parametrizedModel.findElement(siteMap);
-		if (findedElement == null) {
-			findedElement = parametrizedModel.createElement(root, siteMap);
-		}
-		resetRowValueBySynonym(row, INetworkModel.LONGITUDE);
-		resetRowValueBySynonym(row, INetworkModel.LATITUDE);
-		addSynonyms(parametrizedModel, siteMap);
-		return findedElement;
-	}
+        IDataElement findedElement;
+        findedElement = parametrizedModel.findElement(siteMap);
+        if (findedElement == null) {
+            findedElement = parametrizedModel.createElement(root, siteMap);
+        }
+        resetRowValueBySynonym(row, INetworkModel.LONGITUDE);
+        resetRowValueBySynonym(row, INetworkModel.LATITUDE);
+        addSynonyms(parametrizedModel, siteMap);
+        return findedElement;
+    }
 
-	/**
-	 * close the chain with creation of sector if sector was found - pass to
-	 * next line
-	 * 
-	 * @param findedElement
-	 *            site node
-	 * @param row
-	 * @param sectorElementId
-	 * @throws AWEException
-	 */
-	private void createSector(IDataElement root, List<String> row,
-			String sectorElementId) throws AWEException {
-		if (root == null) {
-			LOGGER.info("there is no parent element for sector on line: "
-					+ lineCounter);
-			return;
-		}
-		if (!isCorrect(sectorElementId, row)) {
-			return;
-		}
-		Map<String, Object> sectorMap = new HashMap<String, Object>();
-		if (!collectSector(sectorMap, row, sectorElementId)) {
-			return;
-		}
+    /**
+     * close the chain with creation of sector if sector was found - pass to next line
+     * 
+     * @param findedElement site node
+     * @param row
+     * @param sectorElementId
+     * @throws AWEException
+     */
+    private void createSector(IDataElement root, List<String> row, String sectorElementId) throws AWEException {
+        if (root == null) {
+            LOGGER.info("there is no parent element for sector on line: " + lineCounter);
+            return;
+        }
+        if (!isCorrect(sectorElementId, row)) {
+            return;
+        }
+        Map<String, Object> sectorMap = new HashMap<String, Object>();
+        if (!collectSector(sectorMap, row, sectorElementId)) {
+            return;
+        }
 
-		IDataElement findedElement = parametrizedModel.findElement(sectorMap);
-		if (findedElement == null) {
-			parametrizedModel.createElement(root, sectorMap);
-			addSynonyms(parametrizedModel, sectorMap);
-		} else {
-			LOGGER.info("sector" + sectorMap + " is already exist;line: "
-					+ lineCounter);
-		}
-	}
+        IDataElement findedElement = parametrizedModel.findElement(sectorMap);
+        if (findedElement == null) {
+            parametrizedModel.createElement(root, sectorMap);
+            addSynonyms(parametrizedModel, sectorMap);
+        } else {
+            LOGGER.info("sector" + sectorMap + " is already exist;line: " + lineCounter);
+        }
+    }
 
-	/**
-	 * Create main elements - city, msc, bsc
-	 * 
-	 * @param row
-	 * @param root
-	 * @param nodeType
-	 * @param type
-	 * @return element
-	 * @throws AWEException
-	 */
-	private IDataElement createMainElements(List<String> row,
-			IDataElement root, INodeType nodeType, String type)
-			throws AWEException {
-		Map<String, Object> mapProperty = new HashMap<String, Object>();
-		collectMainElements(mapProperty, row, nodeType, type);
+    /**
+     * Create main elements - city, msc, bsc
+     * 
+     * @param row
+     * @param root
+     * @param nodeType
+     * @param type
+     * @return element
+     * @throws AWEException
+     */
+    private IDataElement createMainElements(List<String> row, IDataElement root, INodeType nodeType, String type)
+            throws AWEException {
+        Map<String, Object> mapProperty = new HashMap<String, Object>();
+        collectMainElements(mapProperty, row, nodeType, type);
 
-		Set<IDataElement> findedElement;
-		findedElement = parametrizedModel.findElementByPropertyValue(nodeType,
-				NewAbstractService.NAME,
-				mapProperty.get(NewAbstractService.NAME).toString());
-		if (findedElement.isEmpty()) {
-			findedElement.add(parametrizedModel
-					.createElement(root, mapProperty));
-		}
-		addSynonyms(parametrizedModel, mapProperty);
-		resetRowValueBySynonym(row, type);
-		return findedElement.iterator().next();
-	}
+        Set<IDataElement> findedElement;
+        findedElement = parametrizedModel.findElementByPropertyValue(nodeType, NewAbstractService.NAME,
+                mapProperty.get(NewAbstractService.NAME).toString());
+        if (findedElement.isEmpty()) {
+            findedElement.add(parametrizedModel.createElement(root, mapProperty));
+        }
+        addSynonyms(parametrizedModel, mapProperty);
+        resetRowValueBySynonym(row, type);
+        return findedElement.iterator().next();
+    }
 
-	/**
-	 * Collect main elements - city, msc, bsc
-	 * 
-	 * @param mapProperty
-	 * @param row
-	 * @param nodeType
-	 * @param type
-	 */
-	private void collectMainElements(Map<String, Object> mapProperty,
-			List<String> row, INodeType nodeType, String type) {
-		mapProperty.put(NewAbstractService.TYPE, nodeType.getId());
-		mapProperty.put(NewAbstractService.NAME,
-				getSynonymValueWithAutoparse(type, row));
-	}
+    /**
+     * Collect main elements - city, msc, bsc
+     * 
+     * @param mapProperty
+     * @param row
+     * @param nodeType
+     * @param type
+     */
+    private void collectMainElements(Map<String, Object> mapProperty, List<String> row, INodeType nodeType, String type) {
+        mapProperty.put(NewAbstractService.TYPE, nodeType.getId());
+        mapProperty.put(NewAbstractService.NAME, getSynonymValueWithAutoparse(type, row));
+    }
 
-	/**
-	 * Collect site
-	 * 
-	 * @param siteMap
-	 * @param row
-	 * @param siteElementId
-	 * @return true if site is collected
-	 */
-	private boolean collectSite(Map<String, Object> siteMap, List<String> row,
-			String siteElementId) {
-		siteMap.put(NewAbstractService.TYPE, siteElementId);
-		siteMap.put(INetworkModel.LONGITUDE,
-				getSynonymValueWithAutoparse(INetworkModel.LONGITUDE, row));
-		siteMap.put(INetworkModel.LATITUDE,
-				getSynonymValueWithAutoparse(INetworkModel.LATITUDE, row));
-		String siteName;
-		if (!isCorrect(siteElementId, row)) {
-			if (isCorrect(
-					DEFAULT_NETWORK_STRUCTURE[SECTOR_STRUCTURE_ID-1].getId(), row)) {
-				siteName = getSynonymValueWithAutoparse(
-						DEFAULT_NETWORK_STRUCTURE[SECTOR_STRUCTURE_ID-1].getId(),
-						row).toString();
-				siteMap.put(
-						NewAbstractService.NAME,
-						autoParse(NewAbstractService.NAME,
-								siteName.substring(0, siteName.length() - 1)));
-			} else {
-				LOGGER.info("Missing site name based on SectorName on line:"
-						+ lineCounter);
-				return false;
-			}
+    /**
+     * Collect site
+     * 
+     * @param siteMap
+     * @param row
+     * @param siteElementId
+     * @return true if site is collected
+     */
+    private boolean collectSite(Map<String, Object> siteMap, List<String> row, String siteElementId) {
+        siteMap.put(NewAbstractService.TYPE, siteElementId);
+        siteMap.put(INetworkModel.LONGITUDE, getSynonymValueWithAutoparse(INetworkModel.LONGITUDE, row));
+        siteMap.put(INetworkModel.LATITUDE, getSynonymValueWithAutoparse(INetworkModel.LATITUDE, row));
+        String siteName;
+        if (!isCorrect(siteElementId, row)) {
+            if (isCorrect(DEFAULT_NETWORK_STRUCTURE[SECTOR_STRUCTURE_ID - 1].getId(), row)) {
+                siteName = getSynonymValueWithAutoparse(DEFAULT_NETWORK_STRUCTURE[SECTOR_STRUCTURE_ID - 1].getId(), row).toString();
+                siteMap.put(NewAbstractService.NAME,
+                        autoParse(NewAbstractService.NAME, siteName.substring(0, siteName.length() - 1)));
+            } else {
+                LOGGER.info("Missing site name based on SectorName on line:" + lineCounter);
+                return false;
+            }
 
-		} else {
-			siteName = getSynonymValueWithAutoparse(siteElementId, row)
-					.toString();
-			siteMap.put(NewAbstractService.NAME, siteName);
-			resetRowValueBySynonym(row, siteElementId);
-		}
-		return true;
-	}
+        } else {
+            siteName = getSynonymValueWithAutoparse(siteElementId, row).toString();
+            siteMap.put(NewAbstractService.NAME, siteName);
+            resetRowValueBySynonym(row, siteElementId);
+        }
+        return true;
+    }
 
-	/**
-	 * Collect sector
-	 * 
-	 * @param sectorMap
-	 * @param row
-	 * @param sectorElementId
-	 * @return true if sector is collected
-	 */
-	private boolean collectSector(Map<String, Object> sectorMap,
-			List<String> row, String sectorElementId) {
-		for (String head : headers) {
-			if (isCorrect(head, row)
-					&& !head.equals(fileSynonyms.get(sectorElementId))) {
-				sectorMap.put(head.toLowerCase(),
-						getSynonymValueWithAutoparse(head, row));
-			}
-		}
-		String sector = getSynonymValueWithAutoparse(sectorElementId, row)
-				.toString();
-		String sectorName = isCorrect(sector) ? sector.toString()
-				: StringUtils.EMPTY;
-		if (fileSynonyms.containsKey(sectorElementId)) {
-			sectorMap.put(NewAbstractService.NAME, sectorName);
-		}
-		sectorMap.put(NewAbstractService.TYPE,
-				(NetworkElementNodeType.SECTOR.getId()));
-		return true;
-	}
+    /**
+     * Collect sector
+     * 
+     * @param sectorMap
+     * @param row
+     * @param sectorElementId
+     * @return true if sector is collected
+     */
+    private boolean collectSector(Map<String, Object> sectorMap, List<String> row, String sectorElementId) {
+        for (String head : headers) {
+            if (isCorrect(head, row) && !head.equals(fileSynonyms.get(sectorElementId))) {
+                sectorMap.put(head.toLowerCase(), getSynonymValueWithAutoparse(head, row));
+            }
+        }
+        String sector = getSynonymValueWithAutoparse(sectorElementId, row).toString();
+        String sectorName = isCorrect(sector) ? sector.toString() : StringUtils.EMPTY;
+        if (fileSynonyms.containsKey(sectorElementId)) {
+            sectorMap.put(NewAbstractService.NAME, sectorName);
+        }
+        sectorMap.put(NewAbstractService.TYPE, (NetworkElementNodeType.SECTOR.getId()));
+        return true;
+    }
 
 }
