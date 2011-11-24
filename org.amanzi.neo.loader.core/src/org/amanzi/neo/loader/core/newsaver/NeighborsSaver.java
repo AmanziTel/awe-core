@@ -27,14 +27,14 @@ import org.neo4j.graphdb.GraphDatabaseService;
 /**
  * @author Kondratneko_Vladislav
  */
-public class NeighboursSaver extends AbstractN2NSaver {
+public class NeighborsSaver extends AbstractN2NSaver {
     /*
      * neighbours
      */
     public final static String NEIGHBOUR_SECTOR_NAME = "neigh_sector_name";
     public final static String SERVING_SECTOR_NAME = "serv_sector_name";
 
-    protected NeighboursSaver(INodeToNodeRelationsModel model, INetworkModel networkModel, ConfigurationDataImpl data,
+    protected NeighborsSaver(INodeToNodeRelationsModel model, INetworkModel networkModel, ConfigurationDataImpl data,
             GraphDatabaseService service) {
         super(model, networkModel, data, service);
     }
@@ -42,7 +42,7 @@ public class NeighboursSaver extends AbstractN2NSaver {
     /**
      * create class instance
      */
-    public NeighboursSaver() {
+    public NeighborsSaver() {
         super();
     }
 

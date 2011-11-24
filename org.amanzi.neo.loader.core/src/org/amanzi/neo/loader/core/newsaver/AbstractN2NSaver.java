@@ -137,7 +137,11 @@ public abstract class AbstractN2NSaver extends AbstractCSVSaver<INetworkModel> {
 
     @Override
     protected void commonLinePreparationActions(CSVContainer dataElement) throws Exception {
-        // TODO Auto-generated method stub
 
+    }
+
+    @Override
+    protected String getSubType() {
+        return null;
     }
 }

@@ -45,7 +45,7 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<IDriveModel> {
     private static final Logger LOGGER = Logger.getLogger(AbstractDriveSaver.class);
 
     // Drive type name
-    protected DriveTypes DRIVE_TYPE = null;
+    protected String DRIVE_TYPE = null;
     // Name of handling file
     protected String fileName;
     // constants
@@ -105,10 +105,9 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<IDriveModel> {
      */
     protected Map<String, Integer> columnSynonyms = new HashMap<String, Integer>();
     protected Map<String, Object> params = new HashMap<String, Object>();
-    protected List<String> headers;
 
     /**
-     * 
+     * create class instance
      */
     public AbstractDriveSaver() {
         super();
@@ -313,4 +312,8 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<IDriveModel> {
         }
     }
 
+    @Override
+    protected String getSubType() {
+        return DRIVE_TYPE;
+    }
 }

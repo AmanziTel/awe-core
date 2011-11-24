@@ -156,7 +156,7 @@ public class CommonCSVParser<T1 extends ISaver<IModel, CSVContainer, T2>, T2 ext
             throw (RuntimeException)new RuntimeException().initCause(e);
         } finally {
             double percentage = is.percentage();
-            if (percentage - persentageOld > PERCENTAGE_FIRE) {
+            if (percentage - persentageOld >= PERCENTAGE_FIRE) {
                 persentageOld = percentage;
                 fireSubProgressEvent(currentFile, new ProgressEventImpl(String.format(currentFile.getName()), percentage));
             }

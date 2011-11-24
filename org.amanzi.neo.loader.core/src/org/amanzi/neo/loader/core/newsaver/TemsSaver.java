@@ -77,7 +77,7 @@ public class TemsSaver extends AbstractDriveSaver {
      */
     public TemsSaver() {
         super();
-        DRIVE_TYPE = DriveTypes.TEMS;
+        DRIVE_TYPE = DriveTypes.TEMS.name();
     }
 
     @Override
@@ -105,7 +105,7 @@ public class TemsSaver extends AbstractDriveSaver {
         commitTx();
         addSynonyms(parametrizedModel, params);
         createVirtualModelElement(value, ms, time.toString(), event, timestamp);
-
+        addSynonyms(parametrizedModel, params);
     }
 
     /**
@@ -154,7 +154,6 @@ public class TemsSaver extends AbstractDriveSaver {
         int ec_io = 0;
         int measurement_count = 0;
         try {
-            // TODO: LN: what is '+1'
             channel = (Integer)getSynonymValueWithAutoparse(ALL_PILOT_SET_CHANNEL + INDEX_FIRST_PILOT_ELEMNT, value);
             pn_code = (Integer)getSynonymValueWithAutoparse(ALL_PILOT_SET_PN + INDEX_FIRST_PILOT_ELEMNT, value);
             ec_io = (Integer)getSynonymValueWithAutoparse(ALL_PILOT_SET_EC_IO + INDEX_FIRST_PILOT_ELEMNT, value);
@@ -262,9 +261,10 @@ public class TemsSaver extends AbstractDriveSaver {
 
     @Override
     protected void initializeNecessaryModels() throws AWEException {
-        virtualModel = parametrizedModel.getVirtualDataset(
-                configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME), DriveTypes.MS);
         parametrizedModel = getActiveProject().getDataset(
                 configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME), DriveTypes.TEMS);
+        virtualModel = parametrizedModel.getVirtualDataset(
+                configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME), DriveTypes.MS);
+
     }
 }

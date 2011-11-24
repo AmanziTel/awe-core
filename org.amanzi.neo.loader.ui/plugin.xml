@@ -162,7 +162,7 @@
              loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoaderNew"
              loader_data_type="Neighbours"
              loader_name="NeighboursDataLoader"
-             loader_type="Neighbours loader"
+             loader_type="Neighbors loader"
              parser="org.amanzi.neo.loader.core.newparser.CommonCSVParser"
              validator="org.amanzi.neo.loader.ui.validators.NeighborsDataValidator">
                <saver 

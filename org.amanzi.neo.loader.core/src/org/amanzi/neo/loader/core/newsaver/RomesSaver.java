@@ -62,7 +62,7 @@ public class RomesSaver extends AbstractDriveSaver {
      */
     public RomesSaver() {
         super();
-        DRIVE_TYPE = DriveTypes.ROMES;
+        DRIVE_TYPE = DriveTypes.ROMES.name();
     }
 
     @Override

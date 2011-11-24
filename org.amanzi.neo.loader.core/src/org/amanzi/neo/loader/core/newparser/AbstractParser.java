@@ -48,7 +48,7 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
      * progress monitor listeners
      */
     private final List<ILoaderProgressListener> listeners = new ArrayList<ILoaderProgressListener>();
-    protected final int PERCENTAGE_FIRE = 2;
+    protected final int PERCENTAGE_FIRE = 1;
     /**
      * percentage of all files
      */

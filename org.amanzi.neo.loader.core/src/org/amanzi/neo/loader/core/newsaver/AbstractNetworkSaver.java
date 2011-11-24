@@ -48,6 +48,10 @@ public abstract class AbstractNetworkSaver extends AbstractCSVSaver<INetworkMode
 
     @Override
     protected void commonLinePreparationActions(CSVContainer dataElement) throws Exception {
+    }
 
+    @Override
+    protected String getSubType() {
+        return null;
     }
 }

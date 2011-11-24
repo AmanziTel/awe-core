@@ -46,7 +46,7 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
      */
     protected T1 parametrizedModel;
     /**
-     * seted configuration data
+     * set configuration data
      */
     protected ConfigurationDataImpl configuration;
     /**
@@ -89,7 +89,6 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
      * @return
      */
     protected boolean isCorrect(Object value) {
-        // TODO: LN: move strings to constants
         if (value == null || value.toString().isEmpty() || value.toString().equals(INCORRECT_VALUE_QUEST_SYMBOL)
                 || value.toString().equalsIgnoreCase(INCORRECT_VALUE_NULL)
                 || value.toString().equalsIgnoreCase(INCORRECT_VALUE_DEFAULT)
@@ -362,11 +361,18 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
         for (String header : keySet) {
             for (String posibleHeader : preferenceStoreSynonyms.keySet()) {
                 for (String mask : preferenceStoreSynonyms.get(posibleHeader)) {
-                    if (header.toLowerCase().matches(mask.toLowerCase())) {
-                        isAppropriation = true;
-                        String name = posibleHeader.substring(0, posibleHeader.indexOf(DataLoadPreferenceManager.INFO_SEPARATOR));
-                        fileSynonyms.put(name, header);
-                        break;
+                    if (header.toLowerCase().matches(mask.toLowerCase()) || header.toLowerCase().equals(mask.toLowerCase())) {
+                        for (String key : posibleHeader.split(DataLoadPreferenceManager.INFO_SEPARATOR)) {
+                            if (getSubType() == null || key.equalsIgnoreCase(getSubType())) {
+                                isAppropriation = true;
+                                String name = posibleHeader.substring(0,
+                                        posibleHeader.indexOf(DataLoadPreferenceManager.INFO_SEPARATOR));
+                                if (!fileSynonyms.containsKey(name)) {
+                                    fileSynonyms.put(name, header);
+                                    break;
+                                }
+                            }
+                        }
                     }
                 }
                 if (isAppropriation) {
@@ -376,6 +382,11 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
             }
         }
     }
+
+    /**
+     * @return subtype of dataset or null if not exist
+     */
+    protected abstract String getSubType();
 
     /**
      * get synonym row value and autoparse it
