@@ -2,14 +2,14 @@
 <project>
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <artifactId>awe</artifactId>
-    <groupId>AWE_build</groupId>
-    <version>0.0.1-SNAPSHOT</version>
+  	<groupId>org.amanzi.awe</groupId>
+    <artifactId>core</artifactId>
+    <version>${awe-version}</version>
   </parent>
-  <groupId>AWE_build</groupId>
+  <groupId>org.amanzi</groupId>
   <artifactId>org.amanzi.awe.project</artifactId>
   <version>1.0.0.qualifier</version>
-  <packaging>eclipse-application</packaging>
+  <packaging>eclipse-feature</packaging>
   <properties>
   	<generatedBuildProperties>root.properties</generatedBuildProperties>
   </properties>

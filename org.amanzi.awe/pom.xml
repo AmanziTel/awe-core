@@ -9,6 +9,6 @@
   </parent>
   <groupId>org.amanzi</groupId>
   <artifactId>org.amanzi.awe</artifactId>
-  <version>1.1.0.qualifier</version>
+  <version>1.0.0.qualifier</version>
   <packaging>eclipse-plugin</packaging>
 </project>
