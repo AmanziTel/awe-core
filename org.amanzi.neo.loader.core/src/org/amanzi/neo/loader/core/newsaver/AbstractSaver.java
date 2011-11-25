@@ -61,7 +61,7 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
     /*
      * Database Manager
      */
-    static IDatabaseManager dbManager = DatabaseManagerFactory.getDatabaseManager();
+    IDatabaseManager dbManager = DatabaseManagerFactory.getDatabaseManager();
 
     /**
      * create class instance

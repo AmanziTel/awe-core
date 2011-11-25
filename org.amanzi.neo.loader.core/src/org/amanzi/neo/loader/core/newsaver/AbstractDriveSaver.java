@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -70,6 +71,7 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<IDriveModel> {
     protected final static String CODE = "code";
     protected final static String MW = "mw";
     protected final static String DBM = "dbm";
+    private static final Double LOCATION_DELTA = 0.00001d;
 
     /**
      * regular expression pattern for converting lattitude and longitude
@@ -281,6 +283,28 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<IDriveModel> {
      */
     protected void linkWithLocationElement(IDataElement createdElement, Iterable<IDataElement> locList) throws DatabaseException {
         parametrizedModel.linkNode(createdElement, locList, DriveRelationshipTypes.LOCATION);
+    }
+
+    /**
+     * check parameter values and location list for same locations,
+     * 
+     * @param locationList
+     * @param params
+     * @return
+     */
+    protected IDataElement checkSameLocation(Set<IDataElement> locationList, Map<String, Object> params) {
+        for (IDataElement element : locationList) {
+            Double storedLat = (Double)element.get(IDriveModel.LATITUDE);
+            Double storedLon = (Double)element.get(IDriveModel.LONGITUDE);
+            Double newLat = (Double)params.get(IDriveModel.LATITUDE);
+            Double newLon = (Double)params.get(IDriveModel.LONGITUDE);
+            Double deltLat = storedLat - newLat;
+            Double deltaLon = storedLon - newLon;
+            if (deltLat <= Math.abs(LOCATION_DELTA) && deltaLon <= Math.abs(LOCATION_DELTA)) {
+                return element;
+            }
+        }
+        return null;
     }
 
     /**
