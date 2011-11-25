@@ -25,7 +25,6 @@ import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.apache.log4j.Logger;
-import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
  * saver for separation constraint data
@@ -41,7 +40,7 @@ public class SeparationCostraintSaver extends AbstractNetworkSaver {
     private static final String SEPARATION = "separation";
     private static Map<String, Object> SECTOR_MAP = new HashMap<String, Object>();
 
-    protected SeparationCostraintSaver(INetworkModel model, ConfigurationDataImpl config, GraphDatabaseService service) {
+    protected SeparationCostraintSaver(INetworkModel model, ConfigurationDataImpl config) {
         preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.NETWORK);
         columnSynonyms = new HashMap<String, Integer>();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);

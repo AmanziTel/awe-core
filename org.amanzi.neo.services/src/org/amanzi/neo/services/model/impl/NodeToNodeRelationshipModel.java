@@ -188,7 +188,7 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
         }
         Node newNode = dsServ.createNode(NodeToNodeTypes.FREQUENCY);
         newNode.setProperty(FREQUENCY, frequency);
-        newNode.setProperty(NewAbstractService.NAME, frequency);
+        newNode.setProperty(NewAbstractService.NAME, String.valueOf(frequency));
         dsServ.addChild(rootNode, newNode, null);
         result = new DataElement(newNode);
         cache.put(frequency, result);

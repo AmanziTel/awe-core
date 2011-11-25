@@ -18,7 +18,6 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -30,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.amanzi.log4j.LogStarter;
+import org.amanzi.neo.db.manager.IDatabaseManager;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceInitializer;
@@ -43,11 +43,10 @@ import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel;
 import org.amanzi.testing.AbstractAWETest;
 import org.apache.log4j.Logger;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Transaction;
 
 /**
  * @author Vladislav_Kondratenko
@@ -68,9 +67,19 @@ public class NeighbourSaverTesting extends AbstractAWETest {
     private final static Map<String, Object> properties = new HashMap<String, Object>();
     private INetworkModel networkModel;
     private INodeToNodeRelationsModel node2model;
-    private GraphDatabaseService service;
-    private Transaction tx;
     private static Long startTime;
+    private static IDatabaseManager dbManager;
+
+    @BeforeClass
+    public static void prepare() {
+        clearDb();
+        initializer = new DataLoadPreferenceInitializer();
+        initializer.initializeDefaultPreferences();
+        new LogStarter().earlyStartup();
+        startTime = System.currentTimeMillis();
+        dbManager = mock(IDatabaseManager.class);
+    }
+
     static {
         PATH_TO_BASE = System.getProperty("user.home");
         SECTOR1.put("name", "sector1");
@@ -79,16 +88,6 @@ public class NeighbourSaverTesting extends AbstractAWETest {
         SECTOR2.put("type", "sector");
     }
     private HashMap<String, Object> hashMap = null;
-
-    @BeforeClass
-    public static void prepare() {
-        clearDb();
-        initializeDb();
-        initializer = new DataLoadPreferenceInitializer();
-        initializer.initializeDefaultPreferences();
-        new LogStarter().earlyStartup();
-        startTime = System.currentTimeMillis();
-    }
 
     @AfterClass
     public static void tearDownAfterClass() throws Exception {
@@ -101,9 +100,6 @@ public class NeighbourSaverTesting extends AbstractAWETest {
     public void onStart() {
         networkModel = mock(NetworkModel.class);
         node2model = mock(NodeToNodeRelationshipModel.class);
-        service = mock(GraphDatabaseService.class);
-        tx = mock(Transaction.class);
-        when(service.beginTx()).thenReturn(tx);
         hashMap = new HashMap<String, Object>();
         config = new ConfigurationDataImpl();
         config.getDatasetNames().put(NETWORK_KEY, NETWORK_NAME);
@@ -118,7 +114,8 @@ public class NeighbourSaverTesting extends AbstractAWETest {
         }
         fileList.add(testFile);
         config.setSourceFile(fileList);
-        neighboursSaver = new NeighborsSaver(node2model, networkModel, config, service);
+        neighboursSaver = new NeighborsSaver(node2model, networkModel, config);
+        neighboursSaver.dbManager = dbManager;
         hashMap.put("Serving Sector", "sector1");
         hashMap.put("Neighbour", "sector2");
         hashMap.put("ci", "3.123");
@@ -209,9 +206,9 @@ public class NeighbourSaverTesting extends AbstractAWETest {
             when(networkModel.findElement(any(Map.class))).thenThrow(new DatabaseException("required exception"));
             neighboursSaver.saveElement(rowContainer);
         } catch (Exception e) {
-            verify(tx, never()).success();
-            verify(tx, atLeastOnce()).failure();
-            verify(tx, times(1)).finish();
+            verify(dbManager, never()).commitThreadTransaction();
+            verify(dbManager, atLeastOnce()).rollbackThreadTransaction();
+
         }
     }
 
@@ -227,10 +224,10 @@ public class NeighbourSaverTesting extends AbstractAWETest {
             rowContainer.setValues(values);
             when(networkModel.findElement(any(Map.class))).thenThrow(new IllegalArgumentException("required exception"));
             neighboursSaver.saveElement(rowContainer);
+            verify(dbManager, never()).rollbackThreadTransaction();
+
         } catch (Exception e) {
-            verify(tx, times(2)).success();
-            verify(tx, never()).failure();
-            verify(tx, times(3)).finish();
+            Assert.fail("unexpected exceptions");
         }
     }
 }

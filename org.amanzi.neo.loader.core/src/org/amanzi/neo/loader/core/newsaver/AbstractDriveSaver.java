@@ -27,7 +27,6 @@ import java.util.regex.Pattern;
 
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
-import org.amanzi.neo.services.NewDatasetService.DriveTypes;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.model.IDataElement;
@@ -93,17 +92,8 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<IDriveModel> {
      */
     protected Calendar workDate = Calendar.getInstance();
     /**
-     * contains appropriation of header synonyms and name inDB
-     * <p>
-     * <b>key</b>- name in db ,<br>
-     * <b>value</b>-file header key
-     * </p>
-     */
-    protected Map<String, String> fileSynonyms = new HashMap<String, String>();
-    /**
      * name inDB properties values
      */
-    protected Map<String, Integer> columnSynonyms = new HashMap<String, Integer>();
     protected Map<String, Object> params = new HashMap<String, Object>();
 
     /**
@@ -239,7 +229,6 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<IDriveModel> {
      * @param time
      * @return
      */
-    @SuppressWarnings("deprecation")
     protected Long defineTimestamp(Calendar workDate, String time) {
         if (time == null) {
             return null;
@@ -249,19 +238,18 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<IDriveModel> {
             return datetime.getTime();
         } catch (ParseException e1) {
             try {
-                // TODO: Lagutko: refactor to not use DEPRECATED methods
                 Date nodeDate = DATE_FORMAT_TIME.parse(time);
-                final int nodeHours = nodeDate.getHours();
+                Calendar newCalendar = Calendar.getInstance();
+                newCalendar.setTime(nodeDate);
+                final int nodeHours = newCalendar.get(Calendar.HOUR_OF_DAY);
                 if (hours != null && hours > nodeHours) {
                     // next day
                     workDate.add(Calendar.DAY_OF_MONTH, 1);
                     this.workDate.add(Calendar.DAY_OF_MONTH, 1);
                 }
                 hours = nodeHours;
-                // TODO: LN: we have method for this
-                workDate.set(Calendar.HOUR_OF_DAY, nodeHours);
-                workDate.set(Calendar.MINUTE, nodeDate.getMinutes());
-                workDate.set(Calendar.SECOND, nodeDate.getSeconds());
+                workDate.set(workDate.get(Calendar.YEAR), workDate.get(Calendar.MONTH), workDate.get(Calendar.DATE), nodeHours,
+                        workDate.get(Calendar.MINUTE), workDate.get(Calendar.SECOND));
                 return workDate.getTimeInMillis();
 
             } catch (Exception e) {

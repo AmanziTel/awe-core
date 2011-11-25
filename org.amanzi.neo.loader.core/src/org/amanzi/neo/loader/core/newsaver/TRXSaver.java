@@ -29,7 +29,6 @@ import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.apache.log4j.Logger;
-import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
  * saver for trx data
@@ -63,7 +62,7 @@ public class TRXSaver extends AbstractNetworkSaver {
     private Map<String, Object> TRX_ELEMENT = new HashMap<String, Object>();
     private Map<String, Object> FREQUENCY_ELEMENT = new HashMap<String, Object>();
 
-    protected TRXSaver(INetworkModel model, ConfigurationDataImpl config, GraphDatabaseService service) {
+    protected TRXSaver(INetworkModel model, ConfigurationDataImpl config) {
         preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.NETWORK);
         columnSynonyms = new HashMap<String, Integer>();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);

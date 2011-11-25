@@ -16,7 +16,6 @@ package org.amanzi.neo.loader.core.newsaver;
 import static org.amanzi.neo.services.NewNetworkService.BCCH;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +23,6 @@ import java.util.TreeMap;
 
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.services.NewAbstractService;
-import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.NewDatasetService.DriveTypes;
 import org.amanzi.neo.services.NewNetworkService;
 import org.amanzi.neo.services.exceptions.AWEException;
@@ -35,7 +33,6 @@ import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
  * tems data saver
@@ -60,9 +57,9 @@ public class TemsSaver extends AbstractDriveSaver {
     private int previous_pn_code = -1;
     private IDataElement location;
 
-    protected TemsSaver(IDriveModel model, IDriveModel virtualModel, ConfigurationDataImpl config, GraphDatabaseService service) {
-        preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.DRIVE);
-        columnSynonyms = new HashMap<String, Integer>();
+    protected TemsSaver(IDriveModel model, IDriveModel virtualModel, ConfigurationDataImpl config) {
+        preferenceStoreSynonyms = initializeSynonyms();
+        DRIVE_TYPE = DriveTypes.TEMS.name();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
         commitTx();
         if (model != null) {

@@ -249,7 +249,6 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
      */
     protected String getValueFromRow(String synonym, List<String> value) {
         String requiredHeader = chechHeaderInSynonyms(synonym);
-
         return isCorrect(synonym, value) ? getSynonymValue(value, requiredHeader) : null;
     }
 

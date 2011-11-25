@@ -18,7 +18,6 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -30,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.amanzi.log4j.LogStarter;
+import org.amanzi.neo.db.manager.IDatabaseManager;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceInitializer;
@@ -47,8 +47,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Transaction;
 
 /**
  * @author Vladislav_Kondratenko
@@ -71,10 +69,20 @@ public class TrafficSaverTesting extends AbstractAWETest {
     private static DataLoadPreferenceInitializer initializer;
     private final static Map<String, Object> COMPLETED_SECTOR = new HashMap<String, Object>();
     private final static Map<String, Object> COLLECTED_SECTOR = new HashMap<String, Object>();
-    private static NetworkModel model;
+    private static NetworkModel networkModel;
     private static Long startTime;
-    private GraphDatabaseService service;
-    private Transaction tx;
+    private static IDatabaseManager dbManager;
+
+    @BeforeClass
+    public static void prepare() {
+        clearDb();
+        initializer = new DataLoadPreferenceInitializer();
+        initializer.initializeDefaultPreferences();
+        new LogStarter().earlyStartup();
+        startTime = System.currentTimeMillis();
+        dbManager = mock(IDatabaseManager.class);
+    }
+
     static {
         PATH_TO_BASE = System.getProperty("user.home");
         COMPLETED_SECTOR.put(SECTOR_PARAM, SECTOR_VALUE);
@@ -85,18 +93,6 @@ public class TrafficSaverTesting extends AbstractAWETest {
 
     private HashMap<String, Object> hashMap = null;
 
-    @BeforeClass
-    public static void prepare() {
-        new LogStarter().earlyStartup();
-        clearDb();
-        initializeDb();
-
-        initializer = new DataLoadPreferenceInitializer();
-        initializer.initializeDefaultPreferences();
-        startTime = System.currentTimeMillis();
-
-    }
-
     @AfterClass
     public static void tearDownAfterClass() throws Exception {
         stopDb();
@@ -106,10 +102,7 @@ public class TrafficSaverTesting extends AbstractAWETest {
 
     @Before
     public void onStart() throws AWEException {
-        model = mock(NetworkModel.class);
-        service = mock(GraphDatabaseService.class);
-        tx = mock(Transaction.class);
-        when(service.beginTx()).thenReturn(tx);
+        networkModel = mock(NetworkModel.class);
         hashMap = new HashMap<String, Object>();
         config = new ConfigurationDataImpl();
         config.getDatasetNames().put(NETWORK_KEY, NETWORK_NAME);
@@ -124,7 +117,8 @@ public class TrafficSaverTesting extends AbstractAWETest {
         }
         fileList.add(testFile);
         config.setSourceFile(fileList);
-        trafficSaver = new TrafficSaver(model, (ConfigurationDataImpl)config, service);
+        trafficSaver = new TrafficSaver(networkModel, (ConfigurationDataImpl)config);
+        trafficSaver.dbManager = dbManager;
         hashMap.put(SECTOR_PARAM, SECTOR_VALUE);
         hashMap.put(TRAFFIC_PARAM, TRAFFIC_VALUE);
     }
@@ -146,11 +140,11 @@ public class TrafficSaverTesting extends AbstractAWETest {
             trafficSaver.saveElement(rowContainer);
             List<String> values = prepareValues(hashMap);
             rowContainer.setValues(values);
-            when(model.findElement(eq(COLLECTED_SECTOR))).thenReturn(new DataElement(COLLECTED_SECTOR));
-            when(model.completeProperties(new DataElement(eq(COLLECTED_SECTOR)), eq(COMPLETED_SECTOR), any(Boolean.class)))
+            when(networkModel.findElement(eq(COLLECTED_SECTOR))).thenReturn(new DataElement(COLLECTED_SECTOR));
+            when(networkModel.completeProperties(new DataElement(eq(COLLECTED_SECTOR)), eq(COMPLETED_SECTOR), any(Boolean.class)))
                     .thenReturn(new DataElement(COLLECTED_SECTOR));
             trafficSaver.saveElement(rowContainer);
-            verify(model, atLeastOnce()).completeProperties(new DataElement(eq(COLLECTED_SECTOR)), eq(COMPLETED_SECTOR),
+            verify(networkModel, atLeastOnce()).completeProperties(new DataElement(eq(COLLECTED_SECTOR)), eq(COMPLETED_SECTOR),
                     any(Boolean.class));
         } catch (Exception e) {
             LOGGER.error(" testCompleteingElement error", e);
@@ -168,11 +162,11 @@ public class TrafficSaverTesting extends AbstractAWETest {
             trafficSaver.saveElement(rowContainer);
             List<String> values = prepareValues(hashMap);
             rowContainer.setValues(values);
-            when(model.findElement(eq(COLLECTED_SECTOR))).thenReturn(null);
-            when(model.completeProperties(new DataElement(eq(COLLECTED_SECTOR)), eq(COMPLETED_SECTOR), any(Boolean.class)))
+            when(networkModel.findElement(eq(COLLECTED_SECTOR))).thenReturn(null);
+            when(networkModel.completeProperties(new DataElement(eq(COLLECTED_SECTOR)), eq(COMPLETED_SECTOR), any(Boolean.class)))
                     .thenReturn(new DataElement(COLLECTED_SECTOR));
             trafficSaver.saveElement(rowContainer);
-            verify(model, never()).completeProperties(any(IDataElement.class), any(Map.class), any(Boolean.class));
+            verify(networkModel, never()).completeProperties(any(IDataElement.class), any(Map.class), any(Boolean.class));
         } catch (Exception e) {
             LOGGER.error(" testIfSectorNotFound error", e);
             Assert.fail("Exception while saving row");
@@ -190,11 +184,11 @@ public class TrafficSaverTesting extends AbstractAWETest {
             List<String> values = prepareValues(hashMap);
             rowContainer.setValues(values);
             COMPLETED_SECTOR.remove(TRAFFIC_PARAM);
-            when(model.findElement(eq(COLLECTED_SECTOR))).thenReturn(null);
-            when(model.completeProperties(new DataElement(eq(COLLECTED_SECTOR)), eq(COMPLETED_SECTOR), any(Boolean.class)))
+            when(networkModel.findElement(eq(COLLECTED_SECTOR))).thenReturn(null);
+            when(networkModel.completeProperties(new DataElement(eq(COLLECTED_SECTOR)), eq(COMPLETED_SECTOR), any(Boolean.class)))
                     .thenReturn(new DataElement(COLLECTED_SECTOR));
             trafficSaver.saveElement(rowContainer);
-            verify(model, never()).completeProperties(any(IDataElement.class), any(Map.class), any(Boolean.class));
+            verify(networkModel, never()).completeProperties(any(IDataElement.class), any(Map.class), any(Boolean.class));
         } catch (Exception e) {
             LOGGER.error(" testIfThereIsNoValue error", e);
             Assert.fail("Exception while saving row");
@@ -210,13 +204,14 @@ public class TrafficSaverTesting extends AbstractAWETest {
         try {
             trafficSaver.saveElement(rowContainer);
             List<String> values = prepareValues(hashMap);
+
             rowContainer.setValues(values);
-            when(model.findElement(any(Map.class))).thenThrow(new DatabaseException("required exception"));
+            when(networkModel.findElement(any(Map.class))).thenThrow(new DatabaseException("required exception"));
             trafficSaver.saveElement(rowContainer);
         } catch (Exception e) {
-            verify(tx, never()).success();
-            verify(tx, atLeastOnce()).failure();
-            verify(tx, times(1)).finish();
+            verify(dbManager, never()).commitThreadTransaction();
+            verify(dbManager, atLeastOnce()).rollbackThreadTransaction();
+
         }
     }
 
@@ -230,12 +225,12 @@ public class TrafficSaverTesting extends AbstractAWETest {
             trafficSaver.saveElement(rowContainer);
             List<String> values = prepareValues(hashMap);
             rowContainer.setValues(values);
-            when(model.findElement(any(Map.class))).thenThrow(new IllegalArgumentException("required exception"));
+            when(networkModel.findElement(any(Map.class))).thenThrow(new IllegalArgumentException("required exception"));
             trafficSaver.saveElement(rowContainer);
+            verify(dbManager, never()).rollbackThreadTransaction();
+
         } catch (Exception e) {
-            verify(tx, times(2)).success();
-            verify(tx, never()).failure();
-            verify(tx, times(3)).finish();
+            Assert.fail("unexpected exceptions");
         }
     }
 }

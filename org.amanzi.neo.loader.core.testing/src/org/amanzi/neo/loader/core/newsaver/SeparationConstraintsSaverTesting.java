@@ -18,7 +18,6 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -30,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.amanzi.log4j.LogStarter;
+import org.amanzi.neo.db.manager.IDatabaseManager;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceInitializer;
@@ -47,8 +47,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Transaction;
 
 /**
  * @author Vladislav_Kondratenko
@@ -73,8 +71,17 @@ public class SeparationConstraintsSaverTesting extends AbstractAWETest {
     private final static Map<String, Object> COLLECTED_SECTOR = new HashMap<String, Object>();
     private static NetworkModel model;
     private static Long startTime;
-    private GraphDatabaseService service;
-    private Transaction tx;
+    private static IDatabaseManager dbManager;
+
+    @BeforeClass
+    public static void prepare() {
+        clearDb();
+        initializer = new DataLoadPreferenceInitializer();
+        initializer.initializeDefaultPreferences();
+        new LogStarter().earlyStartup();
+        startTime = System.currentTimeMillis();
+    }
+
     static {
         PATH_TO_BASE = System.getProperty("user.home");
         COMPLETED_SECTOR.put(SEPARATION_PARAM, SEPARATION_VALUE);
@@ -86,18 +93,6 @@ public class SeparationConstraintsSaverTesting extends AbstractAWETest {
 
     private HashMap<String, Object> hashMap = null;
 
-    @BeforeClass
-    public static void prepare() {
-        new LogStarter().earlyStartup();
-        clearDb();
-        initializeDb();
-
-        initializer = new DataLoadPreferenceInitializer();
-        initializer.initializeDefaultPreferences();
-        startTime = System.currentTimeMillis();
-
-    }
-
     @AfterClass
     public static void tearDownAfterClass() throws Exception {
         stopDb();
@@ -107,10 +102,8 @@ public class SeparationConstraintsSaverTesting extends AbstractAWETest {
 
     @Before
     public void onStart() throws AWEException {
+        dbManager = mock(IDatabaseManager.class);
         model = mock(NetworkModel.class);
-        service = mock(GraphDatabaseService.class);
-        tx = mock(Transaction.class);
-        when(service.beginTx()).thenReturn(tx);
         hashMap = new HashMap<String, Object>();
         config = new ConfigurationDataImpl();
         config.getDatasetNames().put(NETWORK_KEY, NETWORK_NAME);
@@ -125,7 +118,8 @@ public class SeparationConstraintsSaverTesting extends AbstractAWETest {
         }
         fileList.add(testFile);
         config.setSourceFile(fileList);
-        separationSaver = new SeparationCostraintSaver(model, (ConfigurationDataImpl)config, service);
+        separationSaver = new SeparationCostraintSaver(model, (ConfigurationDataImpl)config);
+        separationSaver.dbManager = dbManager;
         hashMap.put(SECTOR_PARAM, SECTOR_VALUE);
         hashMap.put(SEPARATION_PARAM, SEPARATION_VALUE);
     }
@@ -202,7 +196,6 @@ public class SeparationConstraintsSaverTesting extends AbstractAWETest {
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testTransactionRollBackIfDatabaseExceptionThrow() {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
@@ -216,9 +209,9 @@ public class SeparationConstraintsSaverTesting extends AbstractAWETest {
             when(model.findElement(any(Map.class))).thenThrow(new DatabaseException("required exception"));
             separationSaver.saveElement(rowContainer);
         } catch (Exception e) {
-            verify(tx, never()).success();
-            verify(tx, atLeastOnce()).failure();
-            verify(tx, times(1)).finish();
+            verify(dbManager, never()).commitThreadTransaction();
+            verify(dbManager, atLeastOnce()).rollbackThreadTransaction();
+
         }
     }
 
@@ -234,11 +227,10 @@ public class SeparationConstraintsSaverTesting extends AbstractAWETest {
             rowContainer.setValues(values);
             when(model.findElement(any(Map.class))).thenThrow(new IllegalArgumentException("required exception"));
             separationSaver.saveElement(rowContainer);
+            verify(dbManager, never()).rollbackThreadTransaction();
+
         } catch (Exception e) {
-            verify(tx, times(2)).success();
-            verify(tx, never()).failure();
-            verify(tx, times(3)).finish();
+            Assert.fail("unexpected exceptions");
         }
     }
-
 }

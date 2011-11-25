@@ -48,8 +48,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Transaction;
 
 /**
  * @author Vladislav_Kondratenko
@@ -98,8 +96,6 @@ public class TemsSaverTesting extends AbstractAWETest {
     private final static Map<String, Object> msCollected2 = new HashMap<String, Object>();
     private static DriveModel model;
     private static Long startTime;
-    private GraphDatabaseService service;
-    private Transaction tx;
     private Calendar workDate = Calendar.getInstance();
     static {
         PATH_TO_BASE = System.getProperty("user.home");
@@ -142,11 +138,11 @@ public class TemsSaverTesting extends AbstractAWETest {
     public static void prepare() {
         new LogStarter().earlyStartup();
         clearDb();
-        initializeDb();
 
         initializer = new DataLoadPreferenceInitializer();
         initializer.initializeDefaultPreferences();
         startTime = System.currentTimeMillis();
+
     }
 
     @AfterClass
@@ -160,9 +156,6 @@ public class TemsSaverTesting extends AbstractAWETest {
     public void onStart() throws AWEException {
         model = mock(DriveModel.class);
         virtualModel = mock(DriveModel.class);
-        service = mock(GraphDatabaseService.class);
-        tx = mock(Transaction.class);
-        when(service.beginTx()).thenReturn(tx);
         hashMap = new HashMap<String, Object>();
         config = new ConfigurationDataImpl();
         config.getDatasetNames().put(NETWORK_KEY, NETWORK_NAME);
@@ -177,7 +170,7 @@ public class TemsSaverTesting extends AbstractAWETest {
         }
         fileList.add(testFile);
         config.setSourceFile(fileList);
-        temsSaver = new TemsSaver(model, virtualModel, (ConfigurationDataImpl)config, service);
+        temsSaver = new TemsSaver(model, virtualModel, (ConfigurationDataImpl)config);
         hashMap.put(TIME, "Aug 6 12:13:14.15");
         hashMap.put("latitude", "12");
         hashMap.put("longitude", "13");
@@ -260,7 +253,7 @@ public class TemsSaverTesting extends AbstractAWETest {
 
             verify(virtualModel, atLeastOnce()).addMeasurement(eq(rowContainer.getFile().getName()), eq(msCollected2));
             verify(model).getLocation(new DataElement(eq(createdMainElement)));
-            verify(virtualModel).linkNode(new DataElement(eq(msCollected2)), any(List.class), eq(DriveRelationshipTypes.LOCATION));
+            verify(model).linkNode(new DataElement(eq(msCollected2)), any(List.class), eq(DriveRelationshipTypes.LOCATION));
         } catch (Exception e) {
             LOGGER.error(" testSavingAllElement error", e);
             Assert.fail("Exception while saving row");

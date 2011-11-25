@@ -22,7 +22,6 @@ import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
 import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelTypes;
-import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
  * @author Kondratneko_Vladislav
@@ -34,9 +33,8 @@ public class NeighborsSaver extends AbstractN2NSaver {
     public final static String NEIGHBOUR_SECTOR_NAME = "neigh_sector_name";
     public final static String SERVING_SECTOR_NAME = "serv_sector_name";
 
-    protected NeighborsSaver(INodeToNodeRelationsModel model, INetworkModel networkModel, ConfigurationDataImpl data,
-            GraphDatabaseService service) {
-        super(model, networkModel, data, service);
+    protected NeighborsSaver(INodeToNodeRelationsModel model, INetworkModel networkModel, ConfigurationDataImpl data) {
+        super(model, networkModel, data);
     }
 
     /**

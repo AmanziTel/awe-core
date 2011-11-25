@@ -28,7 +28,6 @@ import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
 import org.apache.log4j.Logger;
-import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
  * common actions for saver using n2n models
@@ -43,9 +42,8 @@ public abstract class AbstractN2NSaver extends AbstractCSVSaver<INetworkModel> {
      */
     protected INodeToNodeRelationsModel n2nModel;
 
-    protected AbstractN2NSaver(INodeToNodeRelationsModel model, INetworkModel networkModel, ConfigurationDataImpl data,
-            GraphDatabaseService service) {
-        initializeSynonyms();
+    protected AbstractN2NSaver(INodeToNodeRelationsModel model, INetworkModel networkModel, ConfigurationDataImpl data) {
+        preferenceStoreSynonyms = initializeSynonyms();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
         if (model != null) {
             n2nModel = model;
@@ -89,16 +87,18 @@ public abstract class AbstractN2NSaver extends AbstractCSVSaver<INetworkModel> {
 
         Set<IDataElement> findedServiceSector = parametrizedModel.findElementByPropertyValue(NetworkElementNodeType.SECTOR,
                 NewAbstractService.NAME, serviceNeighName);
-        for (String head : headers) {
-            if (fileSynonyms.containsValue(head)) {
-                properties.put(head.toLowerCase(), getSynonymValueWithAutoparse(head, row));
-            }
-        }
         if (!findedNeighSector.isEmpty() && !findedServiceSector.isEmpty()) {
+            for (String head : headers) {
+                if (fileSynonyms.containsValue(head)) {
+                    properties.put(head.toLowerCase(), getSynonymValueWithAutoparse(head, row));
+                }
+            }
             n2nModel.linkNode(findedServiceSector.iterator().next(), findedNeighSector.iterator().next(), properties);
+            addSynonyms(n2nModel, properties);
         } else {
             LOGGER.warn("cann't find service or neighbour sector on line " + lineCounter);
         }
+
     }
 
     /**
@@ -132,8 +132,6 @@ public abstract class AbstractN2NSaver extends AbstractCSVSaver<INetworkModel> {
      * @throws AWEException
      */
     protected abstract INodeToNodeRelationsModel getNode2NodeModel(String name) throws AWEException;
-
-    protected abstract Map<String, String[]> initializeSynonyms();
 
     @Override
     protected void commonLinePreparationActions(CSVContainer dataElement) throws Exception {

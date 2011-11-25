@@ -19,7 +19,6 @@ import org.amanzi.neo.loader.core.newparser.CSVContainer;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.INetworkModel;
-import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
  * common actions for saver network savers

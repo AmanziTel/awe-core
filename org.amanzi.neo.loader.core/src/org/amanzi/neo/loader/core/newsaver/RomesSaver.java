@@ -14,7 +14,6 @@
 package org.amanzi.neo.loader.core.newsaver;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -23,7 +22,6 @@ import java.util.Set;
 
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.services.NewAbstractService;
-import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.NewDatasetService.DriveTypes;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
@@ -32,7 +30,6 @@ import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
 import org.apache.log4j.Logger;
-import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
  * saver for romves data
@@ -46,9 +43,9 @@ public class RomesSaver extends AbstractDriveSaver {
      */
     private Set<IDataElement> locationDataElements = new HashSet<IDataElement>();
 
-    protected RomesSaver(IDriveModel model, ConfigurationDataImpl config, GraphDatabaseService service) {
-        preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.DRIVE);
-        columnSynonyms = new HashMap<String, Integer>();
+    protected RomesSaver(IDriveModel model, ConfigurationDataImpl config) {
+        preferenceStoreSynonyms = initializeSynonyms();
+        DRIVE_TYPE = DriveTypes.ROMES.name();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
         commitTx();
         if (model != null) {
@@ -135,8 +132,8 @@ public class RomesSaver extends AbstractDriveSaver {
      */
     private IDataElement checkForSameLocation(Map<String, Object> params) {
         for (IDataElement location : locationDataElements) {
-            if (location.get(IDriveModel.LATITUDE) == params.get(IDriveModel.LATITUDE)
-                    && location.get(IDriveModel.LONGITUDE) == params.get(IDriveModel.LONGITUDE)) {
+            if (location.get(IDriveModel.LATITUDE).equals(params.get(IDriveModel.LATITUDE))
+                    && location.get(IDriveModel.LONGITUDE).equals(params.get(IDriveModel.LONGITUDE))) {
                 return location;
             }
         }
