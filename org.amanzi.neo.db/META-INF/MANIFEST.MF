@@ -5,7 +5,7 @@ Bundle-SymbolicName: org.amanzi.neo.db
 Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.neo4j.neoclipse;bundle-version="1.4.0";resolution:=optional,
- org.amanzi.log4j;bundle-version="1.2.12";visibility:=reexport,
+ org.amanzi.log4j;bundle-version="1.0.0";visibility:=reexport,
  org.neo4j;bundle-version="1.4.1"
 Export-Package: org.amanzi.neo.db.manager,
  org.amanzi.neo.db.manager.events,
