@@ -24,6 +24,7 @@ import org.amanzi.neo.loader.core.ProgressEventImpl;
 import org.amanzi.neo.loader.core.newsaver.IData;
 import org.amanzi.neo.loader.core.newsaver.ISaver;
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IModel;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.ISafeRunnable;
@@ -41,14 +42,32 @@ import org.eclipse.core.runtime.SafeRunner;
 public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2>, T2 extends IConfiguration, T3 extends IData>
         implements
             IParser<T1, T2, T3> {
-    //TODO: LN: comments
-    protected static Logger LOGGER;
+    private static final Logger LOGGER = Logger.getLogger(AbstractParser.class);;
+
+    /**
+     * progress monitor listeners
+     */
     private final List<ILoaderProgressListener> listeners = new ArrayList<ILoaderProgressListener>();
-    protected final int PERCENTAGE_FIRE = 2;
+    protected final int PERCENTAGE_FIRE = 1;
+    /**
+     * percentage of all files
+     */
     private double percentage = 0.0;
+    /**
+     * temporary files instance
+     */
     protected File tempFile;
+    /**
+     * new file flag
+     */
     private boolean isNewFile = false;
-    private double commonPercentage = 0;
+    /**
+     * percentage of curent file
+     */
+    private double commonCurentFilePercentage = 0;
+    /**
+     * cancel progress monitor flag
+     */
     protected boolean isCanceled = false;
 
     @Override
@@ -105,7 +124,13 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
         long startTime = System.currentTimeMillis();
         while (element != null) {
             for (ISaver< ? , T3, T2> saver : savers) {
-                saver.saveElement(element);
+                try {
+                    saver.saveElement(element);
+                } catch (DatabaseException e) {
+                    LOGGER.error("Error while saving line ", e);
+                    saver.finishUp();
+                    throw new DatabaseException(e);
+                }
             }
             element = parseElement();
             if (isCanceled) {
@@ -127,10 +152,10 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
      */
     protected boolean fireSubProgressEvent(File element, final IProgressEvent event) {
         if (isNewFile) {
-            percentage += commonPercentage;
+            percentage += commonCurentFilePercentage;
             isNewFile = false;
         }
-        commonPercentage = event.getPercentage() / 100;
+        commonCurentFilePercentage = event.getPercentage() / 100;
         isCanceled = fireProgressEvent(new ProgressEventImpl(event.getProcessName(), (percentage + (event.getPercentage()) / 100)
                 / config.getFilesToLoad().size()));
         return isCanceled;

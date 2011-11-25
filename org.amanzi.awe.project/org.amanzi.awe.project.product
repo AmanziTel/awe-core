@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="Amanzi Wireless Explorer" id="org.amanzi.awe.product" application="org.amanzi.awe.id1" useFeatures="true" includeLaunchers="true">
+<product name="Amanzi Wireless Explorer" uid="org.amanzi.awe.project" id="org.amanzi.awe.product" application="org.amanzi.awe.id1" version="1.0.0.qualifier" useFeatures="true" includeLaunchers="true">
 
    <aboutInfo>
       <image path="/org.amanzi.awe/nl/en/about.gif"/>
@@ -45,8 +45,8 @@ For more information and support visit http://www.amanzitel.com/page/AWE
 
 
    <vm>
-      <linux>jre1.6.0_11_gdal</linux>
-      <windows>jre6</windows>
+      <linux include="true">jre1.6.0_11_gdal</linux>
+      <windows include="true">jre6</windows>
    </vm>
 
    <license>

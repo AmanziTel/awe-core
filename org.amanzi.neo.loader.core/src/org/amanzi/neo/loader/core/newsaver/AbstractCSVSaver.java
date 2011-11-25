@@ -21,32 +21,34 @@ import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceManager;
 import org.amanzi.neo.services.NewAbstractService;
-import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
-import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDataModel;
 import org.amanzi.neo.services.model.IModel;
-import org.amanzi.neo.services.model.INetworkModel;
-import org.amanzi.neo.services.model.impl.DataElement;
 import org.apache.log4j.Logger;
-import org.neo4j.graphdb.GraphDatabaseService;
 
-//TODO: LN: comment
 /**
+ * common actions for all csv savers
+ * 
  * @author Vladislav_Kondratenko
  */
 public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<T1, CSVContainer, ConfigurationDataImpl> {
     private static final Logger LOGGER = Logger.getLogger(AbstractCSVSaver.class);
-    
-    //TODO: LN: comment
+
+    /**
+     * maximum count of placebo commited transaction before Top-level commit
+     */
     protected final int MAX_TX_BEFORE_COMMIT = 1000;
-    
-    //TODO: LN: why Abstract CSV Saver have NetworkModel??? this Saver is parametrized we can use T1
-    protected INetworkModel networkModel;
-    protected IDataElement rootDataElement;
+    /**
+     * model used in top cases
+     */
+    protected T1 parametrizedModel;
+    /**
+     * set configuration data
+     */
+    protected ConfigurationDataImpl configuration;
     /**
      * line number
      */
@@ -71,6 +73,14 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
      * file headers
      */
     protected List<String> headers;
+    /*
+     * constants
+     */
+    protected static final String INCORRECT_VALUE_NULL = "NULL";
+    protected static final String INCORRECT_VALUE_QUEST_SYMBOL = "?";
+    protected static final String INCORRECT_VALUE_DEFAULT = "default";
+    protected static final String INCORRECT_VALUE_NA = "N/A";
+    protected static final String INCORRECT_VALUE_DOUBLE_DASH = "--";
 
     /**
      * check value for null or empty or String value "NULL" or "?"
@@ -79,10 +89,11 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
      * @return
      */
     protected boolean isCorrect(Object value) {
-        //TODO: LN: move strings to constants
-        if (value == null || value.toString().isEmpty() || value.toString().equals("?")
-                || value.toString().equalsIgnoreCase("NULL") || value.toString().equalsIgnoreCase("default")
-                || value.toString().equalsIgnoreCase("--") || value.toString().equalsIgnoreCase("N/A")) {
+        if (value == null || value.toString().isEmpty() || value.toString().equals(INCORRECT_VALUE_QUEST_SYMBOL)
+                || value.toString().equalsIgnoreCase(INCORRECT_VALUE_NULL)
+                || value.toString().equalsIgnoreCase(INCORRECT_VALUE_DEFAULT)
+                || value.toString().equalsIgnoreCase(INCORRECT_VALUE_DOUBLE_DASH)
+                || value.toString().equalsIgnoreCase(INCORRECT_VALUE_NA)) {
             return false;
         }
         return true;
@@ -111,15 +122,6 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
         }
     }
 
-    //TODO: LN: do not use constructore with Service
-    /**
-     * @param service
-     */
-    public AbstractCSVSaver(GraphDatabaseService service) {
-        super(service);
-    }
-
-    //TODO: LN: comment, also do we need emtpy constructor? 
     /**
      * 
      */
@@ -128,25 +130,37 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
     }
 
     @Override
-    public void init(ConfigurationDataImpl configuration, CSVContainer dataElement) {
+    public void init(ConfigurationDataImpl configuration, CSVContainer dataElement) throws Exception {
         super.init(configuration, dataElement);
-        preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.NETWORK);
+        this.configuration = configuration;
+        preferenceStoreSynonyms = initializeSynonyms();
         columnSynonyms = new HashMap<String, Integer>();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
         try {
-            networkModel = getActiveProject().getNetwork(
-                    configuration.getDatasetNames().get(ConfigurationDataImpl.NETWORK_PROPERTY_NAME));
-            //TODO: LN: do not use DataElement!!! 
-            rootDataElement = new DataElement(networkModel.getRootNode());
-            modelMap.put(configuration.getDatasetNames().get(ConfigurationDataImpl.NETWORK_PROPERTY_NAME), networkModel);
+            initializeNecessaryModels();
+            useableModels.add((IDataModel)parametrizedModel);
             createExportSynonymsForModels();
-        } catch (AWEException e) {
+        } catch (Exception e) {
             rollbackTx();
             LOGGER.error("Exception on creating root Model", e);
-            //TODO: LN: do not use RuntimeException!!!
-            throw new RuntimeException(e);
+            throw new DatabaseException(e);
         }
     }
+
+    /**
+     * return preference store synonyms
+     * 
+     * @return
+     */
+    protected abstract Map<String, String[]> initializeSynonyms();
+
+    /**
+     * initialize necessary models
+     * 
+     * @return model used in top cases(parametrized model)
+     * @throws AWEException
+     */
+    protected abstract void initializeNecessaryModels() throws AWEException;
 
     /**
      * get synonym row value and autoparse it
@@ -164,30 +178,58 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
     }
 
     @Override
-    public void saveElement(CSVContainer dataElement) {
-        commitTx();
-        CSVContainer container = dataElement;
+    public void saveElement(CSVContainer dataElement) throws AWEException {
         try {
-            if (fileSynonyms.isEmpty()) {
-                headers = container.getHeaders();
-                makeAppropriationWithSynonyms(headers);
-                makeIndexAppropriation();
-                //TODO: LN: lineCounter++ and container.getHeaders() duplicated
-                lineCounter++;
-            } else {
-                lineCounter++;
-                List<String> value = container.getValues();
-                saveLine(value);
+            commitTx();
+            commonLinePreparationActions(dataElement);
+            if (handleHeaders(dataElement)) {
+                handleLine(dataElement);
             }
         } catch (DatabaseException e) {
             LOGGER.error("Error while saving element on line " + lineCounter, e);
             rollbackTx();
-            //TODO: LN: do not use RuntimeException!!!
-            throw (RuntimeException)new RuntimeException().initCause(e);
+            throw new DatabaseException(e);
         } catch (Exception e) {
             LOGGER.error("Exception while saving element on line " + lineCounter, e);
             commitTx();
         }
+    }
+
+    /**
+     * common prepare action
+     * 
+     * @param dataElement
+     * @throws Exception
+     */
+    protected abstract void commonLinePreparationActions(CSVContainer dataElement) throws Exception;
+
+    /**
+     * handle line actions
+     * 
+     * @param dataElement
+     * @throws AWEException
+     */
+    protected void handleLine(CSVContainer dataElement) throws AWEException {
+        lineCounter++;
+        List<String> value = dataElement.getValues();
+        saveLine(value);
+
+    }
+
+    /**
+     * intialize headers
+     * 
+     * @throws Exception
+     */
+    protected boolean handleHeaders(CSVContainer dataElement) throws Exception {
+        if (fileSynonyms.isEmpty()) {
+            headers = dataElement.getHeaders();
+            makeAppropriationWithSynonyms(headers);
+            makeIndexAppropriation();
+            lineCounter++;
+            return false;
+        }
+        return !fileSynonyms.isEmpty();
     }
 
     /**
@@ -206,11 +248,20 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
      * @return
      */
     protected String getValueFromRow(String synonym, List<String> value) {
-        String requiredHeader = synonym;
-        if (fileSynonyms.containsKey(synonym)) {
-            requiredHeader = fileSynonyms.get(synonym);
-        }
+        String requiredHeader = chechHeaderInSynonyms(synonym);
         return isCorrect(synonym, value) ? getSynonymValue(value, requiredHeader) : null;
+    }
+
+    /**
+     * check if header contains in synonyms
+     * 
+     * @return synonym if contains
+     */
+    private String chechHeaderInSynonyms(String header) {
+        if (fileSynonyms.containsKey(header)) {
+            return fileSynonyms.get(header);
+        }
+        return header;
     }
 
     /**
@@ -221,11 +272,7 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
      * @return
      */
     protected boolean isCorrect(String synonymName, List<String> row) {
-        //TODO: LN: few duplication with getValueFromRow, please investigate
-        String requiredHeader = synonymName;
-        if (fileSynonyms.containsKey(synonymName)) {
-            requiredHeader = fileSynonyms.get(synonymName);
-        }
+        String requiredHeader = chechHeaderInSynonyms(synonymName);
         return requiredHeader != null && columnSynonyms.containsKey(requiredHeader) && row != null
                 && isCorrect(row.get(columnSynonyms.get(requiredHeader)));
     }
@@ -279,12 +326,19 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
         row.set(columnSynonyms.get(fileSynonyms.get(synonym)), null);
     }
 
-    //TODO: LN: comments
-    protected int getHeaderId(String header) {
+    /**
+     * return header number by header name
+     * 
+     * @param header
+     * @return
+     */
+    private int getHeaderId(String header) {
         return headers.indexOf(header);
     }
 
-    //TODO: LN: comments
+    /**
+     * make appropriation with headers and them indexes
+     */
     protected void makeIndexAppropriation() {
         for (String synonyms : fileSynonyms.keySet()) {
             columnSynonyms.put(fileSynonyms.get(synonyms), getHeaderId(fileSynonyms.get(synonyms)));
@@ -299,18 +353,25 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
     /**
      * make Appropriation with default synonyms and file header
      * 
-     * @param keySet -header files;
+     * @param keySet - header files;
      */
     protected void makeAppropriationWithSynonyms(List<String> keySet) {
         boolean isAppropriation = false;
         for (String header : keySet) {
             for (String posibleHeader : preferenceStoreSynonyms.keySet()) {
                 for (String mask : preferenceStoreSynonyms.get(posibleHeader)) {
-                    if (header.toLowerCase().matches(mask.toLowerCase())) {
-                        isAppropriation = true;
-                        String name = posibleHeader.substring(0, posibleHeader.indexOf(DataLoadPreferenceManager.INFO_SEPARATOR));
-                        fileSynonyms.put(name, header);
-                        break;
+                    if (header.toLowerCase().matches(mask.toLowerCase()) || header.toLowerCase().equals(mask.toLowerCase())) {
+                        for (String key : posibleHeader.split(DataLoadPreferenceManager.INFO_SEPARATOR)) {
+                            if (getSubType() == null || key.equalsIgnoreCase(getSubType())) {
+                                isAppropriation = true;
+                                String name = posibleHeader.substring(0,
+                                        posibleHeader.indexOf(DataLoadPreferenceManager.INFO_SEPARATOR));
+                                if (!fileSynonyms.containsKey(name)) {
+                                    fileSynonyms.put(name, header);
+                                    break;
+                                }
+                            }
+                        }
                     }
                 }
                 if (isAppropriation) {
@@ -320,7 +381,12 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
             }
         }
     }
-    
+
+    /**
+     * @return subtype of dataset or null if not exist
+     */
+    protected abstract String getSubType();
+
     /**
      * get synonym row value and autoparse it
      * 

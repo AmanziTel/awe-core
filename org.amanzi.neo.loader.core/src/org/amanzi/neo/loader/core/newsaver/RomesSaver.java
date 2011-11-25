@@ -14,11 +14,6 @@
 package org.amanzi.neo.loader.core.newsaver;
 
 import java.io.File;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -26,9 +21,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
-import org.amanzi.neo.loader.core.newparser.CSVContainer;
 import org.amanzi.neo.services.NewAbstractService;
-import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.NewDatasetService.DriveTypes;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
@@ -36,9 +29,7 @@ import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
-import org.amanzi.neo.services.model.impl.DriveModel.DriveRelationshipTypes;
 import org.apache.log4j.Logger;
-import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
  * saver for romves data
@@ -46,90 +37,37 @@ import org.neo4j.graphdb.GraphDatabaseService;
  * @author Vladislav_Kondratenko
  */
 public class RomesSaver extends AbstractDriveSaver {
-    // Saver constants
     private static final Logger LOGGER = Logger.getLogger(RomesSaver.class);
-    //TODO: LN: comments
+    /**
+     * collection of new created locations element
+     */
     private Set<IDataElement> locationDataElements = new HashSet<IDataElement>();
 
-    protected RomesSaver(IDriveModel model, ConfigurationDataImpl config, GraphDatabaseService service) {
-        super(service);
-        preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.DRIVE);
-        columnSynonyms = new HashMap<String, Integer>();
+    protected RomesSaver(IDriveModel model, ConfigurationDataImpl config) {
+        preferenceStoreSynonyms = initializeSynonyms();
+        DRIVE_TYPE = DriveTypes.ROMES.name();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
         commitTx();
         if (model != null) {
-            this.driveModel = model;
-            modelMap.put(model.getName(), model);
-        } else {
-            init(config, null);
+            this.parametrizedModel = model;
+            useableModels.add(model);
         }
     }
 
-    //TODO: LN: comments
     /**
-     * 
+     * create class instants
      */
     public RomesSaver() {
         super();
-    }
-
-    @Override
-    public void init(ConfigurationDataImpl configuration, CSVContainer dataElement) {
-        super.init(configuration, dataElement);
-        DRIVE_TYPE_NAME = DriveTypes.ROMES.name();
-        preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.DRIVE);
-        setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
-        try {
-            driveModel = getActiveProject().getDataset(
-                    configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME), DriveTypes.TEMS);
-            modelMap.put(configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME), driveModel);
-            createExportSynonymsForModels();
-        } catch (AWEException e) {
-            rollbackTx();
-            LOGGER.error("Exception on creating root Model", e);
-            //TODO: LN: do not throw Runtime
-            throw new RuntimeException(e);
-        }
+        DRIVE_TYPE = DriveTypes.ROMES.name();
     }
 
     @Override
     protected void addedNewFileToModels(File file) throws DatabaseException, DuplicateNodeNameException {
-        driveModel.addFile(file);
+        parametrizedModel.addFile(file);
     }
 
-    //TODO: LN: duplicated logic
     @Override
-    public void saveElement(CSVContainer dataElement) {
-        commitTx();
-        CSVContainer container = dataElement;
-        try {
-            checkForNewFile(dataElement);
-            if (fileSynonyms.isEmpty()) {
-                headers = container.getHeaders();
-                makeAppropriationWithSynonyms(headers);
-                makeIndexAppropriation();
-                lineCounter++;
-                locationDataElements.clear();
-            } else if (container.getValues().size() == headers.size()) {
-                lineCounter++;
-                List<String> value = container.getValues();
-                saveLine(value);
-            }
-        } catch (DatabaseException e) {
-            LOGGER.error("Error while saving element on line " + lineCounter, e);
-            rollbackTx();
-            throw (RuntimeException)new RuntimeException().initCause(e);
-        } catch (Exception e) {
-            LOGGER.error("Exception while saving element on line " + lineCounter, e);
-            commitTx();
-        }
-    }
-
-    //TODO: LN: comments
-    /**
-     * @param value
-     * @throws AWEException
-     */
     protected void saveLine(List<String> value) throws AWEException {
         String time = getValueFromRow(TIME, value);
         Long timestamp = defineTimestamp(workDate, time);
@@ -146,20 +84,19 @@ public class RomesSaver extends AbstractDriveSaver {
 
         removeEmpty(params);
         collectRemainProperties(params, value);
-        addSynonyms(driveModel, params);
-        IDataElement existedLocation = checkSameLocation(params);
+        addSynonyms(parametrizedModel, params);
+        IDataElement existedLocation = checkForSameLocation(params);
         if (existedLocation != null) {
             params.remove(IDriveModel.LATITUDE);
             params.remove(IDriveModel.LONGITUDE);
         }
-        IDataElement createdElement = driveModel.addMeasurement(fileName, params);
+        IDataElement createdElement = parametrizedModel.addMeasurement(fileName, params);
         if (existedLocation != null) {
             List<IDataElement> locList = new LinkedList<IDataElement>();
             locList.add(existedLocation);
-            //TODO: LN: see Nemo1xSaver
-            driveModel.linkNode(createdElement, locList, DriveRelationshipTypes.LOCATION);
+            linkWithLocationElement(createdElement, locList);
         } else {
-            locationDataElements.add(driveModel.getLocation(createdElement));
+            locationDataElements.add(parametrizedModel.getLocation(createdElement));
         }
     }
 
@@ -187,9 +124,13 @@ public class RomesSaver extends AbstractDriveSaver {
         params.put(NewAbstractService.TYPE, DriveNodeTypes.M.getId());
     }
 
-    //TODO: LN: duplicated method
-    //we can't use equals for Double
-    private IDataElement checkSameLocation(Map<String, Object> params) {
+    /**
+     * check for same located element
+     * 
+     * @param params
+     * @return
+     */
+    private IDataElement checkForSameLocation(Map<String, Object> params) {
         for (IDataElement location : locationDataElements) {
             if (location.get(IDriveModel.LATITUDE).equals(params.get(IDriveModel.LATITUDE))
                     && location.get(IDriveModel.LONGITUDE).equals(params.get(IDriveModel.LONGITUDE))) {
@@ -199,48 +140,10 @@ public class RomesSaver extends AbstractDriveSaver {
         return null;
     }
 
-    //TODO: LN: seem to be duplicated 
-    /**
-     * @param workDate
-     * @param time
-     * @return
-     */
-    @SuppressWarnings("deprecation")
-    protected Long defineTimestamp(Calendar workDate, String time) {
-        if (time == null) {
-            return null;
-        }
-        //TODO: LN: to constant
-        SimpleDateFormat dfn = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss.SSS");
-        try {
-            Date datetime = dfn.parse(time);
-            return datetime.getTime();
-        } catch (ParseException e1) {
-            //TODO: LN: to constant
-            dfn = new SimpleDateFormat("HH:mm:ss");
-            try {
-                // TODO: Lagutko: refactor to not use DEPRECATED methods
-                Date nodeDate = dfn.parse(time);
-                final int nodeHours = nodeDate.getHours();
-                if (hours != null && hours > nodeHours) {
-                    // next day
-                    workDate.add(Calendar.DAY_OF_MONTH, 1);
-                    this.workDate.add(Calendar.DAY_OF_MONTH, 1);
-                }
-                hours = nodeHours;
-                //TODO: LN: we have method for this
-                workDate.set(Calendar.HOUR_OF_DAY, nodeHours);
-                workDate.set(Calendar.MINUTE, nodeDate.getMinutes());
-                workDate.set(Calendar.SECOND, nodeDate.getSeconds());
-                return workDate.getTimeInMillis();
-
-            } catch (Exception e) {
-                LOGGER.error(String.format("Can't parse time: %s", time));
-
-            }
-        }
-        return 0l;
+    @Override
+    protected void initializeNecessaryModels() throws AWEException {
+        parametrizedModel = getActiveProject().getDataset(
+                configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME), DriveTypes.ROMES);
 
     }
-
 }

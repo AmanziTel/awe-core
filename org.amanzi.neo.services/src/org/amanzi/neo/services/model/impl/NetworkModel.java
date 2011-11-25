@@ -122,9 +122,6 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
             throws InvalidDatasetParameterException, DatasetTypeParameterException, DuplicateNodeNameException, AWEException {
         super(null, DatasetTypes.NETWORK);
         // validate
-        if (project == null) {
-            throw new IllegalArgumentException("Parent is null.");
-        }
         Node projectNode = ((DataElement)project).getNode();
         if (projectNode == null) {
             throw new IllegalArgumentException("Project node is null.");
@@ -218,32 +215,32 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         String oldName = elementToRename.get(NewAbstractService.NAME).toString();
         elementToRename.put(NewAbstractService.NAME, newName);
         Node node = ((DataElement)elementToRename).getNode();
-        //TODO: LN: we have a method to get Type in AbstractService
+        // TODO: LN: we have a method to get Type in AbstractService
         INodeType nodeType = NodeTypeManager.getType(elementToRename.get(NewAbstractService.TYPE).toString());
-        
+
         nwServ.removeNodeFromIndex(node, getIndex(nodeType), NewAbstractService.NAME, oldName);
 
         nwServ.setAnyProperty(node, NewAbstractService.NAME, newName);
         renameProperty(nodeType, NewAbstractService.NAME, oldName, newName);
-        
+
         nwServ.addNodeToIndex(node, getIndex(nodeType), NewAbstractService.NAME, newName);
         finishUp();
     }
-    
+
     @Override
     public void updateElement(IDataElement elementToUpdate, String propertyName, Object newValue) throws AWEException {
         Object oldValue = elementToUpdate.get(propertyName);
         elementToUpdate.put(propertyName, newValue);
         Node node = ((DataElement)elementToUpdate).getNode();
         INodeType nodeType = NodeTypeManager.getType(elementToUpdate.get(NewAbstractService.TYPE).toString());
-        
+
         if (nwServ.isIndexedProperties(propertyName)) {
             nwServ.removeNodeFromIndex(node, getIndex(nodeType), propertyName, oldValue);
         }
-        
+
         nwServ.setAnyProperty(node, propertyName, newValue);
         renameProperty(nodeType, propertyName, oldValue, newValue);
-        
+
         if (nwServ.isIndexedProperties(propertyName)) {
             nwServ.addNodeToIndex(node, getIndex(nodeType), propertyName, newValue);
         }
@@ -280,15 +277,13 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
 
         return node == null ? null : new DataElement(node);
     }
-    
+
     @Override
     public IDataElement findSector(String propertyName, String propertyValue) throws AWEException {
         Node node = null;
         if (propertyName.equals(NewNetworkService.NAME)) {
             node = nwServ.findSector(getIndex(NetworkElementNodeType.SECTOR), propertyValue, null, null);
-        }
-        else if (propertyName.equals(NewNetworkService.CELL_INDEX) ||
-                propertyName.equals(NewNetworkService.LOCATION_AREA_CODE)) {
+        } else if (propertyName.equals(NewNetworkService.CELL_INDEX) || propertyName.equals(NewNetworkService.LOCATION_AREA_CODE)) {
             int underliningIndex = propertyValue.indexOf('_');
             String ci = propertyValue.substring(0, underliningIndex);
             String lac = propertyValue.substring(underliningIndex + 1, propertyValue.length());
@@ -589,7 +584,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     public IDataElement createElement(IDataElement parent, Map<String, Object> element, RelationshipType reltype)
             throws AWEException {
         if (parent == null) {
-            throw new IllegalArgumentException("Parent is null.");
+            parent = new DataElement(rootNode);
         }
         Node parentNode = ((DataElement)parent).getNode();
         if (parentNode == null) {

@@ -15,10 +15,9 @@ package org.amanzi.neo.loader.core.newsaver;
 
 import org.amanzi.neo.loader.core.parser.IDataElement;
 
-//TODO: LN: comments
 /**
- * TODO Purpose of
  * <p>
+ * only for marking necessary data to save
  * </p>
  * 
  * @author Kondratenko_Vladislav

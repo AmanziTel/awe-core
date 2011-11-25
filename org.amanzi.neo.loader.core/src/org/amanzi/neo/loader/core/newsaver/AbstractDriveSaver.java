@@ -14,7 +14,10 @@
 package org.amanzi.neo.loader.core.newsaver;
 
 import java.io.File;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -23,31 +26,32 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
+import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
+import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDriveModel;
-import org.amanzi.neo.services.model.impl.DriveModel;
+import org.amanzi.neo.services.model.impl.DriveModel.DriveRelationshipTypes;
 import org.apache.log4j.Logger;
-import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
  * class contains common operation for tems romes saver
  * 
  * @author Vladislav_Kondratenko
  */
-public abstract class AbstractDriveSaver extends AbstractCSVSaver<DriveModel> {
+public abstract class AbstractDriveSaver extends AbstractCSVSaver<IDriveModel> {
 
     private static final Logger LOGGER = Logger.getLogger(AbstractDriveSaver.class);
-    
-    //TODO: LN: comments!!!!
-    protected String DRIVE_TYPE_NAME = "";
+
+    // Drive type name
+    protected String DRIVE_TYPE = null;
+    // Name of handling file
     protected String fileName;
     // constants
     protected final static String SECTOR_ID = "sector_id";
     protected final static String TIME = "time";
     protected final static String TIMESTAMP = "timestamp";
     protected final static String EVENT = "event";
-    protected IDriveModel driveModel;
     protected final static String TCH = "tch";
     protected final static String SC = "sc";
     protected final static String PN = "PN";
@@ -66,44 +70,42 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<DriveModel> {
     protected final static String CODE = "code";
     protected final static String MW = "mw";
     protected final static String DBM = "dbm";
+
+    /**
+     * regular expression pattern for converting lattitude and longitude
+     */
+    protected final static Pattern LONGITUDE_PATTERN = Pattern.compile("^([+-]{0,1}\\d+(\\.\\d+)*)([NESW]{0,1})$");
+    protected final static Pattern LATITUDE_PATTERN = Pattern.compile("^([+-]{0,1}\\d+(\\.\\d+)*)([NESW]{0,1})$");
+
+    /*
+     * date format patterns
+     */
+    protected final static SimpleDateFormat DATE_FORMAT_WITH_TIME_DATE = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss.SSS");
+    protected final static SimpleDateFormat DATE_FORMAT_TIME = new SimpleDateFormat("HH:mm:ss");
     // 12 posible headers
     protected final static String ALL_PILOT_SET_EC_IO = "all_pilot_set_ec_io_";
     protected final static String ALL_PILOT_SET_CHANNEL = "all_pilot_set_channel_";
     protected final static String ALL_PILOT_SET_PN = "all_pilot_set_pn_";
     protected Integer hours;
-    
-    //TODO: LN: maybe final? 
-    protected Calendar workDate = Calendar.getInstance();
     /**
-     * contains appropriation of header synonyms and name inDB
-     * <p>
-     * <b>key</b>- name in db ,<br>
-     * <b>value</b>-file header key
-     * </p>
+     * calendar instance
      */
-    protected Map<String, String> fileSynonyms = new HashMap<String, String>();
+    protected Calendar workDate = Calendar.getInstance();
     /**
      * name inDB properties values
      */
-    protected Map<String, Integer> columnSynonyms = new HashMap<String, Integer>();
     protected Map<String, Object> params = new HashMap<String, Object>();
-    protected List<String> headers;
 
     /**
-     * @param service
-     */
-    protected AbstractDriveSaver(GraphDatabaseService service) {
-        super(service);
-    }
-    
-    /**
-     * 
+     * create class instance
      */
     public AbstractDriveSaver() {
         super();
     }
-    
-    //TODO: LN: comments
+
+    /**
+     * reset synonyms maps
+     */
     protected void resetSynonymsMaps() {
         if (!fileSynonyms.isEmpty()) {
             fileSynonyms.clear();
@@ -112,7 +114,6 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<DriveModel> {
         }
     }
 
-    //TODO: LN: duplicated with AbstractCSVSaver method
     /**
      * Convert milliwatss values to dBm
      * 
@@ -123,8 +124,13 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<DriveModel> {
         return (float)(10.0 * Math.log10(mw));
     }
 
-    //TODO: LN: comments
-    void collectRemainProperties(Map<String, Object> properties, List<String> row) {
+    /**
+     * collect not handled properties
+     * 
+     * @param properties
+     * @param row
+     */
+    protected void collectRemainProperties(Map<String, Object> properties, List<String> row) {
         for (String head : headers) {
             if (isCorrect(head, row)) {
                 if (!properties.containsKey(head)) {
@@ -135,7 +141,7 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<DriveModel> {
                 }
             }
         }
-        
+
     }
 
     /**
@@ -151,9 +157,7 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<DriveModel> {
         try {
             return Double.valueOf(stringValue);
         } catch (NumberFormatException e) {
-            //TODO: LN: to constant
-            Pattern p = Pattern.compile("^([+-]{0,1}\\d+(\\.\\d+)*)([NESW]{0,1})$");
-            Matcher m = p.matcher(stringValue);
+            Matcher m = LONGITUDE_PATTERN.matcher(stringValue);
             if (m.matches()) {
                 try {
                     return Double.valueOf(m.group(1));
@@ -178,9 +182,9 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<DriveModel> {
         try {
             return Double.valueOf(stringValue);
         } catch (NumberFormatException e) {
-            //TODO: LN: to constant
-            Pattern p = Pattern.compile("^([+-]{0,1}\\d+(\\.\\d+)*)([NESW]{0,1})$");
-            Matcher m = p.matcher(stringValue);
+            // TODO: LN: to constant
+
+            Matcher m = LATITUDE_PATTERN.matcher(stringValue);
             if (m.matches()) {
                 try {
                     return Double.valueOf(m.group(1));
@@ -192,24 +196,95 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<DriveModel> {
         return null;
     }
 
-    //TODO: LN: comments
+    /**
+     * added file element to models
+     * 
+     * @param file
+     * @throws DatabaseException
+     * @throws DuplicateNodeNameException
+     */
     protected abstract void addedNewFileToModels(File file) throws DatabaseException, DuplicateNodeNameException;
 
-    //TODO: LN: comments
+    /**
+     * check if there is new file handling reset prepare synonymsand add new file to model, also
+     * reset lineCounter
+     * 
+     * @param dataElement
+     * @throws DatabaseException
+     * @throws DuplicateNodeNameException
+     */
     protected void checkForNewFile(CSVContainer dataElement) throws DatabaseException, DuplicateNodeNameException {
         if ((fileName != null && !fileName.equals(dataElement.getFile().getName())) || (fileName == null)) {
             fileName = dataElement.getFile().getName();
             addedNewFileToModels(dataElement.getFile());
-            //TODO: LN: do we need to reset synonyms for each file? 
-            //since we can't load multi-files for different data all synonyms will be 
-            //the same for all files
             resetSynonymsMaps();
             lineCounter = 0l;
         }
     }
 
     /**
-     * remove empty or null values from params Map
+     * try to parse time string to timestamp
+     * 
+     * @param workDate
+     * @param time
+     * @return
+     */
+    protected Long defineTimestamp(Calendar workDate, String time) {
+        if (time == null) {
+            return null;
+        }
+        try {
+            Date datetime = DATE_FORMAT_WITH_TIME_DATE.parse(time);
+            return datetime.getTime();
+        } catch (ParseException e1) {
+            try {
+                Date nodeDate = DATE_FORMAT_TIME.parse(time);
+                Calendar newCalendar = Calendar.getInstance();
+                newCalendar.setTime(nodeDate);
+                final int nodeHours = newCalendar.get(Calendar.HOUR_OF_DAY);
+                if (hours != null && hours > nodeHours) {
+                    // next day
+                    workDate.add(Calendar.DAY_OF_MONTH, 1);
+                    this.workDate.add(Calendar.DAY_OF_MONTH, 1);
+                }
+                hours = nodeHours;
+                workDate.set(workDate.get(Calendar.YEAR), workDate.get(Calendar.MONTH), workDate.get(Calendar.DATE), nodeHours,
+                        workDate.get(Calendar.MINUTE), workDate.get(Calendar.SECOND));
+                return workDate.getTimeInMillis();
+
+            } catch (Exception e) {
+                LOGGER.error(String.format("Can't parse time: %s", time));
+
+            }
+        }
+        return 0l;
+
+    }
+
+    @Override
+    protected Map<String, String[]> initializeSynonyms() {
+        return preferenceManager.getSynonyms(DatasetTypes.DRIVE);
+
+    }
+
+    @Override
+    protected void commonLinePreparationActions(CSVContainer dataElement) throws Exception {
+        checkForNewFile(dataElement);
+    }
+
+    /**
+     * link new created element with existed location element;
+     * 
+     * @param createdElement
+     * @param locList
+     * @throws DatabaseException
+     */
+    protected void linkWithLocationElement(IDataElement createdElement, Iterable<IDataElement> locList) throws DatabaseException {
+        parametrizedModel.linkNode(createdElement, locList, DriveRelationshipTypes.LOCATION);
+    }
+
+    /**
+     * remove incorrect values from params Map
      * 
      * @param params2
      */
@@ -225,66 +300,8 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<DriveModel> {
         }
     }
 
-    /**
-     * get value from row without autoparse (like a string)
-     * 
-     * @param synonym
-     * @param value
-     * @return
-     */
-    protected String getValueFromRow(String synonym, List<String> value) {
-        return isCorrect(synonym, value) ? value.get(columnSynonyms.get(fileSynonyms.get(synonym))) : null;
+    @Override
+    protected String getSubType() {
+        return DRIVE_TYPE;
     }
-
-    /**
-     * check if row value is correct
-     * 
-     * @param synonymName
-     * @param row
-     * @return
-     */
-    protected boolean isCorrect(String synonymName, List<String> row) {
-        return fileSynonyms.get(synonymName) != null
-                && isCorrect(row.get(columnSynonyms.get(fileSynonyms.get(synonymName))) != null);
-    }
-
-    /**
-     * get header name by synonymVale
-     * 
-     * @param synonymName
-     * @return
-     */
-    protected String getHeaderBySynonym(String synonymName) {
-        return headers.get(columnSynonyms.get((fileSynonyms.get(synonymName))));
-    }
-
-    /**
-     * check value for null or empty
-     * 
-     * @param value
-     * @return
-     */
-    protected boolean isCorrect(Object value) {
-        if (value == null || value.toString().isEmpty() || value.toString().equals("?")
-                || value.toString().equalsIgnoreCase("NULL")) {
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Get row value by header
-     * 
-     * @param row
-     * @param synonym
-     * @return synonym value
-     */
-    protected String getSynonymValue(List<String> row, String propertyName) {
-        return row.get(columnSynonyms.get(propertyName));
-    }
-
-    protected int getHeaderId(String header) {
-        return headers.indexOf(header);
-    }
-    
 }

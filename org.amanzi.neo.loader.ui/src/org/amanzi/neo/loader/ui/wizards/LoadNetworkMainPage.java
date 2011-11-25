@@ -71,13 +71,13 @@ public class LoadNetworkMainPage extends LoaderPageNew<ConfigurationDataImpl> {
     /** The Constant PAGE_DESCR. */
     private String fileName;
     private Composite main;
-    protected Combo network;
+    protected Combo networkNameField;
     private FileFieldEditorExt editor;
     private HashMap<String, INetworkModel> members;
-    
+
     protected INetworkModel networkModel;
     private Label labNetworkDescr;
-    private Combo networkType;
+    private Combo loaderType;
     protected String networkName = ""; //$NON-NLS-1$
 
     /**
@@ -96,55 +96,56 @@ public class LoadNetworkMainPage extends LoaderPageNew<ConfigurationDataImpl> {
         Label label = new Label(main, SWT.LEFT);
         label.setText(NeoLoaderPluginMessages.NetworkSiteImportWizard_NETWORK);
         label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
-        network = new Combo(main, SWT.DROP_DOWN);
-        network.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
-        network.setItems(getRootItems());
-        network.addModifyListener(new ModifyListener() {
-
+        networkNameField = new Combo(main, SWT.DROP_DOWN);
+        networkNameField.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
+        networkNameField.setItems(getRootItems());
+        networkNameField.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e) {
                 changeNetworkName();
+                update();
             }
         });
-        network.addSelectionListener(new SelectionListener() {
+        networkNameField.addSelectionListener(new SelectionListener() {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
                 changeNetworkName();
+                update();
             }
 
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {
                 widgetSelected(e);
+                update();
             }
         });
 
         editor = new FileFieldEditorExt("fileSelectNeighb", NeoLoaderPluginMessages.NetworkSiteImportWizard_FILE, main); // NON-NLS-1 //$NON-NLS-1$
         editor.setDefaulDirectory(LoaderUiUtils.getDefaultDirectory());
-
         editor.getTextControl(main).addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
-                network.setText(networkName);
+                setFileName(editor.getStringValue());
+                networkNameField.setText(networkName);
                 changeNetworkName();
                 // updateCRS();
                 update();
             }
         });
-
         editor.setFileExtensions(NETWORK_FILE_EXTENSIONS);
         editor.setFileExtensionNames(NETWORK_FILE_NAMES);
         label = new Label(main, SWT.LEFT);
         label.setText(NeoLoaderPluginMessages.NetworkSiteImportWizard_DATA_TYPE);
         label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 3));
-        networkType = new Combo(main, SWT.DROP_DOWN | SWT.READ_ONLY);
-        networkType.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 3));
-        networkType.setItems(getNewLoadersDescriptions());
-        networkType.addSelectionListener(new SelectionListener() {
+        loaderType = new Combo(main, SWT.DROP_DOWN | SWT.READ_ONLY);
+        loaderType.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 3));
+        loaderType.setItems(getNewLoadersDescriptions());
+        loaderType.addSelectionListener(new SelectionListener() {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                selectNewLoader(networkType.getSelectionIndex());
-                // updateCRS();
+                selectNewLoader(loaderType.getSelectionIndex());
+                autodefineNew(getNewConfigurationData());
                 update();
             }
 
@@ -205,7 +206,7 @@ public class LoadNetworkMainPage extends LoaderPageNew<ConfigurationDataImpl> {
         ILoaderNew< ? extends IData, ConfigurationDataImpl> loader = autodefineNew(getNewConfigurationData());
         int id = setSelectedLoaderNew(loader);
         if (id >= 0) {
-            networkType.select(id);
+            loaderType.select(id);
         }
         update();
         // editor.store();
@@ -227,6 +228,7 @@ public class LoadNetworkMainPage extends LoaderPageNew<ConfigurationDataImpl> {
                 String id = model.getName();
                 members.put(id, model);
             }
+            getNewConfigurationData().getDatasetNames().put(ConfigurationDataImpl.PROJECT_PROPERTY_NAME, projectModel.getName());
         } catch (AWEException e) {
             LOGGER.error("Error while getRootItems work", e);
             throw (RuntimeException)new RuntimeException().initCause(e);
@@ -234,9 +236,9 @@ public class LoadNetworkMainPage extends LoaderPageNew<ConfigurationDataImpl> {
 
         String[] result = members.keySet().toArray(new String[] {});
         Arrays.sort(result);
-        
+
         DatabaseManagerFactory.getDatabaseManager().commitMainTransaction();
-        
+
         return result;
     }
 
@@ -255,13 +257,12 @@ public class LoadNetworkMainPage extends LoaderPageNew<ConfigurationDataImpl> {
     }
 
     protected void changeNetworkName() {
-        networkName = network.getText();
+        networkName = networkNameField.getText();
         if (members != null && !members.isEmpty()) {
             networkModel = members.get(networkName);
         }
-        getNewConfigurationData().getDatasetNames().put("Network", networkName);
+        getNewConfigurationData().getDatasetNames().put(ConfigurationDataImpl.NETWORK_PROPERTY_NAME, networkName);
         updateLabelNetwDescr();
-        update();
     }
 
     @Override
@@ -299,10 +300,6 @@ public class LoadNetworkMainPage extends LoaderPageNew<ConfigurationDataImpl> {
         List<File> files = new LinkedList<File>();
         files.add(file);
         getNewConfigurationData().setSourceFile(files);
-        // configurationData.setProjectName(LoaderUiUtils.getAweProjectName());
-        // configurationData.setCrs(getSelectedCRS());
-        // configurationData.setDbRootName(networkName);
-        // configurationData.setRoot(file);
 
         return true;
     }

@@ -16,6 +16,7 @@ package org.amanzi.neo.loader.core.newsaver;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
@@ -26,49 +27,46 @@ import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
-import org.amanzi.neo.services.model.impl.NetworkModel;
 import org.apache.log4j.Logger;
-import org.neo4j.graphdb.GraphDatabaseService;
 
-//TODO: LN: comments
 /**
+ * common actions for saver using n2n models
+ * 
  * @author Vladislav_Kondratenko
  */
-public abstract class AbstractN2NSaver extends AbstractCSVSaver<NetworkModel> {
-    protected static final Logger LOGGER = Logger.getLogger(AbstractN2NSaver.class);
-    // TODO: LN: comments
-    protected INetworkModel networkModel;
+public abstract class AbstractN2NSaver extends AbstractCSVSaver<INetworkModel> {
+
+    private static final Logger LOGGER = Logger.getLogger(AbstractN2NSaver.class);
+    /**
+     * related n2nModel
+     */
     protected INodeToNodeRelationsModel n2nModel;
 
-    protected AbstractN2NSaver(INodeToNodeRelationsModel model, INetworkModel networkModel, ConfigurationDataImpl data,
-            GraphDatabaseService service) {
-        super(service);
-        initSynonyms();
+    protected AbstractN2NSaver(INodeToNodeRelationsModel model, INetworkModel networkModel, ConfigurationDataImpl data) {
+        preferenceStoreSynonyms = initializeSynonyms();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
         if (model != null) {
             n2nModel = model;
             if (networkModel == null) {
                 try {
-                    this.networkModel = getActiveProject().getNetwork(
+                    parametrizedModel = getActiveProject().getNetwork(
                             data.getDatasetNames().get(ConfigurationDataImpl.NETWORK_PROPERTY_NAME));
-                    networkModel = this.networkModel;
+                    networkModel = this.parametrizedModel;
                 } catch (AWEException e) {
                     throw (RuntimeException)new RuntimeException().initCause(e);
                 }
             } else {
-                this.networkModel = networkModel;
+                this.parametrizedModel = networkModel;
             }
-        } else {
-            init(data, null);
         }
 
     }
 
-    // TODO: LN: comments
     /**
-     * 
+     * create class instance
      */
     public AbstractN2NSaver() {
+        super();
     }
 
     /**
@@ -81,51 +79,39 @@ public abstract class AbstractN2NSaver extends AbstractCSVSaver<NetworkModel> {
     protected void saveLine(List<String> row) throws AWEException {
         String neighbSectorName = getValueFromRow(getNeighborElementName(), row);
         String serviceNeighName = getValueFromRow(getSourceElementName(), row);
-        
+
         Map<String, Object> properties = new HashMap<String, Object>();
-        
-        properties.put(NewAbstractService.TYPE, NetworkElementNodeType.SECTOR.getId());
-        properties.put(NewAbstractService.NAME, neighbSectorName);
-        //TODO: LN: why not use networkModel.findElementByPropertyValue? 
-        //creation of map takes much more memory and time
-        IDataElement findedNeighSector = networkModel.findElement(properties);
-        
-        properties.put(NewAbstractService.NAME, serviceNeighName);
-        IDataElement findedServiceSector = networkModel.findElement(properties);
-        
-        for (String head : headers) {
-            if (fileSynonyms.containsValue(head)) {
-                properties.put(head.toLowerCase(), getSynonymValueWithAutoparse(head, row));
+
+        Set<IDataElement> findedNeighSector = parametrizedModel.findElementByPropertyValue(NetworkElementNodeType.SECTOR,
+                NewAbstractService.NAME, neighbSectorName);
+
+        Set<IDataElement> findedServiceSector = parametrizedModel.findElementByPropertyValue(NetworkElementNodeType.SECTOR,
+                NewAbstractService.NAME, serviceNeighName);
+        if (!findedNeighSector.isEmpty() && !findedServiceSector.isEmpty()) {
+            for (String head : headers) {
+                if (fileSynonyms.containsValue(head)) {
+                    properties.put(head.toLowerCase(), getSynonymValueWithAutoparse(head, row));
+                }
             }
-        }
-        if (findedNeighSector != null && findedServiceSector != null) {
-            n2nModel.linkNode(findedServiceSector, findedNeighSector, properties);
+            n2nModel.linkNode(findedServiceSector.iterator().next(), findedNeighSector.iterator().next(), properties);
+            addSynonyms(n2nModel, properties);
         } else {
             LOGGER.warn("cann't find service or neighbour sector on line " + lineCounter);
         }
+
     }
 
-    @Override
-    public void init(ConfigurationDataImpl configuration, CSVContainer dataElement) {
-        super.init(configuration, dataElement);
-        Map<String, Object> rootElement = new HashMap<String, Object>();
-        initSynonyms();
-        setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
-        try {
-            rootElement.put(NewAbstractService.NAME,
-                    configuration.getDatasetNames().get(ConfigurationDataImpl.NETWORK_PROPERTY_NAME));
-            networkModel = getActiveProject().getNetwork(
-                    configuration.getDatasetNames().get(ConfigurationDataImpl.NETWORK_PROPERTY_NAME));
-            n2nModel = getNode2NodeModel(configuration.getFilesToLoad().get(0).getName());
-            modelMap.put(networkModel.getName(), networkModel);
-            modelMap.put(n2nModel.getName(), n2nModel);
-            createExportSynonymsForModels();
-        } catch (AWEException e) {
-            rollbackTx();
-            LOGGER.error("Exception on creating root Model", e);
-            //TODO: LN: do not throw RuntimeException
-            throw new RuntimeException(e);
-        }
+    /**
+     * initialize necessary models
+     * 
+     * @return model used in top cases(parametrized model)
+     * @throws AWEException
+     */
+    protected void initializeNecessaryModels() throws AWEException {
+        parametrizedModel = getActiveProject().getNetwork(
+                configuration.getDatasetNames().get(ConfigurationDataImpl.NETWORK_PROPERTY_NAME));
+        n2nModel = getNode2NodeModel(configuration.getFilesToLoad().get(0).getName());
+        useableModels.add(n2nModel);
     }
 
     /**
@@ -138,10 +124,22 @@ public abstract class AbstractN2NSaver extends AbstractCSVSaver<NetworkModel> {
      */
     protected abstract String getNeighborElementName();
 
-    //TODO: LN: comments
+    /**
+     * initialize required n2n models
+     * 
+     * @param name
+     * @return
+     * @throws AWEException
+     */
     protected abstract INodeToNodeRelationsModel getNode2NodeModel(String name) throws AWEException;
 
-    //TODO: LN: comments
-    //TODO: LN: this method is never used 
-    protected abstract void initSynonyms();
+    @Override
+    protected void commonLinePreparationActions(CSVContainer dataElement) throws Exception {
+
+    }
+
+    @Override
+    protected String getSubType() {
+        return null;
+    }
 }

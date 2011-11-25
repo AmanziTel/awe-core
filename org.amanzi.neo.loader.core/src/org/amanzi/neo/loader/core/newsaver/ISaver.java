@@ -29,14 +29,15 @@ public interface ISaver<M extends IModel, D extends IData, C extends IConfigurat
      * @param configuration
      * @param dataElement
      */
-    public void init(C configuration, D dataElement);
+    public void init(C configuration, D dataElement) throws Exception;
 
     /**
      * save dataElement to database;
      * 
      * @param dataElement
+     * @throws AWEException
      */
-    public void saveElement(D dataElement);
+    public void saveElement(D dataElement) throws AWEException;
 
     /**
      * common finishing actions

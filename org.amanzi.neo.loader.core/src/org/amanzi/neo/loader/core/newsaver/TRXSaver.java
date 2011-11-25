@@ -24,22 +24,22 @@ import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.NewNetworkService.NetworkRelationshipTypes;
+import org.amanzi.neo.services.enums.Band;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
-import org.amanzi.neo.services.model.impl.DataElement;
-import org.amanzi.neo.services.model.impl.NetworkModel;
 import org.apache.log4j.Logger;
-import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
  * saver for trx data
  * 
  * @author Vladislav_Kondratenko
  */
-public class TRXSaver extends AbstractCSVSaver<NetworkModel> {
-    //TODO: LN: comments
+public class TRXSaver extends AbstractNetworkSaver {
     private static final Logger LOGGER = Logger.getLogger(TRXSaver.class);
+    /*
+     * constants
+     */
     private static final String SECTOR = "sector";
     private static final String SUBCELL = "subcell";
     private static final String BAND = "band";
@@ -50,29 +50,31 @@ public class TRXSaver extends AbstractCSVSaver<NetworkModel> {
     private static final String HSN = "hsn";
     private static final String MAIO = "maio";
     private static final String ARFCN = "arfcn";
+    private static final int ARFCN_ARRAY_SIZE = 63;
+
     private Integer[] arfcnArray;
     private IDataElement frequency_rootElement;
+
+    /*
+     * maps for collecting properties values;
+     */
     private Map<String, Object> SECTOR_ELEMENT = new HashMap<String, Object>();
     private Map<String, Object> TRX_ELEMENT = new HashMap<String, Object>();
     private Map<String, Object> FREQUENCY_ELEMENT = new HashMap<String, Object>();
 
-    protected TRXSaver(INetworkModel model, ConfigurationDataImpl config, GraphDatabaseService service) {
-        super(service);
+    protected TRXSaver(INetworkModel model, ConfigurationDataImpl config) {
         preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.NETWORK);
         columnSynonyms = new HashMap<String, Integer>();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
         commitTx();
         if (model != null) {
-            networkModel = model;
-            modelMap.put(model.getName(), model);
-        } else {
-            init(config, null);
+            parametrizedModel = model;
+            useableModels.add(model);
         }
     }
 
-    //TODO: LN: comments
     /**
-     * 
+     * create class instance
      */
     public TRXSaver() {
         super();
@@ -81,14 +83,13 @@ public class TRXSaver extends AbstractCSVSaver<NetworkModel> {
     protected void saveLine(List<String> value) throws AWEException {
         if (frequency_rootElement == null) {
             Map<String, Object> frequency = new HashMap<String, Object>();
-            frequency.put(NewAbstractService.NAME, networkModel.getName());
+            frequency.put(NewAbstractService.NAME, parametrizedModel.getName());
             frequency.put(NewAbstractService.TYPE, NetworkElementNodeType.FREQUENCY_ROOT.getId());
-            frequency_rootElement = networkModel.createElement(new DataElement(networkModel.getRootNode()), FREQUENCY_ELEMENT,
+            frequency_rootElement = parametrizedModel.createElement(null, FREQUENCY_ELEMENT,
                     NetworkRelationshipTypes.FREQUENCY_ROOT);
         }
         clearElementMaps();
-        //TODO: LN: what is 63? 
-        arfcnArray = new Integer[63];
+        arfcnArray = new Integer[ARFCN_ARRAY_SIZE];
         String sectorName = (String)getSynonymValueWithAutoparse(SECTOR, value);
         collectSectorElement(sectorName);
 
@@ -96,8 +97,8 @@ public class TRXSaver extends AbstractCSVSaver<NetworkModel> {
         Integer trxId = (Integer)getSynonymValueWithAutoparse(TRXID, value);
         String band = getSynonymValueWithAutoparse(BAND, value).toString();
         String extended = null;
-        //TODO: LN: what is 900? Make a Enum for Band in Services plugin for example
-        if (band.equals("900")) {
+
+        if (band.equals(Band.BAND_900.getId())) {
             extended = (String)getSynonymValueWithAutoparse(EXTENDED, value);
 
         }
@@ -149,11 +150,11 @@ public class TRXSaver extends AbstractCSVSaver<NetworkModel> {
      * @throws AWEException
      */
     private void createOrUpdateTRX() throws AWEException {
-        IDataElement findedSector = networkModel.findElement(SECTOR_ELEMENT);
+        IDataElement findedSector = parametrizedModel.findElement(SECTOR_ELEMENT);
         if (findedSector == null) {
             LOGGER.warn("Cann't find sector on line " + lineCounter);
         }
-        Iterable<IDataElement> sectorsTrx = networkModel.getChildren(findedSector);
+        Iterable<IDataElement> sectorsTrx = parametrizedModel.getChildren(findedSector);
         IDataElement findedTrx = null;
         for (IDataElement trx : sectorsTrx) {
             if (trx.get(TRXID).equals(TRX_ELEMENT.get(TRXID))) {
@@ -161,12 +162,12 @@ public class TRXSaver extends AbstractCSVSaver<NetworkModel> {
             }
         }
         if (findedTrx == null) {
-            findedTrx = networkModel.createElement(findedSector, TRX_ELEMENT);
+            findedTrx = parametrizedModel.createElement(findedSector, TRX_ELEMENT);
         } else {
-            networkModel.completeProperties(findedTrx, TRX_ELEMENT, true);
+            parametrizedModel.completeProperties(findedTrx, TRX_ELEMENT, true);
         }
         createOrUpdateFrequencyElement(findedTrx);
-        addSynonyms(networkModel, TRX_ELEMENT);
+        addSynonyms(parametrizedModel, TRX_ELEMENT);
     }
 
     /**
@@ -176,17 +177,18 @@ public class TRXSaver extends AbstractCSVSaver<NetworkModel> {
      * @throws AWEException
      */
     private void createOrUpdateFrequencyElement(IDataElement findedTrx) throws AWEException {
-        Iterable<IDataElement> frequencyElements = networkModel.getRelatedNodes(findedTrx, NetworkRelationshipTypes.ENTRY_PLAN);
+        Iterable<IDataElement> frequencyElements = parametrizedModel
+                .getRelatedNodes(findedTrx, NetworkRelationshipTypes.ENTRY_PLAN);
         Iterator<IDataElement> frequencyElement = null;
         if (frequencyElements != null) {
             frequencyElement = frequencyElements.iterator();
         }
         if (frequencyElement != null && !frequencyElement.hasNext()) {
-            networkModel.createElement(findedTrx, FREQUENCY_ELEMENT, NetworkRelationshipTypes.ENTRY_PLAN);
+            parametrizedModel.createElement(findedTrx, FREQUENCY_ELEMENT, NetworkRelationshipTypes.ENTRY_PLAN);
         } else {
-            networkModel.completeProperties(frequencyElement.next(), FREQUENCY_ELEMENT, true);
+            parametrizedModel.completeProperties(frequencyElement.next(), FREQUENCY_ELEMENT, true);
         }
-        addSynonyms(networkModel, FREQUENCY_ELEMENT);
+        addSynonyms(parametrizedModel, FREQUENCY_ELEMENT);
     }
 
     /**
@@ -207,7 +209,7 @@ public class TRXSaver extends AbstractCSVSaver<NetworkModel> {
     }
 
     /**
-     * collect sectir from required element
+     * collect sector from required element
      * 
      * @param sectorName
      */

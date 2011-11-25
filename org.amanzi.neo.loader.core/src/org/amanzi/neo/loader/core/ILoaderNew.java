@@ -30,72 +30,75 @@ import org.amanzi.neo.services.model.IModel;
  * @since 1.0.0
  */
 public interface ILoaderNew<T extends IData, T2 extends IConfiguration> {
-    /**
-     * set progress bar to loader
-     * 
-     * @param listener
-     */
-    void addProgressListener(ILoaderProgressListener listener);
+	/**
+	 * set progress bar to loader
+	 * 
+	 * @param listener
+	 */
+	void addProgressListener(ILoaderProgressListener listener);
 
-    /**
-     * remove progress Monitor
-     * 
-     * @param listener
-     */
-    void removeProgressListener(ILoaderProgressListener listener);
+	/**
+	 * remove progress Monitor
+	 * 
+	 * @param listener
+	 */
+	void removeProgressListener(ILoaderProgressListener listener);
 
-    /**
-     * set saver for selected loader
-     * 
-     * @param saver
-     */
-    public void setSaver(List<ISaver<? extends IModel, T, T2>> saver);
+	/**
+	 * set saver for selected loader
+	 * 
+	 * @param saver
+	 */
+	public void setSaver(List<ISaver<? extends IModel, T, T2>> saver);
 
-    /**
-     * set parser for selected loader;
-     * 
-     * @param parser
-     */
-    @SuppressWarnings("rawtypes")
-    public void setParser(IParser parser);
+	/**
+	 * set parser for selected loader;
+	 * 
+	 * @param parser
+	 */
+	@SuppressWarnings("rawtypes")
+	public void setParser(IParser parser);
 
-    /**
-     * run loader
-     */
-    public void run() throws AWEException;
+	/**
+	 * run loader
+	 * 
+	 * @throws AWEException
+	 */
+	public void run() throws AWEException;
 
-    /**
-     * set validator for selected loader
-     * 
-     * @param validator
-     */
-    public void setValidator(IValidator validator);
+	/**
+	 * set validator for selected loader
+	 * 
+	 * @param validator
+	 */
+	public void setValidator(IValidator validator);
 
-    /**
-     * configure loader
-     * 
-     * @param config
-     */
-    public void init(T2 config);
+	/**
+	 * configure loader
+	 * 
+	 * @param config
+	 * @throws Exception
+	 */
+	public void init(T2 config) throws Exception;
 
-    /**
-     * get validator for current loader;
-     * 
-     * @return validator
-     */
-    public IValidator getValidator();
+	/**
+	 * get validator for current loader;
+	 * 
+	 * @return validator
+	 */
+	public IValidator getValidator();
 
-    /**
-     * get loader info
-     * 
-     * @return
-     */
-    public ILoaderInfo getLoaderInfo();
+	/**
+	 * get loader info
+	 * 
+	 * @return
+	 */
+	public ILoaderInfo getLoaderInfo();
 
-    /**
-     * set loader info
-     * 
-     * @return
-     */
-    public void setLoaderInfo(ILoaderInfo info);
+	/**
+	 * set loader info
+	 * 
+	 * @return
+	 */
+	public void setLoaderInfo(ILoaderInfo info);
 }

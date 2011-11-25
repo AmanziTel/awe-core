@@ -14,6 +14,8 @@
 package org.amanzi.neo.loader.core.newsaver;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import org.amanzi.neo.db.manager.DatabaseManagerFactory;
@@ -30,7 +32,7 @@ import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.amanzi.neo.services.synonyms.ExportSynonymsManager;
 import org.amanzi.neo.services.synonyms.ExportSynonymsService.ExportSynonymType;
 import org.amanzi.neo.services.synonyms.ExportSynonymsService.ExportSynonyms;
-import org.neo4j.graphdb.GraphDatabaseService;
+import org.apache.log4j.Logger;
 
 /**
  * contains common methods for all savers
@@ -41,35 +43,31 @@ import org.neo4j.graphdb.GraphDatabaseService;
  * @param <T3>
  */
 public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 extends IConfiguration> implements ISaver<T1, T2, T3> {
-    
-    //TODO: LN: comments
-    public static final String PROJECT_PROPERTY = "project";
-    public static final String CONFIG_VALUE_CALLS = "Calls";
-    public static final String CONFIG_VALUE_PESQ = "Pesq";
+    private static final Logger LOGGER = Logger.getLogger(AbstractSaver.class);
+    // constants
+    protected static final String CONFIG_VALUE_CALLS = "Calls";
+    protected static final String CONFIG_VALUE_PESQ = "Pesq";
+    protected static final char DOT_SEPARATOR = '.';
+
     protected final static ExportSynonymsManager exportManager = ExportSynonymsManager.getManager();
+    // instance of prefernece meneger for getting synonyms
     protected static DataLoadPreferenceManager preferenceManager = new DataLoadPreferenceManager();
     protected Map<String, String[]> preferenceStoreSynonyms;
-    
-    //TODO: LN: in modelMap we use Name of Model and Model instance
-    //why not use list of Models? and then just model.getName()
-    protected Map<String, IDataModel> modelMap = new HashMap<String, IDataModel>();
+
+    // variables required for export synonyms saving
+    protected List<IDataModel> useableModels = new LinkedList<IDataModel>();
     protected Map<IModel, ExportSynonyms> synonymsMap = new HashMap<IModel, ExportSynonyms>();
-    
-    //TODO: LN: comments, WTF?????? 
-    private static final String TRUE = "true";
-    private static final String FALSE = "false";
 
     /*
      * Database Manager
      */
-    private static IDatabaseManager dbManager = DatabaseManagerFactory.getDatabaseManager();
-  
-    protected AbstractSaver(GraphDatabaseService service) {
-        
-    }
-    
+    static IDatabaseManager dbManager = DatabaseManagerFactory.getDatabaseManager();
+
+    /**
+     * create class instance
+     */
     protected AbstractSaver() {
-        
+
     }
 
     /**
@@ -84,7 +82,7 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
             if (predifinedCheck != null) {
                 return predifinedCheck;
             }
-            char separator = '.';
+            char separator = DOT_SEPARATOR;
             if (propertyValue.indexOf(separator) != -1) {
                 Float floatValue = Float.parseFloat(propertyValue);
                 if (floatValue.toString().length() < propertyValue.length()) {
@@ -100,9 +98,9 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
                 }
             }
         } catch (Exception e) {
-            if (propertyValue.equalsIgnoreCase(TRUE)) {
+            if (propertyValue.equalsIgnoreCase(Boolean.TRUE.toString())) {
                 return Boolean.TRUE;
-            } else if (propertyValue.equalsIgnoreCase(FALSE)) {
+            } else if (propertyValue.equalsIgnoreCase(Boolean.FALSE.toString())) {
                 return Boolean.FALSE;
             }
             return propertyValue;
@@ -140,14 +138,14 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
         return parsedValue;
     }
 
-    protected void createExportSynonymsForModels() {
+    protected void createExportSynonymsForModels() throws DatabaseException {
         try {
-            for (String key : modelMap.keySet()) {
-                synonymsMap.put(modelMap.get(key), exportManager.createExportSynonym(modelMap.get(key), ExportSynonymType.DATASET));
+            for (IModel model : useableModels) {
+                synonymsMap.put(model, exportManager.createExportSynonym(model, ExportSynonymType.DATASET));
             }
         } catch (DatabaseException e) {
-            // TODO Handle DatabaseException
-            throw (RuntimeException)new RuntimeException().initCause(e);
+            LOGGER.error("Error while creating export synonyms for models", e);
+            throw new DatabaseException(e);
         }
     }
 
@@ -159,18 +157,19 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
 
     /**
      * save synonyms into database
+     * 
+     * @throws DatabaseException
      */
-    private void saveSynonym() {
+    private void saveSynonym() throws DatabaseException {
         if (synonymsMap.isEmpty()) {
             return;
         }
-        for (String key : modelMap.keySet()) {
+        for (IModel model : useableModels) {
             try {
-                exportManager.saveDatasetExportSynonyms(modelMap.get(key), synonymsMap.get(modelMap.get(key)),
-                        ExportSynonymType.DATASET);
+                exportManager.saveDatasetExportSynonyms(model, synonymsMap.get(model), ExportSynonymType.DATASET);
             } catch (DatabaseException e) {
-                // TODO Handle DatabaseException
-                throw (RuntimeException)new RuntimeException().initCause(e);
+                LOGGER.error("Error while saving export synonyms for models", e);
+                throw new DatabaseException(e);
             }
         }
     }
@@ -179,7 +178,7 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
      * action threshold for commit
      */
     private int commitTxCount;
-    
+
     /**
      * transactions count
      */
@@ -212,7 +211,7 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
 
     @Override
     public void finishUp() throws AWEException {
-        for (IDataModel dataModel : modelMap.values()) {
+        for (IDataModel dataModel : useableModels) {
             dataModel.finishUp();
         }
         saveSynonym();
@@ -224,9 +223,9 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
     protected IProjectModel getActiveProject() throws AWEException {
         return ProjectModel.getCurrentProjectModel();
     }
-    
+
     @Override
-    public void init(T3 configuration, T2 dataElement) {
+    public void init(T3 configuration, T2 dataElement) throws Exception {
         DatabaseManagerFactory.getDatabaseManager().startThreadTransaction();
     }
 }

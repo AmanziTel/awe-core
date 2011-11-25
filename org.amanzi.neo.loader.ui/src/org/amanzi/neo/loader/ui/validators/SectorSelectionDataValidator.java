@@ -16,65 +16,27 @@ package org.amanzi.neo.loader.ui.validators;
 import java.io.File;
 import java.util.List;
 
-import org.amanzi.neo.loader.core.IConfiguration;
-import org.amanzi.neo.loader.core.IValidator;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
-import org.amanzi.neo.services.exceptions.AWEException;
-import org.amanzi.neo.services.model.INetworkModel;
-import org.amanzi.neo.services.model.IProjectModel;
-import org.amanzi.neo.services.model.impl.ProjectModel;
-import org.apache.log4j.Logger;
 
 /**
  * @author Kondratenko_Vladislav validate sector selection information
  */
-public class SectorSelectionDataValidator implements IValidator {
-    private static final Logger LOGGER = Logger.getLogger(SectorSelectionDataValidator.class);
-    private String[] possibleFieldSepRegexes = new String[] {"\t", ",", ";"};
-    private Result result = Result.FAIL;
-    private String message = "";
+public class SectorSelectionDataValidator extends AbstractNetworkValidator {
 
-    @Override
-    public Result getResult() {
-        return result;
-    }
+	@Override
+	public Result isAppropriate(List<File> fileToLoad) {
+		for (File f : fileToLoad) {
+			result = ValidatorUtils.checkFileAndHeaders(f, 2,
+					new String[] { DataLoadPreferences.NH_SECTOR },
+					possibleFieldSepRegexes).getResult();
+			if (result == Result.FAIL) {
+				message = "File" + f.getName()
+						+ " doesn't contain correct header";
+				return result;
+			}
+		}
 
-    @Override
-    public String getMessages() {
-        return message;
-    }
-
-    @Override
-    public Result isAppropriate(List<File> fileToLoad) {
-        for (File f : fileToLoad) {
-            result = ValidatorUtils
-                    .checkFileAndHeaders(f, 1, new String[] {DataLoadPreferences.NH_SECTOR}, possibleFieldSepRegexes).getResult();
-            return result;
-        }
-        message = "File doesn't contain correct header";
-        return Result.FAIL;
-    }
-
-    @Override
-    public Result isValid(IConfiguration config) {
-        if (config.getDatasetNames().get("Project") == null) {
-            return Result.FAIL;
-        }
-        if (result == Result.SUCCESS) {
-            try {
-                IProjectModel projectModel = ProjectModel.getCurrentProjectModel();
-                INetworkModel network = projectModel.findNetwork(config.getDatasetNames().get("Network"));
-                if (network != null) {
-                    result = Result.SUCCESS;
-                    return result;
-                }
-            } catch (AWEException e) {
-                LOGGER.error("Error while Sector selection data validate", e);
-                throw (RuntimeException)new RuntimeException().initCause(e);
-            }
-        }
-        message = String.format("Should select some network to build selection model");
-        return Result.FAIL;
-    }
+		return result;
+	}
 
 }

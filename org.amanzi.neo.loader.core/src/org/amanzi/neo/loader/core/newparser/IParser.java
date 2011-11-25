@@ -21,6 +21,7 @@ import org.amanzi.neo.loader.core.IProgressEvent;
 import org.amanzi.neo.loader.core.newsaver.IData;
 import org.amanzi.neo.loader.core.newsaver.ISaver;
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IModel;
 
 /**
@@ -40,8 +41,10 @@ public interface IParser<T1 extends ISaver< ? extends IModel, T3, T2>, T2 extend
     /**
      * run parser and save parsed files in database. For saving data parser use saver which it was
      * initialize in <B>init</B> method;
+     * 
+     * @throws AWEException
      */
-    public void run() throws AWEException;
+    public void run() throws DatabaseException, AWEException;
 
     /**
      * set progress bar to loader

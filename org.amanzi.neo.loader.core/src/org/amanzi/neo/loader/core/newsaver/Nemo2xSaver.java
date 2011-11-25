@@ -41,7 +41,7 @@ import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDriveModel;
-import org.amanzi.neo.services.model.impl.DriveModel.DriveRelationshipTypes;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
 
@@ -52,92 +52,91 @@ import org.neo4j.graphdb.GraphDatabaseService;
  */
 public class Nemo2xSaver extends AbstractDriveSaver {
     private static final Logger LOGGER = Logger.getLogger(Nemo2xSaver.class);
-    
-    //TODO: LN: comments
-    //TODO: LN: string to const
-    protected static final SimpleDateFormat EVENT_DATE_FORMAT = new SimpleDateFormat("dd.MM.yyyy");
-    protected static final String TIME_FORMAT = "HH:mm:ss.S";
-    protected Calendar workDate;
-    protected IDriveModel model;
-    protected final int MAX_TX_BEFORE_COMMIT = 1000;
 
+    // Constants
+    protected static final SimpleDateFormat EVENT_DATE_FORMAT = new SimpleDateFormat("dd.MM.yyyy");
+    protected static final String REPLACEMENT_PATTERN_1 = "[\\s\\-\\[\\]\\(\\)\\/\\.\\\\\\:\\#]+";
+    protected static final String REPLACEMENT_PATTERN_2 = "[^\\w]+";
+    protected static final String REPLACEMENT_PATTERN_4 = "\\_$";
+    protected static final String REPLACEMENT_PATTERN_3 = "_+";
+    protected static final String UNDERSCORE = "_";
+    protected String EVENT_TYPE = "event_type";
+    private static final String GPS_EVENT = "GPS";
+    private static final String NEMO_V2_VERSION = "2.01";
+    /*
+     * index number
+     */
+    private static final int EVENT_ID_INDEX = 0;
+    private static final int TIME_INDEX = 1;
+    private static final int NUMBER_CONTEXT_ID_INDEX = 2;
+    private static final int FIRST_PARAMETER_INDEX = 3;
+
+    protected static final SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss.S");
+
+    protected Calendar workDate;
     protected DriveEvents driveEvents;
     protected List<Map<String, Object>> subNodes;
-    protected SimpleDateFormat timeFormat = new SimpleDateFormat(TIME_FORMAT);
+
+    /**
+     * virtual model for parameterizedModel
+     */
+    protected IDriveModel virtualModel;
+    /**
+     * list of all created location elements
+     */
     protected Set<IDataElement> locationDataElements = new HashSet<IDataElement>();
-    protected String EVENT_TYPE = "event_type";
+
+    /**
+     * curent created location element
+     */
     protected IDataElement location;
 
     protected Nemo2xSaver(IDriveModel model, ConfigurationDataImpl config, GraphDatabaseService service) {
-        super(service);
         preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.DRIVE);
         columnSynonyms = new HashMap<String, Integer>();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
         commitTx();
         if (model != null) {
-            this.model = model;
-            modelMap.put(model.getName(), model);
-        } else {
-            init(config, null);
+            parametrizedModel = model;
+            useableModels.add(model);
         }
     }
 
-    //TODO: LN: comments
     /**
-     * 
+     * create instance of nemo2xsaver
      */
     public Nemo2xSaver() {
         super();
     }
 
-    //TODO: LN: comments
+    @Override
     protected void addedNewFileToModels(File file) throws DatabaseException, DuplicateNodeNameException {
-        model.addFile(file);
+        parametrizedModel.addFile(file);
+    }
+
+    /**
+     * return virtual model for parametrizedModel
+     * 
+     * @return
+     * @throws AWEException
+     */
+    private IDriveModel getVirtualModel() throws AWEException {
+        return parametrizedModel.getVirtualDataset(parametrizedModel.getName(), DriveTypes.MS);
     }
 
     @Override
-    public void init(ConfigurationDataImpl configuration, CSVContainer dataElement) {
-        super.init(configuration, dataElement);
-        preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.DRIVE);
-        setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
-        
-        try {
-            model = getActiveProject().getDataset(configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME),
-                    DriveTypes.TEMS);
-            modelMap.put(configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME), model);
-            createExportSynonymsForModels();
-        } catch (AWEException e) {
-            rollbackTx();
-            LOGGER.error("Exception on creating root Model", e);
-            //TODO: LN: do not use RuntimeException
-            throw new RuntimeException(e);
+    protected boolean handleHeaders(CSVContainer dataElement) throws Exception {
+        if (!dataElement.getHeaders().isEmpty() && dataElement.getValues().isEmpty()) {
+            saveLine(dataElement.getHeaders());
+            return false;
         }
-    }
-
-    //TODO: LN: comments
-    protected IDriveModel getVirtualModel() throws AWEException {
-        return model.getVirtualDataset(model.getName(), DriveTypes.MS);
+        return true;
     }
 
     @Override
-    public void saveElement(CSVContainer dataElement) {
-        try {
-            commitTx();
-            CSVContainer container = dataElement;
-            checkForNewFile(dataElement);
-            if (!container.getHeaders().isEmpty() && container.getValues().isEmpty()) {
-                saveLine(container.getHeaders());
-            } else if (!container.getHeaders().isEmpty() && !container.getValues().isEmpty()) {
-                saveLine(container.getValues());
-            }
-        } catch (DatabaseException e) {
-            LOGGER.error("Error while saving element on line " + lineCounter, e);
-            rollbackTx();
-            //TODO: LN: do not throw Runtime
-            throw (RuntimeException)new RuntimeException().initCause(e);
-        } catch (Exception e) {
-            LOGGER.error("Exception while saving element on line " + lineCounter, e);
-            commitTx();
+    protected void handleLine(CSVContainer dataElement) throws AWEException {
+        if (!dataElement.getHeaders().isEmpty() && !dataElement.getValues().isEmpty()) {
+            saveLine(dataElement.getValues());
         }
     }
 
@@ -172,12 +171,11 @@ public class Nemo2xSaver extends AbstractDriveSaver {
                 }
                 propertyMap.put(TIMESTAMP, timestamp);
                 propertyMap.put(NewAbstractService.NAME, eventId);
-                getVirtualModel().getFile(fileName);
+                virtualModel.getFile(fileName);
                 IDataElement createdElement = getVirtualModel().addMeasurement(fileName, propertyMap);
                 List<IDataElement> locList = new LinkedList<IDataElement>();
                 locList.add(location);
-                //TODO: LN: same as for Nemo1xSaver
-                getVirtualModel().linkNode(createdElement, locList, DriveRelationshipTypes.LOCATION);
+                linkWithLocationElement(createdElement, locList);
             } catch (Exception e) {
             }
         }
@@ -185,13 +183,12 @@ public class Nemo2xSaver extends AbstractDriveSaver {
 
     @Override
     protected void saveLine(List<String> headers) throws AWEException {
-        //TODO: LN: magic numbers
-        String eventId = headers.get(0);
+        String eventId = headers.get(EVENT_ID_INDEX);
         NemoEvents event = NemoEvents.getEventById(eventId);
-        String time = headers.get(1);
-        String numberContextId = headers.get(2);
+        String time = headers.get(TIME_INDEX);
+        String numberContextId = headers.get(NUMBER_CONTEXT_ID_INDEX);
         List<Integer> contextId = new ArrayList<Integer>();
-        Integer firstParamsId = 3;
+        Integer firstParamsId = FIRST_PARAMETER_INDEX;
         if (!numberContextId.isEmpty()) {
             int numContext = Integer.parseInt(numberContextId);
             for (int i = 1; i <= numContext; i++) {
@@ -201,7 +198,6 @@ public class Nemo2xSaver extends AbstractDriveSaver {
                     try {
                         value = Integer.parseInt(field);
                     } catch (NumberFormatException e) {
-                        // TODO Handle NumberFormatException
                         LOGGER.error("Wrong context id:" + field);
                         value = 0;
                     }
@@ -220,10 +216,8 @@ public class Nemo2xSaver extends AbstractDriveSaver {
         }
         long timestamp;
         try {
-            timestamp = getTimeStamp(1, timeFormat.parse(time));
+            timestamp = getTimeStamp(timeFormat.parse(time));
         } catch (ParseException e) {
-            // some parameters do not have time
-            // NeoLoaderPlugin.error(e.getLocalizedMessage());
             timestamp = 0;
         }
         parsedParameters.put(NewAbstractService.NAME, eventId);
@@ -231,8 +225,7 @@ public class Nemo2xSaver extends AbstractDriveSaver {
         parsedParameters.put(TIMESTAMP, timestamp);
         removeEmpty(parsedParameters);
         boolean isAlreadyCreated = false;
-        //TODO: LN: string to const
-        if ("GPS".equalsIgnoreCase(eventId)) {
+        if (GPS_EVENT.equalsIgnoreCase(eventId)) {
             Double longitude = (Double)parsedParameters.get(IDriveModel.LONGITUDE);
             Double latitude = (Double)parsedParameters.get(IDriveModel.LATITUDE);
             if (isCorrect(latitude) && latitude != 0d && isCorrect(longitude) && longitude != 0d) {
@@ -241,26 +234,25 @@ public class Nemo2xSaver extends AbstractDriveSaver {
                     parsedParameters.remove(IDriveModel.LATITUDE);
                     parsedParameters.remove(IDriveModel.LONGITUDE);
                 }
-                IDataElement createdElement = model.addMeasurement(fileName, parsedParameters);
+                IDataElement createdElement = parametrizedModel.addMeasurement(fileName, parsedParameters);
                 isAlreadyCreated = true;
                 if (location != null) {
                     List<IDataElement> locList = new LinkedList<IDataElement>();
                     locList.add(location);
-                    //TODO: LN: see Nemo1xSaver
-                    model.linkNode(createdElement, locList, DriveRelationshipTypes.LOCATION);
+                    linkWithLocationElement(createdElement, locList);
                 } else {
-                    IDataElement location = model.getLocation(createdElement);
+                    IDataElement location = parametrizedModel.getLocation(createdElement);
                     if (location != null) {
-                        locationDataElements.add(model.getLocation(createdElement));
+                        locationDataElements.add(parametrizedModel.getLocation(createdElement));
                     }
                 }
             }
         }
         if (!isAlreadyCreated) {
-            IDataElement createdElement = model.addMeasurement(fileName, parsedParameters);
-            IDataElement location = model.getLocation(createdElement);
+            IDataElement createdElement = parametrizedModel.addMeasurement(fileName, parsedParameters);
+            IDataElement location = parametrizedModel.getLocation(createdElement);
             if (location != null) {
-                locationDataElements.add(model.getLocation(createdElement));
+                locationDataElements.add(parametrizedModel.getLocation(createdElement));
             }
         }
         createSubNodes(eventId, subNodes, timestamp);
@@ -290,9 +282,6 @@ public class Nemo2xSaver extends AbstractDriveSaver {
             parParam = event.fill(getVersion(), parameters);
         } catch (Exception e1) {
             LOGGER.error(String.format("Line %s not parsed", element.toString()));
-            //TODO: LN: do not use printStackTrace
-            e1.printStackTrace();
-            // exception(e1);
             return null;
         }
         if (parParam.isEmpty()) {
@@ -300,7 +289,6 @@ public class Nemo2xSaver extends AbstractDriveSaver {
         }
         driveEvents = (DriveEvents)parParam.remove(NemoEvents.DRIVE_EVENTS);
         subNodes = (List<Map<String, Object>>)parParam.remove(NemoEvents.SUB_NODES);
-        // TODO check documentation
         if (subNodes != null) {
             // store in parameters like prop1,prop2...
             int i = 0;
@@ -328,7 +316,7 @@ public class Nemo2xSaver extends AbstractDriveSaver {
             workDate = new GregorianCalendar();
             Date date;
             try {
-                //TODO: LN: string to const
+                // TODO: LN: string to const
                 date = EVENT_DATE_FORMAT.parse((String)parParam.get("Date"));
 
             } catch (Exception e) {
@@ -339,7 +327,6 @@ public class Nemo2xSaver extends AbstractDriveSaver {
         }
         // Pechko_E make property names Ruby-compatible
         Set<Entry<String, Object>> entrySet = parParam.entrySet();
-        // TODO Check may be a new map is unnecessary and we can use parsedParameters
         Map<String, Object> parsedParameters = new HashMap<String, Object>(parParam.size());
         for (Entry<String, Object> entry : entrySet) {
             parsedParameters.put(cleanHeader(entry.getKey()), entry.getValue());
@@ -356,9 +343,8 @@ public class Nemo2xSaver extends AbstractDriveSaver {
      * @return edited String
      */
     protected final static String cleanHeader(String header) {
-        //TODO: LN: string to const
-        return header.replaceAll("[\\s\\-\\[\\]\\(\\)\\/\\.\\\\\\:\\#]+", "_").replaceAll("[^\\w]+", "_").replaceAll("_+", "_")
-                .replaceAll("\\_$", "").toLowerCase();
+        return header.replaceAll(REPLACEMENT_PATTERN_1, UNDERSCORE).replaceAll(REPLACEMENT_PATTERN_2, UNDERSCORE)
+                .replaceAll(REPLACEMENT_PATTERN_3, UNDERSCORE).replaceAll(REPLACEMENT_PATTERN_4, StringUtils.EMPTY).toLowerCase();
     }
 
     /**
@@ -368,11 +354,11 @@ public class Nemo2xSaver extends AbstractDriveSaver {
      * @return long (0 if nodeDate==null)
      */
     @SuppressWarnings("deprecation")
-    protected long getTimeStamp(Integer key, Date nodeDate) {
+    protected long getTimeStamp(Date nodeDate) {
         if (nodeDate == null || workDate == null) {
             return 0L;
         }
-        //TODO: LN: do not use deprecated methods
+        // TODO: LN: do not use deprecated methods
         final int nodeHours = nodeDate.getHours();
         workDate.set(Calendar.HOUR_OF_DAY, nodeHours);
         workDate.set(Calendar.MINUTE, nodeDate.getMinutes());
@@ -382,10 +368,11 @@ public class Nemo2xSaver extends AbstractDriveSaver {
     }
 
     protected IDataElement checkSameLocation(Map<String, Object> params) {
-        //TODO: LN: you can use 'equals' for double
-        //use delta, for example it should be less 0.00001
+        // TODO: LN: you can use 'equals' for double
+        // use delta, for example it should be less 0.00001
         for (IDataElement location : locationDataElements) {
-            if (location.get(IDriveModel.LATITUDE).equals(params.get(IDriveModel.LATITUDE)) && location.get(IDriveModel.LONGITUDE).equals(params.get(IDriveModel.LONGITUDE))) {
+            if (location.get(IDriveModel.LATITUDE).equals(params.get(IDriveModel.LATITUDE))
+                    && location.get(IDriveModel.LONGITUDE).equals(params.get(IDriveModel.LONGITUDE))) {
                 return location;
             }
         }
@@ -398,6 +385,14 @@ public class Nemo2xSaver extends AbstractDriveSaver {
      * @return the version
      */
     protected String getVersion() {
-        return "2.01";
+        return NEMO_V2_VERSION;
+    }
+
+    @Override
+    protected void initializeNecessaryModels() throws AWEException {
+        parametrizedModel = getActiveProject().getDataset(
+                configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME), DriveTypes.NEMO_V2);
+        virtualModel = getVirtualModel();
+
     }
 }

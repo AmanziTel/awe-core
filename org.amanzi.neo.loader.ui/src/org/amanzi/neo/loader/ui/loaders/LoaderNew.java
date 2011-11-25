@@ -24,6 +24,7 @@ import org.amanzi.neo.loader.core.newparser.IParser;
 import org.amanzi.neo.loader.core.newsaver.IData;
 import org.amanzi.neo.loader.core.newsaver.ISaver;
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IModel;
 
 /**
@@ -35,78 +36,80 @@ import org.amanzi.neo.services.model.IModel;
  * @since 1.0.0
  */
 public class LoaderNew implements ILoaderNew<IData, IConfiguration> {
-    /**
-     * contain some information about loader such as loader name loader type and loader datatype
-     */
-    ILoaderInfo info;
-    
-    /**
-     * saver for current Loader
-     */
-    List<ISaver<? extends IModel, IData, IConfiguration>> saver;
-    /**
-     * parser for current Loader
-     */
-    IParser parser;
-    /**
-     * validator for currentLoader;
-     */
-    IValidator validator;
+	/**
+	 * contain some information about loader such as loader name loader type and
+	 * loader datatype
+	 */
+	ILoaderInfo info;
 
-    @SuppressWarnings("rawtypes")
-    @Override
-    public void setSaver(List<ISaver<? extends IModel, IData, IConfiguration>> saver) {
-        this.saver = saver;
-    }
+	/**
+	 * saver for current Loader
+	 */
+	List<ISaver<? extends IModel, IData, IConfiguration>> saver;
+	/**
+	 * parser for current Loader
+	 */
+	IParser parser;
+	/**
+	 * validator for currentLoader;
+	 */
+	IValidator validator;
 
-    @SuppressWarnings("rawtypes")
-    @Override
-    public void setParser(IParser parser) {
-        this.parser = parser;
-    }
+	@SuppressWarnings("rawtypes")
+	@Override
+	public void setSaver(
+			List<ISaver<? extends IModel, IData, IConfiguration>> saver) {
+		this.saver = saver;
+	}
 
-    @Override
-    public void run() throws AWEException {
-        parser.run();
-    }
+	@SuppressWarnings("rawtypes")
+	@Override
+	public void setParser(IParser parser) {
+		this.parser = parser;
+	}
 
-    @Override
-    public void setValidator(IValidator validator) {
-        this.validator = validator;
-    }
+	@Override
+	public void run() throws AWEException {
+		parser.run();
+	}
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    @Override
-    public void init(IConfiguration config) {
-        for (ISaver saverMem : saver) {
-            saverMem.init(config, null);
-        }
-        parser.init(config, saver);
-    }
+	@Override
+	public void setValidator(IValidator validator) {
+		this.validator = validator;
+	}
 
-    @Override
-    public IValidator getValidator() {
-        return validator;
-    }
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Override
+	public void init(IConfiguration config) throws Exception {
+		for (ISaver saverMem : saver) {
+			saverMem.init(config, null);
+		}
+		parser.init(config, saver);
+	}
 
-    @Override
-    public ILoaderInfo getLoaderInfo() {
-        return info;
-    }
+	@Override
+	public IValidator getValidator() {
+		return validator;
+	}
 
-    @Override
-    public void setLoaderInfo(ILoaderInfo info) {
-        this.info = info;
-    }
+	@Override
+	public ILoaderInfo getLoaderInfo() {
+		return info;
+	}
 
-    @Override
-    public void addProgressListener(ILoaderProgressListener listener) {
-        parser.addProgressListener(listener);
-    }
+	@Override
+	public void setLoaderInfo(ILoaderInfo info) {
+		this.info = info;
+	}
 
-    @Override
-    public void removeProgressListener(ILoaderProgressListener listener) {
-        parser.removeProgressListener(listener);
-    }
+	@Override
+	public void addProgressListener(ILoaderProgressListener listener) {
+		parser.addProgressListener(listener);
+	}
+
+	@Override
+	public void removeProgressListener(ILoaderProgressListener listener) {
+		parser.removeProgressListener(listener);
+	}
 
 }

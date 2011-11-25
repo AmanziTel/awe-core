@@ -24,38 +24,35 @@ import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
-import org.amanzi.neo.services.model.impl.NetworkModel;
 import org.apache.log4j.Logger;
-import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
  * saver for separation constraint data
  * 
  * @author Vladislav_Kondratenko
  */
-public class SeparationCostraintSaver extends AbstractCSVSaver<NetworkModel> {
-    //TODO: LN: comments
+public class SeparationCostraintSaver extends AbstractNetworkSaver {
     private static final Logger LOGGER = Logger.getLogger(SeparationCostraintSaver.class);
+    /*
+     * maps for elements properties collection
+     */
     private static final String SECTOR = "sector";
     private static final String SEPARATION = "separation";
     private static Map<String, Object> SECTOR_MAP = new HashMap<String, Object>();
 
-    protected SeparationCostraintSaver(INetworkModel model, ConfigurationDataImpl config, GraphDatabaseService service) {
-        super(service);
+    protected SeparationCostraintSaver(INetworkModel model, ConfigurationDataImpl config) {
         preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.NETWORK);
         columnSynonyms = new HashMap<String, Integer>();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
         commitTx();
         if (model != null) {
-            networkModel = model;
-            modelMap.put(model.getName(), model);
-        } else {
-            init(config, null);
+            parametrizedModel = model;
+            useableModels.add(model);
         }
     }
 
     /**
-     * 
+     * create class instance
      */
     public SeparationCostraintSaver() {
         super();
@@ -68,7 +65,7 @@ public class SeparationCostraintSaver extends AbstractCSVSaver<NetworkModel> {
         }
         SECTOR_MAP.clear();
         collectSector(value);
-        IDataElement findedSector = networkModel.findElement(SECTOR_MAP);
+        IDataElement findedSector = parametrizedModel.findElement(SECTOR_MAP);
         if (findedSector == null) {
             LOGGER.error("cann't find sector " + SECTOR_MAP);
             return;
@@ -76,9 +73,9 @@ public class SeparationCostraintSaver extends AbstractCSVSaver<NetworkModel> {
         if (isCorrect(SEPARATION, value)) {
             Map<String, Object> collectedParameters = new HashMap<String, Object>();
             collectedParameters.put(SEPARATION, getSynonymValueWithAutoparse(SEPARATION, value));
-            networkModel.completeProperties(findedSector, collectedParameters, false);
+            parametrizedModel.completeProperties(findedSector, collectedParameters, false);
             collectedParameters.put(NewAbstractService.TYPE, NetworkElementNodeType.SECTOR.getId());
-            addSynonyms(networkModel, collectedParameters);
+            addSynonyms(parametrizedModel, collectedParameters);
         } else {
             LOGGER.error("traffic property not found on line:" + lineCounter);
         }
