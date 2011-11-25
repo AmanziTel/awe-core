@@ -229,7 +229,7 @@ public class Nemo2xSaver extends AbstractDriveSaver {
             Double longitude = (Double)parsedParameters.get(IDriveModel.LONGITUDE);
             Double latitude = (Double)parsedParameters.get(IDriveModel.LATITUDE);
             if (isCorrect(latitude) && latitude != 0d && isCorrect(longitude) && longitude != 0d) {
-                location = checkSameLocation(parsedParameters);
+                location = checkSameLocation(locationDataElements, parsedParameters);
                 if (location != null) {
                     parsedParameters.remove(IDriveModel.LATITUDE);
                     parsedParameters.remove(IDriveModel.LONGITUDE);
@@ -365,18 +365,6 @@ public class Nemo2xSaver extends AbstractDriveSaver {
         workDate.set(Calendar.SECOND, nodeDate.getSeconds());
         final long timestamp = workDate.getTimeInMillis();
         return timestamp;
-    }
-
-    protected IDataElement checkSameLocation(Map<String, Object> params) {
-        // TODO: LN: you can use 'equals' for double
-        // use delta, for example it should be less 0.00001
-        for (IDataElement location : locationDataElements) {
-            if (location.get(IDriveModel.LATITUDE).equals(params.get(IDriveModel.LATITUDE))
-                    && location.get(IDriveModel.LONGITUDE).equals(params.get(IDriveModel.LONGITUDE))) {
-                return location;
-            }
-        }
-        return null;
     }
 
     /**

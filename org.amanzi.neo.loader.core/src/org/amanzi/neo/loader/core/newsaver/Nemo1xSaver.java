@@ -153,7 +153,7 @@ public class Nemo1xSaver extends Nemo2xSaver {
         parsedParameters.put(TIMESTAMP, timestamp);
         removeEmpty(parsedParameters);
 
-        location = checkSameLocation(parsedParameters);
+        location = checkSameLocation(locationDataElements, parsedParameters);
         if (location != null) {
             parsedParameters.remove(IDriveModel.LATITUDE);
             parsedParameters.remove(IDriveModel.LONGITUDE);
