@@ -49,6 +49,26 @@ public class Nemo1xSaver extends Nemo2xSaver {
     private static final String NEMO_V1_VERSION = "1.86";
     private static final String START_SYMBOL = "#";
 
+
+    private static final int EVENT_ID_INDEX = 0;
+    private static final int LATITUDE_INDEX = 2;
+    private static final int LONGITUDE_INDEX = 1;
+    private static final int TIME_INDEX = 8;
+
+    private static final int FIRST_PARAMETER_INDEX = 9;
+    private static final double INCORRECT_LAT_LON_VALUE = 0;
+    
+    public Nemo1xSaver() {
+        super();
+    }
+
+    /**
+     * Constructor for testing 
+     * 
+     * @param model
+     * @param config
+     * @param service
+     */
     protected Nemo1xSaver(IDriveModel model, ConfigurationDataImpl config, GraphDatabaseService service) {
         super(model, config, service);
         preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.DRIVE);
@@ -59,13 +79,6 @@ public class Nemo1xSaver extends Nemo2xSaver {
             this.parametrizedModel = model;
             useableModels.add(model);
         }
-    }
-
-    /**
-     * create class instance
-     */
-    public Nemo1xSaver() {
-        super();
     }
 
     @Override
@@ -111,14 +124,6 @@ public class Nemo1xSaver extends Nemo2xSaver {
     protected String getVersion() {
         return NEMO_V1_VERSION;
     }
-
-    private static final int EVENT_ID_INDEX = 0;
-    private static final int LATITUDE_INDEX = 2;
-    private static final int LONGITUDE_INDEX = 1;
-    private static final int TIME_INDEX = 8;
-
-    private static final int FIRST_PARAMETER_INDEX = 9;
-    private static final double INCORRECT_LAT_LON_VALUE = 0;
 
     @Override
     protected void saveLine(List<String> value) throws AWEException {

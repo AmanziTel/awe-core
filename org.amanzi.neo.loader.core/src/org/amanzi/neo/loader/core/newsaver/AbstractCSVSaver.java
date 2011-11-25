@@ -81,7 +81,7 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
     protected static final String INCORRECT_VALUE_DEFAULT = "default";
     protected static final String INCORRECT_VALUE_NA = "N/A";
     protected static final String INCORRECT_VALUE_DOUBLE_DASH = "--";
-
+   
     /**
      * check value for null or empty or String value "NULL" or "?"
      * 
@@ -106,31 +106,24 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
      * @param collectedName
      */
     protected void addSynonyms(IDataModel model, Map<String, Object> collectedName) {
-        String string_type = collectedName.get(NewAbstractService.TYPE).toString();
-        INodeType type = NodeTypeManager.getType(string_type);
+        String stringType = collectedName.get(NewAbstractService.TYPE).toString();
+        INodeType type = NodeTypeManager.getType(stringType);
         for (String name : collectedName.keySet()) {
             String headerName = getHeaderBySynonym(name);
             if (headerName != null && !name.equals(NewAbstractService.NAME) && !name.equals(NewAbstractService.TYPE)) {
-                addedDatasetSynonyms(model, type, headerName, name);
+                addDatasetSynonyms(model, type, headerName, name);
             } else if (name.equals(NewAbstractService.NAME)) {
-                headerName = getHeaderBySynonym(string_type);
+                headerName = getHeaderBySynonym(stringType);
                 if (headerName != null) {
-                    addedDatasetSynonyms(model, type, NewAbstractService.NAME, headerName);
+                    addDatasetSynonyms(model, type, NewAbstractService.NAME, headerName);
                 }
             }
 
         }
     }
 
-    /**
-     * 
-     */
-    public AbstractCSVSaver() {
-        super();
-    }
-
     @Override
-    public void init(ConfigurationDataImpl configuration, CSVContainer dataElement) throws Exception {
+    public void init(ConfigurationDataImpl configuration, CSVContainer dataElement) throws AWEException {
         super.init(configuration, dataElement);
         this.configuration = configuration;
         preferenceStoreSynonyms = initializeSynonyms();
@@ -248,7 +241,7 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
      * @return
      */
     protected String getValueFromRow(String synonym, List<String> value) {
-        String requiredHeader = chechHeaderInSynonyms(synonym);
+        String requiredHeader = checkHeaderInSynonyms(synonym);
         return isCorrect(synonym, value) ? getSynonymValue(value, requiredHeader) : null;
     }
 
@@ -257,11 +250,14 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
      * 
      * @return synonym if contains
      */
-    private String chechHeaderInSynonyms(String header) {
-        if (fileSynonyms.containsKey(header)) {
-            return fileSynonyms.get(header);
+    private String checkHeaderInSynonyms(String header) {
+        String result = fileSynonyms.get(header);
+        
+        if (result == null) {
+            result = header;
         }
-        return header;
+        
+        return result;
     }
 
     /**
@@ -272,9 +268,9 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
      * @return
      */
     protected boolean isCorrect(String synonymName, List<String> row) {
-        String requiredHeader = chechHeaderInSynonyms(synonymName);
-        return requiredHeader != null && columnSynonyms.containsKey(requiredHeader) && row != null
-                && isCorrect(row.get(columnSynonyms.get(requiredHeader)));
+        String requiredHeader = checkHeaderInSynonyms(synonymName);
+        Integer headerId = columnSynonyms.get(requiredHeader);
+        return headerId != null && row != null && isCorrect(row.get(headerId));
     }
 
     /**

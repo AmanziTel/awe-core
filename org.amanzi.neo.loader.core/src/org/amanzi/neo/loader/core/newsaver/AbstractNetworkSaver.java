@@ -26,6 +26,7 @@ import org.amanzi.neo.services.model.INetworkModel;
  * @author Vladislav_Kondratenko
  */
 public abstract class AbstractNetworkSaver extends AbstractCSVSaver<INetworkModel> {
+    
     /**
      * create class instance
      */

@@ -13,12 +13,9 @@
 
 package org.amanzi.neo.loader.core.newsaver;
 
-import java.util.Map;
-
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
-import org.amanzi.neo.loader.core.newparser.CSVContainer;
 import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
-import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
 import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelTypes;
@@ -32,28 +29,22 @@ public class NeighborsSaver extends AbstractN2NSaver {
      */
     public final static String NEIGHBOUR_SECTOR_NAME = "neigh_sector_name";
     public final static String SERVING_SECTOR_NAME = "serv_sector_name";
-
-    protected NeighborsSaver(INodeToNodeRelationsModel model, INetworkModel networkModel, ConfigurationDataImpl data) {
-        super(model, networkModel, data);
-    }
-
-    /**
-     * create class instance
-     */
+    
     public NeighborsSaver() {
         super();
     }
 
-    @Override
-    protected Map<String, String[]> initializeSynonyms() {
-        return preferenceStoreSynonyms = preferenceManager.getNeighbourSynonyms();
+    /**
+     * Constructor for testing
+     * 
+     * @param model
+     * @param networkModel
+     * @param data
+     */
+    protected NeighborsSaver(INodeToNodeRelationsModel model, INetworkModel networkModel, ConfigurationDataImpl data) {
+        super(model, networkModel, data);
     }
-
-    @Override
-    protected INodeToNodeRelationsModel getNode2NodeModel(String name) throws AWEException {
-        return parametrizedModel.getNodeToNodeModel(N2NRelTypes.NEIGHBOUR, name, NetworkElementNodeType.SECTOR);
-    }
-
+    
     @Override
     protected String getSourceElementName() {
         return SERVING_SECTOR_NAME;
@@ -65,8 +56,13 @@ public class NeighborsSaver extends AbstractN2NSaver {
     }
 
     @Override
-    protected void commonLinePreparationActions(CSVContainer dataElement) throws Exception {
+    protected N2NRelTypes getN2NType() {
+        return N2NRelTypes.NEIGHBOUR;
+    }
 
+    @Override
+    protected INodeType getN2NNodeType() {
+        return NetworkElementNodeType.SECTOR;
     }
 
 }

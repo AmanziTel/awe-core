@@ -23,6 +23,7 @@ import java.util.Set;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService.DriveTypes;
+import org.amanzi.neo.services.enums.IDriveType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
@@ -42,10 +43,14 @@ public class RomesSaver extends AbstractDriveSaver {
      * collection of new created locations element
      */
     private Set<IDataElement> locationDataElements = new HashSet<IDataElement>();
+    
+    public RomesSaver() {
+        super();
+    }
 
     protected RomesSaver(IDriveModel model, ConfigurationDataImpl config) {
         preferenceStoreSynonyms = initializeSynonyms();
-        DRIVE_TYPE = DriveTypes.ROMES.name();
+        
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
         commitTx();
         if (model != null) {
@@ -54,16 +59,8 @@ public class RomesSaver extends AbstractDriveSaver {
         }
     }
 
-    /**
-     * create class instants
-     */
-    public RomesSaver() {
-        super();
-        DRIVE_TYPE = DriveTypes.ROMES.name();
-    }
-
     @Override
-    protected void addedNewFileToModels(File file) throws DatabaseException, DuplicateNodeNameException {
+    protected void addNewFileToModels(File file) throws DatabaseException, DuplicateNodeNameException {
         parametrizedModel.addFile(file);
     }
 
@@ -72,8 +69,8 @@ public class RomesSaver extends AbstractDriveSaver {
         String time = getValueFromRow(TIME, value);
         Long timestamp = defineTimestamp(workDate, time);
         String message_type = getValueFromRow(MESSAGE_TYPE, value);
-        Double latitude = getLatitude(getValueFromRow(IDriveModel.LATITUDE, value));
-        Double longitude = getLongitude(getValueFromRow(IDriveModel.LONGITUDE, value));
+        Double latitude = getCoordinate(getValueFromRow(IDriveModel.LATITUDE, value));
+        Double longitude = getCoordinate(getValueFromRow(IDriveModel.LONGITUDE, value));
         String event = getValueFromRow(EVENT, value);
         String sector_id = getValueFromRow(SECTOR_ID, value);
         if (time == null || latitude == null || longitude == null || timestamp == null) {
@@ -141,9 +138,7 @@ public class RomesSaver extends AbstractDriveSaver {
     }
 
     @Override
-    protected void initializeNecessaryModels() throws AWEException {
-        parametrizedModel = getActiveProject().getDataset(
-                configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME), DriveTypes.ROMES);
-
+    protected IDriveType getDriveType() {
+        return DriveTypes.ROMES;
     }
 }

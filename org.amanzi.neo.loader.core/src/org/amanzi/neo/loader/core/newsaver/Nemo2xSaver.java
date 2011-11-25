@@ -36,6 +36,7 @@ import org.amanzi.neo.loader.core.saver.nemo.NemoEvents;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.NewDatasetService.DriveTypes;
+import org.amanzi.neo.services.enums.IDriveType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
@@ -90,6 +91,10 @@ public class Nemo2xSaver extends AbstractDriveSaver {
      * curent created location element
      */
     protected IDataElement location;
+    
+    public Nemo2xSaver() {
+        super();
+    }
 
     protected Nemo2xSaver(IDriveModel model, ConfigurationDataImpl config, GraphDatabaseService service) {
         preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.DRIVE);
@@ -110,7 +115,7 @@ public class Nemo2xSaver extends AbstractDriveSaver {
     }
 
     @Override
-    protected void addedNewFileToModels(File file) throws DatabaseException, DuplicateNodeNameException {
+    protected void addNewFileToModels(File file) throws DatabaseException, DuplicateNodeNameException {
         parametrizedModel.addFile(file);
     }
 
@@ -390,9 +395,12 @@ public class Nemo2xSaver extends AbstractDriveSaver {
 
     @Override
     protected void initializeNecessaryModels() throws AWEException {
-        parametrizedModel = getActiveProject().getDataset(
-                configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME), DriveTypes.NEMO_V2);
+        super.initializeNecessaryModels();
         virtualModel = getVirtualModel();
+    }
 
+    @Override
+    protected IDriveType getDriveType() {
+        return DriveTypes.NEMO_V2;
     }
 }

@@ -25,6 +25,7 @@ import org.amanzi.neo.services.NewDatasetService.DriveTypes;
 import org.amanzi.neo.services.NewNetworkService;
 import org.amanzi.neo.services.enums.IDriveType;
 import org.amanzi.neo.services.model.IDriveModel;
+import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelTypes;
 
 //TODO: LN: comments
 /**
@@ -208,6 +209,19 @@ public class DataLoadPreferenceManager {
         }
         return null;
     }
+    
+    public Map<String, String[]> getSynonyms(N2NRelTypes type) {
+        switch (type) {
+        case NEIGHBOUR:
+            return getNeighbourSynonyms();
+        case INTERFERENCE_MATRIX:
+            return getInterfererSynonyms();
+        case FREQUENCY_SPECTRUM:
+            return getFrequencySynonyms();
+        }
+        
+        return null;
+    }
 
     /**
      * return drive synonyms
@@ -317,7 +331,7 @@ public class DataLoadPreferenceManager {
         return null;
     }
 
-    public Map<String, String[]> getNeighbourSynonyms() {
+    private Map<String, String[]> getNeighbourSynonyms() {
         if (neighMap == null) {
             neighMap = new HashMap<String, String[]>();
         }
@@ -334,7 +348,7 @@ public class DataLoadPreferenceManager {
         return neighMap;
     }
 
-    public Map<String, String[]> getInterfererSunonyms() {
+    private Map<String, String[]> getInterfererSynonyms() {
         if (interferMap == null) {
             interferMap = new HashMap<String, String[]>();
         }
@@ -347,8 +361,7 @@ public class DataLoadPreferenceManager {
         return interferMap;
     }
 
-    //TODO: LN: why for Network and Drive we have one method but for different N2N - many methods? 
-    public Map<String, String[]> getFrequencySynonyms() {
+    private Map<String, String[]> getFrequencySynonyms() {
         if (frequencyMap == null) {
             frequencyMap = new HashMap<String, String[]>();
         }

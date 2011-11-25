@@ -38,7 +38,6 @@ public class AutoParseTesting extends AbstractAWETest {
     private final static String STRING_DOUBLE_MAX_VALUE = String.valueOf(Double.MAX_VALUE);
     private final static String STRING_BOOLEAN_VALUE = "true";
     private final static String STRING_VALUE = "string value";
-    private static final NetworkSaver saver = new NetworkSaver();
     private static Long startTime;
 
     @BeforeClass
@@ -56,7 +55,7 @@ public class AutoParseTesting extends AbstractAWETest {
     @Test
     public void parseDoubleTest() {
         LOGGER.info("Start parseDoubleTest");
-        Object parsedValue = saver.autoParse(null, STRING_DOUBLE_RANDOM_VALUE);
+        Object parsedValue = AbstractSaver.autoParse(null, STRING_DOUBLE_RANDOM_VALUE);
         Assert.assertTrue("Expected Double object but was " + parsedValue.getClass(), parsedValue instanceof Double);
         Assert.assertEquals(parsedValue.toString().length(), STRING_DOUBLE_RANDOM_VALUE.length());
     }
@@ -64,7 +63,7 @@ public class AutoParseTesting extends AbstractAWETest {
     @Test
     public void parseFloatTest() {
         LOGGER.info("Start parseFloatTest");
-        Object parsedValue = saver.autoParse(null, STRING_FLOAT_RANDOM_VALUE);
+        Object parsedValue = AbstractSaver.autoParse(null, STRING_FLOAT_RANDOM_VALUE);
         Assert.assertTrue("Expected Float object but was " + parsedValue.getClass(), parsedValue instanceof Float);
         Assert.assertEquals(parsedValue.toString().length(), STRING_FLOAT_RANDOM_VALUE.length());
     }
@@ -72,7 +71,7 @@ public class AutoParseTesting extends AbstractAWETest {
     @Test
     public void parseIntegerTest() {
         LOGGER.info("Start parseFloatTest");
-        Object parsedValue = saver.autoParse(null, STRING_INT_RANDOM_VALUE);
+        Object parsedValue = AbstractSaver.autoParse(null, STRING_INT_RANDOM_VALUE);
         Assert.assertTrue("Expected Integer object but was " + parsedValue.getClass(), parsedValue instanceof Integer);
         Assert.assertEquals(parsedValue.toString().length(), STRING_INT_RANDOM_VALUE.length());
     }
@@ -80,7 +79,7 @@ public class AutoParseTesting extends AbstractAWETest {
     @Test
     public void parseFloatMinValue() {
         LOGGER.info("Start parseFloatMinValue");
-        Object parsedValue = saver.autoParse(null, STRING_FLOAT_MIN_VALUE);
+        Object parsedValue = AbstractSaver.autoParse(null, STRING_FLOAT_MIN_VALUE);
         Assert.assertTrue("Expected Float object but was " + parsedValue.getClass(), parsedValue instanceof Float);
         Assert.assertEquals(parsedValue.toString().length(), STRING_FLOAT_MIN_VALUE.length());
     }
@@ -88,7 +87,7 @@ public class AutoParseTesting extends AbstractAWETest {
     @Test
     public void parseDoubleMinValue() {
         LOGGER.info("Start parseDoubleMinValue");
-        Object parsedValue = saver.autoParse(null, STRING_DOUBLE_MIN_VALUE);
+        Object parsedValue = AbstractSaver.autoParse(null, STRING_DOUBLE_MIN_VALUE);
         Assert.assertTrue("Expected Double object but was " + parsedValue.getClass(), parsedValue instanceof Double);
         Assert.assertEquals(parsedValue.toString().length(), STRING_DOUBLE_MIN_VALUE.length());
     }
@@ -96,7 +95,7 @@ public class AutoParseTesting extends AbstractAWETest {
     @Test
     public void parseFloatMaxValue() {
         LOGGER.info("Start parseFloatMaxValue");
-        Object parsedValue = saver.autoParse(null, STRING_FLOAT_MAX_VALUE);
+        Object parsedValue = AbstractSaver.autoParse(null, STRING_FLOAT_MAX_VALUE);
         Assert.assertTrue("Expected Float object but was " + parsedValue.getClass(), parsedValue instanceof Float);
         Assert.assertEquals(parsedValue.toString().length(), STRING_FLOAT_MAX_VALUE.length());
     }
@@ -104,7 +103,7 @@ public class AutoParseTesting extends AbstractAWETest {
     @Test
     public void parseDoubleMaxValue() {
         LOGGER.info("Start parseDoubleMaxValue");
-        Object parsedValue = saver.autoParse(null, STRING_DOUBLE_MAX_VALUE);
+        Object parsedValue = AbstractSaver.autoParse(null, STRING_DOUBLE_MAX_VALUE);
         Assert.assertTrue("Expected Double object but was " + parsedValue.getClass(), parsedValue instanceof Double);
         Assert.assertEquals(parsedValue.toString().length(), STRING_DOUBLE_MAX_VALUE.length());
     }
@@ -112,7 +111,7 @@ public class AutoParseTesting extends AbstractAWETest {
     @Test
     public void parseIntegerMinTest() {
         LOGGER.info("Start parseIntegerMinTest");
-        Object parsedValue = saver.autoParse(null, STRING_INT_MIN_VALUE);
+        Object parsedValue = AbstractSaver.autoParse(null, STRING_INT_MIN_VALUE);
         Assert.assertTrue("Expected Integer object but was " + parsedValue.getClass(), parsedValue instanceof Integer);
         Assert.assertEquals(parsedValue.toString().length(), STRING_INT_MIN_VALUE.length());
     }
@@ -120,7 +119,7 @@ public class AutoParseTesting extends AbstractAWETest {
     @Test
     public void parseIntegerMaxTest() {
         LOGGER.info("Start parseIntegerMinTest");
-        Object parsedValue = saver.autoParse(null, STRING_INT_MAX_VALUE);
+        Object parsedValue = AbstractSaver.autoParse(null, STRING_INT_MAX_VALUE);
         Assert.assertTrue("Expected Integer object but was " + parsedValue.getClass(), parsedValue instanceof Integer);
         Assert.assertEquals(parsedValue.toString().length(), STRING_INT_MAX_VALUE.length());
     }
@@ -128,7 +127,7 @@ public class AutoParseTesting extends AbstractAWETest {
     @Test
     public void parseStringFillTest() {
         LOGGER.info("Start parseStringFillTest");
-        Object parsedValue = saver.autoParse(null, STRING_VALUE);
+        Object parsedValue = AbstractSaver.autoParse(null, STRING_VALUE);
         Assert.assertTrue("Expected String object but was " + parsedValue.getClass(), parsedValue instanceof String);
         Assert.assertEquals(parsedValue.toString().length(), STRING_VALUE.length());
     }
@@ -136,7 +135,7 @@ public class AutoParseTesting extends AbstractAWETest {
     @Test
     public void parseStringEmptyTest() {
         LOGGER.info("Start parseStringEmptyTest");
-        Object parsedValue = saver.autoParse(null, EMPTY_STRING);
+        Object parsedValue = AbstractSaver.autoParse(null, EMPTY_STRING);
         Assert.assertTrue("Expected String object but was " + parsedValue.getClass(), parsedValue instanceof String);
         Assert.assertEquals(parsedValue.toString().length(), EMPTY_STRING.length());
     }
@@ -144,7 +143,7 @@ public class AutoParseTesting extends AbstractAWETest {
     @Test
     public void parseBooleanTest() {
         LOGGER.info("Start parseBooleanTest");
-        Object parsedValue = saver.autoParse(null, STRING_BOOLEAN_VALUE);
+        Object parsedValue = AbstractSaver.autoParse(null, STRING_BOOLEAN_VALUE);
         Assert.assertTrue("Expected Boolean object but was " + parsedValue.getClass(), parsedValue instanceof Boolean);
         Assert.assertEquals(parsedValue.toString().length(), STRING_BOOLEAN_VALUE.length());
     }
@@ -152,6 +151,6 @@ public class AutoParseTesting extends AbstractAWETest {
     @Test(expected = NullPointerException.class)
     public void parseNullValue() {
         LOGGER.info("Start parseDoubleMinValue");
-        saver.autoParse(null, null);
+        AbstractSaver.autoParse(null, null);
     }
 }
