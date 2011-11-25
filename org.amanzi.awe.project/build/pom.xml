@@ -2,10 +2,15 @@
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>awe</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  <groupId>AWE_build</groupId>
-  <packaging>pom</packaging>
+  <parent>
+  	<groupId>org.amanzi.awe</groupId>
+  	<artifactId>core</artifactId>
+  	<version>${awe-version}</version>
+  </parent>
+  <artifactId>org.amanzi.awe.project</artifactId>
+  <version>1.0.0.qualifier</version>
+  <groupId>org.amanzi</groupId>
+  <packaging>eclipse-feature</packaging>
   
   <prerequisites>
     <maven>3.0</maven>

@@ -7,4 +7,5 @@ Fragment-Host: org.amanzi.awe.catalog.neo;bundle-version="1.0.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.amanzi.testing;bundle-version="1.0.0"
 Export-Package: org.amanzi.awe.models.catalog.neo
+Bundle-Vendor: amanzi.org
 
