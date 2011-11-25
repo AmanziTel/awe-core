@@ -92,6 +92,9 @@ public class Nemo2xSaver extends AbstractDriveSaver {
      */
     protected IDataElement location;
     
+    /**
+     * create instance of nemo2xsaver
+     */
     public Nemo2xSaver() {
         super();
     }
@@ -105,13 +108,6 @@ public class Nemo2xSaver extends AbstractDriveSaver {
             parametrizedModel = model;
             useableModels.add(model);
         }
-    }
-
-    /**
-     * create instance of nemo2xsaver
-     */
-    public Nemo2xSaver() {
-        super();
     }
 
     @Override
