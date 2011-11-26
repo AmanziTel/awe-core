@@ -86,7 +86,7 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
      * @param propertyValue - String propValue
      * @return Object parseValue
      */
-    static Object autoParse(String propertyName, String propertyValue) {
+    protected static Object autoParse(String propertyName, String propertyValue) {
         try {
             Object predifinedCheck = checkInPredifined(propertyName, propertyValue);
             if (predifinedCheck != null) {
