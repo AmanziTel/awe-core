@@ -39,7 +39,11 @@ public interface IDriveModel extends ICorrelatableModel, IRenderableModel, IProp
      */
     public Iterable<IDriveModel> getVirtualDatasets();
 
-    // TODO: LN: comments
+    /**
+     * get drive type
+     * 
+     * @return drive type
+     */
     public IDriveType getDriveType();
 
     /**
@@ -104,6 +108,15 @@ public interface IDriveModel extends ICorrelatableModel, IRenderableModel, IProp
      */
     public IDataElement addMeasurement(String filename, Map<String, Object> params) throws AWEException;
 
+    /**
+     * same with addMeasurement(String filename, Map<String, Object> params) but
+     * isNeedToCreateLocation flag response for posibility to create location node
+     * 
+     * @param filename the name of file
+     * @param params a map containing parameters of the new measurement
+     * @return the newly created node
+     * @throws AWEException
+     */
     public IDataElement addMeasurement(String filename, Map<String, Object> params, boolean isNeedToCreateLocation)
             throws AWEException;
 
@@ -190,8 +203,9 @@ public interface IDriveModel extends ICorrelatableModel, IRenderableModel, IProp
      */
     public Iterable<IDataElement> getMeasurements(String filename);
 
-    // TODO: LN: comments
     /**
+     * get list of file nodes
+     * 
      * @return an iterator over FILE nodes
      */
     public Iterable<IDataElement> getFiles();
