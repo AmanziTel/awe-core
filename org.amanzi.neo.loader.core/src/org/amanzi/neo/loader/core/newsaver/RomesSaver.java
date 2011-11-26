@@ -17,7 +17,6 @@ import java.io.File;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
@@ -82,7 +81,7 @@ public class RomesSaver extends AbstractDriveSaver {
         removeEmpty(params);
         collectRemainProperties(params, value);
         addSynonyms(parametrizedModel, params);
-        IDataElement existedLocation = checkForSameLocation(params);
+        IDataElement existedLocation = checkSameLocation(locationDataElements, params);
         if (existedLocation != null) {
             params.remove(IDriveModel.LATITUDE);
             params.remove(IDriveModel.LONGITUDE);
@@ -119,22 +118,6 @@ public class RomesSaver extends AbstractDriveSaver {
         params.put(NewAbstractService.NAME, time);
         params.put(SECTOR_ID, sector_id);
         params.put(NewAbstractService.TYPE, DriveNodeTypes.M.getId());
-    }
-
-    /**
-     * check for same located element
-     * 
-     * @param params
-     * @return
-     */
-    private IDataElement checkForSameLocation(Map<String, Object> params) {
-        for (IDataElement location : locationDataElements) {
-            if (location.get(IDriveModel.LATITUDE).equals(params.get(IDriveModel.LATITUDE))
-                    && location.get(IDriveModel.LONGITUDE).equals(params.get(IDriveModel.LONGITUDE))) {
-                return location;
-            }
-        }
-        return null;
     }
 
     @Override

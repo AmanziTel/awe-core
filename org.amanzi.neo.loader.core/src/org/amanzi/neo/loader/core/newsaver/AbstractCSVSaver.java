@@ -89,12 +89,16 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
      * @return
      */
     protected boolean isCorrect(Object value) {
-        if (value == null || value.toString().isEmpty() || value.toString().equals(INCORRECT_VALUE_QUEST_SYMBOL)
-                || value.toString().equalsIgnoreCase(INCORRECT_VALUE_NULL)
-                || value.toString().equalsIgnoreCase(INCORRECT_VALUE_DEFAULT)
-                || value.toString().equalsIgnoreCase(INCORRECT_VALUE_DOUBLE_DASH)
-                || value.toString().equalsIgnoreCase(INCORRECT_VALUE_NA)) {
+        if (value == null) {
             return false;
+        } else {
+            String stringValue = value.toString();
+            if (stringValue.isEmpty() || stringValue.equals(INCORRECT_VALUE_QUEST_SYMBOL)
+                    || stringValue.equalsIgnoreCase(INCORRECT_VALUE_NULL) || stringValue.equalsIgnoreCase(INCORRECT_VALUE_DEFAULT)
+                    || stringValue.equalsIgnoreCase(INCORRECT_VALUE_DOUBLE_DASH)
+                    || stringValue.equalsIgnoreCase(INCORRECT_VALUE_NA)) {
+                return false;
+            }
         }
         return true;
     }
@@ -183,7 +187,7 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
             rollbackTx();
             throw new DatabaseException(e);
         } catch (Exception e) {
-            LOGGER.error("Exception while saving element on line " + lineCounter, e);
+            LOGGER.info("Exception while saving element on line " + lineCounter, e);
             commitTx();
         }
     }

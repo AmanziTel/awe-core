@@ -7,8 +7,19 @@
             name="Network Tree"
             icon="icons/network.png"
             category="org.amanzi.awe.views"
-            class="org.amanzi.awe.views.network.view.NewNetworkTreeView"
+            class="org.amanzi.awe.views.network.view.NetworkTreeView"
             id="org.amanzi.awe.views.network.views.NewNetworkTreeView">
+      </view>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            name="Network Properties View"
+            icon="icons/network.png"
+            category="org.amanzi.awe.views"
+            class="org.amanzi.awe.views.network.view.NetworkPropertiesView"
+            id="org.amanzi.awe.views.network.views.NetworkPropertiesView">
       </view>
    </extension>
    

@@ -57,16 +57,16 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
     // variables required for export synonyms saving
     protected List<IDataModel> useableModels = new LinkedList<IDataModel>();
     protected Map<IModel, ExportSynonyms> synonymsMap = new HashMap<IModel, ExportSynonyms>();
-
-    /*
-     * Database Manager
-     */
-    static IDatabaseManager dbManager = DatabaseManagerFactory.getDatabaseManager();
     
     /**
      * action threshold for commit
      */
     private int commitTxCount;
+
+    /*
+     * Database Manager
+     */
+    IDatabaseManager dbManager = DatabaseManagerFactory.getDatabaseManager();
 
     /**
      * transactions count
