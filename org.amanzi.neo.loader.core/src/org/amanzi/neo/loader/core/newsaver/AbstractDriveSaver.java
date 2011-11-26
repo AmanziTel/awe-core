@@ -22,17 +22,18 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
+import org.amanzi.neo.services.enums.IDriveType;
+import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDriveModel;
-import org.amanzi.neo.services.model.impl.DriveModel.DriveRelationshipTypes;
 import org.apache.log4j.Logger;
 
 /**
@@ -44,8 +45,6 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<IDriveModel> {
 
     private static final Logger LOGGER = Logger.getLogger(AbstractDriveSaver.class);
 
-    // Drive type name
-    protected String DRIVE_TYPE = null;
     // Name of handling file
     protected String fileName;
     // constants
@@ -72,12 +71,13 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<IDriveModel> {
     protected final static String MW = "mw";
     protected final static String DBM = "dbm";
     private static final Double LOCATION_DELTA = 0.00001d;
+    protected Double latitude;
+    protected Double longitude;
 
     /**
      * regular expression pattern for converting lattitude and longitude
      */
-    protected final static Pattern LONGITUDE_PATTERN = Pattern.compile("^([+-]{0,1}\\d+(\\.\\d+)*)([NESW]{0,1})$");
-    protected final static Pattern LATITUDE_PATTERN = Pattern.compile("^([+-]{0,1}\\d+(\\.\\d+)*)([NESW]{0,1})$");
+    protected final static Pattern COORDINATE_PATTERN = Pattern.compile("^([+-]{0,1}\\d+(\\.\\d+)*)([NESW]{0,1})$");
 
     /*
      * date format patterns
@@ -94,14 +94,11 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<IDriveModel> {
      */
     protected Calendar workDate = Calendar.getInstance();
     /**
-     * name inDB properties values
+     * collected properties
      */
     protected Map<String, Object> params = new HashMap<String, Object>();
 
-    /**
-     * create class instance
-     */
-    public AbstractDriveSaver() {
+    protected AbstractDriveSaver() {
         super();
     }
 
@@ -147,51 +144,24 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<IDriveModel> {
     }
 
     /**
-     * Gets the longitude.
+     * Gets the coordinate.
      * 
      * @param stringValue the string value
      * @return the longitude
      */
-    protected Double getLongitude(String stringValue) {
+    protected Double getCoordinate(String stringValue) {
         if (stringValue == null) {
             return null;
         }
         try {
             return Double.valueOf(stringValue);
         } catch (NumberFormatException e) {
-            Matcher m = LONGITUDE_PATTERN.matcher(stringValue);
+            Matcher m = COORDINATE_PATTERN.matcher(stringValue);
             if (m.matches()) {
                 try {
                     return Double.valueOf(m.group(1));
                 } catch (NumberFormatException e2) {
-                    LOGGER.error(String.format("Can't get Longitude from: %s", stringValue));
-                }
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Gets the latitude.
-     * 
-     * @param stringValue the string value
-     * @return the latitude
-     */
-    protected Double getLatitude(String stringValue) {
-        if (stringValue == null) {
-            return null;
-        }
-        try {
-            return Double.valueOf(stringValue);
-        } catch (NumberFormatException e) {
-            // TODO: LN: to constant
-
-            Matcher m = LATITUDE_PATTERN.matcher(stringValue);
-            if (m.matches()) {
-                try {
-                    return Double.valueOf(m.group(1));
-                } catch (NumberFormatException e2) {
-                    LOGGER.error(String.format("Can't get Latitude from: %s", stringValue));
+                    LOGGER.error(String.format("Can't get Coordinate from: %s", stringValue));
                 }
             }
         }
@@ -205,7 +175,7 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<IDriveModel> {
      * @throws DatabaseException
      * @throws DuplicateNodeNameException
      */
-    protected abstract void addedNewFileToModels(File file) throws DatabaseException, DuplicateNodeNameException;
+    protected abstract void addNewFileToModels(File file) throws AWEException;
 
     /**
      * check if there is new file handling reset prepare synonymsand add new file to model, also
@@ -215,10 +185,10 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<IDriveModel> {
      * @throws DatabaseException
      * @throws DuplicateNodeNameException
      */
-    protected void checkForNewFile(CSVContainer dataElement) throws DatabaseException, DuplicateNodeNameException {
-        if ((fileName != null && !fileName.equals(dataElement.getFile().getName())) || (fileName == null)) {
+    protected void checkForNewFile(CSVContainer dataElement) throws AWEException {
+        if (!dataElement.getFile().getName().equals(fileName)) {
             fileName = dataElement.getFile().getName();
-            addedNewFileToModels(dataElement.getFile());
+            addNewFileToModels(dataElement.getFile());
             resetSynonymsMaps();
             lineCounter = 0l;
         }
@@ -250,8 +220,9 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<IDriveModel> {
                     this.workDate.add(Calendar.DAY_OF_MONTH, 1);
                 }
                 hours = nodeHours;
-                workDate.set(workDate.get(Calendar.YEAR), workDate.get(Calendar.MONTH), workDate.get(Calendar.DATE), nodeHours,
-                        workDate.get(Calendar.MINUTE), workDate.get(Calendar.SECOND));
+                workDate.set(Calendar.HOUR, nodeHours);
+                workDate.set(Calendar.MINUTE, newCalendar.get(Calendar.MINUTE));
+                workDate.set(Calendar.SECOND, newCalendar.get(Calendar.SECOND));
                 return workDate.getTimeInMillis();
 
             } catch (Exception e) {
@@ -275,36 +246,40 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<IDriveModel> {
     }
 
     /**
-     * link new created element with existed location element;
-     * 
-     * @param createdElement
-     * @param locList
-     * @throws DatabaseException
-     */
-    protected void linkWithLocationElement(IDataElement createdElement, Iterable<IDataElement> locList) throws DatabaseException {
-        parametrizedModel.linkNode(createdElement, locList, DriveRelationshipTypes.LOCATION);
-    }
-
-    /**
      * check parameter values and location list for same locations,
      * 
-     * @param locationList
+     * @param existedLocationSource
      * @param params
      * @return
      */
-    protected IDataElement checkSameLocation(Set<IDataElement> locationList, Map<String, Object> params) {
-        for (IDataElement element : locationList) {
+    protected IDataElement checkSameLocation(Iterable<IDataElement> existedLocationSource) {
+        for (IDataElement element : existedLocationSource) {
             Double storedLat = (Double)element.get(IDriveModel.LATITUDE);
             Double storedLon = (Double)element.get(IDriveModel.LONGITUDE);
-            Double newLat = (Double)params.get(IDriveModel.LATITUDE);
-            Double newLon = (Double)params.get(IDriveModel.LONGITUDE);
-            Double deltLat = storedLat - newLat;
-            Double deltaLon = storedLon - newLon;
-            if (deltLat <= Math.abs(LOCATION_DELTA) && deltaLon <= Math.abs(LOCATION_DELTA)) {
+            Double deltLat = storedLat - latitude;
+            Double deltaLon = storedLon - longitude;
+            if ((deltLat == 0d && deltaLon == 0d) || deltLat >= Math.abs(LOCATION_DELTA) && deltaLon >= Math.abs(LOCATION_DELTA)) {
                 return element;
             }
         }
         return null;
+    }
+
+    /**
+     * create measurment and new location if it necessary to required model element
+     * 
+     * @param model
+     * @param properties
+     * @return
+     * @throws AWEException
+     */
+    protected IDataElement addMeasurement(IDriveModel model, Map<String, Object> properties) throws AWEException {
+        IDataElement createdMeasurment = model.addMeasurement(fileName, properties, false);
+        IDataElement existedLocation = checkSameLocation(model.getLocations(createdMeasurment));
+        if (existedLocation == null) {
+            model.createLocationNode(createdMeasurment, latitude, longitude);
+        }
+        return createdMeasurment;
     }
 
     /**
@@ -326,6 +301,19 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<IDriveModel> {
 
     @Override
     protected String getSubType() {
-        return DRIVE_TYPE;
+        return getDriveType().name();
     }
+
+    @Override
+    protected void initializeNecessaryModels() throws AWEException {
+        parametrizedModel = getActiveProject().getDataset(
+                configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME), getDriveType());
+    }
+
+    /**
+     * Returns type of Drive data to save
+     * 
+     * @return
+     */
+    protected abstract IDriveType getDriveType();
 }

@@ -57,6 +57,11 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
     // variables required for export synonyms saving
     protected List<IDataModel> useableModels = new LinkedList<IDataModel>();
     protected Map<IModel, ExportSynonyms> synonymsMap = new HashMap<IModel, ExportSynonyms>();
+    
+    /**
+     * action threshold for commit
+     */
+    private int commitTxCount;
 
     /*
      * Database Manager
@@ -64,10 +69,15 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
     IDatabaseManager dbManager = DatabaseManagerFactory.getDatabaseManager();
 
     /**
-     * create class instance
+     * transactions count
+     */
+    private int actionCount;
+    
+    /**
+     * Public constructor 
      */
     protected AbstractSaver() {
-
+        
     }
 
     /**
@@ -76,7 +86,7 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
      * @param propertyValue - String propValue
      * @return Object parseValue
      */
-    protected Object autoParse(String propertyName, String propertyValue) {
+    protected static Object autoParse(String propertyName, String propertyValue) {
         try {
             Object predifinedCheck = checkInPredifined(propertyName, propertyValue);
             if (predifinedCheck != null) {
@@ -113,11 +123,10 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
      * @param propertyValue
      * @return
      */
-    @SuppressWarnings("static-access")
-    private Object checkInPredifined(String propertyName, String propertyValue) {
+    static Object checkInPredifined(String propertyName, String propertyValue) {
         Object parsedValue = null;
-        if (preferenceManager.predifinedPropertyType.containsKey(propertyName)) {
-            switch (preferenceManager.predifinedPropertyType.get(propertyName)) {
+        if (DataLoadPreferenceManager.predifinedPropertyType.containsKey(propertyName)) {
+            switch (DataLoadPreferenceManager.predifinedPropertyType.get(propertyName)) {
             case DOUBLE:
                 parsedValue = Double.parseDouble(propertyValue);
                 break;
@@ -138,7 +147,12 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
         return parsedValue;
     }
 
-    protected void createExportSynonymsForModels() throws DatabaseException {
+    /**
+     * Creates Export Synonyms for this saved models
+     *
+     * @throws DatabaseException
+     */
+    protected void createExportSynonymsForModels() throws AWEException {
         try {
             for (IModel model : useableModels) {
                 synonymsMap.put(model, exportManager.createExportSynonym(model, ExportSynonymType.DATASET));
@@ -149,7 +163,15 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
         }
     }
 
-    protected void addedDatasetSynonyms(IDataModel model, INodeType nodeType, String propertyName, String synonym) {
+    /**
+     * Add synonym
+     *
+     * @param model
+     * @param nodeType
+     * @param propertyName
+     * @param synonym
+     */
+    protected void addDatasetSynonyms(IDataModel model, INodeType nodeType, String propertyName, String synonym) {
         if (model.getName() != null && synonym != null) {
             synonymsMap.get(model).addSynonym(nodeType, propertyName, synonym);
         }
@@ -175,16 +197,6 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
     }
 
     /**
-     * action threshold for commit
-     */
-    private int commitTxCount;
-
-    /**
-     * transactions count
-     */
-    private int actionCount;
-
-    /**
      * set how much transactions should gone before reopening
      * 
      * @param count
@@ -204,6 +216,9 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
         }
     }
 
+    /**
+     * rollback tx in current thread
+     */
     protected void rollbackTx() {
         dbManager.rollbackThreadTransaction();
         actionCount = 0;
@@ -220,12 +235,18 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
         actionCount = 0;
     }
 
+    /**
+     * Returns Active Project
+     *
+     * @return
+     * @throws AWEException
+     */
     protected IProjectModel getActiveProject() throws AWEException {
         return ProjectModel.getCurrentProjectModel();
     }
 
     @Override
-    public void init(T3 configuration, T2 dataElement) throws Exception {
+    public void init(T3 configuration, T2 dataElement) throws AWEException {
         DatabaseManagerFactory.getDatabaseManager().startThreadTransaction();
     }
 }

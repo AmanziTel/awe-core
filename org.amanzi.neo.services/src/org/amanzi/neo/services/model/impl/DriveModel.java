@@ -16,9 +16,11 @@ package org.amanzi.neo.services.model.impl;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.amanzi.neo.services.CorrelationService;
 import org.amanzi.neo.services.NeoServiceFactory;
@@ -290,7 +292,13 @@ public class DriveModel extends RenderableModel implements IDriveModel {
 
     @Override
     public IDataElement addMeasurement(String filename, Map<String, Object> params) throws AWEException {
-        return addMeasurement(filename, params, primaryType);
+        return addMeasurement(filename, params, primaryType, true);
+    }
+
+    @Override
+    public IDataElement addMeasurement(String filename, Map<String, Object> params, boolean isNeedToCreateLocation)
+            throws AWEException {
+        return addMeasurement(filename, params, primaryType, isNeedToCreateLocation);
     }
 
     @Override
@@ -299,7 +307,8 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     }
 
     @Override
-    public IDataElement addMeasurement(IDataElement file, Map<String, Object> params, INodeType nodeType) throws AWEException {
+    public IDataElement addMeasurement(IDataElement file, Map<String, Object> params, INodeType nodeType,
+            boolean isNeedToCreateLocation) throws AWEException {
 
         // validate parameters
         if (file == null) {
@@ -322,8 +331,8 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         Double lon = (Double)params.get(LONGITUDE);
         Long tst = (Long)params.get(TIMESTAMP);
 
-        if ((lat != null) && (lat != 0) && (lon != null) && (lon != 0)) {
-            createLocationNode(m, lat, lon);
+        if ((lat != null) && (lat != 0) && (lon != null) && (lon != 0) && isNeedToCreateLocation) {
+            createLocationNode(new DataElement(m), lat, lon);
             params.remove(LATITUDE);
             params.remove(LONGITUDE);
         }
@@ -345,7 +354,13 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     }
 
     @Override
-    public IDataElement addMeasurement(String filename, Map<String, Object> params, INodeType nodeType) throws AWEException {
+    public IDataElement addMeasurement(IDataElement file, Map<String, Object> params, INodeType nodeType) throws AWEException {
+        return addMeasurement(file, params, nodeType, true);
+    }
+
+    @Override
+    public IDataElement addMeasurement(String filename, Map<String, Object> params, INodeType nodeType,
+            boolean isNeedToCreateLocation) throws AWEException {
         LOGGER.debug("start addMeasurement(String filename, Map<String, Object> params)");
 
         // measurements are added as c-n-n o file nodes
@@ -367,7 +382,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
             throw new IllegalArgumentException("File node " + filename + " not found.");
         }
 
-        return addMeasurement(new DataElement(fileNode), params, nodeType);
+        return addMeasurement(new DataElement(fileNode), params, nodeType, isNeedToCreateLocation);
     }
 
     @Override
@@ -398,32 +413,29 @@ public class DriveModel extends RenderableModel implements IDriveModel {
 
     }
 
-    /**
-     * Creates a node, sets its LATITUDE and LONGITUDE properties, and created a LOCATION
-     * relationship from parent node.
-     * 
-     * @param parent
-     * @param lat
-     * @param lon
-     * @throws DatabaseException if errors occur in the database
-     */
-    protected void createLocationNode(Node parent, double lat, double lon) throws DatabaseException {
+    @Override
+    public IDataElement createLocationNode(IDataElement parent, double lat, double lon) throws DatabaseException {
         LOGGER.debug("start createLocationNode(Node measurement, long lat, long lon)");
         // validate params
         if (parent == null) {
             throw new IllegalArgumentException("Parent nde is null.");
         }
 
-        Node location = dsServ.createNode(parent, DriveRelationshipTypes.LOCATION, DriveNodeTypes.MP);
+        Node parentElement = ((DataElement)parent).getNode();
+        if (parentElement == null) {
+            throw new IllegalArgumentException("Parent nde is null.");
+        }
+        Node location = dsServ.createNode(parentElement, DriveRelationshipTypes.LOCATION, DriveNodeTypes.MP);
         Map<String, Object> params = new HashMap<String, Object>();
         params.put(LATITUDE, lat);
         params.put(LONGITUDE, lon);
         dsServ.setProperties(location, params);
         updateLocationBounds(lat, lon);
+        return new DataElement(location);
     }
 
     @Override
-    public IDataElement getLocation(IDataElement parentElement) {
+    public Iterable<IDataElement> getLocations(IDataElement parentElement) {
         // validate
         if (parentElement == null) {
             throw new IllegalArgumentException("Parent element is null.");
@@ -434,11 +446,12 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         }
         LOGGER.debug("start getLocation(IDataElement parentElement)");
 
+        Set<IDataElement> locations = new HashSet<IDataElement>();
         Iterator<Relationship> it = parent.getRelationships(DriveRelationshipTypes.LOCATION, Direction.OUTGOING).iterator();
         if (it.hasNext()) {
-            return new DataElement(it.next().getOtherNode(parent));
+            locations.add(new DataElement(it.next().getOtherNode(parent)));
         }
-        return null;
+        return locations;
     }
 
     @Override
@@ -602,9 +615,8 @@ public class DriveModel extends RenderableModel implements IDriveModel {
 
     @Override
     public Coordinate getCoordinate(IDataElement element) {
-        IDataElement location = getLocation(element);
-        if (location != null) {
-            return new Coordinate((Long)location.get(LONGITUDE), (Long)location.get(LATITUDE));
+        if (element != null) {
+            return new Coordinate((Double)element.get(LONGITUDE), (Double)element.get(LATITUDE));
         }
         return null;
     }

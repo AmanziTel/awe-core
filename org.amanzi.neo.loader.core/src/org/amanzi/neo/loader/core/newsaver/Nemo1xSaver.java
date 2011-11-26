@@ -18,9 +18,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
@@ -29,7 +27,6 @@ import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.NewDatasetService.DriveTypes;
 import org.amanzi.neo.services.exceptions.AWEException;
-import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -49,6 +46,25 @@ public class Nemo1xSaver extends Nemo2xSaver {
     private static final String NEMO_V1_VERSION = "1.86";
     private static final String START_SYMBOL = "#";
 
+    private static final int EVENT_ID_INDEX = 0;
+    private static final int LATITUDE_INDEX = 2;
+    private static final int LONGITUDE_INDEX = 1;
+    private static final int TIME_INDEX = 8;
+
+    private static final int FIRST_PARAMETER_INDEX = 9;
+    private static final double INCORRECT_LAT_LON_VALUE = 0;
+
+    public Nemo1xSaver() {
+        super();
+    }
+
+    /**
+     * Constructor for testing
+     * 
+     * @param model
+     * @param config
+     * @param service
+     */
     protected Nemo1xSaver(IDriveModel model, ConfigurationDataImpl config, GraphDatabaseService service) {
         super(model, config, service);
         preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.DRIVE);
@@ -59,13 +75,6 @@ public class Nemo1xSaver extends Nemo2xSaver {
             this.parametrizedModel = model;
             useableModels.add(model);
         }
-    }
-
-    /**
-     * create class instance
-     */
-    public Nemo1xSaver() {
-        super();
     }
 
     @Override
@@ -112,16 +121,9 @@ public class Nemo1xSaver extends Nemo2xSaver {
         return NEMO_V1_VERSION;
     }
 
-    private static final int EVENT_ID_INDEX = 0;
-    private static final int LATITUDE_INDEX = 2;
-    private static final int LONGITUDE_INDEX = 1;
-    private static final int TIME_INDEX = 8;
-
-    private static final int FIRST_PARAMETER_INDEX = 9;
-    private static final double INCORRECT_LAT_LON_VALUE = 0;
-
     @Override
     protected void saveLine(List<String> value) throws AWEException {
+        params.clear();
         String eventId = value.get(EVENT_ID_INDEX);
         Object longitude = autoParse(IDriveModel.LONGITUDE, value.get(LONGITUDE_INDEX));
         Object latitude = autoParse(IDriveModel.LATITUDE, value.get(LATITUDE_INDEX));
@@ -133,16 +135,18 @@ public class Nemo1xSaver extends Nemo2xSaver {
         for (int i = FIRST_PARAMETER_INDEX; i < value.size(); i++) {
             parameters.add(value.get(i));
         }
-        Map<String, Object> parsedParameters = analyseKnownParameters(value, event, contextId, parameters);
-        if (parsedParameters == null) {
+        params = analyseKnownParameters(value, event, contextId, parameters);
+        if (params.isEmpty()) {
             return;
         }
         if (isCorrect(latitude) && (Double)latitude != INCORRECT_LAT_LON_VALUE && isCorrect(longitude)
                 && (Double)longitude != INCORRECT_LAT_LON_VALUE) {
-            parsedParameters.put(IDriveModel.LATITUDE, latitude);
-            parsedParameters.put(IDriveModel.LONGITUDE, longitude);
+            params.put(IDriveModel.LATITUDE, latitude);
+            params.put(IDriveModel.LONGITUDE, longitude);
+            this.longitude = (Double)longitude;
+            this.latitude = (Double)latitude;
         }
-        parsedParameters.put(NewAbstractService.NAME, eventId);
+        params.put(NewAbstractService.NAME, eventId);
 
         long timestamp;
         try {
@@ -150,25 +154,10 @@ public class Nemo1xSaver extends Nemo2xSaver {
         } catch (ParseException e) {
             timestamp = 0;
         }
-        parsedParameters.put(TIMESTAMP, timestamp);
-        removeEmpty(parsedParameters);
+        params.put(TIMESTAMP, timestamp);
+        removeEmpty(params);
 
-        location = checkSameLocation(locationDataElements, parsedParameters);
-        if (location != null) {
-            parsedParameters.remove(IDriveModel.LATITUDE);
-            parsedParameters.remove(IDriveModel.LONGITUDE);
-        }
-        IDataElement createdElement = parametrizedModel.addMeasurement(fileName, parsedParameters);
-        if (location != null) {
-            List<IDataElement> locList = new LinkedList<IDataElement>();
-            locList.add(location);
-            linkWithLocationElement(createdElement, locList);
-        } else {
-            IDataElement location = parametrizedModel.getLocation(createdElement);
-            if (location != null) {
-                locationDataElements.add(parametrizedModel.getLocation(createdElement));
-            }
-        }
+        addMeasurement(parametrizedModel, params);
         createSubNodes(eventId, subNodes, timestamp);
     }
 

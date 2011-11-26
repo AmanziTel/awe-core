@@ -22,6 +22,7 @@ import java.util.Set;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
+import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
@@ -36,6 +37,8 @@ import org.apache.log4j.Logger;
  */
 public class FrequencyConstraintSaver extends AbstractN2NSaver {
 
+    /** String ALL_TRX_SYMBOL field */
+    private static final String ALL_TRX_SYMBOL = "*";
     private static final Logger LOGGER = Logger.getLogger(FrequencyConstraintSaver.class);
     /*
      * FREQUENCY constraints
@@ -52,27 +55,13 @@ public class FrequencyConstraintSaver extends AbstractN2NSaver {
      */
     private Map<String, Object> TRX_MAP = new HashMap<String, Object>();
     private Map<String, Object> RELATIONS_PROPERTIES = new HashMap<String, Object>();
-
-    protected FrequencyConstraintSaver(INodeToNodeRelationsModel model, INetworkModel networkModel, ConfigurationDataImpl data) {
-        super(model, networkModel, data);
-    }
-
-    /**
-     * create class instance
-     */
+    
     public FrequencyConstraintSaver() {
         super();
     }
 
-    @Override
-    protected INodeToNodeRelationsModel getNode2NodeModel(String name) throws AWEException {
-        return parametrizedModel.getNodeToNodeModel(N2NRelTypes.FREQUENCY_SPECTRUM, name, NetworkElementNodeType.SECTOR);
-    }
-
-    @Override
-    protected Map<String, String[]> initializeSynonyms() {
-        return preferenceManager.getFrequencySynonyms();
-
+    protected FrequencyConstraintSaver(INodeToNodeRelationsModel model, INetworkModel networkModel, ConfigurationDataImpl data) {
+        super(model, networkModel, data);
     }
 
     @Override
@@ -124,7 +113,7 @@ public class FrequencyConstraintSaver extends AbstractN2NSaver {
         Iterable<IDataElement> listTRX = parametrizedModel.getChildren(findedSector);
         List<IDataElement> requiredTrx = new LinkedList<IDataElement>();
         for (IDataElement trx : listTRX) {
-            if (trxId.equals("*") || trxId == trx.get(FR_TRX_ID)) {
+            if (trxId.equals(ALL_TRX_SYMBOL) || trxId == trx.get(FR_TRX_ID)) {
                 requiredTrx.add(trx);
             }
         }
@@ -132,7 +121,7 @@ public class FrequencyConstraintSaver extends AbstractN2NSaver {
     }
 
     /**
-     *
+     * Clears temporary maps
      */
     private void clearTemporalyDataMaps() {
         TRX_MAP.clear();
@@ -166,6 +155,16 @@ public class FrequencyConstraintSaver extends AbstractN2NSaver {
     @Override
     protected String getNeighborElementName() {
         return null;
+    }
+
+    @Override
+    protected N2NRelTypes getN2NType() {
+        return N2NRelTypes.FREQUENCY_SPECTRUM;
+    }
+
+    @Override
+    protected INodeType getN2NNodeType() {
+        return NetworkElementNodeType.SECTOR;
     }
 
 }

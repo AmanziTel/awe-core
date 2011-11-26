@@ -25,9 +25,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
@@ -37,10 +39,10 @@ import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceInitializer;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewNetworkService;
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.DriveModel;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
-import org.amanzi.neo.services.model.impl.DriveModel.DriveRelationshipTypes;
 import org.amanzi.testing.AbstractAWETest;
 import org.apache.log4j.Logger;
 import org.junit.AfterClass;
@@ -152,6 +154,8 @@ public class RomesSaverTesting extends AbstractAWETest {
         Map<String, Object> location = new HashMap<String, Object>();
         location.put(LATITUDE, collectedElement.get(LATITUDE));
         location.put(LONGITUDE, collectedElement.get(LONGITUDE));
+        Set<IDataElement> locListSet = new HashSet<IDataElement>();
+        locListSet.add(new DataElement(location));
 
         try {
             when(model.addFile(eq(rowContainer.getFile()))).thenReturn(new DataElement(new HashMap<String, Object>()));
@@ -160,13 +164,14 @@ public class RomesSaverTesting extends AbstractAWETest {
             rowContainer.setValues(values);
             collectedElement.put(TIMESTAMP, romesSaver.defineTimestamp(workDate, collectedElement.get(TIME).toString()));
             createdMainElement.putAll(collectedElement);
-            when(model.addMeasurement(eq(rowContainer.getFile().getName()), eq(collectedElement))).thenReturn(
+            when(model.addMeasurement(eq(rowContainer.getFile().getName()), eq(collectedElement), any(Boolean.class))).thenReturn(
                     new DataElement(createdMainElement));
-            when(model.getLocation(new DataElement(eq(createdMainElement)))).thenReturn(new DataElement(location));
+            when(model.getLocations(new DataElement(eq(createdMainElement)))).thenReturn(locListSet);
             romesSaver.saveElement(rowContainer);
 
-            verify(model, atLeastOnce()).addMeasurement(eq(rowContainer.getFile().getName()), eq(collectedElement));
-            verify(model).getLocation(new DataElement(eq(createdMainElement)));
+            verify(model, atLeastOnce()).addMeasurement(eq(rowContainer.getFile().getName()), eq(collectedElement),
+                    any(Boolean.class));
+            verify(model).getLocations(new DataElement(eq(createdMainElement)));
         } catch (Exception e) {
             LOGGER.error(" testSavingAllElement error", e);
             Assert.fail("Exception while saving row");
@@ -186,7 +191,8 @@ public class RomesSaverTesting extends AbstractAWETest {
         Map<String, Object> location = new HashMap<String, Object>();
         location.put(LATITUDE, collectedElement.get(LATITUDE));
         location.put(LONGITUDE, collectedElement.get(LONGITUDE));
-
+        Set<IDataElement> locListSet = new HashSet<IDataElement>();
+        locListSet.add(new DataElement(location));
         try {
             when(model.addFile(eq(rowContainer.getFile()))).thenReturn(new DataElement(new HashMap<String, Object>()));
             romesSaver.saveElement(rowContainer);
@@ -194,13 +200,13 @@ public class RomesSaverTesting extends AbstractAWETest {
             rowContainer.setValues(values);
             collectedElement.put(TIMESTAMP, romesSaver.defineTimestamp(workDate, collectedElement.get(TIME).toString()));
             createdMainElement.putAll(collectedElement);
-            when(model.addMeasurement(eq(rowContainer.getFile().getName()), eq(collectedElement))).thenReturn(
+            when(model.addMeasurement(eq(rowContainer.getFile().getName()), eq(collectedElement), any(Boolean.class))).thenReturn(
                     new DataElement(createdMainElement));
-            when(model.getLocation(new DataElement(eq(createdMainElement)))).thenReturn(new DataElement(location));
+            when(model.getLocations(new DataElement(eq(createdMainElement)))).thenReturn(locListSet);
             romesSaver.saveElement(rowContainer);
 
-            verify(model, never()).addMeasurement(eq(rowContainer.getFile().getName()), eq(collectedElement));
-            verify(model, never()).getLocation(new DataElement(eq(createdMainElement)));
+            verify(model, never()).addMeasurement(eq(rowContainer.getFile().getName()), eq(collectedElement), any(Boolean.class));
+            verify(model, never()).getLocations(new DataElement(eq(createdMainElement)));
         } catch (Exception e) {
             LOGGER.error(" testSavingAllElement error", e);
             Assert.fail("Exception while saving row");
@@ -218,13 +224,14 @@ public class RomesSaverTesting extends AbstractAWETest {
         Map<String, Object> createdMainElement = new HashMap<String, Object>();
         createdMainElement.putAll(collectedElement);
         createdMainElement.put(NewAbstractService.TYPE, DriveNodeTypes.M.getId());
+        Set<IDataElement> locListSet = new HashSet<IDataElement>();
         Map<String, Object> location = new HashMap<String, Object>();
         location.put(LATITUDE, collectedElement.get(LATITUDE));
         location.put(LONGITUDE, collectedElement.get(LONGITUDE));
+        locListSet.add(new DataElement(location));
         Map<String, Object> secondElement = new HashMap<String, Object>();
         secondElement.putAll(collectedElement);
-        secondElement.remove(LATITUDE);
-        secondElement.remove(LONGITUDE);
+        locListSet.add(new DataElement(location));
         Map<String, Object> createdSecondElement = new HashMap<String, Object>();
         createdSecondElement.putAll(secondElement);
         createdSecondElement.put(NewAbstractService.TYPE, DriveNodeTypes.M.getId());
@@ -233,17 +240,16 @@ public class RomesSaverTesting extends AbstractAWETest {
             romesSaver.saveElement(rowContainer);
             List<String> values = prepareValues(hashMap);
             rowContainer.setValues(values);
-            when(model.addMeasurement(eq(rowContainer.getFile().getName()), eq(collectedElement))).thenReturn(
+            when(model.addMeasurement(eq(rowContainer.getFile().getName()), eq(collectedElement), any(Boolean.class))).thenReturn(
                     new DataElement(createdMainElement));
-            when(model.addMeasurement(eq(rowContainer.getFile().getName()), eq(secondElement))).thenReturn(
+            when(model.addMeasurement(eq(rowContainer.getFile().getName()), eq(secondElement), any(Boolean.class))).thenReturn(
                     new DataElement(createdSecondElement));
-            when(model.getLocation(new DataElement(eq(createdMainElement)))).thenReturn(new DataElement(location));
+            when(model.getLocations(new DataElement(eq(createdMainElement)))).thenReturn(locListSet);
             romesSaver.saveElement(rowContainer);
             romesSaver.saveElement(rowContainer);
 
-            verify(model, atLeastOnce()).addMeasurement(eq(rowContainer.getFile().getName()), eq(secondElement));
-            verify(model, atLeastOnce()).linkNode(new DataElement(eq(createdSecondElement)), any(List.class),
-                    eq(DriveRelationshipTypes.LOCATION));
+            verify(model, atLeastOnce())
+                    .addMeasurement(eq(rowContainer.getFile().getName()), eq(secondElement), any(Boolean.class));
         } catch (Exception e) {
             LOGGER.error(" testSavingAllElement error", e);
             Assert.fail("Exception while saving row");

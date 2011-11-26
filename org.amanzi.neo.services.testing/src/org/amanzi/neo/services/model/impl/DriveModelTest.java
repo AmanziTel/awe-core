@@ -575,7 +575,7 @@ public class DriveModelTest extends AbstractNeoServiceTest {
             fail();
         }
 
-        Node l = ((DataElement)dm.getLocation(new DataElement(m))).getNode();
+        Node l = ((DataElement)dm.getLocations(new DataElement(m))).getNode();
         // location node created
         Assert.assertNotNull(l);
         // location node properties correct
@@ -618,9 +618,9 @@ public class DriveModelTest extends AbstractNeoServiceTest {
             fail();
         }
 
-        IDataElement l = dm.getLocation(new DataElement(m));
+        Iterable<IDataElement> l = dm.getLocations(new DataElement(m));
         // location node not created
-        Assert.assertNull(l);
+        Assert.assertNull(!l.iterator().hasNext());
     }
 
     @Test
@@ -655,9 +655,9 @@ public class DriveModelTest extends AbstractNeoServiceTest {
             fail();
         }
 
-        IDataElement l = dm.getLocation(new DataElement(m));
+        Iterable<IDataElement> l = dm.getLocations(new DataElement(m));
         // location node not created
-        Assert.assertNull(l);
+        Assert.assertNull(l.iterator().hasNext());
     }
 
     @Test(expected = IllegalArgumentException.class)

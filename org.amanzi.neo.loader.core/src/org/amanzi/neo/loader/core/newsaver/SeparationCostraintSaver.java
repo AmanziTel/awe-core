@@ -39,6 +39,10 @@ public class SeparationCostraintSaver extends AbstractNetworkSaver {
     private static final String SECTOR = "sector";
     private static final String SEPARATION = "separation";
     private static Map<String, Object> SECTOR_MAP = new HashMap<String, Object>();
+    
+    public SeparationCostraintSaver() {
+        super();
+    }
 
     protected SeparationCostraintSaver(INetworkModel model, ConfigurationDataImpl config) {
         preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.NETWORK);
@@ -51,13 +55,7 @@ public class SeparationCostraintSaver extends AbstractNetworkSaver {
         }
     }
 
-    /**
-     * create class instance
-     */
-    public SeparationCostraintSaver() {
-        super();
-    }
-
+    @Override
     protected void saveLine(List<String> value) throws AWEException {
         if (!isCorrect(SECTOR, value)) {
             LOGGER.error("cant find sector column on line: " + lineCounter);

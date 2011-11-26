@@ -20,14 +20,17 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.times;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
@@ -37,6 +40,7 @@ import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceInitializer;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewNetworkService;
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.DriveModel;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
@@ -231,7 +235,8 @@ public class TemsSaverTesting extends AbstractAWETest {
         Map<String, Object> location = new HashMap<String, Object>();
         location.put(LATITUDE, collectedElement.get(LATITUDE));
         location.put(LONGITUDE, collectedElement.get(LONGITUDE));
-
+        Set<IDataElement> locListSet = new HashSet<IDataElement>();
+        locListSet.add(new DataElement(location));
         try {
             when(model.addFile(eq(rowContainer.getFile()))).thenReturn(new DataElement(new HashMap<String, Object>()));
             when(virtualModel.addFile(eq(rowContainer.getFile()))).thenReturn(new DataElement(new HashMap<String, Object>()));
@@ -240,20 +245,22 @@ public class TemsSaverTesting extends AbstractAWETest {
             rowContainer.setValues(values);
             collectedElement.put(TIMESTAMP, temsSaver.defineTimestamp(workDate, collectedElement.get(TIME).toString()));
             createdMainElement.putAll(collectedElement);
-            when(model.addMeasurement(eq(rowContainer.getFile().getName()), eq(collectedElement))).thenReturn(
+            when(model.addMeasurement(eq(rowContainer.getFile().getName()), eq(collectedElement), any(Boolean.class))).thenReturn(
                     new DataElement(createdMainElement));
-            when(virtualModel.addMeasurement(eq(rowContainer.getFile().getName()), eq(msCollected1))).thenReturn(
-                    new DataElement(msCollected1));
-            when(virtualModel.addMeasurement(eq(rowContainer.getFile().getName()), eq(msCollected2))).thenReturn(
-                    new DataElement(msCollected2));
-            when(model.addMeasurement(eq(rowContainer.getFile().getName()), eq(collectedElement))).thenReturn(
+            when(virtualModel.addMeasurement(eq(rowContainer.getFile().getName()), eq(msCollected1), any(Boolean.class)))
+                    .thenReturn(new DataElement(msCollected1));
+            when(virtualModel.addMeasurement(eq(rowContainer.getFile().getName()), eq(msCollected2), any(Boolean.class)))
+                    .thenReturn(new DataElement(msCollected2));
+            when(model.addMeasurement(eq(rowContainer.getFile().getName()), eq(collectedElement), any(Boolean.class))).thenReturn(
                     new DataElement(createdMainElement));
-            when(model.getLocation(new DataElement(eq(createdMainElement)))).thenReturn(new DataElement(location));
+            when(model.getLocations(new DataElement(eq(createdMainElement)))).thenReturn(locListSet);
+            when(virtualModel.getLocations(new DataElement(eq(msCollected2)))).thenReturn(locListSet);
             temsSaver.saveElement(rowContainer);
 
-            verify(virtualModel, atLeastOnce()).addMeasurement(eq(rowContainer.getFile().getName()), eq(msCollected2));
-            verify(model).getLocation(new DataElement(eq(createdMainElement)));
-            verify(model).linkNode(new DataElement(eq(msCollected2)), any(List.class), eq(DriveRelationshipTypes.LOCATION));
+            verify(virtualModel, atLeastOnce()).addMeasurement(eq(rowContainer.getFile().getName()), eq(msCollected2),
+                    any(Boolean.class));
+            verify(model, atLeastOnce()).getLocations(new DataElement(eq(createdMainElement)));
+            verify(virtualModel, atLeastOnce()).getLocations(new DataElement(eq(msCollected2)));
         } catch (Exception e) {
             LOGGER.error(" testSavingAllElement error", e);
             Assert.fail("Exception while saving row");
@@ -274,7 +281,8 @@ public class TemsSaverTesting extends AbstractAWETest {
         Map<String, Object> location = new HashMap<String, Object>();
         location.put(LATITUDE, collectedElement.get(LATITUDE));
         location.put(LONGITUDE, collectedElement.get(LONGITUDE));
-
+        Set<IDataElement> locListSet = new HashSet<IDataElement>();
+        locListSet.add(new DataElement(location));
         try {
             when(model.addFile(eq(rowContainer.getFile()))).thenReturn(new DataElement(new HashMap<String, Object>()));
             when(virtualModel.addFile(eq(rowContainer.getFile()))).thenReturn(new DataElement(new HashMap<String, Object>()));
@@ -291,7 +299,7 @@ public class TemsSaverTesting extends AbstractAWETest {
                     new DataElement(msCollected2));
             when(model.addMeasurement(eq(rowContainer.getFile().getName()), eq(collectedElement))).thenReturn(
                     new DataElement(createdMainElement));
-            when(model.getLocation(new DataElement(eq(createdMainElement)))).thenReturn(new DataElement(location));
+            when(model.getLocations(new DataElement(eq(createdMainElement)))).thenReturn(locListSet);
             temsSaver.saveElement(rowContainer);
             verify(virtualModel, never()).addMeasurement(any(String.class), any(Map.class));
         } catch (Exception e) {
@@ -322,7 +330,8 @@ public class TemsSaverTesting extends AbstractAWETest {
         Map<String, Object> location = new HashMap<String, Object>();
         location.put(LATITUDE, collectedElement.get(LATITUDE));
         location.put(LONGITUDE, collectedElement.get(LONGITUDE));
-
+        Set<IDataElement> locListSet = new HashSet<IDataElement>();
+        locListSet.add(new DataElement(location));
         try {
             when(model.addFile(eq(rowContainer.getFile()))).thenReturn(new DataElement(new HashMap<String, Object>()));
             when(virtualModel.addFile(eq(rowContainer.getFile()))).thenReturn(new DataElement(new HashMap<String, Object>()));
@@ -331,18 +340,19 @@ public class TemsSaverTesting extends AbstractAWETest {
             rowContainer.setValues(values);
             collectedElement.put(TIMESTAMP, temsSaver.defineTimestamp(workDate, collectedElement.get(TIME).toString()));
             createdMainElement.putAll(collectedElement);
-            when(model.addMeasurement(eq(rowContainer.getFile().getName()), eq(collectedElement))).thenReturn(
+            when(model.addMeasurement(eq(rowContainer.getFile().getName()), eq(collectedElement), any(Boolean.class))).thenReturn(
                     new DataElement(createdMainElement));
-            when(virtualModel.addMeasurement(eq(rowContainer.getFile().getName()), eq(msCollected1))).thenReturn(
-                    new DataElement(msCollected1));
-            when(virtualModel.addMeasurement(eq(rowContainer.getFile().getName()), eq(msCollected2))).thenReturn(
-                    new DataElement(msCollected2));
-            when(model.addMeasurement(eq(rowContainer.getFile().getName()), eq(collectedElement))).thenReturn(
+            when(virtualModel.addMeasurement(eq(rowContainer.getFile().getName()), eq(msCollected1), any(Boolean.class)))
+                    .thenReturn(new DataElement(msCollected1));
+            when(virtualModel.addMeasurement(eq(rowContainer.getFile().getName()), eq(msCollected2), any(Boolean.class)))
+                    .thenReturn(new DataElement(msCollected2));
+            when(model.addMeasurement(eq(rowContainer.getFile().getName()), eq(collectedElement), any(Boolean.class))).thenReturn(
                     new DataElement(createdMainElement));
-            when(model.getLocation(new DataElement(eq(createdMainElement)))).thenReturn(new DataElement(location));
+            when(model.getLocations(new DataElement(eq(createdMainElement)))).thenReturn(locListSet);
             temsSaver.saveElement(rowContainer);
-            verify(model, atLeastOnce()).addMeasurement(eq(rowContainer.getFile().getName()), eq(collectedElement));
-            verify(model, atLeastOnce()).getLocation(new DataElement(eq(createdMainElement)));
+            verify(model, atLeastOnce()).addMeasurement(eq(rowContainer.getFile().getName()), eq(collectedElement),
+                    any(Boolean.class));
+            verify(model, atLeastOnce()).getLocations(new DataElement(eq(createdMainElement)));
         } catch (Exception e) {
             LOGGER.error(" testSavingAllElement error", e);
             Assert.fail("Exception while saving row");
