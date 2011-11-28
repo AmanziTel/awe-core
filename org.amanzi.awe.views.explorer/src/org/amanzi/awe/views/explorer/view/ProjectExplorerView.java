@@ -10,6 +10,9 @@ package org.amanzi.awe.views.explorer.view;
 import org.amanzi.awe.views.explorer.providers.ProjectTreeContentProvider;
 import org.amanzi.awe.views.explorer.providers.ProjectTreeLabelProvider;
 import org.amanzi.neo.services.model.IModel;
+import org.amanzi.neo.services.ui.events.IEventsListener;
+import org.amanzi.neo.services.ui.events.NewEventManager;
+import org.amanzi.neo.services.ui.events.UpdateDataEvent;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
@@ -61,6 +64,23 @@ public class ProjectExplorerView extends ViewPart {
         hookContextMenu();
         getSite().setSelectionProvider(viewer);
         setLayout(parent);
+        addListeners();
+    }
+
+    /**
+     * add required Listener
+     */
+    @SuppressWarnings("unchecked")
+    private void addListeners() {
+        NewEventManager.getInstance().addListener(new UpdateDataEvent(), new RefreshTreeListener());
+    }
+
+    private class RefreshTreeListener implements IEventsListener<UpdateDataEvent> {
+        @Override
+        public void handleEvent(UpdateDataEvent data) {
+            viewer.setInput(getSite());
+        }
+
     }
 
     /**
@@ -130,4 +150,5 @@ public class ProjectExplorerView extends ViewPart {
         viewer.reveal(dataElement);
         viewer.setSelection(new StructuredSelection(new Object[] {dataElement}));
     }
+
 }
