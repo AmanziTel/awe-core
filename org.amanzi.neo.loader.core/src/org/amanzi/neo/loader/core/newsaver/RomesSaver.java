@@ -28,7 +28,7 @@ import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
 import org.apache.log4j.Logger;
 
 /**
- * saver for romes data
+ * saver for romves data
  * 
  * @author Vladislav_Kondratenko
  */

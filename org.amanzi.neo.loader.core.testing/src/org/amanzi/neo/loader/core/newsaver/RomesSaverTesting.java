@@ -104,7 +104,7 @@ public class RomesSaverTesting extends AbstractAWETest {
     public static void tearDownAfterClass() throws Exception {
         stopDb();
         clearDb();
-        LOGGER.info("RomesSaverTesting finished in " + (System.currentTimeMillis() - startTime));
+        LOGGER.info("NewNetworkSaverTesting finished in " + (System.currentTimeMillis() - startTime));
     }
 
     @Before
