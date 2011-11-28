@@ -59,8 +59,6 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.IPageLayout;
-import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
@@ -148,6 +146,7 @@ public class NetworkTreeView extends ViewPart implements IEventListener {
 			
 			@Override
 			public void selectionChanged(SelectionChangedEvent event) {
+				
 				selectedDataElements.clear();
 				IStructuredSelection selection = ((IStructuredSelection)event.getSelection());
 	            Iterator<?> it = selection.iterator();
@@ -230,7 +229,6 @@ public class NetworkTreeView extends ViewPart implements IEventListener {
          * 
          * @param selection - selection
          */
-        @SuppressWarnings("rawtypes")
         public SelectAction(IStructuredSelection selection) {
 
             enabled = selectedDataElements.size() == 1;

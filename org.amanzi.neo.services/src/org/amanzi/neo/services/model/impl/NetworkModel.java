@@ -102,6 +102,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         initializeStatistics();
         initializeMultiPropertyIndexing();
         initializeNetworkStructure();
+        initializeListOfUniqueProperties();
     }
 
     /**
@@ -141,11 +142,26 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         initializeStatistics();
         initializeMultiPropertyIndexing();
         initializeNetworkStructure();
+        initializeListOfUniqueProperties();
         if ((crsCode != null) && (!crsCode.equals(StringUtils.EMPTY))) {
             updateCRS(crsCode);
         }
     }
 
+    /**
+     * Method to fill properties which should be unique in any network
+     */
+    private void initializeListOfUniqueProperties() {
+        uniqueListOfProperties.add(NewNetworkService.NAME);
+        // ci and lac not unique by individual but
+        // ci+lac in binding is unique
+        uniqueListOfProperties.add(NewNetworkService.CELL_INDEX);
+        uniqueListOfProperties.add(NewNetworkService.LOCATION_AREA_CODE);
+        
+        uniqueListOfProperties.add(NewNetworkService.BSIC);
+        uniqueListOfProperties.add(NewNetworkService.BCCH);
+    }
+    
     /**
      * Initializes Network Structure from Node
      */
@@ -828,7 +844,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
 
     @Override
     public boolean isUniqueProperties(String property) {
-        return false;
+        return super.isUniqueProperties(property);
     }
 
 }

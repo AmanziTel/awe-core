@@ -13,6 +13,22 @@
    </extension>
    
    <extension
+         point="org.eclipse.ui.perspectiveExtensions">
+      <perspectiveExtension
+            targetID="org.amanzi.awe.perspective">
+         <view
+               id="org.amanzi.awe.views.network.views.NewNetworkTreeView"
+               relationship="stack"
+               relative="net.refractions.udig.catalog.ui.CatalogView"
+               visible="true">
+         </view>
+         <viewShortcut
+               id="org.amanzi.awe.views.network.views.NewNetworkTreeView">
+         </viewShortcut>
+      </perspectiveExtension>
+   </extension>
+   
+   <extension
          point="org.eclipse.ui.views">
       <view
             name="Network Properties View"
@@ -22,5 +38,7 @@
             id="org.amanzi.awe.views.network.views.NetworkPropertiesView">
       </view>
    </extension>
+   
+
    
 </plugin>

@@ -63,19 +63,6 @@ public abstract class PropertyStatisticalModel extends DataModel implements IPro
         notNecessaryListOfProperties.add(INeoConstants.PROPERTY_TIMESTAMP_NAME);
     }
     
-    /**
-     * Method to fill properties which should be unique in any network
-     */
-    private void fillListOfUniqueProperties() {
-        uniqueListOfProperties.add(NewNetworkService.NAME);
-        // ci and lac not unique by individual but
-        // ci+lac in binding is unique
-        uniqueListOfProperties.add(NewNetworkService.CELL_INDEX);
-        uniqueListOfProperties.add(NewNetworkService.LOCATION_AREA_CODE);
-        
-        uniqueListOfProperties.add(NewNetworkService.BSIC);
-        uniqueListOfProperties.add(NewNetworkService.BCCH);
-    }
     
     @Override
     public boolean isUniqueProperties(String property) {
@@ -89,7 +76,6 @@ public abstract class PropertyStatisticalModel extends DataModel implements IPro
         try {
             statisticsVault = statisticsService.loadVault(getRootNode());
             fillListOfNotNecessaryProperties();
-            fillListOfUniqueProperties();
         } catch (AWEException e) {
             //TODO: LN: handle exception
         }

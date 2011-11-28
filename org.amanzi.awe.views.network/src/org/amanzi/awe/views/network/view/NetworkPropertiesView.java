@@ -15,15 +15,29 @@ package org.amanzi.awe.views.network.view;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
+import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.NewAbstractService;
+import org.amanzi.neo.services.NewNetworkService;
+import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
+import org.amanzi.neo.services.NodeTypeManager;
+import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
+import org.amanzi.neo.services.model.INetworkModel;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.CellEditor;
-import org.eclipse.jface.viewers.ComboBoxCellEditor;
+import org.eclipse.jface.viewers.ColumnViewerEditor;
+import org.eclipse.jface.viewers.ColumnViewerEditorActivationEvent;
+import org.eclipse.jface.viewers.ColumnViewerEditorActivationStrategy;
+import org.eclipse.jface.viewers.ICellModifier;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.jface.viewers.TableViewerEditor;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
@@ -37,10 +51,12 @@ import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Item;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
 /**
@@ -59,7 +75,17 @@ public class NetworkPropertiesView extends ViewPart {
     private IDataElement currentDataElement;
     
     private static String DESTINATION_OF_THIS_VIEW = "This network properties view destine for view all properties in IDataElements";
+    private static String CELL_MODIFIER_1 = "column1";
+    private static String CELL_MODIFIER_2 = "column2";
+    private static final String RENAME_MSG = "Enter new Value";
+    
+    private static String TITLE_COULD_NOT_CHANGE_PROPERTY = "Could not change property";
+    private static String MESSAGE_COULD_NOT_CHANGE_PROPERTY = "Could not change this property, because it property is unique.\n";
+    private static String PROPERTY_DEFINED_IN_ELEMENT = "In current moment this property define in element with type ";
+    private static String PROPERTY_DEFINED_IN_ELEMENT_CI_LAC = "In current moment properties ci+lac unique and define in element with type ";
 
+    public static boolean showMessageBox = true;
+    
     public void updateTableView(IDataElement dataElement) {
     	currentDataElement = dataElement;
     	tableViewer.setInput("");
@@ -93,19 +119,6 @@ public class NetworkPropertiesView extends ViewPart {
         tableViewer = new TableViewer(parent, SWT.BORDER | SWT.FULL_SELECTION);
         tableViewer.setUseHashlookup(true);
         
-        CellEditor[] editors = new CellEditor[2];
-        TextCellEditor textEditor = new TextCellEditor(parent);
-        ((Text)textEditor.getControl()).setTextLimit(60);
-        editors[0] = textEditor;
-        
-        String[] arr = new String[2];
-        arr[0] = "1";
-        arr[1] = "2";
-        editors[1] = new ComboBoxCellEditor(parent, arr,
-                SWT.READ_ONLY);
-        
-        tableViewer.setCellEditors(editors);
-        
         FormData fData = new FormData();
         fData.left = new FormAttachment(0, 0);
         fData.right = new FormAttachment(100, 0);
@@ -115,17 +128,63 @@ public class NetworkPropertiesView extends ViewPart {
         
         labelProvider = new TableLabelProvider();
         labelProvider.createTableColumn();
+        tableViewer.setLabelProvider(labelProvider);
         
         provider = new TableContentProvider();
         tableViewer.setContentProvider(provider);
-        tableViewer.setLabelProvider(labelProvider);
+        
+        tableViewer.setCellModifier(new ICellModifier() {
+			
+			@Override
+			public void modify(Object element, String property, Object value) {
+			    element = ((Item) element).getData();
+			    boolean needToUpdate = setPropertyValue(((RowWrapper)element).property, value);
+				if (needToUpdate) {
+				    ((RowWrapper)element).setValue(value);
+					tableViewer.update(element, null);
+				}
+			}
+			
+			@Override
+			public Object getValue(Object element, String property) {
+				
+				return ((RowWrapper)element).value + "";
+			}
+			
+			@Override
+			public boolean canModify(Object element, String property) {
+				if (property.equals(CELL_MODIFIER_2)) 
+					return true;
+				return false;
+			}
+		});
+        tableViewer.setColumnProperties(new String[] {CELL_MODIFIER_1, CELL_MODIFIER_2});
+        
+        ColumnViewerEditorActivationStrategy activationStrategy = new ColumnViewerEditorActivationStrategy(tableViewer) {
+        	protected boolean isEditorActivationEvent(ColumnViewerEditorActivationEvent event) {
+        		return event.eventType == ColumnViewerEditorActivationEvent.TRAVERSAL
+        				|| event.eventType == ColumnViewerEditorActivationEvent.MOUSE_DOUBLE_CLICK_SELECTION
+        				|| event.eventType == ColumnViewerEditorActivationEvent.PROGRAMMATIC;
+        	}
+        };
+        
+        tableViewer.setCellEditors(new CellEditor[] {
+        		new TextCellEditor(tableViewer.getTable()), 
+        		new TextCellEditor(tableViewer.getTable()) });
+        
+        TableViewerEditor.create(tableViewer, activationStrategy, 
+        		ColumnViewerEditor.TABBING_HORIZONTAL
+        		| ColumnViewerEditor.TABBING_MOVE_TO_ROW_NEIGHBOR
+        		| ColumnViewerEditor.TABBING_VERTICAL
+        		| ColumnViewerEditor.KEYBOARD_ACTIVATION);
+        
         tableViewer.setInput("");
     }
 
     private class TableLabelProvider extends LabelProvider implements ITableLabelProvider {
     	
         private final ArrayList<TableColumn> columns = new ArrayList<TableColumn>();
-        private final static int DEF_SIZE = 380;
+        private final static int DEF_SIZE = 340;
         private final String[] colNames = new String[] {"Property", "Value"};
 
         private void createColumn(String label, int size, boolean sortable, final int idx) {
@@ -293,7 +352,7 @@ public class NetworkPropertiesView extends ViewPart {
      */
     private class RowWrapper {
         private final String property;
-        private final Object value;
+        private Object value;
         private boolean isEditable;
 
         private RowWrapper(String property, Object value) {
@@ -311,6 +370,10 @@ public class NetworkPropertiesView extends ViewPart {
             return value;
         }
         
+        public void setValue(Object value) {
+        	this.value = value;
+        }
+        
         public void setIsEditable(boolean isEditable) {
         	this.isEditable = isEditable;
         }
@@ -324,83 +387,85 @@ public class NetworkPropertiesView extends ViewPart {
     public void setFocus() {
     }
     
-//    /**
-//     * Sets the property value.
-//     * 
-//     * @param id the id
-//     * @param value the value
-//     */
-//    @Override
-//    public void setPropertyValue(Object id, Object value) {
-//        String propertyName = id.toString();
-//        INetworkModel networkModel = (INetworkModel)currentDataElement.get(INeoConstants.NETWORK_MODEL_NAME);
-//        try {
-//            boolean isReadyToUpdate = true;
-//            INodeType nodeType = NodeTypeManager.getType(currentDataElement.get(NewAbstractService.TYPE).toString());
-//            IDataElement dataElement = null;
-//            boolean isCIorLAC = false;
-//            // if property is unique then find is exist some element with equal property
-//            if (networkModel.isUniqueProperties(propertyName)) {
-//                if (nodeType.equals(NetworkElementNodeType.SECTOR)) {
-//                    // ci+lac in sector should be unique, not a ci_lac as parameter
-//                    // but ci together with lac should be unique
-//                    String ci_lac = null;
-//                    if (propertyName.equals(NewNetworkService.CELL_INDEX)) {
-//                        String lac = currentDataElement.get(NewNetworkService.LOCATION_AREA_CODE).toString();
-//                        ci_lac = value.toString() + "_" + lac;
-//                        isCIorLAC = true;
-//                    } else if (propertyName.equals(NewNetworkService.LOCATION_AREA_CODE)) {
-//                        String ci = currentDataElement.get(NewNetworkService.CELL_INDEX).toString();
-//                        ci_lac = ci + "_" + value.toString();
-//                        isCIorLAC = true;
-//                    }
-//                    if (isCIorLAC) {
-//                        dataElement = networkModel.findSector(propertyName, ci_lac);
-//                    } else {
-//                        dataElement = networkModel.findSector(propertyName, value.toString());
-//                    }
-//                    if (dataElement != null) {
-//                        isReadyToUpdate = false;
-//                    }
-//                } else {
-//                    Set<IDataElement> elements = networkModel.findElementByPropertyValue(nodeType, propertyName, value);
-//                    if (elements.size() > 0) {
-//                        dataElement = elements.iterator().next();
-//                        isReadyToUpdate = false;
-//                    }
-//                }
-//            }
-//            if (isReadyToUpdate) {
-//                networkModel.updateElement(currentDataElement, propertyName, value);
-//            } else {
-//                String propertyDefined = null;
-//                if (isCIorLAC) {
-//                    propertyDefined = PROPERTY_DEFINED_IN_ELEMENT_CI_LAC;
-//                } else {
-//                    propertyDefined = PROPERTY_DEFINED_IN_ELEMENT;
-//                }
-//                String message = MESSAGE_COULD_NOT_CHANGE_PROPERTY + propertyDefined + dataElement.get(NewNetworkService.TYPE)
-//                        + " and name " + dataElement.get(NewNetworkService.NAME);
-//
-//                if (showMessageBox) {
-//                    showMessageBox = false;
-//                    synchronized (message) {
-//                        // if we will use this code then we will get a critical error
-//                        // MessageDialog.openWarning(null, TITLE_COULD_NOT_CHANGE_PROPERTY,
-//                        // message);
-//                        MessageBox msg = new MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.OK);
-//                        msg.setText(TITLE_COULD_NOT_CHANGE_PROPERTY);
-//                        msg.setMessage(message);
-//                        int result = msg.open();
-//                        if (result != SWT.OK) {
-//                            return;
-//                        }
-//                    }
-//                    showMessageBox = true;
-//                }
-//            }
-//        } catch (AWEException e) {
-//            MessageDialog.openError(null, TITLE_COULD_NOT_CHANGE_PROPERTY, TITLE_COULD_NOT_CHANGE_PROPERTY + "\n" + e);
-//        }
-//    }
+    /**
+     * Sets the property value.
+     * 
+     * @param id the id
+     * @param value the value
+     * @return Is updated value
+     */
+    public boolean setPropertyValue(String propertyName, Object value) {
+
+        INetworkModel networkModel = (INetworkModel)currentDataElement.get(INeoConstants.NETWORK_MODEL_NAME);
+        boolean isReadyToUpdate = true;
+        try {
+            INodeType nodeType = NodeTypeManager.getType(currentDataElement.get(NewAbstractService.TYPE).toString());
+            IDataElement dataElement = null;
+            boolean isCIorLAC = false;
+            // if property is unique then find is exist some element with equal property
+            if (networkModel.isUniqueProperties(propertyName)) {
+                if (nodeType.equals(NetworkElementNodeType.SECTOR)) {
+                    // ci+lac in sector should be unique, not a ci_lac as parameter
+                    // but ci together with lac should be unique
+                    String ci_lac = null;
+                    if (propertyName.equals(NewNetworkService.CELL_INDEX)) {
+                        String lac = currentDataElement.get(NewNetworkService.LOCATION_AREA_CODE).toString();
+                        ci_lac = value.toString() + "_" + lac;
+                        isCIorLAC = true;
+                    } else if (propertyName.equals(NewNetworkService.LOCATION_AREA_CODE)) {
+                        String ci = currentDataElement.get(NewNetworkService.CELL_INDEX).toString();
+                        ci_lac = ci + "_" + value.toString();
+                        isCIorLAC = true;
+                    }
+                    if (isCIorLAC) {
+                        dataElement = networkModel.findSector(propertyName, ci_lac);
+                    } else {
+                        dataElement = networkModel.findSector(propertyName, value.toString());
+                    }
+                    if (dataElement != null) {
+                        isReadyToUpdate = false;
+                    }
+                } else {
+                    Set<IDataElement> elements = networkModel.findElementByPropertyValue(nodeType, propertyName, value);
+                    if (elements.size() > 0) {
+                        dataElement = elements.iterator().next();
+                        isReadyToUpdate = false;
+                    }
+                }
+            }
+            if (isReadyToUpdate) {
+                networkModel.updateElement(currentDataElement, propertyName, value);
+            } else {
+                String propertyDefined = null;
+                if (isCIorLAC) {
+                    propertyDefined = PROPERTY_DEFINED_IN_ELEMENT_CI_LAC;
+                } else {
+                    propertyDefined = PROPERTY_DEFINED_IN_ELEMENT;
+                }
+                String message = MESSAGE_COULD_NOT_CHANGE_PROPERTY + propertyDefined + dataElement.get(NewNetworkService.TYPE)
+                        + " and name " + dataElement.get(NewNetworkService.NAME);
+
+                if (showMessageBox) {
+                    showMessageBox = false;
+                    synchronized (message) {
+                        // if we will use this code then we will get a critical error
+                        // MessageDialog.openWarning(null, TITLE_COULD_NOT_CHANGE_PROPERTY,
+                        // message);
+                        MessageBox msg = new MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.OK);
+                        msg.setText(TITLE_COULD_NOT_CHANGE_PROPERTY);
+                        msg.setMessage(message);
+                        int result = msg.open();
+                        if (result != SWT.OK) {
+                            return false;
+                        }
+                    }
+                    showMessageBox = true;
+                }
+            }
+        } catch (AWEException e) {
+            MessageDialog.openError(null, TITLE_COULD_NOT_CHANGE_PROPERTY, TITLE_COULD_NOT_CHANGE_PROPERTY + "\n" + e);
+        }
+        
+        return isReadyToUpdate;
+    }
 }
