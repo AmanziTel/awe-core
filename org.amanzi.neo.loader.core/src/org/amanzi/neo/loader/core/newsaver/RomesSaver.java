@@ -14,38 +14,34 @@
 package org.amanzi.neo.loader.core.newsaver;
 
 import java.io.File;
-import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService.DriveTypes;
+import org.amanzi.neo.services.enums.IDriveType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
-import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
 import org.apache.log4j.Logger;
 
 /**
- * saver for romves data
+ * saver for romes data
  * 
  * @author Vladislav_Kondratenko
  */
 public class RomesSaver extends AbstractDriveSaver {
     private static final Logger LOGGER = Logger.getLogger(RomesSaver.class);
-    /**
-     * collection of new created locations element
-     */
-    private Set<IDataElement> locationDataElements = new HashSet<IDataElement>();
+
+    public RomesSaver() {
+        super();
+    }
 
     protected RomesSaver(IDriveModel model, ConfigurationDataImpl config) {
         preferenceStoreSynonyms = initializeSynonyms();
-        DRIVE_TYPE = DriveTypes.ROMES.name();
+
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
         commitTx();
         if (model != null) {
@@ -54,26 +50,19 @@ public class RomesSaver extends AbstractDriveSaver {
         }
     }
 
-    /**
-     * create class instants
-     */
-    public RomesSaver() {
-        super();
-        DRIVE_TYPE = DriveTypes.ROMES.name();
-    }
-
     @Override
-    protected void addedNewFileToModels(File file) throws DatabaseException, DuplicateNodeNameException {
+    protected void addNewFileToModels(File file) throws DatabaseException, DuplicateNodeNameException {
         parametrizedModel.addFile(file);
     }
 
     @Override
     protected void saveLine(List<String> value) throws AWEException {
+        params.clear();
         String time = getValueFromRow(TIME, value);
         Long timestamp = defineTimestamp(workDate, time);
         String message_type = getValueFromRow(MESSAGE_TYPE, value);
-        Double latitude = getLatitude(getValueFromRow(IDriveModel.LATITUDE, value));
-        Double longitude = getLongitude(getValueFromRow(IDriveModel.LONGITUDE, value));
+        latitude = getCoordinate(getValueFromRow(IDriveModel.LATITUDE, value));
+        longitude = getCoordinate(getValueFromRow(IDriveModel.LONGITUDE, value));
         String event = getValueFromRow(EVENT, value);
         String sector_id = getValueFromRow(SECTOR_ID, value);
         if (time == null || latitude == null || longitude == null || timestamp == null) {
@@ -85,19 +74,7 @@ public class RomesSaver extends AbstractDriveSaver {
         removeEmpty(params);
         collectRemainProperties(params, value);
         addSynonyms(parametrizedModel, params);
-        IDataElement existedLocation = checkForSameLocation(params);
-        if (existedLocation != null) {
-            params.remove(IDriveModel.LATITUDE);
-            params.remove(IDriveModel.LONGITUDE);
-        }
-        IDataElement createdElement = parametrizedModel.addMeasurement(fileName, params);
-        if (existedLocation != null) {
-            List<IDataElement> locList = new LinkedList<IDataElement>();
-            locList.add(existedLocation);
-            linkWithLocationElement(createdElement, locList);
-        } else {
-            locationDataElements.add(parametrizedModel.getLocation(createdElement));
-        }
+        addMeasurement(parametrizedModel, params);
     }
 
     /**
@@ -124,26 +101,8 @@ public class RomesSaver extends AbstractDriveSaver {
         params.put(NewAbstractService.TYPE, DriveNodeTypes.M.getId());
     }
 
-    /**
-     * check for same located element
-     * 
-     * @param params
-     * @return
-     */
-    private IDataElement checkForSameLocation(Map<String, Object> params) {
-        for (IDataElement location : locationDataElements) {
-            if (location.get(IDriveModel.LATITUDE).equals(params.get(IDriveModel.LATITUDE))
-                    && location.get(IDriveModel.LONGITUDE).equals(params.get(IDriveModel.LONGITUDE))) {
-                return location;
-            }
-        }
-        return null;
-    }
-
     @Override
-    protected void initializeNecessaryModels() throws AWEException {
-        parametrizedModel = getActiveProject().getDataset(
-                configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME), DriveTypes.ROMES);
-
+    protected IDriveType getDriveType() {
+        return DriveTypes.ROMES;
     }
 }

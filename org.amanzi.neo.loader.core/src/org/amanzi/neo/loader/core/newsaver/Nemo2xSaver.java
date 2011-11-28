@@ -21,9 +21,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -36,10 +34,10 @@ import org.amanzi.neo.loader.core.saver.nemo.NemoEvents;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.NewDatasetService.DriveTypes;
+import org.amanzi.neo.services.enums.IDriveType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
-import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -81,15 +79,13 @@ public class Nemo2xSaver extends AbstractDriveSaver {
      * virtual model for parameterizedModel
      */
     protected IDriveModel virtualModel;
-    /**
-     * list of all created location elements
-     */
-    protected Set<IDataElement> locationDataElements = new HashSet<IDataElement>();
 
     /**
-     * curent created location element
+     * create instance of nemo2xsaver
      */
-    protected IDataElement location;
+    public Nemo2xSaver() {
+        super();
+    }
 
     protected Nemo2xSaver(IDriveModel model, ConfigurationDataImpl config, GraphDatabaseService service) {
         preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.DRIVE);
@@ -102,15 +98,8 @@ public class Nemo2xSaver extends AbstractDriveSaver {
         }
     }
 
-    /**
-     * create instance of nemo2xsaver
-     */
-    public Nemo2xSaver() {
-        super();
-    }
-
     @Override
-    protected void addedNewFileToModels(File file) throws DatabaseException, DuplicateNodeNameException {
+    protected void addNewFileToModels(File file) throws DatabaseException, DuplicateNodeNameException {
         parametrizedModel.addFile(file);
     }
 
@@ -137,6 +126,7 @@ public class Nemo2xSaver extends AbstractDriveSaver {
     protected void handleLine(CSVContainer dataElement) throws AWEException {
         if (!dataElement.getHeaders().isEmpty() && !dataElement.getValues().isEmpty()) {
             saveLine(dataElement.getValues());
+            lineCounter++;
         }
     }
 
@@ -172,10 +162,7 @@ public class Nemo2xSaver extends AbstractDriveSaver {
                 propertyMap.put(TIMESTAMP, timestamp);
                 propertyMap.put(NewAbstractService.NAME, eventId);
                 virtualModel.getFile(fileName);
-                IDataElement createdElement = getVirtualModel().addMeasurement(fileName, propertyMap);
-                List<IDataElement> locList = new LinkedList<IDataElement>();
-                locList.add(location);
-                linkWithLocationElement(createdElement, locList);
+                addMeasurement(virtualModel, propertyMap);
             } catch (Exception e) {
             }
         }
@@ -183,6 +170,7 @@ public class Nemo2xSaver extends AbstractDriveSaver {
 
     @Override
     protected void saveLine(List<String> headers) throws AWEException {
+        params.clear();
         String eventId = headers.get(EVENT_ID_INDEX);
         NemoEvents event = NemoEvents.getEventById(eventId);
         String time = headers.get(TIME_INDEX);
@@ -210,8 +198,8 @@ public class Nemo2xSaver extends AbstractDriveSaver {
             parameters.add(headers.get(i));
         }
         // analyse
-        Map<String, Object> parsedParameters = analyseKnownParameters(headers, event, contextId, parameters);
-        if (parsedParameters == null) {
+        params = analyseKnownParameters(headers, event, contextId, parameters);
+        if (params.isEmpty()) {
             return;
         }
         long timestamp;
@@ -220,39 +208,15 @@ public class Nemo2xSaver extends AbstractDriveSaver {
         } catch (ParseException e) {
             timestamp = 0;
         }
-        parsedParameters.put(NewAbstractService.NAME, eventId);
-        parsedParameters.put(EVENT_TYPE, eventId);
-        parsedParameters.put(TIMESTAMP, timestamp);
-        removeEmpty(parsedParameters);
-        boolean isAlreadyCreated = false;
+        params.put(NewAbstractService.NAME, eventId);
+        params.put(EVENT_TYPE, eventId);
+        params.put(TIMESTAMP, timestamp);
+        removeEmpty(params);
         if (GPS_EVENT.equalsIgnoreCase(eventId)) {
-            Double longitude = (Double)parsedParameters.get(IDriveModel.LONGITUDE);
-            Double latitude = (Double)parsedParameters.get(IDriveModel.LATITUDE);
+            longitude = (Double)params.get(IDriveModel.LONGITUDE);
+            latitude = (Double)params.get(IDriveModel.LATITUDE);
             if (isCorrect(latitude) && latitude != 0d && isCorrect(longitude) && longitude != 0d) {
-                location = checkSameLocation(parsedParameters);
-                if (location != null) {
-                    parsedParameters.remove(IDriveModel.LATITUDE);
-                    parsedParameters.remove(IDriveModel.LONGITUDE);
-                }
-                IDataElement createdElement = parametrizedModel.addMeasurement(fileName, parsedParameters);
-                isAlreadyCreated = true;
-                if (location != null) {
-                    List<IDataElement> locList = new LinkedList<IDataElement>();
-                    locList.add(location);
-                    linkWithLocationElement(createdElement, locList);
-                } else {
-                    IDataElement location = parametrizedModel.getLocation(createdElement);
-                    if (location != null) {
-                        locationDataElements.add(parametrizedModel.getLocation(createdElement));
-                    }
-                }
-            }
-        }
-        if (!isAlreadyCreated) {
-            IDataElement createdElement = parametrizedModel.addMeasurement(fileName, parsedParameters);
-            IDataElement location = parametrizedModel.getLocation(createdElement);
-            if (location != null) {
-                locationDataElements.add(parametrizedModel.getLocation(createdElement));
+                addMeasurement(parametrizedModel, params);
             }
         }
         createSubNodes(eventId, subNodes, timestamp);
@@ -271,21 +235,21 @@ public class Nemo2xSaver extends AbstractDriveSaver {
     protected Map<String, Object> analyseKnownParameters(List<String> element, NemoEvents event, List<Integer> contextId,
             ArrayList<String> parameters) {
         if (parameters.isEmpty()) {
-            return null;
+            return params;
         }
 
         if (event == null) {
-            return null;
+            return params;
         }
         Map<String, Object> parParam;
         try {
             parParam = event.fill(getVersion(), parameters);
         } catch (Exception e1) {
             LOGGER.error(String.format("Line %s not parsed", element.toString()));
-            return null;
+            return params;
         }
         if (parParam.isEmpty()) {
-            return null;
+            return params;
         }
         driveEvents = (DriveEvents)parParam.remove(NemoEvents.DRIVE_EVENTS);
         subNodes = (List<Map<String, Object>>)parParam.remove(NemoEvents.SUB_NODES);
@@ -367,18 +331,6 @@ public class Nemo2xSaver extends AbstractDriveSaver {
         return timestamp;
     }
 
-    protected IDataElement checkSameLocation(Map<String, Object> params) {
-        // TODO: LN: you can use 'equals' for double
-        // use delta, for example it should be less 0.00001
-        for (IDataElement location : locationDataElements) {
-            if (location.get(IDriveModel.LATITUDE).equals(params.get(IDriveModel.LATITUDE))
-                    && location.get(IDriveModel.LONGITUDE).equals(params.get(IDriveModel.LONGITUDE))) {
-                return location;
-            }
-        }
-        return null;
-    }
-
     /**
      * Gets the version.
      * 
@@ -390,9 +342,12 @@ public class Nemo2xSaver extends AbstractDriveSaver {
 
     @Override
     protected void initializeNecessaryModels() throws AWEException {
-        parametrizedModel = getActiveProject().getDataset(
-                configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME), DriveTypes.NEMO_V2);
+        super.initializeNecessaryModels();
         virtualModel = getVirtualModel();
+    }
 
+    @Override
+    protected IDriveType getDriveType() {
+        return DriveTypes.NEMO_V2;
     }
 }

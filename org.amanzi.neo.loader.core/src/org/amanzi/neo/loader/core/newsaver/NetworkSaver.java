@@ -41,7 +41,17 @@ public class NetworkSaver extends AbstractNetworkSaver {
     // Default network structure
     private final static NetworkElementNodeType[] DEFAULT_NETWORK_STRUCTURE = {NetworkElementNodeType.CITY,
             NetworkElementNodeType.MSC, NetworkElementNodeType.BSC, NetworkElementNodeType.SITE, NetworkElementNodeType.SECTOR};
+    
+    public NetworkSaver() {
+        super();
+    }
 
+    /**
+     * Constructor for testing
+     * 
+     * @param model
+     * @param config
+     */
     protected NetworkSaver(INetworkModel model, ConfigurationDataImpl config) {
         preferenceStoreSynonyms = initializeSynonyms();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
@@ -50,13 +60,6 @@ public class NetworkSaver extends AbstractNetworkSaver {
             this.parametrizedModel = model;
             useableModels.add(model);
         }
-    }
-
-    /**
-     * initialize saver
-     */
-    public NetworkSaver() {
-        super();
     }
 
     /**
@@ -84,8 +87,6 @@ public class NetworkSaver extends AbstractNetworkSaver {
                 break;
             case SECTOR:
                 createSector(parentElement, row, stuctureElement.getId());
-                break;
-            default:
                 break;
             }
 
@@ -164,16 +165,18 @@ public class NetworkSaver extends AbstractNetworkSaver {
      */
     private IDataElement createMainElements(List<String> row, IDataElement root, INodeType nodeType, String type)
             throws AWEException {
-        Map<String, Object> mapProperty = new HashMap<String, Object>();
-        collectMainElements(mapProperty, row, nodeType, type);
-
+        String name = getSynonymValueWithAutoparse(type, row).toString();
+        
         Set<IDataElement> findedElement;
-        findedElement = parametrizedModel.findElementByPropertyValue(nodeType, NewAbstractService.NAME,
-                mapProperty.get(NewAbstractService.NAME).toString());
+        findedElement = parametrizedModel.findElementByPropertyValue(nodeType, NewAbstractService.NAME, name);
         if (findedElement.isEmpty()) {
+            Map<String, Object> mapProperty = new HashMap<String, Object>();
+            collectMainElements(mapProperty, name, nodeType);
+            
             findedElement.add(parametrizedModel.createElement(root, mapProperty));
+            
+            addSynonyms(parametrizedModel, mapProperty);
         }
-        addSynonyms(parametrizedModel, mapProperty);
         resetRowValueBySynonym(row, type);
         return findedElement.iterator().next();
     }
@@ -186,9 +189,9 @@ public class NetworkSaver extends AbstractNetworkSaver {
      * @param nodeType
      * @param type
      */
-    private void collectMainElements(Map<String, Object> mapProperty, List<String> row, INodeType nodeType, String type) {
+    private void collectMainElements(Map<String, Object> mapProperty, String name, INodeType nodeType) {
         mapProperty.put(NewAbstractService.TYPE, nodeType.getId());
-        mapProperty.put(NewAbstractService.NAME, getSynonymValueWithAutoparse(type, row));
+        mapProperty.put(NewAbstractService.NAME, name);
     }
 
     /**

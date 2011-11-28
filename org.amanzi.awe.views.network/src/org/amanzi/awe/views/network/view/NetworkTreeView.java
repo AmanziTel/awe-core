@@ -19,8 +19,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.amanzi.awe.awe.views.view.provider.NewNetworkTreeContentProvider;
-import org.amanzi.awe.awe.views.view.provider.NewNetworkTreeLabelProvider;
+import org.amanzi.awe.awe.views.view.provider.NetworkTreeContentProvider;
+import org.amanzi.awe.awe.views.view.provider.NetworkTreeLabelProvider;
 import org.amanzi.neo.model.distribution.IDistributionBar;
 import org.amanzi.neo.model.distribution.IDistributionModel;
 import org.amanzi.neo.model.distribution.IDistributionalModel;
@@ -44,7 +44,9 @@ import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IElementComparer;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
@@ -58,6 +60,7 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IPageLayout;
+import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
@@ -71,7 +74,7 @@ import org.eclipse.ui.part.ViewPart;
  * @since 1.0.0
  */
 
-public class NewNetworkTreeView extends ViewPart implements IEventListener {
+public class NetworkTreeView extends ViewPart implements IEventListener {
 
     private static final String RENAME_MSG = "Enter new Name";
 
@@ -90,11 +93,13 @@ public class NewNetworkTreeView extends ViewPart implements IEventListener {
     protected TreeViewer viewer;
 
     private Text tSearch;
+    
+    private Set<IDataElement> selectedDataElements = new HashSet<IDataElement>();
 
     /**
      * The constructor.
      */
-    public NewNetworkTreeView() {
+    public NetworkTreeView() {
         EventManager.getInstance().addListener(this, EventUIType.PROJECT_CHANGED, EventUIType.DISTRIBUTIONS_CHANGED,
                 EventUIType.DISTRIBUTION_BAR_SELECTED);
     }
@@ -139,6 +144,36 @@ public class NewNetworkTreeView extends ViewPart implements IEventListener {
 
 		setProviders();
 		viewer.setInput(getSite());
+		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+			
+			@Override
+			public void selectionChanged(SelectionChangedEvent event) {
+				selectedDataElements.clear();
+				IStructuredSelection selection = ((IStructuredSelection)event.getSelection());
+	            Iterator<?> it = selection.iterator();
+	            while (it.hasNext()) {
+	                Object elementObject = it.next();
+	                if (elementObject instanceof INetworkModel) {
+	                    continue;
+	                } else {
+	                    IDataElement element = (IDataElement)elementObject;
+	                    selectedDataElements.add(element);
+	                }
+	            }
+               	NetworkPropertiesView propertiesView = null;
+				try {
+					propertiesView = (NetworkPropertiesView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().
+							showView("org.amanzi.awe.views.network.views.NetworkPropertiesView");
+				} catch (PartInitException e) {
+				}
+	            if (selectedDataElements.size() == 1) {
+	               	propertiesView.updateTableView((IDataElement)selection.getFirstElement());
+	            }
+	            else {
+	            	propertiesView.updateTableView(null);
+	            }
+			}
+		});
 		hookContextMenu();
 		getSite().setSelectionProvider(viewer);
 
@@ -153,7 +188,7 @@ public class NewNetworkTreeView extends ViewPart implements IEventListener {
         menuMgr.setRemoveAllWhenShown(true);
         menuMgr.addMenuListener(new IMenuListener() {
             public void menuAboutToShow(IMenuManager manager) {
-                NewNetworkTreeView.this.fillContextMenu(manager);
+                NetworkTreeView.this.fillContextMenu(manager);
             }
         });
         Menu menu = menuMgr.createContextMenu(viewer.getControl());
@@ -188,8 +223,8 @@ public class NewNetworkTreeView extends ViewPart implements IEventListener {
     private class SelectAction extends Action {
         private boolean enabled;
         private final String text;
-        private Set<IDataElement> selectedDataElements = new HashSet<IDataElement>();
-
+        private IDataElement currentDataElement;
+        
         /**
          * Constructor
          * 
@@ -197,18 +232,10 @@ public class NewNetworkTreeView extends ViewPart implements IEventListener {
          */
         @SuppressWarnings("rawtypes")
         public SelectAction(IStructuredSelection selection) {
-            Iterator it = selection.iterator();
-            while (it.hasNext()) {
-                Object elementObject = it.next();
-                if (elementObject instanceof INetworkModel) {
-                    continue;
-                } else {
-                    IDataElement element = (IDataElement)elementObject;
-                    selectedDataElements.add(element);
-                }
-            }
-            enabled = selectedDataElements.size() > 0;
+
+            enabled = selectedDataElements.size() == 1;
             text = SHOW_PROPERTIES;
+            currentDataElement = selectedDataElements.iterator().next();
         }
 
         @Override
@@ -224,7 +251,9 @@ public class NewNetworkTreeView extends ViewPart implements IEventListener {
         @Override
         public void run() {
             try {
-            	PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IPageLayout.ID_PROP_SHEET);
+               	NetworkPropertiesView propertiesView = (NetworkPropertiesView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().
+               			showView("org.amanzi.awe.views.network.views.NetworkPropertiesView");
+               	propertiesView.updateTableView(currentDataElement);
             } catch (PartInitException e) {
             	//TODO: LN: handle exception!!!!!!!!!
             }
@@ -453,7 +482,7 @@ public class NewNetworkTreeView extends ViewPart implements IEventListener {
         @Override
         public void run() {
             Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
-            NewSelectionListDialog pdialog = new NewSelectionListDialog(shell, network, "New selection list", SWT.OK);
+            SelectionListDialog pdialog = new SelectionListDialog(shell, network, "New selection list", SWT.OK);
             if (pdialog.open() == SWT.OK) {
 
             } else {
@@ -726,8 +755,8 @@ public class NewNetworkTreeView extends ViewPart implements IEventListener {
      */
 
     protected void setProviders() {
-        viewer.setContentProvider(new NewNetworkTreeContentProvider());
-        viewer.setLabelProvider(new NewNetworkTreeLabelProvider());
+        viewer.setContentProvider(new NetworkTreeContentProvider());
+        viewer.setLabelProvider(new NetworkTreeLabelProvider());
     }
 
     @Override

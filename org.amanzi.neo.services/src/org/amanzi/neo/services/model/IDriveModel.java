@@ -39,12 +39,16 @@ public interface IDriveModel extends ICorrelatableModel, IRenderableModel, IProp
      */
     public Iterable<IDriveModel> getVirtualDatasets();
 
-    //TODO: LN: comments
+    /**
+     * get drive type
+     * 
+     * @return drive type
+     */
     public IDriveType getDriveType();
-    
+
     /**
      * Get primary type of drive model nodes
-     *
+     * 
      * @return Primary type of drive model nodes
      */
     public INodeType getPrimaryType();
@@ -105,6 +109,18 @@ public interface IDriveModel extends ICorrelatableModel, IRenderableModel, IProp
     public IDataElement addMeasurement(String filename, Map<String, Object> params) throws AWEException;
 
     /**
+     * same with addMeasurement(String filename, Map<String, Object> params) but
+     * isNeedToCreateLocation flag response for posibility to create location node
+     * 
+     * @param filename the name of file
+     * @param params a map containing parameters of the new measurement
+     * @return the newly created node
+     * @throws AWEException
+     */
+    public IDataElement addMeasurement(String filename, Map<String, Object> params, boolean isNeedToCreateLocation)
+            throws AWEException;
+
+    /**
      * Adds a measurement node to a file node in <code>file</code> parameter. If params map contains
      * lat and lon properties, also creates a location node. Use this method if you want to create a
      * measurement with default type.
@@ -140,7 +156,8 @@ public interface IDriveModel extends ICorrelatableModel, IRenderableModel, IProp
      * @return the newly created node
      * @throws AWEException
      */
-    public IDataElement addMeasurement(String filename, Map<String, Object> params, INodeType nodeType) throws AWEException;
+    public IDataElement addMeasurement(String filename, Map<String, Object> params, INodeType nodeType,
+            boolean isNeedToCreateLocation) throws AWEException;
 
     /**
      * The method creates CALL_M relationships between <code>parent</code> node and
@@ -154,12 +171,12 @@ public interface IDriveModel extends ICorrelatableModel, IRenderableModel, IProp
     public void linkNode(IDataElement parent, Iterable<IDataElement> source, RelationshipType rel) throws DatabaseException;
 
     /**
-     * Finds a location node.
+     * Finds a locations node.
      * 
      * @param parent
      * @return the found location node or null.
      */
-    public IDataElement getLocation(IDataElement parentElement);
+    public Iterable<IDataElement> getLocations(IDataElement parentElement);
 
     /**
      * Looks up for a file node through index
@@ -186,9 +203,38 @@ public interface IDriveModel extends ICorrelatableModel, IRenderableModel, IProp
      */
     public Iterable<IDataElement> getMeasurements(String filename);
 
-    //TODO: LN: comments
     /**
+     * get list of file nodes
+     * 
      * @return an iterator over FILE nodes
      */
     public Iterable<IDataElement> getFiles();
+
+    /**
+     * Creates a node, sets its LATITUDE and LONGITUDE properties, and created a LOCATION
+     * relationship from parent node.
+     * 
+     * @param parent
+     * @param lat
+     * @param lon
+     * @throws DatabaseException if errors occur in the database
+     */
+    public IDataElement createLocationNode(IDataElement parent, double lat, double lon) throws DatabaseException;
+
+    /**
+     * Adds a measurement node to a file node in the <code>file</code> parameter. If params map
+     * contains lat and lon properties, also creates a location node if
+     * <code>isNeedToCreateLocation</code> set to true, else creating of location element will be
+     * ignored. Use this method if you want to create a measurement with type, that is different
+     * from drive model primary type.
+     * 
+     * @param file
+     * @param params
+     * @param nodeType
+     * @param isNeedToCreateLocation
+     * @return
+     * @throws AWEException
+     */
+    public IDataElement addMeasurement(IDataElement file, Map<String, Object> params, INodeType nodeType,
+            boolean isNeedToCreateLocation) throws AWEException;
 }

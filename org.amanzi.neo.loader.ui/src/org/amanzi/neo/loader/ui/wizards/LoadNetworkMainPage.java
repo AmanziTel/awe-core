@@ -79,6 +79,7 @@ public class LoadNetworkMainPage extends LoaderPageNew<ConfigurationDataImpl> {
     private Label labNetworkDescr;
     private Combo loaderType;
     protected String networkName = ""; //$NON-NLS-1$
+    private boolean isSetDefaultNetworkName = false;
 
     /**
      * Instantiates a new load network main page.
@@ -170,7 +171,7 @@ public class LoadNetworkMainPage extends LoaderPageNew<ConfigurationDataImpl> {
     }
 
     /**
-     *
+     * updated network field
      */
     protected void updateLabelNetwDescr() {
         String text = ""; //$NON-NLS-1$
@@ -196,20 +197,16 @@ public class LoadNetworkMainPage extends LoaderPageNew<ConfigurationDataImpl> {
         this.fileName = fileName;
         networkName = new java.io.File(getFileName()).getName();
         networkName = networkName.substring(0, networkName.lastIndexOf('.'));
-        // CommonConfigData configurationData = getConfigurationData();
         List<File> files = new LinkedList<File>();
         files.add(new File(fileName));
         getNewConfigurationData().setSourceFile(files);
 
-        // config.getFilesToLoad()
-        // configurationData.setRoot(new File(fileName));
         ILoaderNew< ? extends IData, ConfigurationDataImpl> loader = autodefineNew(getNewConfigurationData());
         int id = setSelectedLoaderNew(loader);
         if (id >= 0) {
             loaderType.select(id);
         }
         update();
-        // editor.store();
         LoaderUiUtils.setDefaultDirectory(editor.getDefaulDirectory());
 
         return loader;
@@ -267,7 +264,6 @@ public class LoadNetworkMainPage extends LoaderPageNew<ConfigurationDataImpl> {
 
     @Override
     protected boolean validateConfigData(ConfigurationDataImpl configurationData) {
-        // TODO must be refactoring after change loaders
         if (fileName == null) {
             setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_FILE, DialogPage.ERROR);
             return false;
@@ -287,6 +283,7 @@ public class LoadNetworkMainPage extends LoaderPageNew<ConfigurationDataImpl> {
         }
         IValidateResult.Result result = getNewSelectedLoader().getValidator().isValid(configurationData);
         if (result == Result.FAIL) {
+            tryToSelectDefautlNetwork();
             setMessage(String.format(getNewSelectedLoader().getValidator().getMessages(), getNewSelectedLoader().getLoaderInfo()
                     .getName()), DialogPage.ERROR);
             return false;
@@ -304,4 +301,15 @@ public class LoadNetworkMainPage extends LoaderPageNew<ConfigurationDataImpl> {
         return true;
     }
 
+    /**
+     * if validation is failed try to reset network name from file name to name of existed network;
+     */
+    private void tryToSelectDefautlNetwork() {
+        if (!isSetDefaultNetworkName) {
+            networkNameField.select(0);
+            isSetDefaultNetworkName = true;
+            validateConfigData(getNewConfigurationData());
+
+        }
+    }
 }

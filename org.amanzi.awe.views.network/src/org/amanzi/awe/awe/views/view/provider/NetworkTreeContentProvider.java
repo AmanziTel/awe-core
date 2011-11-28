@@ -24,7 +24,7 @@ import org.eclipse.jface.viewers.Viewer;
  * @author Kasnitskij_V
  * @since 1.0.0
  */
-public class NewNetworkTreeContentProvider implements IStructuredContentProvider, ITreeContentProvider {
+public class NetworkTreeContentProvider implements IStructuredContentProvider, ITreeContentProvider {
     
 	private static String COULD_NOT_GET_ALL_NETWORK_MODELS = "Could not get all network models";
 

@@ -22,11 +22,13 @@ import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
+import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
+import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelTypes;
 import org.apache.log4j.Logger;
 
 /**
@@ -41,8 +43,19 @@ public abstract class AbstractN2NSaver extends AbstractCSVSaver<INetworkModel> {
      * related n2nModel
      */
     protected INodeToNodeRelationsModel n2nModel;
+    
+    protected AbstractN2NSaver() {
+        super();
+    }
 
-    protected AbstractN2NSaver(INodeToNodeRelationsModel model, INetworkModel networkModel, ConfigurationDataImpl data) {
+    /**
+     * Constructor for testing
+     * 
+     * @param model
+     * @param networkModel
+     * @param data
+     */
+    AbstractN2NSaver(INodeToNodeRelationsModel model, INetworkModel networkModel, ConfigurationDataImpl data) {
         preferenceStoreSynonyms = initializeSynonyms();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
         if (model != null) {
@@ -60,13 +73,6 @@ public abstract class AbstractN2NSaver extends AbstractCSVSaver<INetworkModel> {
             }
         }
 
-    }
-
-    /**
-     * create class instance
-     */
-    public AbstractN2NSaver() {
-        super();
     }
 
     /**
@@ -131,12 +137,33 @@ public abstract class AbstractN2NSaver extends AbstractCSVSaver<INetworkModel> {
      * @return
      * @throws AWEException
      */
-    protected abstract INodeToNodeRelationsModel getNode2NodeModel(String name) throws AWEException;
+    protected INodeToNodeRelationsModel getNode2NodeModel(String name) throws AWEException {
+        return parametrizedModel.getNodeToNodeModel(getN2NType(), name, getN2NNodeType());
+    }
 
     @Override
     protected void commonLinePreparationActions(CSVContainer dataElement) throws Exception {
 
     }
+    
+    @Override
+    protected Map<String, String[]> initializeSynonyms() {
+        return preferenceManager.getSynonyms(getN2NType());
+    }
+    
+    /**
+     * Returns type of N2N Model of this Saver
+     *
+     * @return
+     */
+    protected abstract N2NRelTypes getN2NType();
+    
+    /**
+     * Returns type of Nodes for N2N Model
+     *
+     * @return
+     */
+    protected abstract INodeType getN2NNodeType();
 
     @Override
     protected String getSubType() {

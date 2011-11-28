@@ -17,6 +17,7 @@ import java.util.Map;
 
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
+import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
@@ -32,28 +33,22 @@ public class InterferenceSaver extends AbstractN2NSaver {
     /*
      * neighbours
      */
-    public final static String INTERFERE_SECTOR_NAME = "interfering_sector";
+    public final static String INTERFERING_SECTOR_NAME = "interfering_sector";
     public final static String SERVING_SECTOR_NAME = "serv_sector_name";
-
-    protected InterferenceSaver(INodeToNodeRelationsModel model, INetworkModel networkModel, ConfigurationDataImpl data) {
-        super(model, networkModel, data);
-    }
-
-    /**
-     * create class instance
-     */
+    
     public InterferenceSaver() {
         super();
     }
 
-    @Override
-    protected INodeToNodeRelationsModel getNode2NodeModel(String name) throws AWEException {
-        return parametrizedModel.getNodeToNodeModel(N2NRelTypes.INTERFERENCE_MATRIX, name, NetworkElementNodeType.SECTOR);
-    }
-
-    @Override
-    protected Map<String, String[]> initializeSynonyms() {
-        return preferenceManager.getInterfererSunonyms();
+    /**
+     * Constructor for testing 
+     * 
+     * @param model
+     * @param networkModel
+     * @param data
+     */
+    InterferenceSaver(INodeToNodeRelationsModel model, INetworkModel networkModel, ConfigurationDataImpl data) {
+        super(model, networkModel, data);
     }
 
     @Override
@@ -63,7 +58,17 @@ public class InterferenceSaver extends AbstractN2NSaver {
 
     @Override
     protected String getNeighborElementName() {
-        return INTERFERE_SECTOR_NAME;
+        return INTERFERING_SECTOR_NAME;
+    }
+
+    @Override
+    protected N2NRelTypes getN2NType() {
+        return N2NRelTypes.INTERFERENCE_MATRIX;
+    }
+
+    @Override
+    protected INodeType getN2NNodeType() {
+        return NetworkElementNodeType.SECTOR;
     }
 
 }

@@ -13,6 +13,8 @@
 
 package org.amanzi.neo.services.model;
 
+import java.util.Set;
+
 /**
  * <p>
  * This interface represents a 'proxy' object between view and database layers.
@@ -27,7 +29,7 @@ public interface IDataElement {
      * Gets a property value.
      * 
      * @param header the property name
-     * @return property value or <code>null</code>.
+     * @return Property value or <code>null</code>.
      */
     public Object get(String header);
     
@@ -37,7 +39,14 @@ public interface IDataElement {
      *
      * @param key Key by object
      * @param value Value by object
-     * @return
+     * @return Put object
      */
     public Object put(String key, Object value);
+    
+    /**
+     * Get all properties from DataElement
+     *
+     * @return Set of properties
+     */
+    public Set<String> keySet();
 }

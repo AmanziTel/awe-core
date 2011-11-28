@@ -33,9 +33,9 @@ import org.eclipse.swt.widgets.Text;
  * @author Ladornaya_A
  * @since 1.0.0
  */
-public class NewSelectionListDialog extends AbstractDialog<Integer> {
+public class SelectionListDialog extends AbstractDialog<Integer> {
     
-    private static Logger LOGGER = Logger.getLogger(NewSelectionListDialog.class);
+    private static Logger LOGGER = Logger.getLogger(SelectionListDialog.class);
 
     /** The Constant MIN_FIELD_WIDTH. */
     private static final int MIN_FIELD_WIDTH = 50;
@@ -61,7 +61,7 @@ public class NewSelectionListDialog extends AbstractDialog<Integer> {
      * @param title the title
      * @param style the style
      */
-    public NewSelectionListDialog(Shell parent,INetworkModel network, String title, int style) {
+    public SelectionListDialog(Shell parent,INetworkModel network, String title, int style) {
         super(parent, title, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.CENTER);
         status = SWT.CANCEL;
         this.network = network;

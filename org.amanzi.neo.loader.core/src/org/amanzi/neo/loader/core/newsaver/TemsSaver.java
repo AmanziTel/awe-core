@@ -25,10 +25,10 @@ import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.NewDatasetService.DriveTypes;
 import org.amanzi.neo.services.NewNetworkService;
+import org.amanzi.neo.services.enums.IDriveType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
-import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
 import org.apache.commons.lang.StringUtils;
@@ -55,11 +55,13 @@ public class TemsSaver extends AbstractDriveSaver {
     private String previous_ms = null;
     private String previous_time = null;
     private int previous_pn_code = -1;
-    private IDataElement location;
+
+    public TemsSaver() {
+        super();
+    }
 
     protected TemsSaver(IDriveModel model, IDriveModel virtualModel, ConfigurationDataImpl config) {
         preferenceStoreSynonyms = initializeSynonyms();
-        DRIVE_TYPE = DriveTypes.TEMS.name();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
         commitTx();
         if (model != null) {
@@ -67,14 +69,6 @@ public class TemsSaver extends AbstractDriveSaver {
             this.virtualModel = virtualModel;
             useableModels.add(parametrizedModel);
         }
-    }
-
-    /**
-     * create class instance
-     */
-    public TemsSaver() {
-        super();
-        DRIVE_TYPE = DriveTypes.TEMS.name();
     }
 
     @Override
@@ -88,8 +82,8 @@ public class TemsSaver extends AbstractDriveSaver {
 
         Long timestamp = defineTimestamp(workDate, time);
         String message_type = getValueFromRow(MESSAGE_TYPE, value);
-        Double latitude = getLatitude(getValueFromRow(IDriveModel.LATITUDE, value));
-        Double longitude = getLongitude(getValueFromRow(IDriveModel.LONGITUDE, value));
+        latitude = getCoordinate(getValueFromRow(IDriveModel.LATITUDE, value));
+        longitude = getCoordinate(getValueFromRow(IDriveModel.LONGITUDE, value));
         String event = getValueFromRow(EVENT, value);
         String ms = getValueFromRow(MS, value);
 
@@ -97,8 +91,7 @@ public class TemsSaver extends AbstractDriveSaver {
 
         removeEmpty(params);
         collectRemainProperties(params, value);
-        IDataElement createdMeasurment = addMeasurement(parametrizedModel, params);
-        location = parametrizedModel.getLocation(createdMeasurment);
+        addMeasurement(parametrizedModel, params);
         commitTx();
         addSynonyms(parametrizedModel, params);
         createVirtualModelElement(value, ms, time.toString(), event, timestamp);
@@ -216,13 +209,7 @@ public class TemsSaver extends AbstractDriveSaver {
 
                 float dbm = mw2dbm(mw);
                 collectMsElement(cc, dbm, mw, timestamp);
-                IDataElement virtualMeasurment = addMeasurement(virtualModel, params);
-
-                if (location != null) {
-                    List<IDataElement> locationList = new LinkedList<IDataElement>();
-                    locationList.add(location);
-                    linkWithLocationElement(virtualMeasurment, locationList);
-                }
+                addMeasurement(virtualModel, params);
                 commitTx();
             }
         }
@@ -246,22 +233,22 @@ public class TemsSaver extends AbstractDriveSaver {
         params.put(TIMESTAMP, timestamp);
     }
 
-    private IDataElement addMeasurement(IDriveModel model, Map<String, Object> properties) throws AWEException {
-        return model.addMeasurement(fileName, properties);
-    }
-
     @Override
-    protected void addedNewFileToModels(File file) throws DatabaseException, DuplicateNodeNameException {
+    protected void addNewFileToModels(File file) throws DatabaseException, DuplicateNodeNameException {
         parametrizedModel.addFile(file);
         virtualModel.addFile(file);
     }
 
     @Override
     protected void initializeNecessaryModels() throws AWEException {
-        parametrizedModel = getActiveProject().getDataset(
-                configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME), DriveTypes.TEMS);
+        super.initializeNecessaryModels();
         virtualModel = parametrizedModel.getVirtualDataset(
                 configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME), DriveTypes.MS);
 
+    }
+
+    @Override
+    protected IDriveType getDriveType() {
+        return DriveTypes.TEMS;
     }
 }
