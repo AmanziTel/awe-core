@@ -12,9 +12,13 @@
  */
 package org.amanzi.awe.views.explorer;
 
+import org.amanzi.neo.services.ui.utils.ActionUtil;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
@@ -63,6 +67,8 @@ public class ProjectExplorerPlugin extends AbstractUIPlugin {
     public static ProjectExplorerPlugin getDefault() {
         return plugin;
     }
+
+   
 
     /**
      * Returns an image descriptor for the image file at the given plug-in relative path

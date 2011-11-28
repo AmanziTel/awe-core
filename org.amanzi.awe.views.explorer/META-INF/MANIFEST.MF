@@ -7,6 +7,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.eclipse.gef,
  net.refractions.udig.project.edit,
  org.amanzi.neo.services;bundle-version="1.0.0",
- net.refractions.udig.project.ui
+ net.refractions.udig.project.ui,
+ org.amanzi.neo.services.ui;bundle-version="1.0.0"
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: amanzi.org
