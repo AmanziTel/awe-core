@@ -38,6 +38,10 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
     private static final Logger LOGGER = Logger.getLogger(AbstractCSVSaver.class);
 
     /**
+     * minimum row size
+     */
+    protected static final int MINIMUM_COLUMN_NUMBER = 2;
+    /**
      * maximum count of placebo commited transaction before Top-level commit
      */
     protected final int MAX_TX_BEFORE_COMMIT = 1000;
@@ -81,7 +85,7 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
     protected static final String INCORRECT_VALUE_DEFAULT = "default";
     protected static final String INCORRECT_VALUE_NA = "N/A";
     protected static final String INCORRECT_VALUE_DOUBLE_DASH = "--";
-   
+
     /**
      * check value for null or empty or String value "NULL" or "?"
      * 
@@ -256,11 +260,11 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
      */
     private String checkHeaderInSynonyms(String header) {
         String result = fileSynonyms.get(header);
-        
+
         if (result == null) {
             result = header;
         }
-        
+
         return result;
     }
 
