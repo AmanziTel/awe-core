@@ -14,6 +14,7 @@
 package org.amanzi.neo.services.model;
 
 import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.exceptions.AWEException;
 
 /**
  * <p>
@@ -35,6 +36,13 @@ public interface IDataModel extends IModel {
     public IDataElement getParentElement(IDataElement childElement);
 
     /**
+     * return parent model which current model is belong return parentModel
+     * 
+     * @throws AWEException
+     */
+    public IModel getParentModel() throws AWEException;
+
+    /**
      * Find all direct children or a children chain for the defined element.
      * 
      * @param parent
@@ -51,9 +59,7 @@ public interface IDataModel extends IModel {
     public Iterable<IDataElement> getAllElementsByType(INodeType elementType);
 
     /**
-     * TODO: test implementation
-     * 
-     * Returns the project model, where current data model belongs to.
+     * TODO: test implementation Returns the project model, where current data model belongs to.
      * 
      * @return
      */

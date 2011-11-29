@@ -241,15 +241,15 @@ public abstract class AbstractLoaderWizardNew<T extends IConfiguration> extends 
                 newload(newloader, monitor);
                 try {
                     addDataToCatalog();
-                    NewEventManager.getInstance().fireEvent(new UpdateDataEvent());
                 } catch (MalformedURLException e) {
                     MessageDialog.openError(getShell(), "Error while add data to catalog", "Cann't add data to catalog");
-                    e.printStackTrace();
                 }
+                NewEventManager.getInstance().fireEvent(new UpdateDataEvent());
                 return Status.OK_STATUS;
             }
         };
         job.schedule();
+
         return true;
     }
 

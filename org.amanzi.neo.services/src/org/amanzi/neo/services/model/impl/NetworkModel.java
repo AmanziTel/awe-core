@@ -42,6 +42,7 @@ import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
 import org.amanzi.neo.services.model.ICorrelationModel;
 import org.amanzi.neo.services.model.IDataElement;
+import org.amanzi.neo.services.model.IModel;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.INetworkType;
 import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
@@ -831,4 +832,16 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         return false;
     }
 
+    @Override
+    public IModel getParentModel() throws AWEException {
+        if (rootNode == null) {
+            throw new IllegalArgumentException("currentModel type is null.");
+        }
+        Iterator<Node> isVirtual = dsServ.getFirstRelationTraverser(rootNode, DatasetRelationTypes.DATASET, Direction.INCOMING)
+                .iterator();
+        if (isVirtual.hasNext()) {
+            return new ProjectModel(isVirtual.next());
+        }
+        return null;
+    }
 }

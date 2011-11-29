@@ -36,6 +36,9 @@ import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.amanzi.neo.services.ui.events.EventManager;
 import org.amanzi.neo.services.ui.events.EventUIType;
 import org.amanzi.neo.services.ui.events.IEventListener;
+import org.amanzi.neo.services.ui.events.IEventsListener;
+import org.amanzi.neo.services.ui.events.NewEventManager;
+import org.amanzi.neo.services.ui.events.UpdateDataEvent;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
@@ -59,8 +62,6 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.IPageLayout;
-import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
@@ -93,7 +94,7 @@ public class NetworkTreeView extends ViewPart implements IEventListener {
     protected TreeViewer viewer;
 
     private Text tSearch;
-    
+
     private Set<IDataElement> selectedDataElements = new HashSet<IDataElement>();
 
     /**
@@ -142,42 +143,43 @@ public class NetworkTreeView extends ViewPart implements IEventListener {
             }
         });
 
-		setProviders();
-		viewer.setInput(getSite());
-		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
-			
-			@Override
-			public void selectionChanged(SelectionChangedEvent event) {
-				selectedDataElements.clear();
-				IStructuredSelection selection = ((IStructuredSelection)event.getSelection());
-	            Iterator<?> it = selection.iterator();
-	            while (it.hasNext()) {
-	                Object elementObject = it.next();
-	                if (elementObject instanceof INetworkModel) {
-	                    continue;
-	                } else {
-	                    IDataElement element = (IDataElement)elementObject;
-	                    selectedDataElements.add(element);
-	                }
-	            }
-               	NetworkPropertiesView propertiesView = null;
-				try {
-					propertiesView = (NetworkPropertiesView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().
-							showView("org.amanzi.awe.views.network.views.NetworkPropertiesView");
-				} catch (PartInitException e) {
-				}
-	            if (selectedDataElements.size() == 1) {
-	               	propertiesView.updateTableView((IDataElement)selection.getFirstElement());
-	            }
-	            else {
-	            	propertiesView.updateTableView(null);
-	            }
-			}
-		});
-		hookContextMenu();
-		getSite().setSelectionProvider(viewer);
+        setProviders();
+
+        viewer.setInput(getSite());
+        viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+
+            @Override
+            public void selectionChanged(SelectionChangedEvent event) {
+                selectedDataElements.clear();
+                IStructuredSelection selection = ((IStructuredSelection)event.getSelection());
+                Iterator< ? > it = selection.iterator();
+                while (it.hasNext()) {
+                    Object elementObject = it.next();
+                    if (elementObject instanceof INetworkModel) {
+                        continue;
+                    } else {
+                        IDataElement element = (IDataElement)elementObject;
+                        selectedDataElements.add(element);
+                    }
+                }
+                NetworkPropertiesView propertiesView = null;
+                try {
+                    propertiesView = (NetworkPropertiesView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
+                            .showView("org.amanzi.awe.views.network.views.NetworkPropertiesView");
+                } catch (PartInitException e) {
+                }
+                if (selectedDataElements.size() == 1) {
+                    propertiesView.updateTableView((IDataElement)selection.getFirstElement());
+                } else {
+                    propertiesView.updateTableView(null);
+                }
+            }
+        });
+        hookContextMenu();
+        getSite().setSelectionProvider(viewer);
 
         setLayout(parent);
+        addListeners();
     }
 
     /**
@@ -211,8 +213,34 @@ public class NetworkTreeView extends ViewPart implements IEventListener {
         createSubmenuAddToSelectionList((IStructuredSelection)viewer.getSelection(), manager);
 
         createSubmenuDeleteFromSelectionList((IStructuredSelection)viewer.getSelection(), manager);
-        
+
         createSubmenuCreateSelectionList((IStructuredSelection)viewer.getSelection(), manager);
+    }
+
+    /**
+     * add required Listener
+     */
+    @SuppressWarnings("unchecked")
+    private void addListeners() {
+        NewEventManager.getInstance().addListener(new UpdateDataEvent(), new RefreshTreeListener());
+    }
+
+    /**
+     * <p>
+     * describe listener to refresh Network Tree View
+     * </p>
+     * 
+     * @author Kondratenko_Vladislav
+     * @since 1.0.0
+     */
+    private class RefreshTreeListener implements IEventsListener<UpdateDataEvent> {
+        @Override
+        public void handleEvent(UpdateDataEvent data) {
+            Object[] expandedObject = viewer.getExpandedElements();
+            viewer.refresh();
+            viewer.setExpandedElements(expandedObject);
+        }
+
     }
 
     /**
@@ -224,13 +252,12 @@ public class NetworkTreeView extends ViewPart implements IEventListener {
         private boolean enabled;
         private final String text;
         private IDataElement currentDataElement;
-        
+
         /**
          * Constructor
          * 
          * @param selection - selection
          */
-        @SuppressWarnings("rawtypes")
         public SelectAction(IStructuredSelection selection) {
 
             enabled = selectedDataElements.size() == 1;
@@ -251,11 +278,11 @@ public class NetworkTreeView extends ViewPart implements IEventListener {
         @Override
         public void run() {
             try {
-               	NetworkPropertiesView propertiesView = (NetworkPropertiesView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().
-               			showView("org.amanzi.awe.views.network.views.NetworkPropertiesView");
-               	propertiesView.updateTableView(currentDataElement);
+                NetworkPropertiesView propertiesView = (NetworkPropertiesView)PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+                        .getActivePage().showView("org.amanzi.awe.views.network.views.NetworkPropertiesView");
+                propertiesView.updateTableView(currentDataElement);
             } catch (PartInitException e) {
-            	//TODO: LN: handle exception!!!!!!!!!
+                // TODO: LN: handle exception!!!!!!!!!
             }
         }
     }
@@ -345,9 +372,9 @@ public class NetworkTreeView extends ViewPart implements IEventListener {
                 Object element = iterator.next();
                 if (element != null && element instanceof IDataElement && !(element instanceof INetworkModel)) {
                     dataElementsToDelete.add((IDataElement)element);
-                    
-                    //TODO: LN: do not use raw Nodes
-//                    nodeTypes.add(NeoUtils.getNodeType(((DataElement)element).getNode()));
+
+                    // TODO: LN: do not use raw Nodes
+                    // nodeTypes.add(NeoUtils.getNodeType(((DataElement)element).getNode()));
                 }
             }
             String type = nodeTypes.size() == 1 ? nodeTypes.iterator().next() : "node";
@@ -443,7 +470,7 @@ public class NetworkTreeView extends ViewPart implements IEventListener {
             }
         }
     }
-    
+
     /**
      * Action for creating of selection list
      * 
@@ -607,12 +634,9 @@ public class NetworkTreeView extends ViewPart implements IEventListener {
     }
 
     /**
-<<<<<<< HEAD
-     * >>>>>>> 872543a1a468ec5d3545ee31e062298907bce7dd Action for adding of sectors to selection
-     * list
-=======
-     * Action for adding of sectors to selection list
->>>>>>> refs/remotes/origin/models
+     * <<<<<<< HEAD >>>>>>> 872543a1a468ec5d3545ee31e062298907bce7dd Action for adding of sectors to
+     * selection list ======= Action for adding of sectors to selection list >>>>>>>
+     * refs/remotes/origin/models
      * 
      * @author Ladornaya_A
      * @since 1.0.0
@@ -783,10 +807,10 @@ public class NetworkTreeView extends ViewPart implements IEventListener {
         viewer.setSelection(new StructuredSelection(new Object[] {dataElement}));
     }
 
-	@Override
-	public void handleEvent(EventUIType event, Object data) {
-		// TODO Auto-generated method stub
-		
-	}
+    @Override
+    public void handleEvent(EventUIType event, Object data) {
+        // TODO Auto-generated method stub
+
+    }
 
 }

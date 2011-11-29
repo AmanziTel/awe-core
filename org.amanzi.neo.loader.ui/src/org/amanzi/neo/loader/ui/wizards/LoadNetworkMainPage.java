@@ -291,9 +291,10 @@ public class LoadNetworkMainPage extends LoaderPageNew<ConfigurationDataImpl> {
             if (getNewSelectedLoader().getValidator().isValid(configurationData) == Result.FAIL) {
                 setMessage(String.format(getNewSelectedLoader().getValidator().getMessages(), getNewSelectedLoader()
                         .getLoaderInfo().getName()), DialogPage.ERROR);
+                return false;
             }
 
-            return false;
+            
         } else if (result == Result.UNKNOWN) {
             setMessage(String.format(getNewSelectedLoader().getValidator().getMessages(), getNewSelectedLoader().getLoaderInfo()
                     .getName()), DialogPage.WARNING);
