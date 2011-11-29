@@ -270,6 +270,7 @@ public class LoadNetworkMainPage extends LoaderPageNew<ConfigurationDataImpl> {
                 for (String labels : networkNameField.getItems()) {
                     if (labels.equals(defaultNetwork)) {
                         networkNameField.select(i);
+                        break;
                     }
                     i++;
                 }
@@ -281,17 +282,18 @@ public class LoadNetworkMainPage extends LoaderPageNew<ConfigurationDataImpl> {
                         getNewConfigurationData().getDatasetNames().put(ConfigurationDataImpl.NETWORK_PROPERTY_NAME,
                                 fileWithoutExtension);
                         networkNameField.select(i);
+                        break;
                     }
 
                     i++;
                 }
             }
-            if (getNewSelectedLoader().getValidator().getResult() == Result.FAIL) {
+            if (getNewSelectedLoader().getValidator().isValid(configurationData) == Result.FAIL) {
                 setMessage(String.format(getNewSelectedLoader().getValidator().getMessages(), getNewSelectedLoader()
                         .getLoaderInfo().getName()), DialogPage.ERROR);
-
-                return false;
             }
+
+            return false;
         } else if (result == Result.UNKNOWN) {
             setMessage(String.format(getNewSelectedLoader().getValidator().getMessages(), getNewSelectedLoader().getLoaderInfo()
                     .getName()), DialogPage.WARNING);
