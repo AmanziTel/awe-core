@@ -75,10 +75,19 @@ public class ProjectExplorerView extends ViewPart {
         NewEventManager.getInstance().addListener(new UpdateDataEvent(), new RefreshTreeListener());
     }
 
+    /**
+     * <p>
+     * describe listener to refresh Project Explorer View
+     * </p>
+     * 
+     * @author Kondratenko_Vladislav
+     * @since 1.0.0
+     */
     private class RefreshTreeListener implements IEventsListener<UpdateDataEvent> {
         @Override
         public void handleEvent(UpdateDataEvent data) {
-            viewer.setInput(getSite());
+            viewer.refresh();
+            viewer.setAutoExpandLevel(3);
         }
 
     }
