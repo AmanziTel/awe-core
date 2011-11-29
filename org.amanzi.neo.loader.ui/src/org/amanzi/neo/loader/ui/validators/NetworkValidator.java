@@ -30,61 +30,56 @@ import org.amanzi.neo.services.model.impl.ProjectModel;
  */
 public class NetworkValidator extends AbstractNetworkValidator {
 
-	/**
+    /**
      * 
      */
-	public NetworkValidator() {
-		super();
-	}
+    public NetworkValidator() {
+        super();
+    }
 
-	@Override
-	public Result isAppropriate(List<File> fileToLoad) {
-		for (File f : fileToLoad) {
-			result = ValidatorUtils.checkFileAndHeaders(
-					f,
-					3,
-					new String[] { DataLoadPreferences.NH_LATITUDE,
-							DataLoadPreferences.NH_LONGITUDE,
-							DataLoadPreferences.NH_SECTOR },
-					possibleFieldSepRegexes).getResult();
-			if (result == Result.FAIL) {
-				message = "File" + f.getName()
-						+ " doesn't contain correct header";
-				return result;
-			}
-		}
+    @Override
+    public Result isAppropriate(List<File> fileToLoad) {
+        for (File f : fileToLoad) {
+            result = ValidatorUtils
+                    .checkFileAndHeaders(
+                            f,
+                            3,
+                            new String[] {DataLoadPreferences.NH_LATITUDE, DataLoadPreferences.NH_LONGITUDE,
+                                    DataLoadPreferences.NH_SECTOR}, possibleFieldSepRegexes).getResult();
+            if (result == Result.FAIL) {
+                message = "File" + f.getName() + " doesn't contain correct header";
+                return result;
+            }
+        }
 
-		return result;
-	}
+        return result;
+    }
 
-	@Override
-	public Result isValid(IConfiguration config) {
-		if (config.getDatasetNames().get(IConfiguration.PROJECT_PROPERTY_NAME) == null) {
-			message = String.format("there is no project name");
-			return Result.FAIL;
-		}
-		if (result == Result.SUCCESS) {
-			try {
-				IProjectModel projectModel = ProjectModel
-						.getCurrentProjectModel();
-				String networkName = config.getDatasetNames().get(
-						IConfiguration.NETWORK_PROPERTY_NAME);
-				INetworkModel network = projectModel.findNetwork(networkName);
-				if (network == null) {
-					result = Result.SUCCESS;
-					return result;
-				} else {
-					message = String.format(
-							"Network %s is already exist in database",
-							networkName);
-				}
-			} catch (AWEException e) {
-				LOGGER.error("Error while Sector selection data validate", e);
-				return Result.FAIL;
-			}
-		}
+    @Override
+    public Result isValid(IConfiguration config) {
+        this.config = config;
+        if (config.getDatasetNames().get(IConfiguration.PROJECT_PROPERTY_NAME) == null) {
+            message = String.format("there is no project name");
+            return Result.FAIL;
+        }
+        if (result == Result.SUCCESS) {
+            try {
+                IProjectModel projectModel = ProjectModel.getCurrentProjectModel();
+                String networkName = config.getDatasetNames().get(IConfiguration.NETWORK_PROPERTY_NAME);
+                INetworkModel network = projectModel.findNetwork(networkName);
+                if (network == null && networkName != null) {
+                    result = Result.SUCCESS;
+                    return result;
+                } else {
+                    message = "Network %s is already exist in database";
 
-		return Result.FAIL;
-	}
+                }
+            } catch (AWEException e) {
+                LOGGER.error("Error while Sector selection data validate", e);
+                return Result.FAIL;
+            }
+        }
 
+        return Result.FAIL;
+    }
 }

@@ -29,7 +29,6 @@ import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.INetworkModel;
-import org.amanzi.neo.services.model.INetworkType;
 import org.amanzi.neo.services.model.IProjectModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.apache.commons.lang.StringUtils;
@@ -69,17 +68,17 @@ public class LoadNetworkMainPage extends LoaderPage<ConfigurationDataImpl> {
     public static final String[] NETWORK_FILE_EXTENSIONS = {"*.*", "*.csv", "*.txt", "*.sxc", "*.xls", "*.xml"};
 
     /** The Constant PAGE_DESCR. */
-    private String fileName;
+    private String fullFileName;
+    private String fileWithoutExtension;
     private Composite main;
     protected Combo networkNameField;
     private FileFieldEditorExt editor;
     private HashMap<String, INetworkModel> members;
 
     protected INetworkModel networkModel;
-    private Label labNetworkDescr;
     private Combo loaderType;
     protected String networkName = ""; //$NON-NLS-1$
-    private boolean isSetDefaultNetworkName = false;
+    private boolean tryForDefault = false;
 
     /**
      * Instantiates a new load network main page.
@@ -118,19 +117,16 @@ public class LoadNetworkMainPage extends LoaderPage<ConfigurationDataImpl> {
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {
                 widgetSelected(e);
-                update();
             }
         });
-
         editor = new FileFieldEditorExt("fileSelectNeighb", NeoLoaderPluginMessages.NetworkSiteImportWizard_FILE, main); // NON-NLS-1 //$NON-NLS-1$
         editor.setDefaulDirectory(LoaderUiUtils.getDefaultDirectory());
         editor.getTextControl(main).addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e) {
                 setFileName(editor.getStringValue());
                 networkNameField.setText(networkName);
-                changeNetworkName();
+                tryForDefault = false;
                 // updateCRS();
-                update();
             }
         });
         editor.setFileExtensions(NETWORK_FILE_EXTENSIONS);
@@ -156,8 +152,6 @@ public class LoadNetworkMainPage extends LoaderPage<ConfigurationDataImpl> {
             }
         });
         new Label(main, SWT.NONE);
-        // LN, 28.02.2011, batch mode removed
-        labNetworkDescr = new Label(main, SWT.LEFT);
         GridData layoutData = new GridData(GridData.FILL_HORIZONTAL, SWT.CENTER, true, false, 3, 1);
         layoutData.minimumWidth = 150;
         editor.setFocus();
@@ -171,32 +165,19 @@ public class LoadNetworkMainPage extends LoaderPage<ConfigurationDataImpl> {
     }
 
     /**
-     * updated network field
-     */
-    protected void updateLabelNetwDescr() {
-        String text = ""; //$NON-NLS-1$
-        if (networkModel != null) {
-            INetworkType type = networkModel.getNetworkType();
-            if (type != null) {
-                text = "Network type: " + type.getId(); //$NON-NLS-1$
-            }
-        }
-        labNetworkDescr.setText(text);
-    }
-
-    /**
      * Sets file name
      * 
      * @param fileName file name
      * @return configured loader or null if there was an error
      */
     protected ILoader< ? extends IData, ConfigurationDataImpl> setFileName(String fileName) {
-        if (this.fileName != null && this.fileName.equals(fileName)) {
+        if (this.fullFileName != null && this.fullFileName.equals(fileName)) {
             return null;
         }
-        this.fileName = fileName;
+        this.fullFileName = fileName;
         networkName = new java.io.File(getFileName()).getName();
         networkName = networkName.substring(0, networkName.lastIndexOf('.'));
+        fileWithoutExtension = networkName;
         List<File> files = new LinkedList<File>();
         files.add(new File(fileName));
         getNewConfigurationData().setSourceFile(files);
@@ -206,7 +187,6 @@ public class LoadNetworkMainPage extends LoaderPage<ConfigurationDataImpl> {
         if (id >= 0) {
             loaderType.select(id);
         }
-        update();
         LoaderUiUtils.setDefaultDirectory(editor.getDefaulDirectory());
 
         return loader;
@@ -243,7 +223,7 @@ public class LoadNetworkMainPage extends LoaderPage<ConfigurationDataImpl> {
      * @return Returns the fileName.
      */
     public String getFileName() {
-        return fileName;
+        return fullFileName;
     }
 
     /**
@@ -259,16 +239,15 @@ public class LoadNetworkMainPage extends LoaderPage<ConfigurationDataImpl> {
             networkModel = members.get(networkName);
         }
         getNewConfigurationData().getDatasetNames().put(ConfigurationDataImpl.NETWORK_PROPERTY_NAME, networkName);
-        updateLabelNetwDescr();
     }
 
     @Override
     protected boolean validateConfigData(ConfigurationDataImpl configurationData) {
-        if (fileName == null) {
+        if (fullFileName == null) {
             setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_FILE, DialogPage.ERROR);
             return false;
         }
-        File file = new File(fileName);
+        File file = new File(fullFileName);
         if (!(file.isAbsolute() && file.exists())) {
             setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_FILE, DialogPage.ERROR);
             return false;
@@ -283,33 +262,47 @@ public class LoadNetworkMainPage extends LoaderPage<ConfigurationDataImpl> {
         }
         IValidateResult.Result result = getNewSelectedLoader().getValidator().isValid(configurationData);
         if (result == Result.FAIL) {
-            tryToSelectDefautlNetwork();
-            setMessage(String.format(getNewSelectedLoader().getValidator().getMessages(), getNewSelectedLoader().getLoaderInfo()
-                    .getName()), DialogPage.ERROR);
-            return false;
+            if (!tryForDefault) {
+                String defaultNetwork = networkNameField.getItem(0);
+                getNewConfigurationData().getDatasetNames().put(ConfigurationDataImpl.NETWORK_PROPERTY_NAME, defaultNetwork);
+                tryForDefault = true;
+                int i = 0;
+                for (String labels : networkNameField.getItems()) {
+                    if (labels.equals(defaultNetwork)) {
+                        networkNameField.select(i);
+                    }
+                    i++;
+                }
+            } else if (tryForDefault && members.containsKey(fileWithoutExtension)
+                    && !networkNameField.getText().equals(fileWithoutExtension)) {
+                int i = 0;
+                for (String labels : networkNameField.getItems()) {
+                    if (labels.equals(fileWithoutExtension)) {
+                        getNewConfigurationData().getDatasetNames().put(ConfigurationDataImpl.NETWORK_PROPERTY_NAME,
+                                fileWithoutExtension);
+                        networkNameField.select(i);
+                    }
+
+                    i++;
+                }
+            }
+            if (getNewSelectedLoader().getValidator().getResult() == Result.FAIL) {
+                setMessage(String.format(getNewSelectedLoader().getValidator().getMessages(), getNewSelectedLoader()
+                        .getLoaderInfo().getName()), DialogPage.ERROR);
+
+                return false;
+            }
         } else if (result == Result.UNKNOWN) {
             setMessage(String.format(getNewSelectedLoader().getValidator().getMessages(), getNewSelectedLoader().getLoaderInfo()
                     .getName()), DialogPage.WARNING);
         } else {
             setMessage(""); //$NON-NLS-1$
         }
-        getNewConfigurationData().getDatasetNames().put("Network", networkName);
+        getNewConfigurationData().getDatasetNames().put(ConfigurationDataImpl.NETWORK_PROPERTY_NAME, networkNameField.getText());
         List<File> files = new LinkedList<File>();
         files.add(file);
         getNewConfigurationData().setSourceFile(files);
 
         return true;
-    }
-
-    /**
-     * if validation is failed try to reset network name from file name to name of existed network;
-     */
-    private void tryToSelectDefautlNetwork() {
-        if (!isSetDefaultNetworkName) {
-            networkNameField.select(0);
-            isSetDefaultNetworkName = true;
-            validateConfigData(getNewConfigurationData());
-
-        }
     }
 }

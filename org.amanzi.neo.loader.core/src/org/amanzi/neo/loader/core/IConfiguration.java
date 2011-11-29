@@ -28,7 +28,7 @@ import org.amanzi.neo.loader.core.parser.IConfigurationData;
 public interface IConfiguration extends IConfigurationData {
     public static final String DATASET_PROPERTY_NAME = "Dataset";
     public static final String NETWORK_PROPERTY_NAME = "Network";
-    public static final String PROJECT_PROPERTY_NAME = "Property";
+    public static final String PROJECT_PROPERTY_NAME = "Project";
 
     /**
      * check for few file selection
