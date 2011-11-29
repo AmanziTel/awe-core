@@ -80,17 +80,18 @@ public class NewEventManager {
      * @return
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public <T extends AbstractEvent> T fireEvent(final T event) {
+    public <T extends AbstractEvent> void fireEvent(final T event) {
         Set<IEventsListener<T>> eventListeners = (Set)listenersCollections.get(event);
-        for (final IEventsListener<T> listeners : eventListeners) {
-            ActionUtil.getInstance().runTask(new Runnable() {
-                @Override
-                public void run() {
-                    listeners.handleEvent(event);
-                }
-            }, false);
+        if (eventListeners != null) {
+            for (final IEventsListener<T> listeners : eventListeners) {
+                ActionUtil.getInstance().runTask(new Runnable() {
+                    @Override
+                    public void run() {
+                        listeners.handleEvent(event);
+                    }
+                }, false);
 
+            }
         }
-        return event;
     }
 }
