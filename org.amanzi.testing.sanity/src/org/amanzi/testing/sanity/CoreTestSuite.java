@@ -15,7 +15,7 @@ package org.amanzi.testing.sanity;
 
 import org.amanzi.awe.models.catalog.neo.CatalogSuite;
 import org.amanzi.neo.db.testing.DbTestSuite;
-import org.amanzi.neo.loader.core.newsaver.SaversSuite;
+import org.amanzi.neo.loader.core.saver.SaversSuite;
 import org.amanzi.neo.services.NeoServiceSuite;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;

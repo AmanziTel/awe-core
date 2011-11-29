@@ -13,9 +13,9 @@
 
 package org.amanzi.neo.services;
 
-import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;
-import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
-import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
+import org.amanzi.neo.services.DatasetService.DatasetRelationTypes;
+import org.amanzi.neo.services.DatasetService.DatasetTypes;
+import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.apache.log4j.Logger;
@@ -39,7 +39,7 @@ import org.neo4j.kernel.Traversal;
  * @author grigoreva_a
  * @since 1.0.0
  */
-public class CorrelationService extends NewAbstractService {
+public class CorrelationService extends AbstractService {
 
     /** TraversalDescription ALL_CORRELATED_TRAVERSAL_DESCRIPTION field */
     protected static final TraversalDescription ALL_CORRELATED_TRAVERSAL_DESCRIPTION = Traversal.description().depthFirst()
@@ -63,7 +63,7 @@ public class CorrelationService extends NewAbstractService {
 
     private static Logger LOGGER = Logger.getLogger(CorrelationService.class);
 
-    private NewDatasetService datasetService = NeoServiceFactory.getInstance().getNewDatasetService();
+    private DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
 
     public enum Correlations implements RelationshipType {
         CORRELATION, CORRELATED
@@ -258,7 +258,7 @@ public class CorrelationService extends NewAbstractService {
                             new HasRelationshipPropertyValueEvaluator(NETWORK_ID, network.getId(), Correlations.CORRELATED,
                                     Direction.INCOMING)).traverse(proxy).nodes();
         } else {
-            return NewDatasetService.EMPTY_TRAVERSAL_DESCRIPTION.traverse(sector).nodes();
+            return DatasetService.EMPTY_TRAVERSAL_DESCRIPTION.traverse(sector).nodes();
         }
     }
 
@@ -384,7 +384,7 @@ public class CorrelationService extends NewAbstractService {
     /**
      * @param datasetService The datasetService to set.
      */
-    public void setDatasetService(NewDatasetService datasetService) {
+    public void setDatasetService(DatasetService datasetService) {
         this.datasetService = datasetService;
     }
 

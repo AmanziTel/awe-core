@@ -22,12 +22,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.CorrelationService;
+import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.DatasetService.DatasetTypes;
+import org.amanzi.neo.services.DatasetService.DriveTypes;
 import org.amanzi.neo.services.NeoServiceFactory;
-import org.amanzi.neo.services.NewAbstractService;
-import org.amanzi.neo.services.NewDatasetService;
-import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
-import org.amanzi.neo.services.NewDatasetService.DriveTypes;
 import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.enums.IDriveType;
 import org.amanzi.neo.services.enums.INodeType;
@@ -68,8 +68,8 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     private INodeType primaryType = DriveNodeTypes.M;
     private IDriveType driveType;
 
-    private NewDatasetService dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
-    private CorrelationService crServ = NeoServiceFactory.getInstance().getNewCorrelationService();
+    private DatasetService dsServ = NeoServiceFactory.getInstance().getDatasetService();
+    private CorrelationService crServ = NeoServiceFactory.getInstance().getCorrelationService();
 
     /**
      * <p>
@@ -127,13 +127,13 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         if (driveRoot == null) {
             throw new IllegalArgumentException("Network root is null.");
         }
-        if (!DatasetTypes.DRIVE.getId().equals(driveRoot.getProperty(NewAbstractService.TYPE, null))) {
+        if (!DatasetTypes.DRIVE.getId().equals(driveRoot.getProperty(AbstractService.TYPE, null))) {
             throw new IllegalArgumentException("Root node must be of type NETWORK.");
         }
 
         this.rootNode = driveRoot;
-        this.name = rootNode.getProperty(NewAbstractService.NAME, StringUtils.EMPTY).toString();
-        this.primaryType = DriveNodeTypes.findById(rootNode.getProperty(NewDatasetService.PRIMARY_TYPE).toString());
+        this.name = rootNode.getProperty(AbstractService.NAME, StringUtils.EMPTY).toString();
+        this.primaryType = DriveNodeTypes.findById(rootNode.getProperty(DatasetService.PRIMARY_TYPE).toString());
         initializeStatistics();
         initializeMultiPropertyIndexing();
     }
@@ -153,11 +153,11 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         super(rootNode, DatasetTypes.DRIVE);
         // if root node is null, get one by name
         if (rootNode != null) {
-            dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
+            dsServ = NeoServiceFactory.getInstance().getDatasetService();
 
             this.rootNode = rootNode;
-            this.name = (String)rootNode.getProperty(NewAbstractService.NAME, null);
-            this.driveType = DriveTypes.valueOf(rootNode.getProperty(NewDatasetService.DRIVE_TYPE, StringUtils.EMPTY).toString());
+            this.name = (String)rootNode.getProperty(AbstractService.NAME, null);
+            this.driveType = DriveTypes.valueOf(rootNode.getProperty(DatasetService.DRIVE_TYPE, StringUtils.EMPTY).toString());
         } else {
             // validate params
             if (parent == null) {
@@ -215,7 +215,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
 
         Node virtual = dsServ.createNode(rootNode, DriveRelationshipTypes.VIRTUAL_DATASET, DatasetTypes.DRIVE);
         Map<String, Object> params = new HashMap<String, Object>();
-        params.put(NewAbstractService.NAME, name);
+        params.put(AbstractService.NAME, name);
         params.put(DRIVE_TYPE, driveType.name());
         dsServ.setProperties(virtual, params);
 
@@ -257,7 +257,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
             try {
                 result.add(new DriveModel(null, node, null, null));
             } catch (AWEException e) {
-                LOGGER.error("Could not create drive model on node " + node.getProperty(NewAbstractService.NAME, null), e);
+                LOGGER.error("Could not create drive model on node " + node.getProperty(AbstractService.NAME, null), e);
             }
         }
         return result;
@@ -278,14 +278,14 @@ public class DriveModel extends RenderableModel implements IDriveModel {
 
         Node fileNode = dsServ.addChild(rootNode, dsServ.createNode(DriveNodeTypes.FILE), null);
         Map<String, Object> params = new HashMap<String, Object>();
-        params.put(NewAbstractService.NAME, file.getName());
+        params.put(AbstractService.NAME, file.getName());
         params.put(PATH, file.getPath());
         dsServ.setProperties(fileNode, params);
         if (files == null) {
-            files = dsServ.addNodeToIndex(fileNode, NewAbstractService.getIndexKey(rootNode, DriveNodeTypes.FILE),
-                    NewAbstractService.NAME, file.getName());
+            files = dsServ.addNodeToIndex(fileNode, AbstractService.getIndexKey(rootNode, DriveNodeTypes.FILE),
+                    AbstractService.NAME, file.getName());
         } else {
-            dsServ.addNodeToIndex(fileNode, files, NewAbstractService.NAME, file.getName());
+            dsServ.addNodeToIndex(fileNode, files, AbstractService.NAME, file.getName());
         }
         return new DataElement(fileNode);
     }
@@ -339,7 +339,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         if ((tst != null) && (tst != 0)) {
             updateTimestamp(tst);
         }
-        params.put(NewAbstractService.DATASET_ID, this.name);
+        params.put(AbstractService.DATASET_ID, this.name);
         dsServ.setProperties(m, params);
         indexProperty(primaryType, params); // TODO: ??????????
 
@@ -464,7 +464,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
             files = dsServ.getIndexForNodes(rootNode, DriveNodeTypes.FILE);
         }
 
-        Node fileNode = files.get(NewAbstractService.NAME, name).getSingle();
+        Node fileNode = files.get(AbstractService.NAME, name).getSingle();
         return fileNode == null ? null : new DataElement(fileNode);
     }
 
@@ -488,7 +488,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
             throw new IllegalArgumentException("Filename is null or empty.");
         }
 
-        return new DataElementIterable(dsServ.getChildrenChainTraverser(files.get(NewAbstractService.NAME,
+        return new DataElementIterable(dsServ.getChildrenChainTraverser(files.get(AbstractService.NAME,
                 new File(filename).getName()).getSingle()));
     }
 
@@ -520,7 +520,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     public ICorrelationModel getCorrelatedModel(String correlationModelName) throws AWEException {
         ICorrelationModel result = null;
         for (Node network : crServ.getCorrelatedNetworks(getRootNode())) {
-            if (network.getProperty(NewAbstractService.NAME, StringUtils.EMPTY).equals(correlationModelName)) {
+            if (network.getProperty(AbstractService.NAME, StringUtils.EMPTY).equals(correlationModelName)) {
                 result = new CorrelationModel(network, getRootNode());
                 break;
             }

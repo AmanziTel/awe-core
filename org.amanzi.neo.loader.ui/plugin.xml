@@ -43,7 +43,7 @@
    <extension
           point="org.eclipse.ui.handlers">       
        <handler
-             class="org.amanzi.neo.loader.ui.handlers.LaunchLoaderNew"
+             class="org.amanzi.neo.loader.ui.handlers.LaunchLoader"
              commandId="org.amanzi.neo.loader.ui.commands.LaunchLoaderNew">
        </handler>
     </extension>
@@ -144,7 +144,7 @@
        <newloader
              gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
              id="NewNetworkLoader"
-             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoaderNew"
+             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
              loader_data_type="Network"
              loader_name="NewNetworkLoader"
              loader_type="site sector loader"
@@ -159,7 +159,7 @@
       <newloader
              gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
              id="NewNeighboursLoader"
-             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoaderNew"
+             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
              loader_data_type="Neighbours"
              loader_name="NeighboursDataLoader"
              loader_type="Neighbors loader"
@@ -174,7 +174,7 @@
       <newloader
              gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
              id="NewTRXLoader"
-             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoaderNew"
+             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
              loader_data_type="TrxDataLoader"
              loader_name="TrxDataLoader"
              loader_type="TRXs loader"
@@ -189,7 +189,7 @@
       <newloader
              gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
              id="NewFrequencyConstraintsLoader"
-             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoaderNew"
+             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
              loader_data_type="FrequencyConstraintsDATALoader"
              loader_name="FrequencyConstraintsLoader"
              loader_type="Frequency Constraints loader"
@@ -204,7 +204,7 @@
       <newloader
              gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
              id="NewInterferenceMatrixLoader"
-             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoaderNew"
+             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
              loader_data_type="InterferenceMatrixDataLoader"
              loader_name="InterferenceMatrixLoader"
              loader_type="Interference Matrix loader"
@@ -219,7 +219,7 @@
       <newloader
              gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
              id="NewTrafficDataLoader"
-             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoaderNew"
+             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
              loader_data_type="TrafficDataLoader"
              loader_name="TrafficDataLoader"
              loader_type="Traffic data loader"
@@ -234,7 +234,7 @@
       <newloader
              gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
              id="NewSeparationCostraint"
-             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoaderNew"
+             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
              loader_data_type="SeparationCostraintDataLoader"
              loader_name="SeparationCostraint"
              loader_type="Separation Costraint data loader"
@@ -249,7 +249,7 @@
       <newloader
              gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
              id="NewFrequencyConstraint"
-             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoaderNew"
+             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
              loader_data_type="FrequencyConstraintLoader"
              loader_name="FrequencyConstraint"
              loader_type="Frequency Constraints loader"
@@ -264,7 +264,7 @@
       <newloader
              gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
              id="NewNetworkSelectionLoader"
-             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoaderNew"
+             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
              loader_data_type="Selection"
              loader_name="SelectionDataLoader"
              loader_type="sector selection loader"
@@ -279,7 +279,7 @@
       <newloader
              gui="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard"
              id="newROMESLoader"
-             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoaderNew"
+             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
              loader_data_type="TEMS"
              loader_name="TEMS DATA LOADER"
              loader_type="TEMS loader"
@@ -294,7 +294,7 @@
       <newloader
              gui="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard"
              id="newTEMSLOADER"
-             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoaderNew"
+             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
              loader_data_type="ROMES"
              loader_name="ROMES DATA LOADER"
              loader_type="ROMES loader"
@@ -309,7 +309,7 @@
       <newloader
              gui="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard"
              id="newNEMO1xLOADER"
-             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoaderNew"
+             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
              loader_data_type="NEMO v1.86"
              loader_name="NEMO v1.86 DATA LOADER"
              loader_type="NEMO v1.86 loader"
@@ -324,7 +324,7 @@
       <newloader
              gui="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard"
              id="newNEMO2xLOADER"
-             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoaderNew"
+             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
              loader_data_type="NEMO v2.01"
              loader_name="NEMO v2.01 DATA LOADER"
              loader_type="NEMO v2.01 loader"

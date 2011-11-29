@@ -21,10 +21,10 @@ import java.util.List;
 
 import org.amanzi.neo.db.manager.DatabaseManagerFactory;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
-import org.amanzi.neo.loader.core.ILoaderNew;
+import org.amanzi.neo.loader.core.ILoader;
 import org.amanzi.neo.loader.core.IValidateResult;
 import org.amanzi.neo.loader.core.IValidateResult.Result;
-import org.amanzi.neo.loader.core.newsaver.IData;
+import org.amanzi.neo.loader.core.saver.IData;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.amanzi.neo.services.exceptions.AWEException;
@@ -54,7 +54,7 @@ import org.eclipse.swt.widgets.Label;
  * @author TsAr
  * @since 1.0.0
  */
-public class LoadNetworkMainPage extends LoaderPageNew<ConfigurationDataImpl> {
+public class LoadNetworkMainPage extends LoaderPage<ConfigurationDataImpl> {
     private static final Logger LOGGER = Logger.getLogger(LoadNetworkMainPage.class);
     /*
      * Names of supported files for Network
@@ -190,7 +190,7 @@ public class LoadNetworkMainPage extends LoaderPageNew<ConfigurationDataImpl> {
      * @param fileName file name
      * @return configured loader or null if there was an error
      */
-    protected ILoaderNew< ? extends IData, ConfigurationDataImpl> setFileName(String fileName) {
+    protected ILoader< ? extends IData, ConfigurationDataImpl> setFileName(String fileName) {
         if (this.fileName != null && this.fileName.equals(fileName)) {
             return null;
         }
@@ -201,7 +201,7 @@ public class LoadNetworkMainPage extends LoaderPageNew<ConfigurationDataImpl> {
         files.add(new File(fileName));
         getNewConfigurationData().setSourceFile(files);
 
-        ILoaderNew< ? extends IData, ConfigurationDataImpl> loader = autodefineNew(getNewConfigurationData());
+        ILoader< ? extends IData, ConfigurationDataImpl> loader = autodefineNew(getNewConfigurationData());
         int id = setSelectedLoaderNew(loader);
         if (id >= 0) {
             loaderType.select(id);

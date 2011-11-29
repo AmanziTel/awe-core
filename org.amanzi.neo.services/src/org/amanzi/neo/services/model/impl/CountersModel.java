@@ -16,10 +16,10 @@ package org.amanzi.neo.services.model.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.CorrelationService;
+import org.amanzi.neo.services.DatasetService.DatasetTypes;
 import org.amanzi.neo.services.NeoServiceFactory;
-import org.amanzi.neo.services.NewAbstractService;
-import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.ICorrelationModel;
@@ -39,7 +39,7 @@ import org.neo4j.graphdb.Node;
  */
 public class CountersModel extends AbstractIndexedModel implements ICountersModel {
 
-    private CorrelationService crServ = NeoServiceFactory.getInstance().getNewCorrelationService();
+    private CorrelationService crServ = NeoServiceFactory.getInstance().getCorrelationService();
 
     protected CountersModel(Node rootNode) throws AWEException {
         super(rootNode, DatasetTypes.COUNTERS);
@@ -58,7 +58,7 @@ public class CountersModel extends AbstractIndexedModel implements ICountersMode
     public ICorrelationModel getCorrelatedModel(String correlationModelName) throws AWEException {
         ICorrelationModel result = null;
         for (Node network : crServ.getCorrelatedNetworks(getRootNode())) {
-            if (network.getProperty(NewAbstractService.NAME, StringUtils.EMPTY).equals(correlationModelName)) {
+            if (network.getProperty(AbstractService.NAME, StringUtils.EMPTY).equals(correlationModelName)) {
                 result = new CorrelationModel(network, getRootNode());
                 break;
             }

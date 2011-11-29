@@ -61,7 +61,7 @@ import org.eclipse.swt.widgets.Shell;
  * @author tsinkel_a
  * @since 1.0.0
  */
-public class LoadDatasetMainPage extends LoaderPageNew<ConfigurationDataImpl> {
+public class LoadDatasetMainPage extends LoaderPage<ConfigurationDataImpl> {
 
 	private static final Logger LOGGER = Logger.getLogger(LoadDatasetMainPage.class);
     

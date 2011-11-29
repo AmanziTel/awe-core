@@ -18,14 +18,14 @@ import java.util.Set;
 import junit.framework.Assert;
 
 import org.amanzi.neo.services.AbstractNeoServiceTest;
+import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.CorrelationServiceTest;
+import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.DatasetService.DatasetTypes;
+import org.amanzi.neo.services.DatasetService.DriveTypes;
 import org.amanzi.neo.services.NeoServiceFactory;
-import org.amanzi.neo.services.NewAbstractService;
-import org.amanzi.neo.services.NewDatasetService;
-import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
-import org.amanzi.neo.services.NewDatasetService.DriveTypes;
-import org.amanzi.neo.services.NewNetworkService;
-import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
+import org.amanzi.neo.services.NetworkService;
+import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.ProjectService;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
@@ -52,7 +52,7 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
 
     private static Logger LOGGER = Logger.getLogger(CorrelationServiceTest.class);
 
-    private static NewDatasetService dsServ;
+    private static DatasetService dsServ;
     private static ProjectService prServ;
     private Node network;
     private Node project;
@@ -65,8 +65,8 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
         clearDb();
         initializeDb();
 
-        dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
-        prServ = NeoServiceFactory.getInstance().getNewProjectService();
+        dsServ = NeoServiceFactory.getInstance().getDatasetService();
+        prServ = NeoServiceFactory.getInstance().getProjectService();
     }
 
     @AfterClass
@@ -122,7 +122,7 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
     @Test
     public void testNetworkModelIDataElement() {
 
-        String name = network.getProperty(NewAbstractService.NAME).toString();
+        String name = network.getProperty(AbstractService.NAME).toString();
         DataElement root = new DataElement(network);
         DataElement parent = new DataElement(project);
 
@@ -194,8 +194,8 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
         IDataElement parentElement = new DataElement(network);
         for (INodeType type : NetworkElementNodeType.values()) {
             Map<String, Object> params = new HashMap<String, Object>();
-            params.put(NewAbstractService.TYPE, type.getId());
-            params.put(NewAbstractService.NAME, type.getId());
+            params.put(AbstractService.TYPE, type.getId());
+            params.put(AbstractService.NAME, type.getId());
             params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
             DataElement element = new DataElement(params);
 
@@ -225,8 +225,8 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
         IDataElement parentElement = new DataElement(network);
         for (INodeType type : NetworkElementNodeType.values()) {
             Map<String, Object> params = new HashMap<String, Object>();
-            params.put(NewAbstractService.TYPE, type.getId());
-            params.put(NewAbstractService.NAME, type.getId());
+            params.put(AbstractService.TYPE, type.getId());
+            params.put(AbstractService.NAME, type.getId());
             params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
             DataElement element = new DataElement(params);
             paramsDataElements.add(element);
@@ -282,8 +282,8 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
         for (INodeType type : NetworkElementNodeType.values()) {
 
             Map<String, Object> params = new HashMap<String, Object>();
-            params.put(NewAbstractService.TYPE, type.getId());
-            params.put(NewAbstractService.NAME, type.getId());
+            params.put(AbstractService.TYPE, type.getId());
+            params.put(AbstractService.NAME, type.getId());
             params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
             DataElement element = new DataElement(params);
 
@@ -300,8 +300,8 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
         for (INodeType type : NetworkElementNodeType.values()) {
 
             Map<String, Object> params = new HashMap<String, Object>();
-            params.put(NewAbstractService.TYPE, type.getId());
-            params.put(NewAbstractService.NAME, type.getId());
+            params.put(AbstractService.TYPE, type.getId());
+            params.put(AbstractService.NAME, type.getId());
             IDataElement testElement;
             try {
                 testElement = model.findElement(new DataElement(params));
@@ -323,8 +323,8 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
         for (INodeType type : NetworkElementNodeType.values()) {
 
             Map<String, Object> params = new HashMap<String, Object>();
-            params.put(NewAbstractService.TYPE, type.getId());
-            params.put(NewAbstractService.NAME, type.getId());
+            params.put(AbstractService.TYPE, type.getId());
+            params.put(AbstractService.NAME, type.getId());
             params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
             DataElement element = new DataElement(params);
 
@@ -341,8 +341,8 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
         parentElement = new DataElement(network);
         for (INodeType type : NetworkElementNodeType.values()) {
             Map<String, Object> params = new HashMap<String, Object>();
-            params.put(NewAbstractService.TYPE, type.getId());
-            params.put(NewAbstractService.NAME, type.getId());
+            params.put(AbstractService.TYPE, type.getId());
+            params.put(AbstractService.NAME, type.getId());
             IDataElement testElement;
             try {
                 testElement = model.getElement(parentElement, new DataElement(params));
@@ -364,8 +364,8 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
         IDataElement parentElement = new DataElement(network);
         for (INodeType type : NetworkElementNodeType.values()) {
             Map<String, Object> params = new HashMap<String, Object>();
-            params.put(NewAbstractService.TYPE, type.getId());
-            params.put(NewAbstractService.NAME, type.getId());
+            params.put(AbstractService.TYPE, type.getId());
+            params.put(AbstractService.NAME, type.getId());
             IDataElement testElement;
             try {
                 testElement = model.getElement(parentElement, new DataElement(params));
@@ -459,7 +459,7 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
             }
         };
 
-        final NewDatasetService dsS = context.mock(NewDatasetService.class);
+        final DatasetService dsS = context.mock(DatasetService.class);
 
         // expectations
         context.checking(new Expectations() {
@@ -485,7 +485,7 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
             }
         };
 
-        final NewNetworkService nwS = context.mock(NewNetworkService.class);
+        final NetworkService nwS = context.mock(NetworkService.class);
 
         for (final NetworkElementNodeType type : NetworkElementNodeType.values()) {
             // expectations
@@ -510,8 +510,8 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
     @Test
     public void testFindElementByPropertyValue() {
         Map<String, Object> params = new HashMap<String, Object>();
-        params.put(NewAbstractService.TYPE, NetworkElementNodeType.SITE.getId());
-        params.put(NewAbstractService.NAME, NetworkElementNodeType.SITE.getId());
+        params.put(AbstractService.TYPE, NetworkElementNodeType.SITE.getId());
+        params.put(AbstractService.NAME, NetworkElementNodeType.SITE.getId());
         params.put("lat", 1d);
         params.put("lon", 2d);
         IDataElement parentElement;
@@ -522,9 +522,9 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
             throw (RuntimeException)new RuntimeException().initCause(e1);
         }
         params.clear();
-        params.put(NewAbstractService.TYPE, NetworkElementNodeType.SECTOR.getId());
-        params.put(NewAbstractService.NAME, NetworkElementNodeType.SECTOR.getId());
-        params.put(NewNetworkService.BCCH, 12);
+        params.put(AbstractService.TYPE, NetworkElementNodeType.SECTOR.getId());
+        params.put(AbstractService.NAME, NetworkElementNodeType.SECTOR.getId());
+        params.put(NetworkService.BCCH, 12);
         params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
         DataElement element = new DataElement(params);
 
@@ -539,7 +539,7 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
 
         Set<IDataElement> testElement;
         try {
-            testElement = model.findElementByPropertyValue(NetworkElementNodeType.SECTOR, NewNetworkService.BCCH, 12);
+            testElement = model.findElementByPropertyValue(NetworkElementNodeType.SECTOR, NetworkService.BCCH, 12);
         } catch (AWEException e) {
             LOGGER.error("Erorr while trying to found element", e);
             throw (RuntimeException)new RuntimeException().initCause(e);
@@ -554,16 +554,16 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
     @Test
     public void testGetClosestElement() {
         Map<String, Object> params = new HashMap<String, Object>();
-        params.put(NewAbstractService.TYPE, NetworkElementNodeType.SITE.getId());
-        params.put(NewAbstractService.NAME, NetworkElementNodeType.SITE.getId());
+        params.put(AbstractService.TYPE, NetworkElementNodeType.SITE.getId());
+        params.put(AbstractService.NAME, NetworkElementNodeType.SITE.getId());
         params.put("lat", 107d);
         params.put("lon", 24d);
         IDataElement site1;
         IDataElement site2;
         try {
             site1 = model.createElement(new DataElement(network), params);
-            params.put(NewAbstractService.TYPE, NetworkElementNodeType.SITE.getId());
-            params.put(NewAbstractService.NAME, NetworkElementNodeType.SITE.getId());
+            params.put(AbstractService.TYPE, NetworkElementNodeType.SITE.getId());
+            params.put(AbstractService.NAME, NetworkElementNodeType.SITE.getId());
             params.put("lat", 105d);
             params.put("lon", 34d);
             site2 = model.createElement(new DataElement(network), params);
@@ -581,7 +581,7 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
     @SuppressWarnings("unchecked")
     @Test
     public void checkSetStructureOnFinishUp() throws Exception {
-        NewNetworkService service = mock(NewNetworkService.class);
+        NetworkService service = mock(NetworkService.class);
 
         model.setNetworkService(service);
         model.finishUp();

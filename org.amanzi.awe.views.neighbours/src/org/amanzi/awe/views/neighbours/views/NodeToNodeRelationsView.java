@@ -16,8 +16,8 @@ package org.amanzi.awe.views.neighbours.views;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.amanzi.neo.services.NewNetworkService;
-import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
+import org.amanzi.neo.services.NetworkService;
+import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
@@ -319,8 +319,8 @@ public class NodeToNodeRelationsView extends ViewPart {
                 for (IDataElement element : relations) {
                 	//TODO: LN: do not use Relations!!!
                     Relationship relation = ((DataElement)element).getRelationship();
-                    RowWrapper row = new RowWrapper(relation.getStartNode().getProperty(NewNetworkService.SOURCE_NAME).toString(),
-                            relation.getEndNode().getProperty(NewNetworkService.SOURCE_NAME).toString());
+                    RowWrapper row = new RowWrapper(relation.getStartNode().getProperty(NetworkService.SOURCE_NAME).toString(),
+                            relation.getEndNode().getProperty(NetworkService.SOURCE_NAME).toString());
                     for (int q = 0; q < properties.length; q++) {
                         row.addPropValue(relation.getProperty(properties[q], null));
                     }
