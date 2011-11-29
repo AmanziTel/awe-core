@@ -18,7 +18,7 @@ import java.util.Set;
 
 import org.amanzi.neo.services.exceptions.IndexPropertyException;
 import org.amanzi.neo.services.exceptions.InvalidStatisticsParameterException;
-import org.amanzi.neo.services.statistic.internal.NewPropertyStatistics;
+import org.amanzi.neo.services.statistic.internal.PropertyStatistics;
 
 /**
  * <p>
@@ -194,14 +194,14 @@ public interface IVault {
      * 
      * @return List<NewPropertyStatistics> propertyStatisticsList
      */
-    public Map<String, NewPropertyStatistics> getPropertyStatisticsMap();
+    public Map<String, PropertyStatistics> getPropertyStatisticsMap();
 
     /**
      * add propertyStatistics to propertyStatisticsList
      * 
      * @param propStat
      */
-    public void addPropertyStatistics(NewPropertyStatistics propStat);
+    public void addPropertyStatistics(PropertyStatistics propStat);
 
     /**
      * * this method index property in PropertyStatistics and update counts in vaults

@@ -24,11 +24,11 @@ import org.amanzi.neo.model.distribution.IDistributionBar;
 import org.amanzi.neo.model.distribution.IDistributionModel;
 import org.amanzi.neo.model.distribution.IDistributionalModel;
 import org.amanzi.neo.model.distribution.IRange;
+import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.DistributionService;
-import org.amanzi.neo.services.NeoServiceFactory;
-import org.amanzi.neo.services.NewAbstractService;
-import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.DistributionService.DistributionNodeTypes;
+import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataElement;
@@ -230,7 +230,7 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
         if (color != null) {
             distributionBar.setColor(color);
         }
-        String name = (String)rootElement.get(NewAbstractService.NAME);
+        String name = (String)rootElement.get(AbstractService.NAME);
         distributionBar.setName(name);
         
         return distributionBar;

@@ -23,9 +23,9 @@ import net.refractions.udig.project.ILayer;
 
 import org.amanzi.awe.neostyle.NetworkNeoStyle;
 import org.amanzi.awe.neostyle.NetworkNeoStyleContent;
-import org.amanzi.neo.services.NewAbstractService;
-import org.amanzi.neo.services.NewNetworkService;
-import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
+import org.amanzi.neo.services.AbstractService;
+import org.amanzi.neo.services.NetworkService;
+import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.model.IDataElement;
@@ -53,7 +53,7 @@ public class NewNetworkRenderer extends AbstractRenderer {
 
     @Override
     protected void renderElement(Graphics2D destination, Point point, IDataElement site, IRenderableModel model) {
-        INodeType type = NodeTypeManager.getType(site.get(NewAbstractService.TYPE).toString());
+        INodeType type = NodeTypeManager.getType(site.get(AbstractService.TYPE).toString());
         if (!NetworkElementNodeType.SITE.equals(type)) {
             throw new IllegalArgumentException("Could not render element of type " + type.getId());
         }
@@ -61,7 +61,7 @@ public class NewNetworkRenderer extends AbstractRenderer {
         renderSite(destination, point, site);
         if (RenderOptions.scale == Scale.LARGE) {
             int i = 0;
-            Integer sCount = (Integer)site.get(NewNetworkService.SECTOR_COUNT);
+            Integer sCount = (Integer)site.get(NetworkService.SECTOR_COUNT);
             for (IDataElement sector : ((INetworkModel)model).getChildren(site)) {
                 Double azimuth = (Double)sector.get(AZIMUTH);
                 Double beamwidth = (Double)sector.get(BEAMWIDTH);

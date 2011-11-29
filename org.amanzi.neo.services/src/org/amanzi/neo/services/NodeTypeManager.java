@@ -80,7 +80,7 @@ public class NodeTypeManager {
      * @return type
      */
     public static INodeType getType(IDataElement element){
-        return getType(element.get(NewAbstractService.TYPE).toString());
+        return getType(element.get(AbstractService.TYPE).toString());
     }
 
     private static final class StringToEnumConverter<T extends Enum> {

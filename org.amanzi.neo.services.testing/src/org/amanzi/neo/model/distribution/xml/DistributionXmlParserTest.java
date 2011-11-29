@@ -13,9 +13,11 @@
 
 package org.amanzi.neo.model.distribution.xml;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.junit.Assert.*;
+
 import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.model.distribution.IDistributionalModel;
 import org.amanzi.neo.model.distribution.xml.schema.Bar;
@@ -25,8 +27,8 @@ import org.amanzi.neo.model.distribution.xml.schema.Data;
 import org.amanzi.neo.model.distribution.xml.schema.Distribution;
 import org.amanzi.neo.model.distribution.xml.schema.Filter;
 import org.amanzi.neo.services.AbstractNeoServiceTest;
-import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
-import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
+import org.amanzi.neo.services.DatasetService.DatasetTypes;
+import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.enums.INodeType;
 import org.junit.BeforeClass;
 import org.junit.Test;

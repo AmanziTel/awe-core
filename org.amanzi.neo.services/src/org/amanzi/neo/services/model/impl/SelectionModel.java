@@ -16,12 +16,12 @@ package org.amanzi.neo.services.model.impl;
 import java.util.Iterator;
 
 import org.amanzi.neo.db.manager.DatabaseManagerFactory;
+import org.amanzi.neo.services.AbstractService;
+import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
-import org.amanzi.neo.services.NewAbstractService;
-import org.amanzi.neo.services.NewDatasetService;
-import org.amanzi.neo.services.NewNetworkService;
-import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
-import org.amanzi.neo.services.NewNetworkService.NetworkRelationshipTypes;
+import org.amanzi.neo.services.NetworkService;
+import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
+import org.amanzi.neo.services.NetworkService.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
@@ -44,16 +44,16 @@ import org.neo4j.graphdb.index.Index;
  */
 public class SelectionModel extends AbstractModel implements ISelectionModel {
     private static Logger LOGGER = Logger.getLogger(SelectionModel.class);
-    private NewDatasetService dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
+
     /*
      * Key for Selection List indexes
      */
     private static final String SELECTION_LIST_INDEXES = "selection_list_links";
 
-    static NewNetworkService networkService = NeoServiceFactory.getInstance().getNewNetworkService();
+    static NetworkService networkService = NeoServiceFactory.getInstance().getNetworkService();
 
     private static Index<Relationship> selectionLinkIndex = null;
-
+    private DatasetService dsServ = NeoServiceFactory.getInstance().getDatasetService();
     private int selectedNodesCount = 0;
 
     /**
@@ -71,8 +71,8 @@ public class SelectionModel extends AbstractModel implements ISelectionModel {
         }
 
         this.rootNode = rootSelectionList;
-        this.name = (String)rootSelectionList.getProperty(NewAbstractService.NAME);
-        this.selectedNodesCount = (Integer)rootSelectionList.getProperty(NewNetworkService.SELECTED_NODES_COUNT);
+        this.name = (String)rootSelectionList.getProperty(AbstractService.NAME);
+        this.selectedNodesCount = (Integer)rootSelectionList.getProperty(NetworkService.SELECTED_NODES_COUNT);
 
         LOGGER.info("Selection Model <" + name + "> created by existing node");
     }

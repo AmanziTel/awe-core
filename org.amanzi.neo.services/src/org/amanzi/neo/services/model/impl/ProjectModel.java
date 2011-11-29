@@ -20,10 +20,10 @@ import java.util.List;
 import net.refractions.udig.project.ui.ApplicationGIS;
 
 import org.amanzi.neo.model.distribution.IDistributionalModel;
+import org.amanzi.neo.services.AbstractService;
+import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.DatasetService.DatasetTypes;
 import org.amanzi.neo.services.NeoServiceFactory;
-import org.amanzi.neo.services.NewAbstractService;
-import org.amanzi.neo.services.NewDatasetService;
-import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
 import org.amanzi.neo.services.ProjectService;
 import org.amanzi.neo.services.ProjectService.ProjectNodeType;
 import org.amanzi.neo.services.enums.IDriveType;
@@ -123,8 +123,8 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
 
     private static Logger LOGGER = Logger.getLogger(ProjectModel.class);
 
-    ProjectService prServ = NeoServiceFactory.getInstance().getNewProjectService();
-    NewDatasetService dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
+    ProjectService prServ = NeoServiceFactory.getInstance().getProjectService();
+    DatasetService dsServ = NeoServiceFactory.getInstance().getDatasetService();
 
     /**
      * Constructor. Tries to find or create a project node with the defined <code>name</code>, and
@@ -159,7 +159,7 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
         }
 
         this.rootNode = projectNode;
-        this.name = (String)projectNode.getProperty(NewAbstractService.NAME, StringUtils.EMPTY);
+        this.name = (String)projectNode.getProperty(AbstractService.NAME, StringUtils.EMPTY);
     }
 
     /**
@@ -343,7 +343,7 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
      * @throws AWEException
      */
     public static IProjectModel getCurrentProjectModel() throws AWEException {
-        ProjectService projectService = NeoServiceFactory.getInstance().getNewProjectService();
+        ProjectService projectService = NeoServiceFactory.getInstance().getProjectService();
 
         Node projectNode = projectService.getProject(ApplicationGIS.getActiveProject().getName());
 
@@ -357,7 +357,7 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
      * @throws AWEException
      */
     public static Iterable<IProjectModel> findAllProjectModels() throws AWEException {
-        ProjectService projectService = NeoServiceFactory.getInstance().getNewProjectService();
+        ProjectService projectService = NeoServiceFactory.getInstance().getProjectService();
         List<IProjectModel> projectList = new LinkedList<IProjectModel>();
         
         for (Node projectNode : projectService.findAllProjects()) {

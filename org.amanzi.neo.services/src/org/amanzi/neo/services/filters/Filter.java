@@ -15,7 +15,7 @@ package org.amanzi.neo.services.filters;
 
 import java.io.Serializable;
 
-import org.amanzi.neo.services.NewAbstractService;
+import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.filters.exceptions.FilterTypeException;
@@ -96,7 +96,7 @@ public class Filter implements IFilter {
         boolean result = false;
         boolean supportedType = true;
         
-        INodeType currentType = NodeTypeManager.getType(NewAbstractService.getNodeType(node));
+        INodeType currentType = NodeTypeManager.getType(AbstractService.getNodeType(node));
         
         if ((currentType != null) && (nodeType != null) &&
                 (!currentType.equals(nodeType))) {

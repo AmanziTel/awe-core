@@ -25,7 +25,7 @@ import org.amanzi.neo.model.distribution.IDistributionBar;
 import org.amanzi.neo.model.distribution.IDistributionModel;
 import org.amanzi.neo.model.distribution.IDistributionalModel;
 import org.amanzi.neo.services.INeoConstants;
-import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
+import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
@@ -144,12 +144,12 @@ public class NetworkTreeView extends ViewPart implements IEventListener {
         });
 
         setProviders();
-
         viewer.setInput(getSite());
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
 
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
+
                 selectedDataElements.clear();
                 IStructuredSelection selection = ((IStructuredSelection)event.getSelection());
                 Iterator< ? > it = selection.iterator();
@@ -177,7 +177,6 @@ public class NetworkTreeView extends ViewPart implements IEventListener {
         });
         hookContextMenu();
         getSite().setSelectionProvider(viewer);
-
         setLayout(parent);
         addListeners();
     }

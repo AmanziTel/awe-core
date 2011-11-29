@@ -19,7 +19,7 @@ import java.util.List;
 import net.refractions.udig.project.ui.internal.dialogs.ColorEditor;
 
 import org.amanzi.neo.services.INeoConstants;
-import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
+import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.model.IRenderableModel;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;

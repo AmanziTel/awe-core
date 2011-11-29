@@ -12,12 +12,12 @@ import java.util.Map;
 import junit.framework.Assert;
 
 import org.amanzi.neo.services.AbstractNeoServiceTest;
+import org.amanzi.neo.services.AbstractService;
+import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.DatasetService.DatasetRelationTypes;
+import org.amanzi.neo.services.DatasetService.DatasetTypes;
+import org.amanzi.neo.services.DatasetService.DriveTypes;
 import org.amanzi.neo.services.NeoServiceFactory;
-import org.amanzi.neo.services.NewAbstractService;
-import org.amanzi.neo.services.NewDatasetService;
-import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;
-import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
-import org.amanzi.neo.services.NewDatasetService.DriveTypes;
 import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.ProjectService;
 import org.amanzi.neo.services.exceptions.AWEException;
@@ -43,7 +43,7 @@ public class DriveModelTest extends AbstractNeoServiceTest {
     private static Logger LOGGER = Logger.getLogger(DriveModelTest.class);
     private static final String databasePath = getDbLocation();
     private static ProjectService prServ;
-    private static NewDatasetService dsServ;
+    private static DatasetService dsServ;
     private static Node project, dataset;
     private static String dsName;
     private static int count = 0;
@@ -55,8 +55,8 @@ public class DriveModelTest extends AbstractNeoServiceTest {
         initializeDb();
 
         LOGGER.info("Database created in folder " + databasePath);
-        prServ = NeoServiceFactory.getInstance().getNewProjectService();
-        dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
+        prServ = NeoServiceFactory.getInstance().getProjectService();
+        dsServ = NeoServiceFactory.getInstance().getDatasetService();
     }
 
     @AfterClass
@@ -131,7 +131,7 @@ public class DriveModelTest extends AbstractNeoServiceTest {
         }
         Assert.assertNotNull(dm);
         Assert.assertEquals(name, dm.getName());
-        Assert.assertEquals(name, dm.getRootNode().getProperty(NewAbstractService.NAME, null));
+        Assert.assertEquals(name, dm.getRootNode().getProperty(AbstractService.NAME, null));
     }
 
     @Test
@@ -158,7 +158,7 @@ public class DriveModelTest extends AbstractNeoServiceTest {
         // root node is correct
         Assert.assertNotNull(virtual.getRootNode());
         // root node type is correct
-        Assert.assertEquals(DatasetTypes.DRIVE.getId(), virtual.getRootNode().getProperty(NewAbstractService.TYPE, null));
+        Assert.assertEquals(DatasetTypes.DRIVE.getId(), virtual.getRootNode().getProperty(AbstractService.TYPE, null));
         Assert.assertEquals(DriveTypes.values()[0].name(), virtual.getRootNode().getProperty(DriveModel.DRIVE_TYPE, null));
     }
 
@@ -406,15 +406,15 @@ public class DriveModelTest extends AbstractNeoServiceTest {
         // node returned is not null
         Assert.assertNotNull(fileNode);
         // name correct
-        Assert.assertEquals("file.txt", fileNode.getProperty(NewAbstractService.NAME, null));
+        Assert.assertEquals("file.txt", fileNode.getProperty(AbstractService.NAME, null));
         // path correct
         Assert.assertEquals(filename, fileNode.getProperty(DriveModel.PATH, null));
         // type correct
-        Assert.assertEquals(DriveNodeTypes.FILE.getId(), fileNode.getProperty(NewAbstractService.TYPE));
+        Assert.assertEquals(DriveNodeTypes.FILE.getId(), fileNode.getProperty(AbstractService.TYPE));
         // chain exists
         Assert.assertTrue(chainExists(dataset, fileNode));
         // node indexed
-        Assert.assertTrue(isIndexed(dataset, fileNode, NewAbstractService.NAME, fileNode.getProperty(NewAbstractService.NAME, "")));
+        Assert.assertTrue(isIndexed(dataset, fileNode, AbstractService.NAME, fileNode.getProperty(AbstractService.NAME, "")));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -477,9 +477,9 @@ public class DriveModelTest extends AbstractNeoServiceTest {
             Assert.assertEquals(params.get(key), m.getProperty(key, null));
         }
         // dataset id set
-        Assert.assertEquals(dsName, m.getProperty(NewAbstractService.DATASET_ID, null));
+        Assert.assertEquals(dsName, m.getProperty(AbstractService.DATASET_ID, null));
         // type correct
-        Assert.assertEquals(DriveNodeTypes.M.getId(), m.getProperty(NewAbstractService.TYPE, null));
+        Assert.assertEquals(DriveNodeTypes.M.getId(), m.getProperty(AbstractService.TYPE, null));
         // chain exists
         Assert.assertTrue(chainExists(f, m));
         // root primary_type set
@@ -537,7 +537,7 @@ public class DriveModelTest extends AbstractNeoServiceTest {
         Assert.assertEquals(4, root.getProperty(DriveModel.COUNT, 0));
         Assert.assertEquals(min_tst, root.getProperty(DriveModel.MIN_TIMESTAMP, 0L));
         Assert.assertEquals(max_tst, root.getProperty(DriveModel.MAX_TIMESTAMP, 0L));
-        Assert.assertEquals(ms.keySet().iterator().next().getProperty(NewAbstractService.TYPE, null),
+        Assert.assertEquals(ms.keySet().iterator().next().getProperty(AbstractService.TYPE, null),
                 root.getProperty(DriveModel.PRIMARY_TYPE));
     }
 
@@ -891,7 +891,7 @@ public class DriveModelTest extends AbstractNeoServiceTest {
                 .index()
                 .forNodes(
                         dsServ.getIndexKey(parent,
-                                NodeTypeManager.getType(node.getProperty(NewAbstractService.TYPE, "").toString())))
+                                NodeTypeManager.getType(node.getProperty(AbstractService.TYPE, "").toString())))
                 .get(name, value).getSingle();
         return n.equals(node);
 

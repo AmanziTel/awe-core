@@ -16,8 +16,8 @@ package org.amanzi.neo.services.model.impl;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
-import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
@@ -45,7 +45,7 @@ public abstract class RenderableModel extends AbstractIndexedModel {
     static final String DESCRIPTION = "description";
     static final String CRS_NAME = "crs";
 
-    private NewDatasetService datasetService = NeoServiceFactory.getInstance().getNewDatasetService();
+    private DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
 
     protected final static String DEFAULT_EPSG = "EPSG:31467";
     /** The field used in geo tools. Assignment not yet implemented.//TODO */

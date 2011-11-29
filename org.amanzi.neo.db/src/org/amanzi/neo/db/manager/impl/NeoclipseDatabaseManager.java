@@ -16,7 +16,6 @@ package org.amanzi.neo.db.manager.impl;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.codehaus.groovy.tools.shell.util.NoExitSecurityManager;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.neoclipse.Activator;
 import org.neo4j.neoclipse.graphdb.GraphDbServiceManager;

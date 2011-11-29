@@ -30,11 +30,10 @@ public class NeoServiceFactory {
     private CorrelationService correlationService = null;
     
     // new services
-    private NewDatasetService newDatasetService = null;
-    private NewNetworkService newNetworkService = null;
-    private NewStatisticsService newStatisticsService = null;
-    private ProjectService newProjectService = null;
-    private org.amanzi.neo.services.CorrelationService newCorrelationService = null;
+    private DatasetService datasetService = null;
+    private NetworkService networkService = null;
+    private StatisticsService statisticsService = null;
+    private ProjectService projectService = null;
     
     private ExportSynonymsService exportSynonymsService = null;
     private Object exportSynonymsMonitor = new Object();
@@ -49,73 +48,62 @@ public class NeoServiceFactory {
         return instance;
     }
 
-    public CorrelationService getCorrelationService() {
-        if (correlationService == null) {
+    public DatasetService getDatasetService() {
+        if (datasetService == null) {
             synchronized (datasetMon) {
-                if (correlationService == null) {
-                    correlationService = new CorrelationService();
+                if (datasetService == null) {
+                    datasetService = new DatasetService();
                 }
             }
         }
-        return correlationService;
+        return datasetService;
     }
 
-    public NewDatasetService getNewDatasetService() {
-        if (newDatasetService == null) {
+    public NetworkService getNetworkService() {
+        if (networkService == null) {
             synchronized (datasetMon) {
-                if (newDatasetService == null) {
-                    newDatasetService = new NewDatasetService();
+                if (networkService == null) {
+                    networkService = new NetworkService();
                 }
             }
         }
-        return newDatasetService;
+        return networkService;
     }
 
-    public NewNetworkService getNewNetworkService() {
-        if (newNetworkService == null) {
+    public StatisticsService getStatisticsService() {
+        if (statisticsService == null) {
             synchronized (datasetMon) {
-                if (newNetworkService == null) {
-                    newNetworkService = new NewNetworkService();
+                if (statisticsService == null) {
+                    statisticsService = new StatisticsService();
                 }
             }
         }
-        return newNetworkService;
+        return statisticsService;
     }
 
-    public NewStatisticsService getNewStatisticsService() {
-        if (newStatisticsService == null) {
+    public ProjectService getProjectService() {
+        if (projectService == null) {
             synchronized (datasetMon) {
-                if (newStatisticsService == null) {
-                    newStatisticsService = new NewStatisticsService();
+                if (projectService == null) {
+                    projectService = new ProjectService();
                 }
             }
         }
-        return newStatisticsService;
-    }
-
-    public ProjectService getNewProjectService() {
-        if (newProjectService == null) {
-            synchronized (datasetMon) {
-                if (newProjectService == null) {
-                    newProjectService = new ProjectService();
-                }
-            }
-        }
-        return newProjectService;
+        return projectService;
     }
 
     /**
      * @return
      */
-    public org.amanzi.neo.services.CorrelationService getNewCorrelationService() {
-        if (newCorrelationService == null) {
+    public CorrelationService getCorrelationService() {
+        if (correlationService == null) {
             synchronized (datasetMon) {
-                if (newCorrelationService == null) {
-                    newCorrelationService = new org.amanzi.neo.services.CorrelationService();
+                if (correlationService == null) {
+                    correlationService = new org.amanzi.neo.services.CorrelationService();
                 }
             }
         }
-        return newCorrelationService;
+        return correlationService;
     }
     
     public ExportSynonymsService getExportSynonymsService() {

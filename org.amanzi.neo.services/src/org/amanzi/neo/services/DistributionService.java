@@ -52,7 +52,7 @@ import org.neo4j.kernel.Traversal;
  * @author lagutko_n
  * @since 1.0.0
  */
-public class DistributionService extends NewAbstractService {
+public class DistributionService extends AbstractService {
 
     private static final Logger LOGGER = Logger.getLogger(DistributionService.class);
 
@@ -244,14 +244,14 @@ public class DistributionService extends NewAbstractService {
 
     }
 
-    private NewDatasetService datasetService;
+    private DatasetService datasetService;
 
     /**
      * Default constructor
      */
     public DistributionService() {
         super();
-        datasetService = NeoServiceFactory.getInstance().getNewDatasetService();
+        datasetService = NeoServiceFactory.getInstance().getDatasetService();
     }
 
     /**

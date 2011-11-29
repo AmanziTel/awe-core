@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.amanzi.neo.services.NewAbstractService;
+import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.model.IDataElement;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PropertyContainer;
@@ -93,12 +93,12 @@ public class DataElement extends HashMap<String, Object> implements IDataElement
 
     @Override
     public String toString() {
-        if (this.containsKey(NewAbstractService.NAME)) {
-            return this.get(NewAbstractService.NAME).toString();
+        if (this.containsKey(AbstractService.NAME)) {
+            return this.get(AbstractService.NAME).toString();
         } else {
             if (getNode() != null) {
-                return (getNode().hasProperty(NewAbstractService.NAME) ? 
-                        getNode().getProperty(NewAbstractService.NAME).toString() : 
+                return (getNode().hasProperty(AbstractService.NAME) ? 
+                        getNode().getProperty(AbstractService.NAME).toString() : 
                         Long.toString(getNode().getId()));
             } else if (getRelationship() != null) {
                 return Long.toString(getRelationship().getId());

@@ -14,10 +14,10 @@ import junit.framework.Assert;
 import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.services.CorrelationService.CorrelationNodeTypes;
 import org.amanzi.neo.services.CorrelationService.Correlations;
-import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;
-import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
-import org.amanzi.neo.services.NewDatasetService.DriveTypes;
-import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
+import org.amanzi.neo.services.DatasetService.DatasetRelationTypes;
+import org.amanzi.neo.services.DatasetService.DatasetTypes;
+import org.amanzi.neo.services.DatasetService.DriveTypes;
+import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.impl.DataElement;
@@ -39,8 +39,8 @@ public class CorrelationServiceTest extends AbstractNeoServiceTest {
 			.getLogger(CorrelationServiceTest.class);
 
 	private static CorrelationService correlationServ;
-	private static NewDatasetService dsServ;
-	private static NewNetworkService nwServ;
+	private static DatasetService dsServ;
+	private static NetworkService nwServ;
 	private static ProjectService prServ;
 	private Node network;
 	private Node dataset;
@@ -55,9 +55,9 @@ public class CorrelationServiceTest extends AbstractNeoServiceTest {
 
 		new LogStarter().earlyStartup();
 		correlationServ = NeoServiceFactory.getInstance().getCorrelationService();
-		dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
-		nwServ = NeoServiceFactory.getInstance().getNewNetworkService();
-		prServ = NeoServiceFactory.getInstance().getNewProjectService();
+		dsServ = NeoServiceFactory.getInstance().getDatasetService();
+		nwServ = NeoServiceFactory.getInstance().getNetworkService();
+		prServ = NeoServiceFactory.getInstance().getProjectService();
 	}
 
 	@AfterClass
@@ -114,7 +114,7 @@ public class CorrelationServiceTest extends AbstractNeoServiceTest {
 								Direction.INCOMING).getStartNode());
 		// node type correct
 		Assert.assertEquals(CorrelationNodeTypes.CORRELATION.getId(),
-				correlation.getProperty(NewAbstractService.TYPE, null));
+				correlation.getProperty(AbstractService.TYPE, null));
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -219,7 +219,7 @@ public class CorrelationServiceTest extends AbstractNeoServiceTest {
 				Assert.assertNotNull(cr);
 				// type is correct
 				Assert.assertEquals(CorrelationNodeTypes.PROXY.getId(),
-						cr.getProperty(NewAbstractService.TYPE, null));
+						cr.getProperty(AbstractService.TYPE, null));
 				// relationship from sector exist
 				Assert.assertEquals(
 						sector,

@@ -38,10 +38,10 @@ import org.amanzi.neo.model.distribution.IDistributionBar;
 import org.amanzi.neo.model.distribution.IDistributionalModel;
 import org.amanzi.neo.model.distribution.IRange;
 import org.amanzi.neo.services.AbstractNeoServiceTest;
+import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.DistributionService;
 import org.amanzi.neo.services.DistributionService.DistributionNodeTypes;
-import org.amanzi.neo.services.NewAbstractService;
-import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
+import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.filters.Filter;
@@ -746,7 +746,7 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         
         when(result.getProperty(DistributionService.BAR_COLOR, null)).thenReturn(getColorArray(DISTRIBUTION_BAR_COLORS[index]));
         when(result.getProperty(DistributionService.COUNT, null)).thenReturn(index);
-        when(result.getProperty(NewAbstractService.NAME, null)).thenReturn(DISTRIBUTION_BAR_NAME_PREFIX + index);
+        when(result.getProperty(AbstractService.NAME, null)).thenReturn(DISTRIBUTION_BAR_NAME_PREFIX + index);
         
         return result;
     }
@@ -810,7 +810,7 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         Node result = mock(Node.class);
         
         if (nodeType != null) {
-            when(result.getProperty(NewAbstractService.TYPE, StringUtils.EMPTY)).thenReturn(nodeType.getId());
+            when(result.getProperty(AbstractService.TYPE, StringUtils.EMPTY)).thenReturn(nodeType.getId());
         }
         when(result.getProperty(DistributionService.COUNT, 0)).thenReturn(NUMBER_OF_DISTRIBUTION_BARS);
         when(result.getProperty(DistributionService.PROPERTY_NAME)).thenReturn(DISTRIBUTION_PROPERTY_NAME);

@@ -26,7 +26,7 @@ import net.refractions.udig.project.render.RenderException;
 
 import org.amanzi.awe.models.catalog.neo.GeoResource;
 import org.amanzi.awe.neostyle.BaseNeoStyle;
-import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
+import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
