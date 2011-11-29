@@ -43,7 +43,7 @@ public abstract class AbstractN2NSaver extends AbstractCSVSaver<INetworkModel> {
      * related n2nModel
      */
     protected INodeToNodeRelationsModel n2nModel;
-    
+
     protected AbstractN2NSaver() {
         super();
     }
@@ -96,9 +96,10 @@ public abstract class AbstractN2NSaver extends AbstractCSVSaver<INetworkModel> {
         if (!findedNeighSector.isEmpty() && !findedServiceSector.isEmpty()) {
             for (String head : headers) {
                 if (fileSynonyms.containsValue(head)) {
-                    properties.put(head.toLowerCase(), getSynonymValueWithAutoparse(head, row));
+                    properties.put(getSynonymForHeader(head), getSynonymValueWithAutoparse(head, row));
                 }
             }
+            properties.put(NewAbstractService.TYPE, NetworkElementNodeType.SECTOR.getId());
             n2nModel.linkNode(findedServiceSector.iterator().next(), findedNeighSector.iterator().next(), properties);
             addSynonyms(n2nModel, properties);
         } else {
@@ -116,7 +117,7 @@ public abstract class AbstractN2NSaver extends AbstractCSVSaver<INetworkModel> {
     protected void initializeNecessaryModels() throws AWEException {
         parametrizedModel = getActiveProject().getNetwork(
                 configuration.getDatasetNames().get(ConfigurationDataImpl.NETWORK_PROPERTY_NAME));
-        n2nModel = getNode2NodeModel(configuration.getFilesToLoad().get(0).getName());
+        n2nModel = getNode2NodeModel(parametrizedModel.getName());
         useableModels.add(n2nModel);
     }
 
@@ -145,22 +146,22 @@ public abstract class AbstractN2NSaver extends AbstractCSVSaver<INetworkModel> {
     protected void commonLinePreparationActions(CSVContainer dataElement) throws Exception {
 
     }
-    
+
     @Override
     protected Map<String, String[]> initializeSynonyms() {
         return preferenceManager.getSynonyms(getN2NType());
     }
-    
+
     /**
      * Returns type of N2N Model of this Saver
-     *
+     * 
      * @return
      */
     protected abstract N2NRelTypes getN2NType();
-    
+
     /**
      * Returns type of Nodes for N2N Model
-     *
+     * 
      * @return
      */
     protected abstract INodeType getN2NNodeType();

@@ -30,10 +30,9 @@ import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.ISafeRunnable;
 import org.eclipse.core.runtime.SafeRunner;
 
-//TODO: LN: comments
 /**
- * TODO Purpose of
  * <p>
+ * common parser actions
  * </p>
  * 
  * @author gerzog
