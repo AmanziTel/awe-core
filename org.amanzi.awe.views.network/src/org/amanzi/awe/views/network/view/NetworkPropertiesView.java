@@ -18,9 +18,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.amanzi.neo.services.INeoConstants;
-import org.amanzi.neo.services.NewAbstractService;
-import org.amanzi.neo.services.NewNetworkService;
-import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
+import org.amanzi.neo.services.AbstractService;
+import org.amanzi.neo.services.NetworkService;
+import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
@@ -399,7 +399,7 @@ public class NetworkPropertiesView extends ViewPart {
         INetworkModel networkModel = (INetworkModel)currentDataElement.get(INeoConstants.NETWORK_MODEL_NAME);
         boolean isReadyToUpdate = true;
         try {
-            INodeType nodeType = NodeTypeManager.getType(currentDataElement.get(NewAbstractService.TYPE).toString());
+            INodeType nodeType = NodeTypeManager.getType(currentDataElement.get(AbstractService.TYPE).toString());
             IDataElement dataElement = null;
             boolean isCIorLAC = false;
             // if property is unique then find is exist some element with equal property
@@ -408,12 +408,12 @@ public class NetworkPropertiesView extends ViewPart {
                     // ci+lac in sector should be unique, not a ci_lac as parameter
                     // but ci together with lac should be unique
                     String ci_lac = null;
-                    if (propertyName.equals(NewNetworkService.CELL_INDEX)) {
-                        String lac = currentDataElement.get(NewNetworkService.LOCATION_AREA_CODE).toString();
+                    if (propertyName.equals(NetworkService.CELL_INDEX)) {
+                        String lac = currentDataElement.get(NetworkService.LOCATION_AREA_CODE).toString();
                         ci_lac = value.toString() + "_" + lac;
                         isCIorLAC = true;
-                    } else if (propertyName.equals(NewNetworkService.LOCATION_AREA_CODE)) {
-                        String ci = currentDataElement.get(NewNetworkService.CELL_INDEX).toString();
+                    } else if (propertyName.equals(NetworkService.LOCATION_AREA_CODE)) {
+                        String ci = currentDataElement.get(NetworkService.CELL_INDEX).toString();
                         ci_lac = ci + "_" + value.toString();
                         isCIorLAC = true;
                     }
@@ -442,8 +442,8 @@ public class NetworkPropertiesView extends ViewPart {
                 } else {
                     propertyDefined = PROPERTY_DEFINED_IN_ELEMENT;
                 }
-                String message = MESSAGE_COULD_NOT_CHANGE_PROPERTY + propertyDefined + dataElement.get(NewNetworkService.TYPE)
-                        + " and name " + dataElement.get(NewNetworkService.NAME);
+                String message = MESSAGE_COULD_NOT_CHANGE_PROPERTY + propertyDefined + dataElement.get(NetworkService.TYPE)
+                        + " and name " + dataElement.get(NetworkService.NAME);
 
                 if (showMessageBox) {
                     showMessageBox = false;

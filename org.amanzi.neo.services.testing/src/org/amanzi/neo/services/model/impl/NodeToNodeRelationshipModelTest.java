@@ -10,13 +10,13 @@ import junit.framework.Assert;
 
 import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.services.AbstractNeoServiceTest;
+import org.amanzi.neo.services.AbstractService;
+import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.DatasetService.DatasetRelationTypes;
+import org.amanzi.neo.services.DatasetService.DatasetTypes;
 import org.amanzi.neo.services.NeoServiceFactory;
-import org.amanzi.neo.services.NewAbstractService;
-import org.amanzi.neo.services.NewDatasetService;
-import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;
-import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
-import org.amanzi.neo.services.NewNetworkService;
-import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
+import org.amanzi.neo.services.NetworkService;
+import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.ProjectService;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
@@ -39,7 +39,7 @@ public class NodeToNodeRelationshipModelTest extends AbstractNeoServiceTest {
     private Transaction tx;
     private static int count = 0;
 
-    private static NewDatasetService dsServ;
+    private static DatasetService dsServ;
     private static ProjectService prServ;
     private Node network;
     private static Node project;
@@ -51,8 +51,8 @@ public class NodeToNodeRelationshipModelTest extends AbstractNeoServiceTest {
 
         new LogStarter().earlyStartup();
 
-        dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
-        prServ = NeoServiceFactory.getInstance().getNewProjectService();
+        dsServ = NeoServiceFactory.getInstance().getDatasetService();
+        prServ = NeoServiceFactory.getInstance().getProjectService();
         project = prServ.createProject("project");
     }
 
@@ -125,8 +125,8 @@ public class NodeToNodeRelationshipModelTest extends AbstractNeoServiceTest {
         NetworkModel nm = new NetworkModel(network);
         Map<String, Object> params = new HashMap<String, Object>();
 
-        params.put(NewAbstractService.TYPE, NetworkElementNodeType.SITE.getId());
-        params.put(NewAbstractService.NAME, NetworkElementNodeType.SITE.getId());
+        params.put(AbstractService.TYPE, NetworkElementNodeType.SITE.getId());
+        params.put(AbstractService.NAME, NetworkElementNodeType.SITE.getId());
         IDataElement site;
         try {
             site = nm.createElement(new DataElement(nm.getRootNode()), new DataElement(params));
@@ -135,10 +135,10 @@ public class NodeToNodeRelationshipModelTest extends AbstractNeoServiceTest {
             throw (RuntimeException)new RuntimeException().initCause(e1);
         }
 
-        params.put(NewAbstractService.NAME, "sector1");
-        params.put(NewNetworkService.CELL_INDEX, "ci1");
-        params.put(NewNetworkService.LOCATION_AREA_CODE, "lac1");
-        params.put(NewAbstractService.TYPE, NetworkElementNodeType.SITE.getId());
+        params.put(AbstractService.NAME, "sector1");
+        params.put(NetworkService.CELL_INDEX, "ci1");
+        params.put(NetworkService.LOCATION_AREA_CODE, "lac1");
+        params.put(AbstractService.TYPE, NetworkElementNodeType.SITE.getId());
         IDataElement sector1;
         try {
             sector1 = nm.createElement(site, new DataElement(params));
@@ -147,9 +147,9 @@ public class NodeToNodeRelationshipModelTest extends AbstractNeoServiceTest {
             throw (RuntimeException)new RuntimeException().initCause(e1);
         }
 
-        params.put(NewAbstractService.NAME, "sector2");
-        params.put(NewNetworkService.CELL_INDEX, "ci2");
-        params.put(NewNetworkService.LOCATION_AREA_CODE, "lac2");
+        params.put(AbstractService.NAME, "sector2");
+        params.put(NetworkService.CELL_INDEX, "ci2");
+        params.put(NetworkService.LOCATION_AREA_CODE, "lac2");
         IDataElement sector2;
         try {
             sector2 = nm.createElement(site, new DataElement(params));
@@ -164,7 +164,7 @@ public class NodeToNodeRelationshipModelTest extends AbstractNeoServiceTest {
                     NetworkElementNodeType.SECTOR);
 
             params = new HashMap<String, Object>();
-            params.put(NewAbstractService.NAME, "neighbour");
+            params.put(AbstractService.NAME, "neighbour");
             params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
             model.linkNode(sector1, sector2, params);
 
@@ -197,8 +197,8 @@ public class NodeToNodeRelationshipModelTest extends AbstractNeoServiceTest {
         NetworkModel nm = new NetworkModel(network);
         Map<String, Object> params = new HashMap<String, Object>();
 
-        params.put(NewAbstractService.TYPE, NetworkElementNodeType.SITE.getId());
-        params.put(NewAbstractService.NAME, NetworkElementNodeType.SITE.getId());
+        params.put(AbstractService.TYPE, NetworkElementNodeType.SITE.getId());
+        params.put(AbstractService.NAME, NetworkElementNodeType.SITE.getId());
         IDataElement site;
         try {
             site = nm.createElement(new DataElement(nm.getRootNode()), new DataElement(params));
@@ -207,10 +207,10 @@ public class NodeToNodeRelationshipModelTest extends AbstractNeoServiceTest {
             throw (RuntimeException)new RuntimeException().initCause(e1);
         }
 
-        params.put(NewAbstractService.NAME, "sector1");
-        params.put(NewNetworkService.CELL_INDEX, "ci1");
-        params.put(NewNetworkService.LOCATION_AREA_CODE, "lac1");
-        params.put(NewAbstractService.TYPE, NetworkElementNodeType.SITE.getId());
+        params.put(AbstractService.NAME, "sector1");
+        params.put(NetworkService.CELL_INDEX, "ci1");
+        params.put(NetworkService.LOCATION_AREA_CODE, "lac1");
+        params.put(AbstractService.TYPE, NetworkElementNodeType.SITE.getId());
         IDataElement sector1;
         try {
             sector1 = nm.createElement(site, new DataElement(params));
@@ -219,9 +219,9 @@ public class NodeToNodeRelationshipModelTest extends AbstractNeoServiceTest {
             throw (RuntimeException)new RuntimeException().initCause(e1);
         }
 
-        params.put(NewAbstractService.NAME, "sector2");
-        params.put(NewNetworkService.CELL_INDEX, "ci2");
-        params.put(NewNetworkService.LOCATION_AREA_CODE, "lac2");
+        params.put(AbstractService.NAME, "sector2");
+        params.put(NetworkService.CELL_INDEX, "ci2");
+        params.put(NetworkService.LOCATION_AREA_CODE, "lac2");
         IDataElement sector2;
         try {
             sector2 = nm.createElement(site, new DataElement(params));
@@ -230,9 +230,9 @@ public class NodeToNodeRelationshipModelTest extends AbstractNeoServiceTest {
             throw (RuntimeException)new RuntimeException().initCause(e1);
         }
 
-        params.put(NewAbstractService.NAME, "sector3");
-        params.put(NewNetworkService.CELL_INDEX, "ci3");
-        params.put(NewNetworkService.LOCATION_AREA_CODE, "lac3");
+        params.put(AbstractService.NAME, "sector3");
+        params.put(NetworkService.CELL_INDEX, "ci3");
+        params.put(NetworkService.LOCATION_AREA_CODE, "lac3");
         IDataElement sector3;
         try {
             sector3 = nm.createElement(site, new DataElement(params));
@@ -247,7 +247,7 @@ public class NodeToNodeRelationshipModelTest extends AbstractNeoServiceTest {
                     NetworkElementNodeType.SECTOR);
 
             params = new HashMap<String, Object>();
-            params.put(NewAbstractService.NAME, "neighbour");
+            params.put(AbstractService.NAME, "neighbour");
             params.put(DriveModel.TIMESTAMP, System.currentTimeMillis());
             model.linkNode(sector1, sector2, params);
 
@@ -304,8 +304,8 @@ public class NodeToNodeRelationshipModelTest extends AbstractNeoServiceTest {
         NetworkModel nm = new NetworkModel(network);
         Map<String, Object> params = new HashMap<String, Object>();
 
-        params.put(NewAbstractService.TYPE, NetworkElementNodeType.SITE.getId());
-        params.put(NewAbstractService.NAME, NetworkElementNodeType.SITE.getId());
+        params.put(AbstractService.TYPE, NetworkElementNodeType.SITE.getId());
+        params.put(AbstractService.NAME, NetworkElementNodeType.SITE.getId());
         IDataElement site;
         try {
             site = nm.createElement(new DataElement(nm.getRootNode()), new DataElement(params));
@@ -314,10 +314,10 @@ public class NodeToNodeRelationshipModelTest extends AbstractNeoServiceTest {
             throw (RuntimeException)new RuntimeException().initCause(e1);
         }
 
-        params.put(NewAbstractService.NAME, "sector");
-        params.put(NewNetworkService.CELL_INDEX, "ci");
-        params.put(NewNetworkService.LOCATION_AREA_CODE, "lac");
-        params.put(NewAbstractService.TYPE, NetworkElementNodeType.SITE.getId());
+        params.put(AbstractService.NAME, "sector");
+        params.put(NetworkService.CELL_INDEX, "ci");
+        params.put(NetworkService.LOCATION_AREA_CODE, "lac");
+        params.put(AbstractService.TYPE, NetworkElementNodeType.SITE.getId());
         IDataElement sector;
         try {
             sector = nm.createElement(site, new DataElement(params));
@@ -328,10 +328,10 @@ public class NodeToNodeRelationshipModelTest extends AbstractNeoServiceTest {
 
         for (int i = 0; i < relCount; i++) {
             params = new HashMap<String, Object>();
-            params.put(NewAbstractService.NAME, "sector" + i);
-            params.put(NewNetworkService.CELL_INDEX, "ci" + i);
-            params.put(NewNetworkService.LOCATION_AREA_CODE, "lac" + i);
-            params.put(NewAbstractService.TYPE, NetworkElementNodeType.SECTOR.getId());
+            params.put(AbstractService.NAME, "sector" + i);
+            params.put(NetworkService.CELL_INDEX, "ci" + i);
+            params.put(NetworkService.LOCATION_AREA_CODE, "lac" + i);
+            params.put(AbstractService.TYPE, NetworkElementNodeType.SECTOR.getId());
             IDataElement sect;
             try {
                 sect = nm.createElement(site, new DataElement(params));
@@ -375,8 +375,8 @@ public class NodeToNodeRelationshipModelTest extends AbstractNeoServiceTest {
         NetworkModel nm = new NetworkModel(network);
         Map<String, Object> params = new HashMap<String, Object>();
 
-        params.put(NewAbstractService.TYPE, NetworkElementNodeType.SITE.getId());
-        params.put(NewAbstractService.NAME, NetworkElementNodeType.SITE.getId());
+        params.put(AbstractService.TYPE, NetworkElementNodeType.SITE.getId());
+        params.put(AbstractService.NAME, NetworkElementNodeType.SITE.getId());
         IDataElement site;
         try {
             site = nm.createElement(new DataElement(nm.getRootNode()), new DataElement(params));
@@ -385,10 +385,10 @@ public class NodeToNodeRelationshipModelTest extends AbstractNeoServiceTest {
             throw (RuntimeException)new RuntimeException().initCause(e1);
         }
 
-        params.put(NewAbstractService.NAME, "sector");
-        params.put(NewNetworkService.CELL_INDEX, "ci");
-        params.put(NewNetworkService.LOCATION_AREA_CODE, "lac");
-        params.put(NewAbstractService.TYPE, NetworkElementNodeType.SECTOR.getId());
+        params.put(AbstractService.NAME, "sector");
+        params.put(NetworkService.CELL_INDEX, "ci");
+        params.put(NetworkService.LOCATION_AREA_CODE, "lac");
+        params.put(AbstractService.TYPE, NetworkElementNodeType.SECTOR.getId());
         IDataElement sector;
         try {
             sector = nm.createElement(site, new DataElement(params));
@@ -399,10 +399,10 @@ public class NodeToNodeRelationshipModelTest extends AbstractNeoServiceTest {
 
         for (int i = 0; i < relCount; i++) {
             params = new HashMap<String, Object>();
-            params.put(NewAbstractService.NAME, "sector" + i);
-            params.put(NewNetworkService.CELL_INDEX, "ci" + i);
-            params.put(NewNetworkService.LOCATION_AREA_CODE, "lac" + i);
-            params.put(NewAbstractService.TYPE, NetworkElementNodeType.SECTOR.getId());
+            params.put(AbstractService.NAME, "sector" + i);
+            params.put(NetworkService.CELL_INDEX, "ci" + i);
+            params.put(NetworkService.LOCATION_AREA_CODE, "lac" + i);
+            params.put(AbstractService.TYPE, NetworkElementNodeType.SECTOR.getId());
             IDataElement sect;
             try {
                 sect = nm.createElement(site, new DataElement(params));

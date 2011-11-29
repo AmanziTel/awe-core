@@ -14,22 +14,24 @@
 package org.amanzi.neo.services.model.impl;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.amanzi.neo.model.distribution.IDistribution;
 import org.amanzi.neo.model.distribution.IDistributionModel;
 import org.amanzi.neo.model.distribution.impl.DistributionModel;
+import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.CorrelationService.CorrelationNodeTypes;
+import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
-import org.amanzi.neo.services.NewAbstractService;
-import org.amanzi.neo.services.NewDatasetService;
-import org.amanzi.neo.services.NewNetworkService;
+import org.amanzi.neo.services.NetworkService;
 import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.model.IDataElement;
+import org.amanzi.neo.services.model.IModel;
 import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
 import org.amanzi.neo.services.model.INodeToNodeRelationsType;
 import org.apache.commons.lang.StringUtils;
@@ -56,8 +58,8 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
     public static String FREQUENCY = "frequency";
     private INodeToNodeRelationsType relType;
     private final Map<Integer, IDataElement> cache = new HashMap<Integer, IDataElement>();
-    private NewDatasetService dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
-    private NewNetworkService networkServ = NeoServiceFactory.getInstance().getNewNetworkService();
+    private DatasetService dsServ = NeoServiceFactory.getInstance().getDatasetService();
+    private NetworkService networkServ = NeoServiceFactory.getInstance().getNetworkService();
 
     /**
      * <p>
@@ -140,9 +142,9 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
         } else {
             this.rootNode = dsServ.createNode(parentNode, relType, NodeToNodeTypes.NODE2NODE);
             Map<String, Object> params = new HashMap<String, Object>();
-            params.put(NewNetworkService.NETWORK_ID, parentNode.getId());
-            params.put(NewNetworkService.NAME, this.name);
-            params.put(NewNetworkService.TYPE, NodeToNodeTypes.NODE2NODE.getId());
+            params.put(NetworkService.NETWORK_ID, parentNode.getId());
+            params.put(NetworkService.NAME, this.name);
+            params.put(NetworkService.TYPE, NodeToNodeTypes.NODE2NODE.getId());
             params.put(RELATION_TYPE, this.relType.getId());
             params.put(PRIMARY_TYPE, nodeType.getId());
             dsServ.setProperties(rootNode, params);
@@ -165,7 +167,7 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
         this.rootNode = n2nRoot;
         this.nodeType = NodeTypeManager.getType(n2nRoot.getProperty(PRIMARY_TYPE).toString());
         this.relType = N2NRelTypes.valueOf(n2nRoot.getProperty(RELATION_TYPE).toString());
-        this.name = n2nRoot.getProperty(NewNetworkService.NAME).toString();
+        this.name = n2nRoot.getProperty(NetworkService.NAME).toString();
 
         initializeStatistics();
     }
@@ -188,7 +190,7 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
         }
         Node newNode = dsServ.createNode(NodeToNodeTypes.FREQUENCY);
         newNode.setProperty(FREQUENCY, frequency);
-        newNode.setProperty(NewAbstractService.NAME, String.valueOf(frequency));
+        newNode.setProperty(AbstractService.NAME, String.valueOf(frequency));
         dsServ.addChild(rootNode, newNode, null);
         result = new DataElement(newNode);
         cache.put(frequency, result);
@@ -250,8 +252,7 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
         Node serviceProxy = getProxy(serviceNode);
         Node neighbourProxy = getProxy(neighbourNode);
         Relationship rel = related(serviceProxy, neighbourProxy);
-        NeoServiceFactory.getInstance().getNewNetworkService()
-                .completeProperties(rel, new DataElement(properties), isReplace, null);
+        NeoServiceFactory.getInstance().getNetworkService().completeProperties(rel, new DataElement(properties), isReplace, null);
     }
 
     /**
@@ -338,4 +339,15 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
         return false;
     }
 
+    @Override
+    public IModel getParentModel() throws AWEException {
+        if (rootNode == null) {
+            throw new IllegalArgumentException("currentModel type is null.");
+        }
+        Iterator<Node> isVirtual = dsServ.getFirstRelationTraverser(rootNode, relType, Direction.INCOMING).iterator();
+        if (isVirtual.hasNext()) {
+            return new NetworkModel(isVirtual.next());
+        }
+        return null;
+    }
 }

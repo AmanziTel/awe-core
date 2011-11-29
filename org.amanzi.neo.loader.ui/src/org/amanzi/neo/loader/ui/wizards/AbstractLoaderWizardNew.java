@@ -27,10 +27,10 @@ import net.refractions.udig.catalog.IService;
 
 import org.amanzi.neo.db.manager.DatabaseManagerFactory;
 import org.amanzi.neo.loader.core.IConfiguration;
-import org.amanzi.neo.loader.core.ILoaderNew;
+import org.amanzi.neo.loader.core.ILoader;
 import org.amanzi.neo.loader.core.ILoaderProgressListener;
 import org.amanzi.neo.loader.core.IProgressEvent;
-import org.amanzi.neo.loader.core.newsaver.IData;
+import org.amanzi.neo.loader.core.saver.IData;
 import org.amanzi.neo.loader.core.parser.IConfigurationData;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
@@ -63,7 +63,7 @@ import org.eclipse.ui.IWorkbench;
  */
 public abstract class AbstractLoaderWizardNew<T extends IConfiguration> extends Wizard
         implements
-            IGraphicInterfaceForLoadersNew<T>,
+            IGraphicInterfaceForLoaders<T>,
             IImportWizard {
 
     /** The pages. */
@@ -72,18 +72,18 @@ public abstract class AbstractLoaderWizardNew<T extends IConfiguration> extends 
     /**
      * new loaders
      */
-    protected LinkedHashMap<ILoaderNew<IData, T>, LoaderInfo<T>> newloaders = new LinkedHashMap<ILoaderNew<IData, T>, LoaderInfo<T>>();
-    protected Map<ILoaderNew< ? extends IData, T>, T> requiredLoaders = new LinkedHashMap<ILoaderNew< ? extends IData, T>, T>();
+    protected LinkedHashMap<ILoader<IData, T>, LoaderInfo<T>> newloaders = new LinkedHashMap<ILoader<IData, T>, LoaderInfo<T>>();
+    protected Map<ILoader< ? extends IData, T>, T> requiredLoaders = new LinkedHashMap<ILoader< ? extends IData, T>, T>();
     /** The max main page id. */
     protected int maxMainPageId;
-    private ILoaderNew< ? extends IData, T> newSelectedLoader;
+    private ILoader< ? extends IData, T> newSelectedLoader;
 
     /**
      * Gets new loaders.
      * 
      * @return the loaders
      */
-    public Set<ILoaderNew<IData, T>> getNewLoaders() {
+    public Set<ILoader<IData, T>> getNewLoaders() {
         return newloaders.keySet();
     }
 
@@ -96,11 +96,11 @@ public abstract class AbstractLoaderWizardNew<T extends IConfiguration> extends 
             addPage(iWizardPage);
             maxMainPageId++;
         }
-        for (Map.Entry<ILoaderNew<IData, T>, LoaderInfo<T>> loaderEntry : newloaders.entrySet()) {
+        for (Map.Entry<ILoader<IData, T>, LoaderInfo<T>> loaderEntry : newloaders.entrySet()) {
             LoaderInfo<T> info = loaderEntry.getValue();
             int idPage = 0;
             for (IConfigurationElement pageClass : info.getPages()) {
-                ILoaderPageNew<T> page = createAdditionalPage(pageClass);
+                ILoaderPage<T> page = createAdditionalPage(pageClass);
                 // for this comparing for pages should be implement correct
                 // equals and hashCode
                 // methods (not necessary)
@@ -122,7 +122,7 @@ public abstract class AbstractLoaderWizardNew<T extends IConfiguration> extends 
                 return false;
             }
         }
-        ILoaderNew< ? extends IData, T> loadernew = getNewSelectedLoader();
+        ILoader< ? extends IData, T> loadernew = getNewSelectedLoader();
         if (loadernew == null) {
             return false;
         }
@@ -147,9 +147,9 @@ public abstract class AbstractLoaderWizardNew<T extends IConfiguration> extends 
      * @return the i loader page
      */
     @SuppressWarnings("unchecked")
-    protected ILoaderPageNew<T> createAdditionalPage(IConfigurationElement pageElement) {
+    protected ILoaderPage<T> createAdditionalPage(IConfigurationElement pageElement) {
         try {
-            return (ILoaderPageNew<T>)pageElement.createExecutableExtension("class");
+            return (ILoaderPage<T>)pageElement.createExecutableExtension("class");
         } catch (CoreException e1) {
             // TODO Handle CoreException
             throw (RuntimeException)new RuntimeException().initCause(e1);
@@ -190,7 +190,7 @@ public abstract class AbstractLoaderWizardNew<T extends IConfiguration> extends 
         if (index <= maxMainPageId) {
             return pages.get(index - 1);
         }
-        ILoaderNew< ? extends IData, T> loader = getNewSelectedLoader();
+        ILoader< ? extends IData, T> loader = getNewSelectedLoader();
         LoaderInfo<T> info = newloaders.get(loader);
         int previousWizardId = info.getPreviousWizardId(index);
         return previousWizardId == -1 ? pages.get(maxMainPageId) : pages.get(previousWizardId);
@@ -212,7 +212,7 @@ public abstract class AbstractLoaderWizardNew<T extends IConfiguration> extends 
         if (index < maxMainPageId) {
             return pages.get(index + 1);
         }
-        ILoaderNew< ? extends IData, T> loaderNew = getNewSelectedLoader();
+        ILoader< ? extends IData, T> loaderNew = getNewSelectedLoader();
         if (loaderNew == null) {
             return null;
         }
@@ -232,7 +232,7 @@ public abstract class AbstractLoaderWizardNew<T extends IConfiguration> extends 
 
     @Override
     public boolean performFinish() {
-        final Map<ILoaderNew< ? extends IData, T>, T> newloader = getRequiredLoaders();
+        final Map<ILoader< ? extends IData, T>, T> newloader = getRequiredLoaders();
 
         Job job = new Job("Load data") {
 
@@ -241,15 +241,15 @@ public abstract class AbstractLoaderWizardNew<T extends IConfiguration> extends 
                 newload(newloader, monitor);
                 try {
                     addDataToCatalog();
-                    NewEventManager.getInstance().fireEvent(new UpdateDataEvent());
                 } catch (MalformedURLException e) {
                     MessageDialog.openError(getShell(), "Error while add data to catalog", "Cann't add data to catalog");
-                    e.printStackTrace();
                 }
+                NewEventManager.getInstance().fireEvent(new UpdateDataEvent());
                 return Status.OK_STATUS;
             }
         };
         job.schedule();
+
         return true;
     }
 
@@ -277,9 +277,9 @@ public abstract class AbstractLoaderWizardNew<T extends IConfiguration> extends 
      * @param monitor the monitor
      * @throws Exception
      */
-    protected void newload(final Map<ILoaderNew< ? extends IData, T>, T> newloader, IProgressMonitor monitor) {
+    protected void newload(final Map<ILoader< ? extends IData, T>, T> newloader, IProgressMonitor monitor) {
 
-        for (ILoaderNew< ? extends IData, T> loader : newloader.keySet()) {
+        for (ILoader< ? extends IData, T> loader : newloader.keySet()) {
             if (newloader.get(loader) != null) {
                 assignMonitorToProgressLoader(monitor, loader);
                 try {
@@ -309,7 +309,7 @@ public abstract class AbstractLoaderWizardNew<T extends IConfiguration> extends 
      * @param monitor the monitor
      * @param loader the loader
      */
-    protected void assignMonitorToProgressLoader(final IProgressMonitor monitor, ILoaderNew< ? extends IData, T> loader) {
+    protected void assignMonitorToProgressLoader(final IProgressMonitor monitor, ILoader< ? extends IData, T> loader) {
         monitor.beginTask(loader.getLoaderInfo().getName(), 1000);
         loader.addProgressListener(new ILoaderProgressListener() {
             int jobCount = 0;
@@ -328,7 +328,7 @@ public abstract class AbstractLoaderWizardNew<T extends IConfiguration> extends 
     }
 
     @Override
-    public void addNewLoader(ILoaderNew<IData, T> loader, IConfigurationElement[] pageConfigElements) {
+    public void addNewLoader(ILoader<IData, T> loader, IConfigurationElement[] pageConfigElements) {
         LoaderInfo<T> info = new LoaderInfo<T>();
         info.setAdditionalPages(pageConfigElements);
         newloaders.put(loader, info);
@@ -346,7 +346,7 @@ public abstract class AbstractLoaderWizardNew<T extends IConfiguration> extends 
      * 
      * @return the selected loader
      */
-    public ILoaderNew< ? extends IData, T> getNewSelectedLoader() {
+    public ILoader< ? extends IData, T> getNewSelectedLoader() {
         return newSelectedLoader;
     }
 
@@ -355,7 +355,7 @@ public abstract class AbstractLoaderWizardNew<T extends IConfiguration> extends 
      * 
      * @param selectedLoader the selected loader
      */
-    public void setSelectedLoaderNew(ILoaderNew< ? extends IData, T> selectedLoader) {
+    public void setSelectedLoaderNew(ILoader< ? extends IData, T> selectedLoader) {
         this.newSelectedLoader = selectedLoader;
 
     }
@@ -445,7 +445,7 @@ public abstract class AbstractLoaderWizardNew<T extends IConfiguration> extends 
     /**
      * @return Returns the requiredLoaders.
      */
-    public Map<ILoaderNew< ? extends IData, T>, T> getRequiredLoaders() {
+    public Map<ILoader< ? extends IData, T>, T> getRequiredLoaders() {
         return requiredLoaders;
     }
 

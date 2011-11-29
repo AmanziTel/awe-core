@@ -81,16 +81,16 @@ public class NewEventManager {
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
     public <T extends AbstractEvent> T fireEvent(final T event) {
-        Set<IEventsListener<T>> eventListeners = (Set)listenersCollections.get(event);
-        for (final IEventsListener<T> listeners : eventListeners) {
-            ActionUtil.getInstance().runTask(new Runnable() {
-                @Override
-                public void run() {
+        final Set<IEventsListener<T>> eventListeners = (Set)listenersCollections.get(event);
+        ActionUtil.getInstance().runTask(new Runnable() {
+            @Override
+            public void run() {
+                for (IEventsListener<T> listeners : eventListeners) {
                     listeners.handleEvent(event);
                 }
-            }, false);
+            }
+        }, false);
 
-        }
         return event;
     }
 }

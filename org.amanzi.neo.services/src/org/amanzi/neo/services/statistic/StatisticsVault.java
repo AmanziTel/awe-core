@@ -20,7 +20,7 @@ import java.util.Set;
 
 import org.amanzi.neo.services.exceptions.IndexPropertyException;
 import org.amanzi.neo.services.exceptions.InvalidStatisticsParameterException;
-import org.amanzi.neo.services.statistic.internal.NewPropertyStatistics;
+import org.amanzi.neo.services.statistic.internal.PropertyStatistics;
 import org.apache.log4j.Logger;
 
 /**
@@ -36,7 +36,7 @@ public class StatisticsVault implements IVault {
     private int count;
     private String type;
     private boolean isStatisticsChanged = false;
-    private Map<String, NewPropertyStatistics> propertyStatisticsMap = new HashMap<String, NewPropertyStatistics>();
+    private Map<String, PropertyStatistics> propertyStatisticsMap = new HashMap<String, PropertyStatistics>();
 
     private static Logger LOGGER = Logger.getLogger(StatisticsVault.class);
 
@@ -84,12 +84,12 @@ public class StatisticsVault implements IVault {
     }
 
     @Override
-    public Map<String, NewPropertyStatistics> getPropertyStatisticsMap() {
+    public Map<String, PropertyStatistics> getPropertyStatisticsMap() {
         return this.propertyStatisticsMap;
     }
 
     @Override
-    public void addPropertyStatistics(NewPropertyStatistics propStat) {
+    public void addPropertyStatistics(PropertyStatistics propStat) {
         this.propertyStatisticsMap.put(propStat.getName(), propStat);
     }
 
@@ -139,7 +139,7 @@ public class StatisticsVault implements IVault {
             vault = this.getSubVault(nodeType);
         }
         try {
-            NewPropertyStatistics propStat = ((StatisticsVault)vault).getPropertyStatistics(propName, propValue.getClass());
+            PropertyStatistics propStat = ((StatisticsVault)vault).getPropertyStatistics(propName, propValue.getClass());
             propStat.updatePropertyMap(propValue, 1);
             vault.setCount(vault.getCount() + 1);
         } catch (IndexPropertyException e) {
@@ -186,7 +186,7 @@ public class StatisticsVault implements IVault {
             vault = this.getSubVault(nodeType);
         }
         try {
-            NewPropertyStatistics propStat = ((StatisticsVault)vault).getPropertyStatistics(propName, propValue.getClass());
+            PropertyStatistics propStat = ((StatisticsVault)vault).getPropertyStatistics(propName, propValue.getClass());
             propStat.updatePropertyMap(propValue, -1);
             vault.setCount(vault.getCount() - 1);
         } catch (IndexPropertyException e) {
@@ -235,7 +235,7 @@ public class StatisticsVault implements IVault {
             vault = this.getSubVault(nodeType);
         }
         try {
-            NewPropertyStatistics propStat = ((StatisticsVault)vault).getPropertyStatistics(propName, oldPropValue.getClass());
+            PropertyStatistics propStat = ((StatisticsVault)vault).getPropertyStatistics(propName, oldPropValue.getClass());
             // update statistics only if it was saved early 
             if (propStat.getPropertyMap().containsKey(oldPropValue)) {
                 propStat.updatePropertyMap(oldPropValue, -1);
@@ -257,12 +257,12 @@ public class StatisticsVault implements IVault {
      * @return NewPropertyStatistics instance by name
      * @throws IndexPropertyException - method throw this exception if given class is wrong
      */
-    private NewPropertyStatistics getPropertyStatistics(String name, Class< ? > klass) throws IndexPropertyException {
-        NewPropertyStatistics propStat = this.getPropertyStatisticsMap().get(name);
+    private PropertyStatistics getPropertyStatistics(String name, Class< ? > klass) throws IndexPropertyException {
+        PropertyStatistics propStat = this.getPropertyStatisticsMap().get(name);
         if (propStat != null) {
             return propStat;
         } else {
-            propStat = new NewPropertyStatistics(name, klass);
+            propStat = new PropertyStatistics(name, klass);
             this.addPropertyStatistics(propStat);
         }
         return propStat;
@@ -370,10 +370,10 @@ public class StatisticsVault implements IVault {
                 allProperties.putAll(getAllPropertiesWithName(subV, propertyName));
             }
         } else {
-            Map<String, NewPropertyStatistics> propertyStatisticMap = subVault.getPropertyStatisticsMap();
+            Map<String, PropertyStatistics> propertyStatisticMap = subVault.getPropertyStatisticsMap();
             for (String property : propertyStatisticMap.keySet()) {
                 if (property.equals(propertyName)) {
-                    NewPropertyStatistics newPropertyStatistic = propertyStatisticMap.get(property);
+                    PropertyStatistics newPropertyStatistic = propertyStatisticMap.get(property);
                     Map<Object, Integer> propertyMap = newPropertyStatistic.getPropertyMap();
                     for (Object key : propertyMap.keySet()) {
                         allProperties.put(key, propertyMap.get(key));
@@ -391,7 +391,7 @@ public class StatisticsVault implements IVault {
         
         IVault subVault = subVaults.get(nodeType);
         if (subVault != null) {
-            for (NewPropertyStatistics singleProperty : subVault.getPropertyStatisticsMap().values()) {
+            for (PropertyStatistics singleProperty : subVault.getPropertyStatisticsMap().values()) {
                 if (singleProperty.getKlass().equals(klass)) {
                     result.add(singleProperty.getName());
                 }
@@ -496,7 +496,7 @@ public class StatisticsVault implements IVault {
             if (vault.getType().equals(nodeType)) {
                 for (String property : vault.getPropertyStatisticsMap().keySet()) {
                     if (propertyName.equals(property)) {
-                        NewPropertyStatistics propertyStatistics = vault.getPropertyStatisticsMap().get(property);
+                        PropertyStatistics propertyStatistics = vault.getPropertyStatisticsMap().get(property);
                         Map<Object, Integer> propertyMap = propertyStatistics.getPropertyMap();
                         for (Object propValue : propertyMap.keySet()) {
                             if (propValue.toString().equals(propertyValue.toString())) {
@@ -514,7 +514,7 @@ public class StatisticsVault implements IVault {
                     if (subVault.getType().equals(nodeType)) {
                         for (String property : subVault.getPropertyStatisticsMap().keySet()) {
                             if (propertyName.equals(property)) {
-                                NewPropertyStatistics propertyStatistics = subVault.getPropertyStatisticsMap().get(property);
+                                PropertyStatistics propertyStatistics = subVault.getPropertyStatisticsMap().get(property);
                                 Map<Object, Integer> propertyMap = propertyStatistics.getPropertyMap();
                                 for (Object propValue : propertyMap.keySet()) {
                                     if (propValue.toString().equals(propertyValue.toString())) {
@@ -542,7 +542,7 @@ public class StatisticsVault implements IVault {
             if (vault.getType().equals(nodeType)) {
                 for (String property : vault.getPropertyStatisticsMap().keySet()) {
                     if (propertyName.equals(property)) {
-                        NewPropertyStatistics propertyStatistics = vault.getPropertyStatisticsMap().get(property);
+                        PropertyStatistics propertyStatistics = vault.getPropertyStatisticsMap().get(property);
                         Map<Object, Integer> propertyMap = propertyStatistics.getPropertyMap();
                         for (Object propValue : propertyMap.keySet()) {
                             if (propValue.toString().equals(propertyValue.toString())) {
@@ -561,7 +561,7 @@ public class StatisticsVault implements IVault {
                     if (subVault.getType().equals(nodeType)) {
                         for (String property : subVault.getPropertyStatisticsMap().keySet()) {
                             if (propertyName.equals(property)) {
-                                NewPropertyStatistics propertyStatistics = subVault.getPropertyStatisticsMap().get(property);
+                                PropertyStatistics propertyStatistics = subVault.getPropertyStatisticsMap().get(property);
                                 Map<Object, Integer> propertyMap = propertyStatistics.getPropertyMap();
                                 for (Object propValue : propertyMap.keySet()) {
                                     if (propValue.toString().equals(propertyValue.toString())) {
@@ -611,10 +611,10 @@ public class StatisticsVault implements IVault {
     private Number getMinValue(IVault vault, String nodeType, String propertyName, boolean isNeedType) {
         if (isNeedType || vault.getType().equals(nodeType)) {
             isNeedType = true;
-            Map<String, NewPropertyStatistics> localPropertyStatisticsMap =
+            Map<String, PropertyStatistics> localPropertyStatisticsMap =
                     vault.getPropertyStatisticsMap();
             if (localPropertyStatisticsMap.keySet().contains(propertyName)) {
-                NewPropertyStatistics propertyStatistics = 
+                PropertyStatistics propertyStatistics = 
                         localPropertyStatisticsMap.get(propertyName);
                 return propertyStatistics.getMinValue();
             }
@@ -653,10 +653,10 @@ public class StatisticsVault implements IVault {
     private Number getMaxValue(IVault vault, String nodeType, String propertyName, boolean isNeedType) {
         if (isNeedType || vault.getType().equals(nodeType)) {
             isNeedType = true;
-            Map<String, NewPropertyStatistics> localPropertyStatisticsMap =
+            Map<String, PropertyStatistics> localPropertyStatisticsMap =
                     vault.getPropertyStatisticsMap();
             if (localPropertyStatisticsMap.keySet().contains(propertyName)) {
-                NewPropertyStatistics propertyStatistics = 
+                PropertyStatistics propertyStatistics = 
                         localPropertyStatisticsMap.get(propertyName);
                 return propertyStatistics.getMaxValue();
             }

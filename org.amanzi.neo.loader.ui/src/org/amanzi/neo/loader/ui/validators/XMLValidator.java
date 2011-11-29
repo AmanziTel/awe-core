@@ -22,7 +22,7 @@ import java.util.List;
 
 import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.IValidator;
-import org.amanzi.neo.services.NewDatasetService.DriveTypes;
+import org.amanzi.neo.services.DatasetService.DriveTypes;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.INetworkModel;

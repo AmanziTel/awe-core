@@ -13,19 +13,25 @@
 
 package org.amanzi.neo.services.model.impl;
 
+import java.util.Iterator;
+
 import org.amanzi.neo.db.manager.DatabaseManagerFactory;
+import org.amanzi.neo.services.AbstractService;
+import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
-import org.amanzi.neo.services.NewAbstractService;
-import org.amanzi.neo.services.NewNetworkService;
-import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
+import org.amanzi.neo.services.NetworkService;
+import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
+import org.amanzi.neo.services.NetworkService.NetworkRelationshipTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataElement;
+import org.amanzi.neo.services.model.IModel;
 import org.amanzi.neo.services.model.IProjectModel;
 import org.amanzi.neo.services.model.ISelectionModel;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.index.Index;
@@ -44,10 +50,10 @@ public class SelectionModel extends AbstractModel implements ISelectionModel {
      */
     private static final String SELECTION_LIST_INDEXES = "selection_list_links";
 
-    static NewNetworkService networkService = NeoServiceFactory.getInstance().getNewNetworkService();
+    static NetworkService networkService = NeoServiceFactory.getInstance().getNetworkService();
 
     private static Index<Relationship> selectionLinkIndex = null;
-
+    private DatasetService dsServ = NeoServiceFactory.getInstance().getDatasetService();
     private int selectedNodesCount = 0;
 
     /**
@@ -57,7 +63,7 @@ public class SelectionModel extends AbstractModel implements ISelectionModel {
      */
     public SelectionModel(Node rootSelectionList) {
         super(NetworkElementNodeType.SELECTION_LIST_ROOT);
-        
+
         // check input parameters
         if (rootSelectionList == null) {
             LOGGER.error("Input RootSelectionList node is null");
@@ -65,8 +71,8 @@ public class SelectionModel extends AbstractModel implements ISelectionModel {
         }
 
         this.rootNode = rootSelectionList;
-        this.name = (String)rootSelectionList.getProperty(NewAbstractService.NAME);
-        this.selectedNodesCount = (Integer)rootSelectionList.getProperty(NewNetworkService.SELECTED_NODES_COUNT);
+        this.name = (String)rootSelectionList.getProperty(AbstractService.NAME);
+        this.selectedNodesCount = (Integer)rootSelectionList.getProperty(NetworkService.SELECTED_NODES_COUNT);
 
         LOGGER.info("Selection Model <" + name + "> created by existing node");
     }
@@ -80,7 +86,7 @@ public class SelectionModel extends AbstractModel implements ISelectionModel {
      */
     public SelectionModel(Node networkNode, String selectionListName) throws AWEException {
         super(NetworkElementNodeType.SELECTION_LIST_ROOT);
-        
+
         // check input parameters
         if (networkNode == null) {
             LOGGER.error("Input NetworkModel is null");
@@ -167,8 +173,8 @@ public class SelectionModel extends AbstractModel implements ISelectionModel {
 
     private Index<Relationship> getSelectionLinkIndexes() {
         if (selectionLinkIndex == null) {
-            selectionLinkIndex = DatabaseManagerFactory.getDatabaseManager().
-                    getDatabaseService().index().forRelationships(SELECTION_LIST_INDEXES);
+            selectionLinkIndex = DatabaseManagerFactory.getDatabaseManager().getDatabaseService().index()
+                    .forRelationships(SELECTION_LIST_INDEXES);
         }
 
         return selectionLinkIndex;
@@ -200,4 +206,16 @@ public class SelectionModel extends AbstractModel implements ISelectionModel {
         LOGGER.debug("finish deleteSelectionLink()");
     }
 
+    @Override
+    public IModel getParentModel() throws AWEException {
+        if (rootNode == null) {
+            throw new IllegalArgumentException("currentModel type is null.");
+        }
+        Iterator<Node> isVirtual = dsServ.getFirstRelationTraverser(rootNode, NetworkRelationshipTypes.SELECTION_LIST,
+                Direction.INCOMING).iterator();
+        if (isVirtual.hasNext()) {
+            return new NetworkModel(isVirtual.next());
+        }
+        return null;
+    }
 }

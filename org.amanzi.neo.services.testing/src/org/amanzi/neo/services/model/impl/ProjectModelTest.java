@@ -24,10 +24,10 @@ import java.util.List;
 import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.model.distribution.IDistributionalModel;
 import org.amanzi.neo.services.AbstractNeoServiceTest;
-import org.amanzi.neo.services.NewAbstractService;
-import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
-import org.amanzi.neo.services.NewDatasetService.DriveTypes;
-import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
+import org.amanzi.neo.services.AbstractService;
+import org.amanzi.neo.services.DatasetService.DatasetTypes;
+import org.amanzi.neo.services.DatasetService.DriveTypes;
+import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.model.IDriveModel;
@@ -79,7 +79,7 @@ public class ProjectModelTest extends AbstractNeoServiceTest {
         Assert.assertNotNull(model);
         // root node correct
         Assert.assertNotNull(model.getRootNode());
-        Assert.assertEquals("project", model.getRootNode().getProperty(NewAbstractService.NAME, null));
+        Assert.assertEquals("project", model.getRootNode().getProperty(AbstractService.NAME, null));
         // name correct
         Assert.assertEquals("project", model.getName());
     }

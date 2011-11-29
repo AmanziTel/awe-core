@@ -20,13 +20,12 @@ import java.util.Set;
 
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
-import org.amanzi.neo.services.NewNetworkService;
-import org.amanzi.neo.services.NewStatisticsService;
+import org.amanzi.neo.services.StatisticsService;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IPropertyStatisticalModel;
 import org.amanzi.neo.services.statistic.IVault;
-import org.amanzi.neo.services.statistic.internal.NewPropertyStatistics;
+import org.amanzi.neo.services.statistic.internal.PropertyStatistics;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -44,7 +43,7 @@ public abstract class PropertyStatisticalModel extends DataModel implements IPro
         super(nodeType);
     }
 
-    private NewStatisticsService statisticsService = NeoServiceFactory.getInstance().getNewStatisticsService();
+    private StatisticsService statisticsService = NeoServiceFactory.getInstance().getStatisticsService();
 
     protected IVault statisticsVault;
 
@@ -223,7 +222,7 @@ public abstract class PropertyStatisticalModel extends DataModel implements IPro
         IVault nodeTypeVault = statisticsVault.getSubVaults().get(nodeType.getId());
         
         if (nodeTypeVault != null) {
-            NewPropertyStatistics property = nodeTypeVault.getPropertyStatisticsMap().get(propertyName);
+            PropertyStatistics property = nodeTypeVault.getPropertyStatisticsMap().get(propertyName);
             
             if (property != null) {
                 return property.getKlass();
@@ -238,7 +237,7 @@ public abstract class PropertyStatisticalModel extends DataModel implements IPro
         IVault nodeTypeVault = statisticsVault.getSubVaults().get(nodeType.getId());
         
         if (nodeTypeVault != null) {
-            NewPropertyStatistics property = nodeTypeVault.getPropertyStatisticsMap().get(propertyName);
+            PropertyStatistics property = nodeTypeVault.getPropertyStatisticsMap().get(propertyName);
             if (property != null) {
                 return property.getPropertyMap().keySet().toArray();
             }

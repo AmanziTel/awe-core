@@ -19,10 +19,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.amanzi.neo.services.AbstractService;
+import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.IndexService;
 import org.amanzi.neo.services.NeoServiceFactory;
-import org.amanzi.neo.services.NewAbstractService;
-import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
@@ -55,7 +55,7 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
 
     private IndexService indexService = NeoServiceFactory.getInstance().getIndexService();
 
-    private NewDatasetService datasetService = NeoServiceFactory.getInstance().getNewDatasetService();
+    private DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
 
     protected AbstractIndexedModel(Node rootNode, INodeType nodeType) throws AWEException {
         super(nodeType);
@@ -155,7 +155,7 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
             throw new IllegalArgumentException("Node is null.");
         }
 
-        INodeType type = NodeTypeManager.getType(node.getProperty(NewAbstractService.TYPE, StringUtils.EMPTY).toString());
+        INodeType type = NodeTypeManager.getType(node.getProperty(AbstractService.TYPE, StringUtils.EMPTY).toString());
         List<MultiPropertyIndex< ? >> indList = indexes.get(type);
         if (indList != null) {
             for (MultiPropertyIndex< ? > index : indList) {

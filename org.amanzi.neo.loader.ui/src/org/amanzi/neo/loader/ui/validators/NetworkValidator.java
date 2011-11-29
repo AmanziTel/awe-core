@@ -79,7 +79,6 @@ public class NetworkValidator extends AbstractNetworkValidator {
                 return Result.FAIL;
             }
         }
-
         return Result.FAIL;
     }
 }

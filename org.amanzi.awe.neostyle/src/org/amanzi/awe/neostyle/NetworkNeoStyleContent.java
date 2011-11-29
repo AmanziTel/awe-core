@@ -20,7 +20,7 @@ import java.net.URL;
 import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.project.StyleContent;
 
-import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
+import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
 import org.amanzi.awe.models.catalog.neo.GeoResource;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.eclipse.core.runtime.IProgressMonitor;

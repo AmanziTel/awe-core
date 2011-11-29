@@ -86,8 +86,9 @@ public class ProjectExplorerView extends ViewPart {
     private class RefreshTreeListener implements IEventsListener<UpdateDataEvent> {
         @Override
         public void handleEvent(UpdateDataEvent data) {
+            Object[] expandedObject = viewer.getExpandedElements();
             viewer.refresh();
-            viewer.setAutoExpandLevel(3);
+            viewer.setExpandedElements(expandedObject);
         }
 
     }

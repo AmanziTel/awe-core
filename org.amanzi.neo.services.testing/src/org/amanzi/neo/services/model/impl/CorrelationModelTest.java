@@ -14,12 +14,12 @@ import org.amanzi.neo.services.AbstractNeoServiceTest;
 import org.amanzi.neo.services.CorrelationService;
 import org.amanzi.neo.services.CorrelationService.Correlations;
 import org.amanzi.neo.services.CorrelationServiceTest;
+import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.DatasetService.DatasetTypes;
+import org.amanzi.neo.services.DatasetService.DriveTypes;
 import org.amanzi.neo.services.NeoServiceFactory;
-import org.amanzi.neo.services.NewDatasetService;
-import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
-import org.amanzi.neo.services.NewDatasetService.DriveTypes;
-import org.amanzi.neo.services.NewNetworkService;
-import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
+import org.amanzi.neo.services.NetworkService;
+import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.ProjectService;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
@@ -44,8 +44,8 @@ public class CorrelationModelTest extends AbstractNeoServiceTest {
 
 	private Transaction tx;
 	private static CorrelationService correlationServ;
-	private static NewDatasetService dsServ;
-	private static NewNetworkService nwServ;
+	private static DatasetService dsServ;
+	private static NetworkService nwServ;
 	private static ProjectService prServ;
 	private Node network;
 	private Node dataset;
@@ -59,9 +59,9 @@ public class CorrelationModelTest extends AbstractNeoServiceTest {
 		initializeDb();
 
 		correlationServ = NeoServiceFactory.getInstance().getCorrelationService();
-		dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
-		nwServ = NeoServiceFactory.getInstance().getNewNetworkService();
-		prServ = NeoServiceFactory.getInstance().getNewProjectService();
+		dsServ = NeoServiceFactory.getInstance().getDatasetService();
+		nwServ = NeoServiceFactory.getInstance().getNetworkService();
+		prServ = NeoServiceFactory.getInstance().getProjectService();
 	}
 
 	@AfterClass
