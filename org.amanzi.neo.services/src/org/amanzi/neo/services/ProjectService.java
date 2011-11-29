@@ -38,7 +38,7 @@ import org.neo4j.kernel.Traversal;
  * @author grigoreva_a
  * @since 1.0.0
  */
-public class ProjectService extends NewAbstractService {
+public class ProjectService extends AbstractService {
     
     private static Logger LOGGER = Logger.getLogger(ProjectService.class);
 
@@ -116,7 +116,7 @@ public class ProjectService extends NewAbstractService {
         tx = graphDb.beginTx();
         try {
             result = createNode(ProjectNodeType.PROJECT);
-            result.setProperty(NewAbstractService.NAME, name);
+            result.setProperty(AbstractService.NAME, name);
             graphDb.getReferenceNode().createRelationshipTo(result, ProjectRelationshipType.PROJECT);
             tx.success();
         } catch (DatabaseException e) {

@@ -25,7 +25,6 @@ import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.amanzi.neo.services.ui.utils.ActionUtil;
 import org.amanzi.neo.services.utils.RunnableWithResult;
-import org.apache.commons.lang.StringUtils;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -104,7 +103,7 @@ public class LoaderUiUtils extends LoaderUtils {
     public static String getDefaultDirectory() {
         String result = PreferenceStore.getPreferenceStore().getValue(DataLoadPreferences.DEFAULT_DIRRECTORY_LOADER);
         if (result == null) {
-            result = StringUtils.EMPTY;
+            result = System.getProperty("user.home");
         }
         
         return result;

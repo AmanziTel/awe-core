@@ -32,7 +32,7 @@ import org.neo4j.graphdb.Transaction;
  * @author gerzog
  * @since 1.0.0
  */
-public class IndexService extends NewAbstractService {
+public class IndexService extends AbstractService {
 
     private static final Logger LOGGER = Logger.getLogger(IndexService.class);
 

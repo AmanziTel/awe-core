@@ -15,7 +15,7 @@ package org.amanzi.neo.services.synonyms;
 
 import java.util.HashMap;
 
-import org.amanzi.neo.services.NewAbstractService;
+import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.apache.commons.lang.StringUtils;
@@ -32,7 +32,7 @@ import org.neo4j.graphdb.Transaction;
  * @author lagutko_n
  * @since 1.0.0
  */
-public class ExportSynonymsService extends NewAbstractService {
+public class ExportSynonymsService extends AbstractService {
 
     private static final Logger LOGGER = Logger.getLogger(ExportSynonymsService.class);
 

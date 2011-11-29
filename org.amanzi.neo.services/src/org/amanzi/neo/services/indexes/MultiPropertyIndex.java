@@ -12,6 +12,7 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ReturnableEvaluator;
 import org.neo4j.graphdb.StopEvaluator;
+import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.TraversalPosition;
 import org.neo4j.graphdb.Traverser;
 import org.neo4j.graphdb.Traverser.Order;
@@ -471,21 +472,28 @@ public class MultiPropertyIndex<E extends Object> {
             flush();
         } catch (IOException e) {
         }
-        if (root != null) {
-            Node highestIndex = null;
-            for (IndexLevel level : levels) {
-                if (level.indexNode != null) {
-                    highestIndex = level.indexNode;
+        Transaction tx = neo.beginTx();
+        try {
+            if (root != null) {
+                Node highestIndex = null;
+                for (IndexLevel level : levels) {
+                    if (level.indexNode != null) {
+                        highestIndex = level.indexNode;
+                    }
+                }
+                if (highestIndex != null) {
+                    // Deleting any previous starting relationships
+                    for (Relationship rel : root.getRelationships(PropertyIndex.NeoIndexRelationshipTypes.IND_CHILD, Direction.OUTGOING)) {
+                        rel.delete();
+                    }
+                    // Make a new one to the top node (might be same as before or higher level node
+                    root.createRelationshipTo(highestIndex, PropertyIndex.NeoIndexRelationshipTypes.IND_CHILD);
                 }
             }
-            if (highestIndex != null) {
-                // Deleting any previous starting relationships
-                for (Relationship rel : root.getRelationships(PropertyIndex.NeoIndexRelationshipTypes.IND_CHILD, Direction.OUTGOING)) {
-                    rel.delete();
-                }
-                // Make a new one to the top node (might be same as before or higher level node
-                root.createRelationshipTo(highestIndex, PropertyIndex.NeoIndexRelationshipTypes.IND_CHILD);
-            }
+        } catch (Exception e) {
+            tx.failure();
+        } finally {
+            tx.finish();
         }
     }
 

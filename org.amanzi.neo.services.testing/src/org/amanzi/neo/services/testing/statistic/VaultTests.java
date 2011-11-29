@@ -24,7 +24,7 @@ import org.amanzi.neo.services.exceptions.IndexPropertyException;
 import org.amanzi.neo.services.exceptions.InvalidStatisticsParameterException;
 import org.amanzi.neo.services.statistic.IVault;
 import org.amanzi.neo.services.statistic.StatisticsVault;
-import org.amanzi.neo.services.statistic.internal.NewPropertyStatistics;
+import org.amanzi.neo.services.statistic.internal.PropertyStatistics;
 import org.apache.log4j.Logger;
 import org.junit.Test;
 
@@ -195,7 +195,7 @@ public class VaultTests {
         StatisticsVault networkSubVault = new StatisticsVault(NETWORK);
         propVault.addSubVault(networkSubVault);
         propVault.addSubVault(neighboursSubVault);
-        NewPropertyStatistics propStat = new NewPropertyStatistics(PROPERTY_NAME_NAME_1, String.class);
+        PropertyStatistics propStat = new PropertyStatistics(PROPERTY_NAME_NAME_1, String.class);
         neighboursSubVault.addPropertyStatistics(propStat);
 
         int expectedPropStatCount = 1;
@@ -309,9 +309,9 @@ public class VaultTests {
         StatisticsVault networkSubVault = new StatisticsVault(NETWORK);
         propVault.addSubVault(networkSubVault);
         propVault.addSubVault(neighboursSubVault);
-        NewPropertyStatistics propStat = new NewPropertyStatistics(PROPERTY_NAME_NAME_1, String.class);
+        PropertyStatistics propStat = new PropertyStatistics(PROPERTY_NAME_NAME_1, String.class);
         neighboursSubVault.addPropertyStatistics(propStat);
-        propStat = new NewPropertyStatistics(PROPERTY_NAME_NAME_1, String.class);
+        propStat = new PropertyStatistics(PROPERTY_NAME_NAME_1, String.class);
         networkSubVault.addPropertyStatistics(propStat);
 
         int expectedNetworkSubVaultCount = 3;
@@ -376,7 +376,7 @@ public class VaultTests {
         StatisticsVault networkSubVault = new StatisticsVault(NETWORK);
         propVault.addSubVault(networkSubVault);
         propVault.addSubVault(neighboursSubVault);
-        NewPropertyStatistics propStat = new NewPropertyStatistics(PROPERTY_NAME_NAME_1, String.class);
+        PropertyStatistics propStat = new PropertyStatistics(PROPERTY_NAME_NAME_1, String.class);
         neighboursSubVault.addPropertyStatistics(propStat);
 
         int neighboursPropStatNamePropNumberValue_1 = 2;
@@ -546,15 +546,15 @@ public class VaultTests {
         networkSubVault = new StatisticsVault(NETWORK);
         propVault.addSubVault(networkSubVault);
         propVault.addSubVault(neighboursSubVault);
-        NewPropertyStatistics propStat1 = new NewPropertyStatistics(PROPERTY_NAME_NAME_1, String.class);
+        PropertyStatistics propStat1 = new PropertyStatistics(PROPERTY_NAME_NAME_1, String.class);
         neighboursSubVault.addPropertyStatistics(propStat1);
-        NewPropertyStatistics propStat2 = new NewPropertyStatistics(PROPERTY_NAME_NAME_2, Integer.class);
+        PropertyStatistics propStat2 = new PropertyStatistics(PROPERTY_NAME_NAME_2, Integer.class);
         neighboursSubVault.addPropertyStatistics(propStat2);
-        NewPropertyStatistics propStat3 = new NewPropertyStatistics(PROPERTY_NAME_NAME_3, String.class);
+        PropertyStatistics propStat3 = new PropertyStatistics(PROPERTY_NAME_NAME_3, String.class);
         networkSubVault.addPropertyStatistics(propStat3);
-        NewPropertyStatistics propStat4 = new NewPropertyStatistics(PROPERTY_NAME_NAME_4, String.class);
+        PropertyStatistics propStat4 = new PropertyStatistics(PROPERTY_NAME_NAME_4, String.class);
         networkSubVault.addPropertyStatistics(propStat4);
-        NewPropertyStatistics propStat5 = new NewPropertyStatistics(PROPERTY_NAME_NAME_5, Integer.class);
+        PropertyStatistics propStat5 = new PropertyStatistics(PROPERTY_NAME_NAME_5, Integer.class);
         networkSubVault.addPropertyStatistics(propStat5);
 
         indexProperty(propVault, NEIGHBOURS, PROPERTY_NAME_NAME_1, STRING_PROPERTY_VALUE_NETWORK_1, 1);
@@ -1062,15 +1062,15 @@ public class VaultTests {
         propVault.addSubVault(neighboursSubVault);
         networkSubVault.addSubVault(siteSubVault);
         networkSubVault.addSubVault(sectorSubVault);
-        NewPropertyStatistics propStat1 = new NewPropertyStatistics(PROPERTY_NAME_NAME_1, String.class);
+        PropertyStatistics propStat1 = new PropertyStatistics(PROPERTY_NAME_NAME_1, String.class);
         neighboursSubVault.addPropertyStatistics(propStat1);
-        NewPropertyStatistics propStat2 = new NewPropertyStatistics(PROPERTY_NAME_NAME_2, Integer.class);
+        PropertyStatistics propStat2 = new PropertyStatistics(PROPERTY_NAME_NAME_2, Integer.class);
         neighboursSubVault.addPropertyStatistics(propStat2);
-        NewPropertyStatistics propStat3 = new NewPropertyStatistics(PROPERTY_NAME_NAME_3, String.class);
+        PropertyStatistics propStat3 = new PropertyStatistics(PROPERTY_NAME_NAME_3, String.class);
         sectorSubVault.addPropertyStatistics(propStat3);
-        NewPropertyStatistics propStat4 = new NewPropertyStatistics(PROPERTY_NAME_NAME_4, String.class);
+        PropertyStatistics propStat4 = new PropertyStatistics(PROPERTY_NAME_NAME_4, String.class);
         siteSubVault.addPropertyStatistics(propStat4);
-        NewPropertyStatistics propStat5 = new NewPropertyStatistics(PROPERTY_NAME_NAME_5, Integer.class);
+        PropertyStatistics propStat5 = new PropertyStatistics(PROPERTY_NAME_NAME_5, Integer.class);
         siteSubVault.addPropertyStatistics(propStat5);
 
         indexProperty(propVault, NEIGHBOURS, PROPERTY_NAME_NAME_1, STRING_PROPERTY_VALUE_NETWORK_1, 1);

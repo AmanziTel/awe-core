@@ -24,9 +24,9 @@ import junit.framework.Assert;
 
 import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.services.AbstractNeoServiceTest;
+import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.NeoServiceFactory;
-import org.amanzi.neo.services.NewAbstractService;
-import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
+import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.synonyms.ExportSynonymsService.ExportSynonymType;
@@ -160,7 +160,7 @@ public class ExportSynonymsServiceTest extends AbstractNeoServiceTest {
         Transaction tx = graphDatabaseService.beginTx();
 
         Node fakeGlobalSynonymsNode = graphDatabaseService.createNode();
-        fakeGlobalSynonymsNode.setProperty(NewAbstractService.TYPE, NetworkElementNodeType.CHANNEL_GROUP.getId());
+        fakeGlobalSynonymsNode.setProperty(AbstractService.TYPE, NetworkElementNodeType.CHANNEL_GROUP.getId());
         graphDatabaseService.getReferenceNode().createRelationshipTo(fakeGlobalSynonymsNode,
                 ExportSynonymsRelationshipTypes.GLOBAL_SYNONYMS);
 

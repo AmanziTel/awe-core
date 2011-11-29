@@ -15,8 +15,8 @@ package org.amanzi.neo.services.testing.filters;
 
 import java.io.Serializable;
 
-import org.amanzi.neo.services.NewAbstractService;
-import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
+import org.amanzi.neo.services.AbstractService;
+import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.filters.ExpressionType;
 import org.amanzi.neo.services.filters.Filter;
 import org.amanzi.neo.services.filters.FilterType;
@@ -1177,7 +1177,7 @@ public class FilterTest extends AbstractAWETest {
         Transaction tx = graphDatabaseService.beginTx();
         try {
             Node firstNode = graphDatabaseService.createNode();
-            firstNode.setProperty(NewAbstractService.TYPE, NetworkElementNodeType.CITY.getId());
+            firstNode.setProperty(AbstractService.TYPE, NetworkElementNodeType.CITY.getId());
             //System.out.println(datasetService.getNodeType(firstNode));
             firstNode.setProperty("Name", "Name11");
             firstNode.setProperty("Rest", "value 4");
@@ -1215,7 +1215,7 @@ public class FilterTest extends AbstractAWETest {
         Transaction tx = graphDatabaseService.beginTx();
         try {
             Node firstNode = graphDatabaseService.createNode();
-            firstNode.setProperty(NewAbstractService.TYPE, NetworkElementNodeType.CITY.getId());
+            firstNode.setProperty(AbstractService.TYPE, NetworkElementNodeType.CITY.getId());
             //System.out.println(datasetService.getNodeType(firstNode));
             firstNode.setProperty("Name", "Name11");
             firstNode.setProperty("Rest", "value 4");

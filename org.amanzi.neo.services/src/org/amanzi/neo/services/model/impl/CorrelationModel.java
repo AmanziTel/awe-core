@@ -33,7 +33,7 @@ import org.neo4j.graphdb.Node;
  */
 public class CorrelationModel extends AbstractModel implements ICorrelationModel {
 
-    private CorrelationService crServ = NeoServiceFactory.getInstance().getNewCorrelationService();
+    private CorrelationService crServ = NeoServiceFactory.getInstance().getCorrelationService();
 
     private Node network = null;
     private Node dataset = null;

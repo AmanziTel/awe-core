@@ -41,11 +41,11 @@ import org.amanzi.neo.model.distribution.xml.schema.Bars;
 import org.amanzi.neo.model.distribution.xml.schema.Data;
 import org.amanzi.neo.model.distribution.xml.schema.Distribution;
 import org.amanzi.neo.model.distribution.xml.schema.Filter;
+import org.amanzi.neo.services.DatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.DistributionService.DistributionNodeTypes;
 import org.amanzi.neo.services.DistributionService.DistributionRelationshipTypes;
 import org.amanzi.neo.services.DistributionService.UserDefinedDistrRelTypes;
-import org.amanzi.neo.services.NewDatasetService.DatasetRelationTypes;
-import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
+import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.model.impl.DataElement;
@@ -657,7 +657,7 @@ public class DistributionServiceTest extends AbstractNeoServiceTest {
 
         distributionService.updateDistributionBar(rootNode, bar);
 
-        assertEquals("incorrect name of bar", UPDATED_BAR_NAME, barNode.getProperty(NewAbstractService.NAME));
+        assertEquals("incorrect name of bar", UPDATED_BAR_NAME, barNode.getProperty(AbstractService.NAME));
         assertEquals("incorrect name of bar", UPDATED_BAR_COUNT, barNode.getProperty(DistributionService.COUNT));
         assertTrue("incorrect color of bar",
                 Arrays.equals(getColorArray(UPDATED_BAR_COLOR), (int[])barNode.getProperty(DistributionService.BAR_COLOR)));
@@ -1154,8 +1154,8 @@ public class DistributionServiceTest extends AbstractNeoServiceTest {
 
             parentNode.createRelationshipTo(result, DistributionRelationshipTypes.ROOT_AGGREGATION);
 
-            result.setProperty(NewAbstractService.TYPE, DistributionNodeTypes.ROOT_AGGREGATION.getId());
-            result.setProperty(NewAbstractService.NAME, name);
+            result.setProperty(AbstractService.TYPE, DistributionNodeTypes.ROOT_AGGREGATION.getId());
+            result.setProperty(AbstractService.NAME, name);
             result.setProperty(DistributionService.NODE_TYPE, DEFAULT_NODE_TYPE.getId());
             result.setProperty(DistributionService.PROPERTY_NAME, DEFAULT_PROPERTY_NAME);
             result.setProperty(DistributionService.COUNT, NUMBER_OF_BARS);

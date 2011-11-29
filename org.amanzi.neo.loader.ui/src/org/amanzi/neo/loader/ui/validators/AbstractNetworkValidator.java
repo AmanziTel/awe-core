@@ -31,6 +31,7 @@ public abstract class AbstractNetworkValidator implements IValidator {
     protected String[] possibleFieldSepRegexes = new String[] {"\t", ",", ";"};
     protected Result result = Result.FAIL;
     protected String message = "";
+    protected IConfiguration config;
 
     @Override
     public Result getResult() {
@@ -46,11 +47,12 @@ public abstract class AbstractNetworkValidator implements IValidator {
 
     @Override
     public String getMessages() {
-        return message;
+        return String.format(message, config.getDatasetNames().get(IConfiguration.NETWORK_PROPERTY_NAME));
     }
 
     @Override
     public Result isValid(IConfiguration config) {
+        this.config = config;
         if (config.getDatasetNames().get(IConfiguration.PROJECT_PROPERTY_NAME) == null) {
             message = String.format("there is no project name");
             return Result.FAIL;
@@ -62,6 +64,7 @@ public abstract class AbstractNetworkValidator implements IValidator {
                 INetworkModel network = projectModel.findNetwork(networkName);
                 if (network != null) {
                     result = Result.SUCCESS;
+                    message = String.format("");
                     return result;
                 } else {
                     message = String.format("Should select some network to load");

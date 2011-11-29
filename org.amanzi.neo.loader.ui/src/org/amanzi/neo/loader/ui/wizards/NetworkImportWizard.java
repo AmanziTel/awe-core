@@ -17,8 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
-import org.amanzi.neo.loader.core.ILoaderNew;
-import org.amanzi.neo.loader.core.newsaver.IData;
+import org.amanzi.neo.loader.core.ILoader;
+import org.amanzi.neo.loader.core.saver.IData;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -34,7 +34,7 @@ import org.eclipse.ui.IWorkbench;
  * @since 1.0.0
  */
 public class NetworkImportWizard extends
-		AbstractLoaderWizardNew<ConfigurationDataImpl> {
+		AbstractLoaderWizard<ConfigurationDataImpl> {
 
 	private ConfigurationDataImpl configData;
 
@@ -62,7 +62,7 @@ public class NetworkImportWizard extends
 	}
 
 	@Override
-	public void addNewLoader(ILoaderNew<IData, ConfigurationDataImpl> loader,
+	public void addNewLoader(ILoader<IData, ConfigurationDataImpl> loader,
 			IConfigurationElement[] pageConfigElements) {
 		LoaderInfo<ConfigurationDataImpl> info = new LoaderInfo<ConfigurationDataImpl>();
 		info.setAdditionalPages(pageConfigElements);

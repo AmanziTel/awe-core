@@ -14,10 +14,10 @@
 package org.amanzi.neo.services.model.impl;
 
 import org.amanzi.neo.db.manager.DatabaseManagerFactory;
+import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.NeoServiceFactory;
-import org.amanzi.neo.services.NewAbstractService;
-import org.amanzi.neo.services.NewNetworkService;
-import org.amanzi.neo.services.NewNetworkService.NetworkElementNodeType;
+import org.amanzi.neo.services.NetworkService;
+import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
@@ -44,7 +44,7 @@ public class SelectionModel extends AbstractModel implements ISelectionModel {
      */
     private static final String SELECTION_LIST_INDEXES = "selection_list_links";
 
-    static NewNetworkService networkService = NeoServiceFactory.getInstance().getNewNetworkService();
+    static NetworkService networkService = NeoServiceFactory.getInstance().getNetworkService();
 
     private static Index<Relationship> selectionLinkIndex = null;
 
@@ -65,8 +65,8 @@ public class SelectionModel extends AbstractModel implements ISelectionModel {
         }
 
         this.rootNode = rootSelectionList;
-        this.name = (String)rootSelectionList.getProperty(NewAbstractService.NAME);
-        this.selectedNodesCount = (Integer)rootSelectionList.getProperty(NewNetworkService.SELECTED_NODES_COUNT);
+        this.name = (String)rootSelectionList.getProperty(AbstractService.NAME);
+        this.selectedNodesCount = (Integer)rootSelectionList.getProperty(NetworkService.SELECTED_NODES_COUNT);
 
         LOGGER.info("Selection Model <" + name + "> created by existing node");
     }

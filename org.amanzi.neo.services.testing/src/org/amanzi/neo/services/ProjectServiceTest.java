@@ -32,7 +32,7 @@ public class ProjectServiceTest extends AbstractNeoServiceTest {
 		new LogStarter().earlyStartup();
 		
 		LOGGER.info("Database created in folder " + databasePath);
-		projectService = NeoServiceFactory.getInstance().getNewProjectService();
+		projectService = NeoServiceFactory.getInstance().getProjectService();
 	}
 
 	@AfterClass
@@ -51,7 +51,7 @@ public class ProjectServiceTest extends AbstractNeoServiceTest {
 
 			Assert.assertNotNull(project);
 			Assert.assertEquals(prName,
-					project.getProperty(NewAbstractService.NAME, null));
+					project.getProperty(AbstractService.NAME, null));
 			// check that type is 'project'
 			// check that it's attached to the reference node and relation type
 			// is
@@ -95,13 +95,13 @@ public class ProjectServiceTest extends AbstractNeoServiceTest {
 			// create a node of another type with the same name
 			Transaction tx = graphDatabaseService.beginTx();
 			graphDatabaseService.createNode().setProperty(
-					NewAbstractService.NAME, prName + "1");
+					AbstractService.NAME, prName + "1");
 			tx.success();
 			tx.finish();
 
 			Node found = projectService.findProject(prName + "1");
 			Assert.assertEquals(prName + "1",
-					found.getProperty(NewAbstractService.NAME, null));
+					found.getProperty(AbstractService.NAME, null));
 			Assert.assertEquals(project, found);
 			assertProjectRelatedToRefNode(found);
 		} catch (AWEException e) {
@@ -149,7 +149,7 @@ public class ProjectServiceTest extends AbstractNeoServiceTest {
 		for (Node node : projectService.findAllProjects()) {
 			count++;
 			Assert.assertTrue(projectNames.contains(node.getProperty(
-					NewAbstractService.NAME, null)));
+					AbstractService.NAME, null)));
 			assertProjectRelatedToRefNode(node);
 		}
 		Assert.assertTrue(2 == count);
@@ -168,7 +168,7 @@ public class ProjectServiceTest extends AbstractNeoServiceTest {
 			Node got = projectService.getProject(prName + "2");
 			Assert.assertNotNull(got);
 			Assert.assertEquals(prName + "2",
-					got.getProperty(NewAbstractService.NAME, null));
+					got.getProperty(AbstractService.NAME, null));
 			assertProjectRelatedToRefNode(got);
 		} catch (AWEException e) {
 			LOGGER.error(e.getMessage(), e);
@@ -206,7 +206,7 @@ public class ProjectServiceTest extends AbstractNeoServiceTest {
 
 	private void assertProjectRelatedToRefNode(Node node) {
 		Assert.assertEquals(ProjectService.ProjectNodeType.PROJECT.getId(),
-				node.getProperty(NewAbstractService.TYPE, null));
+				node.getProperty(AbstractService.TYPE, null));
 		Node refNode = graphDatabaseService.getReferenceNode();
 		for (Relationship rel : node.getRelationships(
 				ProjectService.ProjectRelationshipType.PROJECT,

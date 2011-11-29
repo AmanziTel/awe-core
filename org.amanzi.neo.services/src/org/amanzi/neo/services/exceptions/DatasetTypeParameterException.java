@@ -13,7 +13,7 @@
 
 package org.amanzi.neo.services.exceptions;
 
-import org.amanzi.neo.services.NewDatasetService.DatasetTypes;
+import org.amanzi.neo.services.DatasetService.DatasetTypes;
 
 /**
  * TODO Purpose of 

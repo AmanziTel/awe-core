@@ -4,31 +4,25 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.never;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+
 
 import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.data.generator.Nemo2Generator;
 import org.amanzi.neo.loader.core.newparser.CSVContainer;
+import org.amanzi.neo.loader.core.newparser.CommonCSVParser;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceInitializer;
-import org.amanzi.neo.services.NewAbstractService;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
-import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.DriveModel;
-import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
 import org.amanzi.testing.AbstractAWETest;
 import org.apache.log4j.Logger;
 import org.junit.AfterClass;
@@ -38,49 +32,49 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.neo4j.graphdb.GraphDatabaseService;
 
-public class Nemo2xSaverTesting extends AbstractAWETest{
-	private static final Logger LOGGER = Logger.getLogger(Nemo2xSaverTesting.class);
-	
-	private Nemo2xSaver nemo2xSaver;
-	
-	private static DataLoadPreferenceInitializer initializer;
-	
-	private static DriveModel model;
-	
-	private static GraphDatabaseService service;
-	
-	private static File testFile;
-	
-	private IConfiguration config;
-	
-	private static Long startTime;
-	
-	private int minColumnSize = 2;
-	
-	private static final String NETWORK_KEY = "Network";
+public class Nemo2xSaverTesting extends AbstractAWETest {
+    private static final Logger LOGGER = Logger.getLogger(Nemo2xSaverTesting.class);
+
+    private Nemo2xSaver nemo2xSaver;
+
+    private static DataLoadPreferenceInitializer initializer;
+
+    private static DriveModel model;
+
+    private static GraphDatabaseService service;
+
+    private static File testFile;
+
+    private IConfiguration config;
+
+    private static Long startTime;
+
+    private static final String NETWORK_KEY = "Network";
     private static final String NETWORK_NAME = "testNetwork";
     private static final String PROJECT_KEY = "Project";
     private static final String PROJECT_NAME = "project";
-	
-	@BeforeClass
+
+    @BeforeClass
     public static void prepare() {
         new LogStarter().earlyStartup();
+        LOGGER.info("Nemo2xSaverTesting started");
         clearDb();
         initializer = new DataLoadPreferenceInitializer();
         initializer.initializeDefaultPreferences();
         startTime = System.currentTimeMillis();
         testFile = Nemo2Generator.generateNemo2File();
+        LOGGER.info("Finished prepare() - Nemo2xSaverTesting");
 
     }
-	
-	@AfterClass
+
+    @AfterClass
     public static void tearDownAfterClass() throws Exception {
         stopDb();
         clearDb();
         LOGGER.info("Nemo2xSaverTesting finished in " + (System.currentTimeMillis() - startTime));
     }
 
-	@Before
+    @Before
     public void onStart() throws AWEException {
         model = mock(DriveModel.class);
         service = mock(GraphDatabaseService.class);
@@ -92,21 +86,27 @@ public class Nemo2xSaverTesting extends AbstractAWETest{
         config.setSourceFile(fileList);
         nemo2xSaver = new Nemo2xSaver(model, (ConfigurationDataImpl)config, service);
     }
-	
-	@Test
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    @Test
     public void testCreatingNewElement() {
-        CSVContainer rowContainer = new CSVContainer(minColumnSize);
-        //List<String> header = new LinkedList<String>();
-        rowContainer.setFile(config.getFilesToLoad().get(0));
-        //rowContainer.setHeaders();
+        LOGGER.info("Started testCreatingNewElement()");
+        CommonCSVParser obj = new CommonCSVParser(testFile);
+        CSVContainer rowContainer = obj.parseElement();
+        LOGGER.info("header " + rowContainer.getFirstLine());
         try {
             nemo2xSaver.saveElement(rowContainer);
-            //rowContainer.setValues(values);
-            
-            //nemo2xSaver.saveElement(rowContainer);
-
-            //verify(model, times(5)).addMeasurement(any(String.class), any(Map.class),any(Boolean.class));
-            //verify(model).getLocations(new DataElement(eq(createdMainElement)));
+            LOGGER.info("kuku");
+            verify(model, atLeastOnce()).addFile(eq(rowContainer.getFile()));
+            verify(model,never()).getLocations(any(IDataElement.class));
+            //verify(model).getLocations(new DataElement(eq(Nemo2Generator.gps)));
+            verify(model,never()).addMeasurement(eq(rowContainer.getFile().getName()), any(Map.class),
+            any(Boolean.class));
+            LOGGER.info("kuku2");
+            // verify(model, times(5)).addMeasurement(any(String.class),
+            // any(Map.class),any(Boolean.class));
+            // verify(model).getLocations(new
+            // DataElement(eq(createdMainElement)));
         } catch (Exception e) {
             LOGGER.error(" testSavingAllElement error", e);
             Assert.fail("Exception while saving row");

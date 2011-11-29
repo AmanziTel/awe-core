@@ -8,10 +8,9 @@ Require-Bundle: org.amanzi.neo.services;bundle-version="1.0.0",
  org.neo4j;bundle-version="1.4.1"
 Export-Package: au.com.bytecode.opencsv,
  org.amanzi.neo.loader.core,
- org.amanzi.neo.loader.core.newparser,
- org.amanzi.neo.loader.core.newsaver,
  org.amanzi.neo.loader.core.parser,
- org.amanzi.neo.loader.core.preferences
+ org.amanzi.neo.loader.core.preferences,
+ org.amanzi.neo.loader.core.saver
 Bundle-ClassPath: .,
  lib/opencsv-2.2.jar,
  lib/commons-io-2.0.1.jar

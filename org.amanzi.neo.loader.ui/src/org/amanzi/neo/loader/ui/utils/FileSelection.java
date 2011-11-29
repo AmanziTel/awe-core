@@ -44,11 +44,11 @@ import org.eclipse.ui.part.ViewPart;
  */
 public class FileSelection extends ViewPart {
     
-    private static class FileLabelProvider extends LabelProvider {
+    private static final Image folderImage = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
+    private static final Image fileImage = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FILE);
+    
+    private class FileLabelProvider extends LabelProvider {
 
-        private static final Image folderImage = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
-        private static final Image fileImage = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FILE);
-        
         @Override
         public Image getImage(Object element) {
             File file = (File) element;
@@ -66,7 +66,7 @@ public class FileSelection extends ViewPart {
             return ((File) element).getPath();
         }
     }
-    private static class FileContentProvider implements ITreeContentProvider {
+    private class FileContentProvider implements ITreeContentProvider {
 
         @Override
         public Object[] getChildren(Object parent) {
@@ -78,7 +78,7 @@ public class FileSelection extends ViewPart {
             
             for (File singleFile : file.listFiles()) {
                 if (!singleFile.isHidden()) {
-                    if (singleFile.isFile()) {
+                    if (singleFile.isFile() && FileSelection.this.showFiles) {
                         files.add(singleFile);
                     }
                     else if (singleFile.isDirectory()) {
@@ -129,6 +129,15 @@ public class FileSelection extends ViewPart {
     }
 
     private TreeViewer viewer;
+    
+    /*
+     * Should Files be also visible, or only directories 
+     */
+    private boolean showFiles;
+    
+    public FileSelection(boolean showFiles) { 
+        this.showFiles = showFiles;
+    }
 
     public void createPartControl(Composite parent) {
         viewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);

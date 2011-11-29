@@ -15,8 +15,8 @@ package org.amanzi.neo.services.model.impl;
 
 import java.util.Iterator;
 
+import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
-import org.amanzi.neo.services.NewDatasetService;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataElement;
@@ -45,13 +45,13 @@ public abstract class DataModel extends AbstractModel implements IDataModel {
 
     private static Logger LOGGER = Logger.getLogger(DataModel.class);
 
-    private NewDatasetService dsServ = NeoServiceFactory.getInstance().getNewDatasetService();
+    private DatasetService dsServ = NeoServiceFactory.getInstance().getDatasetService();
 
     /**
      * Gets node from <code>parent</code> element (the node must not be <code>null</code>), creates
      * a child node, using properties in <code>child</code>, creates CHILD relationship from parent
      * to child. Don't forget to set node type in <code>child</code>. See also
-     * {@link NewDatasetService#addChild(Node, Node)}.
+     * {@link DatasetService#addChild(Node, Node)}.
      * 
      * @param parent <code>DataElement</code> object, containing parent node.
      * @param child <code>DataElement</code> object, containing properties of the child node, that
@@ -85,7 +85,7 @@ public abstract class DataModel extends AbstractModel implements IDataModel {
      * Gets node from <code>parent</code> element (the node must not be <code>null</code>), creates
      * a child node, using properties in <code>child</code>, adds child to the end of parent's
      * children chain; uses <code>lastChild</code> , if it is set. Don't forget to set node type in
-     * <code>child</code>. See also {@link NewDatasetService#addChild(Node, Node, Node)}.
+     * <code>child</code>. See also {@link DatasetService#addChild(Node, Node, Node)}.
      * 
      * @param parent <code>DataElement</code> object, containing parent node.
      * @param child <code>DataElement</code> object, containing properties of the child node, that

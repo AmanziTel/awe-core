@@ -19,6 +19,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.amanzi.neo.services.ui.utils.ActionUtil;
+
 /**
  * <p>
  * controll events
@@ -78,11 +80,18 @@ public class NewEventManager {
      * @return
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public <T extends AbstractEvent> T fireEvent(T event) {
+    public <T extends AbstractEvent> void fireEvent(final T event) {
         Set<IEventsListener<T>> eventListeners = (Set)listenersCollections.get(event);
-        for (IEventsListener<T> listeners : eventListeners) {
-            listeners.handleEvent(event);
+        if (eventListeners != null) {
+            for (final IEventsListener<T> listeners : eventListeners) {
+                ActionUtil.getInstance().runTask(new Runnable() {
+                    @Override
+                    public void run() {
+                        listeners.handleEvent(event);
+                    }
+                }, false);
+
+            }
         }
-        return event;
     }
 }

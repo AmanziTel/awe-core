@@ -19,7 +19,9 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import org.amanzi.neo.loader.core.saver.nemo.NemoEvents;
@@ -47,6 +49,14 @@ public class Nemo2Generator {
 
     // list of technology systems
     private List<Integer> systems = new ArrayList<Integer>();
+
+    // lon
+    public static Double longitude;
+
+    // lat
+    public static Double latitude;
+    
+    public static Map<String,Object> gps;
 
     /**
      * Generate #AG row
@@ -434,7 +444,7 @@ public class Nemo2Generator {
      */
     private String generateDAC() {
         String str = NemoEvents.DAC.getEventId() + "," + generateTimestamp() + "," + generateContext(1);
-        Integer applicationProtocol = generateInteger(0,14);
+        Integer applicationProtocol = generateInteger(0, 14);
         str = str + "," + applicationProtocol;
         return str;
     }
@@ -466,7 +476,7 @@ public class Nemo2Generator {
      */
     private String generateDREQ() {
         String str = NemoEvents.DREQ.getEventId() + "," + generateTimestamp() + "," + generateContext(2);
-        Integer protocol = generateInteger(0,14);
+        Integer protocol = generateInteger(0, 14);
         str = str + "," + protocol;
         Integer transfDir = generateInteger(1, 3);
         str = str + "," + transfDir;
@@ -530,7 +540,7 @@ public class Nemo2Generator {
      */
     private String generateDRATE() {
         String str = NemoEvents.DRATE.getEventId() + "," + generateTimestamp() + "," + generateContext(1);
-        Integer applicationProtocol = generateInteger(0,14);
+        Integer applicationProtocol = generateInteger(0, 14);
         Integer appRateUL = generateInteger(0, maxIntegerValue);
         Integer appRateDL = generateInteger(0, maxIntegerValue);
         Integer bytesUL = generateInteger(0, maxIntegerValue);
@@ -546,7 +556,7 @@ public class Nemo2Generator {
      */
     private String generatePER() {
         String str = NemoEvents.PER.getEventId() + "," + generateTimestamp() + "," + generateContext(1);
-        Integer applicationProtocol = generateInteger(0,14);
+        Integer applicationProtocol = generateInteger(0, 14);
         Float perUL = generateFloat(0, 99);
         Float perDL = generateFloat(0, 99);
         str = str + "," + applicationProtocol + "," + perUL + "," + perDL;
@@ -560,7 +570,7 @@ public class Nemo2Generator {
      */
     private String generateRTT() {
         String str = NemoEvents.RTT.getEventId() + "," + generateTimestamp() + "," + generateContext(1);
-        Integer protocol = generateInteger(0,14);
+        Integer protocol = generateInteger(0, 14);
         str = str + "," + protocol;
         if (protocol == 12) {
             Integer pingSize = generateInteger(0, 100000);
@@ -577,7 +587,7 @@ public class Nemo2Generator {
      */
     private String generateJITTER() {
         String str = NemoEvents.JITTER.getEventId() + "," + generateTimestamp() + "," + generateContext(1);
-        Integer protocol = generateInteger(0,14);
+        Integer protocol = generateInteger(0, 14);
         str = str + "," + protocol;
         if (protocol == 13 || protocol == 14) {
             Integer jitterUl = generateInteger(0, maxIntegerValue);
@@ -594,7 +604,7 @@ public class Nemo2Generator {
      */
     private String generateDSS() {
         String str = NemoEvents.DSS.getEventId() + "," + generateTimestamp() + ",";
-        Integer protocol = generateInteger(0,14);
+        Integer protocol = generateInteger(0, 14);
         str = str + "," + protocol;
         if (protocol == 9) {
             str = str + generateContext(1);
@@ -612,7 +622,7 @@ public class Nemo2Generator {
      */
     private String generateDCONTENT() {
         String str = NemoEvents.DCONTENT.getEventId() + "," + generateTimestamp() + ",";
-        Integer protocol = generateInteger(0,14);
+        Integer protocol = generateInteger(0, 14);
         str = str + "," + protocol;
         if (protocol == 8 || protocol == 10) {
             str = str + generateContext(1);
@@ -2474,7 +2484,7 @@ public class Nemo2Generator {
                 Integer assignedFinger = generateInteger(0, 1);
                 Integer tdMode = generateInteger(0, 3);
                 Float tdPower = generateFloat(-9, -1);
-                Integer subchannel = Integer.parseInt(String.valueOf(Math.pow(2, generateInteger(0, 21).doubleValue())));
+                Integer subchannel = 1;
                 Integer lockedAntennas = generateInteger(0, 1);
                 Float rx0EcI0 = generateFloat(-32, -1);
                 Float rx1EcI0 = generateFloat(-32, -1);
@@ -5022,14 +5032,28 @@ public class Nemo2Generator {
      * @return row
      */
     private String generateGPS() {
-        String str = NemoEvents.GPS.getEventId() + "," + generateTimestamp() + ",";
+        gps = new HashMap<String, Object>();
+        String timestamp = generateTimestamp();
+        gps.put("timestamp", timestamp);
+        String str = NemoEvents.GPS.getEventId() + "," + timestamp + ",";
+        gps.put("event type", "GPS");
+        gps.put("name", "GPS");
         Float lon = generateFloat(0, 100);
+        gps.put("lon", lon.toString());
+        longitude = Double.parseDouble(lon.toString());
         Float lat = generateFloat(0, 100);
+        gps.put("lat", lat.toString());
+        latitude = Double.parseDouble(lat.toString());
         Integer height = generateInteger(1, maxIntegerValue);
+        gps.put("height", height.toString());
         Integer distance = generateInteger(1, maxIntegerValue);
+        gps.put("distance", distance.toString());
         Integer gpsFix = generateInteger(-1, 4);
+        gps.put("gps fix", gpsFix.toString());
         Integer satellites = generateInteger(1, maxIntegerValue);
+        gps.put("satellites", satellites.toString());
         Integer velocity = generateInteger(1, maxIntegerValue);
+        gps.put("velocity", velocity.toString());
         str = str + "," + lon + "," + lat + "," + height + "," + distance + "," + gpsFix + "," + satellites + "," + velocity;
         return str;
     }
@@ -5518,7 +5542,7 @@ public class Nemo2Generator {
 
     private String generateDataOfProtocol() {
         String str = "";
-        Integer protocol = generateInteger(0,14);
+        Integer protocol = generateInteger(0, 14);
         Integer dataFailStatus = generateInteger(1, 5);
         str = str + "," + protocol + "," + dataFailStatus;
         if (dataFailStatus == 5) {
@@ -5535,8 +5559,8 @@ public class Nemo2Generator {
             str = str + "," + dataTransferCause;
         }
         if (protocol == 3) {
-        	//401,...
-            Integer ftpCause = generateInteger(1,5);
+            // 401,...
+            Integer ftpCause = generateInteger(1, 5);
             str = str + "," + ftpCause;
         }
         if (protocol == 4) {
@@ -5581,7 +5605,7 @@ public class Nemo2Generator {
 
     private String generateDataOfProtocol2() {
         String str = "";
-        Integer protocol = generateInteger(0,14);
+        Integer protocol = generateInteger(0, 14);
         Integer dataFailStatus = generateInteger(1, 4);
         str = str + "," + protocol + "," + dataFailStatus;
         if (dataFailStatus == 1) {
@@ -5598,8 +5622,8 @@ public class Nemo2Generator {
             str = str + "," + dataTransferCause;
         }
         if (protocol == 3) {
-        	//421,...
-            Integer ftpCause = generateInteger(1,5);
+            // 421,...
+            Integer ftpCause = generateInteger(1, 5);
             str = str + "," + ftpCause;
         }
         if (protocol == 4) {
@@ -5669,8 +5693,11 @@ public class Nemo2Generator {
 
     public static File generateNemo2File() {
         Nemo2Generator obj = new Nemo2Generator();
-        File nemoFile = obj.createNemoFile();
-        obj.fillNemoFile(nemoFile);
+        //File nemoFile = obj.createNemoFile();
+        //obj.fillNemoFile(nemoFile);
+        File dir = new File(System.getProperty("user.home") + File.separatorChar + "generated_files");
+        dir.mkdir();
+        File nemoFile = new File(dir, "09Oct19 101958.1.nmf");
         return nemoFile;
     }
 
