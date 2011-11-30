@@ -56,7 +56,7 @@ public abstract class AbstractService implements IDatabaseEventListener {
     public final static String TYPE = "type";
     public final static String NAME = "name";
     public static final String DATASET_ID = "dataset";
-    public static final String NETWORK_ID = "network"; 
+    public static final String NETWORK_ID = "network";
 
     private static Logger LOGGER = Logger.getLogger(AbstractService.class);
     /**

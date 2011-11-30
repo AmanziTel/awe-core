@@ -20,7 +20,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.amanzi.neo.services.exceptions.AWEException;
-import org.amanzi.neo.services.model.IDataModel;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.IModel;
 import org.amanzi.neo.services.model.INetworkModel;
@@ -39,10 +38,9 @@ import org.eclipse.jface.viewers.Viewer;
  * @author Vladislav_Kondratenko
  */
 public class ProjectTreeContentProvider implements IStructuredContentProvider, ITreeContentProvider {
-
+	
     private static final Logger LOGGER = Logger.getLogger(ProjectTreeContentProvider.class);
-    private IProjectModel projectModels = null;
-
+    
     /**
      * Constructor of ContentProvider
      * 
@@ -50,7 +48,7 @@ public class ProjectTreeContentProvider implements IStructuredContentProvider, I
      */
     public ProjectTreeContentProvider() {
     }
-
+    
     @Override
     public void dispose() {
 
@@ -135,14 +133,7 @@ public class ProjectTreeContentProvider implements IStructuredContentProvider, I
 
     @Override
     public Object getParent(Object element) {
-        try {
-            if (element instanceof IDataModel) {
-                return ((IDataModel)element).getParentModel();
-            }
-        } catch (AWEException e) {
-            LOGGER.info("error while try to get parentElement", e);
-            return null;
-        }
+        // TODO Need implement
         return null;
     }
 
@@ -165,6 +156,7 @@ public class ProjectTreeContentProvider implements IStructuredContentProvider, I
     @Override
     public Object[] getElements(Object inputElement) {
 
+        IProjectModel projectModels = null;
         try {
             projectModels = ProjectModel.getCurrentProjectModel();
         } catch (AWEException e) {

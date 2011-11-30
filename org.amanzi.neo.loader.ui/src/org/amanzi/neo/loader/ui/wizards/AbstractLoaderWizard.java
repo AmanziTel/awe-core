@@ -30,8 +30,8 @@ import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.ILoader;
 import org.amanzi.neo.loader.core.ILoaderProgressListener;
 import org.amanzi.neo.loader.core.IProgressEvent;
-import org.amanzi.neo.loader.core.parser.IConfigurationData;
 import org.amanzi.neo.loader.core.saver.IData;
+import org.amanzi.neo.loader.core.parser.IConfigurationData;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.ui.events.NewEventManager;
@@ -241,6 +241,7 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
                 newload(newloader, monitor);
                 try {
                     addDataToCatalog();
+                    NewEventManager.getInstance().fireEvent(new UpdateDataEvent());
                 } catch (MalformedURLException e) {
                     MessageDialog.openError(getShell(), "Error while add data to catalog", "Cann't add data to catalog");
                     e.printStackTrace();
@@ -249,7 +250,6 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
             }
         };
         job.schedule();
-        NewEventManager.getInstance().fireEvent(new UpdateDataEvent());
         return true;
     }
 

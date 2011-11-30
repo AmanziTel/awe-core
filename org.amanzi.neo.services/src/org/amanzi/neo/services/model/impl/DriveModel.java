@@ -25,7 +25,6 @@ import java.util.Set;
 import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.CorrelationService;
 import org.amanzi.neo.services.DatasetService;
-import org.amanzi.neo.services.DatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.DatasetService.DatasetTypes;
 import org.amanzi.neo.services.DatasetService.DriveTypes;
 import org.amanzi.neo.services.NeoServiceFactory;
@@ -39,7 +38,6 @@ import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.model.ICorrelationModel;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDriveModel;
-import org.amanzi.neo.services.model.IModel;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
@@ -637,20 +635,4 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     public boolean isUniqueProperties(String property) {
         return false;
     }
-
-    @Override
-    public IModel getParentModel() throws AWEException {
-        if (rootNode == null) {
-            throw new IllegalArgumentException("currentModel type is null.");
-        }
-        Iterator<Node> isVirtual = dsServ.getFirstRelationTraverser(rootNode, DriveRelationshipTypes.VIRTUAL_DATASET,
-                Direction.INCOMING).iterator();
-        if (isVirtual.hasNext()) {
-            return new DriveModel(isVirtual.next());
-        } else {
-            isVirtual = dsServ.getFirstRelationTraverser(rootNode, DatasetRelationTypes.DATASET, Direction.INCOMING).iterator();
-        }
-        return new ProjectModel(isVirtual.next());
-    }
-
 }

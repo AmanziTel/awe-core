@@ -42,7 +42,6 @@ import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
 import org.amanzi.neo.services.model.ICorrelationModel;
 import org.amanzi.neo.services.model.IDataElement;
-import org.amanzi.neo.services.model.IModel;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.INetworkType;
 import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
@@ -158,11 +157,11 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         // ci+lac in binding is unique
         uniqueListOfProperties.add(NetworkService.CELL_INDEX);
         uniqueListOfProperties.add(NetworkService.LOCATION_AREA_CODE);
-
+        
         uniqueListOfProperties.add(NetworkService.BSIC);
         uniqueListOfProperties.add(NetworkService.BCCH);
     }
-
+    
     /**
      * Initializes Network Structure from Node
      */
@@ -639,8 +638,8 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
                     nwServ.addNodeToIndex(node, getIndex(type), NetworkService.BCCH, bcch);
                 }
             } else {
-                node = nwServ.createNetworkElement(parentNode, getIndex(type), element.get(AbstractService.NAME).toString(), type,
-                        reltype);
+                node = nwServ.createNetworkElement(parentNode, getIndex(type), element.get(AbstractService.NAME).toString(),
+                        type, reltype);
             }
         }
         nwServ.setProperties(node, element);
@@ -725,7 +724,8 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
 
     @Override
     public Coordinate getCoordinate(IDataElement element) {
-        NetworkElementNodeType type = (NetworkElementNodeType)NodeTypeManager.getType(element.get(AbstractService.TYPE).toString());
+        NetworkElementNodeType type = (NetworkElementNodeType)NodeTypeManager.getType(element.get(AbstractService.TYPE)
+                .toString());
         switch (type) {
         case SITE:
             return new Coordinate((Double)element.get(LONGITUDE), (Double)element.get(LATITUDE));
@@ -845,19 +845,6 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     @Override
     public boolean isUniqueProperties(String property) {
         return super.isUniqueProperties(property);
-    }
-
-    @Override
-    public IModel getParentModel() throws AWEException {
-        if (rootNode == null) {
-            throw new IllegalArgumentException("currentModel type is null.");
-        }
-        Iterator<Node> isVirtual = dsServ.getFirstRelationTraverser(rootNode, DatasetRelationTypes.DATASET, Direction.INCOMING)
-                .iterator();
-        if (isVirtual.hasNext()) {
-            return new ProjectModel(isVirtual.next());
-        }
-        return null;
     }
 
 }
