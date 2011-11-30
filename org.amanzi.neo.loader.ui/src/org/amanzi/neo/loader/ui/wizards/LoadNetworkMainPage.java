@@ -103,7 +103,9 @@ public class LoadNetworkMainPage extends LoaderPage<ConfigurationDataImpl> {
             @Override
             public void modifyText(ModifyEvent e) {
                 changeNetworkName();
+                tryForDefault = false;
                 update();
+
             }
         });
         networkNameField.addSelectionListener(new SelectionListener() {
@@ -262,7 +264,7 @@ public class LoadNetworkMainPage extends LoaderPage<ConfigurationDataImpl> {
         }
         IValidateResult.Result result = getNewSelectedLoader().getValidator().isValid(configurationData);
         if (result == Result.FAIL) {
-            if (!tryForDefault) {
+            if (!tryForDefault && !members.containsKey(fileWithoutExtension)) {
                 String defaultNetwork = networkNameField.getItem(0);
                 getNewConfigurationData().getDatasetNames().put(ConfigurationDataImpl.NETWORK_PROPERTY_NAME, defaultNetwork);
                 tryForDefault = true;
@@ -270,9 +272,12 @@ public class LoadNetworkMainPage extends LoaderPage<ConfigurationDataImpl> {
                 for (String labels : networkNameField.getItems()) {
                     if (labels.equals(defaultNetwork)) {
                         networkNameField.select(i);
+                        break;
                     }
                     i++;
                 }
+            } else if (!tryForDefault && members.containsKey(networkName)) {
+                tryForDefault = true;
             } else if (tryForDefault && members.containsKey(fileWithoutExtension)
                     && !networkNameField.getText().equals(fileWithoutExtension)) {
                 int i = 0;
@@ -281,17 +286,18 @@ public class LoadNetworkMainPage extends LoaderPage<ConfigurationDataImpl> {
                         getNewConfigurationData().getDatasetNames().put(ConfigurationDataImpl.NETWORK_PROPERTY_NAME,
                                 fileWithoutExtension);
                         networkNameField.select(i);
+                        break;
                     }
 
                     i++;
                 }
             }
-            if (getNewSelectedLoader().getValidator().getResult() == Result.FAIL) {
+            if (getNewSelectedLoader().getValidator().isValid(configurationData) == Result.FAIL) {
                 setMessage(String.format(getNewSelectedLoader().getValidator().getMessages(), getNewSelectedLoader()
                         .getLoaderInfo().getName()), DialogPage.ERROR);
-
                 return false;
             }
+
         } else if (result == Result.UNKNOWN) {
             setMessage(String.format(getNewSelectedLoader().getValidator().getMessages(), getNewSelectedLoader().getLoaderInfo()
                     .getName()), DialogPage.WARNING);
