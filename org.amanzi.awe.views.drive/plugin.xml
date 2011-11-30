@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            name="Drive"
+            icon="icons/drive.png"
+            category="org.amanzi.awe.views"
+            class="org.amanzi.awe.views.drive.views.NewDriveInquirerView"
+            id="org.amanzi.awe.views.drive.views.NewDriveInquirerView">
+      </view>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.perspectiveExtensions">
+      <perspectiveExtension
+            targetID="org.amanzi.awe.perspective">
+         <view
+               id="org.amanzi.awe.views.drive.views.NewDriveInquirerView"
+               relationship="stack"
+               relative="net.refractions.udig.catalog.ui.CatalogView"
+               visible="true">
+         </view>
+         <viewShortcut
+               id="org.amanzi.awe.views.drive.views.NewDriveInquirerView">
+         </viewShortcut>
+      </perspectiveExtension>
+   </extension>
+</plugin>
