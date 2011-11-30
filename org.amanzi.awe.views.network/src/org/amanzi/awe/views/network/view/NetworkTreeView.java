@@ -81,9 +81,10 @@ public class NetworkTreeView extends ViewPart implements IEventListener {
      */
     public static final String NETWORK_TREE_VIEW_ID = "org.amanzi.awe.views.network.views.NetworkTreeView";
 
-    public static final String SHOW_PROPERTIES = "Show properties";
-    public static final String CHANGE_MODE_TO_JUST_SHOW_PROPERTIES = "Change mode to just show";
-    public static final String CHANGE_MODE_TO_EDIT_PROPERTIES = "Change mode to edit";
+    private static final String SHOW_PROPERTIES = "Show properties";
+    private static final String EDIT_PROPERTIES = "Edit properties";
+    private static final String ERROR_TITLE = "Error";
+    private boolean currentMode = false;
 
     /*
      * TreeViewer for database Nodes
@@ -166,10 +167,10 @@ public class NetworkTreeView extends ViewPart implements IEventListener {
 				} catch (PartInitException e) {
 				}
 	            if (selectedDataElements.size() == 1) {
-	               	propertiesView.updateTableView((IDataElement)selection.getFirstElement());
+	               	propertiesView.updateTableView((IDataElement)selection.getFirstElement(), currentMode);
 	            }
 	            else {
-	            	propertiesView.updateTableView(null);
+	            	propertiesView.updateTableView(null, currentMode);
 	            }
 			}
 		});
@@ -196,9 +197,15 @@ public class NetworkTreeView extends ViewPart implements IEventListener {
     }
 
     private void fillContextMenu(IMenuManager manager) {
-        SelectAction select = new SelectAction((IStructuredSelection)viewer.getSelection());
+        SelectAction select = 
+        		new SelectAction((IStructuredSelection)viewer.getSelection(), SHOW_PROPERTIES, false);
         if (select.isEnabled()) {
             manager.add(select);
+        }
+        SelectAction edit = 
+        		new SelectAction((IStructuredSelection)viewer.getSelection(), EDIT_PROPERTIES, true);
+        if (select.isEnabled()) {
+            manager.add(edit);
         }
 
         RenameAction renameAction = new RenameAction((IStructuredSelection)viewer.getSelection());
@@ -221,18 +228,21 @@ public class NetworkTreeView extends ViewPart implements IEventListener {
      */
     private class SelectAction extends Action {
         private boolean enabled;
-        private final String text;
+        private boolean isEditable;
+        private String text;
         private IDataElement currentDataElement;
+        private final static String ERROR_MSG = "Some error with select of DataElement";
         
         /**
          * Constructor
          * 
          * @param selection - selection
          */
-        public SelectAction(IStructuredSelection selection) {
+        public SelectAction(IStructuredSelection selection, String text, boolean isEditable) {
 
             enabled = selectedDataElements.size() == 1;
-            text = SHOW_PROPERTIES;
+            this.text = text;
+            this.isEditable = isEditable;
             currentDataElement = selectedDataElements.iterator().next();
         }
 
@@ -249,11 +259,12 @@ public class NetworkTreeView extends ViewPart implements IEventListener {
         @Override
         public void run() {
             try {
+            	currentMode = isEditable;
                	NetworkPropertiesView propertiesView = (NetworkPropertiesView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().
                			showView("org.amanzi.awe.views.network.views.NetworkPropertiesView");
-               	propertiesView.updateTableView(currentDataElement);
+               	propertiesView.updateTableView(currentDataElement, isEditable);
             } catch (PartInitException e) {
-            	//TODO: LN: handle exception!!!!!!!!!
+            	MessageDialog.openError(null, ERROR_TITLE, ERROR_MSG);
             }
         }
     }
@@ -327,6 +338,10 @@ public class NetworkTreeView extends ViewPart implements IEventListener {
         private final List<IDataElement> dataElementsToDelete;
         private String text = null;
         private boolean interactive = false;
+        private final static String ERROR_MSG = "Error with deleting of DataElement";
+        private final static String SELECT_DATA_ELEMENTS_TO_DELETE = "Select data elements to delete";
+        private final static String DELETE_DATA_ELEMENT = "Delete data element";
+        private final static String DELETE_DATA_ELEMENT_MSG = "?\n\nAll contained data will also be deleted!";
 
         private DeleteAction(List<IDataElement> nodesToDelete, String text) {
             this.dataElementsToDelete = nodesToDelete;
@@ -343,15 +358,12 @@ public class NetworkTreeView extends ViewPart implements IEventListener {
                 Object element = iterator.next();
                 if (element != null && element instanceof IDataElement && !(element instanceof INetworkModel)) {
                     dataElementsToDelete.add((IDataElement)element);
-                    
-                    //TODO: LN: do not use raw Nodes
-//                    nodeTypes.add(NeoUtils.getNodeType(((DataElement)element).getNode()));
                 }
             }
             String type = nodeTypes.size() == 1 ? nodeTypes.iterator().next() : "node";
             switch (dataElementsToDelete.size()) {
             case 0:
-                text = "Select data elements to delete";
+                text = SELECT_DATA_ELEMENTS_TO_DELETE;
                 break;
             case 1:
                 text = "Delete " + type + " '" + dataElementsToDelete.get(0).toString() + "'";
@@ -380,8 +392,8 @@ public class NetworkTreeView extends ViewPart implements IEventListener {
 
             if (interactive) {
                 MessageBox msg = new MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.YES | SWT.NO);
-                msg.setText("Delete data element");
-                msg.setMessage(getText() + "?\n\nAll contained data will also be deleted!");
+                msg.setText(DELETE_DATA_ELEMENT);
+                msg.setMessage(getText() + DELETE_DATA_ELEMENT_MSG);
                 int result = msg.open();
                 if (result != SWT.YES) {
                     return;
@@ -405,8 +417,7 @@ public class NetworkTreeView extends ViewPart implements IEventListener {
                 try {
                     networkModel.deleteElement(dataElement);
                 } catch (AWEException e) {
-                    // TODO Handle AWEException
-                    throw (RuntimeException)new RuntimeException().initCause(e);
+                    MessageDialog.openError(null, ERROR_TITLE, ERROR_MSG);
                 }
             }
 
@@ -506,6 +517,7 @@ public class NetworkTreeView extends ViewPart implements IEventListener {
         String text = "Add to selection list";
         String nameNetwork = "";
         INetworkModel network = null;
+        final String ERROR_MSG = "Error when you try to add DataElement to selection list";
 
         // Sub menu
         Set<IDataElement> selectedNodes = new HashSet<IDataElement>();
@@ -548,8 +560,7 @@ public class NetworkTreeView extends ViewPart implements IEventListener {
                 }
                 manager.add(subMenu);
             } catch (AWEException e) {
-                // TODO Handle AWEException
-                throw (RuntimeException)new RuntimeException().initCause(e);
+                MessageDialog.openError(null, ERROR_TITLE, ERROR_MSG);
             }
 
         }
@@ -568,6 +579,7 @@ public class NetworkTreeView extends ViewPart implements IEventListener {
         boolean isSector = true;
         String text = "Delete from selection list";
         INetworkModel network;
+        final String ERROR_MSG = "Error when you try to delete DataElement from selection list";
 
         // Sub menu
         IDataElement element = null;
@@ -596,8 +608,7 @@ public class NetworkTreeView extends ViewPart implements IEventListener {
                         subMenu.add(deleteFromSelectionListAction);
                     }
                 } catch (AWEException e) {
-                    // TODO Handle AWEException
-                    throw (RuntimeException)new RuntimeException().initCause(e);
+                    MessageDialog.openError(null, ERROR_TITLE, ERROR_MSG);
                 }
                 manager.add(subMenu);
             }
@@ -605,12 +616,7 @@ public class NetworkTreeView extends ViewPart implements IEventListener {
     }
 
     /**
-<<<<<<< HEAD
-     * >>>>>>> 872543a1a468ec5d3545ee31e062298907bce7dd Action for adding of sectors to selection
-     * list
-=======
      * Action for adding of sectors to selection list
->>>>>>> refs/remotes/origin/models
      * 
      * @author Ladornaya_A
      * @since 1.0.0
@@ -621,6 +627,7 @@ public class NetworkTreeView extends ViewPart implements IEventListener {
         private Set<IDataElement> selectedNodes = new HashSet<IDataElement>();
         private ISelectionModel selectionModel;
         private List<String> nameExistingSector = new ArrayList<String>();
+        private final static String ERROR_MSG = "Error when you try to add DataElement to selection list";
 
         /**
          * Constructor
@@ -678,7 +685,7 @@ public class NetworkTreeView extends ViewPart implements IEventListener {
                     }
                 }
             } catch (AWEException e) {
-                throw (RuntimeException)new RuntimeException().initCause(e);
+                MessageDialog.openError(null, ERROR_TITLE, ERROR_MSG);
             }
         }
     }
@@ -783,8 +790,6 @@ public class NetworkTreeView extends ViewPart implements IEventListener {
 
 	@Override
 	public void handleEvent(EventUIType event, Object data) {
-		// TODO Auto-generated method stub
-		
 	}
 
 }
