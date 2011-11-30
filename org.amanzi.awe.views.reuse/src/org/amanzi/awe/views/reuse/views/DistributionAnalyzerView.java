@@ -39,9 +39,6 @@ import org.amanzi.neo.services.model.impl.ProjectModel.DistributionItem;
 import org.amanzi.neo.services.ui.events.EventManager;
 import org.amanzi.neo.services.ui.events.EventUIType;
 import org.amanzi.neo.services.ui.events.IEventListener;
-import org.amanzi.neo.services.ui.events.IEventsListener;
-import org.amanzi.neo.services.ui.events.NewEventManager;
-import org.amanzi.neo.services.ui.events.UpdateDataEvent;
 import org.amanzi.neo.services.ui.utils.ActionUtil;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -138,11 +135,11 @@ public class DistributionAnalyzerView extends ViewPart implements IEventListener
     private static final Color COLOR_LESS = Color.BLUE;
 
     private static final Color COLOR_MORE = Color.GREEN;
-
+    
     private static final String LOAD_XML_LABEL = "Load Distribution Xml";
-
+    
     private static final String SELECT_XML_DIALOG_LABEL = "Select Distribution XML";
-
+    
     @SuppressWarnings("rawtypes")
     private class DistributionDataset extends AbstractDataset implements CategoryDataset {
 
@@ -465,12 +462,12 @@ public class DistributionAnalyzerView extends ViewPart implements IEventListener
      * Button to choose Third Color option
      */
     private Button thirdColorButton;
-
+    
     /*
      * Action to load distribution xml;
      */
     private Action actLoadXml;
-
+    
     /*
      * Dialog for selecting distribution xml
      */
@@ -480,7 +477,7 @@ public class DistributionAnalyzerView extends ViewPart implements IEventListener
      * Custom constructor
      */
     public DistributionAnalyzerView() {
-        EventManager.getInstance().addListener(this, EventUIType.PROJECT_CHANGED);
+        EventManager.getInstance().addListener(this, EventUIType.PROJECT_CHANGED); 
 
         UPDATE_BAR_COLORS_JOB.setSystem(true);
     }
@@ -499,7 +496,7 @@ public class DistributionAnalyzerView extends ViewPart implements IEventListener
         createDistributionSelectionCombos(parent);
         createDistributionChart(parent);
         createColoringPropertiesControl(parent);
-
+        
         createXmlFileDialog();
         initMenuManager();
 
@@ -512,19 +509,19 @@ public class DistributionAnalyzerView extends ViewPart implements IEventListener
             showErrorMessage(e.getMessage());
         }
     }
-
+    
     private void createXmlFileDialog() {
         xmlFileDialog = new FileDialog(getViewSite().getShell());
         xmlFileDialog.setText(SELECT_XML_DIALOG_LABEL);
-        xmlFileDialog.setFilterExtensions(new String[] {"*.xml"});
-        xmlFileDialog.setFilterNames(new String[] {"XML File (*.xml)"});
-    }
-
+        xmlFileDialog.setFilterExtensions(new String[] { "*.xml" });
+        xmlFileDialog.setFilterNames(new String[] { "XML File (*.xml)" });
+    } 
+    
     private void initMenuManager() {
         IMenuManager mm = getViewSite().getActionBars().getMenuManager();
-        actLoadXml = new Action(LOAD_XML_LABEL) {
+        actLoadXml = new Action(LOAD_XML_LABEL){
             @Override
-            public void run() {
+            public void run(){
                 String selected = xmlFileDialog.open();
                 try {
                     DistributionManager.getManager().createDistributionFromFile(selected);
@@ -938,7 +935,11 @@ public class DistributionAnalyzerView extends ViewPart implements IEventListener
         currentProject = ProjectModel.getCurrentProjectModel();
 
         // get all distributional models
-        updateDistributionsIteams();
+        distributionItems.clear();
+        for (DistributionItem singleItem : currentProject.getAllDistributionalModels()) {
+            distributionItems.put(singleItem.toString(), singleItem);
+        }
+        datasetCombo.setItems(distributionItems.keySet().toArray(ArrayUtils.EMPTY_STRING_ARRAY));
 
         // property combo
         propertyCombo.setItems(ArrayUtils.EMPTY_STRING_ARRAY);
@@ -966,22 +967,6 @@ public class DistributionAnalyzerView extends ViewPart implements IEventListener
         setStandardStatusPanelVisisble(false);
         setBlendPanelVisible(false);
         setPalettePanelVisible(false);
-    }
-
-    /**
-     * update distributions iteam
-     */
-    private void updateDistributionsIteams() {
-        distributionItems.clear();
-        try {
-            for (DistributionItem singleItem : currentProject.getAllDistributionalModels()) {
-                distributionItems.put(singleItem.toString(), singleItem);
-            }
-            datasetCombo.setItems(distributionItems.keySet().toArray(ArrayUtils.EMPTY_STRING_ARRAY));
-        } catch (AWEException e) {
-            // TODO Handle AWEException
-            throw (RuntimeException)new RuntimeException().initCause(e);
-        }
     }
 
     /**
@@ -1138,7 +1123,6 @@ public class DistributionAnalyzerView extends ViewPart implements IEventListener
     /**
      * Add listeners on Components
      */
-    @SuppressWarnings("unchecked")
     private void addListeners() {
         // listener for Dataset combo
         datasetCombo.addSelectionListener(new SelectionListener() {
@@ -1316,24 +1300,6 @@ public class DistributionAnalyzerView extends ViewPart implements IEventListener
                 widgetSelected(e);
             }
         });
-        NewEventManager.getInstance().addListener(new UpdateDataEvent(), new RefreshDistributionComboboxes());
-    }
-
-    /**
-     * <p>
-     * describe listener to refresh RefreshDistribution View
-     * </p>
-     * 
-     * @author Kondratenko_Vladislav
-     * @since 1.0.0
-     */
-    private class RefreshDistributionComboboxes implements IEventsListener<UpdateDataEvent> {
-        @Override
-        public void handleEvent(UpdateDataEvent data) {
-            int datasetSelectionIndex = datasetCombo.getSelectionIndex();
-            updateDistributionsIteams();
-            datasetCombo.select(datasetSelectionIndex);
-        }
     }
 
     /**
