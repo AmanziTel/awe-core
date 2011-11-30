@@ -36,6 +36,9 @@ import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.amanzi.neo.services.ui.events.EventManager;
 import org.amanzi.neo.services.ui.events.EventUIType;
 import org.amanzi.neo.services.ui.events.IEventListener;
+import org.amanzi.neo.services.ui.events.IEventsListener;
+import org.amanzi.neo.services.ui.events.NewEventManager;
+import org.amanzi.neo.services.ui.events.UpdateDataEvent;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
@@ -92,7 +95,7 @@ public class NetworkTreeView extends ViewPart implements IEventListener {
     protected TreeViewer viewer;
 
     private Text tSearch;
-    
+
     private Set<IDataElement> selectedDataElements = new HashSet<IDataElement>();
 
     /**
@@ -141,42 +144,41 @@ public class NetworkTreeView extends ViewPart implements IEventListener {
             }
         });
 
-		setProviders();
-		viewer.setInput(getSite());
-		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
-			
-			@Override
-			public void selectionChanged(SelectionChangedEvent event) {
-				
-				selectedDataElements.clear();
-				IStructuredSelection selection = ((IStructuredSelection)event.getSelection());
-	            Iterator<?> it = selection.iterator();
-	            while (it.hasNext()) {
-	                Object elementObject = it.next();
-	                if (elementObject instanceof INetworkModel) {
-	                    continue;
-	                } else {
-	                    IDataElement element = (IDataElement)elementObject;
-	                    selectedDataElements.add(element);
-	                }
-	            }
-               	NetworkPropertiesView propertiesView = null;
-				try {
-					propertiesView = (NetworkPropertiesView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().
-							showView("org.amanzi.awe.views.network.views.NetworkPropertiesView");
-				} catch (PartInitException e) {
-				}
-	            if (selectedDataElements.size() == 1) {
-	               	propertiesView.updateTableView((IDataElement)selection.getFirstElement(), currentMode);
-	            }
-	            else {
-	            	propertiesView.updateTableView(null, currentMode);
-	            }
-			}
-		});
-		hookContextMenu();
-		getSite().setSelectionProvider(viewer);
+        setProviders();
+        viewer.setInput(getSite());
+        viewer.addSelectionChangedListener(new ISelectionChangedListener() {
 
+            @Override
+            public void selectionChanged(SelectionChangedEvent event) {
+
+                selectedDataElements.clear();
+                IStructuredSelection selection = ((IStructuredSelection)event.getSelection());
+                Iterator< ? > it = selection.iterator();
+                while (it.hasNext()) {
+                    Object elementObject = it.next();
+                    if (elementObject instanceof INetworkModel) {
+                        continue;
+                    } else {
+                        IDataElement element = (IDataElement)elementObject;
+                        selectedDataElements.add(element);
+                    }
+                }
+                NetworkPropertiesView propertiesView = null;
+                try {
+                    propertiesView = (NetworkPropertiesView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
+                            .showView("org.amanzi.awe.views.network.views.NetworkPropertiesView");
+                } catch (PartInitException e) {
+                }
+                if (selectedDataElements.size() == 1) {
+                    propertiesView.updateTableView((IDataElement)selection.getFirstElement(), currentMode);
+                } else {
+                    propertiesView.updateTableView(null, currentMode);
+                }
+            }
+        });
+        hookContextMenu();
+        getSite().setSelectionProvider(viewer);
+        addListeners();
         setLayout(parent);
     }
 
@@ -197,13 +199,11 @@ public class NetworkTreeView extends ViewPart implements IEventListener {
     }
 
     private void fillContextMenu(IMenuManager manager) {
-        SelectAction select = 
-        		new SelectAction((IStructuredSelection)viewer.getSelection(), SHOW_PROPERTIES, false);
+        SelectAction select = new SelectAction((IStructuredSelection)viewer.getSelection(), SHOW_PROPERTIES, false);
         if (select.isEnabled()) {
             manager.add(select);
         }
-        SelectAction edit = 
-        		new SelectAction((IStructuredSelection)viewer.getSelection(), EDIT_PROPERTIES, true);
+        SelectAction edit = new SelectAction((IStructuredSelection)viewer.getSelection(), EDIT_PROPERTIES, true);
         if (select.isEnabled()) {
             manager.add(edit);
         }
@@ -217,8 +217,34 @@ public class NetworkTreeView extends ViewPart implements IEventListener {
         createSubmenuAddToSelectionList((IStructuredSelection)viewer.getSelection(), manager);
 
         createSubmenuDeleteFromSelectionList((IStructuredSelection)viewer.getSelection(), manager);
-        
+
         createSubmenuCreateSelectionList((IStructuredSelection)viewer.getSelection(), manager);
+    }
+
+    /**
+     * add required Listener
+     */
+    @SuppressWarnings("unchecked")
+    private void addListeners() {
+        NewEventManager.getInstance().addListener(new UpdateDataEvent(), new RefreshTreeListener());
+    }
+
+    /**
+     * <p>
+     * describe listener to refresh Network Tree View
+     * </p>
+     * 
+     * @author Kondratenko_Vladislav
+     * @since 1.0.0
+     */
+    private class RefreshTreeListener implements IEventsListener<UpdateDataEvent> {
+        @Override
+        public void handleEvent(UpdateDataEvent data) {
+            Object[] expandedObject = viewer.getExpandedElements();
+            viewer.refresh();
+            viewer.setExpandedElements(expandedObject);
+        }
+
     }
 
     /**
@@ -232,7 +258,7 @@ public class NetworkTreeView extends ViewPart implements IEventListener {
         private String text;
         private IDataElement currentDataElement;
         private final static String ERROR_MSG = "Some error with select of DataElement";
-        
+
         /**
          * Constructor
          * 
@@ -259,12 +285,12 @@ public class NetworkTreeView extends ViewPart implements IEventListener {
         @Override
         public void run() {
             try {
-            	currentMode = isEditable;
-               	NetworkPropertiesView propertiesView = (NetworkPropertiesView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().
-               			showView("org.amanzi.awe.views.network.views.NetworkPropertiesView");
-               	propertiesView.updateTableView(currentDataElement, isEditable);
+                currentMode = isEditable;
+                NetworkPropertiesView propertiesView = (NetworkPropertiesView)PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+                        .getActivePage().showView("org.amanzi.awe.views.network.views.NetworkPropertiesView");
+                propertiesView.updateTableView(currentDataElement, isEditable);
             } catch (PartInitException e) {
-            	MessageDialog.openError(null, ERROR_TITLE, ERROR_MSG);
+                MessageDialog.openError(null, ERROR_TITLE, ERROR_MSG);
             }
         }
     }
@@ -452,7 +478,7 @@ public class NetworkTreeView extends ViewPart implements IEventListener {
             }
         }
     }
-    
+
     /**
      * Action for creating of selection list
      * 
@@ -788,8 +814,8 @@ public class NetworkTreeView extends ViewPart implements IEventListener {
         viewer.setSelection(new StructuredSelection(new Object[] {dataElement}));
     }
 
-	@Override
-	public void handleEvent(EventUIType event, Object data) {
-	}
+    @Override
+    public void handleEvent(EventUIType event, Object data) {
+    }
 
 }

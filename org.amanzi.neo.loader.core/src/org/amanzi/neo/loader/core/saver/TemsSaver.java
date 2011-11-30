@@ -43,6 +43,9 @@ public class TemsSaver extends AbstractDriveSaver {
 
     private static final Logger LOGGER = Logger.getLogger(TemsSaver.class);
 
+    /**
+     * virtual model(contain calculated data)
+     */
     private IDriveModel virtualModel;
     /*
      * constants
@@ -56,11 +59,21 @@ public class TemsSaver extends AbstractDriveSaver {
     private String previous_time = null;
     private int previous_pn_code = -1;
 
+    /**
+     * create saver instance
+     */
     public TemsSaver() {
         super();
     }
 
-    protected TemsSaver(IDriveModel model, IDriveModel virtualModel, ConfigurationDataImpl config) {
+    /**
+     * constructor for tests
+     * 
+     * @param model
+     * @param virtualModel
+     * @param config
+     */
+    TemsSaver(IDriveModel model, IDriveModel virtualModel, ConfigurationDataImpl config) {
         preferenceStoreSynonyms = initializeSynonyms();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
         commitTx();
