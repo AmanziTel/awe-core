@@ -37,8 +37,6 @@ public class DatabaseManagerFactory {
                 dbManager = new NeoclipseDatabaseManager();
             }
         }
-
         return dbManager;
     }
-
 }
