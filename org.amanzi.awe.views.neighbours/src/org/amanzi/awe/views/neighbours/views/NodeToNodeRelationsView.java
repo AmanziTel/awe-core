@@ -25,6 +25,9 @@ import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelTypes;
 import org.amanzi.neo.services.model.impl.ProjectModel;
+import org.amanzi.neo.services.ui.events.IEventsListener;
+import org.amanzi.neo.services.ui.events.NewEventManager;
+import org.amanzi.neo.services.ui.events.UpdateDataEvent;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -317,10 +320,11 @@ public class NodeToNodeRelationsView extends ViewPart {
             for (IDataElement source : n2nModel.getAllElementsByType(NetworkElementNodeType.SECTOR)) {
                 Iterable<IDataElement> relations = n2nModel.getN2NRelatedElements(source);
                 for (IDataElement element : relations) {
-                	//TODO: LN: do not use Relations!!!
+                    // TODO: LN: do not use Relations!!!
                     Relationship relation = ((DataElement)element).getRelationship();
-                    RowWrapper row = new RowWrapper(relation.getStartNode().getProperty(NetworkService.SOURCE_NAME).toString(),
-                            relation.getEndNode().getProperty(NetworkService.SOURCE_NAME).toString());
+                    String startElementPropetyName = (String)relation.getStartNode().getProperty(NetworkService.SOURCE_NAME, null);
+                    String endElementPropertyName = (String)relation.getEndNode().getProperty(NetworkService.SOURCE_NAME, null);
+                    RowWrapper row = new RowWrapper(startElementPropetyName, endElementPropertyName);
                     for (int q = 0; q < properties.length; q++) {
                         row.addPropValue(relation.getProperty(properties[q], null));
                     }
@@ -421,6 +425,7 @@ public class NodeToNodeRelationsView extends ViewPart {
         tableViewer.addFilter(neighbourFilter);
     }
 
+    @SuppressWarnings("unchecked")
     private void addListeners() {
         cbNetwork.addSelectionListener(new SelectionListener() {
             @Override
@@ -456,6 +461,32 @@ public class NodeToNodeRelationsView extends ViewPart {
         cbNetwork.addSelectionListener(selListener);
         cbN2NType.addSelectionListener(selListener);
         cbN2NName.addSelectionListener(selListener);
+        NewEventManager.getInstance().addListener(new UpdateDataEvent(), new RefreshN2NComboboxes());
+    }
+
+    /**
+     * <p>
+     * describe listener to refresh comboboxes
+     * </p>
+     * 
+     * @author Kondratenko_Vladislav
+     * @since 1.0.0
+     */
+    private class RefreshN2NComboboxes implements IEventsListener<UpdateDataEvent> {
+        @Override
+        public void handleEvent(UpdateDataEvent data) {
+            int selectedNetworkIteam = cbNetwork.getSelectionIndex();
+            int selectedN2NType = cbN2NType.getSelectionIndex();
+            int selectedN2NName = cbN2NName.getSelectionIndex();
+            setNetworkItems();
+            setN2NTypeItems();
+            cbNetwork.select(selectedNetworkIteam);
+            cbN2NType.select(selectedN2NType);
+            cbN2NName.select(selectedN2NName);
+            setN2NModelsItems(getSelectedNetwork());
+            tableViewer.refresh();
+
+        }
     }
 
     private INetworkModel getSelectedNetwork() {
