@@ -17,8 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.AbstractService;
+import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NetworkService;
 import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.NodeTypeManager;
@@ -73,11 +73,11 @@ public class NetworkPropertiesView extends ViewPart {
     private TableLabelProvider labelProvider;
     private TableContentProvider provider;
     private IDataElement currentDataElement;
+    private boolean isEditable;
     
     private static String DESTINATION_OF_THIS_VIEW = "This network properties view destine for view all properties in IDataElements";
     private static String CELL_MODIFIER_1 = "column1";
     private static String CELL_MODIFIER_2 = "column2";
-    private static final String RENAME_MSG = "Enter new Value";
     
     private static String TITLE_COULD_NOT_CHANGE_PROPERTY = "Could not change property";
     private static String MESSAGE_COULD_NOT_CHANGE_PROPERTY = "Could not change this property, because it property is unique.\n";
@@ -86,8 +86,9 @@ public class NetworkPropertiesView extends ViewPart {
 
     public static boolean showMessageBox = true;
     
-    public void updateTableView(IDataElement dataElement) {
-    	currentDataElement = dataElement;
+    public void updateTableView(IDataElement dataElement, boolean isEditable) {
+    	this.currentDataElement = dataElement;
+    	this.isEditable = isEditable;
     	tableViewer.setInput("");
     	tableViewer.refresh();
     }
@@ -153,7 +154,7 @@ public class NetworkPropertiesView extends ViewPart {
 			
 			@Override
 			public boolean canModify(Object element, String property) {
-				if (property.equals(CELL_MODIFIER_2)) 
+				if (property.equals(CELL_MODIFIER_2) && isEditable) 
 					return true;
 				return false;
 			}
@@ -185,7 +186,9 @@ public class NetworkPropertiesView extends ViewPart {
     	
         private final ArrayList<TableColumn> columns = new ArrayList<TableColumn>();
         private final static int DEF_SIZE = 340;
-        private final String[] colNames = new String[] {"Property", "Value"};
+        private final String PROPERTY_NAME = "Property";
+        private final String PROPERTY_VALUE = "Value";
+        
 
         private void createColumn(String label, int size, boolean sortable, final int idx) {
             TableViewerColumn column = new TableViewerColumn(tableViewer, SWT.LEFT);
@@ -216,10 +219,11 @@ public class NetworkPropertiesView extends ViewPart {
                 column.dispose();
             }
             int idx = 0;
-            for (String colName : colNames) {
-                createColumn(colName, DEF_SIZE, true, idx);
-                idx++;
-            }
+            createColumn(PROPERTY_NAME, DEF_SIZE, true, idx);
+            idx++;
+            createColumn(PROPERTY_VALUE, DEF_SIZE, false, idx);
+            idx++;
+            
             tabl.setHeaderVisible(true);
             tabl.setLinesVisible(true);
             tableViewer.setLabelProvider(this);

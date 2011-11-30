@@ -35,11 +35,20 @@ import org.apache.log4j.Logger;
 public class RomesSaver extends AbstractDriveSaver {
     private static final Logger LOGGER = Logger.getLogger(RomesSaver.class);
 
+    /**
+     * create saver instance
+     */
     public RomesSaver() {
         super();
     }
 
-    protected RomesSaver(IDriveModel model, ConfigurationDataImpl config) {
+    /**
+     * constuctor for testing
+     * 
+     * @param model
+     * @param config
+     */
+    RomesSaver(IDriveModel model, ConfigurationDataImpl config) {
         preferenceStoreSynonyms = initializeSynonyms();
 
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);

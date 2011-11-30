@@ -41,7 +41,10 @@ public class NetworkSaver extends AbstractNetworkSaver {
     // Default network structure
     private final static NetworkElementNodeType[] DEFAULT_NETWORK_STRUCTURE = {NetworkElementNodeType.CITY,
             NetworkElementNodeType.MSC, NetworkElementNodeType.BSC, NetworkElementNodeType.SITE, NetworkElementNodeType.SECTOR};
-    
+
+    /**
+     * create saver instance
+     */
     public NetworkSaver() {
         super();
     }
@@ -52,7 +55,7 @@ public class NetworkSaver extends AbstractNetworkSaver {
      * @param model
      * @param config
      */
-    protected NetworkSaver(INetworkModel model, ConfigurationDataImpl config) {
+    NetworkSaver(INetworkModel model, ConfigurationDataImpl config) {
         preferenceStoreSynonyms = initializeSynonyms();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
         commitTx();
@@ -166,15 +169,15 @@ public class NetworkSaver extends AbstractNetworkSaver {
     private IDataElement createMainElements(List<String> row, IDataElement root, INodeType nodeType, String type)
             throws AWEException {
         String name = getSynonymValueWithAutoparse(type, row).toString();
-        
+
         Set<IDataElement> findedElement;
         findedElement = parametrizedModel.findElementByPropertyValue(nodeType, AbstractService.NAME, name);
         if (findedElement.isEmpty()) {
             Map<String, Object> mapProperty = new HashMap<String, Object>();
             collectMainElements(mapProperty, name, nodeType);
-            
+
             findedElement.add(parametrizedModel.createElement(root, mapProperty));
-            
+
             addSynonyms(parametrizedModel, mapProperty);
         }
         resetRowValueBySynonym(row, type);
@@ -210,8 +213,7 @@ public class NetworkSaver extends AbstractNetworkSaver {
         if (!isCorrect(siteElementId, row)) {
             if (isCorrect(DEFAULT_NETWORK_STRUCTURE[SECTOR_STRUCTURE_ID - 1].getId(), row)) {
                 siteName = getSynonymValueWithAutoparse(DEFAULT_NETWORK_STRUCTURE[SECTOR_STRUCTURE_ID - 1].getId(), row).toString();
-                siteMap.put(AbstractService.NAME,
-                        autoParse(AbstractService.NAME, siteName.substring(0, siteName.length() - 1)));
+                siteMap.put(AbstractService.NAME, autoParse(AbstractService.NAME, siteName.substring(0, siteName.length() - 1)));
             } else {
                 LOGGER.info("Missing site name based on SectorName on line:" + lineCounter);
                 return false;

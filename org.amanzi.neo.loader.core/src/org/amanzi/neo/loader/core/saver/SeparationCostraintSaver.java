@@ -39,12 +39,21 @@ public class SeparationCostraintSaver extends AbstractNetworkSaver {
     private static final String SECTOR = "sector";
     private static final String SEPARATION = "separation";
     private static Map<String, Object> SECTOR_MAP = new HashMap<String, Object>();
-    
+
+    /**
+     * create saver instance
+     */
     public SeparationCostraintSaver() {
         super();
     }
 
-    protected SeparationCostraintSaver(INetworkModel model, ConfigurationDataImpl config) {
+    /**
+     * constructor for tests
+     * 
+     * @param model
+     * @param config
+     */
+    SeparationCostraintSaver(INetworkModel model, ConfigurationDataImpl config) {
         preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.NETWORK);
         columnSynonyms = new HashMap<String, Integer>();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
