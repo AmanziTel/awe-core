@@ -322,8 +322,9 @@ public class NodeToNodeRelationsView extends ViewPart {
                 for (IDataElement element : relations) {
                     // TODO: LN: do not use Relations!!!
                     Relationship relation = ((DataElement)element).getRelationship();
-                    RowWrapper row = new RowWrapper(relation.getStartNode().getProperty(NetworkService.SOURCE_NAME).toString(),
-                            relation.getEndNode().getProperty(NetworkService.SOURCE_NAME).toString());
+                    String startElementPropetyName = (String)relation.getStartNode().getProperty(NetworkService.SOURCE_NAME, null);
+                    String endElementPropertyName = (String)relation.getEndNode().getProperty(NetworkService.SOURCE_NAME, null);
+                    RowWrapper row = new RowWrapper(startElementPropetyName, endElementPropertyName);
                     for (int q = 0; q < properties.length; q++) {
                         row.addPropValue(relation.getProperty(properties[q], null));
                     }

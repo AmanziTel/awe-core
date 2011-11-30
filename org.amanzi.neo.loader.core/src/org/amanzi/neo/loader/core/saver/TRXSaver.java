@@ -51,8 +51,13 @@ public class TRXSaver extends AbstractNetworkSaver {
     private static final String MAIO = "maio";
     private static final String ARFCN = "arfcn";
     private static final int ARFCN_ARRAY_SIZE = 63;
-
+    /**
+     * calculated arfcn
+     */
     private Integer[] arfcnArray;
+    /**
+     * frequency root
+     */
     private IDataElement frequency_rootElement;
 
     /*
@@ -62,7 +67,13 @@ public class TRXSaver extends AbstractNetworkSaver {
     private Map<String, Object> TRX_ELEMENT = new HashMap<String, Object>();
     private Map<String, Object> FREQUENCY_ELEMENT = new HashMap<String, Object>();
 
-    protected TRXSaver(INetworkModel model, ConfigurationDataImpl config) {
+    /**
+     * constructor for tests
+     * 
+     * @param model
+     * @param config
+     */
+    TRXSaver(INetworkModel model, ConfigurationDataImpl config) {
         preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.NETWORK);
         columnSynonyms = new HashMap<String, Integer>();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
@@ -80,6 +91,7 @@ public class TRXSaver extends AbstractNetworkSaver {
         super();
     }
 
+    @Override
     protected void saveLine(List<String> value) throws AWEException {
         if (frequency_rootElement == null) {
             Map<String, Object> frequency = new HashMap<String, Object>();
@@ -244,7 +256,7 @@ public class TRXSaver extends AbstractNetworkSaver {
     }
 
     /**
-     *
+     * clear already cllected parameters maps before new iteration start
      */
     private void clearElementMaps() {
         SECTOR_ELEMENT.clear();

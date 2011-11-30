@@ -43,7 +43,13 @@ public class TrafficSaver extends AbstractNetworkSaver {
      */
     private static Map<String, Object> SECTOR_MAP = new HashMap<String, Object>();
 
-    protected TrafficSaver(INetworkModel model, ConfigurationDataImpl config) {
+    /**
+     * constructor for tests
+     * 
+     * @param model
+     * @param config
+     */
+    TrafficSaver(INetworkModel model, ConfigurationDataImpl config) {
         preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.NETWORK);
         columnSynonyms = new HashMap<String, Integer>();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
@@ -54,10 +60,14 @@ public class TrafficSaver extends AbstractNetworkSaver {
         }
     }
 
+    /**
+     * create saver instance
+     */
     public TrafficSaver() {
         super();
     }
 
+    @Override
     protected void saveLine(List<String> value) throws AWEException {
         if (!isCorrect(SECTOR, value)) {
             LOGGER.error("cant find sector column on line: " + lineCounter);

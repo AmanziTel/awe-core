@@ -55,12 +55,22 @@ public class FrequencyConstraintSaver extends AbstractN2NSaver {
      */
     private Map<String, Object> TRX_MAP = new HashMap<String, Object>();
     private Map<String, Object> RELATIONS_PROPERTIES = new HashMap<String, Object>();
-    
+
+    /**
+     * create saver instance
+     */
     public FrequencyConstraintSaver() {
         super();
     }
 
-    protected FrequencyConstraintSaver(INodeToNodeRelationsModel model, INetworkModel networkModel, ConfigurationDataImpl data) {
+    /**
+     * constructor for tests
+     * 
+     * @param model
+     * @param networkModel
+     * @param data
+     */
+    FrequencyConstraintSaver(INodeToNodeRelationsModel model, INetworkModel networkModel, ConfigurationDataImpl data) {
         super(model, networkModel, data);
     }
 

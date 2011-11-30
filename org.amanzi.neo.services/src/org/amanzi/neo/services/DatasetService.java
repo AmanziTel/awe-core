@@ -1018,8 +1018,7 @@ public class DatasetService extends AbstractService {
             throw new IllegalArgumentException("Relationship type is null.");
         }
 
-        return N2N_TRAVERSAL_DESCRIPTION.relationships(relType, Direction.INCOMING).relationships(relType, Direction.OUTGOING)
-                .traverse(n2nProxy).relationships();
+        return N2N_TRAVERSAL_DESCRIPTION.relationships(relType, Direction.OUTGOING).traverse(n2nProxy).relationships();
     }
 
     /**

@@ -57,7 +57,7 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
     // variables required for export synonyms saving
     protected List<IDataModel> useableModels = new LinkedList<IDataModel>();
     protected Map<IModel, ExportSynonyms> synonymsMap = new HashMap<IModel, ExportSynonyms>();
-    
+
     /**
      * action threshold for commit
      */
@@ -72,12 +72,12 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
      * transactions count
      */
     private int actionCount;
-    
+
     /**
-     * Public constructor 
+     * Public constructor
      */
     protected AbstractSaver() {
-        
+
     }
 
     /**
@@ -119,6 +119,8 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
     }
 
     /**
+     * check property for predefined type
+     * 
      * @param propertyName
      * @param propertyValue
      * @return
@@ -149,7 +151,7 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
 
     /**
      * Creates Export Synonyms for this saved models
-     *
+     * 
      * @throws DatabaseException
      */
     protected void createExportSynonymsForModels() throws AWEException {
@@ -165,7 +167,7 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
 
     /**
      * Add synonym
-     *
+     * 
      * @param model
      * @param nodeType
      * @param propertyName
@@ -237,7 +239,7 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
 
     /**
      * Returns Active Project
-     *
+     * 
      * @return
      * @throws AWEException
      */

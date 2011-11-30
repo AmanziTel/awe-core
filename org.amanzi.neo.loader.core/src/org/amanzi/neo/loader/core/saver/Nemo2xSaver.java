@@ -87,7 +87,14 @@ public class Nemo2xSaver extends AbstractDriveSaver {
         super();
     }
 
-    protected Nemo2xSaver(IDriveModel model, ConfigurationDataImpl config, GraphDatabaseService service) {
+    /**
+     * constructor for tests
+     * 
+     * @param model
+     * @param config
+     * @param service
+     */
+    Nemo2xSaver(IDriveModel model, ConfigurationDataImpl config, GraphDatabaseService service) {
         preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.DRIVE);
         columnSynonyms = new HashMap<String, Integer>();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);

@@ -44,6 +44,9 @@ public abstract class AbstractN2NSaver extends AbstractCSVSaver<INetworkModel> {
      */
     protected INodeToNodeRelationsModel n2nModel;
 
+    /**
+     * create saver instance
+     */
     protected AbstractN2NSaver() {
         super();
     }

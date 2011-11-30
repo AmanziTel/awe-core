@@ -29,13 +29,16 @@ public class NeighborsSaver extends AbstractN2NSaver {
      */
     public final static String NEIGHBOUR_SECTOR_NAME = "neigh_sector_name";
     public final static String SERVING_SECTOR_NAME = "serv_sector_name";
-    
+
+    /**
+     * create saver instance
+     */
     public NeighborsSaver() {
         super();
     }
 
     /**
-     * Constructor for testing
+     * Constructor for tests
      * 
      * @param model
      * @param networkModel
@@ -44,7 +47,7 @@ public class NeighborsSaver extends AbstractN2NSaver {
     protected NeighborsSaver(INodeToNodeRelationsModel model, INetworkModel networkModel, ConfigurationDataImpl data) {
         super(model, networkModel, data);
     }
-    
+
     @Override
     protected String getSourceElementName() {
         return SERVING_SECTOR_NAME;

@@ -32,13 +32,16 @@ public class InterferenceSaver extends AbstractN2NSaver {
      */
     public final static String INTERFERING_SECTOR_NAME = "interfering_sector";
     public final static String SERVING_SECTOR_NAME = "serv_sector_name";
-    
+
+    /**
+     * create saver instance
+     */
     public InterferenceSaver() {
         super();
     }
 
     /**
-     * Constructor for testing 
+     * Constructor for tests
      * 
      * @param model
      * @param networkModel
