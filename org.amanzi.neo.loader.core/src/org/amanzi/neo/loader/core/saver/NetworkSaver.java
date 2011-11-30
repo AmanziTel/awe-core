@@ -50,7 +50,7 @@ public class NetworkSaver extends AbstractNetworkSaver {
     }
 
     /**
-     * Constructor for testing
+     * Constructor for tests
      * 
      * @param model
      * @param config
