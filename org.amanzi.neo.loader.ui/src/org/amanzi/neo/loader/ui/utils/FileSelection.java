@@ -31,6 +31,7 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
@@ -135,11 +136,20 @@ public class FileSelection extends ViewPart {
      */
     private boolean showFiles;
     
-    public FileSelection(boolean showFiles) { 
+    /*
+     * Text of FileSelection View Label
+     */
+    private String labelText;
+    
+    public FileSelection(boolean showFiles, String labelText) { 
         this.showFiles = showFiles;
+        this.labelText = labelText;
     }
 
     public void createPartControl(Composite parent) {
+        Label label = new Label(parent, SWT.NONE);
+        label.setText(labelText);
+        
         viewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
         viewer.setContentProvider(new FileContentProvider());
         viewer.setLabelProvider(new FileLabelProvider());
