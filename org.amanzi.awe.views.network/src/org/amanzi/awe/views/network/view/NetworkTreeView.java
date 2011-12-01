@@ -33,11 +33,9 @@ import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.ISelectionModel;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.ProjectModel;
+import org.amanzi.neo.services.ui.enums.EventsType;
 import org.amanzi.neo.services.ui.events.EventManager;
-import org.amanzi.neo.services.ui.events.EventUIType;
-import org.amanzi.neo.services.ui.events.IEventListener;
 import org.amanzi.neo.services.ui.events.IEventsListener;
-import org.amanzi.neo.services.ui.events.NewEventManager;
 import org.amanzi.neo.services.ui.events.UpdateDataEvent;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
@@ -75,7 +73,7 @@ import org.eclipse.ui.part.ViewPart;
  * @since 1.0.0
  */
 
-public class NetworkTreeView extends ViewPart implements IEventListener {
+public class NetworkTreeView extends ViewPart {
 
     private static final String RENAME_MSG = "Enter new Name";
 
@@ -102,8 +100,10 @@ public class NetworkTreeView extends ViewPart implements IEventListener {
      * The constructor.
      */
     public NetworkTreeView() {
-        EventManager.getInstance().addListener(this, EventUIType.PROJECT_CHANGED, EventUIType.DISTRIBUTIONS_CHANGED,
-                EventUIType.DISTRIBUTION_BAR_SELECTED);
+        // EventManager.getInstance().addListener(this, EventUIType.PROJECT_CHANGED,
+        // EventUIType.DISTRIBUTIONS_CHANGED,
+        // EventUIType.DISTRIBUTION_BAR_SELECTED);
+        addListeners();
     }
 
     /**
@@ -178,7 +178,6 @@ public class NetworkTreeView extends ViewPart implements IEventListener {
         });
         hookContextMenu();
         getSite().setSelectionProvider(viewer);
-        addListeners();
         setLayout(parent);
     }
 
@@ -226,7 +225,7 @@ public class NetworkTreeView extends ViewPart implements IEventListener {
      */
     @SuppressWarnings("unchecked")
     private void addListeners() {
-        NewEventManager.getInstance().addListener(new UpdateDataEvent(), new RefreshTreeListener());
+        EventManager.getInstance().addListener(EventsType.UPDATE_DATA, new RefreshTreeListener());
     }
 
     /**
@@ -240,9 +239,7 @@ public class NetworkTreeView extends ViewPart implements IEventListener {
     private class RefreshTreeListener implements IEventsListener<UpdateDataEvent> {
         @Override
         public void handleEvent(UpdateDataEvent data) {
-            Object[] expandedObject = viewer.getExpandedElements();
             viewer.refresh();
-            viewer.setExpandedElements(expandedObject);
         }
 
     }
@@ -812,10 +809,6 @@ public class NetworkTreeView extends ViewPart implements IEventListener {
         viewer.refresh();
         viewer.reveal(dataElement);
         viewer.setSelection(new StructuredSelection(new Object[] {dataElement}));
-    }
-
-    @Override
-    public void handleEvent(EventUIType event, Object data) {
     }
 
 }

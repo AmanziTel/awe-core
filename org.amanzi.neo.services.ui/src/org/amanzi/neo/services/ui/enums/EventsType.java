@@ -11,25 +11,22 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.services.ui.events;
-
-import org.amanzi.neo.services.ui.enums.EventsType;
+package org.amanzi.neo.services.ui.enums;
 
 /**
  * <p>
- * describe UPDATE_DATA event
+ * describe all possible events type
  * </p>
  * 
- * @author Vladislav Kondratenko
+ * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class UpdateDataEvent extends AbstractEvent {
-
-    /**
-     * create instants
-     */
-    public UpdateDataEvent() {
-        type = EventsType.UPDATE_DATA;
-    }
-
+public enum EventsType {
+    UPDATE_DATA,
+    SHOW_ON_MAP,
+    CHANGE_PROJECT,
+    DRILL_DOWN,
+    ANALYSE, 
+    SHOW_IND_GRAPH_DB,
+    UPDATE_LAYER
 }

@@ -10,12 +10,14 @@ package org.amanzi.awe.views.explorer.view;
 import org.amanzi.awe.views.explorer.providers.ProjectTreeContentProvider;
 import org.amanzi.awe.views.explorer.providers.ProjectTreeLabelProvider;
 import org.amanzi.neo.services.model.IModel;
+import org.amanzi.neo.services.ui.enums.EventsType;
+import org.amanzi.neo.services.ui.events.EventManager;
 import org.amanzi.neo.services.ui.events.IEventsListener;
-import org.amanzi.neo.services.ui.events.NewEventManager;
 import org.amanzi.neo.services.ui.events.UpdateDataEvent;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.viewers.IElementComparer;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
@@ -36,9 +38,6 @@ public class ProjectExplorerView extends ViewPart {
      * ID of this View
      */
     public static final String PROJECT_EXPLORER_ID = "org.amanzi.awe.views.explorer.view.ProjectExplorer";
-
-    public static final String SHOW_PROPERTIES = "Show properties";
-    public static final String DISTRIBUTION_ANALYSE = "Distribution analyse";
 
     /*
      * TreeViewer for database Nodes
@@ -61,6 +60,23 @@ public class ProjectExplorerView extends ViewPart {
 
         setProviders();
         viewer.setInput(getSite());
+        viewer.setComparer(new IElementComparer() {
+
+            @Override
+            public int hashCode(Object element) {
+                return 0;
+            }
+
+            @Override
+            public boolean equals(Object a, Object b) {
+                if (a instanceof IModel && b instanceof IModel) {
+                    IModel aM = (IModel)a;
+                    IModel bM = (IModel)b;
+                    return aM.getName().equals(bM.getName()) && aM.getClass().equals(bM.getClass());
+                }
+                return a == null ? b == null : a.equals(b);
+            }
+        });
         hookContextMenu();
         getSite().setSelectionProvider(viewer);
         setLayout(parent);
@@ -72,7 +88,7 @@ public class ProjectExplorerView extends ViewPart {
      */
     @SuppressWarnings("unchecked")
     private void addListeners() {
-        NewEventManager.getInstance().addListener(new UpdateDataEvent(), new RefreshTreeListener());
+        EventManager.getInstance().addListener(EventsType.UPDATE_DATA, new RefreshTreeListener());
     }
 
     /**
@@ -87,7 +103,6 @@ public class ProjectExplorerView extends ViewPart {
         @Override
         public void handleEvent(UpdateDataEvent data) {
             viewer.refresh();
-            viewer.setAutoExpandLevel(3);
         }
 
     }

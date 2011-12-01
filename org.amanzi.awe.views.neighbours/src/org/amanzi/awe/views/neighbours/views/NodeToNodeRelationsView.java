@@ -25,8 +25,9 @@ import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelTypes;
 import org.amanzi.neo.services.model.impl.ProjectModel;
+import org.amanzi.neo.services.ui.enums.EventsType;
+import org.amanzi.neo.services.ui.events.EventManager;
 import org.amanzi.neo.services.ui.events.IEventsListener;
-import org.amanzi.neo.services.ui.events.NewEventManager;
 import org.amanzi.neo.services.ui.events.UpdateDataEvent;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
@@ -461,7 +462,7 @@ public class NodeToNodeRelationsView extends ViewPart {
         cbNetwork.addSelectionListener(selListener);
         cbN2NType.addSelectionListener(selListener);
         cbN2NName.addSelectionListener(selListener);
-        NewEventManager.getInstance().addListener(new UpdateDataEvent(), new RefreshN2NComboboxes());
+        EventManager.getInstance().addListener(EventsType.UPDATE_DATA, new RefreshN2NComboboxes());
     }
 
     /**
@@ -482,8 +483,8 @@ public class NodeToNodeRelationsView extends ViewPart {
             setN2NTypeItems();
             cbNetwork.select(selectedNetworkIteam);
             cbN2NType.select(selectedN2NType);
-            cbN2NName.select(selectedN2NName);
             setN2NModelsItems(getSelectedNetwork());
+            cbN2NName.select(selectedN2NName);
             tableViewer.refresh();
 
         }

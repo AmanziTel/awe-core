@@ -14,6 +14,7 @@
 package org.amanzi.neo.services.model.impl;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.amanzi.neo.model.distribution.IDistribution;
@@ -30,6 +31,7 @@ import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.model.IDataElement;
+import org.amanzi.neo.services.model.IModel;
 import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
 import org.amanzi.neo.services.model.INodeToNodeRelationsType;
 import org.apache.commons.lang.StringUtils;
@@ -250,8 +252,7 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
         Node serviceProxy = getProxy(serviceNode);
         Node neighbourProxy = getProxy(neighbourNode);
         Relationship rel = related(serviceProxy, neighbourProxy);
-        NeoServiceFactory.getInstance().getNetworkService()
-                .completeProperties(rel, new DataElement(properties), isReplace, null);
+        NeoServiceFactory.getInstance().getNetworkService().completeProperties(rel, new DataElement(properties), isReplace, null);
     }
 
     /**
@@ -338,4 +339,15 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
         return false;
     }
 
+    @Override
+    public IModel getParentModel() throws AWEException {
+        if (rootNode == null) {
+            throw new IllegalArgumentException("currentModel type is null.");
+        }
+        Iterator<Node> isVirtual = dsServ.getFirstRelationTraverser(rootNode, relType, Direction.INCOMING).iterator();
+        if (isVirtual.hasNext()) {
+            return new NetworkModel(isVirtual.next());
+        }
+        return null;
+    }
 }

@@ -20,6 +20,7 @@ import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.ProjectService;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
+import org.amanzi.neo.services.model.IModel;
 import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelTypes;
 import org.apache.log4j.Logger;
 import org.junit.After;
@@ -452,6 +453,23 @@ public class NodeToNodeRelationshipModelTest extends AbstractNeoServiceTest {
         Assert.assertEquals(model.getNodeToNodeRelationsType(), testModel.getNodeToNodeRelationsType());
         Assert.assertEquals(model.getRootNode(), testModel.getRootNode());
         Assert.assertEquals(model.getType(), testModel.getType());
+    }
+
+    @Test
+    public void testGetParentModel() {
+        // create n2n model
+        NodeToNodeRelationshipModel model;
+        IModel pModel;
+        try {
+            model = new NodeToNodeRelationshipModel(new DataElement(network), N2NRelTypes.NEIGHBOUR, "name",
+                    NetworkElementNodeType.SECTOR);
+            pModel = model.getParentModel();
+        } catch (AWEException e) {
+            // TODO Handle DatabaseException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+
+        Assert.assertEquals("Same nodes expected ", pModel.getRootNode().equals(network));
     }
 
     private boolean chainExists(Node parent, Node child) {

@@ -13,6 +13,11 @@
 
 package org.amanzi.neo.services.ui.events;
 
+import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.model.impl.ProjectModel;
+import org.amanzi.neo.services.ui.enums.EventsType;
+import org.apache.log4j.Logger;
+
 /**
  * <p>
  * CHANGE_PROJECT Event
@@ -22,6 +27,7 @@ package org.amanzi.neo.services.ui.events;
  * @since 1.0.0
  */
 public class ChangeProjectEvent extends AbstractEvent {
+    private static final Logger LOGGER = Logger.getLogger(ChangeProjectEvent.class);
     /**
      * changed projectName
      */
@@ -35,6 +41,12 @@ public class ChangeProjectEvent extends AbstractEvent {
     public ChangeProjectEvent(String projectName) {
         this.projectName = projectName;
         type = EventsType.CHANGE_PROJECT;
+        try {
+            ProjectModel.setActiveProject(projectName);
+        } catch (AWEException e) {
+            LOGGER.error("Cann't set project name because:", e);
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
     }
 
     public String getProjectName() {
