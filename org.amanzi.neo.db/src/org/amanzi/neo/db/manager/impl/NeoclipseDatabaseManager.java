@@ -16,10 +16,12 @@ package org.amanzi.neo.db.manager.impl;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.neoclipse.Activator;
 import org.neo4j.neoclipse.graphdb.GraphDbServiceManager;
 import org.neo4j.neoclipse.graphdb.GraphRunnable;
+import org.neo4j.neoclipse.preference.Preferences;
 
 /**
  * Database Manager that give access to Neo4j using Neoclipse
@@ -28,93 +30,93 @@ import org.neo4j.neoclipse.graphdb.GraphRunnable;
  * @since 1.0.0
  */
 public class NeoclipseDatabaseManager extends AbstractDatabaseManager {
-	private static final Logger LOGGER = Logger
-			.getLogger(NeoclipseDatabaseManager.class);
+    private static final Logger LOGGER = Logger.getLogger(NeoclipseDatabaseManager.class);
 
-	/**
-	 * Neoclipse Task to get Database Service
-	 * 
-	 * @author gerzog
-	 * @since 1.0.0
-	 */
-	private class GetDatabaseTask implements GraphRunnable {
+    private final IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
 
-		@Override
-		public void run(GraphDatabaseService graphDb) {
-			databaseService = graphDb;
-		}
+    /**
+     * Neoclipse Task to get Database Service
+     * 
+     * @author gerzog
+     * @since 1.0.0
+     */
+    private class GetDatabaseTask implements GraphRunnable {
 
-	}
+        @Override
+        public void run(GraphDatabaseService graphDb) {
+            databaseService = graphDb;
+        }
 
-	/*
-	 * Neoclipse Database manager
-	 */
-	private GraphDbServiceManager neoclipseManager;
+    }
 
-	/*
-	 * Graph Database Service
-	 */
-	private GraphDatabaseService databaseService;
+    /*
+     * Neoclipse Database manager
+     */
+    private GraphDbServiceManager neoclipseManager;
 
-	/*
-	 * Constructor for Database Manager
-	 */
-	public NeoclipseDatabaseManager() {
-		neoclipseManager = Activator.getDefault().getGraphDbServiceManager();
-	}
+    /*
+     * Graph Database Service
+     */
+    private GraphDatabaseService databaseService;
 
-	@Override
-	public GraphDatabaseService getDatabaseService() {
-		if (databaseService == null) {
-			try {
-			    if (!neoclipseManager.isRunning()) {
-			        neoclipseManager.startGraphDbService().get();
-			    }
+    /*
+     * Constructor for Database Manager
+     */
+    public NeoclipseDatabaseManager() {
+        neoclipseManager = Activator.getDefault().getGraphDbServiceManager();
+        preferenceStore.setDefault(Preferences.DATABASE_LOCATION, getDefaultDatabaseLocation());
+    }
 
-				neoclipseManager.executeTask(new GetDatabaseTask(),
-						"Get Database Service");
-			} catch (Exception e) {
-				LOGGER.fatal("ERROR while trying to get database instance", e);
-			}
-		}
+    @Override
+    public GraphDatabaseService getDatabaseService() {
+        if (databaseService == null) {
+            try {
+                if (!neoclipseManager.isRunning()) {
+                    neoclipseManager.startGraphDbService().get();
+                }
 
-		return databaseService;
-	}
+                neoclipseManager.executeTask(new GetDatabaseTask(), "Get Database Service");
+            } catch (Exception e) {
+                LOGGER.fatal("ERROR while trying to get database instance", e);
+            }
+        }
 
-	@Override
-	public String getLocation() {
-		return null;
-	}
+        return databaseService;
+    }
 
-	@Override
-	public Map<String, String> getMemoryMapping() {
-		return null;
-	}
+    @Override
+    public String getLocation() {
+        return getDefaultDatabaseLocation();
+    }
 
-	@Override
-	public void commitMainTransaction() {
-		neoclipseManager.commit();
-	}
+    @Override
+    public Map<String, String> getMemoryMapping() {
+        return null;
+    }
 
-	@Override
-	public void rollbackMainTransaction() {
-		neoclipseManager.rollback();
-	}
+    @Override
+    public void commitMainTransaction() {
+        neoclipseManager.commit();
+    }
 
-	@Override
-	public AccessType getAccessType() {
-		return null;
-	}
+    @Override
+    public void rollbackMainTransaction() {
+        neoclipseManager.rollback();
+    }
 
-	@Override
-	public void setDatabaseService(GraphDatabaseService service) {
-		throw new UnsupportedOperationException(
-				"Neoclipse Database Manager have not possibility to set Graph Database Service");
-	}
+    @Override
+    public AccessType getAccessType() {
+        return null;
+    }
 
-	@Override
-	public void shutdown() {
-		neoclipseManager.shutdownGraphDbService();
-	}
+    @Override
+    public void setDatabaseService(GraphDatabaseService service) {
+        throw new UnsupportedOperationException("Neoclipse Database Manager have not possibility to set Graph Database Service");
+    }
+
+    @Override
+    public void shutdown() {
+        neoclipseManager.shutdownGraphDbService();
+    }
 
 }

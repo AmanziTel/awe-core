@@ -13,7 +13,6 @@
 
 package org.amanzi.neo.db.manager.impl;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,11 +37,6 @@ public class Neo4jDatabaseManager extends AbstractDatabaseManager {
      */
     public static final Map<String, String> DEFAULT_MEMORY_MAPPING = new HashMap<String, String>(0);
 
-    /**
-     * Default Database Location "user.home"/.amanzi/neo
-     */
-    private static final String[] DEFAULT_DATABASE_LOCATION = new String[] {".amanzi", "neo"};
-
     /*
      * Location of database
      */
@@ -62,7 +56,7 @@ public class Neo4jDatabaseManager extends AbstractDatabaseManager {
      * Graph Database Service
      */
     private GraphDatabaseService dbService;
-    
+
     /**
      * Full constructor - need on input all parameters of Database
      * 
@@ -75,7 +69,8 @@ public class Neo4jDatabaseManager extends AbstractDatabaseManager {
         this.accessType = accessType;
         this.memoryMapping = memoryMapping;
 
-        LOGGER.info("Neo4j Database Manager was created with parameters: " + "databaseLocation = <" + databaseLocation + ">, " + "accessType = <" + accessType + ">");
+        LOGGER.info("Neo4j Database Manager was created with parameters: " + "databaseLocation = <" + databaseLocation + ">, "
+                + "accessType = <" + accessType + ">");
     }
 
     /**
@@ -161,7 +156,7 @@ public class Neo4jDatabaseManager extends AbstractDatabaseManager {
     @Override
     public void commitMainTransaction() {
         LOGGER.info("Commit with Database Manager");
-        
+
         fireEvent(EventType.BEFORE_FULL_COMMIT);
         // do nothing - Neo4jDatabaseManager have no main transaction.
         // Handling on transaction should be controlled by user
@@ -171,7 +166,7 @@ public class Neo4jDatabaseManager extends AbstractDatabaseManager {
     @Override
     public void rollbackMainTransaction() {
         LOGGER.info("Commit with Database Manager");
-        
+
         fireEvent(EventType.BEFORE_FULL_ROLLBACK);
         // do nothing - Neo4jDatabaseManager have no main transaction.
         // Handling on transaction should be controlled by user
@@ -193,30 +188,13 @@ public class Neo4jDatabaseManager extends AbstractDatabaseManager {
     }
 
     /**
-     * Creates default location for database and returns it's path
-     * 
-     * @return default path to database location
-     */
-    public static String getDefaultDatabaseLocation() {
-        String userHome = System.getProperty("user.home");
-
-        File databaseDirectory = new File(userHome);
-        for (String subDirectory : DEFAULT_DATABASE_LOCATION) {
-            databaseDirectory = new File(databaseDirectory, subDirectory);
-        }
-
-        databaseDirectory.mkdirs();
-
-        return databaseDirectory.getAbsolutePath();
-    }
-
-    /**
      * Initializes DB connection
      */
     private void initializeDb() {
         if (dbService == null) {
-            LOGGER.info("Initializing Neo4j Database Manager with parameters: " + "databaseLocation = <" + databaseLocation + ">, " + "accessType = <" + accessType + ">");
-            
+            LOGGER.info("Initializing Neo4j Database Manager with parameters: " + "databaseLocation = <" + databaseLocation + ">, "
+                    + "accessType = <" + accessType + ">");
+
             fireEvent(EventType.BEFORE_STARTUP);
 
             switch (accessType) {
@@ -227,7 +205,7 @@ public class Neo4jDatabaseManager extends AbstractDatabaseManager {
                 dbService = new EmbeddedGraphDatabase(databaseLocation, memoryMapping);
                 break;
             }
-            
+
             fireEvent(EventType.AFTER_STARTUP);
 
             // TODO: listeners???????
@@ -238,11 +216,11 @@ public class Neo4jDatabaseManager extends AbstractDatabaseManager {
     public void shutdown() {
         if (dbService != null) {
             LOGGER.info("Database shutted down");
-            
+
             fireEvent(EventType.BEFORE_SHUTDOWN);
-            
+
             dbService.shutdown();
-            
+
             fireEvent(EventType.AFTER_SHUTDOWN);
         }
 
@@ -250,21 +228,21 @@ public class Neo4jDatabaseManager extends AbstractDatabaseManager {
     }
 
     @Override
-	public void startThreadTransaction() {
-		// TODO Auto-generated method stub
-		
-	}
+    public void startThreadTransaction() {
+        // TODO Auto-generated method stub
 
-	@Override
-	public void commitThreadTransaction() {
-		// TODO Auto-generated method stub
-		
-	}
+    }
 
-	@Override
-	public void rollbackThreadTransaction() {
-		// TODO Auto-generated method stub
-		
-	}
+    @Override
+    public void commitThreadTransaction() {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void rollbackThreadTransaction() {
+        // TODO Auto-generated method stub
+
+    }
 
 }

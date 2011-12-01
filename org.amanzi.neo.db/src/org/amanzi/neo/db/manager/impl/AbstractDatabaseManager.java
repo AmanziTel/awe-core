@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.db.manager.impl;
 
+import java.io.File;
 import java.util.ArrayList;
 
 import org.amanzi.neo.db.manager.IDatabaseManager;
@@ -30,96 +31,113 @@ import org.neo4j.graphdb.Transaction;
  */
 public abstract class AbstractDatabaseManager implements IDatabaseManager {
 
-	private static final Logger LOGGER = Logger
-			.getLogger(AbstractDatabaseManager.class);
+    private static final Logger LOGGER = Logger.getLogger(AbstractDatabaseManager.class);
 
-	/*
-	 * Map of Transactions-per-Thread
-	 */
-	private ThreadLocal<Transaction> transactionMap = new ThreadLocal<Transaction>();
+    /**
+     * Default Database Location "user.home"/.amanzi/neo
+     */
+    private static final String[] DEFAULT_DATABASE_LOCATION = new String[] {".amanzi", "neo"};
 
-	/*
-	 * Listeners for Database Events
-	 */
-	private static ArrayList<IDatabaseEventListener> listeners = new ArrayList<IDatabaseEventListener>();
+    /*
+     * Map of Transactions-per-Thread
+     */
+    private ThreadLocal<Transaction> transactionMap = new ThreadLocal<Transaction>();
 
-	@Override
-	public void startThreadTransaction() {
-		LOGGER.info("Creating Transaction for Thread <"
-				+ Thread.currentThread() + ">");
+    /*
+     * Listeners for Database Events
+     */
+    private static ArrayList<IDatabaseEventListener> listeners = new ArrayList<IDatabaseEventListener>();
 
-		if (transactionMap.get() != null) {
-			LOGGER.error("Transaction for Thread <" + Thread.currentThread()
-					+ "> alread exists");
-			// TODO: LN: throw Exception
-		}
+    @Override
+    public void startThreadTransaction() {
+        LOGGER.info("Creating Transaction for Thread <" + Thread.currentThread() + ">");
 
-		transactionMap.set(getDatabaseService().beginTx());
-	}
+        if (transactionMap.get() != null) {
+            LOGGER.error("Transaction for Thread <" + Thread.currentThread() + "> alread exists");
+            // TODO: LN: throw Exception
+        }
 
-	@Override
-	public void commitThreadTransaction() {
-		LOGGER.info("Commiting Transaction for Thread <"
-				+ Thread.currentThread() + ">");
+        transactionMap.set(getDatabaseService().beginTx());
+    }
 
-		// commiting current transaction
-		Transaction tx = transactionMap.get();
-		tx.success();
-		tx.finish();
+    @Override
+    public void commitThreadTransaction() {
+        LOGGER.info("Commiting Transaction for Thread <" + Thread.currentThread() + ">");
 
-		// creating new one
-		tx = getDatabaseService().beginTx();
-		transactionMap.set(tx);
-	}
+        // commiting current transaction
+        Transaction tx = transactionMap.get();
+        tx.success();
+        tx.finish();
 
-	@Override
-	public void rollbackThreadTransaction() {
-		LOGGER.info("Rolling back Transaction for Thread <"
-				+ Thread.currentThread() + ">");
+        // creating new one
+        tx = getDatabaseService().beginTx();
+        transactionMap.set(tx);
+    }
 
-		// commiting current transaction
-		Transaction tx = transactionMap.get();
-		tx.failure();
-		tx.finish();
+    @Override
+    public void rollbackThreadTransaction() {
+        LOGGER.info("Rolling back Transaction for Thread <" + Thread.currentThread() + ">");
 
-		// creating new one
-		tx = getDatabaseService().beginTx();
-		transactionMap.set(tx);
-	}
+        // commiting current transaction
+        Transaction tx = transactionMap.get();
+        tx.failure();
+        tx.finish();
 
-	@Override
-	public void finishThreadTransaction() {
-		LOGGER.info("Finishing Transaction for Thread <"
-				+ Thread.currentThread() + ">");
+        // creating new one
+        tx = getDatabaseService().beginTx();
+        transactionMap.set(tx);
+    }
 
-		// commiting current transaction
-		Transaction tx = transactionMap.get();
-		tx.success();
-		tx.finish();
+    @Override
+    public void finishThreadTransaction() {
+        LOGGER.info("Finishing Transaction for Thread <" + Thread.currentThread() + ">");
 
-		transactionMap.remove();
-	}
+        // commiting current transaction
+        Transaction tx = transactionMap.get();
+        tx.success();
+        tx.finish();
 
-	@Override
-	public void addDatabaseEventListener(IDatabaseEventListener listener) {
-		listeners.add(listener);
-	}
+        transactionMap.remove();
+    }
 
-	@Override
-	public void removeDatabaseEventListener(IDatabaseEventListener listener) {
-		listeners.remove(listener);
-	}
+    @Override
+    public void addDatabaseEventListener(IDatabaseEventListener listener) {
+        listeners.add(listener);
+    }
 
-	/**
-	 * Fires database event for listeners
-	 * 
-	 * @param eventType
-	 *            type of event
-	 */
-	protected void fireEvent(EventType eventType) {
-		DatabaseEvent event = new DatabaseEvent(eventType);
-		for (IDatabaseEventListener listener : listeners) {
-			listener.onDatabaseEvent(event);
-		}
-	}
+    @Override
+    public void removeDatabaseEventListener(IDatabaseEventListener listener) {
+        listeners.remove(listener);
+    }
+
+    /**
+     * Fires database event for listeners
+     * 
+     * @param eventType type of event
+     */
+    protected void fireEvent(EventType eventType) {
+        DatabaseEvent event = new DatabaseEvent(eventType);
+        for (IDatabaseEventListener listener : listeners) {
+            listener.onDatabaseEvent(event);
+        }
+    }
+
+    /**
+     * Creates default location for database and returns it's path
+     * 
+     * @return default path to database location
+     */
+    public static String getDefaultDatabaseLocation() {
+        String userHome = System.getProperty("user.home");
+
+        File databaseDirectory = new File(userHome);
+        for (String subDirectory : DEFAULT_DATABASE_LOCATION) {
+            databaseDirectory = new File(databaseDirectory, subDirectory);
+        }
+
+        databaseDirectory.mkdirs();
+
+        return databaseDirectory.getAbsolutePath();
+    }
+
 }
