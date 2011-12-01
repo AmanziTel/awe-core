@@ -37,7 +37,6 @@ import org.amanzi.neo.services.model.IProjectModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.amanzi.neo.services.model.impl.ProjectModel.DistributionItem;
 import org.amanzi.neo.services.ui.enums.EventsType;
-import org.amanzi.neo.services.ui.events.ChangeProjectEvent;
 import org.amanzi.neo.services.ui.events.EventManager;
 import org.amanzi.neo.services.ui.events.IEventsListener;
 import org.amanzi.neo.services.ui.events.UpdateDataEvent;
@@ -484,7 +483,6 @@ public class DistributionAnalyzerView extends ViewPart {
         // EventManager.getInstance().addListener(this, EventUIType.PROJECT_CHANGED);
         EventManager.getInstance().addListener(EventsType.UPDATE_DATA, new RefreshViewListener());
         EventManager.getInstance().addListener(EventsType.UPDATE_DATA, new RefreshNeoclipseManager());
-        EventManager.getInstance().addListener(EventsType.CHANGE_PROJECT, new ChangeProjectListener());
         UPDATE_BAR_COLORS_JOB.setSystem(true);
     }
 
@@ -1350,25 +1348,6 @@ public class DistributionAnalyzerView extends ViewPart {
         @Override
         public void handleEvent(UpdateDataEvent data) {
             NeoclipseViewerManager.getInstance().refreshNeoeclipseView();
-        }
-    }
-
-    /**
-     * <p>
-     * describe reaction for change project event
-     * </p>
-     * 
-     * @author Kondratenko_Vladislav
-     * @since 1.0.0
-     */
-    private class ChangeProjectListener implements IEventsListener<ChangeProjectEvent> {
-        @Override
-        public void handleEvent(ChangeProjectEvent data) {
-            try {
-                initializeFields();
-            } catch (AWEException e) {
-                showErrorMessage("cannot initialize field for project " + data.getProjectName());
-            }
         }
     }
 

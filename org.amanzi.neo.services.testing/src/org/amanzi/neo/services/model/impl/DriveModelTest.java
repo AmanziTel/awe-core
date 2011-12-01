@@ -27,6 +27,8 @@ import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.model.ICorrelationModel;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDriveModel;
+import org.amanzi.neo.services.model.IModel;
+import org.amanzi.neo.services.model.IProjectModel;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveRelationshipTypes;
 import org.apache.log4j.Logger;
@@ -884,14 +886,58 @@ public class DriveModelTest extends AbstractNeoServiceTest {
         }
     }
 
+    @Test
+    public void testGetProject() {
+        DriveModel model = null;
+        try {
+            model = new DriveModel(project, dataset, dsName, DriveTypes.values()[0]);
+        } catch (AWEException e) {
+            // TODO Handle AWEException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+        IProjectModel pModel = model.getProject();
+        Assert.assertEquals("Same nodes expected ", pModel.getRootNode().equals(project));
+    }
+
+    @Test
+    public void testGetParentModelWithoutVirtualDataset() {
+        DriveModel model = null;
+        IModel pModel;
+        try {
+            model = new DriveModel(project, dataset, dsName, DriveTypes.values()[0]);
+            pModel = model.getParentModel();
+        } catch (AWEException e) {
+            // TODO Handle AWEException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+
+        Assert.assertEquals("Same nodes expected ", pModel.getRootNode().equals(project));
+    }
+
+    @Test
+    public void testGetParentModelWithVirtualDataset() {
+        DriveModel model = null;
+        DriveModel virtualModel = null;
+        IModel pModel;
+        try {
+            model = new DriveModel(project, dataset, dsName, DriveTypes.values()[0]);
+            virtualModel = model.addVirtualDataset(model.getName(), DriveTypes.values()[1]);
+            pModel = virtualModel.getParentModel();
+        } catch (AWEException e) {
+            // TODO Handle AWEException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+
+        Assert.assertEquals("Same nodes expected ", pModel.getRootNode().equals(model.getRootNode()));
+    }
+
     @SuppressWarnings("static-access")
     private boolean isIndexed(Node parent, Node node, String name, Object value) {
         Node n = parent
                 .getGraphDatabase()
                 .index()
                 .forNodes(
-                        dsServ.getIndexKey(parent,
-                                NodeTypeManager.getType(node.getProperty(AbstractService.TYPE, "").toString())))
+                        dsServ.getIndexKey(parent, NodeTypeManager.getType(node.getProperty(AbstractService.TYPE, "").toString())))
                 .get(name, value).getSingle();
         return n.equals(node);
 

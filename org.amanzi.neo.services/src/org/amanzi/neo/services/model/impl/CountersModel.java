@@ -14,10 +14,13 @@
 package org.amanzi.neo.services.model.impl;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.CorrelationService;
+import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.DatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.DatasetService.DatasetTypes;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.INodeType;
@@ -26,7 +29,9 @@ import org.amanzi.neo.services.model.ICorrelationModel;
 import org.amanzi.neo.services.model.ICountersModel;
 import org.amanzi.neo.services.model.ICountersType;
 import org.amanzi.neo.services.model.IDataElement;
+import org.amanzi.neo.services.model.IModel;
 import org.apache.commons.lang.StringUtils;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -40,6 +45,7 @@ import org.neo4j.graphdb.Node;
 public class CountersModel extends AbstractIndexedModel implements ICountersModel {
 
     private CorrelationService crServ = NeoServiceFactory.getInstance().getCorrelationService();
+    private DatasetService dsServ = NeoServiceFactory.getInstance().getDatasetService();
 
     protected CountersModel(Node rootNode) throws AWEException {
         super(rootNode, DatasetTypes.COUNTERS);
@@ -101,4 +107,16 @@ public class CountersModel extends AbstractIndexedModel implements ICountersMode
         return false;
     }
 
+    @Override
+    public IModel getParentModel() throws AWEException {
+        if (rootNode == null) {
+            throw new IllegalArgumentException("currentModel type is null.");
+        }
+        Iterator<Node> isVirtual = dsServ.getFirstRelationTraverser(rootNode, DatasetRelationTypes.DATASET, Direction.INCOMING)
+                .iterator();
+        if (isVirtual.hasNext()) {
+            return new ProjectModel(isVirtual.next());
+        }
+        return null;
+    }
 }

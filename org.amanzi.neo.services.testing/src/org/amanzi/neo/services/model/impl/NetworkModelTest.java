@@ -34,7 +34,9 @@ import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
 import org.amanzi.neo.services.model.ICorrelationModel;
 import org.amanzi.neo.services.model.IDataElement;
+import org.amanzi.neo.services.model.IModel;
 import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
+import org.amanzi.neo.services.model.IProjectModel;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
 import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelTypes;
 import org.apache.log4j.Logger;
@@ -387,7 +389,8 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
         List<Node> datasets = new ArrayList<Node>();
         try {
             for (int i = 0; i < 4; i++) {
-                Node dataset = dsServ.createDataset(project, "network" + i, DatasetTypes.DRIVE, DriveTypes.values()[0], DriveNodeTypes.M);
+                Node dataset = dsServ.createDataset(project, "network" + i, DatasetTypes.DRIVE, DriveTypes.values()[0],
+                        DriveNodeTypes.M);
                 datasets.add(dataset);
                 new CorrelationModel(network, dataset);
             }
@@ -587,5 +590,23 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
         model.finishUp();
 
         verify(service).setNetworkStructure(eq(model.getRootNode()), any(List.class));
+    }
+
+    @Test
+    public void testGetProject() {
+        IProjectModel pModel = model.getProject();
+        Assert.assertEquals("Same nodes expected ", pModel.getRootNode().equals(project));
+    }
+
+    @Test
+    public void testGetParentModel() {
+        IModel pModel;
+        try {
+            pModel = model.getParentModel();
+        } catch (AWEException e) {
+            // TODO Handle AWEException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+        Assert.assertEquals("Same nodes expected ", pModel.getRootNode().equals(project));
     }
 }

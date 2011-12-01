@@ -81,16 +81,44 @@ public class EventManager {
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
     public <T extends AbstractEvent> void fireEvent(final T event) {
-        Set<IEventsListener<T>> eventListeners = (Set)listenersCollections.get(event.getType());
-        if (eventListeners != null) {
-            for (final IEventsListener<T> listeners : eventListeners) {
-                ActionUtil.getInstance().runTask(new Runnable() {
-                    @Override
-                    public void run() {
+        EventsType type = event.getType();
+        final Set<IEventsListener<T>> eventListeners = (Set)listenersCollections.get(type);
+        // fire events in main thread
+        ActionUtil.getInstance().runTask(new Runnable() {
+            @Override
+            public void run() {
+                if (eventListeners != null) {
+                    for (final IEventsListener<T> listeners : eventListeners) {
                         listeners.handleEvent(event);
                     }
-                }, false);
+                }
+                fireRelatedEvent(event);
+            }
+        }, false);
+    }
 
+    /**
+     * fire related event for example event PROJECT_CHANGE should fire UPDATE_DATA
+     * 
+     * @param event
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public <T extends AbstractEvent> void fireRelatedEvent(final T event) {
+        EventsType type = event.getType();
+        Set<IEventsListener<T>> eventListeners = null;
+        T relatedEvent = null;
+        switch (type) {
+        case CHANGE_PROJECT:
+            type = EventsType.UPDATE_DATA;
+            relatedEvent = (T)new UpdateDataEvent();
+            break;
+        default:
+            return;
+        }
+        eventListeners = (Set)listenersCollections.get(type);
+        if (eventListeners != null) {
+            for (final IEventsListener<T> listeners : eventListeners) {
+                listeners.handleEvent(relatedEvent);
             }
         }
     }

@@ -41,6 +41,7 @@ import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.model.ICorrelationModel;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDriveModel;
+import org.amanzi.neo.services.model.IModel;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
@@ -642,5 +643,18 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     @Override
     public IDistributionModel getDistributionModel(IDistribution< ? > distributionType) throws AWEException {
         return new DistributionModel(this, distributionType);
+    }
+
+    @Override
+    public IModel getParentModel() throws AWEException {
+        if (rootNode == null) {
+            throw new IllegalArgumentException("currentModel type is null.");
+        }
+        Iterator<Node> isVirtual = dsServ.getFirstRelationTraverser(rootNode, DriveRelationshipTypes.VIRTUAL_DATASET,
+                Direction.INCOMING).iterator();
+        if (isVirtual.hasNext()) {
+            return new DriveModel(isVirtual.next());
+        }
+        return getProject();
     }
 }
