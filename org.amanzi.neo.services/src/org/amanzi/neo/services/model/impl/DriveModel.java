@@ -22,6 +22,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.amanzi.neo.model.distribution.IDistribution;
+import org.amanzi.neo.model.distribution.IDistributionModel;
+import org.amanzi.neo.model.distribution.impl.DistributionModel;
 import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.CorrelationService;
 import org.amanzi.neo.services.DatasetService;
@@ -634,5 +637,10 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     @Override
     public boolean isUniqueProperties(String property) {
         return false;
+    }
+
+    @Override
+    public IDistributionModel getDistributionModel(IDistribution< ? > distributionType) throws AWEException {
+        return new DistributionModel(this, distributionType);
     }
 }

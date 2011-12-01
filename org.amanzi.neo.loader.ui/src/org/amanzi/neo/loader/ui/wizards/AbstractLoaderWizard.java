@@ -30,12 +30,14 @@ import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.ILoader;
 import org.amanzi.neo.loader.core.ILoaderProgressListener;
 import org.amanzi.neo.loader.core.IProgressEvent;
-import org.amanzi.neo.loader.core.saver.IData;
 import org.amanzi.neo.loader.core.parser.IConfigurationData;
+import org.amanzi.neo.loader.core.saver.IData;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
-import org.amanzi.neo.services.ui.events.NewEventManager;
+import org.amanzi.neo.services.ui.events.IEventsListener;
+import org.amanzi.neo.services.ui.events.EventManager;
 import org.amanzi.neo.services.ui.events.UpdateDataEvent;
+import org.amanzi.neo.services.ui.neoclipse.manager.NeoclipseViewerManager;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -49,8 +51,8 @@ import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
+import org.amanzi.neo.services.ui.enums.*;
 
-//TODO refactoring for new loader architect
 /**
  * <p>
  * Abstract class for wizard for loaders
@@ -65,6 +67,13 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
         implements
             IGraphicInterfaceForLoaders<T>,
             IImportWizard {
+
+    @SuppressWarnings("unchecked")
+    public AbstractLoaderWizard() {
+        super();
+        EventManager.getInstance().addListener(EventsType.UPDATE_DATA, new RefreshNeoclipseView());
+
+    }
 
     /** The pages. */
     protected List<IWizardPage> pages = new ArrayList<IWizardPage>();
@@ -112,6 +121,13 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
                 info.setPage(idPage, id);
                 idPage++;
             }
+        }
+    }
+
+    private class RefreshNeoclipseView implements IEventsListener<UpdateDataEvent> {
+        @Override
+        public void handleEvent(UpdateDataEvent data) {
+            NeoclipseViewerManager.getInstance().refreshNeoeclipseView();
         }
     }
 
@@ -241,7 +257,7 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
                 newload(newloader, monitor);
                 try {
                     addDataToCatalog();
-                    NewEventManager.getInstance().fireEvent(new UpdateDataEvent());
+                    EventManager.getInstance().fireEvent(new UpdateDataEvent());
                 } catch (MalformedURLException e) {
                     MessageDialog.openError(getShell(), "Error while add data to catalog", "Cann't add data to catalog");
                     e.printStackTrace();

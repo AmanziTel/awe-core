@@ -14,6 +14,7 @@
 package org.amanzi.neo.services.ui.events;
 
 import org.amanzi.neo.services.model.IDataModel;
+import org.amanzi.neo.services.ui.enums.EventsType;
 
 /**
  * <p>

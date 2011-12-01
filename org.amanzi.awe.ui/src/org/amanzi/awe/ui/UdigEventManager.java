@@ -16,8 +16,8 @@ package org.amanzi.awe.ui;
 import net.refractions.udig.project.IProject;
 import net.refractions.udig.project.internal.impl.ProjectRegistryImpl;
 
+import org.amanzi.neo.services.ui.events.ChangeProjectEvent;
 import org.amanzi.neo.services.ui.events.EventManager;
-import org.amanzi.neo.services.ui.events.EventUIType;
 import org.eclipse.emf.common.notify.Adapter;
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.Notifier;
@@ -27,11 +27,12 @@ import org.eclipse.ui.IStartup;
  * <p>
  * Manager for handling uDig events
  * </p>
+ * 
  * @author kostyukovich_n
  * @since 1.0.0
  */
 public class UdigEventManager implements IStartup {
-    
+
     public void registerProjectChangedEvent() {
         ProjectRegistryImpl.getProjectRegistry().eAdapters().add(new Adapter() {
 
@@ -49,7 +50,7 @@ public class UdigEventManager implements IStartup {
             public void notifyChanged(Notification arg0) {
                 if (arg0.getEventType() == Notification.SET) {
                     IProject project = (IProject)arg0.getNewValue();
-                    EventManager.getInstance().notify(EventUIType.PROJECT_CHANGED, project.getName());
+                    EventManager.getInstance().fireEvent(new ChangeProjectEvent(project.getName()));
                 }
             }
 
@@ -64,5 +65,5 @@ public class UdigEventManager implements IStartup {
     public void earlyStartup() {
         registerProjectChangedEvent();
     }
-    
+
 }

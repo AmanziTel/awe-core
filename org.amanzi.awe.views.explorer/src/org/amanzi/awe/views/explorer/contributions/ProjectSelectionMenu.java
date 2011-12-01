@@ -16,6 +16,8 @@ package org.amanzi.awe.views.explorer.contributions;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IProjectModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
+import org.amanzi.neo.services.ui.events.ChangeProjectEvent;
+import org.amanzi.neo.services.ui.events.EventManager;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -47,10 +49,12 @@ public class ProjectSelectionMenu extends CompoundContributionItem {
                 // create the menu item
                 MenuItem menuItem = new MenuItem(menu, SWT.BUTTON1, index);
                 menuItem.setText(projectModel.getName());
+                if (menuItem.getText().equals(ProjectModel.getCurrentProjectModel().getName())) {
+                    menuItem.setEnabled(false);
+                }
                 menuItem.addSelectionListener(new SelectionAdapter() {
                     public void widgetSelected(SelectionEvent e) {
-                    	//TODO: LN: should be thrown Event
-//                        ProjectModel.setActiveProject(((MenuItem)e.getSource()).getText());
+                        EventManager.getInstance().fireEvent(new ChangeProjectEvent(((MenuItem)e.getSource()).getText()));
                     }
                 });
             }

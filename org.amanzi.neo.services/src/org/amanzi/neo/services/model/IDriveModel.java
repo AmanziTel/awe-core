@@ -16,6 +16,7 @@ package org.amanzi.neo.services.model;
 import java.io.File;
 import java.util.Map;
 
+import org.amanzi.neo.model.distribution.IDistributionalModel;
 import org.amanzi.neo.services.enums.IDriveType;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
@@ -32,7 +33,13 @@ import org.neo4j.graphdb.RelationshipType;
  * @author grigoreva_a
  * @since 1.0.0
  */
-public interface IDriveModel extends ICorrelatableModel, IRenderableModel, IPropertyStatisticalModel, ITimelineModel {
+public interface IDriveModel
+        extends
+            ICorrelatableModel,
+            IRenderableModel,
+            IPropertyStatisticalModel,
+            ITimelineModel,
+            IDistributionalModel {
     /**
      * @return a List<Node> containing DriveModels created on base of virtual dataset nodes in
      *         current DriveModel

@@ -346,7 +346,19 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
         ProjectService projectService = NeoServiceFactory.getInstance().getProjectService();
 
         Node projectNode = projectService.getProject(ApplicationGIS.getActiveProject().getName());
+        return new ProjectModel(projectNode);
+    }
 
+    /**
+     * Reset active project
+     * 
+     * @return Model of active Project
+     * @throws AWEException
+     */
+    public static IProjectModel setActiveProject(String projectName) throws AWEException {
+        ProjectService projectService = NeoServiceFactory.getInstance().getProjectService();
+
+        Node projectNode = projectService.getProject(projectName);
         return new ProjectModel(projectNode);
     }
 
@@ -359,7 +371,7 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
     public static Iterable<IProjectModel> findAllProjectModels() throws AWEException {
         ProjectService projectService = NeoServiceFactory.getInstance().getProjectService();
         List<IProjectModel> projectList = new LinkedList<IProjectModel>();
-        
+
         for (Node projectNode : projectService.findAllProjects()) {
             projectList.add(new ProjectModel(projectNode));
         }
@@ -417,7 +429,7 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
         Iterable<INetworkModel> networks = findAllNetworkModels();
         for (IPropertyStatisticalModel model : networks) {
             datasets.add(model);
-        }        
+        }
         Iterable<IDriveModel> drives = findAllDriveModels();
         for (IPropertyStatisticalModel model : drives) {
             datasets.add(model);

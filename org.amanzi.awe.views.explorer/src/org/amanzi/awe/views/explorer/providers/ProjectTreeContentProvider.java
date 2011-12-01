@@ -19,6 +19,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
+import org.amanzi.neo.model.distribution.impl.DistributionManager;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.IModel;
@@ -38,9 +39,9 @@ import org.eclipse.jface.viewers.Viewer;
  * @author Vladislav_Kondratenko
  */
 public class ProjectTreeContentProvider implements IStructuredContentProvider, ITreeContentProvider {
-	
+
     private static final Logger LOGGER = Logger.getLogger(ProjectTreeContentProvider.class);
-    
+
     /**
      * Constructor of ContentProvider
      * 
@@ -48,7 +49,7 @@ public class ProjectTreeContentProvider implements IStructuredContentProvider, I
      */
     public ProjectTreeContentProvider() {
     }
-    
+
     @Override
     public void dispose() {
 
@@ -82,10 +83,12 @@ public class ProjectTreeContentProvider implements IStructuredContentProvider, I
             addToModelCollection(networkModel.getNodeToNodeModels(), modelMap);
             // add all corelation models
             addToModelCollection(networkModel.getCorrelationModels(), modelMap);
+            modelMap.addAll(DistributionManager.getManager().getAllDistributionModels(networkModel));
         } else if (parentElement instanceof IDriveModel) {
             IDriveModel driveModel = ((IDriveModel)parentElement);
             // add virtual datasets
             addToModelCollection(driveModel.getVirtualDatasets(), modelMap);
+            modelMap.addAll(DistributionManager.getManager().getAllDistributionModels(driveModel));
         }
         return modelMap;
     }

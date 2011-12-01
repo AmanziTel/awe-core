@@ -13,65 +13,85 @@
 
 package org.amanzi.neo.services.ui.events;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+
+import org.amanzi.neo.services.ui.enums.EventsType;
+import org.amanzi.neo.services.ui.utils.ActionUtil;
 
 /**
  * <p>
+ * controll events
  * </p>
  * 
- * @author kostyukovich_n
+ * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
 public class EventManager {
+    /**
+     * manager instance;
+     */
+    private static EventManager manager;
 
-    private static EventManager instance = null;
+    /**
+     * appropriation with event and listeners colections
+     */
+    private Map<EventsType, Set<IEventsListener< ? extends AbstractEvent>>> listenersCollections;
 
+    /**
+     * get instance of event manager
+     * 
+     * @return
+     */
     public static EventManager getInstance() {
-        if (instance == null) {
-            instance = new EventManager();
+        if (manager == null) {
+            manager = new EventManager();
         }
-        return instance;
+        return manager;
     }
 
-    private HashMap<EventUIType, Set<IEventListener>> listeners;
-
+    /**
+     * create class instance
+     */
     private EventManager() {
-        listeners = new HashMap<EventUIType, Set<IEventListener>>();
+        listenersCollections = new HashMap<EventsType, Set<IEventsListener< ? extends AbstractEvent>>>();
     }
 
-    public void addListener(IEventListener listener, EventUIType... eventTypes) {
-        for (EventUIType type : eventTypes) {
-            Set<IEventListener> list = listeners.get(type);
-            if (list == null) {
-                list = new HashSet<IEventListener>();
-                listeners.put(type, list);
+    /**
+     * add listener to event
+     * 
+     * @param eventType
+     * @param eventsListeners
+     */
+    public void addListener(EventsType eventType, IEventsListener< ? extends AbstractEvent>... eventsListeners) {
+        if (!listenersCollections.containsKey(eventType)) {
+            listenersCollections.put(eventType, new HashSet<IEventsListener< ? extends AbstractEvent>>());
+        }
+        listenersCollections.get(eventType).addAll(Arrays.asList(eventsListeners));
+    }
+
+    /**
+     * fire event
+     * 
+     * @param event
+     * @return
+     */
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public <T extends AbstractEvent> void fireEvent(final T event) {
+        Set<IEventsListener<T>> eventListeners = (Set)listenersCollections.get(event.getType());
+        if (eventListeners != null) {
+            for (final IEventsListener<T> listeners : eventListeners) {
+                ActionUtil.getInstance().runTask(new Runnable() {
+                    @Override
+                    public void run() {
+                        listeners.handleEvent(event);
+                    }
+                }, false);
+
             }
-            list.add(listener);
-        }
-    }
-
-    public void removeListener(EventUIType eventType, IEventListener listener) {
-        Set<IEventListener> list = listeners.get(eventType);
-        if (list == null)
-            return;
-        list.remove(listener);
-        if (list.size() == 0) {
-            listeners.remove(eventType);
-        }
-    }
-    
-    public void notify(EventUIType eventType) {
-        notify(eventType, null);
-    }
-
-    public void notify(EventUIType eventType, Object data) {
-        Set<IEventListener> list = listeners.get(eventType);
-        if (list == null)
-            return;
-        for (IEventListener listener : list) {
-            listener.handleEvent(eventType, data);
         }
     }
 }

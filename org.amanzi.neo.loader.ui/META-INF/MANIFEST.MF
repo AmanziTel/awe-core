@@ -8,7 +8,8 @@ Require-Bundle: org.amanzi.neo.loader.core;bundle-version="1.0.0";visibility:=re
  net.refractions.udig.project.ui;bundle-version="1.1.1",
  org.amanzi.neo.services;bundle-version="1.0.0",
  org.amanzi.neo.services.ui;bundle-version="1.0.0",
- org.amanzi.awe.console;bundle-version="1.0.0"
+ org.amanzi.awe.console;bundle-version="1.0.0",
+ org.amanzi.neo.services.ui;bundle-version="1.0.0"
 Export-Package: org.amanzi.neo.loader.ui,
  org.amanzi.neo.loader.ui.handlers,
  org.amanzi.neo.loader.ui.loaders,
