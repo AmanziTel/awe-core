@@ -10,6 +10,7 @@ package org.amanzi.awe.views.explorer.view;
 import org.amanzi.awe.views.explorer.providers.ProjectTreeContentProvider;
 import org.amanzi.awe.views.explorer.providers.ProjectTreeLabelProvider;
 import org.amanzi.neo.services.model.IModel;
+import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.IPropertyStatisticalModel;
 import org.amanzi.neo.services.ui.enums.EventsType;
 import org.amanzi.neo.services.ui.events.AnalyseEvent;
@@ -105,7 +106,14 @@ public class ProjectExplorerView extends ViewPart {
             @Override
             public void doubleClick(DoubleClickEvent event) {
                 IStructuredSelection selection = ((IStructuredSelection)event.getViewer().getSelection());
-                eventManager.fireEvent(new AnalyseEvent((IModel)selection.getFirstElement(), NETWORK_TREE_VIEW_ID));
+                Object selectionObject = selection.getFirstElement();
+                String source = "";
+                if (selectionObject instanceof INetworkModel) {
+                    source = NETWORK_TREE_VIEW_ID;
+                }
+                if (!source.isEmpty()) {
+                    eventManager.fireEvent(new AnalyseEvent((IModel)selection.getFirstElement(), source));
+                }
             }
         });
 
