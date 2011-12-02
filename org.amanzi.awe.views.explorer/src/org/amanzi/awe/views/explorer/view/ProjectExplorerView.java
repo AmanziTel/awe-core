@@ -17,6 +17,7 @@ import org.amanzi.neo.services.ui.events.AnalyseEvent;
 import org.amanzi.neo.services.ui.events.EventManager;
 import org.amanzi.neo.services.ui.events.IEventsListener;
 import org.amanzi.neo.services.ui.events.UpdateDataEvent;
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
@@ -107,7 +108,7 @@ public class ProjectExplorerView extends ViewPart {
             public void doubleClick(DoubleClickEvent event) {
                 IStructuredSelection selection = ((IStructuredSelection)event.getViewer().getSelection());
                 Object selectionObject = selection.getFirstElement();
-                String source = "";
+                String source = StringUtils.EMPTY;
                 if (selectionObject instanceof INetworkModel) {
                     source = NETWORK_TREE_VIEW_ID;
                 }
