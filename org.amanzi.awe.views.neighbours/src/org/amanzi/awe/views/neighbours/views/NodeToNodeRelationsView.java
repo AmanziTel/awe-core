@@ -20,12 +20,14 @@ import org.amanzi.neo.services.NetworkService;
 import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
+import org.amanzi.neo.services.model.IModel;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelTypes;
 import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.amanzi.neo.services.ui.enums.EventsType;
+import org.amanzi.neo.services.ui.events.AnalyseEvent;
 import org.amanzi.neo.services.ui.events.EventManager;
 import org.amanzi.neo.services.ui.events.IEventsListener;
 import org.amanzi.neo.services.ui.events.UpdateDataEvent;
@@ -66,6 +68,7 @@ import org.neo4j.graphdb.Relationship;
  * @since 1.0.0
  */
 public class NodeToNodeRelationsView extends ViewPart {
+    public static final String ID = "org.amanzi.awe.views.neighbours.views.NodeToNodeRelationsView";
 
     private Combo cbNetwork, cbN2NType, cbN2NName;
     private Button btnFilter;
@@ -75,6 +78,15 @@ public class NodeToNodeRelationsView extends ViewPart {
     private TableLabelProvider labelProvider;
     private TableContentProvider provider;
     private TableFilter servingFilter, neighbourFilter;
+    private final EventManager eventManager;
+
+    @SuppressWarnings("unchecked")
+    public NodeToNodeRelationsView() {
+        super();
+        eventManager = EventManager.getInstance();
+        eventManager.addListener(EventsType.UPDATE_DATA, new UpdateDataHandling());
+        eventManager.addListener(EventsType.ANALYSE, new AnalyseHandling());
+    }
 
     public abstract class TableFilter extends ViewerFilter {
 
@@ -462,7 +474,58 @@ public class NodeToNodeRelationsView extends ViewPart {
         cbNetwork.addSelectionListener(selListener);
         cbN2NType.addSelectionListener(selListener);
         cbN2NName.addSelectionListener(selListener);
-        EventManager.getInstance().addListener(EventsType.UPDATE_DATA, new RefreshN2NComboboxes());
+    }
+
+    /**
+     * handle analyse event to show n2n of recieved model
+     * 
+     * @return
+     */
+    private class AnalyseHandling implements IEventsListener<AnalyseEvent> {
+        @Override
+        public void handleEvent(AnalyseEvent data) {
+            setNetworkItems();
+            try {
+                INodeToNodeRelationsModel n2nModel = (INodeToNodeRelationsModel)data.getSelectedModel();
+                selecModel(n2nModel.getParentModel(), cbNetwork);
+                cbNetwork.setEnabled(true);
+                setN2NTypeItems();
+                int i = 0;
+                for (String type : cbN2NType.getItems()) {
+                    if (n2nModel.getN2nType().name().equalsIgnoreCase(type)) {
+                        cbN2NType.select(i);
+                        break;
+                    }
+                    i++;
+                }
+                cbN2NType.setEnabled(true);
+                setN2NModelsItems(getSelectedNetwork());
+                selecModel(n2nModel, cbN2NName);
+                cbN2NName.setEnabled(true);
+                tableViewer.setInput("");
+            } catch (AWEException e) {
+                return;
+            }
+        }
+
+        @Override
+        public Object getSource() {
+            return ID;
+        }
+    }
+
+    /**
+     * select model in combobox
+     */
+    private void selecModel(IModel model, Combo combo) {
+        String modelName = model.getName();
+        int i = 0;
+        for (String name : combo.getItems()) {
+            if (name.equals(modelName)) {
+                combo.select(i);
+            }
+            i++;
+        }
     }
 
     /**
@@ -473,7 +536,7 @@ public class NodeToNodeRelationsView extends ViewPart {
      * @author Kondratenko_Vladislav
      * @since 1.0.0
      */
-    private class RefreshN2NComboboxes implements IEventsListener<UpdateDataEvent> {
+    private class UpdateDataHandling implements IEventsListener<UpdateDataEvent> {
         @Override
         public void handleEvent(UpdateDataEvent data) {
             int selectedNetworkIteam = cbNetwork.getSelectionIndex();

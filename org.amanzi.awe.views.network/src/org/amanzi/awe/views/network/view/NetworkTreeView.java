@@ -229,8 +229,8 @@ public class NetworkTreeView extends ViewPart {
      */
     @SuppressWarnings("unchecked")
     private void addListeners() {
-        eventManager.addListener(EventsType.UPDATE_DATA, new RefreshTreeListener());
-        eventManager.addListener(EventsType.ANALYSE, new ShowInTreeListener());
+        eventManager.addListener(EventsType.UPDATE_DATA, new UpdateDataHandling());
+        eventManager.addListener(EventsType.ANALYSE, new AnalyseHandling());
     }
 
     /**
@@ -241,7 +241,7 @@ public class NetworkTreeView extends ViewPart {
      * @author Kondratenko_Vladislav
      * @since 1.0.0
      */
-    private class RefreshTreeListener implements IEventsListener<UpdateDataEvent> {
+    private class UpdateDataHandling implements IEventsListener<UpdateDataEvent> {
         @Override
         public void handleEvent(UpdateDataEvent data) {
             viewer.refresh();
@@ -254,7 +254,15 @@ public class NetworkTreeView extends ViewPart {
 
     }
 
-    private class ShowInTreeListener implements IEventsListener<AnalyseEvent> {
+    /**
+     * <p>
+     * describe handling of ANALYSE event
+     * </p>
+     * 
+     * @author Vladislav_Kondratenko
+     * @since 1.0.0
+     */
+    private class AnalyseHandling implements IEventsListener<AnalyseEvent> {
 
         @Override
         public void handleEvent(AnalyseEvent data) {

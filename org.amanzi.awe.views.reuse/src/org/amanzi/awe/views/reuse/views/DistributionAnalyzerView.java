@@ -33,10 +33,12 @@ import org.amanzi.neo.model.distribution.IDistributionalModel;
 import org.amanzi.neo.model.distribution.impl.DistributionManager;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.model.IModel;
 import org.amanzi.neo.services.model.IProjectModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.amanzi.neo.services.model.impl.ProjectModel.DistributionItem;
 import org.amanzi.neo.services.ui.enums.EventsType;
+import org.amanzi.neo.services.ui.events.AnalyseEvent;
 import org.amanzi.neo.services.ui.events.EventManager;
 import org.amanzi.neo.services.ui.events.IEventsListener;
 import org.amanzi.neo.services.ui.events.UpdateDataEvent;
@@ -92,6 +94,7 @@ import org.jfree.experimental.chart.swt.ChartComposite;
  * @since 1.0.0
  */
 public class DistributionAnalyzerView extends ViewPart {
+    public static final String ID = "org.amanzi.awe.views.reuse.views.DistributionAnalyzerView";
 
     private static final String DATASET_LABEL = "Data";
 
@@ -140,6 +143,10 @@ public class DistributionAnalyzerView extends ViewPart {
     private static final String LOAD_XML_LABEL = "Load Distribution Xml";
 
     private static final String SELECT_XML_DIALOG_LABEL = "Select Distribution XML";
+
+    private static final int POSITION_OF_DATASET_NAME = 0;
+
+    private static final String DATASET_NAME_SEPARATOR = "-";
 
     @SuppressWarnings("rawtypes")
     private class DistributionDataset extends AbstractDataset implements CategoryDataset {
@@ -485,7 +492,8 @@ public class DistributionAnalyzerView extends ViewPart {
     public DistributionAnalyzerView() {
         eventManager = EventManager.getInstance();
         // eventManager.addListener(this, EventUIType.PROJECT_CHANGED);
-        eventManager.addListener(EventsType.UPDATE_DATA, new RefreshViewListener());
+        eventManager.addListener(EventsType.UPDATE_DATA, new UpdateDataHandling());
+        eventManager.addListener(EventsType.ANALYSE, new AnalyseHandling());
         UPDATE_BAR_COLORS_JOB.setSystem(true);
     }
 
@@ -1330,7 +1338,7 @@ public class DistributionAnalyzerView extends ViewPart {
      * @author Kondratenko_Vladislav
      * @since 1.0.0
      */
-    private class RefreshViewListener implements IEventsListener<UpdateDataEvent> {
+    private class UpdateDataHandling implements IEventsListener<UpdateDataEvent> {
         @Override
         public void handleEvent(UpdateDataEvent data) {
             int datasetSelectionIndex = datasetCombo.getSelectionIndex();
@@ -1341,6 +1349,45 @@ public class DistributionAnalyzerView extends ViewPart {
         @Override
         public Object getSource() {
             return null;
+        }
+    }
+
+    /**
+     * <p>
+     * describe handling of ANALYSE event
+     * </p>
+     * 
+     * @author Kondratenko_Vladislav
+     * @since 1.0.0
+     */
+    private class AnalyseHandling implements IEventsListener<AnalyseEvent> {
+        @Override
+        public void handleEvent(AnalyseEvent data) {
+            IModel model = data.getSelectedModel();
+            updateDistributionsIteams();
+            selectModel(model, datasetCombo);
+            initializePropertyList();
+        }
+
+        @Override
+        public Object getSource() {
+            return ID;
+        }
+    }
+
+    /**
+     * select model in combobox
+     */
+    private void selectModel(IModel model, Combo combo) {
+        String modelName = model.getName();
+        int i = 0;
+        for (String name : combo.getItems()) {
+            String datasetName = name.split(DATASET_NAME_SEPARATOR)[POSITION_OF_DATASET_NAME];
+            if (modelName.equals(datasetName.substring(POSITION_OF_DATASET_NAME, datasetName.lastIndexOf(StringUtils.EMPTY) - 1))) {
+                combo.select(i);
+                break;
+            }
+            i++;
         }
     }
 
