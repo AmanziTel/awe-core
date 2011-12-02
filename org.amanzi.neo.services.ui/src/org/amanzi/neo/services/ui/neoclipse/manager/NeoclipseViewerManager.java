@@ -71,7 +71,7 @@ public class NeoclipseViewerManager {
     /**
      * refresh neoclipse view
      */
-    public void refreshNeoeclipseView() {
+    public void refreshNeoclipseView() {
         try {
             neoGraphView.refresh();
         } catch (Exception e) {

@@ -19,9 +19,14 @@ import org.apache.log4j.Logger;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.neoclipse.Activator;
+import org.neo4j.neoclipse.graphdb.GraphDbServiceEvent;
+import org.neo4j.neoclipse.graphdb.GraphDbServiceEventListener;
 import org.neo4j.neoclipse.graphdb.GraphDbServiceManager;
+import org.neo4j.neoclipse.graphdb.GraphDbServiceStatus;
 import org.neo4j.neoclipse.graphdb.GraphRunnable;
 import org.neo4j.neoclipse.preference.Preferences;
+import org.neo4j.neoclipse.reltype.RelationshipTypesProviderWrapper;
+import org.neo4j.neoclipse.view.UiHelper;
 
 /**
  * Database Manager that give access to Neo4j using Neoclipse
@@ -65,6 +70,7 @@ public class NeoclipseDatabaseManager extends AbstractDatabaseManager {
     public NeoclipseDatabaseManager() {
         neoclipseManager = Activator.getDefault().getGraphDbServiceManager();
         preferenceStore.setDefault(Preferences.DATABASE_LOCATION, getDefaultDatabaseLocation());
+        neoclipseManager.addServiceEventListener(new NeoclipseListener());
     }
 
     @Override
@@ -119,4 +125,38 @@ public class NeoclipseDatabaseManager extends AbstractDatabaseManager {
         neoclipseManager.shutdownGraphDbService();
     }
 
+    private class NeoclipseListener implements GraphDbServiceEventListener {
+        @Override
+        public void serviceChanged(final GraphDbServiceEvent event) {
+            
+            UiHelper.asyncExec( new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    if (event.getStatus() == GraphDbServiceStatus.STARTED) {
+
+                        try {
+                            RelationshipTypesProviderWrapper.getInstance().getElements(null);
+                            //Activator.getDefault().getGraphDbServiceManager().startGraphDbService();
+                        } catch (Exception e) {
+                            LOGGER.error("");
+                            throw (RuntimeException)new RuntimeException().initCause(e);
+                        }
+                    }
+                }
+            } );
+            
+            /*if (event.getStatus() == GraphDbServiceStatus.STARTED) {
+
+                try {
+                    RelationshipTypesProviderWrapper.getInstance().getElements(null);
+                    Activator.getDefault().getGraphDbServiceManager().startGraphDbService();
+                } catch (Exception e) {
+                    LOGGER.error("");
+                    throw (RuntimeException)new RuntimeException().initCause(e);
+                }
+            }*/
+        }
+    }
 }

@@ -127,7 +127,7 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
     private class RefreshNeoclipseView implements IEventsListener<UpdateDataEvent> {
         @Override
         public void handleEvent(UpdateDataEvent data) {
-            NeoclipseViewerManager.getInstance().refreshNeoeclipseView();
+            NeoclipseViewerManager.getInstance().refreshNeoclipseView();
         }
     }
 

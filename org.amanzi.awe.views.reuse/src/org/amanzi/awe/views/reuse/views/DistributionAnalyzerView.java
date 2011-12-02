@@ -1347,7 +1347,7 @@ public class DistributionAnalyzerView extends ViewPart {
     private class RefreshNeoclipseManager implements IEventsListener<UpdateDataEvent> {
         @Override
         public void handleEvent(UpdateDataEvent data) {
-            NeoclipseViewerManager.getInstance().refreshNeoeclipseView();
+            NeoclipseViewerManager.getInstance().refreshNeoclipseView();
         }
     }
 
