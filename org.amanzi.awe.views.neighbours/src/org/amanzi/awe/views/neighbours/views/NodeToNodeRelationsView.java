@@ -488,6 +488,11 @@ public class NodeToNodeRelationsView extends ViewPart {
             tableViewer.refresh();
 
         }
+
+        @Override
+        public Object getSource() {
+            return null;
+        }
     }
 
     private INetworkModel getSelectedNetwork() {

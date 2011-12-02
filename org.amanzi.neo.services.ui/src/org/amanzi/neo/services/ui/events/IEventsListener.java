@@ -27,4 +27,11 @@ public interface IEventsListener<T extends AbstractEvent> {
      * handle required event
      */
     public void handleEvent(T data);
+
+    /**
+     * get source for validate fireing
+     * 
+     * @return
+     */
+    public Object getSource();
 }

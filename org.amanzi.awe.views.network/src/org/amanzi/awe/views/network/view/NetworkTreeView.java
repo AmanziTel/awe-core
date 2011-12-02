@@ -34,6 +34,7 @@ import org.amanzi.neo.services.model.ISelectionModel;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.amanzi.neo.services.ui.enums.EventsType;
+import org.amanzi.neo.services.ui.events.AnalyseEvent;
 import org.amanzi.neo.services.ui.events.EventManager;
 import org.amanzi.neo.services.ui.events.IEventsListener;
 import org.amanzi.neo.services.ui.events.UpdateDataEvent;
@@ -97,12 +98,15 @@ public class NetworkTreeView extends ViewPart {
     private Set<IDataElement> selectedDataElements = new HashSet<IDataElement>();
 
     /**
+     * event manager
+     */
+    private EventManager eventManager;
+
+    /**
      * The constructor.
      */
     public NetworkTreeView() {
-        // EventManager.getInstance().addListener(this, EventUIType.PROJECT_CHANGED,
-        // EventUIType.DISTRIBUTIONS_CHANGED,
-        // EventUIType.DISTRIBUTION_BAR_SELECTED);
+        eventManager = EventManager.getInstance();
         addListeners();
     }
 
@@ -225,7 +229,8 @@ public class NetworkTreeView extends ViewPart {
      */
     @SuppressWarnings("unchecked")
     private void addListeners() {
-        EventManager.getInstance().addListener(EventsType.UPDATE_DATA, new RefreshTreeListener());
+        eventManager.addListener(EventsType.UPDATE_DATA, new RefreshTreeListener());
+        eventManager.addListener(EventsType.ANALYSE, new ShowInTreeListener());
     }
 
     /**
@@ -240,6 +245,26 @@ public class NetworkTreeView extends ViewPart {
         @Override
         public void handleEvent(UpdateDataEvent data) {
             viewer.refresh();
+        }
+
+        @Override
+        public Object getSource() {
+            return null;
+        }
+
+    }
+
+    private class ShowInTreeListener implements IEventsListener<AnalyseEvent> {
+
+        @Override
+        public void handleEvent(AnalyseEvent data) {
+            viewer.refresh();
+            viewer.expandToLevel(data.getSelectedModel(), 2);
+        }
+
+        @Override
+        public Object getSource() {
+            return NETWORK_TREE_VIEW_ID;
         }
 
     }

@@ -20,7 +20,10 @@ import java.util.Map;
 import java.util.Set;
 
 import org.amanzi.neo.services.ui.enums.EventsType;
+import org.amanzi.neo.services.ui.neoclipse.manager.NeoclipseListenerManager;
 import org.amanzi.neo.services.ui.utils.ActionUtil;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 
 /**
  * <p>
@@ -58,6 +61,7 @@ public class EventManager {
      */
     private EventManager() {
         listenersCollections = new HashMap<EventsType, Set<IEventsListener< ? extends AbstractEvent>>>();
+        NeoclipseListenerManager.initialiseNeoclipseListeners(this);
     }
 
     /**
@@ -82,6 +86,8 @@ public class EventManager {
     @SuppressWarnings({"rawtypes", "unchecked"})
     public <T extends AbstractEvent> void fireEvent(final T event) {
         EventsType type = event.getType();
+        final Object fireTarget = event.getTarget();
+        showView((String)fireTarget);
         final Set<IEventsListener<T>> eventListeners = (Set)listenersCollections.get(type);
         // fire events in main thread
         ActionUtil.getInstance().runTask(new Runnable() {
@@ -89,16 +95,31 @@ public class EventManager {
             public void run() {
                 if (eventListeners != null) {
                     for (final IEventsListener<T> listeners : eventListeners) {
-                        listeners.handleEvent(event);
+                        if ((fireTarget == null && listeners.getSource() == null) || fireTarget.equals(listeners.getSource())) {
+                            listeners.handleEvent(event);
+                        }
                     }
                 }
                 fireRelatedEvent(event);
             }
-        }, false);
+        }, true);
     }
 
     /**
-     * fire related event for example event PROJECT_CHANGE should fire UPDATE_DATA
+     * try to search and open view by id
+     */
+    public void showView(final String id) {
+        if (id == null || id.isEmpty()) {
+            return;
+        }
+        try {
+            PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(id);
+        } catch (PartInitException e) {
+        }
+    }
+
+    /**
+     * fire related event for example event PROJECT_CHANGE should also fire UPDATE_DATA
      * 
      * @param event
      */

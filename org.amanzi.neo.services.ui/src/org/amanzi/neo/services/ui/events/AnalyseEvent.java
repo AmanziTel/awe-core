@@ -13,7 +13,7 @@
 
 package org.amanzi.neo.services.ui.events;
 
-import org.amanzi.neo.services.model.IDataModel;
+import org.amanzi.neo.services.model.IModel;
 import org.amanzi.neo.services.ui.enums.EventsType;
 
 /**
@@ -28,7 +28,7 @@ public class AnalyseEvent extends AbstractEvent {
     /**
      * selected model to analyse
      */
-    private IDataModel selectedModel;
+    private IModel selectedModel;
     /**
      * id of required analyser
      */
@@ -37,16 +37,17 @@ public class AnalyseEvent extends AbstractEvent {
     /**
      * initialize event class with necessary parameters
      * 
-     * @param selectedModel
-     * @param analyser_id
+     * @param selectedModel model which should be send to view
+     * @param analyser_id view id
      */
-    public AnalyseEvent(IDataModel selectedModel, String analyser_id) {
+    public AnalyseEvent(IModel selectedModel, String analyser_id) {
         type = EventsType.ANALYSE;
         this.selectedModel = selectedModel;
         this.analyserId = analyser_id;
+        targetPluginId = analyserId;
     }
 
-    public IDataModel getSelectedModel() {
+    public IModel getSelectedModel() {
         return selectedModel;
     }
 

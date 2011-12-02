@@ -13,6 +13,8 @@
 
 package org.amanzi.neo.services.ui.events;
 
+import org.amanzi.neo.db.manager.events.DatabaseEvent;
+import org.amanzi.neo.db.manager.events.IDatabaseEventListener;
 import org.amanzi.neo.services.ui.enums.EventsType;
 
 /**
@@ -23,13 +25,17 @@ import org.amanzi.neo.services.ui.enums.EventsType;
  * @author Vladislav Kondratenko
  * @since 1.0.0
  */
-public class UpdateDataEvent extends AbstractEvent {
+public class UpdateDataEvent extends AbstractEvent implements IDatabaseEventListener {
 
     /**
      * create instants
      */
     public UpdateDataEvent() {
         type = EventsType.UPDATE_DATA;
+    }
+
+    @Override
+    public void onDatabaseEvent(DatabaseEvent event) {
     }
 
 }

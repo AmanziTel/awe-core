@@ -10,14 +10,20 @@ package org.amanzi.awe.views.explorer.view;
 import org.amanzi.awe.views.explorer.providers.ProjectTreeContentProvider;
 import org.amanzi.awe.views.explorer.providers.ProjectTreeLabelProvider;
 import org.amanzi.neo.services.model.IModel;
+import org.amanzi.neo.services.model.IPropertyStatisticalModel;
 import org.amanzi.neo.services.ui.enums.EventsType;
+import org.amanzi.neo.services.ui.events.AnalyseEvent;
 import org.amanzi.neo.services.ui.events.EventManager;
 import org.amanzi.neo.services.ui.events.IEventsListener;
 import org.amanzi.neo.services.ui.events.UpdateDataEvent;
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.IElementComparer;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
@@ -38,16 +44,34 @@ public class ProjectExplorerView extends ViewPart {
      * ID of this View
      */
     public static final String PROJECT_EXPLORER_ID = "org.amanzi.awe.views.explorer.view.ProjectExplorer";
+    /*
+     * pop-up menu items
+     */
+    public static final String DISTRIBUTION_ANALYSE_ITEM = "Distribution analyse";
+    public static final String PROPERTY_TABLE_ITEM = "Show properties";
+    public static final String DRIVE_INUQIER_ITEM = "Drive Inuqirer";
+    public static final String N2N_VIEW_ITEM = "Show N2N view";
 
+    /*
+     * required views id
+     */
+    public static final String PROPERTY_TABLE_PLUGIN_ID = "org.amanzi.awe.views.property.views.PropertyTableView";
+    public static final String NETWORK_TREE_VIEW_ID = "org.amanzi.awe.views.network.views.NetworkTreeView";
     /*
      * TreeViewer for database Nodes
      */
     protected TreeViewer viewer;
 
     /**
+     * event manager;
+     */
+    private EventManager eventManager;
+
+    /**
      * The constructor.
      */
     public ProjectExplorerView() {
+        eventManager = EventManager.getInstance();
     }
 
     /**
@@ -77,6 +101,14 @@ public class ProjectExplorerView extends ViewPart {
                 return a == null ? b == null : a.equals(b);
             }
         });
+        viewer.addDoubleClickListener(new IDoubleClickListener() {
+            @Override
+            public void doubleClick(DoubleClickEvent event) {
+                IStructuredSelection selection = ((IStructuredSelection)event.getViewer().getSelection());
+                eventManager.fireEvent(new AnalyseEvent((IModel)selection.getFirstElement(), NETWORK_TREE_VIEW_ID));
+            }
+        });
+
         hookContextMenu();
         getSite().setSelectionProvider(viewer);
         setLayout(parent);
@@ -105,6 +137,11 @@ public class ProjectExplorerView extends ViewPart {
             viewer.refresh();
         }
 
+        @Override
+        public Object getSource() {
+            return null;
+        }
+
     }
 
     /**
@@ -115,11 +152,60 @@ public class ProjectExplorerView extends ViewPart {
         menuMgr.setRemoveAllWhenShown(true);
         menuMgr.addMenuListener(new IMenuListener() {
             public void menuAboutToShow(IMenuManager manager) {
+                ProjectExplorerView.this.fillContextMenu(manager);
             }
         });
         Menu menu = menuMgr.createContextMenu(viewer.getControl());
         viewer.getControl().setMenu(menu);
         getSite().registerContextMenu(menuMgr, viewer);
+    }
+
+    /**
+     *
+     */
+    protected void fillContextMenu(IMenuManager manager) {
+        ShowPropertiesAction select = new ShowPropertiesAction((IStructuredSelection)viewer.getSelection(), PROPERTY_TABLE_ITEM);
+        if (select.isEnabled()) {
+            manager.add(select);
+        }
+    }
+
+    /**
+     * action describes show properties actions
+     */
+    private class ShowPropertiesAction extends Action {
+        private IPropertyStatisticalModel model = null;
+        private boolean enabled;
+        private String text;
+
+        @Override
+        public String getText() {
+            return text;
+        }
+
+        /**
+         * @param selection
+         * @param propertyTableItem
+         */
+        public ShowPropertiesAction(IStructuredSelection selection, String propertyTableItem) {
+            text = propertyTableItem;
+            if (selection.getFirstElement() instanceof IPropertyStatisticalModel) {
+                enabled = true;
+            }
+            if (enabled) {
+                model = (IPropertyStatisticalModel)selection.getFirstElement();
+            }
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        @Override
+        public void run() {
+            EventManager.getInstance().fireEvent(new AnalyseEvent(model, PROPERTY_TABLE_PLUGIN_ID));
+        }
     }
 
     /**
