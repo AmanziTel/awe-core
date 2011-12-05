@@ -38,7 +38,7 @@ public class NeoclipseDatabaseManager extends AbstractDatabaseManager {
     private static final Logger LOGGER = Logger.getLogger(NeoclipseDatabaseManager.class);
 
     private final IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
-    
+
     /**
      * Neoclipse Task to get Database Service
      * 
@@ -69,7 +69,8 @@ public class NeoclipseDatabaseManager extends AbstractDatabaseManager {
      */
     public NeoclipseDatabaseManager() {
         neoclipseManager = Activator.getDefault().getGraphDbServiceManager();
-        preferenceStore.setDefault(Preferences.DATABASE_LOCATION, getDefaultDatabaseLocation());        
+        preferenceStore.setDefault(Preferences.DATABASE_LOCATION, getDefaultDatabaseLocation());
+        neoclipseManager.addServiceEventListener(new NeoclipseListener());
     }
 
     @Override
@@ -122,5 +123,28 @@ public class NeoclipseDatabaseManager extends AbstractDatabaseManager {
     @Override
     public void shutdown() {
         neoclipseManager.shutdownGraphDbService();
-    }    
+    }
+
+    private class NeoclipseListener implements GraphDbServiceEventListener {
+        @Override
+        public void serviceChanged(final GraphDbServiceEvent event) {
+
+            UiHelper.asyncExec(new Runnable() {
+                @Override
+                public void run() {
+                    if (event.getStatus() == GraphDbServiceStatus.STARTED) {
+
+                        try {
+                            RelationshipTypesProviderWrapper.getInstance().getElements(null);
+
+                        } catch (Exception e) {
+                            LOGGER.error("");
+                            throw (RuntimeException)new RuntimeException().initCause(e);
+                        }
+                    }
+                }
+            });
+
+        }
+    }
 }
