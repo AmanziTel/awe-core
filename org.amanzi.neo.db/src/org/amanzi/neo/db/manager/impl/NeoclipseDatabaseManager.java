@@ -174,18 +174,8 @@ public class NeoclipseDatabaseManager extends AbstractDatabaseManager {
                         }
                     }
                 }
-            } );
-            
-            /*if (event.getStatus() == GraphDbServiceStatus.STARTED) {
-
-                try {
-                    RelationshipTypesProviderWrapper.getInstance().getElements(null);
-                    Activator.getDefault().getGraphDbServiceManager().startGraphDbService();
-                } catch (Exception e) {
-                    LOGGER.error("");
-                    throw (RuntimeException)new RuntimeException().initCause(e);
-                }
-            }*/
+            } );   
+           
         }
     }
 }
