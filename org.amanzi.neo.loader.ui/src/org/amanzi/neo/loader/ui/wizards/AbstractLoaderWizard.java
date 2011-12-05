@@ -34,10 +34,8 @@ import org.amanzi.neo.loader.core.parser.IConfigurationData;
 import org.amanzi.neo.loader.core.saver.IData;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
-import org.amanzi.neo.services.ui.events.IEventsListener;
 import org.amanzi.neo.services.ui.events.EventManager;
 import org.amanzi.neo.services.ui.events.UpdateDataEvent;
-import org.amanzi.neo.services.ui.neoclipse.manager.NeoclipseViewerManager;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -51,7 +49,6 @@ import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
-import org.amanzi.neo.services.ui.enums.*;
 
 /**
  * <p>
@@ -68,11 +65,8 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
             IGraphicInterfaceForLoaders<T>,
             IImportWizard {
 
-    @SuppressWarnings("unchecked")
     public AbstractLoaderWizard() {
         super();
-        EventManager.getInstance().addListener(EventsType.UPDATE_DATA, new RefreshNeoclipseView());
-
     }
 
     /** The pages. */
@@ -121,13 +115,6 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
                 info.setPage(idPage, id);
                 idPage++;
             }
-        }
-    }
-
-    private class RefreshNeoclipseView implements IEventsListener<UpdateDataEvent> {
-        @Override
-        public void handleEvent(UpdateDataEvent data) {
-            NeoclipseViewerManager.getInstance().refreshNeoclipseView();
         }
     }
 

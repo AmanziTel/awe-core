@@ -85,4 +85,8 @@ public interface INodeToNodeRelationsModel extends IPropertyStatisticalModel, ID
      */
     public IDataElement getFrequencyElement(int frequency) throws DatabaseException;
 
+    /**
+     * 
+     */
+    public INodeToNodeRelationsType getN2nType();
 }

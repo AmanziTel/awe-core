@@ -350,4 +350,9 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
         }
         return null;
     }
+
+    @Override
+    public INodeToNodeRelationsType getN2nType() {
+        return relType;
+    }
 }

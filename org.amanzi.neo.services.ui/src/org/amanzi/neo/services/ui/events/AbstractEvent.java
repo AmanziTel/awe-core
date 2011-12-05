@@ -29,6 +29,7 @@ public class AbstractEvent {
      * type of event
      */
     protected EventsType type;
+    protected String targetPluginId;
 
     /**
      * get event type
@@ -37,6 +38,15 @@ public class AbstractEvent {
      */
     protected EventsType getType() {
         return type;
+    }
+
+    /**
+     * get target plugin id
+     * 
+     * @return event type
+     */
+    protected Object getTarget() {
+        return targetPluginId;
     }
 
     @Override
