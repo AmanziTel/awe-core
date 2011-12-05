@@ -15,16 +15,10 @@ package org.amanzi.neo.db.manager.impl;
 
 import java.util.Map;
 
-//import org.amanzi.neo.services.ui.enums.EventsType;
-//import org.amanzi.neo.services.ui.events.EventManager;
-//import org.amanzi.neo.services.ui.events.IEventsListener;
-//import org.amanzi.neo.services.ui.events.UpdateDataEvent;
-//import org.amanzi.neo.services.ui.neoclipse.manager.NeoclipseViewerManager;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.neoclipse.Activator;
-import org.neo4j.neoclipse.event.NeoclipseEvent;
 import org.neo4j.neoclipse.graphdb.GraphDbServiceEvent;
 import org.neo4j.neoclipse.graphdb.GraphDbServiceEventListener;
 import org.neo4j.neoclipse.graphdb.GraphDbServiceManager;
@@ -75,9 +69,7 @@ public class NeoclipseDatabaseManager extends AbstractDatabaseManager {
      */
     public NeoclipseDatabaseManager() {
         neoclipseManager = Activator.getDefault().getGraphDbServiceManager();
-        preferenceStore.setDefault(Preferences.DATABASE_LOCATION, getDefaultDatabaseLocation());
-        neoclipseManager.addServiceEventListener(new NeoclipseListener());
-        //EventManager.getInstance().addListener(EventsType.UPDATE_DATA, new RefreshNeoclipseView());
+        preferenceStore.setDefault(Preferences.DATABASE_LOCATION, getDefaultDatabaseLocation());        
     }
 
     @Override
@@ -130,53 +122,5 @@ public class NeoclipseDatabaseManager extends AbstractDatabaseManager {
     @Override
     public void shutdown() {
         neoclipseManager.shutdownGraphDbService();
-    }
-    
-    /**
-     * <p>
-     * refresh neoclipse viewer
-     * </p>
-     * 
-     * @author Kondratenko_Vladislav
-     * @since 1.0.0
-     */
-    /*private class RefreshNeoclipseManager implements IEventsListener<UpdateDataEvent> {
-        @Override
-        public void handleEvent(UpdateDataEvent data) {
-            NeoclipseViewerManager.getInstance().refreshNeoclipseView();
-        }
-    }
-    
-    private class RefreshNeoclipseView implements IEventsListener<UpdateDataEvent> {
-        @Override
-        public void handleEvent(UpdateDataEvent data) {
-            NeoclipseViewerManager.getInstance().refreshNeoclipseView();
-        }
-    }*/
-    
-    private class NeoclipseListener implements GraphDbServiceEventListener {
-        @Override
-        public void serviceChanged(final GraphDbServiceEvent event) {
-            
-            UiHelper.asyncExec( new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    if (event.getStatus() == GraphDbServiceStatus.STARTED) {
-
-                        try {
-                            RelationshipTypesProviderWrapper.getInstance().getElements(null);
-                            
-                            //NeoclipseViewerManager.getInstance().refreshNeoclipseView();
-                        } catch (Exception e) {
-                            LOGGER.error("");
-                            throw (RuntimeException)new RuntimeException().initCause(e);
-                        }
-                    }
-                }
-            } );   
-           
-        }
-    }
+    }    
 }
