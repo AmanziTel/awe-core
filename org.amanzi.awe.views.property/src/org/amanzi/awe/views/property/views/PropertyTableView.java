@@ -22,10 +22,6 @@ import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IPropertyStatisticalModel;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.ProjectModel;
-import org.amanzi.neo.services.ui.enums.EventsType;
-import org.amanzi.neo.services.ui.events.AnalyseEvent;
-import org.amanzi.neo.services.ui.events.EventManager;
-import org.amanzi.neo.services.ui.events.IEventsListener;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
@@ -61,16 +57,6 @@ import org.eclipse.ui.part.ViewPart;
  */
 public class PropertyTableView extends ViewPart {
 
-    private EventManager eventManager;
-
-    @SuppressWarnings("unchecked")
-    public PropertyTableView() {
-        super();
-        eventManager = EventManager.getInstance();
-        eventManager.addListener(EventsType.ANALYSE, new ShowModelPropertiesActions());
-    }
-
-    public static final String PROPERTY_TABLE_ID = "org.amanzi.awe.views.property.views.PropertyTableView";
     private Combo cbData, cbProperty, cbFilter;
     private TableViewer tableViewer;
     private TableLabelProvider labelProvider;
@@ -294,8 +280,7 @@ public class PropertyTableView extends ViewPart {
                     if (Number.class.isAssignableFrom(propClass)) {
                         for (int i = 0; i < PropertyNumberFilter.values().length; i++) {
                             if (selFilter.equals(PropertyNumberFilter.values()[i].getCaption())) {
-                                if ((((DataElement)element).get(selProperty) == null)
-                                        ^ PropertyNumberFilter.values()[i].isPropertyNull()) {
+                                if ((((DataElement)element).get(selProperty) == null) ^ PropertyNumberFilter.values()[i].isPropertyNull()) {
                                     doFilter = false;
                                     break;
                                 }
@@ -303,10 +288,10 @@ public class PropertyTableView extends ViewPart {
                         }
                     } else {
                         if (!selFilter.equals(((DataElement)element).get(selProperty)))
-                            doFilter = false;
+                            doFilter = false;                                                
                     }
                 }
-                if (doFilter) {
+                if (doFilter) {                    
                     RowWrapper row = new RowWrapper();
                     for (int q = 0; q < properties.length; q++) {
                         row.addPropValue((((DataElement)element).get(properties[q])));
@@ -366,7 +351,7 @@ public class PropertyTableView extends ViewPart {
         cbProperty.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                setFilters();
+                setFilters();                
                 enableElements();
             }
 
@@ -385,35 +370,6 @@ public class PropertyTableView extends ViewPart {
             public void widgetDefaultSelected(SelectionEvent e) {
             }
         });
-    }
-
-    /**
-     * handle analyse event show properties of recieved model
-     * 
-     * @return
-     */
-    private class ShowModelPropertiesActions implements IEventsListener<AnalyseEvent> {
-        @Override
-        public void handleEvent(AnalyseEvent data) {
-            setDataModels();
-            IPropertyStatisticalModel model = (IPropertyStatisticalModel)data.getSelectedModel();
-            String modelName = model.getName();
-            int i = 0;
-            for (String comboEleemnt : cbData.getItems()) {
-                if (comboEleemnt.equals(modelName)) {
-                    cbData.select(i);
-                    break;
-                }
-                i++;
-            }
-            setProperties();
-            setFilters();
-        }
-
-        @Override
-        public Object getSource() {
-            return PROPERTY_TABLE_ID;
-        }
     }
 
     private IPropertyStatisticalModel getSelectedDataModel() {

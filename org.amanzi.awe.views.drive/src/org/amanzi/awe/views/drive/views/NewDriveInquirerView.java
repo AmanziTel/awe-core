@@ -12,9 +12,6 @@
  */
 package org.amanzi.awe.views.drive.views;
 
-import java.awt.Color;
-import java.awt.Paint;
-import java.awt.Shape;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -28,7 +25,6 @@ import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
-import org.amanzi.neo.services.utils.Pair;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.Preferences.IPropertyChangeListener;
 import org.eclipse.core.runtime.Preferences.PropertyChangeEvent;
@@ -65,22 +61,12 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
-import org.geotools.brewer.color.BrewerPalette;
-import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.AxisLocation;
 import org.jfree.chart.axis.DateAxis;
-import org.jfree.chart.axis.LogarithmicAxis;
-import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.ValueAxis;
-import org.jfree.chart.event.ChartProgressEvent;
-import org.jfree.chart.event.ChartProgressListener;
 import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.renderer.xy.StandardXYItemRenderer;
-import org.jfree.chart.renderer.xy.XYBarRenderer;
 import org.jfree.data.Range;
 import org.jfree.data.category.CategoryDataset;
-import org.jfree.data.time.Millisecond;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.xy.AbstractIntervalXYDataset;
@@ -106,7 +92,6 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
     public static final String ID = "org.amanzi.awe.views.drive.views.NewDriveInquirerView"; //$NON-NLS-1$
     private static final int MIN_FIELD_WIDTH = 50;
     private static final long SLIDER_STEP = 1000;// 1 sek
-    private static final String CHART_TITLE = "";
     private static final String LOG_LABEL = Messages.DriveInquirerView_2;
     private static final String PALETTE_LABEL = Messages.DriveInquirerView_3;
     protected static final String EVENT = Messages.DriveInquirerView_4;
@@ -116,8 +101,6 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
     private final TreeMap<String, List<String>> propertyLists = new TreeMap<String, List<String>>();
     private List<String> currentProperies = new ArrayList<String>(0);
     private DateAxis domainAxis;
-    private List<LogarithmicAxis> axisLogs;
-    private List<ValueAxis> axisNumerics;
     private List<TimeDataset> xydatasets;
 
     /* Gui elements */
@@ -147,7 +130,6 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
 
     /* Simple work fields */
     private Long beginGisTime;
-    private Long endGisTime;
     private Long selectedTime;
     private DateTime dateStart;
     private Long dateStartTimestamp;
@@ -203,21 +185,21 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
         bAddPropertyList.setEnabled(false);
 
         chart = createChart();
-        chartFrame = new ChartCompositeImpl(frame, SWT.NONE, chart, true);
+//        chartFrame = new ChartCompositeImpl(frame, SWT.NONE, chart, true);
         fData = new FormData();
         fData.top = new FormAttachment(child, 2);
         fData.left = new FormAttachment(0, 2);
         fData.right = new FormAttachment(100, -2);
         fData.bottom = new FormAttachment(100, -130);
 
-        chartFrame.setLayoutData(fData);
+//        chartFrame.setLayoutData(fData);
 
         slider = new Slider(frame, SWT.NONE);
         slider.setValues(MIN_FIELD_WIDTH, 0, 300, 1, 1, 1);
         fData = new FormData();
         fData.left = new FormAttachment(0, 0);
         fData.right = new FormAttachment(100, 0);
-        fData.top = new FormAttachment(chartFrame, 2);
+//        fData.top = new FormAttachment(chartFrame, 2);
         slider.setLayoutData(fData);
         slider.pack();
         table = new TableViewer(frame, SWT.BORDER | SWT.FULL_SELECTION);
@@ -341,29 +323,7 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
      * Creates the Chart based on a dataset
      */
     private JFreeChart createChart() {
-        XYBarRenderer xyarearenderer = new EventRenderer();
-        eventDataset = new EventDataset();
-        NumberAxis rangeAxis = new NumberAxis(Messages.DriveInquirerView_13);
-        rangeAxis.setVisible(false);
-        domainAxis = new DateAxis(Messages.DriveInquirerView_14);
-        XYPlot xyplot = new XYPlot(eventDataset, domainAxis, rangeAxis, xyarearenderer);
-
-        xydatasets = new ArrayList<TimeDataset>();
-
-        xyplot.setDomainCrosshairVisible(true);
-        xyplot.setDomainCrosshairLockedOnData(false);
-        xyplot.setRangeCrosshairVisible(false);
-
-        JFreeChart jfreechart = new JFreeChart(CHART_TITLE, JFreeChart.DEFAULT_TITLE_FONT, xyplot, true);
-
-        ChartUtilities.applyCurrentTheme(jfreechart);
-        jfreechart.getTitle().setVisible(false);
-
-        axisNumerics = new ArrayList<ValueAxis>(0);
-        axisLogs = new ArrayList<LogarithmicAxis>(0);
-        xyplot.getRenderer(0).setSeriesPaint(0, new Color(0, 0, 0, 0));
-
-        return jfreechart;
+    	return null;
     }
 
     /**
@@ -391,34 +351,7 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
      * Init events
      */
     private void initEvents() {
-        Pair<Long, Long> minMax = new Pair<Long, Long>(new Long(100000000), new Long(300000000));
-        beginGisTime = minMax.getLeft();
-        endGisTime = minMax.getRight();
-        if (beginGisTime == null || endGisTime == null) {
-            displayErrorMessage(Messages.DriveInquirerView_15);
-            validDrive = false;
-            return;
-        }
-        selectedTime = beginGisTime;
-        slider.setMaximum((int)((endGisTime - beginGisTime) / SLIDER_STEP));
-        slider.setSelection(0);
-        selectedTime = beginGisTime;
-        setBeginTime(beginGisTime);
-        chart.getXYPlot().setDomainCrosshairValue(selectedTime);
-    }
-    
-    /**
-     * Returns the color from selected palette for property by index
-     * 
-     * @param propNum index
-     * @return Color
-     */
-    private Color getColorForProperty(int propNum) {
-        BrewerPalette palette = PlatformGIS.getColorBrewer().getPalette(cPropertyPalette.getText());
-        Color[] colors = palette.getColors(palette.getMaxColors());
-        int index = ((colors.length - 1) * propNum) / Math.max(1, getCurrentPropertyCount() - 1);
-        Color color = colors[index];
-        return new Color(color.getRed(), color.getGreen(), color.getBlue(), 255);
+
     }
 
     /**
@@ -449,7 +382,7 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
             Arrays.sort(statistics);
             cPropertyList.setItems(statistics);
         }
-//        Object[] savedProperties = null;
+        Object[] savedProperties = null;
 //        if (savedProperties != null) {
 //            List<String> savedList = new ArrayList<String>(savedProperties.length);
 //            for (Object savedProperty : savedProperties) {
@@ -659,10 +592,10 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
                 widgetSelected(e);
             }
         });
-        chart.addProgressListener(new ChartProgressListener() {
-
-            @Override
-            public void chartProgress(ChartProgressEvent chartprogressevent) {
+//        chart.addProgressListener(new ChartProgressListener() {
+//
+//            @Override
+//            public void chartProgress(ChartProgressEvent chartprogressevent) {
 //                if (chartprogressevent.getType() != 2) {
 //                    return;
 //                }
@@ -671,11 +604,11 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
 //                    selectedTime = domainCrosshairValue;
 //                    slider.setSelection((int)((selectedTime - beginGisTime) / SLIDER_STEP));
 //                }
-                labelProvider.refreshTable();
-                table.setInput(0);
-                table.refresh();
-            }
-        });
+//                labelProvider.refreshTable();
+//                table.setInput(0);
+//                table.refresh();
+//            }
+//        });
         bReport.addSelectionListener(new SelectionAdapter() {
 
             @Override
@@ -717,50 +650,14 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
             currentProperies = new ArrayList<String>(0);
         }
         updateDatasets();
-        updateChart();
+//        updateChart();
     }
 
     /**
      * Update datasets
      */
     protected void updateDatasets() {
-        XYPlot xyplot = chart.getXYPlot();
-        for (int i = 1; i <= xydatasets.size(); i++) {
-            xyplot.setDataset(i, null);
-            xyplot.setRenderer(i, null);
-            xyplot.setRangeAxis(i, null);
-            xyplot.setRangeAxisLocation(i, null);
-        }
-        xydatasets.clear();
 
-        for (int i = 1; i <= getCurrentPropertyCount(); i++) {
-            TimeDataset xydataset = new TimeDataset();
-            StandardXYItemRenderer standardxyitemrenderer = new StandardXYItemRenderer();
-            standardxyitemrenderer.setBaseShapesFilled(true);
-            xyplot.setDataset(i, xydataset);
-            xyplot.setRenderer(i, standardxyitemrenderer);
-            NumberAxis numberaxis = new NumberAxis(getPropertyYAxisName(i));
-            numberaxis.setAutoRangeIncludesZero(false);
-            xyplot.setRangeAxis(i, numberaxis);
-            xyplot.setRangeAxisLocation(i, AxisLocation.BOTTOM_OR_LEFT);
-            xyplot.mapDatasetToRangeAxis(i, i);
-            xydatasets.add(xydataset);
-
-            ValueAxis axisNumeric = xyplot.getRangeAxis(i);
-            LogarithmicAxis axisLog = new LogarithmicAxis(axisNumeric.getLabel());
-            axisLog.setAllowNegativesFlag(true);
-            axisLog.setAutoRange(true);
-
-            Color color = getColorForProperty(i - 1);
-            axisLog.setTickLabelPaint(color);
-            axisLog.setLabelPaint(color);
-            axisNumeric.setTickLabelPaint(color);
-            axisNumeric.setLabelPaint(color);
-
-            axisNumerics.add(axisNumeric);
-            axisLogs.add(axisLog);
-            xyplot.getRenderer(i).setSeriesPaint(0, color);
-        }
     }
     
     /**
@@ -789,8 +686,6 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
         }
         eventDataset.updateDataset(cEvent.getText(), time, length, cEvent.getText());
         setsVisible(true);
-        
-        chart.fireChartChanged();
 //        fireEventUpdateChart();
     }
     
@@ -812,29 +707,6 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
      */
     private void formPropertyLists() {
         formPropertyList();
-        
-        cEvent.select(0);
-
-        Pair<Long, Long> minMax = new Pair<Long, Long>(new Long(100000000), new Long(300000000));
-        beginGisTime = minMax.getLeft();
-        endGisTime = minMax.getRight();
-
-        if (beginGisTime == null || endGisTime == null) {
-            displayErrorMessage(Messages.DriveInquirerView_97);
-            validDrive = false;
-            setsVisible(false);
-            return;
-        }
-        validDrive = true;
-
-        selectedTime = beginGisTime;
-        slider.setMaximum((int)((endGisTime - beginGisTime) / SLIDER_STEP));
-        slider.setSelection(0);
-        selectedTime = beginGisTime;
-        setBeginTime(beginGisTime);
-        chart.getXYPlot().setDomainCrosshairValue(selectedTime);
-
-        updateChart();
     }
 
     /**
@@ -931,45 +803,6 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
     
     /**
      * <p>
-     * Event renderer
-     * </p>
-     * 
-     * @author Cinkel_A
-     * @since 1.0.0
-     */
-    private class EventRenderer extends XYBarRenderer {
-
-        /** long serialVersionUID field */
-        private static final long serialVersionUID = 1L;
-
-        public EventRenderer() {
-            super();
-        }
-
-        @Override
-        public Shape getItemShape(int row, int column) {
-            return super.getItemShape(row, column);
-        }
-
-        @Override
-        public Paint getItemFillPaint(int row, int column) {
-            return super.getItemFillPaint(row, column);
-        }
-
-        @Override
-        public Paint getItemPaint(int row, int column) {
-//            TimeSeriesDataItem item = eventDataset.series.getDataItem(column);
-//            Node node = NeoServiceProviderUi.getProvider().getService().getNodeById(item.getValue().longValue());
-//            Color color = getEventColor(node);
-//            return color;
-        	Color color = Color.RED;
-        	return color;
-        }
-
-    }
-    
-    /**
-     * <p>
      * Dataset for event
      * </p>
      * 
@@ -1042,13 +875,7 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
          * @param propertyName property name
          */
         protected void createSeries(String name, String propertyName) {
-            series = new TimeSeries(name);
-            Long time = (long) 1000000000;
-            
-            for (int i = 0; i < 5; i++) {
-            	series.addOrUpdate(new Millisecond(new Date(time)), time);
-            	time += SLIDER_STEP * 10;
-            }
+
         }
 
         @Override
