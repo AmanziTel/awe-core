@@ -33,14 +33,15 @@ import org.amanzi.neo.model.distribution.IDistributionalModel;
 import org.amanzi.neo.model.distribution.impl.DistributionManager;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.model.IModel;
 import org.amanzi.neo.services.model.IProjectModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.amanzi.neo.services.model.impl.ProjectModel.DistributionItem;
 import org.amanzi.neo.services.ui.enums.EventsType;
+import org.amanzi.neo.services.ui.events.AnalyseEvent;
 import org.amanzi.neo.services.ui.events.EventManager;
 import org.amanzi.neo.services.ui.events.IEventsListener;
 import org.amanzi.neo.services.ui.events.UpdateDataEvent;
-import org.amanzi.neo.services.ui.neoclipse.manager.NeoclipseViewerManager;
 import org.amanzi.neo.services.ui.utils.ActionUtil;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -93,6 +94,7 @@ import org.jfree.experimental.chart.swt.ChartComposite;
  * @since 1.0.0
  */
 public class DistributionAnalyzerView extends ViewPart {
+    public static final String ID = "org.amanzi.awe.views.reuse.views.DistributionAnalyzerView";
 
     private static final String DATASET_LABEL = "Data";
 
@@ -141,6 +143,10 @@ public class DistributionAnalyzerView extends ViewPart {
     private static final String LOAD_XML_LABEL = "Load Distribution Xml";
 
     private static final String SELECT_XML_DIALOG_LABEL = "Select Distribution XML";
+
+    private static final int POSITION_OF_DATASET_NAME = 0;
+
+    private static final String DATASET_NAME_SEPARATOR = " - ";
 
     @SuppressWarnings("rawtypes")
     private class DistributionDataset extends AbstractDataset implements CategoryDataset {
@@ -266,7 +272,7 @@ public class DistributionAnalyzerView extends ViewPart {
             } catch (AWEException e) {
                 return new Status(Status.ERROR, ReusePlugin.PLUGIN_ID, "Error on updating Distribution Bars", e);
             }
-            EventManager.getInstance().fireEvent(new UpdateDataEvent());
+            eventManager.fireEvent(new UpdateDataEvent());
             return Status.OK_STATUS;
         }
 
@@ -474,15 +480,20 @@ public class DistributionAnalyzerView extends ViewPart {
      * Dialog for selecting distribution xml
      */
     private FileDialog xmlFileDialog;
+    /**
+     * event manager
+     */
+    private EventManager eventManager;
 
     /**
      * Custom constructor
      */
     @SuppressWarnings("unchecked")
     public DistributionAnalyzerView() {
-        // EventManager.getInstance().addListener(this, EventUIType.PROJECT_CHANGED);
-        EventManager.getInstance().addListener(EventsType.UPDATE_DATA, new RefreshViewListener());
-        EventManager.getInstance().addListener(EventsType.UPDATE_DATA, new RefreshNeoclipseManager());
+        eventManager = EventManager.getInstance();
+        // eventManager.addListener(this, EventUIType.PROJECT_CHANGED);
+        eventManager.addListener(EventsType.UPDATE_DATA, new UpdateDataHandling());
+        eventManager.addListener(EventsType.ANALYSE, new AnalyseHandling());
         UPDATE_BAR_COLORS_JOB.setSystem(true);
     }
 
@@ -1133,7 +1144,7 @@ public class DistributionAnalyzerView extends ViewPart {
 
         // run a job and wait until it finishes
         distributionJob.schedule();
-        // EventManager.getInstance().notify(EventUIType.DISTRIBUTIONS_CHANGED);
+        // eventManager.notify(EventUIType.DISTRIBUTIONS_CHANGED);
     }
 
     /**
@@ -1210,7 +1221,7 @@ public class DistributionAnalyzerView extends ViewPart {
 
                 if (needRedraw) {
                     updateChartColors();
-                    // EventManager.getInstance().notify(EventUIType.DISTRIBUTION_BAR_SELECTED,
+                    // eventManager.notify(EventUIType.DISTRIBUTION_BAR_SELECTED,
                     // selectedBar);
                 }
 
@@ -1327,27 +1338,56 @@ public class DistributionAnalyzerView extends ViewPart {
      * @author Kondratenko_Vladislav
      * @since 1.0.0
      */
-    private class RefreshViewListener implements IEventsListener<UpdateDataEvent> {
+    private class UpdateDataHandling implements IEventsListener<UpdateDataEvent> {
         @Override
         public void handleEvent(UpdateDataEvent data) {
             int datasetSelectionIndex = datasetCombo.getSelectionIndex();
             updateDistributionsIteams();
             datasetCombo.select(datasetSelectionIndex);
         }
+
+        @Override
+        public Object getSource() {
+            return null;
+        }
     }
 
     /**
      * <p>
-     * refresh neoclipse viewer
+     * describe handling of ANALYSE event
      * </p>
      * 
      * @author Kondratenko_Vladislav
      * @since 1.0.0
      */
-    private class RefreshNeoclipseManager implements IEventsListener<UpdateDataEvent> {
+    private class AnalyseHandling implements IEventsListener<AnalyseEvent> {
         @Override
-        public void handleEvent(UpdateDataEvent data) {
-            NeoclipseViewerManager.getInstance().refreshNeoeclipseView();
+        public void handleEvent(AnalyseEvent data) {
+            IModel model = data.getSelectedModel();
+            updateDistributionsIteams();
+            selectModel(model, datasetCombo);
+            initializePropertyList();
+        }
+
+        @Override
+        public Object getSource() {
+            return ID;
+        }
+    }
+
+    /**
+     * select model in combobox
+     */
+    private void selectModel(IModel model, Combo combo) {
+        String modelName = model.getName();
+        int i = 0;
+        for (String name : combo.getItems()) {
+            String datasetName = name.split(DATASET_NAME_SEPARATOR)[POSITION_OF_DATASET_NAME];
+            if (modelName.equals(datasetName)) {
+                combo.select(i);
+                break;
+            }
+            i++;
         }
     }
 

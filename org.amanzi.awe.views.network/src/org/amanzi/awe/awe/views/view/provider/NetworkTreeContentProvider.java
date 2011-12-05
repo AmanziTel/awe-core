@@ -25,8 +25,8 @@ import org.eclipse.jface.viewers.Viewer;
  * @since 1.0.0
  */
 public class NetworkTreeContentProvider implements IStructuredContentProvider, ITreeContentProvider {
-    
-	private static String COULD_NOT_GET_ALL_NETWORK_MODELS = "Could not get all network models";
+
+    private static String COULD_NOT_GET_ALL_NETWORK_MODELS = "Could not get all network models";
 
     private INetworkModel rootNetworkModel;
 
@@ -81,9 +81,8 @@ public class NetworkTreeContentProvider implements IStructuredContentProvider, I
 
         @Override
         public int compare(IDataElement dataElement1, IDataElement dataElement2) {
-            return dataElement1 == null ? -1 : dataElement2 == null ? 1 : 
-            	dataElement1.get(INeoConstants.PROPERTY_NAME_NAME).toString().compareTo(
-            			dataElement2.get(INeoConstants.PROPERTY_NAME_NAME).toString());
+            return dataElement1 == null ? -1 : dataElement2 == null ? 1 : dataElement1.get(INeoConstants.PROPERTY_NAME_NAME)
+                    .toString().compareTo(dataElement2.get(INeoConstants.PROPERTY_NAME_NAME).toString());
         }
 
     }
@@ -109,12 +108,12 @@ public class NetworkTreeContentProvider implements IStructuredContentProvider, I
             IDataElement child = (IDataElement)parentElement;
             INetworkModel localRootNetworkModel = (INetworkModel)(child).get(INeoConstants.NETWORK_MODEL_NAME);
             children = localRootNetworkModel.getChildren(child);
-        } else if (parentElement instanceof IDistributionModel ){
+        } else if (parentElement instanceof IDistributionModel) {
             try {
                 return ((IDistributionModel)parentElement).getDistributionBars().size() > 0;
             } catch (AWEException e) {
                 // TODO Handle AWEException
-                throw (RuntimeException) new RuntimeException( ).initCause( e );
+                throw (RuntimeException)new RuntimeException().initCause(e);
             }
         } else {
             return false;
