@@ -19,9 +19,14 @@ import org.apache.log4j.Logger;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.neoclipse.Activator;
+import org.neo4j.neoclipse.graphdb.GraphDbServiceEvent;
+import org.neo4j.neoclipse.graphdb.GraphDbServiceEventListener;
 import org.neo4j.neoclipse.graphdb.GraphDbServiceManager;
+import org.neo4j.neoclipse.graphdb.GraphDbServiceStatus;
 import org.neo4j.neoclipse.graphdb.GraphRunnable;
 import org.neo4j.neoclipse.preference.Preferences;
+import org.neo4j.neoclipse.reltype.RelationshipTypesProviderWrapper;
+import org.neo4j.neoclipse.view.UiHelper;
 
 /**
  * Database Manager that give access to Neo4j using Neoclipse
@@ -33,7 +38,7 @@ public class NeoclipseDatabaseManager extends AbstractDatabaseManager {
     private static final Logger LOGGER = Logger.getLogger(NeoclipseDatabaseManager.class);
 
     private final IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
-
+    
     /**
      * Neoclipse Task to get Database Service
      * 
@@ -64,7 +69,7 @@ public class NeoclipseDatabaseManager extends AbstractDatabaseManager {
      */
     public NeoclipseDatabaseManager() {
         neoclipseManager = Activator.getDefault().getGraphDbServiceManager();
-        preferenceStore.setDefault(Preferences.DATABASE_LOCATION, getDefaultDatabaseLocation());
+        preferenceStore.setDefault(Preferences.DATABASE_LOCATION, getDefaultDatabaseLocation());        
     }
 
     @Override
@@ -117,6 +122,5 @@ public class NeoclipseDatabaseManager extends AbstractDatabaseManager {
     @Override
     public void shutdown() {
         neoclipseManager.shutdownGraphDbService();
-    }
-
+    }    
 }
