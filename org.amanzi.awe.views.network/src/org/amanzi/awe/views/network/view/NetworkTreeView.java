@@ -365,6 +365,7 @@ public class NetworkTreeView extends ViewPart {
             } catch (AWEException e) {
                 MessageDialog.openError(null, "Could not rename!", e.toString());
             }
+            eventManager.fireEvent(new UpdateDataEvent());
             viewer.refresh();
         }
 
@@ -476,7 +477,7 @@ public class NetworkTreeView extends ViewPart {
                     MessageDialog.openError(null, ERROR_TITLE, ERROR_MSG);
                 }
             }
-
+            eventManager.fireEvent(new UpdateDataEvent());
             viewer.refresh();
         }
 
