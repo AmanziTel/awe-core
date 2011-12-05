@@ -24,6 +24,7 @@ import org.apache.log4j.Logger;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.neoclipse.Activator;
+import org.neo4j.neoclipse.event.NeoclipseEvent;
 import org.neo4j.neoclipse.graphdb.GraphDbServiceEvent;
 import org.neo4j.neoclipse.graphdb.GraphDbServiceEventListener;
 import org.neo4j.neoclipse.graphdb.GraphDbServiceManager;
