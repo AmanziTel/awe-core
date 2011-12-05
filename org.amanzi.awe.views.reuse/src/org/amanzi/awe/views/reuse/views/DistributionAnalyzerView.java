@@ -146,7 +146,7 @@ public class DistributionAnalyzerView extends ViewPart {
 
     private static final int POSITION_OF_DATASET_NAME = 0;
 
-    private static final String DATASET_NAME_SEPARATOR = "-";
+    private static final String DATASET_NAME_SEPARATOR = " - ";
 
     @SuppressWarnings("rawtypes")
     private class DistributionDataset extends AbstractDataset implements CategoryDataset {
@@ -1383,7 +1383,7 @@ public class DistributionAnalyzerView extends ViewPart {
         int i = 0;
         for (String name : combo.getItems()) {
             String datasetName = name.split(DATASET_NAME_SEPARATOR)[POSITION_OF_DATASET_NAME];
-            if (modelName.equals(datasetName.substring(POSITION_OF_DATASET_NAME, datasetName.lastIndexOf(StringUtils.EMPTY) - 1))) {
+            if (modelName.equals(datasetName)) {
                 combo.select(i);
                 break;
             }
