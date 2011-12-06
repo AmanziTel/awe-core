@@ -338,168 +338,6 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
     }
 
     /**
-     * Creates the Chart based on a dataset
-     */
-    private JFreeChart createChart() {
-        XYBarRenderer xyarearenderer = new EventRenderer();
-        eventDataset = new EventDataset();
-        NumberAxis rangeAxis = new NumberAxis(Messages.DriveInquirerView_13);
-        rangeAxis.setVisible(false);
-        domainAxis = new DateAxis(Messages.DriveInquirerView_14);
-        XYPlot xyplot = new XYPlot(eventDataset, domainAxis, rangeAxis, xyarearenderer);
-
-        xydatasets = new ArrayList<TimeDataset>();
-
-        xyplot.setDomainCrosshairVisible(true);
-        xyplot.setDomainCrosshairLockedOnData(false);
-        xyplot.setRangeCrosshairVisible(false);
-
-        JFreeChart jfreechart = new JFreeChart(CHART_TITLE, JFreeChart.DEFAULT_TITLE_FONT, xyplot, true);
-
-        ChartUtilities.applyCurrentTheme(jfreechart);
-        jfreechart.getTitle().setVisible(false);
-
-        axisNumerics = new ArrayList<ValueAxis>(0);
-        axisLogs = new ArrayList<LogarithmicAxis>(0);
-        xyplot.getRenderer(0).setSeriesPaint(0, new Color(0, 0, 0, 0));
-
-        return jfreechart;
-    }
-
-    /**
-     * Init start data
-     */
-    private void init() {
-        addListeners();
-        cDrive.setItems(getDriveItems());
-
-        formPropertyList();
-
-        cPropertyList.setItems(propertyLists.keySet().toArray(new String[0]));
-
-        // initializeIndex(cDrive.getText());
-
-        initEvents();
-    }
-
-    @Override
-    public void dispose() {
-        super.dispose();
-    }
-
-    /**
-     * Init events
-     */
-    private void initEvents() {
-        Pair<Long, Long> minMax = new Pair<Long, Long>(new Long(100000000), new Long(300000000));
-        beginGisTime = minMax.getLeft();
-        endGisTime = minMax.getRight();
-        if (beginGisTime == null || endGisTime == null) {
-            displayErrorMessage(Messages.DriveInquirerView_15);
-            validDrive = false;
-            return;
-        }
-        selectedTime = beginGisTime;
-        slider.setMaximum((int)((endGisTime - beginGisTime) / SLIDER_STEP));
-        slider.setSelection(0);
-        selectedTime = beginGisTime;
-        setBeginTime(beginGisTime);
-        chart.getXYPlot().setDomainCrosshairValue(selectedTime);
-    }
-    
-    /**
-     * Returns the color from selected palette for property by index
-     * 
-     * @param propNum index
-     * @return Color
-     */
-    private Color getColorForProperty(int propNum) {
-        BrewerPalette palette = PlatformGIS.getColorBrewer().getPalette(cPropertyPalette.getText());
-        Color[] colors = palette.getColors(palette.getMaxColors());
-        int index = ((colors.length - 1) * propNum) / Math.max(1, getCurrentPropertyCount() - 1);
-        Color color = colors[index];
-        return new Color(color.getRed(), color.getGreen(), color.getBlue(), 255);
-    }
-
-    /**
-     *Preparing existing property lists for display
-     */
-    private void formPropertyList() {
-        propertyLists.clear();
-        IDriveModel currentDriveModel = getDriveModel();
-        INodeType primaryTypeOfModel = null;
-        
-        ArrayList<String> list = new ArrayList<String>();
-        if (currentDriveModel != null) {
-            primaryTypeOfModel = currentDriveModel.getPrimaryType();
-        	String[] currentStatistics = currentDriveModel.getAllProperties(primaryTypeOfModel, Double.class);
-        	for (String property : currentStatistics) {
-        		list.add(property);
-        	}
-        	currentStatistics = currentDriveModel.getAllProperties(primaryTypeOfModel, Integer.class);
-        	for (String property : currentStatistics) {
-        		list.add(property);
-        	}
-        	currentStatistics = currentDriveModel.getAllProperties(primaryTypeOfModel, Float.class);
-        	for (String property : currentStatistics) {
-        		list.add(property);
-        	}
-        	String[] statistics = new String[list.size()];
-        	list.toArray(statistics);
-            Arrays.sort(statistics);
-            cPropertyList.setItems(statistics);
-        }
-//        Object[] savedProperties = null;
-//        if (savedProperties != null) {
-//            List<String> savedList = new ArrayList<String>(savedProperties.length);
-//            for (Object savedProperty : savedProperties) {
-//                savedList.add(savedProperty.toString());
-//            }
-//            List<String> filteredList = new PropertyFilterModel().filerProperties(cDrive.getText(), savedList);
-//            for (Object savedProperty : filteredList) {
-//                propertyLists.put(savedProperty.toString(), Arrays.asList(savedProperty.toString().split(", ")));
-//            }
-//        }
-    }
-
-    /**
-     * Displays error message instead of throwing an exception
-     * 
-     * @param e exception thrown
-     */
-    private void displayErrorMessage(final String e) {
-        final Display display = PlatformUI.getWorkbench().getDisplay();
-        display.asyncExec(new Runnable() {
-
-            @Override
-            public void run() {
-                MessageDialog.openError(display.getActiveShell(), Messages.DriveInquirerView_18, e);
-            }
-
-        });
-    }
-
-    /**
-     * get Drive list
-     * 
-     * @return String[]
-     */
-    private String[] getDriveItems() {
-    	Iterable<IDriveModel> driveModels = null;
-		try {
-			driveModels = ProjectModel.getCurrentProjectModel().findAllDriveModels();
-		} catch (AWEException e) {
-		}
-        mapOfDriveModels = new LinkedHashMap<String, IDriveModel>();
-        for (IDriveModel driveModel : driveModels) {
-        	mapOfDriveModels.put(driveModel.getName(), driveModel);
-        }
-        String[] result = mapOfDriveModels.keySet().toArray(new String[] {});
-        Arrays.sort(result);
-        return result;
-    }
-
-    /**
      *add listeners
      */
     private void addListeners() {
@@ -705,7 +543,168 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
             }
         });
     }
+    
+    /**
+     * Creates the Chart based on a dataset
+     */
+    private JFreeChart createChart() {
+        XYBarRenderer xyarearenderer = new EventRenderer();
+        eventDataset = new EventDataset();
+        NumberAxis rangeAxis = new NumberAxis(Messages.DriveInquirerView_13);
+        rangeAxis.setVisible(false);
+        domainAxis = new DateAxis(Messages.DriveInquirerView_14);
+        XYPlot xyplot = new XYPlot(eventDataset, domainAxis, rangeAxis, xyarearenderer);
 
+        xydatasets = new ArrayList<TimeDataset>();
+
+        xyplot.setDomainCrosshairVisible(true);
+        xyplot.setDomainCrosshairLockedOnData(false);
+        xyplot.setRangeCrosshairVisible(false);
+
+        JFreeChart jfreechart = new JFreeChart(CHART_TITLE, JFreeChart.DEFAULT_TITLE_FONT, xyplot, true);
+
+        ChartUtilities.applyCurrentTheme(jfreechart);
+        jfreechart.getTitle().setVisible(false);
+
+        axisNumerics = new ArrayList<ValueAxis>(0);
+        axisLogs = new ArrayList<LogarithmicAxis>(0);
+        xyplot.getRenderer(0).setSeriesPaint(0, new Color(0, 0, 0, 0));
+
+        return jfreechart;
+    }
+
+    /**
+     * Init start data
+     */
+    private void init() {
+        addListeners();
+        cDrive.setItems(getDriveItems());
+
+        formPropertyList();
+
+        cPropertyList.setItems(propertyLists.keySet().toArray(new String[0]));
+
+        // initializeIndex(cDrive.getText());
+
+        initEvents();
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+    }
+
+    /**
+     * Init events
+     */
+    private void initEvents() {
+        Pair<Long, Long> minMax = new Pair<Long, Long>(new Long(100000000), new Long(300000000));
+        beginGisTime = minMax.getLeft();
+        endGisTime = minMax.getRight();
+        if (beginGisTime == null || endGisTime == null) {
+            displayErrorMessage(Messages.DriveInquirerView_15);
+            validDrive = false;
+            return;
+        }
+        selectedTime = beginGisTime;
+        slider.setMaximum((int)((endGisTime - beginGisTime) / SLIDER_STEP));
+        slider.setSelection(0);
+        selectedTime = beginGisTime;
+        setBeginTime(beginGisTime);
+        chart.getXYPlot().setDomainCrosshairValue(selectedTime);
+    }
+    
+    /**
+     * Returns the color from selected palette for property by index
+     * 
+     * @param propNum index
+     * @return Color
+     */
+    private Color getColorForProperty(int propNum) {
+        BrewerPalette palette = PlatformGIS.getColorBrewer().getPalette(cPropertyPalette.getText());
+        Color[] colors = palette.getColors(palette.getMaxColors());
+        int index = ((colors.length - 1) * propNum) / Math.max(1, getCurrentPropertyCount() - 1);
+        Color color = colors[index];
+        return new Color(color.getRed(), color.getGreen(), color.getBlue(), 255);
+    }
+
+    /**
+     *Preparing existing property lists for display
+     */
+    private void formPropertyList() {
+        propertyLists.clear();
+        IDriveModel currentDriveModel = getDriveModel();
+        INodeType primaryTypeOfModel = null;
+        
+        ArrayList<String> list = new ArrayList<String>();
+        if (currentDriveModel != null) {
+            primaryTypeOfModel = currentDriveModel.getPrimaryType();
+        	String[] currentStatistics = currentDriveModel.getAllProperties(primaryTypeOfModel, Double.class);
+        	for (String property : currentStatistics) {
+        		list.add(property);
+        	}
+        	currentStatistics = currentDriveModel.getAllProperties(primaryTypeOfModel, Integer.class);
+        	for (String property : currentStatistics) {
+        		list.add(property);
+        	}
+        	currentStatistics = currentDriveModel.getAllProperties(primaryTypeOfModel, Float.class);
+        	for (String property : currentStatistics) {
+        		list.add(property);
+        	}
+        	String[] statistics = new String[list.size()];
+        	list.toArray(statistics);
+            Arrays.sort(statistics);
+            cPropertyList.setItems(statistics);
+        }
+//        Object[] savedProperties = null;
+//        if (savedProperties != null) {
+//            List<String> savedList = new ArrayList<String>(savedProperties.length);
+//            for (Object savedProperty : savedProperties) {
+//                savedList.add(savedProperty.toString());
+//            }
+//            List<String> filteredList = new PropertyFilterModel().filerProperties(cDrive.getText(), savedList);
+//            for (Object savedProperty : filteredList) {
+//                propertyLists.put(savedProperty.toString(), Arrays.asList(savedProperty.toString().split(", ")));
+//            }
+//        }
+    }
+
+    /**
+     * Displays error message instead of throwing an exception
+     * 
+     * @param e exception thrown
+     */
+    private void displayErrorMessage(final String e) {
+        final Display display = PlatformUI.getWorkbench().getDisplay();
+        display.asyncExec(new Runnable() {
+
+            @Override
+            public void run() {
+                MessageDialog.openError(display.getActiveShell(), Messages.DriveInquirerView_18, e);
+            }
+
+        });
+    }
+
+    /**
+     * get Drive list
+     * 
+     * @return String[]
+     */
+    private String[] getDriveItems() {
+    	Iterable<IDriveModel> driveModels = null;
+		try {
+			driveModels = ProjectModel.getCurrentProjectModel().findAllDriveModels();
+		} catch (AWEException e) {
+		}
+        mapOfDriveModels = new LinkedHashMap<String, IDriveModel>();
+        for (IDriveModel driveModel : driveModels) {
+        	mapOfDriveModels.put(driveModel.getName(), driveModel);
+        }
+        String[] result = mapOfDriveModels.keySet().toArray(new String[] {});
+        Arrays.sort(result);
+        return result;
+    }
 
 
     /**
@@ -814,10 +813,12 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
         formPropertyList();
         
         cEvent.select(0);
-
-        Pair<Long, Long> minMax = new Pair<Long, Long>(new Long(100000000), new Long(300000000));
-        beginGisTime = minMax.getLeft();
-        endGisTime = minMax.getRight();
+        IDriveModel currentDriveModel = getDriveModel();
+        Long minTimestamp = currentDriveModel.getMinTimestamp();
+        Long maxTimestamp = currentDriveModel.getMaxTimestamp();
+        
+        beginGisTime = minTimestamp;
+        endGisTime = maxTimestamp;
 
         if (beginGisTime == null || endGisTime == null) {
             displayErrorMessage(Messages.DriveInquirerView_97);
@@ -1043,6 +1044,7 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
          */
         protected void createSeries(String name, String propertyName) {
             series = new TimeSeries(name);
+            
             Long time = (long) 1000000000;
             
             for (int i = 0; i < 5; i++) {
