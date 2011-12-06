@@ -33,4 +33,6 @@ public interface ITimelineModel extends IDriveInquirerableModel {
      * @param timestamp the new value of timestamp
      */
     public void updateTimestamp(long timestamp);
+    
+    public Iterable<IDataElement> findAllElementsByTimestampPeriod(long min_timestamp, long max_timestamp);
 }

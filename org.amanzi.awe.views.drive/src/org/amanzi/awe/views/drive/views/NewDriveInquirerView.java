@@ -26,6 +26,7 @@ import net.refractions.udig.ui.PlatformGIS;
 
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.amanzi.neo.services.utils.Pair;
@@ -711,6 +712,12 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
      * Update data after property list changed
      */
     protected void updatePropertyList() {
+    	// TODO: my fake
+    	List<String> propList = new ArrayList<String>();
+    	propList.add(cPropertyList.getText());
+    	propertyLists.put(cPropertyList.getText(), propList);
+    	
+    	
         currentProperies = propertyLists.get(cPropertyList.getText());
         if (currentProperies == null) {
             currentProperies = new ArrayList<String>(0);
@@ -1045,10 +1052,10 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
         protected void createSeries(String name, String propertyName) {
             series = new TimeSeries(name);
             
-            Long time = (long) 1000000000;
-            
-            for (int i = 0; i < 5; i++) {
-            	series.addOrUpdate(new Millisecond(new Date(time)), time);
+            Long time = (long) beginGisTime;
+            int[] times = new int[] { 1, 2, 30, 4, 3, 45 };
+            for (int i = 0; i < 6; i++) {
+            	series.addOrUpdate(new Millisecond(new Date(time)), times[i]);
             	time += SLIDER_STEP * 10;
             }
         }
@@ -1096,7 +1103,7 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
 
         @Override
         public Number getY(int i, int j) {
-            return 1;
+        	return (Number)(collection.getY(i, j).longValue());
         }
     }
 
@@ -1182,7 +1189,24 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
          * @param propertyName property name
          */
         protected void createSeries(String name, String propertyName) {
-
+            series = new TimeSeries(name);
+            
+            IDriveModel driveModel = getDriveModel();
+            Iterable<IDataElement> elements = 
+            		driveModel.findAllElementsByTimestampPeriod(beginGisTime, endGisTime);
+            
+            int count = 0;
+            for (IDataElement dataElement : elements) {
+            	count++;
+            }
+            System.out.println("Count = " + count);
+            
+            Long time = (long) beginGisTime;
+            int[] times = new int[] { 2, 4, 60, 8, 6, 90 };
+            for (int i = 0; i < 6; i++) {
+            	series.addOrUpdate(new Millisecond(new Date(time)), times[i]);
+            	time += SLIDER_STEP * 10;
+            }
         }
 
         @Override
@@ -1208,8 +1232,7 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
 
         @Override
         public Number getY(int i, int j) {
-        	return null;
-//            return (Number)NeoServiceProviderUi.getProvider().getService().getNodeById(collection.getY(i, j).longValue()).getProperty(propertyName);
+            return (Number)(collection.getY(i, j).longValue());
         }
 
         @SuppressWarnings("rawtypes")
