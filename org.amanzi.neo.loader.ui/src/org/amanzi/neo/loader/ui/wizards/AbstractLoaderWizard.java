@@ -13,34 +13,31 @@
 
 package org.amanzi.neo.loader.ui.wizards;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.refractions.udig.catalog.CatalogPlugin;
-import net.refractions.udig.catalog.ICatalog;
-import net.refractions.udig.catalog.IService;
-
-import org.amanzi.neo.db.manager.DatabaseManagerFactory;
 import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.ILoader;
 import org.amanzi.neo.loader.core.ILoaderProgressListener;
 import org.amanzi.neo.loader.core.IProgressEvent;
 import org.amanzi.neo.loader.core.parser.IConfigurationData;
 import org.amanzi.neo.loader.core.saver.IData;
+import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
+import org.amanzi.neo.services.model.IDataModel;
+import org.amanzi.neo.services.ui.enums.EventsType;
 import org.amanzi.neo.services.ui.events.EventManager;
-import org.amanzi.neo.services.ui.events.UpdateDataEvent;
+import org.amanzi.neo.services.ui.events.IEventsListener;
+import org.amanzi.neo.services.ui.events.ShowOnMapEvent;
+import org.amanzi.neo.services.ui.utils.ActionUtil;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -60,13 +57,23 @@ import org.eclipse.ui.IWorkbench;
  * @author tsinkel_a
  * @since 1.0.0
  */
+@SuppressWarnings("unchecked")
 public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wizard
         implements
             IGraphicInterfaceForLoaders<T>,
             IImportWizard {
 
+    static {
+        EventManager.getInstance().addListener(EventsType.SHOW_ON_MAP, new ShowOnMapHandling());
+    }
+
+    /**
+     * abstract loader id, required for listeners;
+     */
+
     public AbstractLoaderWizard() {
         super();
+
     }
 
     /** The pages. */
@@ -93,6 +100,7 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         setNeedsProgressMonitor(true);
+
         maxMainPageId = -1;
         List<IWizardPage> mainPages = getMainPagesList();
         for (IWizardPage iWizardPage : mainPages) {
@@ -115,6 +123,28 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
                 info.setPage(idPage, id);
                 idPage++;
             }
+        }
+    }
+
+    /**
+     * <p>
+     * describe handling of show on map event;
+     * </p>
+     * 
+     * @author Vladislav_Kondratenko
+     * @since 1.0.0
+     */
+    private static class ShowOnMapHandling implements IEventsListener<ShowOnMapEvent> {
+
+        @Override
+        public void handleEvent(ShowOnMapEvent data) {
+            List<IDataModel> modelsList = data.getModelsList();
+            LoaderUiUtils.addGisDataToMap(modelsList.get(0).getName(), modelsList);
+        }
+
+        @Override
+        public Object getSource() {
+            return null;
         }
     }
 
@@ -149,7 +179,6 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
      * @param pageElement the page element
      * @return the i loader page
      */
-    @SuppressWarnings("unchecked")
     protected ILoaderPage<T> createAdditionalPage(IConfigurationElement pageElement) {
         try {
             return (ILoaderPage<T>)pageElement.createExecutableExtension("class");
@@ -236,39 +265,19 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
     @Override
     public boolean performFinish() {
         final Map<ILoader< ? extends IData, T>, T> newloader = getRequiredLoaders();
-
         Job job = new Job("Load data") {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
+
                 newload(newloader, monitor);
-                try {
-                    addDataToCatalog();
-                    EventManager.getInstance().fireEvent(new UpdateDataEvent());
-                } catch (MalformedURLException e) {
-                    MessageDialog.openError(getShell(), "Error while add data to catalog", "Cann't add data to catalog");
-                    e.printStackTrace();
-                }
+
                 return Status.OK_STATUS;
             }
+
         };
         job.schedule();
         return true;
-    }
-
-    public static void addDataToCatalog() throws MalformedURLException {
-        String databaseLocation = DatabaseManagerFactory.getDatabaseManager().getLocation();
-
-        ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
-        URL url = new URL("file://" + databaseLocation);
-        List<IService> services = CatalogPlugin.getDefault().getServiceFactory().createService(url);
-        for (IService service : services) {
-            if (catalog.getById(IService.class, service.getID(), new NullProgressMonitor()) != null) {
-                catalog.replace(service.getID(), service);
-            } else {
-                catalog.add(service);
-            }
-        }
     }
 
     /**
@@ -280,7 +289,7 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
      * @param monitor the monitor
      * @throws Exception
      */
-    protected void newload(final Map<ILoader< ? extends IData, T>, T> newloader, IProgressMonitor monitor) {
+    protected void newload(final Map<ILoader< ? extends IData, T>, T> newloader, final IProgressMonitor monitor) {
 
         for (ILoader< ? extends IData, T> loader : newloader.keySet()) {
             if (newloader.get(loader) != null) {
@@ -288,22 +297,35 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
                 try {
                     loader.init(newloader.get(loader));
                 } catch (Exception e) {
-                    MessageDialog.openError(getShell(), getWindowTitle(), "Cann't initialize loader:"
-                            + loader.getLoaderInfo().getType());
+                    showError("Error.", "Cann't initialize loader:" + loader.getLoaderInfo().getType());
                     return;
                 }
                 try {
                     loader.run();
                 } catch (DatabaseException e) {
-                    MessageDialog.openError(getShell(), getWindowTitle(), "Cann't load data, because: " + e.getMessage());
+                    showError("Error.", "Database exception was thrown  while saving data");
                     continue;
                 } catch (AWEException e) {
-                    MessageDialog
-                            .openError(getShell(), getWindowTitle(), "Cann't finsihup transaction, because: " + e.getMessage());
+                    showError("Error.", "error while finishup main transaction");
                     break;
                 }
             }
         }
+    }
+
+    /**
+     * show error message in ui thread;
+     * 
+     * @param title
+     * @param message
+     */
+    private void showError(final String title, final String message) {
+        ActionUtil.getInstance().runTask(new Runnable() {
+            @Override
+            public void run() {
+                MessageDialog.openError(getShell(), title, message);
+            }
+        }, false);
     }
 
     /**

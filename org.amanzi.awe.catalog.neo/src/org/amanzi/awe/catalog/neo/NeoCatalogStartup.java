@@ -22,43 +22,107 @@ import net.refractions.udig.catalog.ICatalog;
 import net.refractions.udig.catalog.IService;
 
 import org.amanzi.neo.db.manager.DatabaseManagerFactory;
+import org.amanzi.neo.services.ui.enums.EventsType;
+import org.amanzi.neo.services.ui.events.EventManager;
+import org.amanzi.neo.services.ui.events.IEventsListener;
+import org.amanzi.neo.services.ui.events.UpdateDataEvent;
+import org.amanzi.neo.services.ui.events.UpdateLayerEvent;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.ui.IStartup;
 
 /**
- * TODO Purpose of
  * <p>
- * 
+ * catalog actions.
  * </p>
  * 
  * @author grigoreva_a
  * @since 1.0.0
  */
 public class NeoCatalogStartup implements IStartup {
-	private static Logger LOGGER = Logger.getLogger(NeoCatalogStartup.class);
+    private static Logger LOGGER = Logger.getLogger(NeoCatalogStartup.class);
 
-	@Override
-	public void earlyStartup() {
-		try {
-			String databaseLocation = DatabaseManagerFactory.getDatabaseManager().getLocation();
-			// TODO: old event
+    @SuppressWarnings("unchecked")
+    public NeoCatalogStartup() {
+        EventManager.getInstance().addListener(EventsType.UPDATE_DATA, new UpdateDataHandling());
+        EventManager.getInstance().addListener(EventsType.UPDATE_LAYER, new UpdateLayerHandling());
+    }
 
-			ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
-			URL url = new URL("file://" + databaseLocation);
-			List<IService> services = CatalogPlugin.getDefault()
-					.getServiceFactory().createService(url);
-			for (IService service : services) {
-				if (catalog.getById(IService.class, service.getID(),
-						new NullProgressMonitor()) != null) {
-					catalog.replace(service.getID(), service);
-				} else {
-					catalog.add(service);
-				}
-			}
-		} catch (MalformedURLException e) {
-			LOGGER.error("Could not create database location URL.", e);
-		}
-	}
+    /**
+     * <p>
+     * describe handling of update layer event. and response for update catalog layer
+     * </p>
+     * TODO should implement
+     * 
+     * @author Vladislav_Kondratenko
+     * @since 1.0.0
+     */
+    private class UpdateLayerHandling implements IEventsListener<UpdateLayerEvent> {
+
+        @Override
+        public void handleEvent(UpdateLayerEvent data) {
+            try {
+                String databaseLocation = DatabaseManagerFactory.getDatabaseManager().getLocation();
+                ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
+                URL url = new URL("file://" + databaseLocation);
+                List<IService> services = CatalogPlugin.getDefault().getServiceFactory().createService(url);
+                for (IService service : services) {
+                    if (catalog.getById(IService.class, service.getID(), new NullProgressMonitor()) != null) {
+                    } else {
+                        catalog.add(service);
+                    }
+                }
+            } catch (MalformedURLException e) {
+                LOGGER.error("Could not create database location URL.", e);
+            }
+        }
+
+        @Override
+        public Object getSource() {
+            return null;
+        }
+
+    }
+
+    /**
+     * <p>
+     * describe handling of update data event. and response for update catalog info
+     * </p>
+     * 
+     * @author Vladislav_Kondratenko
+     * @since 1.0.0
+     */
+    private class UpdateDataHandling implements IEventsListener<UpdateDataEvent> {
+
+        @Override
+        public void handleEvent(UpdateDataEvent data) {
+            try {
+                String databaseLocation = DatabaseManagerFactory.getDatabaseManager().getLocation();
+                ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
+                URL url = new URL("file://" + databaseLocation);
+                List<IService> services = CatalogPlugin.getDefault().getServiceFactory().createService(url);
+                for (IService service : services) {
+                    if (catalog.getById(IService.class, service.getID(), new NullProgressMonitor()) != null) {
+                        catalog.replace(service.getID(), service);
+                    } else {
+                        catalog.add(service);
+                    }
+                }
+            } catch (MalformedURLException e) {
+                LOGGER.error("Could not create database location URL.", e);
+            }
+        }
+
+        @Override
+        public Object getSource() {
+            return null;
+        }
+
+    }
+
+    @Override
+    public void earlyStartup() {
+        EventManager.getInstance().fireEvent(new UpdateDataEvent());
+    }
 
 }
