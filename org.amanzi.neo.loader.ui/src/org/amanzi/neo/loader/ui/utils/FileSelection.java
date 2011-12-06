@@ -16,9 +16,7 @@ package org.amanzi.neo.loader.ui.utils;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -182,6 +180,7 @@ public class FileSelection extends ViewPart {
         } 
         return results;
     }
+    
     public void storeDefSelection(File defSelection){
         if (defSelection==null){
             ITreeSelection treeSelection = (ITreeSelection) viewer.getSelection();
