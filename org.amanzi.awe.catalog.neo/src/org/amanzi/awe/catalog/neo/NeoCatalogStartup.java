@@ -50,7 +50,7 @@ import org.eclipse.ui.IStartup;
  */
 public class NeoCatalogStartup implements IStartup {
     private static Logger LOGGER = Logger.getLogger(NeoCatalogStartup.class);
-    private static String OPEN_STREET_WMS_ID = "wmt://localhost/wmt/net.refractions.udig.catalog.internal.wmt.wmtsource.OSMCloudMadeSource/1155";
+    private static String OSM_WMS_ID = "wmt://localhost/wmt/net.refractions.udig.catalog.internal.wmt.wmtsource.OSMCloudMadeSource/1155";
     private static String URL_TO_CHECK_CONNETCTION = "www.openstreetmap.org";
     public static final String FILE_PREFIX = "file://";
 
@@ -188,7 +188,7 @@ public class NeoCatalogStartup implements IStartup {
      */
     private IService getMapService() throws MalformedURLException {
         ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
-        URL url = new URL(null, OPEN_STREET_WMS_ID, CorePlugin.RELAXED_HANDLER);
+        URL url = new URL(null, OSM_WMS_ID, CorePlugin.RELAXED_HANDLER);
         ID id = new ID(url);
         IService curService = catalog.getById(IService.class, id, null);
         if (curService == null) {
