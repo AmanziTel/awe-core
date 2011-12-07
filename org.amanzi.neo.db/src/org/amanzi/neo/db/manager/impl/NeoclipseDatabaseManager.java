@@ -125,6 +125,15 @@ public class NeoclipseDatabaseManager extends AbstractDatabaseManager {
         neoclipseManager.shutdownGraphDbService();
     }
 
+    /**
+     * 
+     * TODO Purpose of NeoclipseDatabaseManager
+     * <p>
+     * Initializes relationship type data
+     * </p>
+     * @author Ladornaya_A
+     * @since 1.0.0
+     */
     private class NeoclipseListener implements GraphDbServiceEventListener {
         @Override
         public void serviceChanged(final GraphDbServiceEvent event) {

@@ -16,9 +16,7 @@ package org.amanzi.neo.loader.ui.utils;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -30,7 +28,9 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
@@ -135,11 +135,23 @@ public class FileSelection extends ViewPart {
      */
     private boolean showFiles;
     
-    public FileSelection(boolean showFiles) { 
+    /*
+     * Text of FileSelection View Label
+     */
+    private String labelText;
+    
+    public FileSelection(boolean showFiles, String labelText) { 
         this.showFiles = showFiles;
+        this.labelText = labelText;
     }
 
     public void createPartControl(Composite parent) {
+        Label label = new Label(parent, SWT.NONE);
+        label.setText(labelText);
+        GridData labelLayout = new GridData(SWT.FILL);
+        labelLayout.horizontalSpan = 3;
+        label.setLayoutData(labelLayout);
+        
         viewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
         viewer.setContentProvider(new FileContentProvider());
         viewer.setLabelProvider(new FileLabelProvider());
@@ -157,9 +169,9 @@ public class FileSelection extends ViewPart {
     public TreeViewer getTreeViewer() {
         return viewer;
     }
-    public Collection<File>getSelectedFiles(FileFilter filter){
+    public List<File>getSelectedFiles(FileFilter filter){
         ITreeSelection treeSelection = (ITreeSelection) viewer.getSelection();
-        LinkedHashSet<File> results = new LinkedHashSet<File>();
+        ArrayList<File> results = new ArrayList<File>();
         for (TreePath path : treeSelection.getPaths()) {
             File file = new File(path.getLastSegment().toString());
             if (filter==null||filter.accept(file)){
@@ -168,6 +180,7 @@ public class FileSelection extends ViewPart {
         } 
         return results;
     }
+    
     public void storeDefSelection(File defSelection){
         if (defSelection==null){
             ITreeSelection treeSelection = (ITreeSelection) viewer.getSelection();
