@@ -75,7 +75,6 @@ public class EventManager {
             listenersCollections.put(eventType, new HashSet<IEventsListener< ? extends AbstractEvent>>());
         }
         listenersCollections.get(eventType).addAll(Arrays.asList(eventsListeners));
-
     }
 
     /**
