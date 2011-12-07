@@ -334,6 +334,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         Double lat = (Double)params.get(LATITUDE);
         Double lon = (Double)params.get(LONGITUDE);
         Long tst = (Long)params.get(TIMESTAMP);
+        indexNode(m);
 
         if ((lat != null) && (lat != 0) && (lon != null) && (lon != 0) && isNeedToCreateLocation) {
             createLocationNode(new DataElement(m), lat, lon);
@@ -435,6 +436,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
         params.put(LONGITUDE, lon);
         dsServ.setProperties(location, params);
         updateLocationBounds(lat, lon);
+        indexNode(location);
         return new DataElement(location);
     }
 
@@ -614,6 +616,18 @@ public class DriveModel extends RenderableModel implements IDriveModel {
 
     @Override
     public Iterable<IDataElement> getElements(Envelope bounds_transformed) {
+        return null;
+    }
+    
+    @Override
+    public Iterable<IDataElement> findAllElementsByTimestampPeriod(long min_timestamp, long max_timestamp)
+    {
+        INodeType primaryType = getPrimaryType();
+        try {
+            return new DataElementIterable(getNodesByTimestampPeriod(primaryType, min_timestamp, max_timestamp));
+        } catch (AWEException e) {
+            LOGGER.error("Error with findAllElementsByTimestampPeriod");
+        }
         return null;
     }
 

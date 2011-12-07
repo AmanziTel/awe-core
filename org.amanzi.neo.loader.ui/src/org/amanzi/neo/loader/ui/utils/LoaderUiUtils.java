@@ -35,8 +35,6 @@ import org.amanzi.neo.loader.core.preferences.PreferenceStore;
 import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.amanzi.neo.services.model.IDataModel;
-import org.amanzi.neo.services.ui.events.EventManager;
-import org.amanzi.neo.services.ui.events.UpdateDataEvent;
 import org.amanzi.neo.services.ui.utils.ActionUtil;
 import org.amanzi.neo.services.utils.RunnableWithResult;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -45,7 +43,21 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.PlatformUI;
 
+/**
+ * TODO Purpose of
+ * <p>
+ * common actions in loaders ui
+ * </p>
+ * 
+ * @author Vladislav_Kondratenko
+ * @since 1.0.0
+ */
 public class LoaderUiUtils extends LoaderUtils {
+    /*
+     * constants
+     */
+    public static final String FILE_PREFIX = "file://";
+    public static final String COMMA_SEPARATOR = ",";
 
     /**
      * @param key -key of value from preference store
@@ -57,7 +69,7 @@ public class LoaderUiUtils extends LoaderUtils {
         if (text == null) {
             return new String[0];
         }
-        String[] array = text.split(",");
+        String[] array = text.split(COMMA_SEPARATOR);
         List<String> result = new ArrayList<String>();
         for (String string : array) {
             String value = string.trim();
@@ -113,14 +125,14 @@ public class LoaderUiUtils extends LoaderUtils {
     private static IService getMapService() throws MalformedURLException {
         String databaseLocation = DatabaseManagerFactory.getDatabaseManager().getLocation();
         ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
-        URL url = new URL("file://" + databaseLocation);
+        URL url = new URL(FILE_PREFIX + databaseLocation);
         ID id = new ID(url);
         IService curService = catalog.getById(IService.class, id, null);
         return curService;
     }
 
     /**
-     * Add gis node to map.
+     * Add model to map.
      * 
      * @param firstDataset String
      * @param modelsList Node...
@@ -144,8 +156,7 @@ public class LoaderUiUtils extends LoaderUtils {
                         }
                     }
                 }
-                layerList.addAll(ApplicationGIS.addLayersToMap(map, listGeoRes, 0));
-                EventManager.getInstance().fireEvent(new UpdateDataEvent());
+                layerList.addAll(ApplicationGIS.addLayersToMap(map, listGeoRes, -1));
                 IPreferenceStore preferenceStore = NeoLoaderPlugin.getDefault().getPreferenceStore();
                 if (preferenceStore.getBoolean(DataLoadPreferences.ZOOM_TO_LAYER)) {
                     zoomToLayer(layerList);
@@ -158,7 +169,7 @@ public class LoaderUiUtils extends LoaderUtils {
     }
 
     /**
-     * Get geo resource for gis node.
+     * Get geo resource for model
      * 
      * @param service IService
      * @param map IMap
@@ -181,16 +192,19 @@ public class LoaderUiUtils extends LoaderUtils {
     }
 
     /**
-     * Returns layer, that contains necessary gis model
+     * Returns layer, that contains necessary model
      * 
      * @param map map
-     * @param gisNode gis node
+     * @param gis model
      * @return layer or null
      */
     public static ILayer findLayerByGisModel(IMap map, IDataModel gis) {
         try {
             for (ILayer layer : map.getMapLayers()) {
                 IGeoResource resource = layer.findGeoResource(IDataModel.class);
+                if (resource == null) {
+                    continue;
+                }
                 IDataModel resolvedElement = resource.resolve(IDataModel.class, null);
                 if (resolvedElement.getName().equals(gis.getName()) && resolvedElement.getType() == gis.getType()) {
                     return layer;
