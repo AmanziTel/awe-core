@@ -76,7 +76,6 @@ public class LaunchLoader extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent arg0) throws ExecutionException {
-        // TODO: LN: hard code!
         guiId = arg0.getParameter(GUI_ID_ATTRIBUTE);
         if (StringUtils.isEmpty(guiId)) {
             // TODO add descriptions
