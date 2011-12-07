@@ -15,9 +15,11 @@ package org.amanzi.awe.views.drive.views;
 import java.awt.Color;
 import java.awt.Paint;
 import java.awt.Shape;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.TreeMap;
@@ -28,6 +30,7 @@ import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDriveModel;
+import org.amanzi.neo.services.model.impl.DriveModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.amanzi.neo.services.utils.Pair;
 import org.apache.log4j.Logger;
@@ -120,7 +123,9 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
     private List<LogarithmicAxis> axisLogs;
     private List<ValueAxis> axisNumerics;
     private List<TimeDataset> xydatasets;
-
+    // HashMap<id of dataElement, IDataElement>
+    private HashMap<Integer, IDataElement> dataElementsToChart;
+    
     /* Gui elements */
     private Combo cDrive;
     private Combo cEvent;
@@ -477,8 +482,7 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-//                updatePropertyPalette();
-
+                updatePropertyPalette();
             }
 
             @Override
@@ -490,7 +494,7 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-//                changeSlider();
+                changeSlider();
             }
 
             @Override
@@ -502,14 +506,14 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
 
             @Override
             public void chartProgress(ChartProgressEvent chartprogressevent) {
-//                if (chartprogressevent.getType() != 2) {
-//                    return;
-//                }
-//                long domainCrosshairValue = (long)chart.getXYPlot().getDomainCrosshairValue();
-//                if (domainCrosshairValue != selectedTime) {
-//                    selectedTime = domainCrosshairValue;
-//                    slider.setSelection((int)((selectedTime - beginGisTime) / SLIDER_STEP));
-//                }
+                if (chartprogressevent.getType() != 2) {
+                    return;
+                }
+                long domainCrosshairValue = (long)chart.getXYPlot().getDomainCrosshairValue();
+                if (domainCrosshairValue != selectedTime) {
+                    selectedTime = domainCrosshairValue;
+                    slider.setSelection((int)((selectedTime - beginGisTime) / SLIDER_STEP));
+                }
                 labelProvider.refreshTable();
                 table.setInput(0);
                 table.refresh();
@@ -543,6 +547,60 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
                 widgetSelected(e);
             }
         });
+    }
+    
+    /**
+     * Updates colors on chart after palette changed
+     */
+    protected void updatePropertyPalette() {
+        XYPlot xyplot = chart.getXYPlot();
+        for (int i = 1; i <= getCurrentPropertyCount(); i++) {
+            ValueAxis axisNumeric = xyplot.getRangeAxis(i);
+            LogarithmicAxis axisLog = new LogarithmicAxis(axisNumeric.getLabel());
+
+            Color color = getColorForProperty(i - 1);
+            axisLog.setTickLabelPaint(color);
+            axisLog.setLabelPaint(color);
+            axisNumeric.setTickLabelPaint(color);
+            axisNumeric.setLabelPaint(color);
+
+            xyplot.getRenderer(i).setSeriesPaint(0, color);
+
+        }
+    }
+    
+    
+    /**
+     *change slider position
+     */
+    protected void changeSlider() {
+        chartFrame.dropAnchor();
+        int i = slider.getSelection();
+        XYPlot xyplot = (XYPlot)chart.getPlot();
+        Double d = beginGisTime + (i / (double)(slider.getMaximum() - slider.getMinimum())) * (endGisTime - beginGisTime);
+        selectedTime = d.longValue();
+        xyplot.setDomainCrosshairValue(selectedTime.doubleValue());
+        Long beginTime = getBeginTime();
+        int timeWindowLen = getLength();
+        Long endTime = beginTime + timeWindowLen;
+        if (selectedTime < beginTime || selectedTime > endTime) {
+            Long windowStartTime = selectedTime < beginTime ? Math.max(beginGisTime, beginTime - timeWindowLen) : Math.min(endGisTime, beginTime + timeWindowLen);
+            if (selectedTime < windowStartTime || selectedTime > windowStartTime + timeWindowLen) {
+                windowStartTime = selectedTime;
+            }
+            setBeginTime(windowStartTime);
+            updateChart();
+        }
+        chart.fireChartChanged();
+    }
+    
+    /**
+     * get length from spin
+     * 
+     * @return length (milliseconds)
+     */
+    private int getLength() {
+        return sLength.getSelection() * 60 * 1000;
     }
     
     /**
@@ -784,10 +842,11 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
         chart.getTitle().setVisible(false);
 
         Integer length = sLength.getSelection();
+        long lengthOfTime = (long) (length * 1000 * 60);
         Long time = getBeginTime();
         Date date = new Date(time);
         domainAxis.setMinimumDate(date);
-        domainAxis.setMaximumDate(new Date(time + length * 1000 * 60));
+        domainAxis.setMaximumDate(new Date(time + lengthOfTime));
         for (int i = 0; i < getCurrentPropertyCount(); i++) {
             TimeDataset xydataset = xydatasets.get(i);
             String property = currentProperies.get(i);
@@ -906,6 +965,36 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
         date.setMinutes(dateStart.getMinutes());
         date.setSeconds(dateStart.getSeconds());
         return date.getTime();
+    }
+    
+    /**
+     * Gets index of crosshair data item
+     * 
+     * @param xydataset
+     * @param crosshair
+     * @return index or null
+     */
+    private Integer getCrosshairIndex(TimeDataset dataset, Number crosshair) {
+        return getCrosshairIndex(dataset.collection, crosshair);
+    }
+
+    /**
+     * Returns Crosshair Index
+     * 
+     * @param collection Time Series Collection
+     * @param crosshair Number
+     * @return Integer
+     */
+    private Integer getCrosshairIndex(TimeSeriesCollection collection, Number crosshair) {
+        if (crosshair == null) {
+            return null;
+        }
+        int[] item = collection.getSurroundingItems(0, crosshair.longValue());
+        Integer result = null;
+        if (item[0] >= 0) {
+            result = item[0];
+        }
+        return result;
     }
     
 
@@ -1189,24 +1278,41 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
          * @param propertyName property name
          */
         protected void createSeries(String name, String propertyName) {
+        	dataElementsToChart = new HashMap<Integer, IDataElement>();
             series = new TimeSeries(name);
             
             IDriveModel driveModel = getDriveModel();
             Iterable<IDataElement> elements = 
-            		driveModel.findAllElementsByTimestampPeriod(beginGisTime, endGisTime);
+            		driveModel.findAllElementsByTimestampPeriod(beginGisTime, beginGisTime + length);
             
-            int count = 0;
+            int id = 0;
+            double value = 0;
+            long timestamp = 0;
+            boolean isNeedAdd = true;
             for (IDataElement dataElement : elements) {
-            	count++;
+            	isNeedAdd = true;
+            	Object objectValue = dataElement.get(propertyName);
+            	if (objectValue != null && !objectValue.toString().isEmpty()) {
+            		value = Double.parseDouble(objectValue.toString());
+            	}
+            	else {
+            		isNeedAdd = false;
+            	}
+            	Object timestampValue = dataElement.get(DriveModel.TIMESTAMP);
+            	if (timestampValue != null && !timestampValue.toString().isEmpty()) {
+            		timestamp = Long.parseLong(timestampValue.toString());
+            	}
+            	else {
+            		isNeedAdd = false;
+            	}
+            	
+            	if (isNeedAdd) {
+	             	series.addOrUpdate(new Millisecond(new Date(timestamp)), id);
+	             	dataElementsToChart.put(id, dataElement);
+	            	id++;
+            	}
             }
-            System.out.println("Count = " + count);
-            
-            Long time = (long) beginGisTime;
-            int[] times = new int[] { 2, 4, 60, 8, 6, 90 };
-            for (int i = 0; i < 6; i++) {
-            	series.addOrUpdate(new Millisecond(new Date(time)), times[i]);
-            	time += SLIDER_STEP * 10;
-            }
+            System.out.println("Count = " + id);
         }
 
         @Override
@@ -1232,7 +1338,16 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
 
         @Override
         public Number getY(int i, int j) {
-            return (Number)(collection.getY(i, j).longValue());
+        	
+        	Integer id = collection.getY(i, j).intValue();
+        	IDataElement dataElement = dataElementsToChart.get(id);
+        	
+        	Double value = 0.0;
+        	Object objectValue = dataElement.get(propertyName);
+        	if (objectValue != null && !objectValue.toString().isEmpty()) {
+        		value = Double.parseDouble(objectValue.toString());
+        	}
+            return (Number)(value);
         }
 
         @SuppressWarnings("rawtypes")
@@ -1410,7 +1525,31 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
 
         @Override
         public String getColumnText(Object element, int columnIndex) {
-			return null;
+            DataElementWrapper wr = provider.dataElementWrapper;
+            int index = (Integer)element;
+            SimpleDateFormat df = new SimpleDateFormat("HH:mm:ss"); //$NON-NLS-1$
+            if (columnIndex == 0) {
+                if (index >= wr.time.length) {
+                    return ""; //$NON-NLS-1$
+                }
+                Long time = wr.time[index];
+                return time == null ? "" : df.format(new Date(time)); //$NON-NLS-1$
+            }
+            if (columnIndex == 1) {
+                if (index < wr.nEvents.length && wr.nEvents[index] != null) {
+                	if (wr.nEvents[index].get(EVENT) != null) {
+                		return wr.nEvents[index].get(EVENT).toString();
+                	}
+                }
+                return ""; //$NON-NLS-1$
+            }
+            if (columnIndex < getCurrentPropertyCount() + 2 && 
+            		(columnIndex - 2) < wr.nProperties.size() && 
+            		wr.nProperties.get(columnIndex - 2)[index] != null) {
+            	
+                return wr.nProperties.get(columnIndex - 2)[index].get(wr.propertyNames.get(columnIndex - 2)).toString(); //$NON-NLS-1$
+            }
+            return ""; //$NON-NLS-1$
         }
     }
 
@@ -1423,6 +1562,8 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
 
     private class TableContentProvider implements IStructuredContentProvider {
 
+    	private DataElementWrapper dataElementWrapper = new DataElementWrapper();
+    	
         public TableContentProvider() {
         }
 
@@ -1437,7 +1578,91 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
 
         @Override
         public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+            if (newInput == null || cPropertyList.getText().isEmpty()) {
+                return;
+            }
+            dataElementWrapper = new DataElementWrapper();
 
+            labelProvider.refreshTable();
+            Double crosshair = ((XYPlot)chart.getPlot()).getDomainCrosshairValue();
+            dataElementWrapper.propertyNames.clear();
+            dataElementWrapper.propertyNames.addAll(propertyLists.get(cPropertyList.getText()));
+            for (int i = 0; i < getCurrentPropertyCount(); i++) {
+            	dataElementWrapper.propertyNames.add(currentProperies.get(i));
+                changeName(labelProvider.columns.get(i + 2), dataElementWrapper.propertyNames.get(i));
+            }
+            dataElementWrapper.eventName = cEvent.getText();
+            changeName(labelProvider.columns.get(1), dataElementWrapper.eventName);
+
+            // nodeWrapper.nEvents.clear();
+            dataElementWrapper.nEvents = new IDataElement[3];
+            dataElementWrapper.time = new Long[3];;
+
+            if (crosshair < 0.1) {
+                return;
+            }
+            // nodeWrapper.time.add(null);
+            dataElementWrapper.time[1] = crosshair.longValue();
+            dataElementWrapper.time[0] = getPreviousTime(dataElementWrapper.time[1]);
+            dataElementWrapper.time[2] = getNextTime(dataElementWrapper.time[1]);
+
+            for (int i = 0; i < getCurrentPropertyCount(); i++) {
+                fillProperty(crosshair, xydatasets.get(i).collection, 
+                		dataElementWrapper.nProperties.get(i), dataElementWrapper.time);
+            }
+            fillProperty(crosshair, eventDataset.collection, dataElementWrapper.nEvents, dataElementWrapper.time);
+
+        }
+
+        /**
+         * @param tableColumn
+         * @param name
+         */
+        private void changeName(TableColumn tableColumn, String name) {
+            if (!tableColumn.getText().equals(name)) {
+                tableColumn.setText(name);
+            }
+        }
+
+        /**
+         * @param crosshair
+         * @param dataset
+         * @param nodes
+         */
+        private void fillProperty(double crosshair, TimeSeriesCollection dataset, IDataElement[] nodes, Long[] time) {
+            Integer index1 = getCrosshairIndex(dataset, time[1]);
+            Integer idOfDataElement = 0;
+            if (index1 != null) {
+                idOfDataElement = dataset.getSeries(0).getDataItem(index1).getValue().intValue();
+                nodes[1] = dataElementsToChart.get(idOfDataElement);
+                if (index1 > 0) {
+                	idOfDataElement = dataset.getSeries(0).getDataItem(index1 - 1).getValue().intValue(); 
+                    nodes[0] = dataElementsToChart.get(idOfDataElement);
+                }
+                if (index1 + 1 < dataset.getSeries(0).getItemCount()) {
+                	idOfDataElement = dataset.getSeries(0).getDataItem(index1 + 1).getValue().intValue();
+                    nodes[2] = dataElementsToChart.get(idOfDataElement);
+                }
+            }
+        }
+
+    }
+
+    private class DataElementWrapper {
+    	int currentPropertyCount = getCurrentPropertyCount();
+        List<String> propertyNames = new ArrayList<String>(currentPropertyCount);
+        String eventName;
+        Long[] time = new Long[3];
+        List<IDataElement[]> nProperties = new ArrayList<IDataElement[]>(currentPropertyCount);
+        IDataElement[] nEvents = new IDataElement[3];
+
+        /**
+         * Constructor
+         */
+        public DataElementWrapper() {
+            for (int i = 0; i < currentPropertyCount; i++) {
+                nProperties.add(new IDataElement[3]);
+            }
         }
     }
 
