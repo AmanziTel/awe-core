@@ -150,7 +150,7 @@
                   
                </documentation>
                <appInfo>
-                  <meta.attribute kind="java" basedOn=":org.amanzi.neo.loader.core.newsaver.ISaver"/>
+                  <meta.attribute kind="java" basedOn=":org.amanzi.neo.loader.core.saver.ISaver"/>
                </appInfo>
             </annotation>
          </attribute>
