@@ -152,7 +152,7 @@ public class NeoCatalogStartup implements IStartup {
             List<IGeoResource> resMap = new LinkedList<IGeoResource>();
             IMap map = ApplicationGIS.getActiveMap();
 
-            if (map.getMapLayers().isEmpty() && !map.getLayerFactory().getLayers(curService).isEmpty()) {
+            if (map.getMapLayers().isEmpty()) {
                 for (IGeoResource iGeoResource : curService.resources(null)) {
                     resMap.add(iGeoResource);
                 }
@@ -193,6 +193,7 @@ public class NeoCatalogStartup implements IStartup {
         IService curService = catalog.getById(IService.class, id, null);
         if (curService == null) {
             curService = CatalogPlugin.getDefault().getServiceFactory().createService(url).get(0);
+            new UpdateDataHandling().handleEvent(null);
         }
         return curService;
     }
