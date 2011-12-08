@@ -63,6 +63,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DateTime;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Slider;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Table;
@@ -102,7 +103,7 @@ import org.jfree.experimental.chart.swt.ChartComposite;
 public class NewDriveInquirerView extends ViewPart implements IPropertyChangeListener {
 	public NewDriveInquirerView() {
 	
-	}
+	} 
 	
     private static final Logger LOGGER = Logger.getLogger(NewDriveInquirerView.class);
 
@@ -531,15 +532,15 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-//                Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
-//                NewDriveInquirerPropertyConfig pdialog = new NewDriveInquirerPropertyConfig(shell, getDriveModel().getRootNode());;
-//                if (pdialog.open() == SWT.OK) {
-//                    formPropertyList();
-//                    String[] result = propertyLists.keySet().toArray(new String[0]);
-//                    Arrays.sort(result);
-//                    cPropertyList.setItems(result);
-//                    updatePropertyList();
-//                }
+                Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+                NewDriveInquirerPropertyConfig pdialog = new NewDriveInquirerPropertyConfig(shell, getDriveModel());
+                if (pdialog.open() == SWT.OK) {
+                    formPropertyList();
+                    String[] result = propertyLists.keySet().toArray(new String[0]);
+                    Arrays.sort(result);
+                    cPropertyList.setItems(result);
+                    updatePropertyList();
+                }
             }
 
             @Override
