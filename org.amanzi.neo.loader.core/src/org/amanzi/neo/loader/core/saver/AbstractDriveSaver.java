@@ -316,4 +316,9 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<IDriveModel> {
      * @return
      */
     protected abstract IDriveType getDriveType();
+
+    @Override
+    protected boolean isRenderable() {
+        return true;
+    }
 }

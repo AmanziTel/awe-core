@@ -173,4 +173,9 @@ public abstract class AbstractN2NSaver extends AbstractCSVSaver<INetworkModel> {
     protected String getSubType() {
         return null;
     }
+
+    @Override
+    protected boolean isRenderable() {
+        return false;
+    }
 }

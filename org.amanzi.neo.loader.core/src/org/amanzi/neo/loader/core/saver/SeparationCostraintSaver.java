@@ -47,6 +47,11 @@ public class SeparationCostraintSaver extends AbstractNetworkSaver {
         super();
     }
 
+    @Override
+    protected boolean isRenderable() {
+        return false;
+    }
+
     /**
      * constructor for tests
      * 

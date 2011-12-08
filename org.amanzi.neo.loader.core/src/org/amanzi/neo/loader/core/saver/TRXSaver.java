@@ -263,4 +263,9 @@ public class TRXSaver extends AbstractNetworkSaver {
         TRX_ELEMENT.clear();
         FREQUENCY_ELEMENT.clear();
     }
+
+    @Override
+    protected boolean isRenderable() {
+        return false;
+    }
 }
