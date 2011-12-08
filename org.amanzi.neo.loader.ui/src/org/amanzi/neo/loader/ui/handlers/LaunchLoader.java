@@ -52,27 +52,27 @@ public class LaunchLoader extends AbstractHandler {
     /*
      * constants
      */
-    private static final String GUI_ID_ATTRIBUTE = "org.amanzi.neo.loader.ui.commands.guiId";
-    private static final String LOADERS_EXTENSION_POINT = "org.amanzi.neo.loader.ui.newloaders";
-    private static final String GUI_EXTENSION_POIN = "org.amanzi.neo.loader.ui.gui";
-    private static final String SAVER_EXTENSION_POINT = "org.amanzi.loader.core.saver";
-    private static final String PARSER_EXTENSION_POINT = "org.amanzi.loader.core.parser";
+    protected static final String GUI_ID_ATTRIBUTE = "org.amanzi.neo.loader.ui.commands.guiId";
+    protected static final String LOADERS_EXTENSION_POINT = "org.amanzi.neo.loader.ui.newloaders";
+    protected static final String GUI_EXTENSION_POIN = "org.amanzi.neo.loader.ui.gui";
+    protected static final String SAVER_EXTENSION_POINT = "org.amanzi.loader.core.saver";
+    protected static final String PARSER_EXTENSION_POINT = "org.amanzi.loader.core.parser";
 
-    private static final String GUI_ATTRIBUTE = "gui";
-    private static final String ID_ATTRIBUTE = "id";
-    private static final String CLASS_ATTRIBUTE = "class";
-    private static final String PAGES_ATTRIBUTE = "pages";
+    protected static final String GUI_ATTRIBUTE = "gui";
+    protected static final String ID_ATTRIBUTE = "id";
+    protected static final String CLASS_ATTRIBUTE = "class";
+    protected static final String PAGES_ATTRIBUTE = "pages";
 
-    private static final String LOADER_CLASS_ATRIBUTE = "loader_class";
-    private static final String LOADER_DATA_TYPE = "loader_data_type";
-    private static final String LOADER_TYPE_ATTRIBUTE = "loader_type";
-    private static final String LOADER_NAME = "loader_name";
+    protected static final String LOADER_CLASS_ATRIBUTE = "loader_class";
+    protected static final String LOADER_DATA_TYPE = "loader_data_type";
+    protected static final String LOADER_TYPE_ATTRIBUTE = "loader_type";
+    protected static final String LOADER_NAME = "loader_name";
 
-    private static final String VALIDATOR_ATTRIBUTE = "validator";
-    private static final String SAVER_ATTRIBUTE = "saver";
-    private static final String PARSER_ATTRIBUTE = "parser";
+    protected static final String VALIDATOR_ATTRIBUTE = "validator";
+    protected static final String SAVER_ATTRIBUTE = "saver";
+    protected static final String PARSER_ATTRIBUTE = "parser";
 
-    private String guiId;
+    protected String guiId;
 
     @Override
     public Object execute(ExecutionEvent arg0) throws ExecutionException {
@@ -149,7 +149,7 @@ public class LaunchLoader extends AbstractHandler {
      * @param element the element
      * @return the loader
      */
-    private ILoader<IData, IConfiguration> defineLoader(IConfigurationElement element) {
+    protected ILoader<IData, IConfiguration> defineLoader(IConfigurationElement element) {
         try {
             String loaderClass = element.getAttribute(LOADER_CLASS_ATRIBUTE);
 
