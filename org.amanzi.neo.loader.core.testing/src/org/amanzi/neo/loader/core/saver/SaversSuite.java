@@ -35,8 +35,7 @@ import org.junit.runners.Suite.SuiteClasses;
         org.amanzi.neo.loader.core.saver.NeighbourSaverTesting.class,
         org.amanzi.neo.loader.core.saver.TemsSaverTesting.class,
         org.amanzi.neo.loader.core.saver.RomesSaverTesting.class,
-        org.amanzi.neo.loader.core.saver.AutoParseTesting.class,
-        org.amanzi.neo.loader.core.saver.Nemo2xSaverTesting.class
+        org.amanzi.neo.loader.core.saver.AutoParseTesting.class
         })
 public class SaversSuite {
 
