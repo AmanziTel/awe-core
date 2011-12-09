@@ -22,6 +22,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeMap;
 
 import net.refractions.udig.ui.PlatformGIS;
@@ -207,7 +208,6 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
 
         bAddPropertyList = new Button(child, SWT.PUSH);
         bAddPropertyList.setText(Messages.DriveInquirerView_7);
-        bAddPropertyList.setEnabled(false);
 
         chart = createChart();
         chartFrame = new ChartCompositeImpl(frame, SWT.NONE, chart, true);
@@ -694,39 +694,16 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
     private void formPropertyList() {
         propertyLists.clear();
         IDriveModel currentDriveModel = getDriveModel();
-        INodeType primaryTypeOfModel = null;
         
-        ArrayList<String> list = new ArrayList<String>();
         if (currentDriveModel != null) {
-            primaryTypeOfModel = currentDriveModel.getPrimaryType();
-        	String[] currentStatistics = currentDriveModel.getAllProperties(primaryTypeOfModel, Double.class);
-        	for (String property : currentStatistics) {
-        		list.add(property);
-        	}
-        	currentStatistics = currentDriveModel.getAllProperties(primaryTypeOfModel, Integer.class);
-        	for (String property : currentStatistics) {
-        		list.add(property);
-        	}
-        	currentStatistics = currentDriveModel.getAllProperties(primaryTypeOfModel, Float.class);
-        	for (String property : currentStatistics) {
-        		list.add(property);
-        	}
-        	String[] statistics = new String[list.size()];
-        	list.toArray(statistics);
-            Arrays.sort(statistics);
-            cPropertyList.setItems(statistics);
+	        Set<String> selectedProperties = currentDriveModel.getSelectedProperties();
+	        
+	        String[] statistics = new String[selectedProperties.size()];
+	    	selectedProperties.toArray(statistics);
+	        Arrays.sort(statistics);
+	        cPropertyList.setItems(statistics);
         }
-//        Object[] savedProperties = null;
-//        if (savedProperties != null) {
-//            List<String> savedList = new ArrayList<String>(savedProperties.length);
-//            for (Object savedProperty : savedProperties) {
-//                savedList.add(savedProperty.toString());
-//            }
-//            List<String> filteredList = new PropertyFilterModel().filerProperties(cDrive.getText(), savedList);
-//            for (Object savedProperty : filteredList) {
-//                propertyLists.put(savedProperty.toString(), Arrays.asList(savedProperty.toString().split(", ")));
-//            }
-//        }
+        
     }
 
     /**
@@ -866,7 +843,7 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
     private void changeDrive() {
         if (cDrive.getSelectionIndex() < 0) {
             setsVisible(false);
-            bAddPropertyList.setEnabled(false);
+//            bAddPropertyList.setEnabled(false);
         } else {
             formPropertyLists();
             bAddPropertyList.setEnabled(true);

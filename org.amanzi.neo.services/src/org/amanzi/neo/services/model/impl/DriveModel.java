@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.amanzi.neo.model.distribution.IDistribution;
 import org.amanzi.neo.model.distribution.IDistributionModel;
@@ -28,6 +29,7 @@ import org.amanzi.neo.model.distribution.impl.DistributionModel;
 import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.CorrelationService;
 import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.DatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.DatasetService.DatasetTypes;
 import org.amanzi.neo.services.DatasetService.DriveTypes;
 import org.amanzi.neo.services.NeoServiceFactory;
@@ -84,7 +86,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
      * @since 1.0.0
      */
     public enum DriveNodeTypes implements INodeType {
-        FILE, M, MP, M_AGGR, MM, MS;
+        FILE, M, MP, M_AGGR, MM, MS, SELECTED_PROPERTIES;
 
         static {
             NodeTypeManager.registerNodeType(DriveNodeTypes.class);
@@ -670,5 +672,47 @@ public class DriveModel extends RenderableModel implements IDriveModel {
             return new DriveModel(isVirtual.next());
         }
         return getProject();
+    }
+    
+    @Override
+    public IDataElement addSelectedProperties(Set<String> selectedProperties)
+    {
+        LOGGER.debug("start addSelectedProperties(Set<String> selectedProperties)");
+        
+        if (selectedProperties == null) {
+            throw new IllegalArgumentException("Set<String> is null.");
+        }
+
+        Node selectedPropertiesNode = null;
+        try {
+            selectedPropertiesNode = dsServ.addSelectedPropertiesNode(rootNode, 
+                    dsServ.createNode(DriveNodeTypes.SELECTED_PROPERTIES));
+            Map<String, Object> params = new HashMap<String, Object>();
+            params.put(AbstractService.NAME, getName());
+            String[] array = selectedProperties.toArray(new String[0]);
+            params.put(SELECTED_PROPERTIES, array);
+            dsServ.setProperties(selectedPropertiesNode, params);
+        }
+        catch (AWEException e) {
+            LOGGER.error("Error with saving selected properties");
+        }
+        
+        return new DataElement(selectedPropertiesNode);
+    }
+    
+    @Override
+    public Set<String> getSelectedProperties()
+    {
+        Set<String> result = new TreeSet<String>();
+        try {
+            Node selectedPropertiesNode = dsServ.getSelectedPropertiesNode(rootNode);
+            String[] array = (String[])selectedPropertiesNode.getProperty(SELECTED_PROPERTIES);
+            for (int i = 0; i < array.length; i++) {
+                result.add(array[i]);
+            }
+        } catch (AWEException e) {
+            LOGGER.error("Error with get selected properties");
+        }
+        return result;
     }
 }

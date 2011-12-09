@@ -35,10 +35,11 @@ public abstract class AbstractDialog<E> extends Dialog {
         this(parent, title, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.CENTER);
     }
 
-    public AbstractDialog(Shell parent, String title, int style) {
+    @SuppressWarnings("unchecked")
+	public AbstractDialog(Shell parent, String title, int style) {
         super(parent, style);
         this.title = title;
-        status = null;
+        status = (E)(new Integer(SWT.OK));
     }
 
     public E open() {
