@@ -3,7 +3,9 @@
 <plugin>
    <extension-point id="org.amanzi.neo.loader.ui.gui" name="GUI for loaders" schema="schema/org.amanzi.neo.loader.ui.gui.exsd"/>
    <extension-point id="org.amanzi.neo.loader.ui.loaders" name="Loaders" schema="schema/org.amanzi.neo.loader.ui.loaders.exsd"/>
-   <extension-point id="org.amanzi.neo.loader.ui.newloaders" name="NewLoaders" schema="schema/org.amanzi.neo.loader.ui.newloaders.exsd"/>
+   <extension-point id="org.amanzi.neo.loader.ui.wizard" name="Extension describe wizard" schema="schema/org.amanzi.neo.loader.ui.wizard.exsd"/>
+  <extension-point id="org.amanzi.neo.loader.ui.pages" name="Extension describe pages" schema="schema/org.amanzi.neo.loader.ui.pages.exsd"/>
+   
       <extension
           point="org.eclipse.ui.commands">
        <category
@@ -106,204 +108,181 @@
             class="org.amanzi.neo.loader.core.preferences.DataLoadPreferenceInitializer">
       </initializer>
    </extension>
-
-     <extension
-         point="org.amanzi.neo.loader.ui.newloaders">
-        
-       <newloader
-             gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
-             id="NewNetworkLoader"
+   
+    <!-- describe wizard -->
+ <extension
+       point="org.amanzi.neo.loader.ui.wizard">
+       <wizard id="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard">
+          <page_id id="load_physical_network_page"/>
+       </wizard>
+       <wizard id="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard">
+          <page_id id="load_drive_data_page"/>
+       </wizard>
+ </extension>
+ 
+<!-- describe wizard page-->
+ <extension point="org.amanzi.neo.loader.ui.pages">
+	 <page id="load_physical_network_page" class="org.amanzi.neo.loader.ui.wizards.LoadNetworkMainPage" isMain="true">
+	             <loader_id id="org.amanzi.neo.loader.ui.networkloader"/>
+	             <loader_id id="org.amanzi.neo.loader.ui.neighboursLoader"/>
+	             <loader_id id="org.amanzi.neo.loader.ui.networkSelectionLoader"/>
+	             <loader_id id="org.amanzi.neo.loader.ui.frequencyConstraint"/>
+	             <loader_id id="org.amanzi.neo.loader.ui.separationCostraint"/>
+	             <loader_id id="org.amanzi.neo.loader.ui.trafficDataLoader"/>
+	             <loader_id id="org.amanzi.neo.loader.ui.interferenceMatrixLoader"/>
+	             
+	 </page>
+	 
+	 <page id="load_drive_data_page" class="org.amanzi.neo.loader.ui.wizards.LoadDatasetMainPage" isMain="true">
+	             <loader_id id="org.amanzi.neo.loader.ui.nemo2xloader"/>
+	             <loader_id id="org.amanzi.neo.loader.ui.nemo1xloader"/>
+	             <loader_id id="org.amanzi.neo.loader.ui.romesloader"/>
+	             <loader_id id="org.amanzi.neo.loader.ui.temsloader"/>
+	 </page>
+	 
+ </extension>
+   <!-- loaders definition -->
+ <extension
+       point="org.amanzi.neo.loader.ui.loaders">
+       <loaders
+	       id="org.amanzi.neo.loader.ui.nemo2xloader"
+	       loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
+	       parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
+	       loader_name="NEMO v2.01 loader"
+	       validator="org.amanzi.neo.loader.ui.validators.FakeValidator">
+           <saver id="org.amanzi.neo.loader.core.saver.Nemo2xSaver"/>
+       </loaders>
+       
+       <loaders
+	       id="org.amanzi.neo.loader.ui.nemo1xloader"
+	       loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
+	       parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
+	       loader_name="NEMO v1.86 loader"
+	       validator="org.amanzi.neo.loader.ui.validators.FakeValidator">
+           <saver id="org.amanzi.neo.loader.core.saver.Nemo1xSaver"/>
+       </loaders>
+       
+       <loaders
+             id="org.amanzi.neo.loader.ui.romesloader"
              loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
-             loader_data_type="Network"
-             loader_name="NewNetworkLoader"
-             loader_type="site sector loader"
-             parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
-             validator="org.amanzi.neo.loader.ui.validators.NetworkValidator">
-               <saver 
-               id="org.amanzi.neo.loader.core.saver.NetworkSaver"
-            	class="org.amanzi.neo.loader.core.saver.NetworkSaver"
-            />
-      </newloader>
-     
-      <newloader
-             gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
-             id="NewNeighboursLoader"
-             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
-             loader_data_type="Neighbours"
-             loader_name="NeighboursDataLoader"
-             loader_type="Neighbors loader"
-             parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
-             validator="org.amanzi.neo.loader.ui.validators.NeighborsDataValidator">
-               <saver 
-                id="org.amanzi.neo.loader.core.saver.NeighborsSaver"
-            	class="org.amanzi.neo.loader.core.saver.NeighborsSaver"
-            />
-      </newloader>
-      
-      <newloader
-             gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
-             id="NewTRXLoader"
-             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
-             loader_data_type="TrxDataLoader"
-             loader_name="TrxDataLoader"
-             loader_type="TRXs loader"
-             parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
-             validator="org.amanzi.neo.loader.ui.validators.TrxDataValidator">
-               <saver 
-               id="org.amanzi.neo.loader.core.saver.TRXSaver"
-            	class="org.amanzi.neo.loader.core.saver.TRXSaver"
-            />
-      </newloader>
-      
-      <newloader
-             gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
-             id="NewFrequencyConstraintsLoader"
-             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
-             loader_data_type="FrequencyConstraintsDATALoader"
-             loader_name="FrequencyConstraintsLoader"
-             loader_type="Frequency Constraints loader"
-             parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
-             validator="org.amanzi.neo.loader.ui.validators.FrequencyConstraintsDataValidator">
-               <saver 
-               id="org.amanzi.neo.loader.core.saver.FrequencyConstraintSaver"
-            	class="org.amanzi.neo.loader.core.saver.FrequencyConstraintSaver"
-            />
-      </newloader>
-      
-      <newloader
-             gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
-             id="NewInterferenceMatrixLoader"
-             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
-             loader_data_type="InterferenceMatrixDataLoader"
-             loader_name="InterferenceMatrixLoader"
-             loader_type="Interference Matrix loader"
-             parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
-             validator="org.amanzi.neo.loader.ui.validators.InterferenceMatrixValidator">
-               <saver 
-               id="org.amanzi.neo.loader.core.saver.InterferenceSaver"
-            	class="org.amanzi.neo.loader.core.saver.InterferenceSaver"
-            />
-      </newloader>
-      
-      <newloader
-             gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
-             id="NewTrafficDataLoader"
-             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
-             loader_data_type="TrafficDataLoader"
-             loader_name="TrafficDataLoader"
-             loader_type="Traffic data loader"
-             parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
-             validator="org.amanzi.neo.loader.ui.validators.TrafficDataValidator">
-               <saver 
-               id="org.amanzi.neo.loader.core.saver.TrafficSaver"
-            	class="org.amanzi.neo.loader.core.saver.TrafficSaver"
-            />
-      </newloader>
-      
-      <newloader
-             gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
-             id="NewSeparationCostraint"
-             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
-             loader_data_type="SeparationCostraintDataLoader"
-             loader_name="SeparationCostraint"
-             loader_type="Separation Costraint data loader"
-             parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
-             validator="org.amanzi.neo.loader.ui.validators.SeparationConstraintsDataValidator">
-               <saver 
-               id="org.amanzi.neo.loader.core.saver.SeparationCostraintSaver"
-            	class="org.amanzi.neo.loader.core.saver.SeparationCostraintSaver"
-            />
-      </newloader>
-      
-      <newloader
-             gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
-             id="NewFrequencyConstraint"
-             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
-             loader_data_type="FrequencyConstraintLoader"
-             loader_name="FrequencyConstraint"
-             loader_type="Frequency Constraints loader"
-             parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
-             validator="org.amanzi.neo.loader.ui.validators.FrequencyConstraintsDataValidator">
-               <saver 
-               id="org.amanzi.neo.loader.core.saver.FrequencyConstraintSaver"
-            	class="org.amanzi.neo.loader.core.saver.FrequencyConstraintSaver"
-            />
-      </newloader>
-    
-      <newloader
-             gui="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
-             id="NewNetworkSelectionLoader"
-             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
-             loader_data_type="Selection"
-             loader_name="SelectionDataLoader"
-             loader_type="sector selection loader"
-             parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
-             validator="org.amanzi.neo.loader.ui.validators.SectorSelectionDataValidator">
-               <saver 
-                id="org.amanzi.neo.loader.core.saver.SectorSelectionSaver"
-            	class="org.amanzi.neo.loader.core.saver.SectorSelectionSaver"
-            />
-      </newloader>
-     
-      <newloader
-             gui="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard"
-             id="newROMESLoader"
-             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
-             loader_data_type="TEMS"
-             loader_name="TEMS DATA LOADER"
-             loader_type="TEMS loader"
-             parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
-             validator="org.amanzi.neo.loader.ui.validators.FakeValidator">
-               <saver 
-                id="org.amanzi.neo.loader.core.saver.TemsSaver"
-            	class="org.amanzi.neo.loader.core.saver.TemsSaver"
-            />
-      </newloader>
-      
-      <newloader
-             gui="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard"
-             id="newTEMSLOADER"
-             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
-             loader_data_type="ROMES"
-             loader_name="ROMES DATA LOADER"
-             loader_type="ROMES loader"
+             loader_name="ROMES loader"
              parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
              validator="org.amanzi.neo.loader.ui.validators.FakeValidator">
                <saver 
                 id="org.amanzi.neo.loader.core.saver.RomesSaver"
-            	class="org.amanzi.neo.loader.core.saver.RomesSaver"
             />
-      </newloader>
-      
-      <newloader
-             gui="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard"
-             id="newNEMO1xLOADER"
+      </loaders>
+       <loaders
+             id="org.amanzi.neo.loader.ui.temsloader"
              loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
-             loader_data_type="NEMO v1.86"
-             loader_name="NEMO v1.86 DATA LOADER"
-             loader_type="NEMO v1.86 loader"
+             loader_name="TEMS loader"
              parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
              validator="org.amanzi.neo.loader.ui.validators.FakeValidator">
                <saver 
-                id="org.amanzi.neo.loader.core.saver.Nemo1xSaver"
-            	class="org.amanzi.neo.loader.core.saver.Nemo1xSaver"
+                id="org.amanzi.neo.loader.core.saver.TemsSaver"
             />
-      </newloader>
+      </loaders>
       
-      <newloader
-             gui="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard"
-             id="newNEMO2xLOADER"
+       <loaders
+             id="org.amanzi.neo.loader.ui.networkloader"
              loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
-             loader_data_type="NEMO v2.01"
-             loader_name="NEMO v2.01 DATA LOADER"
-             loader_type="NEMO v2.01 loader"
+             loader_name="site sector loader"
              parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
-             validator="org.amanzi.neo.loader.ui.validators.FakeValidator">
+             validator="org.amanzi.neo.loader.ui.validators.NetworkValidator">
                <saver 
-                id="org.amanzi.neo.loader.core.saver.Nemo2xSaver"
-            	class="org.amanzi.neo.loader.core.saver.Nemo2xSaver"
+               id="org.amanzi.neo.loader.core.saver.NetworkSaver"
             />
-      </newloader>
-   </extension>
+      </loaders>
+     
+      <loaders
+             id="org.amanzi.neo.loader.ui.neighboursLoader"
+             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
+             loader_name="Neighbors loader"
+             parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
+             validator="org.amanzi.neo.loader.ui.validators.NeighborsDataValidator">
+               <saver 
+                id="org.amanzi.neo.loader.core.saver.NeighborsSaver"
+            />
+      </loaders>
+      
+      <loaders
+             id="org.amanzi.neo.loader.ui.trxLoader"
+             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
+             loader_name="TRXs loader"
+             parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
+             validator="org.amanzi.neo.loader.ui.validators.TrxDataValidator">
+               <saver 
+               id="org.amanzi.neo.loader.core.saver.TRXSaver"
+            />
+      </loaders>
+      
+      <loaders
+              id="org.amanzi.neo.loader.ui.frequencyConstraintsLoader"
+             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
+             loader_name="Frequency Constraints loader"
+             parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
+             validator="org.amanzi.neo.loader.ui.validators.FrequencyConstraintsDataValidator">
+               <saver 
+               id="org.amanzi.neo.loader.core.saver.FrequencyConstraintSaver"
+            />
+      </loaders>
+      
+      <loaders
+             id="org.amanzi.neo.loader.ui.interferenceMatrixLoader"
+             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
+             loader_name="Interference Matrix loader"
+             parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
+             validator="org.amanzi.neo.loader.ui.validators.InterferenceMatrixValidator">
+               <saver 
+               id="org.amanzi.neo.loader.core.saver.InterferenceSaver"
+            />
+      </loaders>
+      
+      <loaders
+             id="org.amanzi.neo.loader.ui.trafficDataLoader"
+             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
+             loader_name="Traffic data loader"
+             parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
+             validator="org.amanzi.neo.loader.ui.validators.TrafficDataValidator">
+               <saver 
+               id="org.amanzi.neo.loader.core.saver.TrafficSaver"
+            />
+      </loaders>
+      
+      <loaders
+             id="org.amanzi.neo.loader.ui.separationCostraint"
+             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
+             loader_name="Separation Costraint data loader"
+             parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
+             validator="org.amanzi.neo.loader.ui.validators.SeparationConstraintsDataValidator">
+               <saver 
+               id="org.amanzi.neo.loader.core.saver.SeparationCostraintSaver"
+            />
+      </loaders>
+      
+      <loaders
+             id="org.amanzi.neo.loader.ui.frequencyConstraint"
+             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
+             loader_name="Frequency Constraints loader"
+             parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
+             validator="org.amanzi.neo.loader.ui.validators.FrequencyConstraintsDataValidator">
+               <saver 
+               id="org.amanzi.neo.loader.core.saver.FrequencyConstraintSaver"
+            />
+      </loaders>
+    
+      <loaders
+             id="org.amanzi.neo.loader.ui.networkSelectionLoader"
+             loader_class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
+             loader_name="sector selection loader"
+             parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
+             validator="org.amanzi.neo.loader.ui.validators.SectorSelectionDataValidator">
+               <saver 
+                id="org.amanzi.neo.loader.core.saver.SectorSelectionSaver"
+            />
+      </loaders>
+       </extension>
 
+ 
+ 
 </plugin>

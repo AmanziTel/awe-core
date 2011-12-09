@@ -159,12 +159,12 @@ public class LoadDatasetMainPage extends LoaderPage<ConfigurationDataImpl> {
         Label ldataset = new Label(panel, SWT.NONE);
         ldataset.setText(NeoLoaderPluginMessages.NetworkSiteImportWizard_DATA_TYPE);
         cLoaders = new Combo(panel, SWT.NONE);
-        cLoaders.setItems(getNewLoadersDescriptions());
+        cLoaders.setItems(getLoadersDescription());
         cLoaders.addSelectionListener(new SelectionListener() {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                selectNewLoader(cLoaders.getSelectionIndex());
+                selectLoader(cLoaders.getSelectionIndex());
                 update();
             }
 
@@ -350,7 +350,7 @@ public class LoadDatasetMainPage extends LoaderPage<ConfigurationDataImpl> {
     protected void update() {
         // CoordinateReferenceSystem crs = getSelectedCRS();
         // selectCRS.setText(String.format("CRS: %s", crs.getName().toString()));
-        super.updateNew();
+        super.commonUpdate();
     }
 
     /**
@@ -399,7 +399,7 @@ public class LoadDatasetMainPage extends LoaderPage<ConfigurationDataImpl> {
     protected void changeDatasetSelection() {
         datasetName = cDataset.getText();
         names.put("Dataset", datasetName);
-        getNewConfigurationData().setDatasetNames(names);
+        getConfigurationData().setDatasetNames(names);
         update();
     }
 
@@ -568,7 +568,7 @@ public class LoadDatasetMainPage extends LoaderPage<ConfigurationDataImpl> {
                 fileToLoad.add(new File(file));
             }
         }
-        getNewConfigurationData().setSourceFile(fileToLoad);
+        getConfigurationData().setSourceFile(fileToLoad);
         update();
     }
 
@@ -597,7 +597,7 @@ public class LoadDatasetMainPage extends LoaderPage<ConfigurationDataImpl> {
             setMessage("Select files for import", DialogPage.ERROR);
             return false;
         }
-        if (getNewSelectedLoader() == null) {
+        if (getSelectedLoader() == null) {
             setMessage(NeoLoaderPluginMessages.NetworkSiteImportWizardPage_NO_TYPE, DialogPage.ERROR);
             return false;
         }
@@ -622,13 +622,13 @@ public class LoadDatasetMainPage extends LoaderPage<ConfigurationDataImpl> {
         // cl.set(Calendar.MONTH, date.getMonth());
         // cl.set(Calendar.DAY_OF_MONTH, date.getDay());
 
-        Result result = getNewSelectedLoader().getValidator().isValid(configurationData);
-        String messaString = getNewSelectedLoader().getValidator().getMessages();
+        Result result = getSelectedLoader().getValidator().isValid(configurationData);
+        String messaString = getSelectedLoader().getValidator().getMessages();
         if (result == Result.FAIL) {
-            setMessage(String.format(messaString, getNewSelectedLoader().getLoaderInfo().getName()), DialogPage.ERROR);
+            setMessage(String.format(messaString, getSelectedLoader().getLoaderInfo().getName()), DialogPage.ERROR);
             return false;
         } else if (result == Result.UNKNOWN) {
-            setMessage(String.format(messaString, getNewSelectedLoader().getLoaderInfo().getName()), DialogPage.WARNING);
+            setMessage(String.format(messaString, getSelectedLoader().getLoaderInfo().getName()), DialogPage.WARNING);
         } else {
             setMessage(""); //$NON-NLS-1$
         }

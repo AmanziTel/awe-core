@@ -26,18 +26,4 @@ public interface ILoaderInfo {
      */
     public String getName();
 
-    /**
-     * get loader type
-     * 
-     * @return
-     */
-    public String getType();
-
-    /**
-     * get loader data type
-     * 
-     * @return
-     */
-    public String getDataType();
-
 }

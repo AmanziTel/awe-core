@@ -28,6 +28,7 @@ import org.amanzi.neo.loader.ui.loaders.Loader;
 import org.amanzi.neo.loader.ui.wizards.IGraphicInterfaceForLoaders;
 import org.amanzi.neo.services.model.IModel;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -49,12 +50,15 @@ import org.eclipse.ui.handlers.HandlerUtil;
  * @author Kondratenko_Vladsialv
  */
 public class LaunchLoader extends AbstractHandler {
+    private static Logger LOGGER = Logger.getLogger(LaunchLoader.class);
     /*
      * constants
      */
     protected static final String GUI_ID_ATTRIBUTE = "org.amanzi.neo.loader.ui.commands.guiId";
-    protected static final String LOADERS_EXTENSION_POINT = "org.amanzi.neo.loader.ui.newloaders";
-    protected static final String GUI_EXTENSION_POIN = "org.amanzi.neo.loader.ui.gui";
+    protected static final String LOADERS_EXTENSION_POINT = "org.amanzi.neo.loader.ui.loaders";
+    protected static final String WIZARD_GUI_EXTENSION_POIN = "org.amanzi.neo.loader.ui.wizard";
+    protected static final String REGISTERED_GUI_EXTENSION_POIN = "org.amanzi.neo.loader.ui.gui";
+    protected static final String PAGES_EXTENSION_POIN = "org.amanzi.neo.loader.ui.pages";
     protected static final String SAVER_EXTENSION_POINT = "org.amanzi.loader.core.saver";
     protected static final String PARSER_EXTENSION_POINT = "org.amanzi.loader.core.parser";
 
@@ -62,6 +66,8 @@ public class LaunchLoader extends AbstractHandler {
     protected static final String ID_ATTRIBUTE = "id";
     protected static final String CLASS_ATTRIBUTE = "class";
     protected static final String PAGES_ATTRIBUTE = "pages";
+    protected static final String PAGE_ID_ATTRIBUTE = "page_id";
+    protected static final String LOADER_ID_ATTRIBUTE = "loader_id";
 
     protected static final String LOADER_CLASS_ATRIBUTE = "loader_class";
     protected static final String LOADER_DATA_TYPE = "loader_data_type";
@@ -75,24 +81,23 @@ public class LaunchLoader extends AbstractHandler {
     protected String guiId;
 
     @Override
-    public Object execute(ExecutionEvent arg0) throws ExecutionException {
-        guiId = arg0.getParameter(GUI_ID_ATTRIBUTE);
+    public Object execute(ExecutionEvent event) throws ExecutionException {
+        guiId = event.getParameter(GUI_ID_ATTRIBUTE);
         if (StringUtils.isEmpty(guiId)) {
-            // TODO add descriptions
-            throw new IllegalArgumentException();
+            LOGGER.error("Wizzard id is empty");
         }
-        IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindowChecked(arg0);
+        IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindowChecked(event);
         IExtensionRegistry reg = Platform.getExtensionRegistry();
-        IConfigurationElement[] extensions = reg.getConfigurationElementsFor(LOADERS_EXTENSION_POINT);
-        List<IConfigurationElement> loaders = new LinkedList<IConfigurationElement>();
+        IConfigurationElement[] extensions = reg.getConfigurationElementsFor(WIZARD_GUI_EXTENSION_POIN);
+        IConfigurationElement wizards = null;
         for (int i = 0; i < extensions.length; i++) {
             IConfigurationElement element = extensions[i];
-            String localGuiId = element.getAttribute(GUI_ATTRIBUTE);
+            String localGuiId = element.getAttribute(ID_ATTRIBUTE);
             if (guiId.equals(localGuiId)) {
-                loaders.add(element);
+                wizards = element;
             }
         }
-        IWorkbenchWizard wizard = getWizardInstance(arg0, loaders);
+        IWorkbenchWizard wizard = getWizardInstance(event, wizards);
         if (wizard != null) {
             wizard.init(workbenchWindow.getWorkbench(), null);
             Shell parent = workbenchWindow.getShell();
@@ -107,32 +112,32 @@ public class LaunchLoader extends AbstractHandler {
      * Gets the wizard instance.
      * 
      * @param arg0 the arg0
-     * @param elements the elements
+     * @param wizards the elements
      * @return the wizard instance
      */
-    private IGraphicInterfaceForLoaders getWizardInstance(ExecutionEvent arg0, List<IConfigurationElement> elements) {
+    private IGraphicInterfaceForLoaders getWizardInstance(ExecutionEvent arg0, IConfigurationElement wizards) {
         Object wizard = null;
+        IConfigurationElement[] wizardPages = wizards.getChildren(PAGE_ID_ATTRIBUTE);
         IExtensionRegistry reg = Platform.getExtensionRegistry();
-        IConfigurationElement[] extensions = reg.getConfigurationElementsFor(GUI_EXTENSION_POIN);
+        try {
 
-        for (int i = 0; i < extensions.length; i++) {
-            IConfigurationElement element = extensions[i];
-            if (guiId.equals(element.getAttribute(ID_ATTRIBUTE))) {
-                try {
-                    wizard = element.createExecutableExtension(CLASS_ATTRIBUTE);
+            IConfigurationElement[] registeredGui = reg.getConfigurationElementsFor(REGISTERED_GUI_EXTENSION_POIN);
+            for (IConfigurationElement gui : registeredGui) {
+                if (gui.getAttribute(ID_ATTRIBUTE).equals(wizards.getAttribute(ID_ATTRIBUTE))) {
+                    wizard = gui.createExecutableExtension(CLASS_ATTRIBUTE);
                     break;
-                } catch (CoreException e) {
-                    // TODO Handle CoreException
-                    e.printStackTrace();
-                    return null;
                 }
             }
-        }
-        for (IConfigurationElement element : elements) {
-            ILoader<IData, IConfiguration> loader = defineLoader(element);
-            if (loader != null) {
-                ((IGraphicInterfaceForLoaders)wizard).addNewLoader(loader, element.getChildren(PAGES_ATTRIBUTE));
+            IConfigurationElement[] allPages = reg.getConfigurationElementsFor(PAGES_EXTENSION_POIN);
+            for (IConfigurationElement wizardPage : wizardPages) {
+                for (IConfigurationElement page : allPages) {
+                    if (wizardPage.getAttribute(ID_ATTRIBUTE).equals(page.getAttribute(ID_ATTRIBUTE))) {
+                        addLoadersToPage(wizard, reg, page);
+                    }
+                }
             }
+        } catch (CoreException e) {
+            LOGGER.error("Error while try to get wizzard instance", e);
         }
         if (wizard instanceof IGraphicInterfaceForLoaders) {
             IGraphicInterfaceForLoaders gui = (IGraphicInterfaceForLoaders)wizard;
@@ -140,6 +145,32 @@ public class LaunchLoader extends AbstractHandler {
             return gui;
         } else {
             return null;
+        }
+    }
+
+    /**
+     * try to find loader declarated in page element
+     * 
+     * @param wizard
+     * @param reg
+     * @param page
+     */
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private void addLoadersToPage(Object wizard, IExtensionRegistry reg, IConfigurationElement page) {
+        IConfigurationElement[] allLoaders = reg.getConfigurationElementsFor(LOADERS_EXTENSION_POINT);
+        IConfigurationElement[] pageLoaders = page.getChildren(LOADER_ID_ATTRIBUTE);
+        IGraphicInterfaceForLoaders castedWizard = (IGraphicInterfaceForLoaders)wizard;
+        for (IConfigurationElement pageLoader : pageLoaders) {
+            for (IConfigurationElement loader : allLoaders) {
+                if (loader.getAttribute(ID_ATTRIBUTE).equals(pageLoader.getAttribute(ID_ATTRIBUTE))) {
+                    ILoader<IData, IConfiguration> initializedLoader = defineLoader(loader);
+                    if (initializedLoader != null) {
+                        castedWizard.addLoaderToPage(initializedLoader, page);
+                        break;
+                    }
+
+                }
+            }
         }
     }
 
@@ -156,10 +187,10 @@ public class LaunchLoader extends AbstractHandler {
             ILoader<IData, IConfiguration> loader = null;
             ILoaderInfo loaderInfo = null;
             if (loaderClass != null) {
-                String loaderType = element.getAttribute(LOADER_TYPE_ATTRIBUTE);
+                // String loaderType = element.getAttribute(LOADER_TYPE_ATTRIBUTE);
                 String loaderName = element.getAttribute(LOADER_NAME);
-                String loaderDataType = element.getAttribute(LOADER_DATA_TYPE);
-                loaderInfo = new LoaderInfoImpl(loaderName, loaderType, loaderDataType);
+                // String loaderDataType = element.getAttribute(LOADER_DATA_TYPE);
+                loaderInfo = new LoaderInfoImpl(loaderName, null, null);
                 loader = (ILoader<IData, IConfiguration>)element.createExecutableExtension(LOADER_CLASS_ATRIBUTE);
                 loader.setLoaderInfo(loaderInfo);
             } else {
@@ -177,15 +208,11 @@ public class LaunchLoader extends AbstractHandler {
 
             }
         } catch (InstantiationException e) {
-            // TODO: LN: handle exceptions!!!!!
-            // TODO Handle InstantiationException
-            e.printStackTrace();
+            LOGGER.error("Cann't instantiate class", e);
         } catch (IllegalAccessException e) {
-            // TODO Handle IllegalAccessException
-            e.printStackTrace();
+            LOGGER.error("Illigal access exception whyle try to define loader ", e);
         } catch (CoreException e) {
-            // TODO Handle CoreException
-            throw (RuntimeException)new RuntimeException().initCause(e);
+            LOGGER.error("Core exception while try to define loader ", e);
         }
         return null;
     }
@@ -196,7 +223,7 @@ public class LaunchLoader extends AbstractHandler {
      * @param element the element
      * @return the i loader input validator
      */
-    private IValidator defineValidator(IConfigurationElement element) {
+    protected IValidator defineValidator(IConfigurationElement element) {
         String validatorClass = element.getAttribute(VALIDATOR_ATTRIBUTE);
         if (StringUtils.isEmpty(validatorClass)) {
             return null;
@@ -205,7 +232,7 @@ public class LaunchLoader extends AbstractHandler {
         try {
             return (IValidator)element.createExecutableExtension(VALIDATOR_ATTRIBUTE);
         } catch (CoreException e) {
-            // TODO Handle IllegalAccessException
+            LOGGER.error("Core exception while try to define validator ", e);
             e.printStackTrace();
             return null;
         }
@@ -218,7 +245,7 @@ public class LaunchLoader extends AbstractHandler {
      * @return the i saver<? extends i data element>
      */
     @SuppressWarnings("unchecked")
-    private List<ISaver< ? extends IModel, IData, IConfiguration>> defineSaver(IConfigurationElement element) {
+    protected List<ISaver< ? extends IModel, IData, IConfiguration>> defineSaver(IConfigurationElement element) {
         List<IConfigurationElement> saverElements = new LinkedList<IConfigurationElement>();
         for (IConfigurationElement innerElement : element.getChildren()) {
             if (innerElement.getName().equals(SAVER_ATTRIBUTE)) {
@@ -234,11 +261,11 @@ public class LaunchLoader extends AbstractHandler {
                 String saverId = saver.getAttribute(ID_ATTRIBUTE);
                 if (saverId.equals(elementSaver.getAttribute(ID_ATTRIBUTE))) {
                     try {
+
                         saverList.add((ISaver<IModel, IData, IConfiguration>)elementSaver
                                 .createExecutableExtension(CLASS_ATTRIBUTE));
                     } catch (CoreException e) {
-                        // TODO Handle CoreException
-                        e.printStackTrace();
+                        LOGGER.error("Core exception while try to define saver ", e);
                         return null;
                     }
                 }
@@ -258,7 +285,7 @@ public class LaunchLoader extends AbstractHandler {
      * @return the i parser<? extends i data element,? extends i configuration data>
      */
     @SuppressWarnings("unchecked")
-    private IParser<ISaver<IModel, ? extends IData, IConfiguration>, IConfiguration, ? extends IData> defineParser(
+    protected IParser<ISaver<IModel, ? extends IData, IConfiguration>, IConfiguration, ? extends IData> defineParser(
             IConfigurationElement element) {
         String parserId = element.getAttribute(PARSER_ATTRIBUTE);
         IExtensionRegistry reg = Platform.getExtensionRegistry();
@@ -270,12 +297,12 @@ public class LaunchLoader extends AbstractHandler {
                     return (IParser<ISaver<IModel, ? extends IData, IConfiguration>, IConfiguration, ? extends IData>)elementParser
                             .createExecutableExtension(CLASS_ATTRIBUTE);
                 } catch (Exception e) {
-                    // TODO Handle CoreException
-                    e.printStackTrace();
+                    LOGGER.error("exception while try to define parser ", e);
                     return null;
                 }
             }
         }
         return null;
     }
+
 }

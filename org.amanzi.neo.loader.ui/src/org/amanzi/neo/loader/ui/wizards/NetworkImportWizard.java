@@ -13,16 +13,9 @@
 
 package org.amanzi.neo.loader.ui.wizards;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
-import org.amanzi.neo.loader.core.ILoader;
-import org.amanzi.neo.loader.core.saver.IData;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
-import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.ui.IWorkbench;
 
 /**
@@ -33,51 +26,26 @@ import org.eclipse.ui.IWorkbench;
  * @author TsAr
  * @since 1.0.0
  */
-public class NetworkImportWizard extends
-		AbstractLoaderWizard<ConfigurationDataImpl> {
+public class NetworkImportWizard extends AbstractLoaderWizard<ConfigurationDataImpl> {
 
-	private ConfigurationDataImpl configData;
+    @Override
+    public void init(IWorkbench workbench, IStructuredSelection selection) {
+        super.init(workbench, selection);
+        setWindowTitle(NeoLoaderPluginMessages.NetworkSiteImportWizard_PAGE_TITLE);
+    }
 
-	@Override
-	protected List<IWizardPage> getMainPagesList() {
-		requiredLoaders.clear();
-		List<IWizardPage> result = new ArrayList<IWizardPage>();
-		result.add(new LoadNetworkMainPage());
-		return result;
-	}
+    @Override
+    public boolean performFinish() {
+        if (super.performFinish()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
-	@Override
-	public void init(IWorkbench workbench, IStructuredSelection selection) {
-		super.init(workbench, selection);
-		setWindowTitle(NeoLoaderPluginMessages.NetworkSiteImportWizard_PAGE_TITLE);
-	}
+    @Override
+    protected ConfigurationDataImpl getConfigInstance() {
+        return new ConfigurationDataImpl();
+    }
 
-	@Override
-	public boolean performFinish() {
-		if (super.performFinish()) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	@Override
-	public void addNewLoader(ILoader<IData, ConfigurationDataImpl> loader,
-			IConfigurationElement[] pageConfigElements) {
-		LoaderInfo<ConfigurationDataImpl> info = new LoaderInfo<ConfigurationDataImpl>();
-		info.setAdditionalPages(pageConfigElements);
-		newloaders.put(loader, info);
-		requiredLoaders.put(loader, null);
-	}
-
-	@Override
-	public ConfigurationDataImpl getNewConfigurationData() {
-		if (getNewSelectedLoader() != null && configData != null) {
-			requiredLoaders.put(getNewSelectedLoader(), configData);
-		}
-		if (configData == null) {
-			configData = new ConfigurationDataImpl();
-		}
-		return configData;
-	}
 }
