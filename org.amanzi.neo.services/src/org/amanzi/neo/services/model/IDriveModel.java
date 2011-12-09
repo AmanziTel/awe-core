@@ -15,6 +15,7 @@ package org.amanzi.neo.services.model;
 
 import java.io.File;
 import java.util.Map;
+import java.util.Set;
 
 import org.amanzi.neo.model.distribution.IDistributionalModel;
 import org.amanzi.neo.services.enums.IDriveType;
@@ -40,6 +41,9 @@ public interface IDriveModel
             IPropertyStatisticalModel,
             ITimelineModel,
             IDistributionalModel {
+    
+    public final static String SELECTED_PROPERTIES = "selected_properties";
+    
     /**
      * @return a List<Node> containing DriveModels created on base of virtual dataset nodes in
      *         current DriveModel
@@ -244,4 +248,19 @@ public interface IDriveModel
      */
     public IDataElement addMeasurement(IDataElement file, Map<String, Object> params, INodeType nodeType,
             boolean isNeedToCreateLocation) throws AWEException;
+    
+    /**
+     * Add a node with selected properties in DriveInquirerView
+     *
+     * @param selectedProperties Set of selected properties
+     * @return Created IDataElement with node
+     */
+    public IDataElement addSelectedProperties(Set<String> selectedProperties);
+    
+    /**
+     * Method to get saved selected properties from DriveInquirerView
+     *
+     * @return Set of selected properties from DriveInquirerView
+     */
+    public Set<String> getSelectedProperties();
 }
