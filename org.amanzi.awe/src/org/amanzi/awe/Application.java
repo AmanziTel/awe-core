@@ -49,6 +49,7 @@ public class Application extends UDIGApplication implements IApplication {
         };
     }
 
+    
     private class AWEWorkbenchAdivsor extends UDIGWorkbenchAdvisor {
         @Override
         public void preStartup() {

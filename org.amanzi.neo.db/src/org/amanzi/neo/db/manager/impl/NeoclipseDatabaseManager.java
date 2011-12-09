@@ -125,6 +125,7 @@ public class NeoclipseDatabaseManager extends AbstractDatabaseManager {
         neoclipseManager.shutdownGraphDbService();
     }
 
+    
     /**
      * 
      * TODO Purpose of NeoclipseDatabaseManager
