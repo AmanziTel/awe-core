@@ -134,8 +134,8 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
     public void init(ConfigurationDataImpl configuration, CSVContainer dataElement) throws AWEException {
         super.init(configuration, dataElement);
         this.configuration = configuration;
-        clearHeaders();
         preferenceStoreSynonyms = initializeSynonyms();
+        columnSynonyms = new HashMap<String, Integer>();
         setTxCountToReopen(MAX_TX_BEFORE_COMMIT);
         try {
             initializeNecessaryModels();
@@ -145,12 +145,6 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
             rollbackTx();
             LOGGER.error("Exception on creating root Model", e);
             throw new DatabaseException(e);
-        }
-    }
-
-    protected void clearHeaders() {
-        if (headers != null && !headers.isEmpty()) {
-            headers.clear();
         }
     }
 
@@ -181,7 +175,7 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
         if (findedValue == null) {
             return null;
         } else
-            return autoParse(synonym.toLowerCase(), findedValue.toString());
+            return autoParse(synonym, findedValue.toString());
     }
 
     @Override
@@ -268,10 +262,7 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
         String result = fileSynonyms.get(header);
 
         if (result == null) {
-            result = fileSynonyms.get(header.toLowerCase());
-            if (result == null) {
-                result = header;
-            }
+            result = header;
         }
 
         return result;
@@ -315,7 +306,7 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
                 return key;
             }
         }
-        return header;
+        return null;
     }
 
     /**

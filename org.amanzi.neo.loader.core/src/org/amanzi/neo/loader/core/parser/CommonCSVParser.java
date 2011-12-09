@@ -86,6 +86,17 @@ public class CommonCSVParser<T1 extends ISaver<IModel, CSVContainer, T2>, T2 ext
         }
 
     }
+    
+    /**
+     * Method for tests - parse file in CSVContainer
+     * @param file
+     */
+    @SuppressWarnings("rawtypes")
+    public CSVContainer parseElement(File file){
+        currentFile = file;
+        new CommonCSVParser();
+        return parseElement();
+    }
 
     /**
      * parse csv file headers

@@ -119,4 +119,9 @@ public class CountersModel extends AbstractIndexedModel implements ICountersMode
         }
         return null;
     }
+
+    @Override
+    public Iterable<IDataElement> findAllElementsByTimestampPeriod(long min_timestamp, long max_timestamp) {
+        return null;
+    }
 }

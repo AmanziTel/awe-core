@@ -32,9 +32,6 @@ import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.amanzi.neo.services.synonyms.ExportSynonymsManager;
 import org.amanzi.neo.services.synonyms.ExportSynonymsService.ExportSynonymType;
 import org.amanzi.neo.services.synonyms.ExportSynonymsService.ExportSynonyms;
-import org.amanzi.neo.services.ui.events.EventManager;
-import org.amanzi.neo.services.ui.events.ShowOnMapEvent;
-import org.amanzi.neo.services.ui.events.UpdateDataEvent;
 import org.apache.log4j.Logger;
 
 /**
@@ -238,8 +235,6 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
         dbManager.finishThreadTransaction();
         dbManager.commitMainTransaction();
         actionCount = 0;
-        EventManager.getInstance().fireEvent(new UpdateDataEvent());
-        EventManager.getInstance().fireEvent(new ShowOnMapEvent(useableModels, 900d));
     }
 
     /**

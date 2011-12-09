@@ -60,6 +60,11 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
     protected AbstractIndexedModel(Node rootNode, INodeType nodeType) throws AWEException {
         super(nodeType);
         this.rootNode = rootNode;
+        
+        if (rootNode != null) {
+            max_timestamp = (Long)rootNode.getProperty(DriveModel.MAX_TIMESTAMP, max_timestamp);
+            min_timestamp = (Long)rootNode.getProperty(DriveModel.MIN_TIMESTAMP, min_timestamp);
+        }
 
         Node gis = datasetService.getGisNodeByDataset(rootNode);
         if (gis != null) {
@@ -114,6 +119,24 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
             return datasetService.emptyTraverser(rootNode);
         }
         return locationIndex.searchTraverser(new Double[]{minLat, minLon}, new Double[]{maxLat, maxLon});
+    }
+    
+    protected Iterable<Node> getNodesByTimestampPeriod(INodeType nodeType, long min_timestamp, long max_timestamp) throws AWEException{
+        
+        //validate
+        if(nodeType == null){
+            throw new IllegalArgumentException("Node type is null.");
+        }
+        
+        List<MultiPropertyIndex< ? >> indList = indexes.get(nodeType);
+        if(indList == null){
+            return datasetService.emptyTraverser(rootNode);
+        }
+        MultiPropertyIndex<Long> timestampIndex = indexService.createTimestampIndex(rootNode, nodeType);
+        if (!indList.contains(timestampIndex)) {
+            return datasetService.emptyTraverser(rootNode);
+        }
+        return timestampIndex.searchTraverser(new Long[] {min_timestamp}, new Long[] {max_timestamp});
     }
 
     /**
