@@ -14,11 +14,14 @@
 package org.amanzi.neo.loader.ui.wizards;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.ILoader;
 import org.amanzi.neo.loader.core.ILoaderProgressListener;
@@ -29,6 +32,7 @@ import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataModel;
+import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.amanzi.neo.services.ui.enums.EventsType;
 import org.amanzi.neo.services.ui.events.EventManager;
 import org.amanzi.neo.services.ui.events.IEventsListener;
@@ -63,6 +67,9 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
             IGraphicInterfaceForLoaders<T>,
             IImportWizard {
 
+    public static final String IS_MAIN_ATTRUBUTE = "isMain";
+    public static final String CLASS_ATTRUBUTE = "class";
+    protected T configData;
     static {
         EventManager.getInstance().addListener(EventsType.SHOW_ON_MAP, new ShowOnMapHandling());
     }
@@ -82,40 +89,37 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
     /**
      * new loaders
      */
-    protected LinkedHashMap<ILoader<IData, T>, LoaderInfo<T>> newloaders = new LinkedHashMap<ILoader<IData, T>, LoaderInfo<T>>();
+    protected LinkedHashMap<ILoader<IData, T>, LoaderInfo<T>> loaders = new LinkedHashMap<ILoader<IData, T>, LoaderInfo<T>>();
     protected Map<ILoader< ? extends IData, T>, T> requiredLoaders = new LinkedHashMap<ILoader< ? extends IData, T>, T>();
     /** The max main page id. */
     protected int maxMainPageId;
-    private ILoader< ? extends IData, T> newSelectedLoader;
+    private ILoader< ? extends IData, T> selectedLoader;
 
     /**
      * Gets new loaders.
      * 
      * @return the loaders
      */
-    public Set<ILoader<IData, T>> getNewLoaders() {
-        return newloaders.keySet();
+    public Set<ILoader<IData, T>> getLoaders() {
+        return loaders.keySet();
     }
 
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         setNeedsProgressMonitor(true);
 
-        maxMainPageId = -1;
+        // maxMainPageId = -1;
         List<IWizardPage> mainPages = getMainPagesList();
         for (IWizardPage iWizardPage : mainPages) {
             addPage(iWizardPage);
             maxMainPageId++;
         }
-        for (Map.Entry<ILoader<IData, T>, LoaderInfo<T>> loaderEntry : newloaders.entrySet()) {
+        for (Map.Entry<ILoader<IData, T>, LoaderInfo<T>> loaderEntry : loaders.entrySet()) {
             LoaderInfo<T> info = loaderEntry.getValue();
             int idPage = 0;
             for (IConfigurationElement pageClass : info.getPages()) {
                 ILoaderPage<T> page = createAdditionalPage(pageClass);
-                // for this comparing for pages should be implement correct
-                // equals and hashCode
-                // methods (not necessary)
-                int id = pages.indexOf(pageClass);
+                int id = checkIndexInPages(page);
                 if (id == -1) {
                     addPage(page);
                     id = pages.size() - 1;
@@ -124,6 +128,23 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
                 idPage++;
             }
         }
+    }
+
+    /**
+     * try to find page with the same name in page list..
+     * 
+     * @param page
+     * @return index of found page, else return -1
+     */
+    private int checkIndexInPages(ILoaderPage<T> page) {
+        int id = -1;
+        for (IWizardPage p : pages) {
+            if (p.getName().equals(page.getName())) {
+                id++;
+                break;
+            }
+        }
+        return id;
     }
 
     /**
@@ -150,17 +171,17 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
 
     @Override
     public boolean canFinish() {
-        for (int i = 0; i <= maxMainPageId; i++) {
+        for (int i = 0; i < maxMainPageId; i++) {
             if (!pages.get(i).isPageComplete()) {
                 return false;
             }
         }
-        ILoader< ? extends IData, T> loadernew = getNewSelectedLoader();
+        ILoader< ? extends IData, T> loadernew = getSelectedLoader();
         if (loadernew == null) {
             return false;
         }
         if (loadernew != null) {
-            LoaderInfo<T> info = newloaders.get(loadernew);
+            LoaderInfo<T> info = loaders.get(loadernew);
             if (info.pageId.length == 0) {
                 return true;
             }
@@ -168,6 +189,11 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
                 if (!pages.get(info.pageId[i]).isPageComplete()) {
                     return false;
                 }
+            }
+        }
+        for (int i = 0; i < pages.size(); i++) {
+            if (!pages.get(i).isPageComplete()) {
+                return false;
             }
         }
         return true;
@@ -181,19 +207,26 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
      */
     protected ILoaderPage<T> createAdditionalPage(IConfigurationElement pageElement) {
         try {
-            return (ILoaderPage<T>)pageElement.createExecutableExtension("class");
+            return (ILoaderPage<T>)pageElement.createExecutableExtension(CLASS_ATTRUBUTE);
         } catch (CoreException e1) {
             // TODO Handle CoreException
             throw (RuntimeException)new RuntimeException().initCause(e1);
         }
     }
 
-    /**
-     * Gets the main pages list.
-     * 
-     * @return the main pages list
-     */
-    protected abstract List<IWizardPage> getMainPagesList();
+    protected List<IWizardPage> getMainPagesList() {
+        List<IWizardPage> mainPages = new LinkedList<IWizardPage>();
+        for (Map.Entry<ILoader<IData, T>, LoaderInfo<T>> loaderEntry : loaders.entrySet()) {
+            LoaderInfo<T> info = loaderEntry.getValue();
+            for (IConfigurationElement pageClass : info.getPages()) {
+                if (Boolean.parseBoolean(pageClass.getAttribute(IS_MAIN_ATTRUBUTE))) {
+                    mainPages.add(createAdditionalPage(pageClass));
+                    return mainPages;
+                }
+            }
+        }
+        return mainPages;
+    }
 
     /**
      * Adds the page.
@@ -222,8 +255,8 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
         if (index <= maxMainPageId) {
             return pages.get(index - 1);
         }
-        ILoader< ? extends IData, T> loader = getNewSelectedLoader();
-        LoaderInfo<T> info = newloaders.get(loader);
+        ILoader< ? extends IData, T> loader = getSelectedLoader();
+        LoaderInfo<T> info = loaders.get(loader);
         int previousWizardId = info.getPreviousWizardId(index);
         return previousWizardId == -1 ? pages.get(maxMainPageId) : pages.get(previousWizardId);
     }
@@ -244,16 +277,16 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
         if (index < maxMainPageId) {
             return pages.get(index + 1);
         }
-        ILoader< ? extends IData, T> loaderNew = getNewSelectedLoader();
-        if (loaderNew == null) {
+        ILoader< ? extends IData, T> selectedLoader = getSelectedLoader();
+        if (selectedLoader == null) {
             return null;
         }
-        LoaderInfo<T> infonew = newloaders.get(loaderNew);
+        LoaderInfo<T> infonew = loaders.get(selectedLoader);
         if (infonew == null) {
             return null;
         }
         if (index == maxMainPageId && infonew != null) {
-            return infonew.pageId.length == 0 ? null : pages.get(infonew.pageId[0]);
+            return null;
         }
         Integer nextWizardIdNew = null;
         if (infonew != null) {
@@ -270,7 +303,7 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
             @Override
             protected IStatus run(IProgressMonitor monitor) {
 
-                newload(newloader, monitor);
+                load(newloader, monitor);
 
                 return Status.OK_STATUS;
             }
@@ -289,15 +322,15 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
      * @param monitor the monitor
      * @throws Exception
      */
-    protected void newload(final Map<ILoader< ? extends IData, T>, T> newloader, final IProgressMonitor monitor) {
+    protected void load(final Map<ILoader< ? extends IData, T>, T> newloader, final IProgressMonitor monitor) {
 
         for (ILoader< ? extends IData, T> loader : newloader.keySet()) {
-            if (newloader.get(loader) != null) {
+            if (newloader.get(loader) != null && !newloader.get(loader).getFilesToLoad().isEmpty()) {
                 assignMonitorToProgressLoader(monitor, loader);
                 try {
                     loader.init(newloader.get(loader));
                 } catch (Exception e) {
-                    showError("Error.", "Cann't initialize loader:" + loader.getLoaderInfo().getType());
+                    showError("Error.", "Cann't initialize loader:" + loader.getLoaderInfo().getName());
                     return;
                 }
                 try {
@@ -332,7 +365,7 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
      * Assign monitor to progress loader.
      * 
      * @param monitor the monitor
-     * @param loader the loader
+     * @param loader the loadero
      */
     protected void assignMonitorToProgressLoader(final IProgressMonitor monitor, ILoader< ? extends IData, T> loader) {
         monitor.beginTask(loader.getLoaderInfo().getName(), 1000);
@@ -353,26 +386,54 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
     }
 
     @Override
-    public void addNewLoader(ILoader<IData, T> loader, IConfigurationElement[] pageConfigElements) {
+    public void addLoaderToPage(ILoader<IData, T> loader, IConfigurationElement pageConfigElements) {
         LoaderInfo<T> info = new LoaderInfo<T>();
         info.setAdditionalPages(pageConfigElements);
-        newloaders.put(loader, info);
+        loaders.put(loader, info);
+        requiredLoaders.put(loader, null);
     }
 
     /**
-     * get the new configuration data ;
+     * get the configuration data or create new one ;
      * 
      * @return
      */
-    public abstract T getNewConfigurationData();
+    public T getConfigurationData() {
+        ILoader< ? extends IData, T> currentLoader = getSelectedLoader();
+        if (currentLoader != null) {
+            if (requiredLoaders.get(currentLoader) == null) {
+                configData = getConfigInstance();
+                requiredLoaders.put(currentLoader, configData);
+            } else {
+                configData = requiredLoaders.get(currentLoader);
+            }
+        } else {
+            configData = getConfigInstance();
+            try {
+                configData.getDatasetNames().put(ConfigurationDataImpl.PROJECT_PROPERTY_NAME,
+                        ProjectModel.getCurrentProjectModel().getName());
+            } catch (AWEException e) {
+                // TODO Handle AWEException
+                throw (RuntimeException)new RuntimeException().initCause(e);
+            }
+        }
+        return configData;
+    }
+
+    /**
+     * create instance of configData
+     * 
+     * @return
+     */
+    protected abstract T getConfigInstance();
 
     /**
      * Gets the selected loader.
      * 
      * @return the selected loader
      */
-    public ILoader< ? extends IData, T> getNewSelectedLoader() {
-        return newSelectedLoader;
+    public ILoader< ? extends IData, T> getSelectedLoader() {
+        return selectedLoader;
     }
 
     /**
@@ -380,8 +441,8 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
      * 
      * @param selectedLoader the selected loader
      */
-    public void setSelectedLoaderNew(ILoader< ? extends IData, T> selectedLoader) {
-        this.newSelectedLoader = selectedLoader;
+    public void setSelectedLoader(ILoader< ? extends IData, T> selectedLoader) {
+        this.selectedLoader = selectedLoader;
 
     }
 
@@ -408,8 +469,13 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
          * 
          * @param pageConfigElements the new additional pages
          */
-        public void setAdditionalPages(IConfigurationElement[] pageConfigElements) {
-            this.pageClasses = pageConfigElements;
+        public void setAdditionalPages(IConfigurationElement pageConfigElements) {
+            ArrayList<IConfigurationElement> list = new ArrayList<IConfigurationElement>();
+            list.add(pageConfigElements);
+            if (pageClasses != null) {
+                list.addAll(Arrays.asList(pageClasses));
+            }
+            this.pageClasses = list.toArray(new IConfigurationElement[list.size()]);
 
             pageId = new int[pageClasses.length];
         }
@@ -479,4 +545,5 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
         // TODO Auto-generated method stub
 
     }
+
 }

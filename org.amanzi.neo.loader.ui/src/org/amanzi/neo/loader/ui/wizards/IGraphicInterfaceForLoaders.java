@@ -24,5 +24,5 @@ import org.eclipse.ui.IWorkbenchWizard;
  * @author Vladislav_Kondratenko
  */
 public interface IGraphicInterfaceForLoaders<T extends IConfiguration> extends IWorkbenchWizard, IExecutableExtension {
-    void addNewLoader(ILoader<IData, T> loader, IConfigurationElement[] pageConfigElements);
+    void addLoaderToPage(ILoader<IData, T> loader, IConfigurationElement pageConfigElements);
 }

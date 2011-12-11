@@ -17,10 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
-import org.amanzi.neo.loader.core.ILoader;
-import org.amanzi.neo.loader.core.saver.IData;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
-import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.ui.IWorkbench;
@@ -34,8 +31,6 @@ import org.eclipse.ui.IWorkbench;
  * @since 1.0.0
  */
 public class DatasetImportWizard extends AbstractLoaderWizard<ConfigurationDataImpl> {
-
-	private ConfigurationDataImpl configData;
 
     @Override
     protected List<IWizardPage> getMainPagesList() {
@@ -60,22 +55,19 @@ public class DatasetImportWizard extends AbstractLoaderWizard<ConfigurationDataI
     }
 
     @Override
-    public void addNewLoader(ILoader<IData, ConfigurationDataImpl> loader, IConfigurationElement[] pageConfigElements) {
-        LoaderInfo<ConfigurationDataImpl> info = new LoaderInfo<ConfigurationDataImpl>();
-        info.setAdditionalPages(pageConfigElements);
-        newloaders.put(loader, info);
-        requiredLoaders.put(loader, null);
+    public ConfigurationDataImpl getConfigurationData() {
+        if (getSelectedLoader() != null && configData != null) {
+            requiredLoaders.put(getSelectedLoader(), configData);
+        }
+        if (configData == null) {
+            configData = getConfigInstance();
+        }
+        return configData;
     }
 
     @Override
-    public ConfigurationDataImpl getNewConfigurationData() {
-        if (getNewSelectedLoader() != null && configData != null) {
-            requiredLoaders.put(getNewSelectedLoader(), configData);
-        }
-        if (configData == null) {
-            configData = new ConfigurationDataImpl();
-        }
-        return configData;
+    protected ConfigurationDataImpl getConfigInstance() {
+        return new ConfigurationDataImpl();
     }
 
 }

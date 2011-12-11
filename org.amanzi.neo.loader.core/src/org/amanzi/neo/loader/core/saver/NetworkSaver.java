@@ -250,4 +250,9 @@ public class NetworkSaver extends AbstractNetworkSaver {
         return true;
     }
 
+    @Override
+    protected boolean isRenderable() {
+        return true;
+    }
+
 }

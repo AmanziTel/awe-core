@@ -115,7 +115,7 @@ public class DatasetService extends AbstractService {
      * @since 1.0.0
      */
     public enum DatasetRelationTypes implements RelationshipType {
-        PROJECT, DATASET, CHILD, NEXT, GIS;
+        PROJECT, DATASET, CHILD, NEXT, GIS, SELECTED_PROPERTIES;
     }
 
     /**
@@ -733,6 +733,67 @@ public class DatasetService extends AbstractService {
             tx.finish();
         }
         return child;
+    }
+    
+    /**
+     * The method creates a SELECTED_PROPERTIES relationship 
+     * from <code>parent</code> to <code>child</code>
+     * 
+     * @param parent
+     * @param child
+     * @return child node
+     * @throws DatabaseException if something went wrong during creating the relationship
+     */
+    public Node addSelectedPropertiesNode(Node parent, Node child) throws DatabaseException {
+        // validate parameters
+        if (parent == null) {
+            throw new IllegalArgumentException("Parent cannot be null");
+        }
+        if (child == null) {
+            throw new IllegalArgumentException("Child cannot be null");
+        }
+
+        // create relationship
+        Transaction tx = graphDb.beginTx();
+        try {
+            parent.createRelationshipTo(child, DatasetRelationTypes.SELECTED_PROPERTIES);
+            tx.success();
+        } catch (Exception e) {
+            LOGGER.error("Could not add selected_properties node.", e);
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
+        return child;
+    }
+    
+    /**
+     * Method to get selected_properties node
+     *
+     * @param parent Parent node
+     * @return
+     * @throws DatabaseException
+     */
+    public Node getSelectedPropertiesNode(Node parent) throws DatabaseException {
+        Node result = null;
+        
+        Transaction tx = graphDb.beginTx();
+        try {
+        	Iterable<Relationship> nodes =
+        			parent.getRelationships(DatasetRelationTypes.SELECTED_PROPERTIES);
+        	
+        	for (Relationship rel : nodes) {
+        		System.out.println(rel.getEndNode().getProperty("name"));
+        	}
+            result = parent.getSingleRelationship(DatasetRelationTypes.SELECTED_PROPERTIES, 
+                    Direction.OUTGOING).getEndNode();
+        } catch (Exception e) {
+            LOGGER.error("Could not get selected_properties node");
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
+        return result;
     }
 
     /**

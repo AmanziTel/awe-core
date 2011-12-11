@@ -193,6 +193,7 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
         }
         for (IModel model : useableModels) {
             try {
+                commitTx();
                 exportManager.saveDatasetExportSynonyms(model, synonymsMap.get(model), ExportSynonymType.DATASET);
             } catch (DatabaseException e) {
                 LOGGER.error("Error while saving export synonyms for models", e);
@@ -239,7 +240,9 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
         dbManager.commitMainTransaction();
         actionCount = 0;
         EventManager.getInstance().fireEvent(new UpdateDataEvent());
-        EventManager.getInstance().fireEvent(new ShowOnMapEvent(useableModels, 900d));
+        if (isRenderable()) {
+            EventManager.getInstance().fireEvent(new ShowOnMapEvent(useableModels, 900d));
+        }
     }
 
     /**
@@ -251,6 +254,13 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
     protected IProjectModel getActiveProject() throws AWEException {
         return ProjectModel.getCurrentProjectModel();
     }
+
+    /**
+     * check if current saver should be rendered on map
+     * 
+     * @return
+     */
+    protected abstract boolean isRenderable();
 
     @Override
     public void init(T3 configuration, T2 dataElement) throws AWEException {

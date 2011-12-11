@@ -89,6 +89,11 @@ public class TrafficSaver extends AbstractNetworkSaver {
         }
     }
 
+    @Override
+    protected boolean isRenderable() {
+        return false;
+    }
+
     /**
      * collect sector to find
      */

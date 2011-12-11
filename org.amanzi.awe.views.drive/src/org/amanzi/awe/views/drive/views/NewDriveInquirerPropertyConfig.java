@@ -188,11 +188,11 @@ public class NewDriveInquirerPropertyConfig extends AbstractDialog<Integer> {
      */
     private void loadSavedData() {
     	
-//        String[] statistics = null;
-//    	
-//        for (Object savedProperty : statistics) {
-//            propertySlip.add(savedProperty.toString());
-//        }
+    	Set<String> savedProperties = dataset.getSelectedProperties();
+    	
+        for (Object savedProperty : savedProperties) {
+            propertySlip.add(savedProperty.toString());
+        }
         propertySlipTable.refresh();
     }
 
@@ -200,6 +200,7 @@ public class NewDriveInquirerPropertyConfig extends AbstractDialog<Integer> {
      * Action perform saving
      */
     protected void perfomSave() {
+    	dataset.addSelectedProperties(propertySlip);
     }
 
     /**

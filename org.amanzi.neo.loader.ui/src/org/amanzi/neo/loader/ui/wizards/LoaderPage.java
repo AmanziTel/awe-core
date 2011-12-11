@@ -37,11 +37,13 @@ import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
+ * common action for wizards pages
+ * 
  * @author Vladislav_Kondratenko
  */
 public abstract class LoaderPage<T extends IConfiguration> extends WizardPage implements ILoaderPage<T> {
 
-    private ArrayList<ILoader<IData, T>> newloaders = new ArrayList<ILoader<IData, T>>();
+    protected ArrayList<ILoader<IData, T>> loaders = new ArrayList<ILoader<IData, T>>();
     private CoordinateReferenceSystem selectedCRS;
 
     /**
@@ -71,7 +73,7 @@ public abstract class LoaderPage<T extends IConfiguration> extends WizardPage im
      * @return
      */
     protected ILoader< ? extends IData, T> autodefineNew(T data) {
-        ILoader< ? extends IData, T> loader = getNewSelectedLoader();
+        ILoader< ? extends IData, T> loader = getSelectedLoader();
         ILoader< ? extends IData, T> candidate = null;
         if (loader != null) {
             Result validateResult = loader.getValidator().isAppropriate(data.getFilesToLoad());
@@ -81,11 +83,11 @@ public abstract class LoaderPage<T extends IConfiguration> extends WizardPage im
                 candidate = loader;
             }
         }
-        if (newloaders.isEmpty()) {
+        if (loaders.isEmpty()) {
             AbstractLoaderWizard<T> wizard = (AbstractLoaderWizard<T>)getWizard();
-            newloaders.addAll(wizard.getNewLoaders());
+            loaders.addAll(wizard.getLoaders());
         }
-        for (ILoader<IData, T> loadr : newloaders) {
+        for (ILoader<IData, T> loadr : loaders) {
             Result validateResult = loadr.getValidator().isAppropriate(data.getFilesToLoad());
             if (validateResult == Result.SUCCESS) {
                 return loadr;
@@ -100,7 +102,7 @@ public abstract class LoaderPage<T extends IConfiguration> extends WizardPage im
     *
     */
     protected void selectCRS() {
-    	CoordinateReferenceSystem result = ActionUtil.getInstance().runTaskWithResult(
+        CoordinateReferenceSystem result = ActionUtil.getInstance().runTaskWithResult(
                 new RunnableWithResult<CoordinateReferenceSystem>() {
 
                     private CoordinateReferenceSystem result;
@@ -140,7 +142,7 @@ public abstract class LoaderPage<T extends IConfiguration> extends WizardPage im
             return;
         }
         selectedCRS = result;
-        updateNew();
+        commonUpdate();
     }
 
     /**
@@ -166,8 +168,11 @@ public abstract class LoaderPage<T extends IConfiguration> extends WizardPage im
         }
     }
 
-    protected void updateNew() {
-        setPageComplete(validateConfigData(getNewConfigurationData()));
+    /**
+     * update configurated page
+     */
+    protected void commonUpdate() {
+        setPageComplete(validateConfigData(getConfigurationData()));
     }
 
     /**
@@ -176,14 +181,14 @@ public abstract class LoaderPage<T extends IConfiguration> extends WizardPage im
      * @return the loaders descriptions
      */
     @SuppressWarnings("unchecked")
-    protected String[] getNewLoadersDescriptions() {
-        if (newloaders.isEmpty()) {
+    protected String[] getLoadersDescription() {
+        if (loaders.isEmpty()) {
             AbstractLoaderWizard<T> wizard = (AbstractLoaderWizard<T>)getWizard();
-            newloaders.addAll(wizard.getNewLoaders());
+            loaders.addAll(wizard.getLoaders());
         }
-        String[] result = new String[newloaders.size()];
+        String[] result = new String[loaders.size()];
         for (int i = 0; i < result.length; i++) {
-            result[i] = newloaders.get(i).getLoaderInfo().getType();
+            result[i] = loaders.get(i).getLoaderInfo().getName();
         }
         return result;
     }
@@ -202,14 +207,14 @@ public abstract class LoaderPage<T extends IConfiguration> extends WizardPage im
      * 
      * @param selectionIndex
      */
-    protected void selectNewLoader(int selectionIndex) {
+    protected void selectLoader(int selectionIndex) {
         ILoader<IData, T> loader;
-        if (selectionIndex < 0 || selectionIndex >= newloaders.size()) {
+        if (selectionIndex < 0 || selectionIndex >= loaders.size()) {
             loader = null;
         } else {
-            loader = newloaders.get(selectionIndex);
+            loader = loaders.get(selectionIndex);
         }
-        setSelectedLoaderNew(loader);
+        setSelectedLoader(loader);
     }
 
     /**
@@ -219,10 +224,10 @@ public abstract class LoaderPage<T extends IConfiguration> extends WizardPage im
      * @return
      */
     @SuppressWarnings("unchecked")
-    protected int setSelectedLoaderNew(ILoader< ? extends IData, T> loader) {
+    protected int setSelectedLoader(ILoader< ? extends IData, T> loader) {
         AbstractLoaderWizard<T> wizard = (AbstractLoaderWizard<T>)getWizard();
-        wizard.setSelectedLoaderNew(loader);
-        return loader == null ? -1 : newloaders.indexOf(loader);
+        wizard.setSelectedLoader(loader);
+        return loader == null ? -1 : loaders.indexOf(loader);
     }
 
     /**
@@ -231,18 +236,18 @@ public abstract class LoaderPage<T extends IConfiguration> extends WizardPage im
      * @return the selected loader
      */
     @SuppressWarnings("unchecked")
-    protected ILoader< ? extends IData, T> getNewSelectedLoader() {
+    protected ILoader< ? extends IData, T> getSelectedLoader() {
         AbstractLoaderWizard<T> wizard = (AbstractLoaderWizard<T>)getWizard();
-        return wizard.getNewSelectedLoader();
+        return wizard.getSelectedLoader();
     }
 
     /**
      * @return configuration data instance; if it is <code>NULL</code> return new one;
      */
     @SuppressWarnings("unchecked")
-    public T getNewConfigurationData() {
+    public T getConfigurationData() {
         IWizard wizard = getWizard();
-        return ((AbstractLoaderWizard<T>)wizard).getNewConfigurationData();
+        return ((AbstractLoaderWizard<T>)wizard).getConfigurationData();
     }
 
     /**
@@ -254,7 +259,7 @@ public abstract class LoaderPage<T extends IConfiguration> extends WizardPage im
     protected abstract boolean validateConfigData(T configurationData);
 
     /**
-     *
+     * method for updating page
      */
     protected abstract void update();
 
