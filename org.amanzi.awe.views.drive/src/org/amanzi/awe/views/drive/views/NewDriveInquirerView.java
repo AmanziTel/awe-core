@@ -536,10 +536,11 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
                 NewDriveInquirerPropertyConfig pdialog = new NewDriveInquirerPropertyConfig(shell, getDriveModel());
                 if (pdialog.open() == SWT.OK) {
                     formPropertyList();
-                    String[] result = propertyLists.keySet().toArray(new String[0]);
-                    Arrays.sort(result);
-                    cPropertyList.setItems(result);
-                    updatePropertyList();
+                    changeDrive();
+//                    String[] result = propertyLists.keySet().toArray(new String[0]);
+//                    Arrays.sort(result);
+//                    cPropertyList.setItems(result);
+//                    updatePropertyList();
                 }
             }
 
@@ -695,15 +696,21 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
         propertyLists.clear();
         IDriveModel currentDriveModel = getDriveModel();
         
+        String[] statistics = null;
         if (currentDriveModel != null) {
 	        Set<String> selectedProperties = currentDriveModel.getSelectedProperties();
 	        
-	        String[] statistics = new String[selectedProperties.size()];
+	        statistics = new String[selectedProperties.size()];
 	    	selectedProperties.toArray(statistics);
 	        Arrays.sort(statistics);
 	        cPropertyList.setItems(statistics);
         }
         
+        if (statistics != null) {
+	    	for (String savedProperty : statistics) {
+	            propertyLists.put(savedProperty, Arrays.asList(savedProperty.split(", ")));
+	        }
+        }
     }
 
     /**
@@ -748,12 +755,6 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
      * Update data after property list changed
      */
     protected void updatePropertyList() {
-    	// TODO: my fake
-    	List<String> propList = new ArrayList<String>();
-    	propList.add(cPropertyList.getText());
-    	propertyLists.put(cPropertyList.getText(), propList);
-    	
-    	
         currentProperies = propertyLists.get(cPropertyList.getText());
         if (currentProperies == null) {
             currentProperies = new ArrayList<String>(0);
