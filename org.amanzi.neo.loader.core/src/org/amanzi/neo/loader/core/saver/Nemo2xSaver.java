@@ -36,8 +36,6 @@ import org.amanzi.neo.services.DatasetService.DatasetTypes;
 import org.amanzi.neo.services.DatasetService.DriveTypes;
 import org.amanzi.neo.services.enums.IDriveType;
 import org.amanzi.neo.services.exceptions.AWEException;
-import org.amanzi.neo.services.exceptions.DatabaseException;
-import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -106,7 +104,7 @@ public class Nemo2xSaver extends AbstractDriveSaver {
     }
 
     @Override
-    protected void addNewFileToModels(File file) throws DatabaseException, DuplicateNodeNameException {
+    protected void addNewFileToModels(File file) throws AWEException {
         parametrizedModel.addFile(file);
     }
 

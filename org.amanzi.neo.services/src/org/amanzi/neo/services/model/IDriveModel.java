@@ -105,7 +105,7 @@ public interface IDriveModel
      * @throws DatabaseException if errors occur in database
      * @throws DuplicateNodeNameException when trying to add a file that already exists
      */
-    public IDataElement addFile(File file) throws DatabaseException, DuplicateNodeNameException;
+    public IDataElement addFile(File file) throws AWEException;
 
     /**
      * Adds a measurement node to a file node with defined filename. If params map contains lat and
@@ -195,7 +195,7 @@ public interface IDriveModel
      * @param name
      * @return
      */
-    public IDataElement findFile(String name);
+    public IDataElement findFile(String name) throws AWEException;
 
     /**
      * Finds or creates a file with the defined name.
@@ -204,7 +204,7 @@ public interface IDriveModel
      * @return FILE node
      * @throws DatabaseException if errors occur in database
      */
-    public IDataElement getFile(String name) throws DatabaseException;
+    public IDataElement getFile(String name) throws AWEException;
 
     /**
      * Gets all measurements under defined file.

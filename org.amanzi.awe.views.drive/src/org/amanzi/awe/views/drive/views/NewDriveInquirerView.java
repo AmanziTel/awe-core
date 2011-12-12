@@ -18,7 +18,9 @@ import java.awt.Shape;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -27,7 +29,6 @@ import java.util.TreeMap;
 
 import net.refractions.udig.ui.PlatformGIS;
 
-import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDriveModel;
@@ -49,7 +50,6 @@ import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
-import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
@@ -130,7 +130,6 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
     
     /* Gui elements */
     private Combo cDrive;
-    private Combo cEvent;
     private Combo cPropertyList;
     private JFreeChart chart;
     private ChartCompositeImpl chartFrame;
@@ -140,11 +139,6 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
     private TableContentProvider provider;
     private Slider slider;
     private Composite buttonLine;
-    private Button bLeft;
-    private Button bLeftHalf;
-    private Button bRight;
-    private Button bRightHalf;
-    private Button bReport;
     private Label lLogarithmic;
     private Button bLogarithmic;
     private Label lPalette;
@@ -159,6 +153,8 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
     private Long selectedTime;
     private DateTime dateStart;
     private Long dateStartTimestamp;
+    private Long oldStartTime;
+    private Integer oldTimeLength;
     private Button bAddPropertyList;
     private boolean validDrive;
 
@@ -178,29 +174,18 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
         fData.right = new FormAttachment(100, -2);
 
         child.setLayoutData(fData);
-        final GridLayout layout = new GridLayout(13, false);
+        final GridLayout layout = new GridLayout(11, false);
         child.setLayout(layout);
         Label label = new Label(child, SWT.FLAT);
         label.setText(Messages.DriveInquirerView_label_drive);
-        label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
         cDrive = new Combo(child, SWT.DROP_DOWN | SWT.READ_ONLY);
 
         GridData layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
         layoutData.minimumWidth = MIN_FIELD_WIDTH;
         cDrive.setLayoutData(layoutData);
 
-        label = new Label(child, SWT.FLAT);
-        label.setText(Messages.DriveInquirerView_label_event);
-        label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
-        cEvent = new Combo(child, SWT.DROP_DOWN | SWT.READ_ONLY);
-
-        layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
-        layoutData.minimumWidth = MIN_FIELD_WIDTH;
-        cEvent.setLayoutData(layoutData);
-
         label = new Label(child, SWT.NONE);
         label.setText(Messages.DriveInquirerView_6);
-        label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
         cPropertyList = new Combo(child, SWT.DROP_DOWN | SWT.READ_ONLY);
         layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
         layoutData.minimumWidth = MIN_FIELD_WIDTH;
@@ -228,6 +213,8 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
         slider.setLayoutData(fData);
         slider.pack();
         table = new TableViewer(frame, SWT.BORDER | SWT.FULL_SELECTION);
+        Table table_1 = table.getTable();
+        table_1.setLayoutData(new FormData());
         fData = new FormData();
         fData.left = new FormAttachment(0, 0);
         fData.right = new FormAttachment(100, 0);
@@ -249,35 +236,6 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
         formLayout = new FormLayout();
         buttonLine.setLayout(formLayout);
 
-        bLeft = new Button(buttonLine, SWT.PUSH);
-        bLeft.setText(Messages.DriveInquirerView_8);
-        bLeftHalf = new Button(buttonLine, SWT.PUSH);
-        bLeftHalf.setText(Messages.DriveInquirerView_9);
-
-        bRight = new Button(buttonLine, SWT.PUSH);
-        bRight.setText(Messages.DriveInquirerView_10);
-        bRightHalf = new Button(buttonLine, SWT.PUSH);
-        bRightHalf.setText(Messages.DriveInquirerView_11);
-
-        bReport = new Button(buttonLine, SWT.PUSH);
-        bReport.setText(Messages.DriveInquirerView_12);
-
-        FormData formData = new FormData();
-        formData.left = new FormAttachment(0, 5);
-        bLeft.setLayoutData(formData);
-
-        formData = new FormData();
-        formData.left = new FormAttachment(bLeft, 5);
-        bLeftHalf.setLayoutData(formData);
-
-        formData = new FormData();
-        formData.right = new FormAttachment(100, -5);
-        bRight.setLayoutData(formData);
-
-        formData = new FormData();
-        formData.right = new FormAttachment(bRight, -5);
-        bRightHalf.setLayoutData(formData);
-
         lLogarithmic = new Label(buttonLine, SWT.NONE);
         lLogarithmic.setText(LOG_LABEL);
         bLogarithmic = new Button(buttonLine, SWT.CHECK);
@@ -292,8 +250,6 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
         cPalette.select(0);
 
         FormData dCombo = new FormData();
-        dCombo.left = new FormAttachment(bLeftHalf, 10);
-        dCombo.top = new FormAttachment(bLeftHalf, 0, SWT.CENTER);
         bLogarithmic.setLayoutData(dCombo);
 
         FormData dLabel = new FormData();
@@ -312,11 +268,9 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
 
         FormData dReport = new FormData();
         dReport.left = new FormAttachment(cPalette, 2);
-        bReport.setLayoutData(dReport);
 
         label = new Label(child, SWT.FLAT);
         label.setText(Messages.DriveInquirerView_label_start_time);
-        label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
         dateStart = new DateTime(child, SWT.FILL | SWT.BORDER | SWT.TIME | SWT.LONG);
         GridData dateStartlayoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
         dateStartlayoutData.minimumWidth = 75;
@@ -324,7 +278,6 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
 
         label = new Label(child, SWT.FLAT);
         label.setText(Messages.DriveInquirerView_label_length);
-        label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
         sLength = new Spinner(child, SWT.BORDER);
         sLength.setMinimum(1);
         sLength.setMaximum(1000);
@@ -360,17 +313,6 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
                 widgetDefaultSelected(e);
             }
         });
-        cEvent.addSelectionListener(new SelectionListener() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-            }
-
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-                widgetSelected(e);
-            }
-        });
         cPropertyList.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -386,7 +328,7 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
 
             @Override
             public void focusLost(FocusEvent e) {
-//                changeDate();
+                changeDate();
             }
 
             @Override
@@ -398,7 +340,7 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
             @Override
             public void keyReleased(KeyEvent e) {
                 if (e.keyCode == '\r' || e.keyCode == SWT.KEYPAD_CR) {
-//                    changeDate();
+                    changeDate();
                 }
             }
 
@@ -410,7 +352,7 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
 
             @Override
             public void focusLost(FocusEvent e) {
-//                changeTimeLenght();
+                changeTimeLenght();
             }
 
             @Override
@@ -422,7 +364,7 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
             @Override
             public void keyReleased(KeyEvent e) {
                 if (e.keyCode == '\r' || e.keyCode == SWT.KEYPAD_CR) {
-//                    changeTimeLenght();
+                    changeTimeLenght();
                 }
             }
 
@@ -430,43 +372,7 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
             public void keyPressed(KeyEvent e) {
             }
         });
-
-        bRight.addSelectionListener(new SelectionListener() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-//                right();
-            }
-
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-                widgetSelected(e);
-            }
-        });
-        bLeft.addSelectionListener(new SelectionListener() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-//                left();
-            }
-
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-                widgetSelected(e);
-            }
-        });
-        bLeftHalf.addSelectionListener(new SelectionListener() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-//                leftHalf();
-            }
-
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-                widgetSelected(e);
-            }
-        });
+        
         cPalette.addSelectionListener(new SelectionListener() {
 
             @Override
@@ -520,14 +426,6 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
                 table.refresh();
             }
         });
-        bReport.addSelectionListener(new SelectionAdapter() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-//                generateReport();
-            }
-
-        });
         bAddPropertyList.addSelectionListener(new SelectionListener() {
 
             @Override
@@ -536,10 +434,11 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
                 NewDriveInquirerPropertyConfig pdialog = new NewDriveInquirerPropertyConfig(shell, getDriveModel());
                 if (pdialog.open() == SWT.OK) {
                     formPropertyList();
-                    String[] result = propertyLists.keySet().toArray(new String[0]);
-                    Arrays.sort(result);
-                    cPropertyList.setItems(result);
-                    updatePropertyList();
+                    changeDrive();
+//                    String[] result = propertyLists.keySet().toArray(new String[0]);
+//                    Arrays.sort(result);
+//                    cPropertyList.setItems(result);
+//                    updatePropertyList();
                 }
             }
 
@@ -602,6 +501,64 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
      */
     private int getLength() {
         return sLength.getSelection() * 60 * 1000;
+    }
+    
+    /**
+     * Change time length
+     */
+    protected void changeTimeLenght() {
+        if (!isTimeLengthChanged()) {
+            return;
+        }
+        updateChart();
+        oldTimeLength = sLength.getSelection();
+    }
+
+    /**
+     * @return isTimeLengthChanged
+     */
+    private boolean isTimeLengthChanged() {
+        return oldTimeLength == null || sLength.getSelection() != oldTimeLength;
+    }
+    
+    /**
+     *change drive
+     */
+    protected void changeDate() {
+        if (!isStartDateChanged()) {
+            return;
+        }
+        setTimeFromField();
+        IDriveModel driveModel = getDriveModel();
+
+        if (driveModel == null) {
+            return;
+        }
+        updateChart();
+        oldStartTime = getBeginTime();
+    }
+
+    /**
+     *Check changing start date
+     * 
+     * @return true if start date was changed
+     */
+    private boolean isStartDateChanged() {
+        return oldStartTime == null || !getBeginTime().equals(oldStartTime);
+    }
+    
+    /**
+     * Sets time from datetime field
+     */
+    private void setTimeFromField() {
+        GregorianCalendar cl = new GregorianCalendar();
+        if (dateStartTimestamp != null) {
+            cl.setTimeInMillis(dateStartTimestamp);
+        }
+        cl.set(Calendar.HOUR_OF_DAY, dateStart.getHours());
+        cl.set(Calendar.MINUTE, dateStart.getMinutes());
+        cl.set(Calendar.SECOND, dateStart.getSeconds());
+        dateStartTimestamp = cl.getTimeInMillis();
     }
     
     /**
@@ -695,15 +652,21 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
         propertyLists.clear();
         IDriveModel currentDriveModel = getDriveModel();
         
+        String[] statistics = null;
         if (currentDriveModel != null) {
 	        Set<String> selectedProperties = currentDriveModel.getSelectedProperties();
 	        
-	        String[] statistics = new String[selectedProperties.size()];
+	        statistics = new String[selectedProperties.size()];
 	    	selectedProperties.toArray(statistics);
 	        Arrays.sort(statistics);
 	        cPropertyList.setItems(statistics);
         }
         
+        if (statistics != null) {
+	    	for (String savedProperty : statistics) {
+	            propertyLists.put(savedProperty, Arrays.asList(savedProperty.split(", ")));
+	        }
+        }
     }
 
     /**
@@ -748,12 +711,6 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
      * Update data after property list changed
      */
     protected void updatePropertyList() {
-    	// TODO: my fake
-    	List<String> propList = new ArrayList<String>();
-    	propList.add(cPropertyList.getText());
-    	propertyLists.put(cPropertyList.getText(), propList);
-    	
-    	
         currentProperies = propertyLists.get(cPropertyList.getText());
         if (currentProperies == null) {
             currentProperies = new ArrayList<String>(0);
@@ -813,8 +770,7 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
             setsVisible(false);
             return;
         }
-        String event = cEvent.getText();
-        if (event.isEmpty() || getCurrentPropertyCount() < 1) {
+        if (getCurrentPropertyCount() < 1) {
             setsVisible(false);
         }
         chart.getTitle().setVisible(false);
@@ -830,7 +786,7 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
             String property = currentProperies.get(i);
             xydataset.updateDataset(property, time, length, property);
         }
-        eventDataset.updateDataset(cEvent.getText(), time, length, cEvent.getText());
+//        eventDataset.updateDataset(cEvent.getText(), time, length, cEvent.getText());
         setsVisible(true);
         
         chart.fireChartChanged();
@@ -843,7 +799,7 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
     private void changeDrive() {
         if (cDrive.getSelectionIndex() < 0) {
             setsVisible(false);
-//            bAddPropertyList.setEnabled(false);
+            bAddPropertyList.setEnabled(false);
         } else {
             formPropertyLists();
             bAddPropertyList.setEnabled(true);
@@ -856,7 +812,6 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
     private void formPropertyLists() {
         formPropertyList();
         
-        cEvent.select(0);
         IDriveModel currentDriveModel = getDriveModel();
         Long minTimestamp = currentDriveModel.getMinTimestamp();
         Long maxTimestamp = currentDriveModel.getMaxTimestamp();
@@ -1051,127 +1006,61 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
      * @author Cinkel_A
      * @since 1.0.0
      */
-    private class EventDataset extends AbstractIntervalXYDataset {
-        /** long serialVersionUID field */
-        private static final long serialVersionUID = 1L;
-
-        private Long beginTime;
-        private Long length;
-        private TimeSeries series;
-        private TimeSeriesCollection collection;
-        private String propertyName;
-
-        /**
-         * @return Returns the propertyName.
-         */
-        public String getPropertyName() {
-            return propertyName;
-        }
-
-        /**
-         * update dataset with new data
-         * 
-         * @param name - dataset name
-         * @param root - root node
-         * @param beginTime - begin time
-         * @param length - length
-         * @param propertyName - property name
-         * @param event - event value
-         */
-        public void updateDataset(String name, Long beginTime, int length, String propertyName) {
-            this.beginTime = beginTime;
-            this.length = (long)length * 1000 * 60;
-            this.propertyName = propertyName;
-            collection = new TimeSeriesCollection();
-            createSeries(name, propertyName);
-            collection.addSeries(series);
-            this.fireDatasetChanged();
-        }
-
-        /**
-         * update dataset
-         */
-        public void update() {
-            if (collection.getSeriesCount() > 0) {
-                collection.getSeries(0).setKey(propertyName);
-            }
-            this.fireDatasetChanged();
-        }
+    @SuppressWarnings("serial")
+	private class EventDataset extends AbstractIntervalXYDataset {
 
         /**
          * constructor
          */
         public EventDataset() {
             super();
-            beginTime = null;
-            length = null;
-            series = null;
-            collection = new TimeSeriesCollection();
-            propertyName = null;
         }
 
-        /**
-         * Create time series
-         * 
-         * @param name name of serie
-         * @param propertyName property name
-         */
-        protected void createSeries(String name, String propertyName) {
-            series = new TimeSeries(name);
-            
-            Long time = (long) beginGisTime;
-            int[] times = new int[] { 1, 2, 30, 4, 3, 45 };
-            for (int i = 0; i < 6; i++) {
-            	series.addOrUpdate(new Millisecond(new Date(time)), times[i]);
-            	time += SLIDER_STEP * 10;
-            }
-        }
-
-        @Override
-        public int getSeriesCount() {
-            return collection.getSeriesCount();
-        }
-
-        @SuppressWarnings("rawtypes")
 		@Override
-        public Comparable getSeriesKey(int i) {
-            return collection.getSeriesKey(i);
-        }
+		public Number getEndX(int arg0, int arg1) {
+			return null;
+		}
 
-        @Override
-        public Number getEndX(int i, int j) {
-            return collection.getEndX(i, j);
-        }
+		@Override
+		public Number getEndY(int arg0, int arg1) {
+			return null;
+		}
 
-        @Override
-        public Number getEndY(int i, int j) {
-            return 1;
-        }
+		@Override
+		public Number getStartX(int arg0, int arg1) {
+			return null;
+		}
 
-        @Override
-        public Number getStartX(int i, int j) {
-            return collection.getStartX(i, j);
-        }
+		@Override
+		public Number getStartY(int arg0, int arg1) {
+			return null;
+		}
 
-        @Override
-        public Number getStartY(int i, int j) {
-            return 1;
-        }
+		@Override
+		public int getItemCount(int arg0) {
+			return 0;
+		}
 
-        @Override
-        public int getItemCount(int i) {
-            return collection.getItemCount(i);
-        }
+		@Override
+		public Number getX(int arg0, int arg1) {
+			return null;
+		}
 
-        @Override
-        public Number getX(int i, int j) {
-            return collection.getX(i, j);
-        }
+		@Override
+		public Number getY(int arg0, int arg1) {
+			return null;
+		}
 
-        @Override
-        public Number getY(int i, int j) {
-        	return (Number)(collection.getY(i, j).longValue());
-        }
+		@Override
+		public int getSeriesCount() {
+			return 0;
+		}
+
+		@SuppressWarnings("rawtypes")
+		@Override
+		public Comparable getSeriesKey(int arg0) {
+			return null;
+		}
     }
 
     /**
@@ -1569,7 +1458,7 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
             	dataElementWrapper.propertyNames.add(currentProperies.get(i));
                 changeName(labelProvider.columns.get(i + 2), dataElementWrapper.propertyNames.get(i));
             }
-            dataElementWrapper.eventName = cEvent.getText();
+            dataElementWrapper.eventName = "";
             changeName(labelProvider.columns.get(1), dataElementWrapper.eventName);
 
             // nodeWrapper.nEvents.clear();
@@ -1588,7 +1477,7 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
                 fillProperty(crosshair, xydatasets.get(i).collection, 
                 		dataElementWrapper.nProperties.get(i), dataElementWrapper.time);
             }
-            fillProperty(crosshair, eventDataset.collection, dataElementWrapper.nEvents, dataElementWrapper.time);
+//            fillProperty(crosshair, eventDataset.collection, dataElementWrapper.nEvents, dataElementWrapper.time);
 
         }
 

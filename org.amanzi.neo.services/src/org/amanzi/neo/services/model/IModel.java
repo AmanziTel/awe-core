@@ -52,7 +52,6 @@ public interface IModel {
     /**
      * @return root node of a model
      */
-    @Deprecated
     public Node getRootNode();
 
     /**

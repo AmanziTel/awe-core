@@ -5,7 +5,7 @@ Bundle-SymbolicName: org.amanzi.neo.services
 Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.amanzi.neo.db;bundle-version="1.0.0";visibility:=reexport,
- org.neo4j;bundle-version="1.4.1",
+ org.neo4j;bundle-version="1.4.1";visibility:=reexport,
  net.refractions.udig.project.ui;bundle-version="1.2.0"
 Export-Package: org.amanzi.neo.model.distribution,
  org.amanzi.neo.model.distribution.impl,

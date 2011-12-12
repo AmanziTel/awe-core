@@ -29,7 +29,6 @@ import org.amanzi.neo.model.distribution.impl.DistributionModel;
 import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.CorrelationService;
 import org.amanzi.neo.services.DatasetService;
-import org.amanzi.neo.services.DatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.DatasetService.DatasetTypes;
 import org.amanzi.neo.services.DatasetService.DriveTypes;
 import org.amanzi.neo.services.NeoServiceFactory;
@@ -270,7 +269,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     }
 
     @Override
-    public IDataElement addFile(File file) throws DatabaseException, DuplicateNodeNameException {
+    public IDataElement addFile(File file) throws AWEException {
         LOGGER.debug("start addFile(File file)");
 
         // file nodes are added as c-n-n
@@ -463,13 +462,13 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     }
 
     @Override
-    public IDataElement findFile(String name) {
+    public IDataElement findFile(String name) throws AWEException {
         // validate parameters
         if ((name == null) || (name.equals(StringUtils.EMPTY))) {
             throw new IllegalArgumentException("Name is null or empty");
         }
         if (files == null) {
-            files = dsServ.getIndexForNodes(rootNode, DriveNodeTypes.FILE);
+            files = dsServ.getIndex(rootNode, DriveNodeTypes.FILE);
         }
 
         Node fileNode = files.get(AbstractService.NAME, name).getSingle();
@@ -477,7 +476,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     }
 
     @Override
-    public IDataElement getFile(String name) throws DatabaseException {
+    public IDataElement getFile(String name) throws AWEException {
         IDataElement result = ((DataElement)findFile(name));
         if (result == null) {
             try {
@@ -685,8 +684,8 @@ public class DriveModel extends RenderableModel implements IDriveModel {
 
         Node selectedPropertiesNode = null;
         try {
-            selectedPropertiesNode = dsServ.addSelectedPropertiesNode(rootNode, 
-                    dsServ.createNode(DriveNodeTypes.SELECTED_PROPERTIES));
+            selectedPropertiesNode = dsServ.addSelectedPropertiesNode(rootNode);
+            
             Map<String, Object> params = new HashMap<String, Object>();
             params.put(AbstractService.NAME, getName());
             String[] array = selectedProperties.toArray(new String[0]);

@@ -24,7 +24,6 @@ import org.neo4j.graphdb.RelationshipType;
  * @author grigoreva_a
  * @since 1.0.0
  */
-@Deprecated
 public interface INodeToNodeRelationsType extends RelationshipType {
     public String getId();
 }
