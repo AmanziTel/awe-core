@@ -33,10 +33,8 @@ import org.eclipse.ui.IWorkbench;
 public class DatasetImportWizard extends AbstractLoaderWizard<ConfigurationDataImpl> {
 
     @Override
-    protected List<IWizardPage> getMainPagesList() {
-        List<IWizardPage> result = new ArrayList<IWizardPage>();
-        result.add(new LoadDatasetMainPage());
-        return result;
+    protected IWizardPage getMainPage() {
+        return new LoadDatasetMainPage();
     }
 
     @Override

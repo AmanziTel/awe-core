@@ -53,7 +53,7 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
     protected static final char DOT_SEPARATOR = '.';
 
     protected final static ExportSynonymsManager exportManager = ExportSynonymsManager.getManager();
-    // instance of prefernece meneger for getting synonyms
+    // instance of preference manager for getting synonyms
     protected static DataLoadPreferenceManager preferenceManager = new DataLoadPreferenceManager();
     protected Map<String, String[]> preferenceStoreSynonyms;
 

@@ -61,8 +61,9 @@ public class LoadNetworkMainPage extends AbstractNetworkLoaderMainPage<Configura
      * Instantiates a new load network main page.
      */
     public LoadNetworkMainPage() {
-        super("mainNetworkPage");
+        super(NeoLoaderPluginMessages.NetworkSiteImportWizard_PAGE_DESCR);
         setTitle(NeoLoaderPluginMessages.NetworkSiteImportWizard_PAGE_DESCR);
+        rootName = StringUtils.EMPTY;
 
     }
 
@@ -173,7 +174,7 @@ public class LoadNetworkMainPage extends AbstractNetworkLoaderMainPage<Configura
         List<File> files = new LinkedList<File>();
         files.add(file);
         getConfigurationData().setSourceFile(files);
-
+        LoaderUiUtils.setDefaultDirectory((files.get(0).getAbsolutePath()));
         return true;
     }
 
@@ -210,4 +211,5 @@ public class LoadNetworkMainPage extends AbstractNetworkLoaderMainPage<Configura
         autodefineNew(getConfigurationData());
         update();
     }
+
 }

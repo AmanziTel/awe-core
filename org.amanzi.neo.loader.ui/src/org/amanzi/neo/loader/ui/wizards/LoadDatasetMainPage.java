@@ -63,8 +63,8 @@ import org.eclipse.swt.widgets.Shell;
  */
 public class LoadDatasetMainPage extends LoaderPage<ConfigurationDataImpl> {
 
-	private static final Logger LOGGER = Logger.getLogger(LoadDatasetMainPage.class);
-    
+    private static final Logger LOGGER = Logger.getLogger(LoadDatasetMainPage.class);
+
     private Map<Object, String> names = new HashMap<Object, String>();
 
     /*
@@ -373,9 +373,9 @@ public class LoadDatasetMainPage extends LoaderPage<ConfigurationDataImpl> {
 
         String[] result = dataset.keySet().toArray(new String[] {});
         Arrays.sort(result);
-        
+
         DatabaseManagerFactory.getDatabaseManager().commitMainTransaction();
-        
+
         return result;
     }
 
@@ -425,7 +425,7 @@ public class LoadDatasetMainPage extends LoaderPage<ConfigurationDataImpl> {
 
                 if (fn != null) {
                     LoaderUiUtils.setDefaultDirectory(dlg.getFilterPath());
-                    
+
                     for (String name : dlg.getFileNames()) {
                         addFileToLoad(name, dlg.getFilterPath(), true);
                         if (cDataset.getText().isEmpty()) {
@@ -633,5 +633,9 @@ public class LoadDatasetMainPage extends LoaderPage<ConfigurationDataImpl> {
             setMessage(""); //$NON-NLS-1$
         }
         return true;
+    }
+
+    @Override
+    protected void setPredifinedValues() {
     }
 }

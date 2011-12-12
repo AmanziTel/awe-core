@@ -37,59 +37,59 @@ import org.eclipse.ui.part.ViewPart;
 
 /**
  * <p>
- *Part of view provide work with file/directory choosing
+ * Part of view provide work with file/directory choosing
  * </p>
+ * 
  * @author TsAr
  * @since 1.0.0
  */
 public class FileSelection extends ViewPart {
-    
+
     private static final Image folderImage = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
     private static final Image fileImage = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FILE);
-    
+
     private class FileLabelProvider extends LabelProvider {
 
         @Override
         public Image getImage(Object element) {
-            File file = (File) element;
+            File file = (File)element;
             if (file.isFile())
                 return fileImage;
             return folderImage;
         }
-        
+
         @Override
         public String getText(Object element) {
-            String fileName = ((File) element).getName();
+            String fileName = ((File)element).getName();
             if (fileName.length() > 0) {
                 return fileName;
             }
-            return ((File) element).getPath();
+            return ((File)element).getPath();
         }
     }
+
     private class FileContentProvider implements ITreeContentProvider {
 
         @Override
         public Object[] getChildren(Object parent) {
-            File file = (File) parent;
-            
+            File file = (File)parent;
+
             List<File> files = new ArrayList<File>();
             List<File> directories = new ArrayList<File>();
             List<File> others = new ArrayList<File>();
-            
+
             for (File singleFile : file.listFiles()) {
                 if (!singleFile.isHidden()) {
                     if (singleFile.isFile() && FileSelection.this.showFiles) {
                         files.add(singleFile);
-                    }
-                    else if (singleFile.isDirectory()) {
+                    } else if (singleFile.isDirectory()) {
                         directories.add(singleFile);
-                    }
-                    else {
+                    } else {
                         others.add(singleFile);
                     }
                 }
             }
-            
+
             Collections.sort(files);
             Collections.sort(directories);
             Collections.sort(others);
@@ -97,31 +97,31 @@ public class FileSelection extends ViewPart {
             directories.addAll(files);
             directories.addAll(others);
             Object[] objects = directories.toArray();
-            
+
             return objects;
         }
-        
+
         public Object[] getElements(Object inputElement) {
-            return (Object[]) inputElement;
+            return (Object[])inputElement;
         }
-        
+
         @Override
         public Object getParent(Object element) {
-            File file = (File) element;
+            File file = (File)element;
             return file.getParentFile();
         }
-        
+
         @Override
         public boolean hasChildren(Object parent) {
-            File file = (File) parent;
+            File file = (File)parent;
             return file.isDirectory();
         }
-        
+
         @Override
         public void dispose() {
-        
+
         }
-        
+
         @Override
         public void inputChanged(Viewer arg0, Object arg1, Object arg2) {
         }
@@ -129,18 +129,18 @@ public class FileSelection extends ViewPart {
     }
 
     private TreeViewer viewer;
-    
+
     /*
-     * Should Files be also visible, or only directories 
+     * Should Files be also visible, or only directories
      */
     private boolean showFiles;
-    
+
     /*
      * Text of FileSelection View Label
      */
     private String labelText;
-    
-    public FileSelection(boolean showFiles, String labelText) { 
+
+    public FileSelection(boolean showFiles, String labelText) {
         this.showFiles = showFiles;
         this.labelText = labelText;
     }
@@ -151,44 +151,52 @@ public class FileSelection extends ViewPart {
         GridData labelLayout = new GridData(SWT.FILL);
         labelLayout.horizontalSpan = 3;
         label.setLayoutData(labelLayout);
-        
+
         viewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
         viewer.setContentProvider(new FileContentProvider());
         viewer.setLabelProvider(new FileLabelProvider());
         viewer.setInput(File.listRoots());
         String defDir = LoaderUiUtils.getDefaultDirectory();
-        if (StringUtils.isNotEmpty(defDir)){
+        if (StringUtils.isNotEmpty(defDir)) {
             viewer.reveal(new File(defDir));
         }
     }
-    
+
     public void setFocus() {
         viewer.getControl().setFocus();
     }
-    
+
     public TreeViewer getTreeViewer() {
         return viewer;
     }
-    public List<File>getSelectedFiles(FileFilter filter){
-        ITreeSelection treeSelection = (ITreeSelection) viewer.getSelection();
+
+    public List<File> getSelectedFiles(FileFilter filter) {
+        ITreeSelection treeSelection = (ITreeSelection)viewer.getSelection();
         ArrayList<File> results = new ArrayList<File>();
         for (TreePath path : treeSelection.getPaths()) {
             File file = new File(path.getLastSegment().toString());
-            if (filter==null||filter.accept(file)){
+            if (filter == null || filter.accept(file)) {
                 results.add(file);
             }
-        } 
+        }
         return results;
     }
-    
-    public void storeDefSelection(File defSelection){
-        if (defSelection==null){
-            ITreeSelection treeSelection = (ITreeSelection) viewer.getSelection();
-            defSelection=(File)treeSelection.getFirstElement();
+
+    public void refreshDefDirectory() {
+        String defDir = LoaderUiUtils.getDefaultDirectory();
+        if (StringUtils.isNotEmpty(defDir)) {
+            viewer.reveal(new File(defDir));
         }
-        if (defSelection!=null){
+    }
+
+    public void storeDefSelection(File defSelection) {
+        if (defSelection == null) {
+            ITreeSelection treeSelection = (ITreeSelection)viewer.getSelection();
+            defSelection = (File)treeSelection.getFirstElement();
+        }
+        if (defSelection != null) {
             LoaderUiUtils.setDefaultDirectory(defSelection.getAbsolutePath());
         }
     }
-   
+
 }

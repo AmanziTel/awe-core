@@ -168,11 +168,25 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
             parseFile(file);
             LOGGER.info("File " + currentFile.getName() + " Parsing/Saving data finished in: " + getOperationTime(startTime));
         }
-        for (ISaver< ? , T3, T2> saver : savers) {
-            saver.finishUp();
+        try {
+            finishUp();
+        } catch (Exception e) {
+            throw new DatabaseException(e);
         }
         LOGGER.info("All files Parsing/Saving finished in: " + getOperationTime(globalStartTime));
     }
+
+    protected void finishUp() throws Exception {
+        finishUpParse();
+        for (ISaver< ? , T3, T2> saver : savers) {
+            saver.finishUp();
+        }
+    }
+
+    /**
+     * finishup common parser methods;
+     */
+    protected abstract void finishUpParse();
 
     @Override
     public boolean fireProgressEvent(final IProgressEvent event) {

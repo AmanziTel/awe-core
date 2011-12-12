@@ -48,7 +48,7 @@ import org.eclipse.swt.widgets.Label;
  * file/dir and select loader
  * </p>
  * 
- * @author tsinkel_a
+ * @author Vladislav_Kondratneko
  * @since 1.0.0
  */
 public abstract class AbstractNetworkLoaderMainPage<T extends IConfiguration> extends LoaderPage<T> {
@@ -58,17 +58,17 @@ public abstract class AbstractNetworkLoaderMainPage<T extends IConfiguration> ex
     protected Combo cbNetwork;
     protected FileSelection fileSelectionViewer;
     protected Combo cbLoaders;
-    protected static Integer selectedIteam = 0;
+    protected static Integer selectedIteam = -1;
     protected Object editor;
     protected HashMap<String, INetworkModel> members;
-    protected boolean isSetDefaultLoader = false;
-    protected String rootName = StringUtils.EMPTY;
+    protected static String rootName = StringUtils.EMPTY;
 
     /**
      * @param pageName
      */
     protected AbstractNetworkLoaderMainPage(String pageName) {
         super(pageName);
+        setTitle(pageName);
     }
 
     /**
@@ -84,6 +84,7 @@ public abstract class AbstractNetworkLoaderMainPage<T extends IConfiguration> ex
             @Override
             public void modifyText(ModifyEvent e) {
                 changeRootName();
+                update();
             }
         });
         cbNetwork.addSelectionListener(new SelectionListener() {
@@ -91,6 +92,7 @@ public abstract class AbstractNetworkLoaderMainPage<T extends IConfiguration> ex
             @Override
             public void widgetSelected(SelectionEvent e) {
                 changeRootName();
+                update();
             }
 
             @Override
@@ -152,8 +154,7 @@ public abstract class AbstractNetworkLoaderMainPage<T extends IConfiguration> ex
         createEditor();
         createLoadersCombobox();
         setProjectNamesToLoaders();
-        addAdditionalComponents(parent, main);
-        selectLoader(defineLoaders());
+        setPredifinedValues();
         setControl(main);
         update();
     }
@@ -163,7 +164,7 @@ public abstract class AbstractNetworkLoaderMainPage<T extends IConfiguration> ex
      */
     private void setProjectNamesToLoaders() {
         try {
-            for (ILoader<IData, T> loader : loaders) {
+            for (ILoader<IData, T> loader : pageLoaders) {
                 setSelectedLoader(loader);
                 getConfigurationData().getDatasetNames().put(ConfigurationDataImpl.PROJECT_PROPERTY_NAME,
                         ProjectModel.getCurrentProjectModel().getName());
@@ -179,15 +180,6 @@ public abstract class AbstractNetworkLoaderMainPage<T extends IConfiguration> ex
      * @param event
      */
     protected abstract void handleEditorModification(EventObject event);
-
-    /**
-     * Adds the additional components.
-     * 
-     * @param parent the parent
-     * @param main the main
-     */
-    protected void addAdditionalComponents(Composite parent, Group main) {
-    }
 
     @Override
     protected void update() {
@@ -236,4 +228,9 @@ public abstract class AbstractNetworkLoaderMainPage<T extends IConfiguration> ex
      * @return
      */
     protected abstract Integer defineLoaders();
+
+    @Override
+    protected void setPredifinedValues() {
+        selectLoader(defineLoaders());
+    }
 }

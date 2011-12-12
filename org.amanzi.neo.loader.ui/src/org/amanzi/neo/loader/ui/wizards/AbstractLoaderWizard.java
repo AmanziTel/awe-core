@@ -14,7 +14,7 @@
 package org.amanzi.neo.loader.ui.wizards;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -26,7 +26,6 @@ import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.ILoader;
 import org.amanzi.neo.loader.core.ILoaderProgressListener;
 import org.amanzi.neo.loader.core.IProgressEvent;
-import org.amanzi.neo.loader.core.parser.IConfigurationData;
 import org.amanzi.neo.loader.core.saver.IData;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.amanzi.neo.services.exceptions.AWEException;
@@ -69,6 +68,7 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
 
     public static final String IS_MAIN_ATTRUBUTE = "isMain";
     public static final String CLASS_ATTRUBUTE = "class";
+    private Set<ILoader<IData, T>> pageLoaders = new HashSet<ILoader<IData, T>>();
     protected T configData;
     static {
         EventManager.getInstance().addListener(EventsType.SHOW_ON_MAP, new ShowOnMapHandling());
@@ -89,10 +89,10 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
     /**
      * new loaders
      */
-    protected LinkedHashMap<ILoader<IData, T>, LoaderInfo<T>> loaders = new LinkedHashMap<ILoader<IData, T>, LoaderInfo<T>>();
+    protected LinkedHashMap<ILoader<IData, T>, List<IConfigurationElement>> wizardLoaders = new LinkedHashMap<ILoader<IData, T>, List<IConfigurationElement>>();
     protected Map<ILoader< ? extends IData, T>, T> requiredLoaders = new LinkedHashMap<ILoader< ? extends IData, T>, T>();
     /** The max main page id. */
-    protected int maxMainPageId;
+    protected int maxMainPageId = 1;
     private ILoader< ? extends IData, T> selectedLoader;
 
     /**
@@ -100,8 +100,43 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
      * 
      * @return the loaders
      */
-    public Set<ILoader<IData, T>> getLoaders() {
-        return loaders.keySet();
+    public Set<ILoader<IData, T>> getWizardLoaders() {
+        return wizardLoaders.keySet();
+    }
+
+    /**
+     * get loaders for current active page;
+     */
+    public Set<ILoader<IData, T>> getWizardLoadersForPage(String pageName) {
+        pageLoaders.clear();
+        for (ILoader<IData, T> loader : wizardLoaders.keySet()) {
+            for (IConfigurationElement page : wizardLoaders.get(loader)) {
+                if (page.getAttribute(CLASS_ATTRUBUTE).equals(pageName)) {
+                    pageLoaders.add(loader);
+                }
+            }
+        }
+        return pageLoaders;
+    }
+
+    /**
+     * check if current loader used in few pages
+     * 
+     * @return
+     */
+    public boolean isFewPagesForLoader() {
+        ILoader< ? extends IData, T> checkedLoader = getSelectedLoader();
+        if (checkedLoader == null) {
+            return false;
+        }
+        ILoader< ? extends IData, T> loader = checkForLoader(checkedLoader);
+        if (loader == null) {
+            return false;
+        }
+        if (pageLoaders.contains(loader) && wizardLoaders.get(loader).size() > 1) {
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -109,25 +144,22 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
         setNeedsProgressMonitor(true);
 
         // maxMainPageId = -1;
-        List<IWizardPage> mainPages = getMainPagesList();
-        for (IWizardPage iWizardPage : mainPages) {
-            addPage(iWizardPage);
-            maxMainPageId++;
+        IWizardPage mainPages = getMainPage();
+        if (mainPages != null) {
+            addPage(mainPages);
+        } else {
+            return;
         }
-        for (Map.Entry<ILoader<IData, T>, LoaderInfo<T>> loaderEntry : loaders.entrySet()) {
-            LoaderInfo<T> info = loaderEntry.getValue();
-            int idPage = 0;
-            for (IConfigurationElement pageClass : info.getPages()) {
-                ILoaderPage<T> page = createAdditionalPage(pageClass);
-                int id = checkIndexInPages(page);
+        for (List<IConfigurationElement> pages : wizardLoaders.values()) {
+            for (IConfigurationElement page : pages) {
+                ILoaderPage<T> createdPage = createAdditionalPage(page);
+                int id = checkIndexInPages(createdPage);
                 if (id == -1) {
-                    addPage(page);
-                    id = pages.size() - 1;
+                    addPage(createdPage);
                 }
-                info.setPage(idPage, id);
-                idPage++;
             }
         }
+        selectedLoader = null;
     }
 
     /**
@@ -180,17 +212,6 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
         if (loadernew == null) {
             return false;
         }
-        if (loadernew != null) {
-            LoaderInfo<T> info = loaders.get(loadernew);
-            if (info.pageId.length == 0) {
-                return true;
-            }
-            for (int i = 0; i < info.pageId.length; i++) {
-                if (!pages.get(info.pageId[i]).isPageComplete()) {
-                    return false;
-                }
-            }
-        }
         for (int i = 0; i < pages.size(); i++) {
             if (!pages.get(i).isPageComplete()) {
                 return false;
@@ -214,18 +235,19 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
         }
     }
 
-    protected List<IWizardPage> getMainPagesList() {
-        List<IWizardPage> mainPages = new LinkedList<IWizardPage>();
-        for (Map.Entry<ILoader<IData, T>, LoaderInfo<T>> loaderEntry : loaders.entrySet()) {
-            LoaderInfo<T> info = loaderEntry.getValue();
-            for (IConfigurationElement pageClass : info.getPages()) {
-                if (Boolean.parseBoolean(pageClass.getAttribute(IS_MAIN_ATTRUBUTE))) {
-                    mainPages.add(createAdditionalPage(pageClass));
-                    return mainPages;
-                }
+    /**
+     * return start page Start page this is page with isMain attribute
+     * 
+     * @return
+     */
+    protected IWizardPage getMainPage() {
+        for (List<IConfigurationElement> pages : wizardLoaders.values()) {
+            for (IConfigurationElement page : pages) {
+                if (page.getAttribute(IS_MAIN_ATTRUBUTE) != null && Boolean.valueOf(page.getAttribute(IS_MAIN_ATTRUBUTE)))
+                    return createAdditionalPage(page);
             }
         }
-        return mainPages;
+        return null;
     }
 
     /**
@@ -255,10 +277,7 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
         if (index <= maxMainPageId) {
             return pages.get(index - 1);
         }
-        ILoader< ? extends IData, T> loader = getSelectedLoader();
-        LoaderInfo<T> info = loaders.get(loader);
-        int previousWizardId = info.getPreviousWizardId(index);
-        return previousWizardId == -1 ? pages.get(maxMainPageId) : pages.get(previousWizardId);
+        return pages.get(index - 1);
     }
 
     /**
@@ -275,24 +294,21 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
             return null;
         }
         if (index < maxMainPageId) {
-            return pages.get(index + 1);
+            LoaderPage<T> nextPage = (LoaderPage<T>)pages.get(index + 1);
+            nextPage.setPredifinedValues();
+            return nextPage;
         }
         ILoader< ? extends IData, T> selectedLoader = getSelectedLoader();
         if (selectedLoader == null) {
             return null;
         }
-        LoaderInfo<T> infonew = loaders.get(selectedLoader);
-        if (infonew == null) {
+        LoaderPage<T> nextPage;
+        if ((pages.size() - 1) == index) {
             return null;
         }
-        if (index == maxMainPageId && infonew != null) {
-            return null;
-        }
-        Integer nextWizardIdNew = null;
-        if (infonew != null) {
-            nextWizardIdNew = infonew.getNextWizardId(index);
-        }
-        return nextWizardIdNew == null ? null : pages.get(nextWizardIdNew);
+        nextPage = (LoaderPage<T>)pages.get(index + 1);
+        nextPage.setPredifinedValues();
+        return nextPage;
     }
 
     @Override
@@ -386,11 +402,39 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
     }
 
     @Override
-    public void addLoaderToPage(ILoader<IData, T> loader, IConfigurationElement pageConfigElements) {
-        LoaderInfo<T> info = new LoaderInfo<T>();
-        info.setAdditionalPages(pageConfigElements);
-        loaders.put(loader, info);
+    public void addLoaderToWizard(ILoader<IData, T> loader, IConfigurationElement pageConfigElements) {
+        ILoader< ? extends IData, T> foundLoader = checkForLoader(loader);
+        if (foundLoader != null) {
+            List<IConfigurationElement> wizardPage = wizardLoaders.get(foundLoader);
+            if (wizardPage != null) {
+                wizardPage.add(pageConfigElements);
+            } else {
+                wizardPage = new LinkedList<IConfigurationElement>();
+                wizardPage.add(pageConfigElements);
+            }
+        } else {
+            List<IConfigurationElement> pages = new LinkedList<IConfigurationElement>();
+            pages.add(pageConfigElements);
+            wizardLoaders.put(loader, pages);
+        }
+
         requiredLoaders.put(loader, null);
+    }
+
+    /**
+     * return existed loader or null of not exist
+     * 
+     * @param loader
+     * @return
+     */
+    private ILoader< ? extends IData, T> checkForLoader(ILoader< ? extends IData, T> loader) {
+
+        for (ILoader< ? extends IData, T> containedLoader : wizardLoaders.keySet()) {
+            if (containedLoader.getLoaderInfo().getName().equals(loader.getLoaderInfo().getName())) {
+                return containedLoader;
+            }
+        }
+        return null;
     }
 
     /**
@@ -444,93 +488,6 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
     public void setSelectedLoader(ILoader< ? extends IData, T> selectedLoader) {
         this.selectedLoader = selectedLoader;
 
-    }
-
-    /**
-     * <p>
-     * Additional information about loaders
-     * </p>
-     * .
-     * 
-     * @param <T> the generic type
-     * @author tsinkel_a
-     * @since 1.0.0
-     */
-    public static class LoaderInfo<T extends IConfigurationData> {
-
-        /** The page classes. */
-        private IConfigurationElement[] pageClasses;
-
-        /** The page id. */
-        private int[] pageId = new int[0];
-
-        /**
-         * Sets the additional pages.
-         * 
-         * @param pageConfigElements the new additional pages
-         */
-        public void setAdditionalPages(IConfigurationElement pageConfigElements) {
-            ArrayList<IConfigurationElement> list = new ArrayList<IConfigurationElement>();
-            list.add(pageConfigElements);
-            if (pageClasses != null) {
-                list.addAll(Arrays.asList(pageClasses));
-            }
-            this.pageClasses = list.toArray(new IConfigurationElement[list.size()]);
-
-            pageId = new int[pageClasses.length];
-        }
-
-        /**
-         * Gets the previous wizard id.
-         * 
-         * @param index the index
-         * @return the previous wizard id
-         */
-        public int getPreviousWizardId(int index) {
-            for (int i = 0; i < pageId.length; i++) {
-                if (pageId[i] == index) {
-                    return i == 0 ? -1 : pageId[i - 1];
-                }
-            }
-            throw new IllegalArgumentException("Wrong index=" + index);
-        }
-
-        /**
-         * Gets the previous wizard id.
-         * 
-         * @param index the index
-         * @return the previous wizard id
-         */
-        public Integer getNextWizardId(int index) {
-            if (pageId.length == 0) {
-                return null;
-            }
-            for (int i = 0; i < pageId.length; i++) {
-                if (pageId[i] == index) {
-                    return i == pageId.length - 1 ? null : pageId[i + 1];
-                }
-            }
-            throw new IllegalArgumentException("Wrong index=" + index);
-        }
-
-        /**
-         * Sets the page.
-         * 
-         * @param realId the real id
-         * @param wizardId the wizard id
-         */
-        public void setPage(int realId, int wizardId) {
-            pageId[realId] = wizardId;
-        }
-
-        /**
-         * Gets the pages.
-         * 
-         * @return the pages
-         */
-        public IConfigurationElement[] getPages() {
-            return pageClasses;
-        }
     }
 
     /**

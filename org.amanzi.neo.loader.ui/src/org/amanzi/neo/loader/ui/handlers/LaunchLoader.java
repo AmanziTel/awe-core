@@ -165,7 +165,7 @@ public class LaunchLoader extends AbstractHandler {
                 if (loader.getAttribute(ID_ATTRIBUTE).equals(pageLoader.getAttribute(ID_ATTRIBUTE))) {
                     ILoader<IData, IConfiguration> initializedLoader = defineLoader(loader);
                     if (initializedLoader != null) {
-                        castedWizard.addLoaderToPage(initializedLoader, page);
+                        castedWizard.addLoaderToWizard(initializedLoader, page);
                         break;
                     }
 

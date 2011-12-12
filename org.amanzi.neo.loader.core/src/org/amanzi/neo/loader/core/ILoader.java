@@ -93,7 +93,7 @@ public interface ILoader<T extends IData, T2 extends IConfiguration> {
 	 * 
 	 * @return
 	 */
-	public ILoaderInfo getLoaderInfo();
+    public ILoaderInfo getLoaderInfo();
 
 	/**
 	 * set loader info
