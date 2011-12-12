@@ -29,7 +29,6 @@ import org.amanzi.neo.model.distribution.impl.DistributionModel;
 import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.CorrelationService;
 import org.amanzi.neo.services.DatasetService;
-import org.amanzi.neo.services.DatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.DatasetService.DatasetTypes;
 import org.amanzi.neo.services.DatasetService.DriveTypes;
 import org.amanzi.neo.services.NeoServiceFactory;
@@ -685,8 +684,8 @@ public class DriveModel extends RenderableModel implements IDriveModel {
 
         Node selectedPropertiesNode = null;
         try {
-            selectedPropertiesNode = dsServ.addSelectedPropertiesNode(rootNode, 
-                    dsServ.createNode(DriveNodeTypes.SELECTED_PROPERTIES));
+            selectedPropertiesNode = dsServ.addSelectedPropertiesNode(rootNode);
+            
             Map<String, Object> params = new HashMap<String, Object>();
             params.put(AbstractService.NAME, getName());
             String[] array = selectedProperties.toArray(new String[0]);
