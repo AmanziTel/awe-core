@@ -820,7 +820,7 @@ public class DriveModelTest extends AbstractNeoServiceTest {
             dm = new DriveModel(project, dataset, dsName, DriveTypes.values()[0]);
         } catch (AWEException e) {
             LOGGER.error("Could not create drive model", e);
-            fail();
+            fail(); 
         }
         for (int i = 0; i < 4; i++) {
             String fname = filename + i;
