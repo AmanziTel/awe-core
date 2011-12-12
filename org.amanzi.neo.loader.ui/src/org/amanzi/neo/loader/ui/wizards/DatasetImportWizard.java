@@ -13,9 +13,6 @@
 
 package org.amanzi.neo.loader.ui.wizards;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.eclipse.jface.viewers.IStructuredSelection;
