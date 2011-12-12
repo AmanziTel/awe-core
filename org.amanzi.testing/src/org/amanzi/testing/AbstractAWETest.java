@@ -13,6 +13,8 @@
 
 package org.amanzi.testing;
 
+import static org.mockito.Mockito.*;
+
 import java.io.File;
 
 import org.amanzi.neo.db.manager.DatabaseManagerFactory;
@@ -87,5 +89,11 @@ public abstract class AbstractAWETest {
     }
     protected Relationship createRelation(Node parent, Node child, String relationName) {
         return parent.createRelationshipTo(child, DynamicRelationshipType.withName(relationName));
+    }
+    
+    protected Node getNodeMock() {
+        Node result = mock(Node.class);
+        
+        return result;
     }
 }

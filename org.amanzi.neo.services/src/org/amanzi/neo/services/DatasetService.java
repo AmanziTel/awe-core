@@ -116,7 +116,7 @@ public class DatasetService extends AbstractService {
      * @since 1.0.0
      */
     public enum DatasetRelationTypes implements RelationshipType {
-        PROJECT, DATASET, CHILD, NEXT, GIS, SELECTED_PROPERTIES;
+        PROJECT, DATASET, CHILD, NEXT, GIS, SELECTED_PROPERTIES, SUB_COUNTERS;
     }
 
     /**

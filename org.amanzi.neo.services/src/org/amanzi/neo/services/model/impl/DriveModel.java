@@ -269,7 +269,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     }
 
     @Override
-    public IDataElement addFile(File file) throws DatabaseException, DuplicateNodeNameException {
+    public IDataElement addFile(File file) throws AWEException {
         LOGGER.debug("start addFile(File file)");
 
         // file nodes are added as c-n-n
@@ -462,13 +462,13 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     }
 
     @Override
-    public IDataElement findFile(String name) {
+    public IDataElement findFile(String name) throws AWEException {
         // validate parameters
         if ((name == null) || (name.equals(StringUtils.EMPTY))) {
             throw new IllegalArgumentException("Name is null or empty");
         }
         if (files == null) {
-            files = dsServ.getIndexForNodes(rootNode, DriveNodeTypes.FILE);
+            files = dsServ.getIndex(rootNode, DriveNodeTypes.FILE);
         }
 
         Node fileNode = files.get(AbstractService.NAME, name).getSingle();
@@ -476,7 +476,7 @@ public class DriveModel extends RenderableModel implements IDriveModel {
     }
 
     @Override
-    public IDataElement getFile(String name) throws DatabaseException {
+    public IDataElement getFile(String name) throws AWEException {
         IDataElement result = ((DataElement)findFile(name));
         if (result == null) {
             try {
