@@ -21,9 +21,7 @@ import org.eclipse.ui.IPerspectiveFactory;
 public class PerspectiveFactory implements IPerspectiveFactory {
 
     public static final String AWE_PERSPECTIVE = "org.amanzi.awe.perspective"; //$NON-NLS-1$
-    private static final String PROJECTS = "net.refractions.udig.project.ui.projectExplorer"; //$NON-NLS-1$
     private static final String LAYERS = "net.refractions.udig.project.ui.layerManager"; //$NON-NLS-1$
-    private static final String CATALOG = "net.refractions.udig.catalog.ui.CatalogView"; //$NON-NLS-1$
     private static final String NETWORK_TREE = "org.amanzi.awe.views.network.views.NewNetworkTreeView";
     private static final String DATABASE_PROJECT_EXPLORER = "org.amanzi.awe.views.explorer.view.ProjectExplorerView";
     private static final String N2N = "org.amanzi.awe.views.neighbours.views.NodeToNodeRelationsView";
