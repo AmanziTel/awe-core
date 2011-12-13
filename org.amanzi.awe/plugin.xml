@@ -110,9 +110,6 @@
                id="org.amanzi.awe.perspective">
          </perspectiveShortcut>
       </perspectiveExtension>
-      <perspectiveExtension
-            targetID="org.amanzi.awe.perspective.rf">
-      </perspectiveExtension>
    </extension>
    <extension
          id="product"
