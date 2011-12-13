@@ -17,6 +17,11 @@
             id="org.amanzi.awe.perspective"
             name="Amanzi Wireless Explorer">
       </perspective>
+      <perspective
+            class="org.amanzi.awe.UdigPerspectiveFactory"
+            id="org.amanzi.awe.perspective.uDig"
+            name="uDig">
+      </perspective>
    </extension>
    <extension point="org.eclipse.ui.perspectiveExtensions">
       <perspectiveExtension targetID="org.amanzi.awe.perspective">
@@ -98,6 +103,15 @@
          <perspectiveShortcut
                id="org.amanzi.awe.perspective">
          </perspectiveShortcut>
+      </perspectiveExtension>
+      <perspectiveExtension
+            targetID="org.amanzi.awe.perspective.uDig">
+         <perspectiveShortcut
+               id="org.amanzi.awe.perspective">
+         </perspectiveShortcut>
+      </perspectiveExtension>
+      <perspectiveExtension
+            targetID="org.amanzi.awe.perspective.rf">
       </perspectiveExtension>
    </extension>
    <extension
