@@ -55,7 +55,7 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
 
     private IndexService indexService = NeoServiceFactory.getInstance().getIndexService();
 
-    private DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
+    static DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
 
     protected AbstractIndexedModel(Node rootNode, INodeType nodeType) throws AWEException {
         super(nodeType);
@@ -224,7 +224,7 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
      * @param latitude
      * @param longitude
      */
-    protected void updateLocationBounds(double latitude, double longitude) {
+    public void updateLocationBounds(double latitude, double longitude) {
 
         // update latitude
         if (latitude > max_latitude) {
@@ -244,27 +244,27 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
 
     }
 
-    protected double getMinLatitude() {
+    public double getMinLatitude() {
         return min_latitude;
     }
 
-    protected double getMaxLatitude() {
+    public double getMaxLatitude() {
         return max_latitude;
     }
 
-    protected double getMinLongitude() {
+    public double getMinLongitude() {
         return min_longitude;
     }
 
-    protected double getMaxLongitude() {
+    public double getMaxLongitude() {
         return max_longitude;
     }
 
-    protected long getMinTimestamp() {
+    public long getMinTimestamp() {
         return min_timestamp;
     }
 
-    protected long getMaxTimestamp() {
+    public long getMaxTimestamp() {
         return max_timestamp;
     }
 

@@ -213,14 +213,16 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
      */
     @Override
     public IDriveModel findDataset(String name, IDriveType driveType) {
-        Node dataset = null;
+        IDriveModel dataset = null;
         try {
-            dataset = dsServ.findDataset(rootNode, name, DatasetTypes.DRIVE, driveType);
-            return dataset == null ? null : new DriveModel(null, dataset, name, driveType);
+            Node datasetNode = dsServ.findDataset(rootNode, name, DatasetTypes.DRIVE, driveType);
+            if (datasetNode != null) {
+                dataset = new DriveModel(datasetNode);
+            }
         } catch (AWEException e) {
             LOGGER.error("Could not create drive model.", e);
         }
-        return null;
+        return dataset;
     }
 
     /**

@@ -896,7 +896,7 @@ public class DriveModelTest extends AbstractNeoServiceTest {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
         IProjectModel pModel = model.getProject();
-        Assert.assertEquals("Same nodes expected ", pModel.getRootNode().equals(project));
+        Assert.assertTrue("Same nodes expected ", pModel.getRootNode().equals(project));
     }
 
     @Test
@@ -911,7 +911,7 @@ public class DriveModelTest extends AbstractNeoServiceTest {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
 
-        Assert.assertEquals("Same nodes expected ", pModel.getRootNode().equals(project));
+        Assert.assertTrue("Same nodes expected ", pModel.getRootNode().equals(project));
     }
 
     @Test
@@ -928,7 +928,7 @@ public class DriveModelTest extends AbstractNeoServiceTest {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
 
-        Assert.assertEquals("Same nodes expected ", pModel.getRootNode().equals(model.getRootNode()));
+        Assert.assertTrue("Same nodes expected ", pModel.getRootNode().equals(model.getRootNode()));
     }
 
     @SuppressWarnings("static-access")

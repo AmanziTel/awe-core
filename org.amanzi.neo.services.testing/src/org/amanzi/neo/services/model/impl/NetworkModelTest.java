@@ -595,7 +595,7 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
     @Test
     public void testGetProject() {
         IProjectModel pModel = model.getProject();
-        Assert.assertEquals("Same nodes expected ", pModel.getRootNode().equals(project));
+        Assert.assertTrue("Same nodes expected ", pModel.getRootNode().equals(project));
     }
 
     @Test
@@ -607,6 +607,6 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
             // TODO Handle AWEException
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
-        Assert.assertEquals("Same nodes expected ", pModel.getRootNode().equals(project));
+        Assert.assertTrue("Same nodes expected ", pModel.getRootNode().equals(project));
     }
 }

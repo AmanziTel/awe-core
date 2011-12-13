@@ -468,11 +468,11 @@ public class MultiPropertyIndex<E extends Object> {
     }
 
     public void finishUp() {
+        Transaction tx = neo.beginTx();
         try {
             flush();
         } catch (IOException e) {
         }
-        Transaction tx = neo.beginTx();
         try {
             if (root != null) {
                 Node highestIndex = null;

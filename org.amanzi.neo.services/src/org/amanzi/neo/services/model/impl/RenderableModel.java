@@ -16,11 +16,8 @@ package org.amanzi.neo.services.model.impl;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.amanzi.neo.services.DatasetService;
-import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
-import org.amanzi.neo.services.model.IDataElement;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.geotools.geometry.jts.ReferencedEnvelope;
@@ -44,8 +41,6 @@ public abstract class RenderableModel extends AbstractIndexedModel {
 
     static final String DESCRIPTION = "description";
     static final String CRS_NAME = "crs";
-
-    private DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
 
     protected final static String DEFAULT_EPSG = "EPSG:31467";
     /** The field used in geo tools. Assignment not yet implemented.//TODO */
@@ -77,7 +72,7 @@ public abstract class RenderableModel extends AbstractIndexedModel {
      * @param crsCode a string representing the new CRS - something like "EPSG:31247"
      * @return the updated CRS as <code>CoordinateReferenceSystem</code> object
      */
-    protected CoordinateReferenceSystem updateCRS(String crsCode) {
+    public CoordinateReferenceSystem updateCRS(String crsCode) {
         try {
             crs = CRS.decode(crsCode);
             this.crsCode = crsCode;
@@ -95,12 +90,6 @@ public abstract class RenderableModel extends AbstractIndexedModel {
         this.crs = crs;
         crsCode = "";// ToDO:
     }
-
-    @Override
-    public abstract Iterable<IDataElement> getChildren(IDataElement parent);
-
-    @Override
-    public abstract Iterable<IDataElement> getAllElementsByType(INodeType elementType);
 
     /**
      * @return A <code>String</code> description for use of geo tools;

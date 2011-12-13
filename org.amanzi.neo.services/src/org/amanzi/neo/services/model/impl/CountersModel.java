@@ -33,6 +33,10 @@ import org.amanzi.neo.services.model.IModel;
 import org.apache.commons.lang.StringUtils;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Envelope;
 
 /**
  * TODO Purpose of
@@ -42,7 +46,7 @@ import org.neo4j.graphdb.Node;
  * @author grigoreva_a
  * @since 1.0.0
  */
-public class CountersModel extends AbstractIndexedModel implements ICountersModel {
+public class CountersModel extends MeasurementModel implements ICountersModel {
 
     private CorrelationService crServ = NeoServiceFactory.getInstance().getCorrelationService();
     private DatasetService dsServ = NeoServiceFactory.getInstance().getDatasetService();
@@ -122,6 +126,21 @@ public class CountersModel extends AbstractIndexedModel implements ICountersMode
 
     @Override
     public Iterable<IDataElement> findAllElementsByTimestampPeriod(long min_timestamp, long max_timestamp) {
+        return null;
+    }
+
+    @Override
+    public CoordinateReferenceSystem getCRS() {
+        return null;
+    }
+
+    @Override
+    public Iterable<IDataElement> getElements(Envelope bounds_transformed) throws AWEException {
+        return null;
+    }
+
+    @Override
+    public Coordinate getCoordinate(IDataElement element) {
         return null;
     }
 }

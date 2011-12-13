@@ -469,7 +469,7 @@ public class NodeToNodeRelationshipModelTest extends AbstractNeoServiceTest {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
 
-        Assert.assertEquals("Same nodes expected ", pModel.getRootNode().equals(network));
+        Assert.assertTrue("Same nodes expected ", pModel.getRootNode().equals(network));
     }
 
     private boolean chainExists(Node parent, Node child) {

@@ -22,7 +22,7 @@ package org.amanzi.neo.services.model;
  * @author grigoreva_a
  * @since 1.0.0
  */
-public interface ICountersModel extends ICorrelatableModel, ITimelineModel {
+public interface ICountersModel extends ICorrelatableModel, ITimelineModel, IMeasurementModel {
 
     //TODO: LN: comments
     public ICountersType getCountersType();
