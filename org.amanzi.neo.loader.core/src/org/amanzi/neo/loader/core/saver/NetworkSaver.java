@@ -238,7 +238,8 @@ public class NetworkSaver extends AbstractNetworkSaver {
     private boolean collectSector(Map<String, Object> sectorMap, List<String> row, String sectorElementId) {
         for (String head : headers) {
             if (isCorrect(head, row) && !head.equals(fileSynonyms.get(sectorElementId))) {
-                sectorMap.put(head.toLowerCase(), getSynonymValueWithAutoparse(head, row));
+                String synonym = getSynonymForHeader(head);
+                sectorMap.put(synonym.toLowerCase(), getSynonymValueWithAutoparse(synonym, row));
             }
         }
         String sector = getSynonymValueWithAutoparse(sectorElementId, row).toString();
