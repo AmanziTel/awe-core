@@ -5,7 +5,8 @@ Bundle-SymbolicName: org.amanzi.neo.loader.core;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.amanzi.neo.services;bundle-version="1.0.0",
- org.neo4j;bundle-version="1.4.1"
+ org.neo4j;bundle-version="1.4.1",
+ org.amanzi.neo.services.ui;bundle-version="1.0.0";resolution:=optional
 Export-Package: au.com.bytecode.opencsv,
  org.amanzi.neo.loader.core,
  org.amanzi.neo.loader.core.parser,

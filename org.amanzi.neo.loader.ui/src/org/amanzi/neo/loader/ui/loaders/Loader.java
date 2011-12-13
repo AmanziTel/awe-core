@@ -54,7 +54,6 @@ public class Loader implements ILoader<IData, IConfiguration> {
 	 */
 	IValidator validator;
 
-	@SuppressWarnings("rawtypes")
 	@Override
 	public void setSaver(
 			List<ISaver<? extends IModel, IData, IConfiguration>> saver) {

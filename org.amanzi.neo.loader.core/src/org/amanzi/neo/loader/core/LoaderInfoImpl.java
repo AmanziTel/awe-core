@@ -45,14 +45,4 @@ public class LoaderInfoImpl implements ILoaderInfo {
         return name;
     }
 
-    @Override
-    public String getType() {
-        return type;
-    }
-
-    @Override
-    public String getDataType() {
-        return dataType;
-    }
-
 }

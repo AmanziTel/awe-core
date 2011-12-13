@@ -18,7 +18,7 @@
             name="Amanzi Wireless Explorer">
       </perspective>
       <perspective
-            class="org.amanzi.awe.PerspectiveFactoryUdig"
+            class="org.amanzi.awe.UdigPerspectiveFactory"
             id="org.amanzi.awe.perspective.uDig"
             name="uDig">
       </perspective>
@@ -106,9 +106,12 @@
       </perspectiveExtension>
       <perspectiveExtension
             targetID="org.amanzi.awe.perspective.uDig">
-         <viewShortcut
+         <perspectiveShortcut
                id="org.amanzi.awe.perspective">
-         </viewShortcut>
+         </perspectiveShortcut>
+      </perspectiveExtension>
+      <perspectiveExtension
+            targetID="org.amanzi.awe.perspective.rf">
       </perspectiveExtension>
    </extension>
    <extension

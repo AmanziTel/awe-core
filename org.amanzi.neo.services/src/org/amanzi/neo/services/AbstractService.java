@@ -562,17 +562,6 @@ public abstract class AbstractService implements IDatabaseEventListener {
     }
 
     /**
-     * Creates Indexes
-     * 
-     * @param rootNode root node of indexed structure
-     * @param nodeType type of indexed node
-     * @return
-     */
-    public Index<Node> getIndexForNodes(Node rootNode, INodeType nodeType) {
-        return graphDb.index().forNodes(AbstractService.getIndexKey(rootNode, DriveNodeTypes.FILE));
-    }
-
-    /**
      * Safely get a node that is linked to <code>startNode</code> with the defined relationship.
      * Assumed, that <code>startNode</code> has only one relationship of that kind
      * 

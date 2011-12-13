@@ -69,7 +69,6 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
      * @author grigoreva_a
      * @since 1.0.0
      */
-    @Deprecated
     public enum N2NRelTypes implements INodeToNodeRelationsType {
         NEIGHBOUR, INTERFERENCE_MATRIX, TRIANGULATION, SHADOW, ILLEGAL_FREQUENCY, FREQUENCY_SPECTRUM, TRANSMISSION, EXCEPTION;
 

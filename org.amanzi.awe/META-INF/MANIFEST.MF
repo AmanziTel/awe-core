@@ -9,7 +9,8 @@ Require-Bundle: net.refractions.udig.ui,
  net.refractions.udig.catalog,
  org.amanzi.neo.db;bundle-version="1.0.0",
  org.neo4j;bundle-version="1.4.1",
- org.neo4j.neoclipse;bundle-version="1.4.0"
+ org.neo4j.neoclipse;bundle-version="1.4.0",
+ org.amanzi.awe.rf;bundle-version="1.0.0"
 Bundle-ActivationPolicy: lazy
 Export-Package: org.amanzi.awe
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6

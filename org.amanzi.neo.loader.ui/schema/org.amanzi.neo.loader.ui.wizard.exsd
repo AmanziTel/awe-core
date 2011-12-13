@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Schema file written by PDE -->
-<schema targetNamespace="org.amanzi.neo.loader.core" xmlns="http://www.w3.org/2001/XMLSchema">
+<schema targetNamespace="org.amanzi.neo.loader.ui" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appInfo>
-         <meta.schema plugin="org.amanzi.neo.loader.core" id="org.amanzi.loader.core.newsaver" name="Extension for new Saver"/>
+         <meta.schema plugin="org.amanzi.neo.loader.ui" id="org.amanzi.neo.loader.ui.wizard" name="Extension describe wizards"/>
       </appInfo>
       <documentation>
          [Enter description of this extension point.]
@@ -17,8 +17,8 @@
          </appInfo>
       </annotation>
       <complexType>
-         <sequence minOccurs="1" maxOccurs="unbounded">
-            <element ref="newsaver"/>
+         <sequence>
+            <element ref="wizard" minOccurs="1" maxOccurs="unbounded"/>
          </sequence>
          <attribute name="point" type="string" use="required">
             <annotation>
@@ -30,7 +30,7 @@
          <attribute name="id" type="string">
             <annotation>
                <documentation>
-                  saver id
+                  
                </documentation>
             </annotation>
          </attribute>
@@ -47,8 +47,11 @@
       </complexType>
    </element>
 
-   <element name="newsaver">
+   <element name="wizard">
       <complexType>
+         <sequence>
+            <element ref="page_id" minOccurs="1" maxOccurs="unbounded"/>
+         </sequence>
          <attribute name="id" type="string" use="required">
             <annotation>
                <documentation>
@@ -59,14 +62,16 @@
                </appInfo>
             </annotation>
          </attribute>
-         <attribute name="class" type="string" use="required">
+      </complexType>
+   </element>
+
+   <element name="page_id">
+      <complexType>
+         <attribute name="id" type="string" use="required">
             <annotation>
                <documentation>
                   
                </documentation>
-               <appInfo>
-                  <meta.attribute kind="java" basedOn=":org.amanzi.neo.loader.core.newsaver.ISaver"/>
-               </appInfo>
             </annotation>
          </attribute>
       </complexType>

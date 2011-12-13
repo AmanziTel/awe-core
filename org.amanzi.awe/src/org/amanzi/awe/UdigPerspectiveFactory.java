@@ -12,7 +12,7 @@ import org.eclipse.ui.IPerspectiveFactory;
  * @author Ladornaya_A
  * @since 1.0.0
  */
-public class PerspectiveFactoryUdig implements IPerspectiveFactory {
+public class UdigPerspectiveFactory implements IPerspectiveFactory {
     
     public static final String UDIG_PERSPECTIVE = "org.amanzi.awe.perspective.uDig"; //$NON-NLS-1$
     private static final String CATALOG = "net.refractions.udig.catalog.ui.CatalogView"; //$NON-NLS-1$

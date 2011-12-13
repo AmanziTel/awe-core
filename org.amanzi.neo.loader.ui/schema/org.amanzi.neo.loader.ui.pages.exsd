@@ -1,12 +1,12 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Schema file written by PDE -->
-<schema targetNamespace="org.amanzi.neo.loader.core" xmlns="http://www.w3.org/2001/XMLSchema">
+<schema targetNamespace="org.amanzi.neo.loader.ui" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appInfo>
-         <meta.schema plugin="org.amanzi.neo.loader.core" id="org.amanzi.loader.core.newparser" name="Extension for new parsers"/>
+         <meta.schema plugin="org.amanzi.neo.loader.ui" id="org.amanzi.neo.loader.ui.pages" name="describe pages"/>
       </appInfo>
       <documentation>
-         extension point for new parser
+         [Enter description of this extension point.]
       </documentation>
    </annotation>
 
@@ -18,7 +18,7 @@
       </annotation>
       <complexType>
          <sequence>
-            <element ref="newparser" minOccurs="1" maxOccurs="unbounded"/>
+            <element ref="page" minOccurs="1" maxOccurs="unbounded"/>
          </sequence>
          <attribute name="point" type="string" use="required">
             <annotation>
@@ -30,7 +30,7 @@
          <attribute name="id" type="string">
             <annotation>
                <documentation>
-                  new parser id
+                  
                </documentation>
             </annotation>
          </attribute>
@@ -47,26 +47,45 @@
       </complexType>
    </element>
 
-   <element name="newparser">
+   <element name="page">
       <complexType>
-         <attribute name="id" type="string">
+         <sequence>
+            <element ref="loader_id" minOccurs="1" maxOccurs="unbounded"/>
+         </sequence>
+         <attribute name="id" type="string" use="required">
             <annotation>
                <documentation>
-                  parser id
+                  
                </documentation>
-               <appInfo>
-                  <meta.attribute kind="identifier"/>
-               </appInfo>
             </annotation>
          </attribute>
-         <attribute name="class" type="string">
+         <attribute name="class" type="string" use="required">
             <annotation>
                <documentation>
                   
                </documentation>
                <appInfo>
-                  <meta.attribute kind="java" basedOn=":org.amanzi.neo.loader.core.newparser.IParser"/>
+                  <meta.attribute kind="java" basedOn=":org.amanzi.neo.loader.ui.wizards.ILoaderPage"/>
                </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="isMain" type="boolean">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="loader_id">
+      <complexType>
+         <attribute name="id" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
             </annotation>
          </attribute>
       </complexType>

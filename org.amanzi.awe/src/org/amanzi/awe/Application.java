@@ -18,7 +18,9 @@ import net.refractions.udig.internal.ui.UDIGWorkbenchAdvisor;
 import org.amanzi.neo.db.manager.DatabaseManagerFactory;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.ui.application.IWorkbenchConfigurer;
+import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchAdvisor;
+import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 
 /**
  * This is the default application for the Amanzi Wireless Explorer. It is based directly on uDIG,
@@ -59,6 +61,12 @@ public class Application extends UDIGApplication implements IApplication {
         @Override
         public String getInitialWindowPerspectiveId() {
             return PerspectiveFactory.AWE_PERSPECTIVE;
+        }
+        
+        @Override
+        public WorkbenchWindowAdvisor createWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer) {
+            configurer.setShowPerspectiveBar(true);
+            return super.createWorkbenchWindowAdvisor(configurer);           
         }
     }
 

@@ -101,8 +101,8 @@ public class Nemo2xSaverTesting extends AbstractAWETest {
         fileList.add(testFile);
         config.setSourceFile(fileList);
         nemo2xSaver = new Nemo2xSaver(model, (ConfigurationDataImpl)config, service);
-        CommonCSVParser objCommonCSVParser = new CommonCSVParser();
-        rowContainer = objCommonCSVParser.parseElement(testFile);
+        //CommonCSVParser objCommonCSVParser = new CommonCSVParser(testFile);
+        //rowContainer = objCommonCSVParser.parseElement();
     }
 
     @SuppressWarnings("unchecked")

@@ -12,26 +12,53 @@
  */
 package org.amanzi.neo.loader.ui.utils;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.refractions.udig.catalog.CatalogPlugin;
+import net.refractions.udig.catalog.ICatalog;
+import net.refractions.udig.catalog.ID;
+import net.refractions.udig.catalog.IGeoResource;
+import net.refractions.udig.catalog.IService;
+import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.ui.ApplicationGIS;
+import net.refractions.udig.project.ui.internal.actions.ZoomToLayer;
 
+import org.amanzi.neo.db.manager.DatabaseManagerFactory;
 import org.amanzi.neo.loader.core.LoaderUtils;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.core.preferences.PreferenceStore;
 import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
+import org.amanzi.neo.services.model.IDataModel;
 import org.amanzi.neo.services.ui.utils.ActionUtil;
 import org.amanzi.neo.services.utils.RunnableWithResult;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.PlatformUI;
 
+/**
+ * TODO Purpose of
+ * <p>
+ * common actions in loaders ui
+ * </p>
+ * 
+ * @author Vladislav_Kondratenko
+ * @since 1.0.0
+ */
 public class LoaderUiUtils extends LoaderUtils {
-    
+    /*
+     * constants
+     */
+    public static final String FILE_PREFIX = "file://";
+    public static final String COMMA_SEPARATOR = ",";
+
     /**
      * @param key -key of value from preference store
      * @return array of possible headers
@@ -42,7 +69,7 @@ public class LoaderUiUtils extends LoaderUtils {
         if (text == null) {
             return new String[0];
         }
-        String[] array = text.split(",");
+        String[] array = text.split(COMMA_SEPARATOR);
         List<String> result = new ArrayList<String>();
         for (String string : array) {
             String value = string.trim();
@@ -73,11 +100,6 @@ public class LoaderUiUtils extends LoaderUtils {
                 if (map == ApplicationGIS.NO_MAP) {
                     message = String.format(NeoLoaderPluginMessages.ADD_NEW_MAP_MESSAGE, fileName);
                 }
-                // MessageBox msg = new
-                // MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
-                // SWT.YES | SWT.NO);
-                // msg.setText(NeoLoaderPluginMessages.ADD_LAYER_TITLE);
-                // msg.setMessage(message);
                 MessageDialogWithToggle dialog = MessageDialogWithToggle.openYesNoQuestion(PlatformUI.getWorkbench()
                         .getActiveWorkbenchWindow().getShell(), NeoLoaderPluginMessages.ADD_LAYER_TITLE, message,
                         NeoLoaderPluginMessages.TOGLE_MESSAGE, boolean1, preferenceStore, DataLoadPreferences.ZOOM_TO_LAYER);
@@ -95,6 +117,123 @@ public class LoaderUiUtils extends LoaderUtils {
     }
 
     /**
+     * Get map service.
+     * 
+     * @return IService
+     * @throws MalformedURLException
+     */
+    private static IService getMapService() throws MalformedURLException {
+        String databaseLocation = DatabaseManagerFactory.getDatabaseManager().getLocation();
+        ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
+        URL url = new URL(FILE_PREFIX + databaseLocation);
+        ID id = new ID(url);
+        IService curService = catalog.getById(IService.class, id, null);
+        return curService;
+    }
+
+    /**
+     * Add model to map.
+     * 
+     * @param firstDataset String
+     * @param modelsList Node...
+     */
+    public static void addGisDataToMap(String dataName, List<IDataModel> modelsList) {
+        try {
+            IService curService = getMapService();
+            IMap map = ApplicationGIS.getActiveMap();
+            if (confirmAddToMap(map, dataName)) {
+                List<ILayer> layerList = new ArrayList<ILayer>();
+                List<IGeoResource> listGeoRes = new ArrayList<IGeoResource>();
+                for (IDataModel gis : modelsList) {
+                    IGeoResource iGeoResource = getResourceForGis(curService, map, gis);
+                    if (iGeoResource != null) {
+                        listGeoRes.add(iGeoResource);
+                    } else {
+                        ILayer layer = findLayerByGisModel(map, gis);
+                        if (layer != null) {
+                            layer.refresh(null);
+                            layerList.add(layer);
+                        }
+                    }
+                }
+                layerList.addAll(ApplicationGIS.addLayersToMap(map, listGeoRes, -1));
+                IPreferenceStore preferenceStore = NeoLoaderPlugin.getDefault().getPreferenceStore();
+                if (preferenceStore.getBoolean(DataLoadPreferences.ZOOM_TO_LAYER)) {
+                    zoomToLayer(layerList);
+                }
+            }
+        } catch (Exception e) {
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+
+    }
+
+    /**
+     * Get geo resource for model
+     * 
+     * @param service IService
+     * @param map IMap
+     * @param gis Node
+     * @return IGeoResource
+     * @throws IOException
+     */
+    private static IGeoResource getResourceForGis(IService service, IMap map, IDataModel gis) throws IOException {
+        if (service != null && findLayerByGisModel(map, gis) == null) {
+            for (IGeoResource iGeoResource : service.resources(null)) {
+                if (iGeoResource.canResolve(IDataModel.class)) {
+                    IDataModel resolvedElement = iGeoResource.resolve(IDataModel.class, null);
+                    if (resolvedElement.getName().equals(gis.getName()) && resolvedElement.getType() == gis.getType()) {
+                        return iGeoResource;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns layer, that contains necessary model
+     * 
+     * @param map map
+     * @param gis model
+     * @return layer or null
+     */
+    public static ILayer findLayerByGisModel(IMap map, IDataModel gis) {
+        try {
+            for (ILayer layer : map.getMapLayers()) {
+                IGeoResource resource = layer.findGeoResource(IDataModel.class);
+                if (resource == null) {
+                    continue;
+                }
+                IDataModel resolvedElement = resource.resolve(IDataModel.class, null);
+                if (resolvedElement.getName().equals(gis.getName()) && resolvedElement.getType() == gis.getType()) {
+                    return layer;
+                }
+            }
+            return null;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Zoom To 1st layers in list
+     * 
+     * @param layers list of layers
+     */
+    public static void zoomToLayer(final List< ? extends ILayer> layers) {
+        ActionUtil.getInstance().runTask(new Runnable() {
+            @Override
+            public void run() {
+                ZoomToLayer zoomCommand = new ZoomToLayer();
+                zoomCommand.selectionChanged(null, new StructuredSelection(layers));
+                zoomCommand.runWithEvent(null, null);
+            }
+        }, true);
+    }
+
+    /**
      * Returns Default Directory path for file dialogs in DriveLoad and NetworkLoad
      * 
      * @return default directory
@@ -105,7 +244,7 @@ public class LoaderUiUtils extends LoaderUtils {
         if (result == null) {
             result = System.getProperty("user.home");
         }
-        
+
         return result;
     }
 

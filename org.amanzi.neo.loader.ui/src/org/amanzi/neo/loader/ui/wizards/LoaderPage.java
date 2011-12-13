@@ -37,11 +37,13 @@ import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
+ * common action for wizards pages
+ * 
  * @author Vladislav_Kondratenko
  */
 public abstract class LoaderPage<T extends IConfiguration> extends WizardPage implements ILoaderPage<T> {
 
-    private ArrayList<ILoader<IData, T>> newloaders = new ArrayList<ILoader<IData, T>>();
+    protected ArrayList<ILoader<IData, T>> pageLoaders = new ArrayList<ILoader<IData, T>>();
     private CoordinateReferenceSystem selectedCRS;
 
     /**
@@ -63,15 +65,14 @@ public abstract class LoaderPage<T extends IConfiguration> extends WizardPage im
         }
     }
 
-    @SuppressWarnings("unchecked")
     /**
      * try to autodefine loader by seted information
-     *
+     * 
      * @param data
      * @return
      */
     protected ILoader< ? extends IData, T> autodefineNew(T data) {
-        ILoader< ? extends IData, T> loader = getNewSelectedLoader();
+        ILoader< ? extends IData, T> loader = getSelectedLoader();
         ILoader< ? extends IData, T> candidate = null;
         if (loader != null) {
             Result validateResult = loader.getValidator().isAppropriate(data.getFilesToLoad());
@@ -81,11 +82,8 @@ public abstract class LoaderPage<T extends IConfiguration> extends WizardPage im
                 candidate = loader;
             }
         }
-        if (newloaders.isEmpty()) {
-            AbstractLoaderWizard<T> wizard = (AbstractLoaderWizard<T>)getWizard();
-            newloaders.addAll(wizard.getNewLoaders());
-        }
-        for (ILoader<IData, T> loadr : newloaders) {
+        definePageLoaders();
+        for (ILoader<IData, T> loadr : pageLoaders) {
             Result validateResult = loadr.getValidator().isAppropriate(data.getFilesToLoad());
             if (validateResult == Result.SUCCESS) {
                 return loadr;
@@ -100,7 +98,7 @@ public abstract class LoaderPage<T extends IConfiguration> extends WizardPage im
     *
     */
     protected void selectCRS() {
-    	CoordinateReferenceSystem result = ActionUtil.getInstance().runTaskWithResult(
+        CoordinateReferenceSystem result = ActionUtil.getInstance().runTaskWithResult(
                 new RunnableWithResult<CoordinateReferenceSystem>() {
 
                     private CoordinateReferenceSystem result;
@@ -140,7 +138,7 @@ public abstract class LoaderPage<T extends IConfiguration> extends WizardPage im
             return;
         }
         selectedCRS = result;
-        updateNew();
+        commonUpdate();
     }
 
     /**
@@ -166,8 +164,11 @@ public abstract class LoaderPage<T extends IConfiguration> extends WizardPage im
         }
     }
 
-    protected void updateNew() {
-        setPageComplete(validateConfigData(getNewConfigurationData()));
+    /**
+     * update configurated page
+     */
+    protected void commonUpdate() {
+        setPageComplete(validateConfigData(getConfigurationData()));
     }
 
     /**
@@ -175,17 +176,24 @@ public abstract class LoaderPage<T extends IConfiguration> extends WizardPage im
      * 
      * @return the loaders descriptions
      */
-    @SuppressWarnings("unchecked")
-    protected String[] getNewLoadersDescriptions() {
-        if (newloaders.isEmpty()) {
-            AbstractLoaderWizard<T> wizard = (AbstractLoaderWizard<T>)getWizard();
-            newloaders.addAll(wizard.getNewLoaders());
-        }
-        String[] result = new String[newloaders.size()];
+    protected String[] getLoadersDescription() {
+        definePageLoaders();
+        String[] result = new String[pageLoaders.size()];
         for (int i = 0; i < result.length; i++) {
-            result[i] = newloaders.get(i).getLoaderInfo().getType();
+            result[i] = pageLoaders.get(i).getLoaderInfo().getName();
         }
         return result;
+    }
+
+    /**
+     * define wizard loaders
+     */
+    @SuppressWarnings("unchecked")
+    protected void definePageLoaders() {
+        if (pageLoaders.isEmpty()) {
+            AbstractLoaderWizard<T> wizard = (AbstractLoaderWizard<T>)getWizard();
+            pageLoaders.addAll(wizard.getWizardLoadersForPage(this.getClass().getName()));
+        }
     }
 
     @Override
@@ -202,14 +210,14 @@ public abstract class LoaderPage<T extends IConfiguration> extends WizardPage im
      * 
      * @param selectionIndex
      */
-    protected void selectNewLoader(int selectionIndex) {
+    protected void selectLoader(int selectionIndex) {
         ILoader<IData, T> loader;
-        if (selectionIndex < 0 || selectionIndex >= newloaders.size()) {
+        if (selectionIndex < 0 || selectionIndex >= pageLoaders.size()) {
             loader = null;
         } else {
-            loader = newloaders.get(selectionIndex);
+            loader = pageLoaders.get(selectionIndex);
         }
-        setSelectedLoaderNew(loader);
+        setSelectedLoader(loader);
     }
 
     /**
@@ -219,10 +227,10 @@ public abstract class LoaderPage<T extends IConfiguration> extends WizardPage im
      * @return
      */
     @SuppressWarnings("unchecked")
-    protected int setSelectedLoaderNew(ILoader< ? extends IData, T> loader) {
+    protected int setSelectedLoader(ILoader< ? extends IData, T> loader) {
         AbstractLoaderWizard<T> wizard = (AbstractLoaderWizard<T>)getWizard();
-        wizard.setSelectedLoaderNew(loader);
-        return loader == null ? -1 : newloaders.indexOf(loader);
+        wizard.setSelectedLoader(loader);
+        return loader == null ? -1 : pageLoaders.indexOf(loader);
     }
 
     /**
@@ -231,18 +239,23 @@ public abstract class LoaderPage<T extends IConfiguration> extends WizardPage im
      * @return the selected loader
      */
     @SuppressWarnings("unchecked")
-    protected ILoader< ? extends IData, T> getNewSelectedLoader() {
+    protected ILoader< ? extends IData, T> getSelectedLoader() {
         AbstractLoaderWizard<T> wizard = (AbstractLoaderWizard<T>)getWizard();
-        return wizard.getNewSelectedLoader();
+        ILoader< ? extends IData, T> loader = wizard.getSelectedLoader();
+        if (pageLoaders.contains(loader)) {
+            return wizard.getSelectedLoader();
+        } else {
+            return null;
+        }
     }
 
     /**
      * @return configuration data instance; if it is <code>NULL</code> return new one;
      */
     @SuppressWarnings("unchecked")
-    public T getNewConfigurationData() {
+    public T getConfigurationData() {
         IWizard wizard = getWizard();
-        return ((AbstractLoaderWizard<T>)wizard).getNewConfigurationData();
+        return ((AbstractLoaderWizard<T>)wizard).getConfigurationData();
     }
 
     /**
@@ -254,8 +267,13 @@ public abstract class LoaderPage<T extends IConfiguration> extends WizardPage im
     protected abstract boolean validateConfigData(T configurationData);
 
     /**
-     *
+     * method for updating page
      */
     protected abstract void update();
 
+    /**
+     * set predefined networkName and loader type if network name didn't setup in previous wizard
+     * then network combobox will be available to choose some networks
+     */
+    protected abstract void setPredifinedValues();
 }

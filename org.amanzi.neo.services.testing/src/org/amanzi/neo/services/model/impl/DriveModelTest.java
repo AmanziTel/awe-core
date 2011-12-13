@@ -385,7 +385,7 @@ public class DriveModelTest extends AbstractNeoServiceTest {
     }
 
     @Test
-    public final void testAddFile() {
+    public final void testAddFile() throws AWEException {
         // add file
         DriveModel dm = null;
         try {
@@ -420,7 +420,7 @@ public class DriveModelTest extends AbstractNeoServiceTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public final void testAddFileNull() {
+    public final void testAddFileNull() throws Exception {
         // add file null
         DriveModel dm = null;
         try {
@@ -442,7 +442,7 @@ public class DriveModelTest extends AbstractNeoServiceTest {
     }
 
     @Test
-    public final void testAddMeasurement() {
+    public final void testAddMeasurement() throws Exception {
         // add measurement with some parameters
         DriveModel dm = null;
         try {
@@ -544,7 +544,7 @@ public class DriveModelTest extends AbstractNeoServiceTest {
     }
 
     @Test
-    public final void testAddMeasurementLatLon() {
+    public final void testAddMeasurementLatLon() throws Exception {
         // add measurement with some parameters
         DriveModel dm = null;
         try {
@@ -589,7 +589,7 @@ public class DriveModelTest extends AbstractNeoServiceTest {
     }
 
     @Test
-    public final void testAddMeasurementLatLonNull() {
+    public final void testAddMeasurementLatLonNull() throws Exception {
         // add measurement with some parameters
         DriveModel dm = null;
         try {
@@ -626,7 +626,7 @@ public class DriveModelTest extends AbstractNeoServiceTest {
     }
 
     @Test
-    public final void testAddMeasurementLatLonEmpty() {
+    public final void testAddMeasurementLatLonEmpty() throws Exception {
         // add measurement with some parameters
         DriveModel dm = null;
         try {
@@ -777,7 +777,7 @@ public class DriveModelTest extends AbstractNeoServiceTest {
     }
 
     @Test
-    public void testGetFiles() {
+    public void testGetFiles() throws Exception {
         List<Node> fileNodes = new ArrayList<Node>();
         // add file
         DriveModel dm = null;
@@ -812,7 +812,7 @@ public class DriveModelTest extends AbstractNeoServiceTest {
     }
 
     @Test
-    public void testGetMeasurements() {
+    public void testGetMeasurements() throws Exception {
         Map<String, List<Node>> fms = new HashMap<String, List<Node>>();
         // add measurement with some parameters
         DriveModel dm = null;
@@ -820,7 +820,7 @@ public class DriveModelTest extends AbstractNeoServiceTest {
             dm = new DriveModel(project, dataset, dsName, DriveTypes.values()[0]);
         } catch (AWEException e) {
             LOGGER.error("Could not create drive model", e);
-            fail();
+            fail(); 
         }
         for (int i = 0; i < 4; i++) {
             String fname = filename + i;

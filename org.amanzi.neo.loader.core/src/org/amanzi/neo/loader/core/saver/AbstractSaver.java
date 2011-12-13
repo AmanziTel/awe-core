@@ -32,6 +32,9 @@ import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.amanzi.neo.services.synonyms.ExportSynonymsManager;
 import org.amanzi.neo.services.synonyms.ExportSynonymsService.ExportSynonymType;
 import org.amanzi.neo.services.synonyms.ExportSynonymsService.ExportSynonyms;
+import org.amanzi.neo.services.ui.events.EventManager;
+import org.amanzi.neo.services.ui.events.ShowOnMapEvent;
+import org.amanzi.neo.services.ui.events.UpdateDataEvent;
 import org.apache.log4j.Logger;
 
 /**
@@ -50,7 +53,7 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
     protected static final char DOT_SEPARATOR = '.';
 
     protected final static ExportSynonymsManager exportManager = ExportSynonymsManager.getManager();
-    // instance of prefernece meneger for getting synonyms
+    // instance of preference manager for getting synonyms
     protected static DataLoadPreferenceManager preferenceManager = new DataLoadPreferenceManager();
     protected Map<String, String[]> preferenceStoreSynonyms;
 
@@ -190,6 +193,7 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
         }
         for (IModel model : useableModels) {
             try {
+                commitTx();
                 exportManager.saveDatasetExportSynonyms(model, synonymsMap.get(model), ExportSynonymType.DATASET);
             } catch (DatabaseException e) {
                 LOGGER.error("Error while saving export synonyms for models", e);
@@ -235,6 +239,10 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
         dbManager.finishThreadTransaction();
         dbManager.commitMainTransaction();
         actionCount = 0;
+        EventManager.getInstance().fireEvent(new UpdateDataEvent());
+        if (isRenderable()) {
+            EventManager.getInstance().fireEvent(new ShowOnMapEvent(useableModels, 900d));
+        }
     }
 
     /**
@@ -246,6 +254,13 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
     protected IProjectModel getActiveProject() throws AWEException {
         return ProjectModel.getCurrentProjectModel();
     }
+
+    /**
+     * check if current saver should be rendered on map
+     * 
+     * @return
+     */
+    protected abstract boolean isRenderable();
 
     @Override
     public void init(T3 configuration, T2 dataElement) throws AWEException {

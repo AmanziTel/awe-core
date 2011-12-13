@@ -23,6 +23,7 @@ import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
+import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveRelationshipTypes;
 import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelTypes;
 import org.apache.commons.lang.StringUtils;
@@ -115,7 +116,7 @@ public class DatasetService extends AbstractService {
      * @since 1.0.0
      */
     public enum DatasetRelationTypes implements RelationshipType {
-        PROJECT, DATASET, CHILD, NEXT, GIS;
+        PROJECT, DATASET, CHILD, NEXT, GIS, SELECTED_PROPERTIES, SUB_COUNTERS;
     }
 
     /**
@@ -733,6 +734,74 @@ public class DatasetService extends AbstractService {
             tx.finish();
         }
         return child;
+    }
+    
+    /**
+     * The method creates a SELECTED_PROPERTIES relationship 
+     * from <code>parent</code> to <code>child</code>
+     * 
+     * @param parent
+     * @param child
+     * @return child node
+     * @throws DatabaseException if something went wrong during creating the relationship
+     */
+    public Node addSelectedPropertiesNode(Node parent) throws DatabaseException {
+        // validate parameters
+        if (parent == null) {
+            throw new IllegalArgumentException("Parent cannot be null");
+        }
+
+        // create relationship
+        Transaction tx = graphDb.beginTx();
+        
+        Node child = null;
+        try {
+            boolean hasChild = parent.hasRelationship(DatasetRelationTypes.SELECTED_PROPERTIES, Direction.OUTGOING);
+            if (!hasChild) {
+                child = createNode(DriveNodeTypes.SELECTED_PROPERTIES);
+                parent.createRelationshipTo(child, DatasetRelationTypes.SELECTED_PROPERTIES);
+            }
+            else {
+                child = parent.getSingleRelationship(DatasetRelationTypes.SELECTED_PROPERTIES, 
+                        Direction.OUTGOING).getEndNode();
+            }
+            tx.success();
+        } catch (Exception e) {
+            LOGGER.error("Could not add selected_properties node.", e);
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
+        return child;
+    }
+    
+    /**
+     * Method to get selected_properties node
+     *
+     * @param parent Parent node
+     * @return
+     * @throws DatabaseException
+     */
+    public Node getSelectedPropertiesNode(Node parent) throws DatabaseException {
+        Node result = null;
+        
+        Transaction tx = graphDb.beginTx();
+        try {
+        	Iterable<Relationship> nodes =
+        			parent.getRelationships(DatasetRelationTypes.SELECTED_PROPERTIES);
+        	
+        	for (Relationship rel : nodes) {
+        		System.out.println(rel.getEndNode().getProperty("name"));
+        	}
+            result = parent.getSingleRelationship(DatasetRelationTypes.SELECTED_PROPERTIES, 
+                    Direction.OUTGOING).getEndNode();
+        } catch (Exception e) {
+            LOGGER.error("Could not get selected_properties node");
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
+        return result;
     }
 
     /**
