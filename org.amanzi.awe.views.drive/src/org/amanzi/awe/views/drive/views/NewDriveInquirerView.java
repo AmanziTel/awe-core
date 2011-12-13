@@ -567,11 +567,12 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
     private JFreeChart createChart() {
         XYBarRenderer xyarearenderer = new EventRenderer();
         eventDataset = new EventDataset();
+        
         NumberAxis rangeAxis = new NumberAxis(Messages.DriveInquirerView_13);
         rangeAxis.setVisible(false);
         domainAxis = new DateAxis(Messages.DriveInquirerView_14);
         XYPlot xyplot = new XYPlot(eventDataset, domainAxis, rangeAxis, xyarearenderer);
-
+        
         xydatasets = new ArrayList<TimeDataset>();
 
         xyplot.setDomainCrosshairVisible(true);
@@ -843,6 +844,7 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
      * @param visible - is visible?
      */
     private void setsVisible(boolean visible) {
+    	chartFrame.setVisible(visible);
         table.getControl().setVisible(visible);
         buttonLine.setVisible(visible);
         slider.setVisible(visible);
@@ -1141,7 +1143,7 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
         /**
          * Create time series
          * 
-         * @param name name of serie
+         * @param name name of series
          * @param propertyName property name
          */
         protected void createSeries(String name, String propertyName) {
@@ -1153,16 +1155,12 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
             		driveModel.findAllElementsByTimestampPeriod(beginGisTime, beginGisTime + length);
             
             int id = 0;
-            double value = 0;
             long timestamp = 0;
             boolean isNeedAdd = true;
             for (IDataElement dataElement : elements) {
             	isNeedAdd = true;
             	Object objectValue = dataElement.get(propertyName);
-            	if (objectValue != null && !objectValue.toString().isEmpty()) {
-            		value = Double.parseDouble(objectValue.toString());
-            	}
-            	else {
+            	if (objectValue == null || objectValue.toString().isEmpty()) {
             		isNeedAdd = false;
             	}
             	Object timestampValue = dataElement.get(DriveModel.TIMESTAMP);
@@ -1534,15 +1532,12 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
     }
 
     @Override
-    public void propertyChange(PropertyChangeEvent event) {
-        // if (propertyListsConstantValue !=
-        // getPreferenceStore().getString(DataLoadPreferences.PROPERY_LISTS)) {
+    public void propertyChange(@SuppressWarnings("deprecation") PropertyChangeEvent event) {
         formPropertyList();
         String[] result = propertyLists.keySet().toArray(new String[0]);
         Arrays.sort(result);
         cPropertyList.setItems(result);
         updatePropertyList();
-        // }
     }
 
 
