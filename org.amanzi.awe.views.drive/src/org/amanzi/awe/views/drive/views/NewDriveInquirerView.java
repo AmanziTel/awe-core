@@ -106,7 +106,7 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
 	
 	} 
 	
-    private static final Logger LOGGER = Logger.getLogger(NewDriveInquirerView.class);
+//    private static final Logger LOGGER = Logger.getLogger(NewDriveInquirerView.class);
 
     /* Data constants */
     public static final String ID = "org.amanzi.awe.views.drive.views.NewDriveInquirerView"; //$NON-NLS-1$
@@ -132,6 +132,7 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
     private Combo cDrive;
     private Combo cPropertyList;
     private JFreeChart chart;
+    private ValueAxis valueAxis;
     private ChartCompositeImpl chartFrame;
     private EventDataset eventDataset;
     private TableViewer table;
@@ -141,8 +142,6 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
     private Composite buttonLine;
     private Label lLogarithmic;
     private Button bLogarithmic;
-    private Label lPalette;
-    private Combo cPalette;
     private Label lPropertyPalette;
     private Combo cPropertyPalette;
     private Spinner sLength;
@@ -157,6 +156,7 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
     private Integer oldTimeLength;
     private Button bAddPropertyList;
     private boolean validDrive;
+    private boolean isLogarithmic;
 
     @Override
     public void createPartControl(Composite parent) {
@@ -240,15 +240,8 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
         lLogarithmic.setText(LOG_LABEL);
         bLogarithmic = new Button(buttonLine, SWT.CHECK);
         bLogarithmic.setSelection(false);
-
-        lPalette = new Label(buttonLine, SWT.NONE);
-        lPalette.setText(PALETTE_LABEL);
-        cPalette = new Combo(buttonLine, SWT.DROP_DOWN | SWT.READ_ONLY);
-        String[] paletteNames = PlatformGIS.getColorBrewer().getPaletteNames();
-        Arrays.sort(paletteNames);
-        cPalette.setItems(paletteNames);
-        cPalette.select(0);
-
+        isLogarithmic = false;
+        
         FormData dCombo = new FormData();
         bLogarithmic.setLayoutData(dCombo);
 
@@ -259,15 +252,6 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
 
         dCombo = new FormData();
         dCombo.left = new FormAttachment(lLogarithmic, 10);
-        dCombo.top = new FormAttachment(cPalette, 5, SWT.CENTER);
-        lPalette.setLayoutData(dCombo);
-
-        dCombo = new FormData();
-        dCombo.left = new FormAttachment(lPalette, 2);
-        cPalette.setLayoutData(dCombo);
-
-        FormData dReport = new FormData();
-        dReport.left = new FormAttachment(cPalette, 2);
 
         label = new Label(child, SWT.FLAT);
         label.setText(Messages.DriveInquirerView_label_start_time);
@@ -372,19 +356,6 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
             public void keyPressed(KeyEvent e) {
             }
         });
-        
-        cPalette.addSelectionListener(new SelectionListener() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-//                fireEventUpdateChart();
-            }
-
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-                widgetSelected(e);
-            }
-        });
         cPropertyPalette.addSelectionListener(new SelectionListener() {
 
             @Override
@@ -446,6 +417,18 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
             public void widgetDefaultSelected(SelectionEvent e) {
                 widgetSelected(e);
             }
+        });
+        bLogarithmic.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                changeValueAxis();
+            }
+
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
         });
     }
     
@@ -568,10 +551,10 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
         XYBarRenderer xyarearenderer = new EventRenderer();
         eventDataset = new EventDataset();
         
-        NumberAxis rangeAxis = new NumberAxis(Messages.DriveInquirerView_13);
-        rangeAxis.setVisible(false);
+        valueAxis = new NumberAxis(Messages.DriveInquirerView_13);
+        valueAxis.setVisible(false);
         domainAxis = new DateAxis(Messages.DriveInquirerView_14);
-        XYPlot xyplot = new XYPlot(eventDataset, domainAxis, rangeAxis, xyarearenderer);
+        XYPlot xyplot = new XYPlot(eventDataset, domainAxis, valueAxis, xyarearenderer);
         
         xydatasets = new ArrayList<TimeDataset>();
 
@@ -590,6 +573,13 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
 
         return jfreechart;
     }
+    
+    private void changeValueAxis() {
+        isLogarithmic = (isLogarithmic == false) ? true : false;
+        updateDatasets();
+        updateChart();
+    }
+    
 
     /**
      * Init start data
@@ -732,16 +722,29 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
             xyplot.setRangeAxisLocation(i, null);
         }
         xydatasets.clear();
-
+        
         for (int i = 1; i <= getCurrentPropertyCount(); i++) {
             TimeDataset xydataset = new TimeDataset();
             StandardXYItemRenderer standardxyitemrenderer = new StandardXYItemRenderer();
             standardxyitemrenderer.setBaseShapesFilled(true);
             xyplot.setDataset(i, xydataset);
             xyplot.setRenderer(i, standardxyitemrenderer);
-            NumberAxis numberaxis = new NumberAxis(getPropertyYAxisName(i));
-            numberaxis.setAutoRangeIncludesZero(false);
-            xyplot.setRangeAxis(i, numberaxis);
+            
+            NumberAxis valueAxis = null;
+            if (isLogarithmic) {
+            	valueAxis = new LogarithmicAxis(getPropertyYAxisName(i));
+            }
+            else {
+            	valueAxis = new NumberAxis(getPropertyYAxisName(i));
+            }
+            if (isLogarithmic) {
+            	((LogarithmicAxis)valueAxis).setAllowNegativesFlag(true);
+            	((LogarithmicAxis)valueAxis).setAutoRange(true);
+            }
+            else {
+            	valueAxis.setAutoRangeIncludesZero(true);
+            }
+            xyplot.setRangeAxis(i, valueAxis);
             xyplot.setRangeAxisLocation(i, AxisLocation.BOTTOM_OR_LEFT);
             xyplot.mapDatasetToRangeAxis(i, i);
             xydatasets.add(xydataset);
