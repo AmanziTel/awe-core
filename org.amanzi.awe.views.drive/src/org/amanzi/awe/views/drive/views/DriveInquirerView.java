@@ -35,7 +35,6 @@ import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.impl.DriveModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.amanzi.neo.services.utils.Pair;
-import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.Preferences.IPropertyChangeListener;
 import org.eclipse.core.runtime.Preferences.PropertyChangeEvent;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -50,6 +49,8 @@ import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
@@ -101,8 +102,8 @@ import org.jfree.experimental.chart.swt.ChartComposite;
  * @author Kasnitskij_V
  * @since 1.0.0
  */
-public class NewDriveInquirerView extends ViewPart implements IPropertyChangeListener {
-	public NewDriveInquirerView() {
+public class DriveInquirerView extends ViewPart implements IPropertyChangeListener {
+	public DriveInquirerView() {
 	
 	} 
 	
@@ -179,6 +180,7 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
         Label label = new Label(child, SWT.FLAT);
         label.setText(Messages.DriveInquirerView_label_drive);
         cDrive = new Combo(child, SWT.DROP_DOWN | SWT.READ_ONLY);
+        cDrive.setTouchEnabled(true);
 
         GridData layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
         layoutData.minimumWidth = MIN_FIELD_WIDTH;
@@ -285,6 +287,19 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
      *add listeners
      */
     private void addListeners() {
+    	cDrive.addMouseListener(new MouseListener() {
+			
+			@Override
+			public void mouseUp(MouseEvent e) {}
+			
+			@Override
+			public void mouseDown(MouseEvent e) {
+			    cDrive.setItems(getDriveItems());
+			}
+			
+			@Override
+			public void mouseDoubleClick(MouseEvent e) {}
+		});
         cDrive.addSelectionListener(new SelectionListener() {
 
             @Override
@@ -402,7 +417,7 @@ public class NewDriveInquirerView extends ViewPart implements IPropertyChangeLis
             @Override
             public void widgetSelected(SelectionEvent e) {
                 Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
-                NewDriveInquirerPropertyConfig pdialog = new NewDriveInquirerPropertyConfig(shell, getDriveModel());
+                DriveInquirerPropertyConfig pdialog = new DriveInquirerPropertyConfig(shell, getDriveModel());
                 if (pdialog.open() == SWT.OK) {
                     formPropertyList();
                     changeDrive();

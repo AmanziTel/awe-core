@@ -7,7 +7,7 @@
             name="Drive"
             icon="icons/drive.png"
             category="org.amanzi.awe.views"
-            class="org.amanzi.awe.views.drive.views.NewDriveInquirerView"
+            class="org.amanzi.awe.views.drive.views.DriveInquirerView"
             id="org.amanzi.awe.views.network.view.NewDriveInquirerView">
       </view>
    </extension>
