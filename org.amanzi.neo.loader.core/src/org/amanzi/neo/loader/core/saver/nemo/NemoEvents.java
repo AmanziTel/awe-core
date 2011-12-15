@@ -8342,7 +8342,7 @@ public enum NemoEvents {
             return parsedParameters;
         }
     };
-    public static String FIRST_CONTEXT_NAME = "FIRST_CONTEXT_NAMEFIRST_CONTEXT_NAME";
+    public static String FIRST_CONTEXT_NAME = "FIRST_CONTEXT_NAME";
     public static String SUB_NODES = "SUB_NODES";
     public static String MM_NODES = "MM_NODES";
     public static String MS_NODES = "MS_NODES";
