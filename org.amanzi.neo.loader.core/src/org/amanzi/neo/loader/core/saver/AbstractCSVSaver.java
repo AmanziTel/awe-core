@@ -193,7 +193,7 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
                 handleLine(dataElement);
             }
         } catch (DatabaseException e) {
-            LOGGER.error("Error while saving element on line " + lineCounter, e);
+            LOGGER.info("Error while saving element on line " + lineCounter, e);
             rollbackTx();
             throw new DatabaseException(e);
         } catch (Exception e) {
