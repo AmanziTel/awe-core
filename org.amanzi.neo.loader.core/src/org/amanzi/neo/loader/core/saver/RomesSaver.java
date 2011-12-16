@@ -16,6 +16,7 @@ package org.amanzi.neo.loader.core.saver;
 import java.io.File;
 import java.util.List;
 
+import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.DatasetService.DriveTypes;
@@ -73,6 +74,7 @@ public class RomesSaver extends AbstractDriveSaver {
         String event = getValueFromRow(EVENT, value);
         String sector_id = getValueFromRow(SECTOR_ID, value);
         if (time == null || latitude == null || longitude == null || timestamp == null) {
+            AweConsolePlugin.info(String.format("Line %s not saved.", lineCounter));
             LOGGER.info(String.format("Line %s not saved.", lineCounter));
             return;
         }

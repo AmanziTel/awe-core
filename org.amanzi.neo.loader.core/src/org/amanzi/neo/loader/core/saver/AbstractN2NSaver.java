@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.parser.CSVContainer;
 import org.amanzi.neo.services.AbstractService;
@@ -106,6 +107,7 @@ public abstract class AbstractN2NSaver extends AbstractCSVSaver<INetworkModel> {
             n2nModel.linkNode(findedServiceSector.iterator().next(), findedNeighSector.iterator().next(), properties);
             addSynonyms(n2nModel, properties);
         } else {
+            AweConsolePlugin.info("Cann't find service or neighbour sector on line " + lineCounter);
             LOGGER.warn("cann't find service or neighbour sector on line " + lineCounter);
         }
 

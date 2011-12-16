@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.DatasetService.DriveTypes;
@@ -87,6 +88,7 @@ public class TemsSaver extends AbstractDriveSaver {
         params.clear();
         String time = getValueFromRow(TIME, value);
         if (time == null) {
+            AweConsolePlugin.error("There is no time value in row" + value);
             LOGGER.error("There is no time value in row" + value);
             return;
         }
@@ -160,11 +162,13 @@ public class TemsSaver extends AbstractDriveSaver {
             ec_io = (Integer)getSynonymValueWithAutoparse(ALL_PILOT_SET_EC_IO + INDEX_FIRST_PILOT_ELEMNT, value);
             measurement_count = (Integer)getSynonymValueWithAutoparse(ALL_PILOT_SET_COUNT, value);
         } catch (Exception e) {
+            AweConsolePlugin.error("Failed to parse a field on line " + lineCounter + ": " + e.getMessage());
             LOGGER.error("Failed to parse a field on line " + lineCounter + ": " + e.getMessage());
             return;
         }
 
         if (measurement_count > MAXIMUM_MEASURMENT_COUNT) {
+            AweConsolePlugin.error("Measurement count " + measurement_count + " > " + MAXIMUM_MEASURMENT_COUNT);
             LOGGER.error("Measurement count " + measurement_count + " > " + MAXIMUM_MEASURMENT_COUNT);
             measurement_count = MAXIMUM_MEASURMENT_COUNT;
         }
@@ -202,6 +206,7 @@ public class TemsSaver extends AbstractDriveSaver {
                     tempSignal.getChanarray()[0] += Math.pow(10.0, ((ec_io) / 10.0));
                     tempSignal.getChanarray()[1] += 1;
                 } catch (Exception e) {
+                    AweConsolePlugin.error("Error parsing column " + i + " for EC/IO, Channel or PN: " + e.getMessage());
                     LOGGER.error("Error parsing column " + i + " for EC/IO, Channel or PN: " + e.getMessage(), e);
                 }
             }

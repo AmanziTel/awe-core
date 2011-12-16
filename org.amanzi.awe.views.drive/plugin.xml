@@ -7,8 +7,8 @@
             name="Drive"
             icon="icons/drive.png"
             category="org.amanzi.awe.views"
-            class="org.amanzi.awe.views.drive.views.NewDriveInquirerView"
-            id="org.amanzi.awe.views.drive.view.DriveInquirerView">
+            class="org.amanzi.awe.views.drive.views.DriveInquirerView"
+            id="org.amanzi.awe.views.DriveInquirerView">
       </view>
    </extension>
    
@@ -17,13 +17,13 @@
       <perspectiveExtension
             targetID="org.amanzi.awe.perspective">
          <view
-               id="org.amanzi.awe.views.drive.view.DriveInquirerView"
+               id="org.amanzi.awe.views.DriveInquirerView"
                relationship="stack"
                relative="net.refractions.udig.catalog.ui.CatalogView"
                visible="true">
          </view>
          <viewShortcut
-               id="org.amanzi.awe.views.drive.view.DriveInquirerView">
+               id="org.amanzi.awe.views.DriveInquirerView">
          </viewShortcut>
       </perspectiveExtension>
    </extension>

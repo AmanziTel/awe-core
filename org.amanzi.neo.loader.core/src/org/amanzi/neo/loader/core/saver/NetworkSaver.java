@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
@@ -106,6 +107,7 @@ public class NetworkSaver extends AbstractNetworkSaver {
      */
     private IDataElement createSite(IDataElement root, List<String> row, String siteElementId) throws AWEException {
         if (!isCorrect(INetworkModel.LATITUDE, row) || !isCorrect(INetworkModel.LONGITUDE, row)) {
+            AweConsolePlugin.info("Missing site name on line:" + lineCounter);
             LOGGER.info("Missing site name on line:" + lineCounter);
             return null;
         }
@@ -119,6 +121,7 @@ public class NetworkSaver extends AbstractNetworkSaver {
         findedElement = parametrizedModel.findElement(siteMap);
         if (findedElement == null) {
             findedElement = parametrizedModel.createElement(root, siteMap);
+            increaseCount(NetworkElementNodeType.SITE.getId());
         }
         resetRowValueBySynonym(row, INetworkModel.LONGITUDE);
         resetRowValueBySynonym(row, INetworkModel.LATITUDE);
@@ -136,6 +139,7 @@ public class NetworkSaver extends AbstractNetworkSaver {
      */
     private void createSector(IDataElement root, List<String> row, String sectorElementId) throws AWEException {
         if (root == null) {
+            AweConsolePlugin.info("There is no parent element for sector on line: " + lineCounter);
             LOGGER.info("there is no parent element for sector on line: " + lineCounter);
             return;
         }
@@ -150,6 +154,7 @@ public class NetworkSaver extends AbstractNetworkSaver {
         IDataElement findedElement = parametrizedModel.findElement(sectorMap);
         if (findedElement == null) {
             parametrizedModel.createElement(root, sectorMap);
+            increaseCount(NetworkElementNodeType.SECTOR.getId());
             addSynonyms(parametrizedModel, sectorMap);
         } else {
             LOGGER.info("sector" + sectorMap + " is already exist;line: " + lineCounter);
@@ -177,6 +182,8 @@ public class NetworkSaver extends AbstractNetworkSaver {
             collectMainElements(mapProperty, name, nodeType);
 
             findedElement.add(parametrizedModel.createElement(root, mapProperty));
+            
+            increaseCount(nodeType.getId());
 
             addSynonyms(parametrizedModel, mapProperty);
         }
@@ -215,6 +222,7 @@ public class NetworkSaver extends AbstractNetworkSaver {
                 siteName = getSynonymValueWithAutoparse(DEFAULT_NETWORK_STRUCTURE[SECTOR_STRUCTURE_ID - 1].getId(), row).toString();
                 siteMap.put(AbstractService.NAME, autoParse(AbstractService.NAME, siteName.substring(0, siteName.length() - 1)));
             } else {
+                AweConsolePlugin.info("Missing site name based on SectorName on line:" + lineCounter);
                 LOGGER.info("Missing site name based on SectorName on line:" + lineCounter);
                 return false;
             }

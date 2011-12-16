@@ -28,6 +28,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.loader.core.CountingFileInputStream;
 import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.ProgressEventImpl;
@@ -217,11 +218,13 @@ public class CommonCSVParser<T1 extends ISaver<IModel, CSVContainer, T2>, T2 ext
                 }
             }
         } catch (IOException e) {
+            AweConsolePlugin.error("Cann't define delimeters");
             LOGGER.error("Cann't define delimeters", e);
         } finally {
             try {
                 read.close();
             } catch (IOException e) {
+                AweConsolePlugin.error("Cann't close read stream");
                 LOGGER.error("Cann't close read stream", e);
                 e.printStackTrace();
             };
@@ -235,6 +238,7 @@ public class CommonCSVParser<T1 extends ISaver<IModel, CSVContainer, T2>, T2 ext
             is.close();
             reader.close();
         } catch (IOException e) {
+            AweConsolePlugin.error("Cannt't close stream");
             LOGGER.error("cannt't close stream", e);
         }
 
