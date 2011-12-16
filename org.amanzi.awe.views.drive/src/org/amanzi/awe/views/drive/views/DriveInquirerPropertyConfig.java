@@ -48,7 +48,7 @@ import org.eclipse.swt.widgets.TableColumn;
  * @author NiCK
  * @since 1.0.0
  */
-public class NewDriveInquirerPropertyConfig extends AbstractDialog<Integer> {
+public class DriveInquirerPropertyConfig extends AbstractDialog<Integer> {
     //private static final Logger LOGGER = Logger.getLogger(DriveInquirerPropertyConfig.class);
 
     private final IDriveModel dataset;
@@ -71,7 +71,7 @@ public class NewDriveInquirerPropertyConfig extends AbstractDialog<Integer> {
      * @param parent
      * @param title
      */
-    public NewDriveInquirerPropertyConfig(Shell parent, IDriveModel dataset) {
+    public DriveInquirerPropertyConfig(Shell parent, IDriveModel dataset) {
     	super(parent, "Dataset properties configura\tion", SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.CENTER);
         this.dataset = dataset;
         int status = SWT.CANCEL;
