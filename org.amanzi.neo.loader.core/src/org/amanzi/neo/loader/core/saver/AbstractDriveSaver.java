@@ -308,6 +308,7 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<IDriveModel> {
     protected void initializeNecessaryModels() throws AWEException {
         parametrizedModel = getActiveProject().getDataset(
                 configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME), getDriveType());
+        useableModels.add(parametrizedModel);
     }
 
     /**

@@ -265,7 +265,7 @@ public class LaunchLoader extends AbstractHandler {
                         saverList.add((ISaver<IModel, IData, IConfiguration>)elementSaver
                                 .createExecutableExtension(CLASS_ATTRIBUTE));
                     } catch (CoreException e) {
-                        LOGGER.error("Core exception while try to define saver ", e);
+                        LOGGER.info("Core exception while try to define saver ", e);
                         return null;
                     }
                 }

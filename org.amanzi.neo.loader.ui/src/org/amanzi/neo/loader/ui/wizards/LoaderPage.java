@@ -15,11 +15,14 @@ package org.amanzi.neo.loader.ui.wizards;
 
 import java.util.ArrayList;
 
+import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.ILoader;
 import org.amanzi.neo.loader.core.IValidateResult.Result;
 import org.amanzi.neo.loader.core.saver.IData;
 import org.amanzi.neo.loader.ui.preferences.CommonCRSPreferencePage;
+import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.amanzi.neo.services.ui.utils.ActionUtil;
 import org.amanzi.neo.services.utils.RunnableWithResult;
 import org.eclipse.core.runtime.CoreException;
@@ -53,6 +56,22 @@ public abstract class LoaderPage<T extends IConfiguration> extends WizardPage im
      */
     protected LoaderPage(String pageName) {
         super(pageName);
+    }
+
+    /**
+     * put project attribute to config in all loaders elements
+     */
+    protected void setProjectNamesToLoaders() {
+        for (ILoader<IData, T> loader : pageLoaders) {
+            setSelectedLoader(loader);
+            try {
+                getConfigurationData().getDatasetNames().put(ConfigurationDataImpl.PROJECT_PROPERTY_NAME,
+                        ProjectModel.getCurrentProjectModel().getName());
+            } catch (AWEException e) {
+                // TODO Handle AWEException
+                throw (RuntimeException)new RuntimeException().initCause(e);
+            }
+        }
     }
 
     @Override

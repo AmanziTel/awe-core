@@ -136,6 +136,7 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
                 break;
             }
         }
+        
         LOGGER.info("File " + currentFile.getName() + "  data saving finished in: " + getOperationTime(startTime));
     }
 
