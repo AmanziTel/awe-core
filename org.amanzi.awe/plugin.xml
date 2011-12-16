@@ -158,6 +158,13 @@
             id="org.amanzi.awe.views">
       </category>
    </extension>
+   <extension
+         point="net.refractions.udig.catalog.temporaryResource">
+      <resource
+            descriptorClass="org.amanzi.awe.Resource1"
+            factory="org.amanzi.awe.TemporaryResourceFactory1">
+      </resource>
+   </extension>
    
 
 </plugin>

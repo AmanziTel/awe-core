@@ -20,6 +20,7 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 
+import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.parser.CSVContainer;
 import org.amanzi.neo.loader.core.saver.nemo.NemoEvents;
@@ -87,6 +88,7 @@ public class Nemo1xSaver extends Nemo2xSaver {
             try {
                 date = EVENT_DATE_FORMAT.parse(dataElement.getFirstLine().split(NEMO_FIRST_LINE_SPLIT)[2]);
             } catch (Exception e) {
+                AweConsolePlugin.error("Wrong time format\n" + e.getLocalizedMessage());
                 LOGGER.error("Wrong time format\n" + e.getLocalizedMessage(), e);
                 date = new Date();
             }

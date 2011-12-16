@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
@@ -77,16 +78,19 @@ public class FrequencyConstraintSaver extends AbstractN2NSaver {
     @Override
     protected void saveLine(List<String> row) throws AWEException {
         if (!isCorrect(SECTOR, row)) {
+            AweConsolePlugin.error("Sector name not found on line: " + lineCounter);
             LOGGER.error("Sector name not found on line: " + lineCounter);
             return;
         }
         clearTemporalyDataMaps();
         Object sectorName = getSynonymValueWithAutoparse(SECTOR, row);
         if (sectorName == null) {
+            AweConsolePlugin.error("Incorrect sector name on line: " + lineCounter);
             LOGGER.error("Incorrect sector name on line: " + lineCounter);
             return;
         }
         if (!isCorrect(FR_TRX_ID, row)) {
+            AweConsolePlugin.error("TRX id  not found on line: " + lineCounter);
             LOGGER.error("TRX id  not found on line: " + lineCounter);
             return;
         }
@@ -96,12 +100,14 @@ public class FrequencyConstraintSaver extends AbstractN2NSaver {
         Set<IDataElement> findedSector = parametrizedModel.findElementByPropertyValue(NetworkElementNodeType.SECTOR,
                 AbstractService.NAME, sectorName);
         if (findedSector.isEmpty()) {
+            AweConsolePlugin.error("Sector " + sectorName + " not found");
             LOGGER.error("sector " + sectorName + " not found");
         }
 
         // link trx elements and frequency spectrum element
         List<IDataElement> listTRX = getRequiredTrxs(trxId, findedSector.iterator().next());
         if (listTRX.size() == 0) {
+            AweConsolePlugin.info("There are no trx for sector " + sectorName);
             LOGGER.info("There are no trx for sector " + sectorName);
             return;
         }

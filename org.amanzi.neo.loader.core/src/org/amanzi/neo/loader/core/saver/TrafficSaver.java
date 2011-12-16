@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.DatasetService.DatasetTypes;
@@ -85,6 +86,7 @@ public class TrafficSaver extends AbstractNetworkSaver {
             parametrizedModel.completeProperties(findedSector, SECTOR_MAP, true);
             addSynonyms(parametrizedModel, SECTOR_MAP);
         } else {
+            AweConsolePlugin.error("Traffic property not found on line:" + lineCounter);
             LOGGER.error("traffic property not found on line:" + lineCounter);
         }
     }
