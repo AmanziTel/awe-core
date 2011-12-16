@@ -209,7 +209,7 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
      * 
      * @param timestamp the new value of timestamp
      */
-    protected void updateTimestamp(long timestamp) {
+    public void updateTimestamp(long timestamp) {
         if (timestamp < min_timestamp) {
             min_timestamp = timestamp;
         }

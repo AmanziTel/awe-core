@@ -77,23 +77,8 @@ public class CountersModel extends MeasurementModel implements ICountersModel {
     }
 
     @Override
-    public void updateTimestamp(long timestamp) {
-        super.updateTimestamp(timestamp);
-    }
-
-    @Override
     public ICountersType getCountersType() {
         return null;
-    }
-
-    @Override
-    public long getMaxTimestamp() {
-        return super.getMaxTimestamp();
-    }
-
-    @Override
-    public long getMinTimestamp() {
-        return super.getMinTimestamp();
     }
 
     @Override

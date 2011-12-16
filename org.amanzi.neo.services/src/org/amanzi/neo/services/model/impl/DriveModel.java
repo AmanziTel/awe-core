@@ -342,11 +342,6 @@ public class DriveModel extends MeasurementModel implements IDriveModel {
     }
 
     @Override
-    public void updateTimestamp(long timestamp) {
-        super.updateTimestamp(timestamp);
-    }
-
-    @Override
     public Iterable<IDataElement> getChildren(IDataElement parent) {
         // validate
         if (parent == null) {
