@@ -438,7 +438,6 @@ public class NodeToNodeRelationsView extends ViewPart {
         tableViewer.addFilter(neighbourFilter);
     }
 
-    @SuppressWarnings("unchecked")
     private void addListeners() {
         cbNetwork.addSelectionListener(new SelectionListener() {
             @Override

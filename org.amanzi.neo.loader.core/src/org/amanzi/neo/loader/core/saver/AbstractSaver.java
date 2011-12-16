@@ -18,6 +18,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.db.manager.DatabaseManagerFactory;
 import org.amanzi.neo.db.manager.IDatabaseManager;
 import org.amanzi.neo.loader.core.IConfiguration;
@@ -60,6 +61,9 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
     // variables required for export synonyms saving
     protected List<IDataModel> useableModels = new LinkedList<IDataModel>();
     protected Map<IModel, ExportSynonyms> synonymsMap = new HashMap<IModel, ExportSynonyms>();
+
+    // map for statistics
+    public static Map<String, Long> statisticsValues = new HashMap<String, Long>();
 
     /**
      * action threshold for commit
@@ -163,6 +167,7 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
                 synonymsMap.put(model, exportManager.createExportSynonym(model, ExportSynonymType.DATASET));
             }
         } catch (DatabaseException e) {
+            AweConsolePlugin.error("Error while creating export synonyms for models");
             LOGGER.error("Error while creating export synonyms for models", e);
             throw new DatabaseException(e);
         }
@@ -196,6 +201,7 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
                 commitTx();
                 exportManager.saveDatasetExportSynonyms(model, synonymsMap.get(model), ExportSynonymType.DATASET);
             } catch (DatabaseException e) {
+                AweConsolePlugin.error("Error while saving export synonyms for models");
                 LOGGER.error("Error while saving export synonyms for models", e);
                 throw new DatabaseException(e);
             }
@@ -265,5 +271,19 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
     @Override
     public void init(T3 configuration, T2 dataElement) throws AWEException {
         DatabaseManagerFactory.getDatabaseManager().startThreadTransaction();
+    }
+
+    /**
+     * Increases count of type element
+     * 
+     * @param type
+     */
+    public void increaseCount(String type) {
+        if (statisticsValues.containsKey(type)) {
+            Long lastValue = statisticsValues.get(type);
+            statisticsValues.put(type, lastValue + 1);
+        } else {
+            statisticsValues.put(type, (long)1);
+        }
     }
 }

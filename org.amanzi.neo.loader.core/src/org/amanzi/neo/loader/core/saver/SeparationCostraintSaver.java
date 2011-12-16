@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.DatasetService.DatasetTypes;
@@ -72,6 +73,7 @@ public class SeparationCostraintSaver extends AbstractNetworkSaver {
     @Override
     protected void saveLine(List<String> value) throws AWEException {
         if (!isCorrect(SECTOR, value)) {
+            AweConsolePlugin.error("Cant find sector column on line: " + lineCounter);
             LOGGER.error("cant find sector column on line: " + lineCounter);
             return;
         }
@@ -89,6 +91,7 @@ public class SeparationCostraintSaver extends AbstractNetworkSaver {
             collectedParameters.put(AbstractService.TYPE, NetworkElementNodeType.SECTOR.getId());
             addSynonyms(parametrizedModel, collectedParameters);
         } else {
+            AweConsolePlugin.error("Traffic property not found on line:" + lineCounter);
             LOGGER.error("traffic property not found on line:" + lineCounter);
         }
     }

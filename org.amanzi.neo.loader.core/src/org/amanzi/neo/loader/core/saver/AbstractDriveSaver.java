@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.parser.CSVContainer;
 import org.amanzi.neo.services.DatasetService.DatasetTypes;
@@ -161,6 +162,7 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<IDriveModel> {
                 try {
                     return Double.valueOf(m.group(1));
                 } catch (NumberFormatException e2) {
+                    AweConsolePlugin.error(String.format("Can't get Coordinate from: %s", stringValue));
                     LOGGER.error(String.format("Can't get Coordinate from: %s", stringValue));
                 }
             }
@@ -226,6 +228,7 @@ public abstract class AbstractDriveSaver extends AbstractCSVSaver<IDriveModel> {
                 return workDate.getTimeInMillis();
 
             } catch (Exception e) {
+                AweConsolePlugin.error(String.format("Can't parse time: %s", time));
                 LOGGER.error(String.format("Can't parse time: %s", time));
 
             }

@@ -12,7 +12,6 @@
  */
 package org.amanzi.awe.views.explorer;
 
-import org.amanzi.neo.services.ui.events.EventManager;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.ImageDescriptor;

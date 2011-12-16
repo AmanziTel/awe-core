@@ -15,12 +15,17 @@ package org.amanzi.neo.loader.core.parser;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.ILoaderProgressListener;
 import org.amanzi.neo.loader.core.IProgressEvent;
+import org.amanzi.neo.loader.core.LoaderMessages;
 import org.amanzi.neo.loader.core.ProgressEventImpl;
+import org.amanzi.neo.loader.core.saver.AbstractSaver;
 import org.amanzi.neo.loader.core.saver.IData;
 import org.amanzi.neo.loader.core.saver.ISaver;
 import org.amanzi.neo.services.exceptions.AWEException;
@@ -114,6 +119,7 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
      * @throws AWEException
      */
     protected void parseFile(File file) throws AWEException {
+        AbstractSaver.statisticsValues = new HashMap<String,Long>();
         currentFile = file;
         if (tempFile == null || tempFile != currentFile) {
             isNewFile = true;
@@ -126,6 +132,7 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
                 try {
                     saver.saveElement(element);
                 } catch (DatabaseException e) {
+                    AweConsolePlugin.error("Error while saving line ");
                     LOGGER.error("Error while saving line ", e);
                     saver.finishUp();
                     throw new DatabaseException(e);
@@ -136,7 +143,12 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
                 break;
             }
         }
-        
+        Map<String, Long> statisticsValues = AbstractSaver.statisticsValues;
+        for(String type:statisticsValues.keySet()){
+            AweConsolePlugin.info(LoaderMessages.getFormattedString(LoaderMessages.Loading,type, statisticsValues.get(type).toString()));
+        }
+        AweConsolePlugin.info(LoaderMessages.getFormattedString(LoaderMessages.TimeOfDataSaving, currentFile.getName(),
+                getOperationTime(startTime)));
         LOGGER.info("File " + currentFile.getName() + "  data saving finished in: " + getOperationTime(startTime));
     }
 
@@ -167,6 +179,8 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
         for (File file : config.getFilesToLoad()) {
             long startTime = System.currentTimeMillis();
             parseFile(file);
+            AweConsolePlugin.info(LoaderMessages.getFormattedString(LoaderMessages.TimeOfFileLoading, currentFile.getName(),
+                    getOperationTime(startTime)));
             LOGGER.info("File " + currentFile.getName() + " Parsing/Saving data finished in: " + getOperationTime(startTime));
         }
         try {
@@ -174,6 +188,8 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
         } catch (Exception e) {
             throw new DatabaseException(e);
         }
+        AweConsolePlugin
+                .info(LoaderMessages.getFormattedString(LoaderMessages.AllTimeOfLoading, getOperationTime(globalStartTime)));
         LOGGER.info("All files Parsing/Saving finished in: " + getOperationTime(globalStartTime));
     }
 
@@ -203,6 +219,7 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
 
                 @Override
                 public void handleException(Throwable exception) {
+                    AweConsolePlugin.error("Error while SafeRunner execute ");
                     LOGGER.error("Error while SafeRunner execute ", exception);
                 }
             });

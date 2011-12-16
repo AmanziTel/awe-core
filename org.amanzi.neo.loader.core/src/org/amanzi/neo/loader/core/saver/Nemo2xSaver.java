@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.parser.CSVContainer;
 import org.amanzi.neo.loader.core.saver.drive.DriveEvents;
@@ -225,6 +226,7 @@ public class Nemo2xSaver extends AbstractDriveSaver {
             }
         }
         createSubNodes(eventId, subNodes, timestamp);
+        increaseCount(eventId);
     }
 
     /**
@@ -250,6 +252,7 @@ public class Nemo2xSaver extends AbstractDriveSaver {
         try {
             parParam = event.fill(getVersion(), parameters);
         } catch (Exception e1) {
+            AweConsolePlugin.error(String.format("Line %s not parsed", element.toString()));
             LOGGER.error(String.format("Line %s not parsed", element.toString()));
             return params;
         }
@@ -289,6 +292,7 @@ public class Nemo2xSaver extends AbstractDriveSaver {
                 date = EVENT_DATE_FORMAT.parse((String)parParam.get("Date"));
 
             } catch (Exception e) {
+                AweConsolePlugin.error("Wrong time format" + e.getLocalizedMessage());
                 LOGGER.error("Wrong time format" + e.getLocalizedMessage());
                 date = new Date();
             }

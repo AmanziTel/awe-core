@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.parser.CSVContainer;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceManager;
@@ -143,6 +144,7 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
             createExportSynonymsForModels();
         } catch (Exception e) {
             rollbackTx();
+            AweConsolePlugin.error("Exception on creating root Model");
             LOGGER.error("Exception on creating root Model", e);
             throw new DatabaseException(e);
         }
@@ -193,10 +195,12 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
                 handleLine(dataElement);
             }
         } catch (DatabaseException e) {
-            LOGGER.info("Error while saving element on line " + lineCounter, e);
+            AweConsolePlugin.exception(e);
+            LOGGER.error("Error while saving element on line " + lineCounter, e);
             rollbackTx();
             throw new DatabaseException(e);
         } catch (Exception e) {
+            AweConsolePlugin.info("Exception while saving element on line " + lineCounter);
             LOGGER.info("Exception while saving element on line " + lineCounter, e);
             commitTx();
         }
