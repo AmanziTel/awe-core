@@ -12,6 +12,7 @@ Require-Bundle: org.amanzi.neo.services;bundle-version="1.0.0",
 Export-Package: au.com.bytecode.opencsv,
  org.amanzi.neo.loader.core,
  org.amanzi.neo.loader.core.parser,
+ org.amanzi.neo.loader.core.parser.xml,
  org.amanzi.neo.loader.core.preferences,
  org.amanzi.neo.loader.core.saver
 Bundle-ClassPath: .,
