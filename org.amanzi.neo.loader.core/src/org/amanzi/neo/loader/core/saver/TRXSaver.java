@@ -112,7 +112,6 @@ public class TRXSaver extends AbstractNetworkSaver {
 
         if (band.equals(Band.BAND_900.getId())) {
             extended = (String)getSynonymValueWithAutoparse(EXTENDED, value);
-
         }
         Boolean isBcch = false;
         Integer hoppingType = (Integer)getSynonymValueWithAutoparse(HOPPING_TYPE, value);

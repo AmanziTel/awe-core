@@ -106,9 +106,6 @@ public class DriveInquirerView extends ViewPart implements IPropertyChangeListen
 	public DriveInquirerView() {
 	
 	} 
-	
-//    private static final Logger LOGGER = Logger.getLogger(NewDriveInquirerView.class);
-
     /* Data constants */
     public static final String ID = "org.amanzi.awe.views.drive.views.NewDriveInquirerView"; //$NON-NLS-1$
     private static final int MIN_FIELD_WIDTH = 50;
@@ -421,10 +418,6 @@ public class DriveInquirerView extends ViewPart implements IPropertyChangeListen
                 if (pdialog.open() == SWT.OK) {
                     formPropertyList();
                     changeDrive();
-//                    String[] result = propertyLists.keySet().toArray(new String[0]);
-//                    Arrays.sort(result);
-//                    cPropertyList.setItems(result);
-//                    updatePropertyList();
                 }
             }
 
@@ -441,8 +434,6 @@ public class DriveInquirerView extends ViewPart implements IPropertyChangeListen
 
 			@Override
 			public void widgetDefaultSelected(SelectionEvent e) {
-				// TODO Auto-generated method stub
-				
 			}
         });
     }
@@ -805,11 +796,9 @@ public class DriveInquirerView extends ViewPart implements IPropertyChangeListen
             String property = currentProperies.get(i);
             xydataset.updateDataset(property, time, length, property);
         }
-//        eventDataset.updateDataset(cEvent.getText(), time, length, cEvent.getText());
         setsVisible(true);
         
         chart.fireChartChanged();
-//        fireEventUpdateChart();
     }
     
     /**
@@ -919,17 +908,6 @@ public class DriveInquirerView extends ViewPart implements IPropertyChangeListen
         date.setSeconds(dateStart.getSeconds());
         return date.getTime();
     }
-    
-    /**
-     * Gets index of crosshair data item
-     * 
-     * @param xydataset
-     * @param crosshair
-     * @return index or null
-     */
-    private Integer getCrosshairIndex(TimeDataset dataset, Number crosshair) {
-        return getCrosshairIndex(dataset.collection, crosshair);
-    }
 
     /**
      * Returns Crosshair Index
@@ -1008,10 +986,6 @@ public class DriveInquirerView extends ViewPart implements IPropertyChangeListen
 
         @Override
         public Paint getItemPaint(int row, int column) {
-//            TimeSeriesDataItem item = eventDataset.series.getDataItem(column);
-//            Node node = NeoServiceProviderUi.getProvider().getService().getNodeById(item.getValue().longValue());
-//            Color color = getEventColor(node);
-//            return color;
         	Color color = Color.RED;
         	return color;
         }
@@ -1493,8 +1467,6 @@ public class DriveInquirerView extends ViewPart implements IPropertyChangeListen
                 fillProperty(crosshair, xydatasets.get(i).collection, 
                 		dataElementWrapper.nProperties.get(i), dataElementWrapper.time);
             }
-//            fillProperty(crosshair, eventDataset.collection, dataElementWrapper.nEvents, dataElementWrapper.time);
-
         }
 
         /**

@@ -115,11 +115,11 @@ public class NetworkService extends AbstractService {
      * Traversal Description to find all node2node relationship root nodes
      */
     protected final static TraversalDescription N2N_ROOT_TRAVERSER = Traversal.description().breadthFirst()
-            .relationships(N2NRelTypes.NEIGHBOUR).evaluator(Evaluators.excludeStartPosition())
-            .relationships(N2NRelTypes.EXCEPTION).relationships(N2NRelTypes.FREQUENCY_SPECTRUM)
-            .relationships(N2NRelTypes.ILLEGAL_FREQUENCY).relationships(N2NRelTypes.INTERFERENCE_MATRIX)
-            .relationships(N2NRelTypes.NEIGHBOUR).relationships(N2NRelTypes.SHADOW).relationships(N2NRelTypes.TRANSMISSION)
-            .relationships(N2NRelTypes.TRIANGULATION).evaluator(Evaluators.excludeStartPosition());
+            .relationships(N2NRelTypes.NEIGHBOUR).evaluator(Evaluators.excludeStartPosition()).relationships(N2NRelTypes.EXCEPTION)
+            .relationships(N2NRelTypes.FREQUENCY_SPECTRUM).relationships(N2NRelTypes.ILLEGAL_FREQUENCY)
+            .relationships(N2NRelTypes.INTERFERENCE_MATRIX).relationships(N2NRelTypes.NEIGHBOUR).relationships(N2NRelTypes.SHADOW)
+            .relationships(N2NRelTypes.TRANSMISSION).relationships(N2NRelTypes.TRIANGULATION)
+            .evaluator(Evaluators.excludeStartPosition());
 
     public static final String SECTOR_COUNT = "sector_count";
 
@@ -335,7 +335,7 @@ public class NetworkService extends AbstractService {
         if (!((ci == null) || (ci.equals(StringUtils.EMPTY)))) {
             IndexHits<Node> cis = index.get(CELL_INDEX, ci);
             for (Node node : cis) {
-                //TODO: LN: incorrect code!!!!!!!!!!!!!!!!!!
+                // TODO: LN: incorrect code!!!!!!!!!!!!!!!!!!
                 if (lac.equals(node.getProperty(LOCATION_AREA_CODE, null).toString())) {
                     result = node;
                     break;
@@ -672,7 +672,7 @@ public class NetworkService extends AbstractService {
             tx.success();
         } catch (Exception e) {
             tx.failure();
-            LOGGER.debug("end with exception");
+            LOGGER.debug("replaceRelationship end with exception");
             throw new DatabaseException(e);
         } finally {
 

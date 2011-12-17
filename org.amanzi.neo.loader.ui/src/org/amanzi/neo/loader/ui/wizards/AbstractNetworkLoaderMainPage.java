@@ -20,8 +20,6 @@ import java.util.HashMap;
 import org.amanzi.neo.db.manager.DatabaseManagerFactory;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.IConfiguration;
-import org.amanzi.neo.loader.core.ILoader;
-import org.amanzi.neo.loader.core.saver.IData;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.amanzi.neo.loader.ui.utils.FileSelection;
 import org.amanzi.neo.services.exceptions.AWEException;
@@ -157,21 +155,6 @@ public abstract class AbstractNetworkLoaderMainPage<T extends IConfiguration> ex
         setPredifinedValues();
         setControl(main);
         update();
-    }
-
-    /**
-     * put project attribute to config in all loaders elements
-     */
-    private void setProjectNamesToLoaders() {
-        try {
-            for (ILoader<IData, T> loader : pageLoaders) {
-                setSelectedLoader(loader);
-                getConfigurationData().getDatasetNames().put(ConfigurationDataImpl.PROJECT_PROPERTY_NAME,
-                        ProjectModel.getCurrentProjectModel().getName());
-            }
-        } catch (AWEException e1) {
-            LOGGER.error("Error while get current project name", e1);
-        }
     }
 
     /**

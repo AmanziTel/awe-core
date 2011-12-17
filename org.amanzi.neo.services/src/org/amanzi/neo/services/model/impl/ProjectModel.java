@@ -454,7 +454,14 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
                 result.add(new DistributionItem(n2nModel));
             }
         }
-
+        // add all drive models
+        for (IDriveModel drive : findAllDriveModels()) {
+            result.add(new DistributionItem(drive, drive.getPrimaryType()));
+            // add virtual model for current drive
+            for (IDriveModel virtualDriveModel : drive.getVirtualDatasets()) {
+                result.add(new DistributionItem(virtualDriveModel, virtualDriveModel.getPrimaryType()));
+            }
+        }
         return result;
     }
 }

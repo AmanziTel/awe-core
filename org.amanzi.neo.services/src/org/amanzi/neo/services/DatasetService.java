@@ -153,7 +153,7 @@ public class DatasetService extends AbstractService {
      * @since 1.0.0
      */
     public enum DriveTypes implements IDriveType {
-        NEMO_V1, NEMO_V2, TEMS, ROMES, AMS_CALLS, AMS, AMS_PESQ, MS;
+        NEMO_V1, NEMO_V2, TEMS, ROMES, AMS_CALLS, AMS, AMS_PESQ, MS, OSS;
     }
 
     /**
@@ -735,10 +735,10 @@ public class DatasetService extends AbstractService {
         }
         return child;
     }
-    
+
     /**
-     * The method creates a SELECTED_PROPERTIES relationship 
-     * from <code>parent</code> to <code>child</code>
+     * The method creates a SELECTED_PROPERTIES relationship from <code>parent</code> to
+     * <code>child</code>
      * 
      * @param parent
      * @param child
@@ -753,17 +753,15 @@ public class DatasetService extends AbstractService {
 
         // create relationship
         Transaction tx = graphDb.beginTx();
-        
+
         Node child = null;
         try {
             boolean hasChild = parent.hasRelationship(DatasetRelationTypes.SELECTED_PROPERTIES, Direction.OUTGOING);
             if (!hasChild) {
                 child = createNode(DriveNodeTypes.SELECTED_PROPERTIES);
                 parent.createRelationshipTo(child, DatasetRelationTypes.SELECTED_PROPERTIES);
-            }
-            else {
-                child = parent.getSingleRelationship(DatasetRelationTypes.SELECTED_PROPERTIES, 
-                        Direction.OUTGOING).getEndNode();
+            } else {
+                child = parent.getSingleRelationship(DatasetRelationTypes.SELECTED_PROPERTIES, Direction.OUTGOING).getEndNode();
             }
             tx.success();
         } catch (Exception e) {
@@ -774,27 +772,25 @@ public class DatasetService extends AbstractService {
         }
         return child;
     }
-    
+
     /**
      * Method to get selected_properties node
-     *
+     * 
      * @param parent Parent node
      * @return
      * @throws DatabaseException
      */
     public Node getSelectedPropertiesNode(Node parent) throws DatabaseException {
         Node result = null;
-        
+
         Transaction tx = graphDb.beginTx();
         try {
-        	Iterable<Relationship> nodes =
-        			parent.getRelationships(DatasetRelationTypes.SELECTED_PROPERTIES);
-        	
-        	for (Relationship rel : nodes) {
-        		System.out.println(rel.getEndNode().getProperty("name"));
-        	}
-            result = parent.getSingleRelationship(DatasetRelationTypes.SELECTED_PROPERTIES, 
-                    Direction.OUTGOING).getEndNode();
+            Iterable<Relationship> nodes = parent.getRelationships(DatasetRelationTypes.SELECTED_PROPERTIES);
+
+            for (Relationship rel : nodes) {
+                System.out.println(rel.getEndNode().getProperty("name"));
+            }
+            result = parent.getSingleRelationship(DatasetRelationTypes.SELECTED_PROPERTIES, Direction.OUTGOING).getEndNode();
         } catch (Exception e) {
             LOGGER.error("Could not get selected_properties node");
             throw new DatabaseException(e);
