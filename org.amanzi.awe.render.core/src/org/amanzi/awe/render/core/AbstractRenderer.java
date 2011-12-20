@@ -24,6 +24,7 @@ import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.internal.render.impl.RendererImpl;
 import net.refractions.udig.project.render.RenderException;
 
+import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.awe.models.catalog.neo.GeoResource;
 import org.amanzi.awe.neostyle.BaseNeoStyle;
 import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
@@ -268,7 +269,35 @@ public class AbstractRenderer extends RendererImpl {
      * @return average count
      */
     protected double getAverageDensity(IProgressMonitor monitor) {
-        return 0;
+        double result = 0;
+        long count = 0;
+        try {
+            for (ILayer layer : getContext().getMap().getMapLayers()) {
+                if (layer.getGeoResource().canResolve(IMeasurementModel.class)) {
+                    IMeasurementModel resource = layer.getGeoResource().resolve(IMeasurementModel.class, monitor);
+                    Envelope dbounds = resource.getBounds();
+                    if (dbounds != null) {
+                        result += calculateResult(dbounds, resource);
+                        count++;
+                    }
+                }
+            }
+        } catch (IOException e) {
+            LOGGER.error("Error while try to return average density, return 0", e);
+            AweConsolePlugin.error("Error while try to return average density, return 0 ");
+            return 0;
+        }
+        return result / (double)count;
     }
 
+    /**
+     * calculate average between necessary nodes count and size
+     * 
+     * @param dbounds
+     * @param resource
+     * @return
+     */
+    protected double calculateResult(Envelope dbounds, IMeasurementModel resource) {
+        return 0d;
+    }
 }

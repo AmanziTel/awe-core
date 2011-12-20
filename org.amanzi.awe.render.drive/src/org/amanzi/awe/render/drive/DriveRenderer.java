@@ -15,9 +15,6 @@ package org.amanzi.awe.render.drive;
 
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.io.IOException;
-
-import net.refractions.udig.project.ILayer;
 
 import org.amanzi.awe.render.core.AbstractRenderer;
 import org.amanzi.neo.services.AbstractService;
@@ -27,7 +24,6 @@ import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IMeasurementModel;
 import org.amanzi.neo.services.model.IRenderableModel;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
-import org.eclipse.core.runtime.IProgressMonitor;
 
 import com.vividsolutions.jts.geom.Envelope;
 
@@ -52,6 +48,8 @@ public class DriveRenderer extends AbstractRenderer {
     }
 
     /**
+     * render location element on map
+     * 
      * @param destination
      * @param point
      * @param element
@@ -85,26 +83,7 @@ public class DriveRenderer extends AbstractRenderer {
     }
 
     @Override
-    protected double getAverageDensity(IProgressMonitor monitor) {
-        double result = 0;
-        long count = 0;
-        try {
-            for (ILayer layer : getContext().getMap().getMapLayers()) {
-                if (layer.getGeoResource().canResolve(IMeasurementModel.class)) {
-                    IMeasurementModel resource = layer.getGeoResource().resolve(IMeasurementModel.class, monitor);
-                    Envelope dbounds = resource.getBounds();
-                    if (dbounds != null) {
-                        result += (resource.getNodeCount(DriveNodeTypes.MP) / 2) / (dbounds.getHeight() * dbounds.getWidth());
-                        count++;
-                    }
-                }
-            }
-        } catch (IOException e) {
-            // TODO Handle IOException
-            // TODO: LN: error in Log and Console
-            // NeoCorePlugin.error(e.getLocalizedMessage(), e);
-            return 0;
-        }
-        return result / (double)count;
+    protected double calculateResult(Envelope dbounds, IMeasurementModel resource) {
+        return (resource.getNodeCount(DriveNodeTypes.MP) / 2) / (dbounds.getHeight() * dbounds.getWidth());
     }
 }

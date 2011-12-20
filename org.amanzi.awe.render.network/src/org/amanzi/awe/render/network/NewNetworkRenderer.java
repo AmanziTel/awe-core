@@ -17,9 +17,6 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.geom.Arc2D;
 import java.awt.geom.GeneralPath;
-import java.io.IOException;
-
-import net.refractions.udig.project.ILayer;
 
 import org.amanzi.awe.neostyle.NetworkNeoStyle;
 import org.amanzi.awe.neostyle.NetworkNeoStyleContent;
@@ -31,10 +28,10 @@ import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.model.IDataElement;
+import org.amanzi.neo.services.model.IMeasurementModel;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.IRenderableModel;
 import org.apache.commons.lang.ObjectUtils;
-import org.eclipse.core.runtime.IProgressMonitor;
 
 import com.vividsolutions.jts.geom.Envelope;
 
@@ -79,6 +76,8 @@ public class NewNetworkRenderer extends AbstractRenderer {
     }
 
     /**
+     * render site element on map
+     * 
      * @param destination
      * @param point
      * @param element
@@ -106,6 +105,8 @@ public class NewNetworkRenderer extends AbstractRenderer {
     }
 
     /**
+     * render sector element on map
+     * 
      * @param destination
      * @param point
      * @param element
@@ -156,27 +157,7 @@ public class NewNetworkRenderer extends AbstractRenderer {
     }
 
     @Override
-    protected double getAverageDensity(IProgressMonitor monitor) {
-        double result = 0;
-        long count = 0;
-        try {
-            for (ILayer layer : getContext().getMap().getMapLayers()) {
-                if (layer.getGeoResource().canResolve(INetworkModel.class)) {
-                    INetworkModel resource = layer.getGeoResource().resolve(INetworkModel.class, monitor);
-                    Envelope dbounds = resource.getBounds();
-                    if (dbounds != null) {
-                        result += (resource.getNodeCount(NetworkElementNodeType.SITE) / 2)
-                                / (dbounds.getHeight() * dbounds.getWidth());
-                        count++;
-                    }
-                }
-            }
-        } catch (IOException e) {
-            // TODO Handle IOException
-            // TODO: LN: error in Log and Console
-            // NeoCorePlugin.error(e.getLocalizedMessage(), e);
-            return 0;
-        }
-        return result / (double)count;
+    protected double calculateResult(Envelope dbounds, IMeasurementModel resource) {
+        return (resource.getNodeCount(NetworkElementNodeType.SITE) / 2) / (dbounds.getHeight() * dbounds.getWidth());
     }
 }
