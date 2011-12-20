@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?eclipse version="3.2"?>
+<?eclipse version="3.4"?>
 <plugin>
-   <extension
+  <extension
          point="net.refractions.udig.project.renderer">
       <renderer
             class="org.amanzi.awe.render.network.NetworkRenderMetricsFactory"
-            id="org.amanzi.awe.render.network.networkRenderer"
-            name="Amanzi Network Renderer">
+            id="oorg.amanzi.awe.render.network.networkrenderer"
+            name="Amanzi Measurment Renderer">
       </renderer>
    </extension>
    <extension
@@ -15,5 +15,4 @@
             class="org.amanzi.awe.render.network.HashMapPersister">
       </persister>
    </extension>
-
 </plugin>

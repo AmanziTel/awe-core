@@ -165,7 +165,7 @@ public class Nemo1xSaver extends Nemo2xSaver {
 
     @Override
     protected void initializeNecessaryModels() throws AWEException {
-        parametrizedModel = getActiveProject().getDataset(
+        parametrizedModel = getActiveProject().getDriveModel(
                 configuration.getDatasetNames().get(ConfigurationDataImpl.DATASET_PROPERTY_NAME), DriveTypes.NEMO_V1);
 
     }

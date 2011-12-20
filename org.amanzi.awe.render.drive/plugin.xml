@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+ <extension
+         point="net.refractions.udig.project.renderer">
+      <renderer
+            class="org.amanzi.awe.render.drive.DriveRendererMetricsFactory"
+            id="org.amanzi.awe.render.drive.driveRenderer"
+            name="Amanzi Measurment Renderer">
+      </renderer>
+   </extension>
+</plugin>

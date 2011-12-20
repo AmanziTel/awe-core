@@ -66,6 +66,11 @@ public class RomesSaver extends AbstractDriveSaver {
     @Override
     protected void saveLine(List<String> value) throws AWEException {
         params.clear();
+        if (value.size() < MINIMUM_COLUMN_NUMBER) {
+            AweConsolePlugin.info(String.format("Line %s is empty (nothing to save).", lineCounter));
+            LOGGER.info(String.format("Line %s is empty (nothing to save).", lineCounter));
+            return;
+        }
         String time = getValueFromRow(TIME, value);
         Long timestamp = defineTimestamp(workDate, time);
         String message_type = getValueFromRow(MESSAGE_TYPE, value);

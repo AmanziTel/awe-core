@@ -22,9 +22,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.amanzi.neo.model.distribution.IDistribution;
-import org.amanzi.neo.model.distribution.IDistributionModel;
-import org.amanzi.neo.model.distribution.impl.DistributionModel;
 import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.CorrelationService;
 import org.amanzi.neo.services.DatasetService;
@@ -49,9 +46,6 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Envelope;
 
 /**
  * <p>
@@ -363,24 +357,7 @@ public class DriveModel extends MeasurementModel implements IDriveModel {
     }
 
     @Override
-    public Iterable<IDataElement> getAllElementsByType(INodeType elementType) {
-        // validate
-        if (elementType == null) {
-            throw new IllegalArgumentException("Element type is null.");
-        }
-        LOGGER.info("getAllElementsByType(" + elementType.getId() + ")");
-
-        return new DataElementIterable(datasetService.findAllDatasetElements(getRootNode(), elementType));
-    }
-
-    @Override
-    public Iterable<IDataElement> getElements(Envelope bounds_transformed) {
-        return null;
-    }
-    
-    @Override
-    public Iterable<IDataElement> findAllElementsByTimestampPeriod(long min_timestamp, long max_timestamp)
-    {
+    public Iterable<IDataElement> findAllElementsByTimestampPeriod(long min_timestamp, long max_timestamp) {
         INodeType primaryType = getPrimaryType();
         try {
             return new DataElementIterable(getNodesByTimestampPeriod(primaryType, min_timestamp, max_timestamp));
@@ -391,21 +368,8 @@ public class DriveModel extends MeasurementModel implements IDriveModel {
     }
 
     @Override
-    public Coordinate getCoordinate(IDataElement element) {
-        if (element != null) {
-            return new Coordinate((Double)element.get(LONGITUDE), (Double)element.get(LATITUDE));
-        }
-        return null;
-    }
-
-    @Override
     public boolean isUniqueProperties(String property) {
         return false;
-    }
-
-    @Override
-    public IDistributionModel getDistributionModel(IDistribution< ? > distributionType) throws AWEException {
-        return new DistributionModel(this, distributionType);
     }
 
     @Override
@@ -420,12 +384,11 @@ public class DriveModel extends MeasurementModel implements IDriveModel {
         }
         return getProject();
     }
-    
+
     @Override
-    public IDataElement addSelectedProperties(Set<String> selectedProperties)
-    {
+    public IDataElement addSelectedProperties(Set<String> selectedProperties) {
         LOGGER.debug("start addSelectedProperties(Set<String> selectedProperties)");
-        
+
         if (selectedProperties == null) {
             throw new IllegalArgumentException("Set<String> is null.");
         }
@@ -433,23 +396,21 @@ public class DriveModel extends MeasurementModel implements IDriveModel {
         Node selectedPropertiesNode = null;
         try {
             selectedPropertiesNode = datasetService.addSelectedPropertiesNode(rootNode);
-            
+
             Map<String, Object> params = new HashMap<String, Object>();
             params.put(AbstractService.NAME, getName());
             String[] array = selectedProperties.toArray(new String[0]);
             params.put(SELECTED_PROPERTIES, array);
             datasetService.setProperties(selectedPropertiesNode, params);
-        }
-        catch (AWEException e) {
+        } catch (AWEException e) {
             LOGGER.error("Error with saving selected properties");
         }
-        
+
         return new DataElement(selectedPropertiesNode);
     }
-    
+
     @Override
-    public Set<String> getSelectedProperties()
-    {
+    public Set<String> getSelectedProperties() {
         Set<String> result = new TreeSet<String>();
         try {
             Node selectedPropertiesNode = datasetService.getSelectedPropertiesNode(rootNode);

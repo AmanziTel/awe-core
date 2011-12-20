@@ -22,7 +22,7 @@ import net.refractions.udig.catalog.IGeoResourceInfo;
 import net.refractions.udig.catalog.IService;
 
 import org.amanzi.neo.services.model.IDataModel;
-import org.amanzi.neo.services.model.IDriveModel;
+import org.amanzi.neo.services.model.IMeasurementModel;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.IRenderableModel;
 import org.apache.log4j.Logger;
@@ -74,7 +74,7 @@ public class GeoResource extends IGeoResource {
 
     @Override
     public IGeoResourceInfo createInfo(IProgressMonitor monitor) throws IOException {
-    	return new GeoResourceInfo(this.source, monitor);
+        return new GeoResourceInfo(this.source, monitor);
     }
 
     @Override
@@ -91,16 +91,17 @@ public class GeoResource extends IGeoResource {
     public <T> boolean canResolve(Class<T> adaptee) {
         return (adaptee.isAssignableFrom(INetworkModel.class) && (source instanceof INetworkModel))
                 || adaptee.isAssignableFrom(IRenderableModel.class)
-                || (adaptee.isAssignableFrom(IDriveModel.class) && (source instanceof IDriveModel)) || super.canResolve(adaptee);
+                || (adaptee.isAssignableFrom(IMeasurementModel.class) && (source instanceof IMeasurementModel))
+                || super.canResolve(adaptee);
     }
 
     @Override
     public <T> T resolve(Class<T> adaptee, IProgressMonitor monitor) throws IOException {
-        if ((adaptee.isAssignableFrom(INetworkModel.class)) || (adaptee.isAssignableFrom(IDriveModel.class))
+        if ((adaptee.isAssignableFrom(INetworkModel.class)) || (adaptee.isAssignableFrom(IMeasurementModel.class))
                 || (adaptee.isAssignableFrom(IRenderableModel.class))) {
             return adaptee.cast(source);
         }
         return super.resolve(adaptee, monitor);
-    }	
+    }
 
 }

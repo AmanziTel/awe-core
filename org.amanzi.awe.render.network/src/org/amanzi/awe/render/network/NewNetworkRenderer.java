@@ -23,6 +23,8 @@ import net.refractions.udig.project.ILayer;
 
 import org.amanzi.awe.neostyle.NetworkNeoStyle;
 import org.amanzi.awe.neostyle.NetworkNeoStyleContent;
+import org.amanzi.awe.render.core.AbstractRenderer;
+import org.amanzi.awe.render.core.Scale;
 import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.NetworkService;
 import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
@@ -89,15 +91,15 @@ public class NewNetworkRenderer extends AbstractRenderer {
             destination.drawRect(point.x - size / 2, point.y - size / 2, size, size);
             break;
         case MEDIUM:
-            size = RenderOptions.site_size;
+            size = RenderOptions.siteSize;
             destination.setColor(RenderOptions.border);
             destination.drawOval(point.x - size / 2, point.y - size / 2, size, size);
             break;
         case LARGE:
-            size = RenderOptions.large_sector_size / 3;
+            size = RenderOptions.largeSectorsSize / 3;
             destination.setColor(RenderOptions.border);
             destination.drawOval(point.x - size / 2, point.y - size / 2, size, size);
-            destination.setColor(RenderOptions.site_fill);
+            destination.setColor(RenderOptions.siteFill);
             destination.fillOval(point.x - size / 2, point.y - size / 2, size, size);
         }
 
@@ -118,13 +120,13 @@ public class NewNetworkRenderer extends AbstractRenderer {
             GeneralPath path = new GeneralPath();
             path.moveTo(point.x, point.y);
             Arc2D a = new Arc2D.Double();
-            a.setArcByCenter(point.x, point.y, RenderOptions.large_sector_size, angle2, beamwidth, Arc2D.OPEN);
+            a.setArcByCenter(point.x, point.y, RenderOptions.largeSectorsSize, angle2, beamwidth, Arc2D.OPEN);
             path.append(a.getPathIterator(null), true);
             path.closePath();
 
             destination.setColor(RenderOptions.border);
             destination.draw(path);
-            destination.setColor(RenderOptions.sector_fill);
+            destination.setColor(RenderOptions.sectorFill);
             destination.fill(path);
 
             break;
@@ -142,9 +144,9 @@ public class NewNetworkRenderer extends AbstractRenderer {
         style = newStyle;
         RenderOptions.alpha = 255 - (int)((double)newStyle.getSymbolTransparency() / 100.0 * 255.0);
         RenderOptions.border = changeColor(newStyle.getLine(), RenderOptions.alpha);
-        RenderOptions.large_sector_size = newStyle.getSymbolSize();
-        RenderOptions.sector_fill = changeColor(newStyle.getFill(), RenderOptions.alpha);
-        RenderOptions.site_fill = changeColor(newStyle.getSiteFill(), RenderOptions.alpha);
+        RenderOptions.largeSectorsSize = newStyle.getSymbolSize();
+        RenderOptions.sectorFill = changeColor(newStyle.getFill(), RenderOptions.alpha);
+        RenderOptions.siteFill = changeColor(newStyle.getSiteFill(), RenderOptions.alpha);
 
         RenderOptions.maxSitesFull = newStyle.getSmallSymb();
         RenderOptions.maxSitesLabel = newStyle.getLabeling();
@@ -152,7 +154,7 @@ public class NewNetworkRenderer extends AbstractRenderer {
         RenderOptions.maxSymbolSize = newStyle.getMaximumSymbolSize();
 
     }
-    
+
     @Override
     protected double getAverageDensity(IProgressMonitor monitor) {
         double result = 0;
@@ -163,15 +165,16 @@ public class NewNetworkRenderer extends AbstractRenderer {
                     INetworkModel resource = layer.getGeoResource().resolve(INetworkModel.class, monitor);
                     Envelope dbounds = resource.getBounds();
                     if (dbounds != null) {
-                        result += (resource.getNodeCount(NetworkElementNodeType.SITE)/2) / (dbounds.getHeight() * dbounds.getWidth());
+                        result += (resource.getNodeCount(NetworkElementNodeType.SITE) / 2)
+                                / (dbounds.getHeight() * dbounds.getWidth());
                         count++;
                     }
                 }
             }
         } catch (IOException e) {
             // TODO Handle IOException
-            //TODO: LN: error in Log and Console
-//            NeoCorePlugin.error(e.getLocalizedMessage(), e);
+            // TODO: LN: error in Log and Console
+            // NeoCorePlugin.error(e.getLocalizedMessage(), e);
             return 0;
         }
         return result / (double)count;

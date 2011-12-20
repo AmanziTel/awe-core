@@ -16,20 +16,21 @@ package org.amanzi.neo.services.model;
 import java.io.File;
 import java.util.Map;
 
+import org.amanzi.neo.model.distribution.IDistributionalModel;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 
 /**
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author gerzog
  * @since 1.0.0
  */
-public interface IMeasurementModel extends IRenderableModel {
+public interface IMeasurementModel extends IRenderableModel, IDistributionalModel {
 
     /**
      * Adds a FILE node to the drive model. FILE nodes are added to root node via
@@ -160,8 +161,6 @@ public interface IMeasurementModel extends IRenderableModel {
      * @return Primary type of drive model nodes
      */
     public INodeType getPrimaryType();
-    
-
 
     /**
      * Creates a node, sets its LATITUDE and LONGITUDE properties, and created a LOCATION

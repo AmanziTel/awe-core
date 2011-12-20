@@ -1,11 +1,12 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Network Rendering Plug-in
-Bundle-SymbolicName: org.amanzi.awe.render.network;singleton:=true
+Bundle-Name: Drive Rendering Plug-in
+Bundle-SymbolicName: org.amanzi.awe.render.drive;singleton:=true
 Bundle-Version: 1.0.0.qualifier
-Bundle-Activator: org.amanzi.awe.render.network.NetworkRendererPlugin
+Bundle-Activator: org.amanzi.awe.render.drive.DriveRendererPlugin
 Bundle-Vendor: amanzi.org
-Require-Bundle: net.refractions.udig.project,
+Require-Bundle: 
+  net.refractions.udig.project,
  org.amanzi.awe.catalog.neo,
  org.amanzi.awe.neostyle;bundle-version="1.0.0",
  org.amanzi.neo.services;bundle-version="1.0.0",

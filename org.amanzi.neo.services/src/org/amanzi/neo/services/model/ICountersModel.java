@@ -13,6 +13,8 @@
 
 package org.amanzi.neo.services.model;
 
+import org.amanzi.neo.model.distribution.IDistributionalModel;
+
 //TODO: LN: comments
 /**
  * TODO Purpose of
@@ -22,8 +24,8 @@ package org.amanzi.neo.services.model;
  * @author grigoreva_a
  * @since 1.0.0
  */
-public interface ICountersModel extends ICorrelatableModel, ITimelineModel, IMeasurementModel {
+public interface ICountersModel extends ICorrelatableModel, ITimelineModel, IMeasurementModel, IDistributionalModel {
 
-    //TODO: LN: comments
+    // TODO: LN: comments
     public ICountersType getCountersType();
 }

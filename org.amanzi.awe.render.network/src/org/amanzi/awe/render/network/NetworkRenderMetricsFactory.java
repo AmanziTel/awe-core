@@ -20,27 +20,10 @@ import net.refractions.udig.project.render.IRenderContext;
 import net.refractions.udig.project.render.IRenderMetricsFactory;
 import net.refractions.udig.project.render.IRenderer;
 
+import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.IRenderableModel;
 
 public class NetworkRenderMetricsFactory implements IRenderMetricsFactory {
-
-    /**
-     * This metrics factory supports the Amanzi GeoNeo GIS conventions for Neo4j data sources
-     * (IGeoResources). See the org.amanzi.awe.catalog.neo plugin. Here we return true if the
-     * IGeoResource passed in the context canResolve the GeoNeo.class the catalog package.
-     * 
-     * @see net.refractions.udig.project.render.IRenderMetricsFactory#canRender(net.refractions.udig.project.render.IRenderContext)
-     */
-    public boolean canRender(IRenderContext context) throws IOException {
-        for (IGeoResource resource : context.getLayer().getGeoResources()) {
-            // TODO: test also that the data is for network only.
-            if (resource.canResolve(IRenderableModel.class)) {
-                return true;
-                // return resource.resolve(GeoNeo.class, null).getGisType() == GisTypes.NETWORK;
-            }
-        }
-        return false;
-    }
 
     /**
      * @return a NetworkRenderMetrics constructed on this context
@@ -54,6 +37,17 @@ public class NetworkRenderMetricsFactory implements IRenderMetricsFactory {
      */
     public Class< ? extends IRenderer> getRendererType() {
         return NewNetworkRenderer.class;
+    }
+
+    @Override
+    public boolean canRender(IRenderContext context) throws IOException {
+        for (IGeoResource resource : context.getLayer().getGeoResources()) {
+            if (resource.canResolve(IRenderableModel.class) && resource.canResolve(INetworkModel.class)) {
+                return true;
+                // return resource.resolve(GeoNeo.class, null).getGisType() == GisTypes.NETWORK;
+            }
+        }
+        return false;
     }
 
 }
