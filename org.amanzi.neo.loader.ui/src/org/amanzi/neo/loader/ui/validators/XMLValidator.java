@@ -89,7 +89,7 @@ public class XMLValidator implements IValidator {
             try {
                 IProjectModel projectModel = ProjectModel.getCurrentProjectModel();
                 network = projectModel.findNetwork(config.getDatasetNames().get("Network"));
-                dataset = projectModel.findDataset(config.getDatasetNames().get("Dataset"), DriveTypes.AMS);
+                dataset = projectModel.findDriveModel(config.getDatasetNames().get("Dataset"), DriveTypes.AMS);
                 if (network == null && dataset != null) {
                     message = String.format("Drive node %s is already exists in db ", config.getDatasetNames().get("Dataset"));
                     return Result.FAIL;

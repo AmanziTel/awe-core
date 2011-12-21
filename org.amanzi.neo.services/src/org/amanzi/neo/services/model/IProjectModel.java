@@ -39,7 +39,7 @@ public interface IProjectModel extends IModel {
      * @param driveType drive type of the new dataset
      * @return a <code>DriveModel</code>, based on a new dataset node.
      */
-    public abstract IDriveModel createDataset(String name, IDriveType driveType);
+    public abstract IDriveModel createDrive(String name, IDriveType driveType);
 
     /**
      * Creates a <code>DriveModel</code> based on a new dataset, attached to the current project,
@@ -51,7 +51,7 @@ public interface IProjectModel extends IModel {
      * @param primaryType <code>DriveModel</code> primary type
      * @return a <code>DriveModel</code> object with the defined primary type
      */
-    public abstract IDriveModel createDataset(String name, IDriveType driveType, INodeType primaryType);
+    public abstract IDriveModel createDriveModel(String name, IDriveType driveType, INodeType primaryType);
 
     /**
      * Tries to find a dataset node within the current project, with the defined <code>name</code>
@@ -61,7 +61,7 @@ public interface IProjectModel extends IModel {
      * @param driveType
      * @return a <code>DriveModel</code>, based on the found node, or <code>null</code>
      */
-    public abstract IDriveModel findDataset(String name, IDriveType driveType);
+    public abstract IDriveModel findDriveModel(String name, IDriveType driveType);
 
     /**
      * Tries to find a dataset node within the current project, with the defined <code>name</code>
@@ -73,7 +73,7 @@ public interface IProjectModel extends IModel {
      * @return a <code>DriveModel</code> object, based on the found or created node with the defined
      *         parameters.
      */
-    public abstract IDriveModel getDataset(String name, IDriveType driveType);
+    public abstract IDriveModel getDriveModel(String name, IDriveType driveType);
 
     /**
      * Tries to find a dataset node within the current project, with the defined <code>name</code>
@@ -86,7 +86,7 @@ public interface IProjectModel extends IModel {
      * @returna <code>DriveModel</code> object with the defined <code>primaryType</code>, based on
      *          the found or created node with the defined parameters.
      */
-    public abstract IDriveModel getDataset(String name, IDriveType driveType, INodeType primaryType);
+    public abstract IDriveModel getDrive(String name, IDriveType driveType, INodeType primaryType);
 
     /**
      * Creates a new network node with the defined <code>name</code>, attaches it to the current
@@ -159,4 +159,28 @@ public interface IProjectModel extends IModel {
      */
     public Iterable<IDriveModel> findAllDriveModels() throws AWEException;
 
+    /**
+     * create a counters model
+     */
+
+    public ICountersModel createCountersModel(String name, ICountersType type) throws AWEException;
+
+    /**
+     * find all countersModel
+     */
+    public Iterable<ICountersModel> findAllCountersModel() throws AWEException;
+
+    /**
+     * try to find required countersModel or create new one if nor exist
+     */
+    public ICountersModel getCountersModel(String name, ICountersType countersModel) throws AWEException;
+
+    /**
+     * try to find required counter type;
+     * 
+     * @param name
+     * @param driveType
+     * @return
+     */
+    public ICountersModel findCountersModel(String name, ICountersType driveType);
 }

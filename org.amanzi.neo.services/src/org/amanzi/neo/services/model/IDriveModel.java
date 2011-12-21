@@ -15,7 +15,6 @@ package org.amanzi.neo.services.model;
 
 import java.util.Set;
 
-import org.amanzi.neo.model.distribution.IDistributionalModel;
 import org.amanzi.neo.services.enums.IDriveType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
@@ -30,16 +29,10 @@ import org.neo4j.graphdb.RelationshipType;
  * @author grigoreva_a
  * @since 1.0.0
  */
-public interface IDriveModel
-        extends
-            ICorrelatableModel,
-            IRenderableModel,
-            ITimelineModel,
-            IDistributionalModel,
-            IMeasurementModel{
-    
+public interface IDriveModel extends ICorrelatableModel, IRenderableModel, ITimelineModel, IMeasurementModel {
+
     public final static String SELECTED_PROPERTIES = "selected_properties";
-    
+
     /**
      * @return a List<Node> containing DriveModels created on base of virtual dataset nodes in
      *         current DriveModel
@@ -106,15 +99,15 @@ public interface IDriveModel
 
     /**
      * Add a node with selected properties in DriveInquirerView
-     *
+     * 
      * @param selectedProperties Set of selected properties
      * @return Created IDataElement with node
      */
     public IDataElement addSelectedProperties(Set<String> selectedProperties);
-    
+
     /**
      * Method to get saved selected properties from DriveInquirerView
-     *
+     * 
      * @return Set of selected properties from DriveInquirerView
      */
     public Set<String> getSelectedProperties();

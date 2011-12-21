@@ -29,6 +29,8 @@ import org.amanzi.neo.services.ProjectService.ProjectNodeType;
 import org.amanzi.neo.services.enums.IDriveType;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.model.ICountersModel;
+import org.amanzi.neo.services.model.ICountersType;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
@@ -172,10 +174,21 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
      * @return a <code>DriveModel</code>, based on a new dataset node.
      */
     @Override
-    public IDriveModel createDataset(String name, IDriveType driveType) {
+    public IDriveModel createDrive(String name, IDriveType driveType) {
 
         try {
             return new DriveModel(rootNode, null, name, driveType);
+        } catch (AWEException e) {
+            LOGGER.error("Could not create drive model.", e);
+        }
+        return null;
+    }
+
+    @Override
+    public ICountersModel createCountersModel(String name, ICountersType driveType) {
+
+        try {
+            return new CountersModel(rootNode, null, name, driveType);
         } catch (AWEException e) {
             LOGGER.error("Could not create drive model.", e);
         }
@@ -193,7 +206,7 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
      * @return a <code>DriveModel</code> object with the defined primary type
      */
     @Override
-    public IDriveModel createDataset(String name, IDriveType driveType, INodeType primaryType) {
+    public IDriveModel createDriveModel(String name, IDriveType driveType, INodeType primaryType) {
 
         try {
             return new DriveModel(rootNode, null, name, driveType, primaryType);
@@ -212,12 +225,26 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
      * @return a <code>DriveModel</code>, based on the found node, or <code>null</code>
      */
     @Override
-    public IDriveModel findDataset(String name, IDriveType driveType) {
+    public IDriveModel findDriveModel(String name, IDriveType driveType) {
         IDriveModel dataset = null;
         try {
             Node datasetNode = dsServ.findDataset(rootNode, name, DatasetTypes.DRIVE, driveType);
             if (datasetNode != null) {
                 dataset = new DriveModel(datasetNode);
+            }
+        } catch (AWEException e) {
+            LOGGER.error("Could not create drive model.", e);
+        }
+        return dataset;
+    }
+
+    @Override
+    public ICountersModel findCountersModel(String name, ICountersType driveType) {
+        ICountersModel dataset = null;
+        try {
+            Node datasetNode = dsServ.findDataset(rootNode, name, DatasetTypes.COUNTERS, driveType);
+            if (datasetNode != null) {
+                dataset = new CountersModel(datasetNode);
             }
         } catch (AWEException e) {
             LOGGER.error("Could not create drive model.", e);
@@ -256,10 +283,10 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
      *         parameters.
      */
     @Override
-    public IDriveModel getDataset(String name, IDriveType driveType) {
-        IDriveModel result = findDataset(name, driveType);
+    public IDriveModel getDriveModel(String name, IDriveType driveType) {
+        IDriveModel result = findDriveModel(name, driveType);
         if (result == null) {
-            result = createDataset(name, driveType);
+            result = createDrive(name, driveType);
         }
         return result;
     }
@@ -276,10 +303,10 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
      *          the found or created node with the defined parameters.
      */
     @Override
-    public IDriveModel getDataset(String name, IDriveType driveType, INodeType primaryType) {
+    public IDriveModel getDrive(String name, IDriveType driveType, INodeType primaryType) {
         IDriveModel result = findDataset(name, driveType, primaryType);
         if (result == null) {
-            result = createDataset(name, driveType, primaryType);
+            result = createDriveModel(name, driveType, primaryType);
         }
         return result;
     }
@@ -393,6 +420,9 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
                 case DRIVE:
                     result.add(new DriveModel(rootNode, node, null, null));
                     break;
+                case COUNTERS:
+                    result.add(new CountersModel(rootNode, node, null, null));
+                    break;
                 }
             }
         }
@@ -403,8 +433,7 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
     public Iterable<INetworkModel> findAllNetworkModels() throws AWEException {
         List<INetworkModel> networkModels = new ArrayList<INetworkModel>();
 
-        List<Node> allNetworkNodes = null;
-        allNetworkNodes = dsServ.findAllDatasetsByType(getRootNode(), DatasetTypes.NETWORK);
+        List<Node> allNetworkNodes = findAllMeasurmentModels(DatasetTypes.NETWORK);
         for (Node networkRoot : allNetworkNodes) {
             networkModels.add(new NetworkModel(networkRoot));
         }
@@ -412,12 +441,19 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
         return networkModels;
     }
 
+    private List<Node> findAllMeasurmentModels(DatasetTypes datasetType) throws AWEException {
+
+        List<Node> allNetworkNodes = null;
+        allNetworkNodes = dsServ.findAllDatasetsByType(getRootNode(), datasetType);
+
+        return allNetworkNodes;
+    }
+
     @Override
     public Iterable<IDriveModel> findAllDriveModels() throws AWEException {
         List<IDriveModel> datasets = new ArrayList<IDriveModel>();
 
-        List<Node> allNetworkNodes = null;
-        allNetworkNodes = dsServ.findAllDatasetsByType(getRootNode(), DatasetTypes.DRIVE);
+        List<Node> allNetworkNodes = findAllMeasurmentModels(DatasetTypes.DRIVE);
         for (Node networkRoot : allNetworkNodes) {
             datasets.add(new DriveModel(networkRoot));
         }
@@ -461,6 +497,32 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
             for (IDriveModel virtualDriveModel : drive.getVirtualDatasets()) {
                 result.add(new DistributionItem(virtualDriveModel, virtualDriveModel.getPrimaryType()));
             }
+        }
+        // add all counters models
+        for (ICountersModel counter : findAllCountersModel()) {
+            result.add(new DistributionItem(counter, counter.getPrimaryType()));
+        }
+        return result;
+    }
+
+    @Override
+    public Iterable<ICountersModel> findAllCountersModel() throws AWEException {
+        List<ICountersModel> datasets = new ArrayList<ICountersModel>();
+
+        List<Node> allNetworkNodes = findAllMeasurmentModels(DatasetTypes.COUNTERS);
+        for (Node counterRoot : allNetworkNodes) {
+            ICountersModel model = new CountersModel(counterRoot);
+            datasets.add(model);
+        }
+
+        return datasets;
+    }
+
+    @Override
+    public ICountersModel getCountersModel(String name, ICountersType countersType) throws AWEException {
+        ICountersModel result = findCountersModel(name, countersType);
+        if (result == null) {
+            result = createCountersModel(name, countersType);
         }
         return result;
     }

@@ -13,15 +13,17 @@
 
 package org.amanzi.neo.services.model;
 
+import org.amanzi.neo.services.enums.IDriveType;
+
 //TODO: LN: comments
 /**
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author grigoreva_a
  * @since 1.0.0
  */
-public interface ICountersType {
+public interface ICountersType extends IDriveType {
 
 }

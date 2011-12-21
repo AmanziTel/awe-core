@@ -96,7 +96,7 @@ public class ProjectModelTest extends AbstractNeoServiceTest {
     public void testCreateDatasetStringIDriveType() {
         LOGGER.debug("start testCreateDatasetStringIDriveType()");
 
-        IDriveModel dm = model.createDataset("dataset", DriveTypes.values()[0]);
+        IDriveModel dm = model.createDrive("dataset", DriveTypes.values()[0]);
 
         // object returned not null
         Assert.assertNotNull(dm);
@@ -111,7 +111,7 @@ public class ProjectModelTest extends AbstractNeoServiceTest {
     public void testCreateDatasetStringIDriveTypeINodeType() {
         LOGGER.debug("start testCreateDatasetStringIDriveTypeINodeType()");
 
-        IDriveModel dm = model.createDataset("dataset", DriveTypes.values()[0], NetworkElementNodeType.values()[0]);
+        IDriveModel dm = model.createDriveModel("dataset", DriveTypes.values()[0], NetworkElementNodeType.values()[0]);
 
         // object returned not null
         Assert.assertNotNull(dm);
@@ -127,9 +127,9 @@ public class ProjectModelTest extends AbstractNeoServiceTest {
     @Test
     public void testFindDataset() {
         LOGGER.debug("start testFindDataset()");
-        model.createDataset("dataset", DriveTypes.values()[0]);
+        model.createDrive("dataset", DriveTypes.values()[0]);
 
-        IDriveModel dm = model.findDataset("dataset", DriveTypes.values()[0]);
+        IDriveModel dm = model.findDriveModel("dataset", DriveTypes.values()[0]);
         // object returned not null
         Assert.assertNotNull(dm);
         Assert.assertNotNull(dm.getRootNode());
@@ -142,7 +142,7 @@ public class ProjectModelTest extends AbstractNeoServiceTest {
     @Test
     public void testFindDatasetNoDataset() {
         LOGGER.debug("start testFindDatasetNoDataset()");
-        IDriveModel dm = model.findDataset("dataset", DriveTypes.values()[0]);
+        IDriveModel dm = model.findDriveModel("dataset", DriveTypes.values()[0]);
         // object returned is null
         Assert.assertNull(dm);
     }
@@ -151,9 +151,9 @@ public class ProjectModelTest extends AbstractNeoServiceTest {
     public void testGetDatasetStringIDriveType() {
         LOGGER.debug("start testGetDatasetStringIDriveType()");
         // dataset exists
-        model.createDataset("dataset", DriveTypes.values()[0]);
+        model.createDrive("dataset", DriveTypes.values()[0]);
 
-        IDriveModel dm = model.getDataset("dataset", DriveTypes.values()[0]);
+        IDriveModel dm = model.getDriveModel("dataset", DriveTypes.values()[0]);
         // object returned not null
         Assert.assertNotNull(dm);
         Assert.assertNotNull(dm.getRootNode());
@@ -168,7 +168,7 @@ public class ProjectModelTest extends AbstractNeoServiceTest {
         LOGGER.debug("start testGetDatasetStringIDriveTypeNoDataset()");
         // dataset !exists
 
-        IDriveModel dm = model.getDataset("dataset", DriveTypes.values()[0]);
+        IDriveModel dm = model.getDriveModel("dataset", DriveTypes.values()[0]);
         // object returned not null
         Assert.assertNotNull(dm);
         Assert.assertNotNull(dm.getRootNode());
@@ -182,9 +182,9 @@ public class ProjectModelTest extends AbstractNeoServiceTest {
     public void testGetDatasetStringIDriveTypeINodeType() {
         LOGGER.debug("start testGetDatasetStringIDriveTypeINodeType()");
         // dataset exists
-        model.createDataset("dataset", DriveTypes.values()[0], NetworkElementNodeType.values()[0]);
+        model.createDriveModel("dataset", DriveTypes.values()[0], NetworkElementNodeType.values()[0]);
 
-        IDriveModel dm = model.getDataset("dataset", DriveTypes.values()[0], NetworkElementNodeType.values()[0]);
+        IDriveModel dm = model.getDrive("dataset", DriveTypes.values()[0], NetworkElementNodeType.values()[0]);
         // object returned not null
         Assert.assertNotNull(dm);
         Assert.assertNotNull(dm.getRootNode());
@@ -203,7 +203,7 @@ public class ProjectModelTest extends AbstractNeoServiceTest {
         LOGGER.debug("start testGetDatasetStringIDriveTypeINodeTypeNoDataset()");
         // dataset !exists
 
-        IDriveModel dm = model.getDataset("dataset", DriveTypes.values()[0], NetworkElementNodeType.values()[0]);
+        IDriveModel dm = model.getDrive("dataset", DriveTypes.values()[0], NetworkElementNodeType.values()[0]);
         // object returned not null
         Assert.assertNotNull(dm);
         Assert.assertNotNull(dm.getRootNode());
