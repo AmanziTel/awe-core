@@ -27,11 +27,12 @@ import net.refractions.udig.project.render.RenderException;
 import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.awe.models.catalog.neo.GeoResource;
 import org.amanzi.awe.neostyle.BaseNeoStyle;
-import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
+import org.amanzi.neo.model.distribution.IDistributionBar;
+import org.amanzi.neo.model.distribution.IDistributionalModel;
+import org.amanzi.neo.model.distribution.impl.DistributionManager;
+import org.amanzi.neo.model.distribution.impl.DistributionModel;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
-import org.amanzi.neo.services.model.IMeasurementModel;
-import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.IRenderableModel;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -42,6 +43,7 @@ import org.geotools.referencing.CRS;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.TransformException;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -55,53 +57,46 @@ import com.vividsolutions.jts.geom.Envelope;
  * @author grigoreva_a
  * @since 1.0.0
  */
-public class AbstractRenderer extends RendererImpl {
+public abstract class AbstractRenderer extends RendererImpl {
     private static Logger LOGGER = Logger.getLogger(AbstractRenderer.class);
     protected static BaseNeoStyle style;
-
+    protected IRenderableModel model;
     private MathTransform transform_d2w;
     private MathTransform transform_w2d;
+    protected DistributionManager distributionManager = DistributionManager.getManager();
+    protected DistributionModel currentDistributionModel = null;
+    private AbstractRendererStyles commonStyle = initDefaultRendererStyle();
 
-    /**
-     * commonly describe style of rendered elements
-     */
-    public static class RenderOptions {
-        public static Scale scale = Scale.MEDIUM;
-        public static int alpha = (int)(0.6 * 255.0);
-        public static int largeSectorsSize = 30;
-        public static int siteSize = 10;
-        public static Color border = Color.BLACK;
-        public static Color siteFill = new Color(128, 128, 128, alpha);
-        public static Color sectorFill = new Color(255, 255, 128, alpha);
-        public static boolean antialiazing = true;
-        public static int maxSitesLabel = 50;
-        public static int maxSitesFull = 100;
-        public static int maxSitesLite = 1000;
-        public static int maxSymbolSize = 40;
-        public static boolean drawLabels = false;
-        public static boolean scaleSymbols = true;
-    }
+    protected abstract AbstractRendererStyles initDefaultRendererStyle();
 
     public void setScaling(Envelope bounds_transformed, Envelope data_bounds, final IProgressMonitor monitor, long count) {
         double dataScaled = (bounds_transformed.getHeight() * bounds_transformed.getWidth())
                 / (data_bounds.getHeight() * data_bounds.getWidth());
 
         double countScaled = dataScaled * count / 2;
-        RenderOptions.drawLabels = countScaled < RenderOptions.maxSitesLabel;
-        if (countScaled < RenderOptions.maxSitesFull) {
-            RenderOptions.scale = Scale.LARGE;
-        } else if (countScaled > RenderOptions.maxSitesLite) {
-            RenderOptions.scale = Scale.SMALL;
+        setDrawLabel(countScaled);
+        if (countScaled < commonStyle.getMaxElementsFull()) {
+            commonStyle.setScale(Scale.LARGE);
+        } else if (countScaled > commonStyle.getMaxElementsLite()) {
+            commonStyle.setScale(Scale.SMALL);
         } else {
-            RenderOptions.scale = Scale.MEDIUM;
+            commonStyle.setScale(Scale.MEDIUM);
         }
-        if (RenderOptions.scale.equals(Scale.LARGE) && RenderOptions.scaleSymbols) {
-            RenderOptions.largeSectorsSize *= Math.sqrt(RenderOptions.maxSitesFull) / (3 * Math.sqrt(countScaled));
-            RenderOptions.largeSectorsSize = Math.min(RenderOptions.largeSectorsSize, RenderOptions.maxSymbolSize);
+        if (commonStyle.getScale().equals(Scale.LARGE) && commonStyle.isScaleSymbols()) {
+            int largeSectorsSize = commonStyle.getLargeElementSize();
+            largeSectorsSize *= Math.sqrt(commonStyle.getMaxElementsFull()) / (3 * Math.sqrt(countScaled));
+            largeSectorsSize = Math.min(largeSectorsSize, commonStyle.getMaxSymbolSize());
+            commonStyle.setLargeElementSize(largeSectorsSize);
         }
-
         bounds_transformed.expandBy(0.75 * (bounds_transformed.getHeight() + bounds_transformed.getWidth()));
     }
+
+    /**
+     * set requirement to draw labels
+     * 
+     * @param countScaled
+     */
+    protected abstract void setDrawLabel(double countScaled);
 
     public static final String BLACKBOARD_NODE_LIST = "org.amanzi.awe.tool.star.StarTool.nodes";
 
@@ -138,63 +133,23 @@ public class AbstractRenderer extends RendererImpl {
         try {
 
             setStyle(destination);
-
             // find a resource to render
-            IRenderableModel model = resource.resolve(IRenderableModel.class, monitor);
+            model = resource.resolve(getResolvedClass(), monitor);
+            initCurrentDistribution();
             // get rendering bounds and zoom
             setCrsTransforms(resource.getInfo(null).getCRS());
             Envelope bounds_transformed = getTransformedBounds();
             Envelope data_bounds = model.getBounds();
-
-            // TODO: refactor
+            Long count;
             if (bounds_transformed == null) {
-                RenderOptions.scale = Scale.MEDIUM;
+                commonStyle.setScale(Scale.MEDIUM);
             } else if (data_bounds != null && data_bounds.getHeight() > 0 && data_bounds.getWidth() > 0) {
-                if (model instanceof INetworkModel) {
-                    long count = ((INetworkModel)model).getNodeCount(NetworkElementNodeType.SITE) / 2;// TODO:
-                    // TODO: LN: this property should be moved to another preference store
-                    // if (NeoLoaderPlugin
-                    // .getDefault()
-                    // .getPreferenceStore()
-                    // .getBoolean(
-                    // DataLoadPreferences.NETWORK_COMBINED_CALCULATION)) {
-                    // double density = getAverageDensity(monitor);
-                    // if (density > 0)
-                    // count = (long) (density * data_bounds.getHeight() * data_bounds
-                    // .getWidth());
-                    // }
-                    setScaling(bounds_transformed, data_bounds, monitor, count);
-                } else if (model instanceof IMeasurementModel) {
-                    long count = ((IMeasurementModel)model).getNodeCount(((IMeasurementModel)model).getPrimaryType()) / 2;
-                    setScaling(bounds_transformed, data_bounds, monitor, count);
-                }
+                count = getRenderableElementCount(model);
+                setScaling(bounds_transformed, data_bounds, monitor, count);
             }
             // TODO: selection
 
-            for (IDataElement element : model.getElements(data_bounds)) {
-                Coordinate location = model.getCoordinate(element);
-                if (location == null) {
-                    continue;
-                }
-                Coordinate world_location = new Coordinate();
-                if (bounds_transformed != null && !bounds_transformed.contains(location)) {
-                    continue; // Don't draw points outside viewport
-                }
-                try {
-                    JTS.transform(location, world_location, transform_d2w);
-                } catch (Exception e) {
-                    JTS.transform(location, world_location, transform_w2d.inverse());
-                }
-
-                java.awt.Point p = getContext().worldToPixel(world_location);
-
-                renderElement(destination, p, element, model);
-
-                monitor.worked(1);
-                // count++;
-                if (monitor.isCanceled())
-                    break;
-            }
+            renderElements(destination, bounds_transformed, data_bounds, monitor);
 
         } catch (IOException e) {
             LOGGER.error("Could not relosve resource.", e);
@@ -209,10 +164,190 @@ public class AbstractRenderer extends RendererImpl {
     }
 
     /**
+     * render elements from current model
+     * 
+     * @param destination
+     * @throws TransformException
+     * @throws AWEException
+     * @throws NoninvertibleTransformException
+     */
+    private void renderElements(Graphics2D destination, Envelope bounds_transformed, Envelope data_bounds, IProgressMonitor monitor)
+            throws NoninvertibleTransformException, AWEException, TransformException {
+        for (IDataElement element : model.getElements(data_bounds)) {
+            Coordinate location = model.getCoordinate(element);
+            if (location == null) {
+                continue;
+            }
+            Coordinate world_location = new Coordinate();
+            if (bounds_transformed != null && !bounds_transformed.contains(location)) {
+                continue; // Don't draw points outside viewport
+            }
+            try {
+                JTS.transform(location, world_location, transform_d2w);
+            } catch (Exception e) {
+                JTS.transform(location, world_location, transform_w2d.inverse());
+            }
+
+            java.awt.Point p = getContext().worldToPixel(world_location);
+
+            renderElement(destination, p, element, model);
+
+            monitor.worked(1);
+            // count++;
+            if (monitor.isCanceled())
+                break;
+        }
+    }
+
+    /**
+     * return renderable element count
+     * 
+     * @param model2
+     */
+    protected abstract long getRenderableElementCount(IRenderableModel model);
+
+    /**
+     * render element based on latitude and longitude values;
+     * 
+     * @param destination
+     * @param point
+     * @param element
+     */
+    protected abstract void renderCoordinateElement(Graphics2D destination, Point point, IDataElement element);
+
+    /**
+     * generate required shape element
+     * 
+     * @param shape -shape of feature element
+     * @param destination
+     * @param size -current s
+     * @param isFill- is need to feel shape
+     */
+    protected void drawElement(RenderShape shape, Graphics2D destination, Point point, IDataElement element, boolean isFill) {
+        int size = getSize();
+        int x = point.x - size;
+        int y = point.y - size;
+        Color color = commonStyle.changeColor(getColor(element), commonStyle.getAlpha());
+        switch (shape) {
+        case OVAL:
+            drawOval(destination, isFill, x, y, size, color);
+            break;
+        case RECTUNGLE:
+            drawRect(destination, isFill, x, y, size, color);
+        default:
+            break;
+        }
+    }
+
+    /**
+     * return default element size depends of scale
+     * 
+     * @return
+     */
+    private int getSize() {
+        switch (commonStyle.getScale()) {
+        case MEDIUM:
+            return commonStyle.getMediumElementSize() / 2;
+        case LARGE:
+            return commonStyle.getLargeElementSize() / 2;
+        default:
+            break;
+        }
+        return 1;
+    }
+
+    /**
+     * draw oval
+     * 
+     * @param destination
+     * @param isFill
+     * @param x
+     * @param y
+     * @param size
+     * @param color
+     */
+    protected void drawOval(Graphics2D destination, boolean isFill, int x, int y, int size, Color color) {
+        destination.setColor(commonStyle.getBorderColor());
+        destination.drawOval(x, y, size, size);
+        if (isFill) {
+            destination.setColor(color);
+            destination.fillOval(x, y, size, size);
+        }
+
+    }
+
+    /**
+     * draw rectungle
+     * 
+     * @param destination
+     * @param isFill
+     * @param x
+     * @param y
+     * @param size
+     * @param color
+     */
+    protected void drawRect(Graphics2D destination, boolean isFill, int x, int y, int size, Color color) {
+        destination.setColor(commonStyle.getBorderColor());
+        destination.drawRect(x, y, size, size);
+        if (isFill) {
+            destination.setColor(color);
+            destination.fillRect(x, y, size, size);
+        }
+    }
+
+    /**
+     * get color from distribution ... if distribution not exist then return default border color
+     * 
+     * @param element
+     * @return
+     */
+    protected Color getColor(IDataElement element) {
+        if (currentDistributionModel == null) {
+            return getDefaultColor(element);
+        }
+        IDistributionBar bar = currentDistributionModel.getBarForAggregatedElement(element);
+        if (bar == null || bar.getColor() == null) {
+            LOGGER.info(" <getColor(IDataElement element)> Cann't find bar of distribution " + currentDistributionModel + " for "
+                    + element + " element");
+            return getDefaultColor(element);
+        }
+        return bar.getColor();
+    }
+
+    /**
+     * return default color
+     * 
+     * @param element
+     * @return
+     */
+    protected Color getDefaultColor(IDataElement element) {
+        switch (commonStyle.getScale()) {
+        case MEDIUM:
+        case SMALL:
+            return commonStyle.getBorderColor();
+        case LARGE:
+            return getDefaultFillColorByElement(element);
+        default:
+            return null;
+        }
+    }
+
+    /**
+     * return default fill color for element;
+     */
+    protected abstract Color getDefaultFillColorByElement(IDataElement element);
+
+    protected void initCurrentDistribution() {
+        if (model instanceof IDistributionalModel) {
+            currentDistributionModel = distributionManager.getCurrent((IDistributionalModel)model);
+        }
+    }
+
+    /**
      * set default style to destination
      */
     protected void setStyle(Graphics2D destination) {
-        if (RenderOptions.antialiazing) {
+        if (commonStyle.isAntialiazing()) {
             destination.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             destination.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         }
@@ -258,10 +393,6 @@ public class AbstractRenderer extends RendererImpl {
         return bounds_transformed;
     }
 
-    protected Color changeColor(Color color, int toAlpha) {
-        return new Color(color.getRed(), color.getGreen(), color.getBlue(), toAlpha);
-    }
-
     /**
      * gets average count of geoNeo.getCount() from all resources in map
      * 
@@ -273,8 +404,9 @@ public class AbstractRenderer extends RendererImpl {
         long count = 0;
         try {
             for (ILayer layer : getContext().getMap().getMapLayers()) {
-                if (layer.getGeoResource().canResolve(IMeasurementModel.class)) {
-                    IMeasurementModel resource = layer.getGeoResource().resolve(IMeasurementModel.class, monitor);
+                Class< ? extends IRenderableModel> classToResolve = getResolvedClass();
+                if (layer.getGeoResource().canResolve(classToResolve)) {
+                    IRenderableModel resource = layer.getGeoResource().resolve(classToResolve, monitor);
                     Envelope dbounds = resource.getBounds();
                     if (dbounds != null) {
                         result += calculateResult(dbounds, resource);
@@ -291,13 +423,20 @@ public class AbstractRenderer extends RendererImpl {
     }
 
     /**
+     * return class which can be resolved with georesource
+     * 
+     * @return
+     */
+    protected abstract Class< ? extends IRenderableModel> getResolvedClass();
+
+    /**
      * calculate average between necessary nodes count and size
      * 
      * @param dbounds
      * @param resource
      * @return
      */
-    protected double calculateResult(Envelope dbounds, IMeasurementModel resource) {
+    protected double calculateResult(Envelope dbounds, IRenderableModel resource) {
         return 0d;
     }
 }

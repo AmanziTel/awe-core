@@ -15,8 +15,10 @@ package org.amanzi.neo.services;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import net.refractions.udig.ui.PlatformGIS;
 
@@ -403,6 +405,27 @@ public class DistributionService extends AbstractService {
     }
 
     /**
+     * find bar by aggregated node
+     */
+    public Set<Node> findBarsByAggregationNode(Node aggregatedNode) {
+        if (aggregatedNode == null) {
+            LOGGER.error("aggregatedNode cannot be null");
+            throw new IllegalArgumentException("aggregatedNode cannot be null");
+        }
+        Iterator<Relationship> rel = aggregatedNode.getRelationships(Direction.INCOMING, DistributionRelationshipTypes.AGGREGATED)
+                .iterator();
+        if (rel == null || !rel.hasNext()) {
+            LOGGER.info("<findBarByAggregationNode(Node aggregatedNode)> cannot find AGGREGATEDrelationship");
+            return new HashSet<Node>();
+        }
+        Set<Node> barSet = new HashSet<Node>();
+        while (rel.hasNext()) {
+            barSet.add(rel.next().getOtherNode(aggregatedNode));
+        }
+        return barSet;
+    }
+
+    /**
      * Creates new Aggregation Bar Node in Database
      * 
      * @param rootAggregationNode root node of Distribution Structure
@@ -656,23 +679,23 @@ public class DistributionService extends AbstractService {
      * @param distributionModelRoot root of Distribution Model - can be null, and in this case
      *        current distribution model will be skipped
      */
-    public void setCurrentDistributionModel(Node analyzedModelRoot, Node distributionModelRoot) throws DatabaseException {
-        LOGGER.debug("start setCurrentDistributionModel(<" + analyzedModelRoot + ">, <" + distributionModelRoot + ">)");
+    public void setCurrentDistributionModel(Node analyzedModelRoot, Node rootAgr) throws DatabaseException {
+        LOGGER.debug("start setCurrentDistributionModel(<" + analyzedModelRoot + ">, <" + rootAgr + ">)");
 
         // check input
         if (analyzedModelRoot == null) {
             LOGGER.error("Input analyzedModelRoot cannot be null");
             throw new IllegalArgumentException("Input analyzedModelRoot cannot be null");
         }
-
         // make changes
         Transaction tx = graphDb.beginTx();
         try {
 
-            if (distributionModelRoot == null) {
+            if (rootAgr == null) {
                 analyzedModelRoot.removeProperty(CURRENT_DISTRIBUTION_MODEL);
             } else {
-                analyzedModelRoot.setProperty(CURRENT_DISTRIBUTION_MODEL, distributionModelRoot.getProperty(NAME));
+                String id = rootAgr.getProperty(PROPERTY_NAME) + "-" + rootAgr.getProperty(NAME);
+                analyzedModelRoot.setProperty(CURRENT_DISTRIBUTION_MODEL, id);
             }
 
             tx.success();
@@ -685,6 +708,44 @@ public class DistributionService extends AbstractService {
         }
 
         LOGGER.debug("finish setCurrentDistributionModel()");
+    }
+
+    /**
+     * get current distribution for necessary model
+     * 
+     * @throws DatabaseException
+     */
+    public Node getCurrentDistribution(Node necessaryModel) throws DatabaseException {
+        LOGGER.debug("start getCurrentDistribution(<" + necessaryModel + ">)");
+
+        if (necessaryModel == null) {
+            LOGGER.error("Input analyzedModelRoot cannot be null");
+            throw new IllegalArgumentException("Input analyzedModelRoot cannot be null");
+        }
+        String currrentDistributionName = (String)necessaryModel.getProperty(CURRENT_DISTRIBUTION_MODEL, null);
+        if (currrentDistributionName == null) {
+            LOGGER.error("<getCurrentDistribution(Node necessaryModel)> currrentDistributionName cannot be null");
+            return null;
+        }
+        try {
+            for (Relationship rel : necessaryModel.getRelationships(DistributionRelationshipTypes.ROOT_AGGREGATION,
+                    Direction.OUTGOING)) {
+                Node distributionNode = rel.getOtherNode(necessaryModel);
+                String name = (String)distributionNode.getProperty(NAME, StringUtils.EMPTY);
+                String property = (String)distributionNode.getProperty(PROPERTY_NAME, StringUtils.EMPTY);
+                String id = property + "-" + name;
+                if (id.equals(currrentDistributionName)) {
+                    return distributionNode;
+                }
+            }
+
+        } catch (Exception e) {
+            LOGGER.error("Error on setting current Distribution Model");
+            throw new DatabaseException(e);
+        }
+
+        LOGGER.debug("finish getCurrentDistribution()");
+        return null;
     }
 
     /**
@@ -808,7 +869,8 @@ public class DistributionService extends AbstractService {
 
             @Override
             public Evaluation evaluate(Path arg0) {
-                if (!arg0.endNode().hasProperty(UD_NAME) || arg0.endNode().getProperty(UD_NAME).equals(distribution.getData().getName())) {
+                if (!arg0.endNode().hasProperty(UD_NAME)
+                        || arg0.endNode().getProperty(UD_NAME).equals(distribution.getData().getName())) {
                     return Evaluation.INCLUDE_AND_CONTINUE;
                 } else {
                     return Evaluation.EXCLUDE_AND_CONTINUE;
@@ -952,7 +1014,7 @@ public class DistributionService extends AbstractService {
     public Node getReferenceNode() {
         return graphDb.getReferenceNode();
     }
-    
+
     /**
      * Searches for a Root Aggregation Nodes
      * 

@@ -13,10 +13,13 @@
 
 package org.amanzi.awe.render.drive;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 
 import org.amanzi.awe.render.core.AbstractRenderer;
+import org.amanzi.awe.render.core.AbstractRendererStyles;
+import org.amanzi.awe.render.core.RenderShape;
 import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.enums.INodeType;
@@ -36,6 +39,13 @@ import com.vividsolutions.jts.geom.Envelope;
  * @since 1.0.0
  */
 public class DriveRenderer extends AbstractRenderer {
+    private DefaultDriveRendererStyles driveRendererStyle;
+
+    @Override
+    protected AbstractRendererStyles initDefaultRendererStyle() {
+        driveRendererStyle = DefaultDriveRendererStyles.getInstance();
+        return driveRendererStyle;
+    }
 
     @Override
     protected void renderElement(Graphics2D destination, Point point, IDataElement mpLocation, IRenderableModel model) {
@@ -43,47 +53,49 @@ public class DriveRenderer extends AbstractRenderer {
         if (!DriveNodeTypes.MP.equals(type)) {
             throw new IllegalArgumentException("Could not render element of type " + type.getId());
         }
-
-        renderMPelement(destination, point, mpLocation);
-    }
-
-    /**
-     * render location element on map
-     * 
-     * @param destination
-     * @param point
-     * @param element
-     */
-    private void renderMPelement(Graphics2D destination, Point point, IDataElement element) {
-        int size = 2;
-        switch (RenderOptions.scale) {
-        case SMALL:
-            destination.setColor(RenderOptions.border);
-            destination.drawRect(point.x - size / 2, point.y - size / 2, size, size);
-            break;
-        case MEDIUM:
-            size = RenderOptions.siteSize;
-            destination.setColor(RenderOptions.border);
-            destination.drawOval(point.x - size / 2, point.y - size / 2, size, size);
-            break;
-        case LARGE:
-            size = RenderOptions.largeSectorsSize / 3;
-            destination.setColor(RenderOptions.border);
-            destination.drawOval(point.x - size / 2, point.y - size / 2, size, size);
-            destination.setColor(RenderOptions.siteFill);
-            destination.fillOval(point.x - size / 2, point.y - size / 2, size, size);
-        }
-
+        renderCoordinateElement(destination, point, mpLocation);
     }
 
     @Override
     protected void setStyle(Graphics2D destination) {
         super.setStyle(destination);
-
     }
 
     @Override
-    protected double calculateResult(Envelope dbounds, IMeasurementModel resource) {
-        return (resource.getNodeCount(DriveNodeTypes.MP) / 2) / (dbounds.getHeight() * dbounds.getWidth());
+    protected double calculateResult(Envelope dbounds, IRenderableModel resource) {
+        return (((IMeasurementModel)resource).getNodeCount(DriveNodeTypes.MP) / 2) / (dbounds.getHeight() * dbounds.getWidth());
+    }
+
+    @Override
+    protected void setDrawLabel(double countScaled) {
+    }
+
+    @Override
+    protected long getRenderableElementCount(IRenderableModel model) {
+        return ((IMeasurementModel)model).getNodeCount(((IMeasurementModel)model).getPrimaryType()) / 2;
+    }
+
+    @Override
+    protected Class< ? extends IRenderableModel> getResolvedClass() {
+        return IMeasurementModel.class;
+    }
+
+    @Override
+    protected Color getDefaultFillColorByElement(IDataElement element) {
+        return driveRendererStyle.getDefaultMpColor();
+    }
+
+    @Override
+    protected void renderCoordinateElement(Graphics2D destination, Point point, IDataElement element) {
+        switch (driveRendererStyle.getScale()) {
+        case SMALL:
+            drawElement(RenderShape.RECTUNGLE, destination, point, element, false);
+            break;
+        case MEDIUM:
+            drawElement(RenderShape.RECTUNGLE, destination, point, element, true);
+            break;
+        case LARGE:
+            drawElement(RenderShape.OVAL, destination, point, element, true);
+        }
     }
 }
