@@ -86,6 +86,7 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
     protected static final String INCORRECT_VALUE_DEFAULT = "default";
     protected static final String INCORRECT_VALUE_NA = "N/A";
     protected static final String INCORRECT_VALUE_DOUBLE_DASH = "--";
+    protected static final String INCORRECT_VALUE_DASH = "-";
 
     /**
      * check value for null or empty or String value "NULL" or "?"
@@ -101,7 +102,7 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
             if (stringValue.isEmpty() || stringValue.equals(INCORRECT_VALUE_QUEST_SYMBOL)
                     || stringValue.equalsIgnoreCase(INCORRECT_VALUE_NULL) || stringValue.equalsIgnoreCase(INCORRECT_VALUE_DEFAULT)
                     || stringValue.equalsIgnoreCase(INCORRECT_VALUE_DOUBLE_DASH)
-                    || stringValue.equalsIgnoreCase(INCORRECT_VALUE_NA)) {
+                    || stringValue.equalsIgnoreCase(INCORRECT_VALUE_DASH) || stringValue.equalsIgnoreCase(INCORRECT_VALUE_NA)) {
                 return false;
             }
         }

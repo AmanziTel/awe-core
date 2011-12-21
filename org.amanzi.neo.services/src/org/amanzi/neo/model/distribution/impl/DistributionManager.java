@@ -135,6 +135,36 @@ public class DistributionManager {
     }
 
     /**
+     * Get current distribution model belongs to required model
+     * 
+     * @param analyzedModel
+     * @throws DatabaseException
+     */
+    public DistributionModel getCurrent(IDistributionalModel model) {
+        if (model == null || model.getRootNode() == null) {
+            LOGGER.error("model cannot be null");
+            throw new IllegalArgumentException("model cannot be null");
+        }
+        Node currentDistributionNode;
+        try {
+            currentDistributionNode = distributionService.getCurrentDistribution(model.getRootNode());
+        } catch (DatabaseException e) {
+            LOGGER.error("Error when try to find distribution  for " + model, e);
+            return null;
+        }
+        if (currentDistributionNode == null) {
+            LOGGER.info("There is no active distribution model in model " + model);
+            return null;
+        }
+        try {
+            return new DistributionModel(model, currentDistributionNode);
+        } catch (AWEException e) {
+            LOGGER.error("Error when try to init distribution  for " + model, e);
+            return null;
+        }
+    }
+
+    /**
      * Returns list of Distributions available for current parameters. User Defined Distributions
      * include if includeUserDefined is true.
      * 
@@ -148,7 +178,8 @@ public class DistributionManager {
      */
     public List<IDistribution< ? >> getDistributions(IDistributionalModel model, INodeType nodeType, String propertyName,
             ChartType chartType, boolean includeUserDefined) throws DistributionManagerException {
-        LOGGER.debug("start getDistributions(<" + model + ">, <" + nodeType + ">, " + propertyName + ">, <" + chartType + ">, <" + includeUserDefined + ">)");
+        LOGGER.debug("start getDistributions(<" + model + ">, <" + nodeType + ">, " + propertyName + ">, <" + chartType + ">, <"
+                + includeUserDefined + ">)");
 
         // check input
         if (model == null) {
@@ -273,7 +304,7 @@ public class DistributionManager {
 
     /**
      * Creates Distribution from XML file
-     *
+     * 
      * @param path
      * @throws FileNotFoundException
      * @throws DistributionXmlParsingException
@@ -285,7 +316,7 @@ public class DistributionManager {
         DistributionXmlParser xmlParser = new DistributionXmlParser(new FileInputStream(path), path);
         distributionService.createUserDefinedDistribution(xmlParser.getXmlDistr());
     }
-    
+
     public List<IDistributionModel> getAllDistributionModels(IDistributionalModel analyzedModel) throws AWEException {
         List<IDistributionModel> res = new ArrayList<IDistributionModel>();
         List<Node> nodes = distributionService.findRootAggregationNodes(analyzedModel.getRootNode());
@@ -312,8 +343,8 @@ public class DistributionManager {
     }
 
     /**
-     * Tries to find Distribution for Strings and Enums in Cache Creates new one if nothing found and put it to
-     * cache
+     * Tries to find Distribution for Strings and Enums in Cache Creates new one if nothing found
+     * and put it to cache
      * 
      * @param model
      * @param nodeType
@@ -354,9 +385,8 @@ public class DistributionManager {
     }
 
     /**
-     * Tries to find Distribution in Cache Creates new one if nothing found and put it to
-     * cache
-     *
+     * Tries to find Distribution in Cache Creates new one if nothing found and put it to cache
+     * 
      * @param model
      * @param nodeType
      * @param propertyName

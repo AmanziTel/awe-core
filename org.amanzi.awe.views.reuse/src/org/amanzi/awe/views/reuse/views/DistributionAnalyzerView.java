@@ -1221,8 +1221,7 @@ public class DistributionAnalyzerView extends ViewPart {
 
                 if (needRedraw) {
                     updateChartColors();
-                    // eventManager.notify(EventUIType.DISTRIBUTION_BAR_SELECTED,
-                    // selectedBar);
+                    // eventManager.notify(EventUIType.DISTRIBUTION_BAR_SELECTED, selectedBar);
                 }
 
                 // TODO: also it should open NetworkTreeView with this Distribution

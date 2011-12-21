@@ -54,7 +54,7 @@ public class NetworkRenderMetrics extends AbstractRenderMetrics {
      * @return a new SitesRenderer
      */
     public Renderer createRenderer() {
-        return new NewNetworkRenderer();
+        return new NetworkRenderer();
     }
 
 }

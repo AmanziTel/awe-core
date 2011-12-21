@@ -5,7 +5,7 @@
          point="net.refractions.udig.project.renderer">
       <renderer
             class="org.amanzi.awe.render.network.NetworkRenderMetricsFactory"
-            id="oorg.amanzi.awe.render.network.networkrenderer"
+            id="org.amanzi.awe.render.network.networkrenderer"
             name="Amanzi Measurment Renderer">
       </renderer>
    </extension>
