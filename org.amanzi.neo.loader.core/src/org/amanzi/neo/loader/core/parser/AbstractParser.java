@@ -111,6 +111,10 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
      * @return next parsed IData object, or null in case if parsing finished
      */
     protected abstract T3 parseElement();
+    
+    protected void saveElement(T3 element) {
+        
+    }
 
     /**
      * Parses single file

@@ -104,5 +104,10 @@ public class CSVContainer implements IData {
     public void setFile(File fileName) {
         this.file = fileName;
     }
+    
+    public void put(String header, String value) {
+        row.add(value);
+        headers.add(header);
+    }
 
 }
