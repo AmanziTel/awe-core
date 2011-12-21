@@ -53,5 +53,10 @@ public abstract class AbstractTag implements IXmlTag {
 
     @Override
     public abstract IXmlTag startElement(String localName, Attributes attributes);
+    
+    @Override
+    public String toString() {
+        return getName();
+    }
 
 }

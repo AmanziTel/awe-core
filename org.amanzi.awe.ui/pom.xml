@@ -3,12 +3,12 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-  	<groupId>org.amanzi.awe</groupId>
-    <artifactId>core</artifactId>    
-    <version>${awe-version}</version>
+    <artifactId>awe-core</artifactId>
+    <groupId>org.amanzi</groupId>
+    <version>0.0.1-SNAPSHOT</version>
   </parent>
   <groupId>org.amanzi</groupId>
   <artifactId>org.amanzi.awe.ui</artifactId>
-  <version>1.0.0.qualifier</version>
+  <version>1.0.0-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
 </project>
