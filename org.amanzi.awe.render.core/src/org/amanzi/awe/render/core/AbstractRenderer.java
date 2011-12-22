@@ -27,7 +27,6 @@ import net.refractions.udig.project.render.RenderException;
 import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.awe.models.catalog.neo.GeoResource;
 import org.amanzi.awe.neostyle.BaseNeoStyle;
-import org.amanzi.neo.model.distribution.IDistributionBar;
 import org.amanzi.neo.model.distribution.IDistributionalModel;
 import org.amanzi.neo.model.distribution.impl.DistributionManager;
 import org.amanzi.neo.model.distribution.impl.DistributionModel;
@@ -66,9 +65,24 @@ public abstract class AbstractRenderer extends RendererImpl {
     protected DistributionManager distributionManager = DistributionManager.getManager();
     protected DistributionModel currentDistributionModel = null;
     private AbstractRendererStyles commonStyle = initDefaultRendererStyle();
+    public static final String BLACKBOARD_NODE_LIST = "org.amanzi.awe.tool.star.StarTool.nodes";
 
+    /**
+     * initialize default renderer styles;
+     * 
+     * @return
+     */
     protected abstract AbstractRendererStyles initDefaultRendererStyle();
 
+    /**
+     * prepare scaling value before elements render. Scale is answer for the view of renderable
+     * elements
+     * 
+     * @param bounds_transformed
+     * @param data_bounds
+     * @param monitor
+     * @param count
+     */
     public void setScaling(Envelope bounds_transformed, Envelope data_bounds, final IProgressMonitor monitor, long count) {
         double dataScaled = (bounds_transformed.getHeight() * bounds_transformed.getWidth())
                 / (data_bounds.getHeight() * data_bounds.getWidth());
@@ -98,8 +112,6 @@ public abstract class AbstractRenderer extends RendererImpl {
      */
     protected abstract void setDrawLabel(double countScaled);
 
-    public static final String BLACKBOARD_NODE_LIST = "org.amanzi.awe.tool.star.StarTool.nodes";
-
     @Override
     public void render(Graphics2D destination, IProgressMonitor monitor) throws RenderException {
         ILayer layer = getContext().getLayer();
@@ -116,6 +128,8 @@ public abstract class AbstractRenderer extends RendererImpl {
     }
 
     /**
+     * render selected georesource
+     * 
      * @param destination
      * @param resource
      * @param monitor
@@ -216,24 +230,27 @@ public abstract class AbstractRenderer extends RendererImpl {
     protected abstract void renderCoordinateElement(Graphics2D destination, Point point, IDataElement element);
 
     /**
-     * generate required shape element
+     * draw coordinate element(element which contain latitude and longitude properties for example
+     * Site in Network Model or Mp in drive Model) on map
      * 
      * @param shape -shape of feature element
      * @param destination
      * @param size -current s
      * @param isFill- is need to feel shape
      */
-    protected void drawElement(RenderShape shape, Graphics2D destination, Point point, IDataElement element, boolean isFill) {
+    protected void drawCoordinateElement(RenderShape shape, Graphics2D destination, Point point, IDataElement element,
+            boolean isFill) {
         int size = getSize();
         int x = point.x - size;
         int y = point.y - size;
         Color color = commonStyle.changeColor(getColor(element), commonStyle.getAlpha());
         switch (shape) {
-        case OVAL:
+        case ELLIPSE:
             drawOval(destination, isFill, x, y, size, color);
             break;
-        case RECTUNGLE:
+        case RECTANGLE:
             drawRect(destination, isFill, x, y, size, color);
+            break;
         default:
             break;
         }
@@ -244,7 +261,7 @@ public abstract class AbstractRenderer extends RendererImpl {
      * 
      * @return
      */
-    private int getSize() {
+    protected int getSize() {
         switch (commonStyle.getScale()) {
         case MEDIUM:
             return commonStyle.getMediumElementSize() / 2;
@@ -257,7 +274,7 @@ public abstract class AbstractRenderer extends RendererImpl {
     }
 
     /**
-     * draw oval
+     * draw ellipse
      * 
      * @param destination
      * @param isFill
@@ -277,7 +294,7 @@ public abstract class AbstractRenderer extends RendererImpl {
     }
 
     /**
-     * draw rectungle
+     * draw rectangle
      * 
      * @param destination
      * @param isFill
@@ -287,11 +304,12 @@ public abstract class AbstractRenderer extends RendererImpl {
      * @param color
      */
     protected void drawRect(Graphics2D destination, boolean isFill, int x, int y, int size, Color color) {
-        destination.setColor(commonStyle.getBorderColor());
-        destination.drawRect(x, y, size, size);
         if (isFill) {
             destination.setColor(color);
             destination.fillRect(x, y, size, size);
+        } else {
+            destination.setColor(commonStyle.getBorderColor());
+            destination.drawRect(x, y, size, size);
         }
     }
 
@@ -305,13 +323,13 @@ public abstract class AbstractRenderer extends RendererImpl {
         if (currentDistributionModel == null) {
             return getDefaultColor(element);
         }
-        IDistributionBar bar = currentDistributionModel.getBarForAggregatedElement(element);
-        if (bar == null || bar.getColor() == null) {
+        Color barColor = currentDistributionModel.getBarColorForAggregatedElement(element);
+        if (barColor == null) {
             LOGGER.info(" <getColor(IDataElement element)> Cann't find bar of distribution " + currentDistributionModel + " for "
                     + element + " element");
             return getDefaultColor(element);
         }
-        return bar.getColor();
+        return barColor;
     }
 
     /**
@@ -337,6 +355,9 @@ public abstract class AbstractRenderer extends RendererImpl {
      */
     protected abstract Color getDefaultFillColorByElement(IDataElement element);
 
+    /**
+     * distribution model will be initialized actually after some analyze was made;
+     */
     protected void initCurrentDistribution() {
         if (model instanceof IDistributionalModel) {
             currentDistributionModel = distributionManager.getCurrent((IDistributionalModel)model);
@@ -354,14 +375,13 @@ public abstract class AbstractRenderer extends RendererImpl {
     }
 
     /**
+     * render currentElement element (for example site or mp location element)
+     * 
      * @param destination
      * @param point
      * @param element
      */
-    protected void renderElement(Graphics2D destination, Point point, IDataElement element, IRenderableModel model) {
-        destination.setColor(Color.BLACK);
-        destination.drawOval(point.x - 1, point.y - 1, 2, 2);
-    }
+    protected abstract void renderElement(Graphics2D destination, Point point, IDataElement element, IRenderableModel model);
 
     @Override
     public void render(IProgressMonitor monitor) throws RenderException {
@@ -369,6 +389,12 @@ public abstract class AbstractRenderer extends RendererImpl {
         render(g, monitor);
     }
 
+    /**
+     * set transforms
+     * 
+     * @param dataCrs
+     * @throws FactoryException
+     */
     private void setCrsTransforms(CoordinateReferenceSystem dataCrs) throws FactoryException {
         boolean lenient = true; // needs to be lenient to work on uDIG 1.1
                                 // (otherwise we get error:
@@ -381,6 +407,12 @@ public abstract class AbstractRenderer extends RendererImpl {
                                                                                 // also
     }
 
+    /**
+     * get transformded bounds
+     * 
+     * @return
+     * @throws TransformException
+     */
     private Envelope getTransformedBounds() throws TransformException {
         ReferencedEnvelope bounds = getRenderBounds();
         if (bounds == null) {

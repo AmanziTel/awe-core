@@ -20,9 +20,6 @@ import java.awt.Point;
 import org.amanzi.awe.render.core.AbstractRenderer;
 import org.amanzi.awe.render.core.AbstractRendererStyles;
 import org.amanzi.awe.render.core.RenderShape;
-import org.amanzi.neo.services.AbstractService;
-import org.amanzi.neo.services.NodeTypeManager;
-import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IMeasurementModel;
 import org.amanzi.neo.services.model.IRenderableModel;
@@ -49,10 +46,6 @@ public class DriveRenderer extends AbstractRenderer {
 
     @Override
     protected void renderElement(Graphics2D destination, Point point, IDataElement mpLocation, IRenderableModel model) {
-        INodeType type = NodeTypeManager.getType(mpLocation.get(AbstractService.TYPE).toString());
-        if (!DriveNodeTypes.MP.equals(type)) {
-            throw new IllegalArgumentException("Could not render element of type " + type.getId());
-        }
         renderCoordinateElement(destination, point, mpLocation);
     }
 
@@ -89,13 +82,13 @@ public class DriveRenderer extends AbstractRenderer {
     protected void renderCoordinateElement(Graphics2D destination, Point point, IDataElement element) {
         switch (driveRendererStyle.getScale()) {
         case SMALL:
-            drawElement(RenderShape.RECTUNGLE, destination, point, element, false);
+            drawCoordinateElement(RenderShape.RECTANGLE, destination, point, element, true);
             break;
         case MEDIUM:
-            drawElement(RenderShape.RECTUNGLE, destination, point, element, true);
+            drawCoordinateElement(RenderShape.RECTANGLE, destination, point, element, true);
             break;
         case LARGE:
-            drawElement(RenderShape.OVAL, destination, point, element, true);
+            drawCoordinateElement(RenderShape.ELLIPSE, destination, point, element, true);
         }
     }
 }

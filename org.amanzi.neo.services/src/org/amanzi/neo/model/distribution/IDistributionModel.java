@@ -134,5 +134,5 @@ public interface IDistributionModel extends IModel {
      * @return existed bar or null if not exist
      * @param required element
      */
-    public IDistributionBar getBarForAggregatedElement(IDataElement element);
+    public Color getBarColorForAggregatedElement(IDataElement element);
 }
