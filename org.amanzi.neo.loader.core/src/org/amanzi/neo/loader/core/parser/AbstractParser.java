@@ -26,7 +26,6 @@ import org.amanzi.neo.loader.core.IProgressEvent;
 import org.amanzi.neo.loader.core.LoaderMessages;
 import org.amanzi.neo.loader.core.ProgressEventImpl;
 import org.amanzi.neo.loader.core.saver.AbstractSaver;
-import org.amanzi.neo.loader.core.saver.IData;
 import org.amanzi.neo.loader.core.saver.ISaver;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
@@ -111,10 +110,6 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
      * @return next parsed IData object, or null in case if parsing finished
      */
     protected abstract T3 parseElement();
-    
-    protected void saveElement(T3 element) {
-        
-    }
 
     /**
      * Parses single file

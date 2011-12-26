@@ -17,7 +17,6 @@ import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.amanzi.neo.loader.core.saver.IData;
 import org.apache.commons.lang.StringUtils;
 
 /**

@@ -11,9 +11,8 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.core.saver;
+package org.amanzi.neo.loader.core.parser;
 
-import org.amanzi.neo.loader.core.parser.IDataElement;
 
 /**
  * <p>
@@ -23,6 +22,6 @@ import org.amanzi.neo.loader.core.parser.IDataElement;
  * @author Kondratenko_Vladislav
  * @since 1.0.0
  */
-public interface IData extends IDataElement {
+public interface IData {
 
 }

@@ -15,7 +15,7 @@ package org.amanzi.neo.loader.ui.wizards;
 
 import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.ILoader;
-import org.amanzi.neo.loader.core.saver.IData;
+import org.amanzi.neo.loader.core.parser.IData;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExecutableExtension;
 import org.eclipse.ui.IWorkbenchWizard;

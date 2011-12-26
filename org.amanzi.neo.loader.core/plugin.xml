@@ -74,5 +74,12 @@
             id="org.amanzi.neo.loader.core.saver.InterferenceSaver">
       </saver>
    </extension>
+   
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="org.amanzi.neo.loader.core.preferences.SynonymsInitializer">
+      </initializer>
+   </extension>
 
 </plugin>
