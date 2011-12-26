@@ -13,9 +13,6 @@
 
 package org.amanzi.neo.services.ui.icons;
 
-import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.Platform;
-import org.eclipse.swt.graphics.Image;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -27,6 +24,9 @@ import java.util.Map;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.ui.NeoServicesUiPlugin;
 import org.apache.log4j.Logger;
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 
 /**
@@ -47,11 +47,11 @@ public class IconManager {
     public static final String[] EXTENSIONS = new String[] {"png", "PNG", "gif", "GIF", "ico", "ICO", "bmp", "BMP", "jpg", "JPG",
             "jpeg", "JPEG", "tif", "TIF", "tiff", "TIFF"};
 
-    private final String ICONS_DIRECTORY = "icons";
+    private final String ICONS_DIRECTORY = "images/icons";
+    private final String EVENTS_DIRECTORY = "images/events";
     private Map<IconSize, IconContainer> existedContainers = new HashMap<IconSize, IconContainer>();
     private List<String> missesIcons = new LinkedList<String>();
     private final static String DOT_SEPARATOR = ".";
-    private final static String UNDERSCORE_SEPARATOR = "_";
 
     /**
      * get instance of icon manager
@@ -92,6 +92,32 @@ public class IconManager {
     }
 
     /**
+     * search default size image only by event type
+     * <p>
+     * default size is 16
+     * </p>
+     * 
+     * @param nodeType
+     * @return image if found and null if not found
+     */
+    public Image getImage(EventIcons icon) {
+        return getImage(icon, IconSize.SIZE_16);
+    }
+
+    /**
+     * search image by size and event icon type
+     * 
+     * @param nodeType
+     * @param size
+     * @return image or null if not found
+     */
+    public Image getImage(EventIcons nodeType, IconSize size) {
+        String iconName = nodeType.getIconName();
+        String directoryPath = getDirectoryPath(EVENTS_DIRECTORY, size.getImageSize());
+        return getImage(iconName, directoryPath, size);
+    }
+
+    /**
      * search image by name size and directory path
      * 
      * @param iconName the name of image
@@ -128,8 +154,7 @@ public class IconManager {
         String[] directoryFile = directory.list();
         for (String file : directoryFile) {
             for (String imgExt : EXTENSIONS) {
-                if (file.equals(iconName + DOT_SEPARATOR + imgExt)
-                        || file.equals(iconName + UNDERSCORE_SEPARATOR + DOT_SEPARATOR + imgExt)) {
+                if (file.equals(iconName + DOT_SEPARATOR + imgExt)) {
                     String imgFileName = directoryPath + FILE_SEPARATOR + file;
                     Image image = new Image(Display.getDefault(), imgFileName);
                     imageContainer.put(iconName, image);
