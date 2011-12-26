@@ -15,10 +15,8 @@ package org.amanzi.neo.services;
 
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import net.refractions.udig.ui.PlatformGIS;
 
@@ -407,7 +405,7 @@ public class DistributionService extends AbstractService {
     /**
      * find bar by aggregated node
      */
-    public Set<Node> findBarsByAggregationNode(Node aggregatedNode) {
+    public Node findBarByAggregatedNode(Node aggregatedNode, long parentId) {
         if (aggregatedNode == null) {
             LOGGER.error("aggregatedNode cannot be null");
             throw new IllegalArgumentException("aggregatedNode cannot be null");
@@ -416,13 +414,14 @@ public class DistributionService extends AbstractService {
                 .iterator();
         if (rel == null || !rel.hasNext()) {
             LOGGER.info("<findBarByAggregationNode(Node aggregatedNode)> cannot find AGGREGATEDrelationship");
-            return new HashSet<Node>();
         }
-        Set<Node> barSet = new HashSet<Node>();
         while (rel.hasNext()) {
-            barSet.add(rel.next().getOtherNode(aggregatedNode));
+            Node barNode = rel.next().getOtherNode(aggregatedNode);
+            if (barNode.getProperty(DatasetService.PARENT_ID, 0l).equals(parentId)) {
+                return barNode;
+            }
         }
-        return barSet;
+        return null;
     }
 
     /**

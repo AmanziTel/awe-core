@@ -16,7 +16,6 @@ package org.amanzi.neo.model.distribution.impl;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import net.refractions.udig.ui.PlatformGIS;
 
@@ -531,7 +530,7 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
     }
 
     @Override
-    public IDistributionBar getBarForAggregatedElement(IDataElement element) {
+    public Color getBarColorForAggregatedElement(IDataElement element) {
         if (element == null) {
             LOGGER.error("<getBarForAggregatedElement(" + element + ")>e lement cannot be null");
             throw new IllegalArgumentException("<getBarForAggregatedElement(" + element + ")>e lement cannot be null");
@@ -544,17 +543,12 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
         } else {
             elementNode = ((DataElement)element).getNode();
         }
-        Set<Node> foundBars = distributionService.findBarsByAggregationNode(elementNode);
-        for (Node barNode : foundBars) {
-            DistributionBar bar = createDistributionBar(barNode);
-            try {
-                if (getDistributionBars().contains(bar)) {
-                    return bar;
-                }
-            } catch (AWEException e) {
-                LOGGER.error("<getBarForAggregatedElement(" + element + ")>e lement cannot get distribution bars");
-            }
+        Node foundBar = distributionService.findBarByAggregatedNode(elementNode, rootNode.getId());
+        if (foundBar == null) {
+            LOGGER.error("<getBarForAggregatedElement(" + element + ")>e lement cannot get distribution bars");
+            return null;
         }
-        return null;
+        Color color = getColor(new DataElement(foundBar), DistributionService.BAR_COLOR);
+        return color;
     }
 }

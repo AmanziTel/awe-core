@@ -37,7 +37,7 @@ public class GeoService extends IService {
     private Throwable message;
     private URL url;
     private final Map<String, Serializable> params;
-    
+
     GeoService(Map<String, Serializable> params) {
         this.params = params;
         url = (URL)params.get(GeoServiceExtension.URL_KEY);
@@ -72,7 +72,9 @@ public class GeoService extends IService {
                 try {
                     // TODO: current project or all the projects?
                     for (IRenderableModel model : ProjectModel.getCurrentProjectModel().getAllRenderableModels()) {
-                        result.add(new GeoResource(this, model));
+                        if (checkForExistCoordinateElement(model)) {
+                            result.add(new GeoResource(this, model));
+                        }
                     }
                 } catch (AWEException e) {
                     LOGGER.error("Could not create a list of resources.", e);
@@ -83,6 +85,19 @@ public class GeoService extends IService {
             }
         }
         return members;
+    }
+
+    /**
+     * just check for location contain
+     * 
+     * @param gis
+     * @return
+     */
+    private boolean checkForExistCoordinateElement(IRenderableModel gis) {
+        if (gis.getMaxLongitude() >= 0d && gis.getMinLongitude() >= 0d && gis.getMaxLatitude() >= 0d && gis.getMinLatitude() >= 0d) {
+            return true;
+        }
+        return false;
     }
 
     @Override

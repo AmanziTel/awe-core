@@ -28,6 +28,7 @@ import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.ui.ApplicationGIS;
 import net.refractions.udig.project.ui.internal.actions.ZoomToLayer;
 
+import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.db.manager.DatabaseManagerFactory;
 import org.amanzi.neo.loader.core.LoaderUtils;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
@@ -35,8 +36,10 @@ import org.amanzi.neo.loader.core.preferences.PreferenceStore;
 import org.amanzi.neo.loader.ui.NeoLoaderPlugin;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.amanzi.neo.services.model.IDataModel;
+import org.amanzi.neo.services.model.IRenderableModel;
 import org.amanzi.neo.services.ui.utils.ActionUtil;
 import org.amanzi.neo.services.utils.RunnableWithResult;
+import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -53,6 +56,7 @@ import org.eclipse.ui.PlatformUI;
  * @since 1.0.0
  */
 public class LoaderUiUtils extends LoaderUtils {
+    private static final Logger LOGGER = Logger.getLogger(LoaderUiUtils.class);
     /*
      * constants
      */
@@ -145,6 +149,12 @@ public class LoaderUiUtils extends LoaderUtils {
                 List<ILayer> layerList = new ArrayList<ILayer>();
                 List<IGeoResource> listGeoRes = new ArrayList<IGeoResource>();
                 for (IDataModel gis : modelsList) {
+                    if (!checkForExistCoordinateElement(gis)) {
+                        LOGGER.info("Cann't add layer to map because model: " + gis.getName() + " doesn't contain locations");
+                        AweConsolePlugin.error("Cann't add layer to map because model" + gis.getName()
+                                + "  doesn't contain locations");
+                        continue;
+                    }
                     IGeoResource iGeoResource = getResourceForGis(curService, map, gis);
                     if (iGeoResource != null) {
                         listGeoRes.add(iGeoResource);
@@ -166,6 +176,21 @@ public class LoaderUiUtils extends LoaderUtils {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
 
+    }
+
+    /**
+     * just check for location contain
+     * 
+     * @param gis
+     * @return
+     */
+    private static boolean checkForExistCoordinateElement(IDataModel gis) {
+        IRenderableModel model = (IRenderableModel)gis;
+        if (model.getMaxLongitude() >= 0d && model.getMinLongitude() >= 0d && model.getMaxLatitude() >= 0d
+                && model.getMinLatitude() >= 0d) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -223,6 +248,9 @@ public class LoaderUiUtils extends LoaderUtils {
      * @param layers list of layers
      */
     public static void zoomToLayer(final List< ? extends ILayer> layers) {
+        if (layers.isEmpty()) {
+            return;
+        }
         ActionUtil.getInstance().runTask(new Runnable() {
             @Override
             public void run() {

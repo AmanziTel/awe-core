@@ -20,5 +20,5 @@ package org.amanzi.awe.render.core;
  */
 public enum RenderShape {
 
-    OVAL, RECTUNGLE
+    ELLIPSE, RECTANGLE
 }

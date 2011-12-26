@@ -23,9 +23,8 @@ import org.amanzi.awe.neostyle.NetworkNeoStyle;
 import org.amanzi.awe.neostyle.NetworkNeoStyleContent;
 import org.amanzi.awe.render.core.AbstractRenderer;
 import org.amanzi.awe.render.core.AbstractRendererStyles;
-import org.amanzi.awe.render.core.Scale;
 import org.amanzi.awe.render.core.RenderShape;
-import org.amanzi.neo.services.AbstractService;
+import org.amanzi.awe.render.core.Scale;
 import org.amanzi.neo.services.NetworkService;
 import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.NodeTypeManager;
@@ -52,6 +51,9 @@ public class NetworkRenderer extends AbstractRenderer {
     public static final String BEAMWIDTH = "beam";
     private static final double FULL_CIRCLE = 360.0;
 
+    /**
+     * styler for current renderer
+     */
     private DefaultNetworkRenderStyle networkRendererStyle;
 
     @Override
@@ -62,11 +64,6 @@ public class NetworkRenderer extends AbstractRenderer {
 
     @Override
     protected void renderElement(Graphics2D destination, Point point, IDataElement site, IRenderableModel model) {
-        INodeType type = NodeTypeManager.getType(site.get(AbstractService.TYPE).toString());
-        if (!NetworkElementNodeType.SITE.equals(type)) {
-            throw new IllegalArgumentException("Could not render element of type " + type.getId());
-        }
-
         renderCoordinateElement(destination, point, site);
         if (networkRendererStyle.getScale() == Scale.LARGE) {
             int i = 0;
@@ -93,13 +90,16 @@ public class NetworkRenderer extends AbstractRenderer {
      * @param element
      */
     private void renderSector(Graphics2D destination, Point point, double azimuth, double beamwidth, IDataElement sector) {
+        int size = getSize();
+        int x = point.x - size / 2;
+        int y = point.y - size / 2;
         destination.setColor(networkRendererStyle.changeColor(getColor(sector), networkRendererStyle.getAlpha()));
         double angle1 = 90 - azimuth - beamwidth / 2.0;
         double angle2 = angle1 + beamwidth;
         GeneralPath path = new GeneralPath();
-        path.moveTo(point.x, point.y);
+        path.moveTo(x, y);
         Arc2D a = new Arc2D.Double();
-        a.setArcByCenter(point.x, point.y, networkRendererStyle.getLargeElementSize(), angle2, beamwidth, Arc2D.OPEN);
+        a.setArcByCenter(x, y, networkRendererStyle.getLargeElementSize(), angle2, beamwidth, Arc2D.OPEN);
         path.append(a.getPathIterator(null), true);
         path.closePath();
         destination.draw(path);
@@ -175,13 +175,13 @@ public class NetworkRenderer extends AbstractRenderer {
     protected void renderCoordinateElement(Graphics2D destination, Point point, IDataElement element) {
         switch (networkRendererStyle.getScale()) {
         case SMALL:
-            drawElement(RenderShape.RECTUNGLE, destination, point, element, false);
+            drawCoordinateElement(RenderShape.RECTANGLE, destination, point, element, false);
             break;
         case MEDIUM:
-            drawElement(RenderShape.OVAL, destination, point, element, false);
+            drawCoordinateElement(RenderShape.ELLIPSE, destination, point, element, false);
             break;
         case LARGE:
-            drawElement(RenderShape.OVAL, destination, point, element, true);
+            drawCoordinateElement(RenderShape.ELLIPSE, destination, point, element, true);
         }
     }
 }
