@@ -68,7 +68,7 @@ public class IconManager {
     /**
      * search default size image only by typeE
      * <p>
-     * default size is 16
+     * <b>default</b> size is 16
      * </p>
      * 
      * @param nodeType

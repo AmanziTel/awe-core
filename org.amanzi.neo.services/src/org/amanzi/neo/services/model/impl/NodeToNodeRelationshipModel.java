@@ -132,7 +132,6 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
             throw new IllegalArgumentException("Node type is null.");
         }
 
-        this.nodeType = nodeType;
         this.relType = relType;
         this.name = name + " " + relType.name();
         Node root = dsServ.findNode(parentNode, relType, this.name, NodeToNodeTypes.NODE2NODE);
@@ -164,7 +163,6 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
         }
 
         this.rootNode = n2nRoot;
-        this.nodeType = NodeTypeManager.getType(n2nRoot.getProperty(PRIMARY_TYPE).toString());
         this.relType = N2NRelTypes.valueOf(n2nRoot.getProperty(RELATION_TYPE).toString());
         this.name = n2nRoot.getProperty(NetworkService.NAME).toString();
 
@@ -348,10 +346,5 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
             return new NetworkModel(isVirtual.next());
         }
         return null;
-    }
-
-    @Override
-    public INodeToNodeRelationsType getN2nType() {
-        return relType;
     }
 }

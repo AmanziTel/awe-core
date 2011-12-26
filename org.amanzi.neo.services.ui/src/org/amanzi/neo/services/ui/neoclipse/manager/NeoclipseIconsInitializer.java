@@ -34,7 +34,7 @@ public class NeoclipseIconsInitializer {
     /**
      * path to icons directory
      */
-    private final String ICONS_PATH = "/icons";
+    private final String ICONS_PATH = "images/icons";
     /**
      * path to necessary directory which situated in icons folder
      */
