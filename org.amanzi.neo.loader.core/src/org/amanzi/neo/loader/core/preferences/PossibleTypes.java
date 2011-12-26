@@ -17,5 +17,5 @@ package org.amanzi.neo.loader.core.preferences;
  * @author Vladislav_Kondratenko
  */
 public enum PossibleTypes {
-    DOUBLE, FLOAT, INTEGER, LONG, STRING
+    DOUBLE, FLOAT, INTEGER, LONG, STRING, AUTO;
 }
