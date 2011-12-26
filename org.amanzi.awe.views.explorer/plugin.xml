@@ -5,7 +5,7 @@
          point="org.eclipse.ui.views">
       <view
             name="Database Project Explorer"
-            icon="icons/network.png"
+            icon="icons/project.png"
             category="org.amanzi.awe.views"
             class="org.amanzi.awe.views.explorer.view.ProjectExplorerView"
             id="org.amanzi.awe.views.explorer.view.ProjectExplorerView">

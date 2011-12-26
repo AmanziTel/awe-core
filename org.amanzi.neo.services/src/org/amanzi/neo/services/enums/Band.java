@@ -15,7 +15,7 @@ package org.amanzi.neo.services.enums;
 
 /**
  * <p>
- * contains enumeration of posible band values;
+ * contains enumeration of possible band values;
  * </p>
  * 
  * @author Vladislav_Kondratenko
@@ -23,7 +23,7 @@ package org.amanzi.neo.services.enums;
  */
 public enum Band {
 
-    BAND_850("800"), BAND_900("900"), BAND_1800("1800"), BAND_1900("1900");
+    BAND_850("GSM800"), BAND_900("GSM900"), BAND_1800("GSM1800"), BAND_1900("GSM1900");
 
     String id = "";
 

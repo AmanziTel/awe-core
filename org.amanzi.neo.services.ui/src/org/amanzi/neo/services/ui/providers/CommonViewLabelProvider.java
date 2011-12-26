@@ -11,35 +11,41 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.views.explorer.providers;
+package org.amanzi.neo.services.ui.providers;
 
+import org.amanzi.neo.services.AbstractService;
+import org.amanzi.neo.services.NodeTypeManager;
+import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IModel;
+import org.amanzi.neo.services.ui.icons.IconManager;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.graphics.Image;
 
 /**
- * label provider for project explorer
+ * represent common view label provider actually used in NetworkTreeView and ProjectExplorerView
  * 
  * @author Vladislav_Kondratenko
  */
-public class ProjectTreeLabelProvider extends LabelProvider {
-
+public class CommonViewLabelProvider extends LabelProvider {
     /**
      * Constructor. Gets an instance of IconManager
      * 
      * @param viewer of this LabelProvider
      */
-    public ProjectTreeLabelProvider(Viewer viewer) {
-        
+    public CommonViewLabelProvider(Viewer viewer) {
+
     }
 
     @Override
     public String getText(Object element) {
         if (element instanceof IModel) {
             return ((IModel)element).getName();
-        } else
-            return null;
+        } else if (element instanceof IDataElement) {
+            return (String)((IDataElement)element).get(AbstractService.NAME);
+        }
+        return null;
     }
 
     /**
@@ -47,8 +53,14 @@ public class ProjectTreeLabelProvider extends LabelProvider {
      * returns <code>null</code>. Subclasses may override.
      */
     public Image getImage(Object element) {
-        // else search for image by given type
-        
-    	return null;
+        if (element instanceof IModel) {
+            IModel model = (IModel)element;
+            return IconManager.getInstance().getImage(model.getType());
+        } else if (element instanceof IDataElement) {
+            IDataElement dataElement = (IDataElement)element;
+            INodeType type = NodeTypeManager.getType(dataElement);
+            return IconManager.getInstance().getImage(type);
+        }
+        return null;
     }
 }

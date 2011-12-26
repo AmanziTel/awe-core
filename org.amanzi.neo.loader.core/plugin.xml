@@ -19,10 +19,6 @@
             id="org.amanzi.neo.loader.core.saver.NetworkSaver">
       </saver>
        
-      <saver
-            class="org.amanzi.neo.loader.core.saver.SectorSelectionSaver"
-            id="org.amanzi.neo.loader.core.saver.SectorSelectionSaver">
-      </saver>
        
       <saver
             class="org.amanzi.neo.loader.core.saver.NeighborsSaver"

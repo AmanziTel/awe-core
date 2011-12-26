@@ -10,28 +10,34 @@
  * This library is distributed WITHOUT ANY WARRANTY; without even the
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-package org.amanzi.awe.awe.views.view.provider;
 
-import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.swt.graphics.Image;
+package org.amanzi.neo.services.ui.icons;
 
 /**
- * New Label Provider for Network Tree
+ * contains images size
  * 
- * @author Kasnitskij_V
- * @since 1.0.0
+ * @author Vladislav_Kondratenko
  */
+public enum IconSize {
 
-public class NetworkTreeLabelProvider extends LabelProvider {
-    
-    /**
-     * The <code>LabelProvider</code> implementation of this
-     * <code>ILabelProvider</code> method returns <code>null</code>.
-     * Subclasses may override.
-     */
-    public Image getImage(Object element) {
-        
-        return null;
+    SIZE_16("16"), SIZE_32("32"), SIZE_48("48"), SIZE_64("64"), SIZE_128("128"), SIZE_256("256");
+
+    private String size;
+
+    private IconSize(String imageSize) {
+        this.size = imageSize;
     }
-    
+
+    /**
+     * return image size appropriate to directory name or
+     * <p>
+     * to name ending( for events icons)
+     * </p>
+     * 
+     * @return
+     */
+    public String getImageSize() {
+        return size;
+    }
+
 }

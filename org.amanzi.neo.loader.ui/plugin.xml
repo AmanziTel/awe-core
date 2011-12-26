@@ -14,13 +14,6 @@
        </category>         
        <command
              categoryId="org.amanzi.neo.loader.commands.category"
-             id="org.amanzi.neo.loader.ui.commands.LoadGPEHHandler"
-             name="Load OSS Data">
-                       <commandParameter id="org.amanzi.neo.loader.commands.addtoselect" name="add to select" optional="true">
-        </commandParameter>
-       </command>
-       <command
-             categoryId="org.amanzi.neo.loader.commands.category"
              id="org.amanzi.neo.loader.ui.commands.LaunchLoader"
              name="LoadLauncher">
           <commandParameter
@@ -59,7 +52,7 @@
            
               <command
                    commandId="org.amanzi.neo.loader.ui.commands.LaunchLoader"
-                   icon="icons/16/network.png"
+                   icon="/icons/16/network.png"
                    id="org.amanzi.neo.loader.ui.commands.LaunchLoader"
                    tooltip="Load Network Data">
                 <parameter
@@ -69,7 +62,7 @@
              </command>
              <command
                    commandId="org.amanzi.neo.loader.ui.commands.LaunchLoader"
-                   icon="icons/16/dataset.png"
+                   icon="/icons/16/dataset.png"
                    id="org.amanzi.neo.loader.ui.LoadLauncher"
                    tooltip="Load Dataset">
                 <parameter
@@ -93,15 +86,6 @@
        </GUI>
     </extension>
     
-   <extension
-         point="org.eclipse.ui.preferencePages">
-      <page
-            class="org.amanzi.neo.loader.ui.preferences.CommonCRSPreferencePage"
-            id="org.amanzi.neo.loader.ui.preferences.CommonCRSPreferencePage"
-            name="Common CRS"
-            category="org.amanzi.neo.loader.ui.preferences.DataLoadPreferencePage">
-      </page>
-   </extension>
    <extension
          point="org.eclipse.core.runtime.preferences">
       <initializer

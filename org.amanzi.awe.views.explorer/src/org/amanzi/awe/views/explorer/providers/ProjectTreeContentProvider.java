@@ -21,7 +21,6 @@ import java.util.List;
 
 import org.amanzi.neo.model.distribution.impl.DistributionManager;
 import org.amanzi.neo.services.exceptions.AWEException;
-import org.amanzi.neo.services.model.ICountersModel;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.IModel;
 import org.amanzi.neo.services.model.INetworkModel;
@@ -92,7 +91,7 @@ public class ProjectTreeContentProvider implements IStructuredContentProvider, I
             // add virtual datasets
             addToModelCollection(driveModel.getVirtualDatasets(), modelMap);
             modelMap.addAll(DistributionManager.getManager().getAllDistributionModels(driveModel));
-        } 
+        }
         return modelMap;
     }
 
