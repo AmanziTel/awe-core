@@ -70,7 +70,7 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
      * @since 1.0.0
      */
     public enum N2NRelTypes implements INodeToNodeRelationsType {
-        NEIGHBOUR, INTERFERENCE_MATRIX, TRIANGULATION, SHADOW, ILLEGAL_FREQUENCY, FREQUENCY_SPECTRUM, TRANSMISSION, EXCEPTION;
+        NEIGHBOUR, INTERFERENCE_MATRIX, TRIANGULATION, SHADOW, ILLEGAL_FREQUENCY, FREQUENCY_SPECTRUM, TRANSMISSION, EXCEPTION, OPTIMIZATION;
 
         @Override
         public String getId() {
@@ -346,5 +346,21 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
             return new NetworkModel(isVirtual.next());
         }
         return null;
+    }
+    
+    /**
+     * Get target sector by rel
+     * 
+     * @param rel
+     * @return target sector
+     */
+    public IDataElement getTargetSector(IDataElement rel) {
+        if (rel == null) {
+            throw new IllegalArgumentException("Relationship element is null");
+        }
+        Node proxy = ((DataElement)rel).getRelationship().getEndNode();
+        Relationship relationship = proxy.getRelationships(this.relType, Direction.INCOMING).iterator().next();
+        Node result = relationship.getStartNode();
+        return new DataElement(result);
     }
 }
