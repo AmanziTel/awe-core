@@ -21,6 +21,7 @@ import java.util.Set;
 import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.parser.MappedData;
 import org.amanzi.neo.loader.core.preferences.ImportSynonymsManager;
+import org.amanzi.neo.loader.core.preferences.PossibleTypes;
 import org.amanzi.neo.loader.core.preferences.ImportSynonymsManager.NodeTypeSynonyms;
 import org.amanzi.neo.loader.core.preferences.ImportSynonymsManager.PropertySynonyms;
 import org.amanzi.neo.loader.core.preferences.ImportSynonymsManager.Synonym;
@@ -47,7 +48,27 @@ public abstract class AbstractMappedDataSaver<T1 extends IDataModel, T3 extends 
             synonymsCache.put(nodeType, synonymMapping);
         }
         
+        HashMap<String, Object> values = new HashMap<String, Object>();
+        
+        for (Entry<String, String> dataEntry : dataElement.entrySet()) {
+            Synonym synonym = synonymMapping.get(dataEntry.getKey());
+            
+            String textValue = dataEntry.getValue();
+            Object value = synonym.getType().parse(textValue);
+            if (synonym.getType() == PossibleTypes.AUTO) {
+                PossibleTypes newType = PossibleTypes.getType(value.getClass());
+                changeSynonymType(synonymMapping, dataEntry.getKey(), synonym.getName(), newType);
+            }
+            
+            values.put(synonym.getName(), value);
+        }
+        
         return null;
+    }
+    
+    private void changeSynonymType(Map<String, Synonym> synonymMapping, String header, String propertyName, PossibleTypes newType){
+        Synonym newSynonym = new Synonym(propertyName, newType);
+        synonymMapping.put(header, newSynonym);
     }
     
     private Map<String, Synonym> createSynonyms(T1 model, INodeType nodeType, Set<String> headerSet, boolean addNonMappedData) {

@@ -94,12 +94,8 @@ public abstract class AbstractSaver<T1 extends IDataModel, T2 extends IData, T3 
      * @param propertyValue - String propValue
      * @return Object parseValue
      */
-    protected static Object autoParse(String propertyName, String propertyValue) {
+    public static Object autoParse(String propertyValue) {
         try {
-            Object predifinedCheck = checkInPredifined(propertyName, propertyValue);
-            if (predifinedCheck != null) {
-                return predifinedCheck;
-            }
             char separator = DOT_SEPARATOR;
             if (propertyValue.indexOf(separator) != -1) {
                 Float floatValue = Float.parseFloat(propertyValue);
@@ -273,7 +269,7 @@ public abstract class AbstractSaver<T1 extends IDataModel, T2 extends IData, T3 
     public void init(T3 configuration, T2 dataElement) throws AWEException {
         DatabaseManagerFactory.getDatabaseManager().startThreadTransaction();
         
-        mainModel = createMainModel(configuration, dataElement);
+        mainModel = createMainModel(configuration);
         useableModels.add(mainModel);
     }
 
@@ -282,7 +278,7 @@ public abstract class AbstractSaver<T1 extends IDataModel, T2 extends IData, T3 
      *
      * @return
      */
-    protected abstract T1 createMainModel(T3 configuration, T2 dataElement) throws AWEException;
+    protected abstract T1 createMainModel(T3 configuration) throws AWEException;
     
     /**
      * Returns main Model of Saver

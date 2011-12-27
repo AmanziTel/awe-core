@@ -82,7 +82,7 @@ public class NetworkSaver extends AbstractMappedDataSaver<INetworkModel, Configu
     }
 
     @Override
-    protected INetworkModel createMainModel(ConfigurationDataImpl configuration, MappedData dataElement) throws AWEException {
+    protected INetworkModel createMainModel(ConfigurationDataImpl configuration) throws AWEException {
         return getActiveProject().getNetwork(configuration.getDatasetNames().get(ConfigurationDataImpl.NETWORK_PROPERTY_NAME));
     }
 
