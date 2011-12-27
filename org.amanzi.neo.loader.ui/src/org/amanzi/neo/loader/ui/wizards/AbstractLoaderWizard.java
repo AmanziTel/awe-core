@@ -29,7 +29,6 @@ import org.amanzi.neo.loader.core.IProgressEvent;
 import org.amanzi.neo.loader.core.saver.IData;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.amanzi.neo.services.exceptions.AWEException;
-import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.amanzi.neo.services.ui.enums.EventsType;
@@ -351,12 +350,9 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
                 }
                 try {
                     loader.run();
-                } catch (DatabaseException e) {
-                    showError("Error.", "Database exception was thrown  while saving data");
+                } catch (Exception e) {
+                    showError("Error.", " exception was thrown  while saving data");
                     continue;
-                } catch (AWEException e) {
-                    showError("Error.", "error while finishup main transaction");
-                    break;
                 }
             }
         }

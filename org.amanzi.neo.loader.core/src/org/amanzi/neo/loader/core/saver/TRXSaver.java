@@ -110,7 +110,7 @@ public class TRXSaver extends AbstractNetworkSaver {
         String band = getSynonymValueWithAutoparse(BAND, value).toString();
         String extended = null;
 
-        if (band.equalsIgnoreCase(Band.BAND_900.getId())) {
+        if (band.matches(Band.BAND_900.getId())) {
             extended = (String)getSynonymValueWithAutoparse(EXTENDED, value);
         }
         Boolean isBcch = false;

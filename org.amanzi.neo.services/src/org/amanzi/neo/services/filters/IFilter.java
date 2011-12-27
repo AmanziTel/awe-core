@@ -23,21 +23,33 @@ import org.neo4j.graphdb.Node;
 
 /**
  * <p>
- *Filter interface
+ * Filter interface
  * </p>
+ * 
  * @author tsinkel_a
  * @since 1.0.0
  */
 public interface IFilter extends ISimpleFilter {
 
     void setExpression(INodeType nodeType, String propertyName, Serializable value);
-    
+
     void setExpression(INodeType nodeType, String propertyName) throws FilterTypeException;
 
     void addFilter(IFilter additionalFilter);
 
     INodeType getNodeType();
-    
+
     boolean check(Node node) throws NullValueException, NotComparebleException;
 
+    public String getFilterName();
+
+    public ExpressionType getExpressionType();
+
+    public String getPropertyName();
+
+    public Serializable getValue();
+
+    public IFilter getUnderlyingFilter();
+
+    public FilterType getFilterType();
 }

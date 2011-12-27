@@ -50,6 +50,7 @@ import org.apache.log4j.Logger;
  */
 public class DistributionXmlParser {
 
+    private static final String FILTER_NAME = "filterName";
     private Distribution xmlDistr;
 
     public Distribution getXmlDistr() {
@@ -168,13 +169,13 @@ public class DistributionXmlParser {
         ExpressionType expType = ExpressionType.getByName(xmlFilter.getExpressionType());
         Filter filter;
         if (filterType != null && expType != null) {
-            filter = new Filter(filterType, expType);
+            filter = new Filter(filterType, expType, FILTER_NAME);
         } else if (filterType != null) {
-            filter = new Filter(filterType);
+            filter = new Filter(filterType, FILTER_NAME);
         } else if (expType != null) {
-            filter = new Filter(expType);
+            filter = new Filter(expType, FILTER_NAME);
         } else {
-            filter = new Filter();
+            filter = new Filter(FILTER_NAME);
         }
         Serializable value = xmlFilter.getValue();
         if (value != null) {
