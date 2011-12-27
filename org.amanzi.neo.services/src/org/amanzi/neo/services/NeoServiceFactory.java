@@ -1,7 +1,3 @@
-package org.amanzi.neo.services;
-
-import org.amanzi.neo.services.synonyms.ExportSynonymsService;
-
 /* AWE - Amanzi Wireless Explorer
  * http://awe.amanzi.org
  * (C) 2008-2009, AmanziTel AB
@@ -14,6 +10,11 @@ import org.amanzi.neo.services.synonyms.ExportSynonymsService;
  * This library is distributed WITHOUT ANY WARRANTY; without even the
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
+package org.amanzi.neo.services;
+
+import org.amanzi.neo.services.synonyms.ExportSynonymsService;
+
+
 
 /**
  * TODO Purpose of

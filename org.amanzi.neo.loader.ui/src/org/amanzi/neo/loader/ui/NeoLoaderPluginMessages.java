@@ -1,4 +1,3 @@
-package org.amanzi.neo.loader.ui;
 /* AWE - Amanzi Wireless Explorer
  * http://awe.amanzi.org
  * (C) 2008-2009, AmanziTel AB
@@ -11,7 +10,7 @@ package org.amanzi.neo.loader.ui;
  * This library is distributed WITHOUT ANY WARRANTY; without even the
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-
+package org.amanzi.neo.loader.ui;
 
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
