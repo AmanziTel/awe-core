@@ -11,27 +11,33 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.services.enums;
+package org.amanzi.neo.services.ui.icons;
 
 /**
- * <p>
- * contains enumeration of possible band values;
- * </p>
+ * contains images size
  * 
  * @author Vladislav_Kondratenko
- * @since 1.0.0
  */
-public enum Band {
+public enum IconSize {
 
-    BAND_850("GSM800"), BAND_900("GSM900"), BAND_1800("GSM1800"), BAND_1900("GSM1900");
+    SIZE_16("16"), SIZE_32("32"), SIZE_48("48"), SIZE_64("64"), SIZE_128("128"), SIZE_256("256");
 
-    String id = "";
+    private String size;
 
-    Band(String id) {
-        this.id = id;
+    private IconSize(String imageSize) {
+        this.size = imageSize;
     }
 
-    public String getId() {
-        return id;
+    /**
+     * return image size appropriate to directory name or
+     * <p>
+     * to name ending( for events icons)
+     * </p>
+     * 
+     * @return
+     */
+    public String getImageSize() {
+        return size;
     }
+
 }

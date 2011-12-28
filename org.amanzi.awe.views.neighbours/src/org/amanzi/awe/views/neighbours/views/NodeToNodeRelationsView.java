@@ -491,7 +491,7 @@ public class NodeToNodeRelationsView extends ViewPart {
                 setN2NTypeItems();
                 int i = 0;
                 for (String type : cbN2NType.getItems()) {
-                    if (n2nModel.getN2nType().name().equalsIgnoreCase(type)) {
+                    if (n2nModel.getNodeToNodeRelationsType().name().equalsIgnoreCase(type)) {
                         cbN2NType.select(i);
                         break;
                     }

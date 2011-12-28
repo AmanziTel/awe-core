@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.amanzi.awe.awe.views.view.provider.NetworkTreeContentProvider;
-import org.amanzi.awe.awe.views.view.provider.NetworkTreeLabelProvider;
 import org.amanzi.neo.model.distribution.IDistributionBar;
 import org.amanzi.neo.model.distribution.IDistributionModel;
 import org.amanzi.neo.model.distribution.IDistributionalModel;
@@ -38,6 +37,7 @@ import org.amanzi.neo.services.ui.events.AnalyseEvent;
 import org.amanzi.neo.services.ui.events.EventManager;
 import org.amanzi.neo.services.ui.events.IEventsListener;
 import org.amanzi.neo.services.ui.events.UpdateDataEvent;
+import org.amanzi.neo.services.ui.providers.CommonViewLabelProvider;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
@@ -818,7 +818,7 @@ public class NetworkTreeView extends ViewPart {
 
     protected void setProviders() {
         viewer.setContentProvider(new NetworkTreeContentProvider());
-        viewer.setLabelProvider(new NetworkTreeLabelProvider());
+        viewer.setLabelProvider(new CommonViewLabelProvider(viewer));
     }
 
     @Override

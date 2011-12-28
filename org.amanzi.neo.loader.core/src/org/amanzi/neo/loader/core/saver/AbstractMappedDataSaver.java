@@ -53,17 +53,19 @@ public abstract class AbstractMappedDataSaver<T1 extends IDataModel, T3 extends 
         for (Entry<String, String> dataEntry : dataElement.entrySet()) {
             Synonym synonym = synonymMapping.get(dataEntry.getKey());
             
-            String textValue = dataEntry.getValue();
-            Object value = synonym.getType().parse(textValue);
-            if (synonym.getType() == PossibleTypes.AUTO) {
-                PossibleTypes newType = PossibleTypes.getType(value.getClass());
-                changeSynonymType(synonymMapping, dataEntry.getKey(), synonym.getName(), newType);
+            if (synonym != null) {
+                String textValue = dataEntry.getValue();
+                Object value = synonym.getType().parse(textValue);
+                if (synonym.getType() == PossibleTypes.AUTO) {
+                    PossibleTypes newType = PossibleTypes.getType(value.getClass());
+                    changeSynonymType(synonymMapping, dataEntry.getKey(), synonym.getName(), newType);
+                }
+
+                values.put(synonym.getName(), value);
             }
-            
-            values.put(synonym.getName(), value);
         }
         
-        return null;
+        return values;
     }
     
     private void changeSynonymType(Map<String, Synonym> synonymMapping, String header, String propertyName, PossibleTypes newType){
@@ -80,7 +82,7 @@ public abstract class AbstractMappedDataSaver<T1 extends IDataModel, T3 extends 
             Synonym synonym = null;
             get_synonym: for (Entry<Synonym, String[]> synonymEntry : synonyms.entrySet()) {
                 for (String possibleHeader : synonymEntry.getValue()) {
-                    if (possibleHeader.matches(header)) {
+                    if (possibleHeader.toLowerCase().matches(header.toLowerCase())) {
                         synonym = synonymEntry.getKey();
                         
                         addDatasetSynonyms(model, nodeType, synonym.getName(), header);
@@ -90,12 +92,12 @@ public abstract class AbstractMappedDataSaver<T1 extends IDataModel, T3 extends 
                 }
             }
             
-            boolean add = false;
+            boolean add = synonym != null;
             
             if (synonym == null && addNonMappedData && !hasSynonyms(header)  ) {
                 add = true;
                 synonym = new Synonym(header);
-            }
+            } 
             
             if (add) {
                 result.put(header, synonym);

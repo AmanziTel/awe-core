@@ -271,6 +271,8 @@ public abstract class AbstractSaver<T1 extends IDataModel, T2 extends IData, T3 
         
         mainModel = createMainModel(configuration);
         useableModels.add(mainModel);
+        
+        createExportSynonymsForModels();
     }
 
     /**

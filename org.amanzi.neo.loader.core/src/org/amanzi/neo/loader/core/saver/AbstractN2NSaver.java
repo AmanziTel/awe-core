@@ -1,0 +1,117 @@
+/* AWE - Amanzi Wireless Explorer
+ * http://awe.amanzi.org
+ * (C) 2008-2009, AmanziTel AB
+ *
+ * This library is provided under the terms of the Eclipse Public License
+ * as described at http://www.eclipse.org/legal/epl-v10.html. Any use,
+ * reproduction or distribution of the library constitutes recipient's
+ * acceptance of this agreement.
+ *
+ * This library is distributed WITHOUT ANY WARRANTY; without even the
+ * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ */
+
+package org.amanzi.neo.loader.core.saver;
+
+import java.util.Map;
+import java.util.Set;
+
+import org.amanzi.neo.loader.core.ConfigurationDataImpl;
+import org.amanzi.neo.loader.core.parser.MappedData;
+import org.amanzi.neo.services.AbstractService;
+import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
+import org.amanzi.neo.services.model.IDataElement;
+import org.amanzi.neo.services.model.INetworkModel;
+import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
+import org.amanzi.neo.services.model.INodeToNodeRelationsType;
+
+/**
+ * Abstract Loader for N2N Relationship Data Type
+ * 
+ * @author lagutko_n
+ * @since 1.0.0
+ */
+public abstract class AbstractN2NSaver extends AbstractMappedDataSaver<INodeToNodeRelationsModel, ConfigurationDataImpl> {
+    
+    /*
+     * Name of Dataset Synonyms
+     */
+    private static final String SYNONYMS_DATASET_TYPE = "n2n";
+    
+    /*
+     * Network Model for this N2N Relations
+     */
+    protected INetworkModel networkModel;
+
+    @Override
+    public void saveElement(MappedData dataElement) throws AWEException {
+        Map<String, Object> values = getDataElementProperties(getMainModel(), null, dataElement, true);
+        
+        IDataElement servingElement = getNetworkElement("serving_name", values);
+        IDataElement targetElement = getNetworkElement("target_element", values);
+        
+        getMainModel().linkNode(servingElement, targetElement, values);
+    }
+    
+    private IDataElement getNetworkElement(String propertyName, Map<String, Object> values) throws AWEException { 
+        Object oElementName = values.remove(propertyName);
+        
+        if (oElementName != null) {
+            String elementName = oElementName.toString();
+            
+            if (!elementName.isEmpty()) {
+                Set<IDataElement> searchResult = networkModel.findElementByPropertyValue(getN2NNodeType(), AbstractService.NAME, elementName);
+                
+                if (!searchResult.isEmpty()) {
+                    if (searchResult.size() > 1) {
+                        throw new DuplicateNodeNameException(elementName, getN2NNodeType());
+                    } else {
+                        return searchResult.iterator().next();
+                    }
+                    
+                }
+            }
+        }
+        
+        return null;
+    }
+
+    @Override
+    protected boolean isRenderable() {
+        return false;
+    }
+
+    @Override
+    protected INodeToNodeRelationsModel createMainModel(ConfigurationDataImpl configuration) throws AWEException {
+        networkModel = getActiveProject().getNetwork(configuration.getDatasetNames().get(ConfigurationDataImpl.NETWORK_PROPERTY_NAME));
+        
+        String n2nName = configuration.getFilesToLoad().get(0).getName();
+        
+        return networkModel.getNodeToNodeModel(getN2NType(), n2nName, getN2NNodeType());
+    }
+    
+    /**
+     * Returns Type of NodeToNode Relations
+     *
+     * @return
+     */
+    protected abstract INodeToNodeRelationsType getN2NType();
+    
+    /**
+     * 
+     */
+    protected abstract INodeType getN2NNodeType();
+
+    @Override
+    protected String getDatasetType() {
+        return SYNONYMS_DATASET_TYPE;
+    }
+
+    @Override
+    protected String getSubType() {
+        return null;
+    }
+
+}

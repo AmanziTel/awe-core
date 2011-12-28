@@ -8,7 +8,6 @@
 package org.amanzi.awe.views.explorer.view;
 
 import org.amanzi.awe.views.explorer.providers.ProjectTreeContentProvider;
-import org.amanzi.awe.views.explorer.providers.ProjectTreeLabelProvider;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.IModel;
 import org.amanzi.neo.services.model.INetworkModel;
@@ -19,6 +18,7 @@ import org.amanzi.neo.services.ui.events.AnalyseEvent;
 import org.amanzi.neo.services.ui.events.EventManager;
 import org.amanzi.neo.services.ui.events.IEventsListener;
 import org.amanzi.neo.services.ui.events.UpdateDataEvent;
+import org.amanzi.neo.services.ui.providers.CommonViewLabelProvider;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
@@ -345,7 +345,7 @@ public class ProjectExplorerView extends ViewPart {
 
     protected void setProviders() {
         viewer.setContentProvider(new ProjectTreeContentProvider());
-        viewer.setLabelProvider(new ProjectTreeLabelProvider(viewer));
+        viewer.setLabelProvider(new CommonViewLabelProvider(viewer));
     }
 
     @Override

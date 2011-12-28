@@ -14,13 +14,6 @@
        </category>         
        <command
              categoryId="org.amanzi.neo.loader.commands.category"
-             id="org.amanzi.neo.loader.ui.commands.LoadGPEHHandler"
-             name="Load OSS Data">
-                       <commandParameter id="org.amanzi.neo.loader.commands.addtoselect" name="add to select" optional="true">
-        </commandParameter>
-       </command>
-       <command
-             categoryId="org.amanzi.neo.loader.commands.category"
              id="org.amanzi.neo.loader.ui.commands.LaunchLoader"
              name="LoadLauncher">
           <commandParameter
@@ -59,7 +52,7 @@
            
               <command
                    commandId="org.amanzi.neo.loader.ui.commands.LaunchLoader"
-                   icon="icons/16/network.png"
+                   icon="/icons/16/network.png"
                    id="org.amanzi.neo.loader.ui.commands.LaunchLoader"
                    tooltip="Load Network Data">
                 <parameter
@@ -69,7 +62,7 @@
              </command>
              <command
                    commandId="org.amanzi.neo.loader.ui.commands.LaunchLoader"
-                   icon="icons/16/dataset.png"
+                   icon="/icons/16/dataset.png"
                    id="org.amanzi.neo.loader.ui.LoadLauncher"
                    tooltip="Load Dataset">
                 <parameter
@@ -94,15 +87,6 @@
     </extension>
     
    <extension
-         point="org.eclipse.ui.preferencePages">
-      <page
-            class="org.amanzi.neo.loader.ui.preferences.CommonCRSPreferencePage"
-            id="org.amanzi.neo.loader.ui.preferences.CommonCRSPreferencePage"
-            name="Common CRS"
-            category="org.amanzi.neo.loader.ui.preferences.DataLoadPreferencePage">
-      </page>
-   </extension>
-   <extension
          point="org.eclipse.core.runtime.preferences">
       <initializer
             class="org.amanzi.neo.loader.core.preferences.DataLoadPreferenceInitializer">
@@ -125,19 +109,8 @@
 	 <page id="load_physical_network_page" class="org.amanzi.neo.loader.ui.wizards.LoadNetworkMainPage" isMain="true">
 	             <loader_id id="org.amanzi.neo.loader.ui.networkloader"/>
 	             <loader_id id="org.amanzi.neo.loader.ui.neighboursLoader"/>
-	             <loader_id id="org.amanzi.neo.loader.ui.networkSelectionLoader"/>
-	             <loader_id id="org.amanzi.neo.loader.ui.frequencyConstraint"/>
-	             <loader_id id="org.amanzi.neo.loader.ui.separationCostraint"/>
-	             <loader_id id="org.amanzi.neo.loader.ui.trafficDataLoader"/>
 	             <loader_id id="org.amanzi.neo.loader.ui.interferenceMatrixLoader"/>
 	             
-	 </page>
-	 
-	 <page id="load_drive_data_page" class="org.amanzi.neo.loader.ui.wizards.LoadDatasetMainPage" isMain="true">
-	             <loader_id id="org.amanzi.neo.loader.ui.nemo2xloader"/>
-	             <loader_id id="org.amanzi.neo.loader.ui.nemo1xloader"/>
-	             <loader_id id="org.amanzi.neo.loader.ui.romesloader"/>
-	             <loader_id id="org.amanzi.neo.loader.ui.temsloader"/>
 	 </page>
 	 
  </extension>

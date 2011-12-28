@@ -39,7 +39,9 @@ public class ImportSynonymsManager {
     
     private static final int SUBTYPE_INDEX = 1;
     
-    private static final String KEY_PART_SEPARATOR = "\\.|@";
+    private static final String KEY_PART_SEPARATOR = "\\.";
+    
+    private static final String TYPE_PART_SEPARATOR = "@";
     
     private static final int KEY_PARTS_SIZE_WITHOUT_SUBTYPE = 3;
     
@@ -184,6 +186,16 @@ public class ImportSynonymsManager {
     }
     
     private void initializeSynonym(String key, String synonyms) {
+        String[] typeParts = key.split(TYPE_PART_SEPARATOR);
+        
+        PossibleTypes dataType = PossibleTypes.AUTO;
+        if (typeParts.length > 1) {
+            String sDataType = typeParts[1].toUpperCase();
+            dataType = PossibleTypes.valueOf(sDataType);
+        }
+        
+        key = typeParts[0];
+        
         String[] keyParts = key.split(KEY_PART_SEPARATOR);
         int keyPartsSize = keyParts.length;
         
@@ -191,7 +203,6 @@ public class ImportSynonymsManager {
         String propertyName = keyParts[keyPartsSize - PROPERTY_NAME_OFFSET];
         String nodeType = null;
         String subType = null;
-        PossibleTypes dataType = null;
         
         if (keyPartsSize > KEY_PARTS_SIZE_WITHOUT_NODE_TYPE) {
             nodeType = keyParts[keyPartsSize - NODE_TYPE_OFFSET];

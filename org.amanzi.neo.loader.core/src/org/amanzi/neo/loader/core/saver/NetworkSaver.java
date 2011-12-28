@@ -17,6 +17,7 @@ import java.util.Map;
 
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.parser.MappedData;
+import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.DatasetService.DatasetTypes;
 import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
@@ -72,7 +73,11 @@ public class NetworkSaver extends AbstractMappedDataSaver<INetworkModel, Configu
         for (NetworkElementNodeType type : DEFAULT_NETWORK_STRUCTURE) {
             Map<String, Object> values = getDataElementProperties(getMainModel(), type, dataElement, type == NetworkElementNodeType.SECTOR);
             
-            parent = getMainModel().createElement(parent, values);
+            values.put(AbstractService.TYPE, type.getId());
+            
+            if (!values.isEmpty()) {
+                parent = getMainModel().createElement(parent, values);
+            }   
         }
     }
 
