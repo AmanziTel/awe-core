@@ -34,18 +34,20 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 
 /**
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Kondratenko_V
  * @since 1.0.0
  */
 public class FilterTest extends AbstractAWETest {
-    
+
     private static Logger LOGGER = Logger.getLogger(FilterTest.class);
 
     private static long startTimestamp;
+    private static final String FILTER_NAME = "filterName";
+    private static final String UNDERLINE_FILTER_NAME = "underlinefilterName";
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
@@ -75,10 +77,11 @@ public class FilterTest extends AbstractAWETest {
         LOGGER.info("Test finished. Test time - " + hours + " hours " + minutes + " minutes " + seconds + " seconds "
                 + milliseconds + " milliseconds");
     }
+
     /**
      * @throws java.lang.Exception
      */
-  
+
     /*
      * check nodes with the same property value
      */
@@ -92,28 +95,27 @@ public class FilterTest extends AbstractAWETest {
             firstNode.setProperty("Name", "Value1");
             Node secondNode = graphDatabaseService.createNode();
             secondNode.setProperty("Name", "Value1");
-            Filter afpFilter=new Filter(FilterType.EQUALS,ExpressionType.AND);
-            LOGGER.info("--firstNode property: "+"'Name'; value: "+firstNode.getProperty("Name"));
-            LOGGER.info("--secondNode property: "+"'Name'; value: "+secondNode.getProperty("Name"));
+            Filter afpFilter = new Filter(FilterType.EQUALS, ExpressionType.AND, FILTER_NAME);
+            LOGGER.info("--firstNode property: " + "'Name'; value: " + firstNode.getProperty("Name"));
+            LOGGER.info("--secondNode property: " + "'Name'; value: " + secondNode.getProperty("Name"));
             LOGGER.info("----FilterType is 'EQUALS' ExpressionType is 'AND'");
-            //afpFilter.addFilter(new Filter(FilterType.EQUALS,ExpressionType.AND));
+            // afpFilter.addFilter(new Filter(FilterType.EQUALS,ExpressionType.AND));
             afpFilter.setExpression(null, "Name", secondNode.getProperty("Name").toString());
-            Assert.assertTrue("Values are not EQUALS ",afpFilter.check(firstNode));
-            
+            Assert.assertTrue("Values are not EQUALS ", afpFilter.check(firstNode));
+
             tx.success();
         } catch (Exception e) {
             e.printStackTrace();
-           
-        }finally{
+
+        } finally {
             tx.finish();
             LOGGER.info("< checkSameValuesThest end >");
         }
-       
-  
+
     }
+
     /*
-     * check node with the width incorrect Expression value
-     * FilterType EQUALS
+     * check node with the width incorrect Expression value FilterType EQUALS
      */
     @Test
     public void DifferentValuesTest() {
@@ -125,25 +127,25 @@ public class FilterTest extends AbstractAWETest {
             firstNode.setProperty("Name", "Value");
             Node secondNode = graphDatabaseService.createNode();
             secondNode.setProperty("Name", "Value 1 6 kk");
-  
-            Filter afpFilter=new Filter(FilterType.EQUALS,ExpressionType.AND);
-            LOGGER.info("--firstNode property: "+"'Name';value: "+firstNode.getProperty("Name"));
-            LOGGER.info("--secondNode property: "+"'Name';value: "+secondNode.getProperty("Name"));
+
+            Filter afpFilter = new Filter(FilterType.EQUALS, ExpressionType.AND, FILTER_NAME);
+            LOGGER.info("--firstNode property: " + "'Name';value: " + firstNode.getProperty("Name"));
+            LOGGER.info("--secondNode property: " + "'Name';value: " + secondNode.getProperty("Name"));
             LOGGER.info("----FilterType is 'EQUALS' ExpressionType is 'AND'");
-            //afpFilter.addFilter(new Filter(FilterType.EQUALS,ExpressionType.AND));
+            // afpFilter.addFilter(new Filter(FilterType.EQUALS,ExpressionType.AND));
             afpFilter.setExpression(null, "Name", secondNode.getProperty("Name").toString());
-            Assert.assertFalse("Values are EQUALS or expression is find ",afpFilter.check(firstNode));
+            Assert.assertFalse("Values are EQUALS or expression is find ", afpFilter.check(firstNode));
             tx.success();
-            
+
         } catch (Exception e) {
             e.printStackTrace();
-           
-        }finally{
+
+        } finally {
             tx.finish();
             LOGGER.info("< checkDifferentValuesTest end >");
         }
-     }
-    
+    }
+
     /*
      * with 'Like' filterType and RegExp
      */
@@ -157,490 +159,482 @@ public class FilterTest extends AbstractAWETest {
             firstNode.setProperty("Name", "Value1");
             Node secondNode = graphDatabaseService.createNode();
             secondNode.setProperty("Name", "Value");
-            Filter afpFilter=new Filter(FilterType.LIKE,ExpressionType.AND);
-            afpFilter.setExpression(null, "Name", ".*"+secondNode.getProperty("Name")+".*");
-            LOGGER.info("--firstNode property: "+"'Name'; value: "+firstNode.getProperty("Name"));
-            LOGGER.info("--secondNode property: "+"'Name'; value: "+secondNode.getProperty("Name"));
+            Filter afpFilter = new Filter(FilterType.LIKE, ExpressionType.AND, FILTER_NAME);
+            afpFilter.setExpression(null, "Name", ".*" + secondNode.getProperty("Name") + ".*");
+            LOGGER.info("--firstNode property: " + "'Name'; value: " + firstNode.getProperty("Name"));
+            LOGGER.info("--secondNode property: " + "'Name'; value: " + secondNode.getProperty("Name"));
             LOGGER.info("----FilterType is 'LIKE' ExpressionType is 'AND'");
-            Assert.assertTrue("Need regExp or values doesn't LIKE",afpFilter.check(firstNode));
+            Assert.assertTrue("Need regExp or values doesn't LIKE", afpFilter.check(firstNode));
             tx.success();
-            
+
         } catch (Exception e) {
             e.printStackTrace();
-           
-        }finally{
+
+        } finally {
             tx.finish();
             LOGGER.info("< checkFilterTypeRE end >");
         }
-     }
-    
-    
+    }
+
     /*
      * check with 'MORE' filterType , result false
      */
     @Test
-    public void CheckMOREFilterFalse(){
-    	LOGGER.info("< checkMOREFilterFalseTest begin >");
+    public void CheckMOREFilterFalse() {
+        LOGGER.info("< checkMOREFilterFalseTest begin >");
         Transaction tx = graphDatabaseService.beginTx();
         try {
 
             Node node = graphDatabaseService.createNode();
             node.setProperty("intValue", 5);
-            
-            Filter afpFilter=new Filter(FilterType.MORE);
-            LOGGER.info("--Node property: "+"'intValue';value: "+node.getProperty("intValue"));
-           
+
+            Filter afpFilter = new Filter(FilterType.MORE, FILTER_NAME);
+            LOGGER.info("--Node property: " + "'intValue';value: " + node.getProperty("intValue"));
+
             LOGGER.info("----FilterType is 'MORE' ");
-           
+
             afpFilter.setExpression(null, "intValue", 6);
-            Assert.assertFalse("propertyValue is MORE then value ",afpFilter.check(node));
+            Assert.assertFalse("propertyValue is MORE then value ", afpFilter.check(node));
             tx.success();
-            
-        } catch (Exception e) {        
+
+        } catch (Exception e) {
             LOGGER.error(e.toString());
-           
-        }finally{
+
+        } finally {
             tx.finish();
             LOGGER.info("< checkMOREFilterFalseTest end >");
         }
     }
-    
+
     /*
      * check with 'MORE' filterType , result true
      */
     @Test
-    public void CheckMOREFilterTrue(){
-    	LOGGER.info("< checkMOREFilterTrueTest begin >");
+    public void CheckMOREFilterTrue() {
+        LOGGER.info("< checkMOREFilterTrueTest begin >");
         Transaction tx = graphDatabaseService.beginTx();
         try {
 
             Node node = graphDatabaseService.createNode();
             node.setProperty("intValue", 6);
-            Filter afpFilter=new Filter(FilterType.MORE);
-            
-            LOGGER.info("--Node property: "+"'intValue';value: "+node.getProperty("intValue"));
-           
+            Filter afpFilter = new Filter(FilterType.MORE, FILTER_NAME);
+
+            LOGGER.info("--Node property: " + "'intValue';value: " + node.getProperty("intValue"));
+
             LOGGER.info("----FilterType is 'MORE' ");
-           
+
             afpFilter.setExpression(null, "intValue", 5);
-            Assert.assertTrue("propertyValue isn't MORE then value ",afpFilter.check(node));
+            Assert.assertTrue("propertyValue isn't MORE then value ", afpFilter.check(node));
             tx.success();
-            
-        } catch (Exception e) {        
+
+        } catch (Exception e) {
             LOGGER.error(e.toString());
-           
-        }finally{
+
+        } finally {
             tx.finish();
             LOGGER.info("< checkMOREFilterTrueTest end >");
         }
     }
-    
+
     /*
      * check with 'LESS' filterType , result false
      */
     @Test
-    public void CheckLESSFilterFalse(){
-    	LOGGER.info("< checkLESSFilterFalseTest begin >");
+    public void CheckLESSFilterFalse() {
+        LOGGER.info("< checkLESSFilterFalseTest begin >");
         Transaction tx = graphDatabaseService.beginTx();
         try {
 
             Node node = graphDatabaseService.createNode();
             node.setProperty("intValue", 6);
 
-            Filter afpFilter=new Filter(FilterType.LESS);
-            LOGGER.info("--Node property: "+"'intValue';value: "+node.getProperty("intValue"));
-           
+            Filter afpFilter = new Filter(FilterType.LESS, FILTER_NAME);
+            LOGGER.info("--Node property: " + "'intValue';value: " + node.getProperty("intValue"));
+
             LOGGER.info("----FilterType is 'LESS' ");
-           
+
             afpFilter.setExpression(null, "intValue", 5);
-            Assert.assertFalse("propertyValue is LESS then value ",afpFilter.check(node));
+            Assert.assertFalse("propertyValue is LESS then value ", afpFilter.check(node));
             tx.success();
-            
-        } catch (Exception e) {        
+
+        } catch (Exception e) {
             LOGGER.error(e.toString());
-           
-        }finally{
+
+        } finally {
             tx.finish();
             LOGGER.info("< checkLESSFilterFalseTest end >");
         }
     }
-    
+
     /*
      * check with 'LESS' filterType , result true
      */
     @Test
-    public void CheckLESSFilterTrue(){
-    	LOGGER.info("< checkLESSFilterTrueTest begin >");
+    public void CheckLESSFilterTrue() {
+        LOGGER.info("< checkLESSFilterTrueTest begin >");
         Transaction tx = graphDatabaseService.beginTx();
         try {
 
             Node node = graphDatabaseService.createNode();
             node.setProperty("intValue", 5);
-         
-            Filter afpFilter=new Filter(FilterType.LESS);
-            LOGGER.info("--Node property: "+"'intValue';value: "+node.getProperty("intValue"));
-           
+
+            Filter afpFilter = new Filter(FilterType.LESS, FILTER_NAME);
+            LOGGER.info("--Node property: " + "'intValue';value: " + node.getProperty("intValue"));
+
             LOGGER.info("----FilterType is 'LESS' ");
-           
+
             afpFilter.setExpression(null, "intValue", 6);
-            Assert.assertTrue("propertyValue isn't LESS then value ",afpFilter.check(node));
+            Assert.assertTrue("propertyValue isn't LESS then value ", afpFilter.check(node));
             tx.success();
-            
-        } catch (Exception e) {        
+
+        } catch (Exception e) {
             LOGGER.error(e.toString());
-           
-        }finally{
+
+        } finally {
             tx.finish();
             LOGGER.info("< checkLESSFilterTrueTest end >");
         }
     }
-    
+
     /*
      * check with 'LESS' filterType with NullValueException
      */
     @Test
-    public void CheckNullValueException(){
-    	LOGGER.info("< checkNullValueExceptionTest begin >");
+    public void CheckNullValueException() {
+        LOGGER.info("< checkNullValueExceptionTest begin >");
         Transaction tx = graphDatabaseService.beginTx();
         try {
 
             Node node = graphDatabaseService.createNode();
             node.setProperty("intValue", 5);
-         
-            Filter afpFilter=new Filter(FilterType.LESS);
-            LOGGER.info("--Node property: "+"'intValue';value: "+node.getProperty("intValue"));
-           
+
+            Filter afpFilter = new Filter(FilterType.LESS, FILTER_NAME);
+            LOGGER.info("--Node property: " + "'intValue';value: " + node.getProperty("intValue"));
+
             LOGGER.info("----FilterType is 'LESS' ");
-           
+
             afpFilter.setExpression(null, "intValue", null);
             Exception exc = null;
-            try{
-            	afpFilter.check(node);
+            try {
+                afpFilter.check(node);
             }
-            
-            catch (Exception e){
-            	exc = e;
-            }
-            finally{
-            	Assert.assertTrue("method check(Node node) don't catch NullValueException",exc instanceof NullValueException );
+
+            catch (Exception e) {
+                exc = e;
+            } finally {
+                Assert.assertTrue("method check(Node node) don't catch NullValueException", exc instanceof NullValueException);
             }
             tx.success();
-            
-        } catch (Exception e) {        
+
+        } catch (Exception e) {
             LOGGER.error(e.toString());
-            
-           
-        }finally{
-            tx.finish();            
+
+        } finally {
+            tx.finish();
             LOGGER.info("< checkNullValueExceptionTest end >");
         }
     }
-    
-    
+
     /*
      * check with 'LESS' filterType with NotComparebleException
      */
     @Test
-    public void CheckNotComparebleException(){
-    	LOGGER.info("< checkNotComparebleExceptionTest begin >");
+    public void CheckNotComparebleException() {
+        LOGGER.info("< checkNotComparebleExceptionTest begin >");
         Transaction tx = graphDatabaseService.beginTx();
         try {
 
             Node node = graphDatabaseService.createNode();
             Object obj = new Object();
-            node.setProperty("intValue",obj );
-               
-            Filter afpFilter=new Filter(FilterType.LESS);
-            LOGGER.info("--Node property: "+"'intValue';value: "+node.getProperty("intValue", "null"));
-           
+            node.setProperty("intValue", obj);
+
+            Filter afpFilter = new Filter(FilterType.LESS, FILTER_NAME);
+            LOGGER.info("--Node property: " + "'intValue';value: " + node.getProperty("intValue", "null"));
+
             LOGGER.info("----FilterType is 'LESS' ");
-           
+
             afpFilter.setExpression(null, "intValue", 6);
             Exception exc = null;
-            try{
-            	afpFilter.check(node);
-            }
-            catch (Exception e){
-            	exc = e;          	
-            }
-            finally{
-            	Assert.assertTrue("method check(Node node) don't catch NotComparebleException",exc instanceof NotComparebleException );
+            try {
+                afpFilter.check(node);
+            } catch (Exception e) {
+                exc = e;
+            } finally {
+                Assert.assertTrue("method check(Node node) don't catch NotComparebleException",
+                        exc instanceof NotComparebleException);
             }
             tx.success();
-            
-        } catch (Exception e) {        
+
+        } catch (Exception e) {
             LOGGER.error(e.toString());
-            
-           
-        }finally{
-            tx.finish();            
+
+        } finally {
+            tx.finish();
             LOGGER.info("< checkNotComparebleExceptionTest end >");
         }
     }
+
     /*
      * check with 'MORE_OR_EQUALS' filterType , result true
      */
     @Test
-    public void CheckMORE_OR_EQUALSFilterTrue(){
-    	LOGGER.info("< checkMORE_OR_EQUALSFilterTrueTest begin >");
+    public void CheckMORE_OR_EQUALSFilterTrue() {
+        LOGGER.info("< checkMORE_OR_EQUALSFilterTrueTest begin >");
         Transaction tx = graphDatabaseService.beginTx();
         try {
 
             Node node = graphDatabaseService.createNode();
             node.setProperty("intValue", 5);
-         
-            Filter afpFilter=new Filter(FilterType.MORE_OR_EQUALS);
-            LOGGER.info("--Node property: "+"'intValue';value: "+node.getProperty("intValue"));
-           
+
+            Filter afpFilter = new Filter(FilterType.MORE_OR_EQUALS, FILTER_NAME);
+            LOGGER.info("--Node property: " + "'intValue';value: " + node.getProperty("intValue"));
+
             LOGGER.info("----FilterType is 'MORE_OR_EQUALS' ");
-           
+
             afpFilter.setExpression(null, "intValue", 5);
-            Assert.assertTrue("propertyValue isn't MORE_OR_EQUALS then value ",afpFilter.check(node));
+            Assert.assertTrue("propertyValue isn't MORE_OR_EQUALS then value ", afpFilter.check(node));
             tx.success();
-            
-        } catch (Exception e) {        
+
+        } catch (Exception e) {
             LOGGER.error(e.toString());
-           
-        }finally{
+
+        } finally {
             tx.finish();
             LOGGER.info("< checkMORE_OR_EQUALSFilterTrueTest end >");
         }
     }
-    
+
     /*
      * check with 'EMPTY' filterType , result true
      */
     @Test
-    public void CheckEMPTYFilterTrue(){
-    	LOGGER.info("< checkEMPTYFilterTrueTest begin >");
+    public void CheckEMPTYFilterTrue() {
+        LOGGER.info("< checkEMPTYFilterTrueTest begin >");
         Transaction tx = graphDatabaseService.beginTx();
         try {
 
             Node node = graphDatabaseService.createNode();
             node.setProperty("property", 5);
-         
-            Filter afpFilter=new Filter(FilterType.EMPTY);
-            LOGGER.info("--Node property: "+"'property';value: "+node.getProperty("property"));
-           
+
+            Filter afpFilter = new Filter(FilterType.EMPTY, FILTER_NAME);
+            LOGGER.info("--Node property: " + "'property';value: " + node.getProperty("property"));
+
             LOGGER.info("----FilterType is 'EMPTY' ");
-           
+
             afpFilter.setExpression(null, "anotherProperty");
-            Assert.assertTrue(" 'EMPTY' filter is wron ",afpFilter.check(node));
+            Assert.assertTrue(" 'EMPTY' filter is wron ", afpFilter.check(node));
             tx.success();
-            
-        } catch (Exception e) {        
+
+        } catch (Exception e) {
             LOGGER.error(e.toString());
-           
-        }finally{
+
+        } finally {
             tx.finish();
             LOGGER.info("< checkEMPTYFilterTrueTest end >");
         }
     }
-    
+
     /*
      * check with 'EMPTY' filterType , result false
      */
     @Test
-    public void CheckEMPTYFilterFalse(){
-    	LOGGER.info("< checkEMPTYFilterFalseTest begin >");
+    public void CheckEMPTYFilterFalse() {
+        LOGGER.info("< checkEMPTYFilterFalseTest begin >");
         Transaction tx = graphDatabaseService.beginTx();
         try {
 
             Node node = graphDatabaseService.createNode();
             node.setProperty("property", 5);
-         
-            Filter afpFilter=new Filter(FilterType.EMPTY);
-            LOGGER.info("--Node property: "+"'property';value: "+node.getProperty("property"));
-           
+
+            Filter afpFilter = new Filter(FilterType.EMPTY, FILTER_NAME);
+            LOGGER.info("--Node property: " + "'property';value: " + node.getProperty("property"));
+
             LOGGER.info("----FilterType is 'EMPTY' ");
-           
+
             afpFilter.setExpression(null, "property");
-            Assert.assertFalse(" 'EMPTY' filter is wron ",afpFilter.check(node));
+            Assert.assertFalse(" 'EMPTY' filter is wron ", afpFilter.check(node));
             tx.success();
-            
-        } catch (Exception e) {        
+
+        } catch (Exception e) {
             LOGGER.error(e.toString());
-           
-        }finally{
+
+        } finally {
             tx.finish();
             LOGGER.info("< checkEMPTYFilterFalseTest end >");
         }
     }
-    
+
     /*
      * check with 'NOT_EMPTY' filterType , result false
      */
     @Test
-    public void CheckNOT_EMPTYFilterFalse(){
-    	LOGGER.info("< checkNOT_EMPTYFilterFalseTest begin >");
+    public void CheckNOT_EMPTYFilterFalse() {
+        LOGGER.info("< checkNOT_EMPTYFilterFalseTest begin >");
         Transaction tx = graphDatabaseService.beginTx();
         try {
 
             Node node = graphDatabaseService.createNode();
             node.setProperty("property", 5);
-         
-            Filter afpFilter=new Filter(FilterType.NOT_EMPTY);
-            LOGGER.info("--Node property: "+"'property';value: "+node.getProperty("property"));
-           
+
+            Filter afpFilter = new Filter(FilterType.NOT_EMPTY, FILTER_NAME);
+            LOGGER.info("--Node property: " + "'property';value: " + node.getProperty("property"));
+
             LOGGER.info("----FilterType is 'NOT_EMPTY' ");
-           
+
             afpFilter.setExpression(null, "anotherProperty");
-            Assert.assertFalse(" 'NOT_EMPTY' filter is wron ",afpFilter.check(node));
+            Assert.assertFalse(" 'NOT_EMPTY' filter is wron ", afpFilter.check(node));
             tx.success();
-            
-        } catch (Exception e) {        
+
+        } catch (Exception e) {
             LOGGER.error(e.toString());
-           
-        }finally{
+
+        } finally {
             tx.finish();
             LOGGER.info("< checkNOT_EMPTYFilterFalseTest end >");
         }
     }
-    
+
     /*
      * check with 'NOT_EMPTY' filterType , result true
      */
     @Test
-    public void CheckNOT_EMPTYFilterTrue(){
-    	LOGGER.info("< checkNOT_EMPTYFilterTrueTest begin >");
+    public void CheckNOT_EMPTYFilterTrue() {
+        LOGGER.info("< checkNOT_EMPTYFilterTrueTest begin >");
         Transaction tx = graphDatabaseService.beginTx();
         try {
 
             Node node = graphDatabaseService.createNode();
             node.setProperty("property", 5);
-         
-            Filter afpFilter=new Filter(FilterType.NOT_EMPTY);
-            LOGGER.info("--Node property: "+"'property';value: "+node.getProperty("property"));
-           
+
+            Filter afpFilter = new Filter(FilterType.NOT_EMPTY, FILTER_NAME);
+            LOGGER.info("--Node property: " + "'property';value: " + node.getProperty("property"));
+
             LOGGER.info("----FilterType is 'NOT_EMPTY' ");
-           
+
             afpFilter.setExpression(null, "property");
-            Assert.assertTrue(" 'NOT_EMPTY' filter is wron ",afpFilter.check(node));
+            Assert.assertTrue(" 'NOT_EMPTY' filter is wron ", afpFilter.check(node));
             tx.success();
-            
-        } catch (Exception e) {        
+
+        } catch (Exception e) {
             LOGGER.error(e.toString());
-           
-        }finally{
+
+        } finally {
             tx.finish();
             LOGGER.info("< checkNOT_EMPTYFilterTrueTest end >");
         }
     }
-    
+
     /*
      * setExpression with FilterTypeException
      */
     @Test
-    public void CheckFilterTypeException(){
-    	LOGGER.info("< checkFilterTypeExceptionTest begin >");
-    	Transaction tx = graphDatabaseService.beginTx();
-    	try {
+    public void CheckFilterTypeException() {
+        LOGGER.info("< checkFilterTypeExceptionTest begin >");
+        Transaction tx = graphDatabaseService.beginTx();
+        try {
 
-    		Node node = graphDatabaseService.createNode();
-    		node.setProperty("property", 5);
+            Node node = graphDatabaseService.createNode();
+            node.setProperty("property", 5);
 
-    		Filter afpFilter=new Filter(FilterType.MORE);
-    		LOGGER.info("--Node property: "+"'property';value: "+node.getProperty("property"));
+            Filter afpFilter = new Filter(FilterType.MORE, FILTER_NAME);
+            LOGGER.info("--Node property: " + "'property';value: " + node.getProperty("property"));
 
-    		LOGGER.info("----FilterType is 'MORE' ");
-    		Exception exc = null;
-    		try{
-    			afpFilter.setExpression(null, "property");
-    		}
-    		catch (Exception e){
-    			exc = e;
-    		}
-    		finally{
-    			Assert.assertTrue("method setExpression() don't catch FilterTypeException", exc instanceof FilterTypeException);
-    		}
-    		tx.success();
+            LOGGER.info("----FilterType is 'MORE' ");
+            Exception exc = null;
+            try {
+                afpFilter.setExpression(null, "property");
+            } catch (Exception e) {
+                exc = e;
+            } finally {
+                Assert.assertTrue("method setExpression() don't catch FilterTypeException", exc instanceof FilterTypeException);
+            }
+            tx.success();
 
-    	} catch (Exception e) {        
-    		LOGGER.error(e.toString());
+        } catch (Exception e) {
+            LOGGER.error(e.toString());
 
-    	}finally{
-    		tx.finish();
-    		LOGGER.info("< checkFilterTypeExceptionTest end >");
-    	}
+        } finally {
+            tx.finish();
+            LOGGER.info("< checkFilterTypeExceptionTest end >");
+        }
     }
-    
+
     /*
      * setExpression with NotComparebleRuntimeException
      */
     @Test
-    public void CheckNotComparebleRuntimeException(){
-    	LOGGER.info("< checkNotComparebleRuntimeExceptionTest begin >");
-    	Transaction tx = graphDatabaseService.beginTx();
-    	try {
+    public void CheckNotComparebleRuntimeException() {
+        LOGGER.info("< checkNotComparebleRuntimeExceptionTest begin >");
+        Transaction tx = graphDatabaseService.beginTx();
+        try {
 
-    		Node node = graphDatabaseService.createNode();
-    		node.setProperty("property", 5);
+            Node node = graphDatabaseService.createNode();
+            node.setProperty("property", 5);
 
-    		Filter afpFilter=new Filter(FilterType.MORE);
-    		LOGGER.info("--Node property: "+"'property';value: "+node.getProperty("property"));
+            Filter afpFilter = new Filter(FilterType.MORE, FILTER_NAME);
+            LOGGER.info("--Node property: " + "'property';value: " + node.getProperty("property"));
 
-    		LOGGER.info("----FilterType is 'MORE' ");
-    		Exception exc = null;
-    		
-    		final class NotComparebleClass implements Serializable{
+            LOGGER.info("----FilterType is 'MORE' ");
+            Exception exc = null;
 
-				/**
+            final class NotComparebleClass implements Serializable {
+
+                /**
 				 * 
 				 */
-				private static final long serialVersionUID = 1L;	
-    		}
-    		
-    		try{
-    			NotComparebleClass object = new NotComparebleClass();
-    			afpFilter.setExpression(null, "property", object);
-    		}
-    		catch (Exception e){
-    			exc = e;
-    		}
-    		finally{
-    			Assert.assertTrue("method setExpression() don't catch NotComparebleRuntimeException ", exc instanceof NotComparebleRuntimeException);
-    		}
-    		tx.success();
+                private static final long serialVersionUID = 1L;
+            }
 
-    	} catch (Exception e) {        
-    		LOGGER.error(e.toString());
+            try {
+                NotComparebleClass object = new NotComparebleClass();
+                afpFilter.setExpression(null, "property", object);
+            } catch (Exception e) {
+                exc = e;
+            } finally {
+                Assert.assertTrue("method setExpression() don't catch NotComparebleRuntimeException ",
+                        exc instanceof NotComparebleRuntimeException);
+            }
+            tx.success();
 
-    	}finally{
-    		tx.finish();
-    		LOGGER.info("< checkNotComparebleRuntimeExceptionTest end >");
-    	}
+        } catch (Exception e) {
+            LOGGER.error(e.toString());
+
+        } finally {
+            tx.finish();
+            LOGGER.info("< checkNotComparebleRuntimeExceptionTest end >");
+        }
     }
+
     /*
      * check with 'MORE_OR_EQUALS' filterType , result false
      */
     @Test
-    public void CheckMORE_OR_EQUALSFilterFalse(){
-    	LOGGER.info("< checkMORE_OR_EQUALSFilterFalseTest begin >");
+    public void CheckMORE_OR_EQUALSFilterFalse() {
+        LOGGER.info("< checkMORE_OR_EQUALSFilterFalseTest begin >");
         Transaction tx = graphDatabaseService.beginTx();
         try {
 
             Node node = graphDatabaseService.createNode();
             node.setProperty("intValue", 5);
-         
-            Filter afpFilter=new Filter(FilterType.MORE_OR_EQUALS);
-            LOGGER.info("--Node property: "+"'intValue';value: "+node.getProperty("intValue"));
-           
+
+            Filter afpFilter = new Filter(FilterType.MORE_OR_EQUALS, FILTER_NAME);
+            LOGGER.info("--Node property: " + "'intValue';value: " + node.getProperty("intValue"));
+
             LOGGER.info("----FilterType is 'MORE_OR_EQUALS' ");
-           
+
             afpFilter.setExpression(null, "intValue", 6);
-            Assert.assertFalse("propertyValue is MORE_OR_EQUALS then value ",afpFilter.check(node));
+            Assert.assertFalse("propertyValue is MORE_OR_EQUALS then value ", afpFilter.check(node));
             tx.success();
-            
-        } catch (Exception e) {        
+
+        } catch (Exception e) {
             LOGGER.error(e.toString());
-           
-        }finally{
+
+        } finally {
             tx.finish();
             LOGGER.info("< checkMORE_OR_EQUALSFilterFalseTest end >");
         }
     }
-    
-    
+
     /*
      * check with 'Like' filterType and without RegExp
      */
@@ -654,27 +648,26 @@ public class FilterTest extends AbstractAWETest {
             firstNode.setProperty("Name", "Value 1 2 4");
             Node secondNode = graphDatabaseService.createNode();
             secondNode.setProperty("Name", "Value");
-            Filter afpFilter=new Filter(FilterType.LIKE,ExpressionType.AND);
+            Filter afpFilter = new Filter(FilterType.LIKE, ExpressionType.AND, FILTER_NAME);
             afpFilter.setExpression(null, "Name", secondNode.getProperty("Name").toString());
-            LOGGER.info("--firstNode property: "+"'Name'; value: "+firstNode.getProperty("Name"));
-            LOGGER.info("--secondNode property: "+"'Name'; value: "+secondNode.getProperty("Name"));
+            LOGGER.info("--firstNode property: " + "'Name'; value: " + firstNode.getProperty("Name"));
+            LOGGER.info("--secondNode property: " + "'Name'; value: " + secondNode.getProperty("Name"));
             LOGGER.info("----FilterType is 'LIKE' ExpressionType is 'AND'");
-            Assert.assertFalse("has RegExp or values really LIKE",afpFilter.check(firstNode));
+            Assert.assertFalse("has RegExp or values really LIKE", afpFilter.check(firstNode));
             tx.success();
-            
+
         } catch (Exception e) {
             e.printStackTrace();
-           
-        }finally{
+
+        } finally {
             tx.finish();
             LOGGER.info("< checkFilterTypeWithoutRE end >");
         }
-     }
-    
+    }
+
     /*
-     *check afpFilter with 'EQUALS' filterType and 'OR' expressionType
-     *addAfpFilter with 'EQUALS' filterType and with 'AND'  ExpressionType
-     *with same 'Rest' property
+     * check afpFilter with 'EQUALS' filterType and 'OR' expressionTypeaddAfpFilter with 'EQUALS'
+     * filterType and with 'AND' ExpressionTypewith same 'Rest' property
      */
     @Test
     public void AdditionFilterEQ() {
@@ -687,92 +680,91 @@ public class FilterTest extends AbstractAWETest {
             Node secondNode = graphDatabaseService.createNode();
             secondNode.setProperty("Name", 33);
             secondNode.setProperty("Rest", "value1");
-            Filter afpFilter=new Filter(FilterType.EQUALS,ExpressionType.OR);
-            Filter addAfpFilter=new Filter(FilterType.EQUALS);
-           
-            afpFilter.setExpression(null, "Name", ".*"+secondNode.getProperty("Name")+".*");
-            addAfpFilter.setExpression(null,"Rest", secondNode.getProperty("Rest").toString());
-           
+            Filter afpFilter = new Filter(FilterType.EQUALS, ExpressionType.OR, FILTER_NAME);
+            Filter addAfpFilter = new Filter(FilterType.EQUALS, FILTER_NAME);
+
+            afpFilter.setExpression(null, "Name", ".*" + secondNode.getProperty("Name") + ".*");
+            addAfpFilter.setExpression(null, "Rest", secondNode.getProperty("Rest").toString());
+
             afpFilter.addFilter(addAfpFilter);
-            LOGGER.info("--firstNode property: "+"'Name'; value: "+firstNode.getProperty("Name"));
-            LOGGER.info("--secondNode property: "+"'Name'; value: "+secondNode.getProperty("Name"));
+            LOGGER.info("--firstNode property: " + "'Name'; value: " + firstNode.getProperty("Name"));
+            LOGGER.info("--secondNode property: " + "'Name'; value: " + secondNode.getProperty("Name"));
             LOGGER.info("---- afpFilter FilterType is 'EQUALS' ExpressionType is 'OR'");
             LOGGER.info("---- addAfpFilter FilterType is 'EQUALS' ExpressionType is 'AND'");
-            
-            Assert.assertTrue("need the same 'Rest' or 'Name' property value ",afpFilter.check(firstNode));
+
+            Assert.assertTrue("need the same 'Rest' or 'Name' property value ", afpFilter.check(firstNode));
             tx.success();
-         } catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
-         }finally{
+        } finally {
             tx.finish();
             LOGGER.info("< checkAdditionFilterEQ end >");
         }
-     }
-    
+    }
+
     /*
      * check with 'LESS_OR_EQUALS' filterType , result false
      */
     @Test
-    public void CheckLESS_OR_EQUALSFilterFalse(){
-    	LOGGER.info("< checkLESS_OR_EQUALSFilterFalseTest begin >");
+    public void CheckLESS_OR_EQUALSFilterFalse() {
+        LOGGER.info("< checkLESS_OR_EQUALSFilterFalseTest begin >");
         Transaction tx = graphDatabaseService.beginTx();
         try {
 
             Node node = graphDatabaseService.createNode();
             node.setProperty("intValue", 6);
-         
-            Filter afpFilter=new Filter(FilterType.LESS_OR_EQUALS);
-            LOGGER.info("--Node property: "+"'intValue';value: "+node.getProperty("intValue"));
-           
+
+            Filter afpFilter = new Filter(FilterType.LESS_OR_EQUALS, FILTER_NAME);
+            LOGGER.info("--Node property: " + "'intValue';value: " + node.getProperty("intValue"));
+
             LOGGER.info("----FilterType is 'LESS_OR_EQUALS' ");
-           
+
             afpFilter.setExpression(null, "intValue", 5);
-            Assert.assertFalse("propertyValue is LESS_OR_EQUALS then value ",afpFilter.check(node));
+            Assert.assertFalse("propertyValue is LESS_OR_EQUALS then value ", afpFilter.check(node));
             tx.success();
-            
-        } catch (Exception e) {        
+
+        } catch (Exception e) {
             LOGGER.error(e.toString());
-           
-        }finally{
+
+        } finally {
             tx.finish();
             LOGGER.info("< checkLESS_OR_EQUALSFilterFalseTest end >");
         }
     }
-    
+
     /*
      * check with 'LESS_OR_EQUALS' filterType , result true
      */
     @Test
-    public void CheckLESS_OR_EQUALSFilterTrue(){
-    	LOGGER.info("< checkLESS_OR_EQUALSFilterTrueTest begin >");
+    public void CheckLESS_OR_EQUALSFilterTrue() {
+        LOGGER.info("< checkLESS_OR_EQUALSFilterTrueTest begin >");
         Transaction tx = graphDatabaseService.beginTx();
         try {
 
             Node node = graphDatabaseService.createNode();
             node.setProperty("intValue", 5);
-         
-            Filter afpFilter=new Filter(FilterType.LESS_OR_EQUALS);
-            LOGGER.info("--Node property: "+"'intValue';value: "+node.getProperty("intValue"));
-           
+
+            Filter afpFilter = new Filter(FilterType.LESS_OR_EQUALS, FILTER_NAME);
+            LOGGER.info("--Node property: " + "'intValue';value: " + node.getProperty("intValue"));
+
             LOGGER.info("----FilterType is 'LESS_OR_EQUALS' ");
-           
+
             afpFilter.setExpression(null, "intValue", 5);
-            Assert.assertTrue("propertyValue isn't LESS_OR_EQUALS then value ",afpFilter.check(node));
+            Assert.assertTrue("propertyValue isn't LESS_OR_EQUALS then value ", afpFilter.check(node));
             tx.success();
-            
-        } catch (Exception e) {        
+
+        } catch (Exception e) {
             LOGGER.error(e.toString());
-           
-        }finally{
+
+        } finally {
             tx.finish();
             LOGGER.info("< checkLESS_OR_EQUALSFilterTrueTest end >");
         }
     }
-    
-    
+
     /*
-     *check afpFilter with 'LIKE' filterType and 'AND' expressionType
-     *addAfpFilter with 'LIKE' filterType and with 'AND'  ExpressionType
+     * check afpFilter with 'LIKE' filterType and 'AND' expressionTypeaddAfpFilter with 'LIKE'
+     * filterType and with 'AND' ExpressionType
      */
     @Test
     public void AdditionFilterLike() {
@@ -785,31 +777,31 @@ public class FilterTest extends AbstractAWETest {
             Node secondNode = graphDatabaseService.createNode();
             secondNode.setProperty("Name", "name");
             secondNode.setProperty("Rest", "value");
-            Filter afpFilter=new Filter(FilterType.LIKE,ExpressionType.AND);
-            Filter addAfpFilter=new Filter(FilterType.LIKE);
-           
-            afpFilter.setExpression(null, "Name", ".*"+secondNode.getProperty("Name")+".*");
-            addAfpFilter.setExpression(null,"Rest", ".*"+secondNode.getProperty("Rest")+".*");
+            Filter afpFilter = new Filter(FilterType.LIKE, ExpressionType.AND, FILTER_NAME);
+            Filter addAfpFilter = new Filter(FilterType.LIKE, UNDERLINE_FILTER_NAME);
+
+            afpFilter.setExpression(null, "Name", ".*" + secondNode.getProperty("Name") + ".*");
+            addAfpFilter.setExpression(null, "Rest", ".*" + secondNode.getProperty("Rest") + ".*");
             afpFilter.addFilter(addAfpFilter);
-             
-            LOGGER.info("--firstNode property: "+"'Name'; value: "+firstNode.getProperty("Name"));
-            LOGGER.info("--secondNode property: "+"'Name'; value: "+secondNode.getProperty("Name"));
+
+            LOGGER.info("--firstNode property: " + "'Name'; value: " + firstNode.getProperty("Name"));
+            LOGGER.info("--secondNode property: " + "'Name'; value: " + secondNode.getProperty("Name"));
             LOGGER.info("---- afpFilter FilterType is 'LIKE' ExpressionType is 'AND'");
             LOGGER.info("---- addAfpFilter FilterType is 'LIKE' ExpressionType is 'AND'");
-            
-            Assert.assertTrue("values doesn't 'LIKE' each others",afpFilter.check(firstNode));
+
+            Assert.assertTrue("values doesn't 'LIKE' each others", afpFilter.check(firstNode));
             tx.success();
-         } catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
-         }finally{
+        } finally {
             tx.finish();
             LOGGER.info("< checkAdditionFilterLike end >");
         }
-     }
-    
+    }
+
     /*
-     *check afpFilter with 'EQUALS' filterType and 'AND' expressionType
-     *addAfpFilter with 'LIKE' filterType and with 'AND'  ExpressionType
+     * check afpFilter with 'EQUALS' filterType and 'AND' expressionTypeaddAfpFilter with 'LIKE'
+     * filterType and with 'AND' ExpressionType
      */
     @Test
     public void AdditionFilterEQL() {
@@ -822,32 +814,33 @@ public class FilterTest extends AbstractAWETest {
             Node secondNode = graphDatabaseService.createNode();
             secondNode.setProperty("Name", "name 1");
             secondNode.setProperty("Rest", "value");
-            Filter afpFilter=new Filter(FilterType.EQUALS,ExpressionType.AND);
-            Filter addAfpFilter=new Filter(FilterType.LIKE);
-           
+            Filter afpFilter = new Filter(FilterType.EQUALS, ExpressionType.AND, FILTER_NAME);
+            Filter addAfpFilter = new Filter(FilterType.LIKE, UNDERLINE_FILTER_NAME);
+
             afpFilter.setExpression(null, "Name", secondNode.getProperty("Name").toString());
-            addAfpFilter.setExpression(null,"Rest", ".*"+secondNode.getProperty("Rest")+".*");
+            addAfpFilter.setExpression(null, "Rest", ".*" + secondNode.getProperty("Rest") + ".*");
             afpFilter.addFilter(addAfpFilter);
-             
-            LOGGER.info("--firstNode property: "+"'Name'; value: "+firstNode.getProperty("Name"));
-            LOGGER.info("--secondNode property: "+"'Name'; value: "+secondNode.getProperty("Name"));
+
+            LOGGER.info("--firstNode property: " + "'Name'; value: " + firstNode.getProperty("Name"));
+            LOGGER.info("--secondNode property: " + "'Name'; value: " + secondNode.getProperty("Name"));
             LOGGER.info("---- afpFilter FilterType is 'EQUALS' ExpressionType is 'AND'");
             LOGGER.info("---- addAfpFilter FilterType is 'LIKE' ExpressionType is 'AND'");
-            
-            Assert.assertTrue("'Name' property is not EQUALS or 'Rest' property is not LIKE to Expression",afpFilter.check(firstNode));
+
+            Assert.assertTrue("'Name' property is not EQUALS or 'Rest' property is not LIKE to Expression",
+                    afpFilter.check(firstNode));
             tx.success();
-         } catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
-         }finally{
+        } finally {
             tx.finish();
             LOGGER.info("< checkAdditionFilterEQL end >");
         }
-     }
-    
+    }
+
     /*
-     *check afpFilter with 'LIKE' filterType and 'AND' expressionType 
-     *addAfpFilter with 'EQUALS' filterType and with 'AND'  ExpressionType
-    */
+     * check afpFilter with 'LIKE' filterType and 'AND' expressionTypeaddAfpFilter with 'EQUALS'
+     * filterType and with 'AND' ExpressionType
+     */
     @Test
     public void AdditionFilterLEQ() {
         LOGGER.info("< checkAdditionFilterLEQ begin >");
@@ -856,37 +849,36 @@ public class FilterTest extends AbstractAWETest {
             Node firstNode = graphDatabaseService.createNode();
             firstNode.setProperty("Name", "name 1");
             firstNode.setProperty("Rest", "value 4");
-           
+
             Node secondNode = graphDatabaseService.createNode();
             secondNode.setProperty("Name", "name");
             secondNode.setProperty("Rest", "value 4");
-            
-            Filter afpFilter=new Filter(FilterType.LIKE,ExpressionType.AND);
-            Filter addAfpFilter=new Filter(FilterType.EQUALS);
-           
-            afpFilter.setExpression(null, "Name", ".*"+secondNode.getProperty("Name")+".*");
-            addAfpFilter.setExpression(null,"Rest", secondNode.getProperty("Rest").toString());
+
+            Filter afpFilter = new Filter(FilterType.LIKE, ExpressionType.AND, FILTER_NAME);
+            Filter addAfpFilter = new Filter(FilterType.EQUALS, UNDERLINE_FILTER_NAME);
+
+            afpFilter.setExpression(null, "Name", ".*" + secondNode.getProperty("Name") + ".*");
+            addAfpFilter.setExpression(null, "Rest", secondNode.getProperty("Rest").toString());
             afpFilter.addFilter(addAfpFilter);
-             
-            LOGGER.info("--firstNode property: "+"'Name'; value: "+firstNode.getProperty("Name"));
-            LOGGER.info("--secondNode property: "+"'Name'; value: "+secondNode.getProperty("Name"));
+
+            LOGGER.info("--firstNode property: " + "'Name'; value: " + firstNode.getProperty("Name"));
+            LOGGER.info("--secondNode property: " + "'Name'; value: " + secondNode.getProperty("Name"));
             LOGGER.info("---- afpFilter FilterType is 'LIKE' ExpressionType is 'AND'");
             LOGGER.info("---- addAfpFilter FilterType is 'EQUALS' ExpressionType is 'AND'");
-            
-            Assert.assertTrue("'Name' property is not LIKE or 'Rest' property not EQUALS to Expression",afpFilter.check(firstNode));
+
+            Assert.assertTrue("'Name' property is not LIKE or 'Rest' property not EQUALS to Expression", afpFilter.check(firstNode));
             tx.success();
-         } catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
-         }finally{
+        } finally {
             tx.finish();
             LOGGER.info("< checkAdditionFilterLEQ end >");
         }
-     }
-    
+    }
+
     /*
-     *check if node doesn't consist propertyName
-     *
-    */
+     * check if node doesn't consist propertyName
+     */
     @Test
     public void NullName() {
         LOGGER.info("< checkAdditionFilterLEQ begin >");
@@ -898,65 +890,64 @@ public class FilterTest extends AbstractAWETest {
             Node secondNode = graphDatabaseService.createNode();
             secondNode.setProperty("Name", "name");
             secondNode.setProperty("Rest", "value 4");
-            Filter afpFilter = new Filter(FilterType.LIKE);
+            Filter afpFilter = new Filter(FilterType.LIKE, FILTER_NAME);
             afpFilter.setExpression(null, "Name", ".*" + secondNode.getProperty("Name") + ".*");
 
             LOGGER.info("--firstNode doesn't consist 'Name' property: ");
             LOGGER.info("--secondNode property: " + "'Name'; value: " + secondNode.getProperty("Name"));
             LOGGER.info("---- afpFilter FilterType is 'LIKE' ExpressionType is 'AND'");
-            Assert.assertFalse("'Name' property is found",afpFilter.check(firstNode));
-        }catch (org.neo4j.graphdb.NotFoundException e) {
+            Assert.assertFalse("'Name' property is found", afpFilter.check(firstNode));
+        } catch (org.neo4j.graphdb.NotFoundException e) {
             e.printStackTrace();
-            //Assert.fail("can't find propertyName in a node ");
-        } 
-        catch (Exception e) {
+            // Assert.fail("can't find propertyName in a node ");
+        } catch (Exception e) {
             e.printStackTrace();
         } finally {
             tx.finish();
             LOGGER.info("< checkNullName end >");
         }
     }
-//    
-//    /*
-//     *check if node property value is  null
-//     *
-//    */
-//    @Test
-//    public void checkNullValue() {
-//        LOGGER.info("< checkAdditionFilterLEQ begin >");
-//        Transaction tx = graphDatabaseService.beginTx();
-//        try {
-//            Node firstNode = graphDatabaseService.createNode();
-//            firstNode.setProperty("Name", null);
-//            firstNode.setProperty("Rest", "value 4");
-//
-//            Node secondNode = graphDatabaseService.createNode();
-//            secondNode.setProperty("Name", "name");
-//            secondNode.setProperty("Rest", "value 4");
-//            Filter afpFilter = new Filter(FilterType.LIKE);
-//            afpFilter.setExpression(null, "Name", ".*" + secondNode.getProperty("Name") + ".*");
-//
-//            LOGGER.info("--firstNode property: " + "'Name'; value: " + firstNode.getProperty("Name"));
-//            LOGGER.info("--secondNode property: " + "'Name'; value: " + secondNode.getProperty("Name"));
-//            LOGGER.info("---- afpFilter FilterType is 'LIKE' ExpressionType is 'AND'");
-//            LOGGER.info("---- addAfpFilter FilterType is 'LIKE' ExpressionType is 'AND'");
-//            Assert.assertTrue("'Name' property is not LIKE or 'Rest' property not EQUALS to Expression",afpFilter.check(firstNode));
-//        }catch (java.lang.IllegalArgumentException e) {
-//            e.printStackTrace();
-//            Assert.fail("Value in filtering Node is null");
-//        } 
-//        catch (Exception e) {
-//            e.printStackTrace();
-//        } finally {
-//            tx.finish();
-//            LOGGER.info("< checkAdditionFilterLEQ end >");
-//        }
-//    }
-    
+
+    //
+    // /*
+    // *check if node property value is null
+    // *
+    // */
+    // @Test
+    // public void checkNullValue() {
+    // LOGGER.info("< checkAdditionFilterLEQ begin >");
+    // Transaction tx = graphDatabaseService.beginTx();
+    // try {
+    // Node firstNode = graphDatabaseService.createNode();
+    // firstNode.setProperty("Name", null);
+    // firstNode.setProperty("Rest", "value 4");
+    //
+    // Node secondNode = graphDatabaseService.createNode();
+    // secondNode.setProperty("Name", "name");
+    // secondNode.setProperty("Rest", "value 4");
+    // Filter afpFilter = new Filter(FilterType.LIKE);
+    // afpFilter.setExpression(null, "Name", ".*" + secondNode.getProperty("Name") + ".*");
+    //
+    // LOGGER.info("--firstNode property: " + "'Name'; value: " + firstNode.getProperty("Name"));
+    // LOGGER.info("--secondNode property: " + "'Name'; value: " + secondNode.getProperty("Name"));
+    // LOGGER.info("---- afpFilter FilterType is 'LIKE' ExpressionType is 'AND'");
+    // LOGGER.info("---- addAfpFilter FilterType is 'LIKE' ExpressionType is 'AND'");
+    // Assert.assertTrue("'Name' property is not LIKE or 'Rest' property not EQUALS to Expression",afpFilter.check(firstNode));
+    // }catch (java.lang.IllegalArgumentException e) {
+    // e.printStackTrace();
+    // Assert.fail("Value in filtering Node is null");
+    // }
+    // catch (Exception e) {
+    // e.printStackTrace();
+    // } finally {
+    // tx.finish();
+    // LOGGER.info("< checkAdditionFilterLEQ end >");
+    // }
+    // }
+
     /*
-     *check if propertyName in expression  is  null
-     *FilterType 'LIKE'
-    */
+     * check if propertyName in expression is nullFilterType 'LIKE'
+     */
     @Test
     public void NullPropertyNameLike() {
         LOGGER.info("< checkPropertyNameNull begin >");
@@ -969,30 +960,28 @@ public class FilterTest extends AbstractAWETest {
             Node secondNode = graphDatabaseService.createNode();
             secondNode.setProperty("Name", "name");
             secondNode.setProperty("Rest", "value 4");
-            Filter afpFilter = new Filter(FilterType.LIKE);
-            afpFilter.setExpression(null,null, ".*" + secondNode.getProperty("Name") + ".*");
+            Filter afpFilter = new Filter(FilterType.LIKE, FILTER_NAME);
+            afpFilter.setExpression(null, null, ".*" + secondNode.getProperty("Name") + ".*");
 
             LOGGER.info("--firstNode property: " + "'Name'; value: " + firstNode.getProperty("Name"));
             LOGGER.info("--secondNode property: " + "'Name'; value: " + secondNode.getProperty("Name"));
             LOGGER.info("---- afpFilter FilterType is 'LIKE' ExpressionType is 'AND'");
             LOGGER.info("---- afpFilter Expression: null,null,'name'");
-            Assert.assertFalse("Expression propertyName is null",afpFilter.check(firstNode));
-        }catch (NullPointerException e){
+            Assert.assertFalse("Expression propertyName is null", afpFilter.check(firstNode));
+        } catch (NullPointerException e) {
             e.printStackTrace();
-            //Assert.fail("Null pointer Exception in propertyName");
-        }
-        catch (Exception e) {
+            // Assert.fail("Null pointer Exception in propertyName");
+        } catch (Exception e) {
             e.printStackTrace();
         } finally {
             tx.finish();
             LOGGER.info("< checkNullPropertyNameLike end >");
         }
     }
-    
+
     /*
-     *check if propertyName in expression  is  null
-     *FilterType 'EQUALS'
-    */
+     * check if propertyName in expression is nullFilterType 'EQUALS'
+     */
     @Test
     public void NullPropertyNameEQUALS() {
         LOGGER.info("< checkPropertyNameNull begin >");
@@ -1005,30 +994,28 @@ public class FilterTest extends AbstractAWETest {
             Node secondNode = graphDatabaseService.createNode();
             secondNode.setProperty("Name", "name");
             secondNode.setProperty("Rest", "value 4");
-            Filter afpFilter = new Filter(FilterType.EQUALS);
-            afpFilter.setExpression(null,null,secondNode.getProperty("Name").toString());
+            Filter afpFilter = new Filter(FilterType.EQUALS, FILTER_NAME);
+            afpFilter.setExpression(null, null, secondNode.getProperty("Name").toString());
 
             LOGGER.info("--firstNode property: " + "'Name'; value: " + firstNode.getProperty("Name"));
             LOGGER.info("--secondNode property: " + "'Name'; value: " + secondNode.getProperty("Name"));
             LOGGER.info("---- afpFilter FilterType is 'LIKE' ExpressionType is 'AND'");
             LOGGER.info("---- afpFilter Expression: null,null,'name'");
-            Assert.assertFalse("Expression propertyName is null",afpFilter.check(firstNode));
-        }catch (NullPointerException e){
+            Assert.assertFalse("Expression propertyName is null", afpFilter.check(firstNode));
+        } catch (NullPointerException e) {
             e.printStackTrace();
-            //Assert.fail("Null pointer Exception in propertyName");
-        }
-        catch (Exception e) {
+            // Assert.fail("Null pointer Exception in propertyName");
+        } catch (Exception e) {
             e.printStackTrace();
         } finally {
             tx.finish();
             LOGGER.info("< checkNullPropertyNameEQUALS end >");
         }
     }
-    
+
     /*
-     *check if propertyName in expression  is  null
-     *FilterType ERQUALS
-    */
+     * check if propertyName in expression is nullFilterType ERQUALS
+     */
     @Test
     public void NullPropertyValueEQ() {
         LOGGER.info("< checkPropertyNameNull begin >");
@@ -1041,29 +1028,28 @@ public class FilterTest extends AbstractAWETest {
             Node secondNode = graphDatabaseService.createNode();
             secondNode.setProperty("Name", "name");
             secondNode.setProperty("Rest", "value 4");
-            Filter afpFilter = new Filter(FilterType.EQUALS);
-            afpFilter.setExpression(null,"Name", null);
+            Filter afpFilter = new Filter(FilterType.EQUALS, FILTER_NAME);
+            afpFilter.setExpression(null, "Name", null);
 
             LOGGER.info("--firstNode property: " + "'Name'; value: " + firstNode.getProperty("Name"));
             LOGGER.info("--secondNode property: " + "'Name'; value: " + secondNode.getProperty("Name"));
             LOGGER.info("---- afpFilter FilterType is 'LIKE' ExpressionType is 'AND'");
             LOGGER.info("---- afpFilter Expression: null,'Name',null");
-            Assert.assertFalse("Expression propertyName is not null",afpFilter.check(firstNode));
-        }catch (NullPointerException e){
+            Assert.assertFalse("Expression propertyName is not null", afpFilter.check(firstNode));
+        } catch (NullPointerException e) {
             e.printStackTrace();
-            //Assert.fail("Null pointer Exception in propertyValue");
-        }
-        catch (Exception e) {
+            // Assert.fail("Null pointer Exception in propertyValue");
+        } catch (Exception e) {
             e.printStackTrace();
         } finally {
             tx.finish();
             LOGGER.info("< checkNullPropertyValueEQ end >");
         }
     }
+
     /*
-     *check if expression propertyName is  null
-     *FilterType LIKE
-    */
+     * check if expression propertyName is nullFilterType LIKE
+     */
     @Test
     public void NullPropertyValueLike() {
         LOGGER.info("< checkPropertyNameNull begin >");
@@ -1076,28 +1062,27 @@ public class FilterTest extends AbstractAWETest {
             Node secondNode = graphDatabaseService.createNode();
             secondNode.setProperty("Name", "name");
             secondNode.setProperty("Rest", "value 4");
-            Filter afpFilter = new Filter(FilterType.LIKE);
-            afpFilter.setExpression(null,"Name", null);
+            Filter afpFilter = new Filter(FilterType.LIKE, FILTER_NAME);
+            afpFilter.setExpression(null, "Name", null);
 
             LOGGER.info("--firstNode property: " + "'Name'; value: " + firstNode.getProperty("Name"));
             LOGGER.info("--secondNode property: " + "'Name'; value: " + secondNode.getProperty("Name"));
             LOGGER.info("---- afpFilter FilterType is 'LIKE' ExpressionType is 'AND'");
             LOGGER.info("---- afpFilter Expression: null,'Name',null");
-            Assert.assertFalse("Expression propertyValue is not null",afpFilter.check(firstNode));
-        }catch (NullPointerException e){
+            Assert.assertFalse("Expression propertyValue is not null", afpFilter.check(firstNode));
+        } catch (NullPointerException e) {
             e.printStackTrace();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         } finally {
             tx.finish();
             LOGGER.info("< checkNullPropertyValue end >");
         }
     }
+
     /*
-     *check if expression propertyName and value null
-     *FilterType LIKE
-    */
+     * check if expression propertyName and value nullFilterType LIKE
+     */
     @Test
     public void NullBOTHLike() {
         LOGGER.info("< checkNullBOTHLike begin >");
@@ -1110,29 +1095,28 @@ public class FilterTest extends AbstractAWETest {
             Node secondNode = graphDatabaseService.createNode();
             secondNode.setProperty("Name", "name");
             secondNode.setProperty("Rest", "value 4");
-            Filter afpFilter = new Filter(FilterType.LIKE);
-            afpFilter.setExpression(null,null, null);
+            Filter afpFilter = new Filter(FilterType.LIKE, FILTER_NAME);
+            afpFilter.setExpression(null, null, null);
 
             LOGGER.info("--firstNode property: " + "'Name'; value: " + firstNode.getProperty("Name"));
             LOGGER.info("--secondNode property: " + "'Name'; value: " + secondNode.getProperty("Name"));
             LOGGER.info("---- afpFilter FilterType is 'LIKE' ExpressionType is 'AND'");
             LOGGER.info("---- afpFilter Expression: null,null,null");
-            Assert.assertFalse("Expression BOTH parameters is not null",afpFilter.check(firstNode));
-        }catch (NullPointerException e){
+            Assert.assertFalse("Expression BOTH parameters is not null", afpFilter.check(firstNode));
+        } catch (NullPointerException e) {
             e.printStackTrace();
-            //Assert.fail("Null pointer Exception in propertyValue or propertyName");
-        }
-        catch (Exception e) {
+            // Assert.fail("Null pointer Exception in propertyValue or propertyName");
+        } catch (Exception e) {
             e.printStackTrace();
         } finally {
             tx.finish();
             LOGGER.info("< checkNullBOTHLike end >");
         }
     }
+
     /*
-     * check if expression propertyName and value null
-     * FilterType EQUALS
-    */
+     * check if expression propertyName and value null FilterType EQUALS
+     */
     @Test
     public void NullBOTHEQ() {
         LOGGER.info("< checkNullBOTHLike begin >");
@@ -1145,32 +1129,30 @@ public class FilterTest extends AbstractAWETest {
             Node secondNode = graphDatabaseService.createNode();
             secondNode.setProperty("Name", "name");
             secondNode.setProperty("Rest", "value 4");
-            Filter afpFilter = new Filter(FilterType.EQUALS);
-            afpFilter.setExpression(null,null, null);
+            Filter afpFilter = new Filter(FilterType.EQUALS, FILTER_NAME);
+            afpFilter.setExpression(null, null, null);
 
             LOGGER.info("--firstNode property: " + "'Name'; value: " + firstNode.getProperty("Name"));
             LOGGER.info("--secondNode property: " + "'Name'; value: " + secondNode.getProperty("Name"));
             LOGGER.info("---- afpFilter FilterType is 'LIKE' ExpressionType is 'AND'");
             LOGGER.info("---- addAfpFilter FilterType is 'LIKE' ExpressionType is 'AND'");
             LOGGER.info("---- afpFilter Expression: null,null,null");
-            Assert.assertFalse("Expression BOTH parameters is not null",afpFilter.check(firstNode));
-        }catch (NullPointerException e){
+            Assert.assertFalse("Expression BOTH parameters is not null", afpFilter.check(firstNode));
+        } catch (NullPointerException e) {
             e.printStackTrace();
-            //Assert.fail("Null pointer Exception in propertyValue or propertyName");
-        }
-        catch (Exception e) {
+            // Assert.fail("Null pointer Exception in propertyValue or propertyName");
+        } catch (Exception e) {
             e.printStackTrace();
-    
+
         } finally {
             tx.finish();
             LOGGER.info("< checkNullBOTHLike end >");
         }
     }
-    
+
     /*
-     * check nodeType 
-     * FilterType EQUALS
-    */
+     * check nodeType FilterType EQUALS
+     */
     @Test
     public void SameNodeType() {
         LOGGER.info("< checkSameNodeType begin >");
@@ -1178,37 +1160,35 @@ public class FilterTest extends AbstractAWETest {
         try {
             Node firstNode = graphDatabaseService.createNode();
             firstNode.setProperty(AbstractService.TYPE, NetworkElementNodeType.CITY.getId());
-            //System.out.println(datasetService.getNodeType(firstNode));
+            // System.out.println(datasetService.getNodeType(firstNode));
             firstNode.setProperty("Name", "Name11");
             firstNode.setProperty("Rest", "value 4");
 
             Node secondNode = graphDatabaseService.createNode();
             secondNode.setProperty("Name", "name");
             secondNode.setProperty("Rest", "value 4");
-            Filter afpFilter = new Filter(FilterType.EQUALS,ExpressionType.AND);
-            afpFilter.setExpression(NetworkElementNodeType.CITY,"Rest", "value 4");
+            Filter afpFilter = new Filter(FilterType.EQUALS, ExpressionType.AND, FILTER_NAME);
+            afpFilter.setExpression(NetworkElementNodeType.CITY, "Rest", "value 4");
 
             LOGGER.info("--firstNode nodeType:'CITY'; property: " + "'Rest'; value: " + firstNode.getProperty("Rest"));
             LOGGER.info("---- afpFilter FilterType is 'EQUALS' ExpressionType is 'AND'");
             LOGGER.info("---- afpFilter Expression: CITY,'Rest','value 4'");
-            Assert.assertTrue("Expression NodeType Parameter and node type are not the same",afpFilter.check(firstNode));
-        }catch (NullPointerException e){
+            Assert.assertTrue("Expression NodeType Parameter and node type are not the same", afpFilter.check(firstNode));
+        } catch (NullPointerException e) {
             e.printStackTrace();
-            //Assert.fail("Null pointer Exception in propertyValue or propertyName");
-        }
-        catch (Exception e) {
+            // Assert.fail("Null pointer Exception in propertyValue or propertyName");
+        } catch (Exception e) {
             e.printStackTrace();
-    
+
         } finally {
             tx.finish();
             LOGGER.info("< checkSameNodeType end >");
         }
     }
-    
+
     /*
-     * check nodeType 
-     * FilterType EQUALS
-    */
+     * check nodeType FilterType EQUALS
+     */
     @Test
     public void DiffNodeType() {
         LOGGER.info("< checkNullBOTHLike begin >");
@@ -1216,31 +1196,29 @@ public class FilterTest extends AbstractAWETest {
         try {
             Node firstNode = graphDatabaseService.createNode();
             firstNode.setProperty(AbstractService.TYPE, NetworkElementNodeType.CITY.getId());
-            //System.out.println(datasetService.getNodeType(firstNode));
+            // System.out.println(datasetService.getNodeType(firstNode));
             firstNode.setProperty("Name", "Name11");
             firstNode.setProperty("Rest", "value 4");
 
             Node secondNode = graphDatabaseService.createNode();
             secondNode.setProperty("Name", "name");
             secondNode.setProperty("Rest", "value 4");
-            Filter afpFilter = new Filter(FilterType.EQUALS,ExpressionType.AND);
-            //Filter addafpFilter = new Filter(FilterType.LIKE);
-           // addafpFilter.setExpression(NodeTypes.CITY, "Name", ".*Name.*");
-            afpFilter.setExpression(NetworkElementNodeType.BSC,"Rest", "value 4");
-           // afpFilter.addFilter(addafpFilter);
-
+            Filter afpFilter = new Filter(FilterType.EQUALS, ExpressionType.AND, FILTER_NAME);
+            // Filter addafpFilter = new Filter(FilterType.LIKE);
+            // addafpFilter.setExpression(NodeTypes.CITY, "Name", ".*Name.*");
+            afpFilter.setExpression(NetworkElementNodeType.BSC, "Rest", "value 4");
+            // afpFilter.addFilter(addafpFilter);
 
             LOGGER.info("--firstNode nodeType:'CITY'; property: " + "'Rest'; value: " + firstNode.getProperty("Rest"));
             LOGGER.info("---- afpFilter FilterType is 'EQUALS' ExpressionType is 'AND'");
             LOGGER.info("---- afpFilter Expression: BSC,'Rest','value 4'");
-            Assert.assertFalse("Expression NodeType Parameter and node type are the same",afpFilter.check(firstNode));
-        }catch (NullPointerException e){
+            Assert.assertFalse("Expression NodeType Parameter and node type are the same", afpFilter.check(firstNode));
+        } catch (NullPointerException e) {
             e.printStackTrace();
-            //Assert.fail("Null pointer Exception in propertyValue or propertyName");
-        }
-        catch (Exception e) {
+            // Assert.fail("Null pointer Exception in propertyValue or propertyName");
+        } catch (Exception e) {
             e.printStackTrace();
-    
+
         } finally {
             tx.finish();
             LOGGER.info("< checkDiffNodeType end >");

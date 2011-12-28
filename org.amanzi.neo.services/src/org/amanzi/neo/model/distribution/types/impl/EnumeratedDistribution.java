@@ -24,28 +24,27 @@ import org.amanzi.neo.services.filters.Filter;
 import org.apache.log4j.Logger;
 
 /**
- * Distribution for Enumerated properties (such as String and Boolean for example)
- * 
- * Creates range for each String value of property
+ * Distribution for Enumerated properties (such as String and Boolean for example) Creates range for
+ * each String value of property
  * 
  * @author gerzog
  * @since 1.0.0
  */
 public class EnumeratedDistribution extends AbstractDistribution<SimpleRange> {
-    
+
     private static final Logger LOGGER = Logger.getLogger(EnumeratedDistribution.class);
-    
+
     static final String STRING_DISTRIBUTION_NAME = "auto";
-    
+    private static final String FILTER_NAME = "filterName";
     /*
      * Maximum count of property values, if count > max that exception will be thrown
      */
     static final int MAX_PROPERTY_VALUE_COUNT = 100;
-    
+
     private int count = 0;
-    
+
     private static final Select[] POSSIBLE_SELECTS = new Select[] {Select.EXISTS};
-    
+
     /**
      * @param model
      * @param nodeType
@@ -69,10 +68,10 @@ public class EnumeratedDistribution extends AbstractDistribution<SimpleRange> {
     @Override
     protected void createRanges() {
         LOGGER.debug("start createRange()");
-        
-        //initialize count of all properties
+
+        // initialize count of all properties
         count = model.getPropertyCount(nodeType, propertyName);
-        
+
         Set<String> uniqueValues = new HashSet<String>();
         Object[] propertyValues = model.getPropertyValues(nodeType, propertyName);
         for (Object value : propertyValues) {
@@ -81,17 +80,17 @@ public class EnumeratedDistribution extends AbstractDistribution<SimpleRange> {
                 throw new IllegalArgumentException("Property values count more than " + MAX_PROPERTY_VALUE_COUNT);
             }
         }
-        //initialize ranges
+        // initialize ranges
         for (Object value : propertyValues) {
-            //we are sure that it's a string
+            // we are sure that it's a string
             String sValue = value.toString();
-            Serializable serValue = (Serializable) value;
-            
-            Filter filter = new Filter();
+            Serializable serValue = (Serializable)value;
+
+            Filter filter = new Filter(FILTER_NAME);
             filter.setExpression(nodeType, propertyName, serValue);
             ranges.add(new SimpleRange(sValue, filter));
         }
-        
+
         LOGGER.debug("finish createRange()");
     }
 
@@ -103,6 +102,6 @@ public class EnumeratedDistribution extends AbstractDistribution<SimpleRange> {
     @Override
     protected Select getDefaultSelect() {
         return Select.EXISTS;
-    }    
+    }
 
 }

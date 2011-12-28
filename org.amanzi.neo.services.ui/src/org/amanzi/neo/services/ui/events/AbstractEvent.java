@@ -23,7 +23,7 @@ import org.amanzi.neo.services.ui.enums.EventsType;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class AbstractEvent {
+public abstract class AbstractEvent {
 
     /**
      * type of event

@@ -58,7 +58,7 @@ public class NetworkService extends AbstractService {
     public final static String SELECTION_RELATIONSHIP_INDEX = "selection_relationship";
 
     public final static String SELECTED_NODES_COUNT = "selected_nodes_count";
-    public final static String SOURCE_NAME = "source name";
+    public final static String SOURCE_NAME = "source_name";
     /*
      * name of property that contains array with network structure
      */

@@ -21,10 +21,10 @@ import java.util.Set;
 import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.parser.MappedData;
 import org.amanzi.neo.loader.core.preferences.ImportSynonymsManager;
-import org.amanzi.neo.loader.core.preferences.PossibleTypes;
 import org.amanzi.neo.loader.core.preferences.ImportSynonymsManager.NodeTypeSynonyms;
 import org.amanzi.neo.loader.core.preferences.ImportSynonymsManager.PropertySynonyms;
 import org.amanzi.neo.loader.core.preferences.ImportSynonymsManager.Synonym;
+import org.amanzi.neo.loader.core.preferences.PossibleTypes;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.model.IDataModel;
 

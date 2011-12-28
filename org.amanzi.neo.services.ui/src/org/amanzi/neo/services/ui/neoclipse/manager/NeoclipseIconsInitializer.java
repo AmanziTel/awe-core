@@ -16,6 +16,8 @@ package org.amanzi.neo.services.ui.neoclipse.manager;
 import java.io.IOException;
 import java.net.URL;
 
+import org.amanzi.neo.services.AbstractService;
+import org.amanzi.neo.services.NetworkService;
 import org.amanzi.neo.services.ui.NeoServicesUiPlugin;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.FileLocator;
@@ -50,8 +52,9 @@ public class NeoclipseIconsInitializer {
             return;
         }
         IPreferenceStore pref = neoclipseActivator.getPreferenceStore();
-        pref.setDefault(DecoratorPreferences.NODE_PROPERTY_NAMES, "name,value,time,code,call_type");
-        pref.setDefault(DecoratorPreferences.NODE_ICON_PROPERTY_NAMES, "type");
+        pref.setDefault(DecoratorPreferences.NODE_PROPERTY_NAMES, NetworkService.NAME + ",value,time,code,call_type,"
+                + NetworkService.SOURCE_NAME);
+        pref.setDefault(DecoratorPreferences.NODE_ICON_PROPERTY_NAMES, AbstractService.TYPE);
         URL iconsUrl = Platform.getBundle(NeoServicesUiPlugin.PLUGIN_ID).findEntries(ICONS_PATH, NECESSARY_DIRECTORY_PATH, false)
                 .nextElement();
         URL fileDir;

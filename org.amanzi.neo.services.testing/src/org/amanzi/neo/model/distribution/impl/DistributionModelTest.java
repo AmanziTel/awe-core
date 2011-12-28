@@ -81,6 +81,7 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
     private static final String DISTRIBUTION_PROPERTY_NAME = "property";
 
     private static final int PALETTE_INDEX = PlatformGIS.getColorBrewer().getPalettes().length / 2;
+    private final static String FILTER_NAME = "filterName";
 
     /**
      * @throws java.lang.Exception
@@ -903,7 +904,7 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
         when(result.getName()).thenReturn(DISTRIBUTION_BAR_NAME_PREFIX + index);
         when(result.getColor()).thenReturn(DISTRIBUTION_BAR_COLORS[index]);
 
-        Filter filter = new Filter();
+        Filter filter = new Filter(FILTER_NAME);
         filter.setExpression(DISTRIBUTION_NODE_TYPE, DISTRIBUTION_PROPERTY_NAME, index);
         when(result.getFilter()).thenReturn(filter);
 

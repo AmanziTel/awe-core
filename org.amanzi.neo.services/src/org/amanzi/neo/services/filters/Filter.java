@@ -26,7 +26,6 @@ import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.neo4j.graphdb.Node;
 
-
 /**
  * TODO Purpose of
  * <p>
@@ -43,95 +42,97 @@ public class Filter implements IFilter {
     private FilterType filterType;
 
     private ExpressionType expressionType;
-    
-    private INodeType nodeType;
-    
-    private String propertyName;
-    
-    private Serializable value;
-    
-    private IFilter underlyingFilter; 
 
-    public Filter(FilterType filterType, ExpressionType expressionType) {
+    private INodeType nodeType;
+
+    private String propertyName;
+
+    private Serializable value;
+
+    private IFilter underlyingFilter;
+
+    private final String filterName;
+
+    public Filter(FilterType filterType, ExpressionType expressionType, String name) {
         this.filterType = filterType;
         this.expressionType = expressionType;
+        this.filterName = name;
     }
 
-    public Filter(FilterType filterType) {
-        this(filterType, ExpressionType.AND);
+    public Filter(FilterType filterType, String name) {
+        this(filterType, ExpressionType.AND, name);
     }
 
-    public Filter(ExpressionType expressionType) {
-        this(FilterType.EQUALS, expressionType);
+    public Filter(ExpressionType expressionType, String name) {
+        this(FilterType.EQUALS, expressionType, name);
     }
 
-    public Filter() {
-        this(FilterType.EQUALS, ExpressionType.AND);
+    public Filter(String name) {
+        this(FilterType.EQUALS, ExpressionType.AND, name);
+
     }
-    
+
     @Override
-    public void setExpression(INodeType nodeType, String propertyName, Serializable value) throws NotComparebleRuntimeException{
-        if (!(value instanceof Comparable<?>))
+    public void setExpression(INodeType nodeType, String propertyName, Serializable value) throws NotComparebleRuntimeException {
+        if (!(value instanceof Comparable< ? >))
             throw new NotComparebleRuntimeException();
         this.nodeType = nodeType;
         this.propertyName = propertyName;
         this.value = value;
     }
+
     @Override
-    public void setExpression(INodeType nodeType, String propertyName)throws FilterTypeException{
+    public void setExpression(INodeType nodeType, String propertyName) throws FilterTypeException {
         if (filterType != FilterType.EMPTY && filterType != FilterType.NOT_EMPTY)
             throw new FilterTypeException();
         this.nodeType = nodeType;
-        this.propertyName = propertyName;                            
+        this.propertyName = propertyName;
     }
-    
+
     @Override
     public void addFilter(IFilter additionalFilter) {
         this.underlyingFilter = additionalFilter;
     }
-    
+
     @SuppressWarnings("unchecked")
     @Override
-    public boolean check(Node node) throws NotComparebleException, NullValueException{
+    public boolean check(Node node) throws NotComparebleException, NullValueException {
         boolean result = false;
         boolean supportedType = true;
-        
+
         INodeType currentType = NodeTypeManager.getType(AbstractService.getNodeType(node));
-        
-        if ((currentType != null) && (nodeType != null) &&
-                (!currentType.equals(nodeType))) {
-                supportedType = false;
-            }
-        
-        //check is node has this property
+
+        if ((currentType != null) && (nodeType != null) && (!currentType.equals(nodeType))) {
+            supportedType = false;
+        }
+
+        // check is node has this property
         if (supportedType) {
             boolean hasProperty = node.hasProperty(propertyName);
             Object propertyValue = null;
             Object compValue = null;
-            //get property value
-            if (hasProperty){
+            // get property value
+            if (hasProperty) {
                 propertyValue = node.getProperty(propertyName);
                 compValue = propertyValue;
                 if (compValue instanceof Number) {
                     compValue = new Double(((Number)compValue).doubleValue());
                 }
             }
-            //compare
+            // compare
             switch (filterType) {
             case EQUALS:
                 if (!hasProperty)
                     break;
-                //two variants:
-                //1. filter value is NULL - compare both values with null 
-                //2. filter value is not NULL - use equals()
-                result = ((value == null) && (propertyValue == null)) ||
-                ((value != null) && value.equals(propertyValue));
+                // two variants:
+                // 1. filter value is NULL - compare both values with null
+                // 2. filter value is not NULL - use equals()
+                result = ((value == null) && (propertyValue == null)) || ((value != null) && value.equals(propertyValue));
                 break;
             case LIKE:
                 if (!hasProperty)
                     break;
-                result = ((value == null) && (propertyValue == null)) ||
-                (propertyValue.toString().matches(value.toString()));
+                result = ((value == null) && (propertyValue == null)) || (propertyValue.toString().matches(value.toString()));
                 break;
 
             case MORE:
@@ -141,13 +142,13 @@ public class Filter implements IFilter {
                 if (propertyValue == null || value == null)
                     throw new NullValueException();
 
-                if (!(propertyValue instanceof Comparable<?> && value instanceof Comparable<?>)){
+                if (!(propertyValue instanceof Comparable< ? > && value instanceof Comparable< ? >)) {
                     throw new NotComparebleException();
                 }
 
                 result = false;
                 if (((Comparable<Serializable>)compValue).compareTo(value) > 0)
-                    result = true;          
+                    result = true;
 
                 break;
 
@@ -158,39 +159,36 @@ public class Filter implements IFilter {
                 if (propertyValue == null || value == null)
                     throw new NullValueException();
 
-                if (!(propertyValue instanceof Comparable<?> && value instanceof Comparable<?>)){
+                if (!(propertyValue instanceof Comparable< ? > && value instanceof Comparable< ? >)) {
                     throw new NotComparebleException();
                 }
 
                 result = false;
                 if (((Comparable<Serializable>)compValue).compareTo(value) < 0)
-                    result = true;                     
+                    result = true;
 
                 break;
             case MORE_OR_EQUALS:
                 if (!hasProperty)
                     break;
 
-                result = ((value == null) && (propertyValue == null)) ||
-                ((value != null) && value.equals(propertyValue));
-                if (!(propertyValue instanceof Comparable<?> && value instanceof Comparable<?>)){
+                result = ((value == null) && (propertyValue == null)) || ((value != null) && value.equals(propertyValue));
+                if (!(propertyValue instanceof Comparable< ? > && value instanceof Comparable< ? >)) {
                     throw new NotComparebleException();
                 }
 
                 if (((Comparable<Serializable>)compValue).compareTo(value) > 0)
-                    result = true;                     
+                    result = true;
                 break;
             case LESS_OR_EQUALS:
                 if (!hasProperty)
                     break;
-                try{
-                    result = ((value == null) && (propertyValue == null)) ||
-                    ((value != null) && value.equals(propertyValue));
-                    if (!(propertyValue instanceof Comparable<?> && value instanceof Comparable<?>)){
+                try {
+                    result = ((value == null) && (propertyValue == null)) || ((value != null) && value.equals(propertyValue));
+                    if (!(propertyValue instanceof Comparable< ? > && value instanceof Comparable< ? >)) {
                         throw new NotComparebleException();
                     }
-                }
-                catch(Exception e){
+                } catch (Exception e) {
 
                 }
                 if (((Comparable<Serializable>)compValue).compareTo(value) < 0)
@@ -214,12 +212,10 @@ public class Filter implements IFilter {
                 result = result || underlyingFilter.check(node);
                 break;
             }
-        }    
+        }
 
         return result;
     }
-
-
 
     @Override
     public INodeType getNodeType() {
@@ -229,7 +225,6 @@ public class Filter implements IFilter {
     public FilterType getFilterType() {
         return filterType;
     }
-
 
     public ExpressionType getExpressionType() {
         return expressionType;
@@ -250,6 +245,11 @@ public class Filter implements IFilter {
     @Override
     public boolean check(IDataElement dataElement) throws NullValueException, NotComparebleException {
         return check(((DataElement)dataElement).getNode());
+    }
+
+    @Override
+    public String getFilterName() {
+        return filterName;
     }
 
 }
