@@ -15,6 +15,7 @@ package org.amanzi.neo.loader.core.parser;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * TODO Purpose of 
@@ -30,6 +31,15 @@ public class MappedData extends HashMap<String, String> implements IData {
 
     /** long serialVersionUID field */
     private static final long serialVersionUID = -3753565510584074157L;
+    
+    public MappedData(Map<String, String> originalMap) {
+        super();
+        putAll(originalMap);
+    }
+    
+    public MappedData() {
+        super();
+    }
 
     /**
      * @return Returns the file.

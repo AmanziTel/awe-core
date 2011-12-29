@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.loader.core.preferences;
 
+import java.util.Arrays;
 import java.util.HashMap;
 
 import org.amanzi.neo.loader.core.internal.NeoLoaderPlugin;
@@ -107,6 +108,28 @@ public class ImportSynonymsManager {
             return name;
         }
         
+        @Override
+        public boolean equals(Object anotherObject) {
+            if (anotherObject != null && anotherObject instanceof Synonym) {
+                Synonym anotherSynonym = (Synonym)anotherObject;
+                
+                return anotherSynonym.getName().equals(getName());
+                       
+            }
+            
+            return false;
+        }
+        
+        @Override
+        public int hashCode() {
+            return name.hashCode();
+        }
+        
+        @Override
+        public String toString() {
+            return getName() + " <" + getType() + ">";
+        }
+        
     }
     
     public static class PropertySynonyms extends SynonymsCache<Synonym, String[]> {
@@ -186,6 +209,14 @@ public class ImportSynonymsManager {
     }
     
     private void initializeSynonym(String key, String synonyms) {
+        initializeSynonym(key, synonyms, false);
+    }
+    
+    public void updateSynonyms(String key, String synonyms) { 
+        initializeSynonym(key, synonyms, true);
+    }
+    
+    private void initializeSynonym(String key, String synonyms, boolean updatePreferenceStore) {
         String[] typeParts = key.split(TYPE_PART_SEPARATOR);
         
         PossibleTypes dataType = PossibleTypes.AUTO;
@@ -214,7 +245,16 @@ public class ImportSynonymsManager {
         
         String[] synonymsArray = synonyms.split(SynonymsInitializer.SEPARATOR);
         
-        synonymsCache.get(datasetType).get(subType).get(nodeType).put(new Synonym(propertyName, dataType), synonymsArray);
+        Synonym synonym = new Synonym(propertyName, dataType);
+        
+        String[] possibleHeaders = getPropertySynonyms(datasetType, subType, nodeType).get(synonym);
+        synonymsArray = splitPossibleHeaders(possibleHeaders, synonymsArray);
+        
+        synonymsCache.get(datasetType).get(subType).get(nodeType).put(synonym, synonymsArray);
+        
+        if (updatePreferenceStore) {
+            preferenceStore.setValue(key, Arrays.toString(synonymsArray));
+        }
     }
     
     public PropertySynonyms getPropertySynonyms(String datasetType, String subType, String nodeType) {
@@ -223,7 +263,25 @@ public class ImportSynonymsManager {
     
     public NodeTypeSynonyms getNodeTypeSynonyms(String datasetType, String subType) {
         return synonymsCache.get(datasetType).get(subType);
+    }    
+    
+    private String[] splitPossibleHeaders(String[] possibleHeaders, String[] newHeaders) {
+        String[] result = Arrays.copyOf(possibleHeaders, possibleHeaders.length);
+        
+        for (String newHeader : newHeaders) {
+            if (possibleHeaders.length > 0) {
+                for (String possibleHeader : possibleHeaders) {
+                    if (!newHeader.toLowerCase().matches(possibleHeader.toLowerCase())) {
+                        result = (String[])ArrayUtils.add(result, newHeader);
+                        break;
+                    }
+                }
+            } else {
+                result = (String[])ArrayUtils.add(result, newHeader);
+            }
+        }
+        
+        return result;
     }
-
 }
 
