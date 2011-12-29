@@ -55,7 +55,6 @@ public abstract class RenderableModel extends AbstractIndexedModel {
     protected RenderableModel(Node rootNode, INodeType nodeType) throws AWEException {
         super(rootNode, nodeType);
         currentGisModel = new GisModel((String)rootNode.getProperty(DatasetService.NAME));
-
     }
 
     /**
@@ -71,8 +70,8 @@ public abstract class RenderableModel extends AbstractIndexedModel {
 
     @Override
     public void finishUp() throws AWEException {
-        Node gis = datasetService.getGisNodeByDataset(rootNode, (String)rootNode.getProperty(DatasetService.NAME));
-        if (gis != null) {
+        Iterable<Node> allGis = datasetService.getAllGisByDataset(rootNode);
+        for (Node gis : allGis) {
             Map<String, Object> params = new HashMap<String, Object>();
             params.put(CRS_NAME, currentGisModel.getCRSCode());
             datasetService.setProperties(gis, params);

@@ -55,7 +55,7 @@ public class GeoResource extends IGeoResource {
     private URL getURL(IService service, IRenderableModel source, GisModel gis) {
         try {
             URL result = new URL(service.getIdentifier().toString() + "#" + ((IDataModel)source).getProject().getName()
-                    + File.separator + gis.getName());
+                    + File.separator + gis.getName().replace(' ', '_'));
 
             return result;
         } catch (MalformedURLException e) {

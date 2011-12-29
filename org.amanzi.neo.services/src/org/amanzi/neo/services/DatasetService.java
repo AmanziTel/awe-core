@@ -1012,6 +1012,9 @@ public class DatasetService extends AbstractService {
         if (dataset == null) {
             return null;
         }
+        if (name == null) {
+            name = (String)dataset.getProperty(DatasetService.NAME);
+        }
         Iterable<Node> gisNodes = getAllGisByDataset(dataset);
         for (Node gis : gisNodes) {
             if (gis.getProperty(NAME).equals(name)) {
