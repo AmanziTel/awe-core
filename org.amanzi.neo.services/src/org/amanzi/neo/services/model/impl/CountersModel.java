@@ -173,7 +173,7 @@ public class CountersModel extends MeasurementModel implements ICountersModel {
 
     @Override
     public CoordinateReferenceSystem getCRS() {
-        return this.crs;
+        return currentGisModel.getCrs();
     }
 
 }

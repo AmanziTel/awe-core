@@ -31,6 +31,7 @@ import org.amanzi.neo.model.distribution.IDistributionalModel;
 import org.amanzi.neo.model.distribution.impl.DistributionManager;
 import org.amanzi.neo.model.distribution.impl.DistributionModel;
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IRenderableModel;
 import org.apache.log4j.Logger;
@@ -66,6 +67,8 @@ public abstract class AbstractRenderer extends RendererImpl {
     protected DistributionModel currentDistributionModel = null;
     private AbstractRendererStyles commonStyle = initDefaultRendererStyle();
     public static final String BLACKBOARD_NODE_LIST = "org.amanzi.awe.tool.star.StarTool.nodes";
+    public static final String SPACE_SEPARATOR = " ";
+    public static final String EQUAL_SEPARATOR = "=";
 
     /**
      * initialize default renderer styles;
@@ -75,7 +78,7 @@ public abstract class AbstractRenderer extends RendererImpl {
     protected abstract AbstractRendererStyles initDefaultRendererStyle();
 
     /**
-     * prepare scaling value before elements render. Scale is answer for the view of renderable
+     * prepare scaling value before elements render. Scale is response for the view of renderable
      * elements
      * 
      * @param bounds_transformed
@@ -149,6 +152,7 @@ public abstract class AbstractRenderer extends RendererImpl {
             setStyle(destination);
             // find a resource to render
             model = resource.resolve(getResolvedClass(), monitor);
+            defineCurrentGis(resource);
             initCurrentDistribution();
             // get rendering bounds and zoom
             setCrsTransforms(resource.getInfo(null).getCRS());
@@ -175,6 +179,20 @@ public abstract class AbstractRenderer extends RendererImpl {
             LOGGER.error("Could not set CRS transforms.", e);
             throw new RenderException(e);
         }
+    }
+
+    /**
+     * try to get filter from information stored in georesource identifire
+     * 
+     * @param identifier
+     * @return
+     * @throws IOException
+     * @throws DatabaseException
+     */
+    private void defineCurrentGis(IGeoResource resource) throws IOException, DatabaseException {
+        String georesInfo = resource.getInfo(null).getName();
+        String gisName = georesInfo;
+        model.findGisByName(gisName);
     }
 
     /**

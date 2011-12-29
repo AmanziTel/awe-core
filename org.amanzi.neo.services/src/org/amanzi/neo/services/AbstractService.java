@@ -34,6 +34,8 @@ import org.amanzi.neo.services.filters.ExpressionType;
 import org.amanzi.neo.services.filters.Filter;
 import org.amanzi.neo.services.filters.FilterType;
 import org.amanzi.neo.services.filters.IFilter;
+import org.amanzi.neo.services.filters.INamedFilter;
+import org.amanzi.neo.services.filters.NamedFilter;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
@@ -641,7 +643,7 @@ public abstract class AbstractService implements IDatabaseEventListener {
      * @param filter filter to save
      * @throws DatabaseException
      */
-    public void saveFilter(Node parentNode, IFilter filter) throws DatabaseException {
+    public void saveFilter(Node parentNode, INamedFilter filter) throws DatabaseException {
         if (parentNode == null) {
             LOGGER.error("saveFilter(...) parent node cann't be null");
             throw new IllegalArgumentException("saveFilter(...) parent node cann't be null");
@@ -655,32 +657,70 @@ public abstract class AbstractService implements IDatabaseEventListener {
         Node filterNode = null;
         if (!parentNode.getProperty(TYPE).equals(FilterNodeType.FILTER.getId())) {
             filterNode = createNode(parentNode, FilterRelationshipType.FILTER, FilterNodeType.FILTER);
-        } else {
-            FilterRelationshipType relType = null;
-            switch (filter.getExpressionType()) {
-            case OR:
-                relType = FilterRelationshipType.OR;
-                break;
-            case AND:
-                relType = FilterRelationshipType.AND;
-                break;
-            default:
-                break;
-            }
-            filterNode = createNode(parentNode, relType, FilterNodeType.FILTER);
         }
+        Map<String, Object> filterProperties = collectFilterProperties(filter);
+        setProperties(filterNode, filterProperties);
+        saveUnderlinesFilters(filterNode, filter.getUnderlyingFilter());
+    }
+
+    /**
+     * @param filterNode
+     * @param underlyingFilter
+     * @throws DatabaseException
+     */
+    private void saveUnderlinesFilters(Node filterNode, IFilter underlyingFilter) throws DatabaseException {
+        if (underlyingFilter == null) {
+            return;
+        }
+        FilterRelationshipType relType = null;
+        switch (underlyingFilter.getExpressionType()) {
+        case OR:
+            relType = FilterRelationshipType.OR;
+            break;
+        case AND:
+            relType = FilterRelationshipType.AND;
+            break;
+        default:
+            break;
+        }
+        filterNode = createNode(filterNode, relType, FilterNodeType.FILTER);
+        Map<String, Object> filterProperties = collectFilterProperties(underlyingFilter);
+        setProperties(filterNode, filterProperties);
+        saveUnderlinesFilters(filterNode, underlyingFilter.getUnderlyingFilter());
+    }
+
+    /**
+     * collect properties required for named filter
+     * 
+     * @param filter
+     * @return
+     */
+    private Map<String, Object> collectFilterProperties(INamedFilter filter) {
+        Map<String, Object> filterProperties = collectFilterProperties((IFilter)filter);
+        filterProperties.put(NAME, filter.getName());
+        return filterProperties;
+    }
+
+    /**
+     * collect properties for usual filter
+     * 
+     * @param filter
+     * @return
+     */
+    private Map<String, Object> collectFilterProperties(IFilter filter) {
         Map<String, Object> filterProperties = new HashMap<String, Object>();
-        filterProperties.put(NAME, filter.getFilterName());
         filterProperties.put(EXPRESSION_TYPE, filter.getExpressionType().name());
-        filterProperties.put(PROPERTY_NAME, filter.getPropertyName());
         filterProperties.put(FILTER_TYPE, filter.getFilterType().name());
+        if (filter.getPropertyName() != null) {
+            filterProperties.put(PROPERTY_NAME, filter.getPropertyName());
+        }
         if (filter.getValue() != null) {
             filterProperties.put(VALUE, filter.getValue());
         }
-        filterProperties.put(FILTER_NODE_TYPE, filter.getNodeType().getId());
-        setProperties(filterNode, filterProperties);
-
-        saveFilter(filterNode, filter.getUnderlyingFilter());
+        if (filter.getNodeType() != null) {
+            filterProperties.put(FILTER_NODE_TYPE, filter.getNodeType().getId());
+        }
+        return filterProperties;
     }
 
     /**
@@ -690,7 +730,7 @@ public abstract class AbstractService implements IDatabaseEventListener {
      * @param filterName
      * @return
      */
-    public IFilter loadFilter(Node parentNode, String filterName) {
+    public INamedFilter loadFilter(Node parentNode, String filterName) {
         if (parentNode == null) {
             LOGGER.error("loadFilter(...) parent node cann't be null");
             throw new IllegalArgumentException("loadFilter(...) parent node cann't be null");
@@ -699,13 +739,15 @@ public abstract class AbstractService implements IDatabaseEventListener {
             LOGGER.error("loadFilter(...) filterName  cann't be null or empty");
             throw new IllegalArgumentException("loadFilter(...) filterName  cann't be null or empty");
         }
-        Iterable<Node> filterRoots = FILTER_NODES_TRAVERSL_DESCRIPTION.traverse(parentNode).nodes();
-        IFilter filter = null;
+        Iterable<Node> filterRoots = FILTER_ROOTS_TRAVERSL_DESCRIPTION.traverse(parentNode).nodes();
+        INamedFilter filter = null;
         for (Node filterNode : filterRoots) {
-            if (!filterNode.getProperty(NAME).equals(filterName)) {
+            if (!filterName.equals(filterNode.getProperty(NAME))) {
                 continue;
             }
-            filter = createFilterFromNode(filterNode);
+            filter = (INamedFilter)createFilterFromNode(filterNode);
+            IFilter underlyingFilter = collectUnderlyingFilters(filterNode, filter.getUnderlyingFilter());
+            filter.addFilter(underlyingFilter);
             break;
         }
         return filter;
@@ -721,11 +763,25 @@ public abstract class AbstractService implements IDatabaseEventListener {
         IFilter filter;
         FilterType filterType = FilterType.getByName((String)filterNode.getProperty(FILTER_TYPE));
         ExpressionType expression = ExpressionType.getByName((String)filterNode.getProperty(EXPRESSION_TYPE));
-        filter = new Filter(filterType, expression, (String)filterNode.getProperty(NAME));
-        INodeType nodeType = NodeTypeManager.getType((String)filterNode.getProperty(FILTER_NODE_TYPE));
-        String propertyName = (String)filterNode.getProperty(PROPERTY_NAME);
+        String filterName = (String)filterNode.getProperty(NAME, null);
+        if (filterName != null) {
+            filter = new NamedFilter(filterType, expression, filterName);
+        } else {
+            filter = new Filter(filterType, expression);
+        }
+        INodeType nodeType = null;
+        String nodeTypeProperty = (String)filterNode.getProperty(FILTER_NODE_TYPE, null);
+        if (nodeTypeProperty != null) {
+            nodeType = NodeTypeManager.getType(nodeTypeProperty);
+        }
+
+        String propertyName = (String)filterNode.getProperty(PROPERTY_NAME, null);
         Serializable value = (Serializable)filterNode.getProperty(VALUE, null);
-        filter.setExpression(nodeType, propertyName, value);
+        if (value != null && propertyName != null && nodeType != null) {
+            filter.setExpression(nodeType, propertyName, value);
+        } else if (value == null && propertyName != null && nodeType != null) {
+            filter.setExpression(nodeType, propertyName);
+        }
         return filter;
     }
 
@@ -736,12 +792,16 @@ public abstract class AbstractService implements IDatabaseEventListener {
      * @param filterName
      * @return
      */
-    public Iterable<IFilter> loadFilters(Node parentNode) {
+    public Iterable<INamedFilter> loadFilters(Node parentNode) {
+        if (parentNode == null) {
+            LOGGER.error("loadFilters(...) parent node cann't be null");
+            throw new IllegalArgumentException("loadFilter(...) parent node cann't be null");
+        }
         Iterable<Node> filterRoots = FILTER_ROOTS_TRAVERSL_DESCRIPTION.traverse(parentNode).nodes();
-        IFilter filter = null;
-        List<IFilter> filterList = new LinkedList<IFilter>();
+        INamedFilter filter = null;
+        List<INamedFilter> filterList = new LinkedList<INamedFilter>();
         for (Node filterNode : filterRoots) {
-            filter = createFilterFromNode(filterNode);
+            filter = (INamedFilter)createFilterFromNode(filterNode);
             IFilter underlyingFilter = collectUnderlyingFilters(filterNode, filter);
             filter.addFilter(underlyingFilter);
             filterList.add(filter);

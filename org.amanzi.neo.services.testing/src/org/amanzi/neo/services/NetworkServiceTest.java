@@ -29,6 +29,8 @@ import org.amanzi.neo.services.filters.ExpressionType;
 import org.amanzi.neo.services.filters.Filter;
 import org.amanzi.neo.services.filters.FilterType;
 import org.amanzi.neo.services.filters.IFilter;
+import org.amanzi.neo.services.filters.INamedFilter;
+import org.amanzi.neo.services.filters.NamedFilter;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelTypes;
 import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.NodeToNodeTypes;
@@ -66,7 +68,6 @@ public class NetworkServiceTest extends AbstractAWETest {
     private final static String DEFAULT_SELECTION_LIST_NAME = "Selection List";
     private int indexCount = 0;
     private static final String FILTER_NAME = "filterName";
-    private static final String UNDERLINE_FILTER_NAME = "underlinefilterName";
     private final static List<INodeType> DEFAULT_NETWORK_STRUCTURE = new ArrayList<INodeType>();
 
     private final static INodeType[] NETWORK_STRUCTURE_NODE_TYPES = new INodeType[] {NetworkElementNodeType.BSC,
@@ -1608,7 +1609,7 @@ public class NetworkServiceTest extends AbstractAWETest {
         try {
             Node parentNode = networkService.createNode(NetworkElementNodeType.SECTOR);
             networkService.setAnyProperty(parentNode, NetworkService.NAME, NAME_VALUE);
-            IFilter filter = new Filter(FILTER_NAME);
+            INamedFilter filter = new NamedFilter(FILTER_NAME);
             filter.setExpression(NetworkElementNodeType.SECTOR, NetworkService.NAME, NAME_VALUE);
             networkService.saveFilter(parentNode, filter);
             Assert.assertTrue("FILTER relationship expected ", parentNode.hasRelationship(FilterRelationshipType.FILTER));
@@ -1624,7 +1625,7 @@ public class NetworkServiceTest extends AbstractAWETest {
         try {
             Node parentNode = networkService.createNode(NetworkElementNodeType.SECTOR);
             networkService.setAnyProperty(parentNode, NetworkService.NAME, NAME_VALUE);
-            IFilter filter = new Filter(FilterType.EMPTY, FILTER_NAME);
+            INamedFilter filter = new NamedFilter(FilterType.EMPTY, FILTER_NAME);
             filter.setExpression(NetworkElementNodeType.SECTOR, NetworkService.NAME);
             networkService.saveFilter(parentNode, filter);
             Assert.assertTrue("FILTER relationship expected ", parentNode.hasRelationship(FilterRelationshipType.FILTER));
@@ -1640,9 +1641,9 @@ public class NetworkServiceTest extends AbstractAWETest {
         try {
             Node parentNode = networkService.createNode(NetworkElementNodeType.SECTOR);
             networkService.setAnyProperty(parentNode, NetworkService.NAME, NAME_VALUE);
-            IFilter filter = new Filter(FILTER_NAME);
+            INamedFilter filter = new NamedFilter(FILTER_NAME);
             filter.setExpression(NetworkElementNodeType.SECTOR, NetworkService.NAME, NAME_VALUE);
-            IFilter underlyingFilter = new Filter(FilterType.EQUALS, ExpressionType.OR, UNDERLINE_FILTER_NAME);
+            IFilter underlyingFilter = new Filter(FilterType.EQUALS, ExpressionType.OR);
             underlyingFilter.setExpression(NetworkElementNodeType.SECTOR, NetworkService.NAME, NEW_NAME_VALUE);
             filter.addFilter(underlyingFilter);
             networkService.saveFilter(parentNode, filter);
@@ -1663,16 +1664,14 @@ public class NetworkServiceTest extends AbstractAWETest {
         try {
             Node parentNode = networkService.createNode(NetworkElementNodeType.SECTOR);
             networkService.setAnyProperty(parentNode, NetworkService.NAME, NAME_VALUE);
-            IFilter filter = new Filter(FILTER_NAME);
+            INamedFilter filter = new NamedFilter(FILTER_NAME);
             filter.setExpression(NetworkElementNodeType.SECTOR, NetworkService.NAME, NAME_VALUE);
-            IFilter underlyingFilter = new Filter(FilterType.EQUALS, ExpressionType.OR, UNDERLINE_FILTER_NAME);
+            IFilter underlyingFilter = new Filter(FilterType.EQUALS, ExpressionType.OR);
             underlyingFilter.setExpression(NetworkElementNodeType.SECTOR, NetworkService.NAME, NEW_NAME_VALUE);
             filter.addFilter(underlyingFilter);
             networkService.saveFilter(parentNode, filter);
-            IFilter findedFilter = networkService.loadFilter(parentNode, filter.getFilterName());
-            IFilter findedUnderline = networkService.loadFilter(parentNode, underlyingFilter.getFilterName());
-            Assert.assertEquals(filter.getFilterName(), findedFilter.getFilterName());
-            Assert.assertEquals(underlyingFilter.getFilterName(), findedUnderline.getFilterName());
+            INamedFilter findedFilter = networkService.loadFilter(parentNode, filter.getName());
+            Assert.assertEquals(filter, findedFilter);
         } catch (Exception e) {
             LOGGER.error("testLoadingSingleFilter() finished with exception ", e);
             Assert.fail("Test finished with exception" + e);
@@ -1684,16 +1683,15 @@ public class NetworkServiceTest extends AbstractAWETest {
         try {
             Node parentNode = networkService.createNode(NetworkElementNodeType.SECTOR);
             networkService.setAnyProperty(parentNode, NetworkService.NAME, NAME_VALUE);
-            IFilter filter = new Filter(FILTER_NAME);
+            INamedFilter filter = new NamedFilter(FILTER_NAME);
             filter.setExpression(NetworkElementNodeType.SECTOR, NetworkService.NAME, NAME_VALUE);
-            IFilter underlyingFilter = new Filter(FilterType.EQUALS, ExpressionType.OR, UNDERLINE_FILTER_NAME);
+            IFilter underlyingFilter = new Filter(FilterType.EQUALS, ExpressionType.OR);
             underlyingFilter.setExpression(NetworkElementNodeType.SECTOR, NetworkService.NAME, NEW_NAME_VALUE);
             filter.addFilter(underlyingFilter);
             networkService.saveFilter(parentNode, filter);
-            Iterable<IFilter> filters = networkService.loadFilters(parentNode);
+            Iterable<INamedFilter> filters = networkService.loadFilters(parentNode);
 
-            Assert.assertEquals(filter.getFilterName(), filters.iterator().next().getFilterName());
-            Assert.assertEquals(underlyingFilter.getFilterName(), filters.iterator().next().getUnderlyingFilter().getFilterName());
+            Assert.assertEquals(filter, filters.iterator().next());
         } catch (Exception e) {
             LOGGER.info("testLoadingSingleFilter() finished with exception ", e);
             Assert.fail("Test finished with exception" + e);

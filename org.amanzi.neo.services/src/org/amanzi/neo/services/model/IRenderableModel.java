@@ -14,6 +14,9 @@
 package org.amanzi.neo.services.model;
 
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.exceptions.DatabaseException;
+import org.amanzi.neo.services.filters.INamedFilter;
+import org.amanzi.neo.services.model.impl.RenderableModel.GisModel;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -81,4 +84,25 @@ public interface IRenderableModel extends IModel {
      * @return
      */
     public Coordinate getCoordinate(IDataElement element);
+
+    /**
+     * add new layer to catalog
+     * 
+     * @param name -name of new layer
+     * @param filter- filter to currentLayer
+     */
+    public void addLayer(String name, INamedFilter filter);
+
+    /**
+     * return all gis elements;
+     * 
+     * @param model
+     */
+    public Iterable<GisModel> getAllGisModels() throws DatabaseException;
+
+    /**
+     * find gis element by name
+     */
+    public GisModel findGisByName(String gisName) throws DatabaseException;
+
 }

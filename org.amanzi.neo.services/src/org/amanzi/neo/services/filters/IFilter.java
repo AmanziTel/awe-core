@@ -41,8 +41,6 @@ public interface IFilter extends ISimpleFilter {
 
     boolean check(Node node) throws NullValueException, NotComparebleException;
 
-    public String getFilterName();
-
     public ExpressionType getExpressionType();
 
     public String getPropertyName();
