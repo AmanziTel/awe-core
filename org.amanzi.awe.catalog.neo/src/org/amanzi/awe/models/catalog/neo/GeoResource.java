@@ -52,6 +52,14 @@ public class GeoResource extends IGeoResource {
         this.url = getURL(service, source, gis);
     }
 
+    /**
+     * form URL which will be used in renderer as identifier of gis
+     * 
+     * @param service
+     * @param source
+     * @param gis
+     * @return
+     */
     private URL getURL(IService service, IRenderableModel source, GisModel gis) {
         try {
             URL result = new URL(service.getIdentifier().toString() + "#" + ((IDataModel)source).getProject().getName()

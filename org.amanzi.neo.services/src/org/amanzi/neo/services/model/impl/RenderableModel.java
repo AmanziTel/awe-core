@@ -47,6 +47,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 public abstract class RenderableModel extends AbstractIndexedModel {
 
     private static Logger LOGGER = Logger.getLogger(RenderableModel.class);
+
     static final String CRS_NAME = "crs";
     static final String DESCRIPTION = "description";
     protected GisModel currentGisModel;
@@ -128,6 +129,22 @@ public abstract class RenderableModel extends AbstractIndexedModel {
         return null;
     }
 
+    /**
+     * <p>
+     * Class which hold information about dataset gis's nodes. <b>Gis node basically response for
+     * store information about Coordinate Reference System(crs), max and min coordinate values, and
+     * filters we should use when current gis selected.</b>
+     * <p>
+     * Basic gis( <code>currentGisModel</code>) is a gis which created with dataset creation(doesn't
+     * store any filters).For creation a new gis you should invoke addLayer(String name,INamedFIlter
+     * filter) method.To initialize <code>currentGisModel</code> with other gis you should to invoke
+     * findGisByName(String name) method at first
+     * </p>
+     * </p>
+     * 
+     * @author Vladislav_Kondratenko
+     * @since 1.0.0
+     */
     public class GisModel implements IModel {
         private Node gisRoot;
         private String name;
@@ -161,7 +178,6 @@ public abstract class RenderableModel extends AbstractIndexedModel {
             if (filters.hasNext()) {
                 this.filter = filters.next();
             }
-
             try {
                 if (!crsCode.equals(StringUtils.EMPTY)) {
                     crsCode = DEFAULT_EPSG;
@@ -173,15 +189,31 @@ public abstract class RenderableModel extends AbstractIndexedModel {
             }
         }
 
+        /**
+         * add new filter to current gis
+         * 
+         * @param filter
+         * @throws DatabaseException
+         */
         private void addFilter(INamedFilter filter) throws DatabaseException {
             datasetService.saveFilter(gisRoot, filter);
             this.filter = filter;
         }
 
+        /**
+         * return current crs code
+         * 
+         * @return
+         */
         public String getCRSCode() {
             return this.crsCode;
         }
 
+        /**
+         * return current crs
+         * 
+         * @return
+         */
         public CoordinateReferenceSystem getCrs() {
             return this.crs;
         }
@@ -234,7 +266,13 @@ public abstract class RenderableModel extends AbstractIndexedModel {
             crsCode = "";// ToDO:
         }
 
-        public INamedFilter getFilter(String filterName) {
+        /**
+         * get filter for this gis
+         * 
+         * @param filterName
+         * @return
+         */
+        public INamedFilter getFilter() {
             return filter;
         }
 

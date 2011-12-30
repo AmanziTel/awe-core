@@ -182,7 +182,7 @@ public abstract class AbstractRenderer extends RendererImpl {
     }
 
     /**
-     * try to get filter from information stored in georesource identifire
+     * try to define gis, from information stored in georesource identifier
      * 
      * @param identifier
      * @return
@@ -190,8 +190,9 @@ public abstract class AbstractRenderer extends RendererImpl {
      * @throws DatabaseException
      */
     private void defineCurrentGis(IGeoResource resource) throws IOException, DatabaseException {
-        String georesInfo = resource.getInfo(null).getName();
-        String gisName = georesInfo;
+        String georesId = resource.getIdentifier().getRef();
+        String gisId = georesId.substring(georesId.lastIndexOf('/') + 1, georesId.length());
+        String gisName = gisId.replace('_', ' ');
         model.findGisByName(gisName);
     }
 

@@ -41,18 +41,46 @@ public interface IRenderableModel extends IModel {
      */
     public void updateLocationBounds(double latitude, double longitude);
 
+    /**
+     * update crs by crs code
+     * 
+     * @param crsCode
+     * @return
+     */
     public CoordinateReferenceSystem updateCRS(String crsCode);
 
+    /**
+     * set crs to current gis
+     * 
+     * @param crs
+     */
     public void setCRS(CoordinateReferenceSystem crs);
 
+    /**
+     * @return minimal latitude
+     */
     public double getMinLatitude();
 
+    /**
+     * @return maximal latitude
+     */
     public double getMaxLatitude();
 
+    /**
+     * @return minimal longitude
+     */
     public double getMinLongitude();
 
+    /**
+     * @return maximal longitude
+     */
     public double getMaxLongitude();
 
+    /**
+     * get crs from current gis;
+     * 
+     * @return
+     */
     public CoordinateReferenceSystem getCRS();
 
     /**
@@ -86,7 +114,10 @@ public interface IRenderableModel extends IModel {
     public Coordinate getCoordinate(IDataElement element);
 
     /**
-     * add new layer to catalog
+     * add new layer to catalog.
+     * <p>
+     * Layer is actually a gis elements which store some information for renderer
+     * </p>
      * 
      * @param name -name of new layer
      * @param filter- filter to currentLayer
@@ -101,7 +132,7 @@ public interface IRenderableModel extends IModel {
     public Iterable<GisModel> getAllGisModels() throws DatabaseException;
 
     /**
-     * find gis element by name
+     * find gis element by name and set is as current for its model;
      */
     public GisModel findGisByName(String gisName) throws DatabaseException;
 
