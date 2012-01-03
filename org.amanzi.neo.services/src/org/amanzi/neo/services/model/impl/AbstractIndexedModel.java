@@ -60,13 +60,13 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
     protected AbstractIndexedModel(Node rootNode, INodeType nodeType) throws AWEException {
         super(nodeType);
         this.rootNode = rootNode;
-        
+
         if (rootNode != null) {
             max_timestamp = (Long)rootNode.getProperty(DriveModel.MAX_TIMESTAMP, max_timestamp);
             min_timestamp = (Long)rootNode.getProperty(DriveModel.MIN_TIMESTAMP, min_timestamp);
         }
 
-        Node gis = datasetService.getGisNodeByDataset(rootNode);
+        Node gis = datasetService.getGisNodeByDataset(rootNode, (String)rootNode.getProperty(DatasetService.NAME));
         if (gis != null) {
             min_latitude = (Double)gis.getProperty(DriveModel.MIN_LATITUDE, min_latitude);
             min_longitude = (Double)gis.getProperty(DriveModel.MIN_LONGITUDE, min_longitude);
@@ -85,7 +85,7 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
         LOGGER.debug("addLocationIndex(" + nodeType + ")");
 
         // since location index exist it should also be a GIS node
-        datasetService.getGisNodeByDataset(rootNode);
+        datasetService.getGisNodeByDataset(rootNode, (String)rootNode.getProperty(DatasetService.NAME));
 
         // validate parameters
         if (nodeType == null) {
@@ -103,33 +103,35 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
             indList.add(index);
         }
     }
-    
-    protected Iterable<Node> getNodesInBounds(INodeType nodeType, double minLat, double minLon, double maxLat, double maxLon) throws AWEException{
-        //validate
-        if(nodeType == null){
+
+    protected Iterable<Node> getNodesInBounds(INodeType nodeType, double minLat, double minLon, double maxLat, double maxLon)
+            throws AWEException {
+        // validate
+        if (nodeType == null) {
             throw new IllegalArgumentException("Node type is null.");
         }
-        
+
         List<MultiPropertyIndex< ? >> indList = indexes.get(nodeType);
-        if(indList == null){
+        if (indList == null) {
             return datasetService.emptyTraverser(rootNode);
         }
         MultiPropertyIndex<Double> locationIndex = indexService.createLocationIndex(rootNode, nodeType);
         if (!indList.contains(locationIndex)) {
             return datasetService.emptyTraverser(rootNode);
         }
-        return locationIndex.searchTraverser(new Double[]{minLat, minLon}, new Double[]{maxLat, maxLon});
+        return locationIndex.searchTraverser(new Double[] {minLat, minLon}, new Double[] {maxLat, maxLon});
     }
-    
-    protected Iterable<Node> getNodesByTimestampPeriod(INodeType nodeType, long min_timestamp, long max_timestamp) throws AWEException{
-        
-        //validate
-        if(nodeType == null){
+
+    protected Iterable<Node> getNodesByTimestampPeriod(INodeType nodeType, long min_timestamp, long max_timestamp)
+            throws AWEException {
+
+        // validate
+        if (nodeType == null) {
             throw new IllegalArgumentException("Node type is null.");
         }
-        
+
         List<MultiPropertyIndex< ? >> indList = indexes.get(nodeType);
-        if(indList == null){
+        if (indList == null) {
             return datasetService.emptyTraverser(rootNode);
         }
         MultiPropertyIndex<Long> timestampIndex = indexService.createTimestampIndex(rootNode, nodeType);
@@ -282,8 +284,8 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
         params.put(DriveModel.MAX_TIMESTAMP, max_timestamp);
         datasetService.setProperties(rootNode, params);
 
-        Node gis = datasetService.getGisNodeByDataset(rootNode);
-        if (gis != null) {
+        Iterable<Node> allGis = datasetService.getAllGisByDataset(rootNode);
+        for (Node gis : allGis) {
             params = new HashMap<String, Object>();
             params.put(DriveModel.MIN_LATITUDE, min_latitude);
             params.put(DriveModel.MIN_LONGITUDE, min_longitude);

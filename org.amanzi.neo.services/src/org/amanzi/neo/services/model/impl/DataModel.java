@@ -19,6 +19,9 @@ import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
+import org.amanzi.neo.services.filters.INamedFilter;
+import org.amanzi.neo.services.filters.exceptions.NotComparebleException;
+import org.amanzi.neo.services.filters.exceptions.NullValueException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDataModel;
 import org.amanzi.neo.services.model.IProjectModel;
@@ -141,20 +144,54 @@ public abstract class DataModel extends AbstractModel implements IDataModel {
     public static class DataElementIterable implements Iterable<IDataElement> {
         private class DataElementIterator implements Iterator<IDataElement> {
 
-            private Iterator<? extends PropertyContainer> it;
+            private Iterator< ? extends PropertyContainer> it;
+            private PropertyContainer nextNode;
 
-            public DataElementIterator(Iterable<? extends PropertyContainer> nodeTraverse) {
+            public DataElementIterator(Iterable< ? extends PropertyContainer> nodeTraverse) {
                 this.it = nodeTraverse.iterator();
             }
 
             @Override
             public boolean hasNext() {
-                return it.hasNext();
+                prepareNextElement();
+                return nextNode != null;
+            }
+
+            /**
+             * prepare next element and check it if filter is not null
+             */
+            private void prepareNextElement() {
+                if (nextNode == null && !it.hasNext()) {
+                    nextNode = null;
+                    return;
+                }
+                if (nextNode != null) {
+                    return;
+                }
+                if (filter == null) {
+                    nextNode = it.next();
+                    return;
+                }
+                try {
+                    while (it.hasNext()) {
+                        if (filter.check((Node)it.next())) {
+                            nextNode = it.next();
+                            return;
+                        }
+                    }
+                } catch (NullValueException e) {
+                    nextNode = null;
+                } catch (NotComparebleException e) {
+                    nextNode = null;
+                }
             }
 
             @Override
             public IDataElement next() {
-                return new DataElement(it.next());
+                prepareNextElement();
+                PropertyContainer returnAbleElement = nextNode;
+                nextNode = null;
+                return new DataElement(returnAbleElement);
             }
 
             @Override
@@ -164,10 +201,16 @@ public abstract class DataModel extends AbstractModel implements IDataModel {
 
         }
 
-        private Iterable<? extends PropertyContainer> nodeTraverse;
+        private Iterable< ? extends PropertyContainer> nodeTraverse;
+        private INamedFilter filter;
 
-        public DataElementIterable(Iterable<? extends PropertyContainer> nodeTraverse) {
+        public DataElementIterable(Iterable< ? extends PropertyContainer> nodeTraverse) {
             this.nodeTraverse = nodeTraverse;
+        }
+
+        public DataElementIterable(Iterable<Node> nodeTraverse, INamedFilter filter) {
+            this.nodeTraverse = nodeTraverse;
+            this.filter = filter;
         }
 
         @Override

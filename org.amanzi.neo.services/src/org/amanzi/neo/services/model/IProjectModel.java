@@ -39,7 +39,7 @@ public interface IProjectModel extends IModel {
      * @param driveType drive type of the new dataset
      * @return a <code>DriveModel</code>, based on a new dataset node.
      */
-    public abstract IDriveModel createDrive(String name, IDriveType driveType);
+    public abstract IDriveModel createDriveModel(String name, IDriveType driveType);
 
     /**
      * Creates a <code>DriveModel</code> based on a new dataset, attached to the current project,
@@ -50,8 +50,9 @@ public interface IProjectModel extends IModel {
      * @param driveType drive type of the new dataset
      * @param primaryType <code>DriveModel</code> primary type
      * @return a <code>DriveModel</code> object with the defined primary type
+     * @throws AWEException
      */
-    public abstract IDriveModel createDriveModel(String name, IDriveType driveType, INodeType primaryType);
+    public abstract IDriveModel createDriveModel(String name, IDriveType driveType, INodeType primaryType) throws AWEException;
 
     /**
      * Tries to find a dataset node within the current project, with the defined <code>name</code>
@@ -83,10 +84,11 @@ public interface IProjectModel extends IModel {
      * @param name
      * @param driveType
      * @param primaryType
+     * @throws AWEException
      * @returna <code>DriveModel</code> object with the defined <code>primaryType</code>, based on
      *          the found or created node with the defined parameters.
      */
-    public abstract IDriveModel getDrive(String name, IDriveType driveType, INodeType primaryType);
+    public abstract IDriveModel getDrive(String name, IDriveType driveType, INodeType primaryType) throws AWEException;
 
     /**
      * Creates a new network node with the defined <code>name</code>, attaches it to the current
@@ -163,6 +165,16 @@ public interface IProjectModel extends IModel {
      * create a counters model
      */
 
+    public ICountersModel createCountersModel(String name, ICountersType type, INodeType primaryType) throws AWEException;
+
+    /**
+     * create counters model with a default primaryType
+     * 
+     * @param name
+     * @param type
+     * @return
+     * @throws AWEException
+     */
     public ICountersModel createCountersModel(String name, ICountersType type) throws AWEException;
 
     /**
@@ -172,6 +184,8 @@ public interface IProjectModel extends IModel {
 
     /**
      * try to find required countersModel or create new one if nor exist
+     * 
+     * @param m
      */
     public ICountersModel getCountersModel(String name, ICountersType countersModel) throws AWEException;
 

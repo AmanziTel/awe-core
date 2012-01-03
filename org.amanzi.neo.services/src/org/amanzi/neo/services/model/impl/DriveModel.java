@@ -311,7 +311,7 @@ public class DriveModel extends MeasurementModel implements IDriveModel {
 
     @Override
     public CoordinateReferenceSystem getCRS() {
-        return crs;
+        return currentGisModel.getCrs();
     }
 
     @Override

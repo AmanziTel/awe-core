@@ -26,6 +26,7 @@ import net.refractions.udig.catalog.IServiceInfo;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IRenderableModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
+import org.amanzi.neo.services.model.impl.RenderableModel.GisModel;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 
@@ -73,7 +74,9 @@ public class GeoService extends IService {
                     // TODO: current project or all the projects?
                     for (IRenderableModel model : ProjectModel.getCurrentProjectModel().getAllRenderableModels()) {
                         if (checkForExistCoordinateElement(model)) {
-                            result.add(new GeoResource(this, model));
+                            for (GisModel gisElements : model.getAllGisModels()) {
+                                result.add(new GeoResource(this, model, gisElements));
+                            }
                         }
                     }
                 } catch (AWEException e) {

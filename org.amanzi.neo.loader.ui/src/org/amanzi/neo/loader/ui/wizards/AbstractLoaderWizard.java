@@ -36,6 +36,7 @@ import org.amanzi.neo.services.ui.events.EventManager;
 import org.amanzi.neo.services.ui.events.IEventsListener;
 import org.amanzi.neo.services.ui.events.ShowOnMapEvent;
 import org.amanzi.neo.services.ui.utils.ActionUtil;
+import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -64,7 +65,7 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
         implements
             IGraphicInterfaceForLoaders<T>,
             IImportWizard {
-
+    private static final Logger LOGGER = Logger.getLogger(AbstractLoaderWizard.class);
     public static final String IS_MAIN_ATTRUBUTE = "isMain";
     public static final String CLASS_ATTRUBUTE = "class";
     private Set<ILoader<IData, T>> pageLoaders = new HashSet<ILoader<IData, T>>();
@@ -345,12 +346,14 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
                 try {
                     loader.init(newloader.get(loader));
                 } catch (Exception e) {
+                    LOGGER.info("error while initialize data ", e);
                     showError("Error.", "Cann't initialize loader:" + loader.getLoaderInfo().getName());
                     return;
                 }
                 try {
                     loader.run();
-                } catch (Exception e) {
+                } catch (AWEException e) {
+                    LOGGER.info("error while saving data ", e);
                     showError("Error.", " exception was thrown  while saving data");
                     continue;
                 }

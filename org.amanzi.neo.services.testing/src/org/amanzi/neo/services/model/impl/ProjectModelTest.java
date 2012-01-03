@@ -30,6 +30,7 @@ import org.amanzi.neo.services.DatasetService.DriveTypes;
 import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.enums.INodeType;
+import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.impl.ProjectModel.DistributionItem;
@@ -96,7 +97,7 @@ public class ProjectModelTest extends AbstractNeoServiceTest {
     public void testCreateDatasetStringIDriveType() {
         LOGGER.debug("start testCreateDatasetStringIDriveType()");
 
-        IDriveModel dm = model.createDrive("dataset", DriveTypes.values()[0]);
+        IDriveModel dm = model.createDriveModel("dataset", DriveTypes.values()[0]);
 
         // object returned not null
         Assert.assertNotNull(dm);
@@ -111,23 +112,28 @@ public class ProjectModelTest extends AbstractNeoServiceTest {
     public void testCreateDatasetStringIDriveTypeINodeType() {
         LOGGER.debug("start testCreateDatasetStringIDriveTypeINodeType()");
 
-        IDriveModel dm = model.createDriveModel("dataset", DriveTypes.values()[0], NetworkElementNodeType.values()[0]);
+        IDriveModel dm;
+        try {
+            dm = model.createDriveModel("dataset", DriveTypes.values()[0], NetworkElementNodeType.values()[0]);
 
-        // object returned not null
-        Assert.assertNotNull(dm);
-        Assert.assertNotNull(dm.getRootNode());
-        // name correct
-        Assert.assertEquals("dataset", dm.getName());
-        // drive type correct
-        Assert.assertEquals(DriveTypes.values()[0], dm.getDriveType());
-        // primary type correct
-        Assert.assertEquals(NetworkElementNodeType.BSC, dm.getPrimaryType());
+            // object returned not null
+            Assert.assertNotNull(dm);
+            Assert.assertNotNull(dm.getRootNode());
+            // name correct
+            Assert.assertEquals("dataset", dm.getName());
+            // drive type correct
+            Assert.assertEquals(DriveTypes.values()[0], dm.getDriveType());
+            // primary type correct
+            Assert.assertEquals(NetworkElementNodeType.BSC, dm.getPrimaryType());
+        } catch (AWEException e) {
+            Assert.fail("testCreateDatasetStringIDriveTypeINodeType exception while create driveModel ");
+        }
     }
 
     @Test
     public void testFindDataset() {
         LOGGER.debug("start testFindDataset()");
-        model.createDrive("dataset", DriveTypes.values()[0]);
+        model.createDriveModel("dataset", DriveTypes.values()[0]);
 
         IDriveModel dm = model.findDriveModel("dataset", DriveTypes.values()[0]);
         // object returned not null
@@ -151,7 +157,7 @@ public class ProjectModelTest extends AbstractNeoServiceTest {
     public void testGetDatasetStringIDriveType() {
         LOGGER.debug("start testGetDatasetStringIDriveType()");
         // dataset exists
-        model.createDrive("dataset", DriveTypes.values()[0]);
+        model.createDriveModel("dataset", DriveTypes.values()[0]);
 
         IDriveModel dm = model.getDriveModel("dataset", DriveTypes.values()[0]);
         // object returned not null
@@ -182,20 +188,24 @@ public class ProjectModelTest extends AbstractNeoServiceTest {
     public void testGetDatasetStringIDriveTypeINodeType() {
         LOGGER.debug("start testGetDatasetStringIDriveTypeINodeType()");
         // dataset exists
-        model.createDriveModel("dataset", DriveTypes.values()[0], NetworkElementNodeType.values()[0]);
+        try {
+            model.createDriveModel("dataset", DriveTypes.values()[0], NetworkElementNodeType.values()[0]);
 
-        IDriveModel dm = model.getDrive("dataset", DriveTypes.values()[0], NetworkElementNodeType.values()[0]);
-        // object returned not null
-        Assert.assertNotNull(dm);
-        Assert.assertNotNull(dm.getRootNode());
-        // name correct
-        Assert.assertEquals("dataset", dm.getName());
-        // drive type correct
-        Assert.assertEquals(DriveTypes.values()[0], dm.getDriveType());
-        // type correct
-        Assert.assertEquals(DatasetTypes.DRIVE, dm.getType());
-        // primary type correct
-        Assert.assertEquals(NetworkElementNodeType.BSC, dm.getPrimaryType());
+            IDriveModel dm = model.getDrive("dataset", DriveTypes.values()[0], NetworkElementNodeType.values()[0]);
+            // object returned not null
+            Assert.assertNotNull(dm);
+            Assert.assertNotNull(dm.getRootNode());
+            // name correct
+            Assert.assertEquals("dataset", dm.getName());
+            // drive type correct
+            Assert.assertEquals(DriveTypes.values()[0], dm.getDriveType());
+            // type correct
+            Assert.assertEquals(DatasetTypes.DRIVE, dm.getType());
+            // primary type correct
+            Assert.assertEquals(NetworkElementNodeType.BSC, dm.getPrimaryType());
+        } catch (AWEException e) {
+            Assert.fail("testGetDatasetStringIDriveTypeINodeType exception  ");
+        }
     }
 
     @Test
@@ -203,16 +213,23 @@ public class ProjectModelTest extends AbstractNeoServiceTest {
         LOGGER.debug("start testGetDatasetStringIDriveTypeINodeTypeNoDataset()");
         // dataset !exists
 
-        IDriveModel dm = model.getDrive("dataset", DriveTypes.values()[0], NetworkElementNodeType.values()[0]);
-        // object returned not null
-        Assert.assertNotNull(dm);
-        Assert.assertNotNull(dm.getRootNode());
-        // name correct
-        Assert.assertEquals("dataset", dm.getName());
-        // drive type correct
-        Assert.assertEquals(DriveTypes.values()[0], dm.getDriveType());
-        // primary type correct
-        Assert.assertEquals(NetworkElementNodeType.BSC, dm.getPrimaryType());
+        IDriveModel dm;
+        try {
+            dm = model.getDrive("dataset", DriveTypes.values()[0], NetworkElementNodeType.values()[0]);
+
+            // object returned not null
+            Assert.assertNotNull(dm);
+            Assert.assertNotNull(dm.getRootNode());
+            // name correct
+            Assert.assertEquals("dataset", dm.getName());
+            // drive type correct
+            Assert.assertEquals(DriveTypes.values()[0], dm.getDriveType());
+            // primary type correct
+            Assert.assertEquals(NetworkElementNodeType.BSC, dm.getPrimaryType());
+        } catch (AWEException e) {
+            // TODO Handle AWEException
+            Assert.fail("testGetDatasetStringIDriveTypeINodeType exception while try to get model  ");
+        }
     }
 
     @Test

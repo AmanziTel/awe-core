@@ -15,6 +15,7 @@ package org.amanzi.neo.services;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.amanzi.neo.services.enums.IDriveType;
@@ -1007,12 +1008,37 @@ public class DatasetService extends AbstractService {
      * @return the gis node by dataset or null
      * @throws DatabaseException
      */
-    public Node getGisNodeByDataset(Node dataset) throws DatabaseException {
+    public Node getGisNodeByDataset(Node dataset, String name) throws DatabaseException {
         if (dataset == null) {
             return null;
         }
-        Relationship rel = dataset.getSingleRelationship(DatasetRelationTypes.GIS, Direction.OUTGOING);
-        return rel == null ? createGisNode(dataset) : rel.getEndNode();
+        if (name == null) {
+            name = (String)dataset.getProperty(DatasetService.NAME);
+        }
+        Iterable<Node> gisNodes = getAllGisByDataset(dataset);
+        for (Node gis : gisNodes) {
+            if (gis.getProperty(NAME).equals(name)) {
+                return gis;
+            }
+        }
+        return createGisNode(dataset, name);
+    }
+
+    /**
+     * get all gis node which belongs to dataset
+     * 
+     * @param dataset
+     * @return Iterable of gisNodes
+     */
+    public Iterable<Node> getAllGisByDataset(Node dataset) {
+        List<Node> gisNodes = new LinkedList<Node>();
+        Iterable<Relationship> rel = dataset.getRelationships(DatasetRelationTypes.GIS, Direction.OUTGOING);
+        for (Relationship gisRel : rel) {
+            gisNodes.add(gisRel.getEndNode());
+        }
+
+        return gisNodes;
+
     }
 
     /**
@@ -1022,8 +1048,9 @@ public class DatasetService extends AbstractService {
      * @return
      * @throws DatabaseException
      */
-    private Node createGisNode(Node dataset) throws DatabaseException {
+    private Node createGisNode(Node dataset, String name) throws DatabaseException {
         Node gis = createNode(DatasetTypes.GIS);
+        gis.setProperty(NAME, name);
         createRelationship(dataset, gis, DatasetRelationTypes.GIS);
         return gis;
     }
