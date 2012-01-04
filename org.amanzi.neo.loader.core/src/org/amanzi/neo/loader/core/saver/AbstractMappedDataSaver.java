@@ -55,7 +55,13 @@ public abstract class AbstractMappedDataSaver<T1 extends IDataModel, T3 extends 
             
             if (synonym != null) {
                 String textValue = dataEntry.getValue();
-                Object value = synonym.getType().parse(textValue);
+                Object value = null;
+                try {
+                    value = synonym.getType().parse(textValue);
+                } catch (NumberFormatException e) {
+                    value = PossibleTypes.AUTO.parse(textValue);
+                    synonym.setType(PossibleTypes.AUTO);
+                }
                 if (synonym.getType() == PossibleTypes.AUTO) {
                     PossibleTypes newType = PossibleTypes.getType(value.getClass());
                     changeSynonymType(synonymMapping, dataEntry.getKey(), synonym.getName(), newType);

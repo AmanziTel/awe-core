@@ -73,9 +73,8 @@ public class NetworkSaver extends AbstractMappedDataSaver<INetworkModel, Configu
         for (NetworkElementNodeType type : DEFAULT_NETWORK_STRUCTURE) {
             Map<String, Object> values = getDataElementProperties(getMainModel(), type, dataElement, type == NetworkElementNodeType.SECTOR);
             
-            values.put(AbstractService.TYPE, type.getId());
-            
             if (!values.isEmpty()) {
+                values.put(AbstractService.TYPE, type.getId());
                 parent = getMainModel().createElement(parent, values);
             }   
         }

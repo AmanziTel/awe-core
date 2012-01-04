@@ -100,6 +100,10 @@ public class ImportSynonymsManager {
         public PossibleTypes getType() {
             return type;
         }
+        
+        public void setType(PossibleTypes type) {
+            this.type = type;
+        }
 
         /**
          * @return Returns the name.

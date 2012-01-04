@@ -119,7 +119,6 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
      */
     protected void parseFile(File file) throws AWEException {
         AbstractSaver.statisticsValues = new HashMap<String,Long>();
-        currentFile = file;
         if (tempFile == null || tempFile != currentFile) {
             isNewFile = true;
         }
@@ -176,6 +175,7 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
     public void run() throws AWEException {
         long globalStartTime = System.currentTimeMillis();
         for (File file : config.getFilesToLoad()) {
+            currentFile = file;
             long startTime = System.currentTimeMillis();
             parseFile(file);
             AweConsolePlugin.info(LoaderMessages.getFormattedString(LoaderMessages.TimeOfFileLoading, currentFile.getName(),
