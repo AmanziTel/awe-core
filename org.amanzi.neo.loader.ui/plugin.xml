@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.2"?>
 <plugin>
-   <extension-point id="org.amanzi.neo.loader.ui.gui" name="GUI for loaders" schema="schema/org.amanzi.neo.loader.ui.gui.exsd"/>
    <extension-point id="org.amanzi.neo.loader.ui.loaders" name="Loaders" schema="schema/org.amanzi.neo.loader.ui.loaders.exsd"/>
    <extension-point id="org.amanzi.neo.loader.ui.wizard" name="Extension describe wizard" schema="schema/org.amanzi.neo.loader.ui.wizard.exsd"/>
   <extension-point id="org.amanzi.neo.loader.ui.pages" name="Extension describe pages" schema="schema/org.amanzi.neo.loader.ui.pages.exsd"/>
@@ -74,17 +73,6 @@
           </toolbar>
        </menuContribution>
     </extension>
-    <extension
-          point="org.amanzi.neo.loader.ui.gui">
-       <GUI
-             class="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
-             id="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard">
-       </GUI>
-       <GUI
-             class="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard"
-             id="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard">
-       </GUI>
-    </extension>
     
    <extension
          point="org.eclipse.core.runtime.preferences">
@@ -96,10 +84,14 @@
     <!-- describe wizard -->
  <extension
        point="org.amanzi.neo.loader.ui.wizard">
-       <wizard id="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard">
+       <wizard 
+         id="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard"
+         class="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard">
           <page_id id="load_physical_network_page"/>
        </wizard>
-       <wizard id="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard">
+       <wizard 
+         id="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard"
+         class="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard">
           <page_id id="load_drive_data_page"/>
        </wizard>
  </extension>

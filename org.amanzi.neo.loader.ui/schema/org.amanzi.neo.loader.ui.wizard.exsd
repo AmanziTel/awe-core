@@ -62,6 +62,16 @@
                </appInfo>
             </annotation>
          </attribute>
+         <attribute name="class" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="java" basedOn=":org.amanzi.neo.loader.ui.wizards.IGraphicInterfaceForLoaders"/>
+               </appInfo>
+            </annotation>
+         </attribute>
       </complexType>
    </element>
 

@@ -190,7 +190,7 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
 
         Node countersRoot = null;
         try {
-            countersRoot = dsServ.createDataset(rootNode, name, DatasetTypes.DRIVE, driveType, primaryType);
+            countersRoot = dsServ.createDataset(rootNode, name, DatasetTypes.COUNTERS, driveType, primaryType);
         } catch (AWEException e) {
             LOGGER.error("Could not create network model.", e);
         }
