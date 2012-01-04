@@ -14,7 +14,9 @@
 package org.amanzi.neo.services.model.impl;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -282,6 +284,11 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
         Map<String, Object> params = new HashMap<String, Object>();
         params.put(DriveModel.MIN_TIMESTAMP, min_timestamp);
         params.put(DriveModel.MAX_TIMESTAMP, max_timestamp);
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss z");
+        Date startDate = new Date(min_timestamp);
+        params.put(DriveModel.START, formatter.format(startDate));
+        Date endDate = new Date(max_timestamp);
+        params.put(DriveModel.END, formatter.format(endDate));
         datasetService.setProperties(rootNode, params);
 
         Iterable<Node> allGis = datasetService.getAllGisByDataset(rootNode);

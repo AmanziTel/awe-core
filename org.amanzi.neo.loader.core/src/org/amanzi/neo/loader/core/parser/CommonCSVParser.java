@@ -87,6 +87,24 @@ public class CommonCSVParser<T1 extends ISaver<IModel, CSVContainer, T2>, T2 ext
         }
 
     }
+    
+    public CommonCSVParser(File file){
+        super();
+        try {
+            container = new CSVContainer(MINIMAL_SIZE);
+            currentFile = file;
+            if (currentFile != null) {
+                is = new CountingFileInputStream(currentFile);
+                reader = new BufferedReader(new InputStreamReader(is, charSetName));
+            }
+        } catch (FileNotFoundException e) {
+            // TODO Handle FileNotFoundException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        } catch (UnsupportedEncodingException e) {
+            // TODO Handle UnsupportedEncodingException
+            throw (RuntimeException)new RuntimeException().initCause(e);
+        }
+    }
 
     /**
      * parse csv file headers
@@ -95,7 +113,7 @@ public class CommonCSVParser<T1 extends ISaver<IModel, CSVContainer, T2>, T2 ext
      * @param is
      * @return
      */
-    private List<String> parseHeaders(File file) {
+    protected List<String> parseHeaders(File file) {
         char delim = getDelimiters(file);
         parser = new CSVParser(delim, quoteCharacter, ESCAPE_SYMBOL, false, true);
         String lineStr;
@@ -122,7 +140,7 @@ public class CommonCSVParser<T1 extends ISaver<IModel, CSVContainer, T2>, T2 ext
     }
 
     @Override
-    protected CSVContainer parseElement() {
+    public CSVContainer parseElement() {
 
         if (tempFile == null || tempFile != currentFile) {
             try {
