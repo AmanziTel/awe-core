@@ -31,13 +31,18 @@ import org.amanzi.neo.services.model.INetworkModel;
  * @author Ladornaya_A
  * @since 1.0.0
  */
-public abstract class AbstractNetworkSaver<T1 extends IDataModel, T3 extends IConfiguration> extends AbstractMappedDataSaver<T1, T3> {
+public abstract class AbstractNetworkSaver<T1 extends IDataModel, T3 extends IConfiguration>
+        extends
+            AbstractMappedDataSaver<T1, T3> {
 
     /*
-     * Network Model 
+     * Network Model
      */
     protected INetworkModel networkModel;
 
+    /**
+     * find network element
+     */
     protected IDataElement getNetworkElement(INodeType type, String propertyName, Map<String, Object> values) throws AWEException {
 
         Object oElementName = values.remove(propertyName);

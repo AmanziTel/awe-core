@@ -29,23 +29,23 @@ import org.amanzi.neo.services.model.INodeToNodeRelationsType;
  * @author lagutko_n
  * @since 1.0.0
  */
-public abstract class AbstractN2NSaver extends AbstractNetworkSaver<INodeToNodeRelationsModel, ConfigurationDataImpl>{
-    
+public abstract class AbstractN2NSaver extends AbstractNetworkSaver<INodeToNodeRelationsModel, ConfigurationDataImpl> {
+
     /*
      * Name of Dataset Synonyms
      */
     private static final String SYNONYMS_DATASET_TYPE = "n2n";
-    
+
     @Override
     public void saveElement(MappedData dataElement) throws AWEException {
         Map<String, Object> values = getDataElementProperties(getMainModel(), null, dataElement, true);
-        
-        IDataElement servingElement = getNetworkElement(getN2NNodeType(),"serving_name", values);
-        IDataElement targetElement = getNetworkElement(getN2NNodeType(),"target_element", values);
-        
+
+        IDataElement servingElement = getNetworkElement(getN2NNodeType(), "serving_name", values);
+        IDataElement targetElement = getNetworkElement(getN2NNodeType(), "target_element", values);
+
         getMainModel().linkNode(servingElement, targetElement, values);
     }
-    
+
     @Override
     protected boolean isRenderable() {
         return false;
@@ -53,20 +53,21 @@ public abstract class AbstractN2NSaver extends AbstractNetworkSaver<INodeToNodeR
 
     @Override
     protected INodeToNodeRelationsModel createMainModel(ConfigurationDataImpl configuration) throws AWEException {
-        networkModel = getActiveProject().getNetwork(configuration.getDatasetNames().get(ConfigurationDataImpl.NETWORK_PROPERTY_NAME));
-        
+        networkModel = getActiveProject().getNetwork(
+                configuration.getDatasetNames().get(ConfigurationDataImpl.NETWORK_PROPERTY_NAME));
+
         String n2nName = configuration.getFilesToLoad().get(0).getName();
-        
+
         return networkModel.getNodeToNodeModel(getN2NType(), n2nName, getN2NNodeType());
     }
-    
+
     /**
      * Returns Type of NodeToNode Relations
-     *
+     * 
      * @return
      */
     protected abstract INodeToNodeRelationsType getN2NType();
-    
+
     /**
      * 
      */
