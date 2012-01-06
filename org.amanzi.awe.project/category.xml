@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/org.amanzi.awe.extras.feature_1.0.0.qualifier.jar" id="org.amanzi.awe.extras.feature" version="1.0.0.qualifier"/>
+   <feature url="features/org.amanzi.awe.feature_1.0.0.qualifier.jar" id="org.amanzi.awe.feature" version="1.0.0.qualifier"/>
+   <feature url="features/org.neo4j.neoclipse.feature_1.4.1.jar" id="org.neo4j.neoclipse.feature" version="1.4.1"/>
+</site>
