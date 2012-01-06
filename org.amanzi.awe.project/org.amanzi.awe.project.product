@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="Amanzi Wireless Explorer" id="org.amanzi.awe.product" application="org.amanzi.awe.id1" useFeatures="true" includeLaunchers="true">
+<product name="Amanzi Wireless Explorer" uid="awe-opensource" id="org.amanzi.awe.product" application="org.amanzi.awe.id1" useFeatures="true" includeLaunchers="true">
 
    <aboutInfo>
       <image path="/org.amanzi.awe/nl/en/about.gif"/>
@@ -38,33 +38,30 @@ For more information and support visit http://www.amanzitel.com/page/AWE
       <linux icon="/org.amanzi.awe.project/icons/awe_icon_128.xpm"/>
       <solaris/>
       <win useIco="true">
-         <ico path="/org.amanzi.awe/icons/awe.ico"/>
+         <ico path="/org.amanzi.awe.project/icons/awe.ico"/>
          <bmp/>
       </win>
    </launcher>
 
-
    <vm>
-      <linux>jre1.6.0_11_gdal</linux>
-      <windows>jre6</windows>
+      <linux include="true">jre1.6.0_11_gdal</linux>
+      <windows include="true">jre6</windows>
    </vm>
 
-   <license>
-        <url>http://awe.amanzi.org/license.html</url>
-   </license>
 
    <plugins>
    </plugins>
 
    <features>
-      <feature id="org.eclipse.rcp" version="3.3.3.r33x_r20080129-8y8eE9UEUWI6qujeED0xT7bc"/>
-      <feature id="org.eclipse.rcp.nls1" version="3.2.0.v200606220026"/>
-      <feature id="org.amanzi.splash.extras_feature" version="1.0.0.qualifier"/>
-      <feature id="org.amanzi.splash" version="1.0.0"/>
-      <feature id="org.neo4j.neoclipse" version="0.4.1"/>
-      <feature id="org.amanzi.awe" version="1.0.0"/>
-      <feature id="net.refractions.udig.awe" version="1.0.0.qualifier"/>
+      <feature id="org.amanzi.awe.extras.feature" version="1.0.0.qualifier"/>
+      <feature id="org.amanzi.awe.feature" version="1.0.0.qualifier"/>
+      <feature id="org.neo4j.neoclipse.feature" version="1.4.1"/>
+      <feature id="net.refractions.udig" version="1.2.2.201107241506"/>
+      <feature id="org.eclipse.rcp" version="3.7.0.v20110216-9DB5Fm1FpBGy_AaVz-mFamgY"/>
    </features>
 
+   <configurations>
+      <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="0" />
+   </configurations>
 
 </product>

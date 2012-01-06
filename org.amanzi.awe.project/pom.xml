@@ -1,29 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <artifactId>awe</artifactId>
-    <groupId>AWE_build</groupId>
+    <artifactId>awe-core</artifactId>
+    <groupId>org.amanzi</groupId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
-  <groupId>AWE_build</groupId>
-  <artifactId>org.amanzi.awe.project</artifactId>
-  <version>1.0.0.qualifier</version>
-  <packaging>eclipse-application</packaging>
+  
   <properties>
-  	<generatedBuildProperties>root.properties</generatedBuildProperties>
-  </properties>
+    <generatedBuildProperties>root.properties</generatedBuildProperties>
+	</properties>
+  
+  <groupId>org.amanzi</groupId>
+  <artifactId>org.amanzi.awe.project</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <packaging>eclipse-repository</packaging>
+  
   <build>
-  	<finalName>${parent.artifactId}-0.12.${BUILD_NUMBER}</finalName>
-  	<plugins>
+    <plugins>
       <plugin>
-        <groupId>org.sonatype.tycho</groupId>
-        <artifactId>maven-osgi-packaging-plugin</artifactId>
+        <groupId>org.eclipse.tycho</groupId>
+        <artifactId>tycho-p2-director-plugin</artifactId>
         <version>${tycho-version}</version>
-        <configuration>
-        	<directoryName>awe</directoryName>         
-        </configuration>
+        <executions>
+          <execution>
+            <id>materialize-products</id>
+            <goals>
+              <goal>materialize-products</goal>
+            </goals>
+          </execution>
+          <execution>
+             <id>archive-products</id>
+            <goals>
+              <goal>archive-products</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
-    </plugins>
+	</plugins>
   </build>
+
 </project>
