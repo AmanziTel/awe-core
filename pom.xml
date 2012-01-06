@@ -11,8 +11,8 @@
     <tycho-version>0.13.0</tycho-version>
   </properties>
   
-  <groupId>org.amanzi</groupId>
-  <artifactId>awe-core</artifactId>
+  <groupId>org.amanzi.awe</groupId>
+  <artifactId>core</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
   
