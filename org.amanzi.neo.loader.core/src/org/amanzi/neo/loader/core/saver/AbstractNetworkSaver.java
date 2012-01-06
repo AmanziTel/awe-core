@@ -18,6 +18,7 @@ import java.util.Set;
 
 import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.services.AbstractService;
+import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
@@ -63,5 +64,12 @@ public abstract class AbstractNetworkSaver<T1 extends IDataModel, T3 extends ICo
             }
         }
         return null;
+    }
+    
+    /**
+     * get sector node type
+     */
+    protected INodeType getSectorNodeType(){
+        return NetworkElementNodeType.SECTOR;
     }
 }
