@@ -220,7 +220,6 @@ public class TemsSaverTesting extends AbstractAWETest {
         return values;
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testSavingAllElement() {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);

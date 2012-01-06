@@ -213,7 +213,6 @@ public class RomesSaverTesting extends AbstractAWETest {
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testLinkNodes() {
         CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);

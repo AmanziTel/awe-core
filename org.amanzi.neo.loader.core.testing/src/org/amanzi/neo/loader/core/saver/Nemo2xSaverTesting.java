@@ -14,26 +14,28 @@ package org.amanzi.neo.loader.core.saver;
 
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.any;
 
+
 import java.io.File;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
-import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.data.generator.Nemo2Generator;
+import org.amanzi.neo.loader.core.parser.AbstractParser;
 import org.amanzi.neo.loader.core.parser.CSVContainer;
 import org.amanzi.neo.loader.core.parser.CommonCSVParser;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceInitializer;
 import org.amanzi.neo.loader.core.saver.nemo.NemoEvents;
+import org.amanzi.neo.services.DatasetService.DriveTypes;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.DriveModel;
@@ -62,7 +64,7 @@ public class Nemo2xSaverTesting extends AbstractAWETest {
     private static DataLoadPreferenceInitializer initializer;
 
     private static DriveModel model;
-    
+
     private static DriveModel virtualModel;
 
     private static GraphDatabaseService service;
@@ -84,7 +86,6 @@ public class Nemo2xSaverTesting extends AbstractAWETest {
 
     @BeforeClass
     public static void prepare() {
-        new LogStarter().earlyStartup();
         clearDb();
         initializer = new DataLoadPreferenceInitializer();
         initializer.initializeDefaultPreferences();
@@ -113,19 +114,100 @@ public class Nemo2xSaverTesting extends AbstractAWETest {
         fileList.add(testFile);
         config.setSourceFile(fileList);
         nemo2xSaver = new Nemo2xSaver(model, (ConfigurationDataImpl)config, service);
-        //CommonCSVParser objCommonCSVParser = new CommonCSVParser(testFile);
-        //rowContainer = objCommonCSVParser.parseElement();
+        CommonCSVParser objCommonCSVParser = new CommonCSVParser(testFile);
+        rowContainer = objCommonCSVParser.parseElement();
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testCreatingNewElement() {
         try {
+            when(model.getVirtualDataset(any(String.class), eq(DriveTypes.MS))).thenReturn(virtualModel);
             when(model.addFile(eq(rowContainer.getFile()))).thenReturn(new DataElement(new HashMap<String, Object>()));
+            when(virtualModel.addFile(eq(rowContainer.getFile()))).thenReturn(new DataElement(new HashMap<String, Object>()));
+            nemo2xSaver.saveElement(rowContainer);            
+            nemo2xSaver.saveElement(rowContainer);
+            nemo2xSaver.saveElement(rowContainer);
             nemo2xSaver.saveElement(rowContainer);
             verify(model, atLeastOnce()).addFile(eq(rowContainer.getFile()));
-            verify(model, atLeastOnce()).addMeasurement(eq(rowContainer.getFile().getName()), any(Map.class), any(Boolean.class));
-            //verify(model, times(5)).getLocations();
+            verify(virtualModel, never()).addMeasurement(eq(rowContainer.getFile().getName()),
+                    eq(Nemo2Generator.map.get(NemoEvents.AG.getEventId())), any(Boolean.class));
+            for(String key:Nemo2Generator.map.get(NemoEvents.AG.getEventId()).keySet())
+            {
+                System.out.println(key+"/"+Nemo2Generator.map.get(NemoEvents.AG.getEventId()).get(key));
+            }
+            verify(virtualModel, never()).addMeasurement(eq(rowContainer.getFile().getName()),
+                    eq(Nemo2Generator.map.get(NemoEvents.BF.getEventId())), any(Boolean.class));
+            verify(virtualModel, never()).addMeasurement(eq(rowContainer.getFile().getName()),
+                    eq(Nemo2Generator.map.get(NemoEvents.CInf.getEventId())), any(Boolean.class));
+            verify(virtualModel, never()).addMeasurement(eq(rowContainer.getFile().getName()),
+                    eq(Nemo2Generator.map.get(NemoEvents.CL.getEventId())), any(Boolean.class));
+            verify(virtualModel, never()).addMeasurement(eq(rowContainer.getFile().getName()),
+                    eq(Nemo2Generator.map.get(NemoEvents.DL.getEventId())), any(Boolean.class));
+            verify(virtualModel, never()).addMeasurement(eq(rowContainer.getFile().getName()),
+                    eq(Nemo2Generator.map.get(NemoEvents.DN.getEventId())), any(Boolean.class));
+            verify(virtualModel, never()).addMeasurement(eq(rowContainer.getFile().getName()),
+                    eq(Nemo2Generator.map.get(NemoEvents.DS.getEventId())), any(Boolean.class));
+            verify(virtualModel, never()).addMeasurement(eq(rowContainer.getFile().getName()),
+                    eq(Nemo2Generator.map.get(NemoEvents.FF.getEventId())), any(Boolean.class));
+            verify(virtualModel, never()).addMeasurement(eq(rowContainer.getFile().getName()),
+                    eq(Nemo2Generator.map.get(NemoEvents.EI.getEventId())), any(Boolean.class));
+            verify(virtualModel, never()).addMeasurement(eq(rowContainer.getFile().getName()),
+                    eq(Nemo2Generator.map.get(NemoEvents.HV.getEventId())), any(Boolean.class));
+            verify(virtualModel, never()).addMeasurement(eq(rowContainer.getFile().getName()),
+                    eq(Nemo2Generator.map.get(NemoEvents.HW.getEventId())), any(Boolean.class));
+            verify(virtualModel, never()).addMeasurement(eq(rowContainer.getFile().getName()),
+                    eq(Nemo2Generator.map.get(NemoEvents.ID.getEventId())), any(Boolean.class));
+            verify(virtualModel, never()).addMeasurement(eq(rowContainer.getFile().getName()),
+                    eq(Nemo2Generator.map.get(NemoEvents.MF.getEventId())), any(Boolean.class));
+            verify(virtualModel, never()).addMeasurement(eq(rowContainer.getFile().getName()),
+                    eq(Nemo2Generator.map.get(NemoEvents.ML.getEventId())), any(Boolean.class));
+            verify(virtualModel, never()).addMeasurement(eq(rowContainer.getFile().getName()),
+                    eq(Nemo2Generator.map.get(NemoEvents.NN.getEventId())), any(Boolean.class));
+            verify(virtualModel, never()).addMeasurement(eq(rowContainer.getFile().getName()),
+                    eq(Nemo2Generator.map.get(NemoEvents.PC.getEventId())), any(Boolean.class));
+            verify(virtualModel, never()).addMeasurement(eq(rowContainer.getFile().getName()),
+                    eq(Nemo2Generator.map.get(NemoEvents.PRODUCT.getEventId())), any(Boolean.class));
+            verify(virtualModel, never()).addMeasurement(eq(rowContainer.getFile().getName()),
+                    eq(Nemo2Generator.map.get(NemoEvents.SI.getEventId())), any(Boolean.class));
+            verify(virtualModel, never()).addMeasurement(eq(rowContainer.getFile().getName()),
+                    eq(Nemo2Generator.map.get(NemoEvents.SP.getEventId())), any(Boolean.class));
+            verify(virtualModel, never()).addMeasurement(eq(rowContainer.getFile().getName()),
+                    eq(Nemo2Generator.map.get(NemoEvents.SW.getEventId())), any(Boolean.class));
+            verify(virtualModel, never()).addMeasurement(eq(rowContainer.getFile().getName()),
+                    eq(Nemo2Generator.map.get(NemoEvents.TS.getEventId())), any(Boolean.class));
+            verify(virtualModel, never()).addMeasurement(eq(rowContainer.getFile().getName()),
+                    eq(Nemo2Generator.map.get(NemoEvents.UT.getEventId())), any(Boolean.class));
+            verify(virtualModel, never()).addMeasurement(eq(rowContainer.getFile().getName()),
+                    eq(Nemo2Generator.map.get(NemoEvents.VQ.getEventId())), any(Boolean.class));
+            verify(virtualModel, never()).addMeasurement(eq(rowContainer.getFile().getName()),
+                    eq(Nemo2Generator.map.get(NemoEvents.START.getEventId())), any(Boolean.class));
+            verify(virtualModel, never()).addMeasurement(eq(rowContainer.getFile().getName()),
+                    eq(Nemo2Generator.map.get(NemoEvents.STOP.getEventId())), any(Boolean.class));
+            verify(virtualModel, never()).addMeasurement(eq(rowContainer.getFile().getName()),
+                    eq(Nemo2Generator.map.get(NemoEvents.CAC.getEventId())), any(Boolean.class));
+            verify(virtualModel, never()).addMeasurement(eq(rowContainer.getFile().getName()),
+                    eq(Nemo2Generator.map.get(NemoEvents.DAC.getEventId())), any(Boolean.class));
+            verify(virtualModel, never()).addMeasurement(eq(rowContainer.getFile().getName()),
+                    eq(Nemo2Generator.map.get(NemoEvents.DAF.getEventId())), any(Boolean.class));
+            verify(virtualModel, never()).addMeasurement(eq(rowContainer.getFile().getName()),
+                    eq(Nemo2Generator.map.get(NemoEvents.DAD.getEventId())), any(Boolean.class));
+            verify(virtualModel, never()).addMeasurement(eq(rowContainer.getFile().getName()),
+                    eq(Nemo2Generator.map.get(NemoEvents.DREQ.getEventId())), any(Boolean.class));
+            verify(virtualModel, never()).addMeasurement(eq(rowContainer.getFile().getName()),
+                    eq(Nemo2Generator.map.get(NemoEvents.DCOMP.getEventId())), any(Boolean.class));
+            verify(virtualModel, never()).addMeasurement(eq(rowContainer.getFile().getName()),
+                    eq(Nemo2Generator.map.get(NemoEvents.DRATE.getEventId())), any(Boolean.class));
+            verify(virtualModel, never()).addMeasurement(eq(rowContainer.getFile().getName()),
+                    eq(Nemo2Generator.map.get(NemoEvents.PER.getEventId())), any(Boolean.class));
+            verify(virtualModel, never()).addMeasurement(eq(rowContainer.getFile().getName()),
+                    eq(Nemo2Generator.map.get(NemoEvents.RTT.getEventId())), any(Boolean.class));
+            verify(virtualModel, never()).addMeasurement(eq(rowContainer.getFile().getName()),
+                    eq(Nemo2Generator.map.get(NemoEvents.JITTER.getEventId())), any(Boolean.class));
+            verify(virtualModel, never()).addMeasurement(eq(rowContainer.getFile().getName()),
+                    eq(Nemo2Generator.map.get(NemoEvents.DSS.getEventId())), any(Boolean.class));  
+            //verify(model,times(1)).addMeasurement(eq(rowContainer.getFile().getName()),
+            //        eq(Nemo2Generator.map.get(NemoEvents.GPS.getEventId())), any(Boolean.class));  
+            // verify(model, times(5)).getLocations();
             // verify(model, times(5)).addMeasurement(any(String.class),
             // any(Map.class),any(Boolean.class));
             // verify(model).getLocations(new DataElement(eq(createdMainElement)));
@@ -133,7 +215,6 @@ public class Nemo2xSaverTesting extends AbstractAWETest {
             LOGGER.error(" testSavingAllElement error", e);
             Assert.fail("Exception while saving row");
         }
-    }
-    
+    }  
     
 }
