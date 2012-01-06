@@ -13,7 +13,7 @@
   
   <groupId>org.amanzi.awe</groupId>
   <artifactId>core</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>${awe-version}</version>
   <packaging>pom</packaging>
   
   <dependencies>
