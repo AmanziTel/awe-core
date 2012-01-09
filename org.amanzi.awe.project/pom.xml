@@ -3,14 +3,10 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <artifactId>awe-core</artifactId>
-    <groupId>org.amanzi</groupId>
-    <version>0.0.1-SNAPSHOT</version>
+  	<groupId>org.amanzi.awe</groupId>
+    <artifactId>core</artifactId>    
+    <version>0.9.0</version>
   </parent>
-  
-  <properties>
-    <generatedBuildProperties>root.properties</generatedBuildProperties>
-	</properties>
   
   <groupId>org.amanzi</groupId>
   <artifactId>org.amanzi.awe.project</artifactId>

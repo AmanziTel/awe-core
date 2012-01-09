@@ -13,7 +13,7 @@
   
   <groupId>org.amanzi.awe</groupId>
   <artifactId>core</artifactId>
-  <version>${awe-version}</version>
+  <version>0.9.0</version>
   <packaging>pom</packaging>
   
   <dependencies>
@@ -29,7 +29,7 @@
     <repository>
       <id>udig_awe_platform</id>
       <layout>p2</layout>
-			<url>file://home/hudson/target_platform/awe_target_repository</url>
+			<url>file://home/gerzog/develop/build/awe_target_repository</url>
     </repository>
   </repositories> 
   
