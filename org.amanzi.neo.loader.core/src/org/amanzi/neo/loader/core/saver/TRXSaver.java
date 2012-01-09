@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.loader.core.saver;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
@@ -37,14 +38,18 @@ public class TRXSaver extends AbstractNetworkSaver<ISelectionModel, Configuratio
      * Name of Dataset Synonyms
      */
     private static final String SYNONYMS_DATASET_TYPE = "network";
-
+    
     @Override
     public void saveElement(MappedData dataElement) throws AWEException {
         Map<String, Object> values = getDataElementProperties(getMainModel(), null, dataElement, true);
 
-        IDataElement selectionElement = getNetworkElement(getSectorNodeType(), "sector_name", values);
+        IDataElement trxSector = getNetworkElement(getSectorNodeType(), "sector_name", values);
+        
+        //collectTRXElement(values);
+        
+        
 
-        getMainModel().linkToSector(selectionElement);
+        //getMainModel().linkToSector(selectionElement);
     }
 
     @Override
@@ -57,11 +62,13 @@ public class TRXSaver extends AbstractNetworkSaver<ISelectionModel, Configuratio
         networkModel = getActiveProject().getNetwork(
                 configuration.getDatasetNames().get(ConfigurationDataImpl.NETWORK_PROPERTY_NAME));
 
-        String selectionName = configuration.getFilesToLoad().get(0).getName();
+       // String selectionName = configuration.getFilesToLoad().get(0).getName();
 
-        return networkModel.getSelectionModel(selectionName);
+        //return networkModel.getSelectionModel(selectionName);
+        return null;
     }
 
+    
     @Override
     protected String getDatasetType() {
         return SYNONYMS_DATASET_TYPE;
