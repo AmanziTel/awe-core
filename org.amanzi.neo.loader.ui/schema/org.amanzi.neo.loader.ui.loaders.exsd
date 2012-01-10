@@ -50,22 +50,22 @@
    <element name="loaders">
       <complexType>
          <sequence>
-            <element ref="saver" minOccurs="1" maxOccurs="unbounded"/>
+            <element ref="savers" minOccurs="1" maxOccurs="unbounded"/>
          </sequence>
-         <attribute name="loader_name" type="string" use="required">
+         <attribute name="name" type="string" use="required">
             <annotation>
                <documentation>
                   
                </documentation>
             </annotation>
          </attribute>
-         <attribute name="loader_class" type="string" use="required">
+         <attribute name="class" type="string" use="required">
             <annotation>
                <documentation>
                   
                </documentation>
                <appInfo>
-                  <meta.attribute kind="java" basedOn=":org.amanzi.neo.loader.core.ILoaderNew"/>
+                  <meta.attribute kind="java" basedOn=":org.amanzi.neo.loader.core.ILoader"/>
                </appInfo>
             </annotation>
          </attribute>
@@ -84,30 +84,35 @@
                <documentation>
                   
                </documentation>
+               <appInfo>
+                  <meta.attribute kind="identifier" basedOn="org.amanzi.loader.core.parser/@id"/>
+               </appInfo>
             </annotation>
          </attribute>
-         <attribute name="validator" type="string">
+         <attribute name="validator" type="string" use="required">
             <annotation>
                <documentation>
                   
                </documentation>
                <appInfo>
-                  <meta.attribute kind="java" basedOn=":org.amanzi.neo.loader.core.IValidator"/>
+                  <meta.attribute kind="identifier" basedOn="org.amanzi.loader.core.validator/@id"/>
                </appInfo>
             </annotation>
          </attribute>
       </complexType>
    </element>
 
-   <element name="saver">
+   <element name="savers">
       <complexType>
-         <attribute name="id" type="string" use="required">
+         <sequence minOccurs="1" maxOccurs="unbounded">
+         </sequence>
+         <attribute name="saver" type="string" use="required">
             <annotation>
                <documentation>
                   
                </documentation>
                <appInfo>
-                  <meta.attribute kind="identifier"/>
+                  <meta.attribute kind="identifier" basedOn="org.amanzi.loader.core.saver/@id"/>
                </appInfo>
             </annotation>
          </attribute>

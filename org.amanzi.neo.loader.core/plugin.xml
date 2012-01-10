@@ -3,6 +3,7 @@
 <plugin>
    <extension-point id="org.amanzi.loader.core.parser" name="Extension for new Parsers" schema="schema/org.amanzi.loader.core.parser.exsd"/>
    <extension-point id="org.amanzi.loader.core.saver" name="Extension for new Saver" schema="schema/org.amanzi.loader.core.saver.exsd"/>
+   <extension-point id="org.amanzi.loader.core.validator" name="Validator for Loaders" schema="schema/org.amanzi.loader.core.validator.exsd"/>
       <!-- new parsers config -->
     <extension
          point="org.amanzi.loader.core.parser">

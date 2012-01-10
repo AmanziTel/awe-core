@@ -119,7 +119,7 @@ public class LaunchLoader extends AbstractHandler {
         IConfigurationElement[] wizardPages = wizards.getChildren(PAGE_ID_ATTRIBUTE);
         IExtensionRegistry reg = Platform.getExtensionRegistry();
         try {
-
+            
             IConfigurationElement[] registeredGui = reg.getConfigurationElementsFor(WIZARD_GUI_EXTENSION_POIN);
             for (IConfigurationElement gui : registeredGui) {
                 if (gui.getAttribute(ID_ATTRIBUTE).equals(wizards.getAttribute(ID_ATTRIBUTE))) {
@@ -200,7 +200,7 @@ public class LaunchLoader extends AbstractHandler {
             List<ISaver< ? extends IModel, IData, IConfiguration>> saver = defineSaver(element);
             if (parser != null && saver != null) {
                 loader.setParser(parser);
-                loader.setSaver(saver);
+                loader.setSavers(saver);
                 IValidator validator = defineValidator(element);
                 loader.setValidator(validator);
                 return loader;

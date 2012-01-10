@@ -15,11 +15,10 @@ package org.amanzi.neo.loader.core;
 
 import java.util.List;
 
-import org.amanzi.neo.loader.core.parser.IData;
 import org.amanzi.neo.loader.core.parser.IParser;
 import org.amanzi.neo.loader.core.saver.ISaver;
 import org.amanzi.neo.services.exceptions.AWEException;
-import org.amanzi.neo.services.model.IModel;
+import org.eclipse.core.runtime.IProgressMonitor;
 
 /**
  * <p>
@@ -29,27 +28,14 @@ import org.amanzi.neo.services.model.IModel;
  * @author Kondratenko_Vladislav
  * @since 1.0.0
  */
-public interface ILoader<T extends IData, T2 extends IConfiguration> {
-	/**
-	 * set progress bar to loader
-	 * 
-	 * @param listener
-	 */
-	void addProgressListener(ILoaderProgressListener listener);
-
-	/**
-	 * remove progress Monitor
-	 * 
-	 * @param listener
-	 */
-	void removeProgressListener(ILoaderProgressListener listener);
-
+public interface ILoader {
 	/**
 	 * set saver for selected loader
 	 * 
 	 * @param saver
 	 */
-	public void setSaver(List<ISaver<? extends IModel, T, T2>> saver);
+	@SuppressWarnings("rawtypes")
+    public void setSavers(List<ISaver> saver);
 
 	/**
 	 * set parser for selected loader;
@@ -64,7 +50,7 @@ public interface ILoader<T extends IData, T2 extends IConfiguration> {
 	 * 
 	 * @throws AWEException
 	 */
-	public void run() throws AWEException;
+	public void run(IProgressMonitor monitor) throws AWEException;
 
 	/**
 	 * set validator for selected loader
@@ -79,7 +65,7 @@ public interface ILoader<T extends IData, T2 extends IConfiguration> {
 	 * @param config
 	 * @throws Exception
 	 */
-	public void init(T2 config) throws Exception;
+	public void init(IConfiguration config) throws AWEException;
 
 	/**
 	 * get validator for current loader;
@@ -87,18 +73,8 @@ public interface ILoader<T extends IData, T2 extends IConfiguration> {
 	 * @return validator
 	 */
 	public IValidator getValidator();
-
-	/**
-	 * get loader info
-	 * 
-	 * @return
-	 */
-    public ILoaderInfo getLoaderInfo();
-
-	/**
-	 * set loader info
-	 * 
-	 * @return
-	 */
-	public void setLoaderInfo(ILoaderInfo info);
+	
+	public void setName(String newName);
+	
+	public String getName();
 }

@@ -17,14 +17,11 @@ import java.util.List;
 
 import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.ILoader;
-import org.amanzi.neo.loader.core.ILoaderInfo;
-import org.amanzi.neo.loader.core.ILoaderProgressListener;
 import org.amanzi.neo.loader.core.IValidator;
-import org.amanzi.neo.loader.core.parser.IData;
 import org.amanzi.neo.loader.core.parser.IParser;
 import org.amanzi.neo.loader.core.saver.ISaver;
 import org.amanzi.neo.services.exceptions.AWEException;
-import org.amanzi.neo.services.model.IModel;
+import org.eclipse.core.runtime.IProgressMonitor;
 
 /**
  * <p>
@@ -34,30 +31,27 @@ import org.amanzi.neo.services.model.IModel;
  * @author Kondratenko_Vladislav
  * @since 1.0.0
  */
-public class Loader implements ILoader<IData, IConfiguration> {
-	/**
-	 * contain some information about loader such as loader name loader type and
-	 * loader datatype
-	 */
-	ILoaderInfo info;
-
-	/**
+public class Loader implements ILoader {
+	
+    /**
 	 * saver for current Loader
 	 */
-	List<ISaver<? extends IModel, IData, IConfiguration>> saver;
+	@SuppressWarnings("rawtypes")
+    List<ISaver> savers;
 	/**
 	 * parser for current Loader
 	 */
-	IParser parser;
+	@SuppressWarnings("rawtypes")
+    IParser parser;
 	/**
 	 * validator for currentLoader;
 	 */
 	IValidator validator;
 
-	@Override
-	public void setSaver(
-			List<ISaver<? extends IModel, IData, IConfiguration>> saver) {
-		this.saver = saver;
+	@SuppressWarnings("rawtypes")
+    @Override
+	public void setSavers(List<ISaver> savers) {
+		this.savers = savers;
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -67,8 +61,8 @@ public class Loader implements ILoader<IData, IConfiguration> {
 	}
 
 	@Override
-	public void run() throws AWEException {
-		parser.run();
+	public void run(IProgressMonitor monitor) throws AWEException {
+		parser.run(monitor);
 	}
 
 	@Override
@@ -76,13 +70,13 @@ public class Loader implements ILoader<IData, IConfiguration> {
 		this.validator = validator;
 	}
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	@Override
-	public void init(IConfiguration config) throws Exception {
-		for (ISaver saverMem : saver) {
+	@SuppressWarnings({"unchecked", "rawtypes"})
+    @Override
+	public void init(IConfiguration config) throws AWEException {
+		for (ISaver saverMem : savers) {
 			saverMem.init(config, null);
 		}
-		parser.init(config, saver);
+		parser.init(config, savers);
 	}
 
 	@Override
@@ -90,24 +84,13 @@ public class Loader implements ILoader<IData, IConfiguration> {
 		return validator;
 	}
 
-	@Override
-	public ILoaderInfo getLoaderInfo() {
-		return info;
-	}
+    @Override
+    public void setName(String newName) {
+    }
 
-	@Override
-	public void setLoaderInfo(ILoaderInfo info) {
-		this.info = info;
-	}
-
-	@Override
-	public void addProgressListener(ILoaderProgressListener listener) {
-		parser.addProgressListener(listener);
-	}
-
-	@Override
-	public void removeProgressListener(ILoaderProgressListener listener) {
-		parser.removeProgressListener(listener);
-	}
+    @Override
+    public String getName() {
+        return null;
+    }
 
 }

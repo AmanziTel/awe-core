@@ -27,7 +27,7 @@
                </documentation>
             </annotation>
          </attribute>
-         <attribute name="id" type="string">
+         <attribute name="id" type="string" use="required">
             <annotation>
                <documentation>
                   
@@ -50,7 +50,6 @@
    <element name="page">
       <complexType>
          <sequence>
-            <element ref="loader_id" minOccurs="1" maxOccurs="unbounded"/>
          </sequence>
          <attribute name="id" type="string" use="required">
             <annotation>
@@ -69,7 +68,38 @@
                </appInfo>
             </annotation>
          </attribute>
-         <attribute name="isMain" type="boolean">
+         <attribute name="isMain" type="boolean" use="default" value="false">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="wizard" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="identifier" basedOn="org.amanzi.neo.loader.ui.wizard/@id"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="title" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="priority" type="string" use="default" value="0">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="description" type="string">
             <annotation>
                <documentation>
                   
@@ -79,13 +109,18 @@
       </complexType>
    </element>
 
-   <element name="loader_id">
+   <element name="loaders">
       <complexType>
-         <attribute name="id" type="string" use="required">
+         <sequence minOccurs="1" maxOccurs="unbounded">
+         </sequence>
+         <attribute name="loader" type="string" use="required">
             <annotation>
                <documentation>
                   
                </documentation>
+               <appInfo>
+                  <meta.attribute kind="identifier" basedOn="org.amanzi.neo.loader.ui.loaders/@id"/>
+               </appInfo>
             </annotation>
          </attribute>
       </complexType>

@@ -50,7 +50,6 @@
    <element name="wizard">
       <complexType>
          <sequence>
-            <element ref="page_id" minOccurs="1" maxOccurs="unbounded"/>
          </sequence>
          <attribute name="id" type="string" use="required">
             <annotation>
@@ -68,20 +67,8 @@
                   
                </documentation>
                <appInfo>
-                  <meta.attribute kind="java" basedOn=":org.amanzi.neo.loader.ui.wizards.IGraphicInterfaceForLoaders"/>
+                  <meta.attribute kind="java" basedOn="org.amanzi.neo.loader.ui.wizards.AbstractLoaderWizard:"/>
                </appInfo>
-            </annotation>
-         </attribute>
-      </complexType>
-   </element>
-
-   <element name="page_id">
-      <complexType>
-         <attribute name="id" type="string" use="required">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
             </annotation>
          </attribute>
       </complexType>
