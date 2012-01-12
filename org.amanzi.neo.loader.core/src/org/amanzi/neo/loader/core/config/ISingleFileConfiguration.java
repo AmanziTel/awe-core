@@ -11,15 +11,22 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.ui.wizards;
+package org.amanzi.neo.loader.core.config;
 
-import org.amanzi.neo.loader.core.IConfiguration;
-import org.eclipse.core.runtime.IExecutableExtension;
-import org.eclipse.jface.wizard.IWizardPage;
+import java.io.File;
 
 /**
- * @author Vladislav_Kondratenko
+ * TODO Purpose of 
+ * <p>
+ *
+ * </p>
+ * @author lagutko_n
+ * @since 1.0.0
  */
-public interface ILoaderPage<T extends IConfiguration> extends IWizardPage, IExecutableExtension {
+public interface ISingleFileConfiguration extends IConfiguration {
+    
+    public void setFile(File fileToLoad);
+    
+    public File getFile();
 
 }

@@ -3,7 +3,7 @@
 <schema targetNamespace="org.amanzi.neo.loader.ui" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appInfo>
-         <meta.schema plugin="org.amanzi.neo.loader.ui" id="org.amanzi.neo.loader.ui.loaders" name="describe loaders"/>
+         <meta.schema plugin="org.amanzi.neo.loader.ui" id="org.amanzi.loaders" name="Loader for Data"/>
       </appInfo>
       <documentation>
          [Enter description of this extension point.]
@@ -18,7 +18,7 @@
       </annotation>
       <complexType>
          <sequence>
-            <element ref="loaders" minOccurs="1" maxOccurs="unbounded"/>
+            <element ref="loader" minOccurs="1" maxOccurs="unbounded"/>
          </sequence>
          <attribute name="point" type="string" use="required">
             <annotation>
@@ -47,7 +47,7 @@
       </complexType>
    </element>
 
-   <element name="loaders">
+   <element name="loader">
       <complexType>
          <sequence>
             <element ref="savers" minOccurs="1" maxOccurs="unbounded"/>
@@ -85,7 +85,7 @@
                   
                </documentation>
                <appInfo>
-                  <meta.attribute kind="identifier" basedOn="org.amanzi.loader.core.parser/@id"/>
+                  <meta.attribute kind="identifier" basedOn="org.amanzi.loader.parsers/parser/@id"/>
                </appInfo>
             </annotation>
          </attribute>
@@ -95,7 +95,17 @@
                   
                </documentation>
                <appInfo>
-                  <meta.attribute kind="identifier" basedOn="org.amanzi.loader.core.validator/@id"/>
+                  <meta.attribute kind="identifier" basedOn="org.amanzi.loader.validators/validator/@id"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="page" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="identifier" basedOn="org.amanzi.loader.pages/page/@id"/>
                </appInfo>
             </annotation>
          </attribute>
@@ -112,7 +122,7 @@
                   
                </documentation>
                <appInfo>
-                  <meta.attribute kind="identifier" basedOn="org.amanzi.loader.core.saver/@id"/>
+                  <meta.attribute kind="identifier" basedOn="org.amanzi.loader.savers/saver/@id"/>
                </appInfo>
             </annotation>
          </attribute>

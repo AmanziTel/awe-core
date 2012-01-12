@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.core;
+package org.amanzi.neo.loader.ui.validators;
 
 /**
  * TODO Purpose of 
@@ -30,7 +30,7 @@ public interface IValidateResult {
      * @author tsinkel_a
      * @since 1.0.0
      */
-    enum Result {
+    public static enum Result {
         SUCCESS, FAIL, UNKNOWN;
     }
     

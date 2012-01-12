@@ -19,25 +19,27 @@ import java.util.List;
 import org.amanzi.neo.loader.ui.validators.IValidateResult.Result;
 
 /**
- * TODO Purpose of 
  * <p>
- *
+ * common validator interface;
  * </p>
- * @author lagutko_n
+ * 
+ * @author Kondratenko_Vladislav
  * @since 1.0.0
  */
-public class NetworkValidator implements IValidator {
-    
-    @Override
-    public Result appropriate(List<File> filesToLoad) {
-        
-        
-        return Result.SUCCESS;
-    }
+public interface IValidator {
+    /**
+     * check files for appropriate to loader
+     * 
+     * @param fileToLoad
+     * @return
+     */
+    public Result appropriate(List<File> filesToLoad);
 
-    @Override
-    public IValidateResult validate(List<File> filesToLoad) {
-        return new ValidateResultImpl(Result.SUCCESS, "");
-    }
-
+    /**
+     * check files for validation
+     * 
+     * @param fileToLoad
+     * @return
+     */
+    public IValidateResult validate(List<File> filesToLoad);
 }

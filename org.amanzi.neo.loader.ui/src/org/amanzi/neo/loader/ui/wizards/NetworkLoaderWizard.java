@@ -11,12 +11,8 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.ui.validators;
+package org.amanzi.neo.loader.ui.wizards;
 
-import java.io.File;
-import java.util.List;
-
-import org.amanzi.neo.loader.ui.validators.IValidateResult.Result;
 
 /**
  * TODO Purpose of 
@@ -26,18 +22,6 @@ import org.amanzi.neo.loader.ui.validators.IValidateResult.Result;
  * @author lagutko_n
  * @since 1.0.0
  */
-public class NetworkValidator implements IValidator {
-    
-    @Override
-    public Result appropriate(List<File> filesToLoad) {
-        
-        
-        return Result.SUCCESS;
-    }
-
-    @Override
-    public IValidateResult validate(List<File> filesToLoad) {
-        return new ValidateResultImpl(Result.SUCCESS, "");
-    }
+public class NetworkLoaderWizard extends AbstractLoaderWizard {
 
 }

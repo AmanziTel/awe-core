@@ -29,8 +29,8 @@ import java.util.Map;
 
 import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.loader.core.CountingFileInputStream;
-import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.ProgressEventImpl;
+import org.amanzi.neo.loader.core.config.IConfiguration;
 import org.amanzi.neo.loader.core.saver.ISaver;
 import org.amanzi.neo.services.model.IModel;
 import org.apache.log4j.Logger;
@@ -42,9 +42,9 @@ import au.com.bytecode.opencsv.CSVParser;
  * 
  * @author Kondratenko_Vladislav
  */
-public class CommonCSVParser<T1 extends ISaver<IModel, MappedData, T2>, T2 extends IConfiguration>
+public class CommonCSVParser<T1 extends ISaver<IModel, MappedData, IConfiguration>>
         extends
-            AbstractParser<T1, T2, MappedData> {
+            AbstractParser<T1, IConfiguration, MappedData> {
     private static final Logger LOGGER = Logger.getLogger(CommonCSVParser.class);
 
     // constants

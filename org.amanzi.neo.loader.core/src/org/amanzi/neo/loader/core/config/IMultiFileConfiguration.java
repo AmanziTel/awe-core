@@ -11,19 +11,19 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.core;
+package org.amanzi.neo.loader.core.config;
+
 
 /**
- * common loader info interface
- * 
- * @author Kondratenko_Vladsialv
+ * TODO Purpose of 
+ * <p>
+ *
+ * </p>
+ * @author lagutko_n
+ * @since 1.0.0
  */
-public interface ILoaderInfo {
-    /**
-     * get loader name
-     * 
-     * @return
-     */
-    public String getName();
+public interface IMultiFileConfiguration extends IConfiguration {
+    
+    public void setFiles();
 
 }

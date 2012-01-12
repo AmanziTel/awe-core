@@ -11,33 +11,23 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.core;
+package org.amanzi.neo.loader.core.config;
 
-import java.io.File;
-import java.util.List;
+import java.util.Map;
+
 
 /**
+ * TODO Purpose of 
  * <p>
- * common validator interface;
+ *
  * </p>
- * 
- * @author Kondratenko_Vladislav
+ * @author lagutko_n
  * @since 1.0.0
  */
-public interface IValidator extends IValidateResult {
-    /**
-     * check files for appropriate to loader
-     * 
-     * @param fileToLoad
-     * @return
-     */
-    public Result isAppropriate(List<File> fileToLoad);
+public class MultiDataConfiguration extends AbstractConfiguration {
 
-    /**
-     * check files for validation
-     * 
-     * @param fileToLoad
-     * @return
-     */
-    public Result isValid(IConfiguration config);
+    private Map<String, IConfiguration> subConfigCache;
+    
+    
+
 }

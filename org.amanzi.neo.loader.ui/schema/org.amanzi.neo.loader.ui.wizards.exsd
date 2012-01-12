@@ -3,7 +3,7 @@
 <schema targetNamespace="org.amanzi.neo.loader.ui" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appInfo>
-         <meta.schema plugin="org.amanzi.neo.loader.ui" id="org.amanzi.neo.loader.ui.wizard" name="Extension describe wizards"/>
+         <meta.schema plugin="org.amanzi.neo.loader.ui" id="org.amanzi.loader.wizards" name="Extension describe wizards"/>
       </appInfo>
       <documentation>
          [Enter description of this extension point.]

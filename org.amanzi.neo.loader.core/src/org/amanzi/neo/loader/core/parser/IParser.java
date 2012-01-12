@@ -15,7 +15,7 @@ package org.amanzi.neo.loader.core.parser;
 
 import java.util.List;
 
-import org.amanzi.neo.loader.core.IConfiguration;
+import org.amanzi.neo.loader.core.config.IConfiguration;
 import org.amanzi.neo.loader.core.saver.ISaver;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;

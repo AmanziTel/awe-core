@@ -11,33 +11,23 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.ui.validators;
+package org.amanzi.neo.loader.core.config;
 
 import java.io.File;
 import java.util.List;
 
-import org.amanzi.neo.loader.ui.validators.IValidateResult.Result;
 
 /**
- * TODO Purpose of 
- * <p>
- *
- * </p>
- * @author lagutko_n
- * @since 1.0.0
+ * common configuration data interface;
+ * 
+ * @author Kondratenko_Vladsialv
  */
-public class NetworkValidator implements IValidator {
+public interface IConfiguration {
     
-    @Override
-    public Result appropriate(List<File> filesToLoad) {
-        
-        
-        return Result.SUCCESS;
-    }
-
-    @Override
-    public IValidateResult validate(List<File> filesToLoad) {
-        return new ValidateResultImpl(Result.SUCCESS, "");
-    }
-
+    public String getDatasetName();
+    
+    public void setDatasetName(String datasetName);
+    
+    public List<File> getFilesToLoad();
+   
 }

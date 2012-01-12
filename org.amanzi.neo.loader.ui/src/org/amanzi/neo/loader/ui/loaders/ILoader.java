@@ -11,12 +11,14 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.core;
+package org.amanzi.neo.loader.ui.loaders;
 
 import java.util.List;
 
+import org.amanzi.neo.loader.core.config.IConfiguration;
 import org.amanzi.neo.loader.core.parser.IParser;
 import org.amanzi.neo.loader.core.saver.ISaver;
+import org.amanzi.neo.loader.ui.validators.IValidator;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.eclipse.core.runtime.IProgressMonitor;
 

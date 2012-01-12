@@ -20,17 +20,18 @@ import java.util.List;
 import java.util.Map;
 
 import org.amanzi.awe.console.AweConsolePlugin;
-import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.ILoaderProgressListener;
 import org.amanzi.neo.loader.core.IProgressEvent;
 import org.amanzi.neo.loader.core.LoaderMessages;
 import org.amanzi.neo.loader.core.ProgressEventImpl;
+import org.amanzi.neo.loader.core.config.IConfiguration;
 import org.amanzi.neo.loader.core.saver.AbstractSaver;
 import org.amanzi.neo.loader.core.saver.ISaver;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IModel;
 import org.apache.log4j.Logger;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.ISafeRunnable;
 import org.eclipse.core.runtime.SafeRunner;
 
@@ -73,12 +74,10 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
      */
     protected boolean isCanceled = false;
 
-    @Override
     public void addProgressListener(ILoaderProgressListener listener) {
         listeners.add(listener);
     }
 
-    @Override
     public void removeProgressListener(ILoaderProgressListener listener) {
         listeners.remove(listener);
     }
@@ -172,7 +171,7 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
     }
 
     @Override
-    public void run() throws AWEException {
+    public void run(IProgressMonitor monitor) throws AWEException {
         long globalStartTime = System.currentTimeMillis();
         for (File file : config.getFilesToLoad()) {
             currentFile = file;
@@ -204,7 +203,6 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
      */
     protected abstract void finishUpParse();
 
-    @Override
     public boolean fireProgressEvent(final IProgressEvent event) {
         Object[] allListeners = listeners.toArray();
         for (Object listener : allListeners) {

@@ -15,11 +15,10 @@ package org.amanzi.neo.loader.ui.loaders;
 
 import java.util.List;
 
-import org.amanzi.neo.loader.core.IConfiguration;
-import org.amanzi.neo.loader.core.ILoader;
-import org.amanzi.neo.loader.core.IValidator;
+import org.amanzi.neo.loader.core.config.IConfiguration;
 import org.amanzi.neo.loader.core.parser.IParser;
 import org.amanzi.neo.loader.core.saver.ISaver;
+import org.amanzi.neo.loader.ui.validators.IValidator;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.eclipse.core.runtime.IProgressMonitor;
 
@@ -47,6 +46,8 @@ public class Loader implements ILoader {
 	 * validator for currentLoader;
 	 */
 	IValidator validator;
+	
+	private String loaderName;
 
 	@SuppressWarnings("rawtypes")
     @Override
@@ -86,11 +87,12 @@ public class Loader implements ILoader {
 
     @Override
     public void setName(String newName) {
+        loaderName = newName;
     }
 
     @Override
     public String getName() {
-        return null;
+        return loaderName;
     }
 
 }

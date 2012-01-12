@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.2"?>
 <plugin>
-   <extension-point id="org.amanzi.loader.core.parser" name="Extension for new Parsers" schema="schema/org.amanzi.loader.core.parser.exsd"/>
-   <extension-point id="org.amanzi.loader.core.saver" name="Extension for new Saver" schema="schema/org.amanzi.loader.core.saver.exsd"/>
-   <extension-point id="org.amanzi.loader.core.validator" name="Validator for Loaders" schema="schema/org.amanzi.loader.core.validator.exsd"/>
+   <extension-point id="org.amanzi.loader.parsers" name="Extension for new Parsers" schema="schema/org.amanzi.loader.core.parser.exsd"/>
+   <extension-point id="org.amanzi.loader.savers" name="Extension for new Saver" schema="schema/org.amanzi.loader.core.saver.exsd"/>
       <!-- new parsers config -->
     <extension
-         point="org.amanzi.loader.core.parser">
+         point="org.amanzi.loader.parsers">
       <parser
             class="org.amanzi.neo.loader.core.parser.CommonCSVParser"
             id="org.amanzi.neo.loader.core.parser.CommonCSVParser">
@@ -14,12 +13,11 @@
    </extension>
    <!-- new savers config -->
    <extension
-         point="org.amanzi.loader.core.saver">
+         point="org.amanzi.loader.savers">
       <saver
             class="org.amanzi.neo.loader.core.saver.NetworkSaver"
             id="org.amanzi.neo.loader.core.saver.NetworkSaver">
       </saver>
-       
        
       <saver
             class="org.amanzi.neo.loader.core.saver.NeighboursSaver"

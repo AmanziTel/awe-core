@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Schema file written by PDE -->
-<schema targetNamespace="org.amanzi.neo.loader.core" xmlns="http://www.w3.org/2001/XMLSchema">
+<schema targetNamespace="org.amanzi.neo.loader.ui" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appInfo>
-         <meta.schema plugin="org.amanzi.neo.loader.core" id="org.amanzi.loader.core.validators" name="Loader Validator"/>
+         <meta.schema plugin="org.amanzi.neo.loader.ui" id="org.amanzi.loader.validators" name="Loader Validator"/>
       </appInfo>
       <documentation>
          [Enter description of this extension point.]
@@ -18,6 +18,7 @@
       </annotation>
       <complexType>
          <sequence minOccurs="1" maxOccurs="unbounded">
+            <element ref="validator"/>
          </sequence>
          <attribute name="point" type="string" use="required">
             <annotation>
@@ -46,7 +47,7 @@
       </complexType>
    </element>
 
-   <element name="validators">
+   <element name="validator">
       <complexType>
          <attribute name="id" type="string">
             <annotation>

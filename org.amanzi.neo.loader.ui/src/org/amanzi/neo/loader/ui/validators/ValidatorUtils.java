@@ -15,11 +15,9 @@ package org.amanzi.neo.loader.ui.validators;
 
 import java.io.File;
 
-import org.amanzi.neo.loader.core.IValidateResult;
-import org.amanzi.neo.loader.core.IValidateResult.Result;
 import org.amanzi.neo.loader.core.LoaderUtils;
-import org.amanzi.neo.loader.core.ValidateResultImpl;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
+import org.amanzi.neo.loader.ui.validators.IValidateResult.Result;
 
 /**
  * <p>

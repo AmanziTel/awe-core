@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.amanzi.neo.loader.core.IConfiguration;
+import org.amanzi.neo.loader.core.config.IConfiguration;
 import org.amanzi.neo.loader.core.parser.MappedData;
 import org.amanzi.neo.loader.core.preferences.ImportSynonymsManager;
 import org.amanzi.neo.loader.core.preferences.ImportSynonymsManager.NodeTypeSynonyms;

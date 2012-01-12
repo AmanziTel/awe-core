@@ -26,18 +26,16 @@ import org.amanzi.neo.loader.ui.validators.IValidateResult.Result;
  * @author lagutko_n
  * @since 1.0.0
  */
-public class NetworkValidator implements IValidator {
-    
+public class NeighboursValidator implements IValidator {
+
     @Override
     public Result appropriate(List<File> filesToLoad) {
-        
-        
-        return Result.SUCCESS;
+        return null;
     }
 
     @Override
     public IValidateResult validate(List<File> filesToLoad) {
-        return new ValidateResultImpl(Result.SUCCESS, "");
+        return null;
     }
 
 }

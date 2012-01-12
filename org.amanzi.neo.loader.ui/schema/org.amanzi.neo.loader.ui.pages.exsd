@@ -3,7 +3,7 @@
 <schema targetNamespace="org.amanzi.neo.loader.ui" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appInfo>
-         <meta.schema plugin="org.amanzi.neo.loader.ui" id="org.amanzi.neo.loader.ui.pages" name="describe pages"/>
+         <meta.schema plugin="org.amanzi.neo.loader.ui" id="org.amanzi.loader.pages" name="describe pages"/>
       </appInfo>
       <documentation>
          [Enter description of this extension point.]
@@ -49,8 +49,6 @@
 
    <element name="page">
       <complexType>
-         <sequence>
-         </sequence>
          <attribute name="id" type="string" use="required">
             <annotation>
                <documentation>
@@ -81,7 +79,7 @@
                   
                </documentation>
                <appInfo>
-                  <meta.attribute kind="identifier" basedOn="org.amanzi.neo.loader.ui.wizard/@id"/>
+                  <meta.attribute kind="identifier" basedOn="org.amanzi.loader.wizards/wizard/@id"/>
                </appInfo>
             </annotation>
          </attribute>
@@ -119,7 +117,7 @@
                   
                </documentation>
                <appInfo>
-                  <meta.attribute kind="identifier" basedOn="org.amanzi.neo.loader.ui.loaders/@id"/>
+                  <meta.attribute kind="identifier" basedOn="org.amanzi.loaders/loader/@id"/>
                </appInfo>
             </annotation>
          </attribute>

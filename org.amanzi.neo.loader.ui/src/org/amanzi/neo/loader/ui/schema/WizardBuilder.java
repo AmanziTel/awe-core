@@ -18,13 +18,12 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import org.amanzi.neo.loader.core.ILoader;
-import org.amanzi.neo.loader.core.IValidator;
 import org.amanzi.neo.loader.core.parser.IParser;
 import org.amanzi.neo.loader.core.saver.ISaver;
+import org.amanzi.neo.loader.ui.loaders.ILoader;
+import org.amanzi.neo.loader.ui.validators.IValidator;
 import org.amanzi.neo.loader.ui.wizards.AbstractLoaderPage;
 import org.amanzi.neo.loader.ui.wizards.AbstractLoaderWizard;
-import org.apache.commons.lang.ArrayUtils;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
@@ -41,17 +40,17 @@ import org.eclipse.jface.wizard.IWizardPage;
  */
 public final class WizardBuilder {
 
-    private static final String WIZARDS_EXTENSION_POINT = "org.amanzi.neo.loader.ui.wizard";
+    private static final String WIZARDS_EXTENSION_POINT = "org.amanzi.loader.wizards";
 
-    private static final String WIZARD_PAGES_EXTENSION_POINT = "org.amanzi.neo.loader.ui.pages";
+    private static final String WIZARD_PAGES_EXTENSION_POINT = "org.amanzi.loader.pages";
     
-    private static final String LOADERS_EXTENSION_POINT = "org.amanzi.neo.loader.ui.loaders";
+    private static final String LOADERS_EXTENSION_POINT = "org.amanzi.loaders";
     
-    private static final String VALIDATORS_EXTENSION_POINT = "org.amanzi.loader.core.validator";
+    private static final String VALIDATORS_EXTENSION_POINT = "org.amanzi.loader.validators";
     
-    private static final String PARSERS_EXTENSION_POINT = "org.amanzi.loader.core.parsers";
+    private static final String PARSERS_EXTENSION_POINT = "org.amanzi.loader.parsers";
     
-    private static final String SAVERS_EXTENSION_POINT = "org.amanzi.loader.core.savers";
+    private static final String SAVERS_EXTENSION_POINT = "org.amanzi.loader.savers";
 
     private static final String ID_ATTRIBUTE = "id";
 
@@ -67,9 +66,7 @@ public final class WizardBuilder {
 
     private static final String DESCRIPTION_ATTRIBUTE = "description";
 
-    private static final String LOADERS_ELEMENT = "loaders";
-    
-    private static final String LOADER_ID_ATTRIBUTE = "loader";
+    private static final String PAGE_ID_ELEMENT = "page";
     
     private static final String NAME_ATTRIBUTE = "name";
     
@@ -86,10 +83,10 @@ public final class WizardBuilder {
         @Override
         public int compare(AbstractLoaderPage< ? > o1, AbstractLoaderPage< ? > o2) {
             if (o1.isMain() == o2.isMain()) {
-                return Integer.valueOf(o1.getPriority()).compareTo(Integer.valueOf(o2.getPriority()));
+                return Integer.valueOf(o2.getPriority()).compareTo(Integer.valueOf(o1.getPriority()));
             }
 
-            return Boolean.valueOf(o1.isMain()).compareTo(Boolean.valueOf(o2.isMain()));
+            return Boolean.valueOf(o2.isMain()).compareTo(Boolean.valueOf(o1.isMain()));
         }
 
     };
@@ -110,7 +107,6 @@ public final class WizardBuilder {
         return instance;
     }
 
-    @SuppressWarnings("rawtypes")
     public AbstractLoaderWizard getWizard(String wizardId) throws CoreException {
         AbstractLoaderWizard result = findWizard(wizardId);
 
@@ -156,32 +152,21 @@ public final class WizardBuilder {
         result.setPriority(Integer.parseInt(pageElement.getAttribute(PRIORITY_ATTRIBUTE)));
 
         // initialize page with loaders
-        for (ILoader singleLoader : findLoaders(pageElement)) {
+        for (ILoader singleLoader : findLoaders(pageElement.getAttribute(ID_ATTRIBUTE))) {
             result.addLoader(singleLoader);
         }
 
         return result;
     }
 
-    private List<ILoader> findLoaders(IConfigurationElement pageElement) throws CoreException {
-        IConfigurationElement[] pageLoaders = pageElement.getChildren(LOADERS_ELEMENT);
+    private List<ILoader> findLoaders(String pageId) throws CoreException {
         IConfigurationElement[] allLoaders = registry.getConfigurationElementsFor(LOADERS_EXTENSION_POINT);
         
         List<ILoader> result = new ArrayList<ILoader>();
         
-        for (IConfigurationElement pageLoader : pageLoaders) {
-            IConfigurationElement loader = null;
-            for (IConfigurationElement candidateLoader : allLoaders) {
-                if (pageLoader.getAttribute(LOADER_ID_ATTRIBUTE).equals(candidateLoader.getAttribute(ID_ATTRIBUTE))) {
-                    loader = candidateLoader;
-                    break;
-                }
-            }
-            
-            if (loader != null) {
-                allLoaders = (IConfigurationElement[])ArrayUtils.removeElement(allLoaders, loader);
-                
-                result.add(createLoader(loader));
+        for (IConfigurationElement loaderElement : allLoaders) {
+            if (loaderElement.getAttribute(PAGE_ID_ELEMENT).equals(pageId)) {
+                result.add(createLoader(loaderElement));
             }
         }
         
@@ -225,7 +210,6 @@ public final class WizardBuilder {
         return null;
     }
 
-    @SuppressWarnings("rawtypes")
     private AbstractLoaderWizard findWizard(String wizardId) throws CoreException {
         IConfigurationElement[] wizardExtensions = registry.getConfigurationElementsFor(WIZARDS_EXTENSION_POINT);
         IConfigurationElement wizardElement = null;
