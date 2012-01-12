@@ -49,6 +49,12 @@ public enum PossibleTypes {
             return text.toString();
         }
     }, 
+    BOOLEAN(Boolean.class){
+        @Override
+        public Object parse(String text) {
+            return Boolean.parseBoolean(text);
+        }        
+    },
     AUTO(null) {
         @Override
         public Object parse(String text) {
