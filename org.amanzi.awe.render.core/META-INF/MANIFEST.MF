@@ -12,4 +12,3 @@ Require-Bundle: net.refractions.udig.project,
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: org.amanzi.awe.render.core
-Bundle-Vendor: amanzi.org
