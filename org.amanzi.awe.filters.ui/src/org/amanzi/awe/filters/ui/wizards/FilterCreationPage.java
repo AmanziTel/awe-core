@@ -455,7 +455,6 @@ public class FilterCreationPage {
      */
     protected void addFilter() {
         IFilter curFilter;
-        boolean isCorrect = isValid();
         try {
             if (namedFilter == null) {
                 namedFilter = new NamedFilter(propCollector.get(FILTER_NAME));
