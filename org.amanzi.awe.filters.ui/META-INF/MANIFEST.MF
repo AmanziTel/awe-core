@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Filters_UI
+Bundle-SymbolicName: org.amanzi.awe.filters.ui
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: org.amanzi.awe.filters.ui.Activator
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.amanzi.neo.services;bundle-version="1.0.0",
+ org.amanzi.neo.services.ui;bundle-version="1.0.0"
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
