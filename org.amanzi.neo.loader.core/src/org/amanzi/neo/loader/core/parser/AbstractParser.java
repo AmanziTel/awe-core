@@ -119,11 +119,8 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
      * @throws AWEException
      */
     protected void parseFile(File file) throws AWEException {
-        AbstractSaver.statisticsValues = new HashMap<String,Long>();
+        AbstractSaver.statisticsValues = new HashMap<String, Long>();
         currentFile = file;
-        if (tempFile == null || tempFile != currentFile) {
-            isNewFile = true;
-        }
         T3 element = parseElement();
 
         long startTime = System.currentTimeMillis();
@@ -144,8 +141,9 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
             }
         }
         Map<String, Long> statisticsValues = AbstractSaver.statisticsValues;
-        for(String type:statisticsValues.keySet()){
-            AweConsolePlugin.info(LoaderMessages.getFormattedString(LoaderMessages.Loading,type, statisticsValues.get(type).toString()));
+        for (String type : statisticsValues.keySet()) {
+            AweConsolePlugin.info(LoaderMessages.getFormattedString(LoaderMessages.Loading, type, statisticsValues.get(type)
+                    .toString()));
         }
         AweConsolePlugin.info(LoaderMessages.getFormattedString(LoaderMessages.TimeOfDataSaving, currentFile.getName(),
                 getOperationTime(startTime)));
@@ -177,6 +175,7 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
     public void run() throws AWEException {
         long globalStartTime = System.currentTimeMillis();
         for (File file : config.getFilesToLoad()) {
+            isNewFile = true;
             long startTime = System.currentTimeMillis();
             parseFile(file);
             AweConsolePlugin.info(LoaderMessages.getFormattedString(LoaderMessages.TimeOfFileLoading, currentFile.getName(),

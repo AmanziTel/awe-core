@@ -140,7 +140,6 @@ public abstract class MeasurementModel extends RenderableModel implements IMeasu
         if ((tst != null) && (tst != 0)) {
             updateTimestamp(tst);
         }
-        params.put(AbstractService.DATASET_ID, this.name);
         datasetService.setProperties(m, params);
         indexProperty(primaryType, params); // TODO: ??????????
 

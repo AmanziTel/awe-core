@@ -23,19 +23,11 @@ import org.amanzi.neo.loader.core.parser.CSVContainer;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceManager;
 import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.NodeTypeManager;
-import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
-import org.amanzi.neo.services.filters.ExpressionType;
-import org.amanzi.neo.services.filters.Filter;
-import org.amanzi.neo.services.filters.FilterType;
-import org.amanzi.neo.services.filters.IFilter;
-import org.amanzi.neo.services.filters.INamedFilter;
-import org.amanzi.neo.services.filters.NamedFilter;
 import org.amanzi.neo.services.model.IDataModel;
 import org.amanzi.neo.services.model.IModel;
-import org.amanzi.neo.services.model.IRenderableModel;
 import org.apache.log4j.Logger;
 
 /**

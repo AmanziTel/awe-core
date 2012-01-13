@@ -49,7 +49,7 @@
 
    <element name="page">
       <complexType>
-         <sequence>
+         <sequence minOccurs="1" maxOccurs="unbounded">
             <element ref="loader_id" minOccurs="1" maxOccurs="unbounded"/>
          </sequence>
          <attribute name="id" type="string" use="required">
@@ -70,6 +70,13 @@
             </annotation>
          </attribute>
          <attribute name="isMain" type="boolean">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="name" type="string">
             <annotation>
                <documentation>
                   
