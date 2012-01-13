@@ -17,6 +17,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.parser.MappedData;
@@ -29,30 +31,32 @@ import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.model.IDataModel;
 
 /**
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author lagutko_n
  * @since 1.0.0
  */
-public abstract class AbstractMappedDataSaver<T1 extends IDataModel, T3 extends IConfiguration> extends AbstractSaver<T1, MappedData, T3> {
-    
+public abstract class AbstractMappedDataSaver<T1 extends IDataModel, T3 extends IConfiguration>
+        extends
+            AbstractSaver<T1, MappedData, T3> {
+
     private Map<INodeType, Map<String, Synonym>> synonymsCache = new HashMap<INodeType, Map<String, Synonym>>();
-    
-    protected Map<String, Object> getDataElementProperties(T1 model, INodeType nodeType, MappedData dataElement, boolean addNonMappedData) {
+
+    protected Map<String, Object> getDataElementProperties(T1 model, INodeType nodeType, MappedData dataElement,
+            boolean addNonMappedData) {
         Map<String, Synonym> synonymMapping = synonymsCache.get(nodeType);
-        
+
         if (synonymMapping == null) {
             synonymMapping = createSynonyms(model, nodeType, dataElement.keySet(), addNonMappedData);
             synonymsCache.put(nodeType, synonymMapping);
         }
-        
         HashMap<String, Object> values = new HashMap<String, Object>();
-        
+
         for (Entry<String, String> dataEntry : dataElement.entrySet()) {
             Synonym synonym = synonymMapping.get(dataEntry.getKey());
-            
+
             if (synonym != null) {
                 String textValue = dataEntry.getValue();
                 Object value = null;
@@ -64,58 +68,69 @@ public abstract class AbstractMappedDataSaver<T1 extends IDataModel, T3 extends 
                 }
                 if (synonym.getType() == PossibleTypes.AUTO) {
                     PossibleTypes newType = PossibleTypes.getType(value.getClass());
-                    changeSynonymType(synonymMapping, dataEntry.getKey(), synonym.getName(), newType);
+                    boolean counters = synonym.getCounters();
+                    changeSynonymType(synonymMapping, dataEntry.getKey(), synonym.getName(), newType, counters);
                 }
 
                 values.put(synonym.getName(), value);
             }
         }
-        
+
         return values;
     }
-    
-    private void changeSynonymType(Map<String, Synonym> synonymMapping, String header, String propertyName, PossibleTypes newType){
-        Synonym newSynonym = new Synonym(propertyName, newType);
+
+    private void changeSynonymType(Map<String, Synonym> synonymMapping, String header, String propertyName, PossibleTypes newType,
+            boolean counters) {
+        Synonym newSynonym = new Synonym(propertyName, newType, counters);
         synonymMapping.put(header, newSynonym);
     }
-    
+
     private Map<String, Synonym> createSynonyms(T1 model, INodeType nodeType, Set<String> headerSet, boolean addNonMappedData) {
-        PropertySynonyms synonyms = ImportSynonymsManager.getManager().getPropertySynonyms(getDatasetType(), getSubType(), nodeType.getId());
-        
+        PropertySynonyms synonyms = ImportSynonymsManager.getManager().getPropertySynonyms(getDatasetType(), getSubType(),
+                nodeType.getId());
+
         HashMap<String, Synonym> result = new HashMap<String, Synonym>();
-        
+
         for (String header : headerSet) {
             Synonym synonym = null;
             get_synonym: for (Entry<Synonym, String[]> synonymEntry : synonyms.entrySet()) {
                 for (String possibleHeader : synonymEntry.getValue()) {
-                    if (possibleHeader.toLowerCase().matches(header.toLowerCase())) {
+                    Pattern patt = Pattern.compile(possibleHeader.toLowerCase());
+                    Matcher match = patt.matcher(header.toLowerCase());
+                    if (match.find()) {
                         synonym = synonymEntry.getKey();
-                        
-                        addDatasetSynonyms(model, nodeType, synonym.getName(), header);
-                        
+
+                        String synonymName = synonym.getName();
+
+                        if (synonym.getCounters() == true) {
+                            synonymName = synonymName + match.group(2);
+                        }
+
+                        addDatasetSynonyms(model, nodeType, synonymName, header);
+
                         break get_synonym;
                     }
                 }
             }
-            
+
             boolean add = synonym != null;
-            
-            if (synonym == null && addNonMappedData && !hasSynonyms(header)  ) {
+
+            if (synonym == null && addNonMappedData && !hasSynonyms(header)) {
                 add = true;
                 synonym = new Synonym(header);
-            } 
-            
+            }
+
             if (add) {
                 result.put(header, synonym);
             }
         }
-        
+
         return result;
     }
-    
+
     private boolean hasSynonyms(String header) {
         NodeTypeSynonyms nodeTypeSynonyms = ImportSynonymsManager.getManager().getNodeTypeSynonyms(getDatasetType(), getSubType());
-        
+
         for (PropertySynonyms propertySynonyms : nodeTypeSynonyms.values()) {
             for (String[] possibleHeadersArray : propertySynonyms.values()) {
                 for (String possibleHeader : possibleHeadersArray) {
@@ -125,7 +140,6 @@ public abstract class AbstractMappedDataSaver<T1 extends IDataModel, T3 extends 
                 }
             }
         }
-        
         return false;
     }
 
