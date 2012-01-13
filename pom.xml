@@ -30,7 +30,7 @@
 		<repository>
 			<id>udig_awe_platform</id>
 			<layout>p2</layout>
-			<url>file://home/hudson/target_platform/awe_target_repository</url>
+			<url>file://media/d/GS/!TargetPlatform/awe_target_repository</url>
 		</repository>
 	</repositories>
 	<profiles>
@@ -63,7 +63,7 @@
 				<module>org.amanzi.neo.loader.core</module>
 				<module>org.amanzi.neo.loader.ui</module>
 				<module>org.amanzi.neo.services</module>
-				<module>org.amanzi.neo.services.ui</module>
+				<module>org.amanzi.neo.loader.core</module>
 				<module>org.jfree</module>
 			</modules>
 			<build>
@@ -125,14 +125,16 @@
 		</profile>
 		<profile>
 			<id>awe-core-test</id>
-			<activation>
+			<activation>	
 				<activeByDefault>false</activeByDefault>
 			</activation>
 			<modules>
+				<module>org.amanzi.testing.sanity</module>
+				<module>org.amanzi.testing</module>
+				<module>org.amanzi.neo.db.testing</module>
 				<module>org.amanzi.neo.services</module>
 				<module>org.amanzi.neo.loader.core</module>
 				<module>org.amanzi.awe.catalog.neo</module>
-				<module>org.amanzi.neo.db.testing</module>
 			</modules>
 			<build>
 				<plugins>
