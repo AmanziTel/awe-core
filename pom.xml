@@ -30,7 +30,7 @@
 		<repository>
 			<id>udig_awe_platform</id>
 			<layout>p2</layout>
-			<url>file://media/d/GS/!TargetPlatform/awe_target_repository</url>
+			<url>file://home/hudson/target_platform/awe_target_repository</url>
 		</repository>
 	</repositories>
 	<profiles>
