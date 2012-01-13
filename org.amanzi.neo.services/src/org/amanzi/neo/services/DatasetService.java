@@ -1049,19 +1049,9 @@ public class DatasetService extends AbstractService {
      * @throws DatabaseException
      */
     private Node createGisNode(Node dataset, String name) throws DatabaseException {
-        Transaction tx = graphDb.beginTx();
-        Node gis;
-        try {
-            gis = createNode(DatasetTypes.GIS);
-            gis.setProperty(NAME, name);
-            createRelationship(dataset, gis, DatasetRelationTypes.GIS);
-            tx.success();
-        } catch (Exception e) {
-            tx.failure();
-            throw new DatabaseException(e);
-        } finally {
-            tx.finish();
-        }
+        Node gis = createNode(DatasetTypes.GIS);
+        gis.setProperty(NAME, name);
+        createRelationship(dataset, gis, DatasetRelationTypes.GIS);
         return gis;
     }
 
