@@ -60,6 +60,11 @@ public class TRXSaver extends AbstractNetworkSaver<INetworkModel, ConfigurationD
     private static final String HSN = "hsn";
     private static final String MAIO = "maio";
     private static final String ARFCN = "arfcn";
+    private static final int ARFCN_ARRAY_SIZE = 63;
+    /**
+     * calculated arfcn
+     */
+    private Integer[] arfcnArray;
     
     @Override
     public void saveElement(MappedData dataElement) throws AWEException {
@@ -109,7 +114,14 @@ public class TRXSaver extends AbstractNetworkSaver<INetworkModel, ConfigurationD
     private void collectFrequencyElement(Map<String,Object> values){
         frequencyMap.put(HSN, values.get("hsn"));
         frequencyMap.put(MAIO, values.get("maio"));
-        frequencyMap.put(ARFCN, values.get("arfcn"));
+        Integer arfcn = null;
+        for (int i = 1; i < 64; i++) {
+            arfcn = (Integer)values.get("arfcn"+i);
+            if (arfcn != null) {
+                arfcnArray[i-1] = arfcn;
+            }
+        }
+        frequencyMap.put(ARFCN, arfcnArray);
     }
     
     private void collectTRXElement(Map<String,Object> values){
