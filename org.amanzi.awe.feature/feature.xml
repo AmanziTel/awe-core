@@ -2,8 +2,7 @@
 <feature
       id="org.amanzi.awe.feature"
       label="Feature"
-      version="1.0.0.qualifier"
-      provider-name="amanzi.org">
+      version="1.0.0.qualifier">
 
    <description url="http://www.example.com/description">
       [Enter Feature Description here.]
@@ -148,5 +147,19 @@
          download-size="0"
          install-size="0"
          version="0.0.0"/>
+
+   <plugin
+         id="org.amanzi.awe.render.core"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.amanzi.awe.render.drive"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
 
 </feature>
