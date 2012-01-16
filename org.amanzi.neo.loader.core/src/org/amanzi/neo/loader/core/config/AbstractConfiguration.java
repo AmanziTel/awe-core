@@ -17,6 +17,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
+
 /**
  * TODO Purpose of 
  * <p>
@@ -29,7 +31,7 @@ public abstract class AbstractConfiguration implements IConfiguration {
     
     private List<File> filesToLoad = new ArrayList<File>();
     
-    private String datasetName;
+    private String datasetName = StringUtils.EMPTY;
 
     @Override
     public List<File> getFilesToLoad() {

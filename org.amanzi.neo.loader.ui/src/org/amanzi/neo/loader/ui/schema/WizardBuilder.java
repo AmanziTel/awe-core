@@ -224,7 +224,11 @@ public final class WizardBuilder {
         }
 
         if (wizardElement != null) {
-            return (AbstractLoaderWizard)wizardElement.createExecutableExtension(CLASS_ATTRIBUTE);
+            AbstractLoaderWizard wizard = (AbstractLoaderWizard)wizardElement.createExecutableExtension(CLASS_ATTRIBUTE);
+            
+            wizard.setWindowTitle(wizardElement.getAttribute(TITLE_ATTRIBUTE));
+            
+            return wizard;
         }
 
         return null;

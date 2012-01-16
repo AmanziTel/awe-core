@@ -274,4 +274,6 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
      * @throws AWEException
      */
     public Iterable<ISelectionModel> getAllSelectionModelsOfSector(IDataElement element) throws AWEException;
+    
+    public IDataElement getNetworkElement(IDataElement parent, Map<String, Object> params) throws AWEException;
 }

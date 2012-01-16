@@ -323,7 +323,8 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
      *                                 <code>null</code>.
      * @throws AWEException
      */
-    public IDataElement getElement(IDataElement parent, Map<String, Object> params) throws AWEException {
+    @Override
+    public IDataElement getNetworkElement(IDataElement parent, Map<String, Object> params) throws AWEException {
 
         IDataElement result = findElement(params);
         if (result == null) {
@@ -540,7 +541,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         Node existedNode;
         existedNode = ((DataElement)existedElement).getNode();
         INodeType nodeType = NodeTypeManager.getType(existedElement.get(AbstractService.TYPE).toString());
-        nwServ.completeProperties(existedNode, new DataElement(newPropertySet), isReplaceExisted, getIndex(nodeType));
+        nwServ.completeProperties(existedNode, newPropertySet, isReplaceExisted, getIndex(nodeType));
         nwServ.setProperties(existedNode, newPropertySet);
         indexProperty(nodeType, newPropertySet);
         return new DataElement(existedNode);

@@ -14,7 +14,6 @@
 package org.amanzi.neo.loader.ui.wizards;
 
 import java.io.File;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -85,7 +84,10 @@ public abstract class AbstractLoaderPage<T extends IConfiguration> extends Wizar
             createLabel(getMainComposite(), "Dataset");
             
             datasetCombo = createCombo(getMainComposite(), true, isMain());
+            datasetCombo.setText(getConfiguration().getDatasetName());
+            
             datasetCombo.addModifyListener(UPDATE_STATE_LISTENER);
+            
         }
         
         public String getDatasetName() {
@@ -114,7 +116,7 @@ public abstract class AbstractLoaderPage<T extends IConfiguration> extends Wizar
             loaderCombo.setItems(pageLoaders.keySet().toArray(ArrayUtils.EMPTY_STRING_ARRAY));
             
             if (!enableLoaderCombo()) {
-                loaderCombo.select(0);
+                setCurrentLoader(pageLoaders.values().iterator().next());
             }
             
             loaderCombo.addSelectionListener(this);
@@ -243,8 +245,8 @@ public abstract class AbstractLoaderPage<T extends IConfiguration> extends Wizar
         return isMain;
     }
     
-    public Collection<ILoader> getLoaders() {
-        return pageLoaders.values();
+    public ILoader getLoader() {
+        return currentLoader;
     }
     
     protected void updateState() {
@@ -336,4 +338,8 @@ public abstract class AbstractLoaderPage<T extends IConfiguration> extends Wizar
     }
     
     protected abstract T createConfiguration();
+    
+    protected abstract void updateValues();
+    
+    protected abstract void initializeFields();
 }

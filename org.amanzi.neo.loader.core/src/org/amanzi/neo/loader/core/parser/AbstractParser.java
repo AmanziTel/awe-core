@@ -17,13 +17,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.loader.core.ILoaderProgressListener;
-import org.amanzi.neo.loader.core.IProgressEvent;
-import org.amanzi.neo.loader.core.LoaderMessages;
-import org.amanzi.neo.loader.core.ProgressEventImpl;
 import org.amanzi.neo.loader.core.config.IConfiguration;
 import org.amanzi.neo.loader.core.saver.AbstractSaver;
 import org.amanzi.neo.loader.core.saver.ISaver;
@@ -32,8 +28,6 @@ import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IModel;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.ISafeRunnable;
-import org.eclipse.core.runtime.SafeRunner;
 
 /**
  * <p>
@@ -140,12 +134,6 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
                 break;
             }
         }
-        Map<String, Long> statisticsValues = AbstractSaver.statisticsValues;
-        for(String type:statisticsValues.keySet()){
-            AweConsolePlugin.info(LoaderMessages.getFormattedString(LoaderMessages.Loading,type, statisticsValues.get(type).toString()));
-        }
-        AweConsolePlugin.info(LoaderMessages.getFormattedString(LoaderMessages.TimeOfDataSaving, currentFile.getName(),
-                getOperationTime(startTime)));
         LOGGER.info("File " + currentFile.getName() + "  data saving finished in: " + getOperationTime(startTime));
     }
 
@@ -153,41 +141,24 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
         return System.currentTimeMillis() - time;
     }
 
-    /**
-     * Fire sub progress event.
-     * 
-     * @param element the element
-     * @param event the event
-     */
-    protected boolean fireSubProgressEvent(File element, final IProgressEvent event) {
-        if (isNewFile) {
-            percentage += commonCurentFilePercentage;
-            isNewFile = false;
-        }
-        commonCurentFilePercentage = event.getPercentage() / 100;
-        isCanceled = fireProgressEvent(new ProgressEventImpl(event.getProcessName(), (percentage + (event.getPercentage()) / 100)
-                / config.getFilesToLoad().size()));
-        return isCanceled;
-    }
-
     @Override
     public void run(IProgressMonitor monitor) throws AWEException {
+        monitor.beginTask("Loading data", config.getFilesToLoad().size());
+        
         long globalStartTime = System.currentTimeMillis();
         for (File file : config.getFilesToLoad()) {
             currentFile = file;
             long startTime = System.currentTimeMillis();
             parseFile(file);
-            AweConsolePlugin.info(LoaderMessages.getFormattedString(LoaderMessages.TimeOfFileLoading, currentFile.getName(),
-                    getOperationTime(startTime)));
             LOGGER.info("File " + currentFile.getName() + " Parsing/Saving data finished in: " + getOperationTime(startTime));
+            
+            monitor.worked(1);
         }
         try {
             finishUp();
         } catch (Exception e) {
             throw new DatabaseException(e);
         }
-        AweConsolePlugin
-                .info(LoaderMessages.getFormattedString(LoaderMessages.AllTimeOfLoading, getOperationTime(globalStartTime)));
         LOGGER.info("All files Parsing/Saving finished in: " + getOperationTime(globalStartTime));
     }
 
@@ -202,26 +173,5 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
      * finishup common parser methods;
      */
     protected abstract void finishUpParse();
-
-    public boolean fireProgressEvent(final IProgressEvent event) {
-        Object[] allListeners = listeners.toArray();
-        for (Object listener : allListeners) {
-            final ILoaderProgressListener singleListener = (ILoaderProgressListener)listener;
-
-            SafeRunner.run(new ISafeRunnable() {
-                @Override
-                public void run() throws Exception {
-                    singleListener.updateProgress(event);
-                }
-
-                @Override
-                public void handleException(Throwable exception) {
-                    AweConsolePlugin.error("Error while SafeRunner execute ");
-                    LOGGER.error("Error while SafeRunner execute ", exception);
-                }
-            });
-        }
-
-        return event.isCanseled();
-    }
+    
 }

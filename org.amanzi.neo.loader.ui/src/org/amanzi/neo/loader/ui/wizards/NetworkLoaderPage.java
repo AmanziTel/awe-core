@@ -14,9 +14,12 @@
 package org.amanzi.neo.loader.ui.wizards;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.amanzi.neo.loader.core.config.NetworkConfiguration;
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.swt.events.ModifyEvent;
@@ -51,6 +54,8 @@ public class NetworkLoaderPage extends AbstractLoaderPage<NetworkConfiguration> 
         loaderCombo = new LoaderCombo();
         
         updateState();
+        
+        initializeFields();
     }
 
     @Override
@@ -63,17 +68,6 @@ public class NetworkLoaderPage extends AbstractLoaderPage<NetworkConfiguration> 
             if (StringUtils.isEmpty(configuration.getDatasetName())) {
                 setErrorMessage("Network name is not set");
                 
-                return false;
-            }
-            
-            try {
-                if (ProjectModel.getCurrentProjectModel().findNetwork(configuration.getDatasetName()) != null) {
-                    setErrorMessage("Duplicate name of Network");
-                    
-                    return false;
-                }
-            } catch (AWEException e) {
-                setErrorMessage(e.getMessage());
                 return false;
             }
             
@@ -113,7 +107,9 @@ public class NetworkLoaderPage extends AbstractLoaderPage<NetworkConfiguration> 
             
             String datasetName = getNameFromFile(dataFile);
             
-            datasetCombo.setCurrentDatasetName(datasetName);
+            if (isMain()) {
+                datasetCombo.setCurrentDatasetName(datasetName);
+            }
             
             loaderCombo.autodefineLoader();
         }
@@ -124,5 +120,25 @@ public class NetworkLoaderPage extends AbstractLoaderPage<NetworkConfiguration> 
     @Override
     protected NetworkConfiguration createConfiguration() {
         return new NetworkConfiguration();
+    }
+
+    @Override
+    protected void updateValues() {
+        datasetCombo.setCurrentDatasetName(getConfiguration().getDatasetName());
+    }
+
+    @Override
+    protected void initializeFields() {
+        //intialize network names
+        try { 
+            List<String> networkNames = new ArrayList<String>();
+            for (INetworkModel networkModel : ProjectModel.getCurrentProjectModel().findAllNetworkModels()) {
+                networkNames.add(networkModel.getName());
+            }
+            
+            datasetCombo.setDatasetNames(networkNames);
+        } catch (AWEException e) {
+            //TODO: handle
+        }
     }
 }

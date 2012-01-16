@@ -24,7 +24,6 @@ import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
-import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelTypes;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -690,7 +689,7 @@ public class NetworkService extends AbstractService {
      * @param index
      * @throws DatabaseException
      */
-    public void completeProperties(PropertyContainer existedNode, DataElement dataElement, boolean isReplaceExisted,
+    public void completeProperties(PropertyContainer existedNode, Map<String, Object> dataElement, boolean isReplaceExisted,
             Index<Node> index) throws DatabaseException {
         Transaction tx = graphDb.beginTx();
         if (existedNode instanceof Node && index != null) {

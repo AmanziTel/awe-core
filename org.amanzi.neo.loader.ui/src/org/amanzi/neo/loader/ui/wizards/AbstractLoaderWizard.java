@@ -20,6 +20,7 @@ import org.amanzi.neo.services.exceptions.AWEException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
@@ -50,15 +51,14 @@ public abstract class AbstractLoaderWizard extends Wizard implements IImportWiza
         @Override
         protected IStatus run(IProgressMonitor monitor) {
             try {
-            
+                monitor.beginTask(getName(), getPages().length);
                 for (IWizardPage page : getPages()) {
                     if (page instanceof AbstractLoaderPage) {
                         AbstractLoaderPage<? extends IConfiguration> loaderPage = (AbstractLoaderPage<? extends IConfiguration>)page;
                     
-                        for (ILoader loader : loaderPage.getLoaders()) {
-                            loader.init(loaderPage.getConfiguration());
-                            loader.run(monitor);                            
-                        }
+                        ILoader loader = loaderPage.getLoader();
+                        loader.init(loaderPage.getConfiguration());
+                        loader.run(new SubProgressMonitor(monitor, 100));
                     }
                 }
             } catch (AWEException e) {
@@ -78,7 +78,7 @@ public abstract class AbstractLoaderWizard extends Wizard implements IImportWiza
 
     @Override
     public boolean performFinish() {
-        new LoadDataJob("").schedule();
+        new LoadDataJob(getWindowTitle()).schedule();
         
         return true;
     }

@@ -38,6 +38,7 @@ public class NetworkConfigurationWizard extends AbstractLoaderWizard {
         
         if (datasetName != null && result instanceof AbstractLoaderPage) {
             ((AbstractLoaderPage<?>)result).getConfiguration().setDatasetName(datasetName);
+            ((AbstractLoaderPage<?>)result).updateValues();
         }
         
         return result;
