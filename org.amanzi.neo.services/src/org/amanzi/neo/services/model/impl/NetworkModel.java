@@ -48,6 +48,7 @@ import org.amanzi.neo.services.model.INetworkType;
 import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
 import org.amanzi.neo.services.model.INodeToNodeRelationsType;
 import org.amanzi.neo.services.model.ISelectionModel;
+import org.amanzi.neo.services.model.impl.AntennaPattern.TypeRadiationPattern;
 import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelTypes;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
@@ -80,7 +81,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     private NetworkService nwServ = NeoServiceFactory.getInstance().getNetworkService();
     private DatasetService dsServ = NeoServiceFactory.getInstance().getDatasetService();
 
-    private List<INodeType> currentNetworkStructure = new LinkedList<INodeType>();
+    private List<INodeType> currentNetworkStructure = new LinkedList<INodeType>();    
 
     /**
      * Use this constructor to create a network model, based on a node, that already exists in the
@@ -850,5 +851,90 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     @Override
     public IModel getParentModel() throws AWEException {
         return getProject();
+    }
+
+    /**
+     * Add antenna pattern to element
+     * 
+     * @param element
+     * @param value antenna pattern
+     * @return element
+     */
+    public IDataElement addAntennaPattern(IDataElement element, AntennaPattern value) {
+        if (element == null) {
+            throw new IllegalArgumentException("element cann't be null");
+        }
+        if (value == null) {
+            throw new IllegalArgumentException("value cann't be null");
+        }
+        INodeType typeElement = NodeTypeManager.getType(element.get(AbstractService.TYPE).toString());
+        if (!typeElement.equals(NetworkElementNodeType.SITE)) {
+            throw new IllegalArgumentException("element should be site");
+        }
+        TypeRadiationPattern type = value.getType();
+        String header = null;
+        String angleHeader = null;
+        String lossHeader = null;
+        if (type.equals(TypeRadiationPattern.HORISONTAL)) {
+            header = NetworkService.HORIZONTAL_PATTERNS_COUNT;
+            angleHeader = NetworkService.HORIZONTAL_ANGLE;
+            lossHeader = NetworkService.HORIZONTAL_LOSS;
+        } else {
+            header = NetworkService.VERTICAL_PATTERNS_COUNT;
+            angleHeader = NetworkService.VERTICAL_ANGLE;
+            lossHeader = NetworkService.VERTICAL_LOSS;
+        }
+        Integer count = null;
+        if (!element.keySet().contains(header)) {
+            count = 1;
+        } else {
+            count = (Integer)element.get(header) + 1;
+        }
+        element.put(header, count);
+        element.put(angleHeader + count, value.getAngle());
+        element.put(lossHeader + count, value.getLoss());
+
+        return element;
+    }
+
+    /**
+     * Get all antenna pattern by element
+     * 
+     * @param element
+     * @param type radiation pattern type
+     * @return antenna pattern list
+     */
+    public Iterable<AntennaPattern> getAllAntennaPattern(IDataElement element, TypeRadiationPattern type) {
+        if (element == null) {
+            throw new IllegalArgumentException("element cann't be null");
+        }
+        if (type == null) {
+            throw new IllegalArgumentException("value cann't be null");
+        }
+        INodeType typeElement = NodeTypeManager.getType(element.get(AbstractService.TYPE).toString());
+        if (!typeElement.equals(NetworkElementNodeType.SITE)) {
+            throw new IllegalArgumentException("element should be site");
+        }
+        List<AntennaPattern> list = new ArrayList<AntennaPattern>();
+        String header = null;
+        String angleHeader = null;
+        String lossHeader = null;
+        if (type.equals(TypeRadiationPattern.HORISONTAL)) {
+            header = NetworkService.HORIZONTAL_PATTERNS_COUNT;
+            angleHeader = NetworkService.HORIZONTAL_ANGLE;
+            lossHeader = NetworkService.HORIZONTAL_LOSS;
+        } else {
+            header = NetworkService.VERTICAL_PATTERNS_COUNT;
+            angleHeader = NetworkService.VERTICAL_ANGLE;
+            lossHeader = NetworkService.VERTICAL_LOSS;
+        }
+        Integer count = (Integer)element.get(header);
+        for (int i = 1; i < count + 1; i++) {
+            double angle = (Double)element.get(angleHeader + i);
+            double loss = (Double)element.get(lossHeader + i);
+            AntennaPattern antennaObj = new AntennaPattern(angle, loss, type);
+            list.add(antennaObj);
+        }
+        return list;
     }
 }

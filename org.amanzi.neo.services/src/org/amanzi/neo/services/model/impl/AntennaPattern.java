@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.core.saver.antenna;
+package org.amanzi.neo.services.model.impl;
 
 /**
  * TODO Purpose of
@@ -32,6 +32,12 @@ public class AntennaPattern {
 
     // type of radiation pattern
     private TypeRadiationPattern type;
+    
+    public AntennaPattern(double angle,double loss,TypeRadiationPattern type){
+        this.angle = angle;
+        this.loss = loss;
+        this.type = type;
+    }
 
     /*
      * getters and setters
@@ -63,7 +69,7 @@ public class AntennaPattern {
     /*
      * radiation pattern type
      */
-    private enum TypeRadiationPattern {
+    public enum TypeRadiationPattern {
         HORISONTAL, VERTICAL
     }
 

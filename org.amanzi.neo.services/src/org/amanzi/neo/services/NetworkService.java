@@ -67,6 +67,18 @@ public class NetworkService extends AbstractService {
     private static Logger LOGGER = Logger.getLogger(NetworkService.class);
 
     private DatasetService datasetService;
+    
+    /*
+     * Constants for antenna pattern
+     */
+    public final static String HORIZONTAL_PATTERNS_COUNT = "horizontal_patterns_count";
+    public final static String VERTICAL_PATTERNS_COUNT = "vertical_patterns_count";
+
+    public final static String HORIZONTAL_ANGLE = "horizontal_angle_";
+    public final static String HORIZONTAL_LOSS = "horizontal_loss_";
+
+    public final static String VERTICAL_ANGLE = "vertical_angle_";
+    public final static String VERTICAL_LOSS = "vertical_loss_";
 
     /**
      * <p>
