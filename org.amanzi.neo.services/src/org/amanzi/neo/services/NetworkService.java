@@ -70,14 +70,14 @@ public class NetworkService extends AbstractService {
     /*
      * Constants for antenna pattern
      */
-    private final static String HORIZONTAL_PATTERNS_COUNT = "horizontal_patterns_count";
-    private final static String VERTICAL_PATTERNS_COUNT = "vertical_patterns_count";
+    public final static String HORIZONTAL_PATTERNS_COUNT = "horizontal_patterns_count";
+    public final static String VERTICAL_PATTERNS_COUNT = "vertical_patterns_count";
 
-    private final static String HORIZONTAL_ANGLE = "horizontal_angle_";
-    private final static String HORIZONTAL_LOSS = "horizontal_loss_";
+    public final static String HORIZONTAL_ANGLE = "horizontal_angle_";
+    public final static String HORIZONTAL_LOSS = "horizontal_loss_";
 
-    private final static String VERTICAL_ANGLE = "vertical_angle_";
-    private final static String VERTICAL_LOSS = "vertical_loss_";
+    public final static String VERTICAL_ANGLE = "vertical_angle_";
+    public final static String VERTICAL_LOSS = "vertical_loss_";
 
     /**
      * <p>
