@@ -29,7 +29,7 @@ import org.amanzi.neo.services.model.INodeToNodeRelationsType;
  * @author lagutko_n
  * @since 1.0.0
  */
-public abstract class AbstractN2NSaver extends AbstractMappedDataSaver<INodeToNodeRelationsModel, IConfiguration> {
+public abstract class AbstractN2NSaver extends AbstractNetworkSaver<INodeToNodeRelationsModel, IConfiguration> {
     
     /*
      * Name of Dataset Synonyms
