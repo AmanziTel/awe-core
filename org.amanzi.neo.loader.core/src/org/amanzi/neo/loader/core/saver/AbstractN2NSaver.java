@@ -14,12 +14,16 @@
 package org.amanzi.neo.loader.core.saver;
 
 import java.util.Map;
+import java.util.Set;
 
-import org.amanzi.neo.loader.core.ConfigurationDataImpl;
+import org.amanzi.neo.loader.core.config.IConfiguration;
 import org.amanzi.neo.loader.core.parser.MappedData;
+import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.model.IDataElement;
+import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
 import org.amanzi.neo.services.model.INodeToNodeRelationsType;
 
@@ -29,21 +33,49 @@ import org.amanzi.neo.services.model.INodeToNodeRelationsType;
  * @author lagutko_n
  * @since 1.0.0
  */
-public abstract class AbstractN2NSaver extends AbstractNetworkSaver<INodeToNodeRelationsModel, ConfigurationDataImpl> {
-
+public abstract class AbstractN2NSaver extends AbstractMappedDataSaver<INodeToNodeRelationsModel, IConfiguration> {
+    
     /*
      * Name of Dataset Synonyms
      */
     private static final String SYNONYMS_DATASET_TYPE = "n2n";
+    
+    /*
+     * Network Model for this N2N Relations
+     */
+    protected INetworkModel networkModel;
 
     @Override
     public void saveElement(MappedData dataElement) throws AWEException {
         Map<String, Object> values = getDataElementProperties(getMainModel(), null, dataElement, true);
-
-        IDataElement servingElement = getNetworkElement(getN2NNodeType(), "serving_sector", values);
-        IDataElement targetElement = getNetworkElement(getN2NNodeType(), "target_sector", values);
-
+        
+        IDataElement servingElement = getNetworkElement("serving_name", values);
+        IDataElement targetElement = getNetworkElement("target_element", values);
+        
         getMainModel().linkNode(servingElement, targetElement, values);
+    }
+    
+    private IDataElement getNetworkElement(String propertyName, Map<String, Object> values) throws AWEException { 
+        Object oElementName = values.remove(propertyName);
+        
+        if (oElementName != null) {
+            String elementName = oElementName.toString();
+            
+            if (!elementName.isEmpty()) {
+                Set<IDataElement> searchResult = networkModel.findElementByPropertyValue(getN2NNodeType(), AbstractService.NAME, elementName);
+                
+                if (!searchResult.isEmpty()) {
+                    if (searchResult.size() > 1) {
+                        throw new DuplicateNodeNameException(elementName, getN2NNodeType());
+                    } else {
+                        return searchResult.iterator().next();
+                    }
+                    
+                }
+            }
+        }
+        
+        return null;
     }
 
     @Override
@@ -52,22 +84,21 @@ public abstract class AbstractN2NSaver extends AbstractNetworkSaver<INodeToNodeR
     }
 
     @Override
-    protected INodeToNodeRelationsModel createMainModel(ConfigurationDataImpl configuration) throws AWEException {
-        networkModel = getActiveProject().getNetwork(
-                configuration.getDatasetNames().get(ConfigurationDataImpl.NETWORK_PROPERTY_NAME));
-
+    protected INodeToNodeRelationsModel createMainModel(IConfiguration configuration) throws AWEException {
+        networkModel = getActiveProject().getNetwork(configuration.getDatasetName());
+        
         String n2nName = configuration.getFilesToLoad().get(0).getName();
-
+        
         return networkModel.getNodeToNodeModel(getN2NType(), n2nName, getN2NNodeType());
     }
-
+    
     /**
      * Returns Type of NodeToNode Relations
-     * 
+     *
      * @return
      */
     protected abstract INodeToNodeRelationsType getN2NType();
-
+    
     /**
      * 
      */
