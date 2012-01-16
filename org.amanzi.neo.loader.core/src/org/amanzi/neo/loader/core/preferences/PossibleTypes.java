@@ -75,8 +75,7 @@ public enum PossibleTypes {
             if (clazz.equals(singleType.originalClass)) {
                 return singleType;
             }
-        }
-        
+        }        
         return null;
     }
 }

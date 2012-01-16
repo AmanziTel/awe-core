@@ -9,7 +9,7 @@ import java.nio.charset.Charset;
 
 import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.loader.core.CountingFileInputStream;
-import org.amanzi.neo.loader.core.IConfiguration;
+import org.amanzi.neo.loader.core.config.IConfiguration;
 import org.amanzi.neo.loader.core.ProgressEventImpl;
 import org.amanzi.neo.loader.core.saver.ISaver;
 import org.amanzi.neo.services.NetworkService;
