@@ -27,9 +27,7 @@ import org.amanzi.neo.loader.core.ILoader;
 import org.amanzi.neo.loader.core.ILoaderProgressListener;
 import org.amanzi.neo.loader.core.IProgressEvent;
 import org.amanzi.neo.loader.core.saver.IData;
-import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.amanzi.neo.services.exceptions.AWEException;
-import org.amanzi.neo.services.model.IDataModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.amanzi.neo.services.ui.enums.EventsType;
 import org.amanzi.neo.services.ui.events.EventManager;
@@ -190,8 +188,8 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
 
         @Override
         public void handleEvent(ShowOnMapEvent data) {
-            List<IDataModel> modelsList = data.getModelsList();
-            LoaderUiUtils.addGisDataToMap(modelsList.get(0).getName(), modelsList);
+//            List<IDataModel> modelsList = data.getModelsList();
+//            LoaderUiUtils.addGisDataToMap(modelsList.get(0).getName(), modelsList);
         }
 
         @Override

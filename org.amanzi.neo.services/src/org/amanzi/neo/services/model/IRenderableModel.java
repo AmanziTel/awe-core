@@ -13,6 +13,8 @@
 
 package org.amanzi.neo.services.model;
 
+import java.util.List;
+
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -41,7 +43,15 @@ public interface IRenderableModel extends IModel {
     public CoordinateReferenceSystem updateCRS(String crsCode);
 
     public void setCRS(CoordinateReferenceSystem crs);
-
+    
+    public void setSelectedDataElementToList(IDataElement dataElement);
+    
+    public void setSelectedDataElements(List<IDataElement> dataElements);
+    
+    public List<IDataElement> getSelectedElements();
+    
+    public void clearSelectedElements();
+        
     public double getMinLatitude();
 
     public double getMaxLatitude();

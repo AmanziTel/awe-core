@@ -43,8 +43,9 @@ public class NeoCatalogStartup implements IStartup {
     public static final String FILE_PREFIX = "file://";
 
     @SuppressWarnings("unchecked")
-    public NeoCatalogStartup() {
-        EventManager.getInstance().addListener(EventsType.UPDATE_DATA, new UpdateDataHandling());
+    public NeoCatalogStartup() {    
+    	EventManager.getInstance().addListener(EventsType.UPDATE_DATA, new UpdateDataHandling());
+    	EventManager.getInstance().addListener(EventsType.SHOW_ON_MAP, new ShowOnMapListener());
     }
 
     /**
@@ -85,7 +86,7 @@ public class NeoCatalogStartup implements IStartup {
 
     @Override
     public void earlyStartup() {
-        EventManager.getInstance().fireEvent(new UpdateDataEvent());
+        EventManager.getInstance().fireEvent(new UpdateDataEvent());        
     }
 
 }

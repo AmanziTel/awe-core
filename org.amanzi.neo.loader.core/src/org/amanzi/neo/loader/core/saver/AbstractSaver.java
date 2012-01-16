@@ -29,6 +29,7 @@ import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataModel;
 import org.amanzi.neo.services.model.IModel;
 import org.amanzi.neo.services.model.IProjectModel;
+import org.amanzi.neo.services.model.IRenderableModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.amanzi.neo.services.synonyms.ExportSynonymsManager;
 import org.amanzi.neo.services.synonyms.ExportSynonymsService.ExportSynonymType;
@@ -247,7 +248,7 @@ public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 exte
         actionCount = 0;
         EventManager.getInstance().fireEvent(new UpdateDataEvent());
         if (isRenderable()) {
-            EventManager.getInstance().fireEvent(new ShowOnMapEvent(useableModels, 900d));
+            EventManager.getInstance().fireEvent(new ShowOnMapEvent((IRenderableModel) useableModels, 900d));
         }
     }
 

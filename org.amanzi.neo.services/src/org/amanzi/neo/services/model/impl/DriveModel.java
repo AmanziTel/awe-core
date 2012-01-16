@@ -60,8 +60,7 @@ public class DriveModel extends MeasurementModel implements IDriveModel {
     private static Logger LOGGER = Logger.getLogger(DriveModel.class);
 
     // private members
-    private IDriveType driveType;
-
+    private IDriveType driveType;    
     private CorrelationService crServ = NeoServiceFactory.getInstance().getCorrelationService();
 
     /**

@@ -13,11 +13,14 @@
 
 package org.amanzi.neo.services.model.impl;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.model.IDataElement;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.geotools.geometry.jts.ReferencedEnvelope;
@@ -42,6 +45,8 @@ public abstract class RenderableModel extends AbstractIndexedModel {
     static final String DESCRIPTION = "description";
     static final String CRS_NAME = "crs";
 
+    protected List<IDataElement> renderableModelElements = new ArrayList<IDataElement>();
+    
     protected final static String DEFAULT_EPSG = "EPSG:31467";
     /** The field used in geo tools. Assignment not yet implemented.//TODO */
     protected CoordinateReferenceSystem crs;
@@ -115,5 +120,21 @@ public abstract class RenderableModel extends AbstractIndexedModel {
         }
         super.finishUp();
     }
+    
+    public void setSelectedDataElementToList(IDataElement dataElement) {        
+        renderableModelElements.add(dataElement);
+    }
 
+    public void setSelectedDataElements(List<IDataElement> dataElements) {
+        renderableModelElements.addAll(dataElements);
+    }
+
+    public List<IDataElement> getSelectedElements() {
+        return renderableModelElements;
+    }
+    
+    public void clearSelectedElements() {
+        renderableModelElements.clear();
+    }
+              
 }

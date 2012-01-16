@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.services.model;
 
+import java.util.List;
 import java.util.Map;
 
 import org.amanzi.neo.model.distribution.IDistributionalModel;
@@ -84,5 +85,12 @@ public interface INodeToNodeRelationsModel extends IPropertyStatisticalModel, ID
      * @throws DatabaseException
      */
     public IDataElement getFrequencyElement(int frequency) throws DatabaseException;
+
+    /**
+     *
+     * @param sector
+     * @return
+     */
+    public List<IDataElement> getNeighboursForCurrentSector(IDataElement sector);
 
 }

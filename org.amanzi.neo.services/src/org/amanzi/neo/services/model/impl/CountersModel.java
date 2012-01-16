@@ -47,7 +47,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  */
 public class CountersModel extends MeasurementModel implements ICountersModel {
     // private members
-    private ICountersType countersType;
+    private ICountersType countersType;    
     private CorrelationService crServ = NeoServiceFactory.getInstance().getCorrelationService();
     private DatasetService dsServ = NeoServiceFactory.getInstance().getDatasetService();
 
@@ -175,5 +175,5 @@ public class CountersModel extends MeasurementModel implements ICountersModel {
     public CoordinateReferenceSystem getCRS() {
         return this.crs;
     }
-
+    
 }

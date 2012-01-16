@@ -78,7 +78,7 @@ public class NetworkServiceTest extends AbstractAWETest {
     private final static String DEFAULT_SELECTION_LIST_NAME = "Selection List";
     private int indexCount = 0;
     private static final String FILTER_NAME = "filterName";
-    private static final String UNDERLINE_FILTER_NAME = "underlinefilterName";
+    private static final String UNDERLINE_FILTER_NAME = "underlinefilterName";    
     private final static List<INodeType> DEFAULT_NETWORK_STRUCTURE = new ArrayList<INodeType>();
 
     private final static INodeType[] NETWORK_STRUCTURE_NODE_TYPES = new INodeType[] {NetworkElementNodeType.BSC,
@@ -1710,6 +1710,37 @@ public class NetworkServiceTest extends AbstractAWETest {
             LOGGER.info("testLoadingSingleFilter() finished with exception ", e);
             Assert.fail("Test finished with exception" + e);
         }
+    }
+    
+    @Test
+    public void testGetCurrentN2NModelName() {
+    	Map<String, Object> properties = new HashMap<String, Object>();
+    	properties.put(AbstractService.NAME, NAME_VALUE);    	
+    	properties.put(SECOND_PROPERTY, SECOND_PROPERTY);    	
+    	try {
+    		Node rootNode = networkService.createNode(NetworkElementNodeType.SECTOR);            
+			networkService.setProperties(rootNode, properties);				
+			networkService.setCurrentNodeToNodeModelName(rootNode, FIRST_PROPERTY);			
+			String actual = networkService.getCurrentNodeToNodeModelName(rootNode);			
+			Assert.assertNotNull(actual);			
+			Assert.assertEquals(FIRST_PROPERTY, actual);			
+			networkService.setCurrentNodeToNodeModelName(rootNode, null);
+			actual = networkService.getCurrentNodeToNodeModelName(rootNode);
+			Assert.assertNull(actual);					
+		} catch (Exception e) {
+			LOGGER.info("testGetCurrentN2NModelName() finished with exception " , e);
+			Assert.fail("Test finished with exception " + e);			
+		}
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void testSetCurrentN2NModelNameWithNullRootNode() throws DatabaseException {
+    	networkService.setCurrentNodeToNodeModelName(null, null);
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetCurrentN2NModelNameWithNullRootNode() throws DatabaseException {
+    	networkService.getCurrentNodeToNodeModelName(null);
     }
 
     /**

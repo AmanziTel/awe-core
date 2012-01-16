@@ -19,6 +19,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -450,7 +451,7 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
             }
             n2ns.add(mdl.getRootNode());
         }
-
+ 
         Iterable<INodeToNodeRelationsModel> it = null;
         try {
             it = model.getNodeToNodeModels();
@@ -621,4 +622,35 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
         }
         Assert.assertTrue("Same nodes expected ", pModel.getRootNode().equals(project));
     }
+    
+    @Test
+    public void testSetCurrentNodeToNodeRelationshipModel() throws AWEException {    	          
+    	NetworkService networkService = mock(NetworkService.class);    	    	
+     
+    	model.setNetworkService(networkService);    	    	    	    
+    	model.setCurrentNodeToNodeRelationshipModel(new NodeToNodeRelationshipModel(new DataElement(network), N2NRelTypes.NEIGHBOUR, "name",
+                NetworkElementNodeType.SECTOR));   
+    	
+    	verify(networkService).setCurrentNodeToNodeModelName(any(Node.class), any(String.class));
+    }
+    
+    @Test
+    public void testGetCurrentNodeToNodeRelationshipModel() throws Exception {    	
+    	INodeToNodeRelationsModel expectedModel = new NodeToNodeRelationshipModel(new DataElement(network), N2NRelTypes.NEIGHBOUR, "name",
+                NetworkElementNodeType.SECTOR);
+    	    	    	    
+    	NetworkModel networkModel = mock(NetworkModel.class);
+    	
+    	networkModel.setCurrentNodeToNodeRelationshipModel(expectedModel);
+    	INodeToNodeRelationsModel actualModel = networkModel.getCurrentNodeToNodeRelationshipModel();
+    	
+    	when(networkModel.getCurrentNodeToNodeRelationshipModel()).thenReturn(actualModel);
+    	
+    	Assert.assertNull(model.getCurrentNodeToNodeRelationshipModel());
+    	
+    	model.setCurrentNodeToNodeRelationshipModel(expectedModel);
+    	
+    	Assert.assertEquals(expectedModel.getName(), model.getCurrentNodeToNodeRelationshipModel().getName());
+    	    	    	       	    	   
+    }    
 }

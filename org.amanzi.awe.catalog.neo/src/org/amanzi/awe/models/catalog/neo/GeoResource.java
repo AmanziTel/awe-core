@@ -12,7 +12,6 @@
  */
 package org.amanzi.awe.models.catalog.neo;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -54,7 +53,7 @@ public class GeoResource extends IGeoResource {
     private URL getURL(IService service, IRenderableModel source) {
         try {
             URL result = new URL(service.getIdentifier().toString() + "#" + ((IDataModel)source).getProject().getName()
-                    + File.separator + ((IDataModel)source).getName());
+                    + "/" + ((IDataModel)source).getName());
             return result;
         } catch (MalformedURLException e) {
             LOGGER.error("Could not build identifier url.", e);
