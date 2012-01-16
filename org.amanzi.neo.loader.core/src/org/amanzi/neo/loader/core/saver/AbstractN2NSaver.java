@@ -29,8 +29,8 @@ import org.amanzi.neo.services.model.INodeToNodeRelationsType;
  * @author lagutko_n
  * @since 1.0.0
  */
-public abstract class AbstractN2NSaver extends AbstractNetworkSaver<INodeToNodeRelationsModel, IConfiguration> {
-
+public abstract class AbstractN2NSaver extends AbstractMappedDataSaver<INodeToNodeRelationsModel, IConfiguration> {
+    
     /*
      * Name of Dataset Synonyms
      */
@@ -54,7 +54,7 @@ public abstract class AbstractN2NSaver extends AbstractNetworkSaver<INodeToNodeR
     @Override
     protected INodeToNodeRelationsModel createMainModel(IConfiguration configuration) throws AWEException {
         networkModel = getActiveProject().getNetwork(configuration.getDatasetName());
-
+        
         String n2nName = configuration.getFilesToLoad().get(0).getName();
 
         return networkModel.getNodeToNodeModel(getN2NType(), n2nName, getN2NNodeType());
