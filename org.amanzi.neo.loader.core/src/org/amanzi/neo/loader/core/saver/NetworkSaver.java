@@ -77,7 +77,7 @@ public class NetworkSaver extends AbstractMappedDataSaver<INetworkModel, Network
                 values.put(AbstractService.TYPE, type.getId());
                 parent = getMainModel().findElement(values);
                 if (parent == null) {
-                    getMainModel().createElement(parent, values);
+                    parent = getMainModel().createElement(parent, values);
                 } else {
                     getMainModel().completeProperties(parent, values, true);
                 }

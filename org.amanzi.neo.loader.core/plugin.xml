@@ -10,6 +10,10 @@
             class="org.amanzi.neo.loader.core.parser.CommonCSVParser"
             id="org.amanzi.neo.loader.core.parser.CommonCSVParser">
       </parser>
+      <parser
+            class="org.amanzi.neo.loader.core.parser.AntennaParser"
+            id="org.amanzi.neo.loader.core.parser.AntennaParser">
+      </parser>
    </extension>
    <!-- new savers config -->
    <extension
@@ -27,6 +31,10 @@
       <saver
             class="org.amanzi.neo.loader.core.saver.InterferenceMatrixSaver"
             id="org.amanzi.neo.loader.core.saver.InterferenceMatrixSaver">
+      </saver>
+      <saver
+            class="org.amanzi.neo.loader.core.saver.AntennaSaver"
+            id="org.amanzi.neo.loader.core.saver.AntennaSaver">
       </saver>
    </extension>
    
