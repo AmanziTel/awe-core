@@ -63,9 +63,10 @@
 				<module>org.amanzi.neo.loader.core</module>
 				<module>org.amanzi.neo.loader.ui</module>
 				<module>org.amanzi.neo.services</module>
+				<module>org.amanzi.neo.services.ui</module>
 				<module>org.jfree</module>
 			</modules>
-			<build>
+<build>
 				<plugins>
 					<plugin>
 						<groupId>org.eclipse.tycho</groupId>
@@ -122,6 +123,7 @@
 				</plugins>
 			</build>
 		</profile>
+
 		<profile>
 			<id>awe-core-test</id>
 			<activation>	
@@ -129,13 +131,14 @@
 			</activation>
 			<modules>
 				<module>org.amanzi.testing.sanity</module>
-				<module>org.amanzi.testing</module>
 				<module>org.amanzi.neo.db.testing</module>
-				<module>org.amanzi.neo.services</module>
-				<module>org.amanzi.neo.loader.core</module>
-				<module>org.amanzi.awe.catalog.neo</module>
+				<module>org.amanzi.testing</module>
+				<module>org.amanzi.neo.services.testing</module>
+				<module>org.amanzi.neo.loader.core.testing</module>
+				<module>org.amanzi.awe.catalog.neo.testing</module>
+				<module>org.jfree</module>
 			</modules>
-			<build>
+<build>
 				<plugins>
 					<plugin>
 						<groupId>org.eclipse.tycho</groupId>
@@ -192,5 +195,94 @@
 				</plugins>
 			</build>
 		</profile>
+<profile>
+			<id>core</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<modules>
+				<module>org.amanzi.awe</module>
+				<module>org.amanzi.awe.catalog.neo</module>
+				<module>org.amanzi.awe.console</module>
+				<module>org.amanzi.awe.extras.feature</module>
+				<module>org.amanzi.awe.feature</module>
+				<module>org.amanzi.awe.neostyle</module>
+				<module>org.amanzi.awe.render.core</module>
+				<module>org.amanzi.awe.render.drive</module>
+				<module>org.amanzi.awe.render.network</module>
+				<module>org.amanzi.awe.startup.splash</module>
+				<module>org.amanzi.awe.ui</module>
+				<module>org.amanzi.awe.views.drive</module>
+				<module>org.amanzi.awe.views.explorer</module>
+				<module>org.amanzi.awe.views.neighbours</module>
+				<module>org.amanzi.awe.views.network</module>
+				<module>org.amanzi.awe.views.property</module>
+				<module>org.amanzi.awe.views.reuse</module>
+				<module>org.amanzi.log4j</module>
+				<module>org.amanzi.neo.db</module>
+				<module>org.amanzi.neo.loader.core</module>
+				<module>org.amanzi.neo.loader.ui</module>
+				<module>org.amanzi.neo.services</module>
+				<module>org.amanzi.neo.services.ui</module>
+				<module>org.jfree</module>
+			</modules>
+<build>
+				<plugins>
+					<plugin>
+						<groupId>org.eclipse.tycho</groupId>
+						<artifactId>tycho-maven-plugin</artifactId>
+						<version>${tycho-version}</version>
+						<extensions>true</extensions>
+					</plugin>
+					<plugin>
+						<groupId>org.eclipse.tycho</groupId>
+						<artifactId>target-platform-configuration</artifactId>
+						<version>${tycho-version}</version>
+						<configuration>
+							<resolver>p2</resolver>
+							<pomDependencies>consider</pomDependencies>
+							<environments>
+								<environment>
+									<os>linux</os>
+									<ws>gtk</ws>
+									<arch>x86_64</arch>
+								</environment>
+								<environment>
+									<os>linux</os>
+									<ws>gtk</ws>
+									<arch>x86</arch>
+								</environment>
+								<environment>
+									<os>macosx</os>
+									<ws>carbon</ws>
+									<arch>x86</arch>
+								</environment>
+								<environment>
+									<os>macosx</os>
+									<ws>cocoa</ws>
+									<arch>x86</arch>
+								</environment>
+								<environment>
+									<os>macosx</os>
+									<ws>cocoa</ws>
+									<arch>x86_64</arch>
+								</environment>
+								<environment>
+									<os>win32</os>
+									<ws>win32</ws>
+									<arch>x86</arch>
+								</environment>
+								<environment>
+									<os>win32</os>
+									<ws>win32</ws>
+									<arch>x86_64</arch>
+								</environment>
+							</environments>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
 	</profiles>
 </project>
