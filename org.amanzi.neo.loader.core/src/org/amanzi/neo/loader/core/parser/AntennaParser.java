@@ -10,7 +10,6 @@ import java.nio.charset.Charset;
 import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.loader.core.CountingFileInputStream;
 import org.amanzi.neo.loader.core.config.IConfiguration;
-import org.amanzi.neo.loader.core.ProgressEventImpl;
 import org.amanzi.neo.loader.core.saver.ISaver;
 import org.amanzi.neo.services.NetworkService;
 import org.amanzi.neo.services.model.IModel;
@@ -114,7 +113,7 @@ public class AntennaParser<T1 extends ISaver<IModel, MappedData, T2>, T2 extends
             double percentage = is.percentage();
             if (percentage - persentageOld >= PERCENTAGE_FIRE) {
                 persentageOld = percentage;
-                fireSubProgressEvent(currentFile, new ProgressEventImpl(String.format(currentFile.getName()), percentage));
+           //     fireSubProgressEvent(currentFile, new ProgressEventImpl(String.format(currentFile.getName()), percentage));
             }
         }
     }

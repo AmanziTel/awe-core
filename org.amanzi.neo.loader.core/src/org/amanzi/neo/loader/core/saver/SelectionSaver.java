@@ -15,7 +15,7 @@ package org.amanzi.neo.loader.core.saver;
 
 import java.util.Map;
 
-import org.amanzi.neo.loader.core.ConfigurationDataImpl;
+import org.amanzi.neo.loader.core.config.NetworkConfiguration;
 import org.amanzi.neo.loader.core.parser.MappedData;
 import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
@@ -31,7 +31,7 @@ import org.amanzi.neo.services.model.ISelectionModel;
  * @author Ladornaya_A
  * @since 1.0.0
  */
-public class SelectionSaver extends AbstractNetworkSaver<ISelectionModel, ConfigurationDataImpl> {
+public class SelectionSaver extends AbstractNetworkSaver<ISelectionModel, NetworkConfiguration> {
 
     /*
      * Name of Dataset Synonyms
@@ -53,9 +53,8 @@ public class SelectionSaver extends AbstractNetworkSaver<ISelectionModel, Config
     }
 
     @Override
-    protected ISelectionModel createMainModel(ConfigurationDataImpl configuration) throws AWEException {
-        networkModel = getActiveProject().getNetwork(
-                configuration.getDatasetNames().get(ConfigurationDataImpl.NETWORK_PROPERTY_NAME));
+    protected ISelectionModel createMainModel(NetworkConfiguration configuration) throws AWEException {
+        networkModel = getActiveProject().getNetwork(configuration.getDatasetName());
 
         String selectionName = configuration.getFilesToLoad().get(0).getName();
 

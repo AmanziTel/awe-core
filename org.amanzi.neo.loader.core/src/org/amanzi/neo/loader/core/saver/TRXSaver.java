@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.amanzi.neo.loader.core.ConfigurationDataImpl;
+import org.amanzi.neo.loader.core.config.NetworkConfiguration;
 import org.amanzi.neo.loader.core.parser.MappedData;
 import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
@@ -35,7 +35,7 @@ import org.amanzi.neo.services.model.INetworkModel;
  * @author Ladornaya_A
  * @since 1.0.0
  */
-public class TRXSaver extends AbstractNetworkSaver<INetworkModel, ConfigurationDataImpl> {
+public class TRXSaver extends AbstractNetworkSaver<INetworkModel, NetworkConfiguration> {
 
     /*
      * Name of Dataset Synonyms
@@ -60,7 +60,7 @@ public class TRXSaver extends AbstractNetworkSaver<INetworkModel, ConfigurationD
     private static final String HSN = "hsn";
     private static final String MAIO = "maio";
     private static final String ARFCN = "arfcn";
-    private static final int ARFCN_ARRAY_SIZE = 63;
+    
     /**
      * calculated arfcn
      */
@@ -142,10 +142,8 @@ public class TRXSaver extends AbstractNetworkSaver<INetworkModel, ConfigurationD
     }
 
     @Override
-    protected INetworkModel createMainModel(ConfigurationDataImpl configuration) throws AWEException {
-        networkModel = getActiveProject().getNetwork(
-                configuration.getDatasetNames().get(ConfigurationDataImpl.NETWORK_PROPERTY_NAME));
-        return networkModel;
+    protected INetworkModel createMainModel(NetworkConfiguration configuration) throws AWEException {
+        return getActiveProject().getNetwork(configuration.getDatasetName());
     }
 
     

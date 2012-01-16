@@ -15,7 +15,7 @@ package org.amanzi.neo.loader.core.saver;
 
 import java.util.Map;
 
-import org.amanzi.neo.loader.core.ConfigurationDataImpl;
+import org.amanzi.neo.loader.core.config.NetworkConfiguration;
 import org.amanzi.neo.loader.core.parser.MappedData;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
@@ -30,7 +30,7 @@ import org.amanzi.neo.services.model.INetworkModel;
  * @author Ladornaya_A
  * @since 1.0.0
  */
-public class SeparationConstraintSaver extends AbstractNetworkSaver<INetworkModel, ConfigurationDataImpl> {
+public class SeparationConstraintSaver extends AbstractNetworkSaver<INetworkModel, NetworkConfiguration> {
 
     /*
      * Name of Dataset Synonyms for separation
@@ -55,10 +55,8 @@ public class SeparationConstraintSaver extends AbstractNetworkSaver<INetworkMode
     }
 
     @Override
-    protected INetworkModel createMainModel(ConfigurationDataImpl configuration) throws AWEException {
-        networkModel = getActiveProject().getNetwork(
-                configuration.getDatasetNames().get(ConfigurationDataImpl.NETWORK_PROPERTY_NAME));
-        return networkModel;       
+    protected INetworkModel createMainModel(NetworkConfiguration configuration) throws AWEException {
+        return getActiveProject().getNetwork(configuration.getDatasetName());      
     }
 
     @Override

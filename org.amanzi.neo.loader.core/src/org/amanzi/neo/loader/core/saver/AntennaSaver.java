@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.amanzi.neo.loader.core.ConfigurationDataImpl;
+import org.amanzi.neo.loader.core.config.NetworkConfiguration;
 import org.amanzi.neo.loader.core.parser.MappedData;
 import org.amanzi.neo.services.NetworkService;
 import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
@@ -22,7 +22,7 @@ import org.amanzi.neo.services.model.INetworkModel;
  * @author Ladornaya_A
  * @since 1.0.0
  */
-public class AntennaSaver extends AbstractMappedDataSaver<INetworkModel, ConfigurationDataImpl> {
+public class AntennaSaver extends AbstractMappedDataSaver<INetworkModel, NetworkConfiguration> {
 
     /*
      * Name of Dataset Synonyms
@@ -57,8 +57,8 @@ public class AntennaSaver extends AbstractMappedDataSaver<INetworkModel, Configu
     }
 
     @Override
-    protected INetworkModel createMainModel(ConfigurationDataImpl configuration) throws AWEException {
-        return getActiveProject().getNetwork(configuration.getDatasetNames().get(ConfigurationDataImpl.NETWORK_PROPERTY_NAME));
+    protected INetworkModel createMainModel(NetworkConfiguration configuration) throws AWEException {
+        return getActiveProject().getNetwork(configuration.getDatasetName());
     }
 
     @Override

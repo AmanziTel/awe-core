@@ -30,7 +30,7 @@ import java.util.Map;
 
 import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.db.manager.IDatabaseManager;
-import org.amanzi.neo.loader.core.ConfigurationDataImpl;
+import org.amanzi.neo.loader.core.config.NetworkConfiguration;
 import org.amanzi.neo.loader.core.parser.CSVContainer;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceInitializer;
 import org.amanzi.neo.services.AbstractService;
@@ -55,7 +55,7 @@ public class TrafficSaverTesting extends AbstractAWETest {
     private static final Logger LOGGER = Logger.getLogger(TrafficSaverTesting.class);
     private TrafficSaver trafficSaver;
     private static String PATH_TO_BASE = "";
-    private ConfigurationDataImpl config;
+    private NetworkConfiguration config;
     private static final String NETWORK_KEY = "Network";
     private static final String NETWORK_NAME = "testNetwork";
     private static final String PROJECT_KEY = "Project";
@@ -104,7 +104,7 @@ public class TrafficSaverTesting extends AbstractAWETest {
     public void onStart() throws AWEException {
         networkModel = mock(NetworkModel.class);
         hashMap = new HashMap<String, Object>();
-        config = new ConfigurationDataImpl();
+        config = new NetworkConfiguration();
         config.getDatasetNames().put(NETWORK_KEY, NETWORK_NAME);
         config.getDatasetNames().put(PROJECT_KEY, PROJECT_NAME);
         List<File> fileList = new LinkedList<File>();
