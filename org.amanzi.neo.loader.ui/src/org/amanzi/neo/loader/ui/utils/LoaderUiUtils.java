@@ -283,7 +283,7 @@ public class LoaderUiUtils extends LoaderUtils {
      */
 
     public static void setDefaultDirectory(String newDirectory) {
-        PreferenceStore.getPreferenceStore().setDefault(DataLoadPreferences.DEFAULT_DIRRECTORY_LOADER, newDirectory);
+        PreferenceStore.getPreferenceStore().setProperty(DataLoadPreferences.DEFAULT_DIRRECTORY_LOADER, newDirectory);
     }
 
 }

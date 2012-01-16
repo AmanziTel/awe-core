@@ -3,7 +3,7 @@
 <schema targetNamespace="org.amanzi.neo.loader.ui" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appInfo>
-         <meta.schema plugin="org.amanzi.neo.loader.ui" id="org.amanzi.neo.loader.ui.pages" name="describe pages"/>
+         <meta.schema plugin="org.amanzi.neo.loader.ui" id="org.amanzi.loader.pages" name="describe pages"/>
       </appInfo>
       <documentation>
          [Enter description of this extension point.]
@@ -49,9 +49,6 @@
 
    <element name="page">
       <complexType>
-         <sequence>
-            <element ref="loader_id" minOccurs="1" maxOccurs="unbounded"/>
-         </sequence>
          <attribute name="id" type="string" use="required">
             <annotation>
                <documentation>
@@ -69,7 +66,38 @@
                </appInfo>
             </annotation>
          </attribute>
-         <attribute name="isMain" type="boolean">
+         <attribute name="isMain" type="boolean" use="default" value="false">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="wizard" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="identifier" basedOn="org.amanzi.loader.wizards/wizard/@id"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="title" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="priority" type="string" use="default" value="0">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="description" type="string">
             <annotation>
                <documentation>
                   
@@ -79,13 +107,18 @@
       </complexType>
    </element>
 
-   <element name="loader_id">
+   <element name="loaders">
       <complexType>
-         <attribute name="id" type="string" use="required">
+         <sequence minOccurs="1" maxOccurs="unbounded">
+         </sequence>
+         <attribute name="loader" type="string" use="required">
             <annotation>
                <documentation>
                   
                </documentation>
+               <appInfo>
+                  <meta.attribute kind="identifier" basedOn="org.amanzi.loaders/loader/@id"/>
+               </appInfo>
             </annotation>
          </attribute>
       </complexType>

@@ -28,7 +28,7 @@ import java.util.Map;
 
 import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
-import org.amanzi.neo.loader.core.IConfiguration;
+import org.amanzi.neo.loader.core.config.IConfiguration;
 import org.amanzi.neo.loader.core.data.generator.Nemo2Generator;
 import org.amanzi.neo.loader.core.parser.CSVContainer;
 import org.amanzi.neo.loader.core.parser.CommonCSVParser;

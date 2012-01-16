@@ -196,11 +196,11 @@ public class StatisticsVault implements IVault {
         }
         LOGGER.debug("finish method removeProperty(String nodeType, String propName, Object propValue)");
     }
-
+    
     @Override
-    public void renamePropertyValue(String nodeType, String propName, Object oldPropValue, Object newPropValue)
-            throws IndexPropertyException, InvalidStatisticsParameterException {
-
+    public void renamePropertyValue(String nodeType, String propName, Object oldPropValue, Object newPropValue) throws IndexPropertyException,
+            InvalidStatisticsParameterException {
+        
         LOGGER.debug("start method renamePropertyValue(String nodeType, String propName, Object oldPropValue, Object newPropValue)");
 
         if (nodeType == null) {
@@ -236,7 +236,7 @@ public class StatisticsVault implements IVault {
         }
         try {
             PropertyStatistics propStat = ((StatisticsVault)vault).getPropertyStatistics(propName, oldPropValue.getClass());
-            // update statistics only if it was saved early
+            // update statistics only if it was saved early 
             if (propStat.getPropertyMap().containsKey(oldPropValue)) {
                 propStat.updatePropertyMap(oldPropValue, -1);
                 propStat.updatePropertyMap(newPropValue, 1);
@@ -284,6 +284,8 @@ public class StatisticsVault implements IVault {
         return result;
     }
 
+    
+
     @Override
     public int getNodeCount(String nodeType) {
         if (this.type.equals(nodeType)) {
@@ -319,12 +321,12 @@ public class StatisticsVault implements IVault {
     @Override
     public Set<String> getAllPropertyNames(String nodeType) {
         Set<String> result = new HashSet<String>();
-
+        
         IVault subVault = subVaults.get(nodeType);
         if (subVault != null) {
             result.addAll(subVault.getPropertyStatisticsMap().keySet());
         }
-
+        
         return result;
     }
 
@@ -386,7 +388,7 @@ public class StatisticsVault implements IVault {
     @Override
     public Set<String> getAllProperties(String nodeType, Class< ? > klass) {
         Set<String> result = new HashSet<String>();
-
+        
         IVault subVault = subVaults.get(nodeType);
         if (subVault != null) {
             for (PropertyStatistics singleProperty : subVault.getPropertyStatisticsMap().values()) {
@@ -395,7 +397,7 @@ public class StatisticsVault implements IVault {
                 }
             }
         }
-
+        
         return result;
     }
 
@@ -597,10 +599,10 @@ public class StatisticsVault implements IVault {
         }
         return null;
     }
-
+    
     /**
      * Recursive method to find minimum value
-     * 
+     *
      * @param vault This vault or sub-vault
      * @param nodeType Type of node
      * @param propertyName Name of property
@@ -609,16 +611,20 @@ public class StatisticsVault implements IVault {
     private Number getMinValue(IVault vault, String nodeType, String propertyName, boolean isNeedType) {
         if (isNeedType || vault.getType().equals(nodeType)) {
             isNeedType = true;
-            Map<String, PropertyStatistics> localPropertyStatisticsMap = vault.getPropertyStatisticsMap();
+            Map<String, PropertyStatistics> localPropertyStatisticsMap =
+                    vault.getPropertyStatisticsMap();
             if (localPropertyStatisticsMap.keySet().contains(propertyName)) {
-                PropertyStatistics propertyStatistics = localPropertyStatisticsMap.get(propertyName);
+                PropertyStatistics propertyStatistics = 
+                        localPropertyStatisticsMap.get(propertyName);
                 return propertyStatistics.getMinValue();
-            } else {
+            }
+            else {
                 for (IVault subVault : vault.getSubVaults().values()) {
                     return getMinValue(subVault, nodeType, propertyName, isNeedType);
                 }
             }
-        } else {
+        }
+        else {
             for (IVault subVault : vault.getSubVaults().values()) {
                 return getMinValue(subVault, nodeType, propertyName, isNeedType);
             }
@@ -635,10 +641,10 @@ public class StatisticsVault implements IVault {
         }
         return null;
     }
-
+    
     /**
      * Recursive method to find maximum value
-     * 
+     *
      * @param vault This vault or sub-vault
      * @param nodeType Type of node
      * @param propertyName Name of property
@@ -647,16 +653,20 @@ public class StatisticsVault implements IVault {
     private Number getMaxValue(IVault vault, String nodeType, String propertyName, boolean isNeedType) {
         if (isNeedType || vault.getType().equals(nodeType)) {
             isNeedType = true;
-            Map<String, PropertyStatistics> localPropertyStatisticsMap = vault.getPropertyStatisticsMap();
+            Map<String, PropertyStatistics> localPropertyStatisticsMap =
+                    vault.getPropertyStatisticsMap();
             if (localPropertyStatisticsMap.keySet().contains(propertyName)) {
-                PropertyStatistics propertyStatistics = localPropertyStatisticsMap.get(propertyName);
+                PropertyStatistics propertyStatistics = 
+                        localPropertyStatisticsMap.get(propertyName);
                 return propertyStatistics.getMaxValue();
-            } else {
+            }
+            else {
                 for (IVault subVault : vault.getSubVaults().values()) {
                     return getMaxValue(subVault, nodeType, propertyName, isNeedType);
                 }
             }
-        } else {
+        }
+        else {
             for (IVault subVault : vault.getSubVaults().values()) {
                 return getMaxValue(subVault, nodeType, propertyName, isNeedType);
             }

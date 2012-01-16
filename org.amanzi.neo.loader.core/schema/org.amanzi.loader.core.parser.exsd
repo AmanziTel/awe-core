@@ -3,7 +3,7 @@
 <schema targetNamespace="org.amanzi.neo.loader.core" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appInfo>
-         <meta.schema plugin="org.amanzi.neo.loader.core" id="org.amanzi.loader.core.parser" name="Extension for parsers"/>
+         <meta.schema plugin="org.amanzi.neo.loader.core" id="org.amanzi.loader.parsers" name="Parser for Data"/>
       </appInfo>
       <documentation>
          [Enter description of this extension point.]

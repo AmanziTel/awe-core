@@ -15,13 +15,12 @@ package org.amanzi.neo.loader.core.parser;
 
 import java.util.List;
 
-import org.amanzi.neo.loader.core.IConfiguration;
-import org.amanzi.neo.loader.core.ILoaderProgressListener;
-import org.amanzi.neo.loader.core.IProgressEvent;
+import org.amanzi.neo.loader.core.config.IConfiguration;
 import org.amanzi.neo.loader.core.saver.ISaver;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IModel;
+import org.eclipse.core.runtime.IProgressMonitor;
 
 /**
  * common parser interface
@@ -43,27 +42,5 @@ public interface IParser<T1 extends ISaver< ? extends IModel, T3, T2>, T2 extend
      * 
      * @throws AWEException
      */
-    public void run() throws DatabaseException, AWEException;
-
-    /**
-     * set progress bar to loader
-     * 
-     * @param listener
-     */
-    void addProgressListener(ILoaderProgressListener listener);
-
-    /**
-     * remove progress Monitor
-     * 
-     * @param listener
-     */
-    void removeProgressListener(ILoaderProgressListener listener);
-
-    /**
-     * update progress monitor
-     * 
-     * @param event
-     * @return
-     */
-    boolean fireProgressEvent(IProgressEvent event);
+    public void run(IProgressMonitor monitor) throws DatabaseException, AWEException;
 }

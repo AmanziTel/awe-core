@@ -359,7 +359,7 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
             params.put(AbstractService.NAME, type.getId());
             IDataElement testElement;
             try {
-                testElement = model.getElement(parentElement, new DataElement(params));
+                testElement = model.getNetworkElement(parentElement, new DataElement(params));
             } catch (AWEException e) {
                 LOGGER.error("Erorr while trying to get element", e);
                 throw (RuntimeException)new RuntimeException().initCause(e);
@@ -382,7 +382,7 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
             params.put(AbstractService.NAME, type.getId());
             IDataElement testElement;
             try {
-                testElement = model.getElement(parentElement, new DataElement(params));
+                testElement = model.getNetworkElement(parentElement, new DataElement(params));
             } catch (AWEException e) {
                 LOGGER.error("Erorr while trying to get element", e);
                 throw (RuntimeException)new RuntimeException().initCause(e);

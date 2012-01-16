@@ -14,6 +14,7 @@ package org.amanzi.neo.loader.ui.wizards;
 
 import java.io.File;
 
+import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.eclipse.jface.preference.FileFieldEditor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
@@ -28,7 +29,7 @@ import org.eclipse.swt.widgets.FileDialog;
  * @since 1.0.0
  */
 public class FileFieldEditorExt extends FileFieldEditor {
-	private String defaulDirrectory;
+	
 	private String[] ext;
 	private String[] extNames;
 
@@ -50,15 +51,7 @@ public class FileFieldEditorExt extends FileFieldEditor {
 	 * @return Returns the defaulDirrectory.
 	 */
 	public String getDefaulDirectory() {
-		return defaulDirrectory;
-	}
-
-	/**
-	 * @param defaulDirrectory
-	 *            The defaulDirrectory to set.
-	 */
-	public void setDefaulDirectory(String defaulDirrectory) {
-		this.defaulDirrectory = defaulDirrectory;
+		return LoaderUiUtils.getDefaultDirectory();
 	}
 
 	@Override
@@ -71,6 +64,7 @@ public class FileFieldEditorExt extends FileFieldEditor {
 		if (d == null) {
 			return null;
 		}
+		LoaderUiUtils.setDefaultDirectory(d.getParent());
 
 		return d.getAbsolutePath();
 	}
@@ -99,7 +93,6 @@ public class FileFieldEditorExt extends FileFieldEditor {
 		}
 		String file = dialog.open();
 		if (file != null) {
-			setDefaulDirectory(dialog.getFilterPath());
 			file = file.trim();
 			if (file.length() > 0) {
 				return new File(file);
