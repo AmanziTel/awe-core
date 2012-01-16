@@ -21,54 +21,21 @@
        
        
       <saver
-            class="org.amanzi.neo.loader.core.saver.NeighborsSaver"
-            id="org.amanzi.neo.loader.core.saver.NeighborsSaver">
+            class="org.amanzi.neo.loader.core.saver.NeighboursSaver"
+            id="org.amanzi.neo.loader.core.saver.NeighboursSaver">
       </saver>
       
       <saver
-            class="org.amanzi.neo.loader.core.saver.TemsSaver"
-            id="org.amanzi.neo.loader.core.saver.TemsSaver">
+            class="org.amanzi.neo.loader.core.saver.InterferenceMatrixSaver"
+            id="org.amanzi.neo.loader.core.saver.InterferenceMatrixSaver">
       </saver>
-      
-      <saver
-            class="org.amanzi.neo.loader.core.saver.RomesSaver"
-            id="org.amanzi.neo.loader.core.saver.RomesSaver">
-      </saver>
-      
-      <saver
-            class="org.amanzi.neo.loader.core.saver.Nemo1xSaver"
-            id="org.amanzi.neo.loader.core.saver.Nemo1xSaver">
-      </saver>
-      
-      <saver
-            class="org.amanzi.neo.loader.core.saver.Nemo2xSaver"
-            id="org.amanzi.neo.loader.core.saver.Nemo2xSaver">
-      </saver>
-      
-      <saver
-            class="org.amanzi.neo.loader.core.saver.TRXSaver"
-            id="org.amanzi.neo.loader.core.saver.TRXSaver">
-      </saver>
-      
-      <saver
-            class="org.amanzi.neo.loader.core.saver.TrafficSaver"
-            id="org.amanzi.neo.loader.core.saver.TrafficSaver">
-      </saver>
-      
-      <saver
-            class="org.amanzi.neo.loader.core.saver.SeparationCostraintSaver"
-            id="org.amanzi.neo.loader.core.saver.SeparationCostraintSaver">
-      </saver>
-      
-       <saver
-            class="org.amanzi.neo.loader.core.saver.FrequencyConstraintSaver"
-            id="org.amanzi.neo.loader.core.saver.FrequencyConstraintSaver">
-      </saver>
-      
-      <saver
-            class="org.amanzi.neo.loader.core.saver.InterferenceSaver"
-            id="org.amanzi.neo.loader.core.saver.InterferenceSaver">
-      </saver>
+   </extension>
+   
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="org.amanzi.neo.loader.core.preferences.SynonymsInitializer">
+      </initializer>
    </extension>
 
 </plugin>

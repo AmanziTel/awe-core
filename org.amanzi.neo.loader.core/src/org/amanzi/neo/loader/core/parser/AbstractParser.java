@@ -26,7 +26,6 @@ import org.amanzi.neo.loader.core.IProgressEvent;
 import org.amanzi.neo.loader.core.LoaderMessages;
 import org.amanzi.neo.loader.core.ProgressEventImpl;
 import org.amanzi.neo.loader.core.saver.AbstractSaver;
-import org.amanzi.neo.loader.core.saver.IData;
 import org.amanzi.neo.loader.core.saver.ISaver;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;

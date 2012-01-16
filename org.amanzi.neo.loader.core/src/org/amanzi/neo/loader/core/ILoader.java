@@ -15,8 +15,8 @@ package org.amanzi.neo.loader.core;
 
 import java.util.List;
 
+import org.amanzi.neo.loader.core.parser.IData;
 import org.amanzi.neo.loader.core.parser.IParser;
-import org.amanzi.neo.loader.core.saver.IData;
 import org.amanzi.neo.loader.core.saver.ISaver;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IModel;

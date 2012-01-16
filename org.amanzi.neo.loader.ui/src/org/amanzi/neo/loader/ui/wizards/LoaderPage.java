@@ -19,7 +19,7 @@ import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.ILoader;
 import org.amanzi.neo.loader.core.IValidateResult.Result;
-import org.amanzi.neo.loader.core.saver.IData;
+import org.amanzi.neo.loader.core.parser.IData;
 import org.amanzi.neo.loader.ui.preferences.CommonCRSPreferencePage;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.impl.ProjectModel;

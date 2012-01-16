@@ -101,19 +101,8 @@
 	 <page id="load_physical_network_page" class="org.amanzi.neo.loader.ui.wizards.LoadNetworkMainPage" isMain="true">
 	             <loader_id id="org.amanzi.neo.loader.ui.networkloader"/>
 	             <loader_id id="org.amanzi.neo.loader.ui.neighboursLoader"/>
-	             <loader_id id="org.amanzi.neo.loader.ui.networkSelectionLoader"/>
-	             <loader_id id="org.amanzi.neo.loader.ui.frequencyConstraint"/>
-	             <loader_id id="org.amanzi.neo.loader.ui.separationCostraint"/>
-	             <loader_id id="org.amanzi.neo.loader.ui.trafficDataLoader"/>
 	             <loader_id id="org.amanzi.neo.loader.ui.interferenceMatrixLoader"/>
 	             
-	 </page>
-	 
-	 <page id="load_drive_data_page" class="org.amanzi.neo.loader.ui.wizards.LoadDatasetMainPage" isMain="true">
-	             <loader_id id="org.amanzi.neo.loader.ui.nemo2xloader"/>
-	             <loader_id id="org.amanzi.neo.loader.ui.nemo1xloader"/>
-	             <loader_id id="org.amanzi.neo.loader.ui.romesloader"/>
-	             <loader_id id="org.amanzi.neo.loader.ui.temsloader"/>
 	 </page>
 	 
  </extension>

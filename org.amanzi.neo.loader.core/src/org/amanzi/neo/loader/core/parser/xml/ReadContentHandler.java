@@ -54,6 +54,11 @@ public class ReadContentHandler extends DefaultHandler {
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
         super.startElement(uri, localName, qName, attributes);
+        
+        if (localName.equals("UtranCell") || localName.contains("Relation")) {
+            System.out.println("UtranCell");
+        }
+        
         if (currentTag == null) {
             currentTag = factory.createInstance(localName, attributes);
         } else {
@@ -67,9 +72,15 @@ public class ReadContentHandler extends DefaultHandler {
     @Override
     public void endElement(String uri, String localName, String qName) throws SAXException {
         super.endElement(uri, localName, qName);
+        
+        if (localName.equals("UtranCell")  || localName.contains("Relation")) {
+            System.out.println("UtranCell");
+        }
+        
         if (currentTag != null) {
             currentTag = currentTag.endElement(localName, chars != null ? chars : new StringBuilder());
         }
+        
         chars = null;
     }
 
