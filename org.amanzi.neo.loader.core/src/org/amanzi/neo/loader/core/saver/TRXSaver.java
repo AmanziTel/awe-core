@@ -158,5 +158,4 @@ public class TRXSaver extends AbstractNetworkSaver<INetworkModel, ConfigurationD
     protected String getSubType() {
         return NetworkElementNodeType.TRX.getId();
     }
-
 }

@@ -71,5 +71,4 @@ public class SelectionSaver extends AbstractNetworkSaver<ISelectionModel, Config
     protected String getSubType() {
         return NetworkElementNodeType.SELECTION_LIST_ROOT.getId();
     }
-
 }

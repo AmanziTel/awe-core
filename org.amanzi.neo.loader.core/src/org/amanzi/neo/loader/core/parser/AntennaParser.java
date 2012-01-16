@@ -129,5 +129,4 @@ public class AntennaParser<T1 extends ISaver<IModel, MappedData, T2>, T2 extends
             LOGGER.error("cannt't close stream", e);
         }
     }
-
 }

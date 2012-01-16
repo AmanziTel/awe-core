@@ -13,7 +13,7 @@
 
 package org.amanzi.neo.loader.core.saver;
 
-import org.amanzi.neo.loader.core.IConfiguration;
+import org.amanzi.neo.loader.core.config.IConfiguration;
 import org.amanzi.neo.loader.core.parser.IData;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IModel;
@@ -30,7 +30,7 @@ public interface ISaver<M extends IModel, D extends IData, C extends IConfigurat
      * @param configuration
      * @param dataElement
      */
-    public void init(C configuration, D dataElement) throws Exception;
+    public void init(C configuration, D dataElement) throws AWEException;
 
     /**
      * save dataElement to database;

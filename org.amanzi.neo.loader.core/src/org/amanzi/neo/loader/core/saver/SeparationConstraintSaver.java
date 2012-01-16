@@ -70,5 +70,4 @@ public class SeparationConstraintSaver extends AbstractNetworkSaver<INetworkMode
     protected String getSubType() {
         return null;
     }
-
 }

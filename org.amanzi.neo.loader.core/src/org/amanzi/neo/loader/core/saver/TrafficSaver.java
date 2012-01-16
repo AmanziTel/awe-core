@@ -70,6 +70,5 @@ public class TrafficSaver extends AbstractNetworkSaver<INetworkModel, Configurat
     protected String getSubType() {
         return null;
     }
-
 }
 

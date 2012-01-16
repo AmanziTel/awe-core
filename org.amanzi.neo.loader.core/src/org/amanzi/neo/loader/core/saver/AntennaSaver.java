@@ -70,5 +70,4 @@ public class AntennaSaver extends AbstractMappedDataSaver<INetworkModel, Configu
     protected String getSubType() {
         return null;
     }
-
 }

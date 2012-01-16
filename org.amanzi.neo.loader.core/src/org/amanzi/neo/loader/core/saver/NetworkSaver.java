@@ -15,7 +15,7 @@ package org.amanzi.neo.loader.core.saver;
 
 import java.util.Map;
 
-import org.amanzi.neo.loader.core.ConfigurationDataImpl;
+import org.amanzi.neo.loader.core.config.NetworkConfiguration;
 import org.amanzi.neo.loader.core.parser.MappedData;
 import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.DatasetService.DatasetTypes;
@@ -29,7 +29,7 @@ import org.amanzi.neo.services.model.INetworkModel;
  * 
  * @author Kondratenko_Vladislav
  */
-public class NetworkSaver extends AbstractMappedDataSaver<INetworkModel, ConfigurationDataImpl> {
+public class NetworkSaver extends AbstractMappedDataSaver<INetworkModel, NetworkConfiguration> {
         
     // Default network structure
     private final static NetworkElementNodeType[] DEFAULT_NETWORK_STRUCTURE = {NetworkElementNodeType.CITY,
@@ -48,7 +48,7 @@ public class NetworkSaver extends AbstractMappedDataSaver<INetworkModel, Configu
      * @param model
      * @param config
      */
-    NetworkSaver(INetworkModel model, ConfigurationDataImpl config) {
+    NetworkSaver(INetworkModel model, NetworkConfiguration config) {
         commitTx();
         if (model != null) {
             setMainModel(model);
@@ -75,7 +75,12 @@ public class NetworkSaver extends AbstractMappedDataSaver<INetworkModel, Configu
             
             if (!values.isEmpty()) {
                 values.put(AbstractService.TYPE, type.getId());
-                parent = getMainModel().createElement(parent, values);
+                parent = getMainModel().findElement(values);
+                if (parent == null) {
+                    getMainModel().createElement(parent, values);
+                } else {
+                    getMainModel().completeProperties(parent, values, true);
+                }
             }   
         }
     }
@@ -86,8 +91,8 @@ public class NetworkSaver extends AbstractMappedDataSaver<INetworkModel, Configu
     }
 
     @Override
-    protected INetworkModel createMainModel(ConfigurationDataImpl configuration) throws AWEException {
-        return getActiveProject().getNetwork(configuration.getDatasetNames().get(ConfigurationDataImpl.NETWORK_PROPERTY_NAME));
+    protected INetworkModel createMainModel(NetworkConfiguration configuration) throws AWEException {
+        return getActiveProject().getNetwork(configuration.getDatasetName());
     }
 
 }

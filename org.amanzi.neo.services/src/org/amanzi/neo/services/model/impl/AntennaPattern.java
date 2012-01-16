@@ -72,4 +72,5 @@ public class AntennaPattern {
     public enum TypeRadiationPattern {
         HORISONTAL, VERTICAL
     }
+    
 }
