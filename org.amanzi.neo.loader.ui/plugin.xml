@@ -51,6 +51,17 @@
                saver="org.amanzi.neo.loader.core.saver.NetworkSaver">
          </savers>
       </loader>
+      <loader
+            class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
+            id="org.amanzi.awe.loader.Network"
+            name="Antenna Loader"
+            page="org.amanzi.awe.pages.network"
+            parser="org.amanzi.neo.loader.core.parser.AntennaParser"
+            validator="org.amanzi.awe.validator.network">
+         <savers
+               saver="org.amanzi.neo.loader.core.saver.AntennaSaver">
+         </savers>
+      </loader>
    </extension>
    
    <extension
