@@ -83,6 +83,18 @@ public interface IRenderableModel extends IModel {
     /**
      * @return minimal latitude
      */
+    /**
+     * @return minimal latitude
+     */
+    /**
+     * @return minimal latitude
+     */
+    /**
+     * @return minimal latitude
+     */
+    /**
+     * @return minimal latitude
+     */
     public double getMinLatitude();
 
     /**
