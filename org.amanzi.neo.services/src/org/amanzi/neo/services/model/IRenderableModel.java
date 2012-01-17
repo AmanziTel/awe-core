@@ -41,6 +41,26 @@ public interface IRenderableModel extends IModel {
      * @param longitude
      */
     public void updateLocationBounds(double latitude, double longitude);
+    
+    /**
+     * set selected data element to list
+     */
+    public void setSelectedDataElementToList(IDataElement dataElement);
+    
+    /**
+     * set list of selected elements to selected data elements
+     */
+    public void setSelectedDataElements(List<IDataElement> dataElements);
+    
+    /**
+     * get selected elements list
+     */
+    public List<IDataElement> getSelectedElements();
+    
+    /**
+     * clear selected elements list
+     */
+    public void clearSelectedElements();
 
     /**
      * update crs by crs code
@@ -56,42 +76,7 @@ public interface IRenderableModel extends IModel {
      * @param crs
      */
     public void setCRS(CoordinateReferenceSystem crs);
-    
-    public void setSelectedDataElementToList(IDataElement dataElement);
-    
-    public void setSelectedDataElements(List<IDataElement> dataElements);
-    
-    public List<IDataElement> getSelectedElements();
-    
-    public void clearSelectedElements();
-        
-    /**
-     * @return minimal latitude
-     */    
-    /**
-     * @return minimal latitude
-     */
-    /**
-     * @return minimal latitude
-     */
-    /**
-     * @return minimal latitude
-     */
-    /**
-     * @return minimal latitude
-     */
-    /**
-     * @return minimal latitude
-     */
-    /**
-     * @return minimal latitude
-     */
-    /**
-     * @return minimal latitude
-     */
-    /**
-     * @return minimal latitude
-     */
+
     /**
      * @return minimal latitude
      */
