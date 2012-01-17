@@ -75,9 +75,6 @@ public class NetworkSaver extends AbstractMappedDataSaver<INetworkModel, Network
             
             if (!values.isEmpty()) {
                 values.put(AbstractService.TYPE, type.getId());
-                for(String key:values.keySet()){
-                    System.out.println("Key="+key);
-                }
                 parent = getMainModel().findElement(values);
                 if (parent == null) {
                     parent = getMainModel().createElement(parent, values);
