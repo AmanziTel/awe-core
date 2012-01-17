@@ -54,6 +54,7 @@ public class NetworkService extends AbstractService {
     public final static String LOCATION_AREA_CODE = "lac";
     public final static String BSIC = "bsic";
     public final static String BCCH = "bcch";
+
     public final static String SELECTION_RELATIONSHIP_INDEX = "selection_relationship";
     public final static String CURRENT_N2N_MODEL_NAME = "current_n2n_model_name";
 

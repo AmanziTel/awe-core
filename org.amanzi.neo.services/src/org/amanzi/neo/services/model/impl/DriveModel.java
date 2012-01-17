@@ -35,6 +35,7 @@ import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
+import org.amanzi.neo.services.filters.INamedFilter;
 import org.amanzi.neo.services.model.ICorrelationModel;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDriveModel;
@@ -60,7 +61,8 @@ public class DriveModel extends MeasurementModel implements IDriveModel {
     private static Logger LOGGER = Logger.getLogger(DriveModel.class);
 
     // private members
-    private IDriveType driveType;    
+    private IDriveType driveType;
+
     private CorrelationService crServ = NeoServiceFactory.getInstance().getCorrelationService();
 
     /**
@@ -310,7 +312,7 @@ public class DriveModel extends MeasurementModel implements IDriveModel {
 
     @Override
     public CoordinateReferenceSystem getCRS() {
-        return crs;
+        return currentGisModel.getCrs();
     }
 
     @Override
@@ -421,5 +423,19 @@ public class DriveModel extends MeasurementModel implements IDriveModel {
             LOGGER.error("Error with get selected properties");
         }
         return result;
+    }
+
+    @Override
+    public void addLayer(String name, INamedFilter filter) {
+    }
+
+    @Override
+    public Iterable<GisModel> getAllGisModels() throws DatabaseException {
+        return null;
+    }
+
+    @Override
+    public GisModel findGisByName(String gisName) throws DatabaseException {
+        return null;
     }
 }

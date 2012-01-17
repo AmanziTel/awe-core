@@ -49,26 +49,23 @@ public class Filter implements IFilter {
 
     private Serializable value;
 
-    private IFilter underlyingFilter;
+    protected IFilter underlyingFilter;
 
-    private final String filterName;
-
-    public Filter(FilterType filterType, ExpressionType expressionType, String name) {
+    public Filter(FilterType filterType, ExpressionType expressionType) {
         this.filterType = filterType;
         this.expressionType = expressionType;
-        this.filterName = name;
     }
 
-    public Filter(FilterType filterType, String name) {
-        this(filterType, ExpressionType.AND, name);
+    public Filter(FilterType filterType) {
+        this(filterType, ExpressionType.AND);
     }
 
-    public Filter(ExpressionType expressionType, String name) {
-        this(FilterType.EQUALS, expressionType, name);
+    public Filter(ExpressionType expressionType) {
+        this(FilterType.EQUALS, expressionType);
     }
 
-    public Filter(String name) {
-        this(FilterType.EQUALS, ExpressionType.AND, name);
+    public Filter() {
+        this(FilterType.EQUALS, ExpressionType.AND);
 
     }
 
@@ -248,8 +245,52 @@ public class Filter implements IFilter {
     }
 
     @Override
-    public String getFilterName() {
-        return filterName;
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((expressionType == null) ? 0 : expressionType.hashCode());
+        result = prime * result + ((filterType == null) ? 0 : filterType.hashCode());
+        result = prime * result + ((nodeType == null) ? 0 : nodeType.hashCode());
+        result = prime * result + ((propertyName == null) ? 0 : propertyName.hashCode());
+        result = prime * result + ((underlyingFilter == null) ? 0 : underlyingFilter.hashCode());
+        result = prime * result + ((value == null) ? 0 : value.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        Filter other = (Filter)obj;
+        if (expressionType != other.expressionType)
+            return false;
+        if (filterType != other.filterType)
+            return false;
+        if (nodeType == null) {
+            if (other.nodeType != null)
+                return false;
+        } else if (!nodeType.equals(other.nodeType))
+            return false;
+        if (propertyName == null) {
+            if (other.propertyName != null)
+                return false;
+        } else if (!propertyName.equals(other.propertyName))
+            return false;
+        if (underlyingFilter == null) {
+            if (other.underlyingFilter != null)
+                return false;
+        } else if (!underlyingFilter.equals(other.underlyingFilter))
+            return false;
+        if (value == null) {
+            if (other.value != null)
+                return false;
+        } else if (!value.equals(other.value))
+            return false;
+        return true;
     }
 
 }

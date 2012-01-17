@@ -378,7 +378,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
 
     @Override
     public CoordinateReferenceSystem getCRS() {
-        return this.crs;
+        return currentGisModel.getCrs();
     }
 
     @Override
@@ -871,5 +871,5 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     @Override
     public void setCurrentNodeToNodeRelationshipModel(INodeToNodeRelationsModel model) throws AWEException {
         nwServ.setCurrentNodeToNodeModelName(getRootNode(), model.getName());
-    }
+    }  
 }

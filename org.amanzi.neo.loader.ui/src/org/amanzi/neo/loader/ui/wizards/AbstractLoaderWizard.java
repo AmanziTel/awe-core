@@ -27,13 +27,16 @@ import org.amanzi.neo.loader.core.ILoader;
 import org.amanzi.neo.loader.core.ILoaderProgressListener;
 import org.amanzi.neo.loader.core.IProgressEvent;
 import org.amanzi.neo.loader.core.saver.IData;
+import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.model.IDataModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.amanzi.neo.services.ui.enums.EventsType;
 import org.amanzi.neo.services.ui.events.EventManager;
 import org.amanzi.neo.services.ui.events.IEventsListener;
 import org.amanzi.neo.services.ui.events.ShowOnMapEvent;
 import org.amanzi.neo.services.ui.utils.ActionUtil;
+import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -62,9 +65,10 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
         implements
             IGraphicInterfaceForLoaders<T>,
             IImportWizard {
-
+    private static final Logger LOGGER = Logger.getLogger(AbstractLoaderWizard.class);
     public static final String IS_MAIN_ATTRUBUTE = "isMain";
     public static final String CLASS_ATTRUBUTE = "class";
+    public static final String NAME_ATTRUBUTE = "name";
     private Set<ILoader<IData, T>> pageLoaders = new HashSet<ILoader<IData, T>>();
     protected T configData;
     static {
@@ -150,6 +154,10 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
         for (List<IConfigurationElement> pages : wizardLoaders.values()) {
             for (IConfigurationElement page : pages) {
                 ILoaderPage<T> createdPage = createAdditionalPage(page);
+                String pageName = page.getAttribute(NAME_ATTRUBUTE);
+                if (pageName != null) {
+                    createdPage.setTitle(pageName);
+                }
                 int id = checkIndexInPages(createdPage);
                 if (id == -1) {
                     addPage(createdPage);
@@ -240,8 +248,11 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
     protected IWizardPage getMainPage() {
         for (List<IConfigurationElement> pages : wizardLoaders.values()) {
             for (IConfigurationElement page : pages) {
-                if (page.getAttribute(IS_MAIN_ATTRUBUTE) != null && Boolean.valueOf(page.getAttribute(IS_MAIN_ATTRUBUTE)))
-                    return createAdditionalPage(page);
+                if (page.getAttribute(IS_MAIN_ATTRUBUTE) != null && Boolean.valueOf(page.getAttribute(IS_MAIN_ATTRUBUTE))) {
+                    ILoaderPage<T> createdPage = createAdditionalPage(page);
+                    return createdPage;
+
+                }
             }
         }
         return null;
@@ -291,8 +302,12 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
             return null;
         }
         if (index < maxMainPageId) {
-            LoaderPage<T> nextPage = (LoaderPage<T>)pages.get(index + 1);
-            nextPage.setPredifinedValues();
+
+            IWizardPage nextPage = pages.get(index + 1);
+            if (nextPage instanceof ILoaderPage< ? >) {
+                ((LoaderPage<T>)nextPage).setPredifinedValues();
+            }
+
             return nextPage;
         }
         ILoader< ? extends IData, T> selectedLoader = getSelectedLoader();
@@ -343,12 +358,14 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
                 try {
                     loader.init(newloader.get(loader));
                 } catch (Exception e) {
+                    LOGGER.info("error while initialize data ", e);
                     showError("Error.", "Cann't initialize loader:" + loader.getLoaderInfo().getName());
                     return;
                 }
                 try {
                     loader.run();
-                } catch (Exception e) {
+                } catch (AWEException e) {
+                    LOGGER.info("error while saving data ", e);
                     showError("Error.", " exception was thrown  while saving data");
                     continue;
                 }

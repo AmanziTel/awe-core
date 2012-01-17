@@ -146,7 +146,7 @@ public abstract class AbstractCSVSaver<T1 extends IModel> extends AbstractSaver<
         } catch (Exception e) {
             rollbackTx();
             AweConsolePlugin.error("Exception on creating root Model");
-            LOGGER.error("Exception on creating root Model", e);
+            LOGGER.info("Exception on creating root Model", e);
             throw new DatabaseException(e);
         }
     }

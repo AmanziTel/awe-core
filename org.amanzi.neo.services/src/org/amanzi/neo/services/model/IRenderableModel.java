@@ -14,8 +14,10 @@
 package org.amanzi.neo.services.model;
 
 import java.util.List;
-
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.exceptions.DatabaseException;
+import org.amanzi.neo.services.filters.INamedFilter;
+import org.amanzi.neo.services.model.impl.RenderableModel.GisModel;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -40,8 +42,19 @@ public interface IRenderableModel extends IModel {
      */
     public void updateLocationBounds(double latitude, double longitude);
 
+    /**
+     * update crs by crs code
+     * 
+     * @param crsCode
+     * @return
+     */
     public CoordinateReferenceSystem updateCRS(String crsCode);
 
+    /**
+     * set crs to current gis
+     * 
+     * @param crs
+     */
     public void setCRS(CoordinateReferenceSystem crs);
     
     public void setSelectedDataElementToList(IDataElement dataElement);
@@ -52,14 +65,46 @@ public interface IRenderableModel extends IModel {
     
     public void clearSelectedElements();
         
+    /**
+     * @return minimal latitude
+     */    
+    /**
+     * @return minimal latitude
+     */
+    /**
+     * @return minimal latitude
+     */
+    /**
+     * @return minimal latitude
+     */
+    /**
+     * @return minimal latitude
+     */
+    /**
+     * @return minimal latitude
+     */
     public double getMinLatitude();
 
+    /**
+     * @return maximal latitude
+     */
     public double getMaxLatitude();
 
+    /**
+     * @return minimal longitude
+     */
     public double getMinLongitude();
 
+    /**
+     * @return maximal longitude
+     */
     public double getMaxLongitude();
 
+    /**
+     * get crs from current gis;
+     * 
+     * @return
+     */
     public CoordinateReferenceSystem getCRS();
 
     /**
@@ -91,4 +136,28 @@ public interface IRenderableModel extends IModel {
      * @return
      */
     public Coordinate getCoordinate(IDataElement element);
+
+    /**
+     * add new layer to catalog.
+     * <p>
+     * Layer is actually a gis elements which store some information for renderer
+     * </p>
+     * 
+     * @param name -name of new layer
+     * @param filter- filter to currentLayer
+     */
+    public void addLayer(String name, INamedFilter filter);
+
+    /**
+     * return all gis elements;
+     * 
+     * @param model
+     */
+    public Iterable<GisModel> getAllGisModels() throws DatabaseException;
+
+    /**
+     * find gis element by name and set is as current for its model;
+     */
+    public GisModel findGisByName(String gisName) throws DatabaseException;
+
 }

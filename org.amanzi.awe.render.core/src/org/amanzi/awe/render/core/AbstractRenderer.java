@@ -31,6 +31,7 @@ import org.amanzi.neo.model.distribution.IDistributionalModel;
 import org.amanzi.neo.model.distribution.impl.DistributionManager;
 import org.amanzi.neo.model.distribution.impl.DistributionModel;
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IRenderableModel;
 import org.apache.log4j.Logger;
@@ -66,7 +67,9 @@ public abstract class AbstractRenderer extends RendererImpl {
 			.getManager();
 	protected DistributionModel currentDistributionModel = null;
 	private AbstractRendererStyles commonStyle = initDefaultRendererStyle();
-	public static final String BLACKBOARD_NODE_LIST = "org.amanzi.awe.tool.star.StarTool.nodes";
+	public static final String BLACKBOARD_NODE_LIST = "org.amanzi.awe.tool.star.StarTool.nodes";    
+    public static final String SPACE_SEPARATOR = " ";
+    public static final String EQUAL_SEPARATOR = "=";    
 
 	/**
 	 * initialize default renderer styles;
@@ -75,20 +78,19 @@ public abstract class AbstractRenderer extends RendererImpl {
 	 */
 	protected abstract AbstractRendererStyles initDefaultRendererStyle();
 
-	/**
-	 * prepare scaling value before elements render. Scale is answer for the
-	 * view of renderable elements
-	 * 
-	 * @param bounds_transformed
-	 * @param data_bounds
-	 * @param monitor
-	 * @param count
-	 */
-	public void setScaling(Envelope bounds_transformed, Envelope data_bounds,
-			final IProgressMonitor monitor, long count) {
-		double dataScaled = (bounds_transformed.getHeight() * bounds_transformed
-				.getWidth())
-				/ (data_bounds.getHeight() * data_bounds.getWidth());
+	
+    /**
+     * prepare scaling value before elements render. Scale is response for the view of renderable
+     * elements
+     * 
+     * @param bounds_transformed
+     * @param data_bounds
+     * @param monitor
+     * @param count
+     */
+    public void setScaling(Envelope bounds_transformed, Envelope data_bounds, final IProgressMonitor monitor, long count) {
+        double dataScaled = (bounds_transformed.getHeight() * bounds_transformed.getWidth())
+                / (data_bounds.getHeight() * data_bounds.getWidth());
 
 		double countScaled = dataScaled * count / 2;
 		setDrawLabel(countScaled);
@@ -160,7 +162,8 @@ public abstract class AbstractRenderer extends RendererImpl {
 			setStyle(destination);
 			// find a resource to render
 			model = resource.resolve(getResolvedClass(), monitor);
-			initCurrentDistribution();
+			defineCurrentGis(resource);
+            initCurrentDistribution();
 			// get rendering bounds and zoom
 			setCrsTransforms(resource.getInfo(null).getCRS());
 			Envelope bounds_transformed = getTransformedBounds();
@@ -191,19 +194,24 @@ public abstract class AbstractRenderer extends RendererImpl {
 			throw new RenderException(e);
 		}
 	}
+	
+    /**
+     * try to define gis, from information stored in georesource identifier
+     * 
+     * @param identifier
+     * @return
+     * @throws IOException
+     * @throws DatabaseException
+     */
+    private void defineCurrentGis(IGeoResource resource) throws IOException, DatabaseException {
+        String georesId = resource.getIdentifier().getRef();
+        String gisId = georesId.substring(georesId.lastIndexOf('/') + 1, georesId.length());
+        String gisName = gisId.replace('_', ' ');
+        model.findGisByName(gisName);
+    }
 
-	/**
-	 * render selected elements from current model
-	 * 
-	 * @param destination
-	 * @param model
-	 */
-	protected abstract void renderSelectedElements(Graphics2D destination,
-			IRenderableModel model, Envelope bounds_transformed)
-			throws NoninvertibleTransformException, TransformException, AWEException;
-
-	/**
-	 * render elements from current model
+    /**
+     * render elements from current model     
 	 * 
 	 * @param destination
 	 * @throws TransformException
@@ -227,6 +235,17 @@ public abstract class AbstractRenderer extends RendererImpl {
 				break;
 		}
 	}
+	
+	/**
+	 * render selected elements from current model
+	 * 
+	 * @param destination
+	 * @param model
+	 */
+	protected abstract void renderSelectedElements(Graphics2D destination,
+			IRenderableModel model, Envelope bounds_transformed)
+			throws NoninvertibleTransformException, TransformException, AWEException;
+
 
 	/**
 	 * Get point

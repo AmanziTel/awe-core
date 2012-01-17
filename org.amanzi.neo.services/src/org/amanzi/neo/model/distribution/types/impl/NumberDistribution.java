@@ -30,7 +30,7 @@ import org.apache.log4j.Logger;
  */
 public class NumberDistribution extends AbstractDistribution<SimpleRange> {
     private static final Logger LOGGER = Logger.getLogger(NumberDistribution.class);
-    private static final String FILTER_NAME = "filterName";
+
     private NumberDistributionType distrType;
     private int count = 0;
 
@@ -77,13 +77,13 @@ public class NumberDistribution extends AbstractDistribution<SimpleRange> {
         double step = AbstractDistribution.getStep(min, max, distrType.getDelta());
 
         while (max - min >= EPS) {
-            Filter filter = new Filter(FilterType.MORE_OR_EQUALS, FILTER_NAME);
+            Filter filter = new Filter(FilterType.MORE_OR_EQUALS);
             filter.setExpression(nodeType, propertyName, min);
             Filter subFilter;
             if (max - min - step >= EPS) {
-                subFilter = new Filter(FilterType.LESS, FILTER_NAME);
+                subFilter = new Filter(FilterType.LESS);
             } else {
-                subFilter = new Filter(FilterType.LESS_OR_EQUALS, FILTER_NAME);
+                subFilter = new Filter(FilterType.LESS_OR_EQUALS);
             }
             double curMax = max - (min + step) >= EPS ? min + step : max;
             subFilter.setExpression(nodeType, propertyName, curMax);

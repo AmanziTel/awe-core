@@ -491,7 +491,6 @@ public class DistributionAnalyzerView extends ViewPart {
     @SuppressWarnings("unchecked")
     public DistributionAnalyzerView() {
         eventManager = EventManager.getInstance();
-        // eventManager.addListener(this, EventUIType.PROJECT_CHANGED);
         eventManager.addListener(EventsType.UPDATE_DATA, new UpdateDataHandling());
         eventManager.addListener(EventsType.ANALYSE, new AnalyseHandling());
         UPDATE_BAR_COLORS_JOB.setSystem(true);

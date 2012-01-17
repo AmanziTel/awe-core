@@ -13,7 +13,6 @@
 
 package org.amanzi.neo.loader.core.saver;
 
-import org.amanzi.neo.loader.core.parser.IDataElement;
 
 /**
  * <p>
@@ -23,6 +22,6 @@ import org.amanzi.neo.loader.core.parser.IDataElement;
  * @author Kondratenko_Vladislav
  * @since 1.0.0
  */
-public interface IData extends IDataElement {
+public interface IData {
 
 }

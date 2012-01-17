@@ -65,8 +65,9 @@ public class Nemo1xSaver extends Nemo2xSaver {
      * @param model
      * @param config
      * @param service
+     * @throws AWEException 
      */
-    protected Nemo1xSaver(IDriveModel model, ConfigurationDataImpl config, GraphDatabaseService service) {
+    protected Nemo1xSaver(IDriveModel model, ConfigurationDataImpl config, GraphDatabaseService service) throws AWEException {
         super(model, config, service);
         preferenceStoreSynonyms = preferenceManager.getSynonyms(DatasetTypes.DRIVE);
         columnSynonyms = new HashMap<String, Integer>();

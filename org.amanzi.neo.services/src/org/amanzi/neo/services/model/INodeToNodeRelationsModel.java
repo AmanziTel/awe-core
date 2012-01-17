@@ -29,7 +29,7 @@ import org.amanzi.neo.services.exceptions.DatabaseException;
  * @author grigoreva_a
  * @since 1.0.0
  */
-public interface INodeToNodeRelationsModel extends IPropertyStatisticalModel, IDistributionalModel {
+public interface INodeToNodeRelationsModel extends IDistributionalModel {
 
     public INodeToNodeRelationsType getNodeToNodeRelationsType();
 

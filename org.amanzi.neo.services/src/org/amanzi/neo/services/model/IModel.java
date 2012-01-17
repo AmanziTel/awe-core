@@ -41,6 +41,9 @@ public interface IModel {
     public final static String MIN_LONGITUDE = "min_longitude";
     public final static String MAX_LATITUDE = "max_latitude";
     public final static String MAX_LONGITUDE = "max_longitude";
+    public final static String START = "start";
+    public final static String END = "end";
+    
 
     /**
      * The name of a model is usually the value of NAME property of the model root node.

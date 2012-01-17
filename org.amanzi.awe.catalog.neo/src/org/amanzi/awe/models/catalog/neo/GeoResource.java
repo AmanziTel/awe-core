@@ -12,6 +12,7 @@
  */
 package org.amanzi.awe.models.catalog.neo;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -24,18 +25,19 @@ import org.amanzi.neo.services.model.IDataModel;
 import org.amanzi.neo.services.model.IMeasurementModel;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.IRenderableModel;
+import org.amanzi.neo.services.model.impl.RenderableModel.GisModel;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 public class GeoResource extends IGeoResource {
 
     private static Logger LOGGER = Logger.getLogger(GeoResource.class);
-
     private IRenderableModel source;
     private IService service;
     private URL url;
+    private GisModel gis;
 
-    protected GeoResource(IService service, IRenderableModel source) {
+    protected GeoResource(IService service, IRenderableModel source, GisModel gis) {
         // validate
         if (service == null) {
             throw new IllegalArgumentException("Geo service is null.");
@@ -46,14 +48,23 @@ public class GeoResource extends IGeoResource {
 
         this.source = source;
         this.service = service;
-        this.url = getURL(service, source);
-
+        this.gis = gis;
+        this.url = getURL(service, source, gis);
     }
 
-    private URL getURL(IService service, IRenderableModel source) {
+    /**
+     * form URL which will be used in renderer as identifier of gis
+     * 
+     * @param service
+     * @param source
+     * @param gis
+     * @return
+     */
+    private URL getURL(IService service, IRenderableModel source, GisModel gis) {
         try {
             URL result = new URL(service.getIdentifier().toString() + "#" + ((IDataModel)source).getProject().getName()
-                    + "/" + ((IDataModel)source).getName());
+                    + File.separator + gis.getName().replace(' ', '_'));
+
             return result;
         } catch (MalformedURLException e) {
             LOGGER.error("Could not build identifier url.", e);
@@ -73,7 +84,7 @@ public class GeoResource extends IGeoResource {
 
     @Override
     public IGeoResourceInfo createInfo(IProgressMonitor monitor) throws IOException {
-        return new GeoResourceInfo(this.source, monitor);
+        return new GeoResourceInfo(this.source, this.gis, monitor);
     }
 
     @Override

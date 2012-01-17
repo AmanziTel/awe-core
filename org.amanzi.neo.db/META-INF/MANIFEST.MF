@@ -4,7 +4,7 @@ Bundle-Name: Services
 Bundle-SymbolicName: org.amanzi.neo.db
 Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Require-Bundle: org.neo4j.neoclipse;bundle-version="1.4.0";resolution:=optional,
+Require-Bundle: org.neo4j.neoclipse;bundle-version="1.4.0",
  org.amanzi.log4j;bundle-version="1.0.0";visibility:=reexport,
  org.neo4j;bundle-version="1.4.1",
  org.eclipse.ui;bundle-version="3.7.0"

@@ -57,7 +57,6 @@ public class LaunchLoader extends AbstractHandler {
     protected static final String GUI_ID_ATTRIBUTE = "org.amanzi.neo.loader.ui.commands.guiId";
     protected static final String LOADERS_EXTENSION_POINT = "org.amanzi.neo.loader.ui.loaders";
     protected static final String WIZARD_GUI_EXTENSION_POIN = "org.amanzi.neo.loader.ui.wizard";
-    protected static final String REGISTERED_GUI_EXTENSION_POIN = "org.amanzi.neo.loader.ui.gui";
     protected static final String PAGES_EXTENSION_POIN = "org.amanzi.neo.loader.ui.pages";
     protected static final String SAVER_EXTENSION_POINT = "org.amanzi.loader.core.saver";
     protected static final String PARSER_EXTENSION_POINT = "org.amanzi.loader.core.parser";
@@ -121,7 +120,7 @@ public class LaunchLoader extends AbstractHandler {
         IExtensionRegistry reg = Platform.getExtensionRegistry();
         try {
 
-            IConfigurationElement[] registeredGui = reg.getConfigurationElementsFor(REGISTERED_GUI_EXTENSION_POIN);
+            IConfigurationElement[] registeredGui = reg.getConfigurationElementsFor(WIZARD_GUI_EXTENSION_POIN);
             for (IConfigurationElement gui : registeredGui) {
                 if (gui.getAttribute(ID_ATTRIBUTE).equals(wizards.getAttribute(ID_ATTRIBUTE))) {
                     wizard = gui.createExecutableExtension(CLASS_ATTRIBUTE);
