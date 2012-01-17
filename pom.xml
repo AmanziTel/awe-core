@@ -63,6 +63,7 @@
 				<module>org.amanzi.neo.loader.core</module>
 				<module>org.amanzi.neo.loader.ui</module>
 				<module>org.amanzi.neo.services</module>
+				<module>org.amanzi.neo.services.ui</module>
 				<module>org.jfree</module>
 			</modules>
 			<build>
@@ -220,6 +221,7 @@
 				<module>org.amanzi.neo.loader.core</module>
 				<module>org.amanzi.neo.loader.ui</module>
 				<module>org.amanzi.neo.services</module>
+				<module>org.amanzi.neo.services.ui</module>
 				<module>org.jfree</module>
 			</modules>
 			<build>
