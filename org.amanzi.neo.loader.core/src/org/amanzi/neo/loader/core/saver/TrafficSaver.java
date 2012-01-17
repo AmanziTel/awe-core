@@ -44,6 +44,10 @@ public class TrafficSaver extends AbstractNetworkSaver<INetworkModel, NetworkCon
 
         IDataElement trafficElement = getNetworkElement(getSectorNodeType(), "sector_name", values);
         
+        if(trafficElement==null){
+            throw new NullPointerException("sector cann't be null");
+        }
+        
         Map<String,Object> newPropertyMap = (Map<String, Object>)values.get("traffic");
 
         getMainModel().completeProperties(trafficElement, newPropertyMap, true);

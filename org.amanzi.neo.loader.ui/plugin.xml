@@ -62,6 +62,17 @@
                saver="org.amanzi.neo.loader.core.saver.AntennaSaver">
          </savers>
       </loader>
+      <loader
+            class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
+            id="org.amanzi.awe.loader.Network"
+            name="Antenna Optimization Constraints Loader"
+            page="org.amanzi.awe.pages.network"
+            parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
+            validator="org.amanzi.awe.validator.network">
+         <savers
+               saver="org.amanzi.neo.loader.core.saver.AntennaOptimizationConstraintsSaver">
+         </savers>
+      </loader>
    </extension>
    
    <extension

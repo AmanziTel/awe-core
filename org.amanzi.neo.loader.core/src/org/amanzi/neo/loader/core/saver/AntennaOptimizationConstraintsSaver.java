@@ -17,38 +17,36 @@ import java.util.Map;
 
 import org.amanzi.neo.loader.core.config.NetworkConfiguration;
 import org.amanzi.neo.loader.core.parser.MappedData;
-import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
-import org.amanzi.neo.services.model.ISelectionModel;
+import org.amanzi.neo.services.model.INetworkModel;
 
 /**
- * TODO Purpose of
- * <p>
- * Saver for selection
- * </p>
  * 
+ * TODO Purpose of 
+ * <p>
+ * Saver for antenna optimization constraints 
+ * </p>
  * @author Ladornaya_A
  * @since 1.0.0
  */
-public class SelectionSaver extends AbstractNetworkSaver<ISelectionModel, NetworkConfiguration> {
-
+public class AntennaOptimizationConstraintsSaver extends AbstractNetworkSaver<INetworkModel, NetworkConfiguration>{
     /*
-     * Name of Dataset Synonyms
+     * Name of Dataset Synonyms for traffic
      */
-    private static final String SYNONYMS_DATASET_TYPE = "selection";
+    private static final String SYNONYMS_DATASET_TYPE = "antenna_optimization";
 
     @Override
     public void saveElement(MappedData dataElement) throws AWEException {
         Map<String, Object> values = getDataElementProperties(getMainModel(), null, dataElement, true);
 
-        IDataElement selectionElement = getNetworkElement(getSectorNodeType(), "sector_name", values);
+        IDataElement sector = getNetworkElement(getSectorNodeType(), "sector_name", values);
         
-        if(selectionElement==null){
+        if(sector==null){
             throw new NullPointerException("sector cann't be null");
         }
-
-        getMainModel().linkToSector(selectionElement);
+        
+        getMainModel().completeProperties(sector, values, true);
     }
 
     @Override
@@ -57,12 +55,8 @@ public class SelectionSaver extends AbstractNetworkSaver<ISelectionModel, Networ
     }
 
     @Override
-    protected ISelectionModel createMainModel(NetworkConfiguration configuration) throws AWEException {
-        networkModel = getActiveProject().getNetwork(configuration.getDatasetName());
-
-        String selectionName = configuration.getFilesToLoad().get(0).getName();
-
-        return networkModel.getSelectionModel(selectionName);
+    protected INetworkModel createMainModel(NetworkConfiguration configuration) throws AWEException {
+        return getActiveProject().getNetwork(configuration.getDatasetName());      
     }
 
     @Override
@@ -72,6 +66,7 @@ public class SelectionSaver extends AbstractNetworkSaver<ISelectionModel, Networ
 
     @Override
     protected String getSubType() {
-        return NetworkElementNodeType.SELECTION_LIST_ROOT.getId();
+        return null;
     }
+
 }

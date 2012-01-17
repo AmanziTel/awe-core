@@ -29,7 +29,6 @@ import java.util.Map;
 
 import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.loader.core.CountingFileInputStream;
-import org.amanzi.neo.loader.core.ProgressEventImpl;
 import org.amanzi.neo.loader.core.config.IConfiguration;
 import org.amanzi.neo.loader.core.saver.ISaver;
 import org.amanzi.neo.services.model.IModel;
@@ -158,7 +157,7 @@ public class CommonCSVParser<T1 extends ISaver<IModel, MappedData, IConfiguratio
             double percentage = is.percentage();
             if (percentage - persentageOld >= PERCENTAGE_FIRE) {
                 persentageOld = percentage;
-//                fireSubProgressEvent(currentFile, new ProgressEventImpl(String.format(currentFile.getName()), percentage));
+ //               fireSubProgressEvent(currentFile, new ProgressEventImpl(String.format(currentFile.getName()), percentage));
             }
         }
         return null;

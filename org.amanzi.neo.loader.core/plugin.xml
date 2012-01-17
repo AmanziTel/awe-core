@@ -36,6 +36,10 @@
             class="org.amanzi.neo.loader.core.saver.AntennaSaver"
             id="org.amanzi.neo.loader.core.saver.AntennaSaver">
       </saver>
+      <saver
+            class="org.amanzi.neo.loader.core.saver.AntennaOptimizationConstraintsSaver"
+            id="org.amanzi.neo.loader.core.saver.AntennaOptimizationConstraintsSaver">
+      </saver>
    </extension>
    
    <extension
