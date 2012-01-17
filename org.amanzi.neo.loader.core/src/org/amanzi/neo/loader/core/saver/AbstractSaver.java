@@ -22,7 +22,6 @@ import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.db.manager.DatabaseManagerFactory;
 import org.amanzi.neo.db.manager.IDatabaseManager;
 import org.amanzi.neo.loader.core.IConfiguration;
-import org.amanzi.neo.loader.core.parser.IData;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceManager;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
@@ -47,16 +46,21 @@ import org.apache.log4j.Logger;
  * @param <T2>
  * @param <T3>
  */
-public abstract class AbstractSaver<T1 extends IDataModel, T2 extends IData, T3 extends IConfiguration> implements ISaver<T1, T2, T3> {
+public abstract class AbstractSaver<T1 extends IModel, T2 extends IData, T3 extends IConfiguration> implements ISaver<T1, T2, T3> {
     private static final Logger LOGGER = Logger.getLogger(AbstractSaver.class);
     // constants
+    protected static final String CONFIG_VALUE_CALLS = "Calls";
+    protected static final String CONFIG_VALUE_PESQ = "Pesq";
     protected static final char DOT_SEPARATOR = '.';
 
-    private final static ExportSynonymsManager exportManager = ExportSynonymsManager.getManager();
-    
+    protected final static ExportSynonymsManager exportManager = ExportSynonymsManager.getManager();
+    // instance of preference manager for getting synonyms
+    protected static DataLoadPreferenceManager preferenceManager = new DataLoadPreferenceManager();
+    protected Map<String, String[]> preferenceStoreSynonyms;
+
     // variables required for export synonyms saving
-    private List<IDataModel> useableModels = new LinkedList<IDataModel>();
-    private Map<IDataModel, ExportSynonyms> synonymsMap = new HashMap<IDataModel, ExportSynonyms>();
+    protected List<IDataModel> useableModels = new LinkedList<IDataModel>();
+    protected Map<IModel, ExportSynonyms> synonymsMap = new HashMap<IModel, ExportSynonyms>();
 
     // map for statistics
     public static Map<String, Long> statisticsValues = new HashMap<String, Long>();
@@ -75,11 +79,6 @@ public abstract class AbstractSaver<T1 extends IDataModel, T2 extends IData, T3 
      * transactions count
      */
     private int actionCount;
-    
-    /*
-     * Main model of Saver
-     */
-    private T1 mainModel;
 
     /**
      * Public constructor
@@ -94,8 +93,12 @@ public abstract class AbstractSaver<T1 extends IDataModel, T2 extends IData, T3 
      * @param propertyValue - String propValue
      * @return Object parseValue
      */
-    public static Object autoParse(String propertyValue) {
+    protected static Object autoParse(String propertyName, String propertyValue) {
         try {
+            Object predifinedCheck = checkInPredifined(propertyName, propertyValue);
+            if (predifinedCheck != null) {
+                return predifinedCheck;
+            }
             char separator = DOT_SEPARATOR;
             if (propertyValue.indexOf(separator) != -1) {
                 Float floatValue = Float.parseFloat(propertyValue);
@@ -160,7 +163,7 @@ public abstract class AbstractSaver<T1 extends IDataModel, T2 extends IData, T3 
      */
     protected void createExportSynonymsForModels() throws AWEException {
         try {
-            for (IDataModel model : useableModels) {
+            for (IModel model : useableModels) {
                 synonymsMap.put(model, exportManager.createExportSynonym(model, ExportSynonymType.DATASET));
             }
         } catch (DatabaseException e) {
@@ -178,7 +181,7 @@ public abstract class AbstractSaver<T1 extends IDataModel, T2 extends IData, T3 
      * @param propertyName
      * @param synonym
      */
-    protected void addDatasetSynonyms(T1 model, INodeType nodeType, String propertyName, String synonym) {
+    protected void addDatasetSynonyms(IDataModel model, INodeType nodeType, String propertyName, String synonym) {
         if (model.getName() != null && synonym != null) {
             synonymsMap.get(model).addSynonym(nodeType, propertyName, synonym);
         }
@@ -268,45 +271,8 @@ public abstract class AbstractSaver<T1 extends IDataModel, T2 extends IData, T3 
     @Override
     public void init(T3 configuration, T2 dataElement) throws AWEException {
         DatabaseManagerFactory.getDatabaseManager().startThreadTransaction();
-        
-        mainModel = createMainModel(configuration);
-        useableModels.add(mainModel);
-        
-        createExportSynonymsForModels();
     }
 
-    /**
-     * Creates Main model of Saver
-     *
-     * @return
-     */
-    protected abstract T1 createMainModel(T3 configuration) throws AWEException;
-    
-    /**
-     * Returns main Model of Saver
-     */
-    protected T1 getMainModel() {
-        return mainModel;
-    }
-    
-    /**
-     * Sets new Main Model for Saver
-     *
-     * @param mainModel
-     */
-    protected void setMainModel(T1 mainModel) {
-        this.mainModel = mainModel;
-    }
-    
-    /**
-     * Adds additional non-main Model
-     *
-     * @param dataModel
-     */
-    protected void addModel(IDataModel dataModel) {
-        useableModels.add(dataModel);
-    }
-    
     /**
      * Increases count of type element
      * 
@@ -320,17 +286,4 @@ public abstract class AbstractSaver<T1 extends IDataModel, T2 extends IData, T3 
             statisticsValues.put(type, (long)1);
         }
     }
-    
-    /**
-     * Returns Dataset Type of Data to Save
-     *
-     * @return
-     */
-    protected abstract String getDatasetType();
-    
-    /**
-     * @return subtype of dataset or null if not exist
-     */
-    protected abstract String getSubType();
-    
 }

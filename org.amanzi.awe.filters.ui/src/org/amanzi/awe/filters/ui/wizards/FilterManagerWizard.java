@@ -13,7 +13,6 @@
 
 package org.amanzi.awe.filters.ui.wizards;
 
-import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.IImportWizard;

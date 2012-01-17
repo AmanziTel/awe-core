@@ -11,12 +11,17 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.filters.ui.wizards;
+package org.amanzi.neo.loader.core.saver;
+
 
 /**
- * @author volad
- *
+ * <p>
+ * only for marking necessary data to save
+ * </p>
+ * 
+ * @author Kondratenko_Vladislav
+ * @since 1.0.0
  */
-public enum Events {
+public interface IData {
 
 }

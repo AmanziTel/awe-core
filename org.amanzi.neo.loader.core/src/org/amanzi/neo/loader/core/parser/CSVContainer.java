@@ -17,6 +17,7 @@ import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.amanzi.neo.loader.core.saver.IData;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -102,11 +103,6 @@ public class CSVContainer implements IData {
      */
     public void setFile(File fileName) {
         this.file = fileName;
-    }
-    
-    public void put(String header, String value) {
-        row.add(value);
-        headers.add(header);
     }
 
 }

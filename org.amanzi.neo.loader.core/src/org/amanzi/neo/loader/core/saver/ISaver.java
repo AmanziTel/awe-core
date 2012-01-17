@@ -14,7 +14,6 @@
 package org.amanzi.neo.loader.core.saver;
 
 import org.amanzi.neo.loader.core.IConfiguration;
-import org.amanzi.neo.loader.core.parser.IData;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IModel;
 

@@ -32,6 +32,7 @@ import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.IPropertyStatisticalModel;
 import org.amanzi.neo.services.model.IRenderableModel;
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -59,7 +60,7 @@ public class AddNewFilterPage {
      * constants
      */
     private final static String FILTER_NAME = "filterName";
-    private final static String LAYER_NAME = "layerName";
+    private final static String GIS_NAME = "layerName";
     private final static String EXPESSION_TYPE = "expressionType";
     private final static String FILTER_TYPE = "filterType";
     private final static String NODE_TYPES = "nodeTypes";
@@ -81,6 +82,7 @@ public class AddNewFilterPage {
     private static final String SAVE_LABEL = "Save";
     private static final String CANCEL_LABEL = "Cancel";
     private static final String ADD_UNDERLINE_LABEL = "ADD underline";
+    private static final char DOT_SEPARATOR = '.';
 
     // container for property
     private Map<String, String> propCollector;
@@ -104,7 +106,7 @@ public class AddNewFilterPage {
      * shell elements
      */
     private Text tFilterName;
-    private Text tLayerName;
+    private Text tGisName;
     private Text tValue;
     private Text tDescription;
     private Button btnAddUnderline;
@@ -128,7 +130,7 @@ public class AddNewFilterPage {
      */
     private void initPropCollector() {
         propCollector = new HashMap<String, String>();
-        propCollector.put(LAYER_NAME, StringUtils.EMPTY);
+        propCollector.put(GIS_NAME, StringUtils.EMPTY);
         propCollector.put(NODE_TYPES, StringUtils.EMPTY);
         propCollector.put(FILTER_NAME, StringUtils.EMPTY);
         propCollector.put(FILTER_TYPE, StringUtils.EMPTY);
@@ -226,8 +228,8 @@ public class AddNewFilterPage {
         label.setText(GIS_NAME_LABEL);
         label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 2));
         GridData rootLayoutData = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 2);
-        tLayerName = new Text(main, SWT.BORDER);
-        tLayerName.setLayoutData(rootLayoutData);
+        tGisName = new Text(main, SWT.BORDER);
+        tGisName.setLayoutData(rootLayoutData);
     }
 
     /**
@@ -339,7 +341,9 @@ public class AddNewFilterPage {
 
             @Override
             public void handleEvent(Event event) {
-                addFilter();
+                if (isPropertyValid()) {
+                    addFilter();
+                }
             }
         });
         btnSave.addListener(SWT.MouseUp, new Listener() {
@@ -359,11 +363,11 @@ public class AddNewFilterPage {
         /*
          * listeners to text fields
          */
-        tLayerName.addModifyListener(new ModifyListener() {
+        tGisName.addModifyListener(new ModifyListener() {
 
             @Override
             public void modifyText(ModifyEvent e) {
-                updateLayerName();
+                updateGisName();
             }
         });
         tFilterName.addModifyListener(new ModifyListener() {
@@ -436,9 +440,11 @@ public class AddNewFilterPage {
      * save filter chain to database
      */
     protected void saveFilter() {
-        addFilter();
+        if (isPropertyValid()) {
+            addFilter();
+        }
         namedFilter.addFilter(underlineFilter);
-        model.addLayer(propCollector.get(LAYER_NAME), namedFilter);
+        model.addLayer(propCollector.get(GIS_NAME), namedFilter);
         close();
     }
 
@@ -451,7 +457,7 @@ public class AddNewFilterPage {
         if (namedFilter == null) {
             namedFilter = new NamedFilter(propCollector.get(FILTER_NAME));
             // disable layer and filter name for the following filters
-            tLayerName.setEnabled(false);
+            tGisName.setEnabled(false);
             tFilterName.setEnabled(false);
             curFilter = namedFilter;
         } else if (underlineFilter == null) {
@@ -497,9 +503,9 @@ public class AddNewFilterPage {
     /**
      * describe reaction for filter
      */
-    protected void updateLayerName() {
-        String layerName = tLayerName.getText();
-        handleReaction(LAYER_NAME, tLayerName);
+    protected void updateGisName() {
+        String layerName = tGisName.getText();
+        handleReaction(GIS_NAME, tGisName);
         if (!layerName.isEmpty() && !tFilterName.isEnabled()) {
             tFilterName.setEnabled(true);
         }
@@ -618,6 +624,63 @@ public class AddNewFilterPage {
         description = propName + SEPARATOR_WORD_FROM + nodeType + SPACE_SEPARATOR + propCollector.get(FILTER_TYPE)
                 + SPACE_SEPARATOR + value;
         return description;
+    }
+
+    /**
+     * validate enetered value for correct class instance.. if its incorrect show error dialog and
+     * return false;else return true
+     * 
+     * @return
+     */
+    private boolean isPropertyValid() {
+        Object value = autoParse(propCollector.get(VALUE));
+        IPropertyStatisticalModel casted = (IPropertyStatisticalModel)model;
+        String propName = propCollector.get(PROPERTY_NAME);
+        INodeType type = NodeTypeManager.getType(propCollector.get(NODE_TYPES));
+        Class< ? > klass = casted.getPropertyClass(type, propName);
+
+        if (value.getClass() != klass) {
+            MessageDialog.openError(
+                    shell,
+                    "Wrong property type",
+                    String.format("Property %s from node type %s should be instance of %s, now its instance of %s", propName,
+                            type.getId(), klass, value.getClass()));
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * this method try to parse String propValue
+     * 
+     * @param propertyValue - String propValue
+     */
+    protected static Object autoParse(String propertyValue) {
+        try {
+            char separator = DOT_SEPARATOR;
+            if (propertyValue.indexOf(separator) != -1) {
+                Float floatValue = Float.parseFloat(propertyValue);
+                if (floatValue.toString().length() < propertyValue.length()) {
+                    return Double.parseDouble(propertyValue);
+                } else {
+                    return floatValue;
+                }
+            } else {
+                try {
+                    return Integer.parseInt(propertyValue);
+                } catch (NumberFormatException e) {
+                    return Long.parseLong(propertyValue);
+                }
+            }
+        } catch (Exception e) {
+            if (propertyValue.equalsIgnoreCase(Boolean.TRUE.toString())) {
+                return Boolean.TRUE;
+            } else if (propertyValue.equalsIgnoreCase(Boolean.FALSE.toString())) {
+                return Boolean.FALSE;
+            }
+            return propertyValue;
+        }
+
     }
 
     /**

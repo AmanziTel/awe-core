@@ -443,6 +443,7 @@ public class FilterCreationPage {
      */
     protected void saveFilter() {
         if (isValid()) {
+            addFilter();
             namedFilter.addFilter(underlineFilter);
             model.addLayer(propCollector.get(LAYER_NAME), namedFilter);
             close();

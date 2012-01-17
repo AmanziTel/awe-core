@@ -19,6 +19,7 @@ import java.util.Iterator;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IRenderableModel;
 import org.amanzi.neo.services.model.impl.RenderableModel.GisModel;
+import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.IContentProvider;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.Viewer;
@@ -27,6 +28,7 @@ import org.eclipse.jface.viewers.Viewer;
  * @author Vladislav_Kondratenko
  */
 public class TableContentProvider implements IContentProvider, IStructuredContentProvider {
+    private static final Logger LOGGER = Logger.getLogger(TableContentProvider.class);
 
     @Override
     public void dispose() {
@@ -58,8 +60,8 @@ public class TableContentProvider implements IContentProvider, IStructuredConten
                 }
             }
         } catch (DatabaseException e) {
-            // TODO Handle DatabaseException
-            throw (RuntimeException)new RuntimeException().initCause(e);
+            LOGGER.error("cann't get gis for model " + model.getName(), e);
+            return null;
         }
         return gisListReturnable;
     }

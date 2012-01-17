@@ -52,6 +52,8 @@ public class TableLabelProvider extends ColumnLabelProvider {
     }
 
     /**
+     * collect filters property to description;
+     * 
      * @param filter
      * @return
      */

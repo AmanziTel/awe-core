@@ -62,7 +62,7 @@ public class NetworkValidator extends AbstractNetworkValidator {
             message = String.format("there is no project name");
             return Result.FAIL;
         }
-        if (result != Result.FAIL) {
+        if (result == Result.SUCCESS) {
             try {
                 IProjectModel projectModel = ProjectModel.getCurrentProjectModel();
                 String networkName = config.getDatasetNames().get(IConfiguration.NETWORK_PROPERTY_NAME);

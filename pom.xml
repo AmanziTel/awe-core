@@ -63,10 +63,9 @@
 				<module>org.amanzi.neo.loader.core</module>
 				<module>org.amanzi.neo.loader.ui</module>
 				<module>org.amanzi.neo.services</module>
-				<module>org.amanzi.neo.services.ui</module>
 				<module>org.jfree</module>
 			</modules>
-<build>
+			<build>
 				<plugins>
 					<plugin>
 						<groupId>org.eclipse.tycho</groupId>
@@ -123,7 +122,6 @@
 				</plugins>
 			</build>
 		</profile>
-
 		<profile>
 			<id>awe-core-test</id>
 			<activation>	
@@ -131,14 +129,13 @@
 			</activation>
 			<modules>
 				<module>org.amanzi.testing.sanity</module>
-				<module>org.amanzi.neo.db.testing</module>
 				<module>org.amanzi.testing</module>
-				<module>org.amanzi.neo.services.testing</module>
-				<module>org.amanzi.neo.loader.core.testing</module>
-				<module>org.amanzi.awe.catalog.neo.testing</module>
-				<module>org.jfree</module>
+				<module>org.amanzi.neo.db.testing</module>
+				<module>org.amanzi.neo.services</module>
+				<module>org.amanzi.neo.loader.core</module>
+				<module>org.amanzi.awe.catalog.neo</module>
 			</modules>
-<build>
+			<build>
 				<plugins>
 					<plugin>
 						<groupId>org.eclipse.tycho</groupId>
@@ -195,10 +192,10 @@
 				</plugins>
 			</build>
 		</profile>
-<profile>
+	<profile>
 			<id>core</id>
 			<activation>
-				<activeByDefault>true</activeByDefault>
+				<activeByDefault>false</activeByDefault>
 			</activation>
 			<modules>
 				<module>org.amanzi.awe</module>
@@ -223,10 +220,9 @@
 				<module>org.amanzi.neo.loader.core</module>
 				<module>org.amanzi.neo.loader.ui</module>
 				<module>org.amanzi.neo.services</module>
-				<module>org.amanzi.neo.services.ui</module>
 				<module>org.jfree</module>
 			</modules>
-<build>
+			<build>
 				<plugins>
 					<plugin>
 						<groupId>org.eclipse.tycho</groupId>
@@ -283,6 +279,6 @@
 				</plugins>
 			</build>
 		</profile>
-
-	</profiles>
+		
+</profiles>
 </project>

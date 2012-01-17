@@ -18,7 +18,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.amanzi.neo.db.manager.DatabaseManagerFactory;
-import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IModel;
 import org.amanzi.neo.services.model.IProjectModel;

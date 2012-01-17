@@ -24,6 +24,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -42,9 +43,9 @@ import au.com.bytecode.opencsv.CSVParser;
  * 
  * @author Kondratenko_Vladislav
  */
-public class CommonCSVParser<T1 extends ISaver<IModel, MappedData, T2>, T2 extends IConfiguration>
+public class CommonCSVParser<T1 extends ISaver<IModel, CSVContainer, T2>, T2 extends IConfiguration>
         extends
-            AbstractParser<T1, T2, MappedData> {
+            AbstractParser<T1, T2, CSVContainer> {
     private static final Logger LOGGER = Logger.getLogger(CommonCSVParser.class);
 
     // constants
@@ -61,11 +62,10 @@ public class CommonCSVParser<T1 extends ISaver<IModel, MappedData, T2>, T2 exten
 
     // common parser variables
     protected CSVParser parser;
+    private CSVContainer container;
     private CountingFileInputStream is;
     protected BufferedReader reader;
     private double persentageOld = 0;
-    
-    private List<String> headers;
 
     /**
      * create class instance
@@ -73,6 +73,7 @@ public class CommonCSVParser<T1 extends ISaver<IModel, MappedData, T2>, T2 exten
     public CommonCSVParser() {
         super();
         try {
+            container = new CSVContainer(MINIMAL_SIZE);
             if (currentFile != null) {
                 is = new CountingFileInputStream(currentFile);
                 reader = new BufferedReader(new InputStreamReader(is, charSetName));
@@ -119,6 +120,9 @@ public class CommonCSVParser<T1 extends ISaver<IModel, MappedData, T2>, T2 exten
         ArrayList<String> header = new ArrayList<String>();
         try {
             while ((lineStr = reader.readLine()) != null) {
+                if (container.getFirstLine().isEmpty()) {
+                    container.setFirstLine(lineStr);
+                }
                 if (lineStr != null && !lineStr.isEmpty()) {
                     header.addAll(Arrays.asList(parser.parseLine(lineStr)));
                     if (header.size() >= MINIMAL_SIZE) {
@@ -136,11 +140,7 @@ public class CommonCSVParser<T1 extends ISaver<IModel, MappedData, T2>, T2 exten
     }
 
     @Override
-<<<<<<< HEAD
     public CSVContainer parseElement() {
-=======
-    protected MappedData parseElement() {
->>>>>>> 9a16c845dc5e497af483da49455b7729a9aa440b
 
         if (tempFile == null || tempFile != currentFile) {
             try {
@@ -148,7 +148,8 @@ public class CommonCSVParser<T1 extends ISaver<IModel, MappedData, T2>, T2 exten
                 reader = new BufferedReader(new InputStreamReader(is, charSetName));
                 tempFile = currentFile;
                 persentageOld = 0;
-                headers = null;
+                container.setHeaders(null);
+                container.setFile(tempFile);
             } catch (FileNotFoundException e) {
                 // TODO Handle FileNotFoundException
                 throw (RuntimeException)new RuntimeException().initCause(e);
@@ -157,21 +158,17 @@ public class CommonCSVParser<T1 extends ISaver<IModel, MappedData, T2>, T2 exten
                 throw (RuntimeException)new RuntimeException().initCause(e);
             }
         }
-        if (headers == null) {
-            headers = parseHeaders(currentFile);
+        if (container.getHeaders() == null) {
+            container.setHeaders(parseHeaders(currentFile));
+            return container;
         }
         try {
             String lineStr;
             if ((lineStr = reader.readLine()) != null) {
                 if (lineStr != null) {
                     String[] line = parser.parseLine(lineStr);
-                    
-                    MappedData element = new MappedData();
-                    for (int i = 0; i < headers.size(); i++) {
-                        element.put(headers.get(i), line[i]);
-                    }
-                    
-                    return element;
+                    container.setValues(new LinkedList<String>(Arrays.asList(line)));
+                    return container;
                 }
             }
         } catch (IOException e) {
