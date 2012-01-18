@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="Amanzi Wireless Explorer" uid="awe-opensource" id="org.amanzi.awe.product" application="org.amanzi.awe.id1" version="{BUILD_NUMBER}" useFeatures="true" includeLaunchers="true">
+<product name="Amanzi Wireless Explorer" uid="awe-opensource" id="org.amanzi.awe.product" application="org.amanzi.awe.id1" version="${BUILD_NUMBER}" useFeatures="true" includeLaunchers="true">
 
    <aboutInfo>
       <image path="/org.amanzi.awe/nl/en/about.gif"/>
