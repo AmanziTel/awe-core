@@ -8,10 +8,14 @@
 		<artifactId>core</artifactId>
 		<version>0.9.0</version>
 	</parent>
+	
+	<properties>
+		<build-version>${BUILD_NUMBER}</build-version>
+	</properties>
 
 	<groupId>org.amanzi</groupId>
 	<artifactId>org.amanzi.awe.project</artifactId>
-	<version>${build-version}</version>
+	<version>1.0.0-SNAPSHOT</version>
 	<packaging>eclipse-repository</packaging>
 
 	<build>
