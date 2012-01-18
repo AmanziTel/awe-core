@@ -58,6 +58,16 @@
                       name="org.amanzi.neo.loader.ui.commands.guiId"
                       value="org.amanzi.neo.loader.ui.wizards.NetworkImportWizard">
                 </parameter>
+                <visibleWhen checkEnabled="false">
+               <or>
+                  <with variable="activeWorkbenchWindow.activePerspective">
+                     <equals value="org.amanzi.awe.perspective.uDig"/>
+                  </with>
+                  <with variable="activeWorkbenchWindow.activePerspective">
+                     <equals value="org.amanzi.awe.perspective"/>
+                  </with>
+               </or>
+            </visibleWhen>
              </command>
              <command
                    commandId="org.amanzi.neo.loader.ui.commands.LaunchLoader"
@@ -68,6 +78,16 @@
                       name="org.amanzi.neo.loader.ui.commands.guiId"
                       value="org.amanzi.neo.loader.ui.wizards.DatasetImportWizard">
                 </parameter>
+                <visibleWhen checkEnabled="false">
+               <or>
+                  <with variable="activeWorkbenchWindow.activePerspective">
+                     <equals value="org.amanzi.awe.perspective.uDig"/>
+                  </with>
+                  <with variable="activeWorkbenchWindow.activePerspective">
+                     <equals value="org.amanzi.awe.perspective"/>
+                  </with>
+               </or>
+            </visibleWhen>
              </command>            
                
           </toolbar>
