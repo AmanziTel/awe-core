@@ -47,8 +47,7 @@
 							<target>
 								<!-- Rename the products -->
 								<move verbose="true" todir="${project.build.directory}/products">
-									<mapper type="regexp" from="^(awe*-)(*.*)$$"
-										to="\10.11-${BUILD_NUMBER}-\2" />
+									<mapper type="regexp" from="^(awe.*-)(.*)$$" to="\10.11-${BUILD_NUMBER}-\2" />
 
 									<fileset dir="${project.build.directory}/products">
 										<include name="*.zip" />
