@@ -15,7 +15,7 @@
 	<packaging>eclipse-repository</packaging>
 
 	<build>
-		<finalName>${parent.artifactId}-0.11.${BUILD_NUMBER}</finalName>
+		<finalName>${project.parent.artifactId}-0.11.${BUILD_NUMBER}</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
