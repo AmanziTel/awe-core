@@ -9,16 +9,13 @@
 		<version>0.9.0</version>
 	</parent>
 	
-	<properties>
-		<build-version>${BUILD_NUMBER}</build-version>
-	</properties>
-
-	<groupId>org.amanzi</groupId>
+    <groupId>org.amanzi</groupId>
 	<artifactId>org.amanzi.awe.project</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
 	<packaging>eclipse-repository</packaging>
 
 	<build>
+		<finalName>${parent.artifactId}-0.11.${BUILD_NUMBER}</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
