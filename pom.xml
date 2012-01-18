@@ -33,6 +33,7 @@
 			<url>file://home/hudson/target_platform/awe_target_repository</url>
 		</repository>
 	</repositories>
+	
 	<profiles>
 		<profile>
 			<id>awe-core</id>
@@ -74,6 +75,14 @@
 						<version>${tycho-version}</version>
 						<extensions>true</extensions>
 					</plugin>
+					<plugin>
+        		<groupId>org.eclipse.tycho</groupId>
+		        <artifactId>tycho-compiler-plugin</artifactId>
+    		    <version>${tycho-version}</version>
+    		    <configuration>
+    		      <optionalDependencies>ignore</optionalDependencies>
+    		    </configuration>
+		      </plugin>
 					<plugin>
 						<groupId>org.eclipse.tycho</groupId>
 						<artifactId>target-platform-configuration</artifactId>
@@ -145,51 +154,13 @@
 						<extensions>true</extensions>
 					</plugin>
 					<plugin>
-						<groupId>org.eclipse.tycho</groupId>
-						<artifactId>target-platform-configuration</artifactId>
-						<version>${tycho-version}</version>
-						<configuration>
-							<resolver>p2</resolver>
-							<pomDependencies>consider</pomDependencies>
-							<environments>
-								<environment>
-									<os>linux</os>
-									<ws>gtk</ws>
-									<arch>x86_64</arch>
-								</environment>
-								<environment>
-									<os>linux</os>
-									<ws>gtk</ws>
-									<arch>x86</arch>
-								</environment>
-								<environment>
-									<os>macosx</os>
-									<ws>carbon</ws>
-									<arch>x86</arch>
-								</environment>
-								<environment>
-									<os>macosx</os>
-									<ws>cocoa</ws>
-									<arch>x86</arch>
-								</environment>
-								<environment>
-									<os>macosx</os>
-									<ws>cocoa</ws>
-									<arch>x86_64</arch>
-								</environment>
-								<environment>
-									<os>win32</os>
-									<ws>win32</ws>
-									<arch>x86</arch>
-								</environment>
-								<environment>
-									<os>win32</os>
-									<ws>win32</ws>
-									<arch>x86_64</arch>
-								</environment>
-							</environments>
-						</configuration>
-					</plugin>
+        		<groupId>org.eclipse.tycho</groupId>
+		        <artifactId>tycho-compiler-plugin</artifactId>
+    		    <version>${tycho-version}</version>
+    		    <configuration>
+    		      <optionalDependencies>ignore</optionalDependencies>
+    		    </configuration>
+		      </plugin>
 				</plugins>
 			</build>
 		</profile>
@@ -233,6 +204,14 @@
 						<extensions>true</extensions>
 					</plugin>
 					<plugin>
+        		<groupId>org.eclipse.tycho</groupId>
+		        <artifactId>tycho-compiler-plugin</artifactId>
+    		    <version>${tycho-version}</version>
+    		    <configuration>
+    		      <optionalDependencies>ignore</optionalDependencies>
+    		    </configuration>
+		      </plugin>
+					<plugin>
 						<groupId>org.eclipse.tycho</groupId>
 						<artifactId>target-platform-configuration</artifactId>
 						<version>${tycho-version}</version>
@@ -281,6 +260,6 @@
 				</plugins>
 			</build>
 		</profile>
-		
-</profiles>
+	</profiles>
+	
 </project>
