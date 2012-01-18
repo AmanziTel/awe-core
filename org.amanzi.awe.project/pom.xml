@@ -8,10 +8,6 @@
 		<artifactId>core</artifactId>
 		<version>0.9.0</version>
 	</parent>
-	
-	<properties>
-		<build-version>${BUILD_NUMBER}</build-version>
-	</properties>
 
 	<groupId>org.amanzi</groupId>
 	<artifactId>org.amanzi.awe.project</artifactId>
