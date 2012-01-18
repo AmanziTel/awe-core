@@ -146,6 +146,16 @@
                      name="org.amanzi.loader.wizard"
                      value="org.amanzi.awe.wizard.network">
                </parameter>
+               <visibleWhen checkEnabled="false">
+               <or>
+                  <with variable="activeWorkbenchWindow.activePerspective">
+                     <equals value="org.amanzi.awe.perspective.uDig"/>
+                  </with>
+                  <with variable="activeWorkbenchWindow.activePerspective">
+                     <equals value="org.amanzi.awe.perspective"/>
+                  </with>
+               </or>
+            </visibleWhen>
             </command>
          </toolbar>
       </menuContribution>

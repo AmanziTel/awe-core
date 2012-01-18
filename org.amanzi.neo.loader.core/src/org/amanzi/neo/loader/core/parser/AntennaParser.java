@@ -38,6 +38,7 @@ public class AntennaParser<T1 extends ISaver<IModel, MappedData, T2>, T2 extends
     // constants
     private static final String HORIZONTAL = "HORIZONTAL";
     private static final String VERTICAL = "VERTICAL";
+    private static final String COMMENT = "COMMENT";
 
     private String charSetName = Charset.defaultCharset().name();
 
@@ -76,46 +77,55 @@ public class AntennaParser<T1 extends ISaver<IModel, MappedData, T2>, T2 extends
                 // TODO Handle UnsupportedEncodingException
                 throw (RuntimeException)new RuntimeException().initCause(e);
             }
-        }
-        try {
-            String lineStr;
-            MappedData element = new MappedData();
-            while ((lineStr = reader.readLine()) != null) {
-                if (lineStr != null) {
-                    String[] line = lineStr.split(SEPARATOR);
-                    if (line[0].equals(HORIZONTAL)) {
-                        Integer count = Integer.parseInt(line[1]);
-                        element.put(NetworkService.HORIZONTAL_PATTERNS_COUNT, line[1]);
-                        for (int i = 1; i < count + 1; i++) {
-                            String parameters = reader.readLine();
-                            String[] param = parameters.split(SEPARATOR);
-                            element.put(NetworkService.HORIZONTAL_ANGLE + i, param[0]);
-                            element.put(NetworkService.HORIZONTAL_LOSS + i, param[1]);
+            try {
+                String lineStr;
+                MappedData element = new MappedData();
+                while ((lineStr = reader.readLine()) != null) {
+                    if (lineStr != null) {
+                        String[] line = lineStr.split(SEPARATOR);
+                        if (line[0].equals(HORIZONTAL)) {
+                            Integer count = Integer.parseInt(line[1]);
+                            element.put(NetworkService.HORIZONTAL_PATTERNS_COUNT, line[1]);
+                            for (int i = 1; i < count + 1; i++) {
+                                String parameters = reader.readLine();
+                                String[] param = parameters.split(SEPARATOR);
+                                element.put(NetworkService.HORIZONTAL_ANGLE + i, param[0]);
+                                element.put(NetworkService.HORIZONTAL_LOSS + i, param[1]);
+                            }
+                        } else if (line[0].equals(VERTICAL)) {
+                            Integer count = Integer.parseInt(line[1]);
+                            element.put(NetworkService.VERTICAL_PATTERNS_COUNT, line[1]);
+                            for (int i = 1; i < count + 1; i++) {
+                                String parameters = reader.readLine();
+                                String[] param = parameters.split(SEPARATOR);
+                                element.put(NetworkService.VERTICAL_ANGLE + i, param[0]);
+                                element.put(NetworkService.VERTICAL_LOSS + i, param[1]);
+                            }
+                        } else if (line[0].equals(COMMENT)) {
+                            String comment = "";
+                            for (int i = 1; i < line.length; i++) {
+                                comment = comment + line[i];
+                            }
+                            element.put(line[0].toLowerCase(), comment);
+                        } else {
+                            element.put(line[0].toLowerCase(), line[1]);
                         }
-                    } else if (line[0].equals(VERTICAL)) {
-                        Integer count = Integer.parseInt(line[1]);
-                        element.put(NetworkService.VERTICAL_PATTERNS_COUNT, line[1]);
-                        for (int i = 1; i < count + 1; i++) {
-                            String parameters = reader.readLine();
-                            String[] param = parameters.split(SEPARATOR);
-                            element.put(NetworkService.VERTICAL_ANGLE + i, param[0]);
-                            element.put(NetworkService.VERTICAL_LOSS + i, param[1]);
-                        }
-                    } else {
-                        element.put(line[0].toLowerCase(), line[1]);
                     }
                 }
-            }
-            return element;
-        } catch (IOException e) {
-            throw (RuntimeException)new RuntimeException().initCause(e);
-        } finally {
-            double percentage = is.percentage();
-            if (percentage - persentageOld >= PERCENTAGE_FIRE) {
-                persentageOld = percentage;
-           //     fireSubProgressEvent(currentFile, new ProgressEventImpl(String.format(currentFile.getName()), percentage));
+                return element;
+
+            } catch (IOException e) {
+                throw (RuntimeException)new RuntimeException().initCause(e);
+            } finally {
+                double percentage = is.percentage();
+                if (percentage - persentageOld >= PERCENTAGE_FIRE) {
+                    persentageOld = percentage;
+                    // fireSubProgressEvent(currentFile, new
+                    // ProgressEventImpl(String.format(currentFile.getName()), percentage));
+                }
             }
         }
+        return null;
     }
 
     @Override

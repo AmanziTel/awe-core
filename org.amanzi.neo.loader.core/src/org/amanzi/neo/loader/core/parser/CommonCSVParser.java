@@ -157,7 +157,7 @@ public class CommonCSVParser<T1 extends ISaver<IModel, MappedData, IConfiguratio
             double percentage = is.percentage();
             if (percentage - persentageOld >= PERCENTAGE_FIRE) {
                 persentageOld = percentage;
- //               fireSubProgressEvent(currentFile, new ProgressEventImpl(String.format(currentFile.getName()), percentage));
+//                fireSubProgressEvent(currentFile, new ProgressEventImpl(String.format(currentFile.getName()), percentage));
             }
         }
         return null;

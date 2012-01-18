@@ -17,6 +17,7 @@ import java.util.Map;
 
 import org.amanzi.neo.loader.core.config.NetworkConfiguration;
 import org.amanzi.neo.loader.core.parser.MappedData;
+import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
@@ -32,15 +33,15 @@ import org.amanzi.neo.services.model.INetworkModel;
  */
 public class AntennaOptimizationConstraintsSaver extends AbstractNetworkSaver<INetworkModel, NetworkConfiguration>{
     /*
-     * Name of Dataset Synonyms for traffic
+     * Name of Dataset Synonyms for antenna optimization constraints
      */
     private static final String SYNONYMS_DATASET_TYPE = "antenna_optimization";
 
     @Override
     public void saveElement(MappedData dataElement) throws AWEException {
-        Map<String, Object> values = getDataElementProperties(getMainModel(), null, dataElement, true);
+        Map<String, Object> values = getDataElementProperties(getMainModel(), NetworkElementNodeType.SECTOR, dataElement, true);
 
-        IDataElement sector = getNetworkElement(getSectorNodeType(), "sector_name", values);
+        IDataElement sector = getNetworkElement(getSectorNodeType(), "name", values);        
         
         if(sector==null){
             throw new NullPointerException("sector cann't be null");
@@ -56,7 +57,8 @@ public class AntennaOptimizationConstraintsSaver extends AbstractNetworkSaver<IN
 
     @Override
     protected INetworkModel createMainModel(NetworkConfiguration configuration) throws AWEException {
-        return getActiveProject().getNetwork(configuration.getDatasetName());      
+        networkModel = getActiveProject().getNetwork(configuration.getDatasetName()); 
+        return networkModel;      
     }
 
     @Override

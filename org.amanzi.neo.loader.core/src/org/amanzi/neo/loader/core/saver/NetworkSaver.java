@@ -69,18 +69,20 @@ public class NetworkSaver extends AbstractMappedDataSaver<INetworkModel, Network
     @Override
     public void saveElement(MappedData dataElement) throws AWEException {
         IDataElement parent = null;
+        IDataElement element = null;
         
         for (NetworkElementNodeType type : DEFAULT_NETWORK_STRUCTURE) {
             Map<String, Object> values = getDataElementProperties(getMainModel(), type, dataElement, type == NetworkElementNodeType.SECTOR);
             
             if (!values.isEmpty()) {
                 values.put(AbstractService.TYPE, type.getId());
-                parent = getMainModel().findElement(values);
-                if (parent == null) {
-                    parent = getMainModel().createElement(parent, values);
+                element = getMainModel().findElement(values);
+                if (element == null) {
+                    element = getMainModel().createElement(parent, values);
                 } else {
-                    getMainModel().completeProperties(parent, values, true);
+                    getMainModel().completeProperties(element, values, true);
                 }
+                parent = element;
             }   
         }
     }

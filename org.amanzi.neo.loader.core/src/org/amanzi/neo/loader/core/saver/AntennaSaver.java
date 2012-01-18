@@ -32,7 +32,7 @@ public class AntennaSaver extends AbstractMappedDataSaver<INetworkModel, Network
     @Override
     public void saveElement(MappedData dataElement) throws AWEException {
         IDataElement site = null;
-        String elementName = dataElement.get(NetworkService.NAME);
+        String elementName = dataElement.get("name");
         Set<IDataElement> searchResult = getMainModel().findElementByPropertyValue(NetworkElementNodeType.SITE,
                 NetworkService.NAME, elementName);
 
