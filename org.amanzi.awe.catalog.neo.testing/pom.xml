@@ -11,5 +11,19 @@
 	<groupId>org.amanzi</groupId>
 	<artifactId>org.amanzi.awe.catalog.neo.testing</artifactId>
 	<version>1.0.0.qualifier</version>
-	<packaging>eclipse-plugin</packaging>
+	<packaging>eclipse-test-plugin</packaging>
+	
+	<build>
+  		<plugins>
+  			<plugin>
+  				<groupId>groupId</groupId>
+  				<artifactId>tycho-surefire-plugin</artifactId>
+  				<version>${tycho-version}</version>
+  				<configuration>
+	  				<testSuite>org.amanzi.awe.catalog.neo.testing</testSuite>
+					<testClass>org.amanzi.awe.models.catalog.neo.CatalogSuite</testClass>
+  				</configuration>
+  			</plugin>
+  	  	</plugins>
+    </build>
 </project>

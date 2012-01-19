@@ -7,5 +7,6 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.amanzi.log4j;bundle-version="1.0.0";visibility:=reexport,
  org.neo4j;bundle-version="1.4.1"
 Export-Package: org.amanzi.neo.db.manager,
- org.amanzi.neo.db.manager.events
+ org.amanzi.neo.db.manager.events,
+ org.amanzi.neo.db.manager.impl;x-friends:="org.amanzi.neo.db.testing"
 Bundle-Vendor: amanzi.org

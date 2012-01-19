@@ -11,5 +11,19 @@
 	<groupId>org.amanzi</groupId>
 	<artifactId>org.amanzi.neo.loader.core.testing</artifactId>
 	<version>1.0.0.qualifier</version>
-	<packaging>eclipse-plugin</packaging>
+	<packaging>eclipse-plugin-test</packaging>
+	
+	<build>
+  		<plugins>
+  			<plugin>
+  				<groupId>groupId</groupId>
+  				<artifactId>tycho-surefire-plugin</artifactId>
+  				<version>${tycho-version}</version>
+  				<configuration>
+	  				<testSuite>org.amanzi.neo.loader.core.testing</testSuite>
+					<testClass>org.amanzi.neo.loader.core.saver.SaversSuite</testClass>
+  				</configuration>
+  			</plugin>
+  	  	</plugins>
+    </build>
 </project>
