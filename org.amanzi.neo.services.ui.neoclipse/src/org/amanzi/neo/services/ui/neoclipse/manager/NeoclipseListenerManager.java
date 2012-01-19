@@ -55,6 +55,8 @@ public class NeoclipseListenerManager {
             LOGGER.info("Can't initialize views because:", e);
             e.printStackTrace();
         }
+    	
+    	new NeoclipseIconsInitializer();
     }
 
     /**
