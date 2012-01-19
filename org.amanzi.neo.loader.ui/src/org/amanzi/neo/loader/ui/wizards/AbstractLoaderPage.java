@@ -188,6 +188,17 @@ public abstract class AbstractLoaderPage<T extends IConfiguration> extends Wizar
         
         setPageComplete(false);
     }
+    
+    protected String getNameFromFile(File dataFile) {
+        int pointIndex = dataFile.getName().lastIndexOf(".");
+        
+        if (pointIndex > 0) {
+            return dataFile.getName().substring(0, pointIndex);
+        } 
+        return dataFile.getName();
+    }
+
+    
         
     @Override
     public void createControl(Composite parent) {

@@ -86,15 +86,6 @@ public class NetworkLoaderPage extends AbstractLoaderPage<NetworkConfiguration> 
         super.updateState();
     }
 
-    private String getNameFromFile(File dataFile) {
-        int pointIndex = dataFile.getName().lastIndexOf(".");
-        
-        if (pointIndex > 0) {
-            return dataFile.getName().substring(0, pointIndex);
-        } 
-        return dataFile.getName();
-    }
-
     @Override
     public void modifyText(ModifyEvent e) {
         NetworkConfiguration configuration = getConfiguration();

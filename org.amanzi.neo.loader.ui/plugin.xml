@@ -43,6 +43,17 @@
       <loader
             class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
             id="org.amanzi.awe.loader.Network"
+            name="Neighbours Loader"
+            page="org.amanzi.awe.pages.directory"
+            parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
+            validator="org.amanzi.awe.validator.neighbours">
+         <savers
+               saver="org.amanzi.neo.loader.core.saver.NeighboursSaver">
+         </savers>
+      </loader>
+      <loader
+            class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
+            id="org.amanzi.awe.loader.Network"
             name="Network Loader"
             page="org.amanzi.awe.pages.network"
             parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
@@ -65,8 +76,30 @@
       <loader
             class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
             id="org.amanzi.awe.loader.Network"
+            name="Antenna Loader"
+            page="org.amanzi.awe.pages.directory"
+            parser="org.amanzi.neo.loader.core.parser.AntennaParser"
+            validator="org.amanzi.awe.validator.network">
+         <savers
+               saver="org.amanzi.neo.loader.core.saver.AntennaSaver">
+         </savers>
+      </loader>
+      <loader
+            class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
+            id="org.amanzi.awe.loader.Network"
             name="Antenna Optimization Constraints Loader"
             page="org.amanzi.awe.pages.network"
+            parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
+            validator="org.amanzi.awe.validator.network">
+         <savers
+               saver="org.amanzi.neo.loader.core.saver.AntennaOptimizationConstraintsSaver">
+         </savers>
+      </loader>
+      <loader
+            class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
+            id="org.amanzi.awe.loader.Network"
+            name="Antenna Optimization Constraints Loader"
+            page="org.amanzi.awe.pages.directory"
             parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
             validator="org.amanzi.awe.validator.network">
          <savers
@@ -87,8 +120,30 @@
       <loader
             class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
             id="org.amanzi.awe.loader.Network"
+            name="Selection Loader"
+            page="org.amanzi.awe.pages.directory"
+            parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
+            validator="org.amanzi.awe.validator.network">
+         <savers
+               saver="org.amanzi.neo.loader.core.saver.SelectionSaver">
+         </savers>
+      </loader>
+      <loader
+            class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
+            id="org.amanzi.awe.loader.Network"
             name="Separation Constraint Loader"
             page="org.amanzi.awe.pages.network"
+            parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
+            validator="org.amanzi.awe.validator.network">
+         <savers
+               saver="org.amanzi.neo.loader.core.saver.SeparationConstraintSaver">
+         </savers>
+      </loader>
+      <loader
+            class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
+            id="org.amanzi.awe.loader.Network"
+            name="Separation Constraint Loader"
+            page="org.amanzi.awe.pages.directory"
             parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
             validator="org.amanzi.awe.validator.network">
          <savers
@@ -109,8 +164,30 @@
       <loader
             class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
             id="org.amanzi.awe.loader.Network"
+            name="Traffic Loader"
+            page="org.amanzi.awe.pages.directory"
+            parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
+            validator="org.amanzi.awe.validator.network">
+         <savers
+               saver="org.amanzi.neo.loader.core.saver.TrafficSaver">
+         </savers>
+      </loader>
+      <loader
+            class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
+            id="org.amanzi.awe.loader.Network"
             name="TRX Loader"
             page="org.amanzi.awe.pages.network"
+            parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
+            validator="org.amanzi.awe.validator.network">
+         <savers
+               saver="org.amanzi.neo.loader.core.saver.TRXSaver">
+         </savers>
+      </loader>
+      <loader
+            class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
+            id="org.amanzi.awe.loader.Network"
+            name="TRX Loader"
+            page="org.amanzi.awe.pages.directory"
             parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
             validator="org.amanzi.awe.validator.network">
          <savers
@@ -130,6 +207,11 @@
             class="org.amanzi.neo.loader.ui.wizards.NetworkLoaderWizard"
             id="org.amanzi.awe.wizard.network"
             title="Load Network Data">
+      </wizard>
+      <wizard
+            class="org.amanzi.neo.loader.ui.wizards.DirectoryLoaderWizard"
+            id="org.amanzi.awe.wizard.directory"
+            title="Load Directory">
       </wizard>
    </extension>
    
@@ -152,6 +234,15 @@
             priority="0"
             title="Load Network data"
             wizard="org.amanzi.awe.wizard.network">
+      </page>
+      <page
+            class="org.amanzi.neo.loader.ui.wizards.NetworkDirectoryLoaderPage"
+            description="Load files from directory"
+            id="org.amanzi.awe.pages.directory"
+            isMain="true"
+            priority="0"
+            title="Load Directory"
+            wizard="org.amanzi.awe.wizard.directory">
       </page>
    </extension>
    <extension
@@ -208,7 +299,7 @@
                   style="push">
                <parameter
                      name="org.amanzi.loader.wizard"
-                     value="org.amanzi.awe.wizard.network">
+                     value="org.amanzi.awe.wizard.directory">
                </parameter>
                <visibleWhen
                      checkEnabled="false">
