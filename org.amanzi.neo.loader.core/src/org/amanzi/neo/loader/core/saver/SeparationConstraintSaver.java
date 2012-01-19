@@ -37,16 +37,13 @@ public class SeparationConstraintSaver extends AbstractNetworkSaver<INetworkMode
      */
     private static final String SYNONYMS_DATASET_TYPE = "separation";
 
-    @SuppressWarnings("unchecked")
     @Override
     public void saveElement(MappedData dataElement) throws AWEException {
-        Map<String, Object> values = getDataElementProperties(getMainModel(), null, dataElement, true);
+        Map<String, Object> values = getDataElementProperties(getMainModel(), getSectorNodeType(), dataElement, true);
 
-        IDataElement trafficElement = getNetworkElement(getSectorNodeType(), "sector_name", values);
+        IDataElement trafficElement = getNetworkElement(getSectorNodeType(), "name", values);
         
-        Map<String,Object> newPropertyMap = (Map<String, Object>)values.get("separation");
-
-        getMainModel().completeProperties(trafficElement, newPropertyMap, true);
+        getMainModel().completeProperties(trafficElement, values, true);
     }
 
     @Override
@@ -56,7 +53,8 @@ public class SeparationConstraintSaver extends AbstractNetworkSaver<INetworkMode
 
     @Override
     protected INetworkModel createMainModel(NetworkConfiguration configuration) throws AWEException {
-        return getActiveProject().getNetwork(configuration.getDatasetName());      
+        networkModel = getActiveProject().getNetwork(configuration.getDatasetName());  
+        return networkModel;      
     }
 
     @Override

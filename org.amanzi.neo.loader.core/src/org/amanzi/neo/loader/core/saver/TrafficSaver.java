@@ -37,20 +37,17 @@ public class TrafficSaver extends AbstractNetworkSaver<INetworkModel, NetworkCon
      */
     private static final String SYNONYMS_DATASET_TYPE = "traffic";
 
-    @SuppressWarnings("unchecked")
     @Override
     public void saveElement(MappedData dataElement) throws AWEException {
-        Map<String, Object> values = getDataElementProperties(getMainModel(), null, dataElement, true);
+        Map<String, Object> values = getDataElementProperties(getMainModel(), getSectorNodeType(), dataElement, true);
 
-        IDataElement trafficElement = getNetworkElement(getSectorNodeType(), "sector_name", values);
+        IDataElement trafficElement = getNetworkElement(getSectorNodeType(), "name", values);
         
         if(trafficElement==null){
             throw new NullPointerException("sector cann't be null");
         }
         
-        Map<String,Object> newPropertyMap = (Map<String, Object>)values.get("traffic");
-
-        getMainModel().completeProperties(trafficElement, newPropertyMap, true);
+        getMainModel().completeProperties(trafficElement, values, true);
     }
 
     @Override
@@ -60,7 +57,8 @@ public class TrafficSaver extends AbstractNetworkSaver<INetworkModel, NetworkCon
 
     @Override
     protected INetworkModel createMainModel(NetworkConfiguration configuration) throws AWEException {
-        return getActiveProject().getNetwork(configuration.getDatasetName());      
+        networkModel = getActiveProject().getNetwork(configuration.getDatasetName()); 
+        return networkModel;      
     }
 
     @Override

@@ -40,6 +40,22 @@
             class="org.amanzi.neo.loader.core.saver.AntennaOptimizationConstraintsSaver"
             id="org.amanzi.neo.loader.core.saver.AntennaOptimizationConstraintsSaver">
       </saver>
+      <saver
+            class="org.amanzi.neo.loader.core.saver.SelectionSaver"
+            id="org.amanzi.neo.loader.core.saver.SelectionSaver">
+      </saver>
+      <saver
+            class="org.amanzi.neo.loader.core.saver.SeparationConstraintSaver"
+            id="org.amanzi.neo.loader.core.saver.SeparationConstraintSaver">
+      </saver>
+      <saver
+            class="org.amanzi.neo.loader.core.saver.TrafficSaver"
+            id="org.amanzi.neo.loader.core.saver.TrafficSaver">
+      </saver>
+      <saver
+            class="org.amanzi.neo.loader.core.saver.TRXSaver"
+            id="org.amanzi.neo.loader.core.saver.TRXSaver">
+      </saver>
    </extension>
    
    <extension

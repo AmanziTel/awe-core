@@ -40,9 +40,9 @@ public class SelectionSaver extends AbstractNetworkSaver<ISelectionModel, Networ
 
     @Override
     public void saveElement(MappedData dataElement) throws AWEException {
-        Map<String, Object> values = getDataElementProperties(getMainModel(), null, dataElement, true);
+        Map<String, Object> values = getDataElementProperties(getMainModel(), getSectorNodeType(), dataElement, true);
 
-        IDataElement selectionElement = getNetworkElement(getSectorNodeType(), "sector_name", values);
+        IDataElement selectionElement = getNetworkElement(getSectorNodeType(), "name", values);
         
         if(selectionElement==null){
             throw new NullPointerException("sector cann't be null");

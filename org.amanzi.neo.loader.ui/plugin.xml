@@ -73,6 +73,50 @@
                saver="org.amanzi.neo.loader.core.saver.AntennaOptimizationConstraintsSaver">
          </savers>
       </loader>
+      <loader
+            class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
+            id="org.amanzi.awe.loader.Network"
+            name="Selection Loader"
+            page="org.amanzi.awe.pages.network"
+            parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
+            validator="org.amanzi.awe.validator.network">
+         <savers
+               saver="org.amanzi.neo.loader.core.saver.SelectionSaver">
+         </savers>
+      </loader>
+      <loader
+            class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
+            id="org.amanzi.awe.loader.Network"
+            name="Separation Constraint Loader"
+            page="org.amanzi.awe.pages.network"
+            parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
+            validator="org.amanzi.awe.validator.network">
+         <savers
+               saver="org.amanzi.neo.loader.core.saver.SeparationConstraintSaver">
+         </savers>
+      </loader>
+      <loader
+            class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
+            id="org.amanzi.awe.loader.Network"
+            name="Traffic Loader"
+            page="org.amanzi.awe.pages.network"
+            parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
+            validator="org.amanzi.awe.validator.network">
+         <savers
+               saver="org.amanzi.neo.loader.core.saver.TrafficSaver">
+         </savers>
+      </loader>
+      <loader
+            class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
+            id="org.amanzi.awe.loader.Network"
+            name="TRX Loader"
+            page="org.amanzi.awe.pages.network"
+            parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
+            validator="org.amanzi.awe.validator.network">
+         <savers
+               saver="org.amanzi.neo.loader.core.saver.TRXSaver">
+         </savers>
+      </loader>
    </extension>
    
    <extension
@@ -156,6 +200,33 @@
                   </with>
                </or>
             </visibleWhen>
+            </command>
+            <command
+                  commandId="org.amanzi.loader.loadNetwork"
+                  icon="icons/16/network.png"
+                  id="org.amanzi.awe.menu.loadNetworkDirectory"
+                  style="push">
+               <parameter
+                     name="org.amanzi.loader.wizard"
+                     value="org.amanzi.awe.wizard.network">
+               </parameter>
+               <visibleWhen
+                     checkEnabled="false">
+                  <or>
+                     <with
+                           variable="activeWorkbenchWindow.activePerspective">
+                        <equals
+                              value="org.amanzi.awe.perspective.uDig">
+                        </equals>
+                     </with>
+                     <with
+                           variable="activeWorkbenchWindow.activePerspective">
+                        <equals
+                              value="org.amanzi.awe.perspective">
+                        </equals>
+                     </with>
+                  </or>
+               </visibleWhen>
             </command>
          </toolbar>
       </menuContribution>
