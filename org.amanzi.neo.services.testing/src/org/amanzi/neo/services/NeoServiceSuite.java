@@ -27,29 +27,30 @@ import org.junit.runners.Suite.SuiteClasses;
  */
 @RunWith(Suite.class)
 @SuiteClasses({
+		org.amanzi.neo.model.distribution.impl.DistributionManagerTest.class,
+		org.amanzi.neo.model.distribution.impl.DistributionModelTest.class,
+		org.amanzi.neo.model.distribution.types.impl.EnumeratedDistributionTest.class,
+		org.amanzi.neo.model.distribution.types.impl.NumberDistributionTest.class,
+		org.amanzi.neo.model.distribution.xml.DistributionXmlParserTest.class,
 		org.amanzi.neo.services.CorrelationServiceTest.class,
 		org.amanzi.neo.services.DatasetServiceTest.class,
+		org.amanzi.neo.services.DistributionServiceTest.class,
 		org.amanzi.neo.services.NetworkServiceTest.class,
-		org.amanzi.neo.services.StatisticsServiceTest.class,
 		org.amanzi.neo.services.NodeTypeManagerTest.class,
 		org.amanzi.neo.services.ProjectServiceTest.class,
+		org.amanzi.neo.services.StatisticsServiceTest.class,
 		org.amanzi.neo.services.model.impl.CorrelationModelTest.class,
 		org.amanzi.neo.services.model.impl.DataElementTest.class,
 		org.amanzi.neo.services.model.impl.DriveModelTest.class,
 		org.amanzi.neo.services.model.impl.NetworkModelTest.class,
 		org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModelTest.class,
 		org.amanzi.neo.services.model.impl.ProjectModelTest.class,
-		org.amanzi.neo.services.testing.filters.FilterTest.class,
-		org.amanzi.neo.services.testing.statistic.VaultTests.class,
+		org.amanzi.neo.services.model.impl.SelectionModelTest.class,
 		org.amanzi.neo.services.synonyms.ExportSynonymsServiceTest.class,
 		org.amanzi.neo.services.synonyms.ExportSynonymsManagerTest.class,
-		org.amanzi.neo.services.model.impl.SelectionModelTest.class,
-		org.amanzi.neo.model.distribution.impl.DistributionModelTest.class,
-		org.amanzi.neo.services.DistributionServiceTest.class,
-		org.amanzi.neo.model.distribution.impl.DistributionManagerTest.class,
-		org.amanzi.neo.model.distribution.types.impl.EnumeratedDistributionTest.class,
-		org.amanzi.neo.model.distribution.types.impl.NumberDistributionTest.class,
-		org.amanzi.neo.model.distribution.xml.DistributionXmlParserTest.class })
+		org.amanzi.neo.services.testing.filters.FilterTest.class,
+		org.amanzi.neo.services.testing.statistic.VaultTests.class})
+		
 public class NeoServiceSuite {
 
 }
