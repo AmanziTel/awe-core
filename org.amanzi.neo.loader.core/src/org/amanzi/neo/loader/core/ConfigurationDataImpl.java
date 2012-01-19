@@ -92,15 +92,13 @@ public class ConfigurationDataImpl implements IConfiguration {
             rootList = new File[1];
             rootList[0] = sourceFile2;
         }
-        if (rootList != null) {
-            for (int i = 0; i < rootList.length; i++) {
-                if (rootList[i].isFile()) {
-                    filelist.add(rootList[i]);
-                } else if (rootList[i].isDirectory()) {
-                    getRootsFiles(rootList[i]);
-                }
-            }
+        
+        for (File singleFile : rootList) {
+        	if (singleFile.isFile()) {
+        		filelist.add(singleFile);
+        	}
         }
+        
         return filelist;
     }
 

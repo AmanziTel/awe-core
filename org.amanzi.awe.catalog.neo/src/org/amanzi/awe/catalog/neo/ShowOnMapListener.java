@@ -58,14 +58,14 @@ public class ShowOnMapListener implements IEventsListener<ShowOnMapEvent> {
 		try {
 			IService curService = getMapService();
 			IMap map = ApplicationGIS.getActiveMap();
-
+			boolean haveSelectedElements = !data.getSelectedElements()
+					.isEmpty();
 			List<ILayer> layerList = new ArrayList<ILayer>();
 			List<IGeoResource> listGeoRes = new ArrayList<IGeoResource>();
 			List<AbstractNavCommand> commands = new ArrayList<AbstractNavCommand>();
-			
+			IRenderableModel selectedModel = null;
 			// in case if zoomed
 			commands.add(new ZoomExtentCommand());
-			
 			for (IRenderableModel gis : data.getRenderableModelList()) {
 				if (!checkForExistCoordinateElement(gis)) {
 					LOGGER.info("Cann't add layer to map because model: "
@@ -90,16 +90,18 @@ public class ShowOnMapListener implements IEventsListener<ShowOnMapEvent> {
 					if (renderableModel != null) {
 						renderableModel.setSelectedDataElements(data
 								.getSelectedElements());
+						selectedModel = renderableModel;
 					}
 				}
-				// Set view for first selected element in
-				// gis.getSelectedElements()
-				commands.add(new SetViewportCenterCommand(gis.getCoordinate(gis
-						.getSelectedElements().get(0))));
 			}
 			layerList
-					.addAll(ApplicationGIS.addLayersToMap(map, listGeoRes, -1));			
-			commands.add(new ZoomCommand(data.getZoom()));
+					.addAll(ApplicationGIS.addLayersToMap(map, listGeoRes, -1));
+
+			if (haveSelectedElements) {
+				commands.add(new SetViewportCenterCommand(selectedModel
+						.getCoordinate(data.getSelectedElements().get(0))));
+				commands.add(new ZoomCommand(data.getZoom()));
+			}
 
 			sendCommandsToLayer(layerList, commands);
 		} catch (Exception e) {
@@ -173,8 +175,10 @@ public class ShowOnMapListener implements IEventsListener<ShowOnMapEvent> {
 	/**
 	 * Executes a commands synchronously
 	 * 
-	 * @param layers layers list
-	 * @param commands commands list
+	 * @param layers
+	 *            layers list
+	 * @param commands
+	 *            commands list
 	 */
 	private void sendCommandsToLayer(final List<ILayer> layers,
 			List<AbstractNavCommand> commands) {

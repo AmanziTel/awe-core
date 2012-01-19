@@ -143,12 +143,7 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
         setNeedsProgressMonitor(true);
 
         // maxMainPageId = -1;
-        IWizardPage mainPages = getMainPage();
-        if (mainPages != null) {
-            addPage(mainPages);
-        } else {
-            return;
-        }
+        initializeMainPages();
         for (List<IConfigurationElement> pages : wizardLoaders.values()) {
             for (IConfigurationElement page : pages) {
                 ILoaderPage<T> createdPage = createAdditionalPage(page);
@@ -243,17 +238,24 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
      * 
      * @return
      */
-    protected IWizardPage getMainPage() {
+    protected void initializeMainPages() {
+    	IWizardPage result = null;
         for (List<IConfigurationElement> pages : wizardLoaders.values()) {
             for (IConfigurationElement page : pages) {
                 if (page.getAttribute(IS_MAIN_ATTRUBUTE) != null && Boolean.valueOf(page.getAttribute(IS_MAIN_ATTRUBUTE))) {
                     ILoaderPage<T> createdPage = createAdditionalPage(page);
-                    return createdPage;
-
+                    result = createdPage;
+                    break;
                 }
             }
         }
-        return null;
+        
+        addPage(result);
+        initAdditionPages();
+    }
+    
+    protected void initAdditionPages() {
+    	
     }
 
     /**
@@ -351,7 +353,7 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
     protected void load(final Map<ILoader< ? extends IData, T>, T> newloader, final IProgressMonitor monitor) {
 
         for (ILoader< ? extends IData, T> loader : newloader.keySet()) {
-            if (newloader.get(loader) != null && newloader.get(loader).getDatasetNames().size() > 1) {
+            if (newloader.get(loader) != null) {
                 assignMonitorToProgressLoader(monitor, loader);
                 try {
                     loader.init(newloader.get(loader));

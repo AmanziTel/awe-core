@@ -16,7 +16,6 @@ package org.amanzi.neo.loader.ui.wizards;
 import org.amanzi.neo.loader.core.ConfigurationDataImpl;
 import org.amanzi.neo.loader.ui.NeoLoaderPluginMessages;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.ui.IWorkbench;
 
 /**
@@ -30,8 +29,8 @@ import org.eclipse.ui.IWorkbench;
 public class DatasetImportWizard extends AbstractLoaderWizard<ConfigurationDataImpl> {
 
     @Override
-    protected IWizardPage getMainPage() {
-        return new LoadDatasetMainPage();
+    protected void initializeMainPages() {
+        addPage(new LoadDatasetMainPage());
     }
 
     @Override
