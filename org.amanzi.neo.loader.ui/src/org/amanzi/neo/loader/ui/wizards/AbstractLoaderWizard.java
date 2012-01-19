@@ -351,7 +351,7 @@ public abstract class AbstractLoaderWizard<T extends IConfiguration> extends Wiz
     protected void load(final Map<ILoader< ? extends IData, T>, T> newloader, final IProgressMonitor monitor) {
 
         for (ILoader< ? extends IData, T> loader : newloader.keySet()) {
-            if (newloader.get(loader) != null && newloader.get(loader).getDatasetNames().size() > 1) {
+            if (newloader.get(loader) != null) {
                 assignMonitorToProgressLoader(monitor, loader);
                 try {
                     loader.init(newloader.get(loader));
