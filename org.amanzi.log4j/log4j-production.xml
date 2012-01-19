@@ -22,7 +22,6 @@
  
   <root>
     <priority value="DEBUG"/>
-    <appender-ref ref="CONSOLE-DEBUG"/>
     <appender-ref ref="LOG-FILE-APPENDER"/>
   </root>
 
