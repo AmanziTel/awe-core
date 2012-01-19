@@ -33,44 +33,26 @@ import org.neo4j.neoclipse.view.NeoGraphViewPart;
 public class NeoclipseListenerManager {
     private static final Logger LOGGER = Logger.getLogger(NeoclipseListenerManager.class);
     private final static String REL_TYPE__VIEW_ID = "org.neo4j.neoclipse.reltype.RelationshipTypeView";
-    /**
-     * NeoclipseViewerManager instance
-     */
-    private static NeoclipseListenerManager manager;
+    
     /**
      * neoclipse view instance
      */
     private NeoGraphViewPart neoGraphView;
-    /**
-     * events manager
-     */
-    private static EventManager eventManager;
+    
     /**
      * instance of relationships view
      */
     private IViewPart relationshipView;
 
     /**
-     * return manager instance
-     * 
-     * @return manager instance
-     */
-    public static void initialiseNeoclipseListeners(EventManager eventManager2) {
-        if (manager == null) {
-            eventManager = eventManager2;
-            manager = new NeoclipseListenerManager();
-        }
-    }
-
-    /**
      * registrate neoclipse views. and add required listeners
      */
     @SuppressWarnings("unchecked")
-    private NeoclipseListenerManager() {
-        try {
+    public NeoclipseListenerManager(EventManager eventManager) {
+    	try {
             eventManager.addListener(EventsType.UPDATE_DATA, new RefreshNeoclipseView());
         } catch (Exception e) {
-            LOGGER.info("Cann't initialize views because:", e);
+            LOGGER.info("Can't initialize views because:", e);
             e.printStackTrace();
         }
     }
