@@ -47,6 +47,10 @@ public abstract class AbstractDatabaseManager implements IDatabaseManager {
      * Listeners for Database Events
      */
     private static ArrayList<IDatabaseEventListener> listeners = new ArrayList<IDatabaseEventListener>();
+    
+    public AbstractDatabaseManager() {
+    	
+    }
 
     @Override
     public void startThreadTransaction() {

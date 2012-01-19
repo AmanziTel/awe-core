@@ -14,8 +14,6 @@
 package org.amanzi.neo.db.manager;
 
 import org.amanzi.neo.db.manager.impl.Neo4jDatabaseManager;
-import org.amanzi.neo.db.manager.impl.NeoclipseDatabaseManager;
-import org.eclipse.core.runtime.Platform;
 
 /**
  * TODO Purpose of
@@ -28,13 +26,19 @@ import org.eclipse.core.runtime.Platform;
 public class DatabaseManagerFactory {
 
     private static IDatabaseManager dbManager = null;
+    
+    private static final String NEOCLIPSE_MANAGER_CLASS_NAME = "org.amanzi.neo.db.manager.impl.NeoclipseDatabaseManager";
 
     public static IDatabaseManager getDatabaseManager() {
         if (dbManager == null) {
-            if (Platform.getBundle("org.neo4j.neoclipse") == null) {
+        	try {
+        		dbManager = (IDatabaseManager)Class.forName(NEOCLIPSE_MANAGER_CLASS_NAME).newInstance();
+        	} catch (ClassNotFoundException e) {
                 dbManager = new Neo4jDatabaseManager();
-            } else {
-                dbManager = new NeoclipseDatabaseManager();
+            } catch (IllegalAccessException e) {
+            	e.printStackTrace();
+            } catch (InstantiationException e) {
+            	e.printStackTrace();
             }
         }
 

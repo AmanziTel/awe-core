@@ -61,6 +61,7 @@
 				<module>org.amanzi.awe.views.reuse</module>
 				<module>org.amanzi.log4j</module>
 				<module>org.amanzi.neo.db</module>
+				<module>org.amanzi.neo.db.neoclipse</module>
 				<module>org.amanzi.neo.loader.core</module>
 				<module>org.amanzi.neo.loader.ui</module>
 				<module>org.amanzi.neo.services</module>
@@ -189,6 +190,7 @@
 				<module>org.amanzi.awe.views.reuse</module>
 				<module>org.amanzi.log4j</module>
 				<module>org.amanzi.neo.db</module>
+				<module>org.amanzi.neo.db.neoclipse</module>
 				<module>org.amanzi.neo.loader.core</module>
 				<module>org.amanzi.neo.loader.ui</module>
 				<module>org.amanzi.neo.services</module>
