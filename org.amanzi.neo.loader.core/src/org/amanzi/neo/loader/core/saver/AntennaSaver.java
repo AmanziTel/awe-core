@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.amanzi.neo.loader.core.config.AntennaConfiguration;
 import org.amanzi.neo.loader.core.config.NetworkConfiguration;
 import org.amanzi.neo.loader.core.parser.MappedData;
 import org.amanzi.neo.services.NetworkService;
@@ -22,12 +23,14 @@ import org.amanzi.neo.services.model.INetworkModel;
  * @author Ladornaya_A
  * @since 1.0.0
  */
-public class AntennaSaver extends AbstractMappedDataSaver<INetworkModel, NetworkConfiguration> {
+public class AntennaSaver extends AbstractMappedDataSaver<INetworkModel, AntennaConfiguration> {
 
     /*
-     * Name of Dataset Synonyms
+     * Name of Dataset Synonyms for antenna patterns
      */
     private static final String SYNONYMS_DATASET_TYPE = "network";
+
+    private static final String TILT = "tilt";
 
     @Override
     public void saveElement(MappedData dataElement) throws AWEException {
@@ -46,9 +49,17 @@ public class AntennaSaver extends AbstractMappedDataSaver<INetworkModel, Network
         if (site == null) {
             throw new NullPointerException("site cann't be null");
         }
+
         Map<String, Object> map = new HashMap<String, Object>();
         map.putAll(dataElement);
-        getMainModel().completeProperties(site, map, true);
+
+        if (site.keySet().contains(TILT)) {
+            if (site.get(TILT).equals(map.get(TILT))) {
+                getMainModel().completeProperties(site, map, true);
+            }
+        } else {
+            getMainModel().completeProperties(site, map, true);
+        }
     }
 
     @Override
@@ -57,7 +68,7 @@ public class AntennaSaver extends AbstractMappedDataSaver<INetworkModel, Network
     }
 
     @Override
-    protected INetworkModel createMainModel(NetworkConfiguration configuration) throws AWEException {
+    protected INetworkModel createMainModel(AntennaConfiguration configuration) throws AWEException {
         return getActiveProject().getNetwork(configuration.getDatasetName());
     }
 

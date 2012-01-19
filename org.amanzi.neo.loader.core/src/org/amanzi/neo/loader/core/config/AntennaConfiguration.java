@@ -10,19 +10,26 @@
  * This library is distributed WITHOUT ANY WARRANTY; without even the
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-package org.amanzi.neo.loader.ui.wizards;
+
+package org.amanzi.neo.loader.core.config;
+
+import java.io.File;
+import java.util.List;
 
 /**
  * 
  * TODO Purpose of 
  * <p>
- * Wizard for loading of antenna patterns directory
+ * Configuration for loading of directory with files
  * </p>
  * @author Ladornaya_A
  * @since 1.0.0
  */
-public class DirectoryLoaderWizard extends AbstractLoaderWizard {
+public class AntennaConfiguration extends AbstractConfiguration implements IMultiFileConfiguration {
 
-    
+    @Override
+    public void setFiles(List<File> files) {
+        setFilesToLoad(files);
+    }   
 
 }

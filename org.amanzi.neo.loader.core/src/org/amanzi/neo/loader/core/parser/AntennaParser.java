@@ -104,7 +104,7 @@ public class AntennaParser<T1 extends ISaver<IModel, MappedData, T2>, T2 extends
                         } else if (line[0].equals(COMMENT)) {
                             String comment = "";
                             for (int i = 1; i < line.length; i++) {
-                                comment = comment + line[i];
+                                comment = comment + " "+line[i];
                             }
                             element.put(line[0].toLowerCase(), comment);
                         } else {

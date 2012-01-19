@@ -13,6 +13,9 @@
 
 package org.amanzi.neo.loader.core.config;
 
+import java.io.File;
+import java.util.List;
+
 
 /**
  * TODO Purpose of 
@@ -24,6 +27,6 @@ package org.amanzi.neo.loader.core.config;
  */
 public interface IMultiFileConfiguration extends IConfiguration {
     
-    public void setFiles();
+    public void setFiles(List<File> files);
 
 }

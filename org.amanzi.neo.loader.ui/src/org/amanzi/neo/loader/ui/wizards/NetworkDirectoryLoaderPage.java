@@ -1,10 +1,24 @@
+/* AWE - Amanzi Wireless Explorer
+ * http://awe.amanzi.org
+ * (C) 2008-2009, AmanziTel AB
+ *
+ * This library is provided under the terms of the Eclipse Public License
+ * as described at http://www.eclipse.org/legal/epl-v10.html. Any use,
+ * reproduction or distribution of the library constitutes recipient's
+ * acceptance of this agreement.
+ *
+ * This library is distributed WITHOUT ANY WARRANTY; without even the
+ * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ */
+
 package org.amanzi.neo.loader.ui.wizards;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-import org.amanzi.neo.loader.core.config.NetworkConfiguration;
+import org.amanzi.neo.loader.core.config.AntennaConfiguration;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
@@ -13,12 +27,24 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.widgets.Composite;
 
-public class NetworkDirectoryLoaderPage extends AbstractLoaderPage<NetworkConfiguration> implements ModifyListener {
+/**
+ * 
+ * TODO Purpose of 
+ * <p>
+ * Loading directory of antenna patterns files
+ * </p>
+ * @author Ladornaya_A
+ * @since 1.0.0
+ */
+public class NetworkDirectoryLoaderPage extends AbstractLoaderPage<AntennaConfiguration> implements ModifyListener {
 
+    //field for directory
     private DirectoryEditor directoryEditor;
 
+    //combo for dataset
     private DatasetCombo datasetCombo;
 
+    //combo for loaders
     private LoaderCombo loaderCombo;
 
     @Override
@@ -42,7 +68,7 @@ public class NetworkDirectoryLoaderPage extends AbstractLoaderPage<NetworkConfig
         boolean superResult = super.validateConfiguration();
 
         if (superResult) {
-            NetworkConfiguration configuration = getConfiguration();
+            AntennaConfiguration configuration = getConfiguration();
 
             if (StringUtils.isEmpty(configuration.getDatasetName())) {
                 setErrorMessage("Network name is not set");
@@ -58,7 +84,7 @@ public class NetworkDirectoryLoaderPage extends AbstractLoaderPage<NetworkConfig
 
     @Override
     protected void updateState() {
-        NetworkConfiguration configuration = getConfiguration();
+        AntennaConfiguration configuration = getConfiguration();
 
         configuration.setDatasetName(datasetCombo.getDatasetName());
 
@@ -67,23 +93,15 @@ public class NetworkDirectoryLoaderPage extends AbstractLoaderPage<NetworkConfig
 
     @Override
     public void modifyText(ModifyEvent e) {
-        NetworkConfiguration configuration = getConfiguration();
+        AntennaConfiguration configuration = getConfiguration();
         configuration.getFilesToLoad().clear();
 
         if (!StringUtils.isEmpty(directoryEditor.getStringValue())) {
-            /*
-             * String path = "."; String files; File folder = new File(path); File[] listOfFiles =
-             * folder.listFiles(); for (int i = 0; i < listOfFiles.length; i++) { if
-             * (listOfFiles[i].isFile()) { files = listOfFiles[i].getName();
-             * System.out.println(files); } }
-             */
             File folder = new File(directoryEditor.getStringValue());
-            File[] listOfFiles = folder.listFiles();
+            File[] files = folder.listFiles();
 
-            for (int i = 0; i < listOfFiles.length; i++) {
-
-                configuration.setFile(listOfFiles[i]);                              
-            }
+            List<File> listOfFiles = new ArrayList<File>(Arrays.asList(files));
+            configuration.setFiles(listOfFiles);
 
             loaderCombo.autodefineLoader();
         }
@@ -92,8 +110,8 @@ public class NetworkDirectoryLoaderPage extends AbstractLoaderPage<NetworkConfig
     }
 
     @Override
-    protected NetworkConfiguration createConfiguration() {
-        return new NetworkConfiguration();
+    protected AntennaConfiguration createConfiguration() {
+        return new AntennaConfiguration();
     }
 
     @Override
