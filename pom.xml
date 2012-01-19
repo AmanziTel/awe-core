@@ -89,7 +89,6 @@
 				<module>org.amanzi.neo.services.testing</module>
 				<module>org.amanzi.neo.services.ui</module>
 				<module>org.amanzi.testing</module>
-				<module>org.amanzi.testing.sanity</module>
 			</modules>
 		</profile>
 	<profile>

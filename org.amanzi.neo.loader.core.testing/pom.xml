@@ -11,7 +11,7 @@
 	<groupId>org.amanzi</groupId>
 	<artifactId>org.amanzi.neo.loader.core.testing</artifactId>
 	<version>1.0.0.qualifier</version>
-	<packaging>eclipse-plugin-test</packaging>
+	<packaging>eclipse-test-plugin</packaging>
 	
 	<build>
   		<plugins>
