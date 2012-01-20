@@ -84,13 +84,6 @@ public class ConfigurationDataImpl implements IConfiguration {
         return fileList;
     }
 
-    // private Long extractTimeStampFromFileName(String fileName) {
-    // String longString = fileName.substring(fileName.lastIndexOf("#") + 1,
-    // fileName.lastIndexOf("."));
-    // return Long.parseLong(longString);
-    //
-    // }
-
     /**
      * get all files from directory and subdirectories
      * 
