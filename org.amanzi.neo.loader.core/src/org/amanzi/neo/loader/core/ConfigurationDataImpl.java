@@ -16,6 +16,8 @@ package org.amanzi.neo.loader.core;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -27,6 +29,15 @@ import java.util.Map;
  * @author Kondratenko_Vladislav
  */
 public class ConfigurationDataImpl implements IConfiguration {
+	
+	private final static Comparator<File> FILE_COMPARATOR = new Comparator<File>() {
+
+		@Override
+		public int compare(File o1, File o2) {
+			return o1.getAbsolutePath().compareTo(o2.getAbsolutePath());
+		}
+	};
+	
     /**
      * 
      */
@@ -67,6 +78,9 @@ public class ConfigurationDataImpl implements IConfiguration {
                 fileList.addAll(getRootsFiles(file));
             }
         }
+        
+        Collections.sort(fileList, FILE_COMPARATOR);
+        
         return fileList;
     }
 
