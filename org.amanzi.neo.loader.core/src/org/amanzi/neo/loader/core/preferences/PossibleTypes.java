@@ -19,6 +19,7 @@ import org.amanzi.neo.loader.core.saver.AbstractSaver;
  * @author Vladislav_Kondratenko
  */
 public enum PossibleTypes {
+
     DOUBLE(Double.class) {
         @Override
         public Object parse(String text) {
@@ -78,5 +79,5 @@ public enum PossibleTypes {
         }        
         return null;
     }
-    
+
 }

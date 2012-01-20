@@ -83,11 +83,12 @@ public abstract class AbstractService implements IDatabaseEventListener {
     protected final static TraversalDescription FILTER_NODES_TRAVERSL_DESCRIPTION = Traversal.description().breadthFirst()
             .relationships(FilterRelationshipType.FILTER, Direction.OUTGOING)
             .relationships(FilterRelationshipType.OR, Direction.OUTGOING)
-            .relationships(FilterRelationshipType.AND, Direction.OUTGOING).evaluator(Evaluators.excludeStartPosition());
+            .relationships(FilterRelationshipType.AND, Direction.OUTGOING).evaluator(Evaluators.excludeStartPosition())
+            .evaluator(Evaluators.atDepth(1));
     protected final static TraversalDescription FILTER_ROOTS_TRAVERSL_DESCRIPTION = Traversal.description().breadthFirst()
             .relationships(FilterRelationshipType.FILTER, Direction.OUTGOING).evaluator(Evaluators.excludeStartPosition())
             .evaluator(Evaluators.atDepth(1));;
-    private List<String> indexedProperties = new ArrayList<String>();
+            private List<String> indexedProperties = new ArrayList<String>();
 
     private void fillIndexedProperties() {
         indexedProperties.add(AbstractService.NAME);
@@ -655,12 +656,22 @@ public abstract class AbstractService implements IDatabaseEventListener {
             return;
         }
         Node filterNode = null;
-        if (!parentNode.getProperty(TYPE).equals(FilterNodeType.FILTER.getId())) {
-            filterNode = createNode(parentNode, FilterRelationshipType.FILTER, FilterNodeType.FILTER);
+        Transaction tx = graphDb.beginTx();
+        try {
+            if (!parentNode.getProperty(TYPE).equals(FilterNodeType.FILTER.getId())) {
+                filterNode = createNode(parentNode, FilterRelationshipType.FILTER, FilterNodeType.FILTER);
+            }
+            Map<String, Object> filterProperties = collectFilterProperties(filter);
+            setProperties(filterNode, filterProperties);
+            saveUnderlinesFilters(filterNode, filter.getUnderlyingFilter());
+            tx.success();
+        } catch (Exception e) {
+            tx.failure();
+            LOGGER.error("Cann't save filters ", e);
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
         }
-        Map<String, Object> filterProperties = collectFilterProperties(filter);
-        setProperties(filterNode, filterProperties);
-        saveUnderlinesFilters(filterNode, filter.getUnderlyingFilter());
     }
 
     /**

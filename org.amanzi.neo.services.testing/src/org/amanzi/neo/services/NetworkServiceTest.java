@@ -1709,6 +1709,37 @@ public class NetworkServiceTest extends AbstractAWETest {
             Assert.fail("Test finished with exception" + e);
         }
     }
+    
+    @Test
+    public void testGetCurrentN2NModelName() {
+    	Map<String, Object> properties = new HashMap<String, Object>();
+    	properties.put(AbstractService.NAME, NAME_VALUE);    	
+    	properties.put(SECOND_PROPERTY, SECOND_PROPERTY);    	
+    	try {
+    		Node rootNode = networkService.createNode(NetworkElementNodeType.SECTOR);            
+			networkService.setProperties(rootNode, properties);				
+			networkService.setCurrentNodeToNodeModelName(rootNode, FIRST_PROPERTY);			
+			String actual = networkService.getCurrentNodeToNodeModelName(rootNode);			
+			Assert.assertNotNull(actual);			
+			Assert.assertEquals(FIRST_PROPERTY, actual);			
+			networkService.setCurrentNodeToNodeModelName(rootNode, null);
+			actual = networkService.getCurrentNodeToNodeModelName(rootNode);
+			Assert.assertNull(actual);					
+		} catch (Exception e) {
+			LOGGER.info("testGetCurrentN2NModelName() finished with exception " , e);
+			Assert.fail("Test finished with exception " + e);			
+		}
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void testSetCurrentN2NModelNameWithNullRootNode() throws DatabaseException {
+    	networkService.setCurrentNodeToNodeModelName(null, null);
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetCurrentN2NModelNameWithNullRootNode() throws DatabaseException {
+    	networkService.getCurrentNodeToNodeModelName(null);
+    }
 
     /**
      * added properties to node

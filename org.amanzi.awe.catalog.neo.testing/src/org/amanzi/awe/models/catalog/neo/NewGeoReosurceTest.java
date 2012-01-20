@@ -67,20 +67,4 @@ public class NewGeoReosurceTest {
         fail("Not yet implemented"); // TODO
     }
 
-    /**
-     * Test method for {@link org.amanzi.awe.models.catalog.neo.GeoResource#canResolve(java.lang.Class)}.
-     */
-    @Test
-    public void testCanResolveClassOfT() {
-        fail("Not yet implemented"); // TODO
-    }
-
-    /**
-     * Test method for {@link org.amanzi.awe.models.catalog.neo.GeoResource#resolve(java.lang.Class, org.eclipse.core.runtime.IProgressMonitor)}.
-     */
-    @Test
-    public void testResolveClassOfTIProgressMonitor() {
-        fail("Not yet implemented"); // TODO
-    }
-
 }

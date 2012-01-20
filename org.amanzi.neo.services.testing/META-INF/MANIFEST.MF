@@ -7,3 +7,4 @@ Fragment-Host: org.amanzi.neo.services;bundle-version="1.0.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.amanzi.testing;bundle-version="1.0.0"
 Bundle-Vendor: amanzi.org
+Export-Package: org.amanzi.neo.services

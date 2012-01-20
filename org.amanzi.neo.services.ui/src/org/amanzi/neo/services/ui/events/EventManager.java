@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.amanzi.neo.services.ui.enums.EventsType;
-import org.amanzi.neo.services.ui.neoclipse.manager.NeoclipseListenerManager;
 import org.amanzi.neo.services.ui.utils.ActionUtil;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -61,7 +60,15 @@ public class EventManager {
      */
     private EventManager() {
         listenersCollections = new HashMap<EventsType, Set<IEventsListener< ? extends AbstractEvent>>>();
-        NeoclipseListenerManager.initialiseNeoclipseListeners(this);
+        initializeNeoclipseListener();
+    }
+    
+    private void initializeNeoclipseListener() {
+    	try {
+    		Class.forName("org.amanzi.neo.services.ui.neoclipse.manager.NeoclipseListenerManager").getConstructor(EventManager.class).newInstance(this);
+    	} catch (Exception e){ 
+    		e.printStackTrace();
+    	}
     }
 
     /**

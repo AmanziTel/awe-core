@@ -273,13 +273,16 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
      * Creates Distribution Database structure
      */
     private List<IDistributionBar> createDistribution(IProgressMonitor monitor) throws AWEException {
-        monitor.beginTask("Creating Distribution <" + getName() + "> in Database", distributionType.getCount());
-
+        int totalElementsCount = 0;
+        for (Object property : analyzedModel.getAllProperties(distributionType.getNodeType(), distributionType.getPropertyName())) {
+            totalElementsCount += analyzedModel.getPropertyValueCount(distributionType.getNodeType(),
+                    distributionType.getPropertyName(), property);
+        }
+        monitor.beginTask("Creating Distribution <" + getName() + "> in Database", totalElementsCount);
         distributionType.init();
-
         List<Pair<IRange, DistributionBar>> distributionConditions = createDistributionBars();
-
         try {
+
             // iterate through all analysed data
             for (IDataElement element : analyzedModel.getAllElementsByType(distributionType.getNodeType())) {
                 // iterate through conditions
@@ -299,8 +302,8 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
                         bar.setCount(bar.getCount() + 1);
                     }
                 }
-
                 monitor.worked(1);
+
             }
         } catch (Exception e) {
             LOGGER.error("Exception on creating aggregation links", e);

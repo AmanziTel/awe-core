@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.services.model.impl;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -47,6 +48,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 public abstract class RenderableModel extends AbstractIndexedModel {
 
     private static Logger LOGGER = Logger.getLogger(RenderableModel.class);
+    protected List<IDataElement> renderableModelElements = new ArrayList<IDataElement>();
 
     static final String CRS_NAME = "crs";
     static final String DESCRIPTION = "description";
@@ -69,6 +71,22 @@ public abstract class RenderableModel extends AbstractIndexedModel {
         return currentGisModel.getBounds();
     }
 
+    public void setSelectedDataElementToList(IDataElement dataElement) {
+        renderableModelElements.add(dataElement);
+    }
+    
+    public List<IDataElement> getSelectedElements() {
+        return renderableModelElements;
+    }
+    
+    public void clearSelectedElements() {
+        renderableModelElements.clear();
+    }
+    
+    public void setSelectedDataElements(List<IDataElement> dataElements) {
+        renderableModelElements.addAll(dataElements);        
+    }
+    
     @Override
     public void finishUp() throws AWEException {
         Iterable<Node> allGis = datasetService.getAllGisByDataset(rootNode);

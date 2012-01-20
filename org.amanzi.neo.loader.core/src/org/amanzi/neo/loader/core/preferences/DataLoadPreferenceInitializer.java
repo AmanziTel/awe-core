@@ -84,7 +84,6 @@ public class DataLoadPreferenceInitializer extends AbstractPreferenceInitializer
         pref.setDefault(DataLoadPreferences.ADD_AMS_CALLS_TO_MAP, true);
         pref.setDefault(DataLoadPreferences.ADD_AMS_EVENTS_TO_MAP, true);
 
-        
         pref.setDefault(DataLoadPreferences.NH_CITY, DataLoadPluginSynonyms.NH_CITY);
         pref.setDefault(DataLoadPreferences.NH_MSC, DataLoadPluginSynonyms.NH_MSC);
         pref.setDefault(DataLoadPreferences.NH_BSC, DataLoadPluginSynonyms.NH_BSC);

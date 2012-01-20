@@ -77,7 +77,6 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     private static Logger LOGGER = Logger.getLogger(NetworkModel.class);
 
     private Map<INodeType, Index<Node>> indexMap = new HashMap<INodeType, Index<Node>>();
-
     private NetworkService nwServ = NeoServiceFactory.getInstance().getNetworkService();
     private DatasetService dsServ = NeoServiceFactory.getInstance().getDatasetService();
 
@@ -939,4 +938,26 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         return list;
     }
     
+    @Override
+    public INodeToNodeRelationsModel getCurrentNodeToNodeRelationshipModel() throws AWEException {
+        INodeToNodeRelationsModel resultModel = null;
+        String currentN2NModelName = nwServ.getCurrentNodeToNodeModelName(getRootNode());
+        
+        if (currentN2NModelName != null) {
+            for (INodeToNodeRelationsModel currentModel : getNodeToNodeModels()) {
+                if (currentN2NModelName.equals(currentModel.getName())) {
+                    resultModel = currentModel;
+                    break;
+                }
+            }
+        }
+        
+        return resultModel;
+    }
+
+    @Override
+    public void setCurrentNodeToNodeRelationshipModel(INodeToNodeRelationsModel model) throws AWEException {
+        nwServ.setCurrentNodeToNodeModelName(getRootNode(), model.getName());
+    }  
+
 }

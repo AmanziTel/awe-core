@@ -148,4 +148,25 @@
          install-size="0"
          version="0.0.0"/>
 
+   <plugin
+         id="org.amanzi.awe.render.core"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.amanzi.awe.render.drive"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.amanzi.neo.db.neoclipse"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"/>
+
 </feature>

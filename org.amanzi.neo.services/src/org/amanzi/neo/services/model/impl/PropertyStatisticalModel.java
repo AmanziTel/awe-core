@@ -48,9 +48,9 @@ public abstract class PropertyStatisticalModel extends DataModel implements IPro
     protected IVault statisticsVault;
 
     protected List<String> notNecessaryListOfProperties = new ArrayList<String>();
-    
+
     protected List<String> uniqueListOfProperties = new ArrayList<String>();
-    
+
     /**
      * Method to fill properties which contains not need properties
      */
@@ -61,13 +61,12 @@ public abstract class PropertyStatisticalModel extends DataModel implements IPro
         notNecessaryListOfProperties.add(INeoConstants.PROPERTY_LONGITUDE_NAME);
         notNecessaryListOfProperties.add(INeoConstants.PROPERTY_TIMESTAMP_NAME);
     }
-    
-    
+
     @Override
     public boolean isUniqueProperties(String property) {
         return uniqueListOfProperties.contains(property) ? true : false;
     }
-    
+
     /**
      * Method to initialize statistics from other models
      */
@@ -76,62 +75,59 @@ public abstract class PropertyStatisticalModel extends DataModel implements IPro
             statisticsVault = statisticsService.loadVault(getRootNode());
             fillListOfNotNecessaryProperties();
         } catch (AWEException e) {
-            //TODO: LN: handle exception
+            // TODO: LN: handle exception
         }
     }
-    
+
     /**
      * Method to add property in statistics by type of node and name of property
-     *
-     * @param nodeType Type of node 
-     * @param propertyName Name of property
-     * @param propertyValue Value of property
-     * @throws AWEException
-     */
-    protected void indexProperty(INodeType nodeType, String propertyName, Object propertyValue)
-            throws AWEException {
-
-        if (!notNecessaryListOfProperties.contains(propertyName)) {
-            statisticsVault.indexProperty(nodeType.getId(), propertyName, propertyValue);
-        }
-    }
-    
-    /**
-     * Method to remove property from statistics by type of node and name of property
-     *
+     * 
      * @param nodeType Type of node
      * @param propertyName Name of property
      * @param propertyValue Value of property
      * @throws AWEException
      */
-    protected void removeProperty(INodeType nodeType, String propertyName, Object propertyValue)
-            throws AWEException {
+    protected void indexProperty(INodeType nodeType, String propertyName, Object propertyValue) throws AWEException {
+
+        if (!notNecessaryListOfProperties.contains(propertyName)) {
+            statisticsVault.indexProperty(nodeType.getId(), propertyName, propertyValue);
+        }
+    }
+
+    /**
+     * Method to remove property from statistics by type of node and name of property
+     * 
+     * @param nodeType Type of node
+     * @param propertyName Name of property
+     * @param propertyValue Value of property
+     * @throws AWEException
+     */
+    protected void removeProperty(INodeType nodeType, String propertyName, Object propertyValue) throws AWEException {
 
         if (!notNecessaryListOfProperties.contains(propertyName)) {
             statisticsVault.removeProperty(nodeType.getId(), propertyName, propertyValue);
         }
     }
-    
+
     /**
-     * Method to rename property from statistics from old value of property 
-     *      to new value of property
-     *
+     * Method to rename property from statistics from old value of property to new value of property
+     * 
      * @param nodeType Type of node
      * @param propertyName Name of property
      * @param oldPropValue Old value of property
      * @param newPropValue New value of property
      * @throws AWEException
      */
-    protected void renameProperty(INodeType nodeType, String propertyName, Object oldPropValue, Object newPropValue) 
+    protected void renameProperty(INodeType nodeType, String propertyName, Object oldPropValue, Object newPropValue)
             throws AWEException {
         statisticsVault.renamePropertyValue(nodeType.getId(), propertyName, oldPropValue, newPropValue);
     }
 
     /**
-     * Method to add all properties from dataElement
-     *      in statistics by type of node and name of property
-     *
-     * @param nodeType Type of node 
+     * Method to add all properties from dataElement in statistics by type of node and name of
+     * property
+     * 
+     * @param nodeType Type of node
      * @param dataElement Element which contains map with properties
      * @throws AWEException
      */
@@ -143,11 +139,11 @@ public abstract class PropertyStatisticalModel extends DataModel implements IPro
             }
         }
     }
-    
+
     /**
-     * Method to remove all properties from dataElement 
-     *      in statistics by type of node and name of property
-     *
+     * Method to remove all properties from dataElement in statistics by type of node and name of
+     * property
+     * 
      * @param nodeType Type of node
      * @param dataElement Element which contains map with properties
      * @throws AWEException
@@ -162,9 +158,10 @@ public abstract class PropertyStatisticalModel extends DataModel implements IPro
         }
     }
 
-//    protected Object parse(INodeType nodeType, String propertyName, String propertyValue) throws AWEException {
-//        return statisticsVault.parse(nodeType.getId(), propertyName, propertyValue);
-//    }
+    // protected Object parse(INodeType nodeType, String propertyName, String propertyValue) throws
+    // AWEException {
+    // return statisticsVault.parse(nodeType.getId(), propertyName, propertyValue);
+    // }
 
     @Override
     public int getNodeCount(INodeType nodeType) {
@@ -191,23 +188,22 @@ public abstract class PropertyStatisticalModel extends DataModel implements IPro
         allProperties.toArray(result);
         return result;
     }
-    
+
     @Override
     public Set<Object> getAllProperties(INodeType nodeType, String propertyName) {
         Map<Object, Integer> allProperties = statisticsVault.getAllProperties(nodeType.getId(), propertyName);
-        return allProperties.keySet(); 
+        return allProperties.keySet();
     }
-    
+
     @Override
     public Number getMinValue(INodeType nodeType, String propertyName) {
         return statisticsVault.getMinValue(nodeType.getId(), propertyName);
     }
-    
+
     @Override
     public Number getMaxValue(INodeType nodeType, String propertyName) {
         return statisticsVault.getMaxValue(nodeType.getId(), propertyName);
     }
-    
 
     @Override
     public void finishUp() throws AWEException {
@@ -216,33 +212,38 @@ public abstract class PropertyStatisticalModel extends DataModel implements IPro
         }
         super.finishUp();
     }
-    
+
     @Override
-    public Class<?> getPropertyClass(INodeType nodeType, String propertyName) {
+    public Class< ? > getPropertyClass(INodeType nodeType, String propertyName) {
         IVault nodeTypeVault = statisticsVault.getSubVaults().get(nodeType.getId());
-        
+
         if (nodeTypeVault != null) {
             PropertyStatistics property = nodeTypeVault.getPropertyStatisticsMap().get(propertyName);
-            
+
             if (property != null) {
                 return property.getKlass();
             }
         }
-        
+
         return null;
     }
-    
+
+    @Override
+    public int getPropertyValueCount(INodeType nodeType, String propertyName, Object propertyValue) {
+        return statisticsVault.getPropertyValueCount(nodeType.getId(), propertyName, propertyValue);
+    }
+
     @Override
     public Object[] getPropertyValues(INodeType nodeType, String propertyName) {
         IVault nodeTypeVault = statisticsVault.getSubVaults().get(nodeType.getId());
-        
+
         if (nodeTypeVault != null) {
             PropertyStatistics property = nodeTypeVault.getPropertyStatisticsMap().get(propertyName);
             if (property != null) {
                 return property.getPropertyMap().keySet().toArray();
             }
         }
-        
+
         return null;
     }
 }

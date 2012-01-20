@@ -15,13 +15,11 @@ package org.amanzi.neo.loader.core.parser;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import org.amanzi.awe.console.AweConsolePlugin;
 import org.amanzi.neo.loader.core.ILoaderProgressListener;
 import org.amanzi.neo.loader.core.config.IConfiguration;
-import org.amanzi.neo.loader.core.saver.AbstractSaver;
 import org.amanzi.neo.loader.core.saver.ISaver;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
@@ -48,21 +46,9 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
     private final List<ILoaderProgressListener> listeners = new ArrayList<ILoaderProgressListener>();
     protected final int PERCENTAGE_FIRE = 1;
     /**
-     * percentage of all files
-     */
-    private double percentage = 0.0;
-    /**
      * temporary files instance
      */
     protected File tempFile;
-    /**
-     * new file flag
-     */
-    private boolean isNewFile = false;
-    /**
-     * percentage of curent file
-     */
-    private double commonCurentFilePercentage = 0;
     /**
      * cancel progress monitor flag
      */
@@ -111,10 +97,6 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
      * @throws AWEException
      */
     protected void parseFile(File file) throws AWEException {
-        AbstractSaver.statisticsValues = new HashMap<String,Long>();
-        if (tempFile == null || tempFile != currentFile) {
-            isNewFile = true;
-        }
         T3 element = parseElement();
 
         long startTime = System.currentTimeMillis();
