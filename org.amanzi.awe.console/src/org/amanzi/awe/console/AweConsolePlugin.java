@@ -74,6 +74,8 @@ public class AweConsolePlugin extends AbstractUIPlugin {
     // The shared instance
     private static AweConsolePlugin plugin;
 
+    private static Display device = Display.getCurrent();
+
     /**
      * Some useful colors.
      */
@@ -82,7 +84,6 @@ public class AweConsolePlugin extends AbstractUIPlugin {
     private static final Color BLACK;
 
     static {
-        Display device = Display.getCurrent();
         RED = new Color(device, 255, 0, 0);
         BLUE = new Color(device, 0, 0, 128);
         BLACK = new Color(device, 0, 0, 0);
@@ -96,6 +97,7 @@ public class AweConsolePlugin extends AbstractUIPlugin {
     public void start(BundleContext context) throws Exception {
         super.start(context);
         plugin = this;
+        device = getWorkbench().getDisplay();
         initializeConsole();
     }
 
@@ -181,11 +183,11 @@ public class AweConsolePlugin extends AbstractUIPlugin {
      * 
      * @param line
      */
-    public static void info(String line) {
+    public static void info(final String line) {
         if (loggingPossible) {
             if (verbose || debug) {
                 consoleStream = pluginConsole.newMessageStream();
-                consoleStream.setColor(BLACK);
+                setColor(BLACK);
                 getDefault().printToStream(line);
             }
         } else {
@@ -201,11 +203,12 @@ public class AweConsolePlugin extends AbstractUIPlugin {
     public static void notify(String line) {
         if (loggingPossible) {
             consoleStream = pluginConsole.newMessageStream();
-            consoleStream.setColor(BLUE);
+            setColor(BLUE);
             getDefault().printToStream(line);
         } else {
             LOGGER.warn(line);
         }
+
     }
 
     /**
@@ -216,11 +219,12 @@ public class AweConsolePlugin extends AbstractUIPlugin {
     public static void error(String line) {
         if (loggingPossible) {
             consoleStream = pluginConsole.newMessageStream();
-            consoleStream.setColor(RED);
+            setColor(RED);
             getDefault().printToStream(line);
         } else {
             LOGGER.error(line);
         }
+
     }
 
     /**
@@ -230,13 +234,15 @@ public class AweConsolePlugin extends AbstractUIPlugin {
      */
 
     public static void exception(Exception e) {
+
         if (loggingPossible) {
             consoleStream = pluginConsole.newMessageStream();
-            consoleStream.setColor(RED);
+            setColor(RED);
             getDefault().printException(e);
         } else {
             LOGGER.error(e.getMessage(), e);
         }
+
     }
 
     /** Print a message to Console */
@@ -265,6 +271,21 @@ public class AweConsolePlugin extends AbstractUIPlugin {
             e.printStackTrace(stream);
         }
         return loggingPossible;
+    }
+
+    /**
+     * set message color
+     *
+     * @param color message color
+     */
+    private static void setColor(final Color color) {
+        device.syncExec(new Runnable() {
+
+            @Override
+            public void run() {
+                consoleStream.setColor(color);
+            }
+        });
     }
 
 }
