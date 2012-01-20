@@ -53,6 +53,11 @@ public class ConfigurationDataImpl implements IConfiguration {
      * dataset names collection
      */
     private Map<Object, String> datasetNames;
+    
+	private boolean filesChanged = false;
+	
+	private List<File> fileList;
+
 
     /**
      * init source with file or directory path
@@ -72,14 +77,20 @@ public class ConfigurationDataImpl implements IConfiguration {
 
     @Override
     public List<File> getFilesToLoad() {
-        List<File> fileList = new LinkedList<File>();
-        if (sourceFile != null) {
-            for (File file : sourceFile) {
-                fileList.addAll(getRootsFiles(file));
-            }
-        }
-        
-        Collections.sort(fileList, FILE_COMPARATOR);
+		if (fileList == null && filesChanged) {
+
+			List<File> fileList = new ArrayList<File>();
+			if (sourceFile != null) {
+				for (File file : sourceFile) {
+					fileList.addAll(getRootsFiles(file));
+				}
+			}
+
+			Collections.sort(fileList, FILE_COMPARATOR);
+			
+			this.fileList = fileList;
+			filesChanged = false;
+		}
         
         return fileList;
     }
@@ -120,6 +131,7 @@ public class ConfigurationDataImpl implements IConfiguration {
     @Override
     public void setSourceFile(Collection<File> sourceFile) {
         this.sourceFile = sourceFile;
+        this.filesChanged = true;
     }
 
     @Override
