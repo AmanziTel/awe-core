@@ -62,13 +62,14 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
     protected AbstractIndexedModel(Node rootNode, INodeType nodeType) throws AWEException {
         super(nodeType);
         this.rootNode = rootNode;
-
-        if (rootNode != null) {
-            max_timestamp = (Long)rootNode.getProperty(DriveModel.MAX_TIMESTAMP, max_timestamp);
-            min_timestamp = (Long)rootNode.getProperty(DriveModel.MIN_TIMESTAMP, min_timestamp);
+        Node gis = null;
+        if (rootNode == null) {
+            return;
         }
+        max_timestamp = (Long)rootNode.getProperty(DriveModel.MAX_TIMESTAMP, max_timestamp);
+        min_timestamp = (Long)rootNode.getProperty(DriveModel.MIN_TIMESTAMP, min_timestamp);
+        gis = datasetService.getGisNodeByDataset(rootNode, (String)rootNode.getProperty(DatasetService.NAME));
 
-        Node gis = datasetService.getGisNodeByDataset(rootNode, (String)rootNode.getProperty(DatasetService.NAME));
         if (gis != null) {
             min_latitude = (Double)gis.getProperty(DriveModel.MIN_LATITUDE, min_latitude);
             min_longitude = (Double)gis.getProperty(DriveModel.MIN_LONGITUDE, min_longitude);
