@@ -55,6 +55,7 @@ public class NetworkService extends AbstractService {
     public final static String BCCH = "bcch";
 
     public final static String SELECTION_RELATIONSHIP_INDEX = "selection_relationship";
+    public final static String CURRENT_N2N_MODEL_NAME = "current_n2n_model_name";
 
     public final static String SELECTED_NODES_COUNT = "selected_nodes_count";
     public final static String SOURCE_NAME = "source_name";
@@ -877,5 +878,63 @@ public class NetworkService extends AbstractService {
         } finally {
             tx.finish();
         }
+    }
+
+    /**
+     * Set for current N2N model name
+     * 
+     * @param rootNode root node
+     * @param name N2N model name
+     * @throws DatabaseException
+     */
+    public void setCurrentNodeToNodeModelName(Node rootNode, String name) throws DatabaseException {
+
+        if (rootNode == null) {
+            LOGGER.error("Input rootNode cannot be null");
+            throw new IllegalArgumentException("Input rootNode cannot be null");
+        }
+
+        Transaction tx = graphDb.beginTx();
+        try {
+            if (name == null) {
+                rootNode.removeProperty(CURRENT_N2N_MODEL_NAME);
+            } else {
+                rootNode.setProperty(CURRENT_N2N_MODEL_NAME, name);
+            }            
+            tx.success();
+        } catch (Exception e) {
+            tx.failure();
+            LOGGER.error("Cannot get NodeToNodeRelationshipModel", e);
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
+    }
+
+    /**
+     * Get current N2N model name by <code>rootNode</code>
+     * 
+     * @param rootNode
+     * @return current N2N model name
+     * @throws DatabaseException
+     */
+    public String getCurrentNodeToNodeModelName(Node rootNode) throws DatabaseException {
+        if (rootNode == null) {
+            LOGGER.error("Input rootNode cannot be null");
+            throw new IllegalArgumentException("Input rootNode cannot be null");
+        }
+        String modelName = null;
+        Transaction tx = graphDb.beginTx();
+        try {            
+            modelName = (String) rootNode.getProperty(CURRENT_N2N_MODEL_NAME, null);
+            tx.success();
+        } catch (Exception e) {
+            tx.failure();
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
+
+        return modelName;
     }
 }

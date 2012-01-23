@@ -81,5 +81,4 @@ public abstract class AbstractN2NSaver extends AbstractNetworkSaver<INodeToNodeR
     protected String getSubType() {
         return null;
     }
-
 }

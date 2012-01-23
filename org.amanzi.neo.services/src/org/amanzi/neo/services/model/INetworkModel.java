@@ -275,5 +275,22 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
      */
     public Iterable<ISelectionModel> getAllSelectionModelsOfSector(IDataElement element) throws AWEException;
     
+
     public IDataElement getNetworkElement(IDataElement parent, Map<String, Object> params) throws AWEException;
+
+    /**
+     * return current N2N relationship model
+     *
+     * @return N2N relationship model
+     */
+    public INodeToNodeRelationsModel getCurrentNodeToNodeRelationshipModel() throws AWEException;
+    
+    /**
+     * Set current N2N relationship model
+     *
+     * @param model
+     * @throws AWEException
+     */
+    public void setCurrentNodeToNodeRelationshipModel(INodeToNodeRelationsModel model) throws AWEException;
+
 }

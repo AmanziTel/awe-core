@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Neoclipse
+Bundle-SymbolicName: org.amanzi.neo.db.neoclipse
+Bundle-Version: 1.0.0.qualifier
+Fragment-Host: org.amanzi.neo.db;bundle-version="1.0.0"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Require-Bundle: org.neo4j.neoclipse;bundle-version="1.4.0",
+ org.eclipse.ui;bundle-version="3.7.0"
+Export-Package: org.amanzi.neo.db.manager.impl;x-friends:="org.amanzi.neo.db.testing"

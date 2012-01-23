@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -47,6 +48,14 @@ public class FileSelection extends ViewPart {
 
     private static final Image folderImage = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
     private static final Image fileImage = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FILE);
+    
+    private final static Comparator<File> FILE_COMPARATOR = new Comparator<File>() {
+
+		@Override
+		public int compare(File arg0, File arg1) {
+			return arg0.getAbsolutePath().compareToIgnoreCase(arg1.getAbsolutePath());
+		}
+	};
 
     private class FileLabelProvider extends LabelProvider {
 
@@ -90,9 +99,9 @@ public class FileSelection extends ViewPart {
                 }
             }
 
-            Collections.sort(files);
-            Collections.sort(directories);
-            Collections.sort(others);
+            Collections.sort(files, FILE_COMPARATOR);
+            Collections.sort(directories, FILE_COMPARATOR);
+            Collections.sort(others, FILE_COMPARATOR);
 
             directories.addAll(files);
             directories.addAll(others);

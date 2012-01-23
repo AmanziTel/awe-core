@@ -13,7 +13,6 @@
 
 package org.amanzi.neo.services.ui;
 
-import org.amanzi.neo.services.ui.neoclipse.manager.NeoclipseIconsInitializer;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
@@ -37,7 +36,6 @@ public class NeoServicesUiPlugin extends AbstractUIPlugin {
     public NeoServicesUiPlugin() {
         super();
         plugin = this;
-        new NeoclipseIconsInitializer();
     }
 
     /**

@@ -27,15 +27,18 @@ import org.junit.runners.Suite.SuiteClasses;
  */
 @RunWith(Suite.class)
 @SuiteClasses({
-         org.amanzi.neo.loader.core.saver.SeparationConstraintsSaverTesting.class,
-        org.amanzi.neo.loader.core.saver.FreuencyConstraintTesting.class,
-        org.amanzi.neo.loader.core.saver.InterferenceSaverTesting.class,
-        org.amanzi.neo.loader.core.saver.NetworkSaverTesting.class,
-        org.amanzi.neo.loader.core.saver.TRXSaverTesting.class,
-        org.amanzi.neo.loader.core.saver.NeighbourSaverTesting.class,
+		org.amanzi.neo.loader.core.saver.AutoParseTesting.class,
+		org.amanzi.neo.loader.core.saver.FreuencyConstraintTesting.class,
+		org.amanzi.neo.loader.core.saver.InterferenceSaverTesting.class,
+		org.amanzi.neo.loader.core.saver.NeighbourSaverTesting.class,
+		org.amanzi.neo.loader.core.saver.Nemo2xSaverTesting.class,
+		org.amanzi.neo.loader.core.saver.NetworkSaverTesting.class,
+		org.amanzi.neo.loader.core.saver.RomesSaverTesting.class,
+        org.amanzi.neo.loader.core.saver.SeparationConstraintsSaverTesting.class,
+        org.amanzi.neo.loader.core.saver.StatisticTesting.class,
         org.amanzi.neo.loader.core.saver.TemsSaverTesting.class,
-        org.amanzi.neo.loader.core.saver.RomesSaverTesting.class,
-        org.amanzi.neo.loader.core.saver.AutoParseTesting.class
+        org.amanzi.neo.loader.core.saver.TrafficSaverTesting.class,
+        org.amanzi.neo.loader.core.saver.TRXSaverTesting.class
         })
 public class SaversSuite {
 

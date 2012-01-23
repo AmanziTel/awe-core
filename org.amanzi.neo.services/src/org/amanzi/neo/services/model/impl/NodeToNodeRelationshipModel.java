@@ -13,8 +13,10 @@
 
 package org.amanzi.neo.services.model.impl;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.amanzi.neo.model.distribution.IDistribution;
@@ -55,7 +57,7 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
     public static final String RELATION_TYPE = "rel_type";
 
     private static Logger LOGGER = Logger.getLogger(NodeToNodeRelationshipModel.class);
-    public static String FREQUENCY = "frequency";
+    public static String FREQUENCY = "frequency";    
     private INodeToNodeRelationsType relType;
     private final Map<Integer, IDataElement> cache = new HashMap<Integer, IDataElement>();
     private DatasetService dsServ = NeoServiceFactory.getInstance().getDatasetService();
@@ -284,7 +286,7 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
 
     @Override
     public Iterable<IDataElement> getN2NRelatedElements(IDataElement source) {
-        // validate parameters
+        // validate parameters 
         if (source == null) {
             throw new IllegalArgumentException("Source is null.");
         }
@@ -300,6 +302,19 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
             return new DataElementIterable(dsServ.emptyTraverser(sourceNode));
         }
     }
+     
+    @Override
+    public List<IDataElement> getNeighboursForCurrentSector(IDataElement sector) {
+        if (sector == null) {
+            throw new IllegalArgumentException("Sector cannot be null");
+        } 
+        List<IDataElement> neighbours = new ArrayList<IDataElement>();
+        for (IDataElement relationship : getN2NRelatedElements(sector)) {
+            Node proxyNode = ((DataElement)relationship).getRelationship().getEndNode();
+            neighbours.add(getServiceElementByProxy(new DataElement(proxyNode)));
+        }              
+        return neighbours;
+    }
 
     @Override
     public INodeToNodeRelationsType getNodeToNodeRelationsType() {
@@ -308,7 +323,17 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
 
     @Override
     public Iterable<IDataElement> getChildren(IDataElement parent) {
-        return null;
+        if (parent == null) {
+            throw new IllegalArgumentException("Parent cannot be null");
+        }
+        
+        LOGGER.debug("getChildren(" + parent.toString() + ")");
+
+        Node parentNode = ((DataElement)parent).getNode();
+        if (parentNode == null) {
+            throw new IllegalArgumentException("Parent node is null.");
+        }
+        return new DataElementIterable(dsServ.getChildrenTraverser(parentNode));        
     }
 
     @Override
@@ -362,5 +387,5 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
         Relationship relationship = proxy.getRelationships(this.relType, Direction.INCOMING).iterator().next();
         Node result = relationship.getStartNode();
         return new DataElement(result);
-    }
+    }       
 }

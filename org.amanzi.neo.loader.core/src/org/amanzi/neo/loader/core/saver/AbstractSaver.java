@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.loader.core.saver;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -30,6 +31,7 @@ import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataModel;
 import org.amanzi.neo.services.model.IModel;
 import org.amanzi.neo.services.model.IProjectModel;
+import org.amanzi.neo.services.model.IRenderableModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.amanzi.neo.services.synonyms.ExportSynonymsManager;
 import org.amanzi.neo.services.synonyms.ExportSynonymsService.ExportSynonymType;
@@ -58,18 +60,18 @@ public abstract class AbstractSaver<T1 extends IDataModel, T2 extends IData, T3 
     private List<IDataModel> useableModels = new LinkedList<IDataModel>();
     private Map<IDataModel, ExportSynonyms> synonymsMap = new HashMap<IDataModel, ExportSynonyms>();
 
-    // map for statistics
-    public static Map<String, Long> statisticsValues = new HashMap<String, Long>();
+	// map for statistics
+	public static Map<String, Long> statisticsValues = new HashMap<String, Long>();
 
-    /**
-     * action threshold for commit
-     */
-    private int commitTxCount;
+	/**
+	 * action threshold for commit
+	 */
+	private int commitTxCount;
 
-    /*
-     * Database Manager
-     */
-    IDatabaseManager dbManager = DatabaseManagerFactory.getDatabaseManager();
+	/*
+	 * Database Manager
+	 */
+	IDatabaseManager dbManager = DatabaseManagerFactory.getDatabaseManager();
 
     /**
      * transactions count
@@ -81,12 +83,12 @@ public abstract class AbstractSaver<T1 extends IDataModel, T2 extends IData, T3 
      */
     private T1 mainModel;
 
-    /**
-     * Public constructor
-     */
-    protected AbstractSaver() {
+	/**
+	 * Public constructor
+	 */
+	protected AbstractSaver() {
 
-    }
+	}
 
     /**
      * this method try to parse String propValue if its type is unknown
@@ -120,38 +122,40 @@ public abstract class AbstractSaver<T1 extends IDataModel, T2 extends IData, T3 
             return propertyValue;
         }
 
-    }
+	}
 
-    /**
-     * check property for predefined type
-     * 
-     * @param propertyName
-     * @param propertyValue
-     * @return
-     */
-    static Object checkInPredifined(String propertyName, String propertyValue) {
-        Object parsedValue = null;
-        if (DataLoadPreferenceManager.predifinedPropertyType.containsKey(propertyName)) {
-            switch (DataLoadPreferenceManager.predifinedPropertyType.get(propertyName)) {
-            case DOUBLE:
-                parsedValue = Double.parseDouble(propertyValue);
-                break;
-            case FLOAT:
-                parsedValue = Float.parseFloat(propertyValue);
-                break;
-            case INTEGER:
-                parsedValue = Integer.parseInt(propertyValue);
-                break;
-            case LONG:
-                parsedValue = Long.parseLong(propertyValue);
-                break;
-            case STRING:
-                parsedValue = propertyValue;
-                break;
-            }
-        }
-        return parsedValue;
-    }
+	/**
+	 * check property for predefined type
+	 * 
+	 * @param propertyName
+	 * @param propertyValue
+	 * @return
+	 */
+	static Object checkInPredifined(String propertyName, String propertyValue) {
+		Object parsedValue = null;
+		if (DataLoadPreferenceManager.predifinedPropertyType
+				.containsKey(propertyName)) {
+			switch (DataLoadPreferenceManager.predifinedPropertyType
+					.get(propertyName)) {
+			case DOUBLE:
+				parsedValue = Double.parseDouble(propertyValue);
+				break;
+			case FLOAT:
+				parsedValue = Float.parseFloat(propertyValue);
+				break;
+			case INTEGER:
+				parsedValue = Integer.parseInt(propertyValue);
+				break;
+			case LONG:
+				parsedValue = Long.parseLong(propertyValue);
+				break;
+			case STRING:
+				parsedValue = propertyValue;
+				break;
+			}
+		}
+		return parsedValue;
+	}
 
     /**
      * Creates Export Synonyms for this saved models
@@ -184,54 +188,56 @@ public abstract class AbstractSaver<T1 extends IDataModel, T2 extends IData, T3 
         }
     }
 
-    /**
-     * save synonyms into database
-     * 
-     * @throws DatabaseException
-     */
-    private void saveSynonym() throws DatabaseException {
-        if (synonymsMap.isEmpty()) {
-            return;
-        }
-        for (IModel model : useableModels) {
-            try {
-                commitTx();
-                exportManager.saveDatasetExportSynonyms(model, synonymsMap.get(model), ExportSynonymType.DATASET);
-            } catch (DatabaseException e) {
-                AweConsolePlugin.error("Error while saving export synonyms for models");
-                LOGGER.error("Error while saving export synonyms for models", e);
-                throw new DatabaseException(e);
-            }
-        }
-    }
+	/**
+	 * save synonyms into database
+	 * 
+	 * @throws DatabaseException
+	 */
+	private void saveSynonym() throws DatabaseException {
+		if (synonymsMap.isEmpty()) {
+			return;
+		}
+		for (IModel model : useableModels) {
+			try {
+				commitTx();
+				exportManager.saveDatasetExportSynonyms(model,
+						synonymsMap.get(model), ExportSynonymType.DATASET);
+			} catch (DatabaseException e) {
+				AweConsolePlugin
+						.error("Error while saving export synonyms for models");
+				LOGGER.error("Error while saving export synonyms for models", e);
+				throw new DatabaseException(e);
+			}
+		}
+	}
 
-    /**
-     * set how much transactions should gone before reopening
-     * 
-     * @param count
-     */
-    protected void setTxCountToReopen(int count) {
-        commitTxCount = count;
-    }
+	/**
+	 * set how much transactions should gone before reopening
+	 * 
+	 * @param count
+	 */
+	protected void setTxCountToReopen(int count) {
+		commitTxCount = count;
+	}
 
-    /**
-     * if current tx==null create new instance finish current transaction if actions in current
-     * transaction more than commitTxCount and open new;
-     */
-    protected void commitTx() {
-        if (++actionCount > commitTxCount) {
-            dbManager.commitThreadTransaction();
-            actionCount = 0;
-        }
-    }
+	/**
+	 * if current tx==null create new instance finish current transaction if
+	 * actions in current transaction more than commitTxCount and open new;
+	 */
+	protected void commitTx() {
+		if (++actionCount > commitTxCount) {
+			dbManager.commitThreadTransaction();
+			actionCount = 0;
+		}
+	}
 
-    /**
-     * rollback tx in current thread
-     */
-    protected void rollbackTx() {
-        dbManager.rollbackThreadTransaction();
-        actionCount = 0;
-    }
+	/**
+	 * rollback tx in current thread
+	 */
+	protected void rollbackTx() {
+		dbManager.rollbackThreadTransaction();
+		actionCount = 0;
+	}
 
     @Override
     public void finishUp() throws AWEException {
@@ -244,26 +250,38 @@ public abstract class AbstractSaver<T1 extends IDataModel, T2 extends IData, T3 
         actionCount = 0;
         EventManager.getInstance().fireEvent(new UpdateDataEvent());
         if (isRenderable()) {
-            EventManager.getInstance().fireEvent(new ShowOnMapEvent(useableModels, 900d));
+            EventManager.getInstance().fireEvent(new ShowOnMapEvent(getRenderableModels(), 900d));
         }
     }
-
-    /**
-     * Returns Active Project
-     * 
-     * @return
-     * @throws AWEException
-     */
-    protected IProjectModel getActiveProject() throws AWEException {
-        return ProjectModel.getCurrentProjectModel();
+    
+    private List<IRenderableModel> getRenderableModels() {
+        List<IRenderableModel> result = new ArrayList<IRenderableModel>();
+        
+        for (IDataModel model : useableModels) {
+            if (model instanceof IRenderableModel) {
+                result.add((IRenderableModel)model);
+            }
+        }
+        
+        return result;
     }
 
-    /**
-     * check if current saver should be rendered on map
-     * 
-     * @return
-     */
-    protected abstract boolean isRenderable();
+	/**
+	 * Returns Active Project
+	 * 
+	 * @return
+	 * @throws AWEException
+	 */
+	protected IProjectModel getActiveProject() throws AWEException {
+		return ProjectModel.getCurrentProjectModel();
+	}
+
+	/**
+	 * check if current saver should be rendered on map
+	 * 
+	 * @return
+	 */
+	protected abstract boolean isRenderable();
 
     @Override
     public void init(T3 configuration, T2 dataElement) throws AWEException {

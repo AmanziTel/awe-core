@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.services.model;
 
+import java.util.List;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.filters.INamedFilter;
@@ -40,6 +41,26 @@ public interface IRenderableModel extends IModel {
      * @param longitude
      */
     public void updateLocationBounds(double latitude, double longitude);
+    
+    /**
+     * set selected data element to list
+     */
+    public void setSelectedDataElementToList(IDataElement dataElement);
+    
+    /**
+     * set list of selected elements to selected data elements
+     */
+    public void setSelectedDataElements(List<IDataElement> dataElements);
+    
+    /**
+     * get selected elements list
+     */
+    public List<IDataElement> getSelectedElements();
+    
+    /**
+     * clear selected elements list
+     */
+    public void clearSelectedElements();
 
     /**
      * update crs by crs code

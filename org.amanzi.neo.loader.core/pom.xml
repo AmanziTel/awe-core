@@ -3,12 +3,12 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <artifactId>awe-core</artifactId>
-    <groupId>org.amanzi</groupId>
-    <version>0.0.1-SNAPSHOT</version>
+  	<groupId>org.amanzi.awe</groupId>
+    <artifactId>core</artifactId>    
+    <version>0.9.0</version>
   </parent>
   <groupId>org.amanzi</groupId>
   <artifactId>org.amanzi.neo.loader.core</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>1.0.0.qualifier</version>
   <packaging>eclipse-plugin</packaging>
 </project>
