@@ -21,7 +21,7 @@ package org.amanzi.neo.loader.ui.wizards;
  * @author Ladornaya_A
  * @since 1.0.0
  */
-public class DirectoryLoaderWizard extends AbstractLoaderWizard {
+public class AntennaPatternsLoaderWizard extends AbstractLoaderWizard {
 
     
 

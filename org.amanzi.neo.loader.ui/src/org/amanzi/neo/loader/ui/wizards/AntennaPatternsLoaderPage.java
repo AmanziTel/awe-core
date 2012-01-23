@@ -28,24 +28,27 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.widgets.Composite;
 
 /**
- * 
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
  * Loading directory of antenna patterns files
  * </p>
+ * 
  * @author Ladornaya_A
  * @since 1.0.0
  */
-public class NetworkDirectoryLoaderPage extends AbstractLoaderPage<AntennaConfiguration> implements ModifyListener {
+public class AntennaPatternsLoaderPage extends AbstractLoaderPage<AntennaConfiguration> implements ModifyListener {
 
-    //field for directory
+    // field for directory
     private DirectoryEditor directoryEditor;
 
-    //combo for dataset
+    // combo for dataset
     private DatasetCombo datasetCombo;
 
-    //combo for loaders
+    // combo for loaders
     private LoaderCombo loaderCombo;
+
+    // file expansion
+    private static final String MSI = "msi";
 
     @Override
     public void createControl(Composite parent) {
@@ -72,6 +75,30 @@ public class NetworkDirectoryLoaderPage extends AbstractLoaderPage<AntennaConfig
 
             if (StringUtils.isEmpty(configuration.getDatasetName())) {
                 setErrorMessage("Network name is not set");
+
+                return false;
+            }
+            List<File> files = configuration.getFilesToLoad();
+            if (files.size() > 0) {
+                for (File file : files) {
+                    String fileName = file.getName();
+                    String[] parts = fileName.split("\\.");
+                    int size = parts.length;
+                    if (size > 1) {
+                        String expansion = parts[size - 1];
+                        if (!expansion.equals(MSI)) {
+                            setErrorMessage("File expansion should be .msi");
+
+                            return false;
+                        }
+                    } else {
+                        setErrorMessage("File expansion should be .msi");
+
+                        return false;
+                    }
+                }
+            } else {
+                setErrorMessage("The folder doesn't contain files");
 
                 return false;
             }

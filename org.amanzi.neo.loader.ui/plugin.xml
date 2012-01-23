@@ -143,7 +143,7 @@
             title="Load Network Data">
       </wizard>
       <wizard
-            class="org.amanzi.neo.loader.ui.wizards.DirectoryLoaderWizard"
+            class="org.amanzi.neo.loader.ui.wizards.AntennaPatternsLoaderWizard"
             id="org.amanzi.awe.wizard.directory"
             title="Load Antenna Patterns">
       </wizard>
@@ -170,7 +170,7 @@
             wizard="org.amanzi.awe.wizard.network">
       </page>
       <page
-            class="org.amanzi.neo.loader.ui.wizards.NetworkDirectoryLoaderPage"
+            class="org.amanzi.neo.loader.ui.wizards.AntennaPatternsLoaderPage"
             description="Load files from directory"
             id="org.amanzi.awe.pages.directory"
             isMain="true"
@@ -189,7 +189,6 @@
    <extension
          point="org.eclipse.ui.commands">
       <command
-            description="Load Network data"
             id="org.amanzi.loader.loadNetwork"
             name="Load Network">
          <commandParameter
@@ -230,7 +229,8 @@
                   commandId="org.amanzi.loader.loadNetwork"
                   icon="icons/16/network.png"
                   id="org.amanzi.awe.menu.loadNetworkDirectory"
-                  style="push">
+                  style="push"
+                  tooltip="Load Antenna Patterns">
                <parameter
                      name="org.amanzi.loader.wizard"
                      value="org.amanzi.awe.wizard.directory">
