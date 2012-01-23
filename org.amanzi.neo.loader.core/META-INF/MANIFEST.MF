@@ -22,3 +22,4 @@ Bundle-ClassPath: .,
 Bundle-Vendor: amanzi.org
 Bundle-ActivationPolicy: lazy
 Eclipse-ExtensibleAPI: true
+Bundle-Activator: org.amanzi.neo.loader.core.internal.NeoLoaderPlugin
