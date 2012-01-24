@@ -16,6 +16,7 @@ package org.amanzi.neo.loader.ui.validators;
 import java.io.File;
 import java.util.List;
 
+import org.amanzi.neo.loader.core.config.NetworkConfiguration;
 import org.amanzi.neo.loader.ui.validators.IValidateResult.Result;
 
 /**
@@ -26,7 +27,7 @@ import org.amanzi.neo.loader.ui.validators.IValidateResult.Result;
  * @author lagutko_n
  * @since 1.0.0
  */
-public class NeighboursValidator implements IValidator {
+public class NeighboursValidator implements IValidator<NetworkConfiguration> {
 
     @Override
     public Result appropriate(List<File> filesToLoad) {
@@ -34,7 +35,7 @@ public class NeighboursValidator implements IValidator {
     }
 
     @Override
-    public IValidateResult validate(List<File> filesToLoad) {
+    public IValidateResult validate(NetworkConfiguration filesToLoad) {
         return null;
     }
 

@@ -91,6 +91,8 @@ public class NetworkSaver extends AbstractMappedDataSaver<INetworkModel, Network
                 parent = element;
             }   
         }
+        
+        commitTx();
     }
 
     @Override

@@ -24,4 +24,8 @@ package org.amanzi.neo.loader.ui.wizards;
  */
 public class NetworkLoaderWizard extends AbstractLoaderWizard {
 
+    @Override
+    public void initAdditionPages() {
+    }
+
 }

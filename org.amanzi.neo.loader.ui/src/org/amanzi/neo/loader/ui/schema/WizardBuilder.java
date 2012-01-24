@@ -120,6 +120,8 @@ public final class WizardBuilder {
             for (IWizardPage singlePage : pages) {
                 result.addPage(singlePage);
             }
+            
+            result.initAdditionPages();
 
         }
 

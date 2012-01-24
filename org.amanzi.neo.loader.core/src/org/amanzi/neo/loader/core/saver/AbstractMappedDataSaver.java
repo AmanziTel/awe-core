@@ -82,7 +82,11 @@ public abstract class AbstractMappedDataSaver<T1 extends IDataModel, T3 extends 
     }
     
     private Map<String, Synonym> createSynonyms(T1 model, INodeType nodeType, Set<String> headerSet, boolean addNonMappedData) {
-        PropertySynonyms synonyms = ImportSynonymsManager.getManager().getPropertySynonyms(getDatasetType(), getSubType(), nodeType.getId());
+        String nodeTypeId = null;
+        if (nodeType != null) {
+            nodeTypeId = nodeType.getId();
+        }
+        PropertySynonyms synonyms = ImportSynonymsManager.getManager().getPropertySynonyms(getDatasetType(), getSubType(), nodeTypeId);
         
         HashMap<String, Synonym> result = new HashMap<String, Synonym>();
         
@@ -90,7 +94,7 @@ public abstract class AbstractMappedDataSaver<T1 extends IDataModel, T3 extends 
             Synonym synonym = null;
             get_synonym: for (Entry<Synonym, String[]> synonymEntry : synonyms.entrySet()) {
                 for (String possibleHeader : synonymEntry.getValue()) {
-                    if (possibleHeader.toLowerCase().matches(header.toLowerCase())) {
+                    if (header.toLowerCase().matches(possibleHeader.toLowerCase())) {
                         synonym = synonymEntry.getKey();
                         
                         addDatasetSynonyms(model, nodeType, synonym.getName(), header);

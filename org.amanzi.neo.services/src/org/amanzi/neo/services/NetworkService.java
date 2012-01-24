@@ -94,10 +94,16 @@ public class NetworkService extends AbstractService {
         static {
             NodeTypeManager.registerNodeType(NetworkElementNodeType.class);
         }
+        
+        private String id;
+        
+        private NetworkElementNodeType() {
+            this.id = name().toLowerCase();
+        }
 
         @Override
         public String getId() {
-            return name().toLowerCase();
+            return id;
         }
     }
 

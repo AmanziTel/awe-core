@@ -44,4 +44,8 @@ public class NetworkConfigurationWizard extends AbstractLoaderWizard {
         return result;
     }
 
+    @Override
+    public void initAdditionPages() {
+    }
+
 }

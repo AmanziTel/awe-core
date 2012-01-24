@@ -62,6 +62,8 @@ import org.neo4j.kernel.Traversal;
  * @since 1.0.0
  */
 public abstract class AbstractService implements IDatabaseEventListener {
+    /** String INDEX_SEPARATOR field */
+    private static final String INDEX_SEPARATOR = "@";
     public final static String TYPE = "type";
     public final static String NAME = "name";
     public static final String DATASET_ID = "dataset";
@@ -317,7 +319,7 @@ public abstract class AbstractService implements IDatabaseEventListener {
             throw new IllegalArgumentException("Node type cannot be null");
         }
 
-        return "" + root.getId() + "@" + nodeType.getId();
+        return new StringBuilder().append(root.getId()).append(INDEX_SEPARATOR).append(nodeType.getId()).toString();
     }
 
     /**

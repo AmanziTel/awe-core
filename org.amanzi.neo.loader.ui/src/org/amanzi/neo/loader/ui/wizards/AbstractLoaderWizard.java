@@ -82,5 +82,7 @@ public abstract class AbstractLoaderWizard extends Wizard implements IImportWiza
         
         return true;
     }
+    
+    public abstract void initAdditionPages();
 
 }

@@ -23,6 +23,10 @@ package org.amanzi.neo.loader.ui.wizards;
  */
 public class AntennaPatternsLoaderWizard extends AbstractLoaderWizard {
 
+    @Override
+    public void initAdditionPages() {
+    }
+
     
 
 }

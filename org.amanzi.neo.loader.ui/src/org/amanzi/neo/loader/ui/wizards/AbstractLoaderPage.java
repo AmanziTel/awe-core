@@ -348,7 +348,7 @@ public abstract class AbstractLoaderPage<T extends IConfiguration> extends Wizar
             return false;
         }
         
-        IValidateResult result = currentLoader.getValidator().validate(getConfiguration().getFilesToLoad());
+        IValidateResult result = currentLoader.getValidator().validate(getConfiguration());
         if (result.getResult() == Result.FAIL) {
             setErrorMessage(result.getMessages());
             
