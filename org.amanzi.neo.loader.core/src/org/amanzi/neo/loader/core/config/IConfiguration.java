@@ -29,5 +29,7 @@ public interface IConfiguration {
     public void setDatasetName(String datasetName);
     
     public List<File> getFilesToLoad();
+    
+    public void computeSourceFiles();
    
 }

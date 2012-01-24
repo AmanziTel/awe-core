@@ -80,6 +80,7 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
     @Override
     public void init(T2 configuration, List<T1> saver) {
         this.config = configuration;
+        this.config.computeSourceFiles();
         this.savers = saver;
     }
 
@@ -125,6 +126,7 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
 
     @Override
     public void run(IProgressMonitor monitor) throws AWEException {
+        
         monitor.beginTask("Loading data", config.getFilesToLoad().size());
         
         long globalStartTime = System.currentTimeMillis();

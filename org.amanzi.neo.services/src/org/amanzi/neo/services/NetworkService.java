@@ -706,7 +706,9 @@ public class NetworkService extends AbstractService {
             Index<Node> index) throws DatabaseException {
         Transaction tx = graphDb.beginTx();
         if (existedNode instanceof Node && index != null) {
-            removeNodeFromIndex((Node)existedNode, index, NAME, existedNode.getProperty(NAME));
+            if (existedNode.hasProperty(NAME)) {
+                removeNodeFromIndex((Node)existedNode, index, NAME, existedNode.getProperty(NAME));
+            }
         }
         try {
             LOGGER.debug("Start completing properties in " + existedNode);
@@ -729,7 +731,9 @@ public class NetworkService extends AbstractService {
                         addNodeToIndex((Node)existedNode, index, NetworkService.BCCH, bcch);
                     }
                 }
-                addNodeToIndex((Node)existedNode, index, NAME, existedNode.getProperty(NAME));
+                if (existedNode.hasProperty(NAME)) {
+                    addNodeToIndex((Node)existedNode, index, NAME, existedNode.getProperty(NAME));
+                }
             }
             tx.success();
         } catch (Exception e) {

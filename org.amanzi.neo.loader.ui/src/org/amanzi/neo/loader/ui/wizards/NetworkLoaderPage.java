@@ -36,11 +36,11 @@ import org.eclipse.swt.widgets.Composite;
  */
 public class NetworkLoaderPage extends AbstractLoaderPage<NetworkConfiguration> implements ModifyListener {
     
-    private FileFieldEditorExt fileEditor;
-    
     private DatasetCombo datasetCombo;
     
     private LoaderCombo loaderCombo;
+    
+    private DataChooserField fileField;
     
     @Override
     public void createControl(Composite parent) {
@@ -48,8 +48,8 @@ public class NetworkLoaderPage extends AbstractLoaderPage<NetworkConfiguration> 
         
         datasetCombo = new DatasetCombo();
         
-        fileEditor = new FileFieldEditorExt("lalala", "Select file to load", getMainComposite());
-        fileEditor.getTextControl(getMainComposite()).addModifyListener(this);
+        fileField = new DataChooserField(FileFieldType.FILE, "Selectfile to load");
+        fileField.addModifyListener(this);
         
         loaderCombo = new LoaderCombo();
         
@@ -91,8 +91,8 @@ public class NetworkLoaderPage extends AbstractLoaderPage<NetworkConfiguration> 
         NetworkConfiguration configuration = getConfiguration();
         configuration.getFilesToLoad().clear();
         
-        if (!StringUtils.isEmpty(fileEditor.getStringValue())) {
-            File dataFile = new File(fileEditor.getStringValue());
+        if (!StringUtils.isEmpty(fileField.getFileName())) {
+            File dataFile = fileField.getFile();
             
             configuration.setFile(dataFile);
             

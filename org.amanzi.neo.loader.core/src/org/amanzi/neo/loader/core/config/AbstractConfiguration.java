@@ -51,12 +51,36 @@ public abstract class AbstractConfiguration implements IConfiguration {
     /**
      * @param filesToLoad The filesToLoad to set.
      */
-    public void setFilesToLoad(List<File> filesToLoad) {
+    protected void setFilesToLoad(List<File> filesToLoad) {
         this.filesToLoad = filesToLoad;
     }
     
     protected void addFileToLoad(File fileToLoad) {
         this.filesToLoad.add(fileToLoad);
+    }
+    
+    protected List<File> getSubFiles(File rootFile) {
+        ArrayList<File> result = new ArrayList<File>();
+        
+        if (rootFile.isFile()) {
+            result.add(rootFile);
+        } else {
+            for (File subFile : rootFile.listFiles()) {
+                result.addAll(getSubFiles(subFile));
+            }
+        }
+        
+        return result;
+    }
+
+    @Override
+    public void computeSourceFiles() {
+        ArrayList<File> result = new ArrayList<File>();
+        for (File sourceFile : getFilesToLoad()) {
+            result.addAll(getSubFiles(sourceFile));
+        }
+        
+        setFilesToLoad(result);
     }
 
 }

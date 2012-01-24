@@ -14,6 +14,7 @@
 package org.amanzi.neo.loader.core.preferences;
 
 import org.amanzi.neo.loader.core.saver.AbstractSaver;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * @author Vladislav_Kondratenko
@@ -22,43 +23,43 @@ public enum PossibleTypes {
 
     DOUBLE(Double.class) {
         @Override
-        public Object parse(String text) {
+        public Object internalParse(String text) {
             return Double.parseDouble(text);
         }
     }, 
     FLOAT(Float.class) {
         @Override
-        public Object parse(String text) {
+        public Object internalParse(String text) {
             return Float.parseFloat(text);
         }
     }, 
     INTEGER(Integer.class) {
         @Override
-        public Object parse(String text) {
+        public Object internalParse(String text) {
             return Integer.parseInt(text);
         }
     }, 
     LONG(Long.class) {
         @Override
-        public Object parse(String text) {
+        public Object internalParse(String text) {
             return Long.parseLong(text);
         }
     }, 
     STRING(String.class) {
         @Override
-        public Object parse(String text) {
+        public Object internalParse(String text) {
             return text.toString();
         }
     }, 
     BOOLEAN(Boolean.class){
         @Override
-        public Object parse(String text) {
+        public Object internalParse(String text) {
             return Boolean.parseBoolean(text);
         }        
     },
     AUTO(null) {
         @Override
-        public Object parse(String text) {
+        public Object internalParse(String text) {
             return AbstractSaver.autoParse(text);
         }
     };
@@ -69,7 +70,15 @@ public enum PossibleTypes {
         this.originalClass = originalClass;
     }
     
-    public abstract Object parse(String text);
+    public Object parse(String text) {
+        if (!StringUtils.isEmpty(text)) {
+            return internalParse(text);
+        }
+        
+        return null;
+    }
+    
+    protected abstract Object internalParse(String text);
     
     public static PossibleTypes getType(Class<?> clazz) {
         for (PossibleTypes singleType : values()) {

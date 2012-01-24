@@ -15,7 +15,7 @@ package org.amanzi.neo.loader.core.saver;
 
 import java.util.Map;
 
-import org.amanzi.neo.loader.core.config.IConfiguration;
+import org.amanzi.neo.loader.core.config.ISingleFileConfiguration;
 import org.amanzi.neo.loader.core.parser.MappedData;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
@@ -29,7 +29,7 @@ import org.amanzi.neo.services.model.INodeToNodeRelationsType;
  * @author lagutko_n
  * @since 1.0.0
  */
-public abstract class AbstractN2NSaver extends AbstractNetworkSaver<INodeToNodeRelationsModel, IConfiguration> {
+public abstract class AbstractN2NSaver extends AbstractNetworkSaver<INodeToNodeRelationsModel, ISingleFileConfiguration> {
     
     /*
      * Name of Dataset Synonyms
@@ -52,10 +52,10 @@ public abstract class AbstractN2NSaver extends AbstractNetworkSaver<INodeToNodeR
     }
 
     @Override
-    protected INodeToNodeRelationsModel createMainModel(IConfiguration configuration) throws AWEException {
+    protected INodeToNodeRelationsModel createMainModel(ISingleFileConfiguration configuration) throws AWEException {
         networkModel = getActiveProject().getNetwork(configuration.getDatasetName());
         
-        String n2nName = configuration.getFilesToLoad().get(0).getName();
+        String n2nName = configuration.getFile().getName();
 
         return networkModel.getNodeToNodeModel(getN2NType(), n2nName, getN2NNodeType());
     }

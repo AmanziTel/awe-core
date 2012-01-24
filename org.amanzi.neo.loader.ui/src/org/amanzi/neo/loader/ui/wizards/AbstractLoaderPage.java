@@ -14,12 +14,14 @@
 package org.amanzi.neo.loader.ui.wizards;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.amanzi.neo.loader.core.config.IConfiguration;
 import org.amanzi.neo.loader.ui.loaders.ILoader;
+import org.amanzi.neo.loader.ui.utils.FileSelection;
 import org.amanzi.neo.loader.ui.validators.IValidateResult;
 import org.amanzi.neo.loader.ui.validators.IValidateResult.Result;
 import org.apache.commons.lang.ArrayUtils;
@@ -27,6 +29,9 @@ import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExecutableExtension;
+import org.eclipse.jface.preference.StringButtonFieldEditor;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -56,6 +61,72 @@ public abstract class AbstractLoaderPage<T extends IConfiguration> extends Wizar
     private static final int EDITABLE_COMBO_STYLE = SWT.DROP_DOWN;
     
     private static final int NON_EDITABLE_COMBO_STYLE = SWT.DROP_DOWN | SWT.READ_ONLY;
+    
+    protected enum FileFieldType {
+        DIRECTORY,
+        FILE;
+    }
+    
+    protected class FileSelectionComponent {
+        
+        private FileSelection viewer;
+        
+        public FileSelectionComponent(String labelText, boolean showFiles) {
+            viewer = new FileSelection(showFiles, labelText);
+            viewer.createPartControl(getMainComposite());
+            
+            viewer.getTreeViewer().getTree().setLayoutData(getFileSelectionLayout());
+        }
+        
+        public void addSelectionChangedListener(final ISelectionChangedListener listener) {
+            viewer.getTreeViewer().addSelectionChangedListener(new ISelectionChangedListener() {
+                
+                @Override
+                public void selectionChanged(SelectionChangedEvent event) {
+                    listener.selectionChanged(event);
+                    viewer.storeDefSelection(null);
+                }
+            });
+        }
+        
+        public List<File> getFiles() {
+            return getFiles(null);
+        }
+        
+        public List<File> getFiles(FileFilter filter) {
+            return viewer.getSelectedFiles(filter);
+        }
+        
+    }
+    
+    protected class DataChooserField {
+        
+        private StringButtonFieldEditor editor;
+        
+        public DataChooserField(FileFieldType fieldType, String labelText) {
+            switch (fieldType) {
+            case DIRECTORY:
+                editor = new DirectoryEditor("directory", labelText, getMainComposite());
+                break;
+            case FILE:
+                editor = new FileFieldEditorExt("file", labelText, getMainComposite());
+                break;
+            }
+        }
+        
+        public void addModifyListener(ModifyListener listener) {
+            editor.getTextControl(getMainComposite()).addModifyListener(listener);
+        }
+        
+        public String getFileName() {
+            return editor.getStringValue();
+        }
+        
+        public File getFile() {
+            return new File(editor.getStringValue());
+        }
+        
+    }
     
     protected class UpdateStateListener implements SelectionListener, ModifyListener {
 
@@ -334,6 +405,15 @@ public abstract class AbstractLoaderPage<T extends IConfiguration> extends Wizar
     
     private static GridData getLabelLayout() {
         return  new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+    }
+    
+    private static GridData getFileSelectionLayout() { 
+        GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, false);
+        gridData.horizontalSpan = 3;
+        gridData.minimumHeight = 500;
+        gridData.heightHint = 300;
+        
+        return gridData;
     }
     
     private static GridData getComboLayout() {

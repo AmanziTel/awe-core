@@ -30,6 +30,10 @@ public class AntennaConfiguration extends AbstractConfiguration implements IMult
     @Override
     public void setFiles(List<File> files) {
         setFilesToLoad(files);
+    }
+
+    @Override
+    public void computeSourceFiles() {
     }   
 
 }

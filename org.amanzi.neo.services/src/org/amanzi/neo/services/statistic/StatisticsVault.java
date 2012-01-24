@@ -108,7 +108,9 @@ public class StatisticsVault implements IVault {
     public void indexProperty(String nodeType, String propName, Object propValue) throws IndexPropertyException,
             InvalidStatisticsParameterException {
 
-        LOGGER.debug("start method indexProperty(String nodeType, String propName, Object propValue)");
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("start method indexProperty(String nodeType, String propName, Object propValue)");
+        }
 
         if (nodeType == null) {
             LOGGER.error("InvalidStatisticsParameterException: parameter nodeType is null");
@@ -147,8 +149,9 @@ public class StatisticsVault implements IVault {
             LOGGER.error("IndexPropertyException: index property has wrong type");
             throw e;
         }
-        LOGGER.debug("finish method indexProperty(String nodeType, String propName, Object propValue)");
-
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("finish method indexProperty(String nodeType, String propName, Object propValue)");
+        }
     }
 
     @Override

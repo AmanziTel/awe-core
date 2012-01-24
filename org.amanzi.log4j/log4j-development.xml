@@ -9,7 +9,6 @@
     </layout>
     <filter class="org.apache.log4j.varia.LevelRangeFilter">
       <param name="LevelMin" value="INFO"/>
-      <param name="LevelMax" value="INFO"/>
     </filter>
   </appender>
   
@@ -19,8 +18,7 @@
       <param name="ConversionPattern" value="%d{ISO8601} [%5p] %m %n"/>
     </layout>
     <filter class="org.apache.log4j.varia.LevelRangeFilter">
-      <param name="LevelMin" value="ALL"/>
-      <param name="LevelMax" value="INFO"/>
+      <param name="LevelMin" value="INFO"/>
     </filter>
   </appender>
  

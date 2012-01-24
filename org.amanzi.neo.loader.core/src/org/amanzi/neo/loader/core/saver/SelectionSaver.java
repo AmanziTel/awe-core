@@ -60,7 +60,7 @@ public class SelectionSaver extends AbstractNetworkSaver<ISelectionModel, Networ
     protected ISelectionModel createMainModel(NetworkConfiguration configuration) throws AWEException {
         networkModel = getActiveProject().getNetwork(configuration.getDatasetName());
 
-        String selectionName = configuration.getFilesToLoad().get(0).getName();
+        String selectionName = configuration.getFile().getName();
 
         return networkModel.getSelectionModel(selectionName);
     }

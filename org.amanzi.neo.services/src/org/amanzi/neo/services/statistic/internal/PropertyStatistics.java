@@ -127,15 +127,19 @@ public class PropertyStatistics {
             
             value = changeTypeOfKlass(value);
             
-            Integer oldCount = 0;
-            if (propertyMap.containsKey(value)) {
-                oldCount = propertyMap.get(value);
+            Integer oldCount = propertyMap.get(value);
+            boolean exists = true;
+            
+            if (oldCount == null) {
+                oldCount = 0;
+                exists = false;
             }
+            
             int newCount = oldCount + count;
             if (newCount > 0) {
                 propertyMap.put(value, newCount);
             }
-            else if (propertyMap.containsKey(value)) {
+            else if (exists) {
                 propertyMap.remove(value);
             }
         }

@@ -36,4 +36,8 @@ public class NetworkConfiguration extends AbstractConfiguration implements ISing
         return getFilesToLoad().get(0);
     }
 
+    @Override
+    public void computeSourceFiles() {
+    }
+
 }

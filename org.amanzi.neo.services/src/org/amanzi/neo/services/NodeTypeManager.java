@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.services;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -38,6 +39,8 @@ public class NodeTypeManager {
 
     private static Set<Class< ? >> registeredNodeTypes = new HashSet<Class< ? >>();
 
+    private static HashMap<String, INodeType> nodeTypeCache = new HashMap<String, INodeType>();
+
     /**
      * Adds a class, implementing <code>INodeType</code> to the collection of registered classes.
      * 
@@ -61,25 +64,31 @@ public class NodeTypeManager {
      */
     public static INodeType getType(String typeID) {
         INodeType result = null;
-        for (Class T : registeredNodeTypes) {
-            StringToEnumConverter conv = new StringToEnumConverter(T);
-            try {
-                result = (INodeType)conv.convert(typeID);
 
-                break;
-            } catch (IllegalArgumentException e) {
+        result = nodeTypeCache.get(typeID);
+
+        if (result == null) {
+            for (Class T : registeredNodeTypes) {
+                StringToEnumConverter conv = new StringToEnumConverter(T);
+                try {
+                    result = (INodeType)conv.convert(typeID);
+
+                    break;
+                } catch (IllegalArgumentException e) {
+                }
             }
+            nodeTypeCache.put(typeID, result);
         }
         return result;
     }
-    
+
     /**
      * Returns type of element
-     *
+     * 
      * @param element
      * @return type
      */
-    public static INodeType getType(IDataElement element){
+    public static INodeType getType(IDataElement element) {
         return getType(element.get(AbstractService.TYPE).toString());
     }
 

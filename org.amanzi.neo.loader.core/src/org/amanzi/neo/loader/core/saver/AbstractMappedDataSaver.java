@@ -62,12 +62,14 @@ public abstract class AbstractMappedDataSaver<T1 extends IDataModel, T3 extends 
                     value = PossibleTypes.AUTO.parse(textValue);
                     synonym.setType(PossibleTypes.AUTO);
                 }
-                if (synonym.getType() == PossibleTypes.AUTO) {
-                    PossibleTypes newType = PossibleTypes.getType(value.getClass());
-                    changeSynonymType(synonymMapping, dataEntry.getKey(), synonym.getName(), newType);
-                }
+                if (value != null) {
+                    if (synonym.getType() == PossibleTypes.AUTO) {
+                        PossibleTypes newType = PossibleTypes.getType(value.getClass());
+                        changeSynonymType(synonymMapping, dataEntry.getKey(), synonym.getName(), newType);
+                    }
 
-                values.put(synonym.getName(), value);
+                    values.put(synonym.getName(), value);
+                }
             }
         }
         
