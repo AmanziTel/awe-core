@@ -58,7 +58,7 @@ public abstract class AbstractLoaderWizard extends Wizard implements IImportWiza
                     
                         ILoader loader = loaderPage.getLoader();
                         loader.init(loaderPage.getConfiguration());
-                        loader.run(new SubProgressMonitor(monitor, 100));
+                        loader.run(monitor);
                     }
                 }
             } catch (AWEException e) {

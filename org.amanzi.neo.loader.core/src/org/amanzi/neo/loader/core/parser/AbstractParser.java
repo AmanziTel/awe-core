@@ -89,7 +89,7 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
      * 
      * @return next parsed IData object, or null in case if parsing finished
      */
-    protected abstract T3 parseElement();
+    protected abstract T3 parseElement(IProgressMonitor monitor);
 
     /**
      * Parses single file
@@ -97,8 +97,10 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
      * @param file
      * @throws AWEException
      */
-    protected void parseFile(File file) throws AWEException {
-        T3 element = parseElement();
+    protected void parseFile(File file, IProgressMonitor monitor) throws AWEException {
+        monitor.beginTask("Loading file <" + file.getName() + ">", 100);
+        
+        T3 element = parseElement(monitor);
 
         long startTime = System.currentTimeMillis();
         while (element != null) {
@@ -112,11 +114,14 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
                     throw new DatabaseException(e);
                 }
             }
-            element = parseElement();
+            element = parseElement(monitor);
             if (isCanceled) {
                 break;
             }
         }
+        
+        monitor.done();
+        
         LOGGER.info("File " + currentFile.getName() + "  data saving finished in: " + getOperationTime(startTime));
     }
 
@@ -127,16 +132,12 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
     @Override
     public void run(IProgressMonitor monitor) throws AWEException {
         
-        monitor.beginTask("Loading data", config.getFilesToLoad().size());
-        
         long globalStartTime = System.currentTimeMillis();
         for (File file : config.getFilesToLoad()) {
             currentFile = file;
             long startTime = System.currentTimeMillis();
-            parseFile(file);
+            parseFile(file, monitor);
             LOGGER.info("File " + currentFile.getName() + " Parsing/Saving data finished in: " + getOperationTime(startTime));
-            
-            monitor.worked(1);
         }
         try {
             finishUp();

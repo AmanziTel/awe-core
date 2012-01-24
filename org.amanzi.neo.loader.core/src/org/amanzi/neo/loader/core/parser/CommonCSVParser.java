@@ -33,6 +33,7 @@ import org.amanzi.neo.loader.core.config.IConfiguration;
 import org.amanzi.neo.loader.core.saver.ISaver;
 import org.amanzi.neo.services.model.IModel;
 import org.apache.log4j.Logger;
+import org.eclipse.core.runtime.IProgressMonitor;
 
 import au.com.bytecode.opencsv.CSVParser;
 
@@ -117,7 +118,7 @@ public class CommonCSVParser<T1 extends ISaver<IModel, MappedData, IConfiguratio
     }
 
     @Override
-    protected MappedData parseElement() {
+    protected MappedData parseElement(IProgressMonitor monitor) {
 
         if (tempFile == null || tempFile != currentFile) {
             try {
@@ -157,7 +158,7 @@ public class CommonCSVParser<T1 extends ISaver<IModel, MappedData, IConfiguratio
             double percentage = is.percentage();
             if (percentage - persentageOld >= PERCENTAGE_FIRE) {
                 persentageOld = percentage;
-//                fireSubProgressEvent(currentFile, new ProgressEventImpl(String.format(currentFile.getName()), percentage));
+                monitor.worked(PERCENTAGE_FIRE);
             }
         }
         return null;

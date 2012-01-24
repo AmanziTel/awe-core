@@ -14,6 +14,7 @@ import org.amanzi.neo.loader.core.saver.ISaver;
 import org.amanzi.neo.services.NetworkService;
 import org.amanzi.neo.services.model.IModel;
 import org.apache.log4j.Logger;
+import org.eclipse.core.runtime.IProgressMonitor;
 
 /**
  * TODO Purpose of
@@ -63,7 +64,7 @@ public class AntennaParser<T1 extends ISaver<IModel, MappedData, T2>, T2 extends
     }
 
     @Override
-    protected MappedData parseElement() {
+    protected MappedData parseElement(IProgressMonitor monitor) {
         if (tempFile == null || tempFile != currentFile) {
             try {
                 is = new CountingFileInputStream(currentFile);
