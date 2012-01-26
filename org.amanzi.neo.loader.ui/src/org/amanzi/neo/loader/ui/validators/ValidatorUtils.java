@@ -23,6 +23,7 @@ import org.amanzi.neo.loader.core.LoaderUtils;
 import org.amanzi.neo.loader.core.preferences.ImportSynonymsManager;
 import org.amanzi.neo.loader.core.preferences.ImportSynonymsManager.NodeTypeSynonyms;
 import org.amanzi.neo.loader.core.preferences.ImportSynonymsManager.PropertySynonyms;
+import org.amanzi.neo.loader.core.preferences.ImportSynonymsManager.Synonym;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.amanzi.neo.loader.ui.validators.IValidateResult.Result;
 
@@ -35,6 +36,9 @@ import org.amanzi.neo.loader.ui.validators.IValidateResult.Result;
  * @since 1.0.0
  */
 public class ValidatorUtils {
+    
+    //separators
+    public final static String[] possibleFieldSepRegexes = new String[] {"\t",",",";"};
     
     /**
      * Check file and headers by dataset synonyms
@@ -68,7 +72,8 @@ public class ValidatorUtils {
                 PropertySynonyms propertySynonyms = nodeTypeSynonyms.get(mandatoryKey);
                 String[] mandatoryValues = mandatoryHeaders.get(mandatoryKey);
                 for(String mandatoryValue:mandatoryValues){
-                    String[] possibleHeadersArray = propertySynonyms.get(mandatoryValue);
+                    Synonym synonym = new Synonym(mandatoryValue);
+                    String[] possibleHeadersArray = propertySynonyms.get(synonym);
                     boolean flag = false;
                     for(String possibleHeader:possibleHeadersArray){
                         if(headers.contains(possibleHeader)){
@@ -76,7 +81,7 @@ public class ValidatorUtils {
                         }
                     }
                     if(flag == false){
-                        return new ValidateResultImpl(Result.FAIL, "not found all necessary headers");
+                        return new ValidateResultImpl(Result.UNKNOWN, "not found all necessary headers");
                     }
                 }
                 

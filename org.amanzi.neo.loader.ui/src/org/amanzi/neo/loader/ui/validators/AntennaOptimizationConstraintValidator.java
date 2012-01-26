@@ -26,17 +26,17 @@ import org.amanzi.neo.services.model.IProjectModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
 
 /**
- * TODO Purpose of
- * <p>
- * Separation constraint validator
- * </p>
  * 
+ * TODO Purpose of 
+ * <p>
+ * Antenna optimization constraint validator
+ * </p>
  * @author Ladornaya_A
  * @since 1.0.0
  */
-public class SeparationConstraintValidator implements IValidator<NetworkConfiguration> {
+public class AntennaOptimizationConstraintValidator implements IValidator<NetworkConfiguration> {
 
-    private final static String DATASET_TYPE = "separation";
+    private final static String DATASET_TYPE = "antenna_optimization";
     private Map<String, String[]> map = new HashMap<String, String[]>();
 
     @Override
@@ -52,8 +52,8 @@ public class SeparationConstraintValidator implements IValidator<NetworkConfigur
             }
 
             // checking for file headers
-            map.put("sector", new String[] {"name", "separation"});
-            Result result = ValidatorUtils.checkFileAndHeaders(file, 2, DATASET_TYPE, null, map,
+            map.put("sector", new String[] {"name", "antenna", "mechanical_titl", "electrical_titl"});
+            Result result = ValidatorUtils.checkFileAndHeaders(file, 4, DATASET_TYPE, null, map,
                     ValidatorUtils.possibleFieldSepRegexes).getResult();
             if (result == Result.FAIL || result == Result.UNKNOWN) {
                 return result;
@@ -77,10 +77,10 @@ public class SeparationConstraintValidator implements IValidator<NetworkConfigur
             }
             Result result = appropriate(filesToLoad.getFilesToLoad());
             if (result == Result.FAIL || result == Result.UNKNOWN) {
-                return new ValidateResultImpl(Result.FAIL, "The file no contains separation data");
+                return new ValidateResultImpl(Result.FAIL, "The file no contains antenna optimization data");
             }
         } catch (AWEException e) {
-            return new ValidateResultImpl(Result.FAIL, "Error while Separation data validate");
+            return new ValidateResultImpl(Result.FAIL, "Error while Antenna optimization data validate");
         }
 
         return new ValidateResultImpl(Result.SUCCESS, "");

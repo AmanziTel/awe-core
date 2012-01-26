@@ -23,20 +23,21 @@ import org.amanzi.neo.loader.ui.validators.IValidateResult.Result;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.IProjectModel;
+import org.amanzi.neo.services.model.ISelectionModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
 
 /**
  * TODO Purpose of
  * <p>
- * Separation constraint validator
+ * Selection validator
  * </p>
  * 
  * @author Ladornaya_A
  * @since 1.0.0
  */
-public class SeparationConstraintValidator implements IValidator<NetworkConfiguration> {
+public class SelectionValidator implements IValidator<NetworkConfiguration> {
 
-    private final static String DATASET_TYPE = "separation";
+    private final static String DATASET_TYPE = "selection";
     private Map<String, String[]> map = new HashMap<String, String[]>();
 
     @Override
@@ -52,8 +53,8 @@ public class SeparationConstraintValidator implements IValidator<NetworkConfigur
             }
 
             // checking for file headers
-            map.put("sector", new String[] {"name", "separation"});
-            Result result = ValidatorUtils.checkFileAndHeaders(file, 2, DATASET_TYPE, null, map,
+            map.put("sector", new String[] {"name"});
+            Result result = ValidatorUtils.checkFileAndHeaders(file, 1, DATASET_TYPE, null, map,
                     ValidatorUtils.possibleFieldSepRegexes).getResult();
             if (result == Result.FAIL || result == Result.UNKNOWN) {
                 return result;
@@ -75,12 +76,17 @@ public class SeparationConstraintValidator implements IValidator<NetworkConfigur
             if (network == null || networkName == null) {
                 return new ValidateResultImpl(Result.FAIL, "Network is not exist in database");
             }
+            String selectionName = filesToLoad.getFile().getName();
+            ISelectionModel selection = network.getSelectionModel(selectionName);
+            if (selection == null) {
+                return new ValidateResultImpl(Result.FAIL, "Selection model is not exist in database");
+            }
             Result result = appropriate(filesToLoad.getFilesToLoad());
             if (result == Result.FAIL || result == Result.UNKNOWN) {
-                return new ValidateResultImpl(Result.FAIL, "The file no contains separation data");
+                return new ValidateResultImpl(Result.FAIL, "The file no contains selection data");
             }
         } catch (AWEException e) {
-            return new ValidateResultImpl(Result.FAIL, "Error while Separation data validate");
+            return new ValidateResultImpl(Result.FAIL, "Error while Selection data validate");
         }
 
         return new ValidateResultImpl(Result.SUCCESS, "");

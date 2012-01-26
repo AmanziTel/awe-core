@@ -10,7 +10,6 @@
  * This library is distributed WITHOUT ANY WARRANTY; without even the
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-
 package org.amanzi.neo.loader.ui.validators;
 
 import java.io.File;
@@ -26,17 +25,18 @@ import org.amanzi.neo.services.model.IProjectModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
 
 /**
- * TODO Purpose of
- * <p>
- * Separation constraint validator
- * </p>
  * 
+ * TODO Purpose of 
+ * <p>
+ * Interference matrix validator
+ * </p>
  * @author Ladornaya_A
  * @since 1.0.0
  */
-public class SeparationConstraintValidator implements IValidator<NetworkConfiguration> {
+public class InterferenceMatrixValidator implements IValidator<NetworkConfiguration> {
 
-    private final static String DATASET_TYPE = "separation";
+    private final static String DATASET_TYPE = "n2n";
+    private final static String SUB_TYPE = "interference";
     private Map<String, String[]> map = new HashMap<String, String[]>();
 
     @Override
@@ -52,10 +52,10 @@ public class SeparationConstraintValidator implements IValidator<NetworkConfigur
             }
 
             // checking for file headers
-            map.put("sector", new String[] {"name", "separation"});
-            Result result = ValidatorUtils.checkFileAndHeaders(file, 2, DATASET_TYPE, null, map,
+            map.put("sector", new String[] {"serving_name", "interfering_name", "source", "co", "adj"});
+            Result result = ValidatorUtils.checkFileAndHeaders(file, 5, DATASET_TYPE, SUB_TYPE, map,
                     ValidatorUtils.possibleFieldSepRegexes).getResult();
-            if (result == Result.FAIL || result == Result.UNKNOWN) {
+            if (result == Result.FAIL) {
                 return result;
             }
         }
@@ -72,15 +72,18 @@ public class SeparationConstraintValidator implements IValidator<NetworkConfigur
             IProjectModel projectModel = ProjectModel.getCurrentProjectModel();
             String networkName = filesToLoad.getDatasetName();
             INetworkModel network = projectModel.findNetwork(networkName);
-            if (network == null || networkName == null) {
-                return new ValidateResultImpl(Result.FAIL, "Network is not exist in database");
+            if (network != null || networkName == null) {
+                return new ValidateResultImpl(Result.FAIL, "Network is already exist in database");
             }
-            Result result = appropriate(filesToLoad.getFilesToLoad());
-            if (result == Result.FAIL || result == Result.UNKNOWN) {
-                return new ValidateResultImpl(Result.FAIL, "The file no contains separation data");
+            String n2nName = filesToLoad.getFile().getName();
+            if (n2nName == null) {
+                return new ValidateResultImpl(Result.FAIL, "There is no n2n name");
+            }
+            if (appropriate(filesToLoad.getFilesToLoad()) == Result.FAIL) {
+                return new ValidateResultImpl(Result.FAIL, "The file no contains interferense matrix");
             }
         } catch (AWEException e) {
-            return new ValidateResultImpl(Result.FAIL, "Error while Separation data validate");
+            return new ValidateResultImpl(Result.FAIL, "Error while interferense matrix validate");
         }
 
         return new ValidateResultImpl(Result.SUCCESS, "");

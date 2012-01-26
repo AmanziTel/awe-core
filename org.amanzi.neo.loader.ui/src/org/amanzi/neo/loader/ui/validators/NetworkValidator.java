@@ -28,12 +28,13 @@ import org.amanzi.neo.services.model.impl.ProjectModel;
 /**
  * TODO Purpose of
  * <p>
+ * Network validator
  * </p>
  * 
  * @author lagutko_n
  * @since 1.0.0
  */
-public class NetworkValidator extends AbstractNetworkValidator {
+public class NetworkValidator implements IValidator<NetworkConfiguration> {
 
     private final static String DATASET_TYPE = "network";
     private Map<String, String[]> map = new HashMap<String, String[]>();
@@ -50,11 +51,12 @@ public class NetworkValidator extends AbstractNetworkValidator {
                 return Result.FAIL;
             }
 
-            //checking for file headers
+            // checking for file headers
             map.put("sector", new String[] {"name"});
             map.put("site", new String[] {"lon", "lat"});
-            Result result = ValidatorUtils.checkFileAndHeaders(file, 3, DATASET_TYPE, null, map, possibleFieldSepRegexes).getResult();
-            if (result == Result.FAIL) {
+            Result result = ValidatorUtils.checkFileAndHeaders(file, 3, DATASET_TYPE, null, map,
+                    ValidatorUtils.possibleFieldSepRegexes).getResult();
+            if (result == Result.FAIL || result == Result.UNKNOWN) {
                 return result;
             }
         }
@@ -72,9 +74,9 @@ public class NetworkValidator extends AbstractNetworkValidator {
             String networkName = filesToLoad.getDatasetName();
             INetworkModel network = projectModel.findNetwork(networkName);
             if (network != null || networkName == null) {
-                return new ValidateResultImpl(Result.FAIL, "Network %s is already exist in database");
+                return new ValidateResultImpl(Result.FAIL, "Network is already exist in database");
             }
-            if(appropriate(filesToLoad.getFilesToLoad()) == Result.FAIL){
+            if (appropriate(filesToLoad.getFilesToLoad()) == Result.FAIL) {
                 return new ValidateResultImpl(Result.FAIL, "The file no contains network data");
             }
         } catch (AWEException e) {

@@ -26,10 +26,10 @@ import org.amanzi.neo.services.model.IProjectModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
 
 /**
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author lagutko_n
  * @since 1.0.0
  */
@@ -37,7 +37,7 @@ public class NeighboursValidator implements IValidator<NetworkConfiguration> {
 
     private final static String DATASET_TYPE = "n2n";
     private Map<String, String[]> map = new HashMap<String, String[]>();
-    
+
     @Override
     public Result appropriate(List<File> filesToLoad) {
         for (File file : filesToLoad) {
@@ -50,13 +50,13 @@ public class NeighboursValidator implements IValidator<NetworkConfiguration> {
                 return Result.FAIL;
             }
 
-            //checking for file headers
-            map.put("sector", new String[] {"name"});
-            map.put("site", new String[] {"lon", "lat"});
-            /*Result result = ValidatorUtils.checkFileAndHeaders(file, 3, DATASET_TYPE, null, map, possibleFieldSepRegexes).getResult();
+            // checking for file headers
+            map.put("sector", new String[] {"serving_name","target_name"});
+            Result result = ValidatorUtils.checkFileAndHeaders(file, 2, DATASET_TYPE, null, map,
+                    ValidatorUtils.possibleFieldSepRegexes).getResult();
             if (result == Result.FAIL) {
                 return result;
-            }*/
+            }
         }
 
         return Result.SUCCESS;
@@ -72,13 +72,17 @@ public class NeighboursValidator implements IValidator<NetworkConfiguration> {
             String networkName = filesToLoad.getDatasetName();
             INetworkModel network = projectModel.findNetwork(networkName);
             if (network != null || networkName == null) {
-                return new ValidateResultImpl(Result.FAIL, "Network %s is already exist in database");
+                return new ValidateResultImpl(Result.FAIL, "Network is already exist in database");
             }
-            if(appropriate(filesToLoad.getFilesToLoad()) == Result.FAIL){
-                return new ValidateResultImpl(Result.FAIL, "The file no contains network data");
+            String n2nName = filesToLoad.getFile().getName();
+            if(n2nName == null){
+                return new ValidateResultImpl(Result.FAIL, "There is no n2n name");
+            }
+            if (appropriate(filesToLoad.getFilesToLoad()) == Result.FAIL) {
+                return new ValidateResultImpl(Result.FAIL, "The file no contains n2n data");
             }
         } catch (AWEException e) {
-            return new ValidateResultImpl(Result.FAIL, "Error while Sector selection data validate");
+            return new ValidateResultImpl(Result.FAIL, "Error while n2n data validate");
         }
 
         return new ValidateResultImpl(Result.SUCCESS, "");

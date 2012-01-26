@@ -15,6 +15,34 @@
             class="org.amanzi.neo.loader.ui.validators.NeighboursValidator"
             id="org.amanzi.awe.validator.neighbours">
       </validator>
+      <validator
+            class="org.amanzi.neo.loader.ui.validators.TrafficValidator"
+            id="org.amanzi.awe.validator.traffic">
+      </validator>
+      <validator
+            class="org.amanzi.neo.loader.ui.validators.SeparationConstraintValidator"
+            id="org.amanzi.awe.validator.separation">
+      </validator>
+      <validator
+            class="org.amanzi.neo.loader.ui.validators.AntennaOptimizationConstraintValidator"
+            id="org.amanzi.awe.validator.antenna_optimization">
+      </validator>
+      <validator
+            class="org.amanzi.neo.loader.ui.validators.AntennaValidator"
+            id="org.amanzi.awe.validator.antenna">
+      </validator>
+      <validator
+            class="org.amanzi.neo.loader.ui.validators.InterferenceMatrixValidator"
+            id="org.amanzi.awe.validator.interference_matrix">
+      </validator>
+      <validator
+            class="org.amanzi.neo.loader.ui.validators.SelectionValidator"
+            id="org.amanzi.awe.validator.selection">
+      </validator>
+      <validator
+            class="org.amanzi.neo.loader.ui.validators.TRXValidator"
+            id="org.amanzi.awe.validator.trx">
+      </validator>
    </extension>
    <extension
          point="org.amanzi.loaders">
@@ -57,7 +85,7 @@
             name="Antenna Loader"
             page="org.amanzi.awe.pages.network"
             parser="org.amanzi.neo.loader.core.parser.AntennaParser"
-            validator="org.amanzi.awe.validator.network">
+            validator="org.amanzi.awe.validator.antenna">
          <savers
                saver="org.amanzi.neo.loader.core.saver.AntennaSaver">
          </savers>
@@ -65,7 +93,7 @@
       <loader
             class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
             id="org.amanzi.awe.loader.Network"
-            name="Antenna Loader"
+            name="Antenna Patterns Loader"
             page="org.amanzi.awe.pages.directory"
             parser="org.amanzi.neo.loader.core.parser.AntennaParser"
             validator="org.amanzi.awe.validator.network">
@@ -79,7 +107,7 @@
             name="Antenna Optimization Constraints Loader"
             page="org.amanzi.awe.pages.network"
             parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
-            validator="org.amanzi.awe.validator.network">
+            validator="org.amanzi.awe.validator.antenna_optimization">
          <savers
                saver="org.amanzi.neo.loader.core.saver.AntennaOptimizationConstraintsSaver">
          </savers>
@@ -90,7 +118,7 @@
             name="Selection Loader"
             page="org.amanzi.awe.pages.network"
             parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
-            validator="org.amanzi.awe.validator.network">
+            validator="org.amanzi.awe.validator.selection">
          <savers
                saver="org.amanzi.neo.loader.core.saver.SelectionSaver">
          </savers>
@@ -101,7 +129,7 @@
             name="Separation Constraint Loader"
             page="org.amanzi.awe.pages.network"
             parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
-            validator="org.amanzi.awe.validator.network">
+            validator="org.amanzi.awe.validator.separation">
          <savers
                saver="org.amanzi.neo.loader.core.saver.SeparationConstraintSaver">
          </savers>
@@ -112,7 +140,7 @@
             name="Traffic Loader"
             page="org.amanzi.awe.pages.network"
             parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
-            validator="org.amanzi.awe.validator.network">
+            validator="org.amanzi.awe.validator.traffic">
          <savers
                saver="org.amanzi.neo.loader.core.saver.TrafficSaver">
          </savers>
@@ -123,7 +151,7 @@
             name="TRX Loader"
             page="org.amanzi.awe.pages.network"
             parser="org.amanzi.neo.loader.core.parser.CommonCSVParser"
-            validator="org.amanzi.awe.validator.network">
+            validator="org.amanzi.awe.validator.trx">
          <savers
                saver="org.amanzi.neo.loader.core.saver.TRXSaver">
          </savers>

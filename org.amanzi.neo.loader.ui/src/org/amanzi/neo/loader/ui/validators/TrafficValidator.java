@@ -26,16 +26,16 @@ import org.amanzi.neo.services.model.IProjectModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
 
 /**
- * 
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
  * Traffic validator
  * </p>
+ * 
  * @author Ladornaya_A
  * @since 1.0.0
  */
-public class TrafficValidator extends AbstractNetworkValidator{
-    
+public class TrafficValidator implements IValidator<NetworkConfiguration> {
+
     private final static String DATASET_TYPE = "traffic";
     private Map<String, String[]> map = new HashMap<String, String[]>();
 
@@ -51,10 +51,11 @@ public class TrafficValidator extends AbstractNetworkValidator{
                 return Result.FAIL;
             }
 
-            //checking for file headers
-            map.put("sector", new String[] {"traffic"});
-            Result result = ValidatorUtils.checkFileAndHeaders(file, 3, DATASET_TYPE, null, map, possibleFieldSepRegexes).getResult();
-            if (result == Result.FAIL) {
+            // checking for file headers
+            map.put("sector", new String[] {"name", "traffic"});
+            Result result = ValidatorUtils.checkFileAndHeaders(file, 2, DATASET_TYPE, null, map,
+                    ValidatorUtils.possibleFieldSepRegexes).getResult();
+            if (result == Result.FAIL || result == Result.UNKNOWN) {
                 return result;
             }
         }
@@ -72,9 +73,10 @@ public class TrafficValidator extends AbstractNetworkValidator{
             String networkName = filesToLoad.getDatasetName();
             INetworkModel network = projectModel.findNetwork(networkName);
             if (network == null || networkName == null) {
-                return new ValidateResultImpl(Result.FAIL, "Network %s is not exist in database");
+                return new ValidateResultImpl(Result.FAIL, "Network is not exist in database");
             }
-            if(appropriate(filesToLoad.getFilesToLoad()) == Result.FAIL){
+            Result result = appropriate(filesToLoad.getFilesToLoad());
+            if (result == Result.FAIL || result == Result.UNKNOWN) {
                 return new ValidateResultImpl(Result.FAIL, "The file no contains traffic data");
             }
         } catch (AWEException e) {
