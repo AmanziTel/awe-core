@@ -33,6 +33,7 @@ import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.INetworkModel;
+import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
 import org.amanzi.neo.services.model.impl.ProjectModel.DistributionItem;
 import org.apache.log4j.Logger;
 import org.junit.AfterClass;
@@ -114,7 +115,7 @@ public class ProjectModelTest extends AbstractNeoServiceTest {
 
         IDriveModel dm;
         try {
-            dm = model.createDriveModel("dataset", DriveTypes.values()[0], NetworkElementNodeType.values()[0]);
+            dm = model.createDriveModel("dataset", DriveTypes.values()[0], DriveNodeTypes.values()[0]);
 
             // object returned not null
             Assert.assertNotNull(dm);
@@ -124,7 +125,7 @@ public class ProjectModelTest extends AbstractNeoServiceTest {
             // drive type correct
             Assert.assertEquals(DriveTypes.values()[0], dm.getDriveType());
             // primary type correct
-            Assert.assertEquals(NetworkElementNodeType.BSC, dm.getPrimaryType());
+            Assert.assertEquals(DriveNodeTypes.values()[0], dm.getPrimaryType());
         } catch (AWEException e) {
             Assert.fail("testCreateDatasetStringIDriveTypeINodeType exception while create driveModel ");
         }
@@ -189,9 +190,9 @@ public class ProjectModelTest extends AbstractNeoServiceTest {
         LOGGER.debug("start testGetDatasetStringIDriveTypeINodeType()");
         // dataset exists
         try {
-            model.createDriveModel("dataset", DriveTypes.values()[0], NetworkElementNodeType.values()[0]);
+            model.createDriveModel("dataset", DriveTypes.values()[0], DriveNodeTypes.values()[0]);
 
-            IDriveModel dm = model.getDrive("dataset", DriveTypes.values()[0], NetworkElementNodeType.values()[0]);
+            IDriveModel dm = model.getDrive("dataset", DriveTypes.values()[0], DriveNodeTypes.values()[0]);
             // object returned not null
             Assert.assertNotNull(dm);
             Assert.assertNotNull(dm.getRootNode());
@@ -202,7 +203,7 @@ public class ProjectModelTest extends AbstractNeoServiceTest {
             // type correct
             Assert.assertEquals(DatasetTypes.DRIVE, dm.getType());
             // primary type correct
-            Assert.assertEquals(NetworkElementNodeType.BSC, dm.getPrimaryType());
+            Assert.assertEquals(DriveNodeTypes.values()[0], dm.getPrimaryType());
         } catch (AWEException e) {
             Assert.fail("testGetDatasetStringIDriveTypeINodeType exception  ");
         }
@@ -215,7 +216,7 @@ public class ProjectModelTest extends AbstractNeoServiceTest {
 
         IDriveModel dm;
         try {
-            dm = model.getDrive("dataset", DriveTypes.values()[0], NetworkElementNodeType.values()[0]);
+            dm = model.getDrive("dataset", DriveTypes.values()[0], DriveNodeTypes.values()[0]);
 
             // object returned not null
             Assert.assertNotNull(dm);
@@ -225,7 +226,7 @@ public class ProjectModelTest extends AbstractNeoServiceTest {
             // drive type correct
             Assert.assertEquals(DriveTypes.values()[0], dm.getDriveType());
             // primary type correct
-            Assert.assertEquals(NetworkElementNodeType.BSC, dm.getPrimaryType());
+            Assert.assertEquals(DriveNodeTypes.values()[0], dm.getPrimaryType());
         } catch (AWEException e) {
             // TODO Handle AWEException
             Assert.fail("testGetDatasetStringIDriveTypeINodeType exception while try to get model  ");
