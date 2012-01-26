@@ -317,7 +317,7 @@ public abstract class AbstractService implements IDatabaseEventListener {
             throw new IllegalArgumentException("Node type cannot be null");
         }
 
-        return "" + root.getId() + "@" + nodeType.getId();
+        return new StringBuilder().append(root.getId()).append("@").append(nodeType.getId()).toString();
     }
 
     /**

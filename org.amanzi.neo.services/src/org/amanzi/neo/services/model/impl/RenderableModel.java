@@ -74,19 +74,19 @@ public abstract class RenderableModel extends AbstractIndexedModel {
     public void setSelectedDataElementToList(IDataElement dataElement) {
         renderableModelElements.add(dataElement);
     }
-    
+
     public List<IDataElement> getSelectedElements() {
         return renderableModelElements;
     }
-    
+
     public void clearSelectedElements() {
         renderableModelElements.clear();
     }
-    
+
     public void setSelectedDataElements(List<IDataElement> dataElements) {
-        renderableModelElements.addAll(dataElements);        
+        renderableModelElements.addAll(dataElements);
     }
-    
+
     @Override
     public void finishUp() throws AWEException {
         Iterable<Node> allGis = datasetService.getAllGisByDataset(rootNode);
