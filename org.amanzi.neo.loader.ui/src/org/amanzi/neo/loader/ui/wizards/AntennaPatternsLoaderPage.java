@@ -146,7 +146,6 @@ public class AntennaPatternsLoaderPage extends AbstractLoaderPage<AntennaConfigu
         datasetCombo.setCurrentDatasetName(getConfiguration().getDatasetName());
     }
 
-    @Override
     protected void initializeFields() {
         // intialize network names
         try {
