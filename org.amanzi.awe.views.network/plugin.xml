@@ -37,6 +37,34 @@
             class="org.amanzi.awe.views.network.view.NetworkPropertiesView"
             id="org.amanzi.awe.views.network.views.NetworkPropertiesView">
       </view>
+      <view
+            category="org.amanzi.awe.views"
+            class="org.amanzi.awe.views.network.view.NewNetworkPropertiesView"
+            icon="icons/network.png"
+            id="org.amanzi.awe.views.network.views.NewNetworkPropertiesView"
+            name="New Network Properties View">
+      </view>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            defaultHandler="org.amanzi.awe.views.network.view.CopyHandler"
+            id="org.amanzi.awe.views.network.command.Copy"
+            name="Copy">
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="toolbar:org.amanzi.awe.views.network.views.NewNetworkPropertiesView">
+         <command
+               commandId="org.amanzi.awe.views.network.command.Copy"
+               icon="icons/copy.png"
+               label="Copy content"
+               style="push">
+         </command>
+      </menuContribution>
    </extension>
    
 

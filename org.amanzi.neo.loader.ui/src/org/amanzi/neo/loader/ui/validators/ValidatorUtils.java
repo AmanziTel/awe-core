@@ -14,8 +14,16 @@
 package org.amanzi.neo.loader.ui.validators;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 import org.amanzi.neo.loader.core.LoaderUtils;
+import org.amanzi.neo.loader.core.preferences.ImportSynonymsManager;
+import org.amanzi.neo.loader.core.preferences.ImportSynonymsManager.NodeTypeSynonyms;
+import org.amanzi.neo.loader.core.preferences.ImportSynonymsManager.PropertySynonyms;
+import org.amanzi.neo.loader.core.preferences.ImportSynonymsManager.Synonym;
 import org.amanzi.neo.loader.ui.utils.LoaderUiUtils;
 import org.amanzi.neo.loader.ui.validators.IValidateResult.Result;
 
@@ -28,16 +36,25 @@ import org.amanzi.neo.loader.ui.validators.IValidateResult.Result;
  * @since 1.0.0
  */
 public class ValidatorUtils {
-    private ValidatorUtils() {
-        // hide constructor
-    }
-
-    public static IValidateResult checkFileAndHeaders(File file, int minSize, String[] constants, String[] possibleFieldSepRegexes) {
-        return checkFileAndHeaders(file, minSize, constants, possibleFieldSepRegexes, true);
-    }
-
-    public static IValidateResult checkFileAndHeaders(File file, int minSize, String[] constants, String[] possibleFieldSepRegexes,
-            boolean convertConstants) {
+    
+    //separators
+    public final static String[] possibleFieldSepRegexes = new String[] {"\t",",",";"};
+    
+    /**
+     * Check file and headers by dataset synonyms
+     * 
+     * @param file loading file
+     * @param minSize
+     * @param datasetType
+     * @param subType
+     * @param possibleFieldSepRegexes
+     * @param convertConstants
+     * @return validate result
+     * 
+     * @author Ladornaya_A
+     */
+    public static IValidateResult checkFileAndHeaders(File file, int minSize, String datasetType, String subType, Map<String,String[]> mandatoryHeaders,
+            String[] possibleFieldSepRegexes) {
         try {
             if (file == null || !file.isFile()) {
                 return new ValidateResultImpl(Result.FAIL, "incorrect file");
@@ -47,18 +64,29 @@ public class ValidatorUtils {
             if (header == null) {
                 return new ValidateResultImpl(Result.FAIL, "not found correct header row");
             }
-            for (String constant : constants) {
-                String[] possibleHeaders = null;
-                if (convertConstants) {
-                    possibleHeaders = LoaderUiUtils.getPossibleHeaders(constant);
-                } else {
-                    possibleHeaders = new String[] {constant};
+
+            List<String> headers = new ArrayList<String>(Arrays.asList(header));
+            NodeTypeSynonyms nodeTypeSynonyms = ImportSynonymsManager.getManager().getNodeTypeSynonyms(datasetType, subType);
+
+            for(String mandatoryKey:mandatoryHeaders.keySet()){
+                PropertySynonyms propertySynonyms = nodeTypeSynonyms.get(mandatoryKey);
+                String[] mandatoryValues = mandatoryHeaders.get(mandatoryKey);
+                for(String mandatoryValue:mandatoryValues){
+                    Synonym synonym = new Synonym(mandatoryValue);
+                    String[] possibleHeadersArray = propertySynonyms.get(synonym);
+                    boolean flag = false;
+                    for(String possibleHeader:possibleHeadersArray){
+                        if(headers.contains(possibleHeader)){
+                            flag = true;
+                        }
+                    }
+                    if(flag == false){
+                        return new ValidateResultImpl(Result.UNKNOWN, "not found all necessary headers");
+                    }
                 }
-                int id = LoaderUtils.findHeaderId(header, possibleHeaders, 0);
-                if (id < 0) {
-                    return new ValidateResultImpl(Result.UNKNOWN, "not found all necessary headers");
-                }
+                
             }
+            
             return new ValidateResultImpl(Result.SUCCESS, "");
 
         } catch (Exception e) {
