@@ -50,26 +50,38 @@ public abstract class AbstractNetworkSaver<T1 extends IDataModel, T3 extends ICo
 
         if (oElementName != null) {
             String elementName = oElementName.toString();
-
-            if (!elementName.isEmpty()) {
-                Set<IDataElement> searchResult = networkModel.findElementByPropertyValue(type, AbstractService.NAME, elementName);
-
-                if (!searchResult.isEmpty()) {
-                    if (searchResult.size() > 1) {
-                        throw new DuplicateNodeNameException(elementName, type);
-                    } else {
-                        return searchResult.iterator().next();
-                    }
-                }
-            }
+            return getNetworkElement(type, elementName);
         }
         return null;
     }
-    
+
     /**
      * get sector node type
      */
-    protected INodeType getSectorNodeType(){
+    protected INodeType getSectorNodeType() {
         return NetworkElementNodeType.SECTOR;
+    }
+
+    /**
+     * find network element by name
+     */
+    protected IDataElement getNetworkElement(INodeType type, String elementName) throws AWEException {
+        if (elementName == null) {
+            return null;
+        }
+
+        if (!elementName.isEmpty()) {
+            Set<IDataElement> searchResult = networkModel.findElementByPropertyValue(type, AbstractService.NAME, elementName);
+
+            if (!searchResult.isEmpty()) {
+                if (searchResult.size() > 1) {
+                    throw new DuplicateNodeNameException(elementName, type);
+                } else {
+                    return searchResult.iterator().next();
+                }
+            }
+        }
+
+        return null;
     }
 }
