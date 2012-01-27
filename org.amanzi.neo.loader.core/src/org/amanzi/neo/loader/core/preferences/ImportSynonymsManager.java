@@ -13,8 +13,14 @@
 
 package org.amanzi.neo.loader.core.preferences;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map.Entry;
+import java.util.Properties;
 
 import org.amanzi.neo.loader.core.internal.NeoLoaderPlugin;
 import org.apache.commons.lang.ArrayUtils;
@@ -286,6 +292,19 @@ public class ImportSynonymsManager {
         }
         
         return result;
+    }
+    
+    public void addFromFile(InputStream inputStream) throws IOException {
+        Properties properties = new Properties();
+        properties.load(inputStream);
+        
+        for (Entry<Object, Object> synonymEntry : properties.entrySet()) {
+            initializeSynonym(synonymEntry.getKey().toString(), synonymEntry.getValue().toString(), true);
+        }
+    }
+    
+    public void addFromFile(File propertiesFile) throws IOException {
+        addFromFile(new FileInputStream(propertiesFile));
     }
 }
 

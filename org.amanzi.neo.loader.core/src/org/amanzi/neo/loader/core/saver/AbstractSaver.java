@@ -284,7 +284,7 @@ public abstract class AbstractSaver<T1 extends IDataModel, T2 extends IData, T3 
 	protected abstract boolean isRenderable();
 
     @Override
-    public void init(T3 configuration, T2 dataElement) throws AWEException {
+    public void init(T3 configuration) throws AWEException {
         DatabaseManagerFactory.getDatabaseManager().startThreadTransaction();
         
         mainModel = createMainModel(configuration);

@@ -75,7 +75,7 @@ public class Loader implements ILoader {
     @Override
 	public void init(IConfiguration config) throws AWEException {
 		for (ISaver saverMem : savers) {
-			saverMem.init(config, null);
+			saverMem.init(config);
 		}
 		parser.init(config, savers);
 	}
