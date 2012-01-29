@@ -28,6 +28,10 @@ import org.amanzi.neo.loader.core.preferences.ImportSynonymsManager.NodeTypeSyno
 import org.amanzi.neo.loader.core.preferences.ImportSynonymsManager.PropertySynonyms;
 import org.amanzi.neo.loader.core.preferences.ImportSynonymsManager.Synonym;
 import org.amanzi.neo.loader.ui.validators.IValidateResult.Result;
+import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.model.INetworkModel;
+import org.amanzi.neo.services.model.IProjectModel;
+import org.amanzi.neo.services.model.impl.ProjectModel;
 
 import au.com.bytecode.opencsv.CSVReader;
 
@@ -44,9 +48,9 @@ import au.com.bytecode.opencsv.CSVReader;
 public abstract class AbstractValidator<T extends IConfiguration> implements IValidator<T> {
 
     // extensions
-    public final static String CSV = "csv";
-    public final static String TXT = "txt";
-    public final static String MSI = "msi";
+    public final static String CSV = ".csv";
+    public final static String TXT = ".txt";
+    public final static String MSI = ".msi";
 
     // separators
     public final static String[] POSSIBLE_SEPARATIONS = new String[] {"\t", ",", ";"};
@@ -157,6 +161,19 @@ public abstract class AbstractValidator<T extends IConfiguration> implements IVa
             e.printStackTrace();
             return new ValidateResultImpl(Result.FAIL, e.getLocalizedMessage());
         }
+    }
+    
+    /**
+     * Find networks
+     *
+     * @param configuration 
+     * @return network model
+     * @throws AWEException 
+     */
+    public INetworkModel findNetwork(IConfiguration configuration) throws AWEException{
+        IProjectModel projectModel = ProjectModel.getCurrentProjectModel();
+        String networkName = configuration.getDatasetName();
+        return projectModel.findNetwork(networkName);
     }
 
     @Override

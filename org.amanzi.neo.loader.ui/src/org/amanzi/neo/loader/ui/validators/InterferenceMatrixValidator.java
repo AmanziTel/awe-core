@@ -21,8 +21,6 @@ import org.amanzi.neo.loader.core.config.NetworkConfiguration;
 import org.amanzi.neo.loader.ui.validators.IValidateResult.Result;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.INetworkModel;
-import org.amanzi.neo.services.model.IProjectModel;
-import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -74,10 +72,8 @@ public class InterferenceMatrixValidator extends AbstractValidator<NetworkConfig
             return new ValidateResultImpl(Result.FAIL, NO_PROJECT);
         }
         try {
-            IProjectModel projectModel = ProjectModel.getCurrentProjectModel();
-            String networkName = filesToLoad.getDatasetName();
-            INetworkModel network = projectModel.findNetwork(networkName);
-            if (network != null || networkName == null) {
+            INetworkModel network = findNetwork(filesToLoad);
+            if (network != null) {
                 return new ValidateResultImpl(Result.FAIL, NETWORK_IS_ALREADY_EXIST);
             }
             String n2nName = filesToLoad.getFile().getName();
