@@ -553,6 +553,9 @@ public class NetworkPropertiesView extends ViewPart {
 
     }
 
+    /*
+     * create filter properties table
+     */
     private void createTable(TableViewer tableView, String columnName) {
         Table table = tableView.getTable();
         TableColumn column = new TableColumn(table, SWT.NONE);
@@ -562,6 +565,15 @@ public class NetworkPropertiesView extends ViewPart {
         table.setLinesVisible(true);
     }
 
+    /**
+     * 
+     * TODO Purpose of NetworkPropertiesView
+     * <p>
+     *  content provider for filter properties table
+     * </p>
+     * @author Ladornaya_A
+     * @since 1.0.0
+     */
     private class PropertyListContentProvider implements IStructuredContentProvider {
 
         @Override
@@ -579,6 +591,15 @@ public class NetworkPropertiesView extends ViewPart {
 
     }
 
+    /**
+     * 
+     * TODO Purpose of NetworkPropertiesView
+     * <p>
+     * label provider for filter properties table
+     * </p>
+     * @author Ladornaya_A
+     * @since 1.0.0
+     */
     public class PropertyListLabelProvider extends LabelProvider {
         @Override
         public Image getImage(Object element) {
