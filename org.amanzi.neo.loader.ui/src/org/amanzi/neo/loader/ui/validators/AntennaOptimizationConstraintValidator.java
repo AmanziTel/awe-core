@@ -24,37 +24,42 @@ import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.IProjectModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
+import org.apache.commons.lang.StringUtils;
 
 /**
- * 
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
  * Antenna optimization constraint validator
  * </p>
+ * 
  * @author Ladornaya_A
  * @since 1.0.0
  */
-public class AntennaOptimizationConstraintValidator implements IValidator<NetworkConfiguration> {
+public class AntennaOptimizationConstraintValidator extends AbstractValidator<NetworkConfiguration> {
 
+    // dataset type
     private final static String DATASET_TYPE = "antenna_optimization";
     private Map<String, String[]> map = new HashMap<String, String[]>();
+
+    // parameters for this type
+    private final static String[] PARAMETERS = new String[] {"name", "antenna", "mechanical_titl", "electrical_titl"};
+
+    // messages
+    private final static String NO_CONTENT = "The file no contains antenna optimization data";
+    private final static String ERROR = "Error while Antenna optimization data validate";
 
     @Override
     public Result appropriate(List<File> filesToLoad) {
         for (File file : filesToLoad) {
 
             // checking for file expansion
-            String name = file.getName();
-            String[] part = name.split("\\.");
-            int size = part.length;
-            if (!part[size - 1].equals("csv") && !part[size - 1].equals("txt")) {
+            if (!checkFileByExtension(file, CSV) && !checkFileByExtension(file, TXT)) {
                 return Result.FAIL;
             }
 
             // checking for file headers
-            map.put("sector", new String[] {"name", "antenna", "mechanical_titl", "electrical_titl"});
-            Result result = ValidatorUtils.checkFileAndHeaders(file, 4, DATASET_TYPE, null, map,
-                    ValidatorUtils.possibleFieldSepRegexes).getResult();
+            map.put(SECTOR, PARAMETERS);
+            Result result = checkFileAndHeaders(file, 4, DATASET_TYPE, null, map, POSSIBLE_SEPARATIONS).getResult();
             if (result == Result.FAIL || result == Result.UNKNOWN) {
                 return result;
             }
@@ -66,24 +71,24 @@ public class AntennaOptimizationConstraintValidator implements IValidator<Networ
     @Override
     public IValidateResult validate(NetworkConfiguration filesToLoad) {
         if (filesToLoad.getDatasetName() == null) {
-            return new ValidateResultImpl(Result.FAIL, "There is no project name");
+            return new ValidateResultImpl(Result.FAIL, NO_PROJECT);
         }
         try {
             IProjectModel projectModel = ProjectModel.getCurrentProjectModel();
             String networkName = filesToLoad.getDatasetName();
             INetworkModel network = projectModel.findNetwork(networkName);
             if (network == null || networkName == null) {
-                return new ValidateResultImpl(Result.FAIL, "Network is not exist in database");
+                return new ValidateResultImpl(Result.FAIL, NETWORK_NOT_EXIST);
             }
             Result result = appropriate(filesToLoad.getFilesToLoad());
             if (result == Result.FAIL || result == Result.UNKNOWN) {
-                return new ValidateResultImpl(Result.FAIL, "The file no contains antenna optimization data");
+                return new ValidateResultImpl(Result.FAIL, NO_CONTENT);
             }
         } catch (AWEException e) {
-            return new ValidateResultImpl(Result.FAIL, "Error while Antenna optimization data validate");
+            return new ValidateResultImpl(Result.FAIL, ERROR);
         }
 
-        return new ValidateResultImpl(Result.SUCCESS, "");
+        return new ValidateResultImpl(Result.SUCCESS, StringUtils.EMPTY);
     }
 
 }

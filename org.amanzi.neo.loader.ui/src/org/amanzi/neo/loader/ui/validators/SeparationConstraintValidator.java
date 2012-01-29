@@ -24,6 +24,7 @@ import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.IProjectModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * TODO Purpose of
@@ -34,27 +35,30 @@ import org.amanzi.neo.services.model.impl.ProjectModel;
  * @author Ladornaya_A
  * @since 1.0.0
  */
-public class SeparationConstraintValidator implements IValidator<NetworkConfiguration> {
+public class SeparationConstraintValidator extends AbstractValidator<NetworkConfiguration> {
 
     private final static String DATASET_TYPE = "separation";
     private Map<String, String[]> map = new HashMap<String, String[]>();
+
+    // parameters
+    private final static String[] PARAMETERS = new String[] {"name", "separation"};
+
+    // messages
+    private final static String NO_CONTENT = "The file no contains separation data";
+    private final static String ERROR = "Error while Separation data validate";
 
     @Override
     public Result appropriate(List<File> filesToLoad) {
         for (File file : filesToLoad) {
 
             // checking for file expansion
-            String name = file.getName();
-            String[] part = name.split("\\.");
-            int size = part.length;
-            if (!part[size - 1].equals("csv") && !part[size - 1].equals("txt")) {
+            if (!checkFileByExtension(file, CSV) && !checkFileByExtension(file, TXT)) {
                 return Result.FAIL;
             }
 
             // checking for file headers
-            map.put("sector", new String[] {"name", "separation"});
-            Result result = ValidatorUtils.checkFileAndHeaders(file, 2, DATASET_TYPE, null, map,
-                    ValidatorUtils.possibleFieldSepRegexes).getResult();
+            map.put(SECTOR, PARAMETERS);
+            Result result = checkFileAndHeaders(file, 2, DATASET_TYPE, null, map, POSSIBLE_SEPARATIONS).getResult();
             if (result == Result.FAIL || result == Result.UNKNOWN) {
                 return result;
             }
@@ -66,24 +70,24 @@ public class SeparationConstraintValidator implements IValidator<NetworkConfigur
     @Override
     public IValidateResult validate(NetworkConfiguration filesToLoad) {
         if (filesToLoad.getDatasetName() == null) {
-            return new ValidateResultImpl(Result.FAIL, "There is no project name");
+            return new ValidateResultImpl(Result.FAIL, NO_PROJECT);
         }
         try {
             IProjectModel projectModel = ProjectModel.getCurrentProjectModel();
             String networkName = filesToLoad.getDatasetName();
             INetworkModel network = projectModel.findNetwork(networkName);
             if (network == null || networkName == null) {
-                return new ValidateResultImpl(Result.FAIL, "Network is not exist in database");
+                return new ValidateResultImpl(Result.FAIL, NETWORK_NOT_EXIST);
             }
             Result result = appropriate(filesToLoad.getFilesToLoad());
             if (result == Result.FAIL || result == Result.UNKNOWN) {
-                return new ValidateResultImpl(Result.FAIL, "The file no contains separation data");
+                return new ValidateResultImpl(Result.FAIL, NO_CONTENT);
             }
         } catch (AWEException e) {
-            return new ValidateResultImpl(Result.FAIL, "Error while Separation data validate");
+            return new ValidateResultImpl(Result.FAIL, ERROR);
         }
 
-        return new ValidateResultImpl(Result.SUCCESS, "");
+        return new ValidateResultImpl(Result.SUCCESS, StringUtils.EMPTY);
     }
 
 }

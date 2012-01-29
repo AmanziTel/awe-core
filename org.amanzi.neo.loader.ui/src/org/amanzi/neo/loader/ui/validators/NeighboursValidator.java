@@ -24,6 +24,7 @@ import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.IProjectModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * TODO Purpose of
@@ -33,27 +34,31 @@ import org.amanzi.neo.services.model.impl.ProjectModel;
  * @author lagutko_n
  * @since 1.0.0
  */
-public class NeighboursValidator implements IValidator<NetworkConfiguration> {
+public class NeighboursValidator extends AbstractValidator<NetworkConfiguration> {
 
     private final static String DATASET_TYPE = "n2n";
     private Map<String, String[]> map = new HashMap<String, String[]>();
+
+    // parameters
+    private final static String[] PARAMETERS = new String[] {"serving_name", "target_name"};
+
+    // messages
+    private final static String NO_N2N_NAME = "There is no n2n name";
+    private final static String NO_CONTENT = "The file no contains n2n data";
+    private final static String ERROR = "Error while n2n data validate";
 
     @Override
     public Result appropriate(List<File> filesToLoad) {
         for (File file : filesToLoad) {
 
             // checking for file expansion
-            String name = file.getName();
-            String[] part = name.split("\\.");
-            int size = part.length;
-            if (!part[size - 1].equals("csv") && !part[size - 1].equals("txt")) {
+            if (!checkFileByExtension(file, CSV) && !checkFileByExtension(file, TXT)) {
                 return Result.FAIL;
             }
 
             // checking for file headers
-            map.put("sector", new String[] {"serving_name","target_name"});
-            Result result = ValidatorUtils.checkFileAndHeaders(file, 2, DATASET_TYPE, null, map,
-                    ValidatorUtils.possibleFieldSepRegexes).getResult();
+            map.put(SECTOR, PARAMETERS);
+            Result result = checkFileAndHeaders(file, 2, DATASET_TYPE, null, map, POSSIBLE_SEPARATIONS).getResult();
             if (result == Result.FAIL) {
                 return result;
             }
@@ -65,27 +70,27 @@ public class NeighboursValidator implements IValidator<NetworkConfiguration> {
     @Override
     public IValidateResult validate(NetworkConfiguration filesToLoad) {
         if (filesToLoad.getDatasetName() == null) {
-            return new ValidateResultImpl(Result.FAIL, "There is no project name");
+            return new ValidateResultImpl(Result.FAIL, NO_PROJECT);
         }
         try {
             IProjectModel projectModel = ProjectModel.getCurrentProjectModel();
             String networkName = filesToLoad.getDatasetName();
             INetworkModel network = projectModel.findNetwork(networkName);
             if (network != null || networkName == null) {
-                return new ValidateResultImpl(Result.FAIL, "Network is already exist in database");
+                return new ValidateResultImpl(Result.FAIL, NETWORK_IS_ALREADY_EXIST);
             }
             String n2nName = filesToLoad.getFile().getName();
-            if(n2nName == null){
-                return new ValidateResultImpl(Result.FAIL, "There is no n2n name");
+            if (n2nName == null) {
+                return new ValidateResultImpl(Result.FAIL, NO_N2N_NAME);
             }
             if (appropriate(filesToLoad.getFilesToLoad()) == Result.FAIL) {
-                return new ValidateResultImpl(Result.FAIL, "The file no contains n2n data");
+                return new ValidateResultImpl(Result.FAIL, NO_CONTENT);
             }
         } catch (AWEException e) {
-            return new ValidateResultImpl(Result.FAIL, "Error while n2n data validate");
+            return new ValidateResultImpl(Result.FAIL, ERROR);
         }
 
-        return new ValidateResultImpl(Result.SUCCESS, "");
+        return new ValidateResultImpl(Result.SUCCESS, StringUtils.EMPTY);
     }
 
 }
