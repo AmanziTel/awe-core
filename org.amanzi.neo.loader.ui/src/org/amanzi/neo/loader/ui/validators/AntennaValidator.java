@@ -26,8 +26,7 @@ import org.amanzi.neo.loader.core.config.NetworkConfiguration;
 import org.amanzi.neo.loader.ui.validators.IValidateResult.Result;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.INetworkModel;
-import org.amanzi.neo.services.model.IProjectModel;
-import org.amanzi.neo.services.model.impl.ProjectModel;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * TODO Purpose of
@@ -38,31 +37,32 @@ import org.amanzi.neo.services.model.impl.ProjectModel;
  * @author Ladornaya_A
  * @since 1.0.0
  */
-public class AntennaValidator implements IValidator<NetworkConfiguration> {
+public class AntennaValidator extends AbstractValidator<NetworkConfiguration> {
 
-    //file reader
+    // file reader
     private CountingFileInputStream is;
     private BufferedReader reader;
 
     private String charSetName = Charset.defaultCharset().name();
 
     // separator
-    private static final String SEPARATOR = " ";
-    
-    //constants
-    private static final Object NAME = "NAME";
-    private static final Object FREQUENCY = "FREQUENCY";
-    private static final Object GAIN = "GAIN";
+    private static final String SEPARATOR = StringUtils.EMPTY;
+
+    // constants
+    private static final String NAME = "NAME";
+    private static final String FREQUENCY = "FREQUENCY";
+    private static final String GAIN = "GAIN";
+
+    // messages
+    private final static String NO_CONTENT = "The file no contents antenna patterns data";
+    private final static String ERROR = "Error while antenna patterns data validate";
 
     @Override
     public Result appropriate(List<File> filesToLoad) {
         for (File file : filesToLoad) {
 
             // checking for file expansion
-            String name = file.getName();
-            String[] part = name.split("\\.");
-            int size = part.length;
-            if (!part[size - 1].equals("msi")) {
+            if (!checkFileByExtension(file, MSI)) {
                 return Result.FAIL;
             }
 
@@ -72,17 +72,17 @@ public class AntennaValidator implements IValidator<NetworkConfiguration> {
                 reader = new BufferedReader(new InputStreamReader(is, charSetName));
 
                 String line1 = reader.readLine();
-                if(!line1.split(SEPARATOR)[1].equals(NAME)){
+                if (!line1.split(SEPARATOR)[1].equals(NAME)) {
                     return Result.FAIL;
                 }
-                
+
                 String line2 = reader.readLine();
-                if(!line2.split(SEPARATOR)[1].equals(FREQUENCY)){
+                if (!line2.split(SEPARATOR)[1].equals(FREQUENCY)) {
                     return Result.FAIL;
                 }
-                
+
                 String line3 = reader.readLine();
-                if(!line3.split(SEPARATOR)[1].equals(GAIN)){
+                if (!line3.split(SEPARATOR)[1].equals(GAIN)) {
                     return Result.FAIL;
                 }
             } catch (FileNotFoundException e) {
@@ -93,7 +93,7 @@ public class AntennaValidator implements IValidator<NetworkConfiguration> {
                 throw (RuntimeException)new RuntimeException().initCause(e);
             } catch (IOException e) {
                 // TODO Handle IOException
-                throw (RuntimeException) new RuntimeException( ).initCause( e );
+                throw (RuntimeException)new RuntimeException().initCause(e);
             }
 
         }
@@ -104,24 +104,22 @@ public class AntennaValidator implements IValidator<NetworkConfiguration> {
     @Override
     public IValidateResult validate(NetworkConfiguration filesToLoad) {
         if (filesToLoad.getDatasetName() == null) {
-            return new ValidateResultImpl(Result.FAIL, "There is no project name");
+            return new ValidateResultImpl(Result.FAIL, NO_PROJECT);
         }
         try {
-            IProjectModel projectModel = ProjectModel.getCurrentProjectModel();
-            String networkName = filesToLoad.getDatasetName();
-            INetworkModel network = projectModel.findNetwork(networkName);
-            if (network == null || networkName == null) {
-                return new ValidateResultImpl(Result.FAIL, "Network is not exist in database");
+            INetworkModel network = findNetwork(filesToLoad);
+            if (network == null) {
+                return new ValidateResultImpl(Result.FAIL, NETWORK_NOT_EXIST);
             }
             Result result = appropriate(filesToLoad.getFilesToLoad());
             if (result == Result.FAIL || result == Result.UNKNOWN) {
-                return new ValidateResultImpl(Result.FAIL, "The file no antenna patterns data");
+                return new ValidateResultImpl(Result.FAIL, NO_CONTENT);
             }
         } catch (AWEException e) {
-            return new ValidateResultImpl(Result.FAIL, "Error while antenna patterns data validate");
+            return new ValidateResultImpl(Result.FAIL, ERROR);
         }
 
-        return new ValidateResultImpl(Result.SUCCESS, "");
+        return new ValidateResultImpl(Result.SUCCESS, StringUtils.EMPTY);
     }
 
 }

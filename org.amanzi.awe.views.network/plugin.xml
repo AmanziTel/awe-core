@@ -39,7 +39,7 @@
       </view>
       <view
             category="org.amanzi.awe.views"
-            class="org.amanzi.awe.views.network.view.NewNetworkPropertiesView"
+            class="org.amanzi.awe.views.network.view.NetworkPropertiesView"
             icon="icons/network.png"
             id="org.amanzi.awe.views.network.views.NewNetworkPropertiesView"
             name="New Network Properties View">
@@ -52,6 +52,11 @@
             id="org.amanzi.awe.views.network.command.Copy"
             name="Copy">
       </command>
+      <command
+            defaultHandler="org.amanzi.awe.views.network.view.FilterHandler"
+            id="org.amanzi.awe.views.network.command.Filter"
+            name="Filter">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.menus">
@@ -62,6 +67,12 @@
                commandId="org.amanzi.awe.views.network.command.Copy"
                icon="icons/copy.png"
                label="Copy content"
+               style="push">
+         </command>
+         <command
+               commandId="org.amanzi.awe.views.network.command.Filter"
+               icon="icons/filter.png"
+               label="Filter"
                style="push">
          </command>
       </menuContribution>

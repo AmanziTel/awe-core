@@ -18,20 +18,15 @@ import java.util.List;
 import java.util.Set;
 
 import org.amanzi.neo.services.AbstractService;
-import org.amanzi.neo.services.INeoConstants;
-import org.amanzi.neo.services.NetworkService;
-import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
-import org.amanzi.neo.services.NodeTypeManager;
-import org.amanzi.neo.services.enums.INodeType;
-import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
-import org.amanzi.neo.services.model.INetworkModel;
-import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.viewers.CellEditor;
+import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ColumnViewerEditor;
 import org.eclipse.jface.viewers.ColumnViewerEditorActivationEvent;
 import org.eclipse.jface.viewers.ColumnViewerEditorActivationStrategy;
-import org.eclipse.jface.viewers.ICellModifier;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -42,57 +37,95 @@ import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Item;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
-import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.part.ViewPart;
 
 /**
  * TODO Purpose of
  * <p>
+ * Network properties view
  * </p>
  * 
- * @author Kasnitskij_V
+ * @author Ladornaya_A
  * @since 1.0.0
  */
 public class NetworkPropertiesView extends ViewPart {
 
+    /*
+     * ID of this View
+     */
+    public static final String NEW_NETWORK_PROPERTIES_VIEW_ID = "org.amanzi.awe.views.network.views.NewNetworkPropertiesView";
+
+    /*
+     * table
+     */
     private TableViewer tableViewer;
-    private TableLabelProvider labelProvider;
-    private TableContentProvider provider;
-    private IDataElement currentDataElement;
-    private boolean isEditable;
-    
+
+    private CheckboxTableViewer propertyListTable;
+
+    /*
+     * table providers
+     */
+    private MultiplyTableLabelProvider labelProvider;
+    private MultiplyTableContentProvider provider;
+
+    /*
+     * set for selection elements
+     */
+    private Set<IDataElement> currentDataElements;
+
+    // all properties
+    private static List<String> allProperties;
+
+    // selected properties
+    private static List<String> headers;
+
+    private static boolean updateTable = false;
+
+    private static List<RowWrapper> elements = new ArrayList<RowWrapper>();
+
+    // private boolean isEditable;
+
     private static String DESTINATION_OF_THIS_VIEW = "This network properties view destine for view all properties in IDataElements";
     private static String CELL_MODIFIER_1 = "column1";
     private static String CELL_MODIFIER_2 = "column2";
-    
-    private static String TITLE_COULD_NOT_CHANGE_PROPERTY = "Could not change property";
-    private static String MESSAGE_COULD_NOT_CHANGE_PROPERTY = "Could not change this property, because it property is unique.\n";
-    private static String PROPERTY_DEFINED_IN_ELEMENT = "In current moment this property define in element with type ";
-    private static String PROPERTY_DEFINED_IN_ELEMENT_CI_LAC = "In current moment properties ci+lac unique and define in element with type ";
 
     public static boolean showMessageBox = true;
-    
-    public void updateTableView(IDataElement dataElement, boolean isEditable) {
-    	this.currentDataElement = dataElement;
-    	this.isEditable = isEditable;
-    	tableViewer.setInput("");
-    	tableViewer.refresh();
+
+    public void updateTableView(Set<IDataElement> dataElements, boolean isEditable) {
+        this.currentDataElements = dataElements;
+        // this.isEditable = isEditable;
+        tableViewer.setInput("");
+        tableViewer.refresh();
     }
-    
+
+    public void updateTableView() {
+        tableViewer.setInput("");
+        tableViewer.refresh();
+    }
+
     private void createLabel(Composite parent, String labelText) {
         Label label = new Label(parent, SWT.FLAT);
         label.setText(labelText + ":");
@@ -113,82 +146,63 @@ public class NetworkPropertiesView extends ViewPart {
         child.setLayout(layout);
         createLabel(child, DESTINATION_OF_THIS_VIEW);
 
+        updateTable = false;
+
         createViewer(parent, child);
     }
-    
+
     private void createViewer(Composite parent, Composite child) {
         tableViewer = new TableViewer(parent, SWT.BORDER | SWT.FULL_SELECTION);
         tableViewer.setUseHashlookup(true);
-        
+
         FormData fData = new FormData();
         fData.left = new FormAttachment(0, 0);
         fData.right = new FormAttachment(100, 0);
         fData.top = new FormAttachment(child, 2);
         fData.bottom = new FormAttachment(100, -2);
         tableViewer.getControl().setLayoutData(fData);
-        
-        labelProvider = new TableLabelProvider();
+
+        labelProvider = new MultiplyTableLabelProvider();
         labelProvider.createTableColumn();
         tableViewer.setLabelProvider(labelProvider);
-        
-        provider = new TableContentProvider();
+
+        provider = new MultiplyTableContentProvider();
         tableViewer.setContentProvider(provider);
-        
-        tableViewer.setCellModifier(new ICellModifier() {
-			
-			@Override
-			public void modify(Object element, String property, Object value) {
-			    element = ((Item) element).getData();
-			    boolean needToUpdate = setPropertyValue(((RowWrapper)element).property, value);
-				if (needToUpdate) {
-				    ((RowWrapper)element).setValue(value);
-					tableViewer.update(element, null);
-				}
-			}
-			
-			@Override
-			public Object getValue(Object element, String property) {
-				
-				return ((RowWrapper)element).value + "";
-			}
-			
-			@Override
-			public boolean canModify(Object element, String property) {
-				if (property.equals(CELL_MODIFIER_2) && isEditable) 
-					return true;
-				return false;
-			}
-		});
+
         tableViewer.setColumnProperties(new String[] {CELL_MODIFIER_1, CELL_MODIFIER_2});
-        
+
         ColumnViewerEditorActivationStrategy activationStrategy = new ColumnViewerEditorActivationStrategy(tableViewer) {
-        	protected boolean isEditorActivationEvent(ColumnViewerEditorActivationEvent event) {
-        		return event.eventType == ColumnViewerEditorActivationEvent.TRAVERSAL
-        				|| event.eventType == ColumnViewerEditorActivationEvent.MOUSE_DOUBLE_CLICK_SELECTION
-        				|| event.eventType == ColumnViewerEditorActivationEvent.PROGRAMMATIC;
-        	}
+            protected boolean isEditorActivationEvent(ColumnViewerEditorActivationEvent event) {
+                return event.eventType == ColumnViewerEditorActivationEvent.TRAVERSAL
+                        || event.eventType == ColumnViewerEditorActivationEvent.MOUSE_DOUBLE_CLICK_SELECTION
+                        || event.eventType == ColumnViewerEditorActivationEvent.PROGRAMMATIC;
+            }
         };
-        
-        tableViewer.setCellEditors(new CellEditor[] {
-        		new TextCellEditor(tableViewer.getTable()), 
-        		new TextCellEditor(tableViewer.getTable()) });
-        
-        TableViewerEditor.create(tableViewer, activationStrategy, 
-        		ColumnViewerEditor.TABBING_HORIZONTAL
-        		| ColumnViewerEditor.TABBING_MOVE_TO_ROW_NEIGHBOR
-        		| ColumnViewerEditor.TABBING_VERTICAL
-        		| ColumnViewerEditor.KEYBOARD_ACTIVATION);
-        
+
+        tableViewer.setCellEditors(new CellEditor[] {new TextCellEditor(tableViewer.getTable()),
+                new TextCellEditor(tableViewer.getTable())});
+
+        TableViewerEditor.create(tableViewer, activationStrategy, ColumnViewerEditor.TABBING_HORIZONTAL
+                | ColumnViewerEditor.TABBING_MOVE_TO_ROW_NEIGHBOR | ColumnViewerEditor.TABBING_VERTICAL
+                | ColumnViewerEditor.KEYBOARD_ACTIVATION);
+
         tableViewer.setInput("");
     }
 
-    private class TableLabelProvider extends LabelProvider implements ITableLabelProvider {
-    	
+    /**
+     * TODO Purpose of NewNetworkPropertiesView
+     * <p>
+     * Label provider for multiply table
+     * </p>
+     * 
+     * @author Ladornaya_A
+     * @since 1.0.0
+     */
+    private class MultiplyTableLabelProvider extends LabelProvider implements ITableLabelProvider {
+
         private final ArrayList<TableColumn> columns = new ArrayList<TableColumn>();
-        private final static int DEF_SIZE = 340;
-        private final String PROPERTY_NAME = "Property";
-        private final String PROPERTY_VALUE = "Value";
-        
+        private final static int DEF_SIZE = 110;
+        private boolean level = true;
 
         private void createColumn(String label, int size, boolean sortable, final int idx) {
             TableViewerColumn column = new TableViewerColumn(tableViewer, SWT.LEFT);
@@ -214,16 +228,55 @@ public class NetworkPropertiesView extends ViewPart {
          * create column table
          */
         public void createTableColumn() {
+            level = true;
             Table tabl = tableViewer.getTable();
+            allProperties = new ArrayList<String>();
             for (TableColumn column : columns) {
                 column.dispose();
             }
             int idx = 0;
-            createColumn(PROPERTY_NAME, DEF_SIZE, true, idx);
-            idx++;
-            createColumn(PROPERTY_VALUE, DEF_SIZE, false, idx);
-            idx++;
             
+            
+
+            if (currentDataElements != null) {
+                allProperties.add(AbstractService.NAME);
+                createColumn(AbstractService.NAME, DEF_SIZE, true, idx);
+                idx++;
+                String type = null;
+
+                for (IDataElement element : currentDataElements) {
+                    for (String header : element.keySet()) {
+                        if (!allProperties.contains(header)) {
+                            allProperties.add(header);
+                        }
+
+                    }
+                    
+                    if (type == null) {
+                        type = element.get(AbstractService.TYPE).toString();
+                    } else {
+                        if (!type.equals(element.get(AbstractService.TYPE).toString())) {
+                            level = false;
+                        }
+                    }
+                }
+
+                if (!level) {
+                    updateTableView(null, true);
+                }
+
+                if (!updateTable) {
+                    headers = new ArrayList<String>();
+                    headers = allProperties;
+                }
+                for (String header : headers) {
+                    if (!header.equals(AbstractService.NAME)) {
+                        createColumn(header, DEF_SIZE, false, idx);
+                        idx++;
+                    }
+                }
+            }
+
             tabl.setHeaderVisible(true);
             tabl.setLinesVisible(true);
             tableViewer.setLabelProvider(this);
@@ -233,11 +286,7 @@ public class NetworkPropertiesView extends ViewPart {
         @Override
         public String getColumnText(Object element, int columnIndex) {
             RowWrapper wrapper = (RowWrapper)element;
-            if (columnIndex == 0) {
-                return wrapper.getProperty();
-            } else {
-                return wrapper.getValue().toString();
-            }
+            return wrapper.getValues().get(columnIndex);
         }
 
         @Override
@@ -265,8 +314,8 @@ public class NetworkPropertiesView extends ViewPart {
             this.column.addSelectionListener(new SelectionAdapter() {
 
                 public void widgetSelected(SelectionEvent e) {
-                    if (TableColumnSorter.this.viewer.getComparator() != null ||
-                    TableColumnSorter.this.viewer.getComparator() == TableColumnSorter.this) {
+                    if (TableColumnSorter.this.viewer.getComparator() != null
+                            || TableColumnSorter.this.viewer.getComparator() == TableColumnSorter.this) {
                         int tdirection = TableColumnSorter.this.direction;
 
                         if (tdirection == ASC) {
@@ -274,9 +323,8 @@ public class NetworkPropertiesView extends ViewPart {
                         } else if (tdirection == DESC) {
                             setSorter(TableColumnSorter.this, NONE);
                         }
-                    } 
-                    else {
-                    	setSorter(TableColumnSorter.this, ASC);
+                    } else {
+                        setSorter(TableColumnSorter.this, ASC);
                     }
                 }
             });
@@ -287,8 +335,7 @@ public class NetworkPropertiesView extends ViewPart {
                 column.getParent().setSortColumn(null);
                 column.getParent().setSortDirection(SWT.NONE);
                 viewer.setComparator(null);
-            } 
-            else {
+            } else {
                 column.getParent().setSortColumn(column);
                 sorter.direction = direction;
 
@@ -313,10 +360,18 @@ public class NetworkPropertiesView extends ViewPart {
         protected abstract int doCompare(Viewer TableViewer, Object e1, Object e2);
     }
 
-    private class TableContentProvider implements IStructuredContentProvider {
-        List<RowWrapper> elements = new ArrayList<RowWrapper>();
+    /**
+     * TODO Purpose of NewNetworkPropertiesView
+     * <p>
+     * Content provider for multiply table
+     * </p>
+     * 
+     * @author Ladornaya_A
+     * @since 1.0.0
+     */
+    private class MultiplyTableContentProvider implements IStructuredContentProvider {
 
-        public TableContentProvider() {
+        public MultiplyTableContentProvider() {
         }
 
         @Override
@@ -326,22 +381,29 @@ public class NetworkPropertiesView extends ViewPart {
 
         @Override
         public void dispose() {
-        	
+
         }
 
         @Override
         public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-        	elements.clear();
-        	
-            ((TableLabelProvider)tableViewer.getLabelProvider()).createTableColumn();
-            if (currentDataElement != null) {
-	            for (String property : currentDataElement.keySet()) {
-	            	Object value = currentDataElement.get(property);
-	            	if (value instanceof Number || value instanceof Boolean || value instanceof String) {
-		            	RowWrapper row = new RowWrapper(property, value);
-		            	elements.add(row);
-	            	}
-	            }
+            elements.clear();
+
+            ((MultiplyTableLabelProvider)tableViewer.getLabelProvider()).createTableColumn();
+
+            if (currentDataElements != null) {
+                for (IDataElement element : currentDataElements) {
+                    List<String> rowValues = new ArrayList<String>();
+                    for (String header : headers) {
+                        if (element.keySet().contains(header)) {
+                            rowValues.add(element.get(header).toString());
+                        } else {
+                            rowValues.add("");
+                        }
+                    }
+                    RowWrapper row = new RowWrapper(rowValues);
+                    elements.add(row);
+                }
+
             }
         }
     }
@@ -355,121 +417,199 @@ public class NetworkPropertiesView extends ViewPart {
      * @since 1.0.0
      */
     private class RowWrapper {
-        private final String property;
-        private Object value;
+        private List<String> values;
+        @SuppressWarnings("unused")
         private boolean isEditable;
 
-        private RowWrapper(String property, Object value) {
+        private RowWrapper(List<String> values) {
             super();
-            this.property = property;
-            this.value = value;
-            this.isEditable = false;
+            this.setValues(values);
+            this.setEditable(false);
         }
 
-        public String getProperty() {
-            return property;
+        public List<String> getValues() {
+            return values;
         }
 
-        public Object getValue() {
-            return value;
+        public void setValues(List<String> values) {
+            this.values = values;
         }
-        
-        public void setValue(Object value) {
-        	this.value = value;
+
+        public void setEditable(boolean isEditable) {
+            this.isEditable = isEditable;
         }
-        
-        public void setIsEditable(boolean isEditable) {
-        	this.isEditable = isEditable;
-        }
-        
-        public boolean isEditable() {
-        	return isEditable;
-        }
+
     }
 
     @Override
     public void setFocus() {
     }
-    
+
     /**
-     * Sets the property value.
-     * 
-     * @param id the id
-     * @param value the value
-     * @return Is updated value
+     * copy date to clipboard
      */
-    public boolean setPropertyValue(String propertyName, Object value) {
+    public void copyToClipboard() {
 
-        INetworkModel networkModel = (INetworkModel)currentDataElement.get(INeoConstants.NETWORK_MODEL_NAME);
-        boolean isReadyToUpdate = true;
-        try {
-            INodeType nodeType = NodeTypeManager.getType(currentDataElement.get(AbstractService.TYPE).toString());
-            IDataElement dataElement = null;
-            boolean isCIorLAC = false;
-            // if property is unique then find is exist some element with equal property
-            if (networkModel.isUniqueProperties(propertyName)) {
-                if (nodeType.equals(NetworkElementNodeType.SECTOR)) {
-                    // ci+lac in sector should be unique, not a ci_lac as parameter
-                    // but ci together with lac should be unique
-                    String ci_lac = null;
-                    if (propertyName.equals(NetworkService.CELL_INDEX)) {
-                        String lac = currentDataElement.get(NetworkService.LOCATION_AREA_CODE).toString();
-                        ci_lac = value.toString() + "_" + lac;
-                        isCIorLAC = true;
-                    } else if (propertyName.equals(NetworkService.LOCATION_AREA_CODE)) {
-                        String ci = currentDataElement.get(NetworkService.CELL_INDEX).toString();
-                        ci_lac = ci + "_" + value.toString();
-                        isCIorLAC = true;
-                    }
-                    if (isCIorLAC) {
-                        dataElement = networkModel.findSector(propertyName, ci_lac);
-                    } else {
-                        dataElement = networkModel.findSector(propertyName, value.toString());
-                    }
-                    if (dataElement != null) {
-                        isReadyToUpdate = false;
-                    }
-                } else {
-                    Set<IDataElement> elements = networkModel.findElementByPropertyValue(nodeType, propertyName, value);
-                    if (elements.size() > 0) {
-                        dataElement = elements.iterator().next();
-                        isReadyToUpdate = false;
-                    }
-                }
-            }
-            if (isReadyToUpdate) {
-                networkModel.updateElement(currentDataElement, propertyName, value);
-            } else {
-                String propertyDefined = null;
-                if (isCIorLAC) {
-                    propertyDefined = PROPERTY_DEFINED_IN_ELEMENT_CI_LAC;
-                } else {
-                    propertyDefined = PROPERTY_DEFINED_IN_ELEMENT;
-                }
-                String message = MESSAGE_COULD_NOT_CHANGE_PROPERTY + propertyDefined + dataElement.get(NetworkService.TYPE)
-                        + " and name " + dataElement.get(NetworkService.NAME);
+        Clipboard cb = new Clipboard(Display.getDefault());
 
-                if (showMessageBox) {
-                    showMessageBox = false;
-                    synchronized (message) {
-                        // if we will use this code then we will get a critical error
-                        // MessageDialog.openWarning(null, TITLE_COULD_NOT_CHANGE_PROPERTY,
-                        // message);
-                        MessageBox msg = new MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.OK);
-                        msg.setText(TITLE_COULD_NOT_CHANGE_PROPERTY);
-                        msg.setMessage(message);
-                        int result = msg.open();
-                        if (result != SWT.OK) {
-                            return false;
-                        }
-                    }
-                    showMessageBox = true;
-                }
-            }
-        } catch (AWEException e) {
-            MessageDialog.openError(null, TITLE_COULD_NOT_CHANGE_PROPERTY, TITLE_COULD_NOT_CHANGE_PROPERTY + "\n" + e);
+        StringBuilder sb = new StringBuilder();
+        // headers
+        sb.append(parseToString(headers));
+
+        // rows
+        for (RowWrapper row : elements) {
+            sb.append(parseToString(row.getValues()));
         }
-        
-        return isReadyToUpdate;
+
+        TextTransfer textTransfer = TextTransfer.getInstance();
+        cb.setContents(new Object[] {sb.toString()}, new Transfer[] {textTransfer});
     }
+
+    /**
+     * transform list at line
+     * 
+     * @param list
+     * @return line
+     */
+    private String parseToString(List<String> list) {
+        String line = "";
+        for (String value : list) {
+            line = line + value + "\t";
+        }
+        line = line + System.getProperty("line.separator");
+        return line;
+    }
+
+    /*
+     * filter properties
+     */
+    public void filter(ExecutionEvent event) throws ExecutionException {
+        IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindowChecked(event);
+        Shell parent = workbenchWindow.getShell();
+        Dialog dialog = new Dialog(parent) {
+            @Override
+            protected Control createDialogArea(Composite parent) {
+                Composite composite = (Composite)super.createDialogArea(parent);
+                composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+                composite.setLayout(new GridLayout());
+                final Button button = new Button(composite, SWT.NONE);
+                button.setText("Select All");
+                button.addSelectionListener(new SelectionListener() {
+
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        propertyListTable.setAllChecked(true);
+                        propertyListTable.refresh();
+                    }
+
+                    @Override
+                    public void widgetDefaultSelected(SelectionEvent e) {
+                        propertyListTable.refresh();
+                    }
+                });
+                propertyListTable = CheckboxTableViewer.newCheckList(composite, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL
+                        | SWT.BORDER | SWT.CHECK);
+                GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
+                data.heightHint = 300;
+                data.widthHint = 200;
+                createTable(propertyListTable, "Properties");
+                propertyListTable.getControl().setLayoutData(data);
+                propertyListTable.setContentProvider(new PropertyListContentProvider());
+                propertyListTable.setLabelProvider(new PropertyListLabelProvider());
+                propertyListTable.setInput("");
+                for (String header : headers) {
+                    propertyListTable.setChecked(header, true);
+                }
+                return dialogArea;
+            }
+
+            @Override
+            protected Point getInitialSize() {
+                return new Point(250, 400);
+            }
+
+            @Override
+            protected void configureShell(Shell newShell) {
+                super.configureShell(newShell);
+                newShell.setText("Properties filter");
+            }
+
+            @Override
+            protected void okPressed() {
+                Object[] selectedProperties = propertyListTable.getCheckedElements();
+                headers = new ArrayList<String>();
+                for (Object o : selectedProperties) {
+                    headers.add(o.toString());
+                }
+                updateTable = true;
+                close();
+            }
+
+        };
+
+        if (dialog.open() == Dialog.OK) {
+
+        }
+
+    }
+
+    /*
+     * create filter properties table
+     */
+    private void createTable(TableViewer tableView, String columnName) {
+        Table table = tableView.getTable();
+        TableColumn column = new TableColumn(table, SWT.NONE);
+        column.setWidth(200);
+        column.setText(columnName);
+        table.setHeaderVisible(true);
+        table.setLinesVisible(true);
+    }
+
+    /**
+     * 
+     * TODO Purpose of NetworkPropertiesView
+     * <p>
+     *  content provider for filter properties table
+     * </p>
+     * @author Ladornaya_A
+     * @since 1.0.0
+     */
+    private class PropertyListContentProvider implements IStructuredContentProvider {
+
+        @Override
+        public Object[] getElements(Object inputElement) {
+            return allProperties.toArray();
+        }
+
+        @Override
+        public void dispose() {
+        }
+
+        @Override
+        public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+        }
+
+    }
+
+    /**
+     * 
+     * TODO Purpose of NetworkPropertiesView
+     * <p>
+     * label provider for filter properties table
+     * </p>
+     * @author Ladornaya_A
+     * @since 1.0.0
+     */
+    public class PropertyListLabelProvider extends LabelProvider {
+        @Override
+        public Image getImage(Object element) {
+            return null;
+        }
+
+        @Override
+        public String getText(Object element) {
+            return element.toString();
+        }
+    }
+
 }
