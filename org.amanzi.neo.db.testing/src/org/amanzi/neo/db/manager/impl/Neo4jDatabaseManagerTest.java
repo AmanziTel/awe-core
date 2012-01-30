@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Random;
 
 import org.amanzi.log4j.LogStarter;
+import org.amanzi.neo.db.manager.DatabaseManagerFactory;
 import org.amanzi.neo.db.manager.IDatabaseManager.AccessType;
 import org.amanzi.neo.db.manager.events.DatabaseEvent;
 import org.amanzi.neo.db.manager.events.DatabaseEvent.EventType;
@@ -51,6 +52,8 @@ public class Neo4jDatabaseManagerTest {
     private final static String DATABASE_DIRECTORY = "neo";
     
     private final Mockery context = new Mockery();
+    
+    private Neo4jDatabaseManager manager;
     
     /**
      * Type of Event Actions
@@ -85,8 +88,11 @@ public class Neo4jDatabaseManagerTest {
      */
     @After
     public void tearDown() throws Exception {
+    	DatabaseManagerFactory.getDatabaseManager().shutdown();
+    	
         clearDbLocation(new File(getDirectoryLocation(TEST_DIRECTORIES)));
         clearDbLocation(new File(getDirectoryLocation(NEO4J_DEFAULT_DIRECTORIES)));
+        
     }
 
     private static String getDirectoryLocation(String[] subDirectories) {

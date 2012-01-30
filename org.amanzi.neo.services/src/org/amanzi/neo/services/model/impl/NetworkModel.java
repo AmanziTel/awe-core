@@ -140,6 +140,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         }
         this.rootNode = networkNode;
         this.name = name;
+        currentGisModel = new GisModel((String)rootNode.getProperty(DatasetService.NAME));
         initializeStatistics();
         initializeMultiPropertyIndexing();
         initializeNetworkStructure();
@@ -942,7 +943,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     public INodeToNodeRelationsModel getCurrentNodeToNodeRelationshipModel() throws AWEException {
         INodeToNodeRelationsModel resultModel = null;
         String currentN2NModelName = nwServ.getCurrentNodeToNodeModelName(getRootNode());
-        
+
         if (currentN2NModelName != null) {
             for (INodeToNodeRelationsModel currentModel : getNodeToNodeModels()) {
                 if (currentN2NModelName.equals(currentModel.getName())) {
@@ -951,7 +952,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
                 }
             }
         }
-        
+
         return resultModel;
     }
 
