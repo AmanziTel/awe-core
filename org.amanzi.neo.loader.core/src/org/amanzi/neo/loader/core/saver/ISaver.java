@@ -44,4 +44,8 @@ public interface ISaver<M extends IModel, D extends IData, C extends IConfigurat
      * common finishing actions
      */
     public void finishUp() throws AWEException;
+    
+    public void setStartElement(String startElement);
+    
+    public void setAllElementsFor(String allElementsFor);
 }

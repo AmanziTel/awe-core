@@ -23,6 +23,8 @@ import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
+import org.apache.commons.lang.StringUtils;
+import org.jaitools.jiffle.parser.JiffleParser.conCall_return;
 
 /**
  * network saver
@@ -34,6 +36,10 @@ public class NetworkSaver extends AbstractMappedDataSaver<INetworkModel, Network
     // Default network structure
     private final static NetworkElementNodeType[] DEFAULT_NETWORK_STRUCTURE = {NetworkElementNodeType.CITY,
             NetworkElementNodeType.MSC, NetworkElementNodeType.BSC, NetworkElementNodeType.SITE, NetworkElementNodeType.SECTOR};
+    
+    private NetworkElementNodeType startNetworkElement;
+    
+    private NetworkElementNodeType allElementsFor;
 
     /**
      * create saver instance
@@ -66,29 +72,63 @@ public class NetworkSaver extends AbstractMappedDataSaver<INetworkModel, Network
         return DatasetTypes.NETWORK.getId();
     }
     
+    private boolean shouldStart(NetworkElementNodeType currentElement) {
+        if (StringUtils.isEmpty(getStartElement())) {
+            return true;
+        }
+        
+        if (startNetworkElement == null) {
+            startNetworkElement = NetworkElementNodeType.valueOf(getStartElement());
+        }
+        
+        return startNetworkElement == currentElement;
+    }
+    
+    private boolean shouldAddAllElements(NetworkElementNodeType currentElement) {
+        if (StringUtils.isEmpty(getAllElementsFor())) {
+            return false;
+        }
+        
+        if (allElementsFor == null) {
+            allElementsFor = NetworkElementNodeType.valueOf(getAllElementsFor());
+        }
+        
+        return currentElement == allElementsFor;
+    }
+    
     @Override
     public void saveElement(MappedData dataElement) throws AWEException {
         IDataElement parent = null;
         IDataElement element = null;
         
+        boolean shouldStart = false;
+        
         for (NetworkElementNodeType type : DEFAULT_NETWORK_STRUCTURE) {
-            Map<String, Object> values = getDataElementProperties(getMainModel(), type, dataElement, type == NetworkElementNodeType.SECTOR);
+            if (!shouldStart) {
+                shouldStart = shouldStart(type);
+            }
+            
+            if (!shouldStart) {
+                continue;
+            }
+            
+            Map<String, Object> values = getDataElementProperties(getMainModel(), type, dataElement, shouldAddAllElements(type));
             
             if (!values.isEmpty()) {
                 values.put(AbstractService.TYPE, type.getId());
                 
                 try {
                     element = getMainModel().findElement(values);
+                
+                    if (element == null) {
+                        element = getMainModel().createElement(parent, values);
+                    } else {
+                        getMainModel().completeProperties(element, values, true);
+                    }
+                    parent = element;
                 } catch (IllegalArgumentException e) {
                     continue;
                 }
-                
-                if (element == null) {
-                    element = getMainModel().createElement(parent, values);
-                } else {
-                    getMainModel().completeProperties(element, values, true);
-                }
-                parent = element;
             }   
         }
         

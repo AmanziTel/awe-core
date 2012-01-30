@@ -38,9 +38,15 @@ import org.amanzi.neo.services.model.IDataModel;
  */
 public abstract class AbstractMappedDataSaver<T1 extends IDataModel, T3 extends IConfiguration> extends AbstractSaver<T1, MappedData, T3> {
     
+    private static final Map<String, Object> EMPTY_MAP = new HashMap<String, Object>();
+    
     private Map<INodeType, Map<String, Synonym>> synonymsCache = new HashMap<INodeType, Map<String, Synonym>>();
     
     protected Map<String, Object> getDataElementProperties(T1 model, INodeType nodeType, MappedData dataElement, boolean addNonMappedData) {
+        if (dataElement.isEmpty()) {
+            return EMPTY_MAP;
+        }
+        
         Map<String, Synonym> synonymMapping = synonymsCache.get(nodeType);
         
         if (synonymMapping == null) {
