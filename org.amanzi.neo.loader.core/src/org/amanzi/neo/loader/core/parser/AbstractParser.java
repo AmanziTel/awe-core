@@ -14,6 +14,7 @@
 package org.amanzi.neo.loader.core.parser;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +27,7 @@ import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IModel;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 
 /**
  * <p>
@@ -89,7 +91,7 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
      * 
      * @return next parsed IData object, or null in case if parsing finished
      */
-    protected abstract T3 parseElement(IProgressMonitor monitor);
+    protected abstract T3 parseElement(IProgressMonitor monitor) throws IOException;
 
     /**
      * Parses single file
@@ -97,7 +99,7 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
      * @param file
      * @throws AWEException
      */
-    protected void parseFile(File file, IProgressMonitor monitor) throws AWEException {
+    protected void parseFile(File file, IProgressMonitor monitor) throws AWEException, IOException {
         monitor.beginTask("Loading file <" + file.getName() + ">", 100);
         
         T3 element = parseElement(monitor);
@@ -131,13 +133,22 @@ public abstract class AbstractParser<T1 extends ISaver< ? extends IModel, T3, T2
 
     @Override
     public void run(IProgressMonitor monitor) throws AWEException {
+        if (monitor == null) {
+            monitor = new NullProgressMonitor();
+        }
         
         long globalStartTime = System.currentTimeMillis();
-        for (File file : config.getFilesToLoad()) {
-            currentFile = file;
-            long startTime = System.currentTimeMillis();
-            parseFile(file, monitor);
-            LOGGER.info("File " + currentFile.getName() + " Parsing/Saving data finished in: " + getOperationTime(startTime));
+        
+        try {
+            for (File file : config.getFilesToLoad()) {
+                currentFile = file;
+                long startTime = System.currentTimeMillis();
+                parseFile(file, monitor);
+                LOGGER.info("File " + currentFile.getName() + " Parsing/Saving data finished in: " + getOperationTime(startTime));
+            }
+        } catch (IOException e) {
+            //TODO:
+            e.printStackTrace();
         }
         try {
             finishUp();
