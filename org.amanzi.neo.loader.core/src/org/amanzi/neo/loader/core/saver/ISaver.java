@@ -30,7 +30,7 @@ public interface ISaver<M extends IModel, D extends IData, C extends IConfigurat
      * @param configuration
      * @param dataElement
      */
-    public void init(C configuration, D dataElement) throws AWEException;
+    public void init(C configuration) throws AWEException;
 
     /**
      * save dataElement to database;
@@ -44,4 +44,8 @@ public interface ISaver<M extends IModel, D extends IData, C extends IConfigurat
      * common finishing actions
      */
     public void finishUp() throws AWEException;
+    
+    public void setStartElement(String startElement);
+    
+    public void setAllElementsFor(String allElementsFor);
 }

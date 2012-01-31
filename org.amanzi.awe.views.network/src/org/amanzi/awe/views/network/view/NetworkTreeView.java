@@ -167,9 +167,9 @@ public class NetworkTreeView extends ViewPart {
                         selectedDataElements.add(element);
                     }
                 }
-                NewNetworkPropertiesView propertiesView = null;
+                NetworkPropertiesView propertiesView = null;
                 try {
-                    propertiesView = (NewNetworkPropertiesView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
+                    propertiesView = (NetworkPropertiesView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
                             .showView("org.amanzi.awe.views.network.views.NewNetworkPropertiesView");
                     propertiesView.updateTableView(selectedDataElements, currentMode);
                 } catch (PartInitException e) {
@@ -312,7 +312,7 @@ public class NetworkTreeView extends ViewPart {
         public void run() {
             try {
                 currentMode = isEditable;
-                NewNetworkPropertiesView propertiesView = (NewNetworkPropertiesView)PlatformUI.getWorkbench()
+                NetworkPropertiesView propertiesView = (NetworkPropertiesView)PlatformUI.getWorkbench()
                         .getActiveWorkbenchWindow().getActivePage()
                         .showView("org.amanzi.awe.views.network.views.NewNetworkPropertiesView");
                 propertiesView.updateTableView(selectedDataElements, isEditable);

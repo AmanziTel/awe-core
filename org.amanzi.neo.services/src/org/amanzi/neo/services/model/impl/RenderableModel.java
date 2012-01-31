@@ -57,7 +57,9 @@ public abstract class RenderableModel extends AbstractIndexedModel {
 
     protected RenderableModel(Node rootNode, INodeType nodeType) throws AWEException {
         super(rootNode, nodeType);
-        currentGisModel = new GisModel((String)rootNode.getProperty(DatasetService.NAME));
+        if (rootNode != null) {
+            currentGisModel = new GisModel((String)rootNode.getProperty(DatasetService.NAME));
+        }
     }
 
     /**
@@ -74,19 +76,19 @@ public abstract class RenderableModel extends AbstractIndexedModel {
     public void setSelectedDataElementToList(IDataElement dataElement) {
         renderableModelElements.add(dataElement);
     }
-    
+
     public List<IDataElement> getSelectedElements() {
         return renderableModelElements;
     }
-    
+
     public void clearSelectedElements() {
         renderableModelElements.clear();
     }
-    
+
     public void setSelectedDataElements(List<IDataElement> dataElements) {
-        renderableModelElements.addAll(dataElements);        
+        renderableModelElements.addAll(dataElements);
     }
-    
+
     @Override
     public void finishUp() throws AWEException {
         Iterable<Node> allGis = datasetService.getAllGisByDataset(rootNode);
@@ -188,19 +190,19 @@ public abstract class RenderableModel extends AbstractIndexedModel {
          */
         private void initGisProperties() {
             this.name = (String)gisRoot.getProperty(DatasetService.NAME);
+            crsCode = StringUtils.EMPTY;
             if (gisRoot != null) {
                 crsCode = gisRoot.getProperty(CRS_NAME, StringUtils.EMPTY).toString();
             }
-            crsCode = StringUtils.EMPTY;
             Iterator<INamedFilter> filters = datasetService.loadFilters(gisRoot).iterator();
             if (filters.hasNext()) {
                 this.filter = filters.next();
             }
             try {
-                if (!crsCode.equals(StringUtils.EMPTY)) {
+                if (crsCode.equals(StringUtils.EMPTY)) {
                     crsCode = DEFAULT_EPSG;
                 }
-                crs = CRS.decode(DEFAULT_EPSG);
+                crs = CRS.decode(crsCode);
             } catch (FactoryException e) {
                 LOGGER.error("Could not parse epsg.", e);
 
@@ -282,6 +284,16 @@ public abstract class RenderableModel extends AbstractIndexedModel {
         public void setCRS(CoordinateReferenceSystem crs) {
             this.crs = crs;
             crsCode = "";// ToDO:
+        }
+        
+        public void setCRS(double lat, double lon, String fileName) {
+            if (this.crs == null) {
+                try {
+                    this.crs = CRS.decode(org.amanzi.neo.services.CRS.fromLocation(lat, lon, fileName).getEpsg());
+                } catch (FactoryException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
         /**

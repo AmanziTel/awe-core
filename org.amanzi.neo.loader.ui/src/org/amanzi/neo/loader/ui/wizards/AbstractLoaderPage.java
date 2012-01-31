@@ -15,6 +15,7 @@ package org.amanzi.neo.loader.ui.wizards;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -342,13 +343,13 @@ public abstract class AbstractLoaderPage<T extends IConfiguration> extends Wizar
             return false;
         }
         
-        if (currentLoader == null) {
+        if (getLoader() == null) {
             setErrorMessage("Data Type not selected");
             
             return false;
         }
         
-        IValidateResult result = currentLoader.getValidator().validate(getConfiguration());
+        IValidateResult result = getLoader().getValidator().validate(getConfiguration());
         if (result.getResult() == Result.FAIL) {
             setErrorMessage(result.getMessages());
             
@@ -431,6 +432,4 @@ public abstract class AbstractLoaderPage<T extends IConfiguration> extends Wizar
     protected abstract T createConfiguration();
     
     protected abstract void updateValues();
-    
-    protected abstract void initializeFields();
 }

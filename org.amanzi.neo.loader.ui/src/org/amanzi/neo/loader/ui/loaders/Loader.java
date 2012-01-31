@@ -21,6 +21,7 @@ import org.amanzi.neo.loader.core.saver.ISaver;
 import org.amanzi.neo.loader.ui.validators.IValidator;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 
 /**
  * <p>
@@ -63,6 +64,10 @@ public class Loader implements ILoader {
 
 	@Override
 	public void run(IProgressMonitor monitor) throws AWEException {
+	    if (monitor == null) {
+	        monitor = new NullProgressMonitor();
+	    }
+	    
 		parser.run(monitor);
 	}
 
@@ -75,7 +80,7 @@ public class Loader implements ILoader {
     @Override
 	public void init(IConfiguration config) throws AWEException {
 		for (ISaver saverMem : savers) {
-			saverMem.init(config, null);
+			saverMem.init(config);
 		}
 		parser.init(config, savers);
 	}

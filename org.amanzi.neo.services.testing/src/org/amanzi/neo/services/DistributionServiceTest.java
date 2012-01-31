@@ -171,30 +171,30 @@ public class DistributionServiceTest extends AbstractNeoServiceTest {
     public void tryToFindRootAggregationNodesWithoutParentNode() throws Exception {
         distributionService.findRootAggregationNodes(null);
     }
-    
+
     public void checkFindRootAggregationNodesCount() throws Exception {
         Node parentNode = getParentNode();
-        for (int i = 0; i < NUMBER_OF_ROOT_AGGREGATIONS; i ++) {
+        for (int i = 0; i < NUMBER_OF_ROOT_AGGREGATIONS; i++) {
             createRootAggregationNode(parentNode, DISTRIBUTION_NAME + i);
         }
-        
+
         List<Node> res = distributionService.findRootAggregationNodes(parentNode);
-        
-        assertEquals("Search found incorrect count of nodes", NUMBER_OF_ROOT_AGGREGATIONS, res.size());        
+
+        assertEquals("Search found incorrect count of nodes", NUMBER_OF_ROOT_AGGREGATIONS, res.size());
     }
 
     public void checkFindRootAggregationNodes() throws Exception {
         Node parentNode = getParentNode();
         Set<Node> nodes = new HashSet<Node>();
-        for (int i = 0; i < NUMBER_OF_ROOT_AGGREGATIONS; i ++) {
+        for (int i = 0; i < NUMBER_OF_ROOT_AGGREGATIONS; i++) {
             nodes.add(createRootAggregationNode(parentNode, DISTRIBUTION_NAME + i));
         }
-        
+
         List<Node> res = distributionService.findRootAggregationNodes(parentNode);
         for (Node node : res) {
             assertTrue("Search found incorrect node", nodes.contains(node));
             nodes.remove(node);
-        }        
+        }
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -302,7 +302,8 @@ public class DistributionServiceTest extends AbstractNeoServiceTest {
         Iterator<Relationship> relationships = result.getRelationships().iterator();
         Relationship relationship = relationships.next();
 
-        assertEquals("Invalid type of reationship", DistributionRelationshipTypes.ROOT_AGGREGATION.name(), relationship.getType().name());
+        assertEquals("Invalid type of reationship", DistributionRelationshipTypes.ROOT_AGGREGATION.name(), relationship.getType()
+                .name());
         assertEquals("Invalid Direction of relationship", result, relationship.getEndNode());
         assertEquals("Invalid start node of relationship", parentNode, relationship.getStartNode());
     }
@@ -705,8 +706,7 @@ public class DistributionServiceTest extends AbstractNeoServiceTest {
 
         distributionService.setCurrentDistributionModel(parentNode, rootNode);
 
-        assertEquals("Unexpected name of current distribution", DISTRIBUTION_NAME,
-                parentNode.getProperty(DistributionService.CURRENT_DISTRIBUTION_MODEL));
+        assertEquals("Unexpected root of current distribution", distributionService.getCurrentDistribution(parentNode), rootNode);
     }
 
     @Test

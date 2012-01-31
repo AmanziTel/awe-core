@@ -48,7 +48,7 @@ public class NetworkLoaderPage extends AbstractLoaderPage<NetworkConfiguration> 
         
         datasetCombo = new DatasetCombo();
         
-        fileField = new DataChooserField(FileFieldType.FILE, "Selectfile to load");
+        fileField = new DataChooserField(FileFieldType.FILE, "Select file to load");
         fileField.addModifyListener(this);
         
         loaderCombo = new LoaderCombo();
@@ -118,7 +118,6 @@ public class NetworkLoaderPage extends AbstractLoaderPage<NetworkConfiguration> 
         datasetCombo.setCurrentDatasetName(getConfiguration().getDatasetName());
     }
 
-    @Override
     protected void initializeFields() {
         //intialize network names
         try { 

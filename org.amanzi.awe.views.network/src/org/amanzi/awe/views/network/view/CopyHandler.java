@@ -7,15 +7,9 @@ public class CopyHandler extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) {
-        NewNetworkPropertiesView obj = new NewNetworkPropertiesView();
+        NetworkPropertiesView obj = new NetworkPropertiesView();
         obj.copyToClipboard();        
         return null;
-    }
-    
-    /*private String personToString(Person person) {
-        return person.getFirstName() + "\t" + person.getLastName() + "\t"
-                + person.getGender() + "\t" + person.isMarried()
-                + System.getProperty("line.separator");
-    }*/
+    }    
 
 }

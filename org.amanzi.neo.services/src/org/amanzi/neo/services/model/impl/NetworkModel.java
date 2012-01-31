@@ -53,6 +53,7 @@ import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelType
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.codehaus.groovy.tools.shell.util.NoExitSecurityManager;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.neo4j.graphdb.Direction;
@@ -140,6 +141,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         }
         this.rootNode = networkNode;
         this.name = name;
+        currentGisModel = new GisModel((String)rootNode.getProperty(DatasetService.NAME));
         initializeStatistics();
         initializeMultiPropertyIndexing();
         initializeNetworkStructure();
@@ -532,6 +534,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         Node newParentNode;
         curentNode = ((DataElement)currentNode).getNode();
         newParentNode = ((DataElement)newParentElement).getNode();
+        
         nwServ.replaceRelationship(newParentNode, curentNode, DatasetRelationTypes.CHILD, Direction.INCOMING);
     }
 
@@ -942,7 +945,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     public INodeToNodeRelationsModel getCurrentNodeToNodeRelationshipModel() throws AWEException {
         INodeToNodeRelationsModel resultModel = null;
         String currentN2NModelName = nwServ.getCurrentNodeToNodeModelName(getRootNode());
-        
+
         if (currentN2NModelName != null) {
             for (INodeToNodeRelationsModel currentModel : getNodeToNodeModels()) {
                 if (currentN2NModelName.equals(currentModel.getName())) {
@@ -951,7 +954,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
                 }
             }
         }
-        
+
         return resultModel;
     }
 

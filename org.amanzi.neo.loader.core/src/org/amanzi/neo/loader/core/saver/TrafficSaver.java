@@ -39,7 +39,7 @@ public class TrafficSaver extends AbstractNetworkSaver<INetworkModel, NetworkCon
 
     @Override
     public void saveElement(MappedData dataElement) throws AWEException {
-        Map<String, Object> values = getDataElementProperties(getMainModel(), getSectorNodeType(), dataElement, true);
+        Map<String, Object> values = getDataElementProperties(getMainModel(), getSectorNodeType(), dataElement, true, true);
 
         IDataElement trafficElement = getNetworkElement(getSectorNodeType(), "name", values);
         

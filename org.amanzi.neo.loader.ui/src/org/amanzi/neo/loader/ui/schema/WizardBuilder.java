@@ -77,6 +77,10 @@ public final class WizardBuilder {
     private static final String SAVERS_CHILDREN = "savers";
     
     private static final String SAVER_ATTRIBUTE = "saver";
+    
+    private static final String START_ELEMENT_ATTRIBUTE = "startElement";
+    
+    private static final String ALL_ELEMENTS_FOR_ATTRIBUTE = "allElementsFor";
 
     private final static Comparator<AbstractLoaderPage< ? >> PAGE_COMPARATOR = new Comparator<AbstractLoaderPage< ? >>() {
 
@@ -191,12 +195,32 @@ public final class WizardBuilder {
         for (IConfigurationElement saverElement : loaderElement.getChildren(SAVERS_CHILDREN)) {
             String saverId = saverElement.getAttribute(SAVER_ATTRIBUTE);
             
-            ISaver saver = createSimpleElement(saverId, SAVERS_EXTENSION_POINT);
+            ISaver saver = createSaver(saverId);
+            
             savers.add(saver);
         }
         result.setSavers(savers);
         
         return result;
+    }
+    
+    private ISaver createSaver(String saverId) throws CoreException {
+        IConfigurationElement[] allSavers = registry.getConfigurationElementsFor(SAVERS_EXTENSION_POINT);
+        
+        for (IConfigurationElement singleSaver : allSavers) {
+            if (singleSaver.getAttribute(ID_ATTRIBUTE).equals(saverId)) {
+                ISaver result = (ISaver)singleSaver.createExecutableExtension(CLASS_ATTRIBUTE);
+                
+                String startElement = singleSaver.getAttribute(START_ELEMENT_ATTRIBUTE);
+                String allElementsFor = singleSaver.getAttribute(ALL_ELEMENTS_FOR_ATTRIBUTE);
+                result.setAllElementsFor(allElementsFor);
+                result.setStartElement(startElement);
+                
+                return result;
+            }
+        }
+        
+        return null;
     }
     
     @SuppressWarnings("unchecked")

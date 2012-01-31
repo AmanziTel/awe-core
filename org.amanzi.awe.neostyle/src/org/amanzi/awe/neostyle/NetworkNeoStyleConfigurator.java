@@ -44,7 +44,7 @@ public class NetworkNeoStyleConfigurator extends IStyleConfigurator {
     private NetworkNeoStyle curStyle;
     private NetworkStyleDefiner defaultStyle = new NetworkStyleDefiner();
     private CheckboxTableViewer viewer;
-    
+
     /** NetworkNeoStyleConfigurator ID field */
     public static final String ID = "org.amanzi.awe.neostyle.style.network"; //$NON-NLS-1$
 
@@ -116,7 +116,7 @@ public class NetworkNeoStyleConfigurator extends IStyleConfigurator {
         lb.setText("Applyed filters:");
         viewer = CheckboxTableViewer.newCheckList(filterMain, SWT.FULL_SELECTION | SWT.BORDER);
         viewer.setColumnProperties(new String[] {"Filter"});
-        
+
         GridData layoutData = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 10);
         viewer.getControl().setLayoutData(layoutData);
         viewer.getTable().addControlListener(new ControlListener() {
@@ -144,16 +144,15 @@ public class NetworkNeoStyleConfigurator extends IStyleConfigurator {
         } catch (IOException e) {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
+
         defaultStyle.setRenderableResource(resource);
         defaultStyle.refresh();
-        viewer.setInput(curStyle);
-
     }
 
     @Override
     public void preApply() {
-        super.preApply();
         defaultStyle.preApply();
-        getStyleBlackboard().put(ID, defaultStyle.getCurStyle());
-    }        
+        NetworkNeoStyle clone = (NetworkNeoStyle)defaultStyle.getCurStyle().clone();        
+        getStyleBlackboard().put(ID, clone);
+    }
 }

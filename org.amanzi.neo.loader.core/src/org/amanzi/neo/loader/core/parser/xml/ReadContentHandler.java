@@ -60,6 +60,7 @@ public class ReadContentHandler extends DefaultHandler {
         } else {
             currentTag = currentTag.startElement(localName, attributes);
         }
+        
         if (currentTag != null) {
             chars = new StringBuilder();
         }

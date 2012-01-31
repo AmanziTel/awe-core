@@ -85,6 +85,11 @@ public abstract class AbstractSaver<T1 extends IDataModel, T2 extends IData, T3 
      * Main model of Saver
      */
     private T1 mainModel;
+    
+    private String startElement;
+    
+    private String allElementsFor;
+    
 
     /**
      * Public constructor
@@ -283,7 +288,7 @@ public abstract class AbstractSaver<T1 extends IDataModel, T2 extends IData, T3 
     protected abstract boolean isRenderable();
 
     @Override
-    public void init(T3 configuration, T2 dataElement) throws AWEException {
+    public void init(T3 configuration) throws AWEException {
         DatabaseManagerFactory.getDatabaseManager().startThreadTransaction();
 
         mainModel = createMainModel(configuration);
@@ -361,6 +366,30 @@ public abstract class AbstractSaver<T1 extends IDataModel, T2 extends IData, T3 
      */
     public ConflictNeighboursModel<String> getConflictNeighboursModel() {
         return conflictNeighboursModel;
+    }
+
+    /**
+     * @return Returns the startElement.
+     */
+    protected String getStartElement() {
+        return startElement;
+    }
+
+    @Override
+    public void setStartElement(String startElement) {
+        this.startElement = startElement;
+    }
+
+    /**
+     * @return Returns the allElementsFor.
+     */
+    protected String getAllElementsFor() {
+        return allElementsFor;
+    }
+
+    @Override
+    public void setAllElementsFor(String allElementsFor) {
+        this.allElementsFor = allElementsFor;
     }
 
 }

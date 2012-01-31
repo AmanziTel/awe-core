@@ -127,6 +127,7 @@ public class DriveModel extends MeasurementModel implements IDriveModel {
         this.rootNode = driveRoot;
         this.name = rootNode.getProperty(AbstractService.NAME, StringUtils.EMPTY).toString();
         setPrimaryType(DriveNodeTypes.findById(rootNode.getProperty(DatasetService.PRIMARY_TYPE).toString()));
+        this.driveType = DriveTypes.valueOf(rootNode.getProperty(DatasetService.DRIVE_TYPE, StringUtils.EMPTY).toString());
         initializeStatistics();
         initializeMultiPropertyIndexing();
     }
