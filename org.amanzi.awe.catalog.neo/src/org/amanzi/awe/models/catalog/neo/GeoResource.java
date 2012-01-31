@@ -62,10 +62,12 @@ public class GeoResource extends IGeoResource {
      */
     private URL getURL(IService service, IRenderableModel source, GisModel gis) {
         try {
-            URL result = new URL(service.getIdentifier().toString() + "#" + ((IDataModel)source).getProject().getName()
-                    + File.separator + gis.getName().replace(' ', '_'));
+            String urlString = service.getIdentifier().toString() + "#" + ((IDataModel)source).getProject().getName()
+                    + File.separator + gis.getName();
+            
+            urlString = urlString.replace(" ", "_").replace("\\", "/");
 
-            return result;
+            return new URL(urlString);
         } catch (MalformedURLException e) {
             LOGGER.error("Could not build identifier url.", e);
         }

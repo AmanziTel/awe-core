@@ -15,7 +15,6 @@ package org.amanzi.neo.loader.ui.wizards;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -204,6 +203,7 @@ public abstract class AbstractLoaderPage<T extends IConfiguration> extends Wizar
             loaderCombo.setText(currentLoader.getName());
         }
         
+        @SuppressWarnings("unchecked")
         public void autodefineLoader() {
             ILoader definedLoader = null;
             for (ILoader loader : pageLoaders.values()) {
@@ -336,6 +336,7 @@ public abstract class AbstractLoaderPage<T extends IConfiguration> extends Wizar
         setPageComplete(checkPage());
     }
     
+    @SuppressWarnings("unchecked")
     protected boolean checkPage() {
         setErrorMessage(null);
         

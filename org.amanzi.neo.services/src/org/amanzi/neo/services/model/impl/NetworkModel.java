@@ -53,7 +53,6 @@ import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelType
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.codehaus.groovy.tools.shell.util.NoExitSecurityManager;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.neo4j.graphdb.Direction;

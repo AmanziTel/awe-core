@@ -204,6 +204,7 @@ public final class WizardBuilder {
         return result;
     }
     
+    @SuppressWarnings("rawtypes")
     private ISaver createSaver(String saverId) throws CoreException {
         IConfigurationElement[] allSavers = registry.getConfigurationElementsFor(SAVERS_EXTENSION_POINT);
         

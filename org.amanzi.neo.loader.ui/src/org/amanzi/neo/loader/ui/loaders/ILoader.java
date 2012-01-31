@@ -59,7 +59,8 @@ public interface ILoader {
 	 * 
 	 * @param validator
 	 */
-	public void setValidator(IValidator validator);
+	@SuppressWarnings("rawtypes")
+    public void setValidator(IValidator validator);
 
 	/**
 	 * configure loader
@@ -74,7 +75,8 @@ public interface ILoader {
 	 * 
 	 * @return validator
 	 */
-	public IValidator getValidator();
+	@SuppressWarnings("rawtypes")
+    public IValidator getValidator();
 	
 	public void setName(String newName);
 	
