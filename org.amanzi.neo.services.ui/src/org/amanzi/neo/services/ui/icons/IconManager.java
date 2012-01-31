@@ -100,7 +100,7 @@ public class IconManager {
      * @param nodeType
      * @return image if found and null if not found
      */
-    public Image getImage(EventIcons icon) {
+    public Image getImage(EventIcons icon) {        
         return getImage(icon, IconSize.SIZE_16);
     }
 
