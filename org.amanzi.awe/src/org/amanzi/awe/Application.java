@@ -88,10 +88,6 @@ public class Application extends UDIGApplication implements IApplication {
 
                 setDBLocation(dbPath);
             }
-            // PreferenceDialog dialog = PreferencesUtil.createPreferenceDialogOn(new Shell(),
-            // "org.neo4j.neoclipse.preference.PreferencePage", null, null);
-            // dialog.open();
-            //
         }
 
         @Override
@@ -157,11 +153,11 @@ class DBLocatinInputDialog extends Dialog {
     public String open() {
         Shell parent = getParent();
         final Shell shell = new Shell(parent, SWT.TITLE | SWT.BORDER | SWT.APPLICATION_MODAL);
-        shell.setText("Neo4j Database Location");
+        shell.setText(Messages.Application_Neo4j_D_Location);
 
         shell.setLayout(new GridLayout(1, false));
 
-        new Label(shell, SWT.NONE).setText("There is running AWE instance. Please, specify another Neo4j Database Location:");
+        new Label(shell, SWT.NONE).setText(Messages.Application_Running_instance);
 
         final Composite inputGroup = new Composite(shell, SWT.NONE);
         inputGroup.setLayout(new GridLayout(2, false));
@@ -187,12 +183,12 @@ class DBLocatinInputDialog extends Dialog {
 
         Label errorLabel = new Label(errorGroup, SWT.WRAP);
         errorLabel.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, true, false));
-        errorLabel.setText("Invalid location");
+        errorLabel.setText(Messages.Application_Inv_location);
         
         // Clicking the button will allow the user
         // to select a directory
         Button button = new Button(inputGroup, SWT.PUSH);
-        button.setText("Browse...");
+        button.setText(Messages.Application_Browse);
         button.addSelectionListener(new SelectionAdapter() {
             public void widgetSelected(SelectionEvent event) {
                 DirectoryDialog dlg = new DirectoryDialog(shell);
@@ -202,10 +198,10 @@ class DBLocatinInputDialog extends Dialog {
                 dlg.setFilterPath(text.getText());
 
                 // Change the title bar text
-                dlg.setText("SWT's DirectoryDialog");
+                dlg.setText(Messages.Application_SWT_DD);
 
                 // Customizable message displayed in the dialog
-                dlg.setMessage("Select a directory");
+                dlg.setMessage(Messages.Application_Select_Directory);
 
                 String dir = dlg.open();
                 if (dir != null) {
@@ -225,10 +221,10 @@ class DBLocatinInputDialog extends Dialog {
 
         
         final Button buttonOK = new Button(buttonGroup, SWT.NONE);
-        buttonOK.setText("Ok");
+        buttonOK.setText(Messages.Application_Ok);
         buttonOK.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
         Button buttonCancel = new Button(buttonGroup, SWT.NONE);
-        buttonCancel.setText("Cancel");
+        buttonCancel.setText(Messages.Application_Cancel);
 
         buttonOK.addListener(SWT.Selection, new Listener() {
             public void handleEvent(Event event) {
