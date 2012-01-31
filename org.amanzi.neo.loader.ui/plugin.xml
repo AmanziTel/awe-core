@@ -250,34 +250,6 @@
                </or>
             </visibleWhen>
             </command>
-            <command
-                  commandId="org.amanzi.loader.launchWizard"
-                  icon="icons/16/network.png"
-                  id="org.amanzi.awe.menu.loadNetworkDirectory"
-                  style="push"
-                  tooltip="Load Antenna Patterns">
-               <parameter
-                     name="org.amanzi.loader.wizard"
-                     value="org.amanzi.awe.wizard.directory">
-               </parameter>
-               <visibleWhen
-                     checkEnabled="false">
-                  <or>
-                     <with
-                           variable="activeWorkbenchWindow.activePerspective">
-                        <equals
-                              value="org.amanzi.awe.perspective.uDig">
-                        </equals>
-                     </with>
-                     <with
-                           variable="activeWorkbenchWindow.activePerspective">
-                        <equals
-                              value="org.amanzi.awe.perspective">
-                        </equals>
-                     </with>
-                  </or>
-               </visibleWhen>
-            </command>
          </toolbar>
       </menuContribution>
    </extension>
