@@ -43,7 +43,7 @@ public abstract class AbstractMappedDataSaver<T1 extends IDataModel, T3 extends 
     
     private Map<INodeType, Map<String, Synonym>> synonymsCache = new HashMap<INodeType, Map<String, Synonym>>();
     
-    protected Map<String, Object> getDataElementProperties(T1 model, INodeType nodeType, MappedData dataElement, boolean addNonMappedData) {
+    protected Map<String, Object> getDataElementProperties(T1 model, INodeType nodeType, MappedData dataElement, boolean addNonMappedData, boolean removeReadHeaders) {
         if (dataElement.isEmpty()) {
             return EMPTY_MAP;
         }
@@ -83,8 +83,10 @@ public abstract class AbstractMappedDataSaver<T1 extends IDataModel, T3 extends 
             }
         }
         
-        for (String header : handledHeaders) {
-            dataElement.remove(header);
+        if (removeReadHeaders) {
+            for (String header : handledHeaders) {
+                dataElement.remove(header);
+            }
         }
         
         return values;

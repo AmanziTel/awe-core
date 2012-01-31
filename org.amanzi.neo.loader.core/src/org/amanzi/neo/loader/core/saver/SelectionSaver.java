@@ -40,7 +40,7 @@ public class SelectionSaver extends AbstractNetworkSaver<ISelectionModel, Networ
 
     @Override
     public void saveElement(MappedData dataElement) throws AWEException {
-        Map<String, Object> values = getDataElementProperties(getMainModel(), getSectorNodeType(), dataElement, true);
+        Map<String, Object> values = getDataElementProperties(getMainModel(), getSectorNodeType(), dataElement, true, true);
 
         IDataElement selectionElement = getNetworkElement(getSectorNodeType(), "name", values);
         

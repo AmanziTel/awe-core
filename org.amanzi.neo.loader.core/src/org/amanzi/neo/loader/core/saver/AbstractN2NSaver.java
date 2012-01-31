@@ -38,7 +38,7 @@ public abstract class AbstractN2NSaver extends AbstractNetworkSaver<INodeToNodeR
 
     @Override
     public void saveElement(MappedData dataElement) throws AWEException {
-        Map<String, Object> values = getDataElementProperties(getMainModel(), null, dataElement, true);
+        Map<String, Object> values = getDataElementProperties(getMainModel(), null, dataElement, true, true);
 
         IDataElement servingElement = getNetworkElement(getN2NNodeType(), "serving_name", values);
         IDataElement targetElement = getNetworkElement(getN2NNodeType(), "target_element", values);

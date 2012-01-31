@@ -118,15 +118,16 @@ public class NetworkSaver extends AbstractMappedDataSaver<INetworkModel, Network
                 continue;
             }
             
-            Map<String, Object> values = getDataElementProperties(getMainModel(), type, dataElement, shouldAddAllElements(type));
+            Map<String, Object> values = getDataElementProperties(getMainModel(), type, dataElement, shouldAddAllElements(type), true);
             
             //trick for SITE name - it can be computed from Sector name
             if (type == NetworkElementNodeType.SITE) {
-                Map<String, Object> sectorProperties = getDataElementProperties(getMainModel(), NetworkElementNodeType.SECTOR, dataElement, shouldAddAllElements(type));
+                Map<String, Object> sectorProperties = getDataElementProperties(getMainModel(), NetworkElementNodeType.SECTOR, dataElement, shouldAddAllElements(type), false);
                 
                 String sectorName = (String)sectorProperties.get(AbstractService.NAME);
                 String siteName = sectorName.substring(0, sectorName.length() - 1);
                 values.put(AbstractService.NAME, siteName);
+                
                 
                 if (firstTime) {
                     Double lat = (Double)values.get(DriveModel.LATITUDE);
