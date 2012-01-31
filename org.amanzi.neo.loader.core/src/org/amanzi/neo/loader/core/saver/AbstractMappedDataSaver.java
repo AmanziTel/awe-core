@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.loader.core.saver;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -55,9 +56,11 @@ public abstract class AbstractMappedDataSaver<T1 extends IDataModel, T3 extends 
         }
         
         HashMap<String, Object> values = new HashMap<String, Object>();
+        ArrayList<String> handledHeaders = new ArrayList<String>();
         
         for (Entry<String, String> dataEntry : dataElement.entrySet()) {
-            Synonym synonym = synonymMapping.get(dataEntry.getKey());
+            String header = dataEntry.getKey();
+            Synonym synonym = synonymMapping.get(header);
             
             if (synonym != null) {
                 String textValue = dataEntry.getValue();
@@ -73,10 +76,15 @@ public abstract class AbstractMappedDataSaver<T1 extends IDataModel, T3 extends 
                         PossibleTypes newType = PossibleTypes.getType(value.getClass());
                         changeSynonymType(synonymMapping, dataEntry.getKey(), synonym.getName(), newType);
                     }
-
+                    
+                    handledHeaders.add(header);
                     values.put(synonym.getName(), value);
                 }
             }
+        }
+        
+        for (String header : handledHeaders) {
+            dataElement.remove(header);
         }
         
         return values;

@@ -68,6 +68,8 @@ public enum PossibleTypes {
     
     private final static String MINUS_STRING = "-";
     
+    private final static String QUESTION_SYMBOL = "?";
+    
     private Class<?> originalClass;
     
     private PossibleTypes(Class<?> originalClass) {
@@ -77,7 +79,8 @@ public enum PossibleTypes {
     public Object parse(String text) {
         if (!StringUtils.isEmpty(text)) {
             if (!(text.equalsIgnoreCase(NULL_STRING) ||
-                text.equals(MINUS_STRING))) {
+                text.equals(MINUS_STRING) ||
+                text.equals(QUESTION_SYMBOL))) {
                 return internalParse(text);
             }
         }

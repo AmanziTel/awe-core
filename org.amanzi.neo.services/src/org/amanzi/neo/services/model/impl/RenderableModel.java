@@ -285,6 +285,16 @@ public abstract class RenderableModel extends AbstractIndexedModel {
             this.crs = crs;
             crsCode = "";// ToDO:
         }
+        
+        public void setCRS(double lat, double lon, String fileName) {
+            if (this.crs == null) {
+                try {
+                    this.crs = CRS.decode(org.amanzi.neo.services.CRS.fromLocation(lat, lon, fileName).getEpsg());
+                } catch (FactoryException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
 
         /**
          * get filter for this gis

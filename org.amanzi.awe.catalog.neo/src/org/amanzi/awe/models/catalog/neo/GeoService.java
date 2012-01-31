@@ -97,7 +97,10 @@ public class GeoService extends IService {
      * @return
      */
     private boolean checkForExistCoordinateElement(IRenderableModel gis) {
-        if (gis.getMaxLongitude() >= 0d && gis.getMinLongitude() >= 0d && gis.getMaxLatitude() >= 0d && gis.getMinLatitude() >= 0d) {
+        if (gis.getMaxLongitude() != 0d && 
+            gis.getMinLongitude() != 0d && 
+            gis.getMaxLatitude() != 0d && 
+            gis.getMinLatitude() != 0d) {
             return true;
         }
         return false;

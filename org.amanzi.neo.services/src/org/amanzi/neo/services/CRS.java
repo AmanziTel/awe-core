@@ -50,7 +50,7 @@ public class CRS {
         crs.epsg = "EPSG:4326";
         if ((lat > 90 || lat < -90) && (lon > 180 || lon < -180)) {
             crs.type = "projected";
-            if (hint != null && hint.toLowerCase().startsWith("germany")) {
+            if (hint != null && hint.toLowerCase().contains("germany")) {
                 crs.epsg = "EPSG:31467";
             } else {
                 crs.epsg = "EPSG:3021";

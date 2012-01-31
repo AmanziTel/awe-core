@@ -181,7 +181,7 @@
          point="org.amanzi.loader.pages">
       <page
             class="org.amanzi.neo.loader.ui.wizards.NetworkLoaderPage"
-            description="Load Network data from CSV"
+            description="Load Physical Configuration"
             id="org.amanzi.awe.pages.networkConfiguration"
             isMain="true"
             priority="0"
@@ -240,13 +240,10 @@
                   tooltip="Load Network Data">
                <parameter
                      name="org.amanzi.loader.wizard"
-                     value="org.amanzi.awe.wizard.network">
+                     value="org.amanzi.awe.wizard.networkConfiguration">
                </parameter>
                <visibleWhen checkEnabled="false">
                <or>
-                  <with variable="activeWorkbenchWindow.activePerspective">
-                     <equals value="org.amanzi.awe.perspective.uDig"/>
-                  </with>
                   <with variable="activeWorkbenchWindow.activePerspective">
                      <equals value="org.amanzi.awe.perspective"/>
                   </with>

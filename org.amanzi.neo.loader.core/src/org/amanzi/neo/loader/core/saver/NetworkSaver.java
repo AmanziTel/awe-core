@@ -18,13 +18,16 @@ import java.util.Map;
 import org.amanzi.neo.loader.core.config.NetworkConfiguration;
 import org.amanzi.neo.loader.core.parser.MappedData;
 import org.amanzi.neo.services.AbstractService;
+import org.amanzi.neo.services.CRS;
+import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.DatasetService.DatasetTypes;
 import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
+import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
+import org.amanzi.neo.services.model.impl.DriveModel;
 import org.apache.commons.lang.StringUtils;
-import org.jaitools.jiffle.parser.JiffleParser.conCall_return;
 
 /**
  * network saver
@@ -40,6 +43,8 @@ public class NetworkSaver extends AbstractMappedDataSaver<INetworkModel, Network
     private NetworkElementNodeType startNetworkElement;
     
     private NetworkElementNodeType allElementsFor;
+    
+    private String hint = StringUtils.EMPTY;
 
     /**
      * create saver instance
@@ -102,6 +107,7 @@ public class NetworkSaver extends AbstractMappedDataSaver<INetworkModel, Network
         IDataElement element = null;
         
         boolean shouldStart = false;
+        boolean firstTime = true;
         
         for (NetworkElementNodeType type : DEFAULT_NETWORK_STRUCTURE) {
             if (!shouldStart) {
@@ -114,6 +120,25 @@ public class NetworkSaver extends AbstractMappedDataSaver<INetworkModel, Network
             
             Map<String, Object> values = getDataElementProperties(getMainModel(), type, dataElement, shouldAddAllElements(type));
             
+            //trick for SITE name - it can be computed from Sector name
+            if (type == NetworkElementNodeType.SITE) {
+                Map<String, Object> sectorProperties = getDataElementProperties(getMainModel(), NetworkElementNodeType.SECTOR, dataElement, shouldAddAllElements(type));
+                
+                String sectorName = (String)sectorProperties.get(AbstractService.NAME);
+                String siteName = sectorName.substring(0, sectorName.length() - 1);
+                values.put(AbstractService.NAME, siteName);
+                
+                if (firstTime) {
+                    Double lat = (Double)values.get(DriveModel.LATITUDE);
+                    Double lon = (Double)values.get(DriveModel.LONGITUDE);
+                    
+                    if (lat != null && lon != null) {
+                        getMainModel().updateCRS(CRS.fromLocation(lat, lon, hint).getEpsg());
+                        firstTime = false;
+                    }
+                }
+            }
+            
             if (!values.isEmpty()) {
                 values.put(AbstractService.TYPE, type.getId());
                 
@@ -123,6 +148,19 @@ public class NetworkSaver extends AbstractMappedDataSaver<INetworkModel, Network
                     if (element == null) {
                         element = getMainModel().createElement(parent, values);
                     } else {
+                        IDataElement oldParent = getMainModel().getParentElement(element);
+                        if (parent != null && !oldParent.equals(parent)) {
+                            INodeType oldType = NodeTypeManager.getType(oldParent);
+                            INodeType newType = NodeTypeManager.getType(parent);
+                            
+                            int oldIndex = getMainModel().getNetworkStructure().indexOf(oldType);
+                            int newIndex = getMainModel().getNetworkStructure().indexOf(newType);
+                            
+                            if (newIndex < oldIndex) {
+                                getMainModel().replaceRelationship(parent, element);
+                            }
+                        }
+                        
                         getMainModel().completeProperties(element, values, true);
                     }
                     parent = element;
@@ -143,6 +181,13 @@ public class NetworkSaver extends AbstractMappedDataSaver<INetworkModel, Network
     @Override
     protected INetworkModel createMainModel(NetworkConfiguration configuration) throws AWEException {
         return getActiveProject().getNetwork(configuration.getDatasetName());
+    }
+    
+    @Override
+    public void init(NetworkConfiguration configuration) throws AWEException {
+        super.init(configuration);
+        
+        hint = configuration.getFile().getName();
     }
 
 }
