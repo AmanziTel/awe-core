@@ -298,7 +298,7 @@ public abstract class AbstractSaver<T1 extends IDataModel, T2 extends IData, T3 
 
         createExportSynonymsForModels();
         
-        conflictNeighboursModel = new ConflictNeighboursModel();
+        conflictNeighboursModel = new ConflictNeighboursModel<String>();
     }
 
     /**

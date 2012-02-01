@@ -18,8 +18,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.amanzi.neo.services.utils.Pair;
-
 /**
  * <p>
  * Contains conflicted N2N related models (target or serving doesn't exist) T - key to identify
@@ -29,7 +27,7 @@ import org.amanzi.neo.services.utils.Pair;
  * @author harchevnikov_m
  * @since 1.0.0
  */
-public class ConflictNeighboursModel<T extends Comparable<T>> {
+public class ConflictNeighboursModel<T> {
     /*
      * Map: serving -->targets
      */
@@ -66,7 +64,7 @@ public class ConflictNeighboursModel<T extends Comparable<T>> {
 
     /**
      * Remove Pair form model
-     *
+     * 
      * @param serving Serving
      * @param target Target
      * @return removed pair or null if it doesn't exist
