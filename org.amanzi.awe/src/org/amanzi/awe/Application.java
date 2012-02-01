@@ -25,6 +25,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -189,31 +190,6 @@ class DBLocatinInputDialog extends Dialog {
         // to select a directory
         Button button = new Button(inputGroup, SWT.PUSH);
         button.setText(Messages.Application_Browse);
-        button.addSelectionListener(new SelectionAdapter() {
-            public void widgetSelected(SelectionEvent event) {
-                DirectoryDialog dlg = new DirectoryDialog(shell);
-
-                // Set the initial filter path according
-                // to anything they've selected or typed in
-                dlg.setFilterPath(text.getText());
-
-                // Change the title bar text
-                dlg.setText(Messages.Application_SWT_DD);
-
-                // Customizable message displayed in the dialog
-                dlg.setMessage(Messages.Application_Select_Directory);
-
-                String dir = dlg.open();
-                if (dir != null) {
-                    // Set the text box to the new selection
-                    text.setText(dir);
-                    boolean isValidPath = Application.setDBLocation(dir);
-                    errorGroup.setVisible(!isValidPath);
-                    
-                    shell.pack();
-                }
-            }
-        });
 
         final Composite buttonGroup = new Composite(shell, SWT.NONE);
         buttonGroup.setLayout(new GridLayout(2, false));
@@ -240,13 +216,40 @@ class DBLocatinInputDialog extends Dialog {
             }
         });
 
+        button.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent event) {
+                DirectoryDialog dlg = new DirectoryDialog(shell);
+                
+                // Set the initial filter path according
+                // to anything they've selected or typed in
+                dlg.setFilterPath(text.getText());
+                
+                // Change the title bar text
+                dlg.setText(Messages.Application_SWT_DD);
+                
+                // Customizable message displayed in the dialog
+                dlg.setMessage(Messages.Application_Select_Directory);
+                
+                String dir = dlg.open();
+                if (dir != null) {
+                    // Set the text box to the new selection
+                    text.setText(dir);
+                    boolean isValidPath = Application.setDBLocation(dir);
+                    errorGroup.setVisible(!isValidPath);
+                    
+                    buttonOK.setEnabled(isValidPath);
+                }
+            }
+        });
+
         shell.addListener(SWT.Traverse, new Listener() {
             public void handleEvent(Event event) {
                 if (event.detail == SWT.TRAVERSE_ESCAPE)
                     event.doit = false;
-            }
+            }            
         });
 
+        shell.setLocation(parent.getSize());
         shell.pack();
         shell.open();
 
