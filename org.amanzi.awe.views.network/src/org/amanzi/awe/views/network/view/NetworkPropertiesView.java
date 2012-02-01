@@ -14,11 +14,16 @@
 package org.amanzi.awe.views.network.view;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.amanzi.neo.services.AbstractService;
+import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.model.IDataElement;
+import org.amanzi.neo.services.model.INetworkModel;
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.dialogs.Dialog;
@@ -102,6 +107,9 @@ public class NetworkPropertiesView extends ViewPart {
     // selected properties
     private static List<String> headers;
 
+    // structure
+    private static Map<String, Map<String, String>> parents;
+
     private static boolean updateTable = false;
 
     private static List<RowWrapper> elements = new ArrayList<RowWrapper>();
@@ -117,12 +125,12 @@ public class NetworkPropertiesView extends ViewPart {
     public void updateTableView(Set<IDataElement> dataElements, boolean isEditable) {
         this.currentDataElements = dataElements;
         // this.isEditable = isEditable;
-        tableViewer.setInput("");
+        tableViewer.setInput(StringUtils.EMPTY);
         tableViewer.refresh();
     }
 
     public void updateTableView() {
-        tableViewer.setInput("");
+        tableViewer.setInput(StringUtils.EMPTY);
         tableViewer.refresh();
     }
 
@@ -231,12 +239,11 @@ public class NetworkPropertiesView extends ViewPart {
             level = true;
             Table tabl = tableViewer.getTable();
             allProperties = new ArrayList<String>();
+            parents = new HashMap<String, Map<String, String>>();
             for (TableColumn column : columns) {
                 column.dispose();
             }
             int idx = 0;
-            
-            
 
             if (currentDataElements != null) {
                 allProperties.add(AbstractService.NAME);
@@ -245,13 +252,7 @@ public class NetworkPropertiesView extends ViewPart {
                 String type = null;
 
                 for (IDataElement element : currentDataElements) {
-                    for (String header : element.keySet()) {
-                        if (!allProperties.contains(header)) {
-                            allProperties.add(header);
-                        }
 
-                    }
-                    
                     if (type == null) {
                         type = element.get(AbstractService.TYPE).toString();
                     } else {
@@ -259,10 +260,40 @@ public class NetworkPropertiesView extends ViewPart {
                             level = false;
                         }
                     }
+
+                    INetworkModel networkModel = (INetworkModel)element.get(INeoConstants.NETWORK_MODEL_NAME);
+                    boolean exist = true;
+                    Map<String, String> structureMap = new HashMap<String, String>();
+                    IDataElement child = element;
+                    while (exist != false && child != null) {
+                        IDataElement parent = networkModel.getParentElement(child);
+                        if (parent != null) {
+                            String parentType = parent.get(AbstractService.TYPE).toString();
+                            if (parentType == null || parentType.equals(AbstractService.NETWORK_ID)) {
+                                exist = false;
+                            } else {
+                                if (!allProperties.contains(parentType)) {
+                                    allProperties.add(parentType);
+                                }
+                                structureMap.put(parentType, parent.get(AbstractService.NAME).toString());
+                            }
+                        }
+                        child = parent;
+                    }
+
+                    parents.put(element.get(AbstractService.NAME).toString(), structureMap);
+
+                    for (String header : element.keySet()) {
+                        if (!allProperties.contains(header)) {
+                            allProperties.add(header);
+                        }
+
+                    }
                 }
 
                 if (!level) {
                     updateTableView(null, true);
+                    updateTable = false;
                 }
 
                 if (!updateTable) {
@@ -392,12 +423,16 @@ public class NetworkPropertiesView extends ViewPart {
 
             if (currentDataElements != null) {
                 for (IDataElement element : currentDataElements) {
+                    Map<String, String> structureMap = parents.get(element.get(AbstractService.NAME).toString());
                     List<String> rowValues = new ArrayList<String>();
                     for (String header : headers) {
+
                         if (element.keySet().contains(header)) {
                             rowValues.add(element.get(header).toString());
+                        } else if (structureMap.containsKey(header)) {
+                            rowValues.add(structureMap.get(header));
                         } else {
-                            rowValues.add("");
+                            rowValues.add(StringUtils.EMPTY);
                         }
                     }
                     RowWrapper row = new RowWrapper(rowValues);
@@ -472,7 +507,7 @@ public class NetworkPropertiesView extends ViewPart {
      * @return line
      */
     private String parseToString(List<String> list) {
-        String line = "";
+        String line = StringUtils.EMPTY;
         for (String value : list) {
             line = line + value + "\t";
         }
@@ -516,7 +551,7 @@ public class NetworkPropertiesView extends ViewPart {
                 propertyListTable.getControl().setLayoutData(data);
                 propertyListTable.setContentProvider(new PropertyListContentProvider());
                 propertyListTable.setLabelProvider(new PropertyListLabelProvider());
-                propertyListTable.setInput("");
+                propertyListTable.setInput(StringUtils.EMPTY);
                 for (String header : headers) {
                     propertyListTable.setChecked(header, true);
                 }
@@ -566,11 +601,11 @@ public class NetworkPropertiesView extends ViewPart {
     }
 
     /**
-     * 
      * TODO Purpose of NetworkPropertiesView
      * <p>
-     *  content provider for filter properties table
+     * content provider for filter properties table
      * </p>
+     * 
      * @author Ladornaya_A
      * @since 1.0.0
      */
@@ -592,11 +627,11 @@ public class NetworkPropertiesView extends ViewPart {
     }
 
     /**
-     * 
      * TODO Purpose of NetworkPropertiesView
      * <p>
      * label provider for filter properties table
      * </p>
+     * 
      * @author Ladornaya_A
      * @since 1.0.0
      */

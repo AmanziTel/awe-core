@@ -46,7 +46,8 @@ public class Loader implements ILoader {
 	/**
 	 * validator for currentLoader;
 	 */
-	IValidator validator;
+	@SuppressWarnings("rawtypes")
+    IValidator validator;
 	
 	private String loaderName;
 
@@ -71,7 +72,8 @@ public class Loader implements ILoader {
 		parser.run(monitor);
 	}
 
-	@Override
+	@SuppressWarnings("rawtypes")
+    @Override
 	public void setValidator(IValidator validator) {
 		this.validator = validator;
 	}
@@ -85,7 +87,8 @@ public class Loader implements ILoader {
 		parser.init(config, savers);
 	}
 
-	@Override
+	@SuppressWarnings("rawtypes")
+    @Override
 	public IValidator getValidator() {
 		return validator;
 	}
