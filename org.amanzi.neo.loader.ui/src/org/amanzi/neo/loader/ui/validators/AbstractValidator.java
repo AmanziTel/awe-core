@@ -49,11 +49,7 @@ public abstract class AbstractValidator<T extends IConfiguration> implements IVa
 
     // extensions
     public final static String CSV = ".csv";
-    public final static String TXT = ".txt";
-    public final static String MSI = ".msi";
-    public final static String CHR = ".chr";
-    public final static String GZ = ".gz";
-    public final static String BIN = ".bin";
+    public final static String TXT = ".txt";    
     public final static String XML = ".xml";
 
     // separators

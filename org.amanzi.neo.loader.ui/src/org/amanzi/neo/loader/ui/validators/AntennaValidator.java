@@ -44,6 +44,8 @@ public class AntennaValidator extends AbstractValidator<NetworkConfiguration> {
     private BufferedReader reader;
 
     private String charSetName = Charset.defaultCharset().name();
+    
+    private final static String MSI = ".msi";
 
     // separator
     private static final String SEPARATOR = StringUtils.EMPTY;
