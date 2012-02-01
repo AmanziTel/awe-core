@@ -160,16 +160,20 @@ public class ProjectTreeContentProvider implements IStructuredContentProvider, I
 
     @Override
     public Object[] getElements(Object inputElement) {
+        Object[] projectModelsInObject = new Object[0];
 
         IProjectModel projectModels = null;
         try {
-            projectModels = ProjectModel.getCurrentProjectModel();
+            Iterable<IProjectModel> findAllProjectModels = ProjectModel.findAllProjectModels();
+            
+            for (IProjectModel iProjectModel : findAllProjectModels) {
+                projectModelsInObject = ArrayUtils.add(projectModelsInObject, iProjectModel);
+                
+            }
         } catch (AWEException e) {
             MessageDialog.openError(null, "Error", "Couldn't get element" + projectModels);
         }
 
-        Object[] projectModelsInObject = new Object[0];
-        projectModelsInObject = ArrayUtils.add(projectModelsInObject, projectModels);
 
         return projectModelsInObject;
     }

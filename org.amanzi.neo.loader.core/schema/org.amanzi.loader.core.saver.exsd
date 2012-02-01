@@ -69,6 +69,20 @@
                </appInfo>
             </annotation>
          </attribute>
+         <attribute name="startElement" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="allFieldsFor" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
       </complexType>
    </element>
 

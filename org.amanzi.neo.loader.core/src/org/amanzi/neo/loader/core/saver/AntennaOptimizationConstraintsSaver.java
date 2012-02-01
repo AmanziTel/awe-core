@@ -39,7 +39,7 @@ public class AntennaOptimizationConstraintsSaver extends AbstractNetworkSaver<IN
 
     @Override
     public void saveElement(MappedData dataElement) throws AWEException {
-        Map<String, Object> values = getDataElementProperties(getMainModel(), NetworkElementNodeType.SECTOR, dataElement, true);
+        Map<String, Object> values = getDataElementProperties(getMainModel(), NetworkElementNodeType.SECTOR, dataElement, true, true);
 
         IDataElement sector = getNetworkElement(getSectorNodeType(), "name", values);        
         

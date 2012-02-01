@@ -17,6 +17,7 @@ import java.util.Map;
 
 import org.amanzi.neo.loader.core.config.ISingleFileConfiguration;
 import org.amanzi.neo.loader.core.parser.MappedData;
+import org.amanzi.neo.loader.core.saver.neighbor.ConflictNeighboursModel;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
@@ -30,20 +31,45 @@ import org.amanzi.neo.services.model.INodeToNodeRelationsType;
  * @since 1.0.0
  */
 public abstract class AbstractN2NSaver extends AbstractNetworkSaver<INodeToNodeRelationsModel, ISingleFileConfiguration> {
-    
+
     /*
      * Name of Dataset Synonyms
      */
     private static final String SYNONYMS_DATASET_TYPE = "n2n";
 
+    private static final String SERVING_NAME_PROPERTY = "serving_name";
+    private static final String TARGET_ELEMENT_PROPERTY = "target_element";
+
+    /**
+     * Creates N2N relationship. If serving/target is missed then this pair will be stored in
+     * neighbourConflicted map to transmit data to another Saver.
+     */
     @Override
     public void saveElement(MappedData dataElement) throws AWEException {
-        Map<String, Object> values = getDataElementProperties(getMainModel(), null, dataElement, true);
+        Map<String, Object> values = getDataElementProperties(getMainModel(), null, dataElement, true, true);
 
-        IDataElement servingElement = getNetworkElement(getN2NNodeType(), "serving_name", values);
-        IDataElement targetElement = getNetworkElement(getN2NNodeType(), "target_element", values);
+        String servingName = values.get(SERVING_NAME_PROPERTY).toString();
+        String targetName = values.get(TARGET_ELEMENT_PROPERTY).toString();
 
-        getMainModel().linkNode(servingElement, targetElement, values);
+        IDataElement servingElement = getNetworkElement(getN2NNodeType(), SERVING_NAME_PROPERTY, values);
+        IDataElement targetElement = getNetworkElement(getN2NNodeType(), TARGET_ELEMENT_PROPERTY, values);
+
+        if (servingElement != null && targetElement != null) {
+            getMainModel().linkNode(servingElement, targetElement, values);
+        } else {
+            ConflictNeighboursModel<String> conflictModel = getConflictNeighboursModel();
+            // try to resolve conflict
+            boolean removed = conflictModel.removeRelation(servingName, targetName);
+            if (removed) {
+                // create link
+                servingElement = getNetworkElement(getN2NNodeType(), servingName);
+                targetElement = getNetworkElement(getN2NNodeType(), targetName);
+                getMainModel().linkNode(servingElement, targetElement, values);
+            } else {
+                // pair doesn't exist.
+                getConflictNeighboursModel().addRelation(servingName, targetName);
+            }
+        }
     }
 
     @Override
@@ -54,7 +80,7 @@ public abstract class AbstractN2NSaver extends AbstractNetworkSaver<INodeToNodeR
     @Override
     protected INodeToNodeRelationsModel createMainModel(ISingleFileConfiguration configuration) throws AWEException {
         networkModel = getActiveProject().getNetwork(configuration.getDatasetName());
-        
+
         String n2nName = configuration.getFile().getName();
 
         return networkModel.getNodeToNodeModel(getN2NType(), n2nName, getN2NNodeType());

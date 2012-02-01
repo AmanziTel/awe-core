@@ -1,0 +1,7 @@
+source.. = src/,\
+           binarynotes/
+output.. = bin/
+bin.includes = META-INF/,\
+               .,\
+               binarynotes/,\
+               schema/

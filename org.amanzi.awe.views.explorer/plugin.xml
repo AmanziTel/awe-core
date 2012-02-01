@@ -30,4 +30,30 @@
           </menu>
        </menuContribution>
     </extension>
+    
+         
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            defaultHandler="org.amanzi.awe.views.explorer.newproject.NewProjectWizardInitHandler"
+            id="org.amanzi.awe.views.explorer.newproject.NewProjectWizardInitHandler"
+            name="New Project">
+      </command>
+   </extension>
+
+
+	<extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="toolbar:org.amanzi.awe.views.explorer.view.ProjectExplorerView">
+         <command         		
+               commandId="org.amanzi.awe.views.explorer.newproject.NewProjectWizardInitHandler"
+               icon="icons/project.png"
+               label="New Project"
+               style="push">
+         </command>
+      </menuContribution>
+   </extension>
+    
 </plugin>

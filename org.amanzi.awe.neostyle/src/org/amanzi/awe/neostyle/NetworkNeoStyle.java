@@ -22,7 +22,7 @@ import java.awt.Color;
  * @author TsAr
  * @since 1.0.0
  */
-public class NetworkNeoStyle extends BaseNeoStyle {
+public class NetworkNeoStyle extends BaseNeoStyle implements Cloneable {
 
     /**
 	 * 
@@ -329,5 +329,153 @@ public class NetworkNeoStyle extends BaseNeoStyle {
         System.out.println("Set correlation "+drawCorrelations+" for "+this);
         this.drawCorrelations = drawCorrelations;
     }
-    
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((defaultBeamwidth == null) ? 0 : defaultBeamwidth.hashCode());
+        result = prime * result + (drawCorrelations ? 1231 : 1237);
+        result = prime * result + ((fill == null) ? 0 : fill.hashCode());
+        result = prime * result + ((fillSite == null) ? 0 : fillSite.hashCode());
+        result = prime * result + (fixSymbolSize ? 1231 : 1237);
+        result = prime * result + ((fontSize == null) ? 0 : fontSize.hashCode());
+        result = prime * result + (ignoreTransparency ? 1231 : 1237);
+        result = prime * result + ((label == null) ? 0 : label.hashCode());
+        result = prime * result + ((labeling == null) ? 0 : labeling.hashCode());
+        result = prime * result + ((line == null) ? 0 : line.hashCode());
+        result = prime * result + ((mainProperty == null) ? 0 : mainProperty.hashCode());
+        result = prime * result + ((maximumSymbolSize == null) ? 0 : maximumSymbolSize.hashCode());
+        result = prime * result + ((secondaryFontSize == null) ? 0 : secondaryFontSize.hashCode());
+        result = prime * result + ((sectorLabelProperty == null) ? 0 : sectorLabelProperty.hashCode());
+        result = prime * result + ((sectorLabelTypeId == null) ? 0 : sectorLabelTypeId.hashCode());
+        result = prime * result + ((smallSymb == null) ? 0 : smallSymb.hashCode());
+        result = prime * result + ((smallestSymb == null) ? 0 : smallestSymb.hashCode());
+        result = prime * result + ((symbolSize == null) ? 0 : symbolSize.hashCode());
+        result = prime * result + ((symbolTransparency == null) ? 0 : symbolTransparency.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+//        if (this == obj)
+//            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        NetworkNeoStyle other = (NetworkNeoStyle)obj;
+        if (defaultBeamwidth == null) {
+            if (other.defaultBeamwidth != null)
+                return false;
+        } else if (!defaultBeamwidth.equals(other.defaultBeamwidth))
+            return false;
+        if (drawCorrelations != other.drawCorrelations)
+            return false;
+        if (fill == null) {
+            if (other.fill != null)
+                return false;
+        } else if (!fill.equals(other.fill))
+            return false;
+        if (fillSite == null) {
+            if (other.fillSite != null)
+                return false;
+        } else if (!fillSite.equals(other.fillSite))
+            return false;
+        if (fixSymbolSize != other.fixSymbolSize)
+            return false;
+        if (fontSize == null) {
+            if (other.fontSize != null)
+                return false;
+        } else if (!fontSize.equals(other.fontSize))
+            return false;
+        if (ignoreTransparency != other.ignoreTransparency)
+            return false;
+        if (label == null) {
+            if (other.label != null)
+                return false;
+        } else if (!label.equals(other.label))
+            return false;
+        if (labeling == null) {
+            if (other.labeling != null)
+                return false;
+        } else if (!labeling.equals(other.labeling))
+            return false;
+        if (line == null) {
+            if (other.line != null)
+                return false;
+        } else if (!line.equals(other.line))
+            return false;
+        if (mainProperty == null) {
+            if (other.mainProperty != null)
+                return false;
+        } else if (!mainProperty.equals(other.mainProperty))
+            return false;
+        if (maximumSymbolSize == null) {
+            if (other.maximumSymbolSize != null)
+                return false;
+        } else if (!maximumSymbolSize.equals(other.maximumSymbolSize))
+            return false;
+        if (secondaryFontSize == null) {
+            if (other.secondaryFontSize != null)
+                return false;
+        } else if (!secondaryFontSize.equals(other.secondaryFontSize))
+            return false;
+        if (sectorLabelProperty == null) {
+            if (other.sectorLabelProperty != null)
+                return false;
+        } else if (!sectorLabelProperty.equals(other.sectorLabelProperty))
+            return false;
+        if (sectorLabelTypeId == null) {
+            if (other.sectorLabelTypeId != null)
+                return false;
+        } else if (!sectorLabelTypeId.equals(other.sectorLabelTypeId))
+            return false;
+        if (smallSymb == null) {
+            if (other.smallSymb != null)
+                return false;
+        } else if (!smallSymb.equals(other.smallSymb))
+            return false;
+        if (smallestSymb == null) {
+            if (other.smallestSymb != null)
+                return false;
+        } else if (!smallestSymb.equals(other.smallestSymb))
+            return false;
+        if (symbolSize == null) {
+            if (other.symbolSize != null)
+                return false;
+        } else if (!symbolSize.equals(other.symbolSize))
+            return false;
+        if (symbolTransparency == null) {
+            if (other.symbolTransparency != null)
+                return false;
+        } else if (!symbolTransparency.equals(other.symbolTransparency))
+            return false;
+        return true;
+    }
+
+    @Override
+    protected Object clone() {
+        NetworkNeoStyle clone = new NetworkNeoStyle();
+        clone.setFill(getFill());
+        clone.setDefaultBeamwidth(getDefaultBeamwidth());
+        clone.setFixSymbolSize(isFixSymbolSize());
+        clone.setFontSize(getFontSize());
+        clone.setIgnoreTransparency(isIgnoreTransparency());
+        clone.setLabel(getLabel());
+        clone.setLabeling(getLabeling());
+        clone.setLine(getLine());
+        clone.setMainProperty(getMainProperty());
+        clone.setMaximumSymbolSize(getMaximumSymbolSize());
+        clone.setSectorFontSize(getSecondaryFontSize());
+        clone.setSectorLabelProperty(getSectorLabelProperty());
+        clone.setSiteFill(getSiteFill());
+        clone.setSmallestSymb(getSmallestSymb());
+        clone.setSmallSymb(getSmallSymb());
+        clone.setSymbolSize(getSymbolSize());
+        clone.setSymbolTransparency(getSymbolTransparency());
+        clone.setSectorLabelTypeId(getSectorLabelTypeId());
+        
+        return clone;
+    }
 }

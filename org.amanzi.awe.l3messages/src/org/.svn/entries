@@ -1,0 +1,31 @@
+10
+
+dir
+6570
+svn+ssh://svn.amanzi.org/var/lib/svn/trunk/awe/org.amanzi.awe.l3messages/src/org
+svn+ssh://svn.amanzi.org/var/lib/svn
+
+
+
+2010-10-04T12:02:34.289044Z
+4399
+lagutko
+
+
+svn:special svn:externals svn:needs-lock
+
+
+
+
+
+
+
+
+
+
+
+0edadee9-8154-4c59-a661-b5f45207fcbd
+
+amanzi
+dir
+

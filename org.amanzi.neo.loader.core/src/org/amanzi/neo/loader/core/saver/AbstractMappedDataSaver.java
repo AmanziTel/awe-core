@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.loader.core.saver;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -38,9 +39,15 @@ import org.amanzi.neo.services.model.IDataModel;
  */
 public abstract class AbstractMappedDataSaver<T1 extends IDataModel, T3 extends IConfiguration> extends AbstractSaver<T1, MappedData, T3> {
     
+    private static final Map<String, Object> EMPTY_MAP = new HashMap<String, Object>();
+    
     private Map<INodeType, Map<String, Synonym>> synonymsCache = new HashMap<INodeType, Map<String, Synonym>>();
     
-    protected Map<String, Object> getDataElementProperties(T1 model, INodeType nodeType, MappedData dataElement, boolean addNonMappedData) {
+    protected Map<String, Object> getDataElementProperties(T1 model, INodeType nodeType, MappedData dataElement, boolean addNonMappedData, boolean removeReadHeaders) {
+        if (dataElement.isEmpty()) {
+            return EMPTY_MAP;
+        }
+        
         Map<String, Synonym> synonymMapping = synonymsCache.get(nodeType);
         
         if (synonymMapping == null) {
@@ -49,9 +56,11 @@ public abstract class AbstractMappedDataSaver<T1 extends IDataModel, T3 extends 
         }
         
         HashMap<String, Object> values = new HashMap<String, Object>();
+        ArrayList<String> handledHeaders = new ArrayList<String>();
         
         for (Entry<String, String> dataEntry : dataElement.entrySet()) {
-            Synonym synonym = synonymMapping.get(dataEntry.getKey());
+            String header = dataEntry.getKey();
+            Synonym synonym = synonymMapping.get(header);
             
             if (synonym != null) {
                 String textValue = dataEntry.getValue();
@@ -67,9 +76,16 @@ public abstract class AbstractMappedDataSaver<T1 extends IDataModel, T3 extends 
                         PossibleTypes newType = PossibleTypes.getType(value.getClass());
                         changeSynonymType(synonymMapping, dataEntry.getKey(), synonym.getName(), newType);
                     }
-
+                    
+                    handledHeaders.add(header);
                     values.put(synonym.getName(), value);
                 }
+            }
+        }
+        
+        if (removeReadHeaders) {
+            for (String header : handledHeaders) {
+                dataElement.remove(header);
             }
         }
         

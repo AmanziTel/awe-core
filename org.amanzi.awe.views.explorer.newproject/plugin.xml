@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>   
+
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            defaultHandler="org.amanzi.awe.views.explorer.newproject.WizardInitHandler"
+            id="org.amanzi.awe.views.explorer.newproject.WizardInitHandler"
+            name="New Project">
+      </command>
+   </extension>
+
+
+	<extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="toolbar:org.amanzi.awe.views.explorer.view.ProjectExplorerView">
+         <command         		
+               commandId="org.amanzi.awe.views.explorer.newproject.WizardInitHandler"
+               icon="icons/project.png"
+               label="New Project"
+               style="push">
+         </command>
+      </menuContribution>
+   </extension>
+   
+   
+   
+   
+
+</plugin>

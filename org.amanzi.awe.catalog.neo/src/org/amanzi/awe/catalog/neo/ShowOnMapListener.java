@@ -152,8 +152,8 @@ public class ShowOnMapListener implements IEventsListener<ShowOnMapEvent> {
 	 * @return
 	 */
 	private boolean checkForExistCoordinateElement(IRenderableModel gis) {
-		return (gis.getMaxLongitude() >= 0d && gis.getMinLongitude() >= 0d
-				&& gis.getMaxLatitude() >= 0d && gis.getMinLatitude() >= 0d);
+		return (gis.getMaxLongitude() != 0d && gis.getMinLongitude() != 0d
+				&& gis.getMaxLatitude() != 0d && gis.getMinLatitude() != 0d);
 	}
 
 	/**

@@ -145,8 +145,10 @@ public class CommonCSVParser<T1 extends ISaver<IModel, MappedData, IConfiguratio
                     String[] line = parser.parseLine(lineStr);
                     
                     MappedData element = new MappedData();
-                    for (int i = 0; i < headers.size(); i++) {
-                        element.put(headers.get(i), line[i]);
+                    if (line.length == headers.size()) {
+                        for (int i = 0; i < headers.size(); i++) {
+                            element.put(headers.get(i), line[i]);
+                        }
                     }
                     
                     return element;
