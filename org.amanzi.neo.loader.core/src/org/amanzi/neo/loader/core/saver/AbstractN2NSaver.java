@@ -38,7 +38,7 @@ public abstract class AbstractN2NSaver extends AbstractNetworkSaver<INodeToNodeR
     private static final String SYNONYMS_DATASET_TYPE = "n2n";
 
     private static final String SERVING_NAME_PROPERTY = "serving_name";
-    private static final String TARGET_ELEMENT_PROPERTY = "target_element";
+    private static final String TARGET_ELEMENT_PROPERTY = "target_name";
 
     /**
      * Creates N2N relationship. If serving/target is missed then this pair will be stored in
@@ -46,7 +46,7 @@ public abstract class AbstractN2NSaver extends AbstractNetworkSaver<INodeToNodeR
      */
     @Override
     public void saveElement(MappedData dataElement) throws AWEException {
-        Map<String, Object> values = getDataElementProperties(getMainModel(), null, dataElement, true, true);
+        Map<String, Object> values = getDataElementProperties(getMainModel(), getN2NNodeType(), dataElement, true, true);
 
         String servingName = values.get(SERVING_NAME_PROPERTY).toString();
         String targetName = values.get(TARGET_ELEMENT_PROPERTY).toString();

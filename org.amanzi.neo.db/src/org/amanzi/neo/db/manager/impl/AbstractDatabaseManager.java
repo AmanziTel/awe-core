@@ -42,6 +42,8 @@ public abstract class AbstractDatabaseManager implements IDatabaseManager {
      * Map of Transactions-per-Thread
      */
     private ThreadLocal<Transaction> transactionMap = new ThreadLocal<Transaction>();
+    
+    private ThreadLocal<Integer> transactionStack = new ThreadLocal<Integer>(); 
 
     /*
      * Listeners for Database Events
@@ -54,14 +56,18 @@ public abstract class AbstractDatabaseManager implements IDatabaseManager {
 
     @Override
     public void startThreadTransaction() {
-        LOGGER.info("Creating Transaction for Thread <" + Thread.currentThread() + ">");
-
-        if (transactionMap.get() != null) {
-            LOGGER.error("Transaction for Thread <" + Thread.currentThread() + "> alread exists");
-            // TODO: LN: throw Exception
+        Integer stack = transactionStack.get();
+        if (stack == null) {
+            stack = 0;
         }
-
-        transactionMap.set(getDatabaseService().beginTx());
+        
+        if (transactionMap.get() != null) {
+            LOGGER.error("Transaction for Thread <" + Thread.currentThread() + "> already exists");
+        } else {
+            LOGGER.info("Creating Transaction for Thread <" + Thread.currentThread() + ">");
+            transactionMap.set(getDatabaseService().beginTx());
+        }
+        transactionStack.set(++stack);
     }
 
     @Override
@@ -95,13 +101,19 @@ public abstract class AbstractDatabaseManager implements IDatabaseManager {
     @Override
     public void finishThreadTransaction() {
         LOGGER.info("Finishing Transaction for Thread <" + Thread.currentThread() + ">");
+        
+        Integer stack = transactionStack.get();
+        
+        if (--stack == 0) {
+            //commiting current transaction
+        
+            Transaction tx = transactionMap.get();
+            tx.success();
+            tx.finish();
 
-        // commiting current transaction
-        Transaction tx = transactionMap.get();
-        tx.success();
-        tx.finish();
-
-        transactionMap.remove();
+            transactionMap.remove();
+        }
+        transactionStack.set(stack);
     }
 
     @Override

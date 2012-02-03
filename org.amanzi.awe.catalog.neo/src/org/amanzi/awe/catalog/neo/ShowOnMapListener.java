@@ -13,14 +13,9 @@
 package org.amanzi.awe.catalog.neo;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.refractions.udig.catalog.CatalogPlugin;
-import net.refractions.udig.catalog.ICatalog;
-import net.refractions.udig.catalog.ID;
 import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.catalog.IService;
 import net.refractions.udig.project.ILayer;
@@ -32,7 +27,6 @@ import net.refractions.udig.project.internal.command.navigation.ZoomCommand;
 import net.refractions.udig.project.internal.command.navigation.ZoomExtentCommand;
 import net.refractions.udig.project.ui.ApplicationGIS;
 
-import org.amanzi.neo.db.manager.DatabaseManagerFactory;
 import org.amanzi.neo.services.model.IDataModel;
 import org.amanzi.neo.services.model.IRenderableModel;
 import org.amanzi.neo.services.ui.events.IEventsListener;
@@ -49,14 +43,13 @@ import org.apache.log4j.Logger;
  */
 public class ShowOnMapListener implements IEventsListener<ShowOnMapEvent> {
 
-	private static final String FILE_PREFIX = "file://";
 	private static final Logger LOGGER = Logger
 			.getLogger(ShowOnMapListener.class);
 
 	@Override
 	public void handleEvent(ShowOnMapEvent data) {
 		try {
-			IService curService = getMapService();
+			IService curService = NeoCatalogPlugin.getDefault().getMapService();
 			IMap map = ApplicationGIS.getActiveMap();
 			boolean haveSelectedElements = !data.getSelectedElements()
 					.isEmpty();
@@ -154,22 +147,6 @@ public class ShowOnMapListener implements IEventsListener<ShowOnMapEvent> {
 	private boolean checkForExistCoordinateElement(IRenderableModel gis) {
 		return (gis.getMaxLongitude() != 0d && gis.getMinLongitude() != 0d
 				&& gis.getMaxLatitude() != 0d && gis.getMinLatitude() != 0d);
-	}
-
-	/**
-	 * Get map service.
-	 * 
-	 * @return IService
-	 * @throws MalformedURLException
-	 */
-	private IService getMapService() throws MalformedURLException {
-		String databaseLocation = DatabaseManagerFactory.getDatabaseManager()
-				.getLocation();
-		ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
-		URL url = new URL(FILE_PREFIX + databaseLocation);
-		ID id = new ID(url);
-		IService curService = catalog.getById(IService.class, id, null);
-		return curService;
 	}
 
 	/**

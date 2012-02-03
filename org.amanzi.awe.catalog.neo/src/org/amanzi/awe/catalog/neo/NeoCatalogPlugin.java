@@ -12,6 +12,18 @@
  */
 package org.amanzi.awe.catalog.neo;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.List;
+
+import net.refractions.udig.catalog.CatalogPlugin;
+import net.refractions.udig.catalog.ICatalog;
+import net.refractions.udig.catalog.ID;
+import net.refractions.udig.catalog.IService;
+
+import org.amanzi.neo.db.manager.DatabaseManagerFactory;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
@@ -24,6 +36,10 @@ import org.osgi.framework.BundleContext;
  * @author Bondoronok_p
  */
 public class NeoCatalogPlugin extends AbstractUIPlugin {
+    
+    private static final String FILE_PREFIX = "file://";
+    
+    private static final String PLUGIN_ID = "org.amanzi.awe.catalog.neo";
 
 	/**
 	 * Plugin variable
@@ -75,4 +91,35 @@ public class NeoCatalogPlugin extends AbstractUIPlugin {
 	public static NeoCatalogPlugin getDefault() {
 		return plugin;
 	}
+	
+	public IService getMapService() throws MalformedURLException {
+        String databaseLocation = DatabaseManagerFactory.getDatabaseManager()
+                .getLocation().replace(" ", "_");
+        ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
+        URL url = new URL(FILE_PREFIX + databaseLocation);
+        ID id = new ID(url);
+        IService curService = catalog.getById(IService.class, id, null);
+        return curService;
+    }
+	
+	public void updateMapServices() {
+	    String databaseLocation = DatabaseManagerFactory.getDatabaseManager().getLocation();
+        ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
+        URL url = null;
+        try {
+            url = new URL(FILE_PREFIX + databaseLocation);
+        } catch (MalformedURLException e) {
+            getLog().log(new Status(Status.ERROR, PLUGIN_ID, "Error while set url", e));
+        }
+        List<IService> services = CatalogPlugin.getDefault().getServiceFactory().createService(url);
+        for (IService service : services) {
+            if (catalog.getById(IService.class, service.getID(), new NullProgressMonitor()) != null) {
+                catalog.replace(service.getID(), service);
+            } else {
+                catalog.add(service);
+            }
+        }
+	}
+	
+	
 }
