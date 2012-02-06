@@ -59,16 +59,6 @@ public class NeoCatalogPlugin extends AbstractUIPlugin {
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
-//		propertyListener = new IPropertyChangeListener() {
-//
-//			@Override
-//			public void propertyChange(PropertyChangeEvent event) {
-//				getPreferenceStore().firePropertyChangeEvent(
-//						event.getProperty(), event.getNewValue(),
-//						event.getOldValue());
-//			}
-//		};
-//		getPreferenceStore().addPropertyChangeListener(propertyListener);
 	}
 
 	/*
@@ -92,9 +82,18 @@ public class NeoCatalogPlugin extends AbstractUIPlugin {
 		return plugin;
 	}
 	
+	public String getDatabaseLocation() {
+	    return DatabaseManagerFactory.getDatabaseManager().getLocation().replace(" ", "_");
+	}
+	
+	/**
+	 * Returns Map service
+	 *
+	 * @return
+	 * @throws MalformedURLException
+	 */
 	public IService getMapService() throws MalformedURLException {
-        String databaseLocation = DatabaseManagerFactory.getDatabaseManager()
-                .getLocation().replace(" ", "_");
+        String databaseLocation = getDatabaseLocation();
         ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
         URL url = new URL(FILE_PREFIX + databaseLocation);
         ID id = new ID(url);
@@ -102,8 +101,18 @@ public class NeoCatalogPlugin extends AbstractUIPlugin {
         return curService;
     }
 	
+	public IService createService(URL url) {
+	    ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
+        ID id = new ID(url);
+        IService curService = catalog.getById(IService.class, id, null);
+        curService = CatalogPlugin.getDefault().getServiceFactory().createService(url).get(0);
+        updateMapServices();
+        
+        return curService;
+	}
+	
 	public void updateMapServices() {
-	    String databaseLocation = DatabaseManagerFactory.getDatabaseManager().getLocation();
+	    String databaseLocation = getDatabaseLocation();
         ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
         URL url = null;
         try {

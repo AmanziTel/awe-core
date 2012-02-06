@@ -13,14 +13,9 @@
 package org.amanzi.neo.loader.ui.utils;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.refractions.udig.catalog.CatalogPlugin;
-import net.refractions.udig.catalog.ICatalog;
-import net.refractions.udig.catalog.ID;
 import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.catalog.IService;
 import net.refractions.udig.project.ILayer;
@@ -28,8 +23,8 @@ import net.refractions.udig.project.IMap;
 import net.refractions.udig.project.ui.ApplicationGIS;
 import net.refractions.udig.project.ui.internal.actions.ZoomToLayer;
 
+import org.amanzi.awe.catalog.neo.NeoCatalogPlugin;
 import org.amanzi.awe.console.AweConsolePlugin;
-import org.amanzi.neo.db.manager.DatabaseManagerFactory;
 import org.amanzi.neo.loader.core.LoaderUtils;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferences;
 import org.amanzi.neo.loader.core.preferences.PreferenceStore;
@@ -121,21 +116,6 @@ public class LoaderUiUtils extends LoaderUtils {
     }
 
     /**
-     * Get map service.
-     * 
-     * @return IService
-     * @throws MalformedURLException
-     */
-    private static IService getMapService() throws MalformedURLException {
-        String databaseLocation = DatabaseManagerFactory.getDatabaseManager().getLocation();
-        ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
-        URL url = new URL(FILE_PREFIX + databaseLocation);
-        ID id = new ID(url);
-        IService curService = catalog.getById(IService.class, id, null);
-        return curService;
-    }
-
-    /**
      * Add model to map.
      * 
      * @param firstDataset String
@@ -143,7 +123,7 @@ public class LoaderUiUtils extends LoaderUtils {
      */
     public static void addGisDataToMap(String dataName, List<IDataModel> modelsList) {
         try {
-            IService curService = getMapService();
+            IService curService = NeoCatalogPlugin.getDefault().getMapService();
             IMap map = ApplicationGIS.getActiveMap();
             if (confirmAddToMap(map, dataName)) {
                 List<ILayer> layerList = new ArrayList<ILayer>();

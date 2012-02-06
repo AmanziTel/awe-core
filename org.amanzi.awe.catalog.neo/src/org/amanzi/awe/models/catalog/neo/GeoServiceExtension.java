@@ -45,16 +45,22 @@ public class GeoServiceExtension implements ServiceExtension {
             if (url.getProtocol().equals(FILE_PROTOCOL)) {
                 // the URL represent a normal file or directory on disk
                 File path = URLUtils.urlToFile(url);
-                if (path.exists() && path.isDirectory()) {
-                    // check the directory, does it contain a neo4j database
-                    File neostore = new File(path, NEOSTORE_DIR);
-                    if (neostore.exists()) {
-                        Map<String, Serializable> params = new HashMap<String, Serializable>();
-                        params.put(URL_KEY, url);
-                        params.put(CLASS_KEY, URL.class);
-                        return params;
-                    }
+                
+                path = new File(path.getAbsolutePath().replace("_", " "));
+                
+                if (!(path.exists() && path.isDirectory())) {
+                    //TODO: error
+                } 
+
+                // check the directory, does it contain a neo4j database
+                File neostore = new File(path, NEOSTORE_DIR);
+                if (neostore.exists()) {
+                    Map<String, Serializable> params = new HashMap<String, Serializable>();
+                    params.put(URL_KEY, url);
+                    params.put(CLASS_KEY, URL.class);
+                    return params;
                 }
+
             }
         } catch (Throwable t) {
             // something went wrong, URL must be for another service

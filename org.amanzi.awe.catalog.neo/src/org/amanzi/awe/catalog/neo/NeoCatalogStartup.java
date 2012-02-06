@@ -13,21 +13,10 @@
 
 package org.amanzi.awe.catalog.neo;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.List;
-
-import net.refractions.udig.catalog.CatalogPlugin;
-import net.refractions.udig.catalog.ICatalog;
-import net.refractions.udig.catalog.IService;
-
-import org.amanzi.neo.db.manager.DatabaseManagerFactory;
 import org.amanzi.neo.services.ui.enums.EventsType;
 import org.amanzi.neo.services.ui.events.EventManager;
 import org.amanzi.neo.services.ui.events.IEventsListener;
 import org.amanzi.neo.services.ui.events.UpdateDataEvent;
-import org.apache.log4j.Logger;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.ui.IStartup;
 
 /**
@@ -39,7 +28,7 @@ import org.eclipse.ui.IStartup;
  * @since 1.0.0
  */
 public class NeoCatalogStartup implements IStartup {
-    private static Logger LOGGER = Logger.getLogger(NeoCatalogStartup.class);
+    
     public static final String FILE_PREFIX = "file://";
 
     @SuppressWarnings("unchecked")
@@ -60,21 +49,7 @@ public class NeoCatalogStartup implements IStartup {
 
         @Override
         public void handleEvent(UpdateDataEvent data) {
-            try {
-                String databaseLocation = DatabaseManagerFactory.getDatabaseManager().getLocation();
-                ICatalog catalog = CatalogPlugin.getDefault().getLocalCatalog();
-                URL url = new URL(FILE_PREFIX + databaseLocation);
-                List<IService> services = CatalogPlugin.getDefault().getServiceFactory().createService(url);
-                for (IService service : services) {
-                    if (catalog.getById(IService.class, service.getID(), new NullProgressMonitor()) != null) {
-                        catalog.replace(service.getID(), service);
-                    } else {
-                        catalog.add(service);
-                    }
-                }
-            } catch (MalformedURLException e) {
-                LOGGER.error("Could not create database location URL.", e);
-            }
+            NeoCatalogPlugin.getDefault().updateMapServices();
         }
 
         @Override
