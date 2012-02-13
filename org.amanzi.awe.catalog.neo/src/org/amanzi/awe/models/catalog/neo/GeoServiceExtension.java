@@ -46,8 +46,6 @@ public class GeoServiceExtension implements ServiceExtension {
                 // the URL represent a normal file or directory on disk
                 File path = URLUtils.urlToFile(url);
                 
-                path = new File(path.getAbsolutePath().replace("_", " "));
-                
                 if (!(path.exists() && path.isDirectory())) {
                     //TODO: error
                 } 

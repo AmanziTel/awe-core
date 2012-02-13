@@ -83,7 +83,7 @@ public class NeoCatalogPlugin extends AbstractUIPlugin {
 	}
 	
 	public String getDatabaseLocation() {
-	    return DatabaseManagerFactory.getDatabaseManager().getLocation().replace(" ", "_");
+	    return DatabaseManagerFactory.getDatabaseManager().getLocation().replace(" ", "%20");
 	}
 	
 	/**
