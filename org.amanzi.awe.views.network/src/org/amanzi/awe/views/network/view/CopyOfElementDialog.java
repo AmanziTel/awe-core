@@ -11,6 +11,7 @@ public class CopyOfElementDialog extends AbstractDialog<Integer> {
 
     @Override
     protected void createContents(Shell shell) {
+        
     }
 
 }
