@@ -170,7 +170,7 @@ public class NetworkTreeView extends ViewPart {
                 NetworkPropertiesView propertiesView = null;
                 try {
                     propertiesView = (NetworkPropertiesView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
-                            .showView("org.amanzi.awe.views.network.views.NewNetworkPropertiesView");
+                            .showView("org.amanzi.awe.views.network.views.NetworkPropertiesView");
                     propertiesView.updateTableView(selectedDataElements, currentMode);
                 } catch (PartInitException e) {
                 }
@@ -315,7 +315,7 @@ public class NetworkTreeView extends ViewPart {
             try {
                 currentMode = isEditable;
                 NetworkPropertiesView propertiesView = (NetworkPropertiesView)PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-                        .getActivePage().showView("org.amanzi.awe.views.network.views.NewNetworkPropertiesView");
+                        .getActivePage().showView("org.amanzi.awe.views.network.views.NetworkPropertiesView");
                 propertiesView.updateTableView(selectedDataElements, isEditable);
             } catch (PartInitException e) {
                 MessageDialog.openError(null, ERROR_TITLE, ERROR_MSG);
@@ -801,13 +801,13 @@ public class NetworkTreeView extends ViewPart {
             }
         }
     }
-    
+
     /**
-     * 
      * TODO Purpose of NetworkTreeView
      * <p>
-     * Action for copy element 
+     * Action for copy element
      * </p>
+     * 
      * @author ladornaya_a
      * @since 1.0.0
      */
@@ -815,7 +815,6 @@ public class NetworkTreeView extends ViewPart {
 
         private boolean enabled;
         private final String text;
-        private INetworkModel network;
         private IDataElement element;
 
         /**
@@ -828,7 +827,8 @@ public class NetworkTreeView extends ViewPart {
             enabled = selection.size() == 1 && !(selection.getFirstElement() instanceof INetworkModel);
             if (enabled) {
                 element = (IDataElement)selection.getFirstElement();
-                network = (INetworkModel)((DataElement)element).get(INeoConstants.NETWORK_MODEL_NAME);
+                // network =
+                // (INetworkModel)((DataElement)element).get(INeoConstants.NETWORK_MODEL_NAME);
             }
         }
 
@@ -845,14 +845,14 @@ public class NetworkTreeView extends ViewPart {
         @Override
         public void run() {
             Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
-            SelectionListDialog pdialog = new SelectionListDialog(shell, network, "New selection list", SWT.OK);
-            if (pdialog.open() == SWT.OK) {
+            CopyOfElementDialog cdialog = new CopyOfElementDialog(shell, element, "Copy Of Element", SWT.OK);
+            if (cdialog.open() == SWT.OK) {
 
             } else {
 
             }
         }
-        
+
     }
 
     /**
