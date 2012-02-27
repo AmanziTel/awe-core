@@ -42,6 +42,11 @@ public class ShowOnMapEvent extends AbstractEvent {
      * zoom degree
      */
     private double zoom;
+    
+    /**
+     * draw neighbors
+     */
+    private boolean drawNeighbors = Boolean.TRUE;
      
     /**
      *  Initialize Event type
@@ -61,6 +66,17 @@ public class ShowOnMapEvent extends AbstractEvent {
     	selectedElements.addAll(renderableModel.getSelectedElements());
     	this.zoom = zoom;
 	}
+    
+    /**
+     * Initialize IRenderableModel, zoom and drawNeigbors
+     * 
+     * @param renderableModel
+     * @param zoom
+     */
+    public ShowOnMapEvent(IRenderableModel renderableModel, double zoom, boolean drawNeighbors) {    	
+    	this(renderableModel, zoom);
+    	this.drawNeighbors = drawNeighbors;
+	}
 
     /**
      * Initialize IRenderableModel list and zoom
@@ -72,8 +88,17 @@ public class ShowOnMapEvent extends AbstractEvent {
         this.zoom = zoom;        
         for (IRenderableModel renderableModel : renderableList) {
         	selectedElements.addAll(renderableModel.getSelectedElements());
-        }
-        
+        }        
+    }
+    
+    /**
+     * Initialize IRenderableModel list, zoom and drawNeigbors
+     * 
+     * @param renderableList
+     */
+    public ShowOnMapEvent(List<IRenderableModel> renderableList, double zoom, boolean drawNeighbors) {
+        this(renderableList, zoom);
+        this.drawNeighbors = drawNeighbors;
     }
     
     /**
@@ -85,6 +110,17 @@ public class ShowOnMapEvent extends AbstractEvent {
     public ShowOnMapEvent(IRenderableModel renderableModel, IDataElement selectedElement, double zoom) {    	
     	this(renderableModel, zoom);    	
     	selectedElements.add(selectedElement);    	
+	}
+    
+    /**
+     * Initialize IRenderableModel, IDataElement, zoom and drawNeighbors
+     * 
+     * @param selectedElement
+     * @param zoom
+     */
+    public ShowOnMapEvent(IRenderableModel renderableModel, IDataElement selectedElement, double zoom, boolean drawNeighbors) {    	
+    	this(renderableModel, selectedElement, zoom);
+    	this.drawNeighbors = drawNeighbors;
 	}
 	
     /**
@@ -112,5 +148,16 @@ public class ShowOnMapEvent extends AbstractEvent {
      */
 	public List<IDataElement> getSelectedElements() {
 		return selectedElements;
+	}
+
+	/**
+	 * Draw Neighbors relationships or not
+	 * 
+	 * @return true or false
+	 */
+	public boolean isDrawNeighbors() {
+		return drawNeighbors;
 	}	
+	
+	
 }

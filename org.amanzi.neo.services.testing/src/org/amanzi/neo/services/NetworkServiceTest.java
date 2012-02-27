@@ -1740,6 +1740,45 @@ public class NetworkServiceTest extends AbstractAWETest {
     public void testGetCurrentN2NModelNameWithNullRootNode() throws DatabaseException {
     	networkService.getCurrentNodeToNodeModelName(null);
     }
+    
+
+	@Test
+	public void testGetStarToolSelectedModelName() {
+		Map<String, Object> properties = new HashMap<String, Object>();
+		properties.put(AbstractService.NAME, NAME_VALUE);
+		properties.put(SECOND_PROPERTY, SECOND_PROPERTY);
+		Node rootNode;
+		try {
+			rootNode = networkService.createNode(NetworkElementNodeType.SITE);
+			networkService.setProperties(rootNode, properties);
+			networkService.setStarToolSelectedModelName(rootNode,
+					FIRST_PROPERTY);
+			String actual = networkService
+					.getStarToolSelectedModelName(rootNode);
+			Assert.assertNotNull(actual);
+			Assert.assertEquals(FIRST_PROPERTY, actual);
+			networkService.setStarToolSelectedModelName(rootNode, null);
+			actual = networkService.getStarToolSelectedModelName(rootNode);
+			Assert.assertNull(actual);
+		} catch (DatabaseException e) {
+			LOGGER.info(
+					"testGetStarToolSelectedModelName() finished with exception ",
+					e);
+			Assert.fail("Test finished with exception " + e);
+		}
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void testGetStarToolSelectedModelNameWithNull()
+			throws DatabaseException {
+		networkService.getStarToolSelectedModelName(null);
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void testSetStarToolSelectedModelNameWithNull()
+			throws DatabaseException {
+		networkService.setStarToolSelectedModelName(null, null);
+	}
 
     /**
      * added properties to node

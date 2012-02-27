@@ -53,6 +53,7 @@ public abstract class RenderableModel extends AbstractIndexedModel {
     static final String CRS_NAME = "crs";
     static final String DESCRIPTION = "description";
     protected GisModel currentGisModel;
+    private boolean drawNeighbors = Boolean.TRUE;
     protected final static String DEFAULT_EPSG = "EPSG:31467";
 
     protected RenderableModel(Node rootNode, INodeType nodeType) throws AWEException {
@@ -88,7 +89,15 @@ public abstract class RenderableModel extends AbstractIndexedModel {
     public void setSelectedDataElements(List<IDataElement> dataElements) {
         renderableModelElements.addAll(dataElements);
     }
-
+    
+    public boolean isDrawNeighbors() {
+        return drawNeighbors;
+    }
+    
+    public void setDrawNeighbors(boolean drawNeighbors) {
+        this.drawNeighbors = drawNeighbors;
+    }
+    
     @Override
     public void finishUp() throws AWEException {
         Iterable<Node> allGis = datasetService.getAllGisByDataset(rootNode);

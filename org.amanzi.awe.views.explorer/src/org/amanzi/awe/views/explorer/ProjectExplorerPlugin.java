@@ -30,6 +30,7 @@ public class ProjectExplorerPlugin extends AbstractUIPlugin {
 
     // The shared instance
     private static ProjectExplorerPlugin plugin;
+   
 
     /**
      * The constructor
@@ -43,7 +44,7 @@ public class ProjectExplorerPlugin extends AbstractUIPlugin {
      */
     public void start(BundleContext context) throws Exception {
         super.start(context);
-        plugin = this;
+        plugin = this;    
     }
 
     /*
@@ -52,7 +53,7 @@ public class ProjectExplorerPlugin extends AbstractUIPlugin {
      */
     public void stop(BundleContext context) throws Exception {
         plugin = null;
-        super.stop(context);
+        super.stop(context);        
     }
 
     /**

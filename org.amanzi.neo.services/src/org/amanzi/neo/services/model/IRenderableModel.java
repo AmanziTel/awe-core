@@ -156,5 +156,19 @@ public interface IRenderableModel extends IModel {
      * find gis element by name and set is as current for its model;
      */
     public GisModel findGisByName(String gisName) throws DatabaseException;
+    
+    /**
+     * Draw neighbors relationships
+     *
+     * @return true or false
+     */
+    public boolean isDrawNeighbors();
+    
+    /**
+     * draw neighbors or not
+     *
+     * @param drawNeighbors true or false
+     */
+    public void setDrawNeighbors(boolean drawNeighbors);
 
 }

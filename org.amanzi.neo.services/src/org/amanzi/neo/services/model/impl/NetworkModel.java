@@ -80,7 +80,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     private NetworkService nwServ = NeoServiceFactory.getInstance().getNetworkService();
     private DatasetService dsServ = NeoServiceFactory.getInstance().getDatasetService();
 
-    private List<INodeType> currentNetworkStructure = new LinkedList<INodeType>();    
+    private List<INodeType> currentNetworkStructure = new LinkedList<INodeType>();
 
     /**
      * Use this constructor to create a network model, based on a node, that already exists in the
@@ -533,7 +533,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         Node newParentNode;
         curentNode = ((DataElement)currentNode).getNode();
         newParentNode = ((DataElement)newParentElement).getNode();
-        
+
         nwServ.replaceRelationship(newParentNode, curentNode, DatasetRelationTypes.CHILD, Direction.INCOMING);
     }
 
@@ -939,7 +939,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         }
         return list;
     }
-    
+
     @Override
     public INodeToNodeRelationsModel getCurrentNodeToNodeRelationshipModel() throws AWEException {
         INodeToNodeRelationsModel resultModel = null;
@@ -960,6 +960,26 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     @Override
     public void setCurrentNodeToNodeRelationshipModel(INodeToNodeRelationsModel model) throws AWEException {
         nwServ.setCurrentNodeToNodeModelName(getRootNode(), model.getName());
-    }  
+    }
+
+    @Override
+    public INetworkModel getStarToolSelectedModel() throws AWEException {
+        INetworkModel resultModel = null;
+        String selectedModelName = nwServ.getStarToolSelectedModelName(getRootNode());
+        if (selectedModelName != null) {            
+            resultModel = new NetworkModel(getRootNode());
+        }
+        return resultModel;
+    }
+
+    @Override
+    public void setStarToolSelectedModel() throws AWEException {
+        nwServ.setStarToolSelectedModelName(getRootNode(), getName());
+    }
+
+    @Override
+    public void removeStarToolSelectedModel() throws AWEException {
+        nwServ.setStarToolSelectedModelName(getRootNode(), null);
+    }
 
 }

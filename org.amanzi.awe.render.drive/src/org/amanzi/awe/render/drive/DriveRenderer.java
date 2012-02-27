@@ -24,7 +24,6 @@ import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IMeasurementModel;
 import org.amanzi.neo.services.model.IRenderableModel;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
-import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.TransformException;
 
 import com.vividsolutions.jts.geom.Envelope;
@@ -102,9 +101,10 @@ public class DriveRenderer extends AbstractRenderer {
 	}
 
 	@Override
-	protected void renderSelectedElements(Graphics2D destination,
-			IRenderableModel model, Envelope bounds_transformed)
-			throws NoninvertibleTransformException, TransformException {			
+	protected void renderSelectedElement(Graphics2D destination, Point point,
+			IDataElement site, IDataElement sector, IRenderableModel model,
+			Envelope selectedBounds) throws TransformException {
+		
 	}
 
 }

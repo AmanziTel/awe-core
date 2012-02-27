@@ -33,6 +33,7 @@ import org.amanzi.neo.model.distribution.impl.DistributionModel;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataElement;
+import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.IRenderableModel;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -67,9 +68,9 @@ public abstract class AbstractRenderer extends RendererImpl {
 			.getManager();
 	protected DistributionModel currentDistributionModel = null;
 	private AbstractRendererStyles commonStyle = initDefaultRendererStyle();
-	public static final String BLACKBOARD_NODE_LIST = "org.amanzi.awe.tool.star.StarTool.nodes";    
-    public static final String SPACE_SEPARATOR = " ";
-    public static final String EQUAL_SEPARATOR = "=";    
+	public static final String BLACKBOARD_NODE_LIST = "org.amanzi.awe.tool.star.StarTool.nodes";
+	public static final String SPACE_SEPARATOR = " ";
+	public static final String EQUAL_SEPARATOR = "=";
 
 	/**
 	 * initialize default renderer styles;
@@ -78,19 +79,20 @@ public abstract class AbstractRenderer extends RendererImpl {
 	 */
 	protected abstract AbstractRendererStyles initDefaultRendererStyle();
 
-	
-    /**
-     * prepare scaling value before elements render. Scale is response for the view of renderable
-     * elements
-     * 
-     * @param bounds_transformed
-     * @param data_bounds
-     * @param monitor
-     * @param count
-     */
-    public void setScaling(Envelope bounds_transformed, Envelope data_bounds, final IProgressMonitor monitor, long count) {
-        double dataScaled = (bounds_transformed.getHeight() * bounds_transformed.getWidth())
-                / (data_bounds.getHeight() * data_bounds.getWidth());
+	/**
+	 * prepare scaling value before elements render. Scale is response for the
+	 * view of renderable elements
+	 * 
+	 * @param bounds_transformed
+	 * @param data_bounds
+	 * @param monitor
+	 * @param count
+	 */
+	public void setScaling(Envelope bounds_transformed, Envelope data_bounds,
+			final IProgressMonitor monitor, long count) {
+		double dataScaled = (bounds_transformed.getHeight() * bounds_transformed
+				.getWidth())
+				/ (data_bounds.getHeight() * data_bounds.getWidth());
 
 		double countScaled = dataScaled * count / 2;
 		setDrawLabel(countScaled);
@@ -163,7 +165,7 @@ public abstract class AbstractRenderer extends RendererImpl {
 			// find a resource to render
 			model = resource.resolve(getResolvedClass(), monitor);
 			defineCurrentGis(resource);
-            initCurrentDistribution();
+			initCurrentDistribution();
 			// get rendering bounds and zoom
 			setCrsTransforms(resource.getInfo(null).getCRS());
 			Envelope bounds_transformed = getTransformedBounds();
@@ -175,14 +177,9 @@ public abstract class AbstractRenderer extends RendererImpl {
 					&& data_bounds.getWidth() > 0) {
 				count = getRenderableElementCount(model);
 				setScaling(bounds_transformed, data_bounds, monitor, count);
-			}			
+			}
 			renderElements(destination, bounds_transformed, data_bounds,
 					monitor);
-			
-			if (!model.getSelectedElements().isEmpty()) {
-				renderSelectedElements(destination, model, bounds_transformed);				
-			}
-
 		} catch (IOException e) {
 			LOGGER.error("Could not relosve resource.", e);
 			throw new RenderException(e);
@@ -194,24 +191,26 @@ public abstract class AbstractRenderer extends RendererImpl {
 			throw new RenderException(e);
 		}
 	}
-	
-    /**
-     * try to define gis, from information stored in georesource identifier
-     * 
-     * @param identifier
-     * @return
-     * @throws IOException
-     * @throws DatabaseException
-     */
-    private void defineCurrentGis(IGeoResource resource) throws IOException, DatabaseException {
-        String georesId = resource.getIdentifier().getRef();
-        String gisId = georesId.substring(georesId.lastIndexOf('/') + 1, georesId.length());
-        String gisName = gisId.replace('_', ' ');
-        model.findGisByName(gisName);
-    }
 
-    /**
-     * render elements from current model     
+	/**
+	 * try to define gis, from information stored in georesource identifier
+	 * 
+	 * @param identifier
+	 * @return
+	 * @throws IOException
+	 * @throws DatabaseException
+	 */
+	private void defineCurrentGis(IGeoResource resource) throws IOException,
+			DatabaseException {
+		String georesId = resource.getIdentifier().getRef();
+		String gisId = georesId.substring(georesId.lastIndexOf('/') + 1,
+				georesId.length());
+		String gisName = gisId.replace('_', ' ');
+		model.findGisByName(gisName);
+	}
+
+	/**
+	 * render elements from current model
 	 * 
 	 * @param destination
 	 * @throws TransformException
@@ -222,30 +221,48 @@ public abstract class AbstractRenderer extends RendererImpl {
 			Envelope bounds_transformed, Envelope data_bounds,
 			IProgressMonitor monitor) throws NoninvertibleTransformException,
 			AWEException, TransformException {
+
 		for (IDataElement element : model.getElements(data_bounds)) {
 			Point point = getPoint(model, element, bounds_transformed);
 			if (point != null) {
-				renderElement(destination, point, element, model);			
+				renderElement(destination, point, element, model);
 			} else {
 				continue;
-			}			
+			}
 			monitor.worked(1);
 			// count++;
 			if (monitor.isCanceled())
 				break;
 		}
+
+		for (IDataElement currentElement : model.getSelectedElements()) {
+			Point point = getPoint(model, currentElement, bounds_transformed);
+			if (point != null) {
+				IDataElement site = ((INetworkModel) model)
+						.getParentElement(currentElement);
+				renderSelectedElement(destination, point, site, currentElement,
+						model, bounds_transformed);
+			} else {
+				continue;
+			}
+		}
 	}
-	
+
 	/**
-	 * render selected elements from current model
+	 * Render selected item
 	 * 
 	 * @param destination
+	 * @param point
+	 * @param site
+	 * @param sector
 	 * @param model
+	 * @param selectedBounds
+	 * @throws TransformException
 	 */
-	protected abstract void renderSelectedElements(Graphics2D destination,
-			IRenderableModel model, Envelope bounds_transformed)
-			throws NoninvertibleTransformException, TransformException, AWEException;
-
+	protected abstract void renderSelectedElement(Graphics2D destination,
+			Point point, IDataElement site, IDataElement sector,
+			IRenderableModel model, Envelope selectedBounds)
+			throws TransformException;
 
 	/**
 	 * Get point
@@ -254,12 +271,10 @@ public abstract class AbstractRenderer extends RendererImpl {
 	 * @param element
 	 * @param bounds_transformed
 	 * @return point or null
-	 * @throws NoninvertibleTransformException
 	 * @throws TransformException
 	 */
 	protected Point getPoint(IRenderableModel model, IDataElement element,
-			Envelope bounds_transformed)
-			throws NoninvertibleTransformException, TransformException {
+			Envelope bounds_transformed) throws TransformException {
 
 		Coordinate location = model.getCoordinate(element);
 		java.awt.Point point = null;

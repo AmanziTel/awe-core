@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         name="Star Tool Analyser"
+         point="net.refractions.udig.project.ui.tool">
+      <modalTool
+            categoryId="org.amanzi.awe.tool.star.analyzer"
+            class="org.amanzi.awe.tool.star.StarTool"
+            icon="icons/tool/selection_mode.gif"
+            id="org.amanzi.awe.tool.star.analyzer"
+            name="Star Tool Analyser"
+            onToolbar="true"
+            tooltip="Star Tool Analyser">
+         <cursor
+               hotspotX="10"
+               hotspotY="10"
+               image="icons/pointers/select_source.png">
+         </cursor>
+      </modalTool>
+   </extension>
+
+</plugin>

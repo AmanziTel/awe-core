@@ -414,7 +414,6 @@ public class DistributionService extends AbstractService {
                 .iterator();
         if (rel == null || !rel.hasNext()) {
             LOGGER.info("<findBarByAggregationNode(Node aggregatedNode)> cannot find AGGREGATEDrelationship");
-            return null;
         }
         while (rel.hasNext()) {
             Node barNode = rel.next().getOtherNode(aggregatedNode);

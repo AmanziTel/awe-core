@@ -55,10 +55,10 @@ public class NetworkService extends AbstractService {
     public final static String BCCH = "bcch";
 
     public final static String SELECTION_RELATIONSHIP_INDEX = "selection_relationship";
-    public final static String CURRENT_N2N_MODEL_NAME = "current_n2n_model_name";
-
+    public final static String CURRENT_N2N_MODEL_NAME = "current_n2n_model_name";    
     public final static String SELECTED_NODES_COUNT = "selected_nodes_count";
     public final static String SOURCE_NAME = "source_name";
+    public final static String STAR_TOOL_MODEL = "star_tool_selected_model";
     /*
      * name of property that contains array with network structure
      */
@@ -67,7 +67,7 @@ public class NetworkService extends AbstractService {
     private static Logger LOGGER = Logger.getLogger(NetworkService.class);
 
     private DatasetService datasetService;
-    
+
     /*
      * Constants for antenna pattern
      */
@@ -94,9 +94,9 @@ public class NetworkService extends AbstractService {
         static {
             NodeTypeManager.registerNodeType(NetworkElementNodeType.class);
         }
-        
+
         private String id;
-        
+
         private NetworkElementNodeType() {
             this.id = name().toLowerCase();
         }
@@ -910,7 +910,7 @@ public class NetworkService extends AbstractService {
                 rootNode.removeProperty(CURRENT_N2N_MODEL_NAME);
             } else {
                 rootNode.setProperty(CURRENT_N2N_MODEL_NAME, name);
-            }            
+            }
             tx.success();
         } catch (Exception e) {
             tx.failure();
@@ -935,8 +935,8 @@ public class NetworkService extends AbstractService {
         }
         String modelName = null;
         Transaction tx = graphDb.beginTx();
-        try {            
-            modelName = (String) rootNode.getProperty(CURRENT_N2N_MODEL_NAME, null);
+        try {
+            modelName = (String)rootNode.getProperty(CURRENT_N2N_MODEL_NAME, null);
             tx.success();
         } catch (Exception e) {
             tx.failure();
@@ -945,6 +945,52 @@ public class NetworkService extends AbstractService {
             tx.finish();
         }
 
+        return modelName;
+    }
+
+    /**
+     * @param rootNode
+     * @param name
+     * @throws DatabaseException
+     */
+    public void setStarToolSelectedModelName(Node rootNode, String name) throws DatabaseException {
+        if (rootNode == null) {
+            LOGGER.error("Input rootNode cannot be null");
+            throw new IllegalArgumentException("Root node cannot be null");
+        }
+        Transaction tx = graphDb.beginTx();
+        try {
+            if (name == null) {
+                rootNode.removeProperty(STAR_TOOL_MODEL);
+            } else {
+                rootNode.setProperty(STAR_TOOL_MODEL, name);
+            }
+            tx.success();
+        } catch (Exception e) {
+            tx.failure();
+            LOGGER.error("Cannot get NodeToNodeRelationshipModel", e);
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
+    }
+
+    public String getStarToolSelectedModelName(Node rootNode) throws DatabaseException {
+        if (rootNode == null) {
+            LOGGER.error("Input rootNode cannot be null");
+            throw new IllegalArgumentException("Input rootNode cannot be null");
+        }
+        String modelName = null;
+        Transaction tx = graphDb.beginTx();
+        try {
+            modelName = (String)rootNode.getProperty(STAR_TOOL_MODEL, null);
+            tx.success();
+        } catch (Exception e) {
+            tx.failure();
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
         return modelName;
     }
 }

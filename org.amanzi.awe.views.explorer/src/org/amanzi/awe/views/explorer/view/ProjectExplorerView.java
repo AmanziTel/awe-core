@@ -8,6 +8,7 @@
 package org.amanzi.awe.views.explorer.view;
 
 import org.amanzi.awe.views.explorer.providers.ProjectTreeContentProvider;
+import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.IModel;
 import org.amanzi.neo.services.model.INetworkModel;
@@ -58,7 +59,7 @@ public class ProjectExplorerView extends ViewPart {
 	public static final String SHOW_IN_PROPERTY_TABLE_ITEM = "Show properties";
 	public static final String SHOW_IN_DRIVE_INUQIER_ITEM = "Drive Inuqirer";
 	public static final String SHOW_IN_N2N_VIEW_ITEM = "Show in N2N view";
-
+	public final static String STAR_TOOL_ANALYSE = "Analyse with Star Tool";
 	/*
 	 * required views id
 	 */
@@ -214,6 +215,13 @@ public class ProjectExplorerView extends ViewPart {
 			manager.add(showOnMapAction);
 		}
 
+		StarToolAnalyseAction starTool = new StarToolAnalyseAction(
+				(IStructuredSelection) viewer.getSelection(), STAR_TOOL_ANALYSE);
+
+		if (starTool.isEnabled()) {
+			manager.add(starTool);
+		}
+
 	}
 
 	/**
@@ -358,7 +366,7 @@ public class ProjectExplorerView extends ViewPart {
 		 */
 		public ShowOnMapAction(IStructuredSelection selection,
 				String propertyTableItem) {
-			text = propertyTableItem;			
+			text = propertyTableItem;
 			if (selection.getFirstElement() instanceof IRenderableModel) {
 				enabled = true;
 				model = (IRenderableModel) selection.getFirstElement();
@@ -378,6 +386,61 @@ public class ProjectExplorerView extends ViewPart {
 		@Override
 		public void run() {
 			eventManager.fireEvent(new ShowOnMapEvent(model, ZOOM));
+		}
+	}
+
+	private class StarToolAnalyseAction extends Action {
+		private INetworkModel model;
+		private boolean enabled = false;
+		private String text;
+		private boolean checked = false;
+
+		public StarToolAnalyseAction(IStructuredSelection selection,
+				String propertyTableItem) {
+			super(propertyTableItem, AS_CHECK_BOX);
+			text = propertyTableItem;
+			if (selection.getFirstElement() instanceof INetworkModel) {
+				enabled = true;
+				model = (INetworkModel) selection.getFirstElement();
+				checkSelection();
+			}
+		}
+
+		@Override
+		public String getText() {
+			return text;
+		}
+
+		@Override
+		public boolean isEnabled() {
+			return enabled;
+		}
+
+		@Override
+		public boolean isChecked() {
+			return checked;
+		}
+
+		@Override
+		public void run() {
+			try {
+				if (checked) {
+					model.removeStarToolSelectedModel();
+				} else {
+					model.setStarToolSelectedModel();
+				}				
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+
+		private void checkSelection() {
+			try {
+				checked = model.getStarToolSelectedModel() != null ? Boolean.TRUE
+						: Boolean.FALSE;
+			} catch (AWEException e) {
+				checked = Boolean.FALSE;
+			}
 		}
 	}
 

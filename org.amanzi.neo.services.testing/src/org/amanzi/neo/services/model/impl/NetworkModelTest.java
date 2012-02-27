@@ -48,6 +48,7 @@ import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
 import org.amanzi.neo.services.model.ICorrelationModel;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IModel;
+import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
 import org.amanzi.neo.services.model.IProjectModel;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
@@ -653,4 +654,37 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
     	Assert.assertEquals(expectedModel.getName(), model.getCurrentNodeToNodeRelationshipModel().getName());
     	    	    	       	    	   
     }    
+    
+	@Test
+	public void testSetStarToolSelectedModel() throws AWEException {
+		NetworkService service = mock(NetworkService.class);
+		model.setNetworkService(service);
+		model.setStarToolSelectedModel();
+		verify(service).setStarToolSelectedModelName(any(Node.class),
+				any(String.class));
+	}
+	
+	@Test
+	public void testGetStarToolSelectedModel() throws AWEException {		
+		Assert.assertNull(model.getStarToolSelectedModel());
+		model.setStarToolSelectedModel();
+		INetworkModel testModel = (INetworkModel) model.getStarToolSelectedModel();
+		Assert.assertNotNull(testModel);
+		
+		Node testModelNode = dsServ.createDataset(project, "star_tool_network", DatasetTypes.NETWORK);
+		
+		INetworkModel expectedModel = new NetworkModel(testModelNode);
+		expectedModel.setStarToolSelectedModel();
+		testModel = (INetworkModel) expectedModel.getStarToolSelectedModel();
+		Assert.assertNotNull(testModel);
+	}
+	
+	@Test
+	public void testRemoveStarToolSelectedModel() throws AWEException {
+		Assert.assertNull(model.getStarToolSelectedModel());
+		model.setStarToolSelectedModel();
+		Assert.assertNotNull(model.getStarToolSelectedModel());
+		model.removeStarToolSelectedModel();
+		Assert.assertNull(model.getStarToolSelectedModel());
+	}
 }

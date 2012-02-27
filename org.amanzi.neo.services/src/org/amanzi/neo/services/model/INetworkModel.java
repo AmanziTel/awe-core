@@ -131,12 +131,12 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
      * @throws AWEException
      */
     public IDataElement findElement(Map<String, Object> params) throws AWEException;
-    
+
     /**
      * Find a sector in network by propertyName and propertyValue
-     *
+     * 
      * @param propertyName Name of property in sector
-     * @param propertyValue Value of property in sector 
+     * @param propertyValue Value of property in sector
      * @return Found sector or null
      * @throws AWEException
      */
@@ -171,15 +171,16 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
     public void renameElement(IDataElement elementToRename, String newName) throws AWEException;
 
     /**
-     * Update any property of a network element based of <code>IDataElement elementToUpdate</code> object.
-     *
+     * Update any property of a network element based of <code>IDataElement elementToUpdate</code>
+     * object.
+     * 
      * @param elementToUpdate Element to update
      * @param propertyName Value of dataElement to update
      * @param newValue New value of updating value
      * @throws AWEException
      */
     public void updateElement(IDataElement elementToUpdate, String propertyName, Object newValue) throws AWEException;
-    
+
     /**
      * complete existedElement with new property. if
      * 
@@ -274,23 +275,43 @@ public interface INetworkModel extends IDataModel, IPropertyStatisticalModel, IR
      * @throws AWEException
      */
     public Iterable<ISelectionModel> getAllSelectionModelsOfSector(IDataElement element) throws AWEException;
-    
 
     public IDataElement getNetworkElement(IDataElement parent, Map<String, Object> params) throws AWEException;
 
     /**
      * return current N2N relationship model
-     *
+     * 
      * @return N2N relationship model
      */
     public INodeToNodeRelationsModel getCurrentNodeToNodeRelationshipModel() throws AWEException;
-    
+
     /**
      * Set current N2N relationship model
-     *
+     * 
      * @param model
      * @throws AWEException
      */
     public void setCurrentNodeToNodeRelationshipModel(INodeToNodeRelationsModel model) throws AWEException;
+
+    /**
+     * Get Star Tool selected model or null
+     * 
+     * @return <code>IRenderableModel</code> or null if model doesn't selected
+     * @throws AWEException
+     */
+    public INetworkModel getStarToolSelectedModel() throws AWEException;
+
+    /**
+     * Set Star Tool selected model
+     * 
+     * @param selectedModel selected model
+     * @throws AWEException
+     */
+    public void setStarToolSelectedModel() throws AWEException;
+
+    /**
+     * Removing star tool selected model; 
+     */
+    public void removeStarToolSelectedModel() throws AWEException;
 
 }

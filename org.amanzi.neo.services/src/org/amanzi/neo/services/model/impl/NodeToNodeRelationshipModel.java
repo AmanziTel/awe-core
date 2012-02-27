@@ -308,7 +308,7 @@ public class NodeToNodeRelationshipModel extends PropertyStatisticalModel implem
         if (sector == null) {
             throw new IllegalArgumentException("Sector cannot be null");
         } 
-        List<IDataElement> neighbours = new ArrayList<IDataElement>();
+        List<IDataElement> neighbours = new ArrayList<IDataElement>(0);
         for (IDataElement relationship : getN2NRelatedElements(sector)) {
             Node proxyNode = ((DataElement)relationship).getRelationship().getEndNode();
             neighbours.add(getServiceElementByProxy(new DataElement(proxyNode)));

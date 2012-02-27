@@ -57,8 +57,11 @@ public class ShowOnMapListener implements IEventsListener<ShowOnMapEvent> {
 			List<IGeoResource> listGeoRes = new ArrayList<IGeoResource>();
 			List<AbstractNavCommand> commands = new ArrayList<AbstractNavCommand>();
 			IRenderableModel selectedModel = null;
-			// in case if zoomed
-			commands.add(new ZoomExtentCommand());
+ 
+			if (data.isDrawNeighbors()) {
+				commands.add(new ZoomExtentCommand());
+			}
+			
 			for (IRenderableModel gis : data.getRenderableModelList()) {
 				if (!checkForExistCoordinateElement(gis)) {
 					LOGGER.info("Cann't add layer to map because model: "
@@ -83,6 +86,7 @@ public class ShowOnMapListener implements IEventsListener<ShowOnMapEvent> {
 					if (renderableModel != null) {
 						renderableModel.setSelectedDataElements(data
 								.getSelectedElements());
+						renderableModel.setDrawNeighbors(data.isDrawNeighbors());
 						selectedModel = renderableModel;
 					}
 				}
@@ -90,7 +94,7 @@ public class ShowOnMapListener implements IEventsListener<ShowOnMapEvent> {
 			layerList
 					.addAll(ApplicationGIS.addLayersToMap(map, listGeoRes, -1));
 
-			if (haveSelectedElements) {
+			if (haveSelectedElements && data.isDrawNeighbors()) {
 				commands.add(new SetViewportCenterCommand(selectedModel
 						.getCoordinate(data.getSelectedElements().get(0))));
 				commands.add(new ZoomCommand(data.getZoom()));
