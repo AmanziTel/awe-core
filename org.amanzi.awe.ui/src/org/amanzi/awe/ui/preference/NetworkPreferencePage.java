@@ -15,7 +15,7 @@ import org.eclipse.swt.widgets.Composite;
 public class NetworkPreferencePage extends AbstractPreferencePage {
 
 	private static final String DEFAULT_BEAMWIDTH = "Default beamwidth :";
-	private static final String SITE_SECTOR_NAME = "Use the name of the sector as the name of the site";
+	private static final String SITE_SECTOR_NAME = "Use the name of the sector for the name of the site";
 
 	private IntegerFieldEditor integerFieldEditor;
 	private BooleanFieldEditor booleanFieldEditor;
