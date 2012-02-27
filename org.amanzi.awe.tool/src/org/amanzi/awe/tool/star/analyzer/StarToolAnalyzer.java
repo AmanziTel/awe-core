@@ -98,20 +98,24 @@ public class StarToolAnalyzer {
 	 */
 	public void analyze(Point point) {
 		INetworkModel analyzedModel = getAnalysedModel();
-		List<IDataElement> analyzedElements = getAnalayzedElements(analyzedModel);
-		if (!dragged && !analyzedElements.isEmpty()) {
-			IDataElement selectedSector = findSelectedSector(analyzedModel,
-					analyzedElements, point);
-			if (selectedSector == null) {
-				selectedSector = analyzedElements.get(0);
+		if (analyzedModel != null) {
+			List<IDataElement> analyzedElements = getAnalayzedElements(analyzedModel);
+			if (!dragged && !analyzedElements.isEmpty()) {
+				IDataElement selectedSector = findSelectedSector(analyzedModel,
+						analyzedElements, point);
+				if (selectedSector == null) {
+					selectedSector = analyzedElements.get(0);
+				}
+				analyzedModel.setSelectedDataElementToList(selectedSector);
+				analyzedElements.clear();
+				analyzedElements.add(selectedSector);
+			} else {
+				analyzedModel.setSelectedDataElements(analyzedElements);
 			}
-			analyzedModel.setSelectedDataElementToList(selectedSector);
-			analyzedElements.clear();
-			analyzedElements.add(selectedSector);
+			fireEvents(analyzedModel, analyzedElements);
 		} else {
-			analyzedModel.setSelectedDataElements(analyzedElements);
+			LOGGER.info("Star Tool: No model for the analysis of.");
 		}
-		fireEvents(analyzedModel, analyzedElements);
 	}
 
 	/**
