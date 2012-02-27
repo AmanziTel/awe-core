@@ -41,7 +41,7 @@
             category="org.amanzi.awe.views"
             class="org.amanzi.awe.views.network.view.NetworkPropertiesView"
             icon="icons/network.png"
-            id="org.amanzi.awe.views.network.views.NewNetworkPropertiesView"
+            id="org.amanzi.awe.views.network.views.NetworkPropertiesView"
             name="New Network Properties View">
       </view>
    </extension>
@@ -62,7 +62,7 @@
          point="org.eclipse.ui.menus">
       <menuContribution
             allPopups="false"
-            locationURI="toolbar:org.amanzi.awe.views.network.views.NewNetworkPropertiesView">
+            locationURI="toolbar:org.amanzi.awe.views.network.views.NetworkPropertiesView">
          <command
                commandId="org.amanzi.awe.views.network.command.Copy"
                icon="icons/copy.png"

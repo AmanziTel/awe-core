@@ -81,7 +81,7 @@ public class NetworkPropertiesView extends ViewPart {
 	/*
 	 * ID of this View
 	 */
-	public static final String NEW_NETWORK_PROPERTIES_VIEW_ID = "org.amanzi.awe.views.network.views.NewNetworkPropertiesView";
+	public static final String NETWORK_PROPERTIES_VIEW_ID = "org.amanzi.awe.views.network.views.NetworkPropertiesView";
 
 	/*
 	 * table
@@ -122,7 +122,6 @@ public class NetworkPropertiesView extends ViewPart {
 
 	public static boolean showMessageBox = true;
 
-	@SuppressWarnings("unchecked")
 	public NetworkPropertiesView() {
 		super();
 	}
@@ -210,7 +209,7 @@ public class NetworkPropertiesView extends ViewPart {
 	}
 
 	/**
-	 * TODO Purpose of NewNetworkPropertiesView
+	 * TODO Purpose of NetworkPropertiesView
 	 * <p>
 	 * Label provider for multiply table
 	 * </p>
@@ -420,7 +419,7 @@ public class NetworkPropertiesView extends ViewPart {
 	}
 
 	/**
-	 * TODO Purpose of NewNetworkPropertiesView
+	 * TODO Purpose of NetworkPropertiesView
 	 * <p>
 	 * Content provider for multiply table
 	 * </p>

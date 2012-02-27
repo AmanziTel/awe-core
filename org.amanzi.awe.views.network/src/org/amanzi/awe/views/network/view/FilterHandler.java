@@ -15,7 +15,7 @@ public class FilterHandler extends AbstractHandler{
         NetworkPropertiesView propertiesView = null;
         try {
             propertiesView = (NetworkPropertiesView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
-                    .showView("org.amanzi.awe.views.network.views.NewNetworkPropertiesView");
+                    .showView("org.amanzi.awe.views.network.views.NetworkPropertiesView");
             propertiesView.updateTableView();
         } catch (PartInitException e) {
         }

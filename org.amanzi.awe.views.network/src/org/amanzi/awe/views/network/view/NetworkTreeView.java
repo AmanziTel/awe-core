@@ -170,7 +170,7 @@ public class NetworkTreeView extends ViewPart {
                 NetworkPropertiesView propertiesView = null;
                 try {
                     propertiesView = (NetworkPropertiesView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
-                            .showView("org.amanzi.awe.views.network.views.NewNetworkPropertiesView");
+                            .showView("org.amanzi.awe.views.network.views.NetworkPropertiesView");
                     propertiesView.updateTableView(selectedDataElements, currentMode);
                 } catch (PartInitException e) {
                 }
@@ -218,6 +218,8 @@ public class NetworkTreeView extends ViewPart {
         createSubmenuDeleteFromSelectionList((IStructuredSelection)viewer.getSelection(), manager);
 
         createSubmenuCreateSelectionList((IStructuredSelection)viewer.getSelection(), manager);
+
+        createSubmenuCopyOfElement((IStructuredSelection)viewer.getSelection(), manager);
     }
 
     /**
@@ -282,7 +284,7 @@ public class NetworkTreeView extends ViewPart {
         private boolean enabled;
         private boolean isEditable;
         private String text;
-        //private IDataElement currentDataElement;
+        // private IDataElement currentDataElement;
         private final static String ERROR_MSG = "Some error with select of DataElement";
 
         /**
@@ -295,7 +297,7 @@ public class NetworkTreeView extends ViewPart {
             enabled = true;
             this.text = text;
             this.isEditable = isEditable;
-           // currentDataElement = selectedDataElements.iterator().next();
+            // currentDataElement = selectedDataElements.iterator().next();
         }
 
         @Override
@@ -312,9 +314,8 @@ public class NetworkTreeView extends ViewPart {
         public void run() {
             try {
                 currentMode = isEditable;
-                NetworkPropertiesView propertiesView = (NetworkPropertiesView)PlatformUI.getWorkbench()
-                        .getActiveWorkbenchWindow().getActivePage()
-                        .showView("org.amanzi.awe.views.network.views.NewNetworkPropertiesView");
+                NetworkPropertiesView propertiesView = (NetworkPropertiesView)PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+                        .getActivePage().showView("org.amanzi.awe.views.network.views.NetworkPropertiesView");
                 propertiesView.updateTableView(selectedDataElements, isEditable);
             } catch (PartInitException e) {
                 MessageDialog.openError(null, ERROR_TITLE, ERROR_MSG);
@@ -781,6 +782,75 @@ public class NetworkTreeView extends ViewPart {
         public void run() {
             model.deleteSelectionLink(sector);
         }
+    }
+
+    /**
+     * Create new element and copy properties from selected element to new element
+     * 
+     * @param selection selected elements
+     * @param manager menu manager
+     */
+    @SuppressWarnings("rawtypes")
+    private void createSubmenuCopyOfElement(IStructuredSelection selection, IMenuManager manager) {
+        if (selection.size() == 1) {
+            Iterator it = selection.iterator();
+            Object elementObject = it.next();
+            if (!(elementObject instanceof INetworkModel)) {
+                CopyOfElementAction copyOfElementAction = new CopyOfElementAction((IStructuredSelection)viewer.getSelection());
+                manager.add(copyOfElementAction);
+            }
+        }
+    }
+
+    /**
+     * TODO Purpose of NetworkTreeView
+     * <p>
+     * Action for copy element
+     * </p>
+     * 
+     * @author ladornaya_a
+     * @since 1.0.0
+     */
+    private class CopyOfElementAction extends Action {
+
+        private boolean enabled;
+        private final String text;
+        private IDataElement element;
+
+        /**
+         * Constructor
+         * 
+         * @param selection - selection
+         */
+        public CopyOfElementAction(IStructuredSelection selection) {
+            text = "Copy of element";
+            enabled = selection.size() == 1 && !(selection.getFirstElement() instanceof INetworkModel);
+            if (enabled) {
+                element = (IDataElement)selection.getFirstElement();
+            }
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        @Override
+        public String getText() {
+            return text;
+        }
+
+        @Override
+        public void run() {
+            Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+            CopyOfElementDialog cdialog = new CopyOfElementDialog(shell, element, "Copy Of Element", SWT.OK);
+            if (cdialog.open() == SWT.OK) {
+
+            } else {
+
+            }
+        }
+
     }
 
     /**

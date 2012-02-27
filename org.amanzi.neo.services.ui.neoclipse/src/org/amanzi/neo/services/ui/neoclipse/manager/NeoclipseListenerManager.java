@@ -33,12 +33,12 @@ import org.neo4j.neoclipse.view.NeoGraphViewPart;
 public class NeoclipseListenerManager {
     private static final Logger LOGGER = Logger.getLogger(NeoclipseListenerManager.class);
     private final static String REL_TYPE__VIEW_ID = "org.neo4j.neoclipse.reltype.RelationshipTypeView";
-    
+
     /**
      * neoclipse view instance
      */
     private NeoGraphViewPart neoGraphView;
-    
+
     /**
      * instance of relationships view
      */
@@ -49,14 +49,14 @@ public class NeoclipseListenerManager {
      */
     @SuppressWarnings("unchecked")
     public NeoclipseListenerManager(EventManager eventManager) {
-    	try {
+        try {
             eventManager.addListener(EventsType.UPDATE_DATA, new RefreshNeoclipseView());
         } catch (Exception e) {
             LOGGER.info("Can't initialize views because:", e);
             e.printStackTrace();
         }
-    	
-    	new NeoclipseIconsInitializer();
+
+        new NeoclipseIconsInitializer();
     }
 
     /**
@@ -106,7 +106,9 @@ public class NeoclipseListenerManager {
      */
     private void refreshNeoclipseView() {
         try {
-            getNeoGraphView().refresh();
+            if (getNeoGraphView() != null) {
+                getNeoGraphView().refresh();
+            }
         } catch (Exception e) {
             LOGGER.error("Cann't refresh view because:", e);
         }
