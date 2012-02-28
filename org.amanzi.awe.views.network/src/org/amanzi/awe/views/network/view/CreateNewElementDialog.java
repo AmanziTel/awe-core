@@ -9,7 +9,6 @@ import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
-import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
@@ -40,8 +39,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 
-import scala.actors.threadpool.Arrays;
-
 public class CreateNewElementDialog extends AbstractDialog<Integer> {
 
     // sector
@@ -49,9 +46,6 @@ public class CreateNewElementDialog extends AbstractDialog<Integer> {
 
     // site
     private final static String[] SITE_PROPERTIES = {"name", "lat", "lon"};
-
-    // other
-    private final static String[] OTHER_PROPERTIES = {"name"};
 
     /*
      * table
@@ -72,15 +66,12 @@ public class CreateNewElementDialog extends AbstractDialog<Integer> {
     // selected element for copy
     private IDataElement element;
 
-    /*
-     * type of selected element: 1 - site, 2 - sector, 0 - other elements
-     */
-    private int typeElement;
+    private INetworkModel networkModel;
 
     /*
      * element type
      */
-    private INodeType typeNode;
+    private String type;
 
     /** The b ok. */
     private Button bOk;
@@ -96,12 +87,15 @@ public class CreateNewElementDialog extends AbstractDialog<Integer> {
     // table row elements
     private List<RowValues> elements = new ArrayList<RowValues>();
 
-    public CreateNewElementDialog(Shell parent, IDataElement element, String title, int style) {
+    public CreateNewElementDialog(Shell parent, IDataElement element, String type, INetworkModel networkModel, String title,
+            int style) {
         super(parent, title, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.CENTER);
         parentShell = parent;
         shell = new Shell(parent, SWT.SHELL_TRIM);
         status = SWT.CANCEL;
         this.element = element;
+        this.type = type;
+        this.networkModel = networkModel;
     }
 
     /**
@@ -110,11 +104,6 @@ public class CreateNewElementDialog extends AbstractDialog<Integer> {
     private void updateProperies() {
 
         properties = new ArrayList<String>();
-        typeElement = 0;
-
-        // type
-        typeNode = NodeTypeManager.getType(element);
-        String type = typeNode.getId();
 
         // if sector
         if (type.equals(NetworkElementNodeType.SECTOR.getId())) {
@@ -123,7 +112,6 @@ public class CreateNewElementDialog extends AbstractDialog<Integer> {
             for (int i = 0; i < SECTOR_PROPERTIES.length; i++) {
                 properties.add(SECTOR_PROPERTIES[i]);
             }
-            typeElement = 2;
         }
 
         // if site
@@ -133,19 +121,11 @@ public class CreateNewElementDialog extends AbstractDialog<Integer> {
             for (int j = 0; j < SITE_PROPERTIES.length; j++) {
                 properties.add(SITE_PROPERTIES[j]);
             }
-            typeElement = 1;
         }
 
         // other elements
         else {
             properties.add(AbstractService.NAME);
-        }
-
-        // add other properties
-        for (String property : element.keySet()) {
-            if (!properties.contains(property)) {
-                properties.add(property);
-            }
         }
     }
 
@@ -157,6 +137,10 @@ public class CreateNewElementDialog extends AbstractDialog<Integer> {
         // composite
         composite.setLayout(new GridLayout(1, true));
 
+        GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
+        data.heightHint = 300;
+        composite.setLayoutData(data);
+
         // label
         Label label = new Label(composite, SWT.NONE);
         label.setText("Enter data:");
@@ -167,7 +151,6 @@ public class CreateNewElementDialog extends AbstractDialog<Integer> {
         tableViewer.setUseHashlookup(true);
 
         GridData dataTable = new GridData(SWT.FILL, SWT.FILL, true, true);
-        dataTable.heightHint = 300;
         dataTable.widthHint = 280;
 
         tableViewer.getControl().setLayoutData(dataTable);
@@ -188,12 +171,12 @@ public class CreateNewElementDialog extends AbstractDialog<Integer> {
 
         // buttons
         bOk = new Button(child, SWT.PUSH);
-        GridData data = new GridData(SWT.FILL, SWT.CENTER, false, false);
-        data.widthHint = 140;
-        bOk.setLayoutData(data);
+        GridData dataButton = new GridData(SWT.FILL, SWT.CENTER, false, false);
+        dataButton.widthHint = 140;
+        bOk.setLayoutData(dataButton);
         bOk.setText("OK");
         bCancel = new Button(child, SWT.PUSH);
-        bCancel.setLayoutData(data);
+        bCancel.setLayoutData(dataButton);
         bCancel.setText("Cancel");
         addListeners();
 
@@ -241,11 +224,9 @@ public class CreateNewElementDialog extends AbstractDialog<Integer> {
      */
     private boolean saveElement() throws AWEException {
 
-        // network
-        INetworkModel networkModel = (INetworkModel)element.get(INeoConstants.NETWORK_MODEL_NAME);
-
         // parameters
         Map<String, Object> params = new HashMap<String, Object>();
+        params.put(AbstractService.TYPE, type);
         for (RowValues r : elements) {
             params.put(r.getProperty(), r.getValue());
         }
@@ -254,18 +235,19 @@ public class CreateNewElementDialog extends AbstractDialog<Integer> {
         if (params.get(AbstractService.NAME).toString().isEmpty()) {
             MessageDialog.openError(shell, "Enter name!", "Name is empty. Enter name.");
             return false;
-        } else if (networkModel.findElementByPropertyValue(typeNode, AbstractService.NAME, params.get(AbstractService.NAME)).size() != 0) {
+        } else if (networkModel.findElementByPropertyValue(NodeTypeManager.getType(type), AbstractService.NAME,
+                params.get(AbstractService.NAME)).size() != 0) {
             MessageDialog.openError(shell, "Such element already exist!",
                     "The element with such name already exists. Enter other name.");
             return false;
-        } else if (typeElement == 1) {
+        } else if (type.equals(NetworkElementNodeType.SITE.getId())) {
             if (!isDouble(params.get(INeoConstants.PROPERTY_LAT_NAME).toString())
                     || !isDouble(params.get(INeoConstants.PROPERTY_LON_NAME).toString())) {
                 MessageDialog.openError(shell, "Lat and lon is double!", "Enter in lat and lon double values.");
                 return false;
             }
 
-        } else if (typeElement == 2) {
+        } else if (type.equals(NetworkElementNodeType.SECTOR.getId())) {
             if (!isDouble(params.get(INeoConstants.PROPERTY_SECTOR_CI).toString())
                     || !isDouble(params.get(INeoConstants.PROPERTY_SECTOR_LAC).toString())) {
                 MessageDialog.openError(shell, "Ci and lac is double!", "Enter in ci and lac double values.");
@@ -274,7 +256,7 @@ public class CreateNewElementDialog extends AbstractDialog<Integer> {
         }
 
         // create element
-        networkModel.createElement(networkModel.getParentElement(element), params);
+        networkModel.createElement(element, params);
         return true;
     }
 
@@ -304,50 +286,24 @@ public class CreateNewElementDialog extends AbstractDialog<Integer> {
      */
     private class TableContentProvider implements IStructuredContentProvider {
 
-        // properties for selected element
-        private List<String> elementProperties = new ArrayList<String>();
-
         @Override
         public void dispose() {
         }
 
-        @SuppressWarnings("unchecked")
         @Override
         public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
 
             elements.clear();
             updateProperies();
             ((TableLabelProvider)tableViewer.getLabelProvider()).createTableColumn();
-            if (element != null) {
-                for (String property : properties) {
 
-                    // other
-                    if (typeElement == 0) {
-                        elementProperties = new ArrayList<String>(Arrays.asList(OTHER_PROPERTIES));
-                    }
+            for (String property : properties) {
 
-                    // site
-                    if (typeElement == 1) {
-                        elementProperties = new ArrayList<String>(Arrays.asList(SITE_PROPERTIES));
-                    }
+                RowValues r = new RowValues(property, StringUtils.EMPTY);
+                elements.add(r);
 
-                    // sector
-                    if (typeElement == 2) {
-                        elementProperties = new ArrayList<String>(Arrays.asList(SECTOR_PROPERTIES));
-                    }
-
-                    if (!elementProperties.contains(property)) {
-                        Object value = element.get(property);
-                        if (value instanceof Number || value instanceof Boolean || value instanceof String) {
-                            RowValues r = new RowValues(property, value);
-                            elements.add(r);
-                        }
-                    } else {
-                        RowValues r = new RowValues(property, StringUtils.EMPTY);
-                        elements.add(r);
-                    }
-                }
             }
+
         }
 
         @Override

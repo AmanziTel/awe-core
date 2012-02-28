@@ -877,6 +877,8 @@ public class NetworkTreeView extends ViewPart {
         // parent element for new element
         IDataElement element = null;
 
+        INetworkModel networkModel;
+
         if (selection.size() == 1) {
 
             // selected element
@@ -889,10 +891,12 @@ public class NetworkTreeView extends ViewPart {
             // if selected element - network
             if (elementObject instanceof INetworkModel) {
                 isNetwork = true;
+                networkModel = (INetworkModel)elementObject;
             } else {
                 element = (IDataElement)elementObject;
                 INodeType typeNode = NodeTypeManager.getType(element);
                 String type = typeNode.getId();
+                networkModel = (INetworkModel)element.get(INeoConstants.NETWORK_MODEL_NAME);
 
                 // if selected element - city
                 if (type.equals(NetworkElementNodeType.CITY.getId())) {
@@ -918,25 +922,27 @@ public class NetworkTreeView extends ViewPart {
             if (isNetwork || isMsc || isCity || isBsc) {
                 // site
                 CreateNewElementAction createNewElementActionSite = new CreateNewElementAction(
-                        (IStructuredSelection)viewer.getSelection(), NetworkElementNodeType.SITE.getId(), element);
+                        (IStructuredSelection)viewer.getSelection(), NetworkElementNodeType.SITE.getId(), element, networkModel);
                 subMenu.add(createNewElementActionSite);
 
                 if (isNetwork || isMsc || isCity) {
                     // bsc
                     CreateNewElementAction createNewElementActionBsc = new CreateNewElementAction(
-                            (IStructuredSelection)viewer.getSelection(), NetworkElementNodeType.BSC.getId(), element);
+                            (IStructuredSelection)viewer.getSelection(), NetworkElementNodeType.BSC.getId(), element, networkModel);
                     subMenu.add(createNewElementActionBsc);
 
                     if (isNetwork || isCity) {
                         // msc
                         CreateNewElementAction createNewElementActionMsc = new CreateNewElementAction(
-                                (IStructuredSelection)viewer.getSelection(), NetworkElementNodeType.MSC.getId(), element);
+                                (IStructuredSelection)viewer.getSelection(), NetworkElementNodeType.MSC.getId(), element,
+                                networkModel);
                         subMenu.add(createNewElementActionMsc);
 
                         if (isNetwork) {
                             // city
                             CreateNewElementAction createNewElementActionCity = new CreateNewElementAction(
-                                    (IStructuredSelection)viewer.getSelection(), NetworkElementNodeType.CITY.getId(), element);
+                                    (IStructuredSelection)viewer.getSelection(), NetworkElementNodeType.CITY.getId(), element,
+                                    networkModel);
                             subMenu.add(createNewElementActionCity);
                         }
                     }
@@ -944,7 +950,7 @@ public class NetworkTreeView extends ViewPart {
             } else if (isSite) {
                 // sector
                 CreateNewElementAction createNewElementActionSector = new CreateNewElementAction(
-                        (IStructuredSelection)viewer.getSelection(), NetworkElementNodeType.SECTOR.getId(), element);
+                        (IStructuredSelection)viewer.getSelection(), NetworkElementNodeType.SECTOR.getId(), element, networkModel);
                 subMenu.add(createNewElementActionSector);
             }
 
@@ -970,14 +976,22 @@ public class NetworkTreeView extends ViewPart {
         // selected element
         private IDataElement element;
 
+        // network model
+        private INetworkModel networkModel;
+
+        // type of new element
+        private String type;
+
         /**
          * Constructor
          * 
          * @param selection - selection
          */
-        public CreateNewElementAction(IStructuredSelection selection, String type, IDataElement element) {
+        public CreateNewElementAction(IStructuredSelection selection, String type, IDataElement element, INetworkModel networkModel) {
             text = type;
             this.element = element;
+            this.type = type;
+            this.networkModel = networkModel;
         }
 
         @Override
@@ -993,7 +1007,8 @@ public class NetworkTreeView extends ViewPart {
         @Override
         public void run() {
             Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
-            CreateNewElementDialog cdialog = new CreateNewElementDialog(shell, element, "Create new element", SWT.OK);
+            CreateNewElementDialog cdialog = new CreateNewElementDialog(shell, element, type, networkModel, "Create new element",
+                    SWT.OK);
             if (cdialog.open() == SWT.OK) {
 
             } else {
