@@ -9,6 +9,7 @@ import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
+import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
@@ -35,11 +36,9 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
-import org.eclipse.ui.PlatformUI;
 
 import scala.actors.threadpool.Arrays;
 
@@ -86,6 +85,11 @@ public class CopyOfElementDialog extends AbstractDialog<Integer> {
      */
     private int typeElement;
 
+    /*
+     * element type
+     */
+    private INodeType typeNode;
+
     /** The b ok. */
     private Button bOk;
 
@@ -95,14 +99,17 @@ public class CopyOfElementDialog extends AbstractDialog<Integer> {
     /** Shell */
     private Shell shell;
 
+    private Shell parentShell;
+
     // table row elements
     private List<RowValues> elements = new ArrayList<RowValues>();
 
     public CopyOfElementDialog(Shell parent, IDataElement element, String title, int style) {
         super(parent, title, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.CENTER);
+        parentShell = parent;
+        shell = new Shell(parent, SWT.SHELL_TRIM);
         status = SWT.CANCEL;
         this.element = element;
-
     }
 
     /**
@@ -114,7 +121,8 @@ public class CopyOfElementDialog extends AbstractDialog<Integer> {
         typeElement = 0;
 
         // type
-        String type = NodeTypeManager.getType(element).getId();
+        typeNode = NodeTypeManager.getType(element);
+        String type = typeNode.getId();
 
         // if sector
         if (type.equals(NetworkElementNodeType.SECTOR.getId())) {
@@ -152,7 +160,7 @@ public class CopyOfElementDialog extends AbstractDialog<Integer> {
     @Override
     protected void createContents(Shell composite) {
 
-        shell = composite;
+        parentShell = composite;
 
         // composite
         composite.setLayout(new GridLayout(1, true));
@@ -211,15 +219,16 @@ public class CopyOfElementDialog extends AbstractDialog<Integer> {
                 status = SWT.OK;
                 try {
                     // copy element
-                    saveElement();
-
-                    // update views
-                    EventManager.getInstance().fireEvent(new UpdateDataEvent());
+                    boolean save = saveElement();
+                    if (save) {
+                        // update views
+                        EventManager.getInstance().fireEvent(new UpdateDataEvent());
+                        parentShell.close();
+                    }
                 } catch (AWEException e1) {
                     // TODO Handle AWEException
                     throw (RuntimeException)new RuntimeException().initCause(e1);
                 }
-                shell.close();
             }
         });
 
@@ -228,7 +237,7 @@ public class CopyOfElementDialog extends AbstractDialog<Integer> {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 status = SWT.CANCEL;
-                shell.close();
+                parentShell.close();
             }
         });
     }
@@ -238,9 +247,7 @@ public class CopyOfElementDialog extends AbstractDialog<Integer> {
      * 
      * @throws AWEException
      */
-    private void saveElement() throws AWEException {
-        
-        
+    private boolean saveElement() throws AWEException {
 
         // network
         INetworkModel networkModel = (INetworkModel)element.get(INeoConstants.NETWORK_MODEL_NAME);
@@ -252,28 +259,46 @@ public class CopyOfElementDialog extends AbstractDialog<Integer> {
         }
 
         // validation
-        if (networkModel.findElement(params) != null) {
-            MessageBox mbox = new MessageBox( shell,SWT.ICON_ERROR | SWT.OK);
-            mbox.setMessage("Данный элемент ввода не привязан к источнику данных!");
-            mbox.open();
-            MessageDialog.openError(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), "Such element already exist!",
+        if (params.get(AbstractService.NAME).toString().isEmpty()) {
+            MessageDialog.openError(shell, "Enter name!", "Name is empty. Enter name.");
+            return false;
+        } else if (networkModel.findElementByPropertyValue(typeNode, AbstractService.NAME, params.get(AbstractService.NAME)).size() != 0) {
+            MessageDialog.openError(shell, "Such element already exist!",
                     "The element with such name already exists. Enter other name.");
+            return false;
         } else if (typeElement == 1) {
-            if (!(params.get(INeoConstants.PROPERTY_LAT_NAME) instanceof Double)
-                    || !(params.get(INeoConstants.PROPERTY_LON_NAME) instanceof Double)) {
-                MessageDialog.openError(null, "Lat and lon is double!", "Enter in lat and lon double values.");
+            if (!isDouble(params.get(INeoConstants.PROPERTY_LAT_NAME).toString())
+                    || !isDouble(params.get(INeoConstants.PROPERTY_LON_NAME).toString())) {
+                MessageDialog.openError(shell, "Lat and lon is double!", "Enter in lat and lon double values.");
+                return false;
             }
 
         } else if (typeElement == 2) {
-            if (!(params.get(INeoConstants.PROPERTY_SECTOR_CI) instanceof Double)
-                    || !(params.get(INeoConstants.PROPERTY_SECTOR_LAC) instanceof Double)) {
-                MessageDialog.openError(null, "Ci and lac is double!", "Enter in ci and lac double values.");
+            if (!isDouble(params.get(INeoConstants.PROPERTY_SECTOR_CI).toString())
+                    || !isDouble(params.get(INeoConstants.PROPERTY_SECTOR_LAC).toString())) {
+                MessageDialog.openError(shell, "Ci and lac is double!", "Enter in ci and lac double values.");
+                return false;
             }
-        } else {
-            // create element
-            networkModel.createElement(networkModel.getParentElement(element), params);
         }
 
+        // create element
+        networkModel.createElement(networkModel.getParentElement(element), params);
+        return true;
+    }
+
+    /**
+     * Checking value - double or no
+     * 
+     * @param value string value
+     * @return true if double
+     */
+    private boolean isDouble(String value) {
+        try {
+            Double.parseDouble(value);
+        } catch (NumberFormatException exc) {
+            return false;
+        }
+        return true;
     }
 
     /**
