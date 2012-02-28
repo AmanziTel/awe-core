@@ -45,6 +45,7 @@
 				<module>org.amanzi.awe.catalog.neo</module>
 				<module>org.amanzi.awe.console</module>
 				<module>org.amanzi.awe.extras.feature</module>
+				<module>org.amanzi.awe.star.tool</module>
 				<module>org.amanzi.awe.feature</module>
 				<module>org.amanzi.awe.neostyle</module>
 				<module>org.amanzi.awe.project</module>

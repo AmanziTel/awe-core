@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.amanzi.awe.tool.star.analyzer;
+package org.amanzi.awe.star.tool.analyzer;
 
 import java.awt.Point;
 import java.awt.geom.Arc2D;
@@ -35,7 +35,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 
 /**
- * 
+ * Tool for analyzing selected data gathered on the map
  * 
  * @author Bondoronok_P
  */

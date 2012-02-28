@@ -1,4 +1,4 @@
-package org.amanzi.awe.tool.star;
+package org.amanzi.awe.star.tool;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -12,7 +12,7 @@ import net.refractions.udig.project.ui.commands.SelectionBoxCommand;
 import net.refractions.udig.project.ui.render.displayAdapter.MapMouseEvent;
 import net.refractions.udig.project.ui.tool.AbstractModalTool;
 
-import org.amanzi.awe.tool.star.analyzer.StarToolAnalyzer;
+import org.amanzi.awe.star.tool.analyzer.StarToolAnalyzer;
 import org.amanzi.awe.views.network.view.NetworkPropertiesView;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.ui.enums.EventsType;
@@ -36,7 +36,7 @@ public class StarTool extends AbstractModalTool {
 	/**
 	 * Network properties id
 	 */
-	public static final String NETWORK_PROPERTIES_VIEW_ID = "org.amanzi.awe.views.network.views.NewNetworkPropertiesView";
+	public static final String NETWORK_PROPERTIES_VIEW_ID = "org.amanzi.awe.views.network.views.NetworkPropertiesView";
 
 	private Coordinate startCoordinate;
 	private Point startPoint;
