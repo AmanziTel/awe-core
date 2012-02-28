@@ -104,6 +104,7 @@
 				<module>org.amanzi.awe.extras.feature</module>
 				<module>org.amanzi.awe.feature</module>
 				<module>org.amanzi.awe.neostyle</module>
+				<module>org.amanzi.awe.star.tool</module>
 				<module>org.amanzi.awe.render.core</module>
 				<module>org.amanzi.awe.render.drive</module>
 				<module>org.amanzi.awe.render.network</module>
