@@ -159,10 +159,16 @@ public class NetworkRenderer extends AbstractRenderer {
 		Integer sCount = (Integer) site.get(NetworkService.SECTOR_COUNT);
 		Double azimuth = (Double) sector.get(AZIMUTH);
 		Double beamwidth = (Double) sector.get(BEAMWIDTH);
-		if (azimuth == null || beamwidth == null || beamwidth == 0) {
-			beamwidth = FULL_CIRCLE / (sCount == null ? 1 : sCount);
+		if (azimuth == null || beamwidth == null || beamwidth == 0) {			
+			beamwidth = FULL_CIRCLE / (sCount == null ? 1 : sCount);			
 			azimuth = beamwidth * i;
 			beamwidth = beamwidth.doubleValue() * 0.8;
+			// TODO default beamwidth
+//			Double defaultBeamwidth = (double) networkRendererStyle.getDefaultBeamwidth();
+////			if (defaultBeamwidth < beamwidth) {
+////				beamwidth = defaultBeamwidth;
+////				azimuth = beamwidth * i;
+////			}
 		}
 		return new Pair<Double, Double>(azimuth, beamwidth);
 	}
@@ -346,6 +352,7 @@ public class NetworkRenderer extends AbstractRenderer {
 		networkRendererStyle.setMaxSitesLabel(newStyle.getLabeling());
 		networkRendererStyle.setMaxSitesLite(newStyle.getSmallestSymb());
 		networkRendererStyle.setMaxSymbolSize(newStyle.getMaximumSymbolSize());
+		networkRendererStyle.setDefaultBeamwidth(newStyle.getDefaultBeamwidth());
 	}
 
 	@Override

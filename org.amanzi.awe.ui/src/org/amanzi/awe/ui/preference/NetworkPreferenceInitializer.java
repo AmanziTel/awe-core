@@ -8,10 +8,13 @@ import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
 
 /**
- * @author pavleg
- *
+ * Network preference initializer
+ * 
+ * @author Bondoronok_P	 
  */
 public class NetworkPreferenceInitializer extends AbstractPreferenceInitializer {
+	
+	private static final int DEF_BEAMWIDTH = 40;	
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer#initializeDefaultPreferences()
@@ -19,8 +22,8 @@ public class NetworkPreferenceInitializer extends AbstractPreferenceInitializer 
 	@Override
 	public void initializeDefaultPreferences() {
 		IPreferenceStore store = AweUiPlugin.getDefault().getPreferenceStore();
-		store.setDefault(NetworkPreferences.BEAMWIDTH, 40);
-		store.setDefault(NetworkPreferences.SITE_SECTOR_NAME, Boolean.FALSE);
+		store.setDefault(NetworkPreferences.BEAMWIDTH, DEF_BEAMWIDTH);
+		store.setDefault(NetworkPreferences.SITE_SECTOR_NAME, Boolean.TRUE);		
 	}
 
 }

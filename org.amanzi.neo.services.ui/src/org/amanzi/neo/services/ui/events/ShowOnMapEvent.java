@@ -28,6 +28,9 @@ import org.amanzi.neo.services.ui.enums.EventsType;
  * @since 1.0.0
  */
 public class ShowOnMapEvent extends AbstractEvent {
+	
+	private static final double WITHOUT_ZOOM = 0;
+	
     /**
      * list of loaded models;
      */
@@ -47,6 +50,11 @@ public class ShowOnMapEvent extends AbstractEvent {
      * draw neighbors
      */
     private boolean drawNeighbors = Boolean.TRUE;
+    
+    /**
+     * With zoomIn/ zoomOut commands
+     */
+	private boolean withZoomCommands = Boolean.TRUE;
      
     /**
      *  Initialize Event type
@@ -76,6 +84,18 @@ public class ShowOnMapEvent extends AbstractEvent {
     public ShowOnMapEvent(IRenderableModel renderableModel, double zoom, boolean drawNeighbors) {    	
     	this(renderableModel, zoom);
     	this.drawNeighbors = drawNeighbors;
+	}
+    
+    /**
+     * Show on map event for star tool analyzer without zooming
+     * 
+     * @param renderableModel
+     * @param drawNeighbors
+     */
+    public ShowOnMapEvent(IRenderableModel renderableModel, boolean drawNeighbors) {    	
+    	this(renderableModel, WITHOUT_ZOOM);
+    	this.drawNeighbors = drawNeighbors;
+    	this.withZoomCommands = Boolean.FALSE;
 	}
 
     /**
@@ -157,7 +177,18 @@ public class ShowOnMapEvent extends AbstractEvent {
 	 */
 	public boolean isDrawNeighbors() {
 		return drawNeighbors;
+	}
+
+	/**
+	 * Use zoomIn/ zoomOut commands
+	 * 
+	 * default: true
+	 * @return true or false
+	 */
+	public boolean isWithZoomCommands() {
+		return withZoomCommands;
 	}	
+	
 	
 	
 }

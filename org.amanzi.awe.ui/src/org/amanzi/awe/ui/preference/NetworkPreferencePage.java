@@ -16,6 +16,8 @@ public class NetworkPreferencePage extends AbstractPreferencePage {
 
 	private static final String DEFAULT_BEAMWIDTH = "Default beamwidth :";
 	private static final String SITE_SECTOR_NAME = "Use the name of the sector for the name of the site";
+	private static final int MIN_BEAMWIDTH = 10;
+	private static final int MAX_BEAMWIDTH = 360;
 
 	private IntegerFieldEditor integerFieldEditor;
 	private BooleanFieldEditor booleanFieldEditor;
@@ -38,6 +40,7 @@ public class NetworkPreferencePage extends AbstractPreferencePage {
 		Composite parent = getFieldEditorParent();
 		integerFieldEditor = new IntegerFieldEditor(
 				NetworkPreferences.BEAMWIDTH, DEFAULT_BEAMWIDTH, parent);
+		integerFieldEditor.setValidRange(MIN_BEAMWIDTH, MAX_BEAMWIDTH);
 		addField(integerFieldEditor);
 
 		booleanFieldEditor = new BooleanFieldEditor(

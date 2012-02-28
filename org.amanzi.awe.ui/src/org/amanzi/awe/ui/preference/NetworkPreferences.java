@@ -4,7 +4,7 @@
 package org.amanzi.awe.ui.preference;
 
 /**
- * 
+ * Awe Network preferences
  * 
  * @author Bondoronok_P
  */

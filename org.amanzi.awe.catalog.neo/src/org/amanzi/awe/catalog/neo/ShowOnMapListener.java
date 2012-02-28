@@ -51,17 +51,9 @@ public class ShowOnMapListener implements IEventsListener<ShowOnMapEvent> {
 		try {
 			IService curService = NeoCatalogPlugin.getDefault().getMapService();
 			IMap map = ApplicationGIS.getActiveMap();
-			boolean haveSelectedElements = !data.getSelectedElements()
-					.isEmpty();
 			List<ILayer> layerList = new ArrayList<ILayer>();
 			List<IGeoResource> listGeoRes = new ArrayList<IGeoResource>();
-			List<AbstractNavCommand> commands = new ArrayList<AbstractNavCommand>();
 			IRenderableModel selectedModel = null;
- 
-			if (data.isDrawNeighbors()) {
-				commands.add(new ZoomExtentCommand());
-			}
-			
 			for (IRenderableModel gis : data.getRenderableModelList()) {
 				if (!checkForExistCoordinateElement(gis)) {
 					LOGGER.info("Cann't add layer to map because model: "
@@ -86,7 +78,8 @@ public class ShowOnMapListener implements IEventsListener<ShowOnMapEvent> {
 					if (renderableModel != null) {
 						renderableModel.setSelectedDataElements(data
 								.getSelectedElements());
-						renderableModel.setDrawNeighbors(data.isDrawNeighbors());
+						renderableModel
+								.setDrawNeighbors(data.isDrawNeighbors());
 						selectedModel = renderableModel;
 					}
 				}
@@ -94,13 +87,7 @@ public class ShowOnMapListener implements IEventsListener<ShowOnMapEvent> {
 			layerList
 					.addAll(ApplicationGIS.addLayersToMap(map, listGeoRes, -1));
 
-			if (haveSelectedElements && data.isDrawNeighbors()) {
-				commands.add(new SetViewportCenterCommand(selectedModel
-						.getCoordinate(data.getSelectedElements().get(0))));
-				commands.add(new ZoomCommand(data.getZoom()));
-			}
-
-			sendCommandsToLayer(layerList, commands);
+			executeCommands(layerList, selectedModel, data);
 		} catch (Exception e) {
 			throw (RuntimeException) new RuntimeException().initCause(e);
 		}
@@ -109,7 +96,7 @@ public class ShowOnMapListener implements IEventsListener<ShowOnMapEvent> {
 	@Override
 	public Object getSource() {
 		return null;
-	}
+	}	
 
 	/**
 	 * Get geo resource for model
@@ -154,26 +141,6 @@ public class ShowOnMapListener implements IEventsListener<ShowOnMapEvent> {
 	}
 
 	/**
-	 * Executes a commands synchronously
-	 * 
-	 * @param layers
-	 *            layers list
-	 * @param commands
-	 *            commands list
-	 */
-	private void sendCommandsToLayer(final List<ILayer> layers,
-			List<AbstractNavCommand> commands) {
-		if (layers.isEmpty()) {
-			return;
-		}
-		CompositeCommand compositeCommand = new CompositeCommand(commands);
-		for (ILayer layer : layers) {
-			layer.getMap().executeSyncWithoutUndo(compositeCommand);
-		}
-
-	}
-
-	/**
 	 * Returns Pair, that contains necessary layer and model
 	 * 
 	 * @param map
@@ -206,5 +173,50 @@ public class ShowOnMapListener implements IEventsListener<ShowOnMapEvent> {
 			e.printStackTrace();
 			return resultPair;
 		}
+	}
+
+	/**
+	 * Create commands and synchronously execute them
+	 * 
+	 * @param layerList
+	 *            layers list
+	 * @param selectedModel
+	 *            selected model
+	 * @param data
+	 *            showOnMapEvent
+	 */
+	private void executeCommands(List<ILayer> layerList,
+			IRenderableModel selectedModel, ShowOnMapEvent data) {
+		boolean haveSelectedElements = !data.getSelectedElements().isEmpty();
+		List<AbstractNavCommand> commands = new ArrayList<AbstractNavCommand>();
+		if (haveSelectedElements && data.isDrawNeighbors()) {
+			if (data.isWithZoomCommands()) {
+				commands.add(new ZoomExtentCommand());
+				commands.add(new ZoomCommand(data.getZoom()));
+			}
+			commands.add(new SetViewportCenterCommand(selectedModel
+					.getCoordinate(data.getSelectedElements().get(0))));
+		}
+		sendCommandsToLayer(layerList, commands);
+	}
+
+	/**
+	 * Executes a commands synchronously
+	 * 
+	 * @param layers
+	 *            layers list
+	 * @param commands
+	 *            commands list
+	 */
+	private void sendCommandsToLayer(final List<ILayer> layers,
+			List<AbstractNavCommand> commands) {
+		if (layers.isEmpty()) {
+			return;
+		}
+		CompositeCommand compositeCommand = new CompositeCommand(commands);
+		for (ILayer layer : layers) {
+			layer.getMap().executeSyncWithoutUndo(compositeCommand);
+		}
+
 	}
 }

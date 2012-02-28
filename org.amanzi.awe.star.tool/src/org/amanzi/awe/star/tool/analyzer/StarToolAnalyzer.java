@@ -59,11 +59,6 @@ public class StarToolAnalyzer {
 	private static final int CORRECTION = 10;
 
 	/**
-	 * Show On Map zoom constant
-	 */
-	private static final double ZOOM = 20d;
-
-	/**
 	 * Star Tool context
 	 */
 	private IToolContext context;
@@ -259,7 +254,7 @@ public class StarToolAnalyzer {
 				IDataModel resolvedElement = resource.resolve(IDataModel.class,
 						null);
 				initializeCoordinateReferenceSystem(resource);
-				((INetworkModel) resolvedElement).clearSelectedElements();
+				((INetworkModel) resolvedElement).clearSelectedElements();				
 				INetworkModel currentModel = ((INetworkModel) resolvedElement)
 						.getStarToolSelectedModel();
 				result = currentModel;
@@ -326,6 +321,6 @@ public class StarToolAnalyzer {
 		eventManager.fireEvent(new StarToolAnalyzerEvent(analyzedModel,
 				analyzedElements));
 		eventManager
-				.fireEvent(new ShowOnMapEvent(analyzedModel, ZOOM, !dragged));
+				.fireEvent(new ShowOnMapEvent(analyzedModel, !dragged));
 	}
 }
