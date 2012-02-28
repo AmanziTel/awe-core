@@ -26,6 +26,7 @@ import org.amanzi.neo.model.distribution.IDistributionalModel;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.NodeTypeManager;
+import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
@@ -220,6 +221,8 @@ public class NetworkTreeView extends ViewPart {
         createSubmenuCreateSelectionList((IStructuredSelection)viewer.getSelection(), manager);
 
         createSubmenuCopyOfElement((IStructuredSelection)viewer.getSelection(), manager);
+
+        createSubmenuCreateNewElement((IStructuredSelection)viewer.getSelection(), manager);
     }
 
     /**
@@ -850,7 +853,153 @@ public class NetworkTreeView extends ViewPart {
 
             }
         }
+    }
 
+    /**
+     * Added menu for creating of new element
+     * 
+     * @param selection selected elements
+     * @param manager menu manager
+     */
+    @SuppressWarnings("rawtypes")
+    private void createSubmenuCreateNewElement(IStructuredSelection selection, IMenuManager manager) {
+
+        // menu name
+        String text = "Create new element";
+
+        // boolean values for node types
+        boolean isNetwork = false;
+        boolean isCity = false;
+        boolean isMsc = false;
+        boolean isBsc = false;
+        boolean isSite = false;
+
+        // parent element for new element
+        IDataElement element = null;
+
+        if (selection.size() == 1) {
+
+            // selected element
+            Iterator it = selection.iterator();
+            Object elementObject = it.next();
+
+            // Sub menu
+            MenuManager subMenu = new MenuManager(text);
+
+            // if selected element - network
+            if (elementObject instanceof INetworkModel) {
+                isNetwork = true;
+            } else {
+                element = (IDataElement)elementObject;
+                INodeType typeNode = NodeTypeManager.getType(element);
+                String type = typeNode.getId();
+
+                // if selected element - city
+                if (type.equals(NetworkElementNodeType.CITY.getId())) {
+                    isCity = true;
+                }
+
+                // if selected element - msc
+                else if (type.equals(NetworkElementNodeType.MSC.getId())) {
+                    isMsc = true;
+                }
+
+                // if selected element - bsc
+                else if (type.equals(NetworkElementNodeType.BSC.getId())) {
+                    isBsc = true;
+                }
+
+                // if selected element - site
+                else if (type.equals(NetworkElementNodeType.SITE.getId())) {
+                    isSite = true;
+                }
+            }
+
+            if (isNetwork || isMsc || isCity || isBsc) {
+                // site
+                CreateNewElementAction createNewElementActionSite = new CreateNewElementAction(
+                        (IStructuredSelection)viewer.getSelection(), NetworkElementNodeType.SITE.getId(), element);
+                subMenu.add(createNewElementActionSite);
+
+                if (isNetwork || isMsc || isCity) {
+                    // bsc
+                    CreateNewElementAction createNewElementActionBsc = new CreateNewElementAction(
+                            (IStructuredSelection)viewer.getSelection(), NetworkElementNodeType.BSC.getId(), element);
+                    subMenu.add(createNewElementActionBsc);
+
+                    if (isNetwork || isCity) {
+                        // msc
+                        CreateNewElementAction createNewElementActionMsc = new CreateNewElementAction(
+                                (IStructuredSelection)viewer.getSelection(), NetworkElementNodeType.MSC.getId(), element);
+                        subMenu.add(createNewElementActionMsc);
+
+                        if (isNetwork) {
+                            // city
+                            CreateNewElementAction createNewElementActionCity = new CreateNewElementAction(
+                                    (IStructuredSelection)viewer.getSelection(), NetworkElementNodeType.CITY.getId(), element);
+                            subMenu.add(createNewElementActionCity);
+                        }
+                    }
+                }
+            } else if (isSite) {
+                // sector
+                CreateNewElementAction createNewElementActionSector = new CreateNewElementAction(
+                        (IStructuredSelection)viewer.getSelection(), NetworkElementNodeType.SECTOR.getId(), element);
+                subMenu.add(createNewElementActionSector);
+            }
+
+            // add submenu to menu
+            manager.add(subMenu);
+        }
+    }
+
+    /**
+     * TODO Purpose of NetworkTreeView
+     * <p>
+     * Action for creating of new element
+     * </p>
+     * 
+     * @author ladornaya_a
+     * @since 1.0.0
+     */
+    private class CreateNewElementAction extends Action {
+
+        // submenu name
+        private final String text;
+
+        // selected element
+        private IDataElement element;
+
+        /**
+         * Constructor
+         * 
+         * @param selection - selection
+         */
+        public CreateNewElementAction(IStructuredSelection selection, String type, IDataElement element) {
+            text = type;
+            this.element = element;
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return true;
+        }
+
+        @Override
+        public String getText() {
+            return text;
+        }
+
+        @Override
+        public void run() {
+            Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+            CreateNewElementDialog cdialog = new CreateNewElementDialog(shell, element, "Create new element", SWT.OK);
+            if (cdialog.open() == SWT.OK) {
+
+            } else {
+
+            }
+        }
     }
 
     /**
