@@ -6,7 +6,7 @@
          point="net.refractions.udig.project.ui.tool">
       <modalTool
             categoryId="org.amanzi.awe.tool.star.analyzer"
-            class="org.amanzi.awe.tool.star.StarTool"
+            class="org.amanzi.awe.star.tool.StarTool"
             icon="icons/tool/selection_mode.gif"
             id="org.amanzi.awe.tool.star.analyzer"
             name="Star Tool Analyser"
