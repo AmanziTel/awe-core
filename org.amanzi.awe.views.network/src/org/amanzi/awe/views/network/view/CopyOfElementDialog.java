@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.INeoConstants;
+import org.amanzi.neo.services.NetworkService;
 import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.enums.INodeType;
@@ -152,7 +153,9 @@ public class CopyOfElementDialog extends AbstractDialog<Integer> {
         // add other properties
         for (String property : element.keySet()) {
             if (!properties.contains(property)) {
-                properties.add(property);
+                if (!property.equals(NetworkService.SECTOR_COUNT) && !property.equals(AbstractService.TYPE)) {
+                    properties.add(property);
+                }
             }
         }
     }
@@ -255,8 +258,16 @@ public class CopyOfElementDialog extends AbstractDialog<Integer> {
         // parameters
         Map<String, Object> params = new HashMap<String, Object>();
         for (RowValues r : elements) {
-            params.put(r.getProperty(), r.getValue());
+            if ((r.getProperty().equals(INeoConstants.PROPERTY_LAT_NAME) || r.getProperty().equals(INeoConstants.PROPERTY_LON_NAME))
+                    && isDouble(r.getValue().toString())) {
+                params.put(r.getProperty(), Double.parseDouble(r.getValue().toString()));
+            } else {
+                params.put(r.getProperty(), r.getValue());
+            }
         }
+
+        // type
+        params.put(AbstractService.TYPE, typeNode.getId());
 
         // validation
         if (params.get(AbstractService.NAME).toString().isEmpty()) {
@@ -461,7 +472,7 @@ public class CopyOfElementDialog extends AbstractDialog<Integer> {
             return value;
         }
 
-        public void setValue(String value) {
+        public void setValue(Object value) {
             this.value = value;
         }
     }
@@ -502,7 +513,7 @@ public class CopyOfElementDialog extends AbstractDialog<Integer> {
 
         @Override
         protected void setValue(Object element, Object value) {
-            ((RowValues)element).setValue(String.valueOf(value));
+            ((RowValues)element).setValue(value);
             viewer.refresh();
         }
     }

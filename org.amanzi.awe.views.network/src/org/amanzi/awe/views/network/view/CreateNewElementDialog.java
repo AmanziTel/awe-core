@@ -138,6 +138,7 @@ public class CreateNewElementDialog extends AbstractDialog<Integer> {
         composite.setLayout(new GridLayout(1, true));
 
         GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
+        data.widthHint = 150;
         data.heightHint = 300;
         composite.setLayoutData(data);
 
@@ -228,7 +229,12 @@ public class CreateNewElementDialog extends AbstractDialog<Integer> {
         Map<String, Object> params = new HashMap<String, Object>();
         params.put(AbstractService.TYPE, type);
         for (RowValues r : elements) {
-            params.put(r.getProperty(), r.getValue());
+            if ((r.getProperty().equals(INeoConstants.PROPERTY_LAT_NAME) || r.getProperty().equals(INeoConstants.PROPERTY_LON_NAME))
+                    && isDouble(r.getValue().toString())) {
+                params.put(r.getProperty(), Double.parseDouble(r.getValue().toString()));
+            } else {
+                params.put(r.getProperty(), r.getValue());
+            }
         }
 
         // validation
@@ -409,7 +415,7 @@ public class CreateNewElementDialog extends AbstractDialog<Integer> {
             return value;
         }
 
-        public void setValue(String value) {
+        public void setValue(Object value) {
             this.value = value;
         }
     }
@@ -450,7 +456,7 @@ public class CreateNewElementDialog extends AbstractDialog<Integer> {
 
         @Override
         protected void setValue(Object element, Object value) {
-            ((RowValues)element).setValue(String.valueOf(value));
+            ((RowValues)element).setValue(value);
             viewer.refresh();
         }
     }
