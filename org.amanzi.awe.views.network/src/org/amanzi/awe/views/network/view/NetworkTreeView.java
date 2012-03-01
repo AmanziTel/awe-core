@@ -23,6 +23,7 @@ import org.amanzi.awe.awe.views.view.provider.NetworkTreeContentProvider;
 import org.amanzi.neo.model.distribution.IDistributionBar;
 import org.amanzi.neo.model.distribution.IDistributionModel;
 import org.amanzi.neo.model.distribution.IDistributionalModel;
+import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.NodeTypeManager;
@@ -32,11 +33,13 @@ import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.ISelectionModel;
 import org.amanzi.neo.services.model.impl.DataElement;
+import org.amanzi.neo.services.model.impl.NetworkModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
 import org.amanzi.neo.services.ui.enums.EventsType;
 import org.amanzi.neo.services.ui.events.AnalyseEvent;
 import org.amanzi.neo.services.ui.events.EventManager;
 import org.amanzi.neo.services.ui.events.IEventsListener;
+import org.amanzi.neo.services.ui.events.ShowOnMapEvent;
 import org.amanzi.neo.services.ui.events.UpdateDataEvent;
 import org.amanzi.neo.services.ui.providers.CommonViewLabelProvider;
 import org.eclipse.jface.action.Action;
@@ -65,6 +68,8 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
+
+import com.google.common.collect.Lists;
 
 /**
  * This View contains a tree of objects found in the database. The tree is built based on the
@@ -223,6 +228,8 @@ public class NetworkTreeView extends ViewPart {
         createSubmenuCopyOfElement((IStructuredSelection)viewer.getSelection(), manager);
 
         createSubmenuCreateNewElement((IStructuredSelection)viewer.getSelection(), manager);
+
+        createSubmenuShowOnMap((IStructuredSelection)viewer.getSelection(), manager);
     }
 
     /**
@@ -1013,6 +1020,95 @@ public class NetworkTreeView extends ViewPart {
 
             } else {
 
+            }
+        }
+    }
+
+    /**
+     * create menu - Show on map
+     * 
+     * @param selection selected elements
+     * @param manager menu manager
+     */
+    private void createSubmenuShowOnMap(IStructuredSelection selection, IMenuManager manager) {
+        if (selection.size() == 1) {
+            ShowOnMapAction showOnMap = new ShowOnMapAction((IStructuredSelection)viewer.getSelection());
+            manager.add(showOnMap);
+        }
+    }
+
+    /**
+     * TODO Purpose of NetworkTreeView
+     * <p>
+     * </p>
+     * 
+     * @author ladornaya_a
+     * @since 1.0.0
+     */
+    private class ShowOnMapAction extends Action {
+
+        // zoom
+        private static final double ZOOM = 0d;
+
+        // menu name
+        private String text = "Show on map";
+
+        // selected element
+        private IStructuredSelection selection;
+
+        /**
+         * Constructor
+         * 
+         * @param selection - selection
+         */
+        public ShowOnMapAction(IStructuredSelection selection) {
+            this.selection = selection;
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return true;
+        }
+
+        @Override
+        public String getText() {
+            return text;
+        }
+
+        @SuppressWarnings("rawtypes")
+        @Override
+        public void run() {
+            Iterator it = selection.iterator();
+            Object elementObject = it.next();
+
+            NetworkModel networkModel;
+
+            // if selected element - network
+            if (elementObject instanceof INetworkModel) {
+                networkModel = (NetworkModel)elementObject;
+                networkModel.clearSelectedElements();
+                networkModel.setSelectedDataElements(Lists.newArrayList(networkModel
+                        .getAllElementsByType(NetworkElementNodeType.SITE)));
+                eventManager.fireEvent(new ShowOnMapEvent(networkModel, true));
+            } else {
+                IDataElement element = (IDataElement)elementObject;
+
+                // network
+                networkModel = (NetworkModel)element.get(INeoConstants.NETWORK_MODEL_NAME);
+
+                // if selected element - site
+                if (element.get(AbstractService.TYPE).equals(NetworkElementNodeType.SITE.getId())) {
+                    networkModel.clearSelectedElements();
+                    networkModel.setSelectedDataElementToList(element);
+                    eventManager.fireEvent(new ShowOnMapEvent(networkModel, true));
+                }
+
+                // if selected element - sector
+                if (element.get(AbstractService.TYPE).equals(NetworkElementNodeType.SECTOR.getId())) {
+                    networkModel.clearSelectedElements();
+                    networkModel.setSelectedDataElementToList(element);
+                    eventManager.fireEvent(new ShowOnMapEvent(networkModel, true));
+                }
             }
         }
     }

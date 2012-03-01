@@ -282,7 +282,7 @@ public class CreateNewElementDialog extends AbstractDialog<Integer> {
     }
 
     /**
-     * TODO Purpose of CopyOfElementDialog
+     * TODO Purpose of CreateNewElementDialog
      * <p>
      * Content provider for property table of selected element
      * </p>
@@ -320,7 +320,7 @@ public class CreateNewElementDialog extends AbstractDialog<Integer> {
     }
 
     /**
-     * TODO Purpose of CopyOfElementDialog
+     * TODO Purpose of CreateNewElementDialog
      * <p>
      * Label provider for property table
      * </p>
@@ -388,7 +388,7 @@ public class CreateNewElementDialog extends AbstractDialog<Integer> {
     }
 
     /**
-     * TODO Purpose of CopyOfElementDialog
+     * TODO Purpose of CreateNewElementDialog
      * <p>
      * Save row values
      * </p>
@@ -421,7 +421,7 @@ public class CreateNewElementDialog extends AbstractDialog<Integer> {
     }
 
     /**
-     * TODO Purpose of CopyOfElementDialog
+     * TODO Purpose of CreateNewElementDialog
      * <p>
      * Class for editing value column
      * </p>
