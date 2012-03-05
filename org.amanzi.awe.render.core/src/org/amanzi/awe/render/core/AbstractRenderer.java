@@ -33,7 +33,6 @@ import org.amanzi.neo.model.distribution.impl.DistributionModel;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataElement;
-import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.IRenderableModel;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -238,10 +237,8 @@ public abstract class AbstractRenderer extends RendererImpl {
 		for (IDataElement currentElement : model.getSelectedElements()) {
 			Point point = getPoint(model, currentElement, bounds_transformed);
 			if (point != null) {
-				IDataElement site = ((INetworkModel) model)
-						.getParentElement(currentElement);
-				renderSelectedElement(destination, point, site, currentElement,
-						model, bounds_transformed);
+				renderSelectedElement(destination, point, model,
+						currentElement, bounds_transformed);
 			} else {
 				continue;
 			}
@@ -253,16 +250,14 @@ public abstract class AbstractRenderer extends RendererImpl {
 	 * 
 	 * @param destination
 	 * @param point
-	 * @param site
 	 * @param sector
 	 * @param model
 	 * @param selectedBounds
 	 * @throws TransformException
 	 */
 	protected abstract void renderSelectedElement(Graphics2D destination,
-			Point point, IDataElement site, IDataElement sector,
-			IRenderableModel model, Envelope selectedBounds)
-			throws TransformException;
+			Point point, IRenderableModel model, IDataElement sector,
+			Envelope selectedBounds) throws TransformException;
 
 	/**
 	 * Get point

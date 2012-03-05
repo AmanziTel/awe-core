@@ -15,6 +15,7 @@ package org.amanzi.awe.views.neighbours.views;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
 
 import org.amanzi.neo.services.NetworkService;
 import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
@@ -33,6 +34,7 @@ import org.amanzi.neo.services.ui.events.EventManager;
 import org.amanzi.neo.services.ui.events.IEventsListener;
 import org.amanzi.neo.services.ui.events.ShowOnMapEvent;
 import org.amanzi.neo.services.ui.events.UpdateDataEvent;
+import org.apache.commons.collections.iterators.ListIteratorWrapper;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
@@ -48,6 +50,10 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.KeyListener;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseWheelListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -60,6 +66,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Table;
@@ -179,7 +186,6 @@ public class NodeToNodeRelationsView extends ViewPart {
 		labelProvider.createTableColumn(new String[] {});
 		provider = new TableContentProvider();
 		tableViewer.setContentProvider(provider);
-
 		MenuManager menuManager = new MenuManager("#PopupMenu");
 		menuManager.setRemoveAllWhenShown(true);
 		menuManager.addMenuListener(new IMenuListener() {
@@ -196,22 +202,22 @@ public class NodeToNodeRelationsView extends ViewPart {
 	protected void fillContextMenu(IMenuManager manager) {
 		ShowOnMapAction showOnMap8X = new ShowOnMapAction(
 				(IStructuredSelection) tableViewer.getSelection(),
-				SHOW_ON_MAP_8_X, ZOOM_8X);		
+				SHOW_ON_MAP_8_X, ZOOM_8X);
 		ShowOnMapAction showOnMap4X = new ShowOnMapAction(
 				(IStructuredSelection) tableViewer.getSelection(),
 				SHOW_ON_MAP_4_X, ZOOM_4X);
 		ShowOnMapAction showOnMap2X = new ShowOnMapAction(
 				(IStructuredSelection) tableViewer.getSelection(),
-				SHOW_ON_MAP_2_X, ZOOM_2X);		
+				SHOW_ON_MAP_2_X, ZOOM_2X);
 		if (showOnMap8X.isEnabled()) {
 			manager.add(showOnMap8X);
-		}		
+		}
 		if (showOnMap4X.isEnabled()) {
 			manager.add(showOnMap4X);
 		}
 		if (showOnMap2X.isEnabled()) {
 			manager.add(showOnMap2X);
-		}		
+		}
 	}
 
 	private class ShowOnMapAction extends Action {
@@ -229,7 +235,7 @@ public class NodeToNodeRelationsView extends ViewPart {
 				String tableItem, double zoom) {
 			this.menuElementTitle = tableItem;
 			this.zoom = zoom;
-			if (selection.getFirstElement() instanceof RowWrapper) {				
+			if (selection.getFirstElement() instanceof RowWrapper) {
 				enabled = true;
 			}
 			if (enabled) {
@@ -424,35 +430,149 @@ public class NodeToNodeRelationsView extends ViewPart {
 			if (newInput == null) {
 				return;
 			}
-			INodeToNodeRelationsModel n2nModel = getSelectedN2NModel();
-			String[] properties = n2nModel.getAllPropertyNames(n2nModel
-					.getType());
+			final VirtualTable virtualTable = new VirtualTable();
+			elements = virtualTable.getElements();
+		}
+	}
+
+	/**
+	 * Virtual Table implementation
+	 * 
+	 * @author Bondoronok_p
+	 */
+	private class VirtualTable {
+
+		private static final int NUMBER_OF_LOADABLE_ITEMS = 8;
+
+		private ListIterator<IDataElement> sectorsIterator;
+		private List<RowWrapper> elements;
+		private INodeToNodeRelationsModel n2nModel;
+		private String[] properties;
+
+		/**
+		 * Initialize elements list
+		 */
+		@SuppressWarnings("unchecked")
+		public VirtualTable() {
+			elements = new ArrayList<RowWrapper>();
+			n2nModel = getSelectedN2NModel();
+			properties = n2nModel.getAllPropertyNames(n2nModel.getType());
 			((TableLabelProvider) tableViewer.getLabelProvider())
 					.createTableColumn(properties);
-			for (IDataElement source : n2nModel
-					.getAllElementsByType(NetworkElementNodeType.SECTOR)) {
-				Iterable<IDataElement> relations = n2nModel
-						.getN2NRelatedElements(source);
-				for (IDataElement element : relations) {
-					// TODO: LN: do not use Relations!!!
-					Relationship relation = ((DataElement) element)
-							.getRelationship();
-					String startElementPropetyName = (String) relation
-							.getStartNode().getProperty(
-									NetworkService.SOURCE_NAME, null);
-					String endElementPropertyName = (String) relation
-							.getEndNode().getProperty(
-									NetworkService.SOURCE_NAME, null);
-					RowWrapper row = new RowWrapper(startElementPropetyName,
-							endElementPropertyName);
-					for (int q = 0; q < properties.length; q++) {
-						row.addPropValue(relation.getProperty(properties[q],
-								null));
+			sectorsIterator = new ListIteratorWrapper(n2nModel
+					.getAllElementsByType(NetworkElementNodeType.SECTOR)
+					.iterator());
+			loadElements(Boolean.TRUE);
+			scrollingListeners();
+		}
+
+		/**
+		 * Get the full list of elements
+		 * 
+		 * @return ArrayList
+		 */
+		public List<RowWrapper> getElements() {
+			return elements;
+		}
+
+		/**
+		 * Listeners
+		 */
+		private void scrollingListeners() {
+			Control tableViewerControl = tableViewer.getControl();
+
+			tableViewerControl.addMouseWheelListener(new MouseWheelListener() {
+				@Override
+				public void mouseScrolled(MouseEvent e) {
+					if (e.count < 0) {
+						loadElements(Boolean.TRUE);
+					} else {
+						loadElements(Boolean.FALSE);
 					}
-					row.setServingElement(source);
-					elements.add(row);
+					tableViewer.refresh();
+				}
+			});
+
+			tableViewerControl.addKeyListener(new KeyListener() {
+
+				@Override
+				public void keyReleased(KeyEvent e) {
+				}
+
+				@Override
+				public void keyPressed(KeyEvent e) {
+					if (e.keyCode == (SWT.ARROW_DOWN)
+							|| e.keyCode == (SWT.PAGE_DOWN)) {
+						loadElements(Boolean.TRUE);
+						tableViewer.refresh();
+					} else if (e.keyCode == (SWT.ARROW_UP)
+							|| e.keyCode == (SWT.PAGE_UP)) {
+						loadElements(Boolean.FALSE);
+						tableViewer.refresh();
+					} else if (e.keyCode == (SWT.HOME)) {
+						// get first n elements
+					} else if (e.keyCode == SWT.END) {
+						// get last n elements
+					}
+				}
+			});
+		}
+
+		/**
+		 * Loading node to node related elements to elements list
+		 */
+		private void loadElements(boolean scrollDown) {
+			List<RowWrapper> loadedElements = new ArrayList<RowWrapper>(0);
+			for (int i = 0; i < NUMBER_OF_LOADABLE_ITEMS; i++) {
+				IDataElement source = getSourceElement(scrollDown);
+				if (source != null) {
+					Iterable<IDataElement> relations = n2nModel
+							.getN2NRelatedElements(source);
+					for (IDataElement element : relations) {
+						// TODO: LN: do not use Relations!!!
+						Relationship relation = ((DataElement) element)
+								.getRelationship();
+						String startElementPropetyName = (String) relation
+								.getStartNode().getProperty(
+										NetworkService.SOURCE_NAME, null);
+						String endElementPropertyName = (String) relation
+								.getEndNode().getProperty(
+										NetworkService.SOURCE_NAME, null);
+						RowWrapper row = new RowWrapper(
+								startElementPropetyName, endElementPropertyName);
+						for (int q = 0; q < properties.length; q++) {
+							row.addPropValue(relation.getProperty(
+									properties[q], null));
+						}
+						row.setServingElement(source);
+						loadedElements.add(row);
+					}
 				}
 			}
+
+			if (!loadedElements.isEmpty()) {
+				elements.clear();
+				elements.addAll(loadedElements);
+			}
+		}
+
+		/**
+		 * Get next or previous element from sectorsIterator
+		 * 
+		 * @param scrollDown
+		 *            true or false
+		 * @return IDataElement or null
+		 */
+		private IDataElement getSourceElement(boolean scrollDown) {
+			IDataElement source = null;
+			if (scrollDown) {
+				source = sectorsIterator.hasNext() ? sectorsIterator.next()
+						: source;
+			} else {
+				source = sectorsIterator.hasPrevious() ? sectorsIterator
+						.previous() : source;
+			}
+			return source;
 		}
 	}
 
@@ -772,5 +892,4 @@ public class NodeToNodeRelationsView extends ViewPart {
 	@Override
 	public void setFocus() {
 	}
-
 }

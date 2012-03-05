@@ -102,8 +102,9 @@ public class DriveRenderer extends AbstractRenderer {
 
 	@Override
 	protected void renderSelectedElement(Graphics2D destination, Point point,
-			IDataElement site, IDataElement sector, IRenderableModel model,
-			Envelope selectedBounds) throws TransformException {
+			IRenderableModel model, IDataElement sector, Envelope selectedBounds)
+			throws TransformException {
+		// TODO Auto-generated method stub
 		
 	}
 
