@@ -69,6 +69,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
@@ -443,6 +444,7 @@ public class NodeToNodeRelationsView extends ViewPart {
 	private class VirtualTable {
 
 		private static final int NUMBER_OF_LOADABLE_ITEMS = 8;
+		private static final int FIRST_TABLE_ITEM = 0;
 
 		private ListIterator<IDataElement> sectorsIterator;
 		private List<RowWrapper> elements;
@@ -481,15 +483,25 @@ public class NodeToNodeRelationsView extends ViewPart {
 		private void scrollingListeners() {
 			Control tableViewerControl = tableViewer.getControl();
 
+			ScrollBar scrollBar = tableViewer.getTable().getVerticalBar();
+			scrollBar.addSelectionListener(new SelectionListener() {
+
+				@Override
+				public void widgetDefaultSelected(SelectionEvent e) {
+				}
+
+				@Override
+				public void widgetSelected(SelectionEvent e) {
+					if (e.detail == SWT.DRAG) {
+						scrollBarSelection();
+					}
+				}
+			});
+
 			tableViewerControl.addMouseWheelListener(new MouseWheelListener() {
 				@Override
 				public void mouseScrolled(MouseEvent e) {
-					if (e.count < 0) {
-						loadElements(Boolean.TRUE);
-					} else {
-						loadElements(Boolean.FALSE);
-					}
-					tableViewer.refresh();
+					scrollBarSelection();
 				}
 			});
 
@@ -501,21 +513,47 @@ public class NodeToNodeRelationsView extends ViewPart {
 
 				@Override
 				public void keyPressed(KeyEvent e) {
+					Table table = tableViewer.getTable();
 					if (e.keyCode == (SWT.ARROW_DOWN)
 							|| e.keyCode == (SWT.PAGE_DOWN)) {
-						loadElements(Boolean.TRUE);
-						tableViewer.refresh();
+						if (table.getSelectionIndex() + 1 == table
+								.getItemCount()) {
+							loadElements(Boolean.TRUE);
+						}
 					} else if (e.keyCode == (SWT.ARROW_UP)
 							|| e.keyCode == (SWT.PAGE_UP)) {
-						loadElements(Boolean.FALSE);
-						tableViewer.refresh();
+						if (table.getSelectionIndex() == FIRST_TABLE_ITEM) {
+							loadElements(Boolean.FALSE);
+						}
 					} else if (e.keyCode == (SWT.HOME)) {
-						// get first n elements
+						while (sectorsIterator.hasPrevious()) {
+							loadElements(Boolean.FALSE);
+						}
 					} else if (e.keyCode == SWT.END) {
-						// get last n elements
+						while (sectorsIterator.hasNext()) {
+							loadElements(Boolean.TRUE);
+						}
 					}
+					tableViewer.refresh();
 				}
 			});
+		}
+
+		/**
+		 * Loading items by the selection of scroll bar
+		 */
+		private void scrollBarSelection() {
+			ScrollBar scrollBar = tableViewer.getTable().getVerticalBar();
+			if ((scrollBar.getSelection() + 5) >= tableViewer.getTable()
+					.getItemCount()) {
+				loadElements(Boolean.TRUE);
+			} else if (scrollBar.getSelection() == FIRST_TABLE_ITEM || scrollBar.getMinimum() == 20) {
+				loadElements(Boolean.FALSE);
+			}
+			tableViewer.refresh();
+			if (elements.size() != 0) {
+				tableViewer.getTable().getVerticalBar().setMinimum(20);
+			}
 		}
 
 		/**
@@ -547,6 +585,8 @@ public class NodeToNodeRelationsView extends ViewPart {
 						row.setServingElement(source);
 						loadedElements.add(row);
 					}
+				} else {
+					break;
 				}
 			}
 
