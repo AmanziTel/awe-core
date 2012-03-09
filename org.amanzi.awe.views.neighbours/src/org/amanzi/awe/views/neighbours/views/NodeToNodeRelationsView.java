@@ -547,13 +547,13 @@ public class NodeToNodeRelationsView extends ViewPart {
 			if ((scrollBar.getSelection() + 5) >= tableViewer.getTable()
 					.getItemCount()) {
 				loadElements(Boolean.TRUE);
-			} else if (scrollBar.getSelection() == FIRST_TABLE_ITEM || scrollBar.getMinimum() == 20) {
+			} else if (scrollBar.getSelection() == FIRST_TABLE_ITEM) {
 				loadElements(Boolean.FALSE);
 			}
 			tableViewer.refresh();
-			if (elements.size() != 0) {
-				tableViewer.getTable().getVerticalBar().setMinimum(20);
-			}
+//			if (elements.size() != 0) {
+//				tableViewer.getTable().getVerticalBar().setMinimum(20);
+//			}
 		}
 
 		/**
