@@ -12,6 +12,8 @@
  */
 package org.amanzi.awe.views.network.view;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -68,8 +70,7 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
-
-import com.google.common.collect.Lists;
+import org.hsqldb.util.CSVWriter;
 
 /**
  * This View contains a tree of objects found in the database. The tree is built based on the
@@ -230,6 +231,8 @@ public class NetworkTreeView extends ViewPart {
         createSubmenuCreateNewElement((IStructuredSelection)viewer.getSelection(), manager);
 
         createSubmenuShowOnMap((IStructuredSelection)viewer.getSelection(), manager);
+
+        createSubmenuExportToCSV((IStructuredSelection)viewer.getSelection(), manager);
     }
 
     /**
@@ -794,6 +797,108 @@ public class NetworkTreeView extends ViewPart {
         }
     }
 
+    @SuppressWarnings("rawtypes")
+    private void createSubmenuExportToCSV(IStructuredSelection selection, IMenuManager manager) {
+        if (selection.size() == 1) {
+            Iterator it = selection.iterator();
+            Object elementObject = it.next();
+            if (elementObject instanceof INetworkModel) {
+                ExportToCSVAction exportToCSVAction = new ExportToCSVAction((IStructuredSelection)viewer.getSelection());
+                manager.add(exportToCSVAction);
+            }
+        }
+    }
+
+    private class ExportToCSVAction extends Action {
+
+        // home property
+        protected static final String USER_HOME = "user.home";
+
+        private boolean enabled;
+        private final String text;
+        private INetworkModel network;
+
+        private List<String> properties;
+
+        /**
+         * Constructor
+         * 
+         * @param selection - selection
+         */
+        public ExportToCSVAction(IStructuredSelection selection) {
+            text = "Export to CSV";
+            enabled = selection.size() == 1 && selection.getFirstElement() instanceof INetworkModel;
+            if (enabled) {
+                network = (INetworkModel)selection.getFirstElement();
+            }
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        @Override
+        public String getText() {
+            return text;
+        }
+
+        @Override
+        public void run() {
+
+            // create csv file
+            File csvFile = createCSVFile();
+
+            // get all sectors
+            Iterable<IDataElement> sectors = network.getAllElementsByType(NetworkElementNodeType.SECTOR);
+
+            /*
+             * fill properties list
+             */
+            properties = new ArrayList<String>();
+
+            for (IDataElement sector : sectors) {
+                Set<String> sectorProperties = sector.keySet();
+                for (String sectorProperty : sectorProperties) {
+                    if (!properties.contains(sectorProperty)) {
+                        properties.add(sectorProperty);
+                    }
+                }
+            }
+
+            try {
+                CSVWriter cw = new CSVWriter(csvFile, " ");
+                
+                //write header
+                cw.writeHeader((String[])properties.toArray());
+                
+            } catch (IOException e) {
+                // TODO Handle IOException
+                throw (RuntimeException) new RuntimeException( ).initCause( e );
+            }
+            
+        }
+
+        /**
+         * Create dir and file
+         * 
+         * @return file
+         */
+        private File createCSVFile() {
+            File dir = new File(System.getProperty(USER_HOME) + File.separatorChar + "csv_files");
+            dir.mkdir();
+            File nemoFile = new File(dir, network.getName() + ".csv");
+            try {
+                nemoFile.createNewFile();
+            } catch (IOException e) {
+                // TODO Handle IOException
+                throw (RuntimeException)new RuntimeException().initCause(e);
+            }
+            return nemoFile;
+        }
+
+    }
+
     /**
      * Create new element and copy properties from selected element to new element
      * 
@@ -1087,9 +1192,7 @@ public class NetworkTreeView extends ViewPart {
             if (elementObject instanceof INetworkModel) {
                 networkModel = (NetworkModel)elementObject;
                 networkModel.clearSelectedElements();
-                networkModel.setSelectedDataElements(Lists.newArrayList(networkModel
-                        .getAllElementsByType(NetworkElementNodeType.SITE)));
-                eventManager.fireEvent(new ShowOnMapEvent(networkModel, true));
+                eventManager.fireEvent(new ShowOnMapEvent(networkModel, ZOOM));
             } else {
                 IDataElement element = (IDataElement)elementObject;
 
