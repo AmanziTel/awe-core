@@ -731,14 +731,36 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
         NetworkElementNodeType type = (NetworkElementNodeType)NodeTypeManager.getType(element.get(AbstractService.TYPE).toString());
         switch (type) {
         case SITE:
-            return new Coordinate((Double)element.get(LONGITUDE), (Double)element.get(LATITUDE));
+            return new Coordinate(getLongitude(element), getLatitude(element));
 
         case SECTOR:
             IDataElement site = getParentElement(element);
-            return new Coordinate((Double)site.get(LONGITUDE), (Double)site.get(LATITUDE));
+            return new Coordinate(getLongitude(site), getLatitude(site));
         default:
             return null;
         }
+    }
+
+    /**
+     * Get longitude for current IDataElement
+     * 
+     * @param element IDataElement
+     * @return longitude
+     */
+    private double getLongitude(IDataElement element) {
+        Object longitude = element.get(LONGITUDE);
+        return longitude != null ? (Double)longitude : 0d;
+    }
+
+    /**
+     * Get latitude for current IDataElement
+     * 
+     * @param element IDataElement
+     * @return latitude
+     */
+    private double getLatitude(IDataElement element) {
+        Object latitude = element.get(LATITUDE);
+        return latitude != null ? (Double)latitude : 0d;
     }
 
     /**
@@ -966,7 +988,7 @@ public class NetworkModel extends RenderableModel implements INetworkModel {
     public INetworkModel getStarToolSelectedModel() throws AWEException {
         INetworkModel resultModel = null;
         String selectedModelName = nwServ.getStarToolSelectedModelName(getRootNode());
-        if (selectedModelName != null) {            
+        if (selectedModelName != null) {
             resultModel = new NetworkModel(getRootNode());
         }
         return resultModel;

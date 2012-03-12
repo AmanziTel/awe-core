@@ -84,10 +84,10 @@ public class NetworkRenderer extends AbstractRenderer {
 		highlightSelectedItem(destination, point);
 		renderElement(destination, point, site, model);
 		if (networkRendererStyle.getScale() == Scale.LARGE) {
-			sectorRendering(destination, point, model, site, sector,
-					model.isDrawNeighbors());
 			if (model.isDrawNeighbors()) {
-				try {
+				sectorRendering(destination, point, model, site, sector,
+						model.isDrawNeighbors());
+				try {					
 					renderSectorNeighbours(destination, point,
 							(INetworkModel) model, sector, selectedBounds);
 				} catch (AWEException e) {
@@ -209,6 +209,7 @@ public class NetworkRenderer extends AbstractRenderer {
 			destination.draw(path);
 			destination.fill(path);
 		}
+
 	}
 
 	/**
@@ -350,7 +351,8 @@ public class NetworkRenderer extends AbstractRenderer {
 		networkRendererStyle.setMaxSitesLabel(newStyle.getLabeling());
 		networkRendererStyle.setMaxSitesLite(newStyle.getSmallestSymb());
 		networkRendererStyle.setMaxSymbolSize(newStyle.getMaximumSymbolSize());
-		networkRendererStyle.setDefaultBeamwidth(newStyle.getDefaultBeamwidth());
+		networkRendererStyle
+				.setDefaultBeamwidth(newStyle.getDefaultBeamwidth());
 	}
 
 	@Override
