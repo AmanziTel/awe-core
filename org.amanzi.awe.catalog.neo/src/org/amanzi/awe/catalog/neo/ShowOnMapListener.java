@@ -63,14 +63,6 @@ public class ShowOnMapListener implements IEventsListener<ShowOnMapEvent> {
 				IGeoResource iGeoResource = getResourceForGis(curService, map,
 						gis);
 				if (iGeoResource != null) {
-					if (iGeoResource.canResolve(IRenderableModel.class)) {
-						IRenderableModel renderableModel = iGeoResource
-								.resolve(IRenderableModel.class, null);
-						renderableModel.setSelectedDataElements(data
-								.getSelectedElements());
-						renderableModel
-								.setDrawNeighbors(data.isDrawNeighbors());
-					}
 					listGeoRes.add(iGeoResource);
 				} else {
 					Pair<ILayer, IRenderableModel> pair = getLayerModelPair(

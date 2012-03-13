@@ -33,121 +33,132 @@ import org.eclipse.ui.PlatformUI;
  * @since 1.0.0
  */
 public class EventManager {
-    /**
-     * manager instance;
-     */
-    private static EventManager manager;
+	/**
+	 * manager instance;
+	 */
+	private static EventManager manager;
 
-    /**
-     * appropriation with event and listeners colections
-     */
-    private Map<EventsType, Set<IEventsListener< ? extends AbstractEvent>>> listenersCollections;
+	/**
+	 * appropriation with event and listeners colections
+	 */
+	private Map<EventsType, Set<IEventsListener<? extends AbstractEvent>>> listenersCollections;
 
-    /**
-     * get instance of event manager
-     * 
-     * @return
-     */
-    public static EventManager getInstance() {
-        if (manager == null) {
-            manager = new EventManager();
-        }
-        return manager;
-    }
+	/**
+	 * get instance of event manager
+	 * 
+	 * @return
+	 */
+	public static EventManager getInstance() {
+		if (manager == null) {
+			manager = new EventManager();
+		}
+		return manager;
+	}
 
-    /**
-     * create class instance
-     */
-    private EventManager() {
-        listenersCollections = new HashMap<EventsType, Set<IEventsListener< ? extends AbstractEvent>>>();
-        initializeNeoclipseListener();
-    }
-    
-    private void initializeNeoclipseListener() {
-    	try {
-    		Class.forName("org.amanzi.neo.services.ui.neoclipse.manager.NeoclipseListenerManager").getConstructor(EventManager.class).newInstance(this);
-    	} catch (Exception e){ 
-    		e.printStackTrace();
-    	}
-    }
+	/**
+	 * create class instance
+	 */
+	private EventManager() {
+		listenersCollections = new HashMap<EventsType, Set<IEventsListener<? extends AbstractEvent>>>();
+		initializeNeoclipseListener();
+	}
 
-    /**
-     * add listener to event
-     * 
-     * @param eventType
-     * @param eventsListeners
-     */
-    public void addListener(EventsType eventType, IEventsListener< ? extends AbstractEvent>... eventsListeners) {
-        if (!listenersCollections.containsKey(eventType)) {
-            listenersCollections.put(eventType, new HashSet<IEventsListener< ? extends AbstractEvent>>());
-        }
-        listenersCollections.get(eventType).addAll(Arrays.asList(eventsListeners));
-    }
+	private void initializeNeoclipseListener() {
+		try {
+			Class.forName(
+					"org.amanzi.neo.services.ui.neoclipse.manager.NeoclipseListenerManager")
+					.getConstructor(EventManager.class).newInstance(this);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
-    /**
-     * fire event
-     * 
-     * @param event
-     * @return
-     */
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    public <T extends AbstractEvent> void fireEvent(final T event) {
-        EventsType type = event.getType();
-        final Object fireTarget = event.getTarget();
-        showView((String)fireTarget);
-        final Set<IEventsListener<T>> eventListeners = (Set)listenersCollections.get(type);
-        // fire events in main thread
-        ActionUtil.getInstance().runTask(new Runnable() {
-            @Override
-            public void run() {
-                if (eventListeners != null) {
-                    for (final IEventsListener<T> listeners : eventListeners) {
-                        if ((fireTarget == null && listeners.getSource() == null) || fireTarget.equals(listeners.getSource())) {
-                            listeners.handleEvent(event);
-                        }
-                    }
-                }
-                fireRelatedEvent(event);
-            }
-        }, true);
-    }
+	/**
+	 * add listener to event
+	 * 
+	 * @param eventType
+	 * @param eventsListeners
+	 */
+	public void addListener(EventsType eventType,
+			IEventsListener<? extends AbstractEvent>... eventsListeners) {
+		if (!listenersCollections.containsKey(eventType)) {
+			listenersCollections.put(eventType,
+					new HashSet<IEventsListener<? extends AbstractEvent>>());
+		}
+		listenersCollections.get(eventType).addAll(
+				Arrays.asList(eventsListeners));
+	}
 
-    /**
-     * try to search and open view by id
-     */
-    public void showView(final String id) {
-        if (id == null || id.isEmpty()) {
-            return;
-        }
-        try {
-            PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(id);
-        } catch (PartInitException e) {
-        }
-    }
+	/**
+	 * fire event
+	 * 
+	 * @param event
+	 * @return
+	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public <T extends AbstractEvent> void fireEvent(final T event) {
+		EventsType type = event.getType();
+		final Object fireTarget = event.getTarget();
+		showView((String) fireTarget);
+		final Set<IEventsListener<T>> eventListeners = (Set) listenersCollections
+				.get(type);
+		// fire events in main thread
+		ActionUtil.getInstance().runTask(new Runnable() {
+			@Override
+			public void run() {
+				if (eventListeners != null) {
+					// we can't invoke .equals method for null !
+					for (final IEventsListener<T> listeners : eventListeners) {
+						if ((fireTarget == null && listeners.getSource() == null)
+								|| (fireTarget != null && fireTarget.equals(listeners
+										.getSource()))) {
+							listeners.handleEvent(event);
+						}
+					}
+				}
+				fireRelatedEvent(event);
+			}
+		}, true);
+	}
 
-    /**
-     * fire related event for example event PROJECT_CHANGE should also fire UPDATE_DATA
-     * 
-     * @param event
-     */
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    public <T extends AbstractEvent> void fireRelatedEvent(final T event) {
-        EventsType type = event.getType();
-        Set<IEventsListener<T>> eventListeners = null;
-        T relatedEvent = null;
-        switch (type) {
-        case CHANGE_PROJECT:
-            type = EventsType.UPDATE_DATA;
-            relatedEvent = (T)new UpdateDataEvent();
-            break;
-        default:
-            return;
-        }
-        eventListeners = (Set)listenersCollections.get(type);
-        if (eventListeners != null) {
-            for (final IEventsListener<T> listeners : eventListeners) {
-                listeners.handleEvent(relatedEvent);
-            }
-        }
-    }
+	/**
+	 * try to search and open view by id
+	 */
+	public void showView(final String id) {
+		if (id == null || id.isEmpty()) {
+			return;
+		}
+		try {
+			PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+					.getActivePage().showView(id);
+		} catch (PartInitException e) {
+		}
+	}
+
+	/**
+	 * fire related event for example event PROJECT_CHANGE should also fire
+	 * UPDATE_DATA
+	 * 
+	 * @param event
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public <T extends AbstractEvent> void fireRelatedEvent(final T event) {
+		EventsType type = event.getType();
+		Set<IEventsListener<T>> eventListeners = null;
+		T relatedEvent = null;
+		switch (type) {
+		case CHANGE_PROJECT:
+			type = EventsType.UPDATE_DATA;
+			relatedEvent = (T) new UpdateDataEvent();
+			break;
+		default:
+			return;
+		}
+		eventListeners = (Set) listenersCollections.get(type);
+		if (eventListeners != null) {
+			for (final IEventsListener<T> listeners : eventListeners) {
+				listeners.handleEvent(relatedEvent);
+			}
+		}
+	}
 }

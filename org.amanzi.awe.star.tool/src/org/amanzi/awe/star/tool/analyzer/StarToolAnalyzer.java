@@ -19,6 +19,7 @@ import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDataModel;
 import org.amanzi.neo.services.model.INetworkModel;
+import org.amanzi.neo.services.ui.events.AnalyseEvent;
 import org.amanzi.neo.services.ui.events.EventManager;
 import org.amanzi.neo.services.ui.events.ShowOnMapEvent;
 import org.amanzi.neo.services.ui.events.StarToolAnalyzerEvent;
@@ -40,6 +41,8 @@ import com.vividsolutions.jts.geom.Envelope;
  * @author Bondoronok_P
  */
 public class StarToolAnalyzer {
+
+	public static final String NETWORK_TREE_VIEW_ID = "org.amanzi.awe.views.network.views.NewNetworkTreeView";
 
 	/**
 	 * Logger instance
@@ -254,7 +257,7 @@ public class StarToolAnalyzer {
 				IDataModel resolvedElement = resource.resolve(IDataModel.class,
 						null);
 				initializeCoordinateReferenceSystem(resource);
-				((INetworkModel) resolvedElement).clearSelectedElements();				
+				((INetworkModel) resolvedElement).clearSelectedElements();
 				INetworkModel currentModel = ((INetworkModel) resolvedElement)
 						.getStarToolSelectedModel();
 				result = currentModel;
@@ -320,7 +323,8 @@ public class StarToolAnalyzer {
 		EventManager eventManager = EventManager.getInstance();
 		eventManager.fireEvent(new StarToolAnalyzerEvent(analyzedModel,
 				analyzedElements));
-		eventManager
-				.fireEvent(new ShowOnMapEvent(analyzedModel, !dragged));
+		eventManager.fireEvent(new AnalyseEvent(analyzedModel,
+				analyzedElements, NETWORK_TREE_VIEW_ID));
+		eventManager.fireEvent(new ShowOnMapEvent(analyzedModel, !dragged));
 	}
 }

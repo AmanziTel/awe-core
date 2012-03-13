@@ -13,6 +13,10 @@
 
 package org.amanzi.neo.services.ui.events;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IModel;
 import org.amanzi.neo.services.ui.enums.EventsType;
 
@@ -25,34 +29,58 @@ import org.amanzi.neo.services.ui.enums.EventsType;
  * @since 1.0.0
  */
 public class AnalyseEvent extends AbstractEvent {
-    /**
-     * selected model to analyse
-     */
-    private IModel selectedModel;
-    /**
-     * id of required analyser
-     */
-    private String analyserId;
+	/**
+	 * selected model to analyse
+	 */
+	private IModel selectedModel;
 
-    /**
-     * initialize event class with necessary parameters
-     * 
-     * @param selectedModel model which should be send to view
-     * @param analyser_id view id
-     */
-    public AnalyseEvent(IModel selectedModel, String analyser_id) {
-        type = EventsType.ANALYSE;
-        this.selectedModel = selectedModel;
-        this.analyserId = analyser_id;
-        targetPluginId = analyserId;
+	/**
+	 * selected elements to analyse
+	 */
+	private List<IDataElement> selectedElements = new ArrayList<IDataElement>();
+	/**
+	 * id of required analyser
+	 */
+	private String analyserId;
+
+	/**
+	 * initialize event class with necessary parameters
+	 * 
+	 * @param selectedModel
+	 *            model which should be send to view
+	 * @param analyser_id
+	 *            view id
+	 */
+	public AnalyseEvent(IModel selectedModel, String analyser_id) {
+		type = EventsType.ANALYSE;
+		this.selectedModel = selectedModel;
+		this.analyserId = analyser_id;
+		targetPluginId = analyserId;
+	}
+
+	/**
+	 * Initialize event
+	 * 	 
+	 * @param selectedModel model 
+	 * @param selectedElements elements
+	 * @param analyser_id analyser id 
+	 */
+	public AnalyseEvent(IModel selectedModel, List<IDataElement> selectedElements, String analyser_id) {
+       this(selectedModel, analyser_id);
+       this.selectedElements.clear();
+       this.selectedElements.addAll(selectedElements);       
     }
 
-    public IModel getSelectedModel() {
-        return selectedModel;
-    }
+	public IModel getSelectedModel() {
+		return selectedModel;
+	}
 
-    public String getAnalyserId() {
-        return analyserId;
-    }
+	public String getAnalyserId() {
+		return analyserId;
+	}
+
+	public List<IDataElement> getSelectedElements() {
+		return selectedElements;
+	}	
 
 }

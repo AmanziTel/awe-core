@@ -216,8 +216,8 @@ public class StarTool extends AbstractModalTool {
 			if ((resultView = (NetworkPropertiesView) page
 					.findView(NETWORK_PROPERTIES_VIEW_ID)) == null) {
 				resultView = (NetworkPropertiesView) page
-						.showView(NETWORK_PROPERTIES_VIEW_ID);
-			}
+						.showView(NETWORK_PROPERTIES_VIEW_ID);				
+			}			
 		} catch (PartInitException e) {			
 		}
 		return resultView;

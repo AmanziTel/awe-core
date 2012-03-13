@@ -25,8 +25,8 @@ import org.amanzi.neo.services.ui.enums.EventsType;
  * @author Vladislav Kondratenko
  * @since 1.0.0
  */
-public class UpdateDataEvent extends AbstractEvent implements IDatabaseEventListener {
-
+public class UpdateDataEvent extends AbstractEvent implements IDatabaseEventListener {	
+	
     /**
      * create instants
      */
