@@ -857,7 +857,7 @@ public class NetworkTreeView extends ViewPart {
         @Override
         public void run() {
             Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
-            ExportToCSVSettings dialog = new ExportToCSVSettings(shell, network, "Export to file", SWT.OK);
+            ExportToFileSettings dialog = new ExportToFileSettings(shell, network, "Export to file", SWT.OK);
             if (dialog.open() == SWT.OK) {
 
             } else {

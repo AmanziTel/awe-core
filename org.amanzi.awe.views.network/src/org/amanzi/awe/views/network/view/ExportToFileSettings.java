@@ -40,7 +40,7 @@ import com.google.common.collect.Lists;
  * @author ladornaya_a
  * @since 1.0.0
  */
-public class ExportToCSVSettings extends AbstractDialog<Integer> {
+public class ExportToFileSettings extends AbstractDialog<Integer> {
 
     // label text
     private final static String LABEL_EXTENSION = "File expansion:";
@@ -93,7 +93,7 @@ public class ExportToCSVSettings extends AbstractDialog<Integer> {
     private String extensionValue;
     private String separatorValue;
 
-    public ExportToCSVSettings(Shell parent, INetworkModel network, String title, int style) {
+    public ExportToFileSettings(Shell parent, INetworkModel network, String title, int style) {
         super(parent, title, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.CENTER);
         status = SWT.CANCEL;
         this.network = network;
