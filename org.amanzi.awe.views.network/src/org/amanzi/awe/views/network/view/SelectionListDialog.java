@@ -34,7 +34,7 @@ import org.eclipse.swt.widgets.Text;
  * @since 1.0.0
  */
 public class SelectionListDialog extends AbstractDialog<Integer> {
-    
+
     private static Logger LOGGER = Logger.getLogger(SelectionListDialog.class);
 
     /** The Constant MIN_FIELD_WIDTH. */
@@ -51,17 +51,17 @@ public class SelectionListDialog extends AbstractDialog<Integer> {
 
     /** The shell. */
     private Shell shell;
-    
+
     private INetworkModel network;
 
-   /**
+    /**
      * Instantiates a new new selection list dialog.
      * 
      * @param parent the parent
      * @param title the title
      * @param style the style
      */
-    public SelectionListDialog(Shell parent,INetworkModel network, String title, int style) {
+    public SelectionListDialog(Shell parent, INetworkModel network, String title, int style) {
         super(parent, title, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.CENTER);
         status = SWT.CANCEL;
         this.network = network;
@@ -110,7 +110,7 @@ public class SelectionListDialog extends AbstractDialog<Integer> {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 status = SWT.OK;
-                perfomrSave();
+                performSave();
                 shell.close();
             }
         });
@@ -120,22 +120,22 @@ public class SelectionListDialog extends AbstractDialog<Integer> {
                 status = SWT.CANCEL;
                 shell.close();
             }
-        });        
+        });
     }
 
     /**
      * Perform save.
      */
-    protected void perfomrSave() {
+    protected void performSave() {
         LOGGER.debug("Start method performSave");
         try {
             network.createSelectionModel(tNewSelectionList.getText());
         } catch (AWEException e) {
             LOGGER.error(e.getMessage());
-            throw (RuntimeException) new RuntimeException( ).initCause( e );
+            throw (RuntimeException)new RuntimeException().initCause(e);
         }
         LOGGER.debug("SelectionList save");
-        
+
     }
 
     /**
@@ -143,5 +143,5 @@ public class SelectionListDialog extends AbstractDialog<Integer> {
      */
     private void load() {
         // nothing to load
-    }    
+    }
 }
