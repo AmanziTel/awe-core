@@ -13,9 +13,11 @@
 package org.amanzi.awe.views.network.view;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -31,12 +33,14 @@ import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.ISelectionModel;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.NetworkModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
+import org.amanzi.neo.services.synonyms.ExportSynonymsManager;
 import org.amanzi.neo.services.ui.enums.EventsType;
 import org.amanzi.neo.services.ui.events.AnalyseEvent;
 import org.amanzi.neo.services.ui.events.EventManager;
@@ -44,6 +48,7 @@ import org.amanzi.neo.services.ui.events.IEventsListener;
 import org.amanzi.neo.services.ui.events.ShowOnMapEvent;
 import org.amanzi.neo.services.ui.events.UpdateDataEvent;
 import org.amanzi.neo.services.ui.providers.CommonViewLabelProvider;
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
@@ -70,7 +75,7 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
-import org.hsqldb.util.CSVWriter;
+import com.google.common.collect.Lists;
 
 /**
  * This View contains a tree of objects found in the database. The tree is built based on the
@@ -797,11 +802,21 @@ public class NetworkTreeView extends ViewPart {
         }
     }
 
+    /**
+     * create menu - Export to CSV
+     * 
+     * @param selection selected elements
+     * @param manager menu manager
+     */
     @SuppressWarnings("rawtypes")
     private void createSubmenuExportToCSV(IStructuredSelection selection, IMenuManager manager) {
+
+        // selection size = 1
         if (selection.size() == 1) {
             Iterator it = selection.iterator();
             Object elementObject = it.next();
+
+            // if network
             if (elementObject instanceof INetworkModel) {
                 ExportToCSVAction exportToCSVAction = new ExportToCSVAction((IStructuredSelection)viewer.getSelection());
                 manager.add(exportToCSVAction);
@@ -809,15 +824,35 @@ public class NetworkTreeView extends ViewPart {
         }
     }
 
+    /**
+     * TODO Purpose of NetworkTreeView
+     * <p>
+     * Action which export selected network to CSV
+     * </p>
+     * 
+     * @author ladornaya_a
+     * @since 1.0.0
+     */
     private class ExportToCSVAction extends Action {
 
         // home property
         protected static final String USER_HOME = "user.home";
 
+        // message title
+        private static final String TILTE = "Export to CSV";
+
+        // message text
+        private static final String MESSAGE = "Export to CSV finished";
+
+        // separators
+        private static final String SEPARATOR = "\t";
+        private static final String ROW_SEPARATOR = "\n";
+
         private boolean enabled;
         private final String text;
         private INetworkModel network;
 
+        // all exist sector properties
         private List<String> properties;
 
         /**
@@ -850,39 +885,86 @@ public class NetworkTreeView extends ViewPart {
             File csvFile = createCSVFile();
 
             // get all sectors
-            Iterable<IDataElement> sectors = network.getAllElementsByType(NetworkElementNodeType.SECTOR);
+            List<IDataElement> sectors = Lists.newArrayList(network.getAllElementsByType(NetworkElementNodeType.SECTOR));
+
+            // comparator for sorting of elements by name
+            Comparator<IDataElement> comp = new Comparator<IDataElement>() {
+
+                public int compare(IDataElement arg0, IDataElement arg1) {
+                    return (arg0.get(AbstractService.NAME).toString()).compareTo(arg1.get(AbstractService.NAME).toString());
+                };
+            };
+
+            Collections.sort(sectors, comp);
+
+            // export synonyms manager for file headers
+            ExportSynonymsManager esm = ExportSynonymsManager.getManager();
 
             /*
              * fill properties list
              */
             properties = new ArrayList<String>();
 
+            // list for all properties
+            List<String> allProperties = new ArrayList<String>();
+
             for (IDataElement sector : sectors) {
                 Set<String> sectorProperties = sector.keySet();
                 for (String sectorProperty : sectorProperties) {
-                    if (!properties.contains(sectorProperty)) {
-                        properties.add(sectorProperty);
+                    if (!allProperties.contains(sectorProperty)) {
+                        String s;
+                        try {
+                            s = esm.getExportHeader(network, NetworkElementNodeType.SECTOR, sectorProperty);
+                        } catch (DatabaseException e) {
+                            MessageDialog.openError(null, ERROR_TITLE, e.getMessage());
+                            throw (RuntimeException)new RuntimeException().initCause(e);
+                        }
+                        if (s != null) {
+                            properties.add(s);
+                        } else {
+                            properties.add(sectorProperty);
+                        }
+                        allProperties.add(sectorProperty);
                     }
                 }
             }
 
             try {
-                CSVWriter cw = new CSVWriter(csvFile, " ");
-                
-                //write header
-                cw.writeHeader((String[])properties.toArray());
-                
+                FileWriter writer = new FileWriter(csvFile);
+
+                // write headers
+                writeRow(writer, properties);
+
+                // write values
+                for (IDataElement sector : sectors) {
+                    List<String> values = new ArrayList<String>();
+                    for (String property : allProperties) {
+                        Object v = sector.get(property);
+                        if (v != null) {
+                            values.add(v.toString());
+                        } else {
+                            values.add(StringUtils.EMPTY);
+                        }
+                    }
+                    writeRow(writer, values);
+                }
+
+                writer.flush();
+                writer.close();
+
+                // message dialog
+                MessageDialog.openInformation(null, TILTE, MESSAGE);
+
             } catch (IOException e) {
-                // TODO Handle IOException
-                throw (RuntimeException) new RuntimeException( ).initCause( e );
+                MessageDialog.openError(null, ERROR_TITLE, e.getMessage());
             }
-            
+
         }
 
         /**
-         * Create dir and file
+         * Create directory and file
          * 
-         * @return file
+         * @return file CSV file
          */
         private File createCSVFile() {
             File dir = new File(System.getProperty(USER_HOME) + File.separatorChar + "csv_files");
@@ -891,12 +973,30 @@ public class NetworkTreeView extends ViewPart {
             try {
                 nemoFile.createNewFile();
             } catch (IOException e) {
-                // TODO Handle IOException
-                throw (RuntimeException)new RuntimeException().initCause(e);
+                MessageDialog.openError(null, ERROR_TITLE, e.getMessage());
             }
             return nemoFile;
         }
 
+        /**
+         * write row values in CSV files
+         * 
+         * @param writer file writer
+         * @throws IOException
+         */
+        private void writeRow(FileWriter writer, List<String> values) throws IOException {
+
+            int i = 1;
+
+            for (String property : values) {
+                writer.append(property);
+                if (i != values.size()) {
+                    writer.append(SEPARATOR);
+                }
+                i++;
+            }
+            writer.append(ROW_SEPARATOR);
+        }
     }
 
     /**
