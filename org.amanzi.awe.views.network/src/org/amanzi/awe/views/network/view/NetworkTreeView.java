@@ -12,8 +12,6 @@
  */
 package org.amanzi.awe.views.network.view;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -70,7 +68,6 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
-import org.hsqldb.util.CSVWriter;
 
 /**
  * This View contains a tree of objects found in the database. The tree is built based on the
@@ -232,7 +229,7 @@ public class NetworkTreeView extends ViewPart {
 
         createSubmenuShowOnMap((IStructuredSelection)viewer.getSelection(), manager);
 
-        createSubmenuExportToCSV((IStructuredSelection)viewer.getSelection(), manager);
+        createSubmenuExportToFile((IStructuredSelection)viewer.getSelection(), manager);
     }
 
     /**
@@ -797,36 +794,50 @@ public class NetworkTreeView extends ViewPart {
         }
     }
 
+    /**
+     * create menu - Export to file
+     * 
+     * @param selection selected elements
+     * @param manager menu manager
+     */
     @SuppressWarnings("rawtypes")
-    private void createSubmenuExportToCSV(IStructuredSelection selection, IMenuManager manager) {
+    private void createSubmenuExportToFile(IStructuredSelection selection, IMenuManager manager) {
+
+        // selection size = 1
         if (selection.size() == 1) {
             Iterator it = selection.iterator();
             Object elementObject = it.next();
+
+            // if network
             if (elementObject instanceof INetworkModel) {
-                ExportToCSVAction exportToCSVAction = new ExportToCSVAction((IStructuredSelection)viewer.getSelection());
-                manager.add(exportToCSVAction);
+                ExportToFileAction exportToFileAction = new ExportToFileAction((IStructuredSelection)viewer.getSelection());
+                manager.add(exportToFileAction);
             }
         }
     }
 
-    private class ExportToCSVAction extends Action {
-
-        // home property
-        protected static final String USER_HOME = "user.home";
+    /**
+     * TODO Purpose of NetworkTreeView
+     * <p>
+     * Action which export selected network to file
+     * </p>
+     * 
+     * @author ladornaya_a
+     * @since 1.0.0
+     */
+    private class ExportToFileAction extends Action {
 
         private boolean enabled;
         private final String text;
         private INetworkModel network;
 
-        private List<String> properties;
-
         /**
          * Constructor
          * 
-         * @param selection - selection
+         * @param selection selected elements
          */
-        public ExportToCSVAction(IStructuredSelection selection) {
-            text = "Export to CSV";
+        public ExportToFileAction(IStructuredSelection selection) {
+            text = "Export to file";
             enabled = selection.size() == 1 && selection.getFirstElement() instanceof INetworkModel;
             if (enabled) {
                 network = (INetworkModel)selection.getFirstElement();
@@ -845,56 +856,13 @@ public class NetworkTreeView extends ViewPart {
 
         @Override
         public void run() {
+            Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+            ExportToFileSettings dialog = new ExportToFileSettings(shell, network, "Export to file", SWT.OK);
+            if (dialog.open() == SWT.OK) {
 
-            // create csv file
-            File csvFile = createCSVFile();
+            } else {
 
-            // get all sectors
-            Iterable<IDataElement> sectors = network.getAllElementsByType(NetworkElementNodeType.SECTOR);
-
-            /*
-             * fill properties list
-             */
-            properties = new ArrayList<String>();
-
-            for (IDataElement sector : sectors) {
-                Set<String> sectorProperties = sector.keySet();
-                for (String sectorProperty : sectorProperties) {
-                    if (!properties.contains(sectorProperty)) {
-                        properties.add(sectorProperty);
-                    }
-                }
             }
-
-            try {
-                CSVWriter cw = new CSVWriter(csvFile, " ");
-                
-                //write header
-                cw.writeHeader((String[])properties.toArray());
-                
-            } catch (IOException e) {
-                // TODO Handle IOException
-                throw (RuntimeException) new RuntimeException( ).initCause( e );
-            }
-            
-        }
-
-        /**
-         * Create dir and file
-         * 
-         * @return file
-         */
-        private File createCSVFile() {
-            File dir = new File(System.getProperty(USER_HOME) + File.separatorChar + "csv_files");
-            dir.mkdir();
-            File nemoFile = new File(dir, network.getName() + ".csv");
-            try {
-                nemoFile.createNewFile();
-            } catch (IOException e) {
-                // TODO Handle IOException
-                throw (RuntimeException)new RuntimeException().initCause(e);
-            }
-            return nemoFile;
         }
 
     }

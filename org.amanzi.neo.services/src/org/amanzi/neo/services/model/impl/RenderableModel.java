@@ -89,15 +89,15 @@ public abstract class RenderableModel extends AbstractIndexedModel {
     public void setSelectedDataElements(List<IDataElement> dataElements) {
         renderableModelElements.addAll(dataElements);
     }
-    
+
     public boolean isDrawNeighbors() {
         return drawNeighbors;
     }
-    
+
     public void setDrawNeighbors(boolean drawNeighbors) {
         this.drawNeighbors = drawNeighbors;
     }
-    
+
     @Override
     public void finishUp() throws AWEException {
         Iterable<Node> allGis = datasetService.getAllGisByDataset(rootNode);
@@ -294,7 +294,7 @@ public abstract class RenderableModel extends AbstractIndexedModel {
             this.crs = crs;
             crsCode = "";// ToDO:
         }
-        
+
         public void setCRS(double lat, double lon, String fileName) {
             if (this.crs == null) {
                 try {

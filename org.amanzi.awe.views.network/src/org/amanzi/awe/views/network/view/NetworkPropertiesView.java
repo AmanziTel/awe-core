@@ -23,6 +23,9 @@ import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
+import org.amanzi.neo.services.ui.events.AnalyseEvent;
+import org.amanzi.neo.services.ui.events.EventManager;
+import org.amanzi.neo.services.ui.events.ShowOnMapEvent;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -32,9 +35,12 @@ import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ColumnViewerEditor;
 import org.eclipse.jface.viewers.ColumnViewerEditorActivationEvent;
 import org.eclipse.jface.viewers.ColumnViewerEditorActivationStrategy;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.TableViewerEditor;
@@ -45,6 +51,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseTrackListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -78,10 +86,8 @@ import org.eclipse.ui.part.ViewPart;
  */
 public class NetworkPropertiesView extends ViewPart {
 
-	/*
-	 * ID of this View
-	 */
 	public static final String NETWORK_PROPERTIES_VIEW_ID = "org.amanzi.awe.views.network.views.NetworkPropertiesView";
+	public static final String NETWORK_TREE_VIEW_ID = "org.amanzi.awe.views.network.views.NewNetworkTreeView";
 
 	/*
 	 * table
@@ -120,6 +126,8 @@ public class NetworkPropertiesView extends ViewPart {
 	private static String CELL_MODIFIER_1 = "column1";
 	private static String CELL_MODIFIER_2 = "column2";
 
+	private boolean notInterruptEvent = Boolean.TRUE;
+
 	public static boolean showMessageBox = true;
 
 	public NetworkPropertiesView() {
@@ -128,6 +136,7 @@ public class NetworkPropertiesView extends ViewPart {
 
 	public void updateTableView(Set<IDataElement> dataElements,
 			boolean isEditable) {
+		notInterruptEvent = Boolean.FALSE;
 		this.currentDataElements = dataElements;
 		// this.isEditable = isEditable;
 		tableViewer.setInput(StringUtils.EMPTY);
@@ -135,6 +144,7 @@ public class NetworkPropertiesView extends ViewPart {
 	}
 
 	public void updateTableView() {
+		notInterruptEvent = Boolean.FALSE;
 		tableViewer.setInput(StringUtils.EMPTY);
 		tableViewer.refresh();
 	}
@@ -206,6 +216,51 @@ public class NetworkPropertiesView extends ViewPart {
 						| ColumnViewerEditor.KEYBOARD_ACTIVATION);
 
 		tableViewer.setInput("");
+		tableViewer.getTable().addMouseTrackListener(new MouseTrackListener() {
+
+			@Override
+			public void mouseHover(MouseEvent e) {
+			}
+
+			@Override
+			public void mouseExit(MouseEvent e) {
+			}
+
+			@Override
+			public void mouseEnter(MouseEvent e) {
+				notInterruptEvent = Boolean.TRUE;
+			}
+		});
+
+		tableViewer
+				.addSelectionChangedListener(new ISelectionChangedListener() {
+
+					@Override
+					public void selectionChanged(SelectionChangedEvent event) {
+						if (notInterruptEvent) {
+							IStructuredSelection selection = ((IStructuredSelection) event
+									.getSelection());
+							RowWrapper wrappedElement = (RowWrapper) selection
+									.getFirstElement();
+							if (wrappedElement != null) {
+								IDataElement element = wrappedElement
+										.getElement();
+								INetworkModel model = (INetworkModel) element
+										.get(INeoConstants.NETWORK_MODEL_NAME);
+								model.clearSelectedElements();
+								model.setSelectedDataElementToList(element);
+								EventManager.getInstance().fireEvent(
+										new ShowOnMapEvent(model, true));
+
+								EventManager.getInstance().fireEvent(
+										new AnalyseEvent(model, model
+												.getSelectedElements(),
+												NETWORK_TREE_VIEW_ID));
+							}
+
+						}
+					}
+				});
 	}
 
 	/**
@@ -467,7 +522,9 @@ public class NetworkPropertiesView extends ViewPart {
 						}
 					}
 					RowWrapper row = new RowWrapper(rowValues);
+					row.setElement(element);
 					elements.add(row);
+
 				}
 
 			}
@@ -484,6 +541,7 @@ public class NetworkPropertiesView extends ViewPart {
 	 */
 	private class RowWrapper {
 		private List<String> values;
+		private IDataElement element;
 		@SuppressWarnings("unused")
 		private boolean isEditable;
 
@@ -505,6 +563,13 @@ public class NetworkPropertiesView extends ViewPart {
 			this.isEditable = isEditable;
 		}
 
+		public IDataElement getElement() {
+			return element;
+		}
+
+		public void setElement(IDataElement element) {
+			this.element = element;
+		}
 	}
 
 	@Override

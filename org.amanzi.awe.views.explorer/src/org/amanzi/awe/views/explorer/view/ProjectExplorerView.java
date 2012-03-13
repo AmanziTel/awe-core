@@ -30,7 +30,9 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.IElementComparer;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
@@ -39,6 +41,8 @@ import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
 /**
@@ -64,7 +68,7 @@ public class ProjectExplorerView extends ViewPart {
 	 * required views id
 	 */
 	public static final String PROPERTY_TABLE_VIEW_ID = "org.amanzi.awe.views.property.views.PropertyTableView";
-	public static final String NETWORK_TREE_VIEW_ID = "org.amanzi.awe.views.network.views.NetworkTreeView";
+	public static final String NETWORK_TREE_VIEW_ID = "org.amanzi.awe.views.network.views.NewNetworkTreeView";
 	public static final String NODE2NODE_VIEW_ID = "org.amanzi.awe.views.neighbours.views.NodeToNodeRelationsView";
 	public static final String DRIVE_INUQIER_VIEW_ID = "org.amanzi.awe.views.drive.views.NewDriveInquirerView";
 	public static final String DISTRIBUTION_ANALYSE_VIEW_ID = "org.amanzi.awe.views.reuse.views.DistributionAnalyzerView";
@@ -116,26 +120,51 @@ public class ProjectExplorerView extends ViewPart {
 				return a == null ? b == null : a.equals(b);
 			}
 		});
+
 		viewer.addDoubleClickListener(new IDoubleClickListener() {
 			@Override
 			public void doubleClick(DoubleClickEvent event) {
-				IStructuredSelection selection = ((IStructuredSelection) event
-						.getViewer().getSelection());
-				Object selectionObject = selection.getFirstElement();
-				String source = StringUtils.EMPTY;
-				if (selectionObject instanceof INetworkModel) {
-					source = NETWORK_TREE_VIEW_ID;
-				}
-				if (!source.isEmpty()) {
-					eventManager.fireEvent(new AnalyseEvent((IModel) selection
-							.getFirstElement(), source));
-				}
+				openModelInViewBySelection(((IStructuredSelection) event
+						.getViewer().getSelection()));
 			}
 		});
+
+		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+
+			@Override
+			public void selectionChanged(SelectionChangedEvent event) {
+				openModelInViewBySelection((IStructuredSelection) event
+						.getSelection());
+			}
+		});
+
 		hookContextMenu();
 		getSite().setSelectionProvider(viewer);
 		setLayout(parent);
 		addListeners();
+	}
+
+	/**
+	 * Open selected INetworkModel in NetworkTreeView
+	 * 
+	 * @param selection
+	 *            IStructuredSelection
+	 */
+	private void openModelInViewBySelection(IStructuredSelection selection) {
+		Object selectionObject = selection.getFirstElement();
+		String source = StringUtils.EMPTY;
+		if (selectionObject instanceof INetworkModel) {
+			source = NETWORK_TREE_VIEW_ID;
+		}
+		if (!source.isEmpty()) {
+			try {
+				PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+				.getActivePage().showView(NETWORK_TREE_VIEW_ID);
+			} catch (PartInitException e) {				
+			}
+			eventManager.fireEvent(new AnalyseEvent((IModel) selectionObject,
+					source));
+		}
 	}
 
 	/**
@@ -428,7 +457,7 @@ public class ProjectExplorerView extends ViewPart {
 					model.removeStarToolSelectedModel();
 				} else {
 					model.setStarToolSelectedModel();
-				}				
+				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
