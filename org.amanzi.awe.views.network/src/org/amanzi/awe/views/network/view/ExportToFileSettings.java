@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 
 import com.google.common.collect.Lists;
 
@@ -54,6 +55,7 @@ public class ExportToFileSettings extends AbstractDialog<Integer> {
 
     // default separators
     private final static String[] DEFAULT_SEPARATOR = {"\"\\" + "t\"", "\",\"", "\";\""};
+    private final static String OTHER_SEPARATOR = "other:";
     private final static String[] SEPARATORS = {"\t", ",", ";"};
 
     // home property
@@ -73,6 +75,9 @@ public class ExportToFileSettings extends AbstractDialog<Integer> {
 
     // container for groups
     private Composite container;
+
+    // text for other separator
+    private Text text;
 
     /** The b ok. */
     private Button bOk;
@@ -190,7 +195,7 @@ public class ExportToFileSettings extends AbstractDialog<Integer> {
         boolean first = true;
 
         GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
-        data.heightHint = 100;
+        data.heightHint = 130;
         data.widthHint = 150;
         group.setLayoutData(data);
 
@@ -209,6 +214,7 @@ public class ExportToFileSettings extends AbstractDialog<Integer> {
 
                 @Override
                 public void widgetSelected(SelectionEvent e) {
+                    text.setEnabled(false);
                     separatorValue = radio.getText();
                 }
 
@@ -217,6 +223,24 @@ public class ExportToFileSettings extends AbstractDialog<Integer> {
                 }
             });
         }
+
+        final Button radio = new Button(group, SWT.RADIO);
+        radio.setText(OTHER_SEPARATOR);
+
+        radio.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                text.setEnabled(true);
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+            }
+        });
+
+        text = new Text(group, SWT.BORDER);
+        text.setEnabled(false);
     }
 
     /**
@@ -227,12 +251,16 @@ public class ExportToFileSettings extends AbstractDialog<Integer> {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 status = SWT.OK;
-                int j = 0;
-                for (String sep : DEFAULT_SEPARATOR) {
-                    if (sep.equals(separatorValue)) {
-                        separatorValue = SEPARATORS[j];
+                if (!text.isEnabled()) {
+                    int j = 0;
+                    for (String sep : DEFAULT_SEPARATOR) {
+                        if (sep.equals(separatorValue)) {
+                            separatorValue = SEPARATORS[j];
+                        }
+                        j++;
                     }
-                    j++;
+                } else {
+                    separatorValue = text.getText();
                 }
                 export();
                 shell.close();
