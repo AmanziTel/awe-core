@@ -1,25 +1,11 @@
 package org.amanzi.awe.views.network.view;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
-
-import org.amanzi.neo.services.AbstractService;
-import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
-import org.amanzi.neo.services.exceptions.DatabaseException;
-import org.amanzi.neo.services.model.IDataElement;
-import org.amanzi.neo.services.model.INetworkModel;
-import org.amanzi.neo.services.synonyms.ExportSynonymsManager;
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
@@ -30,16 +16,19 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
-import com.google.common.collect.Lists;
-
+/**
+ * <p>
+ * Page for ExportToFileSettingsWizard
+ * </p>
+ * 
+ * @author ladornaya_a
+ * @since 1.0.0
+ */
 public class ExportToFileSettingsPage extends WizardPage {
 
     // label text
     private final static String LABEL_EXTENSION = "File expansion:";
     private final static String LABEL_SEPARATOR = "File separator:";
-
-    // directory name
-    private final static String EXPORT_FILES = "export_files";
 
     // default extensions
     private final static String[] DEFAULT_EXTENSION = {".csv", ".txt"};
@@ -49,20 +38,17 @@ public class ExportToFileSettingsPage extends WizardPage {
     private final static String OTHER_SEPARATOR = "other:";
     private final static String[] SEPARATORS = {"\t", ",", ";"};
 
-    // home property
-    protected static final String USER_HOME = "user.home";
+    // page name
+    private final static String PAGE_NAME = "Export to file settings";
 
-    // message title
-    private static final String TILTE = "Export to file";
+    // directory field name and label
+    private final static String DIRECTORY_NAME = "Directory";
+    private final static String DIRECTORY_LABEL = "Choose directory:";
 
-    // message text
-    private static final String MESSAGE = "Export to file finished";
-
-    // row separator
-    private static final String ROW_SEPARATOR = "\n";
-
-    // error title
-    private static final String ERROR_TITLE = "Error";
+    // descriptions
+    private final static String MAIN_DESCRIPTION = "Choose settings";
+    private final static String DESCRIPTION_DIRECTORY = "Choose directory!";
+    private final static String DESCRIPTION_SEPARATOR = "Enter separator!";
 
     // container for groups
     private Composite container;
@@ -73,20 +59,40 @@ public class ExportToFileSettingsPage extends WizardPage {
     // text for other separator
     private Text text;
 
-    // all exist sector properties
-    private List<String> properties;
-
-    // selected network
-    private INetworkModel network;
-
     // values
     private String extensionValue;
     private String separatorValue;
+    private String directoryValue;
 
-    protected ExportToFileSettingsPage(INetworkModel network) {
-        super("Export to file settings");
-        setDescription("Choose settings");
-        this.network = network;
+    /*
+     * getters for values
+     */
+    public String getExtensionValue() {
+        return extensionValue;
+    }
+
+    public String getSeparatorValue() {
+        return separatorValue;
+    }
+
+    public String getDirectoryValue() {
+        return directoryValue;
+    }
+
+    // setter for separatorValue
+    public void setSeparatorValue(String extension) {
+        int j = 0;
+        for (String sep : DEFAULT_SEPARATOR) {
+            if (sep.equals(extension)) {
+                separatorValue = SEPARATORS[j];
+            }
+            j++;
+        }
+    }
+
+    protected ExportToFileSettingsPage() {
+        super(PAGE_NAME);
+        setDescription(MAIN_DESCRIPTION);
     }
 
     @Override
@@ -97,6 +103,7 @@ public class ExportToFileSettingsPage extends WizardPage {
         container.setLayout(layout);
         layout.numColumns = 1;
 
+        // directory
         Group groupD = new Group(container, SWT.NONE);
         GridLayout layoutGroupD = new GridLayout(1, true);
         GridData dataD = new GridData(SWT.FILL, SWT.FILL, true, true);
@@ -104,8 +111,17 @@ public class ExportToFileSettingsPage extends WizardPage {
         groupD.setLayoutData(dataD);
         groupD.setLayout(layoutGroupD);
 
-        directoryEditor = new DirectoryFieldEditor("Directory", "Choose directory:", groupD);
+        directoryEditor = new DirectoryFieldEditor(DIRECTORY_NAME, DIRECTORY_LABEL, groupD);
+        directoryEditor.getTextControl(groupD).addModifyListener(new ModifyListener() {
 
+            @Override
+            public void modifyText(ModifyEvent e) {
+                directoryValue = directoryEditor.getStringValue();
+                validate();
+            }
+        });
+
+        // main group for radio buttons
         Group group = new Group(container, SWT.NONE);
         GridLayout layoutGroup = new GridLayout(2, true);
         GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
@@ -113,6 +129,7 @@ public class ExportToFileSettingsPage extends WizardPage {
         group.setLayoutData(data);
         group.setLayout(layoutGroup);
 
+        // first group - group for extension radio buttons
         Group group1 = new Group(group, SWT.FILL);
 
         GridLayout layoutGroup1 = new GridLayout(1, true);
@@ -120,17 +137,18 @@ public class ExportToFileSettingsPage extends WizardPage {
 
         createRadioExtensionGroup(group1);
 
+        // second group - group for separator radio buttons
         Group group2 = new Group(group, SWT.FILL);
 
         GridLayout layoutGroup2 = new GridLayout(1, true);
         group2.setLayout(layoutGroup2);
 
-        createRadioseparatorGroup(group2);
+        createRadioSeparatorGroup(group2);
 
         // Required to avoid an error in the system
         setControl(container);
 
-        setPageComplete(true);
+        setPageComplete(false);
 
     }
 
@@ -164,6 +182,7 @@ public class ExportToFileSettingsPage extends WizardPage {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     extensionValue = radio.getText();
+                    validate();
                 }
 
                 @Override
@@ -178,7 +197,7 @@ public class ExportToFileSettingsPage extends WizardPage {
      * 
      * @param group
      */
-    private void createRadioseparatorGroup(Group group) {
+    private void createRadioSeparatorGroup(Group group) {
 
         boolean first = true;
 
@@ -195,15 +214,17 @@ public class ExportToFileSettingsPage extends WizardPage {
             radio.setText(ext);
             if (first) {
                 radio.setSelection(true);
-                separatorValue = radio.getText();
+                setSeparatorValue(radio.getText());
                 first = false;
             }
             radio.addSelectionListener(new SelectionListener() {
 
                 @Override
                 public void widgetSelected(SelectionEvent e) {
+                    text.setText(StringUtils.EMPTY);
                     text.setEnabled(false);
-                    separatorValue = radio.getText();
+                    setSeparatorValue(radio.getText());
+                    validate();
                 }
 
                 @Override
@@ -221,6 +242,8 @@ public class ExportToFileSettingsPage extends WizardPage {
             public void widgetSelected(SelectionEvent e) {
                 setPageComplete(false);
                 text.setEnabled(true);
+                separatorValue = text.getText();
+                validate();
             }
 
             @Override
@@ -230,126 +253,45 @@ public class ExportToFileSettingsPage extends WizardPage {
 
         text = new Text(group, SWT.BORDER);
         text.setEnabled(false);
+        text.addModifyListener(new ModifyListener() {
+
+            @Override
+            public void modifyText(ModifyEvent e) {
+                separatorValue = text.getText();
+                validate();
+            }
+        });
     }
 
     /**
-     * export to file
+     * validate main values - directoryValue and separatorValue
      */
-    protected void export() {
-        // create csv file
-        File csvFile = createCSVFile();
+    private void validate() {
 
-        // get all sectors
-        List<IDataElement> sectors = Lists.newArrayList(network.getAllElementsByType(NetworkElementNodeType.SECTOR));
-
-        // separator for sorting of elements by name
-        Comparator<IDataElement> comp = new Comparator<IDataElement>() {
-
-            public int compare(IDataElement arg0, IDataElement arg1) {
-                return (arg0.get(AbstractService.NAME).toString()).compareTo(arg1.get(AbstractService.NAME).toString());
-            };
-        };
-
-        Collections.sort(sectors, comp);
-
-        // export synonyms manager for file headers
-        ExportSynonymsManager esm = ExportSynonymsManager.getManager();
-
-        /*
-         * fill properties list
-         */
-        properties = new ArrayList<String>();
-
-        // list for all properties
-        List<String> allProperties = new ArrayList<String>();
-
-        for (IDataElement sector : sectors) {
-            Set<String> sectorProperties = sector.keySet();
-            for (String sectorProperty : sectorProperties) {
-                if (!allProperties.contains(sectorProperty)) {
-                    String s;
-                    try {
-                        s = esm.getExportHeader(network, NetworkElementNodeType.SECTOR, sectorProperty);
-                    } catch (DatabaseException e) {
-                        MessageDialog.openError(null, ERROR_TITLE, e.getMessage());
-                        throw (RuntimeException)new RuntimeException().initCause(e);
-                    }
-                    if (s != null) {
-                        properties.add(s);
-                    } else {
-                        properties.add(sectorProperty);
-                    }
-                    allProperties.add(sectorProperty);
-                }
-            }
+        if (!validateValue(directoryValue)) {
+            setPageComplete(false);
+            setDescription(DESCRIPTION_DIRECTORY);
+        } else if (!validateValue(separatorValue)) {
+            setPageComplete(false);
+            setDescription(DESCRIPTION_SEPARATOR);
+        } else {
+            setPageComplete(true);
+            setDescription(StringUtils.EMPTY);
         }
 
-        try {
-            FileWriter writer = new FileWriter(csvFile);
-
-            // write headers
-            writeRow(writer, properties);
-
-            // write values
-            for (IDataElement sector : sectors) {
-                List<String> values = new ArrayList<String>();
-                for (String property : allProperties) {
-                    Object v = sector.get(property);
-                    if (v != null) {
-                        values.add(v.toString());
-                    } else {
-                        values.add(StringUtils.EMPTY);
-                    }
-                }
-                writeRow(writer, values);
-            }
-
-            writer.flush();
-            writer.close();
-
-            // message dialog
-            MessageDialog.openInformation(null, TILTE, MESSAGE);
-
-        } catch (IOException e) {
-            MessageDialog.openError(null, ERROR_TITLE, e.getMessage());
-        }
     }
 
     /**
-     * Create directory and file
+     * Check string value on null and empty
      * 
-     * @return file CSV file
+     * @param value string value
+     * @return true - is validate, false - is not validate
      */
-    private File createCSVFile() {
-        File dir = new File(System.getProperty(USER_HOME) + File.separatorChar + EXPORT_FILES);
-        dir.mkdir();
-        File nemoFile = new File(dir, network.getName() + extensionValue);
-        try {
-            nemoFile.createNewFile();
-        } catch (IOException e) {
-            MessageDialog.openError(null, ERROR_TITLE, e.getMessage());
+    private boolean validateValue(String value) {
+        if (value.isEmpty() || value == null) {
+            return false;
         }
-        return nemoFile;
-    }
-
-    /**
-     * write row values in CSV files
-     * 
-     * @param writer file writer
-     * @throws IOException
-     */
-    private void writeRow(FileWriter writer, List<String> values) throws IOException {
-
-        int i = 1;
-
-        for (String property : values) {
-            writer.append(property);
-            if (i != values.size()) {
-                writer.append(separatorValue);
-            }
-            i++;
-        }
-        writer.append(ROW_SEPARATOR);
+        return true;
     }
 
 }
