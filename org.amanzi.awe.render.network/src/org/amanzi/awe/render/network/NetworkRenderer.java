@@ -26,6 +26,7 @@ import org.amanzi.awe.render.core.AbstractRenderer;
 import org.amanzi.awe.render.core.AbstractRendererStyles;
 import org.amanzi.awe.render.core.RenderShape;
 import org.amanzi.awe.render.core.Scale;
+import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.NetworkService;
 import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.NodeTypeManager;
@@ -72,79 +73,44 @@ public class NetworkRenderer extends AbstractRenderer {
 			IDataElement site, IRenderableModel model) {
 		renderCoordinateElement(destination, point, site);
 		if (networkRendererStyle.getScale() == Scale.LARGE) {
-			sectorRendering(destination, point, model, site, null, false);
+			int i = 0;
+			Pair<Double, Double> sectorParameters = null;
+			for (IDataElement sector : ((INetworkModel) model)
+					.getChildren(site)) {
+				sectorParameters = getSectorParameters(site, sector, i);
+				renderSector(destination, point, sectorParameters.getLeft(),
+						sectorParameters.getRight(), sector);
+				i++;
+			}
 		}
 	}
 
 	@Override
 	protected void renderSelectedElement(Graphics2D destination, Point point,
-			IRenderableModel model, IDataElement sector, Envelope selectedBounds)
-			throws TransformException {
-		IDataElement site = ((INetworkModel) model).getParentElement(sector);
+			IRenderableModel model, IDataElement element,
+			Envelope selectedBounds) throws TransformException {
+		IDataElement site = null;
+		boolean drawNeighbors = model.isDrawNeighbors();
+		if (element.get(AbstractService.TYPE).equals(
+				NetworkElementNodeType.SITE.getId())) {
+			site = element;
+			drawNeighbors = false;
+		} else {
+			site = ((INetworkModel) model).getParentElement(element);
+		}
 		highlightSelectedItem(destination, point);
 		renderElement(destination, point, site, model);
 		if (networkRendererStyle.getScale() == Scale.LARGE) {
-			if (model.isDrawNeighbors()) {
-				sectorRendering(destination, point, model, site, sector,
-						model.isDrawNeighbors());
-				try {					
+			if (drawNeighbors) {
+				renderSelectionBorder(destination, point,
+						(INetworkModel) model, element);
+				try {
 					renderSectorNeighbours(destination, point,
-							(INetworkModel) model, sector, selectedBounds);
+							(INetworkModel) model, element, selectedBounds);
 				} catch (AWEException e) {
 				}
 			}
 		}
-	}
-
-	/**
-	 * Sector rendering
-	 * 
-	 * @param destination
-	 * @param point
-	 * @param site
-	 * @param selectedSector
-	 * @param isSelected
-	 */
-	private void sectorRendering(Graphics2D destination, Point point,
-			IRenderableModel model, IDataElement site,
-			IDataElement selectedSector, boolean isSelected) {
-		int i = 0;
-		Pair<Double, Double> sectorParameters = null;
-		for (IDataElement sector : ((INetworkModel) model).getChildren(site)) {
-			if (isSelected) {
-				sectorParameters = getSectorParameters(site, sector,
-						getSelectedSectorIndex(model, site, selectedSector));
-				renderSector(destination, point, sectorParameters.getLeft(),
-						sectorParameters.getRight(), selectedSector, isSelected);
-				break;
-			} else {
-				sectorParameters = getSectorParameters(site, sector, i);
-				renderSector(destination, point, sectorParameters.getLeft(),
-						sectorParameters.getRight(), sector, isSelected);
-			}
-			i++;
-		}
-	}
-
-	/**
-	 * Get selected sector index
-	 * 
-	 * @param model
-	 * @param site
-	 * @param selectedSector
-	 * @return selected sector index
-	 */
-	private int getSelectedSectorIndex(IRenderableModel model,
-			IDataElement site, IDataElement selectedSector) {
-		int result = 0;
-		for (IDataElement sector : ((INetworkModel) model).getChildren(site)) {
-			if (selectedSector.equals(sector)) {
-				break;
-			} else {
-				result++;
-			}
-		}
-		return result;
 	}
 
 	/**
@@ -184,8 +150,7 @@ public class NetworkRenderer extends AbstractRenderer {
 	 * @param element
 	 */
 	private void renderSector(Graphics2D destination, Point point,
-			double azimuth, double beamwidth, IDataElement sector,
-			boolean selected) {
+			double azimuth, double beamwidth, IDataElement sector) {
 		int size = getSize();
 		int x = getSectorXCoordinate(point, size);
 		int y = getSectorYCoordinate(point, size);
@@ -198,18 +163,42 @@ public class NetworkRenderer extends AbstractRenderer {
 				getAngle(azimuth, beamwidth), beamwidth);
 		path.append(a.getPathIterator(null), true);
 		path.closePath();
-		if (selected) {
-			destination.setColor(networkRendererStyle.changeColor(
-					SELECTED_SECTOR_COLOR, networkRendererStyle.getAlpha()));
-			destination.draw(path);
-			destination.drawString(sector.toString(), (int) a.getEndPoint()
-					.getX() + 10, (int) a.getEndPoint().getY());
+		destination.draw(path);
+		destination.fill(path);
+	}
 
-		} else {
-			destination.draw(path);
-			destination.fill(path);
-		}
+	/**
+	 * Draw black border around selected sector
+	 * 
+	 * @param destination
+	 * @param point
+	 * @param model
+	 * @param sector
+	 */
+	private void renderSelectionBorder(Graphics2D destination, Point point,
+			INetworkModel model, IDataElement sector) {
+		IDataElement site = (IDataElement) model.getParentElement(sector);
+		Pair<Double, Double> sectorParameters = getSectorParameters(site,
+				sector, getSelectedSectorIndex(model, site, sector));
+		int size = getSize();
+		double azimuth = sectorParameters.getLeft();
+		double beamwidth = sectorParameters.getRight();
 
+		GeneralPath path = new GeneralPath();
+		path.moveTo(getSectorXCoordinate(point, size),
+				getSectorYCoordinate(point, size));
+		Arc2D a = createSector(point,
+				networkRendererStyle.getLargeElementSize(),
+				getAngle(azimuth, beamwidth), beamwidth);
+		path.append(a.getPathIterator(null), true);
+		path.closePath();
+		destination.setColor(networkRendererStyle.changeColor(
+				SELECTED_SECTOR_COLOR, networkRendererStyle.getAlpha()));
+		destination.draw(path);
+		destination
+				.drawString(sector.toString(),
+						(int) a.getEndPoint().getX() + 10, (int) a
+								.getEndPoint().getY());
 	}
 
 	/**
@@ -237,20 +226,34 @@ public class NetworkRenderer extends AbstractRenderer {
 				Point endPoint = getPoint(model, currentNeighbour,
 						bounds_transformed);
 				if (endPoint != null) {
-					Pair<Double, Double> parameters = getSectorParameters(
-							model.getParentElement(currentNeighbour),
-							currentNeighbour,
-							getSelectedSectorIndex(model,
-									model.getParentElement(currentNeighbour),
-									currentNeighbour));
-					renderSector(destination, endPoint, parameters.getLeft(),
-							parameters.getRight(), currentNeighbour,
-							Boolean.TRUE);
+					renderSelectionBorder(destination, endPoint, model,
+							currentNeighbour);
 					renderNeighbourRelationship(destination, selectedSector,
 							getSector(model, currentNeighbour, endPoint));
 				}
 			}
 		}
+	}
+
+	/**
+	 * Get selected sector index
+	 * 
+	 * @param model
+	 * @param site
+	 * @param selectedSector
+	 * @return selected sector index
+	 */
+	private int getSelectedSectorIndex(IRenderableModel model,
+			IDataElement site, IDataElement selectedSector) {
+		int result = 0;
+		for (IDataElement sector : ((INetworkModel) model).getChildren(site)) {
+			if (selectedSector.equals(sector)) {
+				break;
+			} else {
+				result++;
+			}
+		}
+		return result;
 	}
 
 	/**

@@ -85,7 +85,7 @@ public class SelectionListDialog extends AbstractDialog<Integer> {
         Label label = new Label(shell, SWT.NONE);
         layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
         layoutData.minimumWidth = MIN_FIELD_WIDTH;
-        label.setText("Name of selection list:");
+        label.setText(NetworkMessages.NAME_OF_SELECTION_LIST_TITLE);
         label.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
         tNewSelectionList = new Text(shell, SWT.BORDER);
         layoutData = new GridData(SWT.FILL, SWT.CENTER, true, false);
@@ -94,10 +94,10 @@ public class SelectionListDialog extends AbstractDialog<Integer> {
 
         bOk = new Button(shell, SWT.PUSH);
         bOk.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
-        bOk.setText("OK");
+        bOk.setText(NetworkMessages.BUTTON_OK_TITLE);
         bCancel = new Button(shell, SWT.PUSH);
         bCancel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
-        bCancel.setText("Cancel");
+        bCancel.setText(NetworkMessages.BUTTON_CANCEL_TITLE);
         addListeners();
         load();
     }

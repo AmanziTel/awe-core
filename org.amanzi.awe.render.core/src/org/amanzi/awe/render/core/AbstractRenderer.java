@@ -250,13 +250,13 @@ public abstract class AbstractRenderer extends RendererImpl {
 	 * 
 	 * @param destination
 	 * @param point
-	 * @param sector
+	 * @param element
 	 * @param model
 	 * @param selectedBounds
 	 * @throws TransformException
 	 */
 	protected abstract void renderSelectedElement(Graphics2D destination,
-			Point point, IRenderableModel model, IDataElement sector,
+			Point point, IRenderableModel model, IDataElement element,
 			Envelope selectedBounds) throws TransformException;
 
 	/**

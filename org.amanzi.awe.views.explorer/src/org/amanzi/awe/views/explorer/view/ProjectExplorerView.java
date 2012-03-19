@@ -57,14 +57,6 @@ public class ProjectExplorerView extends ViewPart {
 	 */
 	public static final String PROJECT_EXPLORER_ID = "org.amanzi.awe.views.explorer.view.ProjectExplorer";
 	/*
-	 * pop-up menu items
-	 */
-	public static final String SHOW_IN_DISTRIBUTION_ANALYSE_ITEM = "Distribution analyse";
-	public static final String SHOW_IN_PROPERTY_TABLE_ITEM = "Show properties";
-	public static final String SHOW_IN_DRIVE_INUQIER_ITEM = "Drive Inuqirer";
-	public static final String SHOW_IN_N2N_VIEW_ITEM = "Show in N2N view";
-	public final static String STAR_TOOL_ANALYSE = "Analyse with Star Tool";
-	/*
 	 * required views id
 	 */
 	public static final String PROPERTY_TABLE_VIEW_ID = "org.amanzi.awe.views.property.views.PropertyTableView";
@@ -72,7 +64,7 @@ public class ProjectExplorerView extends ViewPart {
 	public static final String NODE2NODE_VIEW_ID = "org.amanzi.awe.views.neighbours.views.NodeToNodeRelationsView";
 	public static final String DRIVE_INUQIER_VIEW_ID = "org.amanzi.awe.views.drive.views.NewDriveInquirerView";
 	public static final String DISTRIBUTION_ANALYSE_VIEW_ID = "org.amanzi.awe.views.reuse.views.DistributionAnalyzerView";
-	private static final String SHOW_ON_MAP = "Show On Map";
+
 	private static final double ZOOM = 0d;
 	/*
 	 * TreeViewer for database Nodes
@@ -221,7 +213,7 @@ public class ProjectExplorerView extends ViewPart {
 	protected void fillContextMenu(IMenuManager manager) {
 		ShowPropertiesAction select = new ShowPropertiesAction(
 				(IStructuredSelection) viewer.getSelection(),
-				SHOW_IN_PROPERTY_TABLE_ITEM);
+				ProjectExplorerViewMessages.SHOW_IN_PROPERTY_TABLE_ITEM);
 		if (select.isEnabled()) {
 			manager.add(select);
 		}
@@ -233,19 +225,19 @@ public class ProjectExplorerView extends ViewPart {
 
 		DistributionAnalyse showIndDistribute = new DistributionAnalyse(
 				(IStructuredSelection) viewer.getSelection(),
-				SHOW_IN_DISTRIBUTION_ANALYSE_ITEM);
+				ProjectExplorerViewMessages.SHOW_IN_DISTRIBUTION_ANALYSE_ITEM);
 		if (showIndDistribute.isEnabled()) {
 			manager.add(showIndDistribute);
 		}
 
 		ShowOnMapAction showOnMapAction = new ShowOnMapAction(
-				(IStructuredSelection) viewer.getSelection(), SHOW_ON_MAP);
+				(IStructuredSelection) viewer.getSelection(), ProjectExplorerViewMessages.SHOW_ON_MAP);
 		if (showOnMapAction.isEnabled()) {
 			manager.add(showOnMapAction);
 		}
 
 		StarToolAnalyseAction starTool = new StarToolAnalyseAction(
-				(IStructuredSelection) viewer.getSelection(), STAR_TOOL_ANALYSE);
+				(IStructuredSelection) viewer.getSelection(), ProjectExplorerViewMessages.STAR_TOOL_ANALYSE);
 
 		if (starTool.isEnabled()) {
 			manager.add(starTool);
@@ -276,11 +268,11 @@ public class ProjectExplorerView extends ViewPart {
 			Object selected = selection.getFirstElement();
 			if (selected instanceof INodeToNodeRelationsModel) {
 				enabled = true;
-				text = SHOW_IN_N2N_VIEW_ITEM;
+				text = ProjectExplorerViewMessages.SHOW_IN_N2N_VIEW_ITEM;
 				viewToFire = NODE2NODE_VIEW_ID;
 			} else if (selected instanceof IDriveModel) {
 				enabled = true;
-				text = SHOW_IN_DRIVE_INUQIER_ITEM;
+				text = ProjectExplorerViewMessages.SHOW_IN_DRIVE_INUQIER_ITEM;
 				viewToFire = DRIVE_INUQIER_VIEW_ID;
 			}
 			if (enabled) {

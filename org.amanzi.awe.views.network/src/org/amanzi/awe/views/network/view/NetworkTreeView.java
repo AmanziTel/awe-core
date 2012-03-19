@@ -55,6 +55,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseTrackListener;
@@ -893,12 +894,9 @@ public class NetworkTreeView extends ViewPart {
         @Override
         public void run() {
             Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
-            ExportToFileSettings dialog = new ExportToFileSettings(shell, network, "Export to file", SWT.OK);
-            if (dialog.open() == SWT.OK) {
-
-            } else {
-
-            }
+            ExportToFileSettingsWizard wizard = new ExportToFileSettingsWizard(network);
+            WizardDialog dialog = new WizardDialog(shell, wizard);
+            dialog.open();
         }
 
     }

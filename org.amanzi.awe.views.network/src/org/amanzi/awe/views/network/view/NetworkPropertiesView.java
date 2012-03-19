@@ -120,9 +120,6 @@ public class NetworkPropertiesView extends ViewPart {
 
 	private static List<RowWrapper> elements = new ArrayList<RowWrapper>();
 
-	// private boolean isEditable;
-
-	private static String DESTINATION_OF_THIS_VIEW = "This network properties view destine for view all properties in IDataElements";
 	private static String CELL_MODIFIER_1 = "column1";
 	private static String CELL_MODIFIER_2 = "column2";
 
@@ -167,7 +164,7 @@ public class NetworkPropertiesView extends ViewPart {
 		Composite child = new Composite(parent, SWT.FILL);
 		final GridLayout layout = new GridLayout(6, false);
 		child.setLayout(layout);
-		createLabel(child, DESTINATION_OF_THIS_VIEW);
+		createLabel(child, NetworkMessages.DESTINATION_OF_THIS_VIEW);
 
 		updateTable = false;
 
@@ -215,7 +212,7 @@ public class NetworkPropertiesView extends ViewPart {
 						| ColumnViewerEditor.TABBING_VERTICAL
 						| ColumnViewerEditor.KEYBOARD_ACTIVATION);
 
-		tableViewer.setInput("");
+		tableViewer.setInput(StringUtils.EMPTY);
 		tableViewer.getTable().addMouseTrackListener(new MouseTrackListener() {
 
 			@Override
@@ -361,8 +358,8 @@ public class NetworkPropertiesView extends ViewPart {
 
 					parents.put(
 							element.get(AbstractService.NAME) != null ? element
-									.get(AbstractService.NAME).toString() : "",
-							structureMap);
+									.get(AbstractService.NAME).toString()
+									: StringUtils.EMPTY, structureMap);
 
 					for (String header : element.keySet()) {
 						if (!allProperties.contains(header)) {
@@ -509,7 +506,8 @@ public class NetworkPropertiesView extends ViewPart {
 				for (IDataElement element : currentDataElements) {
 					Map<String, String> structureMap = parents.get(element
 							.get(AbstractService.NAME) != null ? element.get(
-							AbstractService.NAME).toString() : "");
+							AbstractService.NAME).toString()
+							: StringUtils.EMPTY);
 					List<String> rowValues = new ArrayList<String>();
 					for (String header : headers) {
 
@@ -628,7 +626,7 @@ public class NetworkPropertiesView extends ViewPart {
 						true));
 				composite.setLayout(new GridLayout());
 				final Button button = new Button(composite, SWT.NONE);
-				button.setText("Select All");
+				button.setText(NetworkMessages.SELECT_ALL);
 				button.addSelectionListener(new SelectionListener() {
 
 					@Override
@@ -648,7 +646,7 @@ public class NetworkPropertiesView extends ViewPart {
 				GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
 				data.heightHint = 300;
 				data.widthHint = 200;
-				createTable(propertyListTable, "Properties");
+				createTable(propertyListTable, NetworkMessages.PROPERTIES);
 				propertyListTable.getControl().setLayoutData(data);
 				propertyListTable
 						.setContentProvider(new PropertyListContentProvider());
@@ -669,7 +667,7 @@ public class NetworkPropertiesView extends ViewPart {
 			@Override
 			protected void configureShell(Shell newShell) {
 				super.configureShell(newShell);
-				newShell.setText("Properties filter");
+				newShell.setText(NetworkMessages.PROPERTIES_FILTER);
 			}
 
 			@Override

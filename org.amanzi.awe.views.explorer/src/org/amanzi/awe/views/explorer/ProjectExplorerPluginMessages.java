@@ -29,6 +29,10 @@ public class ProjectExplorerPluginMessages extends NLS {
     
     public static String NetworkTree_CouldNotBeShown;
     public static String NetworkPropertySheet_Description;
+    public static String ErrorTitle;
+    public static String GetChildrenException;
+    public static String HasChildrenException;
+    public static String GetElementsException;
     
     private ProjectExplorerPluginMessages() {
     }

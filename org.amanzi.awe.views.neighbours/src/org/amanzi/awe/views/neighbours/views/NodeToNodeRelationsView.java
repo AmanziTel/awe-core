@@ -95,10 +95,6 @@ public class NodeToNodeRelationsView extends ViewPart {
 	private TableContentProvider provider;
 	private TableFilter servingFilter, neighbourFilter;
 	private final EventManager eventManager;
-	private final static String CANNOT_SET_N2N_MODEL = "Cannot set current node to node relationship model";
-	private static final String SHOW_ON_MAP_8_X = "Show On Map(8x)";
-	private static final String SHOW_ON_MAP_4_X = "Show On Map(4x)";
-	private static final String SHOW_ON_MAP_2_X = "Show On Map(2x)";
 	private final static double ZOOM_8X = 80d;
 	private final static double ZOOM_4X = 40d;
 	private final static double ZOOM_2X = 20d;
@@ -153,12 +149,12 @@ public class NodeToNodeRelationsView extends ViewPart {
 		Composite child = new Composite(frame, SWT.FILL);
 		final GridLayout layout = new GridLayout(6, false);
 		child.setLayout(layout);
-		createLabel(child, "Data");
+		createLabel(child, NodeToNodeRelationsViewMessages.DATA_TITLE);
 		cbNetwork = new Combo(child, SWT.DROP_DOWN | SWT.READ_ONLY);
 
 		cbNetwork.setLayoutData(createLayoutData(100));
 
-		createLabel(child, "N2N Type");
+		createLabel(child, NodeToNodeRelationsViewMessages.N2N_TYPE_TITLE);
 		cbN2NType = new Combo(child, SWT.DROP_DOWN | SWT.READ_ONLY);
 		cbN2NType.setLayoutData(createLayoutData(100));
 
@@ -166,7 +162,7 @@ public class NodeToNodeRelationsView extends ViewPart {
 		// layoutData.minimumWidth = 150;
 		// cDrive.setLayoutData(layoutData);
 
-		createLabel(child, "N2N Name");
+		createLabel(child, NodeToNodeRelationsViewMessages.N2N_NAME_TITLE);
 		cbN2NName = new Combo(child, SWT.DROP_DOWN | SWT.READ_ONLY);
 		cbN2NName.setLayoutData(createLayoutData(100));
 
@@ -203,13 +199,13 @@ public class NodeToNodeRelationsView extends ViewPart {
 	protected void fillContextMenu(IMenuManager manager) {
 		ShowOnMapAction showOnMap8X = new ShowOnMapAction(
 				(IStructuredSelection) tableViewer.getSelection(),
-				SHOW_ON_MAP_8_X, ZOOM_8X);
+				NodeToNodeRelationsViewMessages.SHOW_ON_MAP_8_X, ZOOM_8X);
 		ShowOnMapAction showOnMap4X = new ShowOnMapAction(
 				(IStructuredSelection) tableViewer.getSelection(),
-				SHOW_ON_MAP_4_X, ZOOM_4X);
+				NodeToNodeRelationsViewMessages.SHOW_ON_MAP_4_X, ZOOM_4X);
 		ShowOnMapAction showOnMap2X = new ShowOnMapAction(
 				(IStructuredSelection) tableViewer.getSelection(),
-				SHOW_ON_MAP_2_X, ZOOM_2X);
+				NodeToNodeRelationsViewMessages.SHOW_ON_MAP_2_X, ZOOM_2X);
 		if (showOnMap8X.isEnabled()) {
 			manager.add(showOnMap8X);
 		}
@@ -267,7 +263,9 @@ public class NodeToNodeRelationsView extends ViewPart {
 		private final ArrayList<TableColumn> columns = new ArrayList<TableColumn>();
 		private final static int DEF_SIZE = 120;
 		private final static int PROP_DEF_SIZE = 80;
-		private final String[] colNames = new String[] { "Serving", "Neighbour" };
+		private final String[] colNames = new String[] {
+				NodeToNodeRelationsViewMessages.SERVING_COLUMN,
+				NodeToNodeRelationsViewMessages.NEIGHBOR_COLUMN };
 
 		private void createColumn(String label, int size, boolean sortable,
 				final int idx) {
@@ -551,9 +549,9 @@ public class NodeToNodeRelationsView extends ViewPart {
 				loadElements(Boolean.FALSE);
 			}
 			tableViewer.refresh();
-//			if (elements.size() != 0) {
-//				tableViewer.getTable().getVerticalBar().setMinimum(20);
-//			}
+			// if (elements.size() != 0) {
+			// tableViewer.getTable().getVerticalBar().setMinimum(20);
+			// }
 		}
 
 		/**
@@ -666,7 +664,7 @@ public class NodeToNodeRelationsView extends ViewPart {
 	}
 
 	private void createFilters(Composite composite) {
-		createLabel(composite, "Serving");
+		createLabel(composite, NodeToNodeRelationsViewMessages.SERVING_FILTER);
 		final Text servingText = new Text(composite, SWT.BORDER | SWT.SEARCH);
 		servingText.setLayoutData(createLayoutData(70));
 		servingFilter = new TableFilter() {
@@ -683,7 +681,7 @@ public class NodeToNodeRelationsView extends ViewPart {
 			}
 		};
 
-		createLabel(composite, "Neigbour");
+		createLabel(composite, NodeToNodeRelationsViewMessages.NEIGHBOR_FILTER);
 		final Text neighbourText = new Text(composite, SWT.BORDER | SWT.SEARCH);
 		neighbourText.setLayoutData(createLayoutData(70));
 		neighbourFilter = new TableFilter() {
@@ -700,7 +698,7 @@ public class NodeToNodeRelationsView extends ViewPart {
 			}
 		};
 		btnFilter = new Button(composite, SWT.PUSH);
-		btnFilter.setText("Filter");
+		btnFilter.setText(NodeToNodeRelationsViewMessages.FILTER_TITLE);
 		btnFilter.addSelectionListener(new SelectionListener() {
 
 			@Override
@@ -866,8 +864,12 @@ public class NodeToNodeRelationsView extends ViewPart {
 								.setCurrentNodeToNodeRelationshipModel(model);
 						return model;
 					} catch (AWEException e) {
-						MessageDialog.openError(null, "Error",
-								CANNOT_SET_N2N_MODEL + "\n" + e);
+						MessageDialog
+								.openError(
+										null,
+										NodeToNodeRelationsViewMessages.ERROR_TITLE,
+										NodeToNodeRelationsViewMessages.CANNOT_SET_N2N_MODEL
+												+ "\n" + e);
 					}
 				}
 			}

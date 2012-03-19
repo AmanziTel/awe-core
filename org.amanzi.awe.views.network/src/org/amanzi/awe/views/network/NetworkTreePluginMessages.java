@@ -29,6 +29,8 @@ public class NetworkTreePluginMessages extends NLS {
     
     public static String NetworkTree_CouldNotBeShown;
     public static String NetworkPropertySheet_Description;
+    public static String COULD_NOT_GET_ALL_NETWORK_MODELS;
+    public static String ERROR_TITLE;
     
     private NetworkTreePluginMessages() {
     }
