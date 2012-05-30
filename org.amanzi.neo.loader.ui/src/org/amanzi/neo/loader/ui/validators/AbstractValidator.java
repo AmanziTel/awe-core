@@ -28,7 +28,9 @@ import org.amanzi.neo.loader.core.preferences.ImportSynonymsManager.NodeTypeSyno
 import org.amanzi.neo.loader.core.preferences.ImportSynonymsManager.PropertySynonyms;
 import org.amanzi.neo.loader.core.preferences.ImportSynonymsManager.Synonym;
 import org.amanzi.neo.loader.ui.validators.IValidateResult.Result;
+import org.amanzi.neo.services.DatasetService.DriveTypes;
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.IProjectModel;
 import org.amanzi.neo.services.model.impl.ProjectModel;
@@ -43,147 +45,176 @@ import au.com.bytecode.opencsv.CSVReader;
  * 
  * @author Ladornaya_A
  * @since 1.0.0
- * @param <T> configuration
+ * @param <T>
+ *            configuration
  */
-public abstract class AbstractValidator<T extends IConfiguration> implements IValidator<T> {
+public abstract class AbstractValidator<T extends IConfiguration> implements
+		IValidator<T> {
 
-    // extensions
-    public final static String CSV = ".csv";
-    public final static String TXT = ".txt";    
-    public final static String XML = ".xml";
+	// extensions
+	public final static String CSV = ".csv";
+	public final static String TXT = ".txt";
+	public final static String XML = ".xml";
 
-    // separators
-    public final static String[] POSSIBLE_SEPARATIONS = new String[] {"\t", ",", ";"};
+	// separators
+	public final static String[] POSSIBLE_SEPARATIONS = new String[] { "\t",
+			",", ";" };
 
-    // types
-    public final static String SITE = "site";
-    public final static String SECTOR = "sector";
+	// types
+	public final static String SITE = "site";
+	public final static String SECTOR = "sector";
 
-    // messages
-    public final static String NO_PROJECT = "There is no project name";
-    public final static String NETWORK_NOT_EXIST = "Network is not exist in database";
-    public final static String NETWORK_IS_ALREADY_EXIST = "Network is already exist in database";
+	// messages
+	public final static String NO_PROJECT = "There is no project name";
+	public final static String NETWORK_NOT_EXIST = "Network is not exist in database";
+	public final static String NETWORK_IS_ALREADY_EXIST = "Network is already exist in database";
 
-    // messages for file
-    private final static String INCORRECT_FILE = "Incorrect file";
-    private final static String NO_HEADER_ROW = "Not found correct header row";
-    private final static String NO_NECESSARY_HEADERS = "Not found all necessary headers";
+	// messages for file
+	private final static String INCORRECT_FILE = "Incorrect file";
+	private final static String NO_HEADER_ROW = "Not found correct header row";
+	private final static String NO_NECESSARY_HEADERS = "Not found all necessary headers";
 
-    /**
-     * checks file by extension
-     * 
-     * @param file
-     * @param extension
-     * @return result
-     */
-    public static boolean checkFileByExtension(File file, String extension) {
-        String name = file.getName();
-        if (!name.endsWith(extension)) {
-            return false;
-        }
-        return true;
-    }
+	/**
+	 * checks file by extension
+	 * 
+	 * @param file
+	 * @param extension
+	 * @return result
+	 */
+	public static boolean checkFileByExtension(File file, String extension) {
+		String name = file.getName();
+		if (!name.endsWith(extension)) {
+			return false;
+		}
+		return true;
+	}
 
-    /**
-     * Checks file by header number
-     * 
-     * @param file
-     * @param size
-     * @return result
-     */
-    public static Result checkFileByHeaderNumber(File file, int size) {
-        CSVReader reader = null;
-        try {
-            CountingFileInputStream is = new CountingFileInputStream(file);
-            String del = LoaderUtils.defineDelimeters(file, size, POSSIBLE_SEPARATIONS);
-            reader = new CSVReader(new InputStreamReader(is), del.charAt(0));
-            String[] line;
-            if ((line = reader.readNext()) != null) {
-                if (line.length != size) {
-                    return Result.FAIL;
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return Result.SUCCESS;
-    }
+	/**
+	 * Checks file by header number
+	 * 
+	 * @param file
+	 * @param size
+	 * @return result
+	 */
+	public static Result checkFileByHeaderNumber(File file, int size) {
+		CSVReader reader = null;
+		try {
+			CountingFileInputStream is = new CountingFileInputStream(file);
+			String del = LoaderUtils.defineDelimeters(file, size,
+					POSSIBLE_SEPARATIONS);
+			reader = new CSVReader(new InputStreamReader(is), del.charAt(0));
+			String[] line;
+			if ((line = reader.readNext()) != null) {
+				if (line.length != size) {
+					return Result.FAIL;
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return Result.SUCCESS;
+	}
 
-    /**
-     * Check file and headers by dataset synonyms
-     * 
-     * @param file loading file
-     * @param minSize
-     * @param datasetType
-     * @param subType
-     * @param possibleFieldSepRegexes
-     * @param convertConstants
-     * @return validate result
-     */
-    public IValidateResult checkFileAndHeaders(File file, int minSize, String datasetType, String subType,
-            Map<String, String[]> mandatoryHeaders, String[] possibleFieldSepRegexes) {
-        try {
-            if (file == null || !file.isFile()) {
-                return new ValidateResultImpl(Result.FAIL, INCORRECT_FILE);
-            }
-            String del = LoaderUtils.defineDelimeters(file, minSize, possibleFieldSepRegexes);
-            String[] header = LoaderUtils.getCSVRow(file, minSize, 1, del.charAt(0));
-            if (header == null) {
-                return new ValidateResultImpl(Result.FAIL, NO_HEADER_ROW);
-            }
+	/**
+	 * Check file and headers by dataset synonyms
+	 * 
+	 * @param file
+	 *            loading file
+	 * @param minSize
+	 * @param datasetType
+	 * @param subType
+	 * @param possibleFieldSepRegexes
+	 * @param convertConstants
+	 * @return validate result
+	 */
+	public IValidateResult checkFileAndHeaders(File file, int minSize,
+			String datasetType, String subType,
+			Map<String, String[]> mandatoryHeaders,
+			String[] possibleFieldSepRegexes) {
+		try {
+			if (file == null || !file.isFile()) {
+				return new ValidateResultImpl(Result.FAIL, INCORRECT_FILE);
+			}
+			String del = LoaderUtils.defineDelimeters(file, minSize,
+					possibleFieldSepRegexes);
+			String[] header = LoaderUtils.getCSVRow(file, minSize, 1,
+					del.charAt(0));
+			if (header == null) {
+				return new ValidateResultImpl(Result.FAIL, NO_HEADER_ROW);
+			}
 
-            List<String> headers = new ArrayList<String>(Arrays.asList(header));
-            NodeTypeSynonyms nodeTypeSynonyms = ImportSynonymsManager.getManager().getNodeTypeSynonyms(datasetType, subType);
+			List<String> headers = new ArrayList<String>(Arrays.asList(header));
+			NodeTypeSynonyms nodeTypeSynonyms = ImportSynonymsManager
+					.getManager().getNodeTypeSynonyms(datasetType, subType);
 
-            for (String mandatoryKey : mandatoryHeaders.keySet()) {
-                PropertySynonyms propertySynonyms = nodeTypeSynonyms.get(mandatoryKey);
-                String[] mandatoryValues = mandatoryHeaders.get(mandatoryKey);
-                for (String mandatoryValue : mandatoryValues) {
-                    Synonym synonym = new Synonym(mandatoryValue);
-                    String[] possibleHeadersArray = propertySynonyms.get(synonym);
-                    boolean flag = false;
-                    for (String possibleHeader : possibleHeadersArray) {
-                        if (headers.contains(possibleHeader)) {
-                            flag = true;
-                        }
-                    }
-                    if (flag == false) {
-                        return new ValidateResultImpl(Result.UNKNOWN, NO_NECESSARY_HEADERS);
-                    }
-                }
+			for (String mandatoryKey : mandatoryHeaders.keySet()) {
+				PropertySynonyms propertySynonyms = nodeTypeSynonyms
+						.get(mandatoryKey);
+				String[] mandatoryValues = mandatoryHeaders.get(mandatoryKey);
+				for (String mandatoryValue : mandatoryValues) {
+					Synonym synonym = new Synonym(mandatoryValue);
+					String[] possibleHeadersArray = propertySynonyms
+							.get(synonym);
+					boolean flag = false;
+					for (String possibleHeader : possibleHeadersArray) {
+						if (headers.contains(possibleHeader)) {
+							flag = true;
+						}
+					}
+					if (flag == false) {
+						return new ValidateResultImpl(Result.UNKNOWN,
+								NO_NECESSARY_HEADERS);
+					}
+				}
 
-            }
+			}
 
-            return new ValidateResultImpl(Result.SUCCESS, "");
+			return new ValidateResultImpl(Result.SUCCESS, "");
 
-        } catch (Exception e) {
-            // TODO: handle exception
-            e.printStackTrace();
-            return new ValidateResultImpl(Result.FAIL, e.getLocalizedMessage());
-        }
-    }
-    
-    /**
-     * Find networks
-     *
-     * @param configuration 
-     * @return network model
-     * @throws AWEException 
-     */
-    public INetworkModel findNetwork(IConfiguration configuration) throws AWEException{
-        IProjectModel projectModel = ProjectModel.getCurrentProjectModel();
-        String networkName = configuration.getDatasetName();
-        return projectModel.findNetwork(networkName);
-    }
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			return new ValidateResultImpl(Result.FAIL, e.getLocalizedMessage());
+		}
+	}
 
-    @Override
-    public Result appropriate(List<File> filesToLoad) {
-        return null;
-    }
+	/**
+	 * Find networks
+	 * 
+	 * @param configuration
+	 * @return network model
+	 * @throws AWEException
+	 */
+	public INetworkModel findNetwork(IConfiguration configuration)
+			throws AWEException {
+		IProjectModel projectModel = ProjectModel.getCurrentProjectModel();
+		String networkName = configuration.getDatasetName();
+		return projectModel.findNetwork(networkName);
+	}
 
-    @Override
-    public IValidateResult validate(IConfiguration configuration) {
-        return null;
-    }
+	/**
+	 * Find drive model 
+	 * 
+	 * @param configuration
+	 * @param type
+	 * @return drive model or null
+	 * @throws AWEException 
+	 */
+	public IDriveModel findDriveModel(IConfiguration configuration,
+			DriveTypes type) throws AWEException {
+		IProjectModel projectModel = ProjectModel.getCurrentProjectModel();
+		String driveName = configuration.getDatasetName();
+		return projectModel.findDriveModel(driveName, type);
+	}
+
+	@Override
+	public Result appropriate(List<File> filesToLoad) {
+		return null;
+	}
+
+	@Override
+	public IValidateResult validate(IConfiguration configuration) {
+		return null;
+	}
 
 }

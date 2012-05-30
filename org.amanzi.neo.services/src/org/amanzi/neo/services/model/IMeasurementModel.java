@@ -163,14 +163,20 @@ public interface IMeasurementModel extends IRenderableModel, IDistributionalMode
     public INodeType getPrimaryType();
 
     /**
-     * Creates a node, sets its LATITUDE and LONGITUDE properties, and created a LOCATION
+     * Creates a node, sets its LATITUDE, LONGITUDE and TIMESTAMP properties, and created a LOCATION
      * relationship from parent node.
      * 
-     * @param parent
-     * @param lat
-     * @param lon
-     * @throws DatabaseException if errors occur in the database
+     * @param filename
+     * @param params
+     * @throws AWEException
      */
-    public IDataElement createLocationNode(IDataElement parent, double lat, double lon) throws DatabaseException;
+    public IDataElement addLocation(String filename, Map<String, Object> params) throws AWEException;
+
+    /**
+     * Get all measurements from database for current drive model
+     * 
+     * @return measurements
+     */
+    public Iterable<IDataElement> getCurrentModelMeasurements();
 
 }

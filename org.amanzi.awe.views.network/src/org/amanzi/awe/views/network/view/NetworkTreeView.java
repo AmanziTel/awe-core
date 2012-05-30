@@ -87,7 +87,7 @@ import scala.actors.threadpool.Arrays;
 public class NetworkTreeView extends ViewPart {
 
 	public static final String NETWORK_TREE_VIEW_ID = "org.amanzi.awe.views.network.views.NewNetworkTreeView";
-	public static final String NETWORK_PROPERTIES_VIEW_ID = "org.amanzi.awe.views.network.views.NetworkPropertiesView";
+	public static final String PROPERTIES_VIEW_ID = "org.amanzi.awe.views.network.views.PropertiesView";
 	private boolean currentMode = false;
 	private boolean notInterruptEvent = Boolean.TRUE;
 
@@ -387,9 +387,9 @@ public class NetworkTreeView extends ViewPart {
 	private void updateNetworkPropertiesView(boolean isEditable) {
 		try {
 			currentMode = isEditable;
-			NetworkPropertiesView propertiesView = (NetworkPropertiesView) PlatformUI
+			PropertiesView propertiesView = (PropertiesView) PlatformUI
 					.getWorkbench().getActiveWorkbenchWindow().getActivePage()
-					.showView(NETWORK_PROPERTIES_VIEW_ID);
+					.showView(PROPERTIES_VIEW_ID);
 			propertiesView.updateTableView(selectedDataElements, isEditable);
 		} catch (PartInitException e) {
 			MessageDialog.openError(null, NetworkMessages.ERROR_TITLE,
@@ -730,12 +730,13 @@ public class NetworkTreeView extends ViewPart {
 			IStructuredSelection selection, IMenuManager manager) {
 
 		boolean isNetwork = true;
-		boolean isSector = true;		
-		INetworkModel network;		
+		boolean isSector = true;
+		INetworkModel network;
 
 		// Sub menu
 		IDataElement element = null;
-		MenuManager subMenu = new MenuManager(NetworkMessages.DELETE_FROM_SELECTION_LIST);
+		MenuManager subMenu = new MenuManager(
+				NetworkMessages.DELETE_FROM_SELECTION_LIST);
 
 		if (selection.size() == 1) {
 			Iterator it = selection.iterator();
@@ -783,7 +784,7 @@ public class NetworkTreeView extends ViewPart {
 		private final String text;
 		private Set<IDataElement> selectedNodes = new HashSet<IDataElement>();
 		private ISelectionModel selectionModel;
-		private List<String> nameExistingSector = new ArrayList<String>();		
+		private List<String> nameExistingSector = new ArrayList<String>();
 
 		/**
 		 * Constructor
@@ -930,7 +931,7 @@ public class NetworkTreeView extends ViewPart {
 	 */
 	private class ExportToFileAction extends Action {
 
-		private boolean enabled;		
+		private boolean enabled;
 		private INetworkModel network;
 
 		/**
@@ -939,7 +940,7 @@ public class NetworkTreeView extends ViewPart {
 		 * @param selection
 		 *            selected elements
 		 */
-		public ExportToFileAction(IStructuredSelection selection) {			
+		public ExportToFileAction(IStructuredSelection selection) {
 			enabled = selection.size() == 1
 					&& selection.getFirstElement() instanceof INetworkModel;
 			if (enabled) {
@@ -1003,7 +1004,7 @@ public class NetworkTreeView extends ViewPart {
 	 */
 	private class CopyOfElementAction extends Action {
 
-		private boolean enabled;		
+		private boolean enabled;
 		private IDataElement element;
 
 		/**
@@ -1012,7 +1013,7 @@ public class NetworkTreeView extends ViewPart {
 		 * @param selection
 		 *            - selection
 		 */
-		public CopyOfElementAction(IStructuredSelection selection) {		
+		public CopyOfElementAction(IStructuredSelection selection) {
 			enabled = selection.size() == 1
 					&& !(selection.getFirstElement() instanceof INetworkModel);
 			if (enabled) {
@@ -1054,7 +1055,7 @@ public class NetworkTreeView extends ViewPart {
 	 */
 	@SuppressWarnings("rawtypes")
 	private void createSubmenuCreateNewElement(IStructuredSelection selection,
-			IMenuManager manager) {	
+			IMenuManager manager) {
 
 		// boolean values for node types
 		boolean isNetwork = false;
@@ -1075,7 +1076,8 @@ public class NetworkTreeView extends ViewPart {
 			Object elementObject = it.next();
 
 			// Sub menu
-			MenuManager subMenu = new MenuManager(NetworkMessages.CREATE_NEW_ELEMENT);
+			MenuManager subMenu = new MenuManager(
+					NetworkMessages.CREATE_NEW_ELEMENT);
 
 			// if selected element - network
 			if (elementObject instanceof INetworkModel) {
@@ -1210,7 +1212,8 @@ public class NetworkTreeView extends ViewPart {
 			Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
 					.getShell();
 			CreateNewElementDialog cdialog = new CreateNewElementDialog(shell,
-					element, type, networkModel, NetworkMessages.CREATE_NEW_ELEMENT, SWT.OK);
+					element, type, networkModel,
+					NetworkMessages.CREATE_NEW_ELEMENT, SWT.OK);
 			if (cdialog.open() == SWT.OK) {
 
 			} else {
@@ -1247,7 +1250,7 @@ public class NetworkTreeView extends ViewPart {
 	private class ShowOnMapAction extends Action {
 
 		// zoom
-		private static final double ZOOM = 0d;		
+		private static final double ZOOM = 0d;
 
 		// selected element
 		private IStructuredSelection selection;

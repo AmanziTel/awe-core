@@ -285,14 +285,6 @@ public class DistributionService extends AbstractService {
             LOGGER.error("NodeType of Distribution cannot be null or empty");
             throw new IllegalArgumentException("NodeType of Distribution cannot be null or empty");
         }
-        if (StringUtils.isEmpty(distribution.getPropertyName())) {
-            LOGGER.error("PropertyName of Distribution cannot be null or empty");
-            throw new IllegalArgumentException("PropertyName of Distribution cannot be null or empty");
-        }
-        if (distribution.getNodeType() == null) {
-            LOGGER.error("NodeType of Distribution cannot be null or empty");
-            throw new IllegalArgumentException("NodeType of Distribution cannot be null or empty");
-        }
 
         Node result = null;
 
@@ -414,6 +406,7 @@ public class DistributionService extends AbstractService {
                 .iterator();
         if (rel == null || !rel.hasNext()) {
             LOGGER.info("<findBarByAggregationNode(Node aggregatedNode)> cannot find AGGREGATEDrelationship");
+            return null;
         }
         while (rel.hasNext()) {
             Node barNode = rel.next().getOtherNode(aggregatedNode);

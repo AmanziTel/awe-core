@@ -88,13 +88,14 @@ public class DistributionManager {
     /*
      * Reuse plugin that contains bundle with distribution xml files
      */
-    private Plugin reusePlugin;
+    Plugin reusePlugin;
+
     public static final String DISTRIBUTION_XML_PATH = "distributions";
 
     /*
      * Distribution Service
      */
-    private static DistributionService distributionService = NeoServiceFactory.getInstance().getDistributionService();
+    DistributionService distributionService = NeoServiceFactory.getInstance().getDistributionService();
 
     /**
      * Returns instance of this Manager
@@ -156,12 +157,7 @@ public class DistributionManager {
             LOGGER.info("There is no active distribution model in model " + model);
             return null;
         }
-        try {
-            return new DistributionModel(model, currentDistributionNode);
-        } catch (AWEException e) {
-            LOGGER.error("Error when try to init distribution  for " + model, e);
-            return null;
-        }
+        return new DistributionModel(model, currentDistributionNode);
     }
 
     /**
@@ -440,7 +436,7 @@ public class DistributionManager {
      * @throws DistributionXmlParsingException
      * @throws IOException
      */
-    private IDistribution< ? > getUserDefinedDistribution(IDistributionalModel model, INodeType nodeType, String propertyName,
+    IDistribution< ? > getUserDefinedDistribution(IDistributionalModel model, INodeType nodeType, String propertyName,
             String distrName, DistributionXmlParser distrXmlParser) throws DistributionXmlParsingException, IOException {
         String cacheKey = getUserDefinedDistributionCacheKey(model, nodeType, propertyName, distrName);
         IDistribution< ? > result = distributionCache.get(cacheKey);

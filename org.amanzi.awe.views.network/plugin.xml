@@ -31,17 +31,17 @@
    <extension
          point="org.eclipse.ui.views">
       <view
-            name="Network Properties View"
+            name="Properties View"
             icon="icons/network.png"
             category="org.amanzi.awe.views"
-            class="org.amanzi.awe.views.network.view.NetworkPropertiesView"
-            id="org.amanzi.awe.views.network.views.NetworkPropertiesView">
+            class="org.amanzi.awe.views.network.view.PropertiesView"
+            id="org.amanzi.awe.views.network.views.PropertiesView">
       </view>
       <view
             category="org.amanzi.awe.views"
-            class="org.amanzi.awe.views.network.view.NetworkPropertiesView"
+            class="org.amanzi.awe.views.network.view.PropertiesView"
             icon="icons/network.png"
-            id="org.amanzi.awe.views.network.views.NetworkPropertiesView"
+            id="org.amanzi.awe.views.network.views.PropertiesView"
             name="New Network Properties View">
       </view>
    </extension>
@@ -62,7 +62,7 @@
          point="org.eclipse.ui.menus">
       <menuContribution
             allPopups="false"
-            locationURI="toolbar:org.amanzi.awe.views.network.views.NetworkPropertiesView">
+            locationURI="toolbar:org.amanzi.awe.views.network.views.PropertiesView">
          <command
                commandId="org.amanzi.awe.views.network.command.Copy"
                icon="icons/copy.png"

@@ -18,6 +18,13 @@
                image="icons/pointers/select_source.png">
          </cursor>
       </modalTool>
+      <modalTool
+            class="org.amanzi.awe.selection.tool.ElementsSelectionTool"
+            id="org.amanzi.awe.tool.selection"
+            name="Selection Tool"
+            onToolbar="true"
+            tooltip="Selection tool">
+      </modalTool>
    </extension>
 
 </plugin>

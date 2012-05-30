@@ -126,12 +126,12 @@ public class ExportSynonymsService extends AbstractService {
         /**
          * Add new Synonym to ExportSynonyms
          * 
-         * @param nodeType nodeType of Property
+         * @param nodeTypeId nodeType of Property
          * @param propertyName name of Property
          * @param synonym synonym of Property
          */
-        public void addSynonym(INodeType nodeType, String propertyName, String synonym) {
-            rawSynonyms.put(nodeType.getId() + SEPARATOR + propertyName, synonym);
+        public void addSynonym(String nodeTypeId, String propertyName, String synonym) {
+            rawSynonyms.put(nodeTypeId + SEPARATOR + propertyName, synonym);
         }
 
         /**

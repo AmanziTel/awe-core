@@ -11,6 +11,7 @@ Require-Bundle: net.refractions.udig.project.ui,
  org.amanzi.awe.ui;bundle-version="1.0.0"
 Bundle-ActivationPolicy: lazy
 Eclipse-ExtensibleAPI: true
-Export-Package: org.amanzi.awe.neostyle
+Export-Package: org.amanzi.awe.neostyle,
+ org.amanzi.awe.neostyle.drive
 Bundle-Vendor: amanzi.org
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
