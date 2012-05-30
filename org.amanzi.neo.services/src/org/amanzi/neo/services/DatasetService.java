@@ -108,6 +108,8 @@ public class DatasetService extends AbstractService {
     protected final TraversalDescription FIRST_RELATION_TRAVERSAL_DESCRIPTION = Traversal.description().breadthFirst()
             .evaluator(Evaluators.excludeStartPosition()).evaluator(Evaluators.atDepth(1));
 
+    protected final TraversalDescription ALL_MEASUREMENTS_TRAVERSER_DESCRIPTION = Traversal.description().depthFirst();
+
     /**
      * <p>
      * enum of dataset relationships types
@@ -715,26 +717,20 @@ public class DatasetService extends AbstractService {
      * @throws DatabaseException if something went wrong during creating the relationship
      */
     public Node addChild(Node parent, Node child) throws DatabaseException {
-        // validate parameters
-        if (parent == null) {
-            throw new IllegalArgumentException("Parent cannot be null");
-        }
-        if (child == null) {
-            throw new IllegalArgumentException("Child cannot be null");
-        }
+        return addChild(parent, child, DatasetRelationTypes.CHILD);
+    }
 
-        // create relationship
-        Transaction tx = graphDb.beginTx();
-        try {
-            parent.createRelationshipTo(child, DatasetRelationTypes.CHILD);
-            tx.success();
-        } catch (Exception e) {
-            LOGGER.error("Could not add child.", e);
-            throw new DatabaseException(e);
-        } finally {
-            tx.finish();
-        }
-        return child;
+    /**
+     * The method create a LOCATION relationship between <code>parent</code> to <code>child</code>
+     * 
+     * @param parent
+     * @param child
+     * @param relType
+     * @return child Node
+     * @throws DatabaseException
+     */
+    public Node addLocationChild(Node parent, Node child) throws DatabaseException {
+        return addChild(parent, child, DriveRelationshipTypes.LOCATION);
     }
 
     /**
@@ -1080,7 +1076,6 @@ public class DatasetService extends AbstractService {
         if (elementType == null) {
             throw new IllegalArgumentException("Element type is null.");
         }
-
         return DATASET_ELEMENT_TRAVERSAL_DESCRIPTION.evaluator(new FilterNodesByType(elementType)).traverse(parent).nodes();
     }
 
@@ -1147,4 +1142,41 @@ public class DatasetService extends AbstractService {
         return VIRTUAL_DATASET_TRAVERSAL_DESCRIPTION.traverse(rootDataset).nodes();
     }
 
+    public Iterable<Node> getAllMeasurements(Node rootNode) {
+        if (rootNode == null) {
+            throw new IllegalArgumentException("Root dataset node is null.");
+        }
+        return ALL_MEASUREMENTS_TRAVERSER_DESCRIPTION.evaluator(new FilterNodesByType(DriveNodeTypes.M)).traverse(rootNode).nodes();
+    }
+
+    /**
+     * The method create relationship <code>relType</code> between <code>parent</code> to
+     * <code>child</code>
+     * 
+     * @param parent
+     * @param child
+     * @param relType
+     * @return Child node
+     * @throws DatabaseException
+     */
+    private Node addChild(Node parent, Node child, RelationshipType relType) throws DatabaseException {
+        if (parent == null) {
+            throw new IllegalArgumentException("Parent cannot be null");
+        }
+        if (child == null) {
+            throw new IllegalArgumentException("Child cannot be null");
+        }
+
+        Transaction tx = graphDb.beginTx();
+        try {
+            parent.createRelationshipTo(child, relType);
+            tx.success();
+        } catch (Exception e) {
+            LOGGER.error("Could not add child.", e);
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
+        return child;
+    }
 }

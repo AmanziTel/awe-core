@@ -8,6 +8,11 @@
             id="org.amanzi.awe.neostyle.style.network"
             name="NeoNetworkStyle">
       </style>
+      <style
+            class="org.amanzi.awe.neostyle.drive.DriveStyleContent"
+            id="org.amanzi.awe.neostyle.style.drive"
+            name="DriveStyle">
+      </style>
    </extension>
    <extension
          point="net.refractions.udig.style.styleConfigurator">
@@ -17,6 +22,13 @@
             label="NetworkStyle"
             requires="org.amanzi.neo.services.model.INetworkModel"
             styleId="org.amanzi.awe.neostyle.style.network">
+      </styleConfigurator>
+      <styleConfigurator
+            class="org.amanzi.awe.neostyle.drive.DriveStyleConfigurator"
+            id="org.amanzi.awe.neostyle.drive.DriveStyleConfigurator"
+            label="DriveStyle"
+            requires="org.amanzi.neo.services.model.IMeasurementModel"
+            styleId="org.amanzi.awe.neostyle.style.drive">
       </styleConfigurator>
    </extension>
 

@@ -41,6 +41,7 @@ import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.IModel;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
@@ -423,5 +424,55 @@ public class DriveModel extends MeasurementModel implements IDriveModel {
             LOGGER.error("Error with get selected properties");
         }
         return result;
+    }
+
+    @Override
+    public Iterable<IDataElement> getMeasurements(Iterable<IDataElement> locations, IProgressMonitor monitor) {
+        Set<IDataElement> measurements = new HashSet<IDataElement>();
+        // TODO BP: try to optimize query for current task
+        if (monitor != null && locations != null) {
+            monitor.beginTask("Get measurements from database", ((Set<IDataElement>)locations).size());
+        }
+        for (IDataElement location : locations) {
+            if (monitor != null) {
+                if (monitor.isCanceled()) {
+                    break;
+                } else {
+                    monitor.worked(1);
+                }
+            }
+            if (location == null) {
+                throw new IllegalArgumentException("Parent element is null.");
+            }
+            Node parent = ((DataElement)location).getNode();
+            if (parent == null) {
+                throw new IllegalArgumentException("Parent node is null.");
+            }
+            LOGGER.debug("start getMeasurement(IDataElement parentElement)");
+            Iterator<Relationship> it = parent.getRelationships(DriveRelationshipTypes.LOCATION, Direction.INCOMING).iterator();
+            while (it.hasNext()) {
+                measurements.add(new DataElement(it.next().getOtherNode(parent)));
+            }
+        }
+        return measurements;
+    }
+
+    @Override
+    public Iterable<IDataElement> getAllMeasurements() {
+        return getCurrentModelMeasurements();
+    }
+
+    @Override
+    public IDataElement getLocation(IDataElement measurement) {
+        if (measurement == null) {
+            throw new IllegalArgumentException("Parent element is null.");
+        }
+        Node parent = ((DataElement)measurement).getNode();
+        if (parent == null) {
+            throw new IllegalArgumentException("Parent node is null.");
+        }
+        LOGGER.debug("start getLocation(IDataElement measurement)");
+        Relationship relationship = parent.getSingleRelationship(DriveRelationshipTypes.LOCATION, Direction.OUTGOING);
+        return new DataElement(relationship.getOtherNode(parent));
     }
 }

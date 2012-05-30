@@ -14,6 +14,10 @@
             class="org.amanzi.neo.loader.core.parser.AntennaParser"
             id="org.amanzi.neo.loader.core.parser.AntennaParser">
       </parser>
+      <parser
+            class="org.amanzi.neo.loader.core.parser.NemoParser"
+            id="org.amanzi.neo.loader.core.parser.NemoParser">
+      </parser>
    </extension>
    <!-- new savers config -->
    <extension
@@ -55,6 +59,10 @@
       <saver
             class="org.amanzi.neo.loader.core.saver.TRXSaver"
             id="org.amanzi.neo.loader.core.saver.TRXSaver">
+      </saver>
+      <saver
+            class="org.amanzi.neo.loader.core.saver.Nemo2xSaver"
+            id="org.amanzi.neo.loader.core.Nemo2xSaver">
       </saver>
    </extension>
    

@@ -16,6 +16,7 @@ package org.amanzi.awe.render.core;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.RadialGradientPaint;
 import java.awt.RenderingHints;
 import java.io.IOException;
 
@@ -545,6 +546,31 @@ public abstract class AbstractRenderer extends RendererImpl {
 			return 0;
 		}
 		return result / (double) count;
+	}
+
+	/**
+	 * Highlight selected items
+	 * 
+	 * @param destination
+	 * @param point
+	 *            point
+	 */
+	protected void highlightSelectedItem(Graphics2D destination,
+			java.awt.Point point) {
+		int elementSize = getSize() * 2;
+		float radius = 60;
+		float[] fractions = { 0.01f, 1.0f };
+		for (; elementSize > 0; elementSize *= 0.8) {
+			Color[] colors = {
+					commonStyle.changeColor(Color.CYAN, elementSize),
+					commonStyle.changeColor(Color.WHITE, Color.TRANSLUCENT) };
+			destination.setPaint(new RadialGradientPaint(
+					(point.x - elementSize / 3), (point.y - elementSize / 3),
+					radius, fractions, colors));
+			destination.fillOval((int) (point.x - (elementSize * 2.25)),
+					(int) (point.y - (elementSize * 2.25)), 4 * elementSize,
+					4 * elementSize);
+		}
 	}
 
 	/**

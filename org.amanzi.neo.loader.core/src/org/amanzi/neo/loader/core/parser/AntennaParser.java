@@ -43,8 +43,8 @@ public class AntennaParser<T1 extends ISaver<IModel, MappedData, T2>, T2 extends
 
     private String charSetName = Charset.defaultCharset().name();
 
-    private CountingFileInputStream is;
-    protected BufferedReader reader;
+//    private CountingFileInputStream is;
+//    protected BufferedReader reader;
     private double persentageOld = 0;
 
     public AntennaParser() {
@@ -66,18 +66,18 @@ public class AntennaParser<T1 extends ISaver<IModel, MappedData, T2>, T2 extends
     @Override
     protected MappedData parseElement(IProgressMonitor monitor) {
         if (tempFile == null || tempFile != currentFile) {
-            try {
-                is = new CountingFileInputStream(currentFile);
-                reader = new BufferedReader(new InputStreamReader(is, charSetName));
-                tempFile = currentFile;
+//            try {
+//                is = new CountingFileInputStream(currentFile);
+//                reader = new BufferedReader(new InputStreamReader(is, charSetName));
+//                tempFile = currentFile;
                 persentageOld = 0;
-            } catch (FileNotFoundException e) {
-                // TODO Handle FileNotFoundException
-                throw (RuntimeException)new RuntimeException().initCause(e);
-            } catch (UnsupportedEncodingException e) {
-                // TODO Handle UnsupportedEncodingException
-                throw (RuntimeException)new RuntimeException().initCause(e);
-            }
+//            } catch (FileNotFoundException e) {
+//                // TODO Handle FileNotFoundException
+//                throw (RuntimeException)new RuntimeException().initCause(e);
+//            } catch (UnsupportedEncodingException e) {
+//                // TODO Handle UnsupportedEncodingException
+//                throw (RuntimeException)new RuntimeException().initCause(e);
+//            }
             try {
                 String lineStr;
                 MappedData element = new MappedData();

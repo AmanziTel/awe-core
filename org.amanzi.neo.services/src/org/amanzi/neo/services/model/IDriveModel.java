@@ -19,6 +19,7 @@ import org.amanzi.neo.services.enums.IDriveType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.impl.DriveModel;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.neo4j.graphdb.RelationshipType;
 
 /**
@@ -29,7 +30,13 @@ import org.neo4j.graphdb.RelationshipType;
  * @author grigoreva_a
  * @since 1.0.0
  */
-public interface IDriveModel extends ICorrelatableModel, IRenderableModel, ITimelineModel, IMeasurementModel {
+public interface IDriveModel
+        extends
+            ICorrelatableModel,
+            IRenderableModel,
+            ITimelineModel,
+            IMeasurementModel,
+            IPropertyStatisticalModel {
 
     public final static String SELECTED_PROPERTIES = "selected_properties";
 
@@ -96,6 +103,14 @@ public interface IDriveModel extends ICorrelatableModel, IRenderableModel, ITime
      * @return the found location node or null.
      */
     public Iterable<IDataElement> getLocations(IDataElement parentElement);
+    
+    /**
+     * Get location for current measurement 
+     *
+     * @param measurement 
+     * @return location or null;
+     */
+    public IDataElement getLocation(IDataElement measurement);
 
     /**
      * Add a node with selected properties in DriveInquirerView
@@ -111,4 +126,19 @@ public interface IDriveModel extends ICorrelatableModel, IRenderableModel, ITime
      * @return Set of selected properties from DriveInquirerView
      */
     public Set<String> getSelectedProperties();
+
+    /**
+     * Method to get all measurements for current locations
+     * 
+     * @param locations
+     * @return Measurements
+     */
+    public Iterable<IDataElement> getMeasurements(Iterable<IDataElement> locations, IProgressMonitor monitor);
+
+    /**
+     * Method to get All Measurements for current Drive Model
+     * 
+     * @return measurements;
+     */
+    public Iterable<IDataElement> getAllMeasurements();
 }
