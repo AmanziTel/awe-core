@@ -30,8 +30,8 @@ import java.util.Map;
 
 import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.db.manager.IDatabaseManager;
-import org.amanzi.neo.loader.core.ConfigurationDataImpl;
-import org.amanzi.neo.loader.core.parser.CSVContainer;
+import org.amanzi.neo.loader.core.config.NetworkConfiguration;
+import org.amanzi.neo.loader.core.parser.MappedData;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceInitializer;
 import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
@@ -56,12 +56,14 @@ public class TRXSaverTesting extends AbstractAWETest {
     private static final Logger LOGGER = Logger.getLogger(TRXSaverTesting.class);
     private TRXSaver trxSaver;
     private static String PATH_TO_BASE = "";
-    private ConfigurationDataImpl config;
+    private NetworkConfiguration config;
     private static final String NETWORK_KEY = "Network";
     private static final String NETWORK_NAME = "testNetwork";
     private static final String PROJECT_KEY = "Project";
     private static final String PROJECT_NAME = "project";
 
+    private static final String ID_PARAM = "trx_id";
+    private static final String ID_VALUE = "1";
     private static final String SECTOR_PARAM = "sector";
     private static final String SECTOR_VALUE = "s1";
     private static final String SUB_SECTOR_PARAM = "subcell";
@@ -81,12 +83,11 @@ public class TRXSaverTesting extends AbstractAWETest {
     private static final String HSN_VALUE = "UL";
     private static final String MAIO_PARAM = "maio";
     private static final String ARFCN_PARAM = "arfcn";
-    private int MINIMAL_COLUMN_SIZE = 2;
     private static DataLoadPreferenceInitializer initializer;
     private final static Map<String, Object> TRX = new HashMap<String, Object>();
     private final static Map<String, Object> FREQ_MAP = new HashMap<String, Object>();
     private final static Map<String, Object> SECTOR = new HashMap<String, Object>();
-    private static NetworkModel networkModel;
+    private static final NetworkModel networkModelMock = mock(NetworkModel.class);
     private static Long startTime;
     private static IDatabaseManager dbManager;
 
@@ -117,7 +118,7 @@ public class TRXSaverTesting extends AbstractAWETest {
         SECTOR.put(AbstractService.TYPE, NetworkElementNodeType.SECTOR.getId());
     }
 
-    private HashMap<String, Object> hashMap = null;
+    private Map<String, String> hashMap = null;
 
     @AfterClass
     public static void tearDownAfterClass() throws Exception {
@@ -129,12 +130,9 @@ public class TRXSaverTesting extends AbstractAWETest {
     @Before
     public void onStart() throws AWEException {
         dbManager = mock(IDatabaseManager.class);
-        networkModel = mock(NetworkModel.class);
-        hashMap = new HashMap<String, Object>();
-        config = new ConfigurationDataImpl();
-        config.getDatasetNames().put(NETWORK_KEY, NETWORK_NAME);
-        config.getDatasetNames().put(PROJECT_KEY, PROJECT_NAME);
-        List<File> fileList = new LinkedList<File>();
+        hashMap = new HashMap<String, String>();
+        config = new NetworkConfiguration();
+        config.setDatasetName(NETWORK_NAME);
         File testFile = new File(PATH_TO_BASE + "/testFile.txt");
         try {
             testFile.createNewFile();
@@ -142,51 +140,46 @@ public class TRXSaverTesting extends AbstractAWETest {
             LOGGER.error(" onStart error while trying to create file", e);
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
-        fileList.add(testFile);
-        config.setSourceFile(fileList);
-        trxSaver = new TRXSaver(networkModel, (ConfigurationDataImpl)config);
+        config.setFile(testFile);
+        trxSaver = new TRXSaver() {
+            @Override
+            public void init(NetworkConfiguration configuration) throws AWEException {
+                // TODO: verify
+                this.networkModel = networkModelMock;
+                setMainModel(networkModelMock);
+            }
+        };
+        trxSaver.init(config);
         trxSaver.dbManager = dbManager;
+        hashMap.put(ID_PARAM, ID_VALUE);
         hashMap.put(SECTOR_PARAM, SECTOR_VALUE);
         hashMap.put(SUB_SECTOR_PARAM, SUB_SECTOR_VALUE);
         hashMap.put(NAME_PARAM, NAME_VALUE);
-        hashMap.put(TRX_ID_PARAM, TRX_ID_VALUE);
+        hashMap.put(TRX_ID_PARAM, TRX_ID_VALUE.toString());
         hashMap.put(BAND_PARAM, BAND_VALUE);
         hashMap.put(EXTENDED_PARAM, EXTENDED_PARAM);
-        hashMap.put(HOPING_TYPE_PARAM, HOPING_TYPE_VALUE);
-        hashMap.put(ISBCCH_PARAM, ISBCCH_VALUE);
+        hashMap.put(HOPING_TYPE_PARAM, HOPING_TYPE_VALUE.toString());
+        hashMap.put(ISBCCH_PARAM, ISBCCH_VALUE.toString());
         hashMap.put(HSN_PARAM, HSN_VALUE);
-        hashMap.put(MAIO_PARAM, 1);
-        hashMap.put(ARFCN_PARAM + " " + 1, 2);
+        hashMap.put(MAIO_PARAM, "1");
+        hashMap.put(ARFCN_PARAM + " " + 1, "2");
 
-    }
-
-    private List<String> prepareValues(HashMap<String, Object> map) {
-        List<String> values = new LinkedList<String>();
-        for (String key : map.keySet()) {
-            values.add(map.get(key).toString());
-        }
-        return values;
     }
 
     @SuppressWarnings("unchecked")
     @Test
     public void testSavingTRXWhenTRXNotExist() {
-        CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
-        List<String> header = new LinkedList<String>(hashMap.keySet());
-        rowContainer.setHeaders(header);
+        MappedData dataElement = new MappedData(hashMap);
         try {
-            trxSaver.saveElement(rowContainer);
-            List<String> values = prepareValues(hashMap);
-            rowContainer.setValues(values);
             List<IDataElement> trxList = new LinkedList<IDataElement>();
-            when(networkModel.findElement(eq(SECTOR))).thenReturn(new DataElement(SECTOR));
-            when(networkModel.getChildren(new DataElement(eq(SECTOR)))).thenReturn(trxList);
-            when(networkModel.createElement(new DataElement(eq(SECTOR)), eq(TRX))).thenReturn(new DataElement(TRX));
-            when(networkModel.getRelatedNodes(new DataElement(eq(TRX)), eq(NetworkRelationshipTypes.ENTRY_PLAN))).thenReturn(
+            when(networkModelMock.findElement(eq(SECTOR))).thenReturn(new DataElement(SECTOR));
+            when(networkModelMock.getChildren(new DataElement(eq(SECTOR)))).thenReturn(trxList);
+            when(networkModelMock.createElement(new DataElement(eq(SECTOR)), eq(TRX))).thenReturn(new DataElement(TRX));
+            when(networkModelMock.getRelatedNodes(new DataElement(eq(TRX)), eq(NetworkRelationshipTypes.ENTRY_PLAN))).thenReturn(
                     trxList);
-            trxSaver.saveElement(rowContainer);
-            verify(networkModel, atLeastOnce()).createElement(any(IDataElement.class), any(Map.class));
-            verify(networkModel, atLeastOnce()).createElement(any(IDataElement.class), any(Map.class),
+            trxSaver.saveElement(dataElement);
+            verify(networkModelMock, atLeastOnce()).createElement(any(IDataElement.class), any(Map.class));
+            verify(networkModelMock, atLeastOnce()).createElement(any(IDataElement.class), any(Map.class),
                     eq(NetworkRelationshipTypes.ENTRY_PLAN));
         } catch (Exception e) {
             LOGGER.error(" testSavingTRXWhenTRXNotExist error", e);
@@ -197,23 +190,18 @@ public class TRXSaverTesting extends AbstractAWETest {
     @SuppressWarnings("unchecked")
     @Test
     public void testSavingTRXWhenTRXExist() {
-        CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
-        List<String> header = new LinkedList<String>(hashMap.keySet());
-        rowContainer.setHeaders(header);
+        MappedData dataElement = new MappedData(hashMap);
         try {
-            trxSaver.saveElement(rowContainer);
-            List<String> values = prepareValues(hashMap);
-            rowContainer.setValues(values);
             List<IDataElement> trxList = new LinkedList<IDataElement>();
             trxList.add(new DataElement(TRX));
-            when(networkModel.findElement(eq(SECTOR))).thenReturn(new DataElement(SECTOR));
-            when(networkModel.getChildren(new DataElement(eq(SECTOR)))).thenReturn(trxList);
-            when(networkModel.createElement(new DataElement(eq(SECTOR)), eq(TRX))).thenReturn(new DataElement(TRX));
-            when(networkModel.getRelatedNodes(new DataElement(eq(TRX)), eq(NetworkRelationshipTypes.ENTRY_PLAN))).thenReturn(
+            when(networkModelMock.findElement(eq(SECTOR))).thenReturn(new DataElement(SECTOR));
+            when(networkModelMock.getChildren(new DataElement(eq(SECTOR)))).thenReturn(trxList);
+            when(networkModelMock.createElement(new DataElement(eq(SECTOR)), eq(TRX))).thenReturn(new DataElement(TRX));
+            when(networkModelMock.getRelatedNodes(new DataElement(eq(TRX)), eq(NetworkRelationshipTypes.ENTRY_PLAN))).thenReturn(
                     trxList);
-            trxSaver.saveElement(rowContainer);
-            verify(networkModel, never()).createElement(new DataElement(eq(SECTOR)), eq(TRX));
-            verify(networkModel, atLeastOnce()).completeProperties(any(IDataElement.class), any(Map.class), any(Boolean.class));
+            trxSaver.saveElement(dataElement);
+            verify(networkModelMock, never()).createElement(new DataElement(eq(SECTOR)), eq(TRX));
+            verify(networkModelMock, atLeastOnce()).completeProperties(any(IDataElement.class), any(Map.class), any(Boolean.class));
         } catch (Exception e) {
             LOGGER.error(" testSavingTRXWhenTRXExist error", e);
             Assert.fail("Exception while saving row");
@@ -222,21 +210,16 @@ public class TRXSaverTesting extends AbstractAWETest {
 
     @Test
     public void testSavingTRXWhenSectorIsNotExist() {
-        CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
-        List<String> header = new LinkedList<String>(hashMap.keySet());
-        rowContainer.setHeaders(header);
+        MappedData dataElement = new MappedData(hashMap);
         try {
-            trxSaver.saveElement(rowContainer);
-            List<String> values = prepareValues(hashMap);
-            rowContainer.setValues(values);
             List<IDataElement> trxList = new LinkedList<IDataElement>();
-            when(networkModel.findElement(eq(SECTOR))).thenReturn(null);
-            when(networkModel.createElement(new DataElement(eq(SECTOR)), eq(TRX))).thenReturn(new DataElement(TRX));
-            when(networkModel.getChildren(new DataElement(eq(SECTOR)))).thenReturn(trxList);
-            when(networkModel.getRelatedNodes(new DataElement(eq(TRX)), eq(NetworkRelationshipTypes.ENTRY_PLAN))).thenReturn(
+            when(networkModelMock.findElement(eq(SECTOR))).thenReturn(null);
+            when(networkModelMock.createElement(new DataElement(eq(SECTOR)), eq(TRX))).thenReturn(new DataElement(TRX));
+            when(networkModelMock.getChildren(new DataElement(eq(SECTOR)))).thenReturn(trxList);
+            when(networkModelMock.getRelatedNodes(new DataElement(eq(TRX)), eq(NetworkRelationshipTypes.ENTRY_PLAN))).thenReturn(
                     trxList);
-            trxSaver.saveElement(rowContainer);
-            verify(networkModel, never()).createElement(new DataElement(eq(SECTOR)), eq(TRX));
+            trxSaver.saveElement(dataElement);
+            verify(networkModelMock, never()).createElement(new DataElement(eq(SECTOR)), eq(TRX));
         } catch (Exception e) {
             LOGGER.error(" testSavingTRXWhenSectorIsNotExist error", e);
             Assert.fail("Exception while saving row");
@@ -246,16 +229,10 @@ public class TRXSaverTesting extends AbstractAWETest {
     @SuppressWarnings("unchecked")
     @Test
     public void testTransactionRollBackIfDatabaseExceptionThrow() {
-        CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
-        List<String> header = new LinkedList<String>(hashMap.keySet());
-        rowContainer.setHeaders(header);
+        MappedData dataElement = new MappedData(hashMap);
         try {
-            trxSaver.saveElement(rowContainer);
-            List<String> values = prepareValues(hashMap);
-
-            rowContainer.setValues(values);
-            when(networkModel.findElement(any(Map.class))).thenThrow(new DatabaseException("required exception"));
-            trxSaver.saveElement(rowContainer);
+            when(networkModelMock.findElement(any(Map.class))).thenThrow(new DatabaseException("required exception"));
+            trxSaver.saveElement(dataElement);
         } catch (Exception e) {
             verify(dbManager, never()).commitThreadTransaction();
             verify(dbManager, atLeastOnce()).rollbackThreadTransaction();
@@ -266,15 +243,10 @@ public class TRXSaverTesting extends AbstractAWETest {
     @SuppressWarnings("unchecked")
     @Test
     public void testTransactionContiniousIfRestExceptionThrow() {
-        CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
-        List<String> header = new LinkedList<String>(hashMap.keySet());
-        rowContainer.setHeaders(header);
+        MappedData dataElement = new MappedData(hashMap);
         try {
-            trxSaver.saveElement(rowContainer);
-            List<String> values = prepareValues(hashMap);
-            rowContainer.setValues(values);
-            when(networkModel.findElement(any(Map.class))).thenThrow(new IllegalArgumentException("required exception"));
-            trxSaver.saveElement(rowContainer);
+            when(networkModelMock.findElement(any(Map.class))).thenThrow(new IllegalArgumentException("required exception"));
+            trxSaver.saveElement(dataElement);
             verify(dbManager, never()).rollbackThreadTransaction();
 
         } catch (Exception e) {

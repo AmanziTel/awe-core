@@ -30,8 +30,8 @@ import java.util.Map;
 
 import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.db.manager.IDatabaseManager;
-import org.amanzi.neo.loader.core.ConfigurationDataImpl;
-import org.amanzi.neo.loader.core.parser.CSVContainer;
+import org.amanzi.neo.loader.core.config.NetworkConfiguration;
+import org.amanzi.neo.loader.core.parser.MappedData;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceInitializer;
 import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
@@ -53,9 +53,9 @@ import org.junit.Test;
  */
 public class SeparationConstraintsSaverTesting extends AbstractAWETest {
     private static final Logger LOGGER = Logger.getLogger(SeparationConstraintsSaverTesting.class);
-    private SeparationCostraintSaver separationSaver;
+    private SeparationConstraintSaver separationSaver;
     private static String PATH_TO_BASE = "";
-    private ConfigurationDataImpl config;
+    private NetworkConfiguration config;
     private static final String NETWORK_KEY = "Network";
     private static final String NETWORK_NAME = "testNetwork";
     private static final String PROJECT_KEY = "Project";
@@ -69,7 +69,7 @@ public class SeparationConstraintsSaverTesting extends AbstractAWETest {
     private static DataLoadPreferenceInitializer initializer;
     private final static Map<String, Object> COMPLETED_SECTOR = new HashMap<String, Object>();
     private final static Map<String, Object> COLLECTED_SECTOR = new HashMap<String, Object>();
-    private static NetworkModel model;
+    private static final NetworkModel networkModelMock = mock(NetworkModel.class);
     private static Long startTime;
     private static IDatabaseManager dbManager;
 
@@ -91,7 +91,7 @@ public class SeparationConstraintsSaverTesting extends AbstractAWETest {
 
     }
 
-    private HashMap<String, Object> hashMap = null;
+    private HashMap<String, String> hashMap = null;
 
     @AfterClass
     public static void tearDownAfterClass() throws Exception {
@@ -103,12 +103,9 @@ public class SeparationConstraintsSaverTesting extends AbstractAWETest {
     @Before
     public void onStart() throws AWEException {
         dbManager = mock(IDatabaseManager.class);
-        model = mock(NetworkModel.class);
-        hashMap = new HashMap<String, Object>();
-        config = new ConfigurationDataImpl();
-        config.getDatasetNames().put(NETWORK_KEY, NETWORK_NAME);
-        config.getDatasetNames().put(PROJECT_KEY, PROJECT_NAME);
-        List<File> fileList = new LinkedList<File>();
+        hashMap = new HashMap<String, String>();
+        config = new NetworkConfiguration();
+        config.setDatasetName(NETWORK_NAME);
         File testFile = new File(PATH_TO_BASE + "/testFile.txt");
         try {
             testFile.createNewFile();
@@ -116,36 +113,29 @@ public class SeparationConstraintsSaverTesting extends AbstractAWETest {
             LOGGER.error(" onStart error while trying to create file", e);
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
-        fileList.add(testFile);
-        config.setSourceFile(fileList);
-        separationSaver = new SeparationCostraintSaver(model, (ConfigurationDataImpl)config);
+        config.setFile(testFile);
+        separationSaver = new SeparationConstraintSaver(){
+            @Override
+            public void init(NetworkConfiguration configuration) throws AWEException {
+                // TODO: verify
+                this.networkModel = networkModelMock;
+                setMainModel(networkModelMock);
+            }
+        };
         separationSaver.dbManager = dbManager;
         hashMap.put(SECTOR_PARAM, SECTOR_VALUE);
-        hashMap.put(SEPARATION_PARAM, SEPARATION_VALUE);
-    }
-
-    private List<String> prepareValues(HashMap<String, Object> map) {
-        List<String> values = new LinkedList<String>();
-        for (String key : map.keySet()) {
-            values.add(map.get(key).toString());
-        }
-        return values;
+        hashMap.put(SEPARATION_PARAM, SEPARATION_VALUE.toString());
     }
 
     @Test
     public void testCompleteingElement() {
-        CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
-        List<String> header = new LinkedList<String>(hashMap.keySet());
-        rowContainer.setHeaders(header);
+       MappedData dataElement = new MappedData(hashMap);
         try {
-            separationSaver.saveElement(rowContainer);
-            List<String> values = prepareValues(hashMap);
-            rowContainer.setValues(values);
-            when(model.findElement(eq(COLLECTED_SECTOR))).thenReturn(new DataElement(COLLECTED_SECTOR));
-            when(model.completeProperties(new DataElement(eq(COLLECTED_SECTOR)), eq(COMPLETED_SECTOR), any(Boolean.class)))
+            when(networkModelMock.findElement(eq(COLLECTED_SECTOR))).thenReturn(new DataElement(COLLECTED_SECTOR));
+            when(networkModelMock.completeProperties(new DataElement(eq(COLLECTED_SECTOR)), eq(COMPLETED_SECTOR), any(Boolean.class)))
                     .thenReturn(new DataElement(COLLECTED_SECTOR));
-            separationSaver.saveElement(rowContainer);
-            verify(model, atLeastOnce()).completeProperties(new DataElement(eq(COLLECTED_SECTOR)), eq(COMPLETED_SECTOR),
+            separationSaver.saveElement(dataElement);
+            verify(networkModelMock, atLeastOnce()).completeProperties(new DataElement(eq(COLLECTED_SECTOR)), eq(COMPLETED_SECTOR),
                     any(Boolean.class));
         } catch (Exception e) {
             LOGGER.error(" testCompleteingElement error", e);
@@ -156,18 +146,13 @@ public class SeparationConstraintsSaverTesting extends AbstractAWETest {
     @SuppressWarnings("unchecked")
     @Test
     public void testIfSectorNotFound() {
-        CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
-        List<String> header = new LinkedList<String>(hashMap.keySet());
-        rowContainer.setHeaders(header);
+        MappedData dataElement = new MappedData(hashMap);
         try {
-            separationSaver.saveElement(rowContainer);
-            List<String> values = prepareValues(hashMap);
-            rowContainer.setValues(values);
-            when(model.findElement(eq(COLLECTED_SECTOR))).thenReturn(null);
-            when(model.completeProperties(new DataElement(eq(COLLECTED_SECTOR)), eq(COMPLETED_SECTOR), any(Boolean.class)))
+            when(networkModelMock.findElement(eq(COLLECTED_SECTOR))).thenReturn(null);
+            when(networkModelMock.completeProperties(new DataElement(eq(COLLECTED_SECTOR)), eq(COMPLETED_SECTOR), any(Boolean.class)))
                     .thenReturn(new DataElement(COLLECTED_SECTOR));
-            separationSaver.saveElement(rowContainer);
-            verify(model, never()).completeProperties(any(IDataElement.class), any(Map.class), any(Boolean.class));
+            separationSaver.saveElement(dataElement);
+            verify(networkModelMock, never()).completeProperties(any(IDataElement.class), any(Map.class), any(Boolean.class));
         } catch (Exception e) {
             LOGGER.error(" testIfSectorNotFound error", e);
             Assert.fail("Exception while saving row");
@@ -177,19 +162,14 @@ public class SeparationConstraintsSaverTesting extends AbstractAWETest {
     @SuppressWarnings("unchecked")
     @Test
     public void testIfThereIsNoValue() {
-        CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
-        List<String> header = new LinkedList<String>(hashMap.keySet());
-        rowContainer.setHeaders(header);
+        MappedData dataElement = new MappedData(hashMap);
         try {
-            separationSaver.saveElement(rowContainer);
-            List<String> values = prepareValues(hashMap);
-            rowContainer.setValues(values);
             COMPLETED_SECTOR.remove(SEPARATION_PARAM);
-            when(model.findElement(eq(COLLECTED_SECTOR))).thenReturn(null);
-            when(model.completeProperties(new DataElement(eq(COLLECTED_SECTOR)), eq(COMPLETED_SECTOR), any(Boolean.class)))
+            when(networkModelMock.findElement(eq(COLLECTED_SECTOR))).thenReturn(null);
+            when(networkModelMock.completeProperties(new DataElement(eq(COLLECTED_SECTOR)), eq(COMPLETED_SECTOR), any(Boolean.class)))
                     .thenReturn(new DataElement(COLLECTED_SECTOR));
-            separationSaver.saveElement(rowContainer);
-            verify(model, never()).completeProperties(any(IDataElement.class), any(Map.class), any(Boolean.class));
+            separationSaver.saveElement(dataElement);
+            verify(networkModelMock, never()).completeProperties(any(IDataElement.class), any(Map.class), any(Boolean.class));
         } catch (Exception e) {
             LOGGER.error(" testIfThereIsNoValue error", e);
             Assert.fail("Exception while saving row");
@@ -198,16 +178,10 @@ public class SeparationConstraintsSaverTesting extends AbstractAWETest {
 
     @Test
     public void testTransactionRollBackIfDatabaseExceptionThrow() {
-        CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
-        List<String> header = new LinkedList<String>(hashMap.keySet());
-        rowContainer.setHeaders(header);
+        MappedData dataElement = new MappedData(hashMap);
         try {
-            separationSaver.saveElement(rowContainer);
-            List<String> values = prepareValues(hashMap);
-
-            rowContainer.setValues(values);
-            when(model.findElement(any(Map.class))).thenThrow(new DatabaseException("required exception"));
-            separationSaver.saveElement(rowContainer);
+            when(networkModelMock.findElement(any(Map.class))).thenThrow(new DatabaseException("required exception"));
+            separationSaver.saveElement(dataElement);
         } catch (Exception e) {
             verify(dbManager, never()).commitThreadTransaction();
             verify(dbManager, atLeastOnce()).rollbackThreadTransaction();
@@ -218,15 +192,10 @@ public class SeparationConstraintsSaverTesting extends AbstractAWETest {
     @SuppressWarnings("unchecked")
     @Test
     public void testTransactionContiniousIfRestExceptionThrow() {
-        CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
-        List<String> header = new LinkedList<String>(hashMap.keySet());
-        rowContainer.setHeaders(header);
+        MappedData dataElement = new MappedData(hashMap);
         try {
-            separationSaver.saveElement(rowContainer);
-            List<String> values = prepareValues(hashMap);
-            rowContainer.setValues(values);
-            when(model.findElement(any(Map.class))).thenThrow(new IllegalArgumentException("required exception"));
-            separationSaver.saveElement(rowContainer);
+            when(networkModelMock.findElement(any(Map.class))).thenThrow(new IllegalArgumentException("required exception"));
+            separationSaver.saveElement(dataElement);
             verify(dbManager, never()).rollbackThreadTransaction();
 
         } catch (Exception e) {
