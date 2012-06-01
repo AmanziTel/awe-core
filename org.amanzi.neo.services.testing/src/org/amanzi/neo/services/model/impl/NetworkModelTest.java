@@ -78,8 +78,6 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        clearDb();
-        initializeDb();
 
         dsServ = NeoServiceFactory.getInstance().getDatasetService();
         prServ = NeoServiceFactory.getInstance().getProjectService();
@@ -452,7 +450,7 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
             }
             n2ns.add(mdl.getRootNode());
         }
- 
+
         Iterable<INodeToNodeRelationsModel> it = null;
         try {
             it = model.getNodeToNodeModels();
@@ -623,68 +621,67 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
         }
         Assert.assertTrue("Same nodes expected ", pModel.getRootNode().equals(project));
     }
-    
+
     @Test
-    public void testSetCurrentNodeToNodeRelationshipModel() throws AWEException {    	          
-    	NetworkService networkService = mock(NetworkService.class);    	    	
-     
-    	model.setNetworkService(networkService);    	    	    	    
-    	model.setCurrentNodeToNodeRelationshipModel(new NodeToNodeRelationshipModel(new DataElement(network), N2NRelTypes.NEIGHBOUR, "name",
-                NetworkElementNodeType.SECTOR));   
-    	
-    	verify(networkService).setCurrentNodeToNodeModelName(any(Node.class), any(String.class));
+    public void testSetCurrentNodeToNodeRelationshipModel() throws AWEException {
+        NetworkService networkService = mock(NetworkService.class);
+
+        model.setNetworkService(networkService);
+        model.setCurrentNodeToNodeRelationshipModel(new NodeToNodeRelationshipModel(new DataElement(network),
+                N2NRelTypes.NEIGHBOUR, "name", NetworkElementNodeType.SECTOR));
+
+        verify(networkService).setCurrentNodeToNodeModelName(any(Node.class), any(String.class));
     }
-    
+
     @Test
-    public void testGetCurrentNodeToNodeRelationshipModel() throws Exception {    	
-    	INodeToNodeRelationsModel expectedModel = new NodeToNodeRelationshipModel(new DataElement(network), N2NRelTypes.NEIGHBOUR, "name",
-                NetworkElementNodeType.SECTOR);
-    	    	    	    
-    	NetworkModel networkModel = mock(NetworkModel.class);
-    	
-    	networkModel.setCurrentNodeToNodeRelationshipModel(expectedModel);
-    	INodeToNodeRelationsModel actualModel = networkModel.getCurrentNodeToNodeRelationshipModel();
-    	
-    	when(networkModel.getCurrentNodeToNodeRelationshipModel()).thenReturn(actualModel);
-    	
-    	Assert.assertNull(model.getCurrentNodeToNodeRelationshipModel());
-    	
-    	model.setCurrentNodeToNodeRelationshipModel(expectedModel);
-    	
-    	Assert.assertEquals(expectedModel.getName(), model.getCurrentNodeToNodeRelationshipModel().getName());
-    	    	    	       	    	   
-    }    
-    
-	@Test
-	public void testSetStarToolSelectedModel() throws AWEException {
-		NetworkService service = mock(NetworkService.class);
-		model.setNetworkService(service);
-		model.setStarToolSelectedModel();
-		verify(service).setStarToolSelectedModelName(any(Node.class),
-				any(String.class));
-	}
-	
-	@Test
-	public void testGetStarToolSelectedModel() throws AWEException {		
-		Assert.assertNull(model.getStarToolSelectedModel());
-		model.setStarToolSelectedModel();
-		INetworkModel testModel = (INetworkModel) model.getStarToolSelectedModel();
-		Assert.assertNotNull(testModel);
-		
-		Node testModelNode = dsServ.createDataset(project, "star_tool_network", DatasetTypes.NETWORK);
-		
-		INetworkModel expectedModel = new NetworkModel(testModelNode);
-		expectedModel.setStarToolSelectedModel();
-		testModel = (INetworkModel) expectedModel.getStarToolSelectedModel();
-		Assert.assertNotNull(testModel);
-	}
-	
-	@Test
-	public void testRemoveStarToolSelectedModel() throws AWEException {
-		Assert.assertNull(model.getStarToolSelectedModel());
-		model.setStarToolSelectedModel();
-		Assert.assertNotNull(model.getStarToolSelectedModel());
-		model.removeStarToolSelectedModel();
-		Assert.assertNull(model.getStarToolSelectedModel());
-	}
+    public void testGetCurrentNodeToNodeRelationshipModel() throws Exception {
+        INodeToNodeRelationsModel expectedModel = new NodeToNodeRelationshipModel(new DataElement(network), N2NRelTypes.NEIGHBOUR,
+                "name", NetworkElementNodeType.SECTOR);
+
+        NetworkModel networkModel = mock(NetworkModel.class);
+
+        networkModel.setCurrentNodeToNodeRelationshipModel(expectedModel);
+        INodeToNodeRelationsModel actualModel = networkModel.getCurrentNodeToNodeRelationshipModel();
+
+        when(networkModel.getCurrentNodeToNodeRelationshipModel()).thenReturn(actualModel);
+
+        Assert.assertNull(model.getCurrentNodeToNodeRelationshipModel());
+
+        model.setCurrentNodeToNodeRelationshipModel(expectedModel);
+
+        Assert.assertEquals(expectedModel.getName(), model.getCurrentNodeToNodeRelationshipModel().getName());
+
+    }
+
+    @Test
+    public void testSetStarToolSelectedModel() throws AWEException {
+        NetworkService service = mock(NetworkService.class);
+        model.setNetworkService(service);
+        model.setStarToolSelectedModel();
+        verify(service).setStarToolSelectedModelName(any(Node.class), any(String.class));
+    }
+
+    @Test
+    public void testGetStarToolSelectedModel() throws AWEException {
+        Assert.assertNull(model.getStarToolSelectedModel());
+        model.setStarToolSelectedModel();
+        INetworkModel testModel = (INetworkModel)model.getStarToolSelectedModel();
+        Assert.assertNotNull(testModel);
+
+        Node testModelNode = dsServ.createDataset(project, "star_tool_network", DatasetTypes.NETWORK);
+
+        INetworkModel expectedModel = new NetworkModel(testModelNode);
+        expectedModel.setStarToolSelectedModel();
+        testModel = (INetworkModel)expectedModel.getStarToolSelectedModel();
+        Assert.assertNotNull(testModel);
+    }
+
+    @Test
+    public void testRemoveStarToolSelectedModel() throws AWEException {
+        Assert.assertNull(model.getStarToolSelectedModel());
+        model.setStarToolSelectedModel();
+        Assert.assertNotNull(model.getStarToolSelectedModel());
+        model.removeStarToolSelectedModel();
+        Assert.assertNull(model.getStarToolSelectedModel());
+    }
 }

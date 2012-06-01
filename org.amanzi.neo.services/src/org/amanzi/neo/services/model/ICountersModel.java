@@ -13,7 +13,11 @@
 
 package org.amanzi.neo.services.model;
 
+import java.util.Map;
+
 import org.amanzi.neo.model.distribution.IDistributionalModel;
+import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.exceptions.DatabaseException;
 
 //TODO: LN: comments
 /**
@@ -26,6 +30,16 @@ import org.amanzi.neo.model.distribution.IDistributionalModel;
  */
 public interface ICountersModel extends ICorrelatableModel, ITimelineModel, IMeasurementModel, IDistributionalModel {
 
-    // TODO: LN: comments
+    /**
+     * @return type of counters model
+     */
     public ICountersType getCountersType();
+
+    /**
+     * just added new node in child-next structure;
+     * 
+     * @param param
+     * @throws DatabaseException
+     */
+    public IDataElement addMeasurement(Map<String, Object> param) throws AWEException;
 }

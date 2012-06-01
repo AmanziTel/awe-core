@@ -1147,4 +1147,26 @@ public class DatasetService extends AbstractService {
         return VIRTUAL_DATASET_TRAVERSAL_DESCRIPTION.traverse(rootDataset).nodes();
     }
 
+    /**
+     * try to find node in child->next chain by property and value
+     * 
+     * @param rootNode
+     * @param propertyName
+     * @param value
+     * @return
+     */
+    public Node findNodeInChainByProperty(Node rootNode, String propertyName, Object value) {
+        Iterable<Node> chain = getChildrenChainTraverser(rootNode);
+        if (chain == null) {
+            return null;
+        }
+        Iterator<Node> nodeIterator = chain.iterator();
+        while (nodeIterator.hasNext()) {
+            Node searchableNode = nodeIterator.next();
+            if (searchableNode.getProperty(propertyName).equals(value)) {
+                return searchableNode;
+            }
+        }
+        return null;
+    }
 }

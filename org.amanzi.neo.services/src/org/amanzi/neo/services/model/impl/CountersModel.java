@@ -16,6 +16,7 @@ package org.amanzi.neo.services.model.impl;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.CorrelationService;
@@ -81,6 +82,16 @@ public class CountersModel extends MeasurementModel implements ICountersModel {
      */
     public CountersModel(Node parent, Node rootNode, String name, ICountersType type) throws AWEException {
         this(parent, rootNode, name, type, DriveNodeTypes.M);
+    }
+
+    public IDataElement addMeasurement(Map<String, Object> param) throws AWEException {
+        Node measurmentNode = datasetService.createNode(param);
+        datasetService.addChild(rootNode, measurmentNode, null);
+        Long tst = (Long)param.get(TIMESTAMP);
+        if ((tst != null) && (tst != 0)) {
+            updateTimestamp(tst);
+        }
+        return new DataElement(param);
     }
 
     /**

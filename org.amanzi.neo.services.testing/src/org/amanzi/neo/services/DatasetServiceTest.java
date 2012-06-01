@@ -25,6 +25,7 @@ import org.amanzi.neo.services.DatasetService.DriveTypes;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
+import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
 import org.apache.log4j.Logger;
@@ -80,6 +81,7 @@ public class DatasetServiceTest extends AbstractNeoServiceTest {
      */
     private final String NAME_1 = "dataset_1";
     private final String NAME_2 = "dataset_2";
+    private final String NAME = "child_name_";
 
     /**
      * this methot inits properties for dataset node
@@ -1786,6 +1788,35 @@ public class DatasetServiceTest extends AbstractNeoServiceTest {
                 }
 
             }
+        }
+    }
+
+    @Test
+    public void testFindNodeInChainByProperty() throws IllegalNodeDataException {
+        parent = getNewChild();
+        List<Node> children = new ArrayList<Node>();
+        // add child to parent
+        for (int i = 0; i < 4; i++) {
+            try {
+                Node child = getNewChild();
+                service.setAnyProperty(child, AbstractService.NAME, NAME + i);
+                children.add(service.addChild(parent, child, null));
+            } catch (DatabaseException e) {
+                LOGGER.error("could not add child", e);
+                Assert.fail();
+            }
+        }
+        boolean isStore = false;
+        for (int i = 0; i < 4; i++) {
+            Node child = service.findNodeInChainByProperty(parent, AbstractService.NAME, NAME + i);
+            for (Node store : children) {
+                if (store.equals(child)) {
+                    isStore = true;
+                    break;
+                }
+            }
+            Assert.assertTrue(child + "not found", isStore);
+            isStore = false;
         }
     }
 
