@@ -129,15 +129,16 @@ public class NetworkSaver extends
 			}
 
 			Map<String, Object> values = getDataElementProperties(
-					getMainModel(), type, dataElement,
+					getMainModel(), type.getId(), dataElement,
 					shouldAddAllElements(type), true);
 
 			// trick for SITE name - it can be computed from Sector name
 			if (type == NetworkElementNodeType.SITE) {
 				if (siteNameFromSectorName) {
 					Map<String, Object> sectorProperties = getDataElementProperties(
-							getMainModel(), NetworkElementNodeType.SECTOR,
-							dataElement, shouldAddAllElements(type), false);
+							getMainModel(),
+							NetworkElementNodeType.SECTOR.getId(), dataElement,
+							shouldAddAllElements(type), false);
 
 					String sectorName = (String) sectorProperties
 							.get(AbstractService.NAME);

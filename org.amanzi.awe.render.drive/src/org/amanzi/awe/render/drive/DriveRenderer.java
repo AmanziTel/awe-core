@@ -16,16 +16,24 @@ package org.amanzi.awe.render.drive;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.util.Date;
+import java.util.Iterator;
 
+import org.amanzi.awe.neostyle.drive.DriveStyle;
+import org.amanzi.awe.neostyle.drive.DriveStyleContent;
 import org.amanzi.awe.render.core.AbstractRenderer;
 import org.amanzi.awe.render.core.AbstractRendererStyles;
 import org.amanzi.awe.render.core.RenderShape;
+import org.amanzi.awe.render.core.Scale;
 import org.amanzi.neo.services.model.IDataElement;
+import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.IMeasurementModel;
 import org.amanzi.neo.services.model.IRenderableModel;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
+import org.apache.commons.lang.StringUtils;
 import org.opengis.referencing.operation.TransformException;
 
+import com.ibm.icu.text.SimpleDateFormat;
 import com.vividsolutions.jts.geom.Envelope;
 
 /**
@@ -37,6 +45,8 @@ import com.vividsolutions.jts.geom.Envelope;
  * @since 1.0.0
  */
 public class DriveRenderer extends AbstractRenderer {
+	private static final String TIMESTAMP = "timestamp";
+	private static final String MEASUREMENT = "measurement";
 	private DefaultDriveRendererStyles driveRendererStyle;
 
 	@Override
@@ -49,11 +59,24 @@ public class DriveRenderer extends AbstractRenderer {
 	protected void renderElement(Graphics2D destination, Point point,
 			IDataElement mpLocation, IRenderableModel model) {
 		renderCoordinateElement(destination, point, mpLocation);
+		if (driveRendererStyle.getScale() == Scale.LARGE) {
+			renderLabel(destination, point, mpLocation, model);
+		}
 	}
 
 	@Override
 	protected void setStyle(Graphics2D destination) {
 		super.setStyle(destination);
+		DriveStyle style = (DriveStyle) getContext().getLayer()
+				.getStyleBlackboard().get(DriveStyleContent.ID);
+		driveRendererStyle.setDefaultLabelColor(style.getLabelColor());
+		driveRendererStyle.setDefaultLineColor(style.getLineColor());
+		driveRendererStyle.setDefaultLocationColor(style.getLocationColor());
+		driveRendererStyle.setDefaultFontSize(style.getFontSize());
+		driveRendererStyle.setDefaultLocationLabelType(style
+				.getLocationLabelType());
+		driveRendererStyle.setDefaultMeasurementPropertyName(style
+				.getMeasurementNameProperty());
 	}
 
 	@Override
@@ -79,7 +102,7 @@ public class DriveRenderer extends AbstractRenderer {
 
 	@Override
 	protected Color getDefaultFillColorByElement(IDataElement element) {
-		return driveRendererStyle.getDefaultMpColor();
+		return driveRendererStyle.getDefaultLocationColor();
 	}
 
 	@Override
@@ -102,10 +125,88 @@ public class DriveRenderer extends AbstractRenderer {
 
 	@Override
 	protected void renderSelectedElement(Graphics2D destination, Point point,
-			IRenderableModel model, IDataElement sector, Envelope selectedBounds)
-			throws TransformException {
-		// TODO Auto-generated method stub
-		
+			IRenderableModel model, IDataElement element,
+			Envelope selectedBounds) throws TransformException {
+		highlightSelectedItem(destination, point);
+		renderElement(destination, point, element, model);
+	}
+
+	/**
+	 * Render Label
+	 * 
+	 * @param destination
+	 * @param point
+	 * @param mpLocation
+	 */
+	private void renderLabel(Graphics2D destination, Point point,
+			IDataElement mpLocation, IRenderableModel model) {
+		destination.setColor(driveRendererStyle.getDefaultLabelColor());
+		// TODO labels rendering at the same points
+		int x = point.x + 5;
+		int y = point.y + 5;
+		destination.drawString(getLabel(mpLocation, model), x, y);
+	}
+
+	/**
+	 * Return label for measurement depending on default label property
+	 * 
+	 * @param dataElement
+	 *            Measurement element
+	 * @return label or empty
+	 */
+	private String getLabel(IDataElement dataElement, IRenderableModel model) {
+		if (TIMESTAMP.equals(driveRendererStyle.getDefaultLocationLabelType())) {
+			return getTime((Long) dataElement.get(TIMESTAMP));
+		} else if (MEASUREMENT.equals(driveRendererStyle
+				.getDefaultLocationLabelType())) {
+			return getMeasurementLabel(dataElement, model);
+		}
+		return StringUtils.EMPTY;
+	}
+
+	/**
+	 * Get Measurement property label
+	 * 
+	 * @param dataElement
+	 *            location
+	 * @param model
+	 *            DriveModel
+	 * @return Measurement property name or Empty
+	 */
+	private String getMeasurementLabel(IDataElement dataElement,
+			IRenderableModel model) {
+		String measurementPropertyName = driveRendererStyle
+				.getDefaultMeasurementPropertyName();
+		IDriveModel driveModel = (IDriveModel) model;
+		Iterator<IDataElement> it = driveModel.getMeasurements(
+				model.getSelectedElements(), null).iterator();
+		Object foundedObject = null;
+		while (it.hasNext()) {
+			IDataElement element = it.next();
+			foundedObject = element.get(measurementPropertyName);
+			if (foundedObject != null) {
+				break;
+			}
+		}
+		return foundedObject == null ? StringUtils.EMPTY : String
+				.valueOf(foundedObject);
+
+	}
+
+	/**
+	 * Get time by timestamp
+	 * 
+	 * @param milliseconds
+	 *            timestamp
+	 * @return time in format HH:mm:ss.S or EMPTY
+	 */
+	private String getTime(Long milliseconds) {
+		if (milliseconds != null && milliseconds != 0L) {
+			Date date = new Date(milliseconds);
+			SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss.S");
+			return dateFormat.format(date);
+		}
+		return "";
 	}
 
 }

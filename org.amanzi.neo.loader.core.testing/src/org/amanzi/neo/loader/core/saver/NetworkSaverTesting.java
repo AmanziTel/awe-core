@@ -25,14 +25,12 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
 import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.db.manager.IDatabaseManager;
-import org.amanzi.neo.loader.core.ConfigurationDataImpl;
-import org.amanzi.neo.loader.core.parser.CSVContainer;
+import org.amanzi.neo.loader.core.config.NetworkConfiguration;
+import org.amanzi.neo.loader.core.parser.MappedData;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceInitializer;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
@@ -54,7 +52,7 @@ public class NetworkSaverTesting extends AbstractAWETest {
     private static final Logger LOGGER = Logger.getLogger(NetworkSaverTesting.class);
     private NetworkSaver networkSaver;
     private static String PATH_TO_BASE = "";
-    private ConfigurationDataImpl config;
+    private NetworkConfiguration config;
     private static final String NETWORK_KEY = "Network";
     private static final String NETWORK_NAME = "testNetwork";
     private static final String PROJECT_KEY = "Project";
@@ -66,7 +64,7 @@ public class NetworkSaverTesting extends AbstractAWETest {
     private final static Map<String, Object> SECTOR = new HashMap<String, Object>();
     private final static Map<String, Object> MSC = new HashMap<String, Object>();
     private final static Map<String, Object> CITY = new HashMap<String, Object>();
-    private static NetworkModel networkModel;
+    private static NetworkModel networkModelMock;
     private static Long startTime;
     private static IDatabaseManager dbManager;
 
@@ -77,7 +75,7 @@ public class NetworkSaverTesting extends AbstractAWETest {
         initializer.initializeDefaultPreferences();
         new LogStarter().earlyStartup();
         startTime = System.currentTimeMillis();
-       
+
     }
 
     static {
@@ -96,7 +94,7 @@ public class NetworkSaverTesting extends AbstractAWETest {
         CITY.put("type", "city");
     }
 
-    private HashMap<String, Object> hashMap = null;
+    private HashMap<String, String> hashMap = null;
 
     @AfterClass
     public static void tearDownAfterClass() throws Exception {
@@ -107,13 +105,11 @@ public class NetworkSaverTesting extends AbstractAWETest {
 
     @Before
     public void onStart() throws AWEException {
+        networkModelMock = mock(NetworkModel.class);
         dbManager = mock(IDatabaseManager.class);
-        networkModel = mock(NetworkModel.class);
-        hashMap = new HashMap<String, Object>();
-        config = new ConfigurationDataImpl();
-        config.getDatasetNames().put(NETWORK_KEY, NETWORK_NAME);
-        config.getDatasetNames().put(PROJECT_KEY, PROJECT_NAME);
-        List<File> fileList = new LinkedList<File>();
+        hashMap = new HashMap<String, String>();
+        config = new NetworkConfiguration();
+        config.setDatasetName(NETWORK_NAME);
         File testFile = new File(PATH_TO_BASE + "/testFile.txt");
         try {
             testFile.createNewFile();
@@ -121,9 +117,15 @@ public class NetworkSaverTesting extends AbstractAWETest {
             LOGGER.error(" onStart error while trying to create file", e);
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
-        fileList.add(testFile);
-        config.setSourceFile(fileList);
-        networkSaver = new NetworkSaver(networkModel, (ConfigurationDataImpl)config);
+        config.setFile(testFile);
+        networkSaver = new NetworkSaver() {
+            @Override
+            public void init(NetworkConfiguration configuration) throws AWEException {
+                // TODO: verify
+                setMainModel(networkModelMock);
+            }
+        };
+        networkSaver.init(config);
         networkSaver.dbManager = dbManager;
         hashMap.put("bsc", "bsc1");
         hashMap.put("site", "site1");
@@ -138,37 +140,23 @@ public class NetworkSaverTesting extends AbstractAWETest {
 
     }
 
-    private List<String> prepareValues(HashMap<String, Object> map) {
-        List<String> values = new LinkedList<String>();
-        for (String key : map.keySet()) {
-            values.add(map.get(key).toString());
-        }
-        return values;
-    }
-
     @SuppressWarnings("unchecked")
     @Test
     public void testForSavingAllElements() {
-        CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
-        List<String> header = new LinkedList<String>(hashMap.keySet());
-        rowContainer.setHeaders(header);
+        MappedData dataElement = new MappedData(hashMap);
         try {
-            networkSaver.saveElement(rowContainer);
-            List<String> values = prepareValues(hashMap);
-            rowContainer.setValues(values);
-
-            when(networkModel.findElement(BSC)).thenReturn(null);
-            when(networkModel.createElement(any(IDataElement.class), eq(BSC))).thenReturn(new DataElement(BSC));
-            when(networkModel.findElement(SITE)).thenReturn(null);
-            when(networkModel.createElement(any(IDataElement.class), eq(SITE))).thenReturn(new DataElement(SITE));
-            when(networkModel.findElement(SECTOR)).thenReturn(null);
-            when(networkModel.createElement(any(IDataElement.class), eq(SECTOR))).thenReturn(new DataElement(SECTOR));
-            when(networkModel.findElement(MSC)).thenReturn(null);
-            when(networkModel.createElement(any(IDataElement.class), eq(MSC))).thenReturn(new DataElement(MSC));
-            when(networkModel.findElement(CITY)).thenReturn(null);
-            when(networkModel.createElement(any(IDataElement.class), eq(CITY))).thenReturn(new DataElement(CITY));
-            networkSaver.saveElement(rowContainer);
-            verify(networkModel, times(5)).createElement(any(IDataElement.class), any(Map.class));
+            when(networkModelMock.findElement(BSC)).thenReturn(null);
+            when(networkModelMock.createElement(any(IDataElement.class), eq(BSC))).thenReturn(new DataElement(BSC));
+            when(networkModelMock.findElement(SITE)).thenReturn(null);
+            when(networkModelMock.createElement(any(IDataElement.class), eq(SITE))).thenReturn(new DataElement(SITE));
+            when(networkModelMock.findElement(SECTOR)).thenReturn(null);
+            when(networkModelMock.createElement(any(IDataElement.class), eq(SECTOR))).thenReturn(new DataElement(SECTOR));
+            when(networkModelMock.findElement(MSC)).thenReturn(null);
+            when(networkModelMock.createElement(any(IDataElement.class), eq(MSC))).thenReturn(new DataElement(MSC));
+            when(networkModelMock.findElement(CITY)).thenReturn(null);
+            when(networkModelMock.createElement(any(IDataElement.class), eq(CITY))).thenReturn(new DataElement(CITY));
+            networkSaver.saveElement(dataElement);
+            verify(networkModelMock, times(5)).createElement(any(IDataElement.class), any(Map.class));
         } catch (Exception e) {
             LOGGER.error(" testForSavingAllElements error", e);
             Assert.fail("Exception while saving row");
@@ -181,20 +169,14 @@ public class NetworkSaverTesting extends AbstractAWETest {
         hashMap.remove("msc");
         hashMap.remove("bsc");
         hashMap.remove("city");
-        CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
-        List<String> header = new LinkedList<String>(hashMap.keySet());
-        rowContainer.setHeaders(header);
+        MappedData dataElement = new MappedData(hashMap);
         try {
-            networkSaver.saveElement(rowContainer);
-            List<String> values = prepareValues(hashMap);
-            rowContainer.setValues(values);
-
-            when(networkModel.findElement(SITE)).thenReturn(null);
-            when(networkModel.createElement(any(IDataElement.class), eq(SITE))).thenReturn(new DataElement(SITE));
-            when(networkModel.findElement(SECTOR)).thenReturn(null);
-            when(networkModel.createElement(any(IDataElement.class), eq(SECTOR))).thenReturn(new DataElement(SECTOR));
-            networkSaver.saveElement(rowContainer);
-            verify(networkModel, times(2)).createElement(any(IDataElement.class), any(Map.class));
+            when(networkModelMock.findElement(SITE)).thenReturn(null);
+            when(networkModelMock.createElement(any(IDataElement.class), eq(SITE))).thenReturn(new DataElement(SITE));
+            when(networkModelMock.findElement(SECTOR)).thenReturn(null);
+            when(networkModelMock.createElement(any(IDataElement.class), eq(SECTOR))).thenReturn(new DataElement(SECTOR));
+            networkSaver.saveElement(dataElement);
+            verify(networkModelMock, times(2)).createElement(any(IDataElement.class), any(Map.class));
         } catch (Exception e) {
             LOGGER.error(" testForSavingSITESECTOR error", e);
             Assert.fail("Exception while saving row");
@@ -210,15 +192,10 @@ public class NetworkSaverTesting extends AbstractAWETest {
         hashMap.remove("site");
         hashMap.remove("lat");
         hashMap.remove("lon");
-        CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
-        List<String> header = new LinkedList<String>(hashMap.keySet());
-        rowContainer.setHeaders(header);
+        MappedData dataElement = new MappedData(hashMap);
         try {
-            networkSaver.saveElement(rowContainer);
-            List<String> values = prepareValues(hashMap);
-            rowContainer.setValues(values);
-            networkSaver.saveElement(rowContainer);
-            verify(networkModel, never()).createElement(any(IDataElement.class), any(Map.class));
+            networkSaver.saveElement(dataElement);
+            verify(networkModelMock, never()).createElement(any(IDataElement.class), any(Map.class));
         } catch (Exception e) {
             LOGGER.error(" testForTyingToSaveOnlySector error", e);
             Assert.fail("Exception while saving row");
@@ -228,16 +205,10 @@ public class NetworkSaverTesting extends AbstractAWETest {
     @SuppressWarnings("unchecked")
     @Test
     public void testTransactionRollBackIfDatabaseExceptionThrow() {
-        CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
-        List<String> header = new LinkedList<String>(hashMap.keySet());
-        rowContainer.setHeaders(header);
+        MappedData dataElement = new MappedData(hashMap);
         try {
-            networkSaver.saveElement(rowContainer);
-            List<String> values = prepareValues(hashMap);
-
-            rowContainer.setValues(values);
-            when(networkModel.findElement(any(Map.class))).thenThrow(new DatabaseException("required exception"));
-            networkSaver.saveElement(rowContainer);
+            when(networkModelMock.findElement(any(Map.class))).thenThrow(new DatabaseException("required exception"));
+            networkSaver.saveElement(dataElement);
         } catch (Exception e) {
             verify(dbManager, never()).commitThreadTransaction();
             verify(dbManager, atLeastOnce()).rollbackThreadTransaction();
@@ -248,15 +219,10 @@ public class NetworkSaverTesting extends AbstractAWETest {
     @SuppressWarnings("unchecked")
     @Test
     public void testTransactionContiniousIfRestExceptionThrow() {
-        CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
-        List<String> header = new LinkedList<String>(hashMap.keySet());
-        rowContainer.setHeaders(header);
+        MappedData dataElement = new MappedData(hashMap);
         try {
-            networkSaver.saveElement(rowContainer);
-            List<String> values = prepareValues(hashMap);
-            rowContainer.setValues(values);
-            when(networkModel.findElement(any(Map.class))).thenThrow(new IllegalArgumentException("required exception"));
-            networkSaver.saveElement(rowContainer);
+            when(networkModelMock.findElement(any(Map.class))).thenThrow(new IllegalArgumentException("required exception"));
+            networkSaver.saveElement(dataElement);
             verify(dbManager, never()).rollbackThreadTransaction();
 
         } catch (Exception e) {

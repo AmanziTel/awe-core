@@ -23,16 +23,15 @@ import org.junit.runners.Suite.SuiteClasses;
 /**
  * TODO Purpose of
  * <p>
- * 
  * </p>
  * 
  * @author gerzog
  * @since 1.0.0
  */
 @RunWith(Suite.class)
-@SuiteClasses({ NeoServiceSuite.class,
-// SaversSuite.class,
-		DbTestSuite.class, CatalogSuite.class })
+@SuiteClasses({NeoServiceSuite.class,
+               DbTestSuite.class,
+               CatalogSuite.class})
 public class CoreTestSuite {
 
 }

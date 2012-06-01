@@ -26,7 +26,6 @@ import org.amanzi.neo.loader.core.config.IConfiguration;
 import org.amanzi.neo.loader.core.parser.IData;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceManager;
 import org.amanzi.neo.loader.core.saver.neighbor.ConflictNeighboursModel;
-import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataModel;
@@ -51,345 +50,353 @@ import org.apache.log4j.Logger;
  * @param <T3>
  */
 public abstract class AbstractSaver<T1 extends IDataModel, T2 extends IData, T3 extends IConfiguration>
-        implements
-            ISaver<T1, T2, T3> {
-    private static final Logger LOGGER = Logger.getLogger(AbstractSaver.class);
-    // constants
-    protected static final char DOT_SEPARATOR = '.';
+		implements ISaver<T1, T2, T3> {
+	private static final Logger LOGGER = Logger.getLogger(AbstractSaver.class);
+	// constants
+	protected static final char DOT_SEPARATOR = '.';
 
-    private final static ExportSynonymsManager exportManager = ExportSynonymsManager.getManager();
+	private final static ExportSynonymsManager exportManager = ExportSynonymsManager
+			.getManager();
 
-    // variables required for export synonyms saving
-    private List<IDataModel> useableModels = new LinkedList<IDataModel>();
-    private Map<IDataModel, ExportSynonyms> synonymsMap = new HashMap<IDataModel, ExportSynonyms>();
+	// variables required for export synonyms saving
+	private List<IDataModel> useableModels = new LinkedList<IDataModel>();
+	private Map<IDataModel, ExportSynonyms> synonymsMap = new HashMap<IDataModel, ExportSynonyms>();
 
-    // map for statistics
-    public static Map<String, Long> statisticsValues = new HashMap<String, Long>();
+	// map for statistics
+	public static Map<String, Long> statisticsValues = new HashMap<String, Long>();
 
-    /**
-     * action threshold for commit
-     */
-    private int commitTxCount;
+	/**
+	 * action threshold for commit
+	 */
+	private int commitTxCount;
 
-    /*
-     * Database Manager
-     */
-    IDatabaseManager dbManager = DatabaseManagerFactory.getDatabaseManager();
+	/*
+	 * Database Manager
+	 */
+	IDatabaseManager dbManager = DatabaseManagerFactory.getDatabaseManager();
 
-    /**
-     * transactions count
-     */
-    private int actionCount;
+	/**
+	 * transactions count
+	 */
+	private int actionCount;
 
-    /*
-     * Main model of Saver
-     */
-    private T1 mainModel;
-    
-    private String startElement;
-    
-    private String allElementsFor;
-    
+	/*
+	 * Main model of Saver
+	 */
+	private T1 mainModel;
 
-    /**
-     * Public constructor
-     */
-    protected AbstractSaver() {
+	private String startElement;
 
-    }
+	private String allElementsFor;
 
-    /**
-     * this method try to parse String propValue if its type is unknown
-     * 
-     * @param propertyValue - String propValue
-     * @return Object parseValue
-     */
-    public static Object autoParse(String propertyValue) {
-        try {
-            char separator = DOT_SEPARATOR;
-            if (propertyValue.indexOf(separator) != -1) {
-                Float floatValue = Float.parseFloat(propertyValue);
-                if (floatValue.toString().length() < propertyValue.length()) {
-                    return Double.parseDouble(propertyValue);
-                } else {
-                    return floatValue;
-                }
-            } else {
-                try {
-                    return Integer.parseInt(propertyValue);
-                } catch (NumberFormatException e) {
-                    return Long.parseLong(propertyValue);
-                }
-            }
-        } catch (Exception e) {
-            if (propertyValue.equalsIgnoreCase(Boolean.TRUE.toString())) {
-                return Boolean.TRUE;
-            } else if (propertyValue.equalsIgnoreCase(Boolean.FALSE.toString())) {
-                return Boolean.FALSE;
-            }
-            return propertyValue;
-        }
+	/**
+	 * Public constructor
+	 */
+	protected AbstractSaver() {
 
-    }
+	}
 
-    /**
-     * check property for predefined type
-     * 
-     * @param propertyName
-     * @param propertyValue
-     * @return
-     */
-    static Object checkInPredifined(String propertyName, String propertyValue) {
-        Object parsedValue = null;
-        if (DataLoadPreferenceManager.predifinedPropertyType.containsKey(propertyName)) {
-            switch (DataLoadPreferenceManager.predifinedPropertyType.get(propertyName)) {
-            case DOUBLE:
-                parsedValue = Double.parseDouble(propertyValue);
-                break;
-            case FLOAT:
-                parsedValue = Float.parseFloat(propertyValue);
-                break;
-            case INTEGER:
-                parsedValue = Integer.parseInt(propertyValue);
-                break;
-            case LONG:
-                parsedValue = Long.parseLong(propertyValue);
-                break;
-            case STRING:
-                parsedValue = propertyValue;
-                break;
-            }
-        }
-        return parsedValue;
-    }
+	/**
+	 * this method try to parse String propValue if its type is unknown
+	 * 
+	 * @param propertyValue
+	 *            - String propValue
+	 * @return Object parseValue
+	 */
+	public static Object autoParse(String propertyValue) {
+		try {
+			char separator = DOT_SEPARATOR;
+			if (propertyValue.indexOf(separator) != -1) {
+				Float floatValue = Float.parseFloat(propertyValue);
+				if (floatValue.toString().length() < propertyValue.length()) {
+					return Double.parseDouble(propertyValue);
+				} else {
+					return floatValue;
+				}
+			} else {
+				try {
+					return Integer.parseInt(propertyValue);
+				} catch (NumberFormatException e) {
+					return Long.parseLong(propertyValue);
+				}
+			}
+		} catch (Exception e) {
+			if (propertyValue.equalsIgnoreCase(Boolean.TRUE.toString())) {
+				return Boolean.TRUE;
+			} else if (propertyValue.equalsIgnoreCase(Boolean.FALSE.toString())) {
+				return Boolean.FALSE;
+			}
+			return propertyValue;
+		}
 
-    /**
-     * Creates Export Synonyms for this saved models
-     * 
-     * @throws DatabaseException
-     */
-    protected void createExportSynonymsForModels() throws AWEException {
-        try {
-            for (IDataModel model : useableModels) {
-                synonymsMap.put(model, exportManager.createExportSynonym(model, ExportSynonymType.DATASET));
-            }
-        } catch (DatabaseException e) {
-            AweConsolePlugin.error("Error while creating export synonyms for models");
-            LOGGER.error("Error while creating export synonyms for models", e);
-            throw new DatabaseException(e);
-        }
-    }
+	}
 
-    /**
-     * Add synonym
-     * 
-     * @param model
-     * @param nodeType
-     * @param propertyName
-     * @param synonym
-     */
-    protected void addDatasetSynonyms(T1 model, INodeType nodeType, String propertyName, String synonym) {
-        if (model.getName() != null && synonym != null) {
-            synonymsMap.get(model).addSynonym(nodeType, propertyName, synonym);
-        }
-    }
+	/**
+	 * check property for predefined type
+	 * 
+	 * @param propertyName
+	 * @param propertyValue
+	 * @return
+	 */
+	static Object checkInPredifined(String propertyName, String propertyValue) {
+		Object parsedValue = null;
+		if (DataLoadPreferenceManager.predifinedPropertyType
+				.containsKey(propertyName)) {
+			switch (DataLoadPreferenceManager.predifinedPropertyType
+					.get(propertyName)) {
+			case DOUBLE:
+				parsedValue = Double.parseDouble(propertyValue);
+				break;
+			case FLOAT:
+				parsedValue = Float.parseFloat(propertyValue);
+				break;
+			case INTEGER:
+				parsedValue = Integer.parseInt(propertyValue);
+				break;
+			case LONG:
+				parsedValue = Long.parseLong(propertyValue);
+				break;
+			case STRING:
+				parsedValue = propertyValue;
+				break;
+			}
+		}
+		return parsedValue;
+	}
 
-    /**
-     * save synonyms into database
-     * 
-     * @throws DatabaseException
-     */
-    private void saveSynonym() throws DatabaseException {
-        if (synonymsMap.isEmpty()) {
-            return;
-        }
-        for (IModel model : useableModels) {
-            try {
-                commitTx();
-                exportManager.saveDatasetExportSynonyms(model, synonymsMap.get(model), ExportSynonymType.DATASET);
-            } catch (DatabaseException e) {
-                AweConsolePlugin.error("Error while saving export synonyms for models");
-                LOGGER.error("Error while saving export synonyms for models", e);
-                throw new DatabaseException(e);
-            }
-        }
-    }
+	/**
+	 * Creates Export Synonyms for this saved models
+	 * 
+	 * @throws DatabaseException
+	 */
+	protected void createExportSynonymsForModels() throws AWEException {
+		try {
+			for (IDataModel model : useableModels) {
+				synonymsMap.put(model, exportManager.createExportSynonym(model,
+						ExportSynonymType.DATASET));
+			}
+		} catch (DatabaseException e) {
+			AweConsolePlugin
+					.error("Error while creating export synonyms for models");
+			LOGGER.error("Error while creating export synonyms for models", e);
+			throw new DatabaseException(e);
+		}
+	}
 
-    /**
-     * set how much transactions should gone before reopening
-     * 
-     * @param count
-     */
-    protected void setTxCountToReopen(int count) {
-        commitTxCount = count;
-    }
+	/**
+	 * Add synonym
+	 * 
+	 * @param model
+	 * @param nodeType
+	 * @param propertyName
+	 * @param synonym
+	 */
+	protected void addDatasetSynonyms(T1 model, String nodeType,
+			String propertyName, String synonym) {
+		if (model.getName() != null && synonym != null) {
+			synonymsMap.get(model).addSynonym(nodeType, propertyName, synonym);
+		}
+	}
 
-    /**
-     * if current tx==null create new instance finish current transaction if actions in current
-     * transaction more than commitTxCount and open new;
-     */
-    protected void commitTx() {
-        if (++actionCount > commitTxCount) {
-            dbManager.commitThreadTransaction();
-            actionCount = 0;
-        }
-    }
+	/**
+	 * save synonyms into database
+	 * 
+	 * @throws DatabaseException
+	 */
+	private void saveSynonym() throws DatabaseException {
+		if (synonymsMap.isEmpty()) {
+			return;
+		}
+		for (IModel model : useableModels) {
+			try {
+				commitTx();
+				exportManager.saveDatasetExportSynonyms(model,
+						synonymsMap.get(model), ExportSynonymType.DATASET);
+			} catch (DatabaseException e) {
+				AweConsolePlugin
+						.error("Error while saving export synonyms for models");
+				LOGGER.error("Error while saving export synonyms for models", e);
+				throw new DatabaseException(e);
+			}
+		}
+	}
 
-    /**
-     * rollback tx in current thread
-     */
-    protected void rollbackTx() {
-        dbManager.rollbackThreadTransaction();
-        actionCount = 0;
-    }
+	/**
+	 * set how much transactions should gone before reopening
+	 * 
+	 * @param count
+	 */
+	protected void setTxCountToReopen(int count) {
+		commitTxCount = count;
+	}
 
-    @Override
-    public void finishUp() throws AWEException {
-        for (IDataModel dataModel : useableModels) {
-            dataModel.finishUp();
-        }
-        saveSynonym();
-        dbManager.finishThreadTransaction();
-        dbManager.commitMainTransaction();
-        actionCount = 0;
-        EventManager.getInstance().fireEvent(new UpdateDataEvent());
-        if (isRenderable()) {
-            EventManager.getInstance().fireEvent(new ShowOnMapEvent(getRenderableModels(), 900d));
-        }
-    }
+	/**
+	 * if current tx==null create new instance finish current transaction if
+	 * actions in current transaction more than commitTxCount and open new;
+	 */
+	protected void commitTx() {
+		if (++actionCount > commitTxCount) {
+			dbManager.commitThreadTransaction();
+			actionCount = 0;
+		}
+	}
 
-    private List<IRenderableModel> getRenderableModels() {
-        List<IRenderableModel> result = new ArrayList<IRenderableModel>();
+	/**
+	 * rollback tx in current thread
+	 */
+	protected void rollbackTx() {
+		dbManager.rollbackThreadTransaction();
+		actionCount = 0;
+	}
 
-        for (IDataModel model : useableModels) {
-            if (model instanceof IRenderableModel) {
-                result.add((IRenderableModel)model);
-            }
-        }
+	@Override
+	public void finishUp() throws AWEException {
+		for (IDataModel dataModel : useableModels) {
+			dataModel.finishUp();
+		}
+		saveSynonym();
+		dbManager.finishThreadTransaction();
+		dbManager.commitMainTransaction();
+		actionCount = 0;
+		EventManager.getInstance().fireEvent(new UpdateDataEvent());
+		if (isRenderable()) {
+			EventManager.getInstance().fireEvent(
+					new ShowOnMapEvent(getRenderableModels(), 900d));
+		}
+	}
 
-        return result;
-    }
+	private List<IRenderableModel> getRenderableModels() {
+		List<IRenderableModel> result = new ArrayList<IRenderableModel>();
 
-    /**
-     * Returns Active Project
-     * 
-     * @return
-     * @throws AWEException
-     */
-    protected IProjectModel getActiveProject() throws AWEException {
-        return ProjectModel.getCurrentProjectModel();
-    }
+		for (IDataModel model : useableModels) {
+			if (model instanceof IRenderableModel) {
+				result.add((IRenderableModel) model);
+			}
+		}
 
-    /**
-     * check if current saver should be rendered on map
-     * 
-     * @return
-     */
-    protected abstract boolean isRenderable();
+		return result;
+	}
 
-    @Override
-    public void init(T3 configuration) throws AWEException {
-        DatabaseManagerFactory.getDatabaseManager().startThreadTransaction();
+	/**
+	 * Returns Active Project
+	 * 
+	 * @return
+	 * @throws AWEException
+	 */
+	protected IProjectModel getActiveProject() throws AWEException {
+		return ProjectModel.getCurrentProjectModel();
+	}
 
-        mainModel = createMainModel(configuration);
-        useableModels.add(mainModel);
+	/**
+	 * check if current saver should be rendered on map
+	 * 
+	 * @return
+	 */
+	protected abstract boolean isRenderable();
 
-        setTxCountToReopen(5000);
+	@Override
+	public void init(T3 configuration) throws AWEException {
+		DatabaseManagerFactory.getDatabaseManager().startThreadTransaction();
 
-        createExportSynonymsForModels();
-        
-        conflictNeighboursModel = new ConflictNeighboursModel<String>();
-    }
+		mainModel = createMainModel(configuration);
+		useableModels.add(mainModel);
 
-    /**
-     * Creates Main model of Saver
-     * 
-     * @return
-     */
-    protected abstract T1 createMainModel(T3 configuration) throws AWEException;
+		setTxCountToReopen(5000);
 
-    /**
-     * Returns main Model of Saver
-     */
-    protected T1 getMainModel() {
-        return mainModel;
-    }
+		createExportSynonymsForModels();
 
-    /**
-     * Sets new Main Model for Saver
-     * 
-     * @param mainModel
-     */
-    protected void setMainModel(T1 mainModel) {
-        this.mainModel = mainModel;
-    }
+		conflictNeighboursModel = new ConflictNeighboursModel<String>();
+	}
 
-    /**
-     * Adds additional non-main Model
-     * 
-     * @param dataModel
-     */
-    protected void addModel(IDataModel dataModel) {
-        useableModels.add(dataModel);
-    }
+	/**
+	 * Creates Main model of Saver
+	 * 
+	 * @return
+	 */
+	protected abstract T1 createMainModel(T3 configuration) throws AWEException;
 
-    /**
-     * Increases count of type element
-     * 
-     * @param type
-     */
-    public void increaseCount(String type) {
-        if (statisticsValues.containsKey(type)) {
-            Long lastValue = statisticsValues.get(type);
-            statisticsValues.put(type, lastValue + 1);
-        } else {
-            statisticsValues.put(type, (long)1);
-        }
-    }
+	/**
+	 * Returns main Model of Saver
+	 */
+	protected T1 getMainModel() {
+		return mainModel;
+	}
 
-    /**
-     * Returns Dataset Type of Data to Save
-     * 
-     * @return
-     */
-    protected abstract String getDatasetType();
+	/**
+	 * Sets new Main Model for Saver
+	 * 
+	 * @param mainModel
+	 */
+	protected void setMainModel(T1 mainModel) {
+		this.mainModel = mainModel;
+	}
 
-    /**
-     * @return subtype of dataset or null if not exist
-     */
-    protected abstract String getSubType();
+	/**
+	 * Adds additional non-main Model
+	 * 
+	 * @param dataModel
+	 */
+	protected void addModel(IDataModel dataModel) {
+		useableModels.add(dataModel);
+	}
 
-    private ConflictNeighboursModel<String> conflictNeighboursModel;
+	/**
+	 * Increases count of type element
+	 * 
+	 * @param type
+	 */
+	public void increaseCount(String type) {
+		if (statisticsValues.containsKey(type)) {
+			Long lastValue = statisticsValues.get(type);
+			statisticsValues.put(type, lastValue + 1);
+		} else {
+			statisticsValues.put(type, (long) 1);
+		}
+	}
 
-    /**
-     * @return Returns the conflictNeighboursModel.
-     */
-    public ConflictNeighboursModel<String> getConflictNeighboursModel() {
-        return conflictNeighboursModel;
-    }
+	/**
+	 * Returns Dataset Type of Data to Save
+	 * 
+	 * @return
+	 */
+	protected abstract String getDatasetType();
 
-    /**
-     * @return Returns the startElement.
-     */
-    protected String getStartElement() {
-        return startElement;
-    }
+	/**
+	 * @return subtype of dataset or null if not exist
+	 */
+	protected abstract String getSubType();
 
-    @Override
-    public void setStartElement(String startElement) {
-        this.startElement = startElement;
-    }
+	private ConflictNeighboursModel<String> conflictNeighboursModel;
 
-    /**
-     * @return Returns the allElementsFor.
-     */
-    protected String getAllElementsFor() {
-        return allElementsFor;
-    }
+	/**
+	 * @return Returns the conflictNeighboursModel.
+	 */
+	public ConflictNeighboursModel<String> getConflictNeighboursModel() {
+		return conflictNeighboursModel;
+	}
 
-    @Override
-    public void setAllElementsFor(String allElementsFor) {
-        this.allElementsFor = allElementsFor;
-    }
+	/**
+	 * @return Returns the startElement.
+	 */
+	protected String getStartElement() {
+		return startElement;
+	}
+
+	@Override
+	public void setStartElement(String startElement) {
+		this.startElement = startElement;
+	}
+
+	/**
+	 * @return Returns the allElementsFor.
+	 */
+	protected String getAllElementsFor() {
+		return allElementsFor;
+	}
+
+	@Override
+	public void setAllElementsFor(String allElementsFor) {
+		this.allElementsFor = allElementsFor;
+	}
 
 }

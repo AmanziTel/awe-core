@@ -43,6 +43,10 @@
             class="org.amanzi.neo.loader.ui.validators.TRXValidator"
             id="org.amanzi.awe.validator.trx">
       </validator>
+      <validator
+            class="org.amanzi.neo.loader.ui.validators.NemoValidator"
+            id="org.amanzi.awe.validator.nemo">
+      </validator>
    </extension>
    <extension
          point="org.amanzi.loaders">
@@ -156,6 +160,17 @@
                saver="org.amanzi.neo.loader.core.saver.TRXSaver">
          </savers>
       </loader>
+      <loader
+            class="org.amanzi.neo.loader.ui.loaders.SimpleLoader"
+            id="org.amanzi.awe.loader.Nemo"
+            name="Nemo Loader"
+            page="org.amanzi.awe.pages.nemoLoader"
+            parser="org.amanzi.neo.loader.core.parser.NemoParser"
+            validator="org.amanzi.awe.validator.nemo">
+         <savers
+               saver="org.amanzi.neo.loader.core.Nemo2xSaver">
+         </savers>
+      </loader>
    </extension>
    
    <extension
@@ -174,6 +189,11 @@
             class="org.amanzi.neo.loader.ui.wizards.AntennaPatternsLoaderWizard"
             id="org.amanzi.awe.wizard.directory"
             title="Load Antenna Patterns">
+      </wizard>
+      <wizard
+            class="org.amanzi.neo.loader.ui.wizards.NemoLoaderWizard"
+            id="org.amanzi.awe.wizard.nemoLoader"
+            title="Load Nemo">
       </wizard>
    </extension>
    
@@ -205,6 +225,14 @@
             priority="0"
             title="Load Antenna Patterns"
             wizard="org.amanzi.awe.wizard.directory">
+      </page>
+      <page
+            class="org.amanzi.neo.loader.ui.wizards.NemoLoaderPage"
+            id="org.amanzi.awe.pages.nemoLoader"
+            isMain="true"
+            priority="0"
+            title="Load Nemo Data"
+            wizard="org.amanzi.awe.wizard.nemoLoader">
       </page>
    </extension>
    <extension
@@ -249,6 +277,17 @@
                   </with>
                </or>
             </visibleWhen>
+            </command>
+            <command
+                  commandId="org.amanzi.loader.launchWizard"
+                  icon="icons/16/dataset.png"
+                  id="org.amanzi.awe.menu.loadNetwork"
+                  style="push"
+                  tooltip="Load Nemo Data">
+               <parameter
+                     name="org.amanzi.loader.wizard"
+                     value="org.amanzi.awe.wizard.nemoLoader">
+               </parameter>
             </command>
          </toolbar>
       </menuContribution>

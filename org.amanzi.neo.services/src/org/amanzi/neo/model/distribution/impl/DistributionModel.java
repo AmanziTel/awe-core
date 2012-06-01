@@ -163,7 +163,7 @@ public class DistributionModel extends AbstractModel implements IDistributionMod
         LOGGER.debug("finish new DistributionModel()");
     }
 
-    public DistributionModel(IDistributionalModel analyzedModel, Node rootNode) throws AWEException {
+    public DistributionModel(IDistributionalModel analyzedModel, Node rootNode) {
         super(DistributionNodeTypes.ROOT_AGGREGATION);
 
         LOGGER.debug("start new DistributionModel()");

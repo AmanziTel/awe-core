@@ -24,14 +24,13 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
 import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.db.manager.IDatabaseManager;
-import org.amanzi.neo.loader.core.ConfigurationDataImpl;
-import org.amanzi.neo.loader.core.parser.CSVContainer;
+import org.amanzi.neo.loader.core.config.ISingleFileConfiguration;
+import org.amanzi.neo.loader.core.config.NetworkConfiguration;
+import org.amanzi.neo.loader.core.parser.MappedData;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceInitializer;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataElement;
@@ -53,9 +52,9 @@ import org.junit.Test;
  */
 public class NeighbourSaverTesting extends AbstractAWETest {
     private static final Logger LOGGER = Logger.getLogger(NeighbourSaverTesting.class);
-    private NeighborsSaver neighboursSaver;
+    private NeighboursSaver neighboursSaver;
     private static String PATH_TO_BASE = "";
-    private ConfigurationDataImpl config;
+    private ISingleFileConfiguration config;
     private static final String NETWORK_KEY = "Network";
     private static final String NETWORK_NAME = "testNetwork";
     private static final String PROJECT_KEY = "Project";
@@ -87,7 +86,7 @@ public class NeighbourSaverTesting extends AbstractAWETest {
         SECTOR2.put("name", "sector2");
         SECTOR2.put("type", "sector");
     }
-    private HashMap<String, Object> hashMap = null;
+    private HashMap<String, String> hashMap = null;
 
     @AfterClass
     public static void tearDownAfterClass() throws Exception {
@@ -100,11 +99,9 @@ public class NeighbourSaverTesting extends AbstractAWETest {
     public void onStart() {
         networkModel = mock(NetworkModel.class);
         node2model = mock(NodeToNodeRelationshipModel.class);
-        hashMap = new HashMap<String, Object>();
-        config = new ConfigurationDataImpl();
-        config.getDatasetNames().put(NETWORK_KEY, NETWORK_NAME);
-        config.getDatasetNames().put(PROJECT_KEY, PROJECT_NAME);
-        List<File> fileList = new LinkedList<File>();
+        hashMap = new HashMap<String, String>();
+        config = new NetworkConfiguration();
+        config.setDatasetName(NETWORK_NAME);
         File testFile = new File(PATH_TO_BASE + "/testFile.txt");
         try {
             testFile.createNewFile();
@@ -112,9 +109,13 @@ public class NeighbourSaverTesting extends AbstractAWETest {
             LOGGER.error(" onStart error while trying to create file", e);
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
-        fileList.add(testFile);
-        config.setSourceFile(fileList);
-        neighboursSaver = new NeighborsSaver(node2model, networkModel, config);
+        config.setFile(testFile);
+        neighboursSaver = new NeighboursSaver() {
+            public void init(ISingleFileConfiguration configuration) throws org.amanzi.neo.services.exceptions.AWEException {
+                setMainModel(node2model);
+                this.networkModel = NeighbourSaverTesting.this.networkModel;
+            };
+        };
         neighboursSaver.dbManager = dbManager;
         hashMap.put("Serving Sector", "sector1");
         hashMap.put("Neighbour", "sector2");
@@ -126,26 +127,13 @@ public class NeighbourSaverTesting extends AbstractAWETest {
 
     }
 
-    private List<String> prepareValues(HashMap<String, Object> map) {
-        List<String> values = new LinkedList<String>();
-        for (String key : map.keySet()) {
-            values.add(map.get(key).toString());
-        }
-        return values;
-    }
-
     @Test
     public void testLinkSectors() {
-        CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
-        List<String> header = new LinkedList<String>(hashMap.keySet());
-        rowContainer.setHeaders(header);
+        MappedData dataElement = new MappedData(hashMap);
         try {
-            neighboursSaver.saveElement(rowContainer);
-            List<String> values = prepareValues(hashMap);
-            rowContainer.setValues(values);
             when(networkModel.findElement(SECTOR1)).thenReturn(new DataElement(SECTOR1));
             when(networkModel.findElement(SECTOR2)).thenReturn(new DataElement(SECTOR2));
-            neighboursSaver.saveElement(rowContainer);
+            neighboursSaver.saveElement(dataElement);
             verify(node2model).linkNode(new DataElement(SECTOR1), new DataElement(SECTOR2), eq(properties));
         } catch (Exception e) {
             LOGGER.error(" testNeighbourNetworkSaver error", e);
@@ -156,15 +144,11 @@ public class NeighbourSaverTesting extends AbstractAWETest {
     @SuppressWarnings("unchecked")
     @Test
     public void testIfOneSectorNotFound() {
-        CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
-        List<String> header = new LinkedList<String>(hashMap.keySet());
-        rowContainer.setHeaders(header);
-        List<String> values = prepareValues(hashMap);
-        rowContainer.setValues(values);
+        MappedData dataElement = new MappedData(hashMap);
         try {
             when(networkModel.findElement(SECTOR1)).thenReturn(null);
             when(networkModel.findElement(SECTOR2)).thenReturn(new DataElement(SECTOR2));
-            neighboursSaver.saveElement(rowContainer);
+            neighboursSaver.saveElement(dataElement);
             verify(node2model, never()).linkNode(any(IDataElement.class), any(IDataElement.class), any(Map.class));
         } catch (Exception e) {
             LOGGER.error(" testNeighbourNetworkSaver error", e);
@@ -176,15 +160,11 @@ public class NeighbourSaverTesting extends AbstractAWETest {
     @Test
     public void testIfThereIsNotEnoughtProperties() {
         hashMap.remove("Serving Sector");
-        CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
-        List<String> header = new LinkedList<String>(hashMap.keySet());
-        rowContainer.setHeaders(header);
-        List<String> values = prepareValues(hashMap);
-        rowContainer.setValues(values);
+        MappedData dataElement = new MappedData(hashMap);
         try {
             when(networkModel.findElement(SECTOR1)).thenReturn(null);
             when(networkModel.findElement(SECTOR2)).thenReturn(new DataElement(SECTOR2));
-            neighboursSaver.saveElement(rowContainer);
+            neighboursSaver.saveElement(dataElement);
             verify(node2model, never()).linkNode(any(IDataElement.class), any(IDataElement.class), any(Map.class));
         } catch (Exception e) {
             LOGGER.error(" testNeighbourNetworkSaver error", e);
@@ -195,16 +175,10 @@ public class NeighbourSaverTesting extends AbstractAWETest {
     @SuppressWarnings("unchecked")
     @Test
     public void testTransactionRollBackIfDatabaseExceptionThrow() {
-        CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
-        List<String> header = new LinkedList<String>(hashMap.keySet());
-        rowContainer.setHeaders(header);
+        MappedData dataElement = new MappedData(hashMap);
         try {
-            neighboursSaver.saveElement(rowContainer);
-            List<String> values = prepareValues(hashMap);
-
-            rowContainer.setValues(values);
             when(networkModel.findElement(any(Map.class))).thenThrow(new DatabaseException("required exception"));
-            neighboursSaver.saveElement(rowContainer);
+            neighboursSaver.saveElement(dataElement);
         } catch (Exception e) {
             verify(dbManager, never()).commitThreadTransaction();
             verify(dbManager, atLeastOnce()).rollbackThreadTransaction();
@@ -215,15 +189,10 @@ public class NeighbourSaverTesting extends AbstractAWETest {
     @SuppressWarnings("unchecked")
     @Test
     public void testTransactionContiniousIfRestExceptionThrow() {
-        CSVContainer rowContainer = new CSVContainer(MINIMAL_COLUMN_SIZE);
-        List<String> header = new LinkedList<String>(hashMap.keySet());
-        rowContainer.setHeaders(header);
+        MappedData dataElement = new MappedData(hashMap);
         try {
-            neighboursSaver.saveElement(rowContainer);
-            List<String> values = prepareValues(hashMap);
-            rowContainer.setValues(values);
             when(networkModel.findElement(any(Map.class))).thenThrow(new IllegalArgumentException("required exception"));
-            neighboursSaver.saveElement(rowContainer);
+            neighboursSaver.saveElement(dataElement);
             verify(dbManager, never()).rollbackThreadTransaction();
 
         } catch (Exception e) {

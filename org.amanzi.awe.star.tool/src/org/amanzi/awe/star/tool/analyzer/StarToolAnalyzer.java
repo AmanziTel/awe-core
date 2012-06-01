@@ -10,14 +10,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.refractions.udig.catalog.IGeoResource;
-import net.refractions.udig.project.ILayer;
 import net.refractions.udig.project.ui.tool.IToolContext;
 
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NetworkService;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;
-import org.amanzi.neo.services.model.IDataModel;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.ui.events.AnalyseEvent;
 import org.amanzi.neo.services.ui.events.EventManager;
@@ -71,18 +69,27 @@ public class StarToolAnalyzer {
 	private MathTransform transformD2w;
 	private MathTransform transformW2d;
 
+	private INetworkModel analyzedModel;
+	private IGeoResource resource;
+
 	/**
 	 * The constructor
 	 * 
+	 * @param analyzedModel
+	 *            Network Model
+	 * @param resource
+	 *            IGeoResource
 	 * @param context
-	 *            star tool context
+	 *            StarTool context
 	 * @param dragged
-	 *            dragged or not
+	 *            is dragged
 	 * @param envelope
 	 *            selection bounds
 	 */
-	public StarToolAnalyzer(IToolContext context, boolean dragged,
-			Envelope envelope) {
+	public StarToolAnalyzer(INetworkModel analyzedModel, IGeoResource resource,
+			IToolContext context, boolean dragged, Envelope envelope) {
+		this.analyzedModel = analyzedModel;
+		this.resource = resource;
 		this.context = context;
 		this.dragged = dragged;
 		this.selection = envelope;
@@ -95,8 +102,8 @@ public class StarToolAnalyzer {
 	 *            selected point
 	 */
 	public void analyze(Point point) {
-		INetworkModel analyzedModel = getAnalysedModel();
 		if (analyzedModel != null) {
+			initializeCoordinateReferenceSystem(resource);
 			List<IDataElement> analyzedElements = getAnalayzedElements(analyzedModel);
 			if (!dragged && !analyzedElements.isEmpty()) {
 				IDataElement selectedSector = findSelectedSector(analyzedModel,
@@ -111,8 +118,6 @@ public class StarToolAnalyzer {
 				analyzedModel.setSelectedDataElements(analyzedElements);
 			}
 			fireEvents(analyzedModel, analyzedElements);
-		} else {
-			LOGGER.info("Star Tool: No model for the analysis of.");
 		}
 	}
 
@@ -241,51 +246,6 @@ public class StarToolAnalyzer {
 	}
 
 	/**
-	 * Searching Star Tool analyzed model
-	 * 
-	 * @return Star Tool analyzed model or null
-	 * @throws AWEException
-	 */
-	private INetworkModel getAnalysedModel() {
-		INetworkModel result = null;
-		for (ILayer layer : context.getMapLayers()) {
-			IGeoResource resource = layer.findGeoResource(IDataModel.class);
-			if (resource == null) {
-				continue;
-			}
-			try {
-				IDataModel resolvedElement = resource.resolve(IDataModel.class,
-						null);
-				initializeCoordinateReferenceSystem(resource);
-				((INetworkModel) resolvedElement).clearSelectedElements();
-				INetworkModel currentModel = ((INetworkModel) resolvedElement)
-						.getStarToolSelectedModel();
-				result = currentModel;
-			} catch (Exception e) {
-				LOGGER.error("Star Tool: resolved resource was unavailable due to a technical problem."
-						+ e);
-			}
-		}
-		return result;
-	}
-
-	/**
-	 * Initializing CRS
-	 * 
-	 * @param resource
-	 *            IGeoResourse
-	 * @throws IOException
-	 * @throws FactoryException
-	 */
-	private void initializeCoordinateReferenceSystem(IGeoResource resource)
-			throws IOException, FactoryException {
-		CoordinateReferenceSystem dataCrs = resource.getInfo(null).getCRS();
-		CoordinateReferenceSystem worldCrs = context.getCRS();
-		transformD2w = CRS.findMathTransform(dataCrs, worldCrs, LENIENT);
-		transformW2d = CRS.findMathTransform(worldCrs, dataCrs, LENIENT);
-	}
-
-	/**
 	 * Get selected elements for analyzing
 	 * 
 	 * @param model
@@ -300,7 +260,7 @@ public class StarToolAnalyzer {
 		try {
 			for (IDataElement currentElement : model.getElements(selection)) {
 				for (IDataElement sector : model.getChildren(currentElement)) {
-					sector.put(INeoConstants.NETWORK_MODEL_NAME, model);
+//					sector.put(INeoConstants.NETWORK_MODEL_NAME, model);
 					result.add(sector);
 				}
 			}
@@ -308,6 +268,27 @@ public class StarToolAnalyzer {
 			LOGGER.error("Star Tool: cannot get analysed elements." + e);
 		}
 		return result;
+	}
+
+	/**
+	 * Initializing CRS
+	 * 
+	 * @param resource
+	 *            IGeoResourse
+	 * @throws IOException
+	 * @throws FactoryException
+	 */
+	private void initializeCoordinateReferenceSystem(IGeoResource resource) {
+		CoordinateReferenceSystem dataCrs;
+		try {
+			dataCrs = resource.getInfo(null).getCRS();
+			CoordinateReferenceSystem worldCrs = context.getCRS();
+			transformD2w = CRS.findMathTransform(dataCrs, worldCrs, LENIENT);
+			transformW2d = CRS.findMathTransform(worldCrs, dataCrs, LENIENT);
+		} catch (Exception e) {
+			LOGGER.error("Star Tool Analyzer: cannot initialize CRS. " + e);
+		}
+
 	}
 
 	/**
@@ -326,5 +307,5 @@ public class StarToolAnalyzer {
 		eventManager.fireEvent(new AnalyseEvent(analyzedModel,
 				analyzedElements, NETWORK_TREE_VIEW_ID));
 		eventManager.fireEvent(new ShowOnMapEvent(analyzedModel, !dragged));
-	}
+	}	
 }

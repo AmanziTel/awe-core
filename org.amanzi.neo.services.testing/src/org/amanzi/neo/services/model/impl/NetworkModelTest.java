@@ -24,6 +24,7 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,6 +33,7 @@ import junit.framework.Assert;
 
 import org.amanzi.neo.services.AbstractNeoServiceTest;
 import org.amanzi.neo.services.AbstractService;
+import org.amanzi.neo.services.AbstractService.FilterNodeType;
 import org.amanzi.neo.services.CorrelationServiceTest;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.DatasetService.DatasetTypes;
@@ -42,9 +44,13 @@ import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.ProjectService;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
+import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DatasetTypeParameterException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.InvalidDatasetParameterException;
+import org.amanzi.neo.services.filters.ExpressionType;
+import org.amanzi.neo.services.filters.FilterType;
+import org.amanzi.neo.services.filters.INamedFilter;
 import org.amanzi.neo.services.model.ICorrelationModel;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IModel;
@@ -53,7 +59,10 @@ import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
 import org.amanzi.neo.services.model.IProjectModel;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
 import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelTypes;
+import org.amanzi.neo.services.model.impl.RenderableModel.GisModel;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.lib.legacy.ClassImposteriser;
@@ -78,6 +87,8 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
+        clearDb();
+        initializeDb();
 
         dsServ = NeoServiceFactory.getInstance().getDatasetService();
         prServ = NeoServiceFactory.getInstance().getProjectService();
@@ -683,5 +694,169 @@ public class NetworkModelTest extends AbstractNeoServiceTest {
         Assert.assertNotNull(model.getStarToolSelectedModel());
         model.removeStarToolSelectedModel();
         Assert.assertNull(model.getStarToolSelectedModel());
+    }
+
+    // TODO RenderableModel Tests
+    @Test
+    public void checkRenderableModelGetDescription() throws AWEException {
+        NetworkModel model = new NetworkModel(network);
+        Node node = mock(Node.class);
+        String expected = "expectedDescription";
+        when(node.getProperty(RenderableModel.DESCRIPTION, StringUtils.EMPTY)).thenReturn("");
+        model.rootNode = node;
+        Assert.assertTrue(model.getDescription().isEmpty());
+
+        when(node.getProperty(RenderableModel.DESCRIPTION, StringUtils.EMPTY)).thenReturn(expected);
+
+        Assert.assertEquals(expected, model.getDescription());
+    }
+
+    @Test
+    public void checkGetBounds() throws AWEException {
+        NetworkModel model = new NetworkModel(network);
+        GisModel gisModel = mock(GisModel.class);
+        ReferencedEnvelope envelope = new ReferencedEnvelope();
+        when(gisModel.getBounds()).thenReturn(envelope);
+        CoordinateReferenceSystem system = mock(CoordinateReferenceSystem.class);
+        INamedFilter filter = mock(INamedFilter.class);
+        Node node = mock(Node.class);
+        gisModel.setCRS(system);
+        when(gisModel.getCrs()).thenReturn(system);
+        when(gisModel.getRootNode()).thenReturn(node);
+        when(gisModel.getFilter()).thenReturn(filter);
+        when(gisModel.getType()).thenReturn(DatasetTypes.GIS);
+        when(gisModel.getBounds()).thenReturn(envelope);
+        Assert.assertEquals(system, gisModel.getCrs());
+        Assert.assertEquals(filter, gisModel.getFilter());
+        Assert.assertEquals(node, gisModel.getRootNode());
+        Assert.assertEquals(DatasetTypes.NETWORK, model.getType());
+        Assert.assertEquals(envelope, gisModel.getBounds());
+        Assert.assertNotNull(model.getBounds());
+    }
+
+    @Test
+    public void checkSetSelectedElements() throws AWEException {
+        NetworkModel model = new NetworkModel(network);
+        IDataElement dataElement = mock(IDataElement.class);
+        List<IDataElement> elements = new ArrayList<IDataElement>(2);
+        elements.add(dataElement);
+        elements.add(dataElement);
+        model.setSelectedDataElementToList(dataElement);
+
+        Assert.assertTrue(model.getSelectedElements().size() == 1);
+
+        model.setSelectedDataElements(elements);
+
+        Assert.assertTrue(model.getSelectedElements().size() == 3);
+
+        for (IDataElement actualElement : model.getSelectedElements()) {
+            Assert.assertEquals(dataElement, actualElement);
+        }
+
+        model.clearSelectedElements();
+
+        Assert.assertTrue(model.getSelectedElements().isEmpty());
+    }
+
+    @Test
+    public void checkDrawNeighbors() throws AWEException {
+        NetworkModel model = new NetworkModel(network);
+        model.setDrawNeighbors(true);
+        Assert.assertTrue(model.isDrawNeighbors());
+        model.setDrawNeighbors(false);
+        Assert.assertFalse(model.isDrawNeighbors());
+    }
+
+    @Test
+    public void checkGetCRS() throws AWEException {
+        NetworkModel model = new NetworkModel(network);
+        CoordinateReferenceSystem crs = mock(CoordinateReferenceSystem.class);
+        model.setCRS(crs);
+        Assert.assertNotNull(model.getCrs());
+        Assert.assertEquals(crs, model.getCrs());
+
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    @Test
+    public void checkGetAllGisModels() throws AWEException {
+        NetworkModel model = new NetworkModel(network);
+        String name = "network";
+        DatasetService service = mock(DatasetService.class);
+        Node rootNode = mock(Node.class);
+        List<Node> gisNodes = new ArrayList<Node>();
+        gisNodes.add(rootNode);
+        when(service.getAllGisByDataset(rootNode)).thenReturn(gisNodes);
+        when(rootNode.getProperty(AbstractService.TYPE)).thenReturn("filter");
+        when(rootNode.getProperty(DatasetService.NAME)).thenReturn(name);
+        when(rootNode.getProperty(RenderableModel.CRS_NAME, StringUtils.EMPTY)).thenReturn("");
+        Iterable iterable = mock(Iterable.class);
+        Iterator iterator = mock(Iterator.class);
+        when(service.loadFilters(rootNode)).thenReturn(iterable);
+        when(iterable.iterator()).thenReturn(iterator);
+        Assert.assertNotNull(model.getAllGisModels());
+
+        model.findGisByName(name);
+        model.findGisByName("not_equals_name");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void checkFindGisByName() throws DatabaseException {
+        model.findGisByName("");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void checkFindGisModelByNameWithNull() throws DatabaseException {
+        model.findGisByName(null);
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    @Test
+    public void checkAddLayer() throws AWEException {
+        NetworkModel model = new NetworkModel(network);
+        String name = "layer_name";
+        Node gisRoot = mock(Node.class);
+        DatasetService service = mock(DatasetService.class);
+        Iterable iterable = mock(Iterable.class);
+        Iterator iterator = mock(Iterator.class);
+        when(gisRoot.getProperty(AbstractService.TYPE)).thenReturn("filter");
+        when(gisRoot.getProperty(DatasetService.NAME)).thenReturn(name);
+        when(gisRoot.getProperty(RenderableModel.CRS_NAME, StringUtils.EMPTY)).thenReturn("");
+        when(service.loadFilters(gisRoot)).thenReturn(iterable);
+        when(iterable.iterator()).thenReturn(iterator);
+        String type = (String)gisRoot.getProperty(AbstractService.TYPE);
+        when(type.equals(FilterNodeType.FILTER.getId())).thenReturn(true);
+        when(service.getGisNodeByDataset(model.rootNode, name)).thenReturn(gisRoot);
+        INamedFilter filter = getFilterMock(name);
+        model.addLayer(name, filter);
+    }
+
+    @Test
+    public void checkGetFilter() {
+
+    }
+
+    @Test
+    public void checkSetCRS() {
+
+    }
+
+    @Test
+    public void checkGetType() {
+
+    }
+
+    /**
+     * findAllFitlers Get INamedFilter mock object with specified logic
+     * 
+     * @param parameter parameter
+     * @return INamedFilter mock
+     */
+    private INamedFilter getFilterMock(String parameter) {
+        INamedFilter filter = mock(INamedFilter.class);
+        when(filter.getExpressionType()).thenReturn(ExpressionType.AND);
+        when(filter.getFilterType()).thenReturn(FilterType.MORE);
+        when(filter.getPropertyName()).thenReturn(parameter);
+        return filter;
     }
 }

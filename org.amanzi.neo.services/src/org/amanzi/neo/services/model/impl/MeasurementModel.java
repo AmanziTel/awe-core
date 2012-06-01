@@ -126,20 +126,8 @@ public abstract class MeasurementModel extends RenderableModel implements IMeasu
         }
 
         Node m = datasetService.createNode(nodeType);
-        datasetService.addChild(fileNode, m, null);
-        Double lat = (Double)params.get(LATITUDE);
-        Double lon = (Double)params.get(LONGITUDE);
-        Long tst = (Long)params.get(TIMESTAMP);
+        datasetService.addLocationChild(m, fileNode);
         indexNode(m);
-
-        if ((lat != null) && (lat != 0) && (lon != null) && (lon != 0) && isNeedToCreateLocation) {
-            createLocationNode(new DataElement(m), lat, lon);
-            params.remove(LATITUDE);
-            params.remove(LONGITUDE);
-        }
-        if ((tst != null) && (tst != 0)) {
-            updateTimestamp(tst);
-        }
         datasetService.setProperties(m, params);
         indexProperty(primaryType, params); // TODO: ??????????
 
@@ -250,28 +238,6 @@ public abstract class MeasurementModel extends RenderableModel implements IMeasu
     }
 
     @Override
-    public IDataElement createLocationNode(IDataElement parent, double lat, double lon) throws DatabaseException {
-        LOGGER.debug("start createLocationNode(Node measurement, long lat, long lon)");
-        // validate params
-        if (parent == null) {
-            throw new IllegalArgumentException("Parent nde is null.");
-        }
-
-        Node parentElement = ((DataElement)parent).getNode();
-        if (parentElement == null) {
-            throw new IllegalArgumentException("Parent nde is null.");
-        }
-        Node location = datasetService.createNode(parentElement, DriveRelationshipTypes.LOCATION, DriveNodeTypes.MP);
-        Map<String, Object> params = new HashMap<String, Object>();
-        params.put(LATITUDE, lat);
-        params.put(LONGITUDE, lon);
-        datasetService.setProperties(location, params);
-        updateLocationBounds(lat, lon);
-        indexNode(location);
-        return new DataElement(location);
-    }
-
-    @Override
     public Iterable<IDataElement> getElements(Envelope bounds_transformed) throws AWEException {
         return new DataElementIterable(getNodesInBounds(DriveNodeTypes.MP, bounds_transformed.getMinY(),
                 bounds_transformed.getMinX(), bounds_transformed.getMaxY(), bounds_transformed.getMaxX()));
@@ -284,7 +250,6 @@ public abstract class MeasurementModel extends RenderableModel implements IMeasu
             throw new IllegalArgumentException("Element type is null.");
         }
         LOGGER.info("getAllElementsByType(" + elementType.getId() + ")");
-
         return new DataElementIterable(datasetService.findAllDatasetElements(getRootNode(), elementType));
     }
 
@@ -292,4 +257,65 @@ public abstract class MeasurementModel extends RenderableModel implements IMeasu
     public Coordinate getCoordinate(IDataElement element) {
         return new Coordinate((Double)element.get(LONGITUDE), (Double)element.get(LATITUDE));
     }
+
+    @Override
+    public IDataElement addLocation(String filename, Map<String, Object> params) throws AWEException {
+        if ((filename == null) || (filename.equals(StringUtils.EMPTY))) {
+            throw new IllegalArgumentException("Filename is null or empty.");
+        }
+        if (params == null) {
+            throw new IllegalArgumentException("Parameters map is null.");
+        }
+        Node fileNode = ((DataElement)findFile(new File(filename).getName())).getNode();
+        if (fileNode == null) {
+            throw new IllegalArgumentException("File node " + filename + " not found.");
+        }
+
+        Double latitude = (Double)params.get(LATITUDE);
+        Double longitude = (Double)params.get(LONGITUDE);
+        Long timestamp = (Long)params.get(TIMESTAMP);
+
+        if ((latitude != null) && (latitude != 0) && (longitude != null) && (longitude != 0) && (timestamp != null)
+                && (timestamp != 0L)) {
+            updateTimestamp(timestamp);
+            return createLocationNode(new DataElement(fileNode), latitude, longitude, timestamp);
+        }
+        return null;
+    }
+
+    /**
+     * Create location node
+     * 
+     * @param parent IDataElement
+     * @param lat latitude
+     * @param lon longitude
+     * @param timestamp timestamp
+     * @return Created location
+     * @throws DatabaseException
+     */
+    private IDataElement createLocationNode(IDataElement parent, double lat, double lon, long timestamp) throws DatabaseException {
+        LOGGER.debug("start createLocationNode(Node measurement, long lat, long lon)");
+        if (parent == null) {
+            throw new IllegalArgumentException("Parent nde is null.");
+        }
+        Node parentElement = ((DataElement)parent).getNode();
+        if (parentElement == null) {
+            throw new IllegalArgumentException("Parent nde is null.");
+        }
+        Node location = datasetService.createNode(parentElement, DriveRelationshipTypes.LOCATION, DriveNodeTypes.MP);
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put(LATITUDE, lat);
+        params.put(LONGITUDE, lon);
+        params.put(TIMESTAMP, timestamp);
+        datasetService.setProperties(location, params);
+        updateLocationBounds(lat, lon);
+        indexNode(location);
+        return new DataElement(location);
+    }
+
+    @Override
+    public Iterable<IDataElement> getCurrentModelMeasurements() {
+        return new DataElementIterable(datasetService.getAllMeasurements(getRootNode()));
+    }
+
 }

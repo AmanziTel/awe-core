@@ -7,7 +7,7 @@ public class CopyHandler extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) {
-        NetworkPropertiesView obj = new NetworkPropertiesView();
+        PropertiesView obj = new PropertiesView();
         obj.copyToClipboard();        
         return null;
     }    
