@@ -64,7 +64,7 @@ public class NetworkSaverTesting extends AbstractAWETest {
     private final static Map<String, Object> SECTOR = new HashMap<String, Object>();
     private final static Map<String, Object> MSC = new HashMap<String, Object>();
     private final static Map<String, Object> CITY = new HashMap<String, Object>();
-    private static final NetworkModel networkModelMock = mock(NetworkModel.class);
+    private static NetworkModel networkModelMock;
     private static Long startTime;
     private static IDatabaseManager dbManager;
 
@@ -105,6 +105,7 @@ public class NetworkSaverTesting extends AbstractAWETest {
 
     @Before
     public void onStart() throws AWEException {
+        networkModelMock = mock(NetworkModel.class);
         dbManager = mock(IDatabaseManager.class);
         hashMap = new HashMap<String, String>();
         config = new NetworkConfiguration();
@@ -124,6 +125,7 @@ public class NetworkSaverTesting extends AbstractAWETest {
                 setMainModel(networkModelMock);
             }
         };
+        networkSaver.init(config);
         networkSaver.dbManager = dbManager;
         hashMap.put("bsc", "bsc1");
         hashMap.put("site", "site1");

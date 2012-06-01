@@ -69,7 +69,7 @@ public class SeparationConstraintsSaverTesting extends AbstractAWETest {
     private static DataLoadPreferenceInitializer initializer;
     private final static Map<String, Object> COMPLETED_SECTOR = new HashMap<String, Object>();
     private final static Map<String, Object> COLLECTED_SECTOR = new HashMap<String, Object>();
-    private static final NetworkModel networkModelMock = mock(NetworkModel.class);
+    private static NetworkModel networkModelMock;
     private static Long startTime;
     private static IDatabaseManager dbManager;
 
@@ -102,6 +102,7 @@ public class SeparationConstraintsSaverTesting extends AbstractAWETest {
 
     @Before
     public void onStart() throws AWEException {
+        networkModelMock = mock(NetworkModel.class);
         dbManager = mock(IDatabaseManager.class);
         hashMap = new HashMap<String, String>();
         config = new NetworkConfiguration();
@@ -114,7 +115,7 @@ public class SeparationConstraintsSaverTesting extends AbstractAWETest {
             throw (RuntimeException)new RuntimeException().initCause(e);
         }
         config.setFile(testFile);
-        separationSaver = new SeparationConstraintSaver(){
+        separationSaver = new SeparationConstraintSaver() {
             @Override
             public void init(NetworkConfiguration configuration) throws AWEException {
                 // TODO: verify
@@ -122,6 +123,7 @@ public class SeparationConstraintsSaverTesting extends AbstractAWETest {
                 setMainModel(networkModelMock);
             }
         };
+        separationSaver.init(config);
         separationSaver.dbManager = dbManager;
         hashMap.put(SECTOR_PARAM, SECTOR_VALUE);
         hashMap.put(SEPARATION_PARAM, SEPARATION_VALUE.toString());
@@ -129,11 +131,12 @@ public class SeparationConstraintsSaverTesting extends AbstractAWETest {
 
     @Test
     public void testCompleteingElement() {
-       MappedData dataElement = new MappedData(hashMap);
+        MappedData dataElement = new MappedData(hashMap);
         try {
             when(networkModelMock.findElement(eq(COLLECTED_SECTOR))).thenReturn(new DataElement(COLLECTED_SECTOR));
-            when(networkModelMock.completeProperties(new DataElement(eq(COLLECTED_SECTOR)), eq(COMPLETED_SECTOR), any(Boolean.class)))
-                    .thenReturn(new DataElement(COLLECTED_SECTOR));
+            when(
+                    networkModelMock.completeProperties(new DataElement(eq(COLLECTED_SECTOR)), eq(COMPLETED_SECTOR),
+                            any(Boolean.class))).thenReturn(new DataElement(COLLECTED_SECTOR));
             separationSaver.saveElement(dataElement);
             verify(networkModelMock, atLeastOnce()).completeProperties(new DataElement(eq(COLLECTED_SECTOR)), eq(COMPLETED_SECTOR),
                     any(Boolean.class));
@@ -149,8 +152,9 @@ public class SeparationConstraintsSaverTesting extends AbstractAWETest {
         MappedData dataElement = new MappedData(hashMap);
         try {
             when(networkModelMock.findElement(eq(COLLECTED_SECTOR))).thenReturn(null);
-            when(networkModelMock.completeProperties(new DataElement(eq(COLLECTED_SECTOR)), eq(COMPLETED_SECTOR), any(Boolean.class)))
-                    .thenReturn(new DataElement(COLLECTED_SECTOR));
+            when(
+                    networkModelMock.completeProperties(new DataElement(eq(COLLECTED_SECTOR)), eq(COMPLETED_SECTOR),
+                            any(Boolean.class))).thenReturn(new DataElement(COLLECTED_SECTOR));
             separationSaver.saveElement(dataElement);
             verify(networkModelMock, never()).completeProperties(any(IDataElement.class), any(Map.class), any(Boolean.class));
         } catch (Exception e) {
@@ -166,8 +170,9 @@ public class SeparationConstraintsSaverTesting extends AbstractAWETest {
         try {
             COMPLETED_SECTOR.remove(SEPARATION_PARAM);
             when(networkModelMock.findElement(eq(COLLECTED_SECTOR))).thenReturn(null);
-            when(networkModelMock.completeProperties(new DataElement(eq(COLLECTED_SECTOR)), eq(COMPLETED_SECTOR), any(Boolean.class)))
-                    .thenReturn(new DataElement(COLLECTED_SECTOR));
+            when(
+                    networkModelMock.completeProperties(new DataElement(eq(COLLECTED_SECTOR)), eq(COMPLETED_SECTOR),
+                            any(Boolean.class))).thenReturn(new DataElement(COLLECTED_SECTOR));
             separationSaver.saveElement(dataElement);
             verify(networkModelMock, never()).completeProperties(any(IDataElement.class), any(Map.class), any(Boolean.class));
         } catch (Exception e) {

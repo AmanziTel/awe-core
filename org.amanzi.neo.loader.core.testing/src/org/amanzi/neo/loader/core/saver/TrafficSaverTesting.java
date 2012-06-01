@@ -67,7 +67,7 @@ public class TrafficSaverTesting extends AbstractAWETest {
     private static DataLoadPreferenceInitializer initializer;
     private final static Map<String, Object> COMPLETED_SECTOR = new HashMap<String, Object>();
     private final static Map<String, Object> COLLECTED_SECTOR = new HashMap<String, Object>();
-    private static final NetworkModel networkModelMock = mock(NetworkModel.class);
+    private static NetworkModel networkModelMock;
     private static Long startTime;
     private static IDatabaseManager dbManager;
 
@@ -100,6 +100,7 @@ public class TrafficSaverTesting extends AbstractAWETest {
 
     @Before
     public void onStart() throws AWEException {
+        networkModelMock = mock(NetworkModel.class);
         hashMap = new HashMap<String, String>();
         config = new NetworkConfiguration();
         config.setDatasetName(NETWORK_NAME);
@@ -119,6 +120,7 @@ public class TrafficSaverTesting extends AbstractAWETest {
                 setMainModel(networkModelMock);
             }
         };
+        trafficSaver.init(config);
         trafficSaver.dbManager = dbManager;
         hashMap.put(SECTOR_PARAM, SECTOR_VALUE);
         hashMap.put(TRAFFIC_PARAM, TRAFFIC_VALUE.toString());
