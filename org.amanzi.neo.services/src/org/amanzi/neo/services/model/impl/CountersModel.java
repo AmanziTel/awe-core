@@ -49,8 +49,16 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 public class CountersModel extends MeasurementModel implements ICountersModel {
     // private members
     private ICountersType countersType;
-    private CorrelationService crServ = NeoServiceFactory.getInstance().getCorrelationService();
-    private DatasetService dsServ = NeoServiceFactory.getInstance().getDatasetService();
+    protected static CorrelationService crServ = NeoServiceFactory.getInstance().getCorrelationService();
+
+    /**
+     * instantiation for testing
+     * 
+     * @param service
+     */
+    static void setDatasetService(DatasetService service) {
+        datasetService = service;
+    }
 
     protected CountersModel(Node rootNode) throws AWEException {
         super(rootNode, DatasetTypes.COUNTERS);
@@ -169,8 +177,8 @@ public class CountersModel extends MeasurementModel implements ICountersModel {
         if (rootNode == null) {
             throw new IllegalArgumentException("currentModel type is null.");
         }
-        Iterator<Node> isVirtual = dsServ.getFirstRelationTraverser(rootNode, DatasetRelationTypes.DATASET, Direction.INCOMING)
-                .iterator();
+        Iterator<Node> isVirtual = datasetService.getFirstRelationTraverser(rootNode, DatasetRelationTypes.DATASET,
+                Direction.INCOMING).iterator();
         if (isVirtual.hasNext()) {
             return new ProjectModel(isVirtual.next());
         }

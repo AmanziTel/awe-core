@@ -57,7 +57,7 @@ public abstract class AbstractIndexedModel extends PropertyStatisticalModel {
 
     private IndexService indexService = NeoServiceFactory.getInstance().getIndexService();
 
-    static DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
+    protected static DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
 
     protected AbstractIndexedModel(Node rootNode, INodeType nodeType) throws AWEException {
         super(nodeType);
