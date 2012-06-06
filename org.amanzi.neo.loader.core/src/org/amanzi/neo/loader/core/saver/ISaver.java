@@ -38,7 +38,8 @@ public interface ISaver<M extends IModel, D extends IData, C extends IConfigurat
      * @param dataElement
      * @throws AWEException
      */
-    public void saveElement(D dataElement) throws AWEException;
+    public boolean save(D dataElement) throws AWEException;
+    
 
     /**
      * common finishing actions

@@ -28,6 +28,9 @@ import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelType
  */
 public class InterferenceMatrixSaver extends AbstractN2NSaver {
 
+    private static final String TARGET_NAME = "interfering_name";
+    private static final String SUB_TYPE = "interference";
+
     @Override
     protected INodeToNodeRelationsType getN2NType() {
         return N2NRelTypes.INTERFERENCE_MATRIX;
@@ -38,4 +41,13 @@ public class InterferenceMatrixSaver extends AbstractN2NSaver {
         return NetworkElementNodeType.SECTOR;
     }
 
+    @Override
+    protected String getSubType() {
+        return SUB_TYPE;
+    }
+    
+    @Override
+    protected String getTargetElementName() {
+        return TARGET_NAME;
+    }
 }

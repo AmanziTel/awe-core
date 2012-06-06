@@ -34,6 +34,7 @@ import org.amanzi.neo.loader.core.config.ISingleFileConfiguration;
 import org.amanzi.neo.loader.core.config.NetworkConfiguration;
 import org.amanzi.neo.loader.core.parser.MappedData;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceInitializer;
+import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataElement;
@@ -67,7 +68,7 @@ public class InterferenceSaverTesting extends AbstractAWETest {
     private final static Map<String, Object> SECTOR1 = new HashMap<String, Object>();
     private final static Map<String, Object> SECTOR2 = new HashMap<String, Object>();
     private final static Map<String, Object> properties = new HashMap<String, Object>();
-    private INetworkModel networkModel;
+    private INetworkModel networkModelMock;
     private INodeToNodeRelationsModel node2model;
     private static Long startTime;
     private static IDatabaseManager dbManager;
@@ -79,7 +80,6 @@ public class InterferenceSaverTesting extends AbstractAWETest {
         initializer.initializeDefaultPreferences();
         new LogStarter().earlyStartup();
         startTime = System.currentTimeMillis();
-        dbManager = mock(IDatabaseManager.class);
     }
 
     static {
@@ -99,8 +99,9 @@ public class InterferenceSaverTesting extends AbstractAWETest {
     }
 
     @Before
-    public void onStart() {
-        networkModel = mock(NetworkModel.class);
+    public void onStart() throws AWEException {
+        dbManager = mock(IDatabaseManager.class);
+        networkModelMock = mock(NetworkModel.class);
         node2model = mock(NodeToNodeRelationshipModel.class);
         hashMap = new HashMap<String, String>();
         config = new NetworkConfiguration();
@@ -116,11 +117,12 @@ public class InterferenceSaverTesting extends AbstractAWETest {
             @Override
             public void init(ISingleFileConfiguration configuration) throws AWEException {
                 setMainModel(node2model);
-                this.networkModel = InterferenceSaverTesting.this.networkModel;
+                this.networkModel = InterferenceSaverTesting.this.networkModelMock;
             }
         };
+        interferenceSaver.init(config);
         interferenceSaver.dbManager = dbManager;
-        hashMap.put("Serving Sector ", "bsc1");
+        hashMap.put("Serving Sector", "bsc1");
         hashMap.put("Interfering Sector", "site1");
         hashMap.put("co", "3.123");
         hashMap.put("adj", "2.1234");
@@ -132,21 +134,13 @@ public class InterferenceSaverTesting extends AbstractAWETest {
 
     }
 
-    private List<String> prepareValues(HashMap<String, Object> map) {
-        List<String> values = new LinkedList<String>();
-        for (String key : map.keySet()) {
-            values.add(map.get(key).toString());
-        }
-        return values;
-    }
-
     @Test
     public void testLinkSectors() {
         MappedData dataElement = new MappedData(hashMap);
         try {
-            when(networkModel.findElement(SECTOR1)).thenReturn(new DataElement(SECTOR1));
-            when(networkModel.findElement(SECTOR2)).thenReturn(new DataElement(SECTOR2));
-            interferenceSaver.saveElement(dataElement);
+            when(networkModelMock.findElement(SECTOR1)).thenReturn(new DataElement(SECTOR1));
+            when(networkModelMock.findElement(SECTOR2)).thenReturn(new DataElement(SECTOR2));
+            interferenceSaver.save(dataElement);
             verify(node2model).linkNode(new DataElement(SECTOR1), new DataElement(SECTOR2), eq(properties));
         } catch (Exception e) {
             LOGGER.error(" testNeighbourNetworkSaver error", e);
@@ -159,9 +153,9 @@ public class InterferenceSaverTesting extends AbstractAWETest {
     public void testIfOneSectorNotFound() {
         MappedData dataElement = new MappedData(hashMap);
         try {
-            when(networkModel.findElement(SECTOR1)).thenReturn(null);
-            when(networkModel.findElement(SECTOR2)).thenReturn(new DataElement(SECTOR2));
-            interferenceSaver.saveElement(dataElement);
+            when(networkModelMock.findElement(SECTOR1)).thenReturn(null);
+            when(networkModelMock.findElement(SECTOR2)).thenReturn(new DataElement(SECTOR2));
+            interferenceSaver.save(dataElement);
             verify(node2model, never()).linkNode(any(IDataElement.class), any(IDataElement.class), any(Map.class));
         } catch (Exception e) {
             LOGGER.error(" testNeighbourNetworkSaver error", e);
@@ -175,9 +169,9 @@ public class InterferenceSaverTesting extends AbstractAWETest {
         hashMap.remove("Serving Sector");
         MappedData dataElement = new MappedData(hashMap);
         try {
-            when(networkModel.findElement(SECTOR1)).thenReturn(null);
-            when(networkModel.findElement(SECTOR2)).thenReturn(new DataElement(SECTOR2));
-            interferenceSaver.saveElement(dataElement);
+            when(networkModelMock.findElement(SECTOR1)).thenReturn(null);
+            when(networkModelMock.findElement(SECTOR2)).thenReturn(new DataElement(SECTOR2));
+            interferenceSaver.save(dataElement);
             verify(node2model, never()).linkNode(any(IDataElement.class), any(IDataElement.class), any(Map.class));
         } catch (Exception e) {
             LOGGER.error(" testNeighbourNetworkSaver error", e);
@@ -189,12 +183,12 @@ public class InterferenceSaverTesting extends AbstractAWETest {
     public void testTransactionRollBackIfDatabaseExceptionThrow() {
         MappedData dataElement = new MappedData(hashMap);
         try {
-            when(networkModel.findElement(any(Map.class))).thenThrow(new DatabaseException("required exception"));
-            interferenceSaver.saveElement(dataElement);
-        } catch (Exception e) {
+            when(networkModelMock.findElementByPropertyValue((INodeType)any(Object.class), any(String.class), any(Object.class))).thenThrow(new DatabaseException("required exception"));
+            interferenceSaver.save(dataElement);
             verify(dbManager, never()).commitThreadTransaction();
             verify(dbManager, atLeastOnce()).rollbackThreadTransaction();
-
+        } catch (Exception e) {
+            Assert.fail("unexpected exceptions");
         }
     }
 
@@ -203,8 +197,8 @@ public class InterferenceSaverTesting extends AbstractAWETest {
     public void testTransactionContiniousIfRestExceptionThrow() {
         MappedData dataElement = new MappedData(hashMap);
         try {
-            when(networkModel.findElement(any(Map.class))).thenThrow(new IllegalArgumentException("required exception"));
-            interferenceSaver.saveElement(dataElement);
+            when(networkModelMock.findElementByPropertyValue((INodeType)any(Object.class), any(String.class), any(Object.class))).thenThrow(new IllegalArgumentException("required exception"));
+            interferenceSaver.save(dataElement);
             verify(dbManager, never()).rollbackThreadTransaction();
 
         } catch (Exception e) {

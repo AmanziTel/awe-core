@@ -30,7 +30,7 @@ public class Nemo2xSaver extends
 	private IDataElement locationParentNode = null;
 
 	@Override
-	public void saveElement(MappedData dataElement) throws AWEException {
+	protected void saveElement(MappedData dataElement) throws AWEException {
 		String eventId = dataElement.remove(EVENT).toLowerCase();
 		File file = dataElement.getFile();
 		DriveModel model = getDriveModel(file);

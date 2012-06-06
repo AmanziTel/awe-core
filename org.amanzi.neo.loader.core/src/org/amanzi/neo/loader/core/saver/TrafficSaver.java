@@ -38,7 +38,7 @@ public class TrafficSaver extends AbstractNetworkSaver<INetworkModel, NetworkCon
     private static final String SYNONYMS_DATASET_TYPE = "traffic";
 
     @Override
-    public void saveElement(MappedData dataElement) throws AWEException {
+    protected void saveElement(MappedData dataElement) throws AWEException {
         Map<String, Object> values = getDataElementProperties(getMainModel(), getSectorNodeType().getId(), dataElement, true, true);
 
         IDataElement trafficElement = getNetworkElement(getSectorNodeType(), "name", values);

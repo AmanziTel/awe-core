@@ -116,16 +116,12 @@ public abstract class AbstractParser<T1 extends ISaver<? extends IModel, T3, T2>
 		do {
 			element = parseElement(monitor);
 			for (ISaver<?, T3, T2> saver : savers) {
-				try {
 					if (element != null) {
-						saver.saveElement(element);
+						if(!saver.save(element)){
+						    AweConsolePlugin.error("Error while saving line ");
+		                    saver.finishUp();
+						}
 					}
-				} catch (DatabaseException e) {
-					AweConsolePlugin.error("Error while saving line ");
-					LOGGER.error("Error while saving line ", e);
-					saver.finishUp();
-					throw new DatabaseException(e);
-				}
 			}
 			if (isCanceled) {
 				break;

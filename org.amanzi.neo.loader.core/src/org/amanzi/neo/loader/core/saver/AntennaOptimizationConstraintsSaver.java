@@ -38,7 +38,7 @@ public class AntennaOptimizationConstraintsSaver extends AbstractNetworkSaver<IN
     private static final String SYNONYMS_DATASET_TYPE = "antenna_optimization";
 
     @Override
-    public void saveElement(MappedData dataElement) throws AWEException {
+    protected void saveElement(MappedData dataElement) throws AWEException {
         Map<String, Object> values = getDataElementProperties(getMainModel(), NetworkElementNodeType.SECTOR.getId(), dataElement, true, true);
 
         IDataElement sector = getNetworkElement(getSectorNodeType(), "name", values);        

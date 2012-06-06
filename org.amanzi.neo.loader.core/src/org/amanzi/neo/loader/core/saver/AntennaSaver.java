@@ -33,7 +33,7 @@ public class AntennaSaver extends AbstractMappedDataSaver<INetworkModel, Antenna
     private static final String TILT = "tilt";
 
     @Override
-    public void saveElement(MappedData dataElement) throws AWEException {
+    protected void saveElement(MappedData dataElement) throws AWEException {
         IDataElement site = null;
         String elementName = dataElement.get("name");
         Set<IDataElement> searchResult = getMainModel().findElementByPropertyValue(NetworkElementNodeType.SITE,

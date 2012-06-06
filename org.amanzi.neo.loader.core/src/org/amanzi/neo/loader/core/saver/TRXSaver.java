@@ -67,7 +67,7 @@ public class TRXSaver extends AbstractNetworkSaver<INetworkModel, NetworkConfigu
     private Integer[] arfcnArray;
     
     @Override
-    public void saveElement(MappedData dataElement) throws AWEException {
+    protected void saveElement(MappedData dataElement) throws AWEException {
         Map<String, Object> values = getDataElementProperties(getMainModel(), getSectorNodeType().getId(), dataElement, true, true);
 
         IDataElement trxSector = getNetworkElement(getSectorNodeType(), "name", values);

@@ -22,11 +22,11 @@ import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
 
 /**
- * 
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
  * Saver for separation constraints
  * </p>
+ * 
  * @author Ladornaya_A
  * @since 1.0.0
  */
@@ -38,11 +38,14 @@ public class SeparationConstraintSaver extends AbstractNetworkSaver<INetworkMode
     private static final String SYNONYMS_DATASET_TYPE = "separation";
 
     @Override
-    public void saveElement(MappedData dataElement) throws AWEException {
+    protected void saveElement(MappedData dataElement) throws AWEException {
         Map<String, Object> values = getDataElementProperties(getMainModel(), getSectorNodeType().getId(), dataElement, true, true);
 
         IDataElement trafficElement = getNetworkElement(getSectorNodeType(), "name", values);
-        
+
+        if (trafficElement == null) {
+            throw new NullPointerException("sector cann't be null");
+        }
         getMainModel().completeProperties(trafficElement, values, true);
     }
 
@@ -53,8 +56,8 @@ public class SeparationConstraintSaver extends AbstractNetworkSaver<INetworkMode
 
     @Override
     protected INetworkModel createMainModel(NetworkConfiguration configuration) throws AWEException {
-        networkModel = getActiveProject().getNetwork(configuration.getDatasetName());  
-        return networkModel;      
+        networkModel = getActiveProject().getNetwork(configuration.getDatasetName());
+        return networkModel;
     }
 
     @Override

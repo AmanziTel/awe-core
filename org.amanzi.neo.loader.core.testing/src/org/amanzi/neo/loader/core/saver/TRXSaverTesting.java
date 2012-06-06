@@ -24,9 +24,11 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.db.manager.IDatabaseManager;
@@ -36,6 +38,7 @@ import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceInitializer;
 import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.NetworkService.NetworkRelationshipTypes;
+import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataElement;
@@ -87,7 +90,7 @@ public class TRXSaverTesting extends AbstractAWETest {
     private final static Map<String, Object> TRX = new HashMap<String, Object>();
     private final static Map<String, Object> FREQ_MAP = new HashMap<String, Object>();
     private final static Map<String, Object> SECTOR = new HashMap<String, Object>();
-    private static final NetworkModel networkModelMock = mock(NetworkModel.class);
+    private static  NetworkModel networkModelMock;
     private static Long startTime;
     private static IDatabaseManager dbManager;
 
@@ -129,6 +132,7 @@ public class TRXSaverTesting extends AbstractAWETest {
 
     @Before
     public void onStart() throws AWEException {
+        networkModelMock = mock(NetworkModel.class);
         dbManager = mock(IDatabaseManager.class);
         hashMap = new HashMap<String, String>();
         config = new NetworkConfiguration();
@@ -171,13 +175,15 @@ public class TRXSaverTesting extends AbstractAWETest {
     public void testSavingTRXWhenTRXNotExist() {
         MappedData dataElement = new MappedData(hashMap);
         try {
+            Set<IDataElement> mockResult = new HashSet<IDataElement>();
+            mockResult.add(new DataElement(SECTOR));
             List<IDataElement> trxList = new LinkedList<IDataElement>();
-            when(networkModelMock.findElement(eq(SECTOR))).thenReturn(new DataElement(SECTOR));
+            when(networkModelMock.findElementByPropertyValue(any(INodeType.class), any(String.class), any(Object.class))).thenReturn(mockResult);
             when(networkModelMock.getChildren(new DataElement(eq(SECTOR)))).thenReturn(trxList);
             when(networkModelMock.createElement(new DataElement(eq(SECTOR)), eq(TRX))).thenReturn(new DataElement(TRX));
-            when(networkModelMock.getRelatedNodes(new DataElement(eq(TRX)), eq(NetworkRelationshipTypes.ENTRY_PLAN))).thenReturn(
+            when(networkModelMock.getRelatedNodes(any(IDataElement.class), eq(NetworkRelationshipTypes.ENTRY_PLAN))).thenReturn(
                     trxList);
-            trxSaver.saveElement(dataElement);
+            trxSaver.save(dataElement);
             verify(networkModelMock, atLeastOnce()).createElement(any(IDataElement.class), any(Map.class));
             verify(networkModelMock, atLeastOnce()).createElement(any(IDataElement.class), any(Map.class),
                     eq(NetworkRelationshipTypes.ENTRY_PLAN));
@@ -193,13 +199,15 @@ public class TRXSaverTesting extends AbstractAWETest {
         MappedData dataElement = new MappedData(hashMap);
         try {
             List<IDataElement> trxList = new LinkedList<IDataElement>();
-            trxList.add(new DataElement(TRX));
-            when(networkModelMock.findElement(eq(SECTOR))).thenReturn(new DataElement(SECTOR));
+            trxList.add(new DataElement(TRX)); 
+            Set<IDataElement> mockResult = new HashSet<IDataElement>();
+            mockResult.add(new DataElement(SECTOR));
+            when(networkModelMock.findElementByPropertyValue(any(INodeType.class), any(String.class), any(Object.class))).thenReturn(mockResult);
             when(networkModelMock.getChildren(new DataElement(eq(SECTOR)))).thenReturn(trxList);
             when(networkModelMock.createElement(new DataElement(eq(SECTOR)), eq(TRX))).thenReturn(new DataElement(TRX));
-            when(networkModelMock.getRelatedNodes(new DataElement(eq(TRX)), eq(NetworkRelationshipTypes.ENTRY_PLAN))).thenReturn(
+            when(networkModelMock.getRelatedNodes(any(IDataElement.class), eq(NetworkRelationshipTypes.ENTRY_PLAN))).thenReturn(
                     trxList);
-            trxSaver.saveElement(dataElement);
+            trxSaver.save(dataElement);
             verify(networkModelMock, never()).createElement(new DataElement(eq(SECTOR)), eq(TRX));
             verify(networkModelMock, atLeastOnce()).completeProperties(any(IDataElement.class), any(Map.class), any(Boolean.class));
         } catch (Exception e) {
@@ -218,7 +226,7 @@ public class TRXSaverTesting extends AbstractAWETest {
             when(networkModelMock.getChildren(new DataElement(eq(SECTOR)))).thenReturn(trxList);
             when(networkModelMock.getRelatedNodes(new DataElement(eq(TRX)), eq(NetworkRelationshipTypes.ENTRY_PLAN))).thenReturn(
                     trxList);
-            trxSaver.saveElement(dataElement);
+            trxSaver.save(dataElement);
             verify(networkModelMock, never()).createElement(new DataElement(eq(SECTOR)), eq(TRX));
         } catch (Exception e) {
             LOGGER.error(" testSavingTRXWhenSectorIsNotExist error", e);
@@ -232,7 +240,7 @@ public class TRXSaverTesting extends AbstractAWETest {
         MappedData dataElement = new MappedData(hashMap);
         try {
             when(networkModelMock.findElement(any(Map.class))).thenThrow(new DatabaseException("required exception"));
-            trxSaver.saveElement(dataElement);
+            trxSaver.save(dataElement);
         } catch (Exception e) {
             verify(dbManager, never()).commitThreadTransaction();
             verify(dbManager, atLeastOnce()).rollbackThreadTransaction();
@@ -246,7 +254,7 @@ public class TRXSaverTesting extends AbstractAWETest {
         MappedData dataElement = new MappedData(hashMap);
         try {
             when(networkModelMock.findElement(any(Map.class))).thenThrow(new IllegalArgumentException("required exception"));
-            trxSaver.saveElement(dataElement);
+            trxSaver.save(dataElement);
             verify(dbManager, never()).rollbackThreadTransaction();
 
         } catch (Exception e) {

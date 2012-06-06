@@ -110,12 +110,13 @@ public class NetworkSaver extends
 	}
 
 	@Override
-	public void saveElement(MappedData dataElement) throws AWEException {
+	protected void saveElement(MappedData dataElement) throws AWEException {
 		IDataElement parent = null;
 		IDataElement element = null;
 
 		boolean shouldStart = false;
 		boolean firstTime = true;
+		boolean hasParents = false;
 		boolean siteNameFromSectorName = AweUiPlugin.getDefault()
 				.getPreferenceStore().getBoolean(SITE_NAME_FROM_SECTOR_NAME);
 
@@ -166,7 +167,7 @@ public class NetworkSaver extends
 				try {
 					element = getMainModel().findElement(values);
 
-					if (element == null) {
+					if ((element == null)&&((!type.equals(NetworkElementNodeType.SECTOR))||(hasParents))) {
 						element = getMainModel().createElement(parent, values);
 					} else {
 						IDataElement oldParent = getMainModel()
@@ -191,13 +192,12 @@ public class NetworkSaver extends
 								.completeProperties(element, values, true);
 					}
 					parent = element;
+					hasParents = true;
 				} catch (IllegalArgumentException e) {
 					continue;
 				}
 			}
 		}
-
-		commitTx();
 	}
 
 	@Override

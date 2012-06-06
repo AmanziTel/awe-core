@@ -45,11 +45,11 @@ public abstract class AbstractN2NSaver extends AbstractNetworkSaver<INodeToNodeR
      * neighbourConflicted map to transmit data to another Saver.
      */
     @Override
-    public void saveElement(MappedData dataElement) throws AWEException {
+    protected void saveElement(MappedData dataElement) throws AWEException {
         Map<String, Object> values = getDataElementProperties(getMainModel(), getN2NNodeType().getId(), dataElement, true, true);
 
-        String servingName = values.get(SERVING_NAME_PROPERTY).toString();
-        String targetName = values.get(TARGET_ELEMENT_PROPERTY).toString();
+        String servingName = values.get(getSourceElementName()).toString();
+        String targetName = values.get(getTargetElementName()).toString();
 
         IDataElement servingElement = getNetworkElement(getN2NNodeType(), SERVING_NAME_PROPERTY, values);
         IDataElement targetElement = getNetworkElement(getN2NNodeType(), TARGET_ELEMENT_PROPERTY, values);
@@ -106,5 +106,19 @@ public abstract class AbstractN2NSaver extends AbstractNetworkSaver<INodeToNodeR
     @Override
     protected String getSubType() {
         return null;
+    }
+    
+    /**
+     * @return name of source element
+     */
+    protected String getSourceElementName(){
+        return SERVING_NAME_PROPERTY;
+    }
+
+    /**
+     * @return name of target element
+     */
+    protected String getTargetElementName(){
+        return TARGET_ELEMENT_PROPERTY;
     }
 }

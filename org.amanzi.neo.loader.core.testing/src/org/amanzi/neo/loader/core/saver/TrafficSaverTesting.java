@@ -24,7 +24,9 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.db.manager.IDatabaseManager;
@@ -131,12 +133,14 @@ public class TrafficSaverTesting extends AbstractAWETest {
         MappedData dataElement = new MappedData(hashMap);
 
         try {
-            when(networkModelMock.findElement(eq(COLLECTED_SECTOR))).thenReturn(new DataElement(COLLECTED_SECTOR));
+            Set<IDataElement> mockResult = new HashSet<IDataElement>();
+            mockResult.add(new DataElement(COLLECTED_SECTOR));
+            when(networkModelMock.findElementByPropertyValue(NetworkElementNodeType.SECTOR,AbstractService.NAME, SECTOR_VALUE)).thenReturn(mockResult);
             when(
                     networkModelMock.completeProperties(new DataElement(eq(COLLECTED_SECTOR)), eq(COMPLETED_SECTOR),
                             any(Boolean.class))).thenReturn(new DataElement(COLLECTED_SECTOR));
-            trafficSaver.saveElement(dataElement);
-            verify(networkModelMock, atLeastOnce()).completeProperties(new DataElement(eq(COLLECTED_SECTOR)), eq(COMPLETED_SECTOR),
+            trafficSaver.save(dataElement);
+            verify(networkModelMock, atLeastOnce()).completeProperties(any(IDataElement.class), any(Map.class),
                     any(Boolean.class));
         } catch (Exception e) {
             LOGGER.error(" testCompleteingElement error", e);
@@ -154,7 +158,7 @@ public class TrafficSaverTesting extends AbstractAWETest {
             when(
                     networkModelMock.completeProperties(new DataElement(eq(COLLECTED_SECTOR)), eq(COMPLETED_SECTOR),
                             any(Boolean.class))).thenReturn(new DataElement(COLLECTED_SECTOR));
-            trafficSaver.saveElement(dataElement);
+            trafficSaver.save(dataElement);
             verify(networkModelMock, never()).completeProperties(any(IDataElement.class), any(Map.class), any(Boolean.class));
         } catch (Exception e) {
             LOGGER.error(" testIfSectorNotFound error", e);
@@ -173,7 +177,7 @@ public class TrafficSaverTesting extends AbstractAWETest {
             when(
                     networkModelMock.completeProperties(new DataElement(eq(COLLECTED_SECTOR)), eq(COMPLETED_SECTOR),
                             any(Boolean.class))).thenReturn(new DataElement(COLLECTED_SECTOR));
-            trafficSaver.saveElement(dataElement);
+            trafficSaver.save(dataElement);
             verify(networkModelMock, never()).completeProperties(any(IDataElement.class), any(Map.class), any(Boolean.class));
         } catch (Exception e) {
             LOGGER.error(" testIfThereIsNoValue error", e);
@@ -188,7 +192,7 @@ public class TrafficSaverTesting extends AbstractAWETest {
 
         try {
             when(networkModelMock.findElement(any(Map.class))).thenThrow(new DatabaseException("required exception"));
-            trafficSaver.saveElement(dataElement);
+            trafficSaver.save(dataElement);
         } catch (Exception e) {
             verify(dbManager, never()).commitThreadTransaction();
             verify(dbManager, atLeastOnce()).rollbackThreadTransaction();
@@ -203,7 +207,7 @@ public class TrafficSaverTesting extends AbstractAWETest {
 
         try {
             when(networkModelMock.findElement(any(Map.class))).thenThrow(new IllegalArgumentException("required exception"));
-            trafficSaver.saveElement(dataElement);
+            trafficSaver.save(dataElement);
             verify(dbManager, never()).rollbackThreadTransaction();
 
         } catch (Exception e) {

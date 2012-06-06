@@ -24,9 +24,9 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.db.manager.IDatabaseManager;
@@ -133,12 +133,14 @@ public class SeparationConstraintsSaverTesting extends AbstractAWETest {
     public void testCompleteingElement() {
         MappedData dataElement = new MappedData(hashMap);
         try {
-            when(networkModelMock.findElement(eq(COLLECTED_SECTOR))).thenReturn(new DataElement(COLLECTED_SECTOR));
+            Set<IDataElement> mockResult = new HashSet<IDataElement>();
+            mockResult.add(new DataElement(COLLECTED_SECTOR));
+            when(networkModelMock.findElementByPropertyValue(NetworkElementNodeType.SECTOR,AbstractService.NAME, SECTOR_VALUE)).thenReturn(mockResult);
             when(
                     networkModelMock.completeProperties(new DataElement(eq(COLLECTED_SECTOR)), eq(COMPLETED_SECTOR),
                             any(Boolean.class))).thenReturn(new DataElement(COLLECTED_SECTOR));
-            separationSaver.saveElement(dataElement);
-            verify(networkModelMock, atLeastOnce()).completeProperties(new DataElement(eq(COLLECTED_SECTOR)), eq(COMPLETED_SECTOR),
+            separationSaver.save(dataElement);
+            verify(networkModelMock, atLeastOnce()).completeProperties(any(IDataElement.class), any(Map.class),
                     any(Boolean.class));
         } catch (Exception e) {
             LOGGER.error(" testCompleteingElement error", e);
@@ -151,11 +153,11 @@ public class SeparationConstraintsSaverTesting extends AbstractAWETest {
     public void testIfSectorNotFound() {
         MappedData dataElement = new MappedData(hashMap);
         try {
-            when(networkModelMock.findElement(eq(COLLECTED_SECTOR))).thenReturn(null);
+            when(networkModelMock.findElementByPropertyValue(NetworkElementNodeType.SECTOR,AbstractService.NAME, SECTOR_VALUE)).thenReturn(new HashSet<IDataElement>());
             when(
-                    networkModelMock.completeProperties(new DataElement(eq(COLLECTED_SECTOR)), eq(COMPLETED_SECTOR),
+                    networkModelMock.completeProperties(any(IDataElement.class), eq(COMPLETED_SECTOR),
                             any(Boolean.class))).thenReturn(new DataElement(COLLECTED_SECTOR));
-            separationSaver.saveElement(dataElement);
+            separationSaver.save(dataElement);
             verify(networkModelMock, never()).completeProperties(any(IDataElement.class), any(Map.class), any(Boolean.class));
         } catch (Exception e) {
             LOGGER.error(" testIfSectorNotFound error", e);
@@ -169,11 +171,11 @@ public class SeparationConstraintsSaverTesting extends AbstractAWETest {
         MappedData dataElement = new MappedData(hashMap);
         try {
             COMPLETED_SECTOR.remove(SEPARATION_PARAM);
-            when(networkModelMock.findElement(eq(COLLECTED_SECTOR))).thenReturn(null);
+            when(networkModelMock.findElementByPropertyValue(NetworkElementNodeType.SECTOR,AbstractService.NAME, SECTOR_VALUE)).thenReturn(new HashSet<IDataElement>());
             when(
                     networkModelMock.completeProperties(new DataElement(eq(COLLECTED_SECTOR)), eq(COMPLETED_SECTOR),
                             any(Boolean.class))).thenReturn(new DataElement(COLLECTED_SECTOR));
-            separationSaver.saveElement(dataElement);
+            separationSaver.save(dataElement);
             verify(networkModelMock, never()).completeProperties(any(IDataElement.class), any(Map.class), any(Boolean.class));
         } catch (Exception e) {
             LOGGER.error(" testIfThereIsNoValue error", e);
@@ -186,7 +188,7 @@ public class SeparationConstraintsSaverTesting extends AbstractAWETest {
         MappedData dataElement = new MappedData(hashMap);
         try {
             when(networkModelMock.findElement(any(Map.class))).thenThrow(new DatabaseException("required exception"));
-            separationSaver.saveElement(dataElement);
+            separationSaver.save(dataElement);
         } catch (Exception e) {
             verify(dbManager, never()).commitThreadTransaction();
             verify(dbManager, atLeastOnce()).rollbackThreadTransaction();
@@ -200,7 +202,7 @@ public class SeparationConstraintsSaverTesting extends AbstractAWETest {
         MappedData dataElement = new MappedData(hashMap);
         try {
             when(networkModelMock.findElement(any(Map.class))).thenThrow(new IllegalArgumentException("required exception"));
-            separationSaver.saveElement(dataElement);
+            separationSaver.save(dataElement);
             verify(dbManager, never()).rollbackThreadTransaction();
 
         } catch (Exception e) {

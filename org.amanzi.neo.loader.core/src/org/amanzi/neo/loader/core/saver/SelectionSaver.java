@@ -39,7 +39,7 @@ public class SelectionSaver extends AbstractNetworkSaver<ISelectionModel, Networ
     private static final String SYNONYMS_DATASET_TYPE = "selection";
 
     @Override
-    public void saveElement(MappedData dataElement) throws AWEException {
+    protected void saveElement(MappedData dataElement) throws AWEException {
         Map<String, Object> values = getDataElementProperties(getMainModel(), getSectorNodeType().getId(), dataElement, true, true);
 
         IDataElement selectionElement = getNetworkElement(getSectorNodeType(), "name", values);

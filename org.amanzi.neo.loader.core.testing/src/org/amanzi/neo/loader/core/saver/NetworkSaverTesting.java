@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.amanzi.awe.ui.AweUiPlugin;
 import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.db.manager.IDatabaseManager;
 import org.amanzi.neo.loader.core.config.NetworkConfiguration;
@@ -67,6 +68,8 @@ public class NetworkSaverTesting extends AbstractAWETest {
     private static NetworkModel networkModelMock;
     private static Long startTime;
     private static IDatabaseManager dbManager;
+    
+    private static final String SITE_NAME_FROM_SECTOR_NAME = "SITE_SECTOR_NAME";
 
     @BeforeClass
     public static void prepare() {
@@ -155,7 +158,7 @@ public class NetworkSaverTesting extends AbstractAWETest {
             when(networkModelMock.createElement(any(IDataElement.class), eq(MSC))).thenReturn(new DataElement(MSC));
             when(networkModelMock.findElement(CITY)).thenReturn(null);
             when(networkModelMock.createElement(any(IDataElement.class), eq(CITY))).thenReturn(new DataElement(CITY));
-            networkSaver.saveElement(dataElement);
+            networkSaver.save(dataElement);
             verify(networkModelMock, times(5)).createElement(any(IDataElement.class), any(Map.class));
         } catch (Exception e) {
             LOGGER.error(" testForSavingAllElements error", e);
@@ -175,7 +178,7 @@ public class NetworkSaverTesting extends AbstractAWETest {
             when(networkModelMock.createElement(any(IDataElement.class), eq(SITE))).thenReturn(new DataElement(SITE));
             when(networkModelMock.findElement(SECTOR)).thenReturn(null);
             when(networkModelMock.createElement(any(IDataElement.class), eq(SECTOR))).thenReturn(new DataElement(SECTOR));
-            networkSaver.saveElement(dataElement);
+            networkSaver.save(dataElement);
             verify(networkModelMock, times(2)).createElement(any(IDataElement.class), any(Map.class));
         } catch (Exception e) {
             LOGGER.error(" testForSavingSITESECTOR error", e);
@@ -185,7 +188,7 @@ public class NetworkSaverTesting extends AbstractAWETest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testForTyingToSaveOnlySector() {
+    public void testForTryingToSaveOnlySector() {
         hashMap.remove("msc");
         hashMap.remove("bsc");
         hashMap.remove("city");
@@ -194,7 +197,9 @@ public class NetworkSaverTesting extends AbstractAWETest {
         hashMap.remove("lon");
         MappedData dataElement = new MappedData(hashMap);
         try {
-            networkSaver.saveElement(dataElement);
+            AweUiPlugin.getDefault()
+            .getPreferenceStore().setValue(SITE_NAME_FROM_SECTOR_NAME, false);
+            networkSaver.save(dataElement);
             verify(networkModelMock, never()).createElement(any(IDataElement.class), any(Map.class));
         } catch (Exception e) {
             LOGGER.error(" testForTyingToSaveOnlySector error", e);
@@ -208,7 +213,7 @@ public class NetworkSaverTesting extends AbstractAWETest {
         MappedData dataElement = new MappedData(hashMap);
         try {
             when(networkModelMock.findElement(any(Map.class))).thenThrow(new DatabaseException("required exception"));
-            networkSaver.saveElement(dataElement);
+            networkSaver.save(dataElement);
         } catch (Exception e) {
             verify(dbManager, never()).commitThreadTransaction();
             verify(dbManager, atLeastOnce()).rollbackThreadTransaction();
@@ -222,7 +227,7 @@ public class NetworkSaverTesting extends AbstractAWETest {
         MappedData dataElement = new MappedData(hashMap);
         try {
             when(networkModelMock.findElement(any(Map.class))).thenThrow(new IllegalArgumentException("required exception"));
-            networkSaver.saveElement(dataElement);
+            networkSaver.save(dataElement);
             verify(dbManager, never()).rollbackThreadTransaction();
 
         } catch (Exception e) {

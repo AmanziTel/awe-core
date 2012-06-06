@@ -32,6 +32,7 @@ import org.amanzi.neo.loader.core.config.ISingleFileConfiguration;
 import org.amanzi.neo.loader.core.config.NetworkConfiguration;
 import org.amanzi.neo.loader.core.parser.MappedData;
 import org.amanzi.neo.loader.core.preferences.DataLoadPreferenceInitializer;
+import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.INetworkModel;
@@ -96,7 +97,7 @@ public class NeighbourSaverTesting extends AbstractAWETest {
     }
 
     @Before
-    public void onStart() {
+    public void onStart() throws AWEException {
         networkModel = mock(NetworkModel.class);
         node2model = mock(NodeToNodeRelationshipModel.class);
         hashMap = new HashMap<String, String>();
@@ -116,6 +117,7 @@ public class NeighbourSaverTesting extends AbstractAWETest {
                 this.networkModel = NeighbourSaverTesting.this.networkModel;
             };
         };
+        neighboursSaver.init(config);
         neighboursSaver.dbManager = dbManager;
         hashMap.put("Serving Sector", "sector1");
         hashMap.put("Neighbour", "sector2");
@@ -133,7 +135,7 @@ public class NeighbourSaverTesting extends AbstractAWETest {
         try {
             when(networkModel.findElement(SECTOR1)).thenReturn(new DataElement(SECTOR1));
             when(networkModel.findElement(SECTOR2)).thenReturn(new DataElement(SECTOR2));
-            neighboursSaver.saveElement(dataElement);
+            neighboursSaver.save(dataElement);
             verify(node2model).linkNode(new DataElement(SECTOR1), new DataElement(SECTOR2), eq(properties));
         } catch (Exception e) {
             LOGGER.error(" testNeighbourNetworkSaver error", e);
@@ -148,7 +150,7 @@ public class NeighbourSaverTesting extends AbstractAWETest {
         try {
             when(networkModel.findElement(SECTOR1)).thenReturn(null);
             when(networkModel.findElement(SECTOR2)).thenReturn(new DataElement(SECTOR2));
-            neighboursSaver.saveElement(dataElement);
+            neighboursSaver.save(dataElement);
             verify(node2model, never()).linkNode(any(IDataElement.class), any(IDataElement.class), any(Map.class));
         } catch (Exception e) {
             LOGGER.error(" testNeighbourNetworkSaver error", e);
@@ -164,7 +166,7 @@ public class NeighbourSaverTesting extends AbstractAWETest {
         try {
             when(networkModel.findElement(SECTOR1)).thenReturn(null);
             when(networkModel.findElement(SECTOR2)).thenReturn(new DataElement(SECTOR2));
-            neighboursSaver.saveElement(dataElement);
+            neighboursSaver.save(dataElement);
             verify(node2model, never()).linkNode(any(IDataElement.class), any(IDataElement.class), any(Map.class));
         } catch (Exception e) {
             LOGGER.error(" testNeighbourNetworkSaver error", e);
@@ -178,7 +180,7 @@ public class NeighbourSaverTesting extends AbstractAWETest {
         MappedData dataElement = new MappedData(hashMap);
         try {
             when(networkModel.findElement(any(Map.class))).thenThrow(new DatabaseException("required exception"));
-            neighboursSaver.saveElement(dataElement);
+            neighboursSaver.save(dataElement);
         } catch (Exception e) {
             verify(dbManager, never()).commitThreadTransaction();
             verify(dbManager, atLeastOnce()).rollbackThreadTransaction();
@@ -192,7 +194,7 @@ public class NeighbourSaverTesting extends AbstractAWETest {
         MappedData dataElement = new MappedData(hashMap);
         try {
             when(networkModel.findElement(any(Map.class))).thenThrow(new IllegalArgumentException("required exception"));
-            neighboursSaver.saveElement(dataElement);
+            neighboursSaver.save(dataElement);
             verify(dbManager, never()).rollbackThreadTransaction();
 
         } catch (Exception e) {
