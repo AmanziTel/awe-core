@@ -69,6 +69,7 @@
 				<module>org.amanzi.neo.services.ui</module>
 				<module>org.amanzi.neo.services.ui.neoclipse</module>
 				<module>org.jfree</module>
+				<module>org.jruby</module>
 			</modules>
 		</profile>
 		<profile>
@@ -125,6 +126,7 @@
 				<module>org.amanzi.neo.services.ui</module>
 				<module>org.amanzi.neo.services.ui.neoclipse</module>
 				<module>org.jfree</module>
+				<module>org.jruby</module>
 			</modules>
 		</profile>
 	</profiles>
