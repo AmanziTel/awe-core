@@ -120,9 +120,6 @@ public class Application extends UDIGApplication implements IApplication {
             return false;
         }
 
-        IPreferenceStore preferenceStore = org.neo4j.neoclipse.Activator.getDefault().getPreferenceStore();
-        preferenceStore.setValue(org.neo4j.neoclipse.preference.Preferences.DATABASE_LOCATION, dbPath);
-
         return true;
     }
 }
@@ -167,10 +164,6 @@ class DBLocatinInputDialog extends Dialog {
         final Text text = new Text(inputGroup, SWT.BORDER);
         GridData data = new GridData(GridData.FILL_HORIZONTAL);
         text.setLayoutData(data);
-
-        IPreferenceStore preferenceStore = org.neo4j.neoclipse.Activator.getDefault().getPreferenceStore();
-        text.setText(preferenceStore.getString(org.neo4j.neoclipse.preference.Preferences.DATABASE_LOCATION));
-        
 
         final Composite errorGroup = new Composite(shell, SWT.NONE);
         errorGroup.setLayout(new GridLayout(2, false));
