@@ -8,7 +8,7 @@
     <version>${awe-scripting-version}</version>
   </parent>
   <groupId>org.amanzi</groupId>
-  <artifactId>org.jruby</artifactId>
+  <artifactId>org.amanzi.awe.scripting</artifactId>
   <version>1.0.0.qualifier</version>
   <packaging>eclipse-plugin</packaging>
 </project>
