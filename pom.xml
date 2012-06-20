@@ -29,7 +29,6 @@
     <module>org.amanzi.awe.extras.feature</module>
     <module>org.amanzi.awe.feature</module>
     <module>org.amanzi.awe.filters.ui</module>
-    <module>org.amanzi.awe.l3messages</module>
     <module>org.amanzi.awe.libs</module>
     <module>org.amanzi.awe.neostyle</module>
     <module>org.amanzi.awe.render.core</module>
@@ -40,14 +39,12 @@
     <module>org.amanzi.awe.ui</module>
     <module>org.amanzi.awe.views.drive</module>
     <module>org.amanzi.awe.views.explorer</module>
-    <module>org.amanzi.awe.views.explorer.newproject</module>
     <module>org.amanzi.awe.views.neighbours</module>
     <module>org.amanzi.awe.views.network</module>
     <module>org.amanzi.awe.views.property</module>
     <module>org.amanzi.awe.views.reuse</module>
     <module>org.amanzi.log4j</module>
     <module>org.amanzi.neo.db</module>
-    <module>org.amanzi.neo.db.neoclipse</module>
     <module>org.amanzi.neo.db.testing</module>
     <module>org.amanzi.neo.loader.core</module>
     <module>org.amanzi.neo.loader.core.testing</module>
@@ -55,7 +52,6 @@
     <module>org.amanzi.neo.services</module>
     <module>org.amanzi.neo.services.testing</module>
     <module>org.amanzi.neo.services.ui</module>
-    <module>org.amanzi.neo.services.ui.neoclipse</module>
     <module>org.amanzi.testing</module>
     <module>org.amanzi.testing.sanity</module>
     <module>org.jfree</module>
