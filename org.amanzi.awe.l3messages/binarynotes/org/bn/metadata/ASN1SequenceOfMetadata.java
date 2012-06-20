@@ -21,13 +21,17 @@ package org.bn.metadata;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
 import org.bn.annotations.ASN1SequenceOf;
-import org.bn.coders.*;
+import org.bn.coders.ASN1PreparedElementData;
+import org.bn.coders.CoderUtils;
+import org.bn.coders.DecodedObject;
+import org.bn.coders.ElementInfo;
+import org.bn.coders.IASN1TypesDecoder;
+import org.bn.coders.IASN1TypesEncoder;
 
 
 public class ASN1SequenceOfMetadata extends ASN1FieldMetadata

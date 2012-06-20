@@ -22,7 +22,6 @@ package org.bn.metadata;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.bn.annotations.ASN1Any;
 import org.bn.annotations.ASN1BitString;
 import org.bn.coders.DecodedObject;
 import org.bn.coders.ElementInfo;

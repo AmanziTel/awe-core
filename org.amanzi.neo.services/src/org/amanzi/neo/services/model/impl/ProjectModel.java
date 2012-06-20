@@ -38,7 +38,7 @@ import org.amanzi.neo.services.model.IProjectModel;
 import org.amanzi.neo.services.model.IPropertyStatisticalModel;
 import org.amanzi.neo.services.model.IRenderableModel;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
 

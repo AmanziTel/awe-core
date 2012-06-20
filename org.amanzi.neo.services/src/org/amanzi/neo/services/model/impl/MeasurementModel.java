@@ -29,7 +29,7 @@ import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IMeasurementModel;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveRelationshipTypes;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.index.Index;

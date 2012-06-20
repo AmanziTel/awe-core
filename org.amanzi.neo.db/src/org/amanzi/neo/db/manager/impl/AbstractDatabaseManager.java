@@ -18,8 +18,8 @@ import java.util.ArrayList;
 
 import org.amanzi.neo.db.manager.IDatabaseManager;
 import org.amanzi.neo.db.manager.events.DatabaseEvent;
-import org.amanzi.neo.db.manager.events.IDatabaseEventListener;
 import org.amanzi.neo.db.manager.events.DatabaseEvent.EventType;
+import org.amanzi.neo.db.manager.events.IDatabaseEventListener;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Transaction;
 

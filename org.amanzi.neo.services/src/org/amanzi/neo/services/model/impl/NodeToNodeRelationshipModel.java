@@ -36,7 +36,7 @@ import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IModel;
 import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
 import org.amanzi.neo.services.model.INodeToNodeRelationsType;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.jdom.IllegalNameException;
 import org.neo4j.graphdb.Direction;

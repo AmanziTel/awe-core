@@ -110,10 +110,16 @@ package org.bn;
 */
 
 
-import org.bn.coders.*;
-import org.bn.coders.ber.*;
-import org.bn.coders.der.*;
-import org.bn.coders.per.*;
+import org.bn.coders.ASN1PreparedElementData;
+import org.bn.coders.IASN1PreparedElementData;
+import org.bn.coders.ber.BERDecoder;
+import org.bn.coders.ber.BEREncoder;
+import org.bn.coders.der.DERDecoder;
+import org.bn.coders.der.DEREncoder;
+import org.bn.coders.per.PERAlignedDecoder;
+import org.bn.coders.per.PERAlignedEncoder;
+import org.bn.coders.per.PERUnalignedDecoder;
+import org.bn.coders.per.PERUnalignedEncoder;
 
 /**
  * The CoderFactory class is factory for creating ASN.1 encoding/decoding implementations

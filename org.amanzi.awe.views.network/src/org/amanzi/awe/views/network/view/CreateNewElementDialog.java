@@ -15,7 +15,7 @@ import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.ui.events.EventManager;
 import org.amanzi.neo.services.ui.events.UpdateDataEvent;
 import org.amanzi.neo.services.ui.utils.AbstractDialog;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.EditingSupport;

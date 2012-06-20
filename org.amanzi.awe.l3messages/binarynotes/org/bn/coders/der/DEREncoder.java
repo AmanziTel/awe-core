@@ -19,10 +19,7 @@
  package org.bn.coders.der;
 
 import java.io.OutputStream;
-
 import java.lang.reflect.Field;
-
-import java.util.Map;
 import java.util.SortedMap;
 
 import org.bn.annotations.ASN1Sequence;

@@ -19,11 +19,34 @@
 package org.bn.coders;
 
 import java.io.InputStream;
-import java.lang.reflect.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+
 import org.bn.IDecoder;
-import org.bn.annotations.*;
-import org.bn.metadata.*;
-import org.bn.types.*;
+import org.bn.annotations.ASN1Any;
+import org.bn.annotations.ASN1BitString;
+import org.bn.annotations.ASN1Boolean;
+import org.bn.annotations.ASN1BoxedType;
+import org.bn.annotations.ASN1Choice;
+import org.bn.annotations.ASN1Element;
+import org.bn.annotations.ASN1Enum;
+import org.bn.annotations.ASN1EnumItem;
+import org.bn.annotations.ASN1Integer;
+import org.bn.annotations.ASN1Null;
+import org.bn.annotations.ASN1ObjectIdentifier;
+import org.bn.annotations.ASN1OctetString;
+import org.bn.annotations.ASN1PreparedElement;
+import org.bn.annotations.ASN1Real;
+import org.bn.annotations.ASN1Sequence;
+import org.bn.annotations.ASN1SequenceOf;
+import org.bn.annotations.ASN1String;
+import org.bn.metadata.ASN1ElementMetadata;
+import org.bn.metadata.ASN1NullMetadata;
+import org.bn.types.BitString;
+import org.bn.types.ObjectIdentifier;
 
 public abstract class Decoder implements IDecoder, IASN1TypesDecoder { 
 

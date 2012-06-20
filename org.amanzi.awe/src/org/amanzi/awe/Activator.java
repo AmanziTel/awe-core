@@ -13,8 +13,6 @@
 package org.amanzi.awe;
 
 import org.eclipse.core.runtime.Plugin;
-import org.eclipse.jface.preference.PreferenceDialog;
-import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.osgi.framework.BundleContext;
 
 /**

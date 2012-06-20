@@ -21,20 +21,23 @@ package org.bn.coders.per;
 
 import java.io.IOException;
 import java.io.OutputStream;
-
 import java.lang.reflect.Field;
 import java.util.Collection;
-import java.util.Map;
 import java.util.SortedMap;
-import org.bn.annotations.*;
-import org.bn.annotations.constraints.*;
-import org.bn.coders.*;
+
+import org.bn.annotations.ASN1EnumItem;
+import org.bn.annotations.constraints.ASN1SizeConstraint;
+import org.bn.annotations.constraints.ASN1ValueRangeConstraint;
+import org.bn.coders.CoderUtils;
+import org.bn.coders.ElementInfo;
+import org.bn.coders.Encoder;
 import org.bn.metadata.ASN1SequenceOfMetadata;
 import org.bn.metadata.constraints.ASN1SizeConstraintMetadata;
 import org.bn.metadata.constraints.ASN1ValueRangeConstraintMetadata;
 import org.bn.metadata.constraints.IASN1ConstraintMetadata;
-import org.bn.types.*;
-import org.bn.utils.*;
+import org.bn.types.BitString;
+import org.bn.types.ObjectIdentifier;
+import org.bn.utils.BitArrayOutputStream;
 
 public class PERAlignedEncoder<T> extends Encoder<T> {
 

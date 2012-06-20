@@ -19,16 +19,28 @@
 package org.bn.coders;
 
 import java.io.UnsupportedEncodingException;
-
-import java.lang.reflect.*;
-
+import java.lang.reflect.Field;
+import java.lang.reflect.GenericArrayType;
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.bn.annotations.*;
-import org.bn.annotations.constraints.*;
-import org.bn.metadata.*;
-import org.bn.types.*;
+import org.bn.annotations.ASN1Any;
+import org.bn.annotations.ASN1Element;
+import org.bn.annotations.ASN1Null;
+import org.bn.annotations.ASN1Sequence;
+import org.bn.annotations.ASN1SequenceOf;
+import org.bn.annotations.ASN1String;
+import org.bn.annotations.constraints.ASN1SizeConstraint;
+import org.bn.annotations.constraints.ASN1ValueRangeConstraint;
+import org.bn.metadata.ASN1AnyMetadata;
+import org.bn.metadata.ASN1NullMetadata;
+import org.bn.metadata.ASN1SequenceMetadata;
+import org.bn.metadata.ASN1SequenceOfMetadata;
+import org.bn.metadata.ASN1StringMetadata;
+import org.bn.types.BitString;
 
 public class CoderUtils {
     public static int getIntegerLength(int value) {

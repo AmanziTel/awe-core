@@ -16,6 +16,7 @@ package org.amanzi.awe.render.drive;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
 
@@ -30,10 +31,9 @@ import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.IMeasurementModel;
 import org.amanzi.neo.services.model.IRenderableModel;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.opengis.referencing.operation.TransformException;
 
-import com.ibm.icu.text.SimpleDateFormat;
 import com.vividsolutions.jts.geom.Envelope;
 
 /**

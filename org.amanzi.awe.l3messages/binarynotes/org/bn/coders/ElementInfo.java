@@ -19,7 +19,6 @@
 package org.bn.coders;
 
 import java.lang.reflect.AnnotatedElement;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 

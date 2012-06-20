@@ -47,7 +47,7 @@ import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelTypes;
 import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.NodeToNodeTypes;
 import org.amanzi.testing.AbstractAWETest;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;

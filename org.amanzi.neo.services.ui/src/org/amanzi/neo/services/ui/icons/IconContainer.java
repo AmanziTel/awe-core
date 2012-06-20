@@ -13,9 +13,10 @@
 
 package org.amanzi.neo.services.ui.icons;
 
-import org.eclipse.swt.graphics.Image;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.eclipse.swt.graphics.Image;
 
 /**
  * contain image by defined size

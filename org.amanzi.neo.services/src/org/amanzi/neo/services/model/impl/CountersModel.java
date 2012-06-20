@@ -33,7 +33,7 @@ import org.amanzi.neo.services.model.ICountersType;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IModel;
 import org.amanzi.neo.services.model.impl.DriveModel.DriveNodeTypes;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;

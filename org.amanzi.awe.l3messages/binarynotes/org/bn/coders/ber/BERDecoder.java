@@ -20,13 +20,20 @@ package org.bn.coders.ber;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-
-import java.lang.reflect.*;
+import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.LinkedList;
-import org.bn.coders.*;
+
+import org.bn.coders.CoderUtils;
+import org.bn.coders.DecodedObject;
+import org.bn.coders.Decoder;
+import org.bn.coders.ElementInfo;
+import org.bn.coders.ElementType;
+import org.bn.coders.TagClass;
+import org.bn.coders.UniversalTag;
 import org.bn.metadata.ASN1SequenceOfMetadata;
-import org.bn.types.*;
+import org.bn.types.BitString;
+import org.bn.types.ObjectIdentifier;
 
 public class BERDecoder extends Decoder {
     

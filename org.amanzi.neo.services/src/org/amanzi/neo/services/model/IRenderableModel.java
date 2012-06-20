@@ -14,6 +14,7 @@
 package org.amanzi.neo.services.model;
 
 import java.util.List;
+
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.filters.INamedFilter;

@@ -31,7 +31,7 @@ import org.amanzi.neo.services.model.IDriveModel;
 import org.amanzi.neo.services.model.INetworkModel;
 import org.amanzi.neo.services.model.IPropertyStatisticalModel;
 import org.amanzi.neo.services.model.IRenderableModel;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;

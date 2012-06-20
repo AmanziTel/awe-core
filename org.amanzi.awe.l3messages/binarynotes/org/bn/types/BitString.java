@@ -19,7 +19,6 @@
 
 package org.bn.types;
 
-import org.bn.utils.BitArrayOutputStream;
 
 /**
  * BitString represents ASN.1 BIT STRING data types

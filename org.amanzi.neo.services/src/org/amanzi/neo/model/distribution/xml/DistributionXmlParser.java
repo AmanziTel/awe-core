@@ -37,7 +37,7 @@ import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.filters.ExpressionType;
 import org.amanzi.neo.services.filters.Filter;
 import org.amanzi.neo.services.filters.FilterType;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 /**

@@ -13,7 +13,7 @@
 
 package org.amanzi.testing;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
 
 import java.io.File;
 

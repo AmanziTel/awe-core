@@ -29,7 +29,7 @@ import org.amanzi.neo.services.AbstractNeoServiceTest;
 import org.amanzi.neo.services.NetworkService;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;

@@ -6,11 +6,14 @@ package org.amanzi.awe.l3messages.rrc;
 // Any modifications to this file will be lost upon recompilation of the source ASN.1. 
 //
 
-import org.bn.*;
-import org.bn.annotations.*;
-import org.bn.annotations.constraints.*;
-import org.bn.coders.*;
-import org.bn.types.*;
+import org.bn.CoderFactory;
+import org.bn.annotations.ASN1Choice;
+import org.bn.annotations.ASN1Element;
+import org.bn.annotations.ASN1Integer;
+import org.bn.annotations.ASN1PreparedElement;
+import org.bn.annotations.constraints.ASN1ValueRangeConstraint;
+import org.bn.coders.IASN1PreparedElement;
+import org.bn.coders.IASN1PreparedElementData;
 
 
 

@@ -18,7 +18,7 @@
  */
 package org.bn.metadata.constraints;
 
-import org.bn.annotations.constraints.*;
+import org.bn.annotations.constraints.ASN1ValueRangeConstraint;
 
 public class ASN1ValueRangeConstraintMetadata implements IASN1ConstraintMetadata {
     private long minValue, maxValue;

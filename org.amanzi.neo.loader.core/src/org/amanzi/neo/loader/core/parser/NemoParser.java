@@ -25,7 +25,7 @@ import org.amanzi.neo.loader.core.config.IConfiguration;
 import org.amanzi.neo.loader.core.saver.ISaver;
 import org.amanzi.neo.loader.core.saver.nemo.NemoEvents;
 import org.amanzi.neo.services.model.IModel;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 

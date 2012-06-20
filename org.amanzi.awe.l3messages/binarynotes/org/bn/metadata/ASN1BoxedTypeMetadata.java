@@ -21,7 +21,6 @@ package org.bn.metadata;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-
 import java.lang.reflect.Field;
 
 import org.bn.annotations.ASN1BoxedType;

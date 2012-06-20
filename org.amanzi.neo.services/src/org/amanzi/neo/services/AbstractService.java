@@ -36,7 +36,7 @@ import org.amanzi.neo.services.filters.FilterType;
 import org.amanzi.neo.services.filters.IFilter;
 import org.amanzi.neo.services.filters.INamedFilter;
 import org.amanzi.neo.services.filters.NamedFilter;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;

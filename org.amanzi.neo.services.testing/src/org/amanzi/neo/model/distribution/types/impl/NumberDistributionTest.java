@@ -31,7 +31,7 @@ import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.filters.ISimpleFilter;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.impl.DataElement;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;

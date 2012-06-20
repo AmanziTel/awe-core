@@ -22,7 +22,7 @@ import org.amanzi.neo.loader.core.config.NetworkConfiguration;
 import org.amanzi.neo.loader.ui.validators.IValidateResult.Result;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.INetworkModel;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * TODO Purpose of

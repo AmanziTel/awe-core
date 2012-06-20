@@ -14,7 +14,7 @@
 package org.amanzi.neo.loader.core.preferences;
 
 import org.amanzi.neo.loader.core.saver.AbstractSaver;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author Vladislav_Kondratenko

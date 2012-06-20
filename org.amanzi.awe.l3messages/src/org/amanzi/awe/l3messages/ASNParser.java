@@ -15,8 +15,8 @@ package org.amanzi.awe.l3messages;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.amanzi.awe.l3.messages.streaming.schema.nodes.ChildInfo;
 import org.amanzi.awe.l3.messages.streaming.schema.nodes.NodeType;

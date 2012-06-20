@@ -13,7 +13,7 @@
 
 package org.amanzi.awe.models.catalog.neo;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
 import org.junit.Test;
 

@@ -21,11 +21,9 @@ package org.bn.metadata;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-
 import java.lang.reflect.AnnotatedElement;
 
 import org.bn.annotations.ASN1String;
-import org.bn.coders.CoderUtils;
 import org.bn.coders.DecodedObject;
 import org.bn.coders.ElementInfo;
 import org.bn.coders.IASN1TypesDecoder;

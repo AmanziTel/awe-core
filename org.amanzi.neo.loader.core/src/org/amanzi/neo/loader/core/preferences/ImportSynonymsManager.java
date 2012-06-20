@@ -23,7 +23,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 
 import org.amanzi.neo.loader.core.internal.NeoLoaderPlugin;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.eclipse.jface.preference.IPreferenceStore;
 
 /**

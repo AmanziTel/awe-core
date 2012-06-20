@@ -22,8 +22,11 @@ package org.bn.metadata;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.bn.annotations.*;
-import org.bn.coders.*;
+import org.bn.annotations.ASN1ObjectIdentifier;
+import org.bn.coders.DecodedObject;
+import org.bn.coders.ElementInfo;
+import org.bn.coders.IASN1TypesDecoder;
+import org.bn.coders.IASN1TypesEncoder;
 
 public class ASN1ObjectIdentifierMetadata extends ASN1FieldMetadata
 {

@@ -20,7 +20,7 @@ import org.amanzi.neo.services.model.IDataModel;
 import org.amanzi.neo.services.model.IModel;
 import org.amanzi.neo.services.synonyms.ExportSynonymsService.ExportSynonymType;
 import org.amanzi.neo.services.synonyms.ExportSynonymsService.ExportSynonyms;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 /**

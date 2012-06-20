@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.amanzi.neo.loader.core.config.AntennaConfiguration;
-import org.amanzi.neo.loader.core.config.NetworkConfiguration;
 import org.amanzi.neo.loader.core.parser.MappedData;
 import org.amanzi.neo.services.NetworkService;
 import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;

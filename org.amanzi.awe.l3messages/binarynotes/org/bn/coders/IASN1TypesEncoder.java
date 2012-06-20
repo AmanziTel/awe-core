@@ -19,7 +19,6 @@
 package org.bn.coders;
 
 import java.io.OutputStream;
-
 import java.lang.reflect.Field;
 
 public interface IASN1TypesEncoder {

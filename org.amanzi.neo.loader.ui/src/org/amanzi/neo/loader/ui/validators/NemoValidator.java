@@ -11,7 +11,7 @@ import org.amanzi.neo.loader.ui.validators.IValidateResult.Result;
 import org.amanzi.neo.services.DatasetService.DriveTypes;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDriveModel;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Nemo validator

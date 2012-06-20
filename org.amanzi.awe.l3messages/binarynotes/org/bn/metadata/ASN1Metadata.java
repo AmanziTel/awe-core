@@ -19,12 +19,7 @@
 
 package org.bn.metadata;
 
-import java.io.OutputStream;
-
 import java.lang.reflect.AnnotatedElement;
-
-import org.bn.coders.ElementInfo;
-import org.bn.coders.IASN1TypesEncoder;
 
 /**
  * @author jcfinley@users.sourceforge.net

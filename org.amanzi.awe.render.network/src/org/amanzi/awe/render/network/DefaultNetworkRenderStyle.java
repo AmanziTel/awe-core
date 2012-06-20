@@ -13,8 +13,9 @@
 
 package org.amanzi.awe.render.network;
 
-import org.amanzi.awe.render.core.AbstractRendererStyles;
 import java.awt.Color;
+
+import org.amanzi.awe.render.core.AbstractRendererStyles;
 
 /**
  * contain common styles for rendering network data;

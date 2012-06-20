@@ -12,7 +12,6 @@ import java.util.List;
 import net.refractions.udig.catalog.IGeoResource;
 import net.refractions.udig.project.ui.tool.IToolContext;
 
-import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NetworkService;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IDataElement;

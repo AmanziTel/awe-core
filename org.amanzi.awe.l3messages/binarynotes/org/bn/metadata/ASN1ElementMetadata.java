@@ -23,7 +23,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.bn.annotations.ASN1Element;
-import org.bn.coders.*;
+import org.bn.coders.DecodedObject;
+import org.bn.coders.ElementInfo;
+import org.bn.coders.IASN1TypesDecoder;
+import org.bn.coders.IASN1TypesEncoder;
+import org.bn.coders.TagClass;
 
 /**
  * @author jcfinley@users.sourceforge.net

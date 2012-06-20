@@ -21,18 +21,48 @@ package org.bn.coders;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-
 import java.lang.reflect.Method;
-
 import java.lang.reflect.Modifier;
-
 import java.util.SortedMap;
 
-import org.bn.annotations.*;
-import org.bn.annotations.constraints.*;
-import org.bn.metadata.*;
-import org.bn.metadata.constraints.*;
-import org.bn.types.*;
+import org.bn.annotations.ASN1Any;
+import org.bn.annotations.ASN1BitString;
+import org.bn.annotations.ASN1Boolean;
+import org.bn.annotations.ASN1BoxedType;
+import org.bn.annotations.ASN1Choice;
+import org.bn.annotations.ASN1Element;
+import org.bn.annotations.ASN1Enum;
+import org.bn.annotations.ASN1Integer;
+import org.bn.annotations.ASN1Null;
+import org.bn.annotations.ASN1ObjectIdentifier;
+import org.bn.annotations.ASN1OctetString;
+import org.bn.annotations.ASN1Real;
+import org.bn.annotations.ASN1Sequence;
+import org.bn.annotations.ASN1SequenceOf;
+import org.bn.annotations.ASN1String;
+import org.bn.annotations.constraints.ASN1SizeConstraint;
+import org.bn.annotations.constraints.ASN1ValueRangeConstraint;
+import org.bn.metadata.ASN1AnyMetadata;
+import org.bn.metadata.ASN1BitStringMetadata;
+import org.bn.metadata.ASN1BooleanMetadata;
+import org.bn.metadata.ASN1BoxedTypeMetadata;
+import org.bn.metadata.ASN1ChoiceMetadata;
+import org.bn.metadata.ASN1ElementMetadata;
+import org.bn.metadata.ASN1EnumMetadata;
+import org.bn.metadata.ASN1IntegerMetadata;
+import org.bn.metadata.ASN1Metadata;
+import org.bn.metadata.ASN1NullMetadata;
+import org.bn.metadata.ASN1ObjectIdentifierMetadata;
+import org.bn.metadata.ASN1OctetStringMetadata;
+import org.bn.metadata.ASN1RealMetadata;
+import org.bn.metadata.ASN1SequenceMetadata;
+import org.bn.metadata.ASN1SequenceOfMetadata;
+import org.bn.metadata.ASN1StringMetadata;
+import org.bn.metadata.constraints.ASN1SizeConstraintMetadata;
+import org.bn.metadata.constraints.ASN1ValueRangeConstraintMetadata;
+import org.bn.metadata.constraints.IASN1ConstraintMetadata;
+import org.bn.types.BitString;
+import org.bn.types.ObjectIdentifier;
 
 public final class ASN1PreparedElementData implements IASN1PreparedElementData {
     private ASN1Metadata typeMeta;

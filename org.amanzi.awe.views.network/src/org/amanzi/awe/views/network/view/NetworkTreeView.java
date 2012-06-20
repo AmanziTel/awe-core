@@ -42,7 +42,7 @@ import org.amanzi.neo.services.ui.events.IEventsListener;
 import org.amanzi.neo.services.ui.events.ShowOnMapEvent;
 import org.amanzi.neo.services.ui.events.UpdateDataEvent;
 import org.amanzi.neo.services.ui.providers.CommonViewLabelProvider;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;

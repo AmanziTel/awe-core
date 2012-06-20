@@ -19,7 +19,6 @@
 package org.bn.coders.ber;
 
 import org.bn.annotations.ASN1Element;
-import org.bn.annotations.ASN1String;
 import org.bn.coders.DecodedObject;
 import org.bn.coders.ElementInfo;
 import org.bn.coders.UniversalTag;
