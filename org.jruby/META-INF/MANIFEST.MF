@@ -136,5 +136,4 @@ Export-Package: org.jruby,
  org.jruby.util.log,
  org.jruby.util.string,
  org.jruby.util.unsafe
-Bundle-ClassPath: .,
- lib/jruby.jar
+Bundle-ClassPath: lib/jruby.jar
