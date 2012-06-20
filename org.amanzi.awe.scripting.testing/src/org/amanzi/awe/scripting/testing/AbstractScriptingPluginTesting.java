@@ -30,7 +30,7 @@ import org.junit.Test;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class JrubyActivatorTesting {
+public class AbstractScriptingPluginTesting {
     private static List<File> expectedFiles;
     private final static String SCRIPT_ROOT = "/ruby";
     private final static String WORKSPACE_FOLDER = Platform.getInstanceLocation().getURL().getPath().toString();
