@@ -22,7 +22,7 @@ import org.amanzi.awe.scripting.AbstractScriptingPlugin;
  * @since 1.0.0
  */
 public class FakeActivator extends AbstractScriptingPlugin {
-    final static String SCRIPT_PATH = "ruby/netview";
+    final static String SCRIPT_PATH = "ruby/netview/";
     public final static String ID = "org.amanzi.awe.scripting.testing";
 
     @Override
