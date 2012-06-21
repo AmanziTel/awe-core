@@ -21,7 +21,7 @@ import org.amanzi.awe.scripting.AbstractScriptingPlugin;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class FakeActivator extends AbstractScriptingPlugin {
+public class TestActivator extends AbstractScriptingPlugin {
     final static String SCRIPT_PATH = "ruby/netview/";
     public final static String ID = "org.amanzi.awe.scripting.testing";
 

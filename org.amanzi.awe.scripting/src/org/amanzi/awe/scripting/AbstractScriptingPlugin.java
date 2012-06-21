@@ -13,12 +13,24 @@
 
 package org.amanzi.awe.scripting;
 
+import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.List;
 
-import org.amanzi.awe.scripting.manager.ScriptingManager;
+import org.amanzi.awe.scripting.utils.ScriptUtils;
+import org.apache.commons.io.FileUtils;
+import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Plugin;
+import org.jcodings.specific.UTF8Encoding;
+import org.jruby.Ruby;
+import org.jruby.RubyInstanceConfig;
+import org.jruby.runtime.load.LoadService;
+import org.jruby.runtime.load.LoadServiceResource;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -30,36 +42,118 @@ import org.osgi.framework.BundleContext;
  * @since 1.0.0
  */
 public abstract class AbstractScriptingPlugin extends Plugin {
-    private URL workspaceName;
-    private final static String rubyScriptFolder = "/ruby";
+    /*
+     * logger initialization
+     */
+    private final static Logger LOGGER = Logger.getLogger(AbstractScriptingPlugin.class);
+    /*
+     * constants definition
+     */
+    public final static String WORKSPACE_FOLDER = Platform.getInstanceLocation().getURL().getPath().toString();
+    public final static String PROJECT_FOLDER = "awe-scripts";
+    public final static String RUBY_SCRIPT_FOLDER = "/ruby";
+
     private ScriptingManager manager;
+    private Ruby runtime;
 
     /**
      * should be invoked to define script folder
      */
-    public void start(BundleContext context) throws Exception {
+    public void start(final BundleContext context) throws Exception {
         super.start(context);
-        initScriptManager(context);
+        try {
+            initScriptManager(context);
+            initRuntime();
+        } catch (Exception e) {
+            LOGGER.error("Error while initialize jruby runtime", e);
+        }
     }
 
     /**
-     * initialise script manager
+     * initialize script manager
      * 
      * @param context
      * @throws IOException
      */
     public void initScriptManager(BundleContext context) throws Exception {
-        if (rubyScriptFolder.equalsIgnoreCase(getScriptPath())) {
-            throw new IOException("undefined project folder");
+        if (RUBY_SCRIPT_FOLDER.equalsIgnoreCase(getScriptPath())) {
+
+            LOGGER.error("undefined project folder", new IOException("undefined project folder"));
         }
-        workspaceName = context.getBundle().getEntry(getScriptPath());
+        URL workspaceName = context.getBundle().getEntry(getScriptPath());
         URL workspaceLocator = FileLocator.toFileURL(workspaceName);
+        LOGGER.info("Start workspace initializing");
         manager = new ScriptingManager(workspaceLocator);
+        LOGGER.info("Start file copying");
         manager.copyScripts();
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * initialize ruby runtime
+     * 
+     * @throws IOException
+     */
+    private void initRuntime() throws IOException {
+        RubyInstanceConfig config = new RubyInstanceConfig() {
+            {
+                setJRubyHome(ScriptUtils.getInstance().getJRubyHome());
+                setObjectSpaceEnabled(true);
+                setLoadServiceCreator(new LoadServiceCreator() {
+                    public LoadService create(Ruby runtime) {
+                        LoadService service = new EclipseLoadSerivce(runtime);
+                        return service;
+                    }
+                });
+                setLoader(getClassLoader());
+            }
+        };
+
+        runtime = Ruby.newInstance(config);
+        runtime.setDefaultExternalEncoding(UTF8Encoding.INSTANCE);
+        runtime.setDefaultInternalEncoding(UTF8Encoding.INSTANCE);
+        runtime.getLoadService().init(ScriptUtils.getInstance().makeLoadPath(manager.getDestination().getAbsolutePath()));
+    }
+
+    /**
+     * return class loader for activator plugin
+     * 
+     * @return
+     */
+    public ClassLoader getClassLoader() {
+        return this.getClass().getClassLoader();
+    }
+
+    /**
+     * TODO Purpose of AbstractScriptingPlugin
+     * <p>
+     * Load runtime service overridden
+     * </p>
+     * 
+     * @author Vladislav_Kondratenko
+     * @since 1.0.0
+     */
+    private class EclipseLoadSerivce extends LoadService {
+
+        public EclipseLoadSerivce(Ruby runtime) {
+            super(runtime);
+        }
+
+        protected String resolveLoadName(LoadServiceResource foundResource, String previousPath) {
+            if (previousPath != null) {
+                try {
+                    URL url = new URL(previousPath);
+                    previousPath = FileLocator.resolve(url).getPath();
+                } catch (IOException e) {
+                    LOGGER.error("Cannot resolve path", e);
+                }
+            }
+            return previousPath;
+        }
+    }
+
+    /**
+     * } /* (non-Javadoc)
+     * 
      * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
      */
     public void stop(BundleContext context) throws Exception {
@@ -72,6 +166,107 @@ public abstract class AbstractScriptingPlugin extends Plugin {
      * @return
      */
     public String getScriptPath() {
-        return rubyScriptFolder;
+        return RUBY_SCRIPT_FOLDER;
+    }
+
+    /**
+     * TODO Purpose of AbstractScriptingPlugin
+     * <p>
+     * Script managment utils
+     * </p>
+     * 
+     * @author Vladislav_Kondratenko
+     * @since 1.0.0
+     */
+    private class ScriptingManager {
+        private File source;
+        private File destination;
+
+        /**
+         * @param rubyScriptingFolder
+         */
+        public ScriptingManager(URL rubyScriptingFolder) {
+            initWorkspace(rubyScriptingFolder);
+        }
+
+        /**
+         * initialise scripts workspace;
+         * 
+         * @param rubyScriptingFolder
+         * @return false if workspace is already exist, true- if newly created
+         */
+        public boolean initWorkspace(URL rubyScriptingFolder) {
+            File projectFolder = new File(WORKSPACE_FOLDER + File.separator + PROJECT_FOLDER);
+            if (!projectFolder.exists()) {
+                projectFolder.mkdirs();
+            }
+            source = new File(rubyScriptingFolder.getPath());
+            String scriptFolderName = rubyScriptingFolder.getFile();
+            scriptFolderName = scriptFolderName.substring(0, scriptFolderName.length() - 1);
+            scriptFolderName = scriptFolderName.substring(scriptFolderName.lastIndexOf(File.separator) + 1,
+                    scriptFolderName.length());
+            boolean isExist = false;
+            for (File existingName : projectFolder.listFiles()) {
+                if (existingName.getName().equals(scriptFolderName)) {
+                    destination = existingName;
+                    isExist = true;
+                    break;
+                }
+            }
+            if (isExist) {
+                return false;
+            }
+            String createScriptFolder = projectFolder.getAbsolutePath() + File.separator + scriptFolderName;
+            destination = new File(createScriptFolder);
+            destination.mkdir();
+            return true;
+        }
+
+        /**
+         * copy directory from source to
+         */
+        public void copyScripts() {
+            FileFilter fileFilter = new FileFilter() {
+
+                @Override
+                public boolean accept(File pathname) {
+                    final String name = pathname.getName();
+                    return name.endsWith(".rb") || name.endsWith(".t");
+                }
+            };
+            List<String> destinationContent = Arrays.asList(destination.list());
+            byte[] buf = new byte[1024];
+            for (File sourceFile : source.listFiles(fileFilter)) {
+                File destFile = new File(destination.getPath() + File.separator + sourceFile.getName());
+                if (!destinationContent.contains(sourceFile.getName())) {
+                    copyFile(sourceFile, destFile, buf);
+
+                }
+            }
+        }
+
+        /**
+         * copy file content from @param sourceFile to @param destFile
+         * 
+         * @param sourceFile
+         * @param destFile
+         * @param buf bufferSize;
+         */
+        public void copyFile(File sourceFile, File destFile, byte[] buf) {
+
+            try {
+                FileUtils.copyFile(sourceFile, destFile, false);
+            } catch (IOException e) {
+                LOGGER.error("Cann't copy file", e);
+            }
+
+        }
+
+        /**
+         * @return Returns the destination.
+         */
+        public File getDestination() {
+            return destination;
+        }
     }
 }

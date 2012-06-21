@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 
+import org.amanzi.testing.AbstractAWETest;
 import org.eclipse.core.runtime.Platform;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -30,7 +31,7 @@ import org.junit.Test;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class AbstractScriptingPluginTesting {
+public class AbstractScriptingPluginTesting extends AbstractAWETest {
     private static List<File> expectedFiles;
     private final static String SCRIPT_ROOT = "/ruby";
     private final static String WORKSPACE_FOLDER = Platform.getInstanceLocation().getURL().getPath().toString();
@@ -38,9 +39,9 @@ public class AbstractScriptingPluginTesting {
 
     @BeforeClass
     public static void init() {
-        Enumeration<String> projectScripts = Platform.getBundle(FakeActivator.ID).getEntryPaths(SCRIPT_ROOT);
+        Enumeration<String> projectScripts = Platform.getBundle(TestActivator.ID).getEntryPaths(SCRIPT_ROOT);
         expectedFiles = new ArrayList<File>();
-        String name = FakeActivator.SCRIPT_PATH;
+        String name = TestActivator.SCRIPT_PATH;
         while (projectScripts.hasMoreElements()) {
             String path = projectScripts.nextElement();
             if (!path.equals(name)) {
