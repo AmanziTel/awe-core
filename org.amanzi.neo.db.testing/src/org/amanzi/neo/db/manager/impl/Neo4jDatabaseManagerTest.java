@@ -53,8 +53,6 @@ public class Neo4jDatabaseManagerTest {
     
     private final Mockery context = new Mockery();
     
-    private Neo4jDatabaseManager manager;
-    
     /**
      * Type of Event Actions
      * 
