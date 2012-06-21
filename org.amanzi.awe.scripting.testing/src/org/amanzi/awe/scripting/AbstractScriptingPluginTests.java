@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.scripting.testing;
+package org.amanzi.awe.scripting;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 
+import org.amanzi.awe.scripting.testing.TestActivator;
 import org.amanzi.testing.AbstractAWETest;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.core.runtime.Platform;
@@ -34,7 +35,7 @@ import org.junit.Test;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class AbstractScriptingPluginTest extends AbstractAWETest {
+public class AbstractScriptingPluginTests extends AbstractAWETest {
     private static List<File> expectedFiles;
     private final static String SCRIPT_ROOT = "/ruby";
     private final static String WORKSPACE_FOLDER = Platform.getInstanceLocation().getURL().getPath().toString();
