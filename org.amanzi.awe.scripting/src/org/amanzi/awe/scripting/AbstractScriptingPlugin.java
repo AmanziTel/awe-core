@@ -66,7 +66,7 @@ public abstract class AbstractScriptingPlugin extends Plugin {
             initScriptManager(context);
             initRuntime();
         } catch (Exception e) {
-            LOGGER.error("Error while initialize jruby runtime", e);
+            LOGGER.error("Error while initialize jruby runtime or workspace folder ", e);
             throw new Exception(e);
         }
     }
@@ -171,9 +171,11 @@ public abstract class AbstractScriptingPlugin extends Plugin {
 
         /**
          * @param rubyScriptingFolder
+         * @throws IOException
          */
-        public ScriptingManager(URL rubyScriptingFolder) {
+        public ScriptingManager(URL rubyScriptingFolder) throws IOException {
             initWorkspace(rubyScriptingFolder);
+
         }
 
         /**
@@ -181,11 +183,12 @@ public abstract class AbstractScriptingPlugin extends Plugin {
          * 
          * @param rubyScriptingFolder
          * @return false if workspace is already exist, true- if newly created
+         * @throws IOException
          */
-        public boolean initWorkspace(URL rubyScriptingFolder) {
+        public boolean initWorkspace(URL rubyScriptingFolder) throws IOException {
             File projectFolder = new File(WORKSPACE_FOLDER + File.separator + PROJECT_FOLDER);
             if (!projectFolder.exists()) {
-                projectFolder.mkdirs();
+                FileUtils.forceMkdir(projectFolder);
             }
             source = new File(rubyScriptingFolder.getPath());
             String scriptFolderName = rubyScriptingFolder.getFile();
@@ -205,7 +208,7 @@ public abstract class AbstractScriptingPlugin extends Plugin {
             }
             String createScriptFolder = projectFolder.getAbsolutePath() + File.separator + scriptFolderName;
             destination = new File(createScriptFolder);
-            destination.mkdir();
+            FileUtils.forceMkdir(destination);
             return true;
         }
 
