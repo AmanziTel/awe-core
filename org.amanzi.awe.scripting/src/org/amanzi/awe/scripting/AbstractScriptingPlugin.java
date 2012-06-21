@@ -29,8 +29,6 @@ import org.eclipse.core.runtime.Plugin;
 import org.jcodings.specific.UTF8Encoding;
 import org.jruby.Ruby;
 import org.jruby.RubyInstanceConfig;
-import org.jruby.runtime.load.LoadService;
-import org.jruby.runtime.load.LoadServiceResource;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -118,35 +116,6 @@ public abstract class AbstractScriptingPlugin extends Plugin {
      */
     public ClassLoader getClassLoader() {
         return this.getClass().getClassLoader();
-    }
-
-    /**
-     * TODO Purpose of AbstractScriptingPlugin
-     * <p>
-     * Load runtime service overridden
-     * </p>
-     * 
-     * @author Vladislav_Kondratenko
-     * @since 1.0.0
-     */
-    private class EclipseLoadSerivce extends LoadService {
-
-        public EclipseLoadSerivce(Ruby runtime) {
-            super(runtime);
-        }
-
-        protected String resolveLoadName(LoadServiceResource foundResource, String previousPath) {
-            if (previousPath != null) {
-                try {
-                    URL url = new URL(previousPath);
-                    previousPath = FileLocator.resolve(url).getPath();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    LOGGER.error("Cannot resolve path", e);
-                }
-            }
-            return previousPath;
-        }
     }
 
     /**
