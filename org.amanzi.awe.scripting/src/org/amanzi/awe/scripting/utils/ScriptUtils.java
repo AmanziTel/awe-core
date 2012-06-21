@@ -112,16 +112,6 @@ public class ScriptUtils {
         loadPath.add(jRubyHome + "/lib/ruby/" + jRubyVersion + "/java");
         loadPath.add(jRubyHome + "/lib");
 
-        // // Lagutko, 20.08.2009, now we have Neo4j RubyGem inside current plugin but not inside
-        // // org.jruby
-        // String neoRubyGemDir = getPluginRoot(SCRIPTING_PLUGIN_NAME) + "/neo4j";
-        //
-        // loadPath.add(neoRubyGemDir + "/lib");
-        // loadPath.add(neoRubyGemDir + "/lib/relations");
-        // loadPath.add(neoRubyGemDir + "/lib/mixins");
-        // loadPath.add(neoRubyGemDir + "/lib/jars");
-        // loadPath.add(neoRubyGemDir + "/examples/imdb");
-
         loadPath.add("lib/ruby/" + jRubyVersion);
         loadPath.add(".");
         return loadPath;
@@ -141,9 +131,6 @@ public class ScriptUtils {
             LOGGER.error("Cannon't instantiate ruby.home");
             jRubyHome = null;
         }
-        // if (jRubyHome == null) {
-        // jRubyHome = ".";
-        // }
         return jRubyHome;
     }
 

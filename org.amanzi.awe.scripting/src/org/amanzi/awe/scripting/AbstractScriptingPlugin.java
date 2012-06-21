@@ -66,10 +66,8 @@ public abstract class AbstractScriptingPlugin extends Plugin {
             initScriptManager(context);
             initRuntime();
         } catch (Exception e) {
-            e.printStackTrace();
             LOGGER.error("Error while initialize jruby runtime", e);
             throw new Exception(e);
-
         }
     }
 

@@ -98,7 +98,7 @@ public class AbstractScriptingPluginTest extends AbstractAWETest {
     public void testSimpleScriptExecution() {
         Object value = TestActivator.getRuntimeWrapper().executeScriptByName(TEST_SCRIPT_NAME);
         Assert.assertNotNull("Not null value excepted", value);
-        Assert.assertEquals("5.0 value epected", 5.0, value);
+        Assert.assertEquals("5.0 value expected", 5.0, value);
     }
 
     @Test
