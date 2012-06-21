@@ -101,12 +101,6 @@ public abstract class AbstractScriptingPlugin extends Plugin {
             {
                 setJRubyHome(ScriptUtils.getInstance().getJRubyHome());
                 setObjectSpaceEnabled(true);
-                setLoadServiceCreator(new LoadServiceCreator() {
-                    public LoadService create(Ruby runtime) {
-                        LoadService service = new EclipseLoadSerivce(runtime);
-                        return service;
-                    }
-                });
                 setLoader(getClassLoader());
             }
         };
