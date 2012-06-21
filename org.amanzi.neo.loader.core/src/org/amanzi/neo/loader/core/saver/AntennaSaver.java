@@ -42,12 +42,16 @@ public class AntennaSaver extends AbstractMappedDataSaver<INetworkModel, Antenna
             if (searchResult.size() > 1) {
                 throw new DuplicateNodeNameException(elementName, NetworkElementNodeType.SITE);
             } else {
-                site = searchResult.iterator().next();
+            	site = searchResult.iterator().next();
             }
+            
+            if (site == null) {
+                throw new NullPointerException("site can't be null");
+            }
+        } else {
+        	throw new NullPointerException("site can't be null");
         }
-        if (site == null) {
-            throw new NullPointerException("site cann't be null");
-        }
+        
 
         Map<String, Object> map = new HashMap<String, Object>();
         map.putAll(dataElement);

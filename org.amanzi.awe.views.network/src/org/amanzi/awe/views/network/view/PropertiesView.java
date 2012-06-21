@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.amanzi.awe.views.network.view.internal.AbstractPropertiesView;
 import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.IDataModel;
@@ -81,7 +82,6 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.eclipse.ui.part.ViewPart;
 
 /**
  * TODO Purpose of
@@ -92,7 +92,7 @@ import org.eclipse.ui.part.ViewPart;
  * @author Ladornaya_A
  * @since 1.0.0
  */
-public class PropertiesView extends ViewPart {
+public class PropertiesView extends AbstractPropertiesView {
 
 	public static final String PROPERTIES_VIEW_ID = "org.amanzi.awe.views.network.views.PropertiesView";
 	public static final String NETWORK_TREE_VIEW_ID = "org.amanzi.awe.views.network.views.NewNetworkTreeView";
@@ -789,21 +789,6 @@ public class PropertiesView extends ViewPart {
 		TextTransfer textTransfer = TextTransfer.getInstance();
 		cb.setContents(new Object[] { sb.toString() },
 				new Transfer[] { textTransfer });
-	}
-
-	/**
-	 * transform list at line
-	 * 
-	 * @param list
-	 * @return line
-	 */
-	private String parseToString(List<String> list) {
-		String line = StringUtils.EMPTY;
-		for (String value : list) {
-			line = line + value + "\t";
-		}
-		line = line + System.getProperty("line.separator");
-		return line;
 	}
 
 	/*

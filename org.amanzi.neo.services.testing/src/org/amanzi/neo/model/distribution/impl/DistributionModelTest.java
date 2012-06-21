@@ -45,6 +45,7 @@ import org.amanzi.neo.services.AbstractNeoServiceTest;
 import org.amanzi.neo.services.AbstractService;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.DistributionService;
+import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.DistributionService.DistributionNodeTypes;
 import org.amanzi.neo.services.NetworkService.NetworkElementNodeType;
 import org.amanzi.neo.services.enums.INodeType;
@@ -1084,6 +1085,11 @@ public class DistributionModelTest extends AbstractNeoServiceTest {
 			Node distributionModelRoot, Node rootAggregationNode,
 			List<Node> distributionBars, boolean shouldFind,
 			IDistribution<?> distirbution) throws AWEException {
+	
+		NeoServiceFactory factory = mock(NeoServiceFactory.class);
+		when(factory.getInstance()).thenReturn(null);
+		
+		
 		DistributionService service = mock(DistributionService.class);
 
 		Node aggregationForFind = null;
