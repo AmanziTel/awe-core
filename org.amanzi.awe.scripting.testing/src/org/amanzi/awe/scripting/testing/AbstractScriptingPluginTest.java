@@ -14,13 +14,16 @@
 package org.amanzi.awe.scripting.testing;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 
 import org.amanzi.testing.AbstractAWETest;
+import org.apache.commons.io.FileUtils;
 import org.eclipse.core.runtime.Platform;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -31,11 +34,12 @@ import org.junit.Test;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class AbstractScriptingPluginTesting extends AbstractAWETest {
+public class AbstractScriptingPluginTest extends AbstractAWETest {
     private static List<File> expectedFiles;
     private final static String SCRIPT_ROOT = "/ruby";
     private final static String WORKSPACE_FOLDER = Platform.getInstanceLocation().getURL().getPath().toString();
     private final static String PROJECT_FOLDER = "awe-scripts";
+    private static final String TEST_SCRIPT_NAME = "testScript.rb";
 
     @BeforeClass
     public static void init() {
@@ -52,18 +56,22 @@ public class AbstractScriptingPluginTesting extends AbstractAWETest {
         }
     }
 
+    @AfterClass
+    public static void clearWS() throws IOException {
+        File ws = new File(WORKSPACE_FOLDER + File.separator + PROJECT_FOLDER);
+        FileUtils.deleteDirectory(ws);
+    }
+
     @Test
     public void testProjectScriptFolderCreated() {
         File projectFolder = new File(WORKSPACE_FOLDER + File.separator + PROJECT_FOLDER);
-        Assert.assertTrue("Destination folder and source folder have different structure",
-                projectFolder.listFiles().length == expectedFiles.size());
+        Assert.assertTrue("Destination folder and source folder have different structure", projectFolder.listFiles().length == 1);
     }
 
     @Test
     public void testProjectScriptFolderContainsAllScripts() {
         File projectFolder = new File(WORKSPACE_FOLDER + File.separator + PROJECT_FOLDER);
-        Assert.assertTrue("Destination folder and source folder have different structure",
-                projectFolder.listFiles().length == expectedFiles.size());
+        Assert.assertTrue("Destination folder and source folder have different structure", projectFolder.listFiles().length == 1);
         List<File> destinationRbFiles = new ArrayList<File>();
         for (File destProject : projectFolder.listFiles()) {
             destinationRbFiles.addAll(Arrays.asList(destProject.listFiles()));
@@ -77,14 +85,26 @@ public class AbstractScriptingPluginTesting extends AbstractAWETest {
                     isExist = true;
                     break;
                 }
-                if (!isExist) {
-                    Assert.assertTrue("file" + source.getParentFile().getName() + File.separator + source.getName()
-                            + "doesn't exist in " + projectFolder.getName() + File.separator + source.getParentFile().getName()
-                            + " directory", isExist);
-                }
+            }
+            if (!isExist) {
+                Assert.assertTrue("file" + source.getParentFile().getName() + File.separator + source.getName()
+                        + "doesn't exist in " + projectFolder.getName() + File.separator + source.getParentFile().getName()
+                        + " directory", isExist);
             }
         }
     }
-    
-    
+
+    @Test
+    public void testSimpleScriptExecution() {
+        Object value = TestActivator.getRuntimeWrapper().executeScriptByName(TEST_SCRIPT_NAME);
+        Assert.assertNotNull("Not null value excepted", value);
+        Assert.assertEquals("5.0 value epected", 5.0, value);
+    }
+
+    @Test
+    public void testGetScriptsForProjectifNotExist() throws IOException {
+        clearWS();
+        String projectName = TestActivator.SCRIPT_PATH.split("/")[1];
+        Assert.assertNull("Null expected", TestActivator.getScriptsForProject(projectName));
+    }
 }

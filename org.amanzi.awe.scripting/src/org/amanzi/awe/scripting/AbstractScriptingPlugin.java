@@ -29,8 +29,6 @@ import org.eclipse.core.runtime.Plugin;
 import org.jcodings.specific.UTF8Encoding;
 import org.jruby.Ruby;
 import org.jruby.RubyInstanceConfig;
-import org.jruby.runtime.load.LoadService;
-import org.jruby.runtime.load.LoadServiceResource;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -53,8 +51,11 @@ public abstract class AbstractScriptingPlugin extends Plugin {
     public final static String PROJECT_FOLDER = "awe-scripts";
     public final static String RUBY_SCRIPT_FOLDER = "/ruby";
 
+    /**
+     * wrapper for runtime instance
+     */
+    private static JRubyRuntimeWrapper runtimeWrapper;
     private ScriptingManager manager;
-    private Ruby runtime;
 
     /**
      * should be invoked to define script folder
@@ -70,6 +71,16 @@ public abstract class AbstractScriptingPlugin extends Plugin {
             throw new Exception(e);
 
         }
+    }
+
+    /**
+     * get list of project folder content
+     * 
+     * @param projectName
+     * @return project folder not exist, in other case return list of files
+     */
+    public static List<File> getScriptsForProject(String projectName) {
+        return ScriptUtils.getScriptFilesForProject(projectName);
     }
 
     /**
@@ -97,16 +108,11 @@ public abstract class AbstractScriptingPlugin extends Plugin {
      * @throws IOException
      */
     private void initRuntime() throws IOException {
+        Ruby runtime;
         RubyInstanceConfig config = new RubyInstanceConfig() {
             {
                 setJRubyHome(ScriptUtils.getInstance().getJRubyHome());
                 setObjectSpaceEnabled(true);
-                setLoadServiceCreator(new LoadServiceCreator() {
-                    public LoadService create(Ruby runtime) {
-                        LoadService service = new EclipseLoadSerivce(runtime);
-                        return service;
-                    }
-                });
                 setLoader(getClassLoader());
             }
         };
@@ -115,6 +121,14 @@ public abstract class AbstractScriptingPlugin extends Plugin {
         runtime.setDefaultExternalEncoding(UTF8Encoding.INSTANCE);
         runtime.setDefaultInternalEncoding(UTF8Encoding.INSTANCE);
         runtime.getLoadService().init(ScriptUtils.getInstance().makeLoadPath(manager.getDestination().getAbsolutePath()));
+        runtimeWrapper = new JRubyRuntimeWrapper(runtime, manager.destination);
+    }
+
+    /**
+     * @return Returns the runtimeWrapper.
+     */
+    public static JRubyRuntimeWrapper getRuntimeWrapper() {
+        return runtimeWrapper;
     }
 
     /**
@@ -122,37 +136,8 @@ public abstract class AbstractScriptingPlugin extends Plugin {
      * 
      * @return
      */
-    public ClassLoader getClassLoader() {
+    private ClassLoader getClassLoader() {
         return this.getClass().getClassLoader();
-    }
-
-    /**
-     * TODO Purpose of AbstractScriptingPlugin
-     * <p>
-     * Load runtime service overridden
-     * </p>
-     * 
-     * @author Vladislav_Kondratenko
-     * @since 1.0.0
-     */
-    private class EclipseLoadSerivce extends LoadService {
-
-        public EclipseLoadSerivce(Ruby runtime) {
-            super(runtime);
-        }
-
-        protected String resolveLoadName(LoadServiceResource foundResource, String previousPath) {
-            if (previousPath != null) {
-                try {
-                    URL url = new URL(previousPath);
-                    previousPath = FileLocator.resolve(url).getPath();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    LOGGER.error("Cannot resolve path", e);
-                }
-            }
-            return previousPath;
-        }
     }
 
     /**

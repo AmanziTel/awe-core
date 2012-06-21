@@ -13,13 +13,20 @@
 
 package org.amanzi.awe.scripting.utils;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.amanzi.awe.scripting.AbstractScriptingPlugin;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Platform;
@@ -170,7 +177,7 @@ public class ScriptUtils {
      * @author Lagutko_N
      */
     public String getPluginRoot(String pluginName) throws IOException {
-        URL rubyLocationURL = Platform.getBundle(pluginName).getEntry("");
+        URL rubyLocationURL = Platform.getBundle(pluginName).getEntry("/");
         String rubyLocation = FileLocator.resolve(rubyLocationURL).getPath();
         if (rubyLocation.startsWith("jar:file:")) {
             rubyLocation = rubyLocation.substring(9);
@@ -185,4 +192,86 @@ public class ScriptUtils {
         return rubyLocation;
     }
 
+    /**
+     * get content of file with @param scriptName
+     * 
+     * @param scriptName
+     * @param destination
+     * @return
+     */
+    public String getScript(String scriptName, File destination) {
+        File requiredFile = null;
+        for (File script : destination.listFiles()) {
+            if (script.getName().equals(scriptName)) {
+                requiredFile = script;
+            }
+        }
+        if (requiredFile == null) {
+            return StringUtils.EMPTY;
+        }
+        String result = StringUtils.EMPTY;
+        try {
+            result = inputStreamToString(new FileInputStream(requiredFile));
+        } catch (FileNotFoundException e) {
+            LOGGER.error("File not found: " + requiredFile.getAbsolutePath(), e);
+        } catch (IOException e) {
+            LOGGER.error("Error while getting script ", e);
+        }
+        return result;
+
+    }
+
+    /**
+     * get content of sciptFile
+     * 
+     * @param scriptFile
+     * @return
+     */
+    public String getScript(File scriptFile) {
+        String result = StringUtils.EMPTY;
+        if (scriptFile == null) {
+            return result;
+        }
+        try {
+            result = inputStreamToString(new FileInputStream(scriptFile));
+        } catch (FileNotFoundException e) {
+            LOGGER.error("File not found: " + scriptFile.getAbsolutePath(), e);
+        } catch (IOException e) {
+            LOGGER.error("Error while getting script ", e);
+        }
+        return result;
+    }
+
+    /**
+     * return project folder content
+     * 
+     * @param projectName
+     */
+    public static List<File> getScriptFilesForProject(String projectName) {
+        File projectFolder = new File(AbstractScriptingPlugin.WORKSPACE_FOLDER + File.separator
+                + AbstractScriptingPlugin.PROJECT_FOLDER + File.separator + projectName);
+        if (!projectFolder.exists()) {
+            LOGGER.info("project folder " + projectName + "doesn't exist");
+            return null;
+        }
+        return Arrays.asList(projectFolder.listFiles());
+    }
+
+    /**
+     * put file content into string
+     * 
+     * @param stream
+     * @return
+     * @throws IOException
+     */
+    private String inputStreamToString(InputStream stream) throws IOException {
+        StringBuffer buffer = new StringBuffer();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+        String line;
+        while ((line = reader.readLine()) != null) {
+            buffer.append(line).append("\n");
+        }
+        reader.close();
+        return buffer.toString();
+    }
 }

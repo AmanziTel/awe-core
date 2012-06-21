@@ -11,6 +11,8 @@ Export-Package: jruby,
  org.jcodings,
  org.jcodings.specific,
  org.jruby,
+ org.jruby.java.proxies,
+ org.jruby.runtime.builtin,
  org.jruby.runtime.load
 Bundle-ClassPath: lib/jruby.jar
 Bundle-ActivationPolicy: lazy
