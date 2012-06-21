@@ -53,14 +53,14 @@ public class AbstractScriptingPluginTesting extends AbstractAWETest {
     }
 
     @Test
-    public void TestProjectScriptFolderCreated() {
+    public void testProjectScriptFolderCreated() {
         File projectFolder = new File(WORKSPACE_FOLDER + File.separator + PROJECT_FOLDER);
         Assert.assertTrue("Destination folder and source folder have different structure",
                 projectFolder.listFiles().length == expectedFiles.size());
     }
 
     @Test
-    public void TestProjectScriptFolderContainsAllScripts() {
+    public void testProjectScriptFolderContainsAllScripts() {
         File projectFolder = new File(WORKSPACE_FOLDER + File.separator + PROJECT_FOLDER);
         Assert.assertTrue("Destination folder and source folder have different structure",
                 projectFolder.listFiles().length == expectedFiles.size());
@@ -85,4 +85,6 @@ public class AbstractScriptingPluginTesting extends AbstractAWETest {
             }
         }
     }
+    
+    
 }

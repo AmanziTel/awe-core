@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: JrubyTesting
-Bundle-SymbolicName: org.amanzi.awe.scripting.testing
+Bundle-SymbolicName: org.amanzi.awe.scripting.testing;singleton:=true
 Bundle-Activator: org.amanzi.awe.scripting.testing.TestActivator
 Bundle-Version: 1.0.0.qualifier
 Require-Bundle: org.junit,
@@ -11,4 +11,3 @@ Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: org.amanzi.awe.scripting,
  org.amanzi.awe.scripting.testing
-

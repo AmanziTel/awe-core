@@ -170,7 +170,7 @@ public class ScriptUtils {
      * @author Lagutko_N
      */
     public String getPluginRoot(String pluginName) throws IOException {
-        URL rubyLocationURL = Platform.getBundle(pluginName).getEntry("/");
+        URL rubyLocationURL = Platform.getBundle(pluginName).getEntry("");
         String rubyLocation = FileLocator.resolve(rubyLocationURL).getPath();
         if (rubyLocation.startsWith("jar:file:")) {
             rubyLocation = rubyLocation.substring(9);

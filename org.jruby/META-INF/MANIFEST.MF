@@ -13,3 +13,4 @@ Export-Package: jruby,
  org.jruby,
  org.jruby.runtime.load
 Bundle-ClassPath: lib/jruby.jar
+Bundle-ActivationPolicy: lazy

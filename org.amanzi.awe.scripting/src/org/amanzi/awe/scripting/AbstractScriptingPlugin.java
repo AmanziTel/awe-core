@@ -59,13 +59,16 @@ public abstract class AbstractScriptingPlugin extends Plugin {
     /**
      * should be invoked to define script folder
      */
-    public void start(final BundleContext context) throws Exception {
+    public void start(BundleContext context) throws Exception {
         super.start(context);
         try {
             initScriptManager(context);
             initRuntime();
         } catch (Exception e) {
+            e.printStackTrace();
             LOGGER.error("Error while initialize jruby runtime", e);
+            throw new Exception(e);
+
         }
     }
 
@@ -144,6 +147,7 @@ public abstract class AbstractScriptingPlugin extends Plugin {
                     URL url = new URL(previousPath);
                     previousPath = FileLocator.resolve(url).getPath();
                 } catch (IOException e) {
+                    e.printStackTrace();
                     LOGGER.error("Cannot resolve path", e);
                 }
             }
