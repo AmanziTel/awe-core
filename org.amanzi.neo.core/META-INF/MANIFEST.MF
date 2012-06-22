@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Core
+Bundle-SymbolicName: org.amanzi.neo.core
+Bundle-Version: 1.0.0.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Export-Package: org.amanzi.neo.nodeproperties,
+ org.amanzi.neo.nodeproperties.impl
+Require-Bundle: org.neo4j;bundle-version="1.8.0";visibility:=reexport

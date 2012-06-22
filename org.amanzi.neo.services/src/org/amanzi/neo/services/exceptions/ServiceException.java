@@ -13,7 +13,6 @@
 
 package org.amanzi.neo.services.exceptions;
 
-import org.amanzi.neo.services.exceptions.enums.ExceptionSeverity;
 import org.amanzi.neo.services.exceptions.enums.ServiceExceptionReason;
 
 /**
@@ -31,35 +30,26 @@ public abstract class ServiceException extends Exception {
 
     private ServiceExceptionReason reason;
 
-    private ExceptionSeverity severity;
-
-    protected ServiceException(ServiceExceptionReason reason, ExceptionSeverity severity) {
+    protected ServiceException(ServiceExceptionReason reason) {
         super();
 
         this.reason = reason;
-        this.severity = severity;
     }
 
-    protected ServiceException(ServiceExceptionReason reason, ExceptionSeverity severity, String message) {
+    protected ServiceException(ServiceExceptionReason reason, String message) {
         super(message);
 
         this.reason = reason;
-        this.severity = severity;
     }
 
-    protected ServiceException(ServiceExceptionReason reason, ExceptionSeverity severity, Exception exception) {
+    protected ServiceException(ServiceExceptionReason reason, Exception exception) {
         super(exception);
 
         this.reason = reason;
-        this.severity = severity;
     }
 
     public ServiceExceptionReason getReason() {
         return reason;
-    }
-
-    public ExceptionSeverity getSeverity() {
-        return severity;
     }
 
 }

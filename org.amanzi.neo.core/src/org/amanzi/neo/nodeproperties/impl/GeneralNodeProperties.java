@@ -11,7 +11,9 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.services.nodeproperties;
+package org.amanzi.neo.nodeproperties.impl;
+
+import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 
 /**
  * TODO Purpose of
@@ -21,10 +23,20 @@ package org.amanzi.neo.services.nodeproperties;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface IGeneralNodeProperties extends INodeProperties {
+public class GeneralNodeProperties implements IGeneralNodeProperties {
 
-    String getNodeNameProperty();
+    private static final String NODE_NAME = "name";
 
-    String getNodeTypeProperty();
+    private static final String NODE_TYPE = "type";
+
+    @Override
+    public String getNodeNameProperty() {
+        return NODE_NAME;
+    }
+
+    @Override
+    public String getNodeTypeProperty() {
+        return NODE_TYPE;
+    }
 
 }

@@ -16,6 +16,7 @@ package org.amanzi.neo.services.factory;
 import org.amanzi.neo.db.manager.DatabaseManagerFactory;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.impl.NodeService;
+import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
  * TODO Purpose of
@@ -51,11 +52,19 @@ public class ServiceFactory {
         if (nodeService == null) {
             synchronized (ServiceFactory.class) {
                 if (nodeService == null) {
-                    nodeService = new NodeService(DatabaseManagerFactory.getDatabaseManager().getDatabaseService());
+                    nodeService = createNodeService();
                 }
             }
         }
 
         return nodeService;
+    }
+
+    private INodeService createNodeService() {
+        return null;
+    }
+
+    private GraphDatabaseService getDbService() {
+        return DatabaseManagerFactory.getDatabaseManager().getDatabaseService();
     }
 }

@@ -16,6 +16,7 @@ package org.amanzi.neo.providers;
 import java.util.List;
 
 import org.amanzi.neo.models.IModel;
+import org.amanzi.neo.providers.factory.ModelProviderFactory;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;

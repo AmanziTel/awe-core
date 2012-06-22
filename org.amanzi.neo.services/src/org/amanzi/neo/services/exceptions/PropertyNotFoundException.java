@@ -15,7 +15,6 @@ package org.amanzi.neo.services.exceptions;
 
 import java.text.MessageFormat;
 
-import org.amanzi.neo.services.exceptions.enums.ExceptionSeverity;
 import org.amanzi.neo.services.exceptions.enums.ServiceExceptionReason;
 import org.neo4j.graphdb.Node;
 
@@ -41,8 +40,8 @@ public class PropertyNotFoundException extends ServiceException {
      * @param severity
      * @param message
      */
-    public PropertyNotFoundException(ExceptionSeverity severity, String propertyName, Node node) {
-        super(ServiceExceptionReason.PROPERTY_NOT_FOUND, severity);
+    public PropertyNotFoundException(String propertyName, Node node) {
+        super(ServiceExceptionReason.PROPERTY_NOT_FOUND);
 
         message = convertMessage(propertyName, node);
     }

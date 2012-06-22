@@ -13,7 +13,6 @@
 
 package org.amanzi.neo.services.exceptions;
 
-import org.amanzi.neo.services.exceptions.enums.ExceptionSeverity;
 import org.amanzi.neo.services.exceptions.enums.ServiceExceptionReason;
 
 /**
@@ -34,7 +33,7 @@ public class DatabaseException extends ServiceException {
      * @param severity
      */
     public DatabaseException(Exception error) {
-        super(ServiceExceptionReason.DATABASE_EXCEPTION, ExceptionSeverity.FATAL, error);
+        super(ServiceExceptionReason.DATABASE_EXCEPTION, error);
     }
 
 }

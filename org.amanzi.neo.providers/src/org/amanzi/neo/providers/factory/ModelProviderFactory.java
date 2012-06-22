@@ -11,12 +11,13 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.providers;
+package org.amanzi.neo.providers.factory;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import org.amanzi.neo.models.IModel;
+import org.amanzi.neo.providers.IModelProvider;
 
 /**
  * TODO Purpose of
@@ -54,7 +55,7 @@ public class ModelProviderFactory {
     }
 
     @SuppressWarnings("unchecked")
-    synchronized void registerModelProvider(Class<IModelProvider< ? extends IModel, IModel>> modelClass) throws Exception {
+    public synchronized void registerModelProvider(Class<IModelProvider< ? extends IModel, IModel>> modelClass) throws Exception {
         if (!modelProviderCache.containsKey(modelClass)) {
             IModelProvider<IModel, IModel> instance = (IModelProvider<IModel, IModel>)modelClass.newInstance();
 

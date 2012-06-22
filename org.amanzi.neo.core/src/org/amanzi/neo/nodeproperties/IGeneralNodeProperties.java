@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.services.exceptions.enums;
+package org.amanzi.neo.nodeproperties;
 
 /**
  * TODO Purpose of
@@ -21,8 +21,10 @@ package org.amanzi.neo.services.exceptions.enums;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public enum ExceptionSeverity {
+public interface IGeneralNodeProperties extends INodeProperties {
 
-    FATAL, WARNING, INFO;
+    String getNodeNameProperty();
+
+    String getNodeTypeProperty();
 
 }

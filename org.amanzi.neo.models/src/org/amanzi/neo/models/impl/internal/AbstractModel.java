@@ -78,15 +78,12 @@ public abstract class AbstractModel implements IModel {
     }
 
     private void processInitializeException(ServiceException e) throws ModelException {
-        switch (e.getSeverity()) {
-        case FATAL:
-            switch (e.getReason()) {
-            case DATABASE_EXCEPTION:
-                throw new FatalException(e);
-            case PROPERTY_NOT_FOUND:
-                throw new DataInconsistencyException(e);
-            }
-            break;
+        switch (e.getReason()) {
+        case DATABASE_EXCEPTION:
+            throw new FatalException(e);
+        case PROPERTY_NOT_FOUND:
+            throw new DataInconsistencyException(e);
         }
     }
+
 }

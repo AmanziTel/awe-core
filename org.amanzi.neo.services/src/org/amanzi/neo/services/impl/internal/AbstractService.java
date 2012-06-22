@@ -47,5 +47,4 @@ public abstract class AbstractService implements IDatabaseEventListener {
             break;
         }
     }
-
 }

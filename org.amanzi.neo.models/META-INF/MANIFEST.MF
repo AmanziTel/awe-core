@@ -5,6 +5,7 @@ Bundle-SymbolicName: org.amanzi.neo.models
 Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.amanzi.neo.services;bundle-version="1.0.0",
- org.amanzi.log4j;bundle-version="1.0.0"
+ org.amanzi.log4j;bundle-version="1.0.0",
+ org.amanzi.neo.core;bundle-version="1.0.0"
 Export-Package: org.amanzi.neo.models,
  org.amanzi.neo.models.impl.internal;x-friends:="org.amanzi.neo.providers"

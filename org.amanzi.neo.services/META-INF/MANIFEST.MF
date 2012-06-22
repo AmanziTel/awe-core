@@ -10,4 +10,4 @@ Export-Package: org.amanzi.neo.services,
  org.amanzi.neo.services.factory,
  org.amanzi.neo.services.nodetypes
 Require-Bundle: org.amanzi.neo.db;bundle-version="1.0.0",
- org.neo4j;bundle-version="1.8.0";visibility:=reexport
+ org.amanzi.neo.core;bundle-version="1.0.0"

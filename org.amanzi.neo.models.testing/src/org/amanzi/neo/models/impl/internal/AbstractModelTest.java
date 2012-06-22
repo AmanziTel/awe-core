@@ -13,22 +13,14 @@
 
 package org.amanzi.neo.models.impl.internal;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import org.amanzi.neo.models.exceptions.DataInconsistencyException;
 import org.amanzi.neo.models.exceptions.FatalException;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.PropertyNotFoundException;
-import org.amanzi.neo.services.exceptions.enums.ExceptionSeverity;
 import org.amanzi.neo.services.nodetypes.INodeType;
-import org.amanzi.testing.AbstractTest;
+import org.amanzi.testing.AbstractMockitoTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
@@ -41,7 +33,7 @@ import org.neo4j.graphdb.Node;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class AbstractModelTest extends AbstractTest {
+public class AbstractModelTest extends AbstractMockitoTest {
 
     private static final String TEST_NODE_NAME = "test name";
 
@@ -110,7 +102,7 @@ public class AbstractModelTest extends AbstractTest {
     public void testCheckInconsistencyExceptionForNameOnInitialize() throws Exception {
         Node rootNode = getNodeMock();
 
-        doThrow(new PropertyNotFoundException(ExceptionSeverity.FATAL, "Name", rootNode)).when(nodeService).getNodeName(rootNode);
+        doThrow(new PropertyNotFoundException("Name", rootNode)).when(nodeService).getNodeName(rootNode);
 
         model.initialize(rootNode);
     }
@@ -119,7 +111,7 @@ public class AbstractModelTest extends AbstractTest {
     public void testCheckInconsistencyExceptionForTypeOnInitialize() throws Exception {
         Node rootNode = getNodeMock();
 
-        doThrow(new PropertyNotFoundException(ExceptionSeverity.FATAL, "Name", rootNode)).when(nodeService).getNodeName(rootNode);
+        doThrow(new PropertyNotFoundException("Name", rootNode)).when(nodeService).getNodeName(rootNode);
 
         model.initialize(rootNode);
     }

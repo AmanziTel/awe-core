@@ -14,6 +14,7 @@
 package org.amanzi.neo.services;
 
 import org.amanzi.neo.services.exceptions.ServiceException;
+import org.amanzi.neo.services.internal.IService;
 import org.amanzi.neo.services.nodetypes.INodeType;
 import org.neo4j.graphdb.Node;
 
@@ -25,7 +26,7 @@ import org.neo4j.graphdb.Node;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface INodeService {
+public interface INodeService extends IService {
 
     /**
      * Returns a Name property of Node

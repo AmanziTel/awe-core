@@ -13,14 +13,12 @@
 
 package org.amanzi.testing;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import java.util.HashMap;
 import java.util.Map.Entry;
 
-import org.amanzi.log4j.LogStarter;
-import org.junit.BeforeClass;
+import org.mockito.Mockito;
+import org.mockito.stubbing.OngoingStubbing;
+import org.mockito.stubbing.Stubber;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -31,12 +29,7 @@ import org.neo4j.graphdb.Node;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class AbstractTest {
-
-    @BeforeClass
-    public static void setUpClass() {
-        new LogStarter().earlyStartup();
-    }
+public class AbstractMockitoTest extends AbstractTest {
 
     protected Node getNodeMock() {
         return mock(Node.class);
@@ -51,4 +44,29 @@ public class AbstractTest {
 
         return result;
     }
+
+    protected <T> T mock(Class<T> mockedClass) {
+        return Mockito.mock(mockedClass);
+    }
+
+    protected <T> OngoingStubbing<T> when(T methodCall) {
+        return Mockito.when(methodCall);
+    }
+
+    protected <T> T eq(T value) {
+        return Mockito.eq(value);
+    }
+
+    protected Stubber doThrow(Throwable toBeThrown) {
+        return Mockito.doThrow(toBeThrown);
+    }
+
+    protected <T> T verify(T mock) {
+        return Mockito.verify(mock);
+    }
+
+    protected void verifyNoMoreInteractions(Object... mocks) {
+        Mockito.verifyNoMoreInteractions(mocks);
+    }
+
 }
