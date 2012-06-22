@@ -13,6 +13,10 @@
 
 package org.amanzi.neo.services.factory;
 
+import org.amanzi.neo.db.manager.DatabaseManagerFactory;
+import org.amanzi.neo.services.INodeService;
+import org.amanzi.neo.services.impl.NodeService;
+
 /**
  * TODO Purpose of
  * <p>
@@ -23,4 +27,35 @@ package org.amanzi.neo.services.factory;
  */
 public class ServiceFactory {
 
+    private static ServiceFactory instance;
+
+    private INodeService nodeService;
+
+    private ServiceFactory() {
+        // do nothing
+    }
+
+    public static ServiceFactory getInstance() {
+        if (instance == null) {
+            synchronized (ServiceFactory.class) {
+                if (instance == null) {
+                    instance = new ServiceFactory();
+                }
+            }
+        }
+
+        return instance;
+    }
+
+    public INodeService getNodeService() {
+        if (nodeService == null) {
+            synchronized (ServiceFactory.class) {
+                if (nodeService == null) {
+                    nodeService = new NodeService(DatabaseManagerFactory.getDatabaseManager().getDatabaseService());
+                }
+            }
+        }
+
+        return nodeService;
+    }
 }
