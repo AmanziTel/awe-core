@@ -7,7 +7,7 @@ Bundle-Activator: org.amanzi.awe.neostyle.NeoStylePlugin
 Require-Bundle: net.refractions.udig.project.ui,
  net.refractions.udig.style,
  org.amanzi.awe.catalog.neo,
- org.amanzi.neo.services;bundle-version="1.0.0",
+ org.amanzi.neo.services.impl;bundle-version="1.0.0",
  org.amanzi.awe.ui;bundle-version="1.0.0"
 Bundle-ActivationPolicy: lazy
 Eclipse-ExtensibleAPI: true

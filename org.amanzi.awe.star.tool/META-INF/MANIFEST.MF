@@ -7,6 +7,6 @@ Bundle-Vendor: amanzi.org
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ActivationPolicy: lazy
 Require-Bundle: net.refractions.udig.project.ui;bundle-version="1.2.0",
- org.amanzi.neo.services;bundle-version="1.0.0",
+ org.amanzi.neo.services.impl;bundle-version="1.0.0",
  org.amanzi.neo.services.ui;bundle-version="1.0.0",
  org.amanzi.awe.views.network;bundle-version="1.0.0"

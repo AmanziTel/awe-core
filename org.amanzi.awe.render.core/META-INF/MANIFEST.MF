@@ -6,7 +6,7 @@ Bundle-Version: 1.0.0.qualifier
 Require-Bundle: net.refractions.udig.project,
  org.amanzi.awe.catalog.neo,
  org.amanzi.awe.neostyle;bundle-version="1.0.0",
- org.amanzi.neo.services;bundle-version="1.0.0",
+ org.amanzi.neo.services.impl;bundle-version="1.0.0",
  org.eclipse.ui;bundle-version="3.7.0",
  org.amanzi.awe.console;bundle-version="1.0.0"
 Bundle-ActivationPolicy: lazy
