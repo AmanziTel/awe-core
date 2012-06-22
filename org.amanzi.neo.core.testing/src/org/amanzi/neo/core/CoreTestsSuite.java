@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.testing.sanity;
+package org.amanzi.neo.core;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
@@ -22,16 +22,11 @@ import org.junit.runners.Suite.SuiteClasses;
  * <p>
  * </p>
  * 
- * @author gerzog
+ * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
 @RunWith(Suite.class)
-@SuiteClasses({
-        org.amanzi.neo.db.testing.DbTestSuite.class, 
-        org.amanzi.neo.core.CoreTestsSuite.class,
-        org.amanzi.neo.models.ModelsTestSuite.class,
-        org.amanzi.neo.services.ServicesTestSuite.class
-})
-public class CoreTestSuite {
+@SuiteClasses({org.amanzi.neo.core.nodetypes.NodeTypeManagerTest.class})
+public class CoreTestsSuite {
 
 }

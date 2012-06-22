@@ -26,7 +26,7 @@ public class NodeTypeManagerTest {
 
         @Override
         public String getId() {
-            return Integer.toString(ordinal());
+            return name().toLowerCase();
         }
     }
 
@@ -35,7 +35,7 @@ public class NodeTypeManagerTest {
 
         @Override
         public String getId() {
-            return Integer.toString(ordinal());
+            return name().toLowerCase();
         }
     }
 
