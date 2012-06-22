@@ -14,12 +14,13 @@
 package org.amanzi.neo.services.impl;
 
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
+import org.amanzi.neo.nodetypes.INodeType;
+import org.amanzi.neo.nodetypes.NodeTypeManager;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.PropertyNotFoundException;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.impl.internal.AbstractService;
-import org.amanzi.neo.services.nodetypes.INodeType;
 import org.codehaus.groovy.syntax.SyntaxException;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -52,9 +53,9 @@ public class NodeService extends AbstractService implements INodeService {
 
     @Override
     public INodeType getNodeType(Node node) throws ServiceException {
-        getNodeProperty(node, generalNodeProperties.getNodeTypeProperty(), null, true);
+        String nodeType = (String)getNodeProperty(node, generalNodeProperties.getNodeTypeProperty(), null, true);
 
-        return null;
+        return NodeTypeManager.getType(nodeType);
     }
 
     /**

@@ -15,11 +15,11 @@ package org.amanzi.neo.services.impl;
 
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.impl.GeneralNodeProperties;
+import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.PropertyNotFoundException;
 import org.amanzi.neo.services.impl.internal.AbstractServiceTest;
-import org.amanzi.neo.services.nodetypes.INodeType;
 import org.junit.Before;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
@@ -36,15 +36,7 @@ public class NodeServiceTest extends AbstractServiceTest {
 
     private static final String NODE_NAME = "node_name";
 
-    private static final String NODE_TYPE_ID = "node_type";
-
-    private static final INodeType NODE_TYPE = new INodeType() {
-
-        @Override
-        public String getId() {
-            return NODE_TYPE_ID;
-        }
-    };
+    private static final String NODE_TYPE_ID = TestNodeType.TEST1.getId();
 
     private INodeService nodeService;
 
@@ -118,7 +110,7 @@ public class NodeServiceTest extends AbstractServiceTest {
 
         INodeType result = nodeService.getNodeType(node);
 
-        assertEquals("Unepected Type of Node", NODE_TYPE, result);
+        assertEquals("Unepected Type of Node", TestNodeType.TEST1, result);
     }
 
     @Test(expected = PropertyNotFoundException.class)

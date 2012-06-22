@@ -13,8 +13,11 @@
 
 package org.amanzi.neo.services.impl.internal;
 
+import org.amanzi.neo.nodetypes.INodeType;
+import org.amanzi.neo.nodetypes.NodeTypeManager;
 import org.amanzi.testing.AbstractMockitoTest;
 import org.junit.After;
+import org.junit.BeforeClass;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Transaction;
 
@@ -28,6 +31,16 @@ import org.neo4j.graphdb.Transaction;
  */
 public class AbstractServiceTest extends AbstractMockitoTest {
 
+    protected enum TestNodeType implements INodeType {
+        TEST1, TEST2;
+
+        @Override
+        public String getId() {
+            return name();
+        }
+
+    }
+
     protected GraphDatabaseService service;
 
     private Transaction transaction;
@@ -35,6 +48,11 @@ public class AbstractServiceTest extends AbstractMockitoTest {
     private boolean isSuccess;
 
     private boolean isReadOnlyTest;
+
+    @BeforeClass
+    public static void setUpClass() {
+        NodeTypeManager.registerNodeType(TestNodeType.class);
+    }
 
     protected void setUp() {
         service = mock(GraphDatabaseService.class);

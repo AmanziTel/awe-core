@@ -17,9 +17,9 @@ import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.exceptions.DataInconsistencyException;
 import org.amanzi.neo.models.exceptions.FatalException;
 import org.amanzi.neo.models.exceptions.ModelException;
+import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.ServiceException;
-import org.amanzi.neo.services.nodetypes.INodeType;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
 
@@ -75,6 +75,10 @@ public abstract class AbstractModel implements IModel {
     @Override
     public String toString() {
         return getName();
+    }
+
+    public Node getRootNode() {
+        return rootNode;
     }
 
     private void processInitializeException(ServiceException e) throws ModelException {

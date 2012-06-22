@@ -14,7 +14,7 @@
 package org.amanzi.neo.models;
 
 import org.amanzi.neo.models.exceptions.ModelException;
-import org.amanzi.neo.services.nodetypes.INodeType;
+import org.amanzi.neo.nodetypes.INodeType;
 
 /**
  * TODO Purpose of

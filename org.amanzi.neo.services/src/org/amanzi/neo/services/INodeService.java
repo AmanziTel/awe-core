@@ -13,9 +13,9 @@
 
 package org.amanzi.neo.services;
 
+import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.internal.IService;
-import org.amanzi.neo.services.nodetypes.INodeType;
 import org.neo4j.graphdb.Node;
 
 /**
