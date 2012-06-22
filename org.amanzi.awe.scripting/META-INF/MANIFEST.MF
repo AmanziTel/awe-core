@@ -8,3 +8,4 @@ Require-Bundle: org.jruby;bundle-version="1.7.0";visibility:=reexport,
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: org.amanzi.awe.scripting
+Import-Package: org.apache.commons.lang
