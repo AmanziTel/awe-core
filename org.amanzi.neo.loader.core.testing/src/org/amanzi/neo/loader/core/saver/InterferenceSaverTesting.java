@@ -41,7 +41,7 @@ import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.NetworkModel;
 import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel;
-import org.amanzi.testing.AbstractAWETest;
+import org.amanzi.testing.AbstractAWEDBTest;
 import org.apache.log4j.Logger;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -52,7 +52,7 @@ import org.junit.Test;
 /**
  * @author Vladislav_Kondratenko
  */
-public class InterferenceSaverTesting extends AbstractAWETest {
+public class InterferenceSaverTesting extends AbstractAWEDBTest {
     private static final Logger LOGGER = Logger.getLogger(InterferenceSaverTesting.class);
     private InterferenceMatrixSaver interferenceSaver;
     private static String PATH_TO_BASE = "";

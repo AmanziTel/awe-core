@@ -46,7 +46,7 @@ import org.amanzi.neo.services.filters.NamedFilter;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.N2NRelTypes;
 import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel.NodeToNodeTypes;
-import org.amanzi.testing.AbstractAWETest;
+import org.amanzi.testing.AbstractAWEDBTest;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.junit.AfterClass;
@@ -67,7 +67,7 @@ import org.neo4j.graphdb.index.Index;
  * @author kostyukovich_n
  * @since 1.0.0
  */
-public class NetworkServiceTest extends AbstractAWETest {
+public class NetworkServiceTest extends AbstractAWEDBTest {
     private static Logger LOGGER = Logger.getLogger(NetworkServiceTest.class);
     private static NetworkService networkService;
     private static DatasetService datasetService;

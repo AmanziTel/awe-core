@@ -40,7 +40,7 @@ import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.NetworkModel;
-import org.amanzi.testing.AbstractAWETest;
+import org.amanzi.testing.AbstractAWEDBTest;
 import org.apache.log4j.Logger;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -51,7 +51,7 @@ import org.junit.Test;
 /**
  * @author Vladislav_Kondratenko
  */
-public class SeparationConstraintsSaverTesting extends AbstractAWETest {
+public class SeparationConstraintsSaverTesting extends AbstractAWEDBTest {
     private static final Logger LOGGER = Logger.getLogger(SeparationConstraintsSaverTesting.class);
     private SeparationConstraintSaver separationSaver;
     private static String PATH_TO_BASE = "";

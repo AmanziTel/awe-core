@@ -11,7 +11,11 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.models.exceptions;
+package org.amanzi.neo.models;
+
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+import org.junit.runners.Suite.SuiteClasses;
 
 /**
  * TODO Purpose of
@@ -21,13 +25,8 @@ package org.amanzi.neo.models.exceptions;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public abstract class ModelException extends Exception {
-
-    /** long serialVersionUID field */
-    private static final long serialVersionUID = 2746388335143339443L;
-
-    protected ModelException(Exception e) {
-        super(e);
-    }
+@RunWith(Suite.class)
+@SuiteClasses({org.amanzi.neo.models.impl.internal.AbstractModelTest.class})
+public class ModelsSuite {
 
 }

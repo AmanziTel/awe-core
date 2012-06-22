@@ -14,7 +14,7 @@
 package org.amanzi.neo.loader.core.saver;
 
 import org.amanzi.log4j.LogStarter;
-import org.amanzi.testing.AbstractAWETest;
+import org.amanzi.testing.AbstractAWEDBTest;
 import org.apache.log4j.Logger;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -24,7 +24,7 @@ import org.junit.Test;
 /**
  * @author Vladislav_Kondratenko
  */
-public class AutoParseTesting extends AbstractAWETest {
+public class AutoParseTesting extends AbstractAWEDBTest {
 	private static final Logger LOGGER = Logger
 			.getLogger(AutoParseTesting.class);
 	private final static String EMPTY_STRING = "";

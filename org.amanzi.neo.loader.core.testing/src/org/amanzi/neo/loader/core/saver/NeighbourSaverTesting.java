@@ -40,7 +40,7 @@ import org.amanzi.neo.services.model.INodeToNodeRelationsModel;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.NetworkModel;
 import org.amanzi.neo.services.model.impl.NodeToNodeRelationshipModel;
-import org.amanzi.testing.AbstractAWETest;
+import org.amanzi.testing.AbstractAWEDBTest;
 import org.apache.log4j.Logger;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -51,7 +51,7 @@ import org.junit.Test;
 /**
  * @author Vladislav_Kondratenko
  */
-public class NeighbourSaverTesting extends AbstractAWETest {
+public class NeighbourSaverTesting extends AbstractAWEDBTest {
     private static final Logger LOGGER = Logger.getLogger(NeighbourSaverTesting.class);
     private NeighboursSaver neighboursSaver;
     private static String PATH_TO_BASE = "";

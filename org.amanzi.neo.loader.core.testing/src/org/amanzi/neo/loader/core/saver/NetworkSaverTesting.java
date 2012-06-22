@@ -38,7 +38,7 @@ import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.NetworkModel;
-import org.amanzi.testing.AbstractAWETest;
+import org.amanzi.testing.AbstractAWEDBTest;
 import org.apache.log4j.Logger;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -49,7 +49,7 @@ import org.junit.Test;
 /**
  * @author Kondratenko_Vladsialv
  */
-public class NetworkSaverTesting extends AbstractAWETest {
+public class NetworkSaverTesting extends AbstractAWEDBTest {
     private static final Logger LOGGER = Logger.getLogger(NetworkSaverTesting.class);
     private NetworkSaver networkSaver;
     private static String PATH_TO_BASE = "";

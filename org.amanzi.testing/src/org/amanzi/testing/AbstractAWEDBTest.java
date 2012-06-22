@@ -33,9 +33,9 @@ import org.neo4j.kernel.EmbeddedGraphDatabase;
  * @author gerzog
  * @since 1.0.0
  */
-public abstract class AbstractAWETest {
+public abstract class AbstractAWEDBTest {
     
-    private static Logger LOGGER = Logger.getLogger(AbstractAWETest.class);
+    private static Logger LOGGER = Logger.getLogger(AbstractAWEDBTest.class);
     
     protected static GraphDatabaseService graphDatabaseService;
     

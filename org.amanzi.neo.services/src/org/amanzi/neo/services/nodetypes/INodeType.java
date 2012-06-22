@@ -23,6 +23,6 @@ package org.amanzi.neo.services.nodetypes;
  */
 public interface INodeType {
 
-    public void getId();
+    public String getId();
 
 }

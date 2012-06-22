@@ -8,7 +8,21 @@
     <version>${awe-core-version}</version>
   </parent>
   <groupId>org.amanzi</groupId>
-  <artifactId>org.amanzi.neo.services.ui</artifactId>
+  <artifactId>org.amanzi.neo.services.testing</artifactId>
   <version>1.0.0.qualifier</version>
-  <packaging>eclipse-plugin</packaging>
+  <packaging>eclipse-test-plugin</packaging>
+  
+  <build>
+    <plugins>
+  	  <plugin>
+  		<groupId>org.eclipse.tycho</groupId>
+  		<artifactId>tycho-surefire-plugin</artifactId>
+  		<version>${tycho-version}</version>
+  		<configuration>
+          <testSuite>org.amanzi.neo.models</testSuite>
+          <testClass>org.amanzi.neo.models.ModelsSuite</testClass>
+        </configuration>
+  	  </plugin>
+  	</plugins>
+  </build>
 </project>

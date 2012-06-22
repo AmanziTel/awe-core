@@ -44,7 +44,7 @@ import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.NetworkModel;
-import org.amanzi.testing.AbstractAWETest;
+import org.amanzi.testing.AbstractAWEDBTest;
 import org.apache.log4j.Logger;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -55,7 +55,7 @@ import org.junit.Test;
 /**
  * @author Vladislav_Kondratenko
  */
-public class TRXSaverTesting extends AbstractAWETest {
+public class TRXSaverTesting extends AbstractAWEDBTest {
     private static final Logger LOGGER = Logger.getLogger(TRXSaverTesting.class);
     private TRXSaver trxSaver;
     private static String PATH_TO_BASE = "";

@@ -14,9 +14,12 @@
 package org.amanzi.neo.models.impl.internal;
 
 import org.amanzi.neo.models.IModel;
+import org.amanzi.neo.models.exceptions.FatalException;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.services.INodeService;
+import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.nodetypes.INodeType;
+import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -29,6 +32,8 @@ import org.neo4j.graphdb.Node;
  */
 public abstract class AbstractModel implements IModel {
 
+    private static final Logger LOGGER = Logger.getLogger(AbstractModel.class);
+
     protected String name;
     protected Node rootNode;
     protected INodeType nodeType;
@@ -36,11 +41,27 @@ public abstract class AbstractModel implements IModel {
     protected INodeService nodeService;
 
     public AbstractModel(INodeService nodeService) {
-
+        this.nodeService = nodeService;
     }
 
-    protected void initialize(Node rootNode) {
+    public void initialize(Node rootNode) throws ModelException {
+        assert rootNode == null;
 
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("start initialize(<" + rootNode + ">)");
+        }
+
+        try {
+            name = nodeService.getNodeName(rootNode);
+            nodeType = nodeService.getNodeType(rootNode);
+        } catch (ServiceException e) {
+            LOGGER.error("An error occured on Model Initialization", e);
+
+            switch (e.getSeverity()) {
+            case FATAL:
+                throw new FatalException(e);
+            }
+        }
     }
 
     @Override
@@ -56,10 +77,5 @@ public abstract class AbstractModel implements IModel {
     @Override
     public String toString() {
         return getName();
-    }
-
-    @Override
-    public void finishUp() throws ModelException {
-        // do nothing
     }
 }

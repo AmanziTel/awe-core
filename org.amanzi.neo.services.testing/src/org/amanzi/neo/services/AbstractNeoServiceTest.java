@@ -15,7 +15,7 @@ package org.amanzi.neo.services;
 
 import java.awt.Color;
 
-import org.amanzi.testing.AbstractAWETest;
+import org.amanzi.testing.AbstractAWEDBTest;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 
@@ -25,7 +25,7 @@ import org.neo4j.graphdb.Transaction;
  * @author lagutko_n
  * @since 1.0.0
  */
-public abstract class AbstractNeoServiceTest extends AbstractAWETest {
+public abstract class AbstractNeoServiceTest extends AbstractAWEDBTest {
     
     /**
      * Cleans up all relationships from ReferenceNode

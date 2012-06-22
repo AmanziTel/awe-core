@@ -24,7 +24,7 @@ import org.amanzi.neo.services.filters.exceptions.FilterTypeException;
 import org.amanzi.neo.services.filters.exceptions.NotComparebleException;
 import org.amanzi.neo.services.filters.exceptions.NotComparebleRuntimeException;
 import org.amanzi.neo.services.filters.exceptions.NullValueException;
-import org.amanzi.testing.AbstractAWETest;
+import org.amanzi.testing.AbstractAWEDBTest;
 import org.apache.log4j.Logger;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -41,7 +41,7 @@ import org.neo4j.graphdb.Transaction;
  * @author Kondratenko_V
  * @since 1.0.0
  */
-public class FilterTest extends AbstractAWETest {
+public class FilterTest extends AbstractAWEDBTest {
     
     private static Logger LOGGER = Logger.getLogger(FilterTest.class);
 

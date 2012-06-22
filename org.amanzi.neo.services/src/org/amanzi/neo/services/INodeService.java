@@ -27,8 +27,22 @@ import org.neo4j.graphdb.Node;
  */
 public interface INodeService {
 
+    /**
+     * Returns a Name property of Node
+     * 
+     * @param node
+     * @return
+     * @throws ServiceException in case of Name Property not found
+     */
     public String getNodeName(Node node) throws ServiceException;
 
+    /**
+     * Returns a NodeType property of Node
+     * 
+     * @param node
+     * @return
+     * @throws ServiceException in case of Type Property not found
+     */
     public INodeType getNodeType(Node node) throws ServiceException;
 
 }

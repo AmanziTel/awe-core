@@ -13,6 +13,9 @@
 
 package org.amanzi.neo.services.exceptions;
 
+import org.amanzi.neo.services.exceptions.enums.ExceptionSeverity;
+import org.amanzi.neo.services.exceptions.enums.ServiceExceptionReason;
+
 /**
  * TODO Purpose of
  * <p>
@@ -25,5 +28,28 @@ public abstract class ServiceException extends Exception {
 
     /** long serialVersionUID field */
     private static final long serialVersionUID = -217926823632324451L;
+
+    private ServiceExceptionReason reason;
+
+    private ExceptionSeverity severity;
+
+    public ServiceException(ServiceExceptionReason reason, ExceptionSeverity severity) {
+        this(reason, severity, null);
+    }
+
+    public ServiceException(ServiceExceptionReason reason, ExceptionSeverity severity, String message) {
+        super(message);
+
+        this.reason = reason;
+        this.severity = severity;
+    }
+
+    public ServiceExceptionReason getReason() {
+        return reason;
+    }
+
+    public ExceptionSeverity getSeverity() {
+        return severity;
+    }
 
 }
