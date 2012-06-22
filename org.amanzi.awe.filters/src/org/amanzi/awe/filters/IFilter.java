@@ -11,18 +11,16 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.services.exceptions.enums;
+package org.amanzi.awe.filters;
 
 /**
- * TODO Purpose of
+ * TODO Purpose of 
  * <p>
+ *
  * </p>
- * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public enum ServiceExceptionReason {
-
-    DATABASE_EXCEPTION, PROPERTY_NOT_FOUND, FILTER_ERROR;
+public interface IFilter {
 
 }

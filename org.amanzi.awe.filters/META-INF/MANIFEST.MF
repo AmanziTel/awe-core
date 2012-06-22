@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Filters
+Bundle-SymbolicName: org.amanzi.awe.filters
+Bundle-Version: 1.0.0.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Export-Package: org.amanzi.awe.filters
+Require-Bundle: org.amanzi.neo.services;bundle-version="1.0.0"
