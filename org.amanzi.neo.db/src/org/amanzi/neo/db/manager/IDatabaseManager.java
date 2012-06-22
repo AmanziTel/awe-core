@@ -25,58 +25,56 @@ import org.neo4j.graphdb.GraphDatabaseService;
  * @since 1.0.0
  */
 public interface IDatabaseManager {
-    
-	/**
-	 * Access Type of database connection
-	 * 
-	 * @author gerzog
-	 *
-	 */
+
+    /**
+     * Access Type of database connection
+     * 
+     * @author gerzog
+     */
     public static enum AccessType {
-    	/*
-    	 * Read-only access
-    	 */
+        /*
+         * Read-only access
+         */
         READ_ONLY,
-        
+
         /*
          * Read-write access
          */
         READ_WRITE;
-        
+
         /**
          * Returns default Access Type
          * 
          * @return READ_WRITE as default AccessType
          */
         public static AccessType getDefaulAccessType() {
-        	return READ_WRITE;
+            return READ_WRITE;
         }
     }
-    
+
     /**
      * Returns Database Service
-     *
+     * 
      * @return
      */
     public GraphDatabaseService getDatabaseService();
-    
+
     /**
      * Returns location of Database
-     *
+     * 
      * @return
      */
     public String getLocation();
-    
+
     /**
      * Returns Memory Mapping parameters
-     *
+     * 
      * @return
      */
     public Map<String, String> getMemoryMapping();
-    
+
     /**
      * Commits all Transactions
-     * 
      */
     public void commitMainTransaction();
 
@@ -84,56 +82,55 @@ public interface IDatabaseManager {
      * Rolls back all Transactions
      */
     public void rollbackMainTransaction();
-    
+
     /**
      * Start transaction in current Thread
      */
     public void startThreadTransaction();
-    
+
     /**
      * Commit transaction in current Thread
      */
     public void commitThreadTransaction();
-    
+
     /**
      * Rollsback transaction in current Thread
      */
     public void rollbackThreadTransaction();
-    
+
     /**
      * Finishes transaction in current Thread
      */
     public void finishThreadTransaction();
-    
+
     /**
      * Returns type of Database Connection
-     *
+     * 
      * @return
      */
     public AccessType getAccessType();
-    
+
     /**
      * Set a Graph Database Service to manager
      * 
      * @param service new graph database service
      */
     public void setDatabaseService(GraphDatabaseService service);
-    
+
     /**
      * Finish up connection to Database
-     * 
      */
     public void shutdown();
-    
+
     /**
      * Add new database event listener
      */
     public void addDatabaseEventListener(IDatabaseEventListener listener);
-    
+
     /**
      * Removes new database event listener
      */
     public void removeDatabaseEventListener(IDatabaseEventListener listener);
 
+    public void cleanDatabaseEventListeners();
 }
-

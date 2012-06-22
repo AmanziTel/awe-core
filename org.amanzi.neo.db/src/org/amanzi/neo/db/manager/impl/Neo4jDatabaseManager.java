@@ -69,8 +69,7 @@ public class Neo4jDatabaseManager extends AbstractDatabaseManager {
         this.accessType = accessType;
         this.memoryMapping = memoryMapping;
 
-        LOGGER.info("Neo4j Database Manager was created with parameters: " + "databaseLocation = <" + databaseLocation + ">, "
-                + "accessType = <" + accessType + ">");
+        LOGGER.info("Neo4j Database Manager was created with parameters: " + "databaseLocation = <" + databaseLocation + ">, " + "accessType = <" + accessType + ">");
     }
 
     /**
@@ -192,8 +191,7 @@ public class Neo4jDatabaseManager extends AbstractDatabaseManager {
      */
     private void initializeDb() {
         if (dbService == null) {
-            LOGGER.info("Initializing Neo4j Database Manager with parameters: " + "databaseLocation = <" + databaseLocation + ">, "
-                    + "accessType = <" + accessType + ">");
+            LOGGER.info("Initializing Neo4j Database Manager with parameters: " + "databaseLocation = <" + databaseLocation + ">, " + "accessType = <" + accessType + ">");
 
             fireEvent(EventType.BEFORE_STARTUP);
 

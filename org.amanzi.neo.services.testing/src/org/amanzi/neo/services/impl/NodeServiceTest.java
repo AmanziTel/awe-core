@@ -19,7 +19,7 @@ import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.PropertyNotFoundException;
-import org.amanzi.neo.services.impl.internal.AbstractServiceTest;
+import org.amanzi.neo.services.util.AbstractServiceTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;

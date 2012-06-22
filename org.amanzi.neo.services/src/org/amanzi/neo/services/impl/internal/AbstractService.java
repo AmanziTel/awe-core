@@ -28,12 +28,16 @@ import org.neo4j.graphdb.GraphDatabaseService;
  */
 public abstract class AbstractService implements IDatabaseEventListener {
 
-    protected GraphDatabaseService graphDb;
+    private GraphDatabaseService graphDb;
 
     protected AbstractService(GraphDatabaseService graphDb) {
         this.graphDb = graphDb;
 
         DatabaseManagerFactory.getDatabaseManager().addDatabaseEventListener(this);
+    }
+
+    public GraphDatabaseService getGraphDb() {
+        return graphDb;
     }
 
     @Override

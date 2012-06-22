@@ -13,13 +13,13 @@
 
 package org.amanzi.neo.services.impl.internal;
 
-import org.amanzi.neo.nodetypes.INodeType;
-import org.amanzi.neo.nodetypes.NodeTypeManager;
+import org.amanzi.neo.db.manager.DatabaseManagerFactory;
+import org.amanzi.neo.db.manager.IDatabaseManager;
 import org.amanzi.testing.AbstractMockitoTest;
 import org.junit.After;
-import org.junit.BeforeClass;
+import org.junit.Before;
+import org.junit.Test;
 import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Transaction;
 
 /**
  * TODO Purpose of
@@ -31,60 +31,56 @@ import org.neo4j.graphdb.Transaction;
  */
 public class AbstractServiceTest extends AbstractMockitoTest {
 
-    protected enum TestNodeType implements INodeType {
-        TEST1, TEST2;
+    private AbstractService service;
 
-        @Override
-        public String getId() {
-            return name();
-        }
+    private IDatabaseManager dbManager;
 
-    }
+    private GraphDatabaseService graphDb;
 
-    protected GraphDatabaseService service;
+    /**
+     * @throws java.lang.Exception
+     */
+    @Before
+    public void setUp() throws Exception {
+        graphDb = mock(GraphDatabaseService.class);
 
-    private Transaction transaction;
-
-    private boolean isSuccess;
-
-    private boolean isReadOnlyTest;
-
-    @BeforeClass
-    public static void setUpClass() {
-        NodeTypeManager.registerNodeType(TestNodeType.class);
-    }
-
-    protected void setUp() {
-        service = mock(GraphDatabaseService.class);
-
-        transaction = mock(Transaction.class);
-
-        isSuccess = true;
-        isReadOnlyTest = false;
-
-        when(service.beginTx()).thenReturn(transaction);
+        dbManager = DatabaseManagerFactory.getDatabaseManager();
+        dbManager.setDatabaseService(graphDb);
     }
 
     @After
-    public void tearDown() {
-        if (!isReadOnlyTest) {
-            if (isSuccess) {
-                verify(transaction).success();
-            } else {
-                verify(transaction).failure();
-            }
-
-            verify(transaction).finish();
-        }
-        verifyNoMoreInteractions(transaction, service);
+    public void tearDown() throws Exception {
+        dbManager.cleanDatabaseEventListeners();
     }
 
-    protected void setMethodFailure() {
-        isSuccess = false;
+    @Test
+    public void testCheckServiceDbOnConstructore() {
+        service = new AbstractService(graphDb) {
+        };
+
+        assertEquals("Unexpected GraphDb", graphDb, service.getGraphDb());
     }
 
-    protected void setReadOnly() {
-        isReadOnlyTest = true;
+    @Test
+    public void testCheckServiceDbOnShutDown() {
+        service = new AbstractService(graphDb) {
+        };
+
+        dbManager.shutdown();
+
+        assertNull("GraphDb should be null", service.getGraphDb());
+    }
+
+    @Test
+    public void testCheckServiceDbOnRestart() {
+        service = new AbstractService(graphDb) {
+        };
+
+        dbManager.shutdown();
+        dbManager.setDatabaseService(graphDb);
+
+        assertNotNull("GraphDb cannot be null", service.getGraphDb());
+        assertEquals("Unexpected GraphDb", graphDb, service.getGraphDb());
     }
 
 }

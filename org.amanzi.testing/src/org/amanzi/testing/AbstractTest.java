@@ -37,4 +37,12 @@ public class AbstractTest {
         Assert.assertEquals(message, expected, actual);
     }
 
+    protected void assertNotNull(String message, Object object) {
+        Assert.assertNotNull(message, object);
+    }
+
+    protected void assertNull(String message, Object object) {
+        Assert.assertNull(message, object);
+    }
+
 }

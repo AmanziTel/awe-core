@@ -42,16 +42,16 @@ public abstract class AbstractDatabaseManager implements IDatabaseManager {
      * Map of Transactions-per-Thread
      */
     private ThreadLocal<Transaction> transactionMap = new ThreadLocal<Transaction>();
-    
-    private ThreadLocal<Integer> transactionStack = new ThreadLocal<Integer>(); 
+
+    private ThreadLocal<Integer> transactionStack = new ThreadLocal<Integer>();
 
     /*
      * Listeners for Database Events
      */
-    private static ArrayList<IDatabaseEventListener> listeners = new ArrayList<IDatabaseEventListener>();
-    
+    private ArrayList<IDatabaseEventListener> listeners = new ArrayList<IDatabaseEventListener>();
+
     public AbstractDatabaseManager() {
-    	
+
     }
 
     @Override
@@ -60,7 +60,7 @@ public abstract class AbstractDatabaseManager implements IDatabaseManager {
         if (stack == null) {
             stack = 0;
         }
-        
+
         if (transactionMap.get() != null) {
             LOGGER.error("Transaction for Thread <" + Thread.currentThread() + "> already exists");
         } else {
@@ -101,12 +101,12 @@ public abstract class AbstractDatabaseManager implements IDatabaseManager {
     @Override
     public void finishThreadTransaction() {
         LOGGER.info("Finishing Transaction for Thread <" + Thread.currentThread() + ">");
-        
+
         Integer stack = transactionStack.get();
-        
+
         if (--stack == 0) {
-            //commiting current transaction
-        
+            // commiting current transaction
+
             Transaction tx = transactionMap.get();
             tx.success();
             tx.finish();
@@ -154,6 +154,11 @@ public abstract class AbstractDatabaseManager implements IDatabaseManager {
         databaseDirectory.mkdirs();
 
         return databaseDirectory.getAbsolutePath();
+    }
+
+    @Override
+    public void cleanDatabaseEventListeners() {
+        listeners.clear();
     }
 
 }

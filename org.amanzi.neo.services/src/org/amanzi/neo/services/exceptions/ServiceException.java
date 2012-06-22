@@ -36,12 +36,6 @@ public abstract class ServiceException extends Exception {
         this.reason = reason;
     }
 
-    protected ServiceException(ServiceExceptionReason reason, String message) {
-        super(message);
-
-        this.reason = reason;
-    }
-
     protected ServiceException(ServiceExceptionReason reason, Exception exception) {
         super(exception);
 
