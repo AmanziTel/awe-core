@@ -22,7 +22,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.amanzi.awe.scripting.AbstractScriptingPlugin;
@@ -32,8 +31,9 @@ import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Platform;
 
 /**
- * TODO Purpose of
  * <p>
+ * ScriptUtils - common functionality for jruby paths definition (such as jruby.home, jruby.version)
+ * also contain methods for converting script files to string.
  * </p>
  * 
  * @author Vladislav_Kondratenko
@@ -63,57 +63,60 @@ public class ScriptUtils {
 
     /**
      * @return
+     * @throws Exception
      */
-    public String getJRubyHome() {
+    public String getJRubyHome() throws IOException {
         return ensureJRubyHome();
     }
 
-    /** return JRubyHome, searching for it if necessary */
-    private String ensureJRubyHome() {
+    /**
+     * return JRubyHome, searching for it if necessary
+     * 
+     * @throws Exception
+     */
+    private String ensureJRubyHome() throws IOException {
         try {
             if (jRubyHome == null) {
                 jRubyHome = findJRubyHome(System.getProperty("jruby.home"));
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             LOGGER.error("Cann't ensure jruby.home", e);
+            throw e;
         }
         return jRubyHome;
     }
 
     /** return JRubyVersion, searching for it if necessary */
-    private String ensureJRubyVersion() {
+    private String ensureJRubyVersion() throws IOException {
         try {
             if (jRubyVersion == null) {
                 jRubyVersion = findJRubyVersion(ensureJRubyHome(), System.getProperty("jruby.version"));
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             LOGGER.error("Cann't ensure jruby.version", e);
+            throw e;
         }
-        return (jRubyVersion);
+        return jRubyVersion;
     }
 
     /**
      * @param absolutePath
      * @return
+     * @throws Exception
      */
-    public List<String> makeLoadPath(String absolutePath) {
-        ensureJRubyHome();
-        ensureJRubyVersion();
-        if (jRubyHome == null || jRubyVersion == null) {
+    public List<String> makeLoadPath(String absolutePath) throws Exception {
+        try {
+            ensureJRubyHome();
+            ensureJRubyVersion();
+        } catch (Exception e) {
             LOGGER.error("cann't ensure necessary variables jruby.home=" + jRubyHome + "jruby.version=" + jRubyVersion);
+            throw e;
         }
+
         List<String> loadPath = new ArrayList<String>();
         if (absolutePath != null) {
             loadPath.add(absolutePath);
         }
-        loadPath.add(jRubyHome + "/lib/ruby/site_ruby/" + jRubyVersion);
-        loadPath.add(jRubyHome + "/lib/ruby/site_ruby");
-        loadPath.add(jRubyHome + "/lib/ruby/" + jRubyVersion);
-        loadPath.add(jRubyHome + "/lib/ruby/" + jRubyVersion + "/java");
-        loadPath.add(jRubyHome + "/lib");
-
-        loadPath.add("lib/ruby/" + jRubyVersion);
-        loadPath.add(".");
         return loadPath;
     }
 
@@ -121,21 +124,25 @@ public class ScriptUtils {
      * search for jruby home, starting with passed value, if any
      * 
      * @return
+     * @throws IOException
      */
-    private String findJRubyHome(String suggested) {
+    private String findJRubyHome(String suggested) throws IOException {
         String jRubyHome = null;
-        // Lagutko, 22.06.2009, since now we search ruby home only in org.jruby plugin
         try {
             jRubyHome = getPluginRoot(JRUBY_PLUGIN_NAME);
         } catch (IOException e) {
             LOGGER.error("Cannon't instantiate ruby.home");
-            jRubyHome = null;
+            throw e;
         }
         return jRubyHome;
     }
 
-    /** try determine ruby version jruby.version property was not set. Default to "1.8" */
-    private String findJRubyVersion(String jRubyHome, String jRubyVersion) {
+    /**
+     * try determine ruby version jruby.version property was not set. Default to "1.8"
+     * 
+     * @throws IOException
+     */
+    private String findJRubyVersion(String jRubyHome, String jRubyVersion) throws IOException {
         if (jRubyVersion == null) {
             for (String version : new String[] {"1.8", "1.9", "2.0", "2.1"}) {
                 String path = jRubyHome + "/lib/ruby/" + version;
@@ -145,7 +152,8 @@ public class ScriptUtils {
                         break;
                     }
                 } catch (Exception e) {
-                    System.err.println("Failed to process possible JRuby path '" + path + "': " + e.getMessage());
+                    LOGGER.error("Failed to process possible JRuby path '" + path + "': " + e.getMessage());
+                    throw new IOException(e.getMessage());
                 }
             }
         }
@@ -227,21 +235,6 @@ public class ScriptUtils {
             LOGGER.error("Error while getting script ", e);
         }
         return result;
-    }
-
-    /**
-     * return project folder content
-     * 
-     * @param projectName
-     */
-    public static List<File> getScriptFilesForProject(String projectName) {
-        File projectFolder = new File(AbstractScriptingPlugin.WORKSPACE_FOLDER + File.separator
-                + AbstractScriptingPlugin.PROJECT_FOLDER + File.separator + projectName);
-        if (!projectFolder.exists()) {
-            LOGGER.info("project folder " + projectName + "doesn't exist");
-            return null;
-        }
-        return Arrays.asList(projectFolder.listFiles());
     }
 
     /**

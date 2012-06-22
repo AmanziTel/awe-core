@@ -55,6 +55,8 @@ public class JRubyRuntimeWrapper {
     }
 
     /**
+     * try to define ruby object as java object
+     * 
      * @param object
      * @return
      */

@@ -55,7 +55,7 @@ public abstract class AbstractScriptingPlugin extends Plugin {
      * wrapper for runtime instance
      */
     private static JRubyRuntimeWrapper runtimeWrapper;
-    private ScriptingManager manager;
+    private ScriptingManager manager = ScriptingManager.getInstance();
 
     /**
      * should be invoked to define script folder
@@ -66,7 +66,7 @@ public abstract class AbstractScriptingPlugin extends Plugin {
             initScriptManager(context);
             initRuntime();
         } catch (Exception e) {
-            LOGGER.error("Error while initialize jruby runtime or workspace folder ", e);
+            LOGGER.error("Activator starting problem ", e);
             throw new Exception(e);
         }
     }
@@ -78,7 +78,7 @@ public abstract class AbstractScriptingPlugin extends Plugin {
      * @return project folder not exist, in other case return list of files
      */
     public static List<File> getScriptsForProject(String projectName) {
-        return ScriptUtils.getScriptFilesForProject(projectName);
+        return ScriptingManager.getInstance().getScriptFilesForProject(projectName);
     }
 
     /**
@@ -89,15 +89,19 @@ public abstract class AbstractScriptingPlugin extends Plugin {
      */
     public void initScriptManager(BundleContext context) throws Exception {
         if (RUBY_SCRIPT_FOLDER.equalsIgnoreCase(getScriptPath())) {
-
-            LOGGER.error("undefined project folder", new IOException("undefined project folder"));
+            LOGGER.error("undefined project folder", new IOException(" undefined project folder "));
         }
-        URL workspaceName = context.getBundle().getEntry(getScriptPath());
-        URL workspaceLocator = FileLocator.toFileURL(workspaceName);
-        LOGGER.info("Start workspace initializing");
-        manager = new ScriptingManager(workspaceLocator);
-        LOGGER.info("Start file copying");
-        manager.copyScripts();
+        try {
+            URL workspaceName = context.getBundle().getEntry(getScriptPath());
+            URL workspaceLocator = FileLocator.toFileURL(workspaceName);
+            LOGGER.info("Start workspace initializing");
+            manager.initWorkspace(workspaceLocator);
+            LOGGER.info("Start file copying");
+            manager.copyScripts();
+        } catch (Exception e) {
+            LOGGER.error("Error in wokspace preparator", e);
+            throw e;
+        }
     }
 
     /**
@@ -105,21 +109,26 @@ public abstract class AbstractScriptingPlugin extends Plugin {
      * 
      * @throws IOException
      */
-    private void initRuntime() throws IOException {
-        Ruby runtime;
-        RubyInstanceConfig config = new RubyInstanceConfig() {
-            {
-                setJRubyHome(ScriptUtils.getInstance().getJRubyHome());
-                setObjectSpaceEnabled(true);
-                setLoader(getClassLoader());
-            }
-        };
+    private void initRuntime() throws Exception {
+        try {
+            Ruby runtime;
+            RubyInstanceConfig config = new RubyInstanceConfig() {
+                {
+                    setJRubyHome(ScriptUtils.getInstance().getJRubyHome());
+                    setObjectSpaceEnabled(true);
+                    setLoader(getClassLoader());
+                }
+            };
 
-        runtime = Ruby.newInstance(config);
-        runtime.setDefaultExternalEncoding(UTF8Encoding.INSTANCE);
-        runtime.setDefaultInternalEncoding(UTF8Encoding.INSTANCE);
-        runtime.getLoadService().init(ScriptUtils.getInstance().makeLoadPath(manager.getDestination().getAbsolutePath()));
-        runtimeWrapper = new JRubyRuntimeWrapper(runtime, manager.destination);
+            runtime = Ruby.newInstance(config);
+            runtime.setDefaultExternalEncoding(UTF8Encoding.INSTANCE);
+            runtime.setDefaultInternalEncoding(UTF8Encoding.INSTANCE);
+            runtime.getLoadService().init(ScriptUtils.getInstance().makeLoadPath(manager.destination.getAbsolutePath()));
+            runtimeWrapper = new JRubyRuntimeWrapper(runtime, manager.destination);
+        } catch (Exception e) {
+            LOGGER.error("Error in runtime initialisation", e);
+            throw e;
+        }
     }
 
     /**
@@ -139,15 +148,6 @@ public abstract class AbstractScriptingPlugin extends Plugin {
     }
 
     /**
-     * } /* (non-Javadoc)
-     * 
-     * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
-     */
-    public void stop(BundleContext context) throws Exception {
-        super.stop(context);
-    }
-
-    /**
      * script folder path; by default @return ruby;
      * 
      * @return
@@ -157,35 +157,37 @@ public abstract class AbstractScriptingPlugin extends Plugin {
     }
 
     /**
-     * TODO Purpose of AbstractScriptingPlugin
      * <p>
-     * Script managment utils
+     * Script management utils - purposed for control of script file and definition script
+     * directories
      * </p>
      * 
      * @author Vladislav_Kondratenko
      * @since 1.0.0
      */
-    private class ScriptingManager {
+    private static class ScriptingManager {
         private File source;
         private File destination;
+        static ScriptingManager INSTANCE;
 
-        /**
-         * @param rubyScriptingFolder
-         * @throws IOException
-         */
-        public ScriptingManager(URL rubyScriptingFolder) throws IOException {
-            initWorkspace(rubyScriptingFolder);
-
+        static ScriptingManager getInstance() {
+            if (INSTANCE == null) {
+                INSTANCE = new ScriptingManager();
+            }
+            return INSTANCE;
         }
 
         /**
-         * initialise scripts workspace;
+         * initialize scripts workspace;
          * 
          * @param rubyScriptingFolder
          * @return false if workspace is already exist, true- if newly created
          * @throws IOException
          */
         public boolean initWorkspace(URL rubyScriptingFolder) throws IOException {
+            source = null;
+            destination = null;
+
             File projectFolder = new File(WORKSPACE_FOLDER + File.separator + PROJECT_FOLDER);
             if (!projectFolder.exists()) {
                 FileUtils.forceMkdir(projectFolder);
@@ -213,9 +215,26 @@ public abstract class AbstractScriptingPlugin extends Plugin {
         }
 
         /**
-         * copy directory from source to
+         * return project folder content
+         * 
+         * @param projectName
          */
-        public void copyScripts() {
+        public List<File> getScriptFilesForProject(String projectName) {
+            File projectFolder = new File(AbstractScriptingPlugin.WORKSPACE_FOLDER + File.separator
+                    + AbstractScriptingPlugin.PROJECT_FOLDER + File.separator + projectName);
+            if (!projectFolder.exists()) {
+                LOGGER.info("project folder " + projectName + " doesn't exist");
+                return null;
+            }
+            return Arrays.asList(projectFolder.listFiles());
+        }
+
+        /**
+         * copy directory from source to
+         * 
+         * @throws IOException
+         */
+        public void copyScripts() throws IOException {
             FileFilter fileFilter = new FileFilter() {
 
                 @Override
@@ -236,27 +255,22 @@ public abstract class AbstractScriptingPlugin extends Plugin {
         }
 
         /**
-         * copy file content from @param sourceFile to @param destFile
+         * copy file content from <b>sourceFile</b> to <b>destFile</b>
          * 
          * @param sourceFile
          * @param destFile
          * @param buf bufferSize;
+         * @throws IOException
          */
-        public void copyFile(File sourceFile, File destFile, byte[] buf) {
+        public void copyFile(File sourceFile, File destFile, byte[] buf) throws IOException {
 
             try {
                 FileUtils.copyFile(sourceFile, destFile, false);
             } catch (IOException e) {
-                LOGGER.error("Cann't copy file", e);
+                LOGGER.error("Cann't copy file " + sourceFile.getAbsolutePath() + " to " + destination.getAbsolutePath(), e);
+                throw e;
             }
 
-        }
-
-        /**
-         * @return Returns the destination.
-         */
-        public File getDestination() {
-            return destination;
         }
     }
 }
