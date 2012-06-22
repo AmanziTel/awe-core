@@ -46,15 +46,17 @@
     <module>org.amanzi.log4j</module>
     <module>org.amanzi.neo.db</module>
     <module>org.amanzi.neo.db.testing</module>
+    <module>org.amanzi.neo.core</module>
     <module>org.amanzi.neo.loader.core</module>
     <module>org.amanzi.neo.loader.core.testing</module>
     <module>org.amanzi.neo.loader.ui</module>
     <module>org.amanzi.neo.models</module>
     <module>org.amanzi.neo.models.testing</module>
-    <module>org.amanzi.neo.services</module>
     <module>org.amanzi.neo.providers</module>
+    <module>org.amanzi.neo.services</module>
     <module>org.amanzi.neo.services.impl</module>
     <module>org.amanzi.neo.services.testing</module>
+    <module>org.amanzi.neo.services.impl.testing</module>
     <module>org.amanzi.neo.services.ui</module>
     <module>org.amanzi.testing</module>
     <module>org.jfree</module>

@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.models;
+package org.amanzi.neo.services;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
@@ -26,7 +26,7 @@ import org.junit.runners.Suite.SuiteClasses;
  * @since 1.0.0
  */
 @RunWith(Suite.class)
-@SuiteClasses({org.amanzi.neo.models.impl.internal.AbstractModelTest.class})
-public class ModelsSuite {
+@SuiteClasses({org.amanzi.neo.services.impl.NodeServiceTest.class})
+public class ServicesTestSuite {
 
 }
