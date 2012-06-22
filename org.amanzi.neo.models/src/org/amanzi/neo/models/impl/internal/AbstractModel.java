@@ -58,7 +58,10 @@ public abstract class AbstractModel implements IModel {
         } catch (ServiceException e) {
             LOGGER.error("An error occured on Model Initialization", e);
 
-            processInitializeException(e);
+            ModelException exception = processInitializeException(e);
+            if (exception != null) {
+                throw exception;
+            }
         }
     }
 
@@ -81,13 +84,15 @@ public abstract class AbstractModel implements IModel {
         return rootNode;
     }
 
-    private void processInitializeException(ServiceException e) throws ModelException {
+    private ModelException processInitializeException(ServiceException e) {
         switch (e.getReason()) {
         case DATABASE_EXCEPTION:
-            throw new FatalException(e);
+            return new FatalException(e);
         case PROPERTY_NOT_FOUND:
-            throw new DataInconsistencyException(e);
+            return new DataInconsistencyException(e);
         }
+
+        return null;
     }
 
 }

@@ -44,10 +44,7 @@ public class NodeTypeManager {
      * @param nodeType a class that implements INodeType interface
      */
     public static void registerNodeType(Class< ? extends INodeType> nodeType) {
-        // validate
-        if (nodeType == null) {
-            throw new IllegalArgumentException("Node type is null.");
-        }
+        assert nodeType == null;
 
         registeredNodeTypes.add(nodeType);
     }
