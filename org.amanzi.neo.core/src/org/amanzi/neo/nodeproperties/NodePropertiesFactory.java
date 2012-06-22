@@ -13,8 +13,7 @@
 
 package org.amanzi.neo.nodeproperties;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.amanzi.neo.nodeproperties.impl.GeneralNodeProperties;
 
 /**
  * TODO Purpose of
@@ -28,7 +27,7 @@ public class NodePropertiesFactory {
 
     private static NodePropertiesFactory instance;
 
-    private Map<Class<INodeProperties>, INodeProperties> propertiesMap = new HashMap<Class<INodeProperties>, INodeProperties>();
+    private IGeneralNodeProperties generalNodeProperties;
 
     private NodePropertiesFactory() {
         // do nothing
@@ -46,15 +45,15 @@ public class NodePropertiesFactory {
         return instance;
     }
 
-    @SuppressWarnings("unchecked")
-    public <T1 extends INodeProperties> T1 getNodeProperties(Class<T1> propertiesClass) {
-        return (T1)propertiesMap.get(propertiesClass);
-    }
-
-    @SuppressWarnings("unchecked")
-    synchronized <T1 extends INodeProperties> void registerNodeProperties(Class<T1> propertiesClass, T1 instance) throws Exception {
-        if (!propertiesMap.containsKey(propertiesClass)) {
-            propertiesMap.put((Class<INodeProperties>)propertiesClass, instance);
+    public IGeneralNodeProperties getGeneralNodeProperties() {
+        if (generalNodeProperties == null) {
+            synchronized (NodePropertiesFactory.class) {
+                if (generalNodeProperties == null) {
+                    generalNodeProperties = new GeneralNodeProperties();
+                }
+            }
         }
+
+        return generalNodeProperties;
     }
 }
