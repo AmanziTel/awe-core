@@ -226,33 +226,7 @@ public abstract class AbstractScriptingPlugin extends Plugin {
                     return name.endsWith(".rb") || name.endsWith(".t");
                 }
             };
-            List<String> destinationContent = Arrays.asList(destination.list());
-            for (File sourceFile : source.listFiles(fileFilter)) {
-                File destFile = new File(destination.getPath() + File.separator + sourceFile.getName());
-                if (!destinationContent.contains(sourceFile.getName())) {
-                    copyFile(sourceFile, destFile);
-
-                }
-            }
-        }
-
-        /**
-         * copy file content from <b>sourceFile</b> to <b>destFile</b>
-         * 
-         * @param sourceFile
-         * @param destFile
-         * @param buf bufferSize;
-         * @throws IOException
-         */
-        public void copyFile(File sourceFile, File destFile) throws IOException {
-
-            try {
-                FileUtils.copyFile(sourceFile, destFile, false);
-            } catch (IOException e) {
-                LOGGER.error("Cann't copy file " + sourceFile.getAbsolutePath() + " to " + destination.getAbsolutePath(), e);
-                throw e;
-            }
-
+            FileUtils.copyDirectory(source, destination, fileFilter);
         }
     }
 }

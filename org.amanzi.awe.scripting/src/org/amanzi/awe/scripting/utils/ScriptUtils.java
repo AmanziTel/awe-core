@@ -52,6 +52,7 @@ public class ScriptUtils {
     private static final String JRUBY_PLUGIN_NAME = "org.jruby";
     private static final String PREFIX_JAR_FILE = "jar:file:";
     private static final String PREFIX_FILE = "file:";
+    
     private String jRubyHome;
     private String jRubyVersion;
 

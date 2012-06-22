@@ -15,6 +15,7 @@ package org.amanzi.awe.scripting;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -23,8 +24,8 @@ import java.util.List;
 import org.amanzi.awe.scripting.testing.TestActivator;
 import org.amanzi.testing.AbstractAWETest;
 import org.apache.commons.io.FileUtils;
+import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Platform;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -58,8 +59,7 @@ public class AbstractScriptingPluginTests extends AbstractAWETest {
         }
     }
 
-    @AfterClass
-    public static void clearWS() throws IOException {
+    public void clearWS() throws IOException {
         File ws = new File(WORKSPACE_FOLDER + File.separator + PROJECT_FOLDER);
         FileUtils.deleteDirectory(ws);
     }
@@ -108,5 +108,24 @@ public class AbstractScriptingPluginTests extends AbstractAWETest {
         clearWS();
         String projectName = TestActivator.SCRIPT_PATH.split("/")[1];
         Assert.assertNull("Null expected", TestActivator.getScriptsForProject(projectName));
+        restoreWS();
+    }
+
+    @Test
+    public void testGetScriptsForProjectifExist() throws IOException {
+        String projectName = TestActivator.SCRIPT_PATH.split("/")[1];
+        Assert.assertEquals("Not expected count of files", TestActivator.getScriptsForProject(projectName).size(),
+                expectedFiles.size());
+    }
+
+    /**
+     * @throws IOException
+     */
+    private void restoreWS() throws IOException {
+        URL scriptFolderUrl = Platform.getBundle(TestActivator.ID).getEntry(TestActivator.SCRIPT_PATH);
+        File targetFolder = new File(WORKSPACE_FOLDER + File.separator + PROJECT_FOLDER);
+        File scriptFolder = new File(FileLocator.resolve(scriptFolderUrl).getPath());
+        FileUtils.forceMkdir(targetFolder);
+        FileUtils.copyDirectoryToDirectory(scriptFolder, targetFolder);
     }
 }
