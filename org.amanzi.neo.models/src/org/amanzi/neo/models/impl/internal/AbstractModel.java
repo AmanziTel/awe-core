@@ -14,6 +14,7 @@
 package org.amanzi.neo.models.impl.internal;
 
 import org.amanzi.neo.models.IModel;
+import org.amanzi.neo.models.exceptions.DataInconsistencyException;
 import org.amanzi.neo.models.exceptions.FatalException;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.services.INodeService;
@@ -57,10 +58,7 @@ public abstract class AbstractModel implements IModel {
         } catch (ServiceException e) {
             LOGGER.error("An error occured on Model Initialization", e);
 
-            switch (e.getSeverity()) {
-            case FATAL:
-                throw new FatalException(e);
-            }
+            processInitializeException(e);
         }
     }
 
@@ -77,5 +75,18 @@ public abstract class AbstractModel implements IModel {
     @Override
     public String toString() {
         return getName();
+    }
+
+    private void processInitializeException(ServiceException e) throws ModelException {
+        switch (e.getSeverity()) {
+        case FATAL:
+            switch (e.getReason()) {
+            case DATABASE_EXCEPTION:
+                throw new FatalException(e);
+            case PROPERTY_NOT_FOUND:
+                throw new DataInconsistencyException(e);
+            }
+            break;
+        }
     }
 }

@@ -33,12 +33,22 @@ public abstract class ServiceException extends Exception {
 
     private ExceptionSeverity severity;
 
-    public ServiceException(ServiceExceptionReason reason, ExceptionSeverity severity) {
-        this(reason, severity, null);
+    protected ServiceException(ServiceExceptionReason reason, ExceptionSeverity severity) {
+        super();
+
+        this.reason = reason;
+        this.severity = severity;
     }
 
-    public ServiceException(ServiceExceptionReason reason, ExceptionSeverity severity, String message) {
+    protected ServiceException(ServiceExceptionReason reason, ExceptionSeverity severity, String message) {
         super(message);
+
+        this.reason = reason;
+        this.severity = severity;
+    }
+
+    protected ServiceException(ServiceExceptionReason reason, ExceptionSeverity severity, Exception exception) {
+        super(exception);
 
         this.reason = reason;
         this.severity = severity;

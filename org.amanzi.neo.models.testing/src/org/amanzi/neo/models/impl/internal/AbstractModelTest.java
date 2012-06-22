@@ -15,13 +15,18 @@ package org.amanzi.neo.models.impl.internal;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.amanzi.neo.models.exceptions.DataInconsistencyException;
+import org.amanzi.neo.models.exceptions.FatalException;
 import org.amanzi.neo.models.exceptions.ModelException;
-import org.amanzi.neo.models.impl.internal.AbstractModel;
 import org.amanzi.neo.services.INodeService;
+import org.amanzi.neo.services.exceptions.DatabaseException;
+import org.amanzi.neo.services.exceptions.PropertyNotFoundException;
+import org.amanzi.neo.services.exceptions.enums.ExceptionSeverity;
 import org.amanzi.neo.services.nodetypes.INodeType;
 import org.amanzi.testing.AbstractTest;
 import org.junit.Before;
@@ -91,4 +96,32 @@ public class AbstractModelTest extends AbstractTest {
         assertEquals("Unexpected initialized name", TEST_NODE_NAME, model.getName());
         assertEquals("Unexpected initialized type", TEST_NODE_TYPE, model.getType());
     }
+
+    @Test(expected = FatalException.class)
+    public void testCheckFatalExceptionOnInitialize() throws Exception {
+        Node rootNode = getNodeMock();
+
+        when(nodeService.getNodeName(eq(rootNode))).thenThrow(new DatabaseException(new NullPointerException()));
+
+        model.initialize(rootNode);
+    }
+
+    @Test(expected = DataInconsistencyException.class)
+    public void testCheckInconsistencyExceptionForNameOnInitialize() throws Exception {
+        Node rootNode = getNodeMock();
+
+        doThrow(new PropertyNotFoundException(ExceptionSeverity.FATAL, "Name", rootNode)).when(nodeService).getNodeName(rootNode);
+
+        model.initialize(rootNode);
+    }
+
+    @Test(expected = DataInconsistencyException.class)
+    public void testCheckInconsistencyExceptionForTypeOnInitialize() throws Exception {
+        Node rootNode = getNodeMock();
+
+        doThrow(new PropertyNotFoundException(ExceptionSeverity.FATAL, "Name", rootNode)).when(nodeService).getNodeName(rootNode);
+
+        model.initialize(rootNode);
+    }
+
 }
