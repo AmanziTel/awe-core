@@ -43,19 +43,19 @@ public abstract class AbstractScriptingPlugin extends Plugin {
     /*
      * logger initialization
      */
-    private final static Logger LOGGER = Logger.getLogger(AbstractScriptingPlugin.class);
+    private static final Logger LOGGER = Logger.getLogger(AbstractScriptingPlugin.class);
     /*
      * constants definition
      */
-    public final static String WORKSPACE_FOLDER = Platform.getInstanceLocation().getURL().getPath().toString();
-    public final static String PROJECT_FOLDER = "awe-scripts";
-    public final static String RUBY_SCRIPT_FOLDER = "/ruby";
+    public static final String WORKSPACE_FOLDER = Platform.getInstanceLocation().getURL().getPath();
+    public static final String PROJECT_FOLDER = "awe-scripts";
+    public static final String RUBY_SCRIPT_FOLDER = "/ruby";
 
     /**
      * wrapper for runtime instance
      */
     private static JRubyRuntimeWrapper runtimeWrapper;
-    private ScriptingManager manager = ScriptingManager.getInstance();
+    private ScriptingManager manager = new ScriptingManager();
 
     /**
      * should be invoked to define script folder
@@ -78,7 +78,13 @@ public abstract class AbstractScriptingPlugin extends Plugin {
      * @return project folder not exist, in other case return list of files
      */
     public static List<File> getScriptsForProject(String projectName) {
-        return ScriptingManager.getInstance().getScriptFilesForProject(projectName);
+        File projectFolder = new File(AbstractScriptingPlugin.WORKSPACE_FOLDER + File.separator
+                + AbstractScriptingPlugin.PROJECT_FOLDER + File.separator + projectName);
+        if (!projectFolder.exists()) {
+            LOGGER.info("project folder " + projectName + " doesn't exist");
+            return null;
+        }
+        return Arrays.asList(projectFolder.listFiles());
     }
 
     /**
@@ -87,7 +93,7 @@ public abstract class AbstractScriptingPlugin extends Plugin {
      * @param context
      * @throws IOException
      */
-    public void initScriptManager(BundleContext context) throws Exception {
+    public void initScriptManager(BundleContext context) throws IOException {
         if (RUBY_SCRIPT_FOLDER.equalsIgnoreCase(getScriptPath())) {
             LOGGER.error("undefined project folder", new IOException(" undefined project folder "));
         }
@@ -98,7 +104,7 @@ public abstract class AbstractScriptingPlugin extends Plugin {
             manager.initWorkspace(workspaceLocator);
             LOGGER.info("Start file copying");
             manager.copyScripts();
-        } catch (Exception e) {
+        } catch (IOException e) {
             LOGGER.error("Error in wokspace preparator", e);
             throw e;
         }
@@ -165,17 +171,9 @@ public abstract class AbstractScriptingPlugin extends Plugin {
      * @author Vladislav_Kondratenko
      * @since 1.0.0
      */
-    private static class ScriptingManager {
-        private File source;
-        private File destination;
-        static ScriptingManager INSTANCE;
-
-        static ScriptingManager getInstance() {
-            if (INSTANCE == null) {
-                INSTANCE = new ScriptingManager();
-            }
-            return INSTANCE;
-        }
+    private class ScriptingManager {
+        private File source = null;
+        private File destination = null;
 
         /**
          * initialize scripts workspace;
@@ -215,21 +213,6 @@ public abstract class AbstractScriptingPlugin extends Plugin {
         }
 
         /**
-         * return project folder content
-         * 
-         * @param projectName
-         */
-        public List<File> getScriptFilesForProject(String projectName) {
-            File projectFolder = new File(AbstractScriptingPlugin.WORKSPACE_FOLDER + File.separator
-                    + AbstractScriptingPlugin.PROJECT_FOLDER + File.separator + projectName);
-            if (!projectFolder.exists()) {
-                LOGGER.info("project folder " + projectName + " doesn't exist");
-                return null;
-            }
-            return Arrays.asList(projectFolder.listFiles());
-        }
-
-        /**
          * copy directory from source to
          * 
          * @throws IOException
@@ -244,11 +227,10 @@ public abstract class AbstractScriptingPlugin extends Plugin {
                 }
             };
             List<String> destinationContent = Arrays.asList(destination.list());
-            byte[] buf = new byte[1024];
             for (File sourceFile : source.listFiles(fileFilter)) {
                 File destFile = new File(destination.getPath() + File.separator + sourceFile.getName());
                 if (!destinationContent.contains(sourceFile.getName())) {
-                    copyFile(sourceFile, destFile, buf);
+                    copyFile(sourceFile, destFile);
 
                 }
             }
@@ -262,7 +244,7 @@ public abstract class AbstractScriptingPlugin extends Plugin {
          * @param buf bufferSize;
          * @throws IOException
          */
-        public void copyFile(File sourceFile, File destFile, byte[] buf) throws IOException {
+        public void copyFile(File sourceFile, File destFile) throws IOException {
 
             try {
                 FileUtils.copyFile(sourceFile, destFile, false);

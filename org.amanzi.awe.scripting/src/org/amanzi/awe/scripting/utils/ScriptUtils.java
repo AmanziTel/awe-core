@@ -43,14 +43,15 @@ public class ScriptUtils {
     /*
      * logger initialization
      */
-    private final static Logger LOGGER = Logger.getLogger(AbstractScriptingPlugin.class);
+    private static final Logger LOGGER = Logger.getLogger(AbstractScriptingPlugin.class);
 
     /*
      * static fields;
      */
     private static final ScriptUtils INSTANCE = new ScriptUtils();
     private static final String JRUBY_PLUGIN_NAME = "org.jruby";
-
+    private static final String PREFIX_JAR_FILE = "jar:file:";
+    private static final String PREFIX_FILE = "file:";
     private String jRubyHome;
     private String jRubyVersion;
 
@@ -77,7 +78,7 @@ public class ScriptUtils {
     private String ensureJRubyHome() throws IOException {
         try {
             if (jRubyHome == null) {
-                jRubyHome = findJRubyHome(System.getProperty("jruby.home"));
+                jRubyHome = getPluginRoot(JRUBY_PLUGIN_NAME);
             }
         } catch (IOException e) {
             LOGGER.error("Cann't ensure jruby.home", e);
@@ -90,7 +91,7 @@ public class ScriptUtils {
     private String ensureJRubyVersion() throws IOException {
         try {
             if (jRubyVersion == null) {
-                jRubyVersion = findJRubyVersion(ensureJRubyHome(), System.getProperty("jruby.version"));
+                jRubyVersion = findJRubyVersion(ensureJRubyHome());
             }
         } catch (IOException e) {
             LOGGER.error("Cann't ensure jruby.version", e);
@@ -104,11 +105,11 @@ public class ScriptUtils {
      * @return
      * @throws Exception
      */
-    public List<String> makeLoadPath(String absolutePath) throws Exception {
+    public List<String> makeLoadPath(String absolutePath) throws IOException {
         try {
             ensureJRubyHome();
             ensureJRubyVersion();
-        } catch (Exception e) {
+        } catch (IOException e) {
             LOGGER.error("cann't ensure necessary variables jruby.home=" + jRubyHome + "jruby.version=" + jRubyVersion);
             throw e;
         }
@@ -121,46 +122,20 @@ public class ScriptUtils {
     }
 
     /**
-     * search for jruby home, starting with passed value, if any
-     * 
-     * @return
-     * @throws IOException
-     */
-    private String findJRubyHome(String suggested) throws IOException {
-        String jRubyHome = null;
-        try {
-            jRubyHome = getPluginRoot(JRUBY_PLUGIN_NAME);
-        } catch (IOException e) {
-            LOGGER.error("Cannon't instantiate ruby.home");
-            throw e;
-        }
-        return jRubyHome;
-    }
-
-    /**
      * try determine ruby version jruby.version property was not set. Default to "1.8"
      * 
      * @throws IOException
      */
-    private String findJRubyVersion(String jRubyHome, String jRubyVersion) throws IOException {
-        if (jRubyVersion == null) {
-            for (String version : new String[] {"1.8", "1.9", "2.0", "2.1"}) {
-                String path = jRubyHome + "/lib/ruby/" + version;
-                try {
-                    if ((new java.io.File(path)).isDirectory()) {
-                        jRubyVersion = version;
-                        break;
-                    }
-                } catch (Exception e) {
-                    LOGGER.error("Failed to process possible JRuby path '" + path + "': " + e.getMessage());
-                    throw new IOException(e.getMessage());
-                }
+    private String findJRubyVersion(String jRubyHome) throws IOException {
+        String result = null;
+        for (String version : new String[] {"1.8", "1.9", "2.0", "2.1"}) {
+            String path = jRubyHome + "/lib/ruby/" + version;
+            if ((new File(path)).isDirectory()) {
+                result = version;
+                break;
             }
         }
-        if (jRubyVersion == null) {
-            jRubyVersion = "1.8";
-        }
-        return jRubyVersion;
+        return result;
     }
 
     /**
@@ -174,14 +149,14 @@ public class ScriptUtils {
     public String getPluginRoot(String pluginName) throws IOException {
         URL rubyLocationURL = Platform.getBundle(pluginName).getEntry("/");
         String rubyLocation = FileLocator.resolve(rubyLocationURL).getPath();
-        if (rubyLocation.startsWith("jar:file:")) {
-            rubyLocation = rubyLocation.substring(9);
+        if (rubyLocation.startsWith(PREFIX_JAR_FILE)) {
+            rubyLocation = rubyLocation.substring(PREFIX_JAR_FILE.length());
             if (!rubyLocation.startsWith(File.separator)) {
                 rubyLocation = File.separator + rubyLocation;
             }
-            rubyLocation = "file:" + rubyLocation;
-        } else if (rubyLocation.startsWith("file:")) {
-            rubyLocation = rubyLocation.substring(5);
+            rubyLocation = PREFIX_FILE + rubyLocation;
+        } else if (rubyLocation.startsWith(PREFIX_FILE)) {
+            rubyLocation = rubyLocation.substring(PREFIX_FILE.length());
         }
 
         return rubyLocation;

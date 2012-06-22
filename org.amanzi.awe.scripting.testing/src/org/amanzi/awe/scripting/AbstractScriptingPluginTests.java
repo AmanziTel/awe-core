@@ -37,10 +37,11 @@ import org.junit.Test;
  */
 public class AbstractScriptingPluginTests extends AbstractAWETest {
     private static List<File> expectedFiles;
-    private final static String SCRIPT_ROOT = "/ruby";
-    private final static String WORKSPACE_FOLDER = Platform.getInstanceLocation().getURL().getPath().toString();
-    private final static String PROJECT_FOLDER = "awe-scripts";
+    private static final String SCRIPT_ROOT = "/ruby";
+    private static final String WORKSPACE_FOLDER = Platform.getInstanceLocation().getURL().getPath();
+    private static final String PROJECT_FOLDER = "awe-scripts";
     private static final String TEST_SCRIPT_NAME = "testScript.rb";
+    private static final double EXPECTED_NUMBER_RESULT = 5.0;
 
     @BeforeClass
     public static void init() {
@@ -99,7 +100,7 @@ public class AbstractScriptingPluginTests extends AbstractAWETest {
     public void testSimpleScriptExecution() {
         Object value = TestActivator.getRuntimeWrapper().executeScriptByName(TEST_SCRIPT_NAME);
         Assert.assertNotNull("Not null value excepted", value);
-        Assert.assertEquals("5.0 value expected", 5.0, value);
+        Assert.assertEquals("5.0 value expected", EXPECTED_NUMBER_RESULT, value);
     }
 
     @Test

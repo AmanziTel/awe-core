@@ -22,8 +22,8 @@ import org.amanzi.awe.scripting.AbstractScriptingPlugin;
  * @since 1.0.0
  */
 public class TestActivator extends AbstractScriptingPlugin {
-    public final static String SCRIPT_PATH = "ruby/netview/";
-    public final static String ID = "org.amanzi.awe.scripting.testing";
+    public static final String SCRIPT_PATH = "ruby/netview/";
+    public static final String ID = "org.amanzi.awe.scripting.testing";
 
     @Override
     public String getScriptPath() {
