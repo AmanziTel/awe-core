@@ -31,7 +31,7 @@ public class ModelProviderFactory {
 
     private static ModelProviderFactory instance;
 
-    private Map<Class<IModel>, IModelProvider<IModel, IModel>> modelProviderCache = new HashMap<Class<IModel>, IModelProvider<IModel, IModel>>();
+    private Map<Class< ? >, IModelProvider<IModel, IModel>> modelProviderCache = new HashMap<Class< ? >, IModelProvider<IModel, IModel>>();
 
     private ModelProviderFactory() {
         // do nothing

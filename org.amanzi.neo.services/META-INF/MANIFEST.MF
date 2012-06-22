@@ -9,5 +9,5 @@ Export-Package: org.amanzi.neo.services,
  org.amanzi.neo.services.exceptions.enums,
  org.amanzi.neo.services.factory
 Require-Bundle: org.amanzi.neo.db;bundle-version="1.0.0",
- org.amanzi.neo.core;bundle-version="1.0.0"
+ org.amanzi.neo.core;bundle-version="1.0.0";visibility:=reexport
 Eclipse-ExtensibleAPI: true

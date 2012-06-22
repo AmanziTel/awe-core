@@ -45,6 +45,10 @@ public abstract class AbstractModel implements IModel {
         this.nodeService = nodeService;
     }
 
+    public void initialize(long rootNodeId) throws ModelException {
+
+    }
+
     public void initialize(Node rootNode) throws ModelException {
         assert rootNode == null;
 
