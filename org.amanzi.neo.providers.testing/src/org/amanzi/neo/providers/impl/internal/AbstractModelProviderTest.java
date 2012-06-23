@@ -13,12 +13,18 @@
 
 package org.amanzi.neo.providers.impl.internal;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.amanzi.neo.db.manager.DatabaseManagerFactory;
 import org.amanzi.neo.models.exceptions.DataInconsistencyException;
 import org.amanzi.neo.models.exceptions.FatalException;
 import org.amanzi.neo.models.impl.internal.AbstractModel;
+import org.amanzi.neo.providers.impl.internal.AbstractModelProvider.NameKey;
 import org.amanzi.testing.AbstractMockitoTest;
 import org.junit.Before;
 import org.junit.Test;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -45,17 +51,24 @@ public class AbstractModelProviderTest extends AbstractMockitoTest {
         }
     }
 
+    private static final String[] MODEL_NAMES = new String[] {"model1", "model2", "model3"};
+
     private AbstractModelProvider<AbstractModel> provider;
 
     private AbstractModel model;
 
     private Node node;
 
+    private GraphDatabaseService service;
+
     /**
      * @throws java.lang.Exception
      */
     @Before
     public void setUp() throws Exception {
+        service = mock(GraphDatabaseService.class);
+        DatabaseManagerFactory.getDatabaseManager().setDatabaseService(service);
+
         node = getNodeMock();
 
         model = mock(AbstractModel.class);
@@ -84,4 +97,43 @@ public class AbstractModelProviderTest extends AbstractMockitoTest {
         provider.initializeFromNode(node);
     }
 
+    @Test
+    public void testCheckCache() {
+        List<AbstractModel> modelList = new ArrayList<AbstractModel>();
+
+        for (String name : MODEL_NAMES) {
+            NameKey key = new NameKey(name);
+            AbstractModel model = mock(AbstractModel.class);
+
+            provider.addToCache(model, key);
+
+            modelList.add(model);
+        }
+
+        for (int i = 0; i < MODEL_NAMES.length; i++) {
+            NameKey key = new NameKey(MODEL_NAMES[i]);
+
+            AbstractModel model = provider.getFromCache(key);
+
+            assertNotNull("Model should exist in cache", model);
+            assertEquals("Unexpected model found by key", modelList.get(i), model);
+        }
+    }
+
+    @Test
+    public void testCheckCacheClearedAfterDbStop() {
+        for (String name : MODEL_NAMES) {
+            NameKey key = new NameKey(name);
+            AbstractModel model = mock(AbstractModel.class);
+
+            provider.addToCache(model, key);
+        }
+
+        DatabaseManagerFactory.getDatabaseManager().shutdown();
+
+        for (String name : MODEL_NAMES) {
+            NameKey key = new NameKey(name);
+            assertNull("Cached model should not exists", provider.getFromCache(key));
+        }
+    }
 }

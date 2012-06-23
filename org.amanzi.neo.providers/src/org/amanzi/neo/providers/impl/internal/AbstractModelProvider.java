@@ -13,6 +13,12 @@
 
 package org.amanzi.neo.providers.impl.internal;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.amanzi.neo.db.manager.DatabaseManagerFactory;
+import org.amanzi.neo.db.manager.events.DatabaseEvent;
+import org.amanzi.neo.db.manager.events.IDatabaseEventListener;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.impl.internal.AbstractModel;
 import org.amanzi.neo.models.impl.internal.util.AbstractLoggable;
@@ -26,7 +32,43 @@ import org.neo4j.graphdb.Node;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public abstract class AbstractModelProvider<T extends AbstractModel> extends AbstractLoggable {
+public abstract class AbstractModelProvider<T extends AbstractModel> extends AbstractLoggable implements IDatabaseEventListener {
+
+    protected interface IKey {
+
+    }
+
+    protected static class NameKey implements IKey {
+
+        private String name;
+
+        public NameKey(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o instanceof NameKey) {
+                NameKey anotherKey = (NameKey)o;
+
+                return name.equals(anotherKey.name);
+            }
+
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return name.hashCode();
+        }
+
+    }
+
+    private Map<IKey, T> modelCache = new HashMap<IKey, T>();
+
+    protected AbstractModelProvider() {
+        DatabaseManagerFactory.getDatabaseManager().addDatabaseEventListener(this);
+    }
 
     protected T initializeFromNode(Node node) throws ModelException {
         T model = createInstance();
@@ -36,5 +78,24 @@ public abstract class AbstractModelProvider<T extends AbstractModel> extends Abs
     }
 
     protected abstract T createInstance();
+
+    protected T getFromCache(IKey key) {
+        return modelCache.get(key);
+    }
+
+    protected void addToCache(T model, IKey key) {
+        modelCache.put(key, model);
+    }
+
+    @Override
+    public void onDatabaseEvent(DatabaseEvent event) {
+        switch (event.getEventType()) {
+        case BEFORE_SHUTDOWN:
+            modelCache.clear();
+            break;
+        default:
+            // do nothing
+        }
+    }
 
 }
