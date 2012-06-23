@@ -28,6 +28,7 @@
     <module>org.amanzi.awe.console</module>
     <module>org.amanzi.awe.extras.feature</module>
     <module>org.amanzi.awe.feature</module>
+    <module>org.amanzi.awe.filters</module>
     <module>org.amanzi.awe.filters.ui</module>
     <module>org.amanzi.awe.libs</module>
     <module>org.amanzi.awe.neostyle</module>
