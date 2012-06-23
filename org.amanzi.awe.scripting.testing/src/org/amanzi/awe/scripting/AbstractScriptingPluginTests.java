@@ -22,7 +22,7 @@ import java.util.Enumeration;
 import java.util.List;
 
 import org.amanzi.awe.scripting.testing.TestActivator;
-import org.amanzi.testing.AbstractAWETest;
+import org.amanzi.testing.AbstractTest;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Platform;
@@ -36,7 +36,7 @@ import org.junit.Test;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class AbstractScriptingPluginTests extends AbstractAWETest {
+public class AbstractScriptingPluginTests extends AbstractTest {
     private static List<File> expectedFiles;
     private static final String SCRIPT_ROOT = "/ruby";
     private static final String WORKSPACE_FOLDER = Platform.getInstanceLocation().getURL().getPath();
@@ -82,16 +82,14 @@ public class AbstractScriptingPluginTests extends AbstractAWETest {
         for (File source : expectedFiles) {
             boolean isExist = false;
             for (File deFile : destinationRbFiles) {
-                if (deFile.getName().equals(source.getName())
-                        && deFile.getParentFile().getName().equals(source.getParentFile().getName())) {
+                if (deFile.getName().equals(source.getName()) && deFile.getParentFile().getName().equals(source.getParentFile().getName())) {
                     isExist = true;
                     break;
                 }
             }
             if (!isExist) {
-                Assert.assertTrue("file" + source.getParentFile().getName() + File.separator + source.getName()
-                        + "doesn't exist in " + projectFolder.getName() + File.separator + source.getParentFile().getName()
-                        + " directory", isExist);
+                Assert.assertTrue("file" + source.getParentFile().getName() + File.separator + source.getName() + "doesn't exist in " + projectFolder.getName() + File.separator
+                        + source.getParentFile().getName() + " directory", isExist);
             }
         }
     }
@@ -114,8 +112,7 @@ public class AbstractScriptingPluginTests extends AbstractAWETest {
     @Test
     public void testGetScriptsForProjectifExist() throws IOException {
         String projectName = TestActivator.SCRIPT_PATH.split("/")[1];
-        Assert.assertEquals("Not expected count of files", TestActivator.getScriptsForProject(projectName).size(),
-                expectedFiles.size());
+        Assert.assertEquals("Not expected count of files", TestActivator.getScriptsForProject(projectName).size(), expectedFiles.size());
     }
 
     /**
