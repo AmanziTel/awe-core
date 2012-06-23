@@ -30,20 +30,20 @@ public interface IRange {
      * 
      * @return
      */
-    public String getName();
+    String getName();
 
     /**
      * Returns Filter of this Range
      * 
      * @return
      */
-    public IFilter getFilter();
+    IFilter getFilter();
 
     /**
      * Returns Color of this Range
      * 
      * @return
      */
-    public Color getColor();
+    Color getColor();
 
 }

@@ -36,7 +36,7 @@ public interface INodeService extends IService {
      * @return
      * @throws ServiceException in case of Name Property not found
      */
-    public String getNodeName(Node node) throws ServiceException;
+    String getNodeName(Node node) throws ServiceException;
 
     /**
      * Returns a NodeType property of Node
@@ -45,7 +45,7 @@ public interface INodeService extends IService {
      * @return
      * @throws ServiceException in case of Type Property not found
      */
-    public INodeType getNodeType(Node node) throws ServiceException;
+    INodeType getNodeType(Node node) throws ServiceException;
 
     /**
      * Returns a Paret of Node Parent is a Node that stand on higher hierarchy level for provided
@@ -56,6 +56,6 @@ public interface INodeService extends IService {
      * @return
      * @throws PropertyNotFoundException in case 'parent' property node found
      */
-    public Node getParent(Node child) throws ServiceException;
+    Node getParent(Node child) throws ServiceException;
 
 }

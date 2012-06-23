@@ -34,7 +34,7 @@ public interface IDataModel extends IModel {
      * @param childElement
      * @return <code>IDataElement</code> based on found parent node or <code>null</code>.
      */
-    public IDataElement getParentElement(IDataElement childElement) throws ModelException;
+    IDataElement getParentElement(IDataElement childElement) throws ModelException;
 
     /**
      * Find all direct children or a children chain for the defined element.
@@ -42,7 +42,7 @@ public interface IDataModel extends IModel {
      * @param parent
      * @return an <code>Iterable</code> of <code>IDataElement</code>s, based on the found nodes.
      */
-    public Iterable<IDataElement> getChildren(IDataElement parent);
+    Iterable<IDataElement> getChildren(IDataElement parent);
 
     /**
      * Find all elements with the defined type, that belong to the current model structure.
@@ -50,5 +50,5 @@ public interface IDataModel extends IModel {
      * @param elementType
      * @return an <code>Iterable</code> of <code>IDataElement</code>s, based on the found nodes.
      */
-    public Iterable<IDataElement> getAllElementsByType(INodeType elementType);
+    Iterable<IDataElement> getAllElementsByType(INodeType elementType);
 }

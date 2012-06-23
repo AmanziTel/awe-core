@@ -31,15 +31,15 @@ public interface IModel {
      * 
      * @return the name of the model
      */
-    public String getName();
+    String getName();
 
     /**
      * @return ???
      */
-    public INodeType getType();
+    INodeType getType();
 
     /**
      * The method should perform final operations like storing indexes and statistics values.
      */
-    public void finishUp() throws ModelException;
+    void finishUp() throws ModelException;
 }

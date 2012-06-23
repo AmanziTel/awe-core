@@ -30,41 +30,41 @@ public interface IDistributionBar extends Comparable<IDistributionBar> {
      * 
      * @return
      */
-    public Color getColor();
+    Color getColor();
 
     /**
      * Set Color for this bar
      * 
      * @param color
      */
-    public void setColor(Color color);
+    void setColor(Color color);
 
     /**
      * Number of Data Elements in this Bar
      * 
      * @return
      */
-    public int getCount();
+    int getCount();
 
     /**
      * Name of this Bar
      * 
      * @return
      */
-    public String getName();
+    String getName();
 
     /**
      * Root Element of Bar
      * 
      * @return
      */
-    public IDataElement getRootElement();
+    IDataElement getRootElement();
 
     /**
      * Returns Distribution
      * 
      * @return
      */
-    public IDistributionModel getDistribution();
+    IDistributionModel getDistribution();
 
 }

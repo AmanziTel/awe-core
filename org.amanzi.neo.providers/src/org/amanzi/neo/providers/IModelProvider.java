@@ -27,11 +27,11 @@ import org.amanzi.neo.models.IModel;
  */
 public interface IModelProvider<Model extends IModel, Parent extends IModel> {
 
-    public Set<Model> findByParent(Parent parent);
+    Set<Model> findByParent(Parent parent);
 
-    public Set<Model> findByName(Parent parent, String modelName);
+    Set<Model> findByName(Parent parent, String modelName);
 
-    public Model create(Parent parent, String name);
+    Model create(Parent parent, String name);
 
-    public Class< ? > getModel();
+    Class< ? > getModel();
 }

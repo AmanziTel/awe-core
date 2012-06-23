@@ -14,6 +14,7 @@
 package org.amanzi.neo.db.manager;
 
 import org.amanzi.neo.db.manager.impl.Neo4jDatabaseManager;
+import org.apache.log4j.Logger;
 
 /**
  * TODO Purpose of
@@ -25,20 +26,28 @@ import org.amanzi.neo.db.manager.impl.Neo4jDatabaseManager;
  */
 public class DatabaseManagerFactory {
 
-    private static IDatabaseManager dbManager = null;
-    
+    private static final Logger LOGGER = Logger.getLogger(DatabaseManagerFactory.class);
+
     private static final String NEOCLIPSE_MANAGER_CLASS_NAME = "org.amanzi.neo.db.manager.impl.NeoclipseDatabaseManager";
+
+    private static IDatabaseManager dbManager = null;
+
+    private DatabaseManagerFactory() {
+
+    }
 
     public static IDatabaseManager getDatabaseManager() {
         if (dbManager == null) {
-        	try {
-        		dbManager = (IDatabaseManager)Class.forName(NEOCLIPSE_MANAGER_CLASS_NAME).newInstance();
-        	} catch (ClassNotFoundException e) {
-                dbManager = new Neo4jDatabaseManager();
-            } catch (IllegalAccessException e) {
-            	e.printStackTrace();
-            } catch (InstantiationException e) {
-            	e.printStackTrace();
+            synchronized (DatabaseManagerFactory.class) {
+                if (dbManager == null) {
+                    try {
+                        dbManager = (IDatabaseManager)Class.forName(NEOCLIPSE_MANAGER_CLASS_NAME).newInstance();
+                    } catch (ClassNotFoundException e) {
+                        dbManager = new Neo4jDatabaseManager();
+                    } catch (Exception e) {
+                        LOGGER.fatal("Cannot instantiane Database Manager", e);
+                    }
+                }
             }
         }
 

@@ -15,6 +15,7 @@ package org.amanzi.neo.db.manager.impl;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.amanzi.neo.db.manager.IDatabaseManager;
 import org.amanzi.neo.db.manager.events.DatabaseEvent;
@@ -48,7 +49,7 @@ public abstract class AbstractDatabaseManager implements IDatabaseManager {
     /*
      * Listeners for Database Events
      */
-    private ArrayList<IDatabaseEventListener> listeners = new ArrayList<IDatabaseEventListener>();
+    private List<IDatabaseEventListener> listeners = new ArrayList<IDatabaseEventListener>();
 
     public AbstractDatabaseManager() {
 
@@ -151,7 +152,9 @@ public abstract class AbstractDatabaseManager implements IDatabaseManager {
             databaseDirectory = new File(databaseDirectory, subDirectory);
         }
 
-        databaseDirectory.mkdirs();
+        if (!databaseDirectory.mkdirs()) {
+            LOGGER.fatal("Database directory <" + databaseDirectory + "> was not created");
+        }
 
         return databaseDirectory.getAbsolutePath();
     }

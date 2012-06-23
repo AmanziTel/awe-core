@@ -35,14 +35,14 @@ public interface IDistributionModel extends IModel {
      * 
      * @return
      */
-    public IDistribution< ? > getDistributionType();
+    IDistribution< ? > getDistributionType();
 
     /**
      * Returns List of Distribution Bars
      * 
      * @return
      */
-    public List<IDistributionBar> getDistributionBars() throws ModelException;
+    List<IDistributionBar> getDistributionBars() throws ModelException;
 
     /**
      * Returns List of Distribution Bars
@@ -50,83 +50,83 @@ public interface IDistributionModel extends IModel {
      * @param monitor
      * @return
      */
-    public List<IDistributionBar> getDistributionBars(IProgressMonitor monitor) throws ModelException;
+    List<IDistributionBar> getDistributionBars(IProgressMonitor monitor) throws ModelException;
 
     /**
      * Updates info about Distribution Bar in Database
      * 
      * @param bar
      */
-    public void updateBar(IDistributionBar bar) throws ModelException;
+    void updateBar(IDistributionBar bar) throws ModelException;
 
     /**
      * Set this model as current/not-current distribution model of analyzed model
      * 
      * @param isCurrent is this model a current model
      */
-    public void setCurrent(boolean isCurrent) throws ModelException;
+    void setCurrent(boolean isCurrent) throws ModelException;
 
     /**
      * Get Color of Bar that is right to Selected
      * 
      * @return
      */
-    public Color getRightColor();
+    Color getRightColor();
 
     /**
      * Set Color for Bar that is right to Selected
      */
-    public void setRightColor(Color rightBarColor);
+    void setRightColor(Color rightBarColor);
 
     /**
      * Get Color of Bar that is left to Selected
      * 
      * @return
      */
-    public Color getLeftColor();
+    Color getLeftColor();
 
     /**
      * Set Color for Bar that is left to Selected
      */
-    public void setLeftColor(Color leftBarColor);
+    void setLeftColor(Color leftBarColor);
 
     /**
      * Get Color of Selected Bar
      * 
      * @return
      */
-    public Color getMiddleColor();
+    Color getMiddleColor();
 
     /**
      * Set Color for Selected Bar
      */
-    public void setMiddleColor(Color middleBarColor);
+    void setMiddleColor(Color middleBarColor);
 
     /**
      * Returns number of Bars in this distribution
      */
-    public int getBarCount();
+    int getBarCount();
 
     /**
      * Returns Palette of this Distribution
      * 
      * @return
      */
-    public BrewerPalette getPalette();
+    BrewerPalette getPalette();
 
     /**
      * Set Palette of this Distribution
      * 
      * @param palette
      */
-    public void setPalette(BrewerPalette palette);
+    void setPalette(BrewerPalette palette);
 
     /**
      * Returns Analyzed Model
      * 
      * @return
      */
-    public IDistributionalModel getAnalyzedModel();
+    IDistributionalModel getAnalyzedModel();
 
     /**
      * get bar for current Element
@@ -134,5 +134,5 @@ public interface IDistributionModel extends IModel {
      * @return existed bar or null if not exist
      * @param required element
      */
-    public Color getBarColorForAggregatedElement(IDataElement element);
+    Color getBarColorForAggregatedElement(IDataElement element);
 }

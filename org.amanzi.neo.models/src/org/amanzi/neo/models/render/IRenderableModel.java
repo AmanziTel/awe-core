@@ -41,27 +41,27 @@ public interface IRenderableModel extends IModel {
      * @param latitude
      * @param longitude
      */
-    public void updateLocationBounds(double latitude, double longitude);
+    void updateLocationBounds(double latitude, double longitude);
 
     /**
      * set selected data element to list
      */
-    public void setSelectedDataElementToList(IDataElement dataElement);
+    void setSelectedDataElementToList(IDataElement dataElement);
 
     /**
      * set list of selected elements to selected data elements
      */
-    public void setSelectedDataElements(List<IDataElement> dataElements);
+    void setSelectedDataElements(List<IDataElement> dataElements);
 
     /**
      * get selected elements list
      */
-    public List<IDataElement> getSelectedElements();
+    List<IDataElement> getSelectedElements();
 
     /**
      * clear selected elements list
      */
-    public void clearSelectedElements();
+    void clearSelectedElements();
 
     /**
      * update crs by crs code
@@ -69,55 +69,55 @@ public interface IRenderableModel extends IModel {
      * @param crsCode
      * @return
      */
-    public CoordinateReferenceSystem updateCRS(String crsCode);
+    CoordinateReferenceSystem updateCRS(String crsCode);
 
     /**
      * set crs to current gis
      * 
      * @param crs
      */
-    public void setCRS(CoordinateReferenceSystem crs);
+    void setCRS(CoordinateReferenceSystem crs);
 
     /**
      * @return minimal latitude
      */
-    public double getMinLatitude();
+    double getMinLatitude();
 
     /**
      * @return maximal latitude
      */
-    public double getMaxLatitude();
+    double getMaxLatitude();
 
     /**
      * @return minimal longitude
      */
-    public double getMinLongitude();
+    double getMinLongitude();
 
     /**
      * @return maximal longitude
      */
-    public double getMaxLongitude();
+    double getMaxLongitude();
 
     /**
      * get crs from current gis;
      * 
      * @return
      */
-    public CoordinateReferenceSystem getCRS();
+    CoordinateReferenceSystem getCRS();
 
     /**
      * TODO: test implementation
      * 
      * @return A <code>String</code> description for use of geo tools;
      */
-    public String getDescription();
+    String getDescription();
 
     /**
      * TODO: test implementation
      * 
      * @return An envelope, representing the coordinate bounds for the data in current model.
      */
-    public ReferencedEnvelope getBounds();
+    ReferencedEnvelope getBounds();
 
     /**
      * Gets all the model elements in the defined bounds.
@@ -125,7 +125,7 @@ public interface IRenderableModel extends IModel {
      * @param bounds_transformed
      * @return
      */
-    public Iterable<IDataElement> getElements(Envelope bounds_transformed) throws ModelException;
+    Iterable<IDataElement> getElements(Envelope bounds_transformed) throws ModelException;
 
     /**
      * Find out coordinates from the defined element.
@@ -133,7 +133,7 @@ public interface IRenderableModel extends IModel {
      * @param element a not null element with an underlying node or properties set.
      * @return
      */
-    public Coordinate getCoordinate(IDataElement element);
+    Coordinate getCoordinate(IDataElement element);
 
     /**
      * add new layer to catalog.
@@ -144,20 +144,20 @@ public interface IRenderableModel extends IModel {
      * @param name -name of new layer
      * @param filter- filter to currentLayer
      */
-    public void addLayer(String name, IFilter filter);
+    void addLayer(String name, IFilter filter);
 
     /**
      * Draw neighbors relationships
      * 
      * @return true or false
      */
-    public boolean shouldDrawNeighbors();
+    boolean shouldDrawNeighbors();
 
     /**
      * draw neighbors or not
      * 
      * @param drawNeighbors true or false
      */
-    public void setDrawNeighbors(boolean drawNeighbors);
+    void setDrawNeighbors(boolean drawNeighbors);
 
 }

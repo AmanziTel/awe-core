@@ -31,7 +31,7 @@ public interface IDatabaseManager {
      * 
      * @author gerzog
      */
-    public static enum AccessType {
+    public enum AccessType {
         /*
          * Read-only access
          */
@@ -57,80 +57,80 @@ public interface IDatabaseManager {
      * 
      * @return
      */
-    public GraphDatabaseService getDatabaseService();
+    GraphDatabaseService getDatabaseService();
 
     /**
      * Returns location of Database
      * 
      * @return
      */
-    public String getLocation();
+    String getLocation();
 
     /**
      * Returns Memory Mapping parameters
      * 
      * @return
      */
-    public Map<String, String> getMemoryMapping();
+    Map<String, String> getMemoryMapping();
 
     /**
      * Commits all Transactions
      */
-    public void commitMainTransaction();
+    void commitMainTransaction();
 
     /**
      * Rolls back all Transactions
      */
-    public void rollbackMainTransaction();
+    void rollbackMainTransaction();
 
     /**
      * Start transaction in current Thread
      */
-    public void startThreadTransaction();
+    void startThreadTransaction();
 
     /**
      * Commit transaction in current Thread
      */
-    public void commitThreadTransaction();
+    void commitThreadTransaction();
 
     /**
      * Rollsback transaction in current Thread
      */
-    public void rollbackThreadTransaction();
+    void rollbackThreadTransaction();
 
     /**
      * Finishes transaction in current Thread
      */
-    public void finishThreadTransaction();
+    void finishThreadTransaction();
 
     /**
      * Returns type of Database Connection
      * 
      * @return
      */
-    public AccessType getAccessType();
+    AccessType getAccessType();
 
     /**
      * Set a Graph Database Service to manager
      * 
      * @param service new graph database service
      */
-    public void setDatabaseService(GraphDatabaseService service);
+    void setDatabaseService(GraphDatabaseService service);
 
     /**
      * Finish up connection to Database
      */
-    public void shutdown();
+    void shutdown();
 
     /**
      * Add new database event listener
      */
-    public void addDatabaseEventListener(IDatabaseEventListener listener);
+    void addDatabaseEventListener(IDatabaseEventListener listener);
 
     /**
      * Removes new database event listener
      */
-    public void removeDatabaseEventListener(IDatabaseEventListener listener);
+    void removeDatabaseEventListener(IDatabaseEventListener listener);
 
-    public void cleanDatabaseEventListeners();
+    void cleanDatabaseEventListeners();
 }

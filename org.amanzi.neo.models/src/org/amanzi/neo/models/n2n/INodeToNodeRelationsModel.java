@@ -32,7 +32,7 @@ import org.amanzi.neo.services.exceptions.DatabaseException;
  */
 public interface INodeToNodeRelationsModel extends IDistributionalModel {
 
-    public INodeToNodeType getNodeToNodeType();
+    INodeToNodeType getNodeToNodeType();
 
     /**
      * Creates a relationship from <code>source</code> to <code>target</code> through PROXY nodes,
@@ -43,7 +43,7 @@ public interface INodeToNodeRelationsModel extends IDistributionalModel {
      * @param target
      * @param params can be <code>null</code>
      */
-    public void linkElements(IDataElement source, IDataElement target, Map<String, Object> params) throws ModelException;
+    void linkElements(IDataElement source, IDataElement target, Map<String, Object> params) throws ModelException;
 
     /**
      * Traverses database to find elements connected to the <code>source</code> element with
@@ -52,7 +52,7 @@ public interface INodeToNodeRelationsModel extends IDistributionalModel {
      * @param source
      * @return <code>IDataElement</code> traverser
      */
-    public Iterable<IDataElement> getN2NRelatedElements(IDataElement source);
+    Iterable<IDataElement> getN2NRelatedElements(IDataElement source);
 
     /**
      * update relationship between service and neighbour elements proxys with required properties
@@ -72,12 +72,12 @@ public interface INodeToNodeRelationsModel extends IDistributionalModel {
      * @param proxy proxy element
      * @return service sector or null if not found
      */
-    public IDataElement getServiceElementByProxy(IDataElement proxy);
+    IDataElement getServiceElementByProxy(IDataElement proxy);
 
     /**
      * @param sector
      * @return
      */
-    public List<IDataElement> getNeighboursForCurrentSector(IDataElement sector);
+    List<IDataElement> getNeighboursForCurrentSector(IDataElement sector);
 
 }

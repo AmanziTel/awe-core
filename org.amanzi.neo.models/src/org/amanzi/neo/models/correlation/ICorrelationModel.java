@@ -16,7 +16,6 @@ package org.amanzi.neo.models.correlation;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.exceptions.ModelException;
-import org.neo4j.graphdb.Node;
 
 /**
  * <p>
@@ -33,14 +32,14 @@ public interface ICorrelationModel extends IModel {
      * 
      * @return a network node
      */
-    public IDataElement getNetwork();
+    IDataElement getNetwork();
 
     /**
      * Returns the dataset node, involved in current relationship.
      * 
      * @return a dataset node
      */
-    public IDataElement getDataset();
+    IDataElement getDataset();
 
     /**
      * Traverses database to get all the sectors of current network, that have correlated dataset
@@ -48,7 +47,7 @@ public interface ICorrelationModel extends IModel {
      * 
      * @return traverser over sectors
      */
-    public Iterable<IDataElement> getSectors() throws ModelException;
+    Iterable<IDataElement> getSectors() throws ModelException;
 
     /**
      * Traverses database to get all the nodes of the current dataset (measurements for drive data,
@@ -56,7 +55,7 @@ public interface ICorrelationModel extends IModel {
      * 
      * @return traverser over dataset nodes
      */
-    public Iterable<IDataElement> getMeasurements() throws ModelException;
+    Iterable<IDataElement> getMeasurements() throws ModelException;
 
     /**
      * Traverses database to get the dataset nodes correlated to the defined sector node.
@@ -64,7 +63,7 @@ public interface ICorrelationModel extends IModel {
      * @param sector the sector to find correlations for
      * @return traverser over dataset nodes
      */
-    public Iterable<IDataElement> getCorrelatedNodes(Node sector);
+    Iterable<IDataElement> getCorrelatedNodes(IDataElement sector);
 
     /**
      * Find a node in the current network, that is correlated to the defined dataset node.
@@ -72,5 +71,5 @@ public interface ICorrelationModel extends IModel {
      * @param measurement the node to find correlation for
      * @return the correlated sector or <code>null</code>.
      */
-    public IDataElement getCorrelatedSector(Node measurement);
+    IDataElement getCorrelatedSector(IDataElement measurement);
 }

@@ -30,7 +30,7 @@ import org.neo4j.kernel.EmbeddedReadOnlyGraphDatabase;
  */
 public class Neo4jDatabaseManager extends AbstractDatabaseManager {
 
-    private final static Logger LOGGER = Logger.getLogger(Neo4jDatabaseManager.class);
+    private static final Logger LOGGER = Logger.getLogger(Neo4jDatabaseManager.class);
 
     /**
      * Default Memory Mapping - empty map
@@ -200,13 +200,12 @@ public class Neo4jDatabaseManager extends AbstractDatabaseManager {
                 dbService = new EmbeddedReadOnlyGraphDatabase(databaseLocation, memoryMapping);
                 break;
             case READ_WRITE:
+            default:
                 dbService = new EmbeddedGraphDatabase(databaseLocation, memoryMapping);
                 break;
             }
 
             fireEvent(EventType.AFTER_STARTUP);
-
-            // TODO: listeners???????
         }
     }
 

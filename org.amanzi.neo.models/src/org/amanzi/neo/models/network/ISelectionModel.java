@@ -32,14 +32,14 @@ public interface ISelectionModel extends IDataModel {
      * 
      * @param element
      */
-    public void linkToSector(IDataElement element) throws ModelException;
+    void linkToSector(IDataElement element) throws ModelException;
 
     /**
      * Returns number of Nodes in current Selection Model
      * 
      * @return
      */
-    public int getSelectedNodesCount();
+    int getSelectedNodesCount();
 
     /**
      * Check existing of selection link
@@ -47,7 +47,7 @@ public interface ISelectionModel extends IDataModel {
      * @param element
      * @return true if link exist
      */
-    public boolean isExistSelectionLink(IDataElement element);
+    boolean isExistSelectionLink(IDataElement element);
 
     /**
      * Delete selection link

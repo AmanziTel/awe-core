@@ -31,7 +31,7 @@ public interface IDistribution<T extends IRange> {
      * @author lagutko_n
      * @since 1.0.0
      */
-    public static enum ChartType {
+    public enum ChartType {
         /*
          * Chart shows Counts of property for each bar
          */
@@ -112,7 +112,7 @@ public interface IDistribution<T extends IRange> {
      * @author gerzog
      * @since 1.0.0
      */
-    public static enum Select {
+    public enum Select {
         MIN, MAX, AVERAGE, EXISTS, UNIQUE, FIRST;
     }
 
@@ -121,67 +121,67 @@ public interface IDistribution<T extends IRange> {
      * 
      * @return
      */
-    public String getName();
+    String getName();
 
     /**
      * Returns list of Ranges of this Distribution
      * 
      * @return
      */
-    public List<T> getRanges();
+    List<T> getRanges();
 
     /**
      * Type of Node to Analyze
      * 
      * @return
      */
-    public INodeType getNodeType();
+    INodeType getNodeType();
 
     /**
      * Returns total number of nodes to analyse
      * 
      * @return
      */
-    public int getCount();
+    int getCount();
 
     /**
      * Initializes current distribution
      */
-    public void init();
+    void init();
 
     /**
      * Returns possible Selects
      * 
      * @return
      */
-    public Select[] getPossibleSelects();
+    Select[] getPossibleSelects();
 
     /**
      * Sets type of Selection
      * 
      * @param select
      */
-    public void setSelect(Select select);
+    void setSelect(Select select);
 
     /**
      * Returns name of Analyzed Property
      * 
      * @return
      */
-    public String getPropertyName();
+    String getPropertyName();
 
     /**
      * Is it possible to changes colors of this Distribution
      * 
      * @return
      */
-    public boolean canChangeColors();
+    boolean canChangeColors();
 
     /**
      * Set possibility to change colors of this Distribution
      * 
      * @param canChangeColor
      */
-    public void setCanChangeColors(boolean canChangeColor);
+    void setCanChangeColors(boolean canChangeColor);
 
 }

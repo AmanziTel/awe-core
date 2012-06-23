@@ -20,12 +20,12 @@ package org.amanzi.neo.db.manager.events;
  * @since 1.0.0
  */
 public interface IDatabaseEventListener {
-    
+
     /**
      * Handles Database Event
-     *
+     * 
      * @param event database event
      */
-    public void onDatabaseEvent(DatabaseEvent event);
+    void onDatabaseEvent(DatabaseEvent event);
 
 }
