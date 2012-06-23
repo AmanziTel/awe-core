@@ -11,12 +11,12 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.providers.impl.internal;
+package org.amanzi.neo.providers.impl;
 
-import java.util.Set;
-
-import org.amanzi.neo.models.IModel;
-import org.amanzi.neo.providers.IModelProvider;
+import org.amanzi.neo.models.network.INetworkModel;
+import org.amanzi.neo.models.network.ISelectionModel;
+import org.amanzi.neo.providers.ISelectionModelProvider;
+import org.amanzi.neo.providers.impl.internal.AbstractModelProvider;
 
 /**
  * TODO Purpose of
@@ -26,20 +26,10 @@ import org.amanzi.neo.providers.IModelProvider;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public abstract class AbstractModelProvider<T1 extends IModel, T2 extends IModel> implements IModelProvider<T1, T2> {
+public class SelectionModelProvider extends AbstractModelProvider<ISelectionModel, INetworkModel> implements ISelectionModelProvider {
 
     @Override
-    public Set<T1> findByParent(T2 parent) {
-        return null;
-    }
-
-    @Override
-    public Set<T1> findByName(T2 parent, String modelName) {
-        return null;
-    }
-
-    @Override
-    public T1 create(T2 parent, String name) {
+    public Class< ? > getModel() {
         return null;
     }
 

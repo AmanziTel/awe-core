@@ -10,5 +10,7 @@ Require-Bundle: org.amanzi.neo.services;bundle-version="1.0.0";visibility:=reexp
 Export-Package: org.amanzi.neo.models,
  org.amanzi.neo.models.distribution,
  org.amanzi.neo.models.impl.distribution,
- org.amanzi.neo.models.impl.internal
+ org.amanzi.neo.models.impl.internal,
+ org.amanzi.neo.models.impl.network,
+ org.amanzi.neo.models.network
 Eclipse-ExtensibleAPI: true

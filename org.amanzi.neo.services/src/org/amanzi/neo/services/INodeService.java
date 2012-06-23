@@ -14,6 +14,7 @@
 package org.amanzi.neo.services;
 
 import org.amanzi.neo.nodetypes.INodeType;
+import org.amanzi.neo.services.exceptions.PropertyNotFoundException;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.internal.IService;
 import org.neo4j.graphdb.Node;
@@ -45,5 +46,16 @@ public interface INodeService extends IService {
      * @throws ServiceException in case of Type Property not found
      */
     public INodeType getNodeType(Node node) throws ServiceException;
+
+    /**
+     * Returns a Paret of Node Parent is a Node that stand on higher hierarchy level for provided
+     * node Searching for a Parent based on 'parent' property of a Child Node containing ID of
+     * Parent Node
+     * 
+     * @param child
+     * @return
+     * @throws PropertyNotFoundException in case 'parent' property node found
+     */
+    public Node getParent(Node child) throws ServiceException;
 
 }

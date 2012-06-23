@@ -11,13 +11,10 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.providers.impl;
+package org.amanzi.neo.providers;
 
-import org.amanzi.neo.models.IDataModel;
-import org.amanzi.neo.models.distribution.IDistributionModel;
-import org.amanzi.neo.models.impl.distribution.DistributionModel;
-import org.amanzi.neo.providers.IDistributionModelProvider;
-import org.amanzi.neo.providers.impl.internal.AbstractModelProvider;
+import org.amanzi.neo.models.network.INetworkModel;
+import org.amanzi.neo.models.network.ISelectionModel;
 
 /**
  * TODO Purpose of
@@ -27,11 +24,6 @@ import org.amanzi.neo.providers.impl.internal.AbstractModelProvider;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class DistributionModelProvider extends AbstractModelProvider<DistributionModel, IDataModel> implements IDistributionModelProvider<DistributionModel> {
-
-    @Override
-    public Class< ? > getModel() {
-        return IDistributionModel.class;
-    }
+public interface ISelectionModelProvider extends IModelProvider<ISelectionModel, INetworkModel> {
 
 }

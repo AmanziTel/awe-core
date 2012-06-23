@@ -33,6 +33,14 @@ import org.neo4j.graphdb.Node;
  */
 public abstract class AbstractModel implements IModel {
 
+    /*
+     * constants to create log statement
+     */
+    private static final String LOG_STATEMENT_FINISH_ARGS = ">)";
+    private static final String LOG_STATEMENT_ARG_SEPARATOR = ">, <";
+    private static final String LOG_STATEMENT_START_ARGS = "(<";
+    private static final String START_LOG_STATEMENT_PREFIX = "start ";
+
     private static final Logger LOGGER = Logger.getLogger(AbstractModel.class);
 
     protected String name;
@@ -45,27 +53,22 @@ public abstract class AbstractModel implements IModel {
         this.nodeService = nodeService;
     }
 
-    public void initialize(long rootNodeId) throws ModelException {
-
-    }
-
     public void initialize(Node rootNode) throws ModelException {
         assert rootNode == null;
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("start initialize(<" + rootNode + ">)");
+            LOGGER.debug(getStartLogStatement("initialize", rootNode));
         }
 
         try {
             name = nodeService.getNodeName(rootNode);
             nodeType = nodeService.getNodeType(rootNode);
         } catch (ServiceException e) {
-            LOGGER.error("An error occured on Model Initialization", e);
+            processException("An error occured on Model Initialization", e);
+        }
 
-            ModelException exception = processInitializeException(e);
-            if (exception != null) {
-                throw exception;
-            }
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("initialize"));
         }
     }
 
@@ -81,22 +84,44 @@ public abstract class AbstractModel implements IModel {
 
     @Override
     public String toString() {
-        return getName();
+        return "<" + getClass().getSimpleName() + "> " + getName();
     }
 
     public Node getRootNode() {
         return rootNode;
     }
 
-    private ModelException processInitializeException(ServiceException e) {
+    protected void processException(String logMessage, ServiceException e) throws ModelException {
+        LOGGER.error(logMessage, e);
+
         switch (e.getReason()) {
         case DATABASE_EXCEPTION:
-            return new FatalException(e);
+            throw new FatalException(e);
         case PROPERTY_NOT_FOUND:
-            return new DataInconsistencyException(e);
+            throw new DataInconsistencyException(e);
+        }
+    }
+
+    protected String getStartLogStatement(String methodName, Object... args) {
+        StringBuilder builder = new StringBuilder(START_LOG_STATEMENT_PREFIX).append(methodName).append(LOG_STATEMENT_START_ARGS);
+
+        for (int i = 0; i < args.length; i++) {
+            if (i != 0) {
+                builder.append(LOG_STATEMENT_ARG_SEPARATOR);
+            }
+
+            builder.append(args[i]);
         }
 
-        return null;
+        builder.append(LOG_STATEMENT_FINISH_ARGS);
+
+        return builder.toString();
+    }
+
+    protected String getFinishLogStatement(String methodName) {
+        StringBuilder builder = new StringBuilder("finish ").append(methodName).append("()");
+
+        return builder.toString();
     }
 
 }

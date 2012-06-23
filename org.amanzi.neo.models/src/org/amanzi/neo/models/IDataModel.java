@@ -14,6 +14,7 @@
 package org.amanzi.neo.models;
 
 import org.amanzi.neo.dto.IDataElement;
+import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.nodetypes.INodeType;
 
 /**
@@ -33,7 +34,7 @@ public interface IDataModel extends IModel {
      * @param childElement
      * @return <code>IDataElement</code> based on found parent node or <code>null</code>.
      */
-    public IDataElement getParentElement(IDataElement childElement);
+    public IDataElement getParentElement(IDataElement childElement) throws ModelException;
 
     /**
      * Find all direct children or a children chain for the defined element.

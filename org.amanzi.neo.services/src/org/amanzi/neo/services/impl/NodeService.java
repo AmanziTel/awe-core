@@ -93,4 +93,9 @@ public class NodeService extends AbstractService implements INodeService {
 
         return result;
     }
+
+    @Override
+    public Node getParent(Node child) throws ServiceException {
+        return null;
+    }
 }

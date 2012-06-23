@@ -13,11 +13,8 @@
 
 package org.amanzi.neo.providers.factory;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.amanzi.neo.models.IModel;
-import org.amanzi.neo.providers.IModelProvider;
+import org.amanzi.neo.providers.ISelectionModelProvider;
+import org.amanzi.neo.providers.impl.SelectionModelProvider;
 
 /**
  * TODO Purpose of
@@ -31,7 +28,7 @@ public class ModelProviderFactory {
 
     private static ModelProviderFactory instance;
 
-    private Map<Class< ? >, IModelProvider<IModel, IModel>> modelProviderCache = new HashMap<Class< ? >, IModelProvider<IModel, IModel>>();
+    private ISelectionModelProvider selectionModelProvider;
 
     private ModelProviderFactory() {
         // do nothing
@@ -49,17 +46,17 @@ public class ModelProviderFactory {
         return instance;
     }
 
-    @SuppressWarnings("unchecked")
-    public <T1 extends IModel, T2 extends IModel> IModelProvider<T1, T2> getModelProvider(T1 modelClass) {
-        return (IModelProvider<T1, T2>)modelProviderCache.get(modelClass);
-    }
+    public ISelectionModelProvider getSelectionModelProvider() {
+        if (selectionModelProvider == null) {
+            synchronized (ModelProviderFactory.class) {
+                if (selectionModelProvider == null) {
+                    selectionModelProvider = new SelectionModelProvider();
+                }
 
-    @SuppressWarnings("unchecked")
-    public synchronized void registerModelProvider(Class<IModelProvider< ? extends IModel, IModel>> modelClass) throws Exception {
-        if (!modelProviderCache.containsKey(modelClass)) {
-            IModelProvider<IModel, IModel> instance = (IModelProvider<IModel, IModel>)modelClass.newInstance();
-
-            modelProviderCache.put(instance.getModel(), instance);
+            }
         }
+
+        return selectionModelProvider;
     }
+
 }
