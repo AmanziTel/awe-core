@@ -83,19 +83,24 @@ public class AbstractModelTest extends AbstractMockitoTest {
 
         verify(nodeService).getNodeName(eq(rootNode));
         verify(nodeService).getNodeType(eq(rootNode));
+        verify(nodeService).getParent(eq(rootNode));
     }
 
     @Test
     public void testCheckModelFieldsOnInitialize() throws Exception {
         Node rootNode = getNodeMock();
+        Node parentNode = getNodeMock();
 
         when(nodeService.getNodeName(eq(rootNode))).thenReturn(TEST_NODE_NAME);
         when(nodeService.getNodeType(eq(rootNode))).thenReturn(TEST_NODE_TYPE);
+        when(nodeService.getParent(eq(rootNode))).thenReturn(parentNode);
 
         model.initialize(rootNode);
 
         assertEquals("Unexpected initialized name", TEST_NODE_NAME, model.getName());
         assertEquals("Unexpected initialized type", TEST_NODE_TYPE, model.getType());
+        assertEquals("Unexpected initialized parent node", parentNode, model.getRootNode());
+        assertEquals("Unexpected initialized root node", rootNode, model.getRootNode());
     }
 
     @Test(expected = FatalException.class)
@@ -121,6 +126,15 @@ public class AbstractModelTest extends AbstractMockitoTest {
         Node rootNode = getNodeMock();
 
         doThrow(new PropertyNotFoundException("Name", rootNode)).when(nodeService).getNodeName(rootNode);
+
+        model.initialize(rootNode);
+    }
+
+    @Test(expected = DataInconsistencyException.class)
+    public void testCheckInconsistencyExceptionForParentOnInitialize() throws Exception {
+        Node rootNode = getNodeMock();
+
+        doThrow(new PropertyNotFoundException("Parent", rootNode)).when(nodeService).getParent(rootNode);
 
         model.initialize(rootNode);
     }

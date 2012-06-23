@@ -58,8 +58,10 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
         }
 
         try {
-            name = nodeService.getNodeName(rootNode);
-            nodeType = nodeService.getNodeType(rootNode);
+            this.rootNode = rootNode;
+            this.name = nodeService.getNodeName(rootNode);
+            this.nodeType = nodeService.getNodeType(rootNode);
+            this.parentNode = nodeService.getParent(rootNode);
         } catch (ServiceException e) {
             processException("An error occured on Model Initialization", e);
         }
