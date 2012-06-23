@@ -39,7 +39,7 @@ import org.neo4j.kernel.EmbeddedReadOnlyGraphDatabase;
  * Tests on DatabaseManager Test
  * 
  * @author gerzog
- * @since 1.0.0
+ * @since 1.0.0 TODO: re-write with using Mockito
  */
 public class Neo4jDatabaseManagerTest {
 
