@@ -11,13 +11,9 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.providers;
+package org.amanzi.neo.services.filters;
 
-import java.util.Set;
-
-import org.amanzi.neo.models.IModel;
-import org.amanzi.neo.models.IProjectModel;
-import org.amanzi.neo.models.exceptions.ModelException;
+import org.neo4j.graphdb.Node;
 
 /**
  * TODO Purpose of
@@ -27,16 +23,8 @@ import org.amanzi.neo.models.exceptions.ModelException;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface IProjectModelProvider extends IModelProvider<IProjectModel, IModel> {
+public interface INodeFilter {
 
-    Set<IProjectModel> findAllProjectModels();
-
-    IProjectModel findProjectByName(String name) throws ModelException;
-
-    IProjectModel createProjectModel(String name) throws ModelException;
-
-    IProjectModel getActiveProjectModel();
-
-    void setActiveProjectModel(IProjectModel projectModel);
+    boolean check(Node node);
 
 }

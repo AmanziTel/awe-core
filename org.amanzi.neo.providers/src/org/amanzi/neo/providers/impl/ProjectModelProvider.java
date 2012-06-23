@@ -17,6 +17,7 @@ import java.util.Set;
 
 import org.amanzi.neo.models.IProjectModel;
 import org.amanzi.neo.models.exceptions.DuplicatedModelException;
+import org.amanzi.neo.models.exceptions.FatalException;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.exceptions.ParameterInconsistencyException;
 import org.amanzi.neo.models.impl.ProjectModel;
@@ -24,8 +25,11 @@ import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.providers.IProjectModelProvider;
 import org.amanzi.neo.providers.impl.internal.AbstractModelProvider;
 import org.amanzi.neo.services.INodeService;
+import org.amanzi.neo.services.exceptions.ServiceException;
+import org.amanzi.neo.services.exceptions.enums.ServiceExceptionReason;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
+import org.neo4j.graphdb.Node;
 
 /**
  * TODO Purpose of
@@ -35,7 +39,7 @@ import org.apache.log4j.Logger;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class ProjectModelProvider extends AbstractModelProvider<ProjectModel> implements IProjectModelProvider {
+public class ProjectModelProvider extends AbstractModelProvider<ProjectModel, IProjectModel> implements IProjectModelProvider {
 
     private static final Logger LOGGER = Logger.getLogger(ProjectModelProvider.class);
 
@@ -54,8 +58,50 @@ public class ProjectModelProvider extends AbstractModelProvider<ProjectModel> im
     }
 
     @Override
-    public IProjectModel findProjectByName(String name) {
-        return null;
+    public IProjectModel findProjectByName(String name) throws ModelException {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getStartLogStatement("findProjectByName", name));
+        }
+
+        // validate arguments
+        if (StringUtils.isEmpty(name)) {
+            throw new ParameterInconsistencyException(generalNodeProperties.getNodeNameProperty(), name);
+        }
+
+        IKey cacheKey = new NameKey(name);
+
+        // check cache
+        IProjectModel projectModel = getFromCache(cacheKey);
+
+        if (projectModel == null) {
+            Node modelNode = null;
+
+            try {
+                Node referencedNode = nodeService.getReferencedNode();
+                modelNode = nodeService.getChildByName(referencedNode, name);
+            } catch (ServiceException e) {
+                LOGGER.error("Error on Searching for a Project Model)");
+
+                if (e.getReason() == ServiceExceptionReason.DATABASE_EXCEPTION) {
+                    throw new FatalException(e);
+                }
+            }
+
+            if (modelNode != null) {
+                ProjectModel model = createInstance();
+                model.initialize(modelNode);
+
+                addToCache(model, cacheKey);
+
+                projectModel = model;
+            }
+        }
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(getFinishLogStatement("findProjectByName"));
+        }
+
+        return projectModel;
     }
 
     @Override

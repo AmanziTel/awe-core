@@ -16,14 +16,17 @@ package org.amanzi.neo.providers.impl;
 import org.amanzi.neo.models.IProjectModel;
 import org.amanzi.neo.models.exceptions.DuplicatedModelException;
 import org.amanzi.neo.models.exceptions.FatalException;
+import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.exceptions.ParameterInconsistencyException;
 import org.amanzi.neo.models.impl.ProjectModel;
 import org.amanzi.neo.nodeproperties.impl.GeneralNodeProperties;
 import org.amanzi.neo.services.INodeService;
+import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.testing.AbstractMockitoTest;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
+import org.neo4j.graphdb.Node;
 
 /**
  * TODO Purpose of
@@ -37,6 +40,10 @@ public class ProjectModelProviderTest extends AbstractMockitoTest {
 
     private static final String PROJECT_NAME = "PROJECT_NAME";
 
+    private static final String NOT_FOUND_PROJECT = "not_found_project";
+
+    private static final String PROJECT_NAME_FOR_CACHE_CHECK = "cached project name";
+
     private ProjectModelProvider projectModelProvider;
 
     private INodeService nodeService;
@@ -45,12 +52,20 @@ public class ProjectModelProviderTest extends AbstractMockitoTest {
 
     private final static GeneralNodeProperties generalNodeProperties = new GeneralNodeProperties();
 
+    private Node node;
+
+    private Node referencedNode;
+
     /**
      * @throws java.lang.Exception
      */
     @Before
     public void setUp() throws Exception {
+        node = mock(Node.class);
+        referencedNode = mock(Node.class);
+
         nodeService = mock(INodeService.class);
+        when(nodeService.getReferencedNode()).thenReturn(referencedNode);
 
         projectModel = mock(ProjectModel.class);
 
@@ -104,14 +119,69 @@ public class ProjectModelProviderTest extends AbstractMockitoTest {
         projectModelProvider.createProjectModel(StringUtils.EMPTY);
     }
 
-    private void spyProjectProvider() {
+    @Test
+    public void testCheckActivityOnFindByName() throws Exception {
+        projectModelProvider.findProjectByName(PROJECT_NAME);
+
+        verify(nodeService).getChildByName(referencedNode, PROJECT_NAME);
+    }
+
+    @Test
+    public void testCheckCacheActivityWithEmptyCache() throws Exception {
+        when(nodeService.getChildByName(referencedNode, PROJECT_NAME_FOR_CACHE_CHECK)).thenReturn(node);
+
+        // without cache
+        projectModelProvider.findProjectByName(PROJECT_NAME_FOR_CACHE_CHECK);
+        verify(nodeService).getChildByName(referencedNode, PROJECT_NAME_FOR_CACHE_CHECK);
+
+        // get model from cache
+        projectModelProvider.findProjectByName(PROJECT_NAME_FOR_CACHE_CHECK);
+        verify(nodeService).getChildByName((Node)any(), (String)any());
+    }
+
+    @Test
+    public void testCheckNohingFoundByName() throws Exception {
+        when(nodeService.getChildByName(referencedNode, NOT_FOUND_PROJECT)).thenReturn(null);
+
+        IProjectModel result = projectModelProvider.findProjectByName(NOT_FOUND_PROJECT);
+
+        assertNull("ProjectModel cannot exist", result);
+    }
+
+    @Test
+    public void testCheckModelFoundByName() throws Exception {
+        when(nodeService.getChildByName(referencedNode, PROJECT_NAME)).thenReturn(node);
+
+        IProjectModel result = projectModelProvider.findProjectByName(PROJECT_NAME);
+
+        assertNotNull("ProjectModel cannot be null", result);
+    }
+
+    @Test(expected = ParameterInconsistencyException.class)
+    public void testCheckFindProjectWithoutName() throws Exception {
+        projectModelProvider.findProjectByName(null);
+    }
+
+    @Test(expected = ParameterInconsistencyException.class)
+    public void testCheckFindProjectWithEmptyName() throws Exception {
+        projectModelProvider.findProjectByName(StringUtils.EMPTY);
+    }
+
+    @Test(expected = FatalException.class)
+    public void testCheckFatalExceptionOnFindProject() throws Exception {
+        doThrow(new DatabaseException(new IllegalArgumentException())).when(nodeService).getReferencedNode();
+
+        projectModelProvider.findProjectByName(PROJECT_NAME);
+    }
+
+    private void spyProjectProvider() throws ModelException {
         projectModelProvider = spy(projectModelProvider);
         when(projectModelProvider.createInstance()).thenReturn(projectModel);
 
         setProjectFound(false);
     }
 
-    private void setProjectFound(boolean isFound) {
-        when(projectModelProvider.findProjectByName(PROJECT_NAME)).thenReturn(isFound ? new ProjectModel(nodeService) : null);
+    private void setProjectFound(boolean isFound) throws ModelException {
+        doReturn(isFound ? new ProjectModel(nodeService) : null).when(projectModelProvider).findProjectByName(PROJECT_NAME);
     }
 }

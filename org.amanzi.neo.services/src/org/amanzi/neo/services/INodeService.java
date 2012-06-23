@@ -13,6 +13,8 @@
 
 package org.amanzi.neo.services;
 
+import java.util.Iterator;
+
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.exceptions.PropertyNotFoundException;
 import org.amanzi.neo.services.exceptions.ServiceException;
@@ -58,4 +60,9 @@ public interface INodeService extends IService {
      */
     Node getParent(Node child) throws ServiceException;
 
+    Iterator<Node> getChildren(Node parentNode) throws ServiceException;
+
+    Node getChildByName(Node parentNode, String name) throws ServiceException;
+
+    Node getReferencedNode() throws ServiceException;
 }

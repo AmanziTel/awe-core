@@ -13,6 +13,8 @@
 
 package org.amanzi.neo.services.impl;
 
+import java.util.Iterator;
+
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.nodetypes.NodeTypeManager;
@@ -95,6 +97,21 @@ public class NodeService extends AbstractService implements INodeService {
 
     @Override
     public Node getParent(Node child) throws ServiceException {
+        return null;
+    }
+
+    @Override
+    public Iterator<Node> getChildren(Node parentNode) throws ServiceException {
+        return null;
+    }
+
+    @Override
+    public Node getChildByName(Node parentNode, String name) throws ServiceException {
+        return null;
+    }
+
+    @Override
+    public Node getReferencedNode() throws ServiceException {
         return null;
     }
 }

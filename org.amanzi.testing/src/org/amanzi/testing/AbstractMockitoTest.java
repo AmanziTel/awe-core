@@ -19,6 +19,7 @@ import java.util.Map.Entry;
 import org.mockito.Mockito;
 import org.mockito.stubbing.OngoingStubbing;
 import org.mockito.stubbing.Stubber;
+import org.mockito.verification.VerificationMode;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -65,8 +66,24 @@ public class AbstractMockitoTest extends AbstractTest {
         return Mockito.verify(mock);
     }
 
-    protected static <T> T spy(T object) {
+    protected <T> T verify(T mock, VerificationMode mode) {
+        return Mockito.verify(mock, mode);
+    }
+
+    protected VerificationMode never() {
+        return Mockito.never();
+    }
+
+    protected <T> T spy(T object) {
         return Mockito.spy(object);
+    }
+
+    protected <T> T any() {
+        return Mockito.any();
+    }
+
+    protected Stubber doReturn(Object toBeReturned) {
+        return Mockito.doReturn(toBeReturned);
     }
 
     protected void verifyNoMoreInteractions(Object... mocks) {

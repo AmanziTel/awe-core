@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.amanzi.neo.db.manager.DatabaseManagerFactory;
+import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.exceptions.DataInconsistencyException;
 import org.amanzi.neo.models.exceptions.FatalException;
 import org.amanzi.neo.models.impl.internal.AbstractModel;
@@ -37,7 +38,7 @@ import org.neo4j.graphdb.Node;
  */
 public class AbstractModelProviderTest extends AbstractMockitoTest {
 
-    private static class TestModelProvider extends AbstractModelProvider<AbstractModel> {
+    private static class TestModelProvider extends AbstractModelProvider<AbstractModel, IModel> {
 
         private AbstractModel instance;
 
@@ -53,7 +54,7 @@ public class AbstractModelProviderTest extends AbstractMockitoTest {
 
     private static final String[] MODEL_NAMES = new String[] {"model1", "model2", "model3"};
 
-    private AbstractModelProvider<AbstractModel> provider;
+    private AbstractModelProvider<AbstractModel, IModel> provider;
 
     private AbstractModel model;
 

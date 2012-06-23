@@ -19,6 +19,7 @@ import java.util.Map;
 import org.amanzi.neo.db.manager.DatabaseManagerFactory;
 import org.amanzi.neo.db.manager.events.DatabaseEvent;
 import org.amanzi.neo.db.manager.events.IDatabaseEventListener;
+import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.impl.internal.AbstractModel;
 import org.amanzi.neo.models.impl.internal.util.AbstractLoggable;
@@ -32,7 +33,7 @@ import org.neo4j.graphdb.Node;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public abstract class AbstractModelProvider<T extends AbstractModel> extends AbstractLoggable implements IDatabaseEventListener {
+public abstract class AbstractModelProvider<T extends AbstractModel, T1 extends IModel> extends AbstractLoggable implements IDatabaseEventListener {
 
     protected interface IKey {
 
@@ -96,6 +97,11 @@ public abstract class AbstractModelProvider<T extends AbstractModel> extends Abs
         default:
             // do nothing
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    protected T convert(T1 model) {
+        return (T)model;
     }
 
 }
