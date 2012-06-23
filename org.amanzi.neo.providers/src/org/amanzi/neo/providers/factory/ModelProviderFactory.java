@@ -13,8 +13,10 @@
 
 package org.amanzi.neo.providers.factory;
 
-import org.amanzi.neo.providers.ISelectionModelProvider;
-import org.amanzi.neo.providers.impl.SelectionModelProvider;
+import org.amanzi.neo.nodeproperties.NodePropertiesFactory;
+import org.amanzi.neo.providers.IProjectModelProvider;
+import org.amanzi.neo.providers.impl.ProjectModelProvider;
+import org.amanzi.neo.services.factory.ServiceFactory;
 
 /**
  * TODO Purpose of
@@ -28,10 +30,15 @@ public final class ModelProviderFactory {
 
     private static volatile ModelProviderFactory instance;
 
-    private volatile ISelectionModelProvider selectionModelProvider;
+    private volatile IProjectModelProvider projectModelProvider;
+
+    private ServiceFactory serviceFactory;
+
+    private NodePropertiesFactory nodePropertiesFactory;
 
     private ModelProviderFactory() {
-        // do nothing
+        serviceFactory = ServiceFactory.getInstance();
+        nodePropertiesFactory = NodePropertiesFactory.getInstance();
     }
 
     public static ModelProviderFactory getInstance() {
@@ -46,17 +53,17 @@ public final class ModelProviderFactory {
         return instance;
     }
 
-    public ISelectionModelProvider getSelectionModelProvider() {
-        if (selectionModelProvider == null) {
+    public IProjectModelProvider getProjectModelProvider() {
+        if (projectModelProvider == null) {
             synchronized (ModelProviderFactory.class) {
-                if (selectionModelProvider == null) {
-                    selectionModelProvider = new SelectionModelProvider();
+                if (projectModelProvider == null) {
+                    projectModelProvider = new ProjectModelProvider(serviceFactory.getNodeService(), nodePropertiesFactory.getGeneralNodeProperties());
                 }
 
             }
         }
 
-        return selectionModelProvider;
+        return projectModelProvider;
     }
 
 }

@@ -11,12 +11,13 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.providers.impl.internal;
+package org.amanzi.neo.providers;
 
+import java.util.Set;
+
+import org.amanzi.neo.models.IModel;
+import org.amanzi.neo.models.IProjectModel;
 import org.amanzi.neo.models.exceptions.ModelException;
-import org.amanzi.neo.models.impl.internal.AbstractModel;
-import org.amanzi.neo.models.impl.internal.util.AbstractLoggable;
-import org.neo4j.graphdb.Node;
 
 /**
  * TODO Purpose of
@@ -26,15 +27,16 @@ import org.neo4j.graphdb.Node;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public abstract class AbstractModelProvider<T extends AbstractModel> extends AbstractLoggable {
+public interface IProjectModelProvider extends IModelProvider<IProjectModel, IModel> {
 
-    protected T initializeFromNode(Node node) throws ModelException {
-        T model = createInstance();
-        model.initialize(node);
+    Set<IProjectModel> findAllProjectModels();
 
-        return model;
-    }
+    IProjectModel findProjectByName(String name);
 
-    protected abstract T createInstance();
+    IProjectModel createProjectModel(String name) throws ModelException;
+
+    IProjectModel getActiveProjectModel();
+
+    void setActiveProjectModel(IProjectModel projectModel);
 
 }

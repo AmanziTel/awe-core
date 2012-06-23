@@ -11,12 +11,11 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.providers.impl;
+package org.amanzi.neo.services.impl;
 
-import org.amanzi.neo.models.network.INetworkModel;
-import org.amanzi.neo.models.network.ISelectionModel;
-import org.amanzi.neo.providers.ISelectionModelProvider;
-import org.amanzi.neo.providers.impl.internal.AbstractModelProvider;
+import org.amanzi.neo.services.IProjectService;
+import org.amanzi.neo.services.impl.internal.AbstractService;
+import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
  * TODO Purpose of
@@ -26,11 +25,13 @@ import org.amanzi.neo.providers.impl.internal.AbstractModelProvider;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class SelectionModelProvider extends AbstractModelProvider<ISelectionModel, INetworkModel> implements ISelectionModelProvider {
+public class ProjectService extends AbstractService implements IProjectService {
 
-    @Override
-    public Class< ? > getModel() {
-        return null;
+    /**
+     * @param graphDb
+     */
+    public ProjectService(GraphDatabaseService graphDb) {
+        super(graphDb);
     }
 
 }

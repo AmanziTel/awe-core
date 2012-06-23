@@ -17,6 +17,7 @@ import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.exceptions.DataInconsistencyException;
 import org.amanzi.neo.models.exceptions.FatalException;
 import org.amanzi.neo.models.exceptions.ModelException;
+import org.amanzi.neo.models.impl.internal.util.AbstractLoggable;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.ServiceException;
@@ -31,25 +32,22 @@ import org.neo4j.graphdb.Node;
  * @author grigoreva_a
  * @since 1.0.0
  */
-public abstract class AbstractModel implements IModel {
+public abstract class AbstractModel extends AbstractLoggable implements IModel {
     private static final Logger LOGGER = Logger.getLogger(AbstractModel.class);
-
-    /*
-     * constants to create log statement
-     */
-    private static final String LOG_STATEMENT_FINISH_ARGS = ">)";
-    private static final String LOG_STATEMENT_ARG_SEPARATOR = ">, <";
-    private static final String LOG_STATEMENT_START_ARGS = "(<";
-    private static final String START_LOG_STATEMENT_PREFIX = "start ";
 
     private String name;
     private Node rootNode;
     private INodeType nodeType;
+    private Node parentNode;
 
-    private INodeService nodeService;
+    private final INodeService nodeService;
 
     public AbstractModel(INodeService nodeService) {
         this.nodeService = nodeService;
+    }
+
+    protected void initialize(Node parentNode, String name, INodeType nodeType) throws ModelException {
+
     }
 
     public void initialize(Node rootNode) throws ModelException {
@@ -90,6 +88,10 @@ public abstract class AbstractModel implements IModel {
         return rootNode;
     }
 
+    public Node getParentNode() {
+        return parentNode;
+    }
+
     protected void processException(String logMessage, ServiceException e) throws ModelException {
         LOGGER.error(logMessage, e);
 
@@ -99,28 +101,6 @@ public abstract class AbstractModel implements IModel {
         case PROPERTY_NOT_FOUND:
             throw new DataInconsistencyException(e);
         }
-    }
-
-    protected String getStartLogStatement(String methodName, Object... args) {
-        StringBuilder builder = new StringBuilder(START_LOG_STATEMENT_PREFIX).append(methodName).append(LOG_STATEMENT_START_ARGS);
-
-        for (int i = 0; i < args.length; i++) {
-            if (i != 0) {
-                builder.append(LOG_STATEMENT_ARG_SEPARATOR);
-            }
-
-            builder.append(args[i]);
-        }
-
-        builder.append(LOG_STATEMENT_FINISH_ARGS);
-
-        return builder.toString();
-    }
-
-    protected String getFinishLogStatement(String methodName) {
-        StringBuilder builder = new StringBuilder("finish ").append(methodName).append("()");
-
-        return builder.toString();
     }
 
     protected INodeService getNodeService() {

@@ -13,8 +13,6 @@
 
 package org.amanzi.neo.providers;
 
-import java.util.Set;
-
 import org.amanzi.neo.models.IModel;
 
 /**
@@ -27,11 +25,4 @@ import org.amanzi.neo.models.IModel;
  */
 public interface IModelProvider<Model extends IModel, Parent extends IModel> {
 
-    Set<Model> findByParent(Parent parent);
-
-    Set<Model> findByName(Parent parent, String modelName);
-
-    Model create(Parent parent, String name);
-
-    Class< ? > getModel();
 }

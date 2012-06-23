@@ -13,11 +13,8 @@
 
 package org.amanzi.neo.models;
 
-import java.util.Iterator;
-
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.exceptions.ModelException;
-import org.amanzi.neo.nodetypes.INodeType;
 
 /**
  * <p>
@@ -38,19 +35,4 @@ public interface IDataModel extends IModel {
      */
     IDataElement getParentElement(IDataElement childElement) throws ModelException;
 
-    /**
-     * Find all direct children or a children chain for the defined element.
-     * 
-     * @param parent
-     * @return an <code>Iterable</code> of <code>IDataElement</code>s, based on the found nodes.
-     */
-    Iterator<IDataElement> getChildren(IDataElement parent);
-
-    /**
-     * Find all elements with the defined type, that belong to the current model structure.
-     * 
-     * @param elementType
-     * @return an <code>Iterable</code> of <code>IDataElement</code>s, based on the found nodes.
-     */
-    Iterator<IDataElement> getAllElementsByType(INodeType elementType);
 }

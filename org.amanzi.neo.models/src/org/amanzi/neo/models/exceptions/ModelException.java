@@ -30,4 +30,8 @@ public abstract class ModelException extends Exception {
         super(e);
     }
 
+    protected ModelException() {
+        super();
+    }
+
 }

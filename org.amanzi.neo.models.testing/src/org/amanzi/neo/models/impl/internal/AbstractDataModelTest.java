@@ -37,7 +37,7 @@ import org.neo4j.graphdb.Node;
  */
 public class AbstractDataModelTest extends AbstractMockitoTest {
 
-    private class TestDataModel extends AbstractDataModel {
+    private static class TestDataModel extends AbstractDataModel {
 
         /**
          * @param nodeService

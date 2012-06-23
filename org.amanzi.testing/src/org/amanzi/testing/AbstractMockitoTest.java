@@ -65,6 +65,10 @@ public class AbstractMockitoTest extends AbstractTest {
         return Mockito.verify(mock);
     }
 
+    protected static <T> T spy(T object) {
+        return Mockito.spy(object);
+    }
+
     protected void verifyNoMoreInteractions(Object... mocks) {
         Mockito.verifyNoMoreInteractions(mocks);
     }

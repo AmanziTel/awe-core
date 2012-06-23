@@ -13,13 +13,10 @@
 
 package org.amanzi.neo.models.impl.internal;
 
-import java.util.Iterator;
-
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.impl.dto.DataElement;
 import org.amanzi.neo.models.IDataModel;
 import org.amanzi.neo.models.exceptions.ModelException;
-import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.apache.log4j.Logger;
@@ -69,15 +66,5 @@ public abstract class AbstractDataModel extends AbstractModel implements IDataMo
         }
 
         return result;
-    }
-
-    @Override
-    public Iterator<IDataElement> getChildren(IDataElement parent) {
-        return null;
-    }
-
-    @Override
-    public Iterator<IDataElement> getAllElementsByType(INodeType elementType) {
-        return null;
     }
 }

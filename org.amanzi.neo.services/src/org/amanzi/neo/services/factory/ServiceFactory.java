@@ -16,7 +16,9 @@ package org.amanzi.neo.services.factory;
 import org.amanzi.neo.db.manager.DatabaseManagerFactory;
 import org.amanzi.neo.nodeproperties.NodePropertiesFactory;
 import org.amanzi.neo.services.INodeService;
+import org.amanzi.neo.services.IProjectService;
 import org.amanzi.neo.services.impl.NodeService;
+import org.amanzi.neo.services.impl.ProjectService;
 import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
@@ -32,6 +34,8 @@ public final class ServiceFactory {
     private static volatile ServiceFactory instance;
 
     private volatile INodeService nodeService;
+
+    private volatile IProjectService projectService;
 
     private ServiceFactory() {
         // do nothing
@@ -61,8 +65,24 @@ public final class ServiceFactory {
         return nodeService;
     }
 
+    public IProjectService getProjectService() {
+        if (projectService == null) {
+            synchronized (ServiceFactory.class) {
+                if (projectService == null) {
+                    projectService = createProjectService();
+                }
+            }
+        }
+
+        return projectService;
+    }
+
     private INodeService createNodeService() {
         return new NodeService(getDbService(), NodePropertiesFactory.getInstance().getGeneralNodeProperties());
+    }
+
+    private IProjectService createProjectService() {
+        return new ProjectService(getDbService());
     }
 
     private GraphDatabaseService getDbService() {

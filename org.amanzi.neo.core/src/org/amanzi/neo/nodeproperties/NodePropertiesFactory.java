@@ -23,11 +23,11 @@ import org.amanzi.neo.nodeproperties.impl.GeneralNodeProperties;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class NodePropertiesFactory {
+public final class NodePropertiesFactory {
 
-    private static NodePropertiesFactory instance;
+    private static volatile NodePropertiesFactory instance;
 
-    private IGeneralNodeProperties generalNodeProperties;
+    private volatile IGeneralNodeProperties generalNodeProperties;
 
     private NodePropertiesFactory() {
         // do nothing
