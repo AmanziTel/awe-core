@@ -11,11 +11,9 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.services.impl;
+package org.amanzi.neo.services.exceptions;
 
-import org.amanzi.neo.services.IProjectService;
-import org.amanzi.neo.services.impl.internal.AbstractService;
-import org.neo4j.graphdb.GraphDatabaseService;
+import org.amanzi.neo.services.exceptions.enums.ServiceExceptionReason;
 
 /**
  * TODO Purpose of
@@ -25,13 +23,16 @@ import org.neo4j.graphdb.GraphDatabaseService;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class ProjectService extends AbstractService implements IProjectService {
+public class DuplicatedNodeException extends ServiceException {
+
+    /** long serialVersionUID field */
+    private static final long serialVersionUID = -4866569763934067767L;
 
     /**
-     * @param graphDb
+     * @param reason
      */
-    public ProjectService(GraphDatabaseService graphDb) {
-        super(graphDb);
+    public DuplicatedNodeException() {
+        super(ServiceExceptionReason.DUPLICATED_NODE);
     }
 
 }

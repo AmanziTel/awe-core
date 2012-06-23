@@ -23,6 +23,6 @@ package org.amanzi.neo.services.exceptions.enums;
  */
 public enum ServiceExceptionReason {
 
-    DATABASE_EXCEPTION, PROPERTY_NOT_FOUND, FILTER_ERROR;
+    DATABASE_EXCEPTION, PROPERTY_NOT_FOUND, FILTER_ERROR, DUPLICATED_NODE;
 
 }

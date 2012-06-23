@@ -15,7 +15,8 @@ package org.amanzi.neo.services.impl.internal;
 
 import org.amanzi.neo.db.manager.DatabaseManagerFactory;
 import org.amanzi.neo.db.manager.IDatabaseManager;
-import org.amanzi.neo.services.internal.IService;
+import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
+import org.amanzi.neo.nodeproperties.impl.GeneralNodeProperties;
 import org.amanzi.testing.AbstractMockitoTest;
 import org.junit.After;
 import org.junit.Before;
@@ -32,18 +33,20 @@ import org.neo4j.graphdb.GraphDatabaseService;
  */
 public class AbstractServiceTest extends AbstractMockitoTest {
 
+    private static final IGeneralNodeProperties GENERAL_NODE_PROPERTIES = new GeneralNodeProperties();
+
     private class TestAbstractService extends AbstractService {
 
         /**
          * @param graphDb
          */
         protected TestAbstractService(GraphDatabaseService graphDb) {
-            super(graphDb);
+            super(graphDb, GENERAL_NODE_PROPERTIES);
         }
 
     }
 
-    private IService service;
+    private AbstractService service;
 
     private IDatabaseManager dbManager;
 

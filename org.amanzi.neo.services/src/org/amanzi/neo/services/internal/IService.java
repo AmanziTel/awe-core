@@ -13,7 +13,6 @@
 
 package org.amanzi.neo.services.internal;
 
-import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
  * TODO Purpose of
@@ -24,7 +23,5 @@ import org.neo4j.graphdb.GraphDatabaseService;
  * @since 1.0.0
  */
 public interface IService {
-
-    GraphDatabaseService getGraphDb();
 
 }

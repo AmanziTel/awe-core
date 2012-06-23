@@ -99,7 +99,7 @@ public class AbstractModelTest extends AbstractMockitoTest {
 
         assertEquals("Unexpected initialized name", TEST_NODE_NAME, model.getName());
         assertEquals("Unexpected initialized type", TEST_NODE_TYPE, model.getType());
-        assertEquals("Unexpected initialized parent node", parentNode, model.getRootNode());
+        assertEquals("Unexpected initialized parent node", parentNode, model.getParentNode());
         assertEquals("Unexpected initialized root node", rootNode, model.getRootNode());
     }
 
