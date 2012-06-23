@@ -42,10 +42,10 @@ import org.neo4j.graphdb.Transaction;
 
 public class StatisticsServiceTest extends AbstractNeoServiceTest {
 
-	private final static String PROPERTIES = "PROPERTIES";
-	private final static String NEIGHBOURS = "Neighbours";
-	private final static String NETWORK = "Network";
-	private final static String SECTOR = "Sector";
+	private static final String PROPERTIES = "PROPERTIES";
+	private static final String NEIGHBOURS = "Neighbours";
+	private static final String NETWORK = "Network";
+	private static final String SECTOR = "Sector";
 
 	private static Logger LOGGER = Logger
 			.getLogger(DatasetServiceTest.class);

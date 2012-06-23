@@ -87,9 +87,9 @@ public class TRXSaverTesting extends AbstractAWEDBTest {
     private static final String MAIO_PARAM = "maio";
     private static final String ARFCN_PARAM = "arfcn";
     private static DataLoadPreferenceInitializer initializer;
-    private final static Map<String, Object> TRX = new HashMap<String, Object>();
-    private final static Map<String, Object> FREQ_MAP = new HashMap<String, Object>();
-    private final static Map<String, Object> SECTOR = new HashMap<String, Object>();
+    private static final Map<String, Object> TRX = new HashMap<String, Object>();
+    private static final Map<String, Object> FREQ_MAP = new HashMap<String, Object>();
+    private static final Map<String, Object> SECTOR = new HashMap<String, Object>();
     private static  NetworkModel networkModelMock;
     private static Long startTime;
     private static IDatabaseManager dbManager;

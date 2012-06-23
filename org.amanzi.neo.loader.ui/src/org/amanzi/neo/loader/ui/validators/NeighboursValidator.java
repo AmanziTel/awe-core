@@ -34,16 +34,16 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class NeighboursValidator extends AbstractValidator<NetworkConfiguration> {
 
-    private final static String DATASET_TYPE = "n2n";
+    private static final String DATASET_TYPE = "n2n";
     private Map<String, String[]> map = new HashMap<String, String[]>();
 
     // parameters
-    private final static String[] PARAMETERS = new String[] {"serving_name", "target_name"};
+    private static final String[] PARAMETERS = new String[] {"serving_name", "target_name"};
 
     // messages
-    private final static String NO_N2N_NAME = "There is no n2n name";
-    private final static String NO_CONTENT = "The file no contains n2n data";
-    private final static String ERROR = "Error while n2n data validate";
+    private static final String NO_N2N_NAME = "There is no n2n name";
+    private static final String NO_CONTENT = "The file no contains n2n data";
+    private static final String ERROR = "Error while n2n data validate";
 
     @Override
     public Result appropriate(List<File> filesToLoad) {

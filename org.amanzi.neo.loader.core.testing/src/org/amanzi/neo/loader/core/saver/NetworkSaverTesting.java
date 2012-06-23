@@ -60,11 +60,11 @@ public class NetworkSaverTesting extends AbstractAWEDBTest {
     private static final String PROJECT_NAME = "project";
     private int MINIMAL_COLUMN_SIZE = 2;
     private static DataLoadPreferenceInitializer initializer;
-    private final static Map<String, Object> BSC = new HashMap<String, Object>();
-    private final static Map<String, Object> SITE = new HashMap<String, Object>();
-    private final static Map<String, Object> SECTOR = new HashMap<String, Object>();
-    private final static Map<String, Object> MSC = new HashMap<String, Object>();
-    private final static Map<String, Object> CITY = new HashMap<String, Object>();
+    private static final Map<String, Object> BSC = new HashMap<String, Object>();
+    private static final Map<String, Object> SITE = new HashMap<String, Object>();
+    private static final Map<String, Object> SECTOR = new HashMap<String, Object>();
+    private static final Map<String, Object> MSC = new HashMap<String, Object>();
+    private static final Map<String, Object> CITY = new HashMap<String, Object>();
     private static NetworkModel networkModelMock;
     private static Long startTime;
     private static IDatabaseManager dbManager;

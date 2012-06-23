@@ -82,7 +82,7 @@ public final class WizardBuilder {
     
     private static final String ALL_ELEMENTS_FOR_ATTRIBUTE = "allElementsFor";
 
-    private final static Comparator<AbstractLoaderPage< ? >> PAGE_COMPARATOR = new Comparator<AbstractLoaderPage< ? >>() {
+    private static final Comparator<AbstractLoaderPage< ? >> PAGE_COMPARATOR = new Comparator<AbstractLoaderPage< ? >>() {
 
         @Override
         public int compare(AbstractLoaderPage< ? > o1, AbstractLoaderPage< ? > o2) {

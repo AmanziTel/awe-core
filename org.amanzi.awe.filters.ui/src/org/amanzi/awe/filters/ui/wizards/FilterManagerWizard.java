@@ -24,7 +24,7 @@ import org.eclipse.ui.IWorkbench;
  * @author Vladislav_Kondratneko
  */
 public class FilterManagerWizard extends Wizard implements IImportWizard {
-    private final static String FILTER_MANAGER_TITLE = "Filter Manager ";
+    private static final String FILTER_MANAGER_TITLE = "Filter Manager ";
 
     @Override
     public boolean performFinish() {

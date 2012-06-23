@@ -106,43 +106,43 @@ public class VaultTests {
 
     private static Logger LOGGER = Logger.getLogger(VaultTests.class);
 
-    private final static String PROPERTIES = "PROPERTIES";
-    private final static String NEIGHBOURS = "Neighbours";
-    private final static String NETWORK = "Network";
-    private final static String SITE = "Site";
-    private final static String SECTOR = "Sector";
+    private static final String PROPERTIES = "PROPERTIES";
+    private static final String NEIGHBOURS = "Neighbours";
+    private static final String NETWORK = "Network";
+    private static final String SITE = "Site";
+    private static final String SECTOR = "Sector";
 
-    private final static String STRING_VALUE = "stringValue";
-    private final static String BYTE_VALUE = "byteValue";
-    private final static String SHORT_VALUE = "shortValue";
-    private final static String INTEGER_VALUE = "integerValue";
-    private final static String LONG_VALUE = "longValue";
-    private final static String FLOAT_VALUE = "floatValue";
-    private final static String DOUBLE_VALUE = "doubleValue";
-    private final static String BOOLEAN_VALUE = "booleanValue";
+    private static final String STRING_VALUE = "stringValue";
+    private static final String BYTE_VALUE = "byteValue";
+    private static final String SHORT_VALUE = "shortValue";
+    private static final String INTEGER_VALUE = "integerValue";
+    private static final String LONG_VALUE = "longValue";
+    private static final String FLOAT_VALUE = "floatValue";
+    private static final String DOUBLE_VALUE = "doubleValue";
+    private static final String BOOLEAN_VALUE = "booleanValue";
 
-    private final static String PROPERTY_NAME_NAME_1 = "name";
-    private final static String PROPERTY_NAME_NAME_2 = "name2";
-    private final static String PROPERTY_NAME_NAME_3 = "name3";
-    private final static String PROPERTY_NAME_NAME_4 = "name4";
-    private final static String PROPERTY_NAME_NAME_5 = "name5";
-    private final static String PROPERTY_NAME_TIME = "time";
-    private final static String STRING_PROPERTY_VALUE_NETWORK_1 = "network_1";
-    private final static String STRING_PROPERTY_VALUE_NETWORK_2 = "network_2";
-    private final static String STRING_PROPERTY_VALUE_NETWORK_3 = "network_3";
-    private final static Integer INTEGER_PROPERTY_VALUE_NETWORK = new Integer(100);
-    private final static Integer INTEGER_PROPERTY_VALUE_NETWORK_2 = new Integer(200);
-    private final static Integer INTEGER_PROPERTY_VALUE_NETWORK_3 = new Integer(1000);
-    private final static Integer INTEGER_PROPERTY_VALUE_NETWORK_4 = new Integer(2000);
-    private final static Integer INTEGER_PROPERTY_VALUE_NETWORK_5 = new Integer(15000);
-    private final static Integer INTEGER_PROPERTY_VALUE_NETWORK_6 = new Integer(-200);
-    private final static String STRING_PROPERTY_VALUE_NEIGHBOURS_1 = "neighbour_1";
-    private final static String STRING_PROPERTY_VALUE_NEIGHBOURS_2 = "neighbour_2";
+    private static final String PROPERTY_NAME_NAME_1 = "name";
+    private static final String PROPERTY_NAME_NAME_2 = "name2";
+    private static final String PROPERTY_NAME_NAME_3 = "name3";
+    private static final String PROPERTY_NAME_NAME_4 = "name4";
+    private static final String PROPERTY_NAME_NAME_5 = "name5";
+    private static final String PROPERTY_NAME_TIME = "time";
+    private static final String STRING_PROPERTY_VALUE_NETWORK_1 = "network_1";
+    private static final String STRING_PROPERTY_VALUE_NETWORK_2 = "network_2";
+    private static final String STRING_PROPERTY_VALUE_NETWORK_3 = "network_3";
+    private static final Integer INTEGER_PROPERTY_VALUE_NETWORK = new Integer(100);
+    private static final Integer INTEGER_PROPERTY_VALUE_NETWORK_2 = new Integer(200);
+    private static final Integer INTEGER_PROPERTY_VALUE_NETWORK_3 = new Integer(1000);
+    private static final Integer INTEGER_PROPERTY_VALUE_NETWORK_4 = new Integer(2000);
+    private static final Integer INTEGER_PROPERTY_VALUE_NETWORK_5 = new Integer(15000);
+    private static final Integer INTEGER_PROPERTY_VALUE_NETWORK_6 = new Integer(-200);
+    private static final String STRING_PROPERTY_VALUE_NEIGHBOURS_1 = "neighbour_1";
+    private static final String STRING_PROPERTY_VALUE_NEIGHBOURS_2 = "neighbour_2";
 
-    private final static String EMPTY_STRING = "";
-    private final static String STRING_INT_VALUE = "5";
-    private final static String STRING_FLOAT_VALUE = "5.5";
-    private final static String STRING_BOOLEAN_VALUE = "true";
+    private static final String EMPTY_STRING = "";
+    private static final String STRING_INT_VALUE = "5";
+    private static final String STRING_FLOAT_VALUE = "5.5";
+    private static final String STRING_BOOLEAN_VALUE = "true";
 
     private List<StoreForTestingParse> testingList = new ArrayList<VaultTests.StoreForTestingParse>();
     {

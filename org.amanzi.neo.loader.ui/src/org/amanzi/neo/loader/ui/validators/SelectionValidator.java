@@ -36,18 +36,18 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class SelectionValidator extends AbstractValidator<NetworkConfiguration> {
 
-    private final static String DATASET_TYPE = "selection";
+    private static final String DATASET_TYPE = "selection";
     private Map<String, String[]> map = new HashMap<String, String[]>();
 
     // parameters
-    private final static String[] PARAMETERS = new String[] {"name"};
+    private static final String[] PARAMETERS = new String[] {"name"};
 
     // messages
-    private final static String SELECTION_NOT_EXIST = "Selection model is not exist in database";
-    private final static String NO_CONTENT = "The file no contains selection data";
-    private final static String ERROR = "Error while Selection data validate";
+    private static final String SELECTION_NOT_EXIST = "Selection model is not exist in database";
+    private static final String NO_CONTENT = "The file no contains selection data";
+    private static final String ERROR = "Error while Selection data validate";
 
-    private final static int size = 1;
+    private static final int size = 1;
 
     @Override
     public Result appropriate(List<File> filesToLoad) {

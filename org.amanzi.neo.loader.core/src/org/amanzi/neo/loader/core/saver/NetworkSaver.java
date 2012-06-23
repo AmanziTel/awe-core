@@ -39,7 +39,7 @@ public class NetworkSaver extends
 		AbstractMappedDataSaver<INetworkModel, NetworkConfiguration> {
 
 	// Default network structure
-	private final static NetworkElementNodeType[] DEFAULT_NETWORK_STRUCTURE = {
+	private static final NetworkElementNodeType[] DEFAULT_NETWORK_STRUCTURE = {
 			NetworkElementNodeType.CITY, NetworkElementNodeType.MSC,
 			NetworkElementNodeType.BSC, NetworkElementNodeType.SITE,
 			NetworkElementNodeType.SECTOR };

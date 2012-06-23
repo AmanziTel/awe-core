@@ -54,13 +54,13 @@ import scala.actors.threadpool.Arrays;
 public class CopyOfElementDialog extends AbstractDialog<Integer> {
 
 	// sector
-	private final static String[] SECTOR_PROPERTIES = { "name", "ci", "lac" };
+	private static final String[] SECTOR_PROPERTIES = { "name", "ci", "lac" };
 
 	// site
-	private final static String[] SITE_PROPERTIES = { "name", "lat", "lon" };
+	private static final String[] SITE_PROPERTIES = { "name", "lat", "lon" };
 
 	// other
-	private final static String[] OTHER_PROPERTIES = { "name" };
+	private static final String[] OTHER_PROPERTIES = { "name" };
 
 	/*
 	 * table
@@ -416,7 +416,7 @@ public class CopyOfElementDialog extends AbstractDialog<Integer> {
 			ITableLabelProvider {
 
 		// column size
-		private final static int DEF_SIZE = 147;
+		private static final int DEF_SIZE = 147;
 
 		// column name
 		private final String PROPERTY_NAME = "Property";

@@ -49,7 +49,7 @@ public class FileSelection extends ViewPart {
     private static final Image folderImage = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
     private static final Image fileImage = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FILE);
     
-    private final static Comparator<File> FILE_COMPARATOR = new Comparator<File>() {
+    private static final Comparator<File> FILE_COMPARATOR = new Comparator<File>() {
 
 		@Override
 		public int compare(File arg0, File arg1) {

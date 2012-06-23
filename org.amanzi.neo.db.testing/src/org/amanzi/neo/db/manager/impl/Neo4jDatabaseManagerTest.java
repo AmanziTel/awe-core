@@ -43,13 +43,13 @@ import org.neo4j.kernel.EmbeddedReadOnlyGraphDatabase;
  */
 public class Neo4jDatabaseManagerTest {
 
-    private final static String USER_HOME = "user.home";
+    private static final String USER_HOME = "user.home";
 
-    private final static String[] TEST_DIRECTORIES = new String[] {".amanzi", "test"};
+    private static final String[] TEST_DIRECTORIES = new String[] {".amanzi", "test"};
 
-    private final static String[] NEO4J_DEFAULT_DIRECTORIES = new String[] {".amanzi", "neo"};
+    private static final String[] NEO4J_DEFAULT_DIRECTORIES = new String[] {".amanzi", "neo"};
 
-    private final static String DATABASE_DIRECTORY = "neo";
+    private static final String DATABASE_DIRECTORY = "neo";
 
     private final Mockery context = new Mockery();
 

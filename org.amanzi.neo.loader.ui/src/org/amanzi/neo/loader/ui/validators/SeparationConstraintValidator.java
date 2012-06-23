@@ -35,15 +35,15 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class SeparationConstraintValidator extends AbstractValidator<NetworkConfiguration> {
 
-    private final static String DATASET_TYPE = "separation";
+    private static final String DATASET_TYPE = "separation";
     private Map<String, String[]> map = new HashMap<String, String[]>();
 
     // parameters
-    private final static String[] PARAMETERS = new String[] {"name", "separation"};
+    private static final String[] PARAMETERS = new String[] {"name", "separation"};
 
     // messages
-    private final static String NO_CONTENT = "The file no contains separation data";
-    private final static String ERROR = "Error while Separation data validate";
+    private static final String NO_CONTENT = "The file no contains separation data";
+    private static final String ERROR = "Error while Separation data validate";
 
     @Override
     public Result appropriate(List<File> filesToLoad) {

@@ -77,12 +77,12 @@ public class NetworkServiceTest extends AbstractAWEDBTest {
     private static final String NEW_NAME_VALUE = "new name value";
     private static final String FIRST_PROPERTY = "first property";
     private static final String SECOND_PROPERTY = "second property";
-    private final static String DEFAULT_SELECTION_LIST_NAME = "Selection List";
+    private static final String DEFAULT_SELECTION_LIST_NAME = "Selection List";
     private int indexCount = 0;
     private static final String FILTER_NAME = "filterName";
-    private final static List<INodeType> DEFAULT_NETWORK_STRUCTURE = new ArrayList<INodeType>();
+    private static final List<INodeType> DEFAULT_NETWORK_STRUCTURE = new ArrayList<INodeType>();
 
-    private final static INodeType[] NETWORK_STRUCTURE_NODE_TYPES = new INodeType[] {NetworkElementNodeType.BSC,
+    private static final INodeType[] NETWORK_STRUCTURE_NODE_TYPES = new INodeType[] {NetworkElementNodeType.BSC,
             NetworkElementNodeType.CITY, NetworkElementNodeType.SITE, NetworkElementNodeType.SECTOR};
 
     static {
@@ -1445,7 +1445,7 @@ public class NetworkServiceTest extends AbstractAWEDBTest {
         assertTrue("Incorrect Network Structure in Node", Arrays.equals(elementNames, structureFromNode));
     }
 
-    private final static String TEST_NAME = "test_name";
+    private static final String TEST_NAME = "test_name";
 
     /**
      * createProxy(Node sourceNode, Node rootNode), check N2N_REL relation

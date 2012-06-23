@@ -31,7 +31,7 @@ import javax.xml.namespace.QName;
 @XmlRegistry
 public class ObjectFactory {
 
-    private final static QName _Distribution_QNAME = new QName("http://www.example.org/DistributionXMLSchema", "distribution");
+    private static final QName _Distribution_QNAME = new QName("http://www.example.org/DistributionXMLSchema", "distribution");
 
     /**
      * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: org.example.distributionxmlschema

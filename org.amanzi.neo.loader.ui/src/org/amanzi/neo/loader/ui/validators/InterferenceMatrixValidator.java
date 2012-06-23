@@ -34,17 +34,17 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class InterferenceMatrixValidator extends AbstractValidator<NetworkConfiguration> {
 
-    private final static String DATASET_TYPE = "n2n";
-    private final static String SUB_TYPE = "interference";
+    private static final String DATASET_TYPE = "n2n";
+    private static final String SUB_TYPE = "interference";
     private Map<String, String[]> map = new HashMap<String, String[]>();
 
     // parameters for this type
-    private final static String[] PARAMETERS = new String[] {"serving_name", "interfering_name", "source", "co", "adj"};
+    private static final String[] PARAMETERS = new String[] {"serving_name", "interfering_name", "source", "co", "adj"};
 
     // messages
-    private final static String NO_N2N_NAME = "There is no n2n name";
-    private final static String NO_CONTENT = "The file no contains interferense matrix";
-    private final static String ERROR = "Error while interferense matrix validate";
+    private static final String NO_N2N_NAME = "There is no n2n name";
+    private static final String NO_CONTENT = "The file no contains interferense matrix";
+    private static final String ERROR = "Error while interferense matrix validate";
 
     @Override
     public Result appropriate(List<File> filesToLoad) {

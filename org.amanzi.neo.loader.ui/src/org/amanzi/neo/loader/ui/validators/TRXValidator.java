@@ -35,17 +35,17 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class TRXValidator extends AbstractValidator<NetworkConfiguration> {
 
-    private final static String DATASET_TYPE = "separation";
-    private final static String SUB_TYPE = "trx";
+    private static final String DATASET_TYPE = "separation";
+    private static final String SUB_TYPE = "trx";
     private Map<String, String[]> map = new HashMap<String, String[]>();
 
     // parameters
-    private final static String[] PARAMETERS = new String[] {"name", "subcell", "id", "band", "extended", "hopping_type", "bcch",
+    private static final String[] PARAMETERS = new String[] {"name", "subcell", "id", "band", "extended", "hopping_type", "bcch",
             "hsn", "maio"};
 
     // messages
-    private final static String NO_CONTENT = "The file no contents trx data";
-    private final static String ERROR = "Error while TRX data validate";
+    private static final String NO_CONTENT = "The file no contents trx data";
+    private static final String ERROR = "Error while TRX data validate";
 
     @Override
     public Result appropriate(List<File> filesToLoad) {

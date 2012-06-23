@@ -27,24 +27,24 @@ import org.junit.Test;
 public class AutoParseTesting extends AbstractAWEDBTest {
 	private static final Logger LOGGER = Logger
 			.getLogger(AutoParseTesting.class);
-	private final static String EMPTY_STRING = "";
-	private final static String STRING_INT_RANDOM_VALUE = "5";
-	private final static String STRING_INT_MAX_VALUE = String
+	private static final String EMPTY_STRING = "";
+	private static final String STRING_INT_RANDOM_VALUE = "5";
+	private static final String STRING_INT_MAX_VALUE = String
 			.valueOf(Integer.MAX_VALUE);
-	private final static String STRING_INT_MIN_VALUE = String
+	private static final String STRING_INT_MIN_VALUE = String
 			.valueOf(Integer.MIN_VALUE);
-	private final static String STRING_FLOAT_RANDOM_VALUE = "5.5";
-	private final static String STRING_DOUBLE_RANDOM_VALUE = "5.55555555";
-	private final static String STRING_FLOAT_MIN_VALUE = String
+	private static final String STRING_FLOAT_RANDOM_VALUE = "5.5";
+	private static final String STRING_DOUBLE_RANDOM_VALUE = "5.55555555";
+	private static final String STRING_FLOAT_MIN_VALUE = String
 			.valueOf(Float.MIN_VALUE);
-	private final static String STRING_DOUBLE_MIN_VALUE = String
+	private static final String STRING_DOUBLE_MIN_VALUE = String
 			.valueOf(Double.MIN_VALUE);
-	private final static String STRING_FLOAT_MAX_VALUE = String
+	private static final String STRING_FLOAT_MAX_VALUE = String
 			.valueOf(Float.MAX_VALUE);
-	private final static String STRING_DOUBLE_MAX_VALUE = String
+	private static final String STRING_DOUBLE_MAX_VALUE = String
 			.valueOf(Double.MAX_VALUE);
-	private final static String STRING_BOOLEAN_VALUE = "true";
-	private final static String STRING_VALUE = "string value";
+	private static final String STRING_BOOLEAN_VALUE = "true";
+	private static final String STRING_VALUE = "string value";
 	private static Long startTime;
 
 	@BeforeClass

@@ -351,7 +351,7 @@ public class PropertiesView extends AbstractPropertiesView {
 			ITableLabelProvider {
 
 		private final ArrayList<TableColumn> columns = new ArrayList<TableColumn>();
-		private final static int DEF_SIZE = 110;
+		private static final int DEF_SIZE = 110;
 		private static final String MEASUREMENT_LOADING_JOB_HEADER = "Measurements loading";
 		private static final String DRIVE_MODEL = "drive_model";
 		private boolean level = true;

@@ -56,7 +56,7 @@ public abstract class AbstractSaver<T1 extends IDataModel, T2 extends IData, T3 
     // constants
     protected static final char DOT_SEPARATOR = '.';
 
-    private final static ExportSynonymsManager exportManager = ExportSynonymsManager.getManager();
+    private static final ExportSynonymsManager exportManager = ExportSynonymsManager.getManager();
 
     // variables required for export synonyms saving
     private List<IDataModel> useableModels = new LinkedList<IDataModel>();

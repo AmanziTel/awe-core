@@ -45,7 +45,7 @@ public class AntennaValidator extends AbstractValidator<NetworkConfiguration> {
 
     private String charSetName = Charset.defaultCharset().name();
     
-    private final static String MSI = ".msi";
+    private static final String MSI = ".msi";
 
     // separator
     private static final String SEPARATOR = StringUtils.EMPTY;
@@ -56,8 +56,8 @@ public class AntennaValidator extends AbstractValidator<NetworkConfiguration> {
     private static final String GAIN = "GAIN";
 
     // messages
-    private final static String NO_CONTENT = "The file no contents antenna patterns data";
-    private final static String ERROR = "Error while antenna patterns data validate";
+    private static final String NO_CONTENT = "The file no contents antenna patterns data";
+    private static final String ERROR = "Error while antenna patterns data validate";
 
     @Override
     public Result appropriate(List<File> filesToLoad) {

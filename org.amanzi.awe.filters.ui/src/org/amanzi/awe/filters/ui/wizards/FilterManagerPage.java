@@ -51,13 +51,13 @@ import org.eclipse.swt.widgets.TableColumn;
 public class FilterManagerPage extends WizardPage {
     private static final Logger LOGGER = Logger.getLogger(FilterManagerPage.class);
 
-    private final static String FILTER_CREATION_PAGE_MSG = "Choose dataset";
-    private final static String LAYER_LABEL = "Gis Name";
-    private final static String FILTER_DESCRIPTION_LABEL = "Filter description";
-    private final static String FILTER_NAME = "Filter Name";
-    private final static int LAYER_COLUMN_INDEX = 1;
-    private final static int FILTER_NAME_COLUMN_INDEX = 2;
-    private final static int FILTER_DESCRIPTION_COLUMN_INDEX = 3;
+    private static final String FILTER_CREATION_PAGE_MSG = "Choose dataset";
+    private static final String LAYER_LABEL = "Gis Name";
+    private static final String FILTER_DESCRIPTION_LABEL = "Filter description";
+    private static final String FILTER_NAME = "Filter Name";
+    private static final int LAYER_COLUMN_INDEX = 1;
+    private static final int FILTER_NAME_COLUMN_INDEX = 2;
+    private static final int FILTER_DESCRIPTION_COLUMN_INDEX = 3;
 
     private Map<String, IRenderableModel> datasetModelMap = new HashMap<String, IRenderableModel>();
 

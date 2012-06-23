@@ -51,7 +51,7 @@ public class IconManager {
     private final String EVENTS_DIRECTORY = "images/events";
     private Map<IconSize, IconContainer> existedContainers = new HashMap<IconSize, IconContainer>();
     private List<String> missesIcons = new LinkedList<String>();
-    private final static String DOT_SEPARATOR = ".";
+    private static final String DOT_SEPARATOR = ".";
 
     /**
      * get instance of icon manager

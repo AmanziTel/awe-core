@@ -36,15 +36,15 @@ import org.apache.commons.lang3.StringUtils;
 public class AntennaOptimizationConstraintValidator extends AbstractValidator<NetworkConfiguration> {
 
     // dataset type
-    private final static String DATASET_TYPE = "antenna_optimization";
+    private static final String DATASET_TYPE = "antenna_optimization";
     private Map<String, String[]> map = new HashMap<String, String[]>();
 
     // parameters for this type
-    private final static String[] PARAMETERS = new String[] {"name", "antenna", "mechanical_titl", "electrical_titl"};
+    private static final String[] PARAMETERS = new String[] {"name", "antenna", "mechanical_titl", "electrical_titl"};
 
     // messages
-    private final static String NO_CONTENT = "The file no contains antenna optimization data";
-    private final static String ERROR = "Error while Antenna optimization data validate";
+    private static final String NO_CONTENT = "The file no contains antenna optimization data";
+    private static final String ERROR = "Error while Antenna optimization data validate";
 
     @Override
     public Result appropriate(List<File> filesToLoad) {

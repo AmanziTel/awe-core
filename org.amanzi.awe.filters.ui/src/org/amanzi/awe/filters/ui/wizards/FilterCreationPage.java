@@ -61,15 +61,15 @@ public class FilterCreationPage {
     /*
      * constants
      */
-    private final static String FILTER_NAME = "filterName";
-    private final static String LAYER_NAME = "layerName";
-    private final static String EXPESSION_TYPE = "expressionType";
-    private final static String FILTER_TYPE = "filterType";
-    private final static String NODE_TYPES = "nodeTypes";
-    private final static String VALUE = "value";
-    private final static String PROPERTY_NAME = "properyName";
-    private final static String SPACE_SEPARATOR = " ";
-    private final static String SEPARATOR_WORD_FROM = " from ";
+    private static final String FILTER_NAME = "filterName";
+    private static final String LAYER_NAME = "layerName";
+    private static final String EXPESSION_TYPE = "expressionType";
+    private static final String FILTER_TYPE = "filterType";
+    private static final String NODE_TYPES = "nodeTypes";
+    private static final String VALUE = "value";
+    private static final String PROPERTY_NAME = "properyName";
+    private static final String SPACE_SEPARATOR = " ";
+    private static final String SEPARATOR_WORD_FROM = " from ";
     /*
      * labels
      */

@@ -64,11 +64,11 @@ public enum PossibleTypes {
         }
     };
     
-    private final static String NULL_STRING = "NULL";
+    private static final String NULL_STRING = "NULL";
     
-    private final static String MINUS_STRING = "-";
+    private static final String MINUS_STRING = "-";
     
-    private final static String QUESTION_SYMBOL = "?";
+    private static final String QUESTION_SYMBOL = "?";
     
     private Class<?> originalClass;
     

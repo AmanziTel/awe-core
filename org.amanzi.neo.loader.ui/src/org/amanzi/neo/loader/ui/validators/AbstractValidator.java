@@ -70,9 +70,9 @@ public abstract class AbstractValidator<T extends IConfiguration> implements
 	public final static String NETWORK_IS_ALREADY_EXIST = "Network is already exist in database";
 
 	// messages for file
-	private final static String INCORRECT_FILE = "Incorrect file";
-	private final static String NO_HEADER_ROW = "Not found correct header row";
-	private final static String NO_NECESSARY_HEADERS = "Not found all necessary headers";
+	private static final String INCORRECT_FILE = "Incorrect file";
+	private static final String NO_HEADER_ROW = "Not found correct header row";
+	private static final String NO_NECESSARY_HEADERS = "Not found all necessary headers";
 
 	/**
 	 * checks file by extension

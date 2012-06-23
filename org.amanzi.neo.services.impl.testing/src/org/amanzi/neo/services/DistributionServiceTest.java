@@ -75,35 +75,35 @@ public class DistributionServiceTest extends AbstractNeoServiceTest {
 	/*
 	 * Name of test distribution
 	 */
-	private final static String DISTRIBUTION_NAME = "distribution";
+	private static final String DISTRIBUTION_NAME = "distribution";
 
-	private final static int NUMBER_OF_ROOT_AGGREGATIONS = 5;
+	private static final int NUMBER_OF_ROOT_AGGREGATIONS = 5;
 
-	private final static int NUMBER_OF_BARS = 10;
+	private static final int NUMBER_OF_BARS = 10;
 
-	private final static Color DEFAULT_BAR_COLOR = Color.BLACK;
+	private static final Color DEFAULT_BAR_COLOR = Color.BLACK;
 
-	private final static int DEFAULT_BAR_COUNT = 100;
+	private static final int DEFAULT_BAR_COUNT = 100;
 
-	private final static INodeType DEFAULT_NODE_TYPE = NetworkElementNodeType.SECTOR;
+	private static final INodeType DEFAULT_NODE_TYPE = NetworkElementNodeType.SECTOR;
 
-	private final static String DEFAULT_BAR_NAME = "bar_name";
+	private static final String DEFAULT_BAR_NAME = "bar_name";
 
-	private final static Color UPDATED_BAR_COLOR = Color.WHITE;
+	private static final Color UPDATED_BAR_COLOR = Color.WHITE;
 
-	private final static String UPDATED_BAR_NAME = "new_bar_name";
+	private static final String UPDATED_BAR_NAME = "new_bar_name";
 
-	private final static String DEFAULT_PROPERTY_NAME = "property";
+	private static final String DEFAULT_PROPERTY_NAME = "property";
 
-	private final static int UPDATED_BAR_COUNT = 500;
+	private static final int UPDATED_BAR_COUNT = 500;
 
-	private final static Color DEFAULT_LEFT_COLOR = Color.WHITE;
+	private static final Color DEFAULT_LEFT_COLOR = Color.WHITE;
 
-	private final static Color DEFAULT_RIGHT_COLOR = Color.YELLOW;
+	private static final Color DEFAULT_RIGHT_COLOR = Color.YELLOW;
 
-	private final static Color DEFAULT_SELECTED_COLOR = Color.BLACK;
+	private static final Color DEFAULT_SELECTED_COLOR = Color.BLACK;
 
-	private final static BrewerPalette DEFAULT_PALETTE = PlatformGIS
+	private static final BrewerPalette DEFAULT_PALETTE = PlatformGIS
 			.getColorBrewer().getPalettes()[PlatformGIS.getColorBrewer()
 			.getPalettes().length / 2];
 

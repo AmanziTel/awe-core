@@ -35,15 +35,15 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class TrafficValidator extends AbstractValidator<NetworkConfiguration> {
 
-    private final static String DATASET_TYPE = "traffic";
+    private static final String DATASET_TYPE = "traffic";
     private Map<String, String[]> map = new HashMap<String, String[]>();
 
     // parameters
-    private final static String[] PARAMETERS = new String[] {"name", "traffic"};
+    private static final String[] PARAMETERS = new String[] {"name", "traffic"};
 
     // messages
-    private final static String NO_CONTENT = "The file no contains traffic data";
-    private final static String ERROR = "Error while Traffic data validate";
+    private static final String NO_CONTENT = "The file no contains traffic data";
+    private static final String ERROR = "Error while Traffic data validate";
 
     @Override
     public Result appropriate(List<File> filesToLoad) {

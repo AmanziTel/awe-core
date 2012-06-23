@@ -35,16 +35,16 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class NetworkValidator extends AbstractValidator<NetworkConfiguration> {
 
-    private final static String DATASET_TYPE = "network";
+    private static final String DATASET_TYPE = "network";
     private Map<String, String[]> map = new HashMap<String, String[]>();
 
     // parameters
-    private final static String[] SECTOR_PARAMETERS = new String[] {"name"};
-    private final static String[] SITE_PARAMETERS = new String[] {"lon", "lat"};
+    private static final String[] SECTOR_PARAMETERS = new String[] {"name"};
+    private static final String[] SITE_PARAMETERS = new String[] {"lon", "lat"};
 
     // messages
-    private final static String NO_CONTENT = "The file no contains network data";
-    private final static String ERROR = "Error while Network data validate";
+    private static final String NO_CONTENT = "The file no contains network data";
+    private static final String ERROR = "Error while Network data validate";
 
     @Override
     public Result appropriate(List<File> filesToLoad) {

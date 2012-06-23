@@ -27,13 +27,13 @@ import org.eclipse.swt.widgets.Text;
 public class ExportToFileSettingsPage extends WizardPage {
 
 	// default extensions
-	private final static String[] DEFAULT_EXTENSION = { ".csv", ".txt" };
+	private static final String[] DEFAULT_EXTENSION = { ".csv", ".txt" };
 
 	// default separators
-	private final static String[] DEFAULT_SEPARATOR = { "\"\\" + "t\"",
+	private static final String[] DEFAULT_SEPARATOR = { "\"\\" + "t\"",
 			"\",\"", "\";\"" };
 
-	private final static String[] SEPARATORS = { "\t", ",", ";" };
+	private static final String[] SEPARATORS = { "\t", ",", ";" };
 
 	// page name
 

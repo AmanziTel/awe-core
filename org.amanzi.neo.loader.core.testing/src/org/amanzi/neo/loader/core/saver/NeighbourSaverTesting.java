@@ -62,9 +62,9 @@ public class NeighbourSaverTesting extends AbstractAWEDBTest {
     private static final String PROJECT_NAME = "project";
     private int MINIMAL_COLUMN_SIZE = 2;
     private static DataLoadPreferenceInitializer initializer;
-    private final static Map<String, Object> SECTOR1 = new HashMap<String, Object>();
-    private final static Map<String, Object> SECTOR2 = new HashMap<String, Object>();
-    private final static Map<String, Object> properties = new HashMap<String, Object>();
+    private static final Map<String, Object> SECTOR1 = new HashMap<String, Object>();
+    private static final Map<String, Object> SECTOR2 = new HashMap<String, Object>();
+    private static final Map<String, Object> properties = new HashMap<String, Object>();
     private INetworkModel networkModel;
     private INodeToNodeRelationsModel node2model;
     private static Long startTime;

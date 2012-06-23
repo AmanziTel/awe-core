@@ -121,7 +121,7 @@ public class PropertyTableView extends ViewPart {
 	private class TableLabelProvider extends LabelProvider implements
 			ITableLabelProvider {
 		private final ArrayList<TableColumn> columns = new ArrayList<TableColumn>();
-		private final static int PROP_DEF_SIZE = 80;
+		private static final int PROP_DEF_SIZE = 80;
 
 		private void createColumn(String label, int size, boolean sortable,
 				final int idx) {

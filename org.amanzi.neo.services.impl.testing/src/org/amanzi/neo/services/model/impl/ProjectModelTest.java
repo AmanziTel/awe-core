@@ -46,7 +46,7 @@ public class ProjectModelTest extends AbstractNeoServiceTest {
 
     private static Logger LOGGER = Logger.getLogger(ProjectModelTest.class);
 
-    private final static String[] NETWORK_STRUCTURE_NODE_TYPES = new String[] {NetworkElementNodeType.BSC.getId(),
+    private static final String[] NETWORK_STRUCTURE_NODE_TYPES = new String[] {NetworkElementNodeType.BSC.getId(),
             NetworkElementNodeType.CITY.getId(), NetworkElementNodeType.SITE.getId(), NetworkElementNodeType.SECTOR.getId()};
 
     private static int count = 0;

@@ -67,8 +67,8 @@ public class TrafficSaverTesting extends AbstractAWEDBTest {
     private static final Integer TRAFFIC_VALUE = 123;
     private int MINIMAL_COLUMN_SIZE = 2;
     private static DataLoadPreferenceInitializer initializer;
-    private final static Map<String, Object> COMPLETED_SECTOR = new HashMap<String, Object>();
-    private final static Map<String, Object> COLLECTED_SECTOR = new HashMap<String, Object>();
+    private static final Map<String, Object> COMPLETED_SECTOR = new HashMap<String, Object>();
+    private static final Map<String, Object> COLLECTED_SECTOR = new HashMap<String, Object>();
     private static NetworkModel networkModelMock;
     private static Long startTime;
     private static IDatabaseManager dbManager;

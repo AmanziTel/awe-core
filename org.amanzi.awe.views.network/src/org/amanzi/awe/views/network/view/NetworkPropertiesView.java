@@ -273,7 +273,7 @@ public class NetworkPropertiesView extends AbstractPropertiesView {
 			ITableLabelProvider {
 
 		private final ArrayList<TableColumn> columns = new ArrayList<TableColumn>();
-		private final static int DEF_SIZE = 110;
+		private static final int DEF_SIZE = 110;
 		private boolean level = true;
 
 		private void createColumn(String label, int size, boolean sortable,

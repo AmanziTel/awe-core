@@ -42,10 +42,10 @@ import org.eclipse.swt.widgets.TableColumn;
 public class CreateNewElementDialog extends AbstractDialog<Integer> {
 
 	// sector
-	private final static String[] SECTOR_PROPERTIES = { "name", "ci", "lac" };
+	private static final String[] SECTOR_PROPERTIES = { "name", "ci", "lac" };
 
 	// site
-	private final static String[] SITE_PROPERTIES = { "name", "lat", "lon" };
+	private static final String[] SITE_PROPERTIES = { "name", "lat", "lon" };
 
 	/*
 	 * table
@@ -351,7 +351,7 @@ public class CreateNewElementDialog extends AbstractDialog<Integer> {
 			ITableLabelProvider {
 
 		// column size
-		private final static int DEF_SIZE = 147;
+		private static final int DEF_SIZE = 147;
 
 		// column name
 		private final String PROPERTY_NAME = "Property";

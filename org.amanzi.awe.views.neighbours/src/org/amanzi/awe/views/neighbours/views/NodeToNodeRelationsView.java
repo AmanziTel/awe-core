@@ -95,9 +95,9 @@ public class NodeToNodeRelationsView extends ViewPart {
 	private TableContentProvider provider;
 	private TableFilter servingFilter, neighbourFilter;
 	private final EventManager eventManager;
-	private final static double ZOOM_8X = 80d;
-	private final static double ZOOM_4X = 40d;
-	private final static double ZOOM_2X = 20d;
+	private static final double ZOOM_8X = 80d;
+	private static final double ZOOM_4X = 40d;
+	private static final double ZOOM_2X = 20d;
 
 	@SuppressWarnings("unchecked")
 	public NodeToNodeRelationsView() {
@@ -261,8 +261,8 @@ public class NodeToNodeRelationsView extends ViewPart {
 	private class TableLabelProvider extends LabelProvider implements
 			ITableLabelProvider {
 		private final ArrayList<TableColumn> columns = new ArrayList<TableColumn>();
-		private final static int DEF_SIZE = 120;
-		private final static int PROP_DEF_SIZE = 80;
+		private static final int DEF_SIZE = 120;
+		private static final int PROP_DEF_SIZE = 80;
 		private final String[] colNames = new String[] {
 				NodeToNodeRelationsViewMessages.SERVING_COLUMN,
 				NodeToNodeRelationsViewMessages.NEIGHBOR_COLUMN };

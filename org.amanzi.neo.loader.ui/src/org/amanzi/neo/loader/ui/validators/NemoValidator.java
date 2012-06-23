@@ -28,9 +28,9 @@ public class NemoValidator extends AbstractValidator<NemoConfiguration> {
 	/**
 	 * Messages
 	 */
-	private final static String DRIVE_ALREADY_EXSIST = "Drive already exist in model";
-	private final static String NO_CONTENT = "The file no contains Nemo data";
-	private final static String ERROR = "Error while Nemo data validate";
+	private static final String DRIVE_ALREADY_EXSIST = "Drive already exist in model";
+	private static final String NO_CONTENT = "The file no contains Nemo data";
+	private static final String ERROR = "Error while Nemo data validate";
 
 	/*
 	 * (non-Javadoc)
