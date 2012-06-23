@@ -37,6 +37,21 @@ import org.neo4j.graphdb.Node;
  */
 public class AbstractDataModelTest extends AbstractMockitoTest {
 
+    private class TestDataModel extends AbstractDataModel {
+
+        /**
+         * @param nodeService
+         */
+        public TestDataModel(INodeService nodeService) {
+            super(nodeService);
+        }
+
+        @Override
+        public void finishUp() throws ModelException {
+        }
+
+    }
+
     private INodeService nodeService;
 
     private IDataModel dataModel;
@@ -48,12 +63,7 @@ public class AbstractDataModelTest extends AbstractMockitoTest {
     public void setUp() throws Exception {
         nodeService = mock(INodeService.class);
 
-        dataModel = new AbstractDataModel(nodeService) {
-
-            @Override
-            public void finishUp() throws ModelException {
-            }
-        };
+        dataModel = new TestDataModel(nodeService);
     }
 
     @Test
@@ -100,7 +110,7 @@ public class AbstractDataModelTest extends AbstractMockitoTest {
         Node childNode = getNodeMock();
         IDataElement child = new DataElement(childNode);
 
-        when(nodeService.getParent(childNode)).thenThrow(new DatabaseException(new NullPointerException()));
+        when(nodeService.getParent(childNode)).thenThrow(new DatabaseException(new IllegalArgumentException()));
 
         dataModel.getParentElement(child);
     }

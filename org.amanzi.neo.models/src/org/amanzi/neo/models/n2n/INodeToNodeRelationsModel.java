@@ -19,7 +19,6 @@ import java.util.Map;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.distribution.IDistributionalModel;
 import org.amanzi.neo.models.exceptions.ModelException;
-import org.amanzi.neo.services.exceptions.DatabaseException;
 
 /**
  * <p>
@@ -61,8 +60,6 @@ public interface INodeToNodeRelationsModel extends IDistributionalModel {
      * @param neighbourElement
      * @param properties
      * @param isReplace
-     * @throws DatabaseException
-     * @throws AWEException
      */
     void updateRelationship(IDataElement serviceElement, IDataElement neighbourElement, Map<String, Object> properties, boolean isReplace) throws ModelException;
 

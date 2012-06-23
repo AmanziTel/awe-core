@@ -14,7 +14,6 @@
 package org.amanzi.neo.impl.dto;
 
 import java.util.HashMap;
-import java.util.Set;
 
 import org.amanzi.neo.dto.IDataElement;
 import org.neo4j.graphdb.Node;
@@ -45,16 +44,6 @@ public class DataElement extends HashMap<String, Object> implements IDataElement
     @Override
     public Object get(String header) {
         return super.get(header);
-    }
-
-    @Override
-    public Object put(String key, Object value) {
-        return super.put(key, value);
-    }
-
-    @Override
-    public Set<String> keySet() {
-        return super.keySet();
     }
 
     public Node getNode() {

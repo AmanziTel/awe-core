@@ -13,7 +13,7 @@
 
 package org.amanzi.testing;
 
-import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import org.mockito.Mockito;
@@ -35,7 +35,7 @@ public class AbstractMockitoTest extends AbstractTest {
         return mock(Node.class);
     }
 
-    protected Node getNodeMock(HashMap<String, Object> values) {
+    protected Node getNodeMock(Map<String, Object> values) {
         Node result = getNodeMock();
 
         for (Entry<String, Object> singleEntry : values.entrySet()) {

@@ -24,11 +24,11 @@ import org.amanzi.neo.providers.impl.SelectionModelProvider;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class ModelProviderFactory {
+public final class ModelProviderFactory {
 
-    private static ModelProviderFactory instance;
+    private static volatile ModelProviderFactory instance;
 
-    private ISelectionModelProvider selectionModelProvider;
+    private volatile ISelectionModelProvider selectionModelProvider;
 
     private ModelProviderFactory() {
         // do nothing

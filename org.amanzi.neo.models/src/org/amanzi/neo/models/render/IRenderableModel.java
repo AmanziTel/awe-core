@@ -122,10 +122,10 @@ public interface IRenderableModel extends IModel {
     /**
      * Gets all the model elements in the defined bounds.
      * 
-     * @param bounds_transformed
+     * @param bounds
      * @return
      */
-    Iterable<IDataElement> getElements(Envelope bounds_transformed) throws ModelException;
+    Iterable<IDataElement> getElements(Envelope bounds) throws ModelException;
 
     /**
      * Find out coordinates from the defined element.

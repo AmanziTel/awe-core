@@ -13,6 +13,8 @@
 
 package org.amanzi.neo.models.impl.internal;
 
+import java.util.Iterator;
+
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.impl.dto.DataElement;
 import org.amanzi.neo.models.IDataModel;
@@ -44,7 +46,7 @@ public abstract class AbstractDataModel extends AbstractModel implements IDataMo
 
     @Override
     public IDataElement getParentElement(IDataElement childElement) throws ModelException {
-        assert childElement == null;
+        assert childElement != null;
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("getParentElement", childElement));
@@ -55,7 +57,7 @@ public abstract class AbstractDataModel extends AbstractModel implements IDataMo
         try {
             Node childNode = ((DataElement)childElement).getNode();
 
-            Node parentNode = nodeService.getParent(childNode);
+            Node parentNode = getNodeService().getParent(childNode);
 
             result = new DataElement(parentNode);
         } catch (ServiceException e) {
@@ -70,12 +72,12 @@ public abstract class AbstractDataModel extends AbstractModel implements IDataMo
     }
 
     @Override
-    public Iterable<IDataElement> getChildren(IDataElement parent) {
+    public Iterator<IDataElement> getChildren(IDataElement parent) {
         return null;
     }
 
     @Override
-    public Iterable<IDataElement> getAllElementsByType(INodeType elementType) {
+    public Iterator<IDataElement> getAllElementsByType(INodeType elementType) {
         return null;
     }
 }

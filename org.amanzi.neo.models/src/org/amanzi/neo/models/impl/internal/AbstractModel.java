@@ -32,6 +32,7 @@ import org.neo4j.graphdb.Node;
  * @since 1.0.0
  */
 public abstract class AbstractModel implements IModel {
+    private static final Logger LOGGER = Logger.getLogger(AbstractModel.class);
 
     /*
      * constants to create log statement
@@ -41,20 +42,18 @@ public abstract class AbstractModel implements IModel {
     private static final String LOG_STATEMENT_START_ARGS = "(<";
     private static final String START_LOG_STATEMENT_PREFIX = "start ";
 
-    private static final Logger LOGGER = Logger.getLogger(AbstractModel.class);
+    private String name;
+    private Node rootNode;
+    private INodeType nodeType;
 
-    protected String name;
-    protected Node rootNode;
-    protected INodeType nodeType;
-
-    protected INodeService nodeService;
+    private INodeService nodeService;
 
     public AbstractModel(INodeService nodeService) {
         this.nodeService = nodeService;
     }
 
     public void initialize(Node rootNode) throws ModelException {
-        assert rootNode == null;
+        assert rootNode != null;
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("initialize", rootNode));
@@ -122,6 +121,10 @@ public abstract class AbstractModel implements IModel {
         StringBuilder builder = new StringBuilder("finish ").append(methodName).append("()");
 
         return builder.toString();
+    }
+
+    protected INodeService getNodeService() {
+        return nodeService;
     }
 
 }

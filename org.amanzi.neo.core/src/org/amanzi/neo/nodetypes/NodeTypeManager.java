@@ -15,7 +15,11 @@ package org.amanzi.neo.nodetypes;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
+
+import org.apache.log4j.Logger;
 
 /**
  * <p>
@@ -32,11 +36,17 @@ import java.util.Set;
  * @since 1.0.0
  */
 @SuppressWarnings({"unchecked", "rawtypes"})
-public class NodeTypeManager {
+public final class NodeTypeManager {
+
+    private static final Logger LOGGER = Logger.getLogger(NodeTypeManager.class);
 
     private static Set<Class< ? >> registeredNodeTypes = new HashSet<Class< ? >>();
 
-    private static HashMap<String, INodeType> nodeTypeCache = new HashMap<String, INodeType>();
+    private static Map<String, INodeType> nodeTypeCache = new HashMap<String, INodeType>();
+
+    private NodeTypeManager() {
+
+    }
 
     /**
      * Adds a class, implementing <code>INodeType</code> to the collection of registered classes.
@@ -44,7 +54,7 @@ public class NodeTypeManager {
      * @param nodeType a class that implements INodeType interface
      */
     public static void registerNodeType(Class< ? extends INodeType> nodeType) {
-        assert nodeType == null;
+        assert nodeType != null;
 
         registeredNodeTypes.add(nodeType);
     }
@@ -62,14 +72,14 @@ public class NodeTypeManager {
         result = nodeTypeCache.get(typeID);
 
         if (result == null) {
-            for (Class T : registeredNodeTypes) {
-                StringToEnumConverter conv = new StringToEnumConverter(T);
+            for (Class clazz : registeredNodeTypes) {
+                StringToEnumConverter conv = new StringToEnumConverter(clazz);
                 try {
                     result = (INodeType)conv.convert(typeID);
 
                     break;
                 } catch (IllegalArgumentException e) {
-                    e.printStackTrace();
+                    LOGGER.error("Unable to get a NodeType from Class", e);
                 }
             }
             nodeTypeCache.put(typeID, result);
@@ -86,7 +96,7 @@ public class NodeTypeManager {
         }
 
         public T convert(String source) {
-            return (T)Enum.valueOf(this.enumType, source.trim().toUpperCase());
+            return (T)Enum.valueOf(this.enumType, source.trim().toUpperCase(Locale.getDefault()));
         }
     }
 

@@ -16,6 +16,7 @@ package org.amanzi.neo.services.impl.internal;
 import org.amanzi.neo.db.manager.DatabaseManagerFactory;
 import org.amanzi.neo.db.manager.events.DatabaseEvent;
 import org.amanzi.neo.db.manager.events.IDatabaseEventListener;
+import org.amanzi.neo.services.internal.IService;
 import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
@@ -26,7 +27,7 @@ import org.neo4j.graphdb.GraphDatabaseService;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public abstract class AbstractService implements IDatabaseEventListener {
+public abstract class AbstractService implements IDatabaseEventListener, IService {
 
     private GraphDatabaseService graphDb;
 
@@ -36,6 +37,7 @@ public abstract class AbstractService implements IDatabaseEventListener {
         DatabaseManagerFactory.getDatabaseManager().addDatabaseEventListener(this);
     }
 
+    @Override
     public GraphDatabaseService getGraphDb() {
         return graphDb;
     }
@@ -49,6 +51,8 @@ public abstract class AbstractService implements IDatabaseEventListener {
         case AFTER_STARTUP:
             graphDb = DatabaseManagerFactory.getDatabaseManager().getDatabaseService();
             break;
+        default:
+            // do nothing
         }
     }
 }

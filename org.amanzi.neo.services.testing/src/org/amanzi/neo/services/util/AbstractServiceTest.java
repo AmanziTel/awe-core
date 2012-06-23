@@ -41,7 +41,7 @@ public class AbstractServiceTest extends AbstractMockitoTest {
 
     }
 
-    protected GraphDatabaseService service;
+    private GraphDatabaseService service;
 
     private Transaction transaction;
 
@@ -85,6 +85,10 @@ public class AbstractServiceTest extends AbstractMockitoTest {
 
     protected void setReadOnly() {
         isReadOnlyTest = true;
+    }
+
+    protected GraphDatabaseService getService() {
+        return service;
     }
 
 }

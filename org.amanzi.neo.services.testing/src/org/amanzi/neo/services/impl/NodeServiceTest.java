@@ -38,17 +38,15 @@ public class NodeServiceTest extends AbstractServiceTest {
 
     private static final String NODE_TYPE_ID = TestNodeType.TEST1.getId();
 
-    private INodeService nodeService;
+    private final IGeneralNodeProperties generalNodeProperties = new GeneralNodeProperties();
 
-    private IGeneralNodeProperties generalNodeProperties;
+    private INodeService nodeService = null;
 
     @Before
     public void setUp() {
         super.setUp();
 
-        generalNodeProperties = new GeneralNodeProperties();
-
-        nodeService = new NodeService(service, generalNodeProperties);
+        nodeService = new NodeService(getService(), generalNodeProperties);
 
         setReadOnly();
     }
@@ -138,7 +136,7 @@ public class NodeServiceTest extends AbstractServiceTest {
         setMethodFailure();
 
         Node node = getNodeMock();
-        when(node.hasProperty(generalNodeProperties.getNodeNameProperty())).thenThrow(new NullPointerException());
+        when(node.hasProperty(generalNodeProperties.getNodeNameProperty())).thenThrow(new IllegalArgumentException());
 
         nodeService.getNodeName(node);
     }
@@ -148,7 +146,7 @@ public class NodeServiceTest extends AbstractServiceTest {
         setMethodFailure();
 
         Node node = getNodeMock();
-        when(node.hasProperty(generalNodeProperties.getNodeTypeProperty())).thenThrow(new NullPointerException());
+        when(node.hasProperty(generalNodeProperties.getNodeTypeProperty())).thenThrow(new IllegalArgumentException());
 
         nodeService.getNodeType(node);
     }

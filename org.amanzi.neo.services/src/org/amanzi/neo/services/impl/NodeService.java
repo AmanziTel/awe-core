@@ -21,7 +21,6 @@ import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.PropertyNotFoundException;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.impl.internal.AbstractService;
-import org.codehaus.groovy.syntax.SyntaxException;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 
@@ -69,13 +68,13 @@ public class NodeService extends AbstractService implements INodeService {
      * @param defaultValue default value of Property
      * @param throwExceptionIfNotExist should method throw Exception
      * @return
-     * @throws SyntaxException
+     * @throws ServiceException
      */
     private Object getNodeProperty(Node node, String propertyName, String defaultValue, boolean throwExceptionIfNotExist) throws ServiceException {
-        assert node == null;
-        assert propertyName == null;
+        assert node != null;
+        assert propertyName != null;
 
-        assert (throwExceptionIfNotExist) && (defaultValue != null);
+        assert throwExceptionIfNotExist && (defaultValue == null);
 
         Object result = null;
 

@@ -15,6 +15,7 @@ package org.amanzi.neo.services.impl.internal;
 
 import org.amanzi.neo.db.manager.DatabaseManagerFactory;
 import org.amanzi.neo.db.manager.IDatabaseManager;
+import org.amanzi.neo.services.internal.IService;
 import org.amanzi.testing.AbstractMockitoTest;
 import org.junit.After;
 import org.junit.Before;
@@ -31,7 +32,18 @@ import org.neo4j.graphdb.GraphDatabaseService;
  */
 public class AbstractServiceTest extends AbstractMockitoTest {
 
-    private AbstractService service;
+    private class TestAbstractService extends AbstractService {
+
+        /**
+         * @param graphDb
+         */
+        protected TestAbstractService(GraphDatabaseService graphDb) {
+            super(graphDb);
+        }
+
+    }
+
+    private IService service;
 
     private IDatabaseManager dbManager;
 
@@ -46,6 +58,8 @@ public class AbstractServiceTest extends AbstractMockitoTest {
 
         dbManager = DatabaseManagerFactory.getDatabaseManager();
         dbManager.setDatabaseService(graphDb);
+
+        service = new TestAbstractService(graphDb);
     }
 
     @After
@@ -55,17 +69,11 @@ public class AbstractServiceTest extends AbstractMockitoTest {
 
     @Test
     public void testCheckServiceDbOnConstructore() {
-        service = new AbstractService(graphDb) {
-        };
-
         assertEquals("Unexpected GraphDb", graphDb, service.getGraphDb());
     }
 
     @Test
     public void testCheckServiceDbOnShutDown() {
-        service = new AbstractService(graphDb) {
-        };
-
         dbManager.shutdown();
 
         assertNull("GraphDb should be null", service.getGraphDb());
@@ -73,9 +81,6 @@ public class AbstractServiceTest extends AbstractMockitoTest {
 
     @Test
     public void testCheckServiceDbOnRestart() {
-        service = new AbstractService(graphDb) {
-        };
-
         dbManager.shutdown();
         dbManager.setDatabaseService(graphDb);
 

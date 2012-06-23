@@ -12,6 +12,8 @@
  */
 package org.amanzi.neo.core.nodetypes;
 
+import java.util.Locale;
+
 import junit.framework.Assert;
 
 import org.amanzi.neo.nodetypes.INodeType;
@@ -26,7 +28,7 @@ public class NodeTypeManagerTest {
 
         @Override
         public String getId() {
-            return name().toLowerCase();
+            return name().toLowerCase(Locale.getDefault());
         }
     }
 
@@ -35,12 +37,12 @@ public class NodeTypeManagerTest {
 
         @Override
         public String getId() {
-            return name().toLowerCase();
+            return name().toLowerCase(Locale.getDefault());
         }
     }
 
     @BeforeClass
-    public static void beforeTest() throws Exception {
+    public static void beforeTest() {
         NodeTypeManager.registerNodeType(NodeType.class);
     }
 

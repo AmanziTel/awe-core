@@ -7,5 +7,6 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: org.amanzi.neo.nodeproperties,
  org.amanzi.neo.nodeproperties.impl,
  org.amanzi.neo.nodetypes
-Require-Bundle: org.neo4j;bundle-version="1.8.0";visibility:=reexport
+Require-Bundle: org.neo4j;bundle-version="1.8.0";visibility:=reexport,
+ org.amanzi.log4j;bundle-version="1.0.0"
 Eclipse-ExtensibleAPI: true

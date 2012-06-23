@@ -13,14 +13,18 @@
 
 package org.amanzi.neo.services.internal;
 
+import org.neo4j.graphdb.GraphDatabaseService;
+
 /**
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
 public interface IService {
+
+    GraphDatabaseService getGraphDb();
 
 }

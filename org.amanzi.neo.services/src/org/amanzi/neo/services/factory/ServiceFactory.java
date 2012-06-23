@@ -27,11 +27,11 @@ import org.neo4j.graphdb.GraphDatabaseService;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class ServiceFactory {
+public final class ServiceFactory {
 
-    private static ServiceFactory instance;
+    private static volatile ServiceFactory instance;
 
-    private INodeService nodeService;
+    private volatile INodeService nodeService;
 
     private ServiceFactory() {
         // do nothing
