@@ -37,7 +37,7 @@ import org.osgi.framework.BundleContext;
  * activate JrubyScripting
  * </p>
  * 
- * @author Vladislav_Kondratenko
+ * @author Vladislav_Kondratenkoprivate
  * @since 1.0.0
  */
 public abstract class AbstractScriptingPlugin extends Plugin {
@@ -56,7 +56,7 @@ public abstract class AbstractScriptingPlugin extends Plugin {
      * wrapper for runtime instance
      */
     private JRubyRuntimeWrapper runtimeWrapper;
-    private ScriptingManager manager = new ScriptingManager();
+    private final ScriptingManager manager = new ScriptingManager();
 
     /**
      * initialize plugin
