@@ -1,0 +1,7 @@
+analyseLocally=true
+eclipse.preferences.version=1
+projectArtifactId=org.amanzi.awe.scripting
+projectBranch=
+projectGroupId=org.amanzi
+serverUrl=http\://192.168.12.2\:8080/sonar
+version=1

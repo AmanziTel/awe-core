@@ -14,8 +14,10 @@
 package org.amanzi.awe.scripting;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 
 import org.amanzi.awe.scripting.utils.ScriptUtils;
+import org.amanzi.awe.scripting.utils.ScriptingException;
 import org.jruby.Ruby;
 import org.jruby.RubyNumeric;
 import org.jruby.java.proxies.JavaProxy;
@@ -46,8 +48,10 @@ public class JRubyRuntimeWrapper {
      * execute string by script name
      * 
      * @param scriptName
+     * @throws ScriptingException
+     * @throws FileNotFoundException
      */
-    public Object executeScriptByName(String scriptName) {
+    public Object executeScriptByName(String scriptName) throws FileNotFoundException, ScriptingException {
         String script = ScriptUtils.getInstance().getScript(scriptName, destination);
         IRubyObject object = runtime.evalScriptlet(script);
 

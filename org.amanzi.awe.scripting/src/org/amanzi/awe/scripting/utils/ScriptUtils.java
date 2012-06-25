@@ -48,27 +48,23 @@ public class ScriptUtils {
     /*
      * static fields;
      */
-    private static final ScriptUtils INSTANCE = new ScriptUtils();
     private static final String JRUBY_PLUGIN_NAME = "org.jruby";
     private static final String PREFIX_JAR_FILE = "jar:file:";
     private static final String PREFIX_FILE = "file:";
-    
+    private static final String LIB_PATH = "/lib/ruby/";
+    private static final String[] JRUBY_VERSIONS = new String[] {"1.8", "1.9", "2.0", "2.1"};
     private String jRubyHome;
     private String jRubyVersion;
 
-    /**
-     * @return
-     */
-    public static ScriptUtils getInstance() {
-        return INSTANCE;
+    private static final class SingletonHolder {
+        public static final ScriptUtils HOLDER_INSTANCE = new ScriptUtils();
+
+        private SingletonHolder() {
+        }
     }
 
-    /**
-     * @return
-     * @throws Exception
-     */
-    public String getJRubyHome() throws IOException {
-        return ensureJRubyHome();
+    public static ScriptUtils getInstance() {
+        return SingletonHolder.HOLDER_INSTANCE;
     }
 
     /**
@@ -76,27 +72,27 @@ public class ScriptUtils {
      * 
      * @throws Exception
      */
-    private String ensureJRubyHome() throws IOException {
+    public String getJRubyHome() throws ScriptingException {
         try {
             if (jRubyHome == null) {
                 jRubyHome = getPluginRoot(JRUBY_PLUGIN_NAME);
             }
-        } catch (IOException e) {
+        } catch (ScriptingException e) {
             LOGGER.error("Cann't ensure jruby.home", e);
-            throw e;
+            throw new ScriptingException(e);
         }
         return jRubyHome;
     }
 
     /** return JRubyVersion, searching for it if necessary */
-    private String ensureJRubyVersion() throws IOException {
+    private String getJrubyVersion() throws ScriptingException {
         try {
             if (jRubyVersion == null) {
-                jRubyVersion = findJRubyVersion(ensureJRubyHome());
+                jRubyVersion = findJRubyVersion(getJRubyHome());
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             LOGGER.error("Cann't ensure jruby.version", e);
-            throw e;
+            throw new ScriptingException(e);
         }
         return jRubyVersion;
     }
@@ -106,13 +102,13 @@ public class ScriptUtils {
      * @return
      * @throws Exception
      */
-    public List<String> makeLoadPath(String absolutePath) throws IOException {
+    public List<String> makeLoadPath(String absolutePath) throws ScriptingException {
         try {
-            ensureJRubyHome();
-            ensureJRubyVersion();
-        } catch (IOException e) {
-            LOGGER.error("cann't ensure necessary variables jruby.home=" + jRubyHome + "jruby.version=" + jRubyVersion);
-            throw e;
+            getJRubyHome();
+            getJrubyVersion();
+        } catch (ScriptingException e) {
+            LOGGER.error("can't ensure necessary variables jruby.home=" + jRubyHome + "jruby.version=" + jRubyVersion);
+            throw new ScriptingException(e);
         }
 
         List<String> loadPath = new ArrayList<String>();
@@ -127,10 +123,10 @@ public class ScriptUtils {
      * 
      * @throws IOException
      */
-    private String findJRubyVersion(String jRubyHome) throws IOException {
+    private String findJRubyVersion(String jRubyHome) throws ScriptingException {
         String result = null;
-        for (String version : new String[] {"1.8", "1.9", "2.0", "2.1"}) {
-            String path = jRubyHome + "/lib/ruby/" + version;
+        for (String version : JRUBY_VERSIONS) {
+            String path = jRubyHome + LIB_PATH + version;
             if ((new File(path)).isDirectory()) {
                 result = version;
                 break;
@@ -147,20 +143,24 @@ public class ScriptUtils {
      * @throws IOException throws Exception if path cannot be resolved
      * @author Lagutko_N
      */
-    public String getPluginRoot(String pluginName) throws IOException {
-        URL rubyLocationURL = Platform.getBundle(pluginName).getEntry("/");
-        String rubyLocation = FileLocator.resolve(rubyLocationURL).getPath();
-        if (rubyLocation.startsWith(PREFIX_JAR_FILE)) {
-            rubyLocation = rubyLocation.substring(PREFIX_JAR_FILE.length());
-            if (!rubyLocation.startsWith(File.separator)) {
-                rubyLocation = File.separator + rubyLocation;
+    public String getPluginRoot(String pluginName) throws ScriptingException {
+        try {
+            URL rubyLocationURL = Platform.getBundle(pluginName).getEntry("/");
+            String rubyLocation = FileLocator.resolve(rubyLocationURL).getPath();
+            if (rubyLocation.startsWith(PREFIX_JAR_FILE)) {
+                rubyLocation = rubyLocation.substring(PREFIX_JAR_FILE.length());
+                if (!rubyLocation.startsWith(File.separator)) {
+                    rubyLocation = File.separator + rubyLocation;
+                }
+                rubyLocation = PREFIX_FILE + rubyLocation;
+            } else if (rubyLocation.startsWith(PREFIX_FILE)) {
+                rubyLocation = rubyLocation.substring(PREFIX_FILE.length());
             }
-            rubyLocation = PREFIX_FILE + rubyLocation;
-        } else if (rubyLocation.startsWith(PREFIX_FILE)) {
-            rubyLocation = rubyLocation.substring(PREFIX_FILE.length());
+            return rubyLocation;
+        } catch (Exception e) {
+            throw new ScriptingException(e);
         }
 
-        return rubyLocation;
     }
 
     /**
@@ -169,8 +169,10 @@ public class ScriptUtils {
      * @param scriptName
      * @param destination
      * @return
+     * @throws ScriptingException
+     * @throws FileNotFoundException
      */
-    public String getScript(String scriptName, File destination) {
+    public String getScript(String scriptName, File destination) throws FileNotFoundException, ScriptingException {
         File requiredFile = null;
         for (File script : destination.listFiles()) {
             if (script.getName().equals(scriptName)) {
@@ -181,13 +183,7 @@ public class ScriptUtils {
             return StringUtils.EMPTY;
         }
         String result = StringUtils.EMPTY;
-        try {
-            result = inputStreamToString(new FileInputStream(requiredFile));
-        } catch (FileNotFoundException e) {
-            LOGGER.error("File not found: " + requiredFile.getAbsolutePath(), e);
-        } catch (IOException e) {
-            LOGGER.error("Error while getting script ", e);
-        }
+        result = inputStreamToString(new FileInputStream(requiredFile));
         return result;
 
     }
@@ -197,18 +193,17 @@ public class ScriptUtils {
      * 
      * @param scriptFile
      * @return
+     * @throws ScriptingException
      */
-    public String getScript(File scriptFile) {
+    public String getScript(File scriptFile) throws ScriptingException {
         String result = StringUtils.EMPTY;
         if (scriptFile == null) {
             return result;
         }
         try {
             result = inputStreamToString(new FileInputStream(scriptFile));
-        } catch (FileNotFoundException e) {
-            LOGGER.error("File not found: " + scriptFile.getAbsolutePath(), e);
-        } catch (IOException e) {
-            LOGGER.error("Error while getting script ", e);
+        } catch (Exception e) {
+            throw new ScriptingException(e);
         }
         return result;
     }
@@ -220,14 +215,25 @@ public class ScriptUtils {
      * @return
      * @throws IOException
      */
-    private String inputStreamToString(InputStream stream) throws IOException {
-        StringBuffer buffer = new StringBuffer();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
-        String line;
-        while ((line = reader.readLine()) != null) {
-            buffer.append(line).append("\n");
+    private String inputStreamToString(InputStream stream) throws ScriptingException {
+        BufferedReader reader = null;
+        try {
+            StringBuffer buffer = new StringBuffer();
+            reader = new BufferedReader(new InputStreamReader(stream));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                buffer.append(line).append("\n");
+            }
+
+            return buffer.toString();
+        } catch (Exception e) {
+            throw new ScriptingException(e);
+        } finally {
+            try {
+                reader.close();
+            } catch (IOException e) {
+                throw new ScriptingException(e);
+            }
         }
-        reader.close();
-        return buffer.toString();
     }
 }

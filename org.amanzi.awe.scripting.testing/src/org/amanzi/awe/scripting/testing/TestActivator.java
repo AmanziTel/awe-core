@@ -14,6 +14,8 @@
 package org.amanzi.awe.scripting.testing;
 
 import org.amanzi.awe.scripting.AbstractScriptingPlugin;
+import org.apache.log4j.Logger;
+import org.osgi.framework.BundleContext;
 
 /**
  * Fake activator for testing
@@ -22,12 +24,39 @@ import org.amanzi.awe.scripting.AbstractScriptingPlugin;
  * @since 1.0.0
  */
 public class TestActivator extends AbstractScriptingPlugin {
-    public static final String SCRIPT_PATH = "ruby/netview/";
+    /*
+     * logger initialization
+     */
+    private static final Logger LOGGER = Logger.getLogger(TestActivator.class);
+
     public static final String ID = "org.amanzi.awe.scripting.testing";
+    public static final String SCRIPT_PATH = "ruby/netview/";
+    private static TestActivator PLUGIN;
+
+    @Override
+    public void start(BundleContext context) throws Exception {
+        super.start(context);
+        PLUGIN = this;
+        try {
+            initScriptManager(context);
+        } catch (Exception e) {
+            LOGGER.error("Activator starting problem ", e);
+            throw new Exception(e);
+        }
+    }
 
     @Override
     public String getScriptPath() {
         return SCRIPT_PATH;
+    }
+
+    public static TestActivator getDefault() {
+        return PLUGIN;
+    }
+
+    @Override
+    protected void initPlugin() {
+
     }
 
 }

@@ -14,6 +14,7 @@
 package org.amanzi.awe.scripting;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -22,6 +23,7 @@ import java.util.Enumeration;
 import java.util.List;
 
 import org.amanzi.awe.scripting.testing.TestActivator;
+import org.amanzi.awe.scripting.utils.ScriptingException;
 import org.amanzi.testing.AbstractAWETest;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.core.runtime.FileLocator;
@@ -97,8 +99,8 @@ public class AbstractScriptingPluginTests extends AbstractAWETest {
     }
 
     @Test
-    public void testSimpleScriptExecution() {
-        Object value = TestActivator.getRuntimeWrapper().executeScriptByName(TEST_SCRIPT_NAME);
+    public void testSimpleScriptExecution() throws FileNotFoundException, ScriptingException {
+        Object value = TestActivator.getDefault().getRuntimeWrapper().executeScriptByName(TEST_SCRIPT_NAME);
         Assert.assertNotNull("Not null value excepted", value);
         Assert.assertEquals("5.0 value expected", EXPECTED_NUMBER_RESULT, value);
     }

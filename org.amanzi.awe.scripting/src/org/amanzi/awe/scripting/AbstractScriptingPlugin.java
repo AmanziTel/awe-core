@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.amanzi.awe.scripting.utils.ScriptUtils;
+import org.amanzi.awe.scripting.utils.ScriptingException;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.FileLocator;
@@ -47,29 +48,20 @@ public abstract class AbstractScriptingPlugin extends Plugin {
     /*
      * constants definition
      */
-    public static final String WORKSPACE_FOLDER = Platform.getInstanceLocation().getURL().getPath();
-    public static final String PROJECT_FOLDER = "awe-scripts";
-    public static final String RUBY_SCRIPT_FOLDER = "/ruby";
+    private static final String WORKSPACE_FOLDER = Platform.getInstanceLocation().getURL().getPath();
+    private static final String PROJECT_FOLDER = "awe-scripts";
+    private static final String RUBY_SCRIPT_FOLDER = "/ruby";
 
     /**
      * wrapper for runtime instance
      */
-    private static JRubyRuntimeWrapper runtimeWrapper;
+    private JRubyRuntimeWrapper runtimeWrapper;
     private ScriptingManager manager = new ScriptingManager();
 
     /**
-     * should be invoked to define script folder
+     * initialize plugin
      */
-    public void start(BundleContext context) throws Exception {
-        super.start(context);
-        try {
-            initScriptManager(context);
-            initRuntime();
-        } catch (Exception e) {
-            LOGGER.error("Activator starting problem ", e);
-            throw new Exception(e);
-        }
-    }
+    protected abstract void initPlugin();
 
     /**
      * get list of project folder content
@@ -115,7 +107,7 @@ public abstract class AbstractScriptingPlugin extends Plugin {
      * 
      * @throws IOException
      */
-    private void initRuntime() throws Exception {
+    private void initRuntime() throws ScriptingException {
         try {
             Ruby runtime;
             RubyInstanceConfig config = new RubyInstanceConfig() {
@@ -125,22 +117,23 @@ public abstract class AbstractScriptingPlugin extends Plugin {
                     setLoader(getClassLoader());
                 }
             };
-
             runtime = Ruby.newInstance(config);
             runtime.setDefaultExternalEncoding(UTF8Encoding.INSTANCE);
             runtime.setDefaultInternalEncoding(UTF8Encoding.INSTANCE);
-            runtime.getLoadService().init(ScriptUtils.getInstance().makeLoadPath(manager.destination.getAbsolutePath()));
-            runtimeWrapper = new JRubyRuntimeWrapper(runtime, manager.destination);
+            runtime.getLoadService().init(ScriptUtils.getInstance().makeLoadPath(manager.getDestination().getAbsolutePath()));
+            runtimeWrapper = new JRubyRuntimeWrapper(runtime, manager.getDestination());
         } catch (Exception e) {
             LOGGER.error("Error in runtime initialisation", e);
-            throw e;
+            throw new ScriptingException(e);
         }
     }
 
     /**
      * @return Returns the runtimeWrapper.
+     * @throws ScriptingException
      */
-    public static JRubyRuntimeWrapper getRuntimeWrapper() {
+    public JRubyRuntimeWrapper getRuntimeWrapper() throws ScriptingException {
+        initRuntime();
         return runtimeWrapper;
     }
 
@@ -171,7 +164,7 @@ public abstract class AbstractScriptingPlugin extends Plugin {
      * @author Vladislav_Kondratenko
      * @since 1.0.0
      */
-    private class ScriptingManager {
+    private static class ScriptingManager {
         private File source = null;
         private File destination = null;
 
@@ -223,10 +216,17 @@ public abstract class AbstractScriptingPlugin extends Plugin {
                 @Override
                 public boolean accept(File pathname) {
                     final String name = pathname.getName();
-                    return name.endsWith(".rb") || name.endsWith(".t");
+                    return name.endsWith(".rb");
                 }
             };
             FileUtils.copyDirectory(source, destination, fileFilter);
+        }
+
+        /**
+         * @return Returns the destination.
+         */
+        public File getDestination() {
+            return destination;
         }
     }
 }
