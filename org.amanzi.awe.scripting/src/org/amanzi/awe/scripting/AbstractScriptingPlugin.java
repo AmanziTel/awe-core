@@ -69,7 +69,7 @@ public abstract class AbstractScriptingPlugin extends Plugin {
      * @param projectName
      * @return project folder not exist, in other case return list of files
      */
-    public static List<File> getScriptsForProject(String projectName) {
+    public List<File> getScriptsForProject(String projectName) {
         File projectFolder = new File(AbstractScriptingPlugin.WORKSPACE_FOLDER + File.separator
                 + AbstractScriptingPlugin.PROJECT_FOLDER + File.separator + projectName);
         if (!projectFolder.exists()) {
@@ -103,11 +103,20 @@ public abstract class AbstractScriptingPlugin extends Plugin {
     }
 
     /**
+     * initialize runtime with default plugin workspace folder
+     * 
+     * @throws ScriptingException
+     */
+    public void initRuntime() throws ScriptingException {
+        initRuntime(manager.getDestination());
+    }
+
+    /**
      * initialize ruby runtime
      * 
      * @throws IOException
      */
-    private void initRuntime() throws ScriptingException {
+    public void initRuntime(File scriptFolder) throws ScriptingException {
         try {
             Ruby runtime;
             RubyInstanceConfig config = new RubyInstanceConfig() {
@@ -120,8 +129,8 @@ public abstract class AbstractScriptingPlugin extends Plugin {
             runtime = Ruby.newInstance(config);
             runtime.setDefaultExternalEncoding(UTF8Encoding.INSTANCE);
             runtime.setDefaultInternalEncoding(UTF8Encoding.INSTANCE);
-            runtime.getLoadService().init(ScriptUtils.getInstance().makeLoadPath(manager.getDestination().getAbsolutePath()));
-            runtimeWrapper = new JRubyRuntimeWrapper(runtime, manager.getDestination());
+            runtime.getLoadService().init(ScriptUtils.getInstance().makeLoadPath(scriptFolder.getAbsolutePath()));
+            runtimeWrapper = new JRubyRuntimeWrapper(runtime, scriptFolder);
         } catch (Exception e) {
             LOGGER.error("Error in runtime initialisation", e);
             throw new ScriptingException(e);
