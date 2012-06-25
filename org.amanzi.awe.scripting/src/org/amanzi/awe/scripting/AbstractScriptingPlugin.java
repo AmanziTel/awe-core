@@ -176,6 +176,14 @@ public abstract class AbstractScriptingPlugin extends Plugin {
     private static class ScriptingManager {
         private File source = null;
         private File destination = null;
+        private static final FileFilter FILE_FILTER = new FileFilter() {
+
+            @Override
+            public boolean accept(File pathname) {
+                final String name = pathname.getName();
+                return name.endsWith(".rb");
+            }
+        };
 
         /**
          * initialize scripts workspace;
@@ -220,15 +228,8 @@ public abstract class AbstractScriptingPlugin extends Plugin {
          * @throws IOException
          */
         public void copyScripts() throws IOException {
-            FileFilter fileFilter = new FileFilter() {
 
-                @Override
-                public boolean accept(File pathname) {
-                    final String name = pathname.getName();
-                    return name.endsWith(".rb");
-                }
-            };
-            FileUtils.copyDirectory(source, destination, fileFilter);
+            FileUtils.copyDirectory(source, destination, FILE_FILTER);
         }
 
         /**

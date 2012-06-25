@@ -35,9 +35,9 @@ public class TestActivator extends AbstractScriptingPlugin {
     private static TestActivator plugin;
 
     private static void initPlugin(TestActivator plug) {
-        if (plugin == null) {
+//        if (plugin == null) {
             plugin = plug;
-        }
+//        }
     }
 
     @Override
