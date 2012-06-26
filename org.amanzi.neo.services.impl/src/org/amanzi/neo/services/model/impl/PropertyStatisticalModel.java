@@ -20,7 +20,7 @@ import java.util.Set;
 
 import org.amanzi.neo.services.INeoConstants;
 import org.amanzi.neo.services.NeoServiceFactory;
-import org.amanzi.neo.services.StatisticsService;
+import org.amanzi.neo.services.PropertyStatisticsService;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.model.IPropertyStatisticalModel;
@@ -43,7 +43,7 @@ public abstract class PropertyStatisticalModel extends DataModel implements IPro
         super(nodeType);
     }
 
-    private StatisticsService statisticsService = NeoServiceFactory.getInstance().getStatisticsService();
+    private PropertyStatisticsService statisticsService = NeoServiceFactory.getInstance().getPropertyStatisticsService();
 
     protected IVault statisticsVault;
 

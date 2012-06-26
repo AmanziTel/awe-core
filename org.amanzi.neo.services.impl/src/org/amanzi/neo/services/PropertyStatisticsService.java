@@ -43,7 +43,7 @@ import org.neo4j.graphdb.traversal.TraversalDescription;
  * @author Kruglik_A
  * @since 1.0.0
  */
-public class StatisticsService extends AbstractService {
+public class PropertyStatisticsService extends AbstractService {
     /**
      * constants for vaultNodes properties keys
      */
@@ -62,7 +62,7 @@ public class StatisticsService extends AbstractService {
     private static final String VAULT = "vault";
     private static final int MAX_PROPERTY_COUNT_TO_SAVE_STATISTICS = 150;
 
-    private static Logger LOGGER = Logger.getLogger(StatisticsService.class);
+    private static Logger LOGGER = Logger.getLogger(PropertyStatisticsService.class);
     /**
      * TraversalDescription for child nodes
      */
