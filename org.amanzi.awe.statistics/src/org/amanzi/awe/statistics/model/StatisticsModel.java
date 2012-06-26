@@ -20,7 +20,6 @@ import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
-import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.model.IModel;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -63,8 +62,7 @@ public class StatisticsModel implements IModel {
         }
     }
 
-    public StatisticsModel(Node parentNode) throws IllegalArgumentException, DatabaseException, IllegalNodeDataException,
-            DuplicateNodeNameException {
+    public StatisticsModel(Node parentNode) throws IllegalArgumentException, DatabaseException, DuplicateNodeNameException {
         initStatisticsService();
         if (parentNode == null) {
             LOGGER.error("parentNode is null");

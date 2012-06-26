@@ -60,23 +60,6 @@ public class StatisticsService {
     }
 
     /**
-     * try to find statistic model root, if can't found - create new one
-     * 
-     * @param parentNode
-     * @param name
-     * @param type
-     * @throws IllegalNodeDataException
-     * @throws DatabaseException
-     */
-    public Node getStatistics(Node parentNode, String name) throws DatabaseException, IllegalNodeDataException {
-        Node statisticRoot = findStatistic(parentNode, name);
-        if (statisticRoot == null) {
-            statisticRoot = createStatisticsModelRoot(parentNode, name);
-        }
-        return statisticRoot;
-    }
-
-    /**
      * find statistic root model
      * 
      * @param parentNode
@@ -84,7 +67,7 @@ public class StatisticsService {
      * @param type
      * @return
      */
-    public Node findStatistic(Node parentNode, String name) {
+    public Node findStatistic(Node parentNode, String name) throws IllegalArgumentException {
         LOGGER.info("try to find statistic parent:" + parentNode + " name:" + name);
         Iterator<Node> statisticsNodes = datasetService.getFirstRelationTraverser(parentNode,
                 StatisticsRelationshipTypes.STATISTICS, Direction.OUTGOING).iterator();
@@ -109,10 +92,15 @@ public class StatisticsService {
      * @throws DatabaseException
      * @throws IllegalNodeDataException
      */
-    public Node createStatisticsModelRoot(Node parent, String name) throws DatabaseException, IllegalNodeDataException {
+    public Node createStatisticsModelRoot(Node parent, String name) throws DatabaseException {
         LOGGER.info("create statistic model node not found. parent:" + parent + " name:" + name);
         Node newlyNode = datasetService.createNode(parent, StatisticsRelationshipTypes.STATISTICS, StatisticsNodeTypes.STATISTICS);
-        datasetService.setAnyProperty(newlyNode, DatasetService.NAME, name);
+        try {
+            datasetService.setAnyProperty(newlyNode, DatasetService.NAME, name);
+        } catch (IllegalNodeDataException e) {
+            LOGGER.error("Unexpected exception thrown", e);
+            // cann't be thrown
+        }
         return newlyNode;
     }
 }
