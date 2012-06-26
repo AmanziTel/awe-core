@@ -13,9 +13,12 @@
 
 package org.amanzi.neo.services.util;
 
+import java.util.Locale;
+
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.nodetypes.NodeTypeManager;
 import org.amanzi.testing.AbstractMockitoTest;
+import org.amanzi.testing.AbstractTest;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -36,7 +39,7 @@ public class AbstractServiceTest extends AbstractMockitoTest {
 
         @Override
         public String getId() {
-            return name();
+            return name().toLowerCase(Locale.getDefault());
         }
 
     }
@@ -51,6 +54,7 @@ public class AbstractServiceTest extends AbstractMockitoTest {
 
     @BeforeClass
     public static void setUpClass() {
+        AbstractTest.setUpClass();
         NodeTypeManager.registerNodeType(TestNodeType.class);
     }
 

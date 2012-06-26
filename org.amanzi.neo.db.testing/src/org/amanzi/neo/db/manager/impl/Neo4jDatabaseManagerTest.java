@@ -30,6 +30,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
@@ -275,7 +276,8 @@ public class Neo4jDatabaseManagerTest {
         context.assertIsSatisfied();
     }
 
-    // @Test
+    @Test
+    @Ignore
     public void checkReadOnlyDatabaseService() {
         // for read only we need to have already created DB
         Neo4jDatabaseManager dbManager = new Neo4jDatabaseManager();
