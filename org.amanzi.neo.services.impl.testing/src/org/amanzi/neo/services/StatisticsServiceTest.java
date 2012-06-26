@@ -19,8 +19,8 @@ import junit.framework.Assert;
 
 import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.services.DatasetService.DatasetRelationTypes;
-import org.amanzi.neo.services.StatisticsService.StatisticsNodeTypes;
-import org.amanzi.neo.services.StatisticsService.StatisticsRelationships;
+import org.amanzi.neo.services.PropertyStatisticsService.StatisticsNodeTypes;
+import org.amanzi.neo.services.PropertyStatisticsService.StatisticsRelationships;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateStatisticsException;
 import org.amanzi.neo.services.exceptions.InvalidPropertyStatisticsNodeException;
@@ -65,7 +65,7 @@ public class StatisticsServiceTest extends AbstractNeoServiceTest {
 	}
 
 	private Transaction tx;
-	private StatisticsService service = new StatisticsService();
+	private PropertyStatisticsService service = new PropertyStatisticsService();
 	private Node referenceNode = graphDatabaseService.getReferenceNode();
 
 	
@@ -136,16 +136,16 @@ public class StatisticsServiceTest extends AbstractNeoServiceTest {
 				StatisticsNodeTypes.VAULT.getId(), nodeType);
 
 		String nodeName = (String) vaultNode.getProperty(
-				StatisticsService.NAME, "");
+				PropertyStatisticsService.NAME, "");
 		Assert.assertEquals("", expectedName, nodeName);
 
 		String klass = (String) vaultNode.getProperty(
-				StatisticsService.CLASS, null);
+				PropertyStatisticsService.CLASS, null);
 		Assert.assertNotNull("Vault node has not property CLASS", klass);
 		Assert.assertEquals("Vault node property CLASS is wrong value",
 				expectedClass.getCanonicalName(), klass);
 
-		int count = (Integer) vaultNode.getProperty(StatisticsService.COUNT,
+		int count = (Integer) vaultNode.getProperty(PropertyStatisticsService.COUNT,
 				null);
 		Assert.assertEquals("Vault node has wrong count", expectedCount, count);
 
@@ -185,7 +185,7 @@ public class StatisticsServiceTest extends AbstractNeoServiceTest {
 		// add PropertyStatistics to propertyVault
 		propVault.addPropertyStatistics(propStat);
 		// create spy object
-		StatisticsService mockService = Mockito.spy(service);
+		PropertyStatisticsService mockService = Mockito.spy(service);
 
 		mockService.saveVault(referenceNode, propVault);
 		// check whether the method savePropertyStatistics() offered
@@ -322,7 +322,7 @@ public class StatisticsServiceTest extends AbstractNeoServiceTest {
 		neighboursSubVault.addPropertyStatistics(neighbourStat);
 		
 		// create spy object
-		StatisticsService mockService = Mockito.spy(service);
+		PropertyStatisticsService mockService = Mockito.spy(service);
 
 		mockService.saveVault(referenceNode, propVault);
 		propVault.setIsStatisticsChanged(true);
@@ -342,7 +342,7 @@ public class StatisticsServiceTest extends AbstractNeoServiceTest {
 		checkVaultNode(propVaultNode, PROPERTIES, StatisticsVault.class, 0, 2);
 
 		for (Node subVaultNode : service.getSubVaultNodes(propVaultNode)) {
-			if (subVaultNode.getProperty(StatisticsService.NAME).toString().equals(NEIGHBOURS)) {
+			if (subVaultNode.getProperty(PropertyStatisticsService.NAME).toString().equals(NEIGHBOURS)) {
 				checkVaultNode(subVaultNode, NEIGHBOURS, StatisticsVault.class, 0, 0);
 			}
 			else {
@@ -397,7 +397,7 @@ public class StatisticsServiceTest extends AbstractNeoServiceTest {
 		neighboursSubVault.addPropertyStatistics(neighbourStat);
 		
 		// create spy object
-		StatisticsService mockService = Mockito.spy(service);
+		PropertyStatisticsService mockService = Mockito.spy(service);
 
 		mockService.saveVault(referenceNode, propVault);
 		mockService.deleteVault(referenceNode);
@@ -464,7 +464,7 @@ public class StatisticsServiceTest extends AbstractNeoServiceTest {
 
 		service.saveVault(referenceNode, propVault);
 		// create spy object
-		StatisticsService mockService = Mockito.spy(service);
+		PropertyStatisticsService mockService = Mockito.spy(service);
 
 		IVault vault = mockService.loadVault(referenceNode);
 		// check whether the method loadPropertyStatistics(Node
@@ -534,7 +534,7 @@ public class StatisticsServiceTest extends AbstractNeoServiceTest {
 				.getEndNode();
 		tx = graphDatabaseService.beginTx();
 		try {
-			vaultNode.setProperty(StatisticsService.CLASS, "wrong_class");
+			vaultNode.setProperty(PropertyStatisticsService.CLASS, "wrong_class");
 			tx.success();
 		} finally {
 			tx.finish();
@@ -576,7 +576,7 @@ public class StatisticsServiceTest extends AbstractNeoServiceTest {
 				"Counter", name);
 
 		int number = (Integer) propStatNode.getProperty(
-				StatisticsService.NUMBER, null);
+				PropertyStatisticsService.NUMBER, null);
 		Assert.assertEquals("propertyStatistics node has wrong number", 2,
 				number);
 
@@ -590,7 +590,7 @@ public class StatisticsServiceTest extends AbstractNeoServiceTest {
 		Assert.assertEquals("propertyStatistics node has wrong c2", 1, c2);
 
 		String className = (String) propStatNode.getProperty(
-				StatisticsService.CLASS, "");
+				PropertyStatisticsService.CLASS, "");
 		Assert.assertEquals("propertyStatistics node has wrong className",
 				Integer.class.getCanonicalName(), className);
 		LOGGER.debug("finish savePropertyStatisticsPositiveTest()");
@@ -682,7 +682,7 @@ public class StatisticsServiceTest extends AbstractNeoServiceTest {
 		tx = graphDatabaseService.beginTx();
 		try {
 			Node invalidPropStatNode = graphDatabaseService.createNode();
-			invalidPropStatNode.setProperty(StatisticsService.NAME, "name");
+			invalidPropStatNode.setProperty(PropertyStatisticsService.NAME, "name");
 			service.loadPropertyStatistics(invalidPropStatNode);
 
 			tx.success();
@@ -706,7 +706,7 @@ public class StatisticsServiceTest extends AbstractNeoServiceTest {
 		tx = graphDatabaseService.beginTx();
 		try {
 			Node invalidPropStatNode = graphDatabaseService.createNode();
-			invalidPropStatNode.setProperty(StatisticsService.CLASS,
+			invalidPropStatNode.setProperty(PropertyStatisticsService.CLASS,
 					Integer.class.getCanonicalName());
 			service.loadPropertyStatistics(invalidPropStatNode);
 
@@ -731,9 +731,9 @@ public class StatisticsServiceTest extends AbstractNeoServiceTest {
 		tx = graphDatabaseService.beginTx();
 		try {
 			Node invalidPropStatNode = graphDatabaseService.createNode();
-			invalidPropStatNode.setProperty(StatisticsService.CLASS,
+			invalidPropStatNode.setProperty(PropertyStatisticsService.CLASS,
 					Integer.class.getCanonicalName());
-			invalidPropStatNode.setProperty(StatisticsService.NAME, "");
+			invalidPropStatNode.setProperty(PropertyStatisticsService.NAME, "");
 			service.loadPropertyStatistics(invalidPropStatNode);
 
 			tx.success();

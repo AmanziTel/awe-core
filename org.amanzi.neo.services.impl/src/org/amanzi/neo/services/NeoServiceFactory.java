@@ -33,7 +33,7 @@ public class NeoServiceFactory {
     // new services
     private DatasetService datasetService = null;
     private NetworkService networkService = null;
-    private StatisticsService statisticsService = null;
+    private PropertyStatisticsService propertyStatisticsService = null;
     private ProjectService projectService = null;
     
     private ExportSynonymsService exportSynonymsService = null;
@@ -71,15 +71,15 @@ public class NeoServiceFactory {
         return networkService;
     }
 
-    public StatisticsService getStatisticsService() {
-        if (statisticsService == null) {
+    public PropertyStatisticsService getPropertyStatisticsService() {
+        if (propertyStatisticsService == null) {
             synchronized (datasetMon) {
-                if (statisticsService == null) {
-                    statisticsService = new StatisticsService();
+                if (propertyStatisticsService == null) {
+                    propertyStatisticsService = new PropertyStatisticsService();
                 }
             }
         }
-        return statisticsService;
+        return propertyStatisticsService;
     }
 
     public ProjectService getProjectService() {
