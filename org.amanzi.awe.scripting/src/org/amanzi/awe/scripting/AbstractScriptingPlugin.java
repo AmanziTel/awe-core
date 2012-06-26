@@ -37,7 +37,7 @@ import org.osgi.framework.BundleContext;
  * activate JrubyScripting
  * </p>
  * 
- * @author Vladislav_Kondratenkoprivate
+ * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
 public abstract class AbstractScriptingPlugin extends Plugin {
