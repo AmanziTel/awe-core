@@ -14,8 +14,6 @@ package org.amanzi.neo.services;
 
 import org.amanzi.neo.services.synonyms.ExportSynonymsService;
 
-
-
 /**
  * TODO Purpose of
  * <p>
@@ -29,19 +27,19 @@ public class NeoServiceFactory {
     private static NeoServiceFactory instance = new NeoServiceFactory();
     private final Object datasetMon = new Object();
     private CorrelationService correlationService = null;
-    
+
     // new services
     private DatasetService datasetService = null;
     private NetworkService networkService = null;
     private PropertyStatisticsService propertyStatisticsService = null;
     private ProjectService projectService = null;
-    
+
     private ExportSynonymsService exportSynonymsService = null;
     private Object exportSynonymsMonitor = new Object();
-    
+
     private DistributionService distributionService = null;
     private Object distributionServiceMonitor = new Object();
-    
+
     private IndexService indexService = null;
     private Object indexServiceMonitor = new Object();
 
@@ -106,7 +104,7 @@ public class NeoServiceFactory {
         }
         return correlationService;
     }
-    
+
     public ExportSynonymsService getExportSynonymsService() {
         if (exportSynonymsService == null) {
             synchronized (exportSynonymsMonitor) {
@@ -115,10 +113,10 @@ public class NeoServiceFactory {
                 }
             }
         }
-        
+
         return exportSynonymsService;
     }
-    
+
     public DistributionService getDistributionService() {
         if (distributionService == null) {
             synchronized (distributionServiceMonitor) {
@@ -127,19 +125,19 @@ public class NeoServiceFactory {
                 }
             }
         }
-        
+
         return distributionService;
     }
-    
+
     public IndexService getIndexService() {
         if (indexService == null) {
-            synchronized (indexServiceMonitor) { 
+            synchronized (indexServiceMonitor) {
                 if (indexService == null) {
                     indexService = new IndexService();
                 }
             }
         }
-        
+
         return indexService;
     }
 

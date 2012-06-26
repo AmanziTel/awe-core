@@ -11,24 +11,25 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.testing.sanity;
+package org.amanzi.awe.statistics;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 /**
- * TODO Purpose of
  * <p>
+ * TestsRunner
  * </p>
  * 
- * @author gerzog
+ * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
 @RunWith(Suite.class)
 @SuiteClasses({
-        org.amanzi.neo.db.testing.DbTestSuite.class, 
-})
-public class CoreTestSuite {
+    org.amanzi.awe.statistics.enumeration.PeriodTests.class,
+    org.amanzi.awe.statistics.model.StatisticsModelTests.class
+    })
+public class StatisticsServiceSuite {
 
 }

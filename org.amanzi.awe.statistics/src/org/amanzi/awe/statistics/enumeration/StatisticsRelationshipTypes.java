@@ -11,24 +11,18 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.testing.sanity;
+package org.amanzi.awe.statistics.enumeration;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import org.neo4j.graphdb.RelationshipType;
 
 /**
- * TODO Purpose of
  * <p>
+ * statistics relationship types
  * </p>
  * 
- * @author gerzog
+ * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-@RunWith(Suite.class)
-@SuiteClasses({
-        org.amanzi.neo.db.testing.DbTestSuite.class, 
-})
-public class CoreTestSuite {
-
+public enum StatisticsRelationshipTypes implements RelationshipType {
+    SOURCE, STATISTICS;
 }

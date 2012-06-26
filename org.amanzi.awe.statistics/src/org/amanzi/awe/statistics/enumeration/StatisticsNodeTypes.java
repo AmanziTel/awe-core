@@ -11,24 +11,29 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.testing.sanity;
+package org.amanzi.awe.statistics.enumeration;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import org.amanzi.neo.services.NodeTypeManager;
+import org.amanzi.neo.services.enums.INodeType;
 
 /**
  * TODO Purpose of
  * <p>
+ * Statistics node Types
  * </p>
  * 
- * @author gerzog
+ * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-@RunWith(Suite.class)
-@SuiteClasses({
-        org.amanzi.neo.db.testing.DbTestSuite.class, 
-})
-public class CoreTestSuite {
+public enum StatisticsNodeTypes implements INodeType {
+    STATISTICS, PERIOD_STATISTICS;
+    static {
+        NodeTypeManager.registerNodeType(StatisticsNodeTypes.class);
+    }
+
+    @Override
+    public String getId() {
+        return this.name().toLowerCase();
+    }
 
 }
