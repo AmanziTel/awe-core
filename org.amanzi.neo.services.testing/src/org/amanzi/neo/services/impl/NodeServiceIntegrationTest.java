@@ -15,15 +15,19 @@ package org.amanzi.neo.services.impl;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.impl.GeneralNodeProperties;
+import org.amanzi.neo.nodetypes.INodeType;
+import org.amanzi.neo.nodetypes.NodeTypeManager;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.DuplicatedNodeException;
 import org.amanzi.testing.AbstractIntegrationTest;
 import org.apache.commons.collections.IteratorUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.RelationshipType;
@@ -43,6 +47,15 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
         TEST_REL;
     }
 
+    private enum TestNodeTypes implements INodeType {
+        TEST_NODE_TYPE;
+
+        @Override
+        public String getId() {
+            return name().toLowerCase(Locale.getDefault());
+        }
+    }
+
     private static final String[] CHILDREN_NAMES = new String[] {"child1", "child2", "child3"};
 
     private static final String CHILD_FOR_SEARCH = CHILDREN_NAMES[1];
@@ -52,6 +65,13 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
     private static final IGeneralNodeProperties nodeProperties = new GeneralNodeProperties();
 
     private INodeService nodeService;
+
+    @BeforeClass
+    public static void setUpClass() throws Exception {
+        AbstractIntegrationTest.setUpClass();
+
+        NodeTypeManager.registerNodeType(TestNodeTypes.class);
+    }
 
     @Before
     @Override
@@ -193,6 +213,24 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
         String name = (String)result.getProperty(nodeProperties.getNodeNameProperty());
 
         assertEquals("name of found node is not the same as original", CHILD_FOR_SEARCH, name);
+    }
+
+    @Test
+    public void testGetNameForNodeWithName() throws Exception {
+        Node node = createNode(nodeProperties.getNodeNameProperty(), nodeProperties.getNodeNameProperty());
+
+        String name = nodeService.getNodeName(node);
+
+        assertEquals("unexpected name of node", nodeProperties.getNodeNameProperty(), name);
+    }
+
+    @Test
+    public void testGetNameForNodeWithType() throws Exception {
+        Node node = createNode(nodeProperties.getNodeTypeProperty(), TestNodeTypes.TEST_NODE_TYPE.getId());
+
+        INodeType type = nodeService.getNodeType(node);
+
+        assertEquals("unexpected type of node", TestNodeTypes.TEST_NODE_TYPE, type);
     }
 
     private void createChildren(Node parent, RelationshipType relType) {

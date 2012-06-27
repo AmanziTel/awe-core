@@ -22,8 +22,10 @@ import org.amanzi.neo.services.exceptions.PropertyNotFoundException;
 import org.amanzi.neo.services.util.AbstractServiceTest;
 import org.junit.Before;
 import org.junit.Test;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 
 /**
  * TODO Purpose of
@@ -193,6 +195,56 @@ public class NodeServiceTest extends AbstractServiceTest {
         Node result = nodeService.getReferencedNode();
 
         assertEquals("Unexpected referenced node", node, result);
+    }
+
+    @Test
+    public void testCheckActivityOnGetParent() throws Exception {
+        Node node = getNodeMock();
+        Node parent = getNodeMock();
+        Relationship relToParent = mock(Relationship.class);
+
+        when(relToParent.getStartNode()).thenReturn(parent);
+        when(node.getSingleRelationship(NodeService.NodeServiceRelationshipType.CHILD, Direction.INCOMING)).thenReturn(relToParent);
+
+        nodeService.getParent(node);
+
+        verify(node).getSingleRelationship(NodeService.NodeServiceRelationshipType.CHILD, Direction.INCOMING);
+        verify(relToParent).getStartNode();
+    }
+
+    @Test
+    public void testCheckResultOnGetParent() throws Exception {
+        Node node = getNodeMock();
+        Node parent = getNodeMock();
+        Relationship relToParent = mock(Relationship.class);
+
+        when(relToParent.getStartNode()).thenReturn(parent);
+        when(node.getSingleRelationship(NodeService.NodeServiceRelationshipType.CHILD, Direction.INCOMING)).thenReturn(relToParent);
+
+        Node result = nodeService.getParent(node);
+
+        assertEquals("unexpected parent", parent, result);
+    }
+
+    @Test
+    public void testCheckWithoutParent() throws Exception {
+        Node node = getNodeMock();
+
+        when(node.getSingleRelationship(NodeService.NodeServiceRelationshipType.CHILD, Direction.INCOMING)).thenReturn(null);
+
+        Node result = nodeService.getParent(node);
+
+        assertNull("there cannot be a parent", result);
+    }
+
+    @Test(expected = DatabaseException.class)
+    public void testCheckDatabaseExceptiononGetParent() throws Exception {
+        Node node = getNodeMock();
+
+        when(node.getSingleRelationship(NodeService.NodeServiceRelationshipType.CHILD, Direction.INCOMING)).thenThrow(
+                new IllegalArgumentException());
+
+        nodeService.getParent(node);
     }
 
     private void setReferencedNode(Node node) {

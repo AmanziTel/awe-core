@@ -153,4 +153,16 @@ public abstract class AbstractIntegrationTest extends AbstractTest {
         return result;
     }
 
+    protected Node createNode(String property, Object value) {
+        Transaction tx = graphDb.beginTx();
+
+        Node node = createNode();
+        node.setProperty(property, value);
+
+        tx.success();
+        tx.finish();
+
+        return node;
+    }
+
 }

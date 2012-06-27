@@ -27,6 +27,7 @@ import org.amanzi.neo.services.impl.internal.AbstractService;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.traversal.Evaluators;
 import org.neo4j.graphdb.traversal.TraversalDescription;
@@ -111,7 +112,21 @@ public class NodeService extends AbstractService implements INodeService {
 
     @Override
     public Node getParent(Node child) throws ServiceException {
-        return null;
+        assert child != null;
+
+        Node parent = null;
+
+        try {
+            Relationship relToParent = child.getSingleRelationship(NodeServiceRelationshipType.CHILD, Direction.INCOMING);
+
+            if (relToParent != null) {
+                parent = relToParent.getStartNode();
+            }
+        } catch (Exception e) {
+            throw new DatabaseException(e);
+        }
+
+        return parent;
     }
 
     @Override
