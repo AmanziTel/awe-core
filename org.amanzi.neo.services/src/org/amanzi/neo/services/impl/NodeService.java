@@ -69,47 +69,6 @@ public class NodeService extends AbstractService implements INodeService {
         return NodeTypeManager.getType(nodeType);
     }
 
-    /**
-     * Returns a Single Property of Node
-     * 
-     * @note do not use this method to get multiple properties of a node
-     * @note will throw assertion error if throwExceptionIfNotExist is true and defaultValue not
-     *       null
-     * @param node Node
-     * @param propertyName name of Property
-     * @param defaultValue default value of Property
-     * @param throwExceptionIfNotExist should method throw Exception
-     * @return
-     * @throws ServiceException
-     */
-    private Object getNodeProperty(Node node, String propertyName, String defaultValue, boolean throwExceptionIfNotExist)
-            throws ServiceException {
-        assert node != null;
-        assert propertyName != null;
-
-        assert throwExceptionIfNotExist && (defaultValue == null);
-
-        Object result = null;
-
-        boolean throwPropertyNotFoundException = false;
-
-        try {
-            if (throwExceptionIfNotExist && !node.hasProperty(propertyName)) {
-                throwPropertyNotFoundException = true;
-            } else {
-                result = node.getProperty(propertyName, defaultValue);
-            }
-        } catch (Exception e) {
-            throw new DatabaseException(e);
-        }
-
-        if (throwPropertyNotFoundException) {
-            throw new PropertyNotFoundException(propertyName, node);
-        }
-
-        return result;
-    }
-
     @Override
     public Node getParent(Node child) throws ServiceException {
         assert child != null;
@@ -180,7 +139,53 @@ public class NodeService extends AbstractService implements INodeService {
         }
     }
 
+    @Override
+    public Node getChildByName(Node parentNode, String name, INodeType nodeType) throws ServiceException {
+        return null;
+    }
+
     protected TraversalDescription getChildrenTraversal() {
         return CHILDREN_TRAVERSAL;
+    }
+
+    /**
+     * Returns a Single Property of Node
+     * 
+     * @note do not use this method to get multiple properties of a node
+     * @note will throw assertion error if throwExceptionIfNotExist is true and defaultValue not
+     *       null
+     * @param node Node
+     * @param propertyName name of Property
+     * @param defaultValue default value of Property
+     * @param throwExceptionIfNotExist should method throw Exception
+     * @return
+     * @throws ServiceException
+     */
+    private Object getNodeProperty(Node node, String propertyName, String defaultValue, boolean throwExceptionIfNotExist)
+            throws ServiceException {
+        assert node != null;
+        assert propertyName != null;
+
+        assert throwExceptionIfNotExist && (defaultValue == null);
+
+        Object result = null;
+
+        boolean throwPropertyNotFoundException = false;
+
+        try {
+            if (throwExceptionIfNotExist && !node.hasProperty(propertyName)) {
+                throwPropertyNotFoundException = true;
+            } else {
+                result = node.getProperty(propertyName, defaultValue);
+            }
+        } catch (Exception e) {
+            throw new DatabaseException(e);
+        }
+
+        if (throwPropertyNotFoundException) {
+            throw new PropertyNotFoundException(propertyName, node);
+        }
+
+        return result;
     }
 }
