@@ -13,6 +13,9 @@
 
 package org.amanzi.awe.statistics.service;
 
+import java.util.Iterator;
+
+import org.amanzi.awe.statistics.enumeration.Period;
 import org.amanzi.awe.statistics.enumeration.StatisticsNodeTypes;
 import org.amanzi.awe.statistics.enumeration.StatisticsRelationshipTypes;
 import org.amanzi.log4j.LogStarter;
@@ -30,12 +33,13 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 
 /**
- * TODO Purpose of
  * <p>
+ * tests for statistics service
  * </p>
  * 
  * @author Vladislav_Kondratenko
@@ -124,6 +128,60 @@ public class StatisticsServiceTests extends AbstractNeoServiceTest {
         Assert.assertNull("Null expected. Node must not be found", result);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void testAddSourceIfOneOfParameterNull() throws DatabaseException {
+        LOGGER.info("testAddSourceIfOneOfParameterNull started");
+        initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
+        service.addSource(null, null);
+    }
+
+    @Test
+    public void testAddSource() throws DatabaseException {
+        LOGGER.info("testAddSource started");
+        initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
+        Node statRoot = createStatisticsRoot(datasetNode);
+        Node periodH = createPeriodNode(statRoot, Period.HOURLY);
+        Node periodD = createPeriodNode(statRoot, Period.DAILY);
+        service.addSource(periodD, periodH);
+        Assert.assertNotNull("SOURCE relationship not exists",
+                periodD.getSingleRelationship(StatisticsRelationshipTypes.SOURCE, Direction.OUTGOING));
+    }
+
+    @Test
+    public void testGetSources() throws DatabaseException {
+        LOGGER.info("testGetSources started");
+        initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
+        Node statRoot = createStatisticsRoot(datasetNode);
+        Node periodH = createPeriodNode(statRoot, Period.HOURLY);
+        Node periodD = createPeriodNode(statRoot, Period.DAILY);
+        Transaction tx = graphDatabaseService.beginTx();
+        try {
+            periodD.createRelationshipTo(periodH, StatisticsRelationshipTypes.SOURCE);
+            tx.success();
+        } finally {
+            tx.finish();
+        }
+
+        Iterator<Node> sources = service.getSources(periodD).iterator();
+        Assert.assertEquals("Source not found", periodH, sources.next());
+    }
+
+    private Node createPeriodNode(Node statisticNode, Period period) {
+        Transaction tx = graphDatabaseService.beginTx();
+        Node periodNode = null;
+        try {
+            periodNode = graphDatabaseService.createNode();
+            setPropertyToNode(periodNode, DatasetService.NAME, period.getId());
+            setPropertyToNode(periodNode, DatasetService.TYPE, StatisticsNodeTypes.PERIOD_STATISTICS.getId());
+            datasetNode.createRelationshipTo(periodNode, DatasetRelationTypes.CHILD);
+            tx.success();
+        } finally {
+            tx.finish();
+            tx = null;
+        }
+        return periodNode;
+    }
+
     /**
      * @param datasetNode2
      * @return
@@ -188,7 +246,7 @@ public class StatisticsServiceTests extends AbstractNeoServiceTest {
     }
 
     /**
-     * this methot inits properties for dataset node
+     * this method properties for dataset node
      * 
      * @param datasetNode
      * @param name
