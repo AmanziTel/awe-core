@@ -22,6 +22,7 @@ import org.amanzi.neo.services.exceptions.PropertyNotFoundException;
 import org.amanzi.neo.services.util.AbstractServiceTest;
 import org.junit.Before;
 import org.junit.Test;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -42,13 +43,34 @@ public class NodeServiceTest extends AbstractServiceTest {
 
     private INodeService nodeService = null;
 
+    @Override
     @Before
     public void setUp() {
         super.setUp();
 
-        nodeService = new NodeService(getService(), generalNodeProperties);
+        this.nodeService = new NodeService(getService(), this.generalNodeProperties);
 
         setReadOnly();
+    }
+
+    @Test(expected = DatabaseException.class)
+    public void testCheckDatabaseExceptionOnGetNodeName() throws Exception {
+        setMethodFailure();
+
+        Node node = getNodeMock();
+        when(node.hasProperty(this.generalNodeProperties.getNodeNameProperty())).thenThrow(new IllegalArgumentException());
+
+        this.nodeService.getNodeName(node);
+    }
+
+    @Test(expected = DatabaseException.class)
+    public void testCheckDatabaseExceptionOnGetNodeType() throws Exception {
+        setMethodFailure();
+
+        Node node = getNodeMock();
+        when(node.hasProperty(this.generalNodeProperties.getNodeTypeProperty())).thenThrow(new IllegalArgumentException());
+
+        this.nodeService.getNodeType(node);
     }
 
     @Test
@@ -56,30 +78,14 @@ public class NodeServiceTest extends AbstractServiceTest {
         Node node = getNodeMock();
 
         // property exists
-        when(node.hasProperty(generalNodeProperties.getNodeNameProperty())).thenReturn(true);
+        when(node.hasProperty(this.generalNodeProperties.getNodeNameProperty())).thenReturn(true);
         // return this property
-        when(node.getProperty(generalNodeProperties.getNodeNameProperty(), null)).thenReturn(NODE_NAME);
+        when(node.getProperty(this.generalNodeProperties.getNodeNameProperty(), null)).thenReturn(NODE_NAME);
 
-        nodeService.getNodeName(node);
+        this.nodeService.getNodeName(node);
 
-        verify(node).hasProperty(generalNodeProperties.getNodeNameProperty());
-        verify(node).getProperty(generalNodeProperties.getNodeNameProperty(), null);
-        verifyNoMoreInteractions(node);
-    }
-
-    @Test
-    public void testCheckGetNodeTypeActivity() throws Exception {
-        Node node = getNodeMock();
-
-        // property exists
-        when(node.hasProperty(generalNodeProperties.getNodeTypeProperty())).thenReturn(true);
-        // return this property
-        when(node.getProperty(generalNodeProperties.getNodeTypeProperty(), null)).thenReturn(NODE_TYPE_ID);
-
-        nodeService.getNodeType(node);
-
-        verify(node).hasProperty(generalNodeProperties.getNodeTypeProperty());
-        verify(node).getProperty(generalNodeProperties.getNodeTypeProperty(), null);
+        verify(node).hasProperty(this.generalNodeProperties.getNodeNameProperty());
+        verify(node).getProperty(this.generalNodeProperties.getNodeNameProperty(), null);
         verifyNoMoreInteractions(node);
     }
 
@@ -88,13 +94,29 @@ public class NodeServiceTest extends AbstractServiceTest {
         Node node = getNodeMock();
 
         // property exists
-        when(node.hasProperty(generalNodeProperties.getNodeNameProperty())).thenReturn(true);
+        when(node.hasProperty(this.generalNodeProperties.getNodeNameProperty())).thenReturn(true);
         // return this property
-        when(node.getProperty(generalNodeProperties.getNodeNameProperty(), null)).thenReturn(NODE_NAME);
+        when(node.getProperty(this.generalNodeProperties.getNodeNameProperty(), null)).thenReturn(NODE_NAME);
 
-        String result = nodeService.getNodeName(node);
+        String result = this.nodeService.getNodeName(node);
 
         assertEquals("Unexpected Name of Node", NODE_NAME, result);
+    }
+
+    @Test
+    public void testCheckGetNodeTypeActivity() throws Exception {
+        Node node = getNodeMock();
+
+        // property exists
+        when(node.hasProperty(this.generalNodeProperties.getNodeTypeProperty())).thenReturn(true);
+        // return this property
+        when(node.getProperty(this.generalNodeProperties.getNodeTypeProperty(), null)).thenReturn(NODE_TYPE_ID);
+
+        this.nodeService.getNodeType(node);
+
+        verify(node).hasProperty(this.generalNodeProperties.getNodeTypeProperty());
+        verify(node).getProperty(this.generalNodeProperties.getNodeTypeProperty(), null);
+        verifyNoMoreInteractions(node);
     }
 
     @Test
@@ -102,11 +124,11 @@ public class NodeServiceTest extends AbstractServiceTest {
         Node node = getNodeMock();
 
         // property exists
-        when(node.hasProperty(generalNodeProperties.getNodeTypeProperty())).thenReturn(true);
+        when(node.hasProperty(this.generalNodeProperties.getNodeTypeProperty())).thenReturn(true);
         // return this property
-        when(node.getProperty(generalNodeProperties.getNodeTypeProperty(), null)).thenReturn(NODE_TYPE_ID);
+        when(node.getProperty(this.generalNodeProperties.getNodeTypeProperty(), null)).thenReturn(NODE_TYPE_ID);
 
-        INodeType result = nodeService.getNodeType(node);
+        INodeType result = this.nodeService.getNodeType(node);
 
         assertEquals("Unepected Type of Node", TestNodeType.TEST1, result);
     }
@@ -116,9 +138,9 @@ public class NodeServiceTest extends AbstractServiceTest {
         Node node = getNodeMock();
 
         // property exists
-        when(node.hasProperty(generalNodeProperties.getNodeNameProperty())).thenReturn(false);
+        when(node.hasProperty(this.generalNodeProperties.getNodeNameProperty())).thenReturn(false);
 
-        nodeService.getNodeName(node);
+        this.nodeService.getNodeName(node);
     }
 
     @Test(expected = PropertyNotFoundException.class)
@@ -126,29 +148,68 @@ public class NodeServiceTest extends AbstractServiceTest {
         Node node = getNodeMock();
 
         // property exists
-        when(node.hasProperty(generalNodeProperties.getNodeTypeProperty())).thenReturn(false);
+        when(node.hasProperty(this.generalNodeProperties.getNodeTypeProperty())).thenReturn(false);
 
-        nodeService.getNodeType(node);
+        this.nodeService.getNodeType(node);
     }
 
     @Test(expected = DatabaseException.class)
-    public void testCheckDatabaseExceptionOnGetNodeName() throws Exception {
-        setMethodFailure();
+    public void testGetAllChildrentOfNode() throws Exception {
+        setChildTraversalToNull();
 
-        Node node = getNodeMock();
-        when(node.hasProperty(generalNodeProperties.getNodeNameProperty())).thenThrow(new IllegalArgumentException());
-
-        nodeService.getNodeName(node);
+        nodeService.getChildren(getNodeMock());
     }
 
     @Test(expected = DatabaseException.class)
-    public void testCheckDatabaseExceptionOnGetNodeType() throws Exception {
-        setMethodFailure();
+    public void testGetAllChildByName() throws Exception {
+        setChildTraversalToNull();
 
-        Node node = getNodeMock();
-        when(node.hasProperty(generalNodeProperties.getNodeTypeProperty())).thenThrow(new IllegalArgumentException());
-
-        nodeService.getNodeType(node);
+        nodeService.getChildByName(getNodeMock(), "some name");
     }
 
+    @Test(expected = DatabaseException.class)
+    public void testCheckExceptionOnGetReferencedNode() throws Exception {
+        setReferencedNode(null);
+
+        nodeService.getReferencedNode();
+    }
+
+    @Test
+    public void testCheckDbActivityOnGetReferencedNode() throws Exception {
+        Node node = getNodeMock();
+        setReferencedNode(node);
+
+        nodeService.getReferencedNode();
+
+        GraphDatabaseService service = getService();
+        verify(service).getReferenceNode();
+    }
+
+    @Test
+    public void testCheckResultOfGetReferencedNode() throws Exception {
+        Node node = getNodeMock();
+        setReferencedNode(node);
+
+        Node result = nodeService.getReferencedNode();
+
+        assertEquals("Unexpected referenced node", node, result);
+    }
+
+    private void setReferencedNode(Node node) {
+        GraphDatabaseService service = getService();
+
+        if (node == null) {
+            when(service.getReferenceNode()).thenThrow(new IllegalArgumentException());
+        } else {
+            when(service.getReferenceNode()).thenReturn(node);
+        }
+    }
+
+    private void setChildTraversalToNull() {
+        NodeService spyService = spy(new NodeService(getService(), generalNodeProperties));
+
+        when(spyService.getChildrenTraversal()).thenReturn(null);
+
+        nodeService = spyService;
+    }
 }

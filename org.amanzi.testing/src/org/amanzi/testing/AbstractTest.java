@@ -13,9 +13,8 @@
 
 package org.amanzi.testing;
 
-import junit.framework.Assert;
-
 import org.amanzi.log4j.LogStarter;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 
 /**
@@ -29,7 +28,7 @@ import org.junit.BeforeClass;
 public class AbstractTest {
 
     @BeforeClass
-    public static void setUpClass() {
+    public static void setUpClass() throws Exception {
         new LogStarter().earlyStartup();
     }
 
@@ -43,6 +42,14 @@ public class AbstractTest {
 
     protected void assertNull(String message, Object object) {
         Assert.assertNull(message, object);
+    }
+
+    protected void assertTrue(String message, boolean condition) {
+        Assert.assertTrue(message, condition);
+    }
+
+    protected void assertFalse(String message, boolean condition) {
+        Assert.assertFalse(message, condition);
     }
 
 }

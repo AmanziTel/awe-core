@@ -79,7 +79,7 @@ public final class NodeTypeManager {
 
                     break;
                 } catch (IllegalArgumentException e) {
-                    LOGGER.error("Unable to get a NodeType from Class", e);
+                    // this enum didn't have corresponding node type
                 }
             }
             nodeTypeCache.put(typeID, result);
@@ -89,7 +89,7 @@ public final class NodeTypeManager {
 
     private static final class StringToEnumConverter<T extends Enum> {
 
-        private Class<T> enumType;
+        private final Class<T> enumType;
 
         public StringToEnumConverter(Class<T> enumType) {
             this.enumType = enumType;

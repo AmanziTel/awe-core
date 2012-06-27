@@ -53,7 +53,7 @@ public class AbstractServiceTest extends AbstractMockitoTest {
     private boolean isReadOnlyTest;
 
     @BeforeClass
-    public static void setUpClass() {
+    public static void setUpClass() throws Exception {
         AbstractTest.setUpClass();
         NodeTypeManager.registerNodeType(TestNodeType.class);
     }
@@ -80,7 +80,6 @@ public class AbstractServiceTest extends AbstractMockitoTest {
 
             verify(transaction).finish();
         }
-        verifyNoMoreInteractions(transaction, service);
     }
 
     protected void setMethodFailure() {

@@ -46,8 +46,8 @@ public class NodeService extends AbstractService implements INodeService {
         CHILD;
     }
 
-    private static final TraversalDescription CHILDREN_TRAVERSAL = Traversal.description().breadthFirst().relationships(NodeServiceRelationshipType.CHILD, Direction.OUTGOING)
-            .evaluator(Evaluators.atDepth(1));
+    private static final TraversalDescription CHILDREN_TRAVERSAL = Traversal.description().breadthFirst()
+            .relationships(NodeServiceRelationshipType.CHILD, Direction.OUTGOING).evaluator(Evaluators.atDepth(1));
 
     /**
      * @param graphDb
@@ -81,7 +81,8 @@ public class NodeService extends AbstractService implements INodeService {
      * @return
      * @throws ServiceException
      */
-    private Object getNodeProperty(Node node, String propertyName, String defaultValue, boolean throwExceptionIfNotExist) throws ServiceException {
+    private Object getNodeProperty(Node node, String propertyName, String defaultValue, boolean throwExceptionIfNotExist)
+            throws ServiceException {
         assert node != null;
         assert propertyName != null;
 
@@ -113,7 +114,7 @@ public class NodeService extends AbstractService implements INodeService {
     public Iterator<Node> getChildren(Node parentNode) throws ServiceException {
         assert parentNode != null;
         try {
-            return CHILDREN_TRAVERSAL.traverse(parentNode).nodes().iterator();
+            return getChildrenTraversal().traverse(parentNode).nodes().iterator();
         } catch (Exception e) {
             throw new DatabaseException(e);
         }
@@ -127,7 +128,9 @@ public class NodeService extends AbstractService implements INodeService {
         Node result = null;
 
         try {
-            Iterator<Node> nodes = CHILDREN_TRAVERSAL.evaluator(new PropertyEvaluator(getGeneralNodeProperties().getNodeNameProperty(), name)).traverse(parentNode).nodes().iterator();
+            Iterator<Node> nodes = getChildrenTraversal()
+                    .evaluator(new PropertyEvaluator(getGeneralNodeProperties().getNodeNameProperty(), name)).traverse(parentNode)
+                    .nodes().iterator();
 
             if (nodes.hasNext()) {
                 result = nodes.next();
@@ -145,6 +148,14 @@ public class NodeService extends AbstractService implements INodeService {
 
     @Override
     public Node getReferencedNode() throws ServiceException {
-        return null;
+        try {
+            return getGraphDb().getReferenceNode();
+        } catch (Exception e) {
+            throw new DatabaseException(e);
+        }
+    }
+
+    protected TraversalDescription getChildrenTraversal() {
+        return CHILDREN_TRAVERSAL;
     }
 }
