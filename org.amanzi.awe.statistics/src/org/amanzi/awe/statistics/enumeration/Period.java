@@ -143,7 +143,8 @@ public enum Period {
     };
 
     private final String id;
-    private static final Period[] PERIODS = new Period[] {Period.ALL, Period.YEARLY, Period.MONTHLY, Period.DAILY, Period.HOURLY};
+    private static final Period[] PERIODS = new Period[] {Period.ALL, Period.YEARLY, Period.MONTHLY, WEEKLY, Period.DAILY,
+            Period.HOURLY};
     private Period underlyingPeriod;
 
     private int underlyingPeriodCalendarField;

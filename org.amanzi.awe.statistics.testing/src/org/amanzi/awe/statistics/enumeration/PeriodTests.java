@@ -79,13 +79,13 @@ public class PeriodTests extends AbstractTest {
     }
 
     @Test
-    public void testGetHighestPeriodMonthlyInTheSameWeek() {
+    public void testGetHighestPeriodWeeklyInTheSameWeek() {
         Calendar startTime = getCalendar();
-        startTime.set(Calendar.DATE, NumberUtils.INTEGER_ONE);
+        startTime.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
         Calendar endTime = getCalendar();
-        endTime.add(Calendar.DATE, NumberUtils.INTEGER_ONE);
+        endTime.set(Calendar.DAY_OF_WEEK, Calendar.THURSDAY);
         Period period = Period.getHighestPeriod(startTime.getTimeInMillis(), endTime.getTimeInMillis());
-        Assert.assertEquals(Period.MONTHLY, period);
+        Assert.assertEquals(Period.WEEKLY, period);
     }
 
     @Test

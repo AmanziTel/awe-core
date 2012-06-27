@@ -41,7 +41,7 @@ public class PeriodStatisticsModel extends AbstractModel {
         statisticService = service;
     }
 
-    static StatisticsService statisticService;
+    private static StatisticsService statisticService;
 
     private List<PeriodStatisticsModel> sourcePeriod;
 
@@ -57,7 +57,7 @@ public class PeriodStatisticsModel extends AbstractModel {
     public PeriodStatisticsModel(Node periodNode) throws IllegalArgumentException {
         super(StatisticsNodeTypes.PERIOD_STATISTICS);
         initStatisticsService();
-        if (periodType == null) {
+        if (periodNode == null) {
             throw new IllegalArgumentException("Period node cann't be null");
         }
         rootNode = periodNode;

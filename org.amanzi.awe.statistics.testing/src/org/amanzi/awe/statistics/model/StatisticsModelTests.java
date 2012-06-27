@@ -15,7 +15,9 @@ package org.amanzi.awe.statistics.model;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Calendar;
@@ -29,7 +31,7 @@ import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.model.impl.DriveModel;
 import org.amanzi.testing.AbstractTest;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
 
@@ -48,18 +50,30 @@ public class StatisticsModelTests extends AbstractTest {
     private static Node parentNode;
     private static Node statisticModelNode;
 
-    @BeforeClass
-    public static void setUp() {
+    @Before
+    public void setUp() {
         statisticsService = getMockedService();
         initMockedParentNode();
         initMockedStatisticsRootModel();
         StatisticsModel.setStatisticsService(statisticsService);
+        PeriodStatisticsModel.setStatisticsService(statisticsService);
+    }
+
+    /**
+     * @param hourly
+     * @return
+     */
+    private Node getMockedPeriodNode(Period hourly) {
+        String id = hourly.getId();
+        Node period = getMockedNode();
+        when(period.getProperty(eq(DatasetService.NAME), any(String.class))).thenReturn(id);
+        return period;
     }
 
     /**
      *
      */
-    private static void initMockedStatisticsRootModel() {
+    private void initMockedStatisticsRootModel() {
         statisticModelNode = getMockedNode();
         when(statisticModelNode.getProperty(eq(DatasetService.NAME), any(String.class))).thenReturn(MODEL_NAME);
         when(statisticModelNode.getProperty(eq(DatasetService.NAME))).thenReturn(MODEL_NAME);
@@ -68,7 +82,7 @@ public class StatisticsModelTests extends AbstractTest {
     /**
      * @return
      */
-    private static void initMockedParentNode() {
+    private void initMockedParentNode() {
         parentNode = getMockedNode();
         when(parentNode.getProperty(eq(DatasetService.NAME), any(String.class))).thenReturn(PARENT_NAME);
     }
@@ -76,7 +90,7 @@ public class StatisticsModelTests extends AbstractTest {
     /**
      * @return
      */
-    private static StatisticsService getMockedService() {
+    private StatisticsService getMockedService() {
         statisticsService = mock(StatisticsService.class);
         return statisticsService;
     }
@@ -92,7 +106,7 @@ public class StatisticsModelTests extends AbstractTest {
         when(parentNode.getProperty(eq(DriveModel.MAX_TIMESTAMP))).thenReturn(max);
     }
 
-    private static Node getMockedNode() {
+    private Node getMockedNode() {
         Node node = mock(Node.class);
         return node;
     }
@@ -122,9 +136,60 @@ public class StatisticsModelTests extends AbstractTest {
     }
 
     @Test
-    public void testPeriodModelInitialization() {
+    public void testPeriodModelInitializationHourly() throws DatabaseException, IllegalArgumentException,
+            DuplicateNodeNameException {
         PeriodRange range = generatePeriod(Period.HOURLY);
+        when(statisticsService.findStatistic(eq(parentNode), any(String.class))).thenReturn(null);
+        when(statisticsService.createStatisticsModelRoot(eq(parentNode), any(String.class))).thenReturn(statisticModelNode);
+        Node mockedNode = getMockedPeriodNode(Period.HOURLY);
+        when(statisticsService.getPeriod(eq(statisticModelNode), eq(Period.HOURLY))).thenReturn(mockedNode);
         mockTimestampParent(range.getMin(), range.getMax());
+        new StatisticsModel(parentNode);
+    }
+
+    @Test
+    public void testPeriodModelInitializationMonthly() throws DatabaseException, IllegalArgumentException,
+            DuplicateNodeNameException {
+        PeriodRange range = generatePeriod(Period.MONTHLY);
+        when(statisticsService.findStatistic(eq(parentNode), any(String.class))).thenReturn(null);
+        when(statisticsService.createStatisticsModelRoot(eq(parentNode), any(String.class))).thenReturn(statisticModelNode);
+        Node mockedNode = getMockedPeriodNode(Period.HOURLY);
+        when(statisticsService.getPeriod(eq(statisticModelNode), eq(Period.HOURLY))).thenReturn(mockedNode);
+        mockedNode = getMockedPeriodNode(Period.DAILY);
+        when(statisticsService.getPeriod(eq(statisticModelNode), eq(Period.DAILY))).thenReturn(mockedNode);
+        mockedNode = getMockedPeriodNode(Period.WEEKLY);
+        when(statisticsService.getPeriod(eq(statisticModelNode), eq(Period.WEEKLY))).thenReturn(mockedNode);
+        mockedNode = getMockedPeriodNode(Period.MONTHLY);
+        when(statisticsService.getPeriod(eq(statisticModelNode), eq(Period.MONTHLY))).thenReturn(mockedNode);
+
+        mockTimestampParent(range.getMin(), range.getMax());
+        new StatisticsModel(parentNode);
+
+        verify(statisticsService, atLeastOnce()).getPeriod(eq(statisticModelNode), eq(Period.HOURLY));
+        verify(statisticsService, atLeastOnce()).getPeriod(eq(statisticModelNode), eq(Period.DAILY));
+        verify(statisticsService, atLeastOnce()).getPeriod(eq(statisticModelNode), eq(Period.WEEKLY));
+        verify(statisticsService, atLeastOnce()).getPeriod(eq(statisticModelNode), eq(Period.MONTHLY));
+    }
+
+    @Test
+    public void testPeriodModelInitializationWeekly() throws DatabaseException, IllegalArgumentException,
+            DuplicateNodeNameException {
+        PeriodRange range = generatePeriod(Period.WEEKLY);
+        when(statisticsService.findStatistic(eq(parentNode), any(String.class))).thenReturn(null);
+        when(statisticsService.createStatisticsModelRoot(eq(parentNode), any(String.class))).thenReturn(statisticModelNode);
+        Node mockedNode = getMockedPeriodNode(Period.HOURLY);
+        when(statisticsService.getPeriod(eq(statisticModelNode), eq(Period.HOURLY))).thenReturn(mockedNode);
+        mockedNode = getMockedPeriodNode(Period.DAILY);
+        when(statisticsService.getPeriod(eq(statisticModelNode), eq(Period.DAILY))).thenReturn(mockedNode);
+        mockedNode = getMockedPeriodNode(Period.WEEKLY);
+        when(statisticsService.getPeriod(eq(statisticModelNode), eq(Period.WEEKLY))).thenReturn(mockedNode);
+
+        mockTimestampParent(range.getMin(), range.getMax());
+        new StatisticsModel(parentNode);
+
+        verify(statisticsService, atLeastOnce()).getPeriod(eq(statisticModelNode), eq(Period.HOURLY));
+        verify(statisticsService, atLeastOnce()).getPeriod(eq(statisticModelNode), eq(Period.DAILY));
+        verify(statisticsService, atLeastOnce()).getPeriod(eq(statisticModelNode), eq(Period.WEEKLY));
     }
 
     /**
@@ -150,15 +215,15 @@ public class StatisticsModelTests extends AbstractTest {
             range = new PeriodRange(min.getTimeInMillis(), max.getTimeInMillis());
             break;
         case WEEKLY:
-            min.set(Calendar.DATE, NumberUtils.INTEGER_ONE);
+            min.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
             max.setTimeInMillis(min.getTimeInMillis());
-            max.add(Calendar.DATE, NumberUtils.INTEGER_ONE);
+            max.set(Calendar.DAY_OF_WEEK, Calendar.THURSDAY);
             range = new PeriodRange(min.getTimeInMillis(), max.getTimeInMillis());
             break;
         case MONTHLY:
             min.set(Calendar.DATE, NumberUtils.INTEGER_ONE);
             max.setTimeInMillis(min.getTimeInMillis());
-            max.add(Calendar.DATE, NumberUtils.INTEGER_ONE);
+            max.add(Calendar.WEEK_OF_YEAR, NumberUtils.INTEGER_ONE);
             range = new PeriodRange(min.getTimeInMillis(), max.getTimeInMillis());
             break;
         case YEARLY:
