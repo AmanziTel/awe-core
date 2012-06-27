@@ -28,11 +28,29 @@ public class DuplicatedNodeException extends ServiceException {
     /** long serialVersionUID field */
     private static final long serialVersionUID = -4866569763934067767L;
 
+    private String propertyName;
+
+    private Object duplicatedValue;
+
     /**
      * @param reason
      */
-    public DuplicatedNodeException() {
+    public DuplicatedNodeException(String propertyName, Object duplicatedValue) {
         super(ServiceExceptionReason.DUPLICATED_NODE);
+    }
+
+    /**
+     * @return Returns the propertyName.
+     */
+    public String getPropertyName() {
+        return propertyName;
+    }
+
+    /**
+     * @return Returns the duplicatedValue.
+     */
+    public Object getDuplicatedValue() {
+        return duplicatedValue;
     }
 
 }

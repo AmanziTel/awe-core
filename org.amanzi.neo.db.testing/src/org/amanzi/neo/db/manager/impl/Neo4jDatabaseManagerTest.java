@@ -30,7 +30,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
@@ -118,7 +117,8 @@ public class Neo4jDatabaseManagerTest {
     }
 
     private String getRandomDatabaseLocation() {
-        File databaseDirectory = new File(new File(getDirectoryLocation(TEST_DIRECTORIES)), DATABASE_DIRECTORY + new Random().nextInt());
+        File databaseDirectory = new File(new File(getDirectoryLocation(TEST_DIRECTORIES)), DATABASE_DIRECTORY
+                + new Random().nextInt());
         databaseDirectory.mkdirs();
         return databaseDirectory.getAbsolutePath();
     }
@@ -248,7 +248,8 @@ public class Neo4jDatabaseManagerTest {
     public void checkReadWriteDatabaseService() {
         Neo4jDatabaseManager dbManager = new Neo4jDatabaseManager(AccessType.READ_WRITE);
 
-        Assert.assertEquals("Type of Graph DB Service incorrect", EmbeddedGraphDatabase.class, dbManager.getDatabaseService().getClass());
+        Assert.assertEquals("Type of Graph DB Service incorrect", EmbeddedGraphDatabase.class, dbManager.getDatabaseService()
+                .getClass());
 
         // shutdown db
         dbManager.shutdown();
@@ -277,7 +278,6 @@ public class Neo4jDatabaseManagerTest {
     }
 
     @Test
-    @Ignore
     public void checkReadOnlyDatabaseService() {
         // for read only we need to have already created DB
         Neo4jDatabaseManager dbManager = new Neo4jDatabaseManager();
@@ -286,7 +286,8 @@ public class Neo4jDatabaseManagerTest {
 
         dbManager = new Neo4jDatabaseManager(AccessType.READ_ONLY);
 
-        Assert.assertEquals("Type of Graph DB Service incorrect", EmbeddedReadOnlyGraphDatabase.class, dbManager.getDatabaseService().getClass());
+        Assert.assertEquals("Type of Graph DB Service incorrect", EmbeddedReadOnlyGraphDatabase.class, dbManager
+                .getDatabaseService().getClass());
 
         // shutdown db
         dbManager.shutdown();
@@ -294,7 +295,8 @@ public class Neo4jDatabaseManagerTest {
 
     @Test
     public void checkBeforeAndAfterShutdownEvent() {
-        Neo4jDatabaseManager dbManager = getMockDbManagerForEvents(EventActionType.SHUTDOWN, EventType.BEFORE_SHUTDOWN, EventType.AFTER_SHUTDOWN);
+        Neo4jDatabaseManager dbManager = getMockDbManagerForEvents(EventActionType.SHUTDOWN, EventType.BEFORE_SHUTDOWN,
+                EventType.AFTER_SHUTDOWN);
 
         dbManager.shutdown();
 
@@ -303,7 +305,8 @@ public class Neo4jDatabaseManagerTest {
 
     @Test
     public void checkBeforeAndAfterFullCommitEvent() {
-        Neo4jDatabaseManager dbManager = getMockDbManagerForEvents(EventActionType.FULL_COMMIT, EventType.BEFORE_FULL_COMMIT, EventType.AFTER_FULL_COMMIT);
+        Neo4jDatabaseManager dbManager = getMockDbManagerForEvents(EventActionType.FULL_COMMIT, EventType.BEFORE_FULL_COMMIT,
+                EventType.AFTER_FULL_COMMIT);
 
         dbManager.commitMainTransaction();
 
@@ -312,7 +315,8 @@ public class Neo4jDatabaseManagerTest {
 
     @Test
     public void checkBeforeAndAfterFullRollbackEvent() {
-        Neo4jDatabaseManager dbManager = getMockDbManagerForEvents(EventActionType.FULL_ROLLBACK, EventType.BEFORE_FULL_ROLLBACK, EventType.AFTER_FULL_ROLLBACK);
+        Neo4jDatabaseManager dbManager = getMockDbManagerForEvents(EventActionType.FULL_ROLLBACK, EventType.BEFORE_FULL_ROLLBACK,
+                EventType.AFTER_FULL_ROLLBACK);
 
         dbManager.rollbackMainTransaction();
 

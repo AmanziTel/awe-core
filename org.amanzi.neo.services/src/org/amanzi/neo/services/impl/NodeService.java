@@ -90,16 +90,20 @@ public class NodeService extends AbstractService implements INodeService {
 
         Object result = null;
 
+        boolean throwPropertyNotFoundException = false;
+
         try {
             if (throwExceptionIfNotExist && !node.hasProperty(propertyName)) {
-                throw new PropertyNotFoundException(propertyName, node);
+                throwPropertyNotFoundException = true;
+            } else {
+                result = node.getProperty(propertyName, defaultValue);
             }
-
-            result = node.getProperty(propertyName, defaultValue);
-        } catch (PropertyNotFoundException e) {
-            throw e;
         } catch (Exception e) {
             throw new DatabaseException(e);
+        }
+
+        if (throwPropertyNotFoundException) {
+            throw new PropertyNotFoundException(propertyName, node);
         }
 
         return result;
@@ -127,6 +131,8 @@ public class NodeService extends AbstractService implements INodeService {
 
         Node result = null;
 
+        boolean throwDuplicatedException = false;
+
         try {
             Iterator<Node> nodes = getChildrenTraversal()
                     .evaluator(new PropertyEvaluator(getGeneralNodeProperties().getNodeNameProperty(), name)).traverse(parentNode)
@@ -136,11 +142,15 @@ public class NodeService extends AbstractService implements INodeService {
                 result = nodes.next();
 
                 if (nodes.hasNext()) {
-                    throw new DuplicatedNodeException();
+                    throwDuplicatedException = true;
                 }
             }
         } catch (Exception e) {
             throw new DatabaseException(e);
+        }
+
+        if (throwDuplicatedException) {
+            throw new DuplicatedNodeException(getGeneralNodeProperties().getNodeNameProperty(), name);
         }
 
         return result;

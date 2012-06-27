@@ -19,6 +19,7 @@ import java.util.List;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.impl.GeneralNodeProperties;
 import org.amanzi.neo.services.INodeService;
+import org.amanzi.neo.services.exceptions.DuplicatedNodeException;
 import org.amanzi.testing.AbstractIntegrationTest;
 import org.apache.commons.collections.IteratorUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -44,6 +45,10 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
 
     private static final String[] CHILDREN_NAMES = new String[] {"child1", "child2", "child3"};
 
+    private static final String CHILD_FOR_SEARCH = CHILDREN_NAMES[1];
+
+    private static final String UNEXPECTED_CHILD = "unexpected child";
+
     private static final IGeneralNodeProperties nodeProperties = new GeneralNodeProperties();
 
     private INodeService nodeService;
@@ -68,7 +73,7 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
         @SuppressWarnings("unchecked")
         List<Node> resultList = IteratorUtils.toList(result);
 
-        assertEquals("Unexpected size of childrent", CHILDREN_NAMES.length, resultList.size());
+        assertEquals("Unexpected size of children", CHILDREN_NAMES.length, resultList.size());
 
         for (Node node : resultList) {
             String name = (String)node.getProperty(nodeProperties.getNodeNameProperty());
@@ -121,6 +126,73 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
     @Test
     public void testCheckGetReferencedNode() throws Exception {
         assertEquals("unexpected referenced node", getGraphDatabaseService().getReferenceNode(), nodeService.getReferencedNode());
+    }
+
+    @Test
+    public void testCheckGetChildByName() throws Exception {
+        Node parent = createNode();
+        createChildren(parent, NodeService.NodeServiceRelationshipType.CHILD);
+
+        Node result = nodeService.getChildByName(parent, CHILD_FOR_SEARCH);
+
+        assertNotNull("result of search should not be null", result);
+
+        String name = (String)result.getProperty(nodeProperties.getNodeNameProperty());
+
+        assertEquals("name of found node is not the same as original", CHILD_FOR_SEARCH, name);
+    }
+
+    @Test
+    public void testCheckGetChildByNameThatIsNotExists() throws Exception {
+        Node parent = createNode();
+        createChildren(parent, NodeService.NodeServiceRelationshipType.CHILD);
+
+        Node result = nodeService.getChildByName(parent, UNEXPECTED_CHILD);
+
+        assertNull("Node cannot be found by this name", result);
+    }
+
+    @Test(expected = DuplicatedNodeException.class)
+    public void testCheckDuplicatedNodeException() throws Exception {
+        Node parent = createNode();
+        createChildren(parent, NodeService.NodeServiceRelationshipType.CHILD);
+        createChildren(parent, NodeService.NodeServiceRelationshipType.CHILD);
+
+        nodeService.getChildByName(parent, CHILD_FOR_SEARCH);
+    }
+
+    @Test
+    public void testCheckGetNodeByNameWithoutChildren() throws Exception {
+        Node parent = createNode();
+
+        Node result = nodeService.getChildByName(parent, CHILD_FOR_SEARCH);
+
+        assertNull("Node cannot be found by this name", result);
+    }
+
+    @Test
+    public void testCheckGetNodeByNameWithChildrenByOtherRel() throws Exception {
+        Node parent = createNode();
+        createChildren(parent, TestRelatinshipType.TEST_REL);
+
+        Node result = nodeService.getChildByName(parent, CHILD_FOR_SEARCH);
+
+        assertNull("Node cannot be found by this name", result);
+    }
+
+    @Test
+    public void testCheckGetNodeByNameWithChildrenByMixedOtherRel() throws Exception {
+        Node parent = createNode();
+        createChildren(parent, NodeService.NodeServiceRelationshipType.CHILD);
+        createChildren(parent, TestRelatinshipType.TEST_REL);
+
+        Node result = nodeService.getChildByName(parent, CHILD_FOR_SEARCH);
+
+        assertNotNull("result of search should not be null", result);
+
+        String name = (String)result.getProperty(nodeProperties.getNodeNameProperty());
+
+        assertEquals("name of found node is not the same as original", CHILD_FOR_SEARCH, name);
     }
 
     private void createChildren(Node parent, RelationshipType relType) {

@@ -10,6 +10,13 @@
 <booleanAttribute key="clearConfig" value="true"/>
 <booleanAttribute key="clearws" value="true"/>
 <booleanAttribute key="clearwslog" value="false"/>
+<listAttribute key="com.mountainminds.eclemma.core.SCOPE_IDS">
+<listEntry value="=org.amanzi.neo.models/src"/>
+<listEntry value="=org.amanzi.neo.providers/src"/>
+<listEntry value="=org.amanzi.neo.db/src"/>
+<listEntry value="=org.amanzi.neo.core/src"/>
+<listEntry value="=org.amanzi.neo.services/src"/>
+</listAttribute>
 <stringAttribute key="configLocation" value="${workspace_loc}/.metadata/.plugins/org.eclipse.pde.core/pde-junit"/>
 <booleanAttribute key="default" value="false"/>
 <stringAttribute key="deselected_workspace_plugins" value="org.amanzi.awe,org.amanzi.awe.catalog.neo,org.amanzi.awe.catalog.neo.testing,org.amanzi.awe.console,org.amanzi.awe.filters.ui,org.amanzi.awe.neostyle,org.amanzi.awe.render.core,org.amanzi.awe.render.drive,org.amanzi.awe.render.network,org.amanzi.awe.star.tool,org.amanzi.awe.startup.splash,org.amanzi.awe.ui,org.amanzi.awe.views.drive,org.amanzi.awe.views.explorer,org.amanzi.awe.views.neighbours,org.amanzi.awe.views.network,org.amanzi.awe.views.property,org.amanzi.awe.views.reuse,org.amanzi.neo.loader.core,org.amanzi.neo.loader.core.testing,org.amanzi.neo.loader.ui,org.amanzi.neo.services.impl,org.amanzi.neo.services.impl.testing,org.amanzi.neo.services.ui,org.jfree"/>
