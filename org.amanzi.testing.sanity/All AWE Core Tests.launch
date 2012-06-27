@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="org.eclipse.pde.ui.JunitLaunchConfig">
+<booleanAttribute key="append.args" value="true"/>
+<stringAttribute key="application" value="org.eclipse.pde.junit.runtime.coretestapplication"/>
+<booleanAttribute key="askclear" value="false"/>
+<booleanAttribute key="automaticAdd" value="true"/>
+<booleanAttribute key="automaticValidate" value="false"/>
+<stringAttribute key="bootstrap" value=""/>
+<stringAttribute key="checked" value="[NONE]"/>
+<booleanAttribute key="clearConfig" value="true"/>
+<booleanAttribute key="clearws" value="true"/>
+<booleanAttribute key="clearwslog" value="false"/>
+<stringAttribute key="configLocation" value="${workspace_loc}/.metadata/.plugins/org.eclipse.pde.core/pde-junit"/>
+<booleanAttribute key="default" value="false"/>
+<stringAttribute key="deselected_workspace_plugins" value="org.amanzi.awe,org.amanzi.awe.catalog.neo,org.amanzi.awe.catalog.neo.testing,org.amanzi.awe.console,org.amanzi.awe.filters.ui,org.amanzi.awe.neostyle,org.amanzi.awe.render.core,org.amanzi.awe.render.drive,org.amanzi.awe.render.network,org.amanzi.awe.star.tool,org.amanzi.awe.startup.splash,org.amanzi.awe.ui,org.amanzi.awe.views.drive,org.amanzi.awe.views.explorer,org.amanzi.awe.views.neighbours,org.amanzi.awe.views.network,org.amanzi.awe.views.property,org.amanzi.awe.views.reuse,org.amanzi.neo.loader.core,org.amanzi.neo.loader.core.testing,org.amanzi.neo.loader.ui,org.amanzi.neo.services.impl,org.amanzi.neo.services.impl.testing,org.amanzi.neo.services.ui,org.jfree"/>
+<booleanAttribute key="includeOptional" value="true"/>
+<stringAttribute key="location" value="${workspace_loc}/../junit-workspace"/>
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
+<listEntry value="/org.amanzi.testing.sanity"/>
+</listAttribute>
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
+<listEntry value="4"/>
+</listAttribute>
+<stringAttribute key="org.eclipse.jdt.junit.CONTAINER" value="=org.amanzi.testing.sanity"/>
+<booleanAttribute key="org.eclipse.jdt.junit.KEEPRUNNING_ATTR" value="false"/>
+<stringAttribute key="org.eclipse.jdt.junit.TESTNAME" value=""/>
+<stringAttribute key="org.eclipse.jdt.junit.TEST_KIND" value="org.eclipse.jdt.junit.loader.junit4"/>
+<stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value=""/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-os ${target.os} -ws ${target.ws} -arch ${target.arch} -nl ${target.nl} -consoleLog"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="org.amanzi.testing.sanity"/>
+<stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.pde.ui.workbenchClasspathProvider"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-enableassertions"/>
+<stringAttribute key="pde.version" value="3.3"/>
+<stringAttribute key="product" value="net.refractions.udig.product"/>
+<booleanAttribute key="run_in_ui_thread" value="true"/>
+<stringAttribute key="selected_target_plugins" value="com.ibm.icu@default:default,javax.servlet@default:default,javax.xml@default:default,net.refractions.udig.libs@default:default,org.apache.batik.bridge@default:default,org.apache.batik.css@default:default,org.apache.batik.dom.svg@default:default,org.apache.batik.dom@default:default,org.apache.batik.ext.awt@default:default,org.apache.batik.parser@default:default,org.apache.batik.svggen@default:default,org.apache.batik.transcoder@default:default,org.apache.batik.util.gui@default:default,org.apache.batik.util@default:default,org.apache.batik.xml@default:default,org.apache.log4j@default:default,org.apache.xerces@default:default,org.apache.xml.resolver@default:default,org.apache.xml.serializer@default:default,org.eclipse.core.commands@default:default,org.eclipse.core.contenttype@default:default,org.eclipse.core.databinding.observable@default:default,org.eclipse.core.databinding.property@default:default,org.eclipse.core.databinding@default:default,org.eclipse.core.expressions@default:default,org.eclipse.core.jobs@default:default,org.eclipse.core.runtime.compatibility.auth@default:default,org.eclipse.core.runtime@default:true,org.eclipse.equinox.app@default:default,org.eclipse.equinox.common@2:true,org.eclipse.equinox.preferences@default:default,org.eclipse.equinox.registry@default:default,org.eclipse.help@default:default,org.eclipse.jface.databinding@default:default,org.eclipse.jface@default:default,org.eclipse.osgi.services@default:default,org.eclipse.osgi@-1:true,org.eclipse.swt.gtk.linux.x86_64@default:false,org.eclipse.swt@default:default,org.eclipse.ui.workbench@default:default,org.eclipse.ui@default:default,org.hamcrest.core@default:default,org.junit4@default:default,org.junit@default:default,org.w3c.css.sac@default:default,org.w3c.dom.events@default:default,org.w3c.dom.smil@default:default,org.w3c.dom.svg@default:default"/>
+<stringAttribute key="selected_workspace_plugins" value="org.amanzi.awe.filters@default:default,org.amanzi.awe.libs@default:default,org.amanzi.log4j@default:default,org.amanzi.neo.core.testing@default:false,org.amanzi.neo.core@default:default,org.amanzi.neo.db.testing@default:default,org.amanzi.neo.db@default:default,org.amanzi.neo.models.testing@default:false,org.amanzi.neo.models@default:default,org.amanzi.neo.providers.testing@default:false,org.amanzi.neo.providers@default:default,org.amanzi.neo.services.testing@default:false,org.amanzi.neo.services@default:default,org.amanzi.testing.sanity@default:default,org.amanzi.testing@default:default,org.neo4j@default:default"/>
+<booleanAttribute key="show_selected_only" value="false"/>
+<stringAttribute key="templateConfig" value="${target_home}/configuration/config.ini"/>
+<booleanAttribute key="tracing" value="false"/>
+<booleanAttribute key="useCustomFeatures" value="false"/>
+<booleanAttribute key="useDefaultConfig" value="true"/>
+<booleanAttribute key="useDefaultConfigArea" value="false"/>
+<booleanAttribute key="useProduct" value="false"/>
+</launchConfiguration>
