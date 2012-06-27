@@ -18,12 +18,17 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.Calendar;
+
+import org.amanzi.awe.statistics.enumeration.Period;
 import org.amanzi.awe.statistics.service.StatisticsService;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
+import org.amanzi.neo.services.model.impl.DriveModel;
 import org.amanzi.testing.AbstractTest;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
@@ -76,6 +81,22 @@ public class StatisticsModelTests extends AbstractTest {
         return statisticsService;
     }
 
+    /**
+     * mock timestamp property in parent node
+     * 
+     * @param min
+     * @param max
+     */
+    private void mockTimestampParent(Long min, Long max) {
+        when(parentNode.getProperty(eq(DriveModel.MIN_TIMESTAMP))).thenReturn(min);
+        when(parentNode.getProperty(eq(DriveModel.MAX_TIMESTAMP))).thenReturn(max);
+    }
+
+    private static Node getMockedNode() {
+        Node node = mock(Node.class);
+        return node;
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void testConstructorIfParentIsNull() throws IllegalArgumentException, DatabaseException, IllegalNodeDataException,
             DuplicateNodeNameException {
@@ -92,6 +113,7 @@ public class StatisticsModelTests extends AbstractTest {
     @Test
     public void testConstructorIfStatisticsNotExist() throws IllegalArgumentException, DatabaseException, IllegalNodeDataException,
             DuplicateNodeNameException {
+
         when(statisticsService.findStatistic(eq(parentNode), any(String.class))).thenReturn(null);
         when(statisticsService.createStatisticsModelRoot(eq(parentNode), any(String.class))).thenReturn(statisticModelNode);
         StatisticsModel model = new StatisticsModel(parentNode);
@@ -99,9 +121,93 @@ public class StatisticsModelTests extends AbstractTest {
 
     }
 
-    private static Node getMockedNode() {
-        Node node = mock(Node.class);
-        return node;
+    @Test
+    public void testPeriodModelInitialization() {
+        PeriodRange range = generatePeriod(Period.HOURLY);
+        mockTimestampParent(range.getMin(), range.getMax());
     }
 
+    /**
+     * generate range period
+     * 
+     * @param monthly
+     */
+    private PeriodRange generatePeriod(Period period) {
+        PeriodRange range = null;
+        Calendar min = Calendar.getInstance();
+        Calendar max = Calendar.getInstance();
+        switch (period) {
+        case HOURLY:
+            min.set(Calendar.MINUTE, NumberUtils.INTEGER_ZERO);
+            max.setTimeInMillis(min.getTimeInMillis());
+            max.add(Calendar.MINUTE, NumberUtils.INTEGER_ONE);
+            range = new PeriodRange(min.getTimeInMillis(), max.getTimeInMillis());
+            break;
+        case DAILY:
+            min.set(Calendar.HOUR_OF_DAY, NumberUtils.INTEGER_ONE);
+            max.setTimeInMillis(min.getTimeInMillis());
+            max.add(Calendar.HOUR_OF_DAY, NumberUtils.INTEGER_ONE);
+            range = new PeriodRange(min.getTimeInMillis(), max.getTimeInMillis());
+            break;
+        case WEEKLY:
+            min.set(Calendar.DATE, NumberUtils.INTEGER_ONE);
+            max.setTimeInMillis(min.getTimeInMillis());
+            max.add(Calendar.DATE, NumberUtils.INTEGER_ONE);
+            range = new PeriodRange(min.getTimeInMillis(), max.getTimeInMillis());
+            break;
+        case MONTHLY:
+            min.set(Calendar.DATE, NumberUtils.INTEGER_ONE);
+            max.setTimeInMillis(min.getTimeInMillis());
+            max.add(Calendar.DATE, NumberUtils.INTEGER_ONE);
+            range = new PeriodRange(min.getTimeInMillis(), max.getTimeInMillis());
+            break;
+        case YEARLY:
+            min.set(Calendar.MONTH, Calendar.JANUARY);
+            max.setTimeInMillis(min.getTimeInMillis());
+            max.set(Calendar.MONTH, Calendar.FEBRUARY);
+            range = new PeriodRange(min.getTimeInMillis(), max.getTimeInMillis());
+            break;
+        case ALL:
+            max.setTimeInMillis(min.getTimeInMillis());
+            max.add(Calendar.YEAR, NumberUtils.INTEGER_ONE);
+            range = new PeriodRange(min.getTimeInMillis(), max.getTimeInMillis());
+            break;
+        default:
+            break;
+        }
+        return range;
+    }
+
+    /**
+     * just storage for test of min max timestamp TODO Purpose of StatisticsModelTests
+     * <p>
+     * </p>
+     * 
+     * @author Vladislav_Kondratenko
+     * @since 1.0.0
+     */
+    private static class PeriodRange {
+        private long min;
+        private long max;
+
+        /**
+         * @return Returns the min.
+         */
+        public long getMin() {
+            return min;
+        }
+
+        /**
+         * @return Returns the max.
+         */
+        public long getMax() {
+            return max;
+        }
+
+        PeriodRange(long min, long max) {
+            this.min = min;
+            this.max = max;
+        }
+
+    }
 }

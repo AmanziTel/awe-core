@@ -15,9 +15,11 @@ package org.amanzi.awe.statistics.service;
 
 import java.util.Iterator;
 
+import org.amanzi.awe.statistics.enumeration.Period;
 import org.amanzi.awe.statistics.enumeration.StatisticsNodeTypes;
 import org.amanzi.awe.statistics.enumeration.StatisticsRelationshipTypes;
 import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.DatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
@@ -25,6 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.RelationshipType;
 
 /**
  * <p>
@@ -68,17 +71,33 @@ public class StatisticsService {
      * @return
      */
     public Node findStatistic(Node parentNode, String name) throws IllegalArgumentException {
-        LOGGER.info("try to find statistic parent:" + parentNode + " name:" + name);
-        Iterator<Node> statisticsNodes = datasetService.getFirstRelationTraverser(parentNode,
-                StatisticsRelationshipTypes.STATISTICS, Direction.OUTGOING).iterator();
+        return findFirstRelationshipNode(parentNode, DatasetService.NAME, name, StatisticsRelationshipTypes.STATISTICS);
+    }
+
+    /**
+     * method for search required node by firstRelationship
+     * 
+     * @param parentNode
+     * @param propertyName
+     * @param propertyValue
+     * @param relType
+     * @return
+     */
+    private Node findFirstRelationshipNode(Node parentNode, String propertyName, String propertyValue, RelationshipType relType) {
+        LOGGER.info("try to find node with propetyName:" + propertyName + " value:" + propertyValue + " from parent:" + parentNode
+                + " by relationship: " + relType);
+        Iterator<Node> statisticsNodes = datasetService.getFirstRelationTraverser(parentNode, relType, Direction.OUTGOING)
+                .iterator();
         while (statisticsNodes.hasNext()) {
             Node currentNode = statisticsNodes.next();
-            if (currentNode.getProperty(DatasetService.NAME, StringUtils.EMPTY).equals(name)) {
-                LOGGER.info("Statistic model founded parent:" + parentNode + " name:" + name);
+            if (currentNode.getProperty(propertyName, StringUtils.EMPTY).equals(propertyValue)) {
+                LOGGER.info("node founded propetyName:" + propertyName + " value:" + propertyValue + " from parent:" + parentNode
+                        + " by relationship: " + relType);
                 return currentNode;
             }
         }
-        LOGGER.info("Model node not found. parent:" + parentNode + " name:" + name);
+        LOGGER.info("node not found. propetyName:" + propertyName + " value:" + propertyValue + " from parent:" + parentNode
+                + " by relationship: " + relType);
         return null;
     }
 
@@ -103,4 +122,62 @@ public class StatisticsService {
         }
         return newlyNode;
     }
+
+    /**
+     * try to find period statistics model node, if not found- create new one
+     * 
+     * @param rootNode
+     * @param period
+     * @return
+     * @throws DatabaseException
+     */
+    public Node getPeriod(Node rootNode, Period period) throws DatabaseException {
+        Node findedPeriod = findFirstRelationshipNode(rootNode, DatasetService.NAME, period.getId(), DatasetRelationTypes.CHILD);
+        if (findedPeriod == null) {
+            createPeriodNode(rootNode, period);
+        }
+        return findedPeriod;
+    }
+
+    /**
+     * create period statistic model node
+     * 
+     * @param rootNode
+     * @param period
+     * @return
+     * @throws DatabaseException
+     */
+    private Node createPeriodNode(Node rootNode, Period period) throws DatabaseException {
+        LOGGER.info("create period statistic model node not found. parent:" + rootNode + " name:" + period);
+        Node newlyNode = datasetService.createNode(rootNode, DatasetRelationTypes.CHILD, StatisticsNodeTypes.PERIOD_STATISTICS);
+        try {
+            datasetService.setAnyProperty(newlyNode, DatasetService.NAME, period.getId());
+        } catch (IllegalNodeDataException e) {
+            LOGGER.error("Unexpected exception thrown", e);
+        }
+        return newlyNode;
+    }
+
+    /**
+     * create SOURCE relationship between periodNode and sourceNOde
+     * 
+     * @param periodNode
+     * @param underline
+     * @throws DatabaseException
+     */
+    public void addSource(Node periodNode, Node sourceNode) throws DatabaseException {
+        LOGGER.info("add source:" + sourceNode + " to period:" + periodNode);
+        datasetService.createRelationship(periodNode, sourceNode, StatisticsRelationshipTypes.SOURCE);
+    }
+
+    /**
+     * return sources nodes;
+     * 
+     * @param parentNode
+     * @return
+     */
+    public Iterable<Node> getSources(Node parentNode) {
+        return datasetService.getFirstRelationTraverser(parentNode, StatisticsRelationshipTypes.SOURCE, Direction.OUTGOING);
+    }
+
 }
