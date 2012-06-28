@@ -21,6 +21,14 @@
     </repository>		
   </repositories>
 
+  <dependencies>
+    <dependency>
+      <groupId>org.jacoco</groupId>
+      <artifactId>jacoco-maven-plugin</artifactId>
+      <version>0.5.8-SNAPSHOT</version>
+    </dependency>
+  </dependencies>
+
   <modules>
     <module>org.amanzi.awe</module>
     <module>org.amanzi.awe.catalog.neo</module>
