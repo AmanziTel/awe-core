@@ -19,8 +19,7 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
-import org.amanzi.awe.statistics.enumeration.Period;
-import org.amanzi.testing.AbstractTest;
+import org.amanzi.awe.statistics.AbstractStatisticsTest;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -33,8 +32,7 @@ import org.junit.Test;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class PeriodTests extends AbstractTest {
-    private static final int EIGHT_VALUE = 8;
+public class PeriodTests extends AbstractStatisticsTest {
 
     private static final Map<Integer, Integer> LEAP_YEAR_VALUES = new LinkedHashMap<Integer, Integer>();
     static {
@@ -50,51 +48,37 @@ public class PeriodTests extends AbstractTest {
 
     @Test
     public void testGetHighestPeriodSimpleHourly() {
-        Calendar startTime = getCalendar();
-        Calendar endTime = getCalendar();
-        endTime.add(Calendar.MINUTE, NumberUtils.INTEGER_ONE);
-        Period period = Period.getHighestPeriod(startTime.getTimeInMillis(), endTime.getTimeInMillis());
+        PeriodRange range = generatePeriod(Period.HOURLY);
+        Period period = Period.getHighestPeriod(range.getMin(), range.getMax());
         Assert.assertEquals("Unexpected period ", Period.HOURLY, period);
     }
 
     @Test
     public void testGetHighestPeriodSimpleDaily() {
-        Calendar startTime = getCalendar();
-        startTime.set(Calendar.HOUR_OF_DAY, NumberUtils.INTEGER_ZERO);
-        Calendar endTime = getCalendar();
-        endTime.add(Calendar.HOUR_OF_DAY, NumberUtils.INTEGER_ONE + NumberUtils.INTEGER_ONE);
-        Period period = Period.getHighestPeriod(startTime.getTimeInMillis(), endTime.getTimeInMillis());
-        Assert.assertEquals(Period.DAILY, period);
+        PeriodRange range = generatePeriod(Period.DAILY);
+        Period period = Period.getHighestPeriod(range.getMin(), range.getMax());
+        Assert.assertEquals("Unexpected period ", Period.DAILY, period);
     }
 
     @Test
-    public void testGetHighestPeriodMonthlyInSeparatedWeeks() {
-        Calendar startTime = getCalendar();
-        startTime.set(Calendar.DATE, NumberUtils.INTEGER_ONE);
-        Calendar endTime = getCalendar();
-        endTime.setTimeInMillis(startTime.getTimeInMillis());
-        endTime.add(Calendar.DATE, EIGHT_VALUE);
-        Period period = Period.getHighestPeriod(startTime.getTimeInMillis(), endTime.getTimeInMillis());
-        Assert.assertEquals(Period.MONTHLY, period);
+    public void testGetHighestPeriodMonthly() {
+        PeriodRange range = generatePeriod(Period.MONTHLY);
+        Period period = Period.getHighestPeriod(range.getMin(), range.getMax());
+        Assert.assertEquals("Unexpected period ", Period.MONTHLY, period);
     }
 
     @Test
     public void testGetHighestPeriodWeeklyInTheSameWeek() {
-        Calendar startTime = getCalendar();
-        startTime.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
-        Calendar endTime = getCalendar();
-        endTime.set(Calendar.DAY_OF_WEEK, Calendar.THURSDAY);
-        Period period = Period.getHighestPeriod(startTime.getTimeInMillis(), endTime.getTimeInMillis());
-        Assert.assertEquals(Period.WEEKLY, period);
+        PeriodRange range = generatePeriod(Period.WEEKLY);
+        Period period = Period.getHighestPeriod(range.getMin(), range.getMax());
+        Assert.assertEquals("Unexpected period ", Period.WEEKLY, period);
     }
 
     @Test
     public void testGetHighestPeriodYearly() {
-        Calendar startTime = getCalendar();
-        Calendar endTime = getCalendar();
-        endTime.add(Calendar.MONTH, NumberUtils.INTEGER_ONE);
-        Period period = Period.getHighestPeriod(startTime.getTimeInMillis(), endTime.getTimeInMillis());
-        Assert.assertEquals(Period.YEARLY, period);
+        PeriodRange range = generatePeriod(Period.YEARLY);
+        Period period = Period.getHighestPeriod(range.getMin(), range.getMax());
+        Assert.assertEquals("Unexpected period ", Period.YEARLY, period);
     }
 
     @Test

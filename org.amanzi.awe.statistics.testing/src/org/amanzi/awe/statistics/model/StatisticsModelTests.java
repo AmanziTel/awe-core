@@ -20,8 +20,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Calendar;
-
+import org.amanzi.awe.statistics.AbstractStatisticsTest;
 import org.amanzi.awe.statistics.enumeration.Period;
 import org.amanzi.awe.statistics.service.StatisticsService;
 import org.amanzi.neo.services.DatasetService;
@@ -29,8 +28,6 @@ import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.model.impl.DriveModel;
-import org.amanzi.testing.AbstractTest;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
@@ -42,7 +39,7 @@ import org.neo4j.graphdb.Node;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class StatisticsModelTests extends AbstractTest {
+public class StatisticsModelTests extends AbstractStatisticsTest {
 
     private static StatisticsService statisticsService;
     private static final String PARENT_NAME = "model";
@@ -192,87 +189,4 @@ public class StatisticsModelTests extends AbstractTest {
         verify(statisticsService, atLeastOnce()).getPeriod(eq(statisticModelNode), eq(Period.WEEKLY));
     }
 
-    /**
-     * generate range period
-     * 
-     * @param monthly
-     */
-    private PeriodRange generatePeriod(Period period) {
-        PeriodRange range = null;
-        Calendar min = Calendar.getInstance();
-        Calendar max = Calendar.getInstance();
-        switch (period) {
-        case HOURLY:
-            min.set(Calendar.MINUTE, NumberUtils.INTEGER_ZERO);
-            max.setTimeInMillis(min.getTimeInMillis());
-            max.add(Calendar.MINUTE, NumberUtils.INTEGER_ONE);
-            range = new PeriodRange(min.getTimeInMillis(), max.getTimeInMillis());
-            break;
-        case DAILY:
-            min.set(Calendar.HOUR_OF_DAY, NumberUtils.INTEGER_ONE);
-            max.setTimeInMillis(min.getTimeInMillis());
-            max.add(Calendar.HOUR_OF_DAY, NumberUtils.INTEGER_ONE);
-            range = new PeriodRange(min.getTimeInMillis(), max.getTimeInMillis());
-            break;
-        case WEEKLY:
-            min.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
-            max.setTimeInMillis(min.getTimeInMillis());
-            max.set(Calendar.DAY_OF_WEEK, Calendar.THURSDAY);
-            range = new PeriodRange(min.getTimeInMillis(), max.getTimeInMillis());
-            break;
-        case MONTHLY:
-            min.set(Calendar.DATE, NumberUtils.INTEGER_ONE);
-            max.setTimeInMillis(min.getTimeInMillis());
-            max.add(Calendar.WEEK_OF_YEAR, NumberUtils.INTEGER_ONE);
-            range = new PeriodRange(min.getTimeInMillis(), max.getTimeInMillis());
-            break;
-        case YEARLY:
-            min.set(Calendar.MONTH, Calendar.JANUARY);
-            max.setTimeInMillis(min.getTimeInMillis());
-            max.set(Calendar.MONTH, Calendar.FEBRUARY);
-            range = new PeriodRange(min.getTimeInMillis(), max.getTimeInMillis());
-            break;
-        case ALL:
-            max.setTimeInMillis(min.getTimeInMillis());
-            max.add(Calendar.YEAR, NumberUtils.INTEGER_ONE);
-            range = new PeriodRange(min.getTimeInMillis(), max.getTimeInMillis());
-            break;
-        default:
-            break;
-        }
-        return range;
-    }
-
-    /**
-     * just storage for test of min max timestamp TODO Purpose of StatisticsModelTests
-     * <p>
-     * </p>
-     * 
-     * @author Vladislav_Kondratenko
-     * @since 1.0.0
-     */
-    private static class PeriodRange {
-        private long min;
-        private long max;
-
-        /**
-         * @return Returns the min.
-         */
-        public long getMin() {
-            return min;
-        }
-
-        /**
-         * @return Returns the max.
-         */
-        public long getMax() {
-            return max;
-        }
-
-        PeriodRange(long min, long max) {
-            this.min = min;
-            this.max = max;
-        }
-
-    }
 }

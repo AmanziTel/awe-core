@@ -24,6 +24,7 @@ import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.model.impl.AbstractModel;
+import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.DriveModel;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -98,15 +99,18 @@ public class StatisticsModel extends AbstractModel {
     }
 
     /**
+     * initialize period chain
+     * 
      * @throws DatabaseException
      */
     private Node initPeriods(Period period) throws DatabaseException {
         Node periodNode = statisticService.getPeriod(rootNode, period);
-        periodList.add(new PeriodStatisticsModel(periodNode));
+        PeriodStatisticsModel periodModel = new PeriodStatisticsModel(periodNode);
+        periodList.add(periodModel);
         Period underlinePeriod = period.getUnderlyingPeriod();
         if (period.getUnderlyingPeriod() != null) {
             Node underline = initPeriods(underlinePeriod);
-            statisticService.addSource(periodNode, underline);
+            periodModel.addSourcePeriod(new DataElement(underline));
         }
         return periodNode;
 

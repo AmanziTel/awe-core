@@ -28,7 +28,8 @@ import org.junit.runners.Suite.SuiteClasses;
 @RunWith(Suite.class)
 @SuiteClasses({
     org.amanzi.awe.statistics.enumeration.PeriodTests.class,
-    org.amanzi.awe.statistics.model.StatisticsModelTests.class
+    org.amanzi.awe.statistics.model.StatisticsModelTests.class,
+    org.amanzi.awe.statistics.service.StatisticsServiceTests.class
     })
 public class StatisticsServiceSuite {
 

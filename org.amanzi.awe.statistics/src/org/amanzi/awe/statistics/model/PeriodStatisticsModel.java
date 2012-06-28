@@ -13,15 +13,16 @@
 
 package org.amanzi.awe.statistics.model;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 import org.amanzi.awe.statistics.enumeration.Period;
 import org.amanzi.awe.statistics.enumeration.StatisticsNodeTypes;
 import org.amanzi.awe.statistics.service.StatisticsService;
 import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.exceptions.DatabaseException;
+import org.amanzi.neo.services.model.IDataElement;
 import org.amanzi.neo.services.model.impl.AbstractModel;
+import org.amanzi.neo.services.model.impl.DataElement;
 import org.apache.commons.lang3.StringUtils;
 import org.neo4j.graphdb.Node;
 
@@ -43,8 +44,6 @@ public class PeriodStatisticsModel extends AbstractModel {
 
     private static StatisticsService statisticService;
 
-    private List<PeriodStatisticsModel> sourcePeriod;
-
     /*
      * initialize statistics services
      */
@@ -54,6 +53,12 @@ public class PeriodStatisticsModel extends AbstractModel {
         }
     }
 
+    /**
+     * Init new period statisticsModel
+     * 
+     * @param periodNode
+     * @throws IllegalArgumentException
+     */
     public PeriodStatisticsModel(Node periodNode) throws IllegalArgumentException {
         super(StatisticsNodeTypes.PERIOD_STATISTICS);
         initStatisticsService();
@@ -66,22 +71,22 @@ public class PeriodStatisticsModel extends AbstractModel {
 
     }
 
-    public List<PeriodStatisticsModel> getSourcePeriods() {
-        if (sourcePeriod == null) {
-            sourcePeriod = new ArrayList<PeriodStatisticsModel>();
-            initSourcesList();
+    /**
+     * get sources periods
+     * 
+     * @return source period if exist -> else return null;
+     */
+    public PeriodStatisticsModel getSourcePeriod() {
+        Iterator<Node> sources = statisticService.getSources(rootNode).iterator();
+        if (sources.hasNext()) {
+            return new PeriodStatisticsModel(sources.next());
         }
-        return sourcePeriod;
+        return null;
     }
 
-    /**
-     *
-     */
-    private void initSourcesList() {
-        Iterator<Node> sources = statisticService.getSources(rootNode).iterator();
-        while (sources.hasNext()) {
-            sourcePeriod.add(new PeriodStatisticsModel(sources.next()));
-        }
-
+    public PeriodStatisticsModel addSourcePeriod(IDataElement source) throws DatabaseException {
+        Node node = ((DataElement)source).getNode();
+        statisticService.addSource(rootNode, node);
+        return new PeriodStatisticsModel(node);
     }
 }
