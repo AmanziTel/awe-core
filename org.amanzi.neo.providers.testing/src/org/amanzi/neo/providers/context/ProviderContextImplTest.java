@@ -18,6 +18,8 @@ import java.util.Map;
 
 import org.amanzi.neo.db.manager.DatabaseManagerFactory;
 import org.amanzi.neo.nodeproperties.INodeProperties;
+import org.amanzi.neo.providers.IModelProvider;
+import org.amanzi.neo.providers.IProjectModelProvider;
 import org.amanzi.neo.providers.IProviderContext.ContextException;
 import org.amanzi.neo.services.internal.IService;
 import org.amanzi.testing.AbstractMockitoTest;
@@ -50,6 +52,8 @@ public class ProviderContextImplTest extends AbstractMockitoTest {
 
     private static final String SERVICE_EXTENSION_POINT = "org.amanzi.services";
 
+    private static final String PROVIDER_EXTENSION_POINT = "org.amanzi.providers";
+
     private static final String SOME_ID = "some id";
 
     private static final String SOME_CLASS = String.class.getName();
@@ -57,6 +61,8 @@ public class ProviderContextImplTest extends AbstractMockitoTest {
     private static final String TEST_NODE_PROPERTIES_ID = "test.node.properties";
 
     private static final String TEST_SERVICE_ID = "test.service";
+
+    private static final String TEST_PROVIDER_ID = "test.provider";
 
     private static final String[] TEST_IDS = new String[] {"other id 1", "other id 2"};
 
@@ -74,6 +80,8 @@ public class ProviderContextImplTest extends AbstractMockitoTest {
 
     private IService service;
 
+    private IModelProvider< ? , ? > provider;
+
     @Before
     public void setUp() {
         registry = mock(IExtensionRegistry.class);
@@ -83,6 +91,8 @@ public class ProviderContextImplTest extends AbstractMockitoTest {
         service = mock(IService.class);
 
         context = new ProviderContextImpl(registry);
+
+        provider = mock(IProjectModelProvider.class);
 
         GraphDatabaseService graphDb = mock(GraphDatabaseService.class);
         DatabaseManagerFactory.getDatabaseManager().setDatabaseService(graphDb);
@@ -155,7 +165,7 @@ public class ProviderContextImplTest extends AbstractMockitoTest {
     }
 
     @Test
-    public void testCachOnServices() throws Exception {
+    public void testCacheOnServices() throws Exception {
         context = spy(new ProviderContextImpl());
 
         doReturn(service).when(context).createService(SOME_ID);
@@ -272,6 +282,63 @@ public class ProviderContextImplTest extends AbstractMockitoTest {
         context.createInstance(String.class, (IConfigurationElement)null);
 
         verify(context).createInstance(eq(String.class), eq(parametersMap));
+    }
+
+    @Test
+    public void testCacheOnProviders() throws Exception {
+        context = spy(new ProviderContextImpl());
+
+        doReturn(provider).when(context).createModelProvider(SOME_ID);
+
+        // put to cache
+        context.get(SOME_ID);
+
+        // get from cache
+        context.get(SOME_ID);
+        verify(context, atLeastOnce()).createModelProvider(SOME_ID);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testCheckActivityOnCreateProvider() throws Exception {
+        IConfigurationElement[] subElements = getParameterConfigurationElements(SERVICE_PARAMETERS);
+        IConfigurationElement[] parameters = getParameterBlockConfigurationElements(subElements);
+        IConfigurationElement[] elements = getConfigurationElementsForService(TEST_PROVIDER_ID, parameters);
+
+        context = spy(context);
+
+        when(registry.getConfigurationElementsFor(PROVIDER_EXTENSION_POINT)).thenReturn(elements);
+
+        doReturn(service).when(context).getService(SOME_ID);
+        doReturn(properties).when(context).getNodeProperties(SOME_ID);
+        doReturn(provider).when(context).createInstance(any(Class.class), any(Map.class));
+
+        context.createModelProvider(TEST_PROVIDER_ID);
+
+        verify(registry).getConfigurationElementsFor(PROVIDER_EXTENSION_POINT);
+        verify(element).getAttribute(CLASS);
+        verify(element).getChildren(PARAMETERS2);
+
+        for (IConfigurationElement parameterBlock : parameters) {
+            verify(parameterBlock).getChildren();
+        }
+
+        for (IConfigurationElement parameter : subElements) {
+            verify(parameter).getName();
+            verify(parameter).getAttribute("refId");
+        }
+
+        verify(context).getNodeProperties(SOME_ID);
+        verify(context).getService(SOME_ID);
+    }
+
+    @Test(expected = ContextException.class)
+    public void testCheckContextExceptionOnUnexistingProviderId() throws Exception {
+        IConfigurationElement[] elements = getConfigurationElementsForService(null, null);
+
+        when(registry.getConfigurationElementsFor(PROVIDER_EXTENSION_POINT)).thenReturn(elements);
+
+        context.createModelProvider(TEST_PROVIDER_ID);
     }
 
     private IConfigurationElement[] getParameterConfigurationElements(String[] names) {

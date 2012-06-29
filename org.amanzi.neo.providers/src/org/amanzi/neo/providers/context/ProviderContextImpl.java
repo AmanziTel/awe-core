@@ -47,6 +47,8 @@ public class ProviderContextImpl implements IProviderContext {
 
     private static final String SERVICES_EXTENSION_POINT = "org.amanzi.services";
 
+    private static final String PROVIDERS_EXTENSION_POINT = "org.amanzi.providers";
+
     private static final String ID_ATTRIBUTE = "id";
 
     private static final String CLASS_ATTRIBUTE = "class";
@@ -59,7 +61,7 @@ public class ProviderContextImpl implements IProviderContext {
 
     private static final String REFERENCE_ATTRIBUTE = "refId";
 
-    private final Map<String, ? extends IModelProvider< ? , ? >> providersCache = new HashMap<String, IModelProvider< ? , ? >>();
+    private final Map<String, IModelProvider< ? , ? >> providersCache = new HashMap<String, IModelProvider< ? , ? >>();
 
     private final Map<String, IService> servicesCache = new HashMap<String, IService>();
 
@@ -69,6 +71,8 @@ public class ProviderContextImpl implements IProviderContext {
 
     private List<String> serviceStack;
 
+    private List<String> providerStack;
+
     public ProviderContextImpl() {
         registry = Platform.getExtensionRegistry();
     }
@@ -77,12 +81,14 @@ public class ProviderContextImpl implements IProviderContext {
         this.registry = registry;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public synchronized <T extends IModelProvider< ? , ? >> T get(String id) throws ContextException {
         T result = (T)providersCache.get(id);
 
         if (result == null) {
-
+            result = (T)createModelProvider(id);
+            providersCache.put(id, result);
         }
 
         return result;
@@ -90,14 +96,6 @@ public class ProviderContextImpl implements IProviderContext {
 
     protected IService getService(String id) throws ContextException {
         assert !StringUtils.isEmpty(id);
-
-        // check cycle
-        serviceStack.add(id);
-        if ((serviceStack != null) && serviceStack.contains(id)) {
-            String message = "A cycle was detected <" + serviceStack + ">";
-            serviceStack = null;
-            throw new ContextException(message);
-        }
 
         IService result = servicesCache.get(id);
 
@@ -123,10 +121,47 @@ public class ProviderContextImpl implements IProviderContext {
         return result;
     }
 
+    protected IModelProvider< ? , ? > createModelProvider(String id) throws ContextException {
+        assert !StringUtils.isEmpty(id);
+
+        if (providerStack == null) {
+            providerStack = new ArrayList<String>();
+        }
+        if (providerStack.contains(id)) {
+            String message = "A cycle was detected <" + providerStack + ">";
+            providerStack = null;
+            throw new ContextException(message);
+        }
+        providerStack.add(id);
+
+        IConfigurationElement element = findConfigurationElement(PROVIDERS_EXTENSION_POINT, id);
+
+        if (element == null) {
+            throw new ContextException("ModelProvider <" + id + "> was not found in context");
+        }
+
+        try {
+            return (IModelProvider< ? , ? >)createInstance(element);
+        } catch (Exception e) {
+            throw new ContextException(e);
+        } finally {
+            if (providerStack != null) {
+                providerStack.remove(id);
+            }
+        }
+    }
+
     protected IService createService(String id) throws ContextException {
         assert !StringUtils.isEmpty(id);
 
-        serviceStack = new ArrayList<String>();
+        if (serviceStack == null) {
+            serviceStack = new ArrayList<String>();
+        }
+        if (serviceStack.contains(id)) {
+            String message = "A cycle was detected <" + serviceStack + ">";
+            serviceStack = null;
+            throw new ContextException(message);
+        }
         serviceStack.add(id);
 
         IConfigurationElement element = findConfigurationElement(SERVICES_EXTENSION_POINT, id);
@@ -139,6 +174,10 @@ public class ProviderContextImpl implements IProviderContext {
             return (IService)createInstance(element);
         } catch (Exception e) {
             throw new ContextException(e);
+        } finally {
+            if (serviceStack != null) {
+                serviceStack.remove(id);
+            }
         }
     }
 
