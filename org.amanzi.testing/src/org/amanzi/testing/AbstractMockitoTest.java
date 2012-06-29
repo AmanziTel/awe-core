@@ -78,8 +78,8 @@ public class AbstractMockitoTest extends AbstractTest {
         return Mockito.spy(object);
     }
 
-    protected <T> T any() {
-        return Mockito.any();
+    protected <T> T any(Class<T> clazz) {
+        return Mockito.any(clazz);
     }
 
     protected Stubber doReturn(Object toBeReturned) {
