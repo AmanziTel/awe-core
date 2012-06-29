@@ -355,6 +355,8 @@ public class Neo4jDatabaseManagerTest {
                 }
             });
             break;
+        default:
+            // do nothing
         }
 
         return service;
