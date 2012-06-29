@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension-point id="org.amanzi.nodeproperties" name="Node Properties" schema="schema/org.amanzi.nodeproperties.exsd"/>
+   <extension-point id="org.amanzi.nodetypes" name="Node Types" schema="schema/org.amanzi.nodetypes.exsd"/>
+   <extension
+         point="org.amanzi.nodeproperties">
+      <nodeProperties
+            class="org.amanzi.neo.nodeproperties.impl.GeneralNodeProperties"
+            id="org.amanzi.nodeproperties.generalnodeproperties">
+      </nodeProperties>
+   </extension>
+
+</plugin>
