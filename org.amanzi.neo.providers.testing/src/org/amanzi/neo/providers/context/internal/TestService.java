@@ -26,7 +26,27 @@ import org.neo4j.graphdb.GraphDatabaseService;
  */
 public class TestService implements ITestService {
 
-    public TestService(IGeneralNodeProperties generalNodeProperties, GraphDatabaseService dbService) {
+    private final IGeneralNodeProperties generalNodeProperties;
 
+    private final GraphDatabaseService dbService;
+
+    public TestService(IGeneralNodeProperties generalNodeProperties, GraphDatabaseService dbService) {
+        this.generalNodeProperties = generalNodeProperties;
+        this.dbService = dbService;
     }
+
+    /**
+     * @return Returns the generalNodeProperties.
+     */
+    public IGeneralNodeProperties getGeneralNodeProperties() {
+        return generalNodeProperties;
+    }
+
+    /**
+     * @return Returns the dbService.
+     */
+    public GraphDatabaseService getDbService() {
+        return dbService;
+    }
+
 }

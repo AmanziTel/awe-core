@@ -51,7 +51,7 @@ public class ProjectModelProviderTest extends AbstractMockitoTest {
 
     private ProjectModel projectModel;
 
-    private final static GeneralNodeProperties generalNodeProperties = new GeneralNodeProperties();
+    private static final GeneralNodeProperties GENERAL_NODE_PROPERTIES = new GeneralNodeProperties();
 
     private Node node;
 
@@ -70,7 +70,7 @@ public class ProjectModelProviderTest extends AbstractMockitoTest {
 
         projectModel = mock(ProjectModel.class);
 
-        projectModelProvider = new ProjectModelProvider(nodeService, generalNodeProperties);
+        projectModelProvider = new ProjectModelProvider(nodeService, GENERAL_NODE_PROPERTIES);
     }
 
     @Test

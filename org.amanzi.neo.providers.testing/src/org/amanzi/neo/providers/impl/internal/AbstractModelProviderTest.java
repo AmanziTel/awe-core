@@ -40,7 +40,7 @@ public class AbstractModelProviderTest extends AbstractMockitoTest {
 
     private static class TestModelProvider extends AbstractModelProvider<AbstractModel, IModel> {
 
-        private AbstractModel instance;
+        private final AbstractModel instance;
 
         public TestModelProvider(AbstractModel instance) {
             this.instance = instance;
@@ -60,14 +60,12 @@ public class AbstractModelProviderTest extends AbstractMockitoTest {
 
     private Node node;
 
-    private GraphDatabaseService service;
-
     /**
      * @throws java.lang.Exception
      */
     @Before
     public void setUp() throws Exception {
-        service = mock(GraphDatabaseService.class);
+        GraphDatabaseService service = mock(GraphDatabaseService.class);
         DatabaseManagerFactory.getDatabaseManager().setDatabaseService(service);
 
         node = getNodeMock();
@@ -104,20 +102,20 @@ public class AbstractModelProviderTest extends AbstractMockitoTest {
 
         for (String name : MODEL_NAMES) {
             NameKey key = new NameKey(name);
-            AbstractModel model = mock(AbstractModel.class);
+            AbstractModel subModel = mock(AbstractModel.class);
 
-            provider.addToCache(model, key);
+            provider.addToCache(subModel, key);
 
-            modelList.add(model);
+            modelList.add(subModel);
         }
 
         for (int i = 0; i < MODEL_NAMES.length; i++) {
             NameKey key = new NameKey(MODEL_NAMES[i]);
 
-            AbstractModel model = provider.getFromCache(key);
+            AbstractModel subModel = provider.getFromCache(key);
 
-            assertNotNull("Model should exist in cache", model);
-            assertEquals("Unexpected model found by key", modelList.get(i), model);
+            assertNotNull("Model should exist in cache", subModel);
+            assertEquals("Unexpected model found by key", modelList.get(i), subModel);
         }
     }
 
@@ -125,9 +123,9 @@ public class AbstractModelProviderTest extends AbstractMockitoTest {
     public void testCheckCacheClearedAfterDbStop() {
         for (String name : MODEL_NAMES) {
             NameKey key = new NameKey(name);
-            AbstractModel model = mock(AbstractModel.class);
+            AbstractModel subModel = mock(AbstractModel.class);
 
-            provider.addToCache(model, key);
+            provider.addToCache(subModel, key);
         }
 
         DatabaseManagerFactory.getDatabaseManager().shutdown();

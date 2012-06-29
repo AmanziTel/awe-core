@@ -43,6 +43,8 @@ public class ProviderContextImplIntegrationTest extends AbstractIntegrationTest 
 
     private static final String TEST_SERVICE_ID = "org.amanzi.neo.providers.testing.TestService";
 
+    private static final String CYCLE_DEPENDENCY_SERVICE_ID = "org.amanzi.service.CycleDependencyService2";
+
     private ProviderContextImpl context;
 
     @Override
@@ -80,5 +82,10 @@ public class ProviderContextImplIntegrationTest extends AbstractIntegrationTest 
         IService instance = context.createService(TEST_SERVICE_ID);
 
         assertEquals("Unexpected class of service", TestService.class, instance.getClass());
+    }
+
+    @Test(expected = ContextException.class)
+    public void testCheckCycleDependencyOnServiceCreation() throws Exception {
+        context.createService(CYCLE_DEPENDENCY_SERVICE_ID);
     }
 }

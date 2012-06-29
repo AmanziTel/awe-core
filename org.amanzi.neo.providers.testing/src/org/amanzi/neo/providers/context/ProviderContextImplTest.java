@@ -74,8 +74,6 @@ public class ProviderContextImplTest extends AbstractMockitoTest {
 
     private IService service;
 
-    private GraphDatabaseService graphDb;
-
     @Before
     public void setUp() {
         registry = mock(IExtensionRegistry.class);
@@ -86,7 +84,7 @@ public class ProviderContextImplTest extends AbstractMockitoTest {
 
         context = new ProviderContextImpl(registry);
 
-        graphDb = mock(GraphDatabaseService.class);
+        GraphDatabaseService graphDb = mock(GraphDatabaseService.class);
         DatabaseManagerFactory.getDatabaseManager().setDatabaseService(graphDb);
     }
 
@@ -302,8 +300,7 @@ public class ProviderContextImplTest extends AbstractMockitoTest {
         return result;
     }
 
-    private IConfigurationElement[] getConfigurationElementsForService(String correctId, IConfigurationElement[] parameters)
-            throws Exception {
+    private IConfigurationElement[] getConfigurationElementsForService(String correctId, IConfigurationElement[] parameters) {
         String[] ids = TEST_IDS;
         if (correctId != null) {
             ids = ArrayUtils.add(ids, correctId);
@@ -313,25 +310,25 @@ public class ProviderContextImplTest extends AbstractMockitoTest {
 
         int i = 0;
         for (String id : ids) {
-            IConfigurationElement element = mock(IConfigurationElement.class);
+            IConfigurationElement serviceElement = mock(IConfigurationElement.class);
 
-            when(element.getAttribute(eq("id"))).thenReturn(id);
+            when(serviceElement.getAttribute(eq("id"))).thenReturn(id);
 
-            result[i++] = element;
+            result[i++] = serviceElement;
 
             if (id.equals(correctId)) {
-                when(element.getAttribute(CLASS)).thenReturn(SOME_CLASS);
+                when(serviceElement.getAttribute(CLASS)).thenReturn(SOME_CLASS);
 
-                when(element.getChildren(PARAMETERS2)).thenReturn(parameters);
+                when(serviceElement.getChildren(PARAMETERS2)).thenReturn(parameters);
 
-                this.element = element;
+                this.element = serviceElement;
             }
         }
 
         return result;
     }
 
-    private IConfigurationElement[] getConfigurationElementsForNodeProperties(String correctId) throws Exception {
+    private IConfigurationElement[] getConfigurationElementsForNodeProperties(String correctId) throws CoreException {
         String[] ids = TEST_IDS;
         if (correctId != null) {
             ids = ArrayUtils.add(ids, correctId);
@@ -341,16 +338,16 @@ public class ProviderContextImplTest extends AbstractMockitoTest {
 
         int i = 0;
         for (String id : ids) {
-            IConfigurationElement element = mock(IConfigurationElement.class);
+            IConfigurationElement nodePropertiesElement = mock(IConfigurationElement.class);
 
-            when(element.getAttribute(eq("id"))).thenReturn(id);
+            when(nodePropertiesElement.getAttribute(eq("id"))).thenReturn(id);
 
-            result[i++] = element;
+            result[i++] = nodePropertiesElement;
 
             if (id.equals(correctId)) {
-                when(element.createExecutableExtension(CLASS)).thenReturn(properties);
+                when(nodePropertiesElement.createExecutableExtension(CLASS)).thenReturn(properties);
 
-                this.element = element;
+                this.element = nodePropertiesElement;
             }
         }
 

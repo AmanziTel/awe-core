@@ -43,6 +43,24 @@
             </serviceReference>
          </parameters>
       </service>
+      <service
+            class="org.amanzi.neo.providers.context.internal.CycleDependencyService1"
+    		id="org.amanzi.service.CycleDependencyService1">
+         <parameters>
+            <serviceReference
+                  refId="org.amanzi.service.CycleDependencyService2">
+            </serviceReference>
+         </parameters>
+      </service>
+      <service
+            class="org.amanzi.neo.providers.context.internal.CycleDependencyService2"
+            id="org.amanzi.service.CycleDependencyService2">
+         <parameters>
+            <serviceReference
+                  refId="org.amanzi.service.CycleDependencyService1">
+            </serviceReference>
+         </parameters>
+      </service>
    </extension>
 
 </fragment>

@@ -139,7 +139,9 @@ public class Neo4jDatabaseManager extends AbstractDatabaseManager {
 
     @Override
     public synchronized GraphDatabaseService getDatabaseService() {
-        initializeDb();
+        if (dbService == null) {
+            initializeDb();
+        }
         return dbService;
     }
 
@@ -179,7 +181,7 @@ public class Neo4jDatabaseManager extends AbstractDatabaseManager {
     }
 
     @Override
-    public void setDatabaseService(GraphDatabaseService service) {
+    public synchronized void setDatabaseService(GraphDatabaseService service) {
         shutdown();
 
         fireEvent(EventType.BEFORE_STARTUP);
@@ -191,28 +193,26 @@ public class Neo4jDatabaseManager extends AbstractDatabaseManager {
      * Initializes DB connection
      */
     private void initializeDb() {
-        if (dbService == null) {
-            LOGGER.info("Initializing Neo4j Database Manager with parameters: " + "databaseLocation = <" + databaseLocation + ">, "
-                    + "accessType = <" + accessType + ">");
+        LOGGER.info("Initializing Neo4j Database Manager with parameters: " + "databaseLocation = <" + databaseLocation + ">, "
+                + "accessType = <" + accessType + ">");
 
-            fireEvent(EventType.BEFORE_STARTUP);
+        fireEvent(EventType.BEFORE_STARTUP);
 
-            switch (accessType) {
-            case READ_ONLY:
-                dbService = new EmbeddedReadOnlyGraphDatabase(databaseLocation, memoryMapping);
-                break;
-            case READ_WRITE:
-            default:
-                dbService = new EmbeddedGraphDatabase(databaseLocation, memoryMapping);
-                break;
-            }
-
-            fireEvent(EventType.AFTER_STARTUP);
+        switch (accessType) {
+        case READ_ONLY:
+            dbService = new EmbeddedReadOnlyGraphDatabase(databaseLocation, memoryMapping);
+            break;
+        case READ_WRITE:
+        default:
+            dbService = new EmbeddedGraphDatabase(databaseLocation, memoryMapping);
+            break;
         }
+
+        fireEvent(EventType.AFTER_STARTUP);
     }
 
     @Override
-    public void shutdown() {
+    public synchronized void shutdown() {
         if (dbService != null) {
             LOGGER.info("Database shutted down");
 

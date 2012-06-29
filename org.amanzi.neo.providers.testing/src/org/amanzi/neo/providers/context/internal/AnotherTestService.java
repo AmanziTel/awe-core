@@ -15,6 +15,7 @@ package org.amanzi.neo.providers.context.internal;
 
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.services.internal.IService;
+import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
  * TODO Purpose of
@@ -26,8 +27,37 @@ import org.amanzi.neo.services.internal.IService;
  */
 public class AnotherTestService implements IService {
 
-    public AnotherTestService(ITestService testService, IGeneralNodeProperties nodeProperties) {
+    private final IGeneralNodeProperties generalNodeProperties;
 
+    private final GraphDatabaseService dbService;
+
+    private final ITestService testService;
+
+    public AnotherTestService(ITestService testService, IGeneralNodeProperties generalNodeProperties, GraphDatabaseService dbService) {
+        this.generalNodeProperties = generalNodeProperties;
+        this.dbService = dbService;
+        this.testService = testService;
+    }
+
+    /**
+     * @return Returns the generalNodeProperties.
+     */
+    public IGeneralNodeProperties getGeneralNodeProperties() {
+        return generalNodeProperties;
+    }
+
+    /**
+     * @return Returns the dbService.
+     */
+    public GraphDatabaseService getDbService() {
+        return dbService;
+    }
+
+    /**
+     * @return Returns the testService.
+     */
+    public ITestService getTestService() {
+        return testService;
     }
 
 }
