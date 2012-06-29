@@ -38,6 +38,8 @@ public class ProviderContextImpl implements IProviderContext {
 
     private static final String NODE_PROPERTIES_EXTENSION_POINT = "org.amanzi.nodeproperties";
 
+    private static final String SERVICES_EXTENSION_POINT = "org.amanzi.services";
+
     private static final String ID_ATTRIBUTE = "id";
 
     private static final String CLASS_ATTRIBUTE = "class";
@@ -69,11 +71,15 @@ public class ProviderContextImpl implements IProviderContext {
         return result;
     }
 
-    private IService getService(String id) throws CoreException {
+    protected IService getService(String id) throws CoreException, ContextException {
+        assert !StringUtils.isEmpty(id);
+
         IService result = servicesCache.get(id);
 
         if (result == null) {
+            result = createService(id);
 
+            servicesCache.put(id, result);
         }
 
         return result;
@@ -92,19 +98,22 @@ public class ProviderContextImpl implements IProviderContext {
         return result;
     }
 
+    protected IService createService(String id) throws CoreException, ContextException {
+        assert !StringUtils.isEmpty(id);
+
+        IConfigurationElement element = findConfigurationElement(SERVICES_EXTENSION_POINT, id);
+
+        if (element == null) {
+            throw new ContextException("Service <" + id + "> was not found in context");
+        }
+
+        return null;
+    }
+
     protected INodeProperties createNodeProperties(String id) throws CoreException, ContextException {
         assert !StringUtils.isEmpty(id);
 
-        IConfigurationElement[] nodePropertiesElements = registry.getConfigurationElementsFor(NODE_PROPERTIES_EXTENSION_POINT);
-
-        IConfigurationElement element = null;
-
-        for (IConfigurationElement singleElement : nodePropertiesElements) {
-            if (singleElement.getAttribute(ID_ATTRIBUTE).equals(id)) {
-                element = singleElement;
-                break;
-            }
-        }
+        IConfigurationElement element = findConfigurationElement(NODE_PROPERTIES_EXTENSION_POINT, id);
 
         if (element != null) {
             try {
@@ -117,6 +126,21 @@ public class ProviderContextImpl implements IProviderContext {
         }
 
         throw new ContextException("NodeProperties <" + id + "> was not found in context");
+    }
+
+    private IConfigurationElement findConfigurationElement(String extensionPoint, String id) {
+        IConfigurationElement result = null;
+
+        IConfigurationElement[] nodePropertiesElements = registry.getConfigurationElementsFor(extensionPoint);
+
+        for (IConfigurationElement singleElement : nodePropertiesElements) {
+            if (singleElement.getAttribute(ID_ATTRIBUTE).equals(id)) {
+                result = singleElement;
+                break;
+            }
+        }
+
+        return result;
     }
 
 }

@@ -16,5 +16,13 @@
             id="org.amanzi.neo.providers.testing.incorrectNodeProperties">
       </nodeProperties>
    </extension>
+   <extension
+         point="org.amanzi.services">
+      <service
+            class="org.amanzi.neo.services.impl.NodeService"
+            id="org.amanzi.service.CorrectService">
+         <parameters></parameters>
+      </service>
+   </extension>
 
 </fragment>

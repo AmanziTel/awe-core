@@ -16,7 +16,7 @@ package org.amanzi.neo.providers.context;
 import org.amanzi.neo.nodeproperties.INodeProperties;
 import org.amanzi.neo.nodeproperties.impl.GeneralNodeProperties;
 import org.amanzi.neo.providers.IProviderContext.ContextException;
-import org.amanzi.testing.AbstractMockitoTest;
+import org.amanzi.testing.AbstractTest;
 import org.eclipse.core.runtime.CoreException;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,7 +29,7 @@ import org.junit.Test;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class ProviderContextImplIntegrationTest extends AbstractMockitoTest {
+public class ProviderContextImplIntegrationTest extends AbstractTest {
 
     private static final String CORRECT_NODE_PROPERTIES = "org.amanzi.neo.providers.testing.corretNodeProperties";
 
@@ -66,19 +66,5 @@ public class ProviderContextImplIntegrationTest extends AbstractMockitoTest {
     @Test(expected = ContextException.class)
     public void testCheckNodePropertiesWithIncorrectClass() throws Exception {
         context.createNodeProperties(INCORRECT_CLASS);
-    }
-
-    @Test
-    public void testCacheOfNodeProperties() throws Exception {
-        context = spy(context);
-
-        doReturn(new GeneralNodeProperties()).when(context).createNodeProperties("some id");
-
-        // put to cache
-        context.getNodeProperties("some id");
-
-        // get from cache
-        context.getNodeProperties("some id");
-        verify(context, atLeastOnce()).createNodeProperties("some id");
     }
 }
