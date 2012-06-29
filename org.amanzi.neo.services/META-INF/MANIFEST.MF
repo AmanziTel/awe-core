@@ -7,7 +7,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: org.amanzi.neo.services,
  org.amanzi.neo.services.exceptions,
  org.amanzi.neo.services.exceptions.enums,
- org.amanzi.neo.services.factory,
+ org.amanzi.neo.services.impl,
  org.amanzi.neo.services.internal
 Require-Bundle: org.amanzi.neo.db;bundle-version="1.0.0";visibility:=reexport,
  org.amanzi.neo.core;bundle-version="1.0.0";visibility:=reexport

@@ -102,9 +102,4 @@ public abstract class AbstractModelProvider<T extends AbstractModel, T1 extends 
         }
     }
 
-    @SuppressWarnings("unchecked")
-    protected T convert(T1 model) {
-        return (T)model;
-    }
-
 }

@@ -12,12 +12,11 @@
  */
 package org.amanzi.neo.core.nodetypes;
 
-import java.util.Locale;
-
 import junit.framework.Assert;
 
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.nodetypes.NodeTypeManager;
+import org.amanzi.neo.nodetypes.NodeTypeUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -28,7 +27,7 @@ public class NodeTypeManagerTest {
 
         @Override
         public String getId() {
-            return name().toLowerCase(Locale.getDefault());
+            return NodeTypeUtils.getTypeId(this);
         }
     }
 
@@ -37,7 +36,7 @@ public class NodeTypeManagerTest {
 
         @Override
         public String getId() {
-            return name().toLowerCase(Locale.getDefault());
+            return NodeTypeUtils.getTypeId(this);
         }
     }
 

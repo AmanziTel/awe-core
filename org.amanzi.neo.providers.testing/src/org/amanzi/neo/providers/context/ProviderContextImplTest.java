@@ -228,7 +228,7 @@ public class ProviderContextImplTest extends AbstractMockitoTest {
 
         context = spy(context);
 
-        doThrow(new IllegalArgumentException()).when(context).createInstance(element);
+        doThrow(new IllegalArgumentException()).when(context).createInstance(element, true);
 
         context.createService(TEST_SERVICE_ID);
     }
@@ -239,7 +239,7 @@ public class ProviderContextImplTest extends AbstractMockitoTest {
         IConfigurationElement[] parameters = getParameterBlockConfigurationElements(subElements);
         getConfigurationElementsForService(TEST_SERVICE_ID, parameters);
 
-        context.createInstance(element);
+        context.createInstance(element, true);
     }
 
     @Test
@@ -249,11 +249,11 @@ public class ProviderContextImplTest extends AbstractMockitoTest {
 
         context = spy(context);
 
-        doReturn(service).when(context).createInstance(String.class, parameters[0]);
+        doReturn(service).when(context).createInstance(String.class, parameters[0], true);
 
-        context.createInstance(String.class, parameters);
+        context.createInstance(String.class, parameters, true);
 
-        verify(context).createInstance(String.class, parameters[0]);
+        verify(context).createInstance(String.class, parameters[0], true);
     }
 
     @Test
@@ -262,11 +262,11 @@ public class ProviderContextImplTest extends AbstractMockitoTest {
 
         context = spy(context);
 
-        doReturn(service).when(context).createInstance(String.class, (IConfigurationElement)null);
+        doReturn(service).when(context).createInstance(String.class, (IConfigurationElement)null, true);
 
-        context.createInstance(String.class, parameters);
+        context.createInstance(String.class, parameters, true);
 
-        verify(context).createInstance(String.class, (IConfigurationElement)null);
+        verify(context).createInstance(String.class, (IConfigurationElement)null, true);
     }
 
     @SuppressWarnings("unchecked")
@@ -279,7 +279,7 @@ public class ProviderContextImplTest extends AbstractMockitoTest {
 
         doReturn(service).when(context).createInstance(any(Class.class), any(Map.class));
 
-        context.createInstance(String.class, (IConfigurationElement)null);
+        context.createInstance(String.class, (IConfigurationElement)null, true);
 
         verify(context).createInstance(eq(String.class), eq(parametersMap));
     }
@@ -337,6 +337,18 @@ public class ProviderContextImplTest extends AbstractMockitoTest {
         IConfigurationElement[] elements = getConfigurationElementsForService(null, null);
 
         when(registry.getConfigurationElementsFor(PROVIDER_EXTENSION_POINT)).thenReturn(elements);
+
+        context.createModelProvider(TEST_PROVIDER_ID);
+    }
+
+    @Test(expected = ContextException.class)
+    public void testCheckGeneralExceptionHandlingForCreateProvider() throws Exception {
+        IConfigurationElement[] elements = getConfigurationElementsForService(TEST_PROVIDER_ID, null);
+        when(registry.getConfigurationElementsFor(PROVIDER_EXTENSION_POINT)).thenReturn(elements);
+
+        context = spy(context);
+
+        doThrow(new IllegalArgumentException()).when(context).createInstance(element, false);
 
         context.createModelProvider(TEST_PROVIDER_ID);
     }

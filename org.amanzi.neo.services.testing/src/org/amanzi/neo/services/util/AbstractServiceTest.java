@@ -14,10 +14,10 @@
 package org.amanzi.neo.services.util;
 
 import java.io.IOException;
-import java.util.Locale;
 
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.nodetypes.NodeTypeManager;
+import org.amanzi.neo.nodetypes.NodeTypeUtils;
 import org.amanzi.testing.AbstractMockitoTest;
 import org.amanzi.testing.AbstractTest;
 import org.junit.After;
@@ -40,7 +40,7 @@ public class AbstractServiceTest extends AbstractMockitoTest {
 
         @Override
         public String getId() {
-            return name().toLowerCase(Locale.getDefault());
+            return NodeTypeUtils.getTypeId(this);
         }
 
     }

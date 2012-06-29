@@ -71,8 +71,6 @@ public class ProviderContextImpl implements IProviderContext {
 
     private List<String> serviceStack;
 
-    private List<String> providerStack;
-
     public ProviderContextImpl() {
         registry = Platform.getExtensionRegistry();
     }
@@ -124,16 +122,6 @@ public class ProviderContextImpl implements IProviderContext {
     protected IModelProvider< ? , ? > createModelProvider(String id) throws ContextException {
         assert !StringUtils.isEmpty(id);
 
-        if (providerStack == null) {
-            providerStack = new ArrayList<String>();
-        }
-        if (providerStack.contains(id)) {
-            String message = "A cycle was detected <" + providerStack + ">";
-            providerStack = null;
-            throw new ContextException(message);
-        }
-        providerStack.add(id);
-
         IConfigurationElement element = findConfigurationElement(PROVIDERS_EXTENSION_POINT, id);
 
         if (element == null) {
@@ -141,13 +129,9 @@ public class ProviderContextImpl implements IProviderContext {
         }
 
         try {
-            return (IModelProvider< ? , ? >)createInstance(element);
+            return (IModelProvider< ? , ? >)createInstance(element, false);
         } catch (Exception e) {
             throw new ContextException(e);
-        } finally {
-            if (providerStack != null) {
-                providerStack.remove(id);
-            }
         }
     }
 
@@ -171,7 +155,7 @@ public class ProviderContextImpl implements IProviderContext {
         }
 
         try {
-            return (IService)createInstance(element);
+            return (IService)createInstance(element, true);
         } catch (Exception e) {
             throw new ContextException(e);
         } finally {
@@ -215,18 +199,19 @@ public class ProviderContextImpl implements IProviderContext {
     }
 
     @SuppressWarnings("unchecked")
-    protected <T> T createInstance(IConfigurationElement configElement) throws ClassNotFoundException, NoSuchMethodException,
-            CoreException, ContextException, InvocationTargetException, IllegalAccessException, InstantiationException {
+    protected <T> T createInstance(IConfigurationElement configElement, boolean isService) throws ClassNotFoundException,
+            NoSuchMethodException, CoreException, ContextException, InvocationTargetException, IllegalAccessException,
+            InstantiationException {
         String className = configElement.getAttribute(CLASS_ATTRIBUTE);
         Class< ? extends T> clazz = (Class< ? extends T>)Class.forName(className);
 
         IConfigurationElement[] parametersBlock = configElement.getChildren(PARAMETERS_TAG);
 
-        return createInstance(clazz, parametersBlock);
+        return createInstance(clazz, parametersBlock, isService);
     }
 
-    protected <T> T createInstance(Class< ? extends T> clazz, IConfigurationElement[] parameterBlock) throws ContextException,
-            CoreException, InvocationTargetException, IllegalAccessException, InstantiationException {
+    protected <T> T createInstance(Class< ? extends T> clazz, IConfigurationElement[] parameterBlock, boolean isService)
+            throws ContextException, CoreException, InvocationTargetException, IllegalAccessException, InstantiationException {
         // should be 0 or 1 element
         assert parameterBlock != null;
         assert parameterBlock.length < 2;
@@ -237,14 +222,16 @@ public class ProviderContextImpl implements IProviderContext {
             singleParameterBlock = parameterBlock[0];
         }
 
-        return createInstance(clazz, singleParameterBlock);
+        return createInstance(clazz, singleParameterBlock, isService);
     }
 
-    protected <T> T createInstance(Class< ? extends T> clazz, IConfigurationElement parameterBlock) throws ContextException,
-            CoreException, InvocationTargetException, IllegalAccessException, InstantiationException {
+    protected <T> T createInstance(Class< ? extends T> clazz, IConfigurationElement parameterBlock, boolean isService)
+            throws ContextException, CoreException, InvocationTargetException, IllegalAccessException, InstantiationException {
         Map<Class< ? extends Object>, Object> parametersMap = new HashMap<Class< ? extends Object>, Object>();
 
-        initializeWithDatabaseService(parametersMap);
+        if (isService) {
+            initializeWithDatabaseService(parametersMap);
+        }
 
         if (parameterBlock != null) {
             for (IConfigurationElement parameter : parameterBlock.getChildren()) {
@@ -270,37 +257,45 @@ public class ProviderContextImpl implements IProviderContext {
 
     @SuppressWarnings("unchecked")
     protected <T> T createInstance(Class< ? extends T> clazz, Map<Class< ? extends Object>, Object> parametersMap)
-            throws InvocationTargetException, IllegalAccessException, InstantiationException {
+            throws InvocationTargetException, IllegalAccessException, InstantiationException, ContextException {
         Constructor< ? > correctConstructor = null;
         Object[] arguments = null;
 
-        NEXT_CONSTRUCTOR: for (Constructor< ? > constructor : clazz.getConstructors()) {
+        for (Constructor< ? > constructor : clazz.getConstructors()) {
             Class< ? >[] parameterTypes = constructor.getParameterTypes();
 
             arguments = new Object[parameterTypes.length];
 
             int i = 0;
 
-            NEXT_ARGUMENT: for (Class< ? > argumentType : parameterTypes) {
+            if (parameterTypes.length == parametersMap.size()) {
                 boolean isFound = false;
+                for (Class< ? > argumentType : parameterTypes) {
+                    for (Entry<Class< ? extends Object>, Object> parameterEntry : parametersMap.entrySet()) {
+                        Class< ? > parameterClass = parameterEntry.getKey();
+                        if (argumentType.isAssignableFrom(parameterClass)) {
+                            isFound = true;
 
-                for (Entry<Class< ? extends Object>, Object> parameterEntry : parametersMap.entrySet()) {
-                    Class< ? > parameterClass = parameterEntry.getKey();
-                    if (argumentType.isAssignableFrom(parameterClass)) {
-                        isFound = true;
+                            arguments[i++] = parameterEntry.getValue();
 
-                        arguments[i] = parameterEntry.getValue();
+                            break;
+                        }
+                    }
 
-                        break NEXT_ARGUMENT;
+                    if (!isFound) {
+                        break;
                     }
                 }
 
-                if (!isFound) {
-                    break NEXT_CONSTRUCTOR;
+                if (isFound) {
+                    correctConstructor = constructor;
                 }
             }
+        }
 
-            correctConstructor = constructor;
+        if (correctConstructor == null) {
+            throw new ContextException("Unable to create <" + clazz.getSimpleName() + ">. Constructor for Parameters <"
+                    + parametersMap.keySet() + "> not found.");
         }
 
         return (T)correctConstructor.newInstance(arguments);

@@ -17,12 +17,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.impl.GeneralNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.nodetypes.NodeTypeManager;
+import org.amanzi.neo.nodetypes.NodeTypeUtils;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicatedNodeException;
@@ -55,7 +55,7 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
 
         @Override
         public String getId() {
-            return name().toLowerCase(Locale.getDefault());
+            return NodeTypeUtils.getTypeId(this);
         }
     }
 
