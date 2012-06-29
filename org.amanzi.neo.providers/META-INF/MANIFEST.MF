@@ -1,10 +1,11 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Services
-Bundle-SymbolicName: org.amanzi.neo.providers
+Bundle-SymbolicName: org.amanzi.neo.providers;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.amanzi.neo.models.impl;bundle-version="1.0.0",
  org.amanzi.neo.models;bundle-version="1.0.0";visibility:=reexport
 Export-Package: org.amanzi.neo.providers
 Eclipse-ExtensibleAPI: true
+Bundle-ClassPath: .

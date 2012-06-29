@@ -11,3 +11,4 @@ Export-Package: org.amanzi.neo.services,
 Require-Bundle: org.amanzi.neo.db;bundle-version="1.0.0";visibility:=reexport,
  org.amanzi.neo.core;bundle-version="1.0.0";visibility:=reexport
 Eclipse-ExtensibleAPI: true
+Bundle-ClassPath: .
