@@ -166,7 +166,7 @@ public class NodeServiceTest extends AbstractServiceTest {
     public void testGetAllChildByName() throws Exception {
         setChildTraversalToNull();
 
-        nodeService.getChildByName(getNodeMock(), "some name");
+        nodeService.getChildByName(getNodeMock(), "some name", TestNodeType.TEST1);
     }
 
     @Test(expected = DatabaseException.class)

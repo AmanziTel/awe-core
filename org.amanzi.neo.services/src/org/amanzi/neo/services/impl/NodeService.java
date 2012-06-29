@@ -99,16 +99,17 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     @Override
-    public Node getChildByName(Node parentNode, String name) throws ServiceException {
+    public Node getChildByName(Node parentNode, String name, INodeType nodeType) throws ServiceException {
         assert parentNode != null;
         assert name != null;
+        assert nodeType != null;
 
         Node result = null;
 
         boolean throwDuplicatedException = false;
 
         try {
-            Iterator<Node> nodes = getChildrenTraversal()
+            Iterator<Node> nodes = getChildrenTraversal().evaluator(getPropertyEvaluatorForType(nodeType))
                     .evaluator(new PropertyEvaluator(getGeneralNodeProperties().getNodeNameProperty(), name)).traverse(parentNode)
                     .nodes().iterator();
 
@@ -137,11 +138,6 @@ public class NodeService extends AbstractService implements INodeService {
         } catch (Exception e) {
             throw new DatabaseException(e);
         }
-    }
-
-    @Override
-    public Node getChildByName(Node parentNode, String name, INodeType nodeType) throws ServiceException {
-        return null;
     }
 
     protected TraversalDescription getChildrenTraversal() {

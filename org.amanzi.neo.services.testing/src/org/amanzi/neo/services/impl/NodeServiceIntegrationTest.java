@@ -49,8 +49,8 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
         TEST_REL;
     }
 
-    private enum TestNodeTypes implements INodeType {
-        TEST_NODE_TYPE;
+    private enum TestNodeType implements INodeType {
+        TEST_NODE_TYPE1, TEST_NODE_TYPE2;
 
         @Override
         public String getId() {
@@ -72,7 +72,7 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
     public static void setUpClass() throws Exception {
         AbstractIntegrationTest.setUpClass();
 
-        NodeTypeManager.registerNodeType(TestNodeTypes.class);
+        NodeTypeManager.registerNodeType(TestNodeType.class);
     }
 
     @Before
@@ -155,7 +155,7 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
         Node parent = createNode();
         createChildren(NodeService.NodeServiceRelationshipType.CHILD, parent);
 
-        Node result = nodeService.getChildByName(parent, CHILD_FOR_SEARCH);
+        Node result = nodeService.getChildByName(parent, CHILD_FOR_SEARCH, TestNodeType.TEST_NODE_TYPE1);
 
         assertNotNull("result of search should not be null", result);
 
@@ -169,7 +169,7 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
         Node parent = createNode();
         createChildren(NodeService.NodeServiceRelationshipType.CHILD, parent);
 
-        Node result = nodeService.getChildByName(parent, UNEXPECTED_CHILD);
+        Node result = nodeService.getChildByName(parent, UNEXPECTED_CHILD, TestNodeType.TEST_NODE_TYPE1);
 
         assertNull("Node cannot be found by this name", result);
     }
@@ -180,14 +180,14 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
         createChildren(NodeService.NodeServiceRelationshipType.CHILD, parent);
         createChildren(NodeService.NodeServiceRelationshipType.CHILD, parent);
 
-        nodeService.getChildByName(parent, CHILD_FOR_SEARCH);
+        nodeService.getChildByName(parent, CHILD_FOR_SEARCH, TestNodeType.TEST_NODE_TYPE1);
     }
 
     @Test
     public void testCheckGetNodeByNameWithoutChildren() throws Exception {
         Node parent = createNode();
 
-        Node result = nodeService.getChildByName(parent, CHILD_FOR_SEARCH);
+        Node result = nodeService.getChildByName(parent, CHILD_FOR_SEARCH, TestNodeType.TEST_NODE_TYPE1);
 
         assertNull("Node cannot be found by this name", result);
     }
@@ -197,7 +197,7 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
         Node parent = createNode();
         createChildren(TestRelatinshipType.TEST_REL, parent);
 
-        Node result = nodeService.getChildByName(parent, CHILD_FOR_SEARCH);
+        Node result = nodeService.getChildByName(parent, CHILD_FOR_SEARCH, TestNodeType.TEST_NODE_TYPE1);
 
         assertNull("Node cannot be found by this name", result);
     }
@@ -208,7 +208,7 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
         createChildren(NodeService.NodeServiceRelationshipType.CHILD, parent);
         createChildren(TestRelatinshipType.TEST_REL, parent);
 
-        Node result = nodeService.getChildByName(parent, CHILD_FOR_SEARCH);
+        Node result = nodeService.getChildByName(parent, CHILD_FOR_SEARCH, TestNodeType.TEST_NODE_TYPE1);
 
         assertNotNull("result of search should not be null", result);
 
@@ -228,11 +228,11 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testGetNameForNodeWithType() throws Exception {
-        Node node = createNode(nodeProperties.getNodeTypeProperty(), TestNodeTypes.TEST_NODE_TYPE.getId());
+        Node node = createNode(nodeProperties.getNodeTypeProperty(), TestNodeType.TEST_NODE_TYPE1.getId());
 
         INodeType type = nodeService.getNodeType(node);
 
-        assertEquals("unexpected type of node", TestNodeTypes.TEST_NODE_TYPE, type);
+        assertEquals("unexpected type of node", TestNodeType.TEST_NODE_TYPE1, type);
     }
 
     @Test
@@ -268,13 +268,32 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
         }
     }
 
+    @Test
+    public void testGetChildrenByNameWithDifferentNodeTypes() throws Exception {
+        Node parent = createNode();
+        createChildren(NodeService.NodeServiceRelationshipType.CHILD, parent);
+        createChildren(NodeService.NodeServiceRelationshipType.CHILD, TestNodeType.TEST_NODE_TYPE2, parent);
+
+        Node result = nodeService.getChildByName(parent, CHILD_FOR_SEARCH, TestNodeType.TEST_NODE_TYPE1);
+
+        assertNotNull("result of search should not be null", result);
+
+        String name = (String)result.getProperty(nodeProperties.getNodeNameProperty());
+
+        assertEquals("name of found node is not the same as original", CHILD_FOR_SEARCH, name);
+    }
+
     private List<Node> createChildren(RelationshipType relType, Node... parents) {
+        return createChildren(relType, TestNodeType.TEST_NODE_TYPE1, parents);
+    }
+
+    private List<Node> createChildren(RelationshipType relType, INodeType childNodeType, Node... parents) {
         List<Node> children = new ArrayList<Node>();
 
         Transaction tx = getGraphDatabaseService().beginTx();
 
         for (String name : CHILDREN_NAMES) {
-            Node child = getGraphDatabaseService().createNode();
+            Node child = createNode(nodeProperties.getNodeTypeProperty(), childNodeType.getId());
             child.setProperty(nodeProperties.getNodeNameProperty(), name);
 
             for (Node parent : parents) {

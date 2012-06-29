@@ -62,16 +62,6 @@ public interface INodeService extends IService {
 
     Iterator<Node> getChildren(Node parentNode) throws ServiceException;
 
-    /**
-     * @deprecated should be used method with INodeType parameter
-     * @param parentNode
-     * @param name
-     * @return
-     * @throws ServiceException
-     */
-    @Deprecated
-    Node getChildByName(Node parentNode, String name) throws ServiceException;
-
     Node getChildByName(Node parentNode, String name, INodeType nodeType) throws ServiceException;
 
     Node getReferencedNode() throws ServiceException;
