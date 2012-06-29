@@ -78,7 +78,7 @@ public class ProjectModelProvider extends AbstractModelProvider<ProjectModel, IP
 
             try {
                 Node referencedNode = nodeService.getReferencedNode();
-                modelNode = nodeService.getChildByName(referencedNode, name);
+                modelNode = nodeService.getChildByName(referencedNode, name, IProjectModel.ProjectModelNodeType.PROJECT);
             } catch (ServiceException e) {
                 LOGGER.error("Error on Searching for a Project Model)");
 

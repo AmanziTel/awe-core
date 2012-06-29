@@ -20,6 +20,7 @@ import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.exceptions.ParameterInconsistencyException;
 import org.amanzi.neo.models.impl.ProjectModel;
 import org.amanzi.neo.nodeproperties.impl.GeneralNodeProperties;
+import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.testing.AbstractMockitoTest;
@@ -123,25 +124,28 @@ public class ProjectModelProviderTest extends AbstractMockitoTest {
     public void testCheckActivityOnFindByName() throws Exception {
         projectModelProvider.findProjectByName(PROJECT_NAME);
 
-        verify(nodeService).getChildByName(referencedNode, PROJECT_NAME);
+        verify(nodeService).getChildByName(referencedNode, PROJECT_NAME, IProjectModel.ProjectModelNodeType.PROJECT);
     }
 
     @Test
     public void testCheckCacheActivityWithEmptyCache() throws Exception {
-        when(nodeService.getChildByName(referencedNode, PROJECT_NAME_FOR_CACHE_CHECK)).thenReturn(node);
+        when(nodeService.getChildByName(referencedNode, PROJECT_NAME_FOR_CACHE_CHECK, IProjectModel.ProjectModelNodeType.PROJECT))
+                .thenReturn(node);
 
         // without cache
         projectModelProvider.findProjectByName(PROJECT_NAME_FOR_CACHE_CHECK);
-        verify(nodeService).getChildByName(referencedNode, PROJECT_NAME_FOR_CACHE_CHECK);
+        verify(nodeService)
+                .getChildByName(referencedNode, PROJECT_NAME_FOR_CACHE_CHECK, IProjectModel.ProjectModelNodeType.PROJECT);
 
         // get model from cache
         projectModelProvider.findProjectByName(PROJECT_NAME_FOR_CACHE_CHECK);
-        verify(nodeService).getChildByName((Node)any(), (String)any());
+        verify(nodeService).getChildByName(any(Node.class), any(String.class), any(INodeType.class));
     }
 
     @Test
     public void testCheckNohingFoundByName() throws Exception {
-        when(nodeService.getChildByName(referencedNode, NOT_FOUND_PROJECT)).thenReturn(null);
+        when(nodeService.getChildByName(referencedNode, NOT_FOUND_PROJECT, IProjectModel.ProjectModelNodeType.PROJECT)).thenReturn(
+                null);
 
         IProjectModel result = projectModelProvider.findProjectByName(NOT_FOUND_PROJECT);
 
@@ -150,7 +154,7 @@ public class ProjectModelProviderTest extends AbstractMockitoTest {
 
     @Test
     public void testCheckModelFoundByName() throws Exception {
-        when(nodeService.getChildByName(referencedNode, PROJECT_NAME)).thenReturn(node);
+        when(nodeService.getChildByName(referencedNode, PROJECT_NAME, IProjectModel.ProjectModelNodeType.PROJECT)).thenReturn(node);
 
         IProjectModel result = projectModelProvider.findProjectByName(PROJECT_NAME);
 
