@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.services.impl;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -22,6 +23,7 @@ import org.amanzi.neo.nodeproperties.impl.GeneralNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.nodetypes.NodeTypeManager;
 import org.amanzi.neo.services.INodeService;
+import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicatedNodeException;
 import org.amanzi.testing.AbstractIntegrationTest;
 import org.apache.commons.collections.IteratorUtils;
@@ -84,7 +86,7 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
     @Test
     public void testCheckGetAllNodes() throws Exception {
         Node parent = createNode();
-        createChildren(parent, NodeService.NodeServiceRelationshipType.CHILD);
+        createChildren(NodeService.NodeServiceRelationshipType.CHILD, parent);
 
         Iterator<Node> result = nodeService.getChildren(parent);
 
@@ -114,7 +116,7 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
     @Test
     public void testCheckGetAllChildrenWithOtherRelationship() throws Exception {
         Node parent = createNode();
-        createChildren(parent, TestRelatinshipType.TEST_REL);
+        createChildren(TestRelatinshipType.TEST_REL, parent);
 
         Iterator<Node> result = nodeService.getChildren(parent);
 
@@ -124,8 +126,8 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
     @Test
     public void testCheckGetAllNodesWithMixedRelTypes() throws Exception {
         Node parent = createNode();
-        createChildren(parent, NodeService.NodeServiceRelationshipType.CHILD);
-        createChildren(parent, TestRelatinshipType.TEST_REL);
+        createChildren(NodeService.NodeServiceRelationshipType.CHILD, parent);
+        createChildren(TestRelatinshipType.TEST_REL, parent);
 
         Iterator<Node> result = nodeService.getChildren(parent);
 
@@ -151,7 +153,7 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
     @Test
     public void testCheckGetChildByName() throws Exception {
         Node parent = createNode();
-        createChildren(parent, NodeService.NodeServiceRelationshipType.CHILD);
+        createChildren(NodeService.NodeServiceRelationshipType.CHILD, parent);
 
         Node result = nodeService.getChildByName(parent, CHILD_FOR_SEARCH);
 
@@ -165,7 +167,7 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
     @Test
     public void testCheckGetChildByNameThatIsNotExists() throws Exception {
         Node parent = createNode();
-        createChildren(parent, NodeService.NodeServiceRelationshipType.CHILD);
+        createChildren(NodeService.NodeServiceRelationshipType.CHILD, parent);
 
         Node result = nodeService.getChildByName(parent, UNEXPECTED_CHILD);
 
@@ -175,8 +177,8 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
     @Test(expected = DuplicatedNodeException.class)
     public void testCheckDuplicatedNodeException() throws Exception {
         Node parent = createNode();
-        createChildren(parent, NodeService.NodeServiceRelationshipType.CHILD);
-        createChildren(parent, NodeService.NodeServiceRelationshipType.CHILD);
+        createChildren(NodeService.NodeServiceRelationshipType.CHILD, parent);
+        createChildren(NodeService.NodeServiceRelationshipType.CHILD, parent);
 
         nodeService.getChildByName(parent, CHILD_FOR_SEARCH);
     }
@@ -193,7 +195,7 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
     @Test
     public void testCheckGetNodeByNameWithChildrenByOtherRel() throws Exception {
         Node parent = createNode();
-        createChildren(parent, TestRelatinshipType.TEST_REL);
+        createChildren(TestRelatinshipType.TEST_REL, parent);
 
         Node result = nodeService.getChildByName(parent, CHILD_FOR_SEARCH);
 
@@ -203,8 +205,8 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
     @Test
     public void testCheckGetNodeByNameWithChildrenByMixedOtherRel() throws Exception {
         Node parent = createNode();
-        createChildren(parent, NodeService.NodeServiceRelationshipType.CHILD);
-        createChildren(parent, TestRelatinshipType.TEST_REL);
+        createChildren(NodeService.NodeServiceRelationshipType.CHILD, parent);
+        createChildren(TestRelatinshipType.TEST_REL, parent);
 
         Node result = nodeService.getChildByName(parent, CHILD_FOR_SEARCH);
 
@@ -233,18 +235,59 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
         assertEquals("unexpected type of node", TestNodeTypes.TEST_NODE_TYPE, type);
     }
 
-    private void createChildren(Node parent, RelationshipType relType) {
+    @Test
+    public void testGetParent() throws Exception {
+        Node parent = createNode();
+        List<Node> children = createChildren(NodeService.NodeServiceRelationshipType.CHILD, parent);
+
+        for (Node child : children) {
+            Node result = nodeService.getParent(child);
+
+            assertEquals("Unexpected parent of child", parent, result);
+        }
+    }
+
+    @Test
+    public void testGetParentWithoutParent() throws Exception {
+        Node child = createNode();
+
+        Node result = nodeService.getParent(child);
+
+        assertNull("Parent should be null", result);
+    }
+
+    @Test(expected = DatabaseException.class)
+    public void testGetParentWithDuplicatedParent() throws Exception {
+        Node parent = createNode();
+        Node anotherParent = createNode();
+
+        List<Node> children = createChildren(NodeService.NodeServiceRelationshipType.CHILD, parent, anotherParent);
+
+        for (Node child : children) {
+            nodeService.getParent(child);
+        }
+    }
+
+    private List<Node> createChildren(RelationshipType relType, Node... parents) {
+        List<Node> children = new ArrayList<Node>();
+
         Transaction tx = getGraphDatabaseService().beginTx();
 
         for (String name : CHILDREN_NAMES) {
             Node child = getGraphDatabaseService().createNode();
             child.setProperty(nodeProperties.getNodeNameProperty(), name);
 
-            parent.createRelationshipTo(child, relType);
+            for (Node parent : parents) {
+                parent.createRelationshipTo(child, relType);
+            }
+
+            children.add(child);
         }
 
         tx.success();
         tx.finish();
+
+        return children;
     }
 
 }
