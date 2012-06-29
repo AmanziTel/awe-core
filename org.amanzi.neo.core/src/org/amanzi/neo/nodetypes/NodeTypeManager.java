@@ -19,8 +19,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
-
 /**
  * <p>
  * Node type manager holds types, that implement {@link INodeType}.
@@ -37,8 +35,6 @@ import org.apache.log4j.Logger;
  */
 @SuppressWarnings({"unchecked", "rawtypes"})
 public final class NodeTypeManager {
-
-    private static final Logger LOGGER = Logger.getLogger(NodeTypeManager.class);
 
     private static Set<Class< ? >> registeredNodeTypes = new HashSet<Class< ? >>();
 

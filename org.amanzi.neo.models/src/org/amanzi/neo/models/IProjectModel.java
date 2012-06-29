@@ -13,14 +13,26 @@
 
 package org.amanzi.neo.models;
 
+import org.amanzi.neo.nodetypes.INodeType;
+import org.amanzi.neo.nodetypes.NodeTypeUtils;
+
 /**
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
 public interface IProjectModel extends IModel {
+
+    enum ProjectModelNodeType implements INodeType {
+        PROJECT;
+
+        @Override
+        public String getId() {
+            return NodeTypeUtils.getTypeId(this);
+        }
+    }
 
 }
