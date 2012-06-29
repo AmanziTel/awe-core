@@ -41,11 +41,6 @@ public class DataElement extends HashMap<String, Object> implements IDataElement
         this.node = node;
     }
 
-    @Override
-    public Object get(String header) {
-        return super.get(header);
-    }
-
     public Node getNode() {
         return node;
     }
