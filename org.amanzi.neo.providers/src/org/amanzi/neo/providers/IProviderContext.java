@@ -25,7 +25,7 @@ import org.eclipse.core.runtime.CoreException;
  */
 public interface IProviderContext {
 
-    public class ContextException extends Exception {
+    class ContextException extends Exception {
 
         /** long serialVersionUID field */
         private static final long serialVersionUID = -6470727859236377384L;

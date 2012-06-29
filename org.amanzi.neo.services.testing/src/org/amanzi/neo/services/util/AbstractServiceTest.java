@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.services.util;
 
+import java.io.IOException;
 import java.util.Locale;
 
 import org.amanzi.neo.nodetypes.INodeType;
@@ -53,7 +54,7 @@ public class AbstractServiceTest extends AbstractMockitoTest {
     private boolean isReadOnlyTest;
 
     @BeforeClass
-    public static void setUpClass() throws Exception {
+    public static void setUpClass() throws IOException {
         AbstractTest.setUpClass();
         NodeTypeManager.registerNodeType(TestNodeType.class);
     }

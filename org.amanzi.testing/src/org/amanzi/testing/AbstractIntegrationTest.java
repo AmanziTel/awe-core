@@ -38,6 +38,36 @@ import org.neo4j.kernel.EmbeddedGraphDatabase;
  */
 public abstract class AbstractIntegrationTest extends AbstractTest {
 
+    /**
+     * TODO Purpose of
+     * <p>
+     * </p>
+     * 
+     * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
+     * @since 1.0.0
+     */
+    private final class TestKernelListener implements KernelEventHandler {
+        @Override
+        public void beforeShutdown() {
+            cleanDatabase();
+            isRunning = false;
+        }
+
+        @Override
+        public void kernelPanic(ErrorState error) {
+        }
+
+        @Override
+        public Object getResource() {
+            return null;
+        }
+
+        @Override
+        public ExecutionOrder orderComparedTo(KernelEventHandler other) {
+            return null;
+        }
+    }
+
     private static final String[] TEST_DB_LOCATION = new String[] {System.getProperty("user.home"), ".amanzi", "neo_test"};
 
     private static String defaultLocation;
@@ -47,7 +77,7 @@ public abstract class AbstractIntegrationTest extends AbstractTest {
     private boolean isRunning;
 
     @BeforeClass
-    public static void setUpClass() throws Exception {
+    public static void setUpClass() throws IOException {
         AbstractTest.setUpClass();
 
         File defaultDb = null;
@@ -75,29 +105,7 @@ public abstract class AbstractIntegrationTest extends AbstractTest {
 
         isRunning = true;
 
-        graphDb.registerKernelEventHandler(new KernelEventHandler() {
-
-            @Override
-            public void beforeShutdown() {
-                cleanDatabase();
-                isRunning = false;
-            }
-
-            @Override
-            public void kernelPanic(ErrorState error) {
-            }
-
-            @Override
-            public Object getResource() {
-                return null;
-            }
-
-            @Override
-            public ExecutionOrder orderComparedTo(KernelEventHandler other) {
-                return null;
-            }
-
-        });
+        graphDb.registerKernelEventHandler(new TestKernelListener());
     }
 
     @After

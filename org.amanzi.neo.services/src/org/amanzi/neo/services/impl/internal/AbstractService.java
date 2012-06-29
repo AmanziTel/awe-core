@@ -40,9 +40,9 @@ public abstract class AbstractService implements IDatabaseEventListener, IServic
 
     public static class PropertyEvaluator implements Evaluator {
 
-        private String propertyName;
+        private final String propertyName;
 
-        private Object propertyValue;
+        private final Object propertyValue;
 
         public PropertyEvaluator(String propertyName, Object propertyValue) {
             this.propertyName = propertyName;
@@ -55,22 +55,19 @@ public abstract class AbstractService implements IDatabaseEventListener, IServic
 
             Object value = node.getProperty(propertyName, null);
 
-            if (value != null) {
-                if (value.equals(propertyValue)) {
-                    return Evaluation.INCLUDE_AND_CONTINUE;
-                }
+            if ((value != null) && (value.equals(propertyValue))) {
+                return Evaluation.INCLUDE_AND_CONTINUE;
             }
 
             return Evaluation.EXCLUDE_AND_CONTINUE;
         }
-
     }
 
     private GraphDatabaseService graphDb;
 
     private final IGeneralNodeProperties generalNodeProperties;
 
-    private Map<INodeType, PropertyEvaluator> nodeTypeEvaluatorCache = new HashMap<INodeType, PropertyEvaluator>();
+    private final Map<INodeType, PropertyEvaluator> nodeTypeEvaluatorCache = new HashMap<INodeType, PropertyEvaluator>();
 
     protected AbstractService(GraphDatabaseService graphDb, IGeneralNodeProperties generalNodeProperties) {
         this.graphDb = graphDb;
@@ -98,6 +95,7 @@ public abstract class AbstractService implements IDatabaseEventListener, IServic
             break;
         default:
             // do nothing
+            break;
         }
     }
 

@@ -33,7 +33,9 @@ import org.neo4j.graphdb.Node;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public abstract class AbstractModelProvider<T extends AbstractModel, T1 extends IModel> extends AbstractLoggable implements IDatabaseEventListener {
+public abstract class AbstractModelProvider<T extends AbstractModel, T1 extends IModel> extends AbstractLoggable
+        implements
+            IDatabaseEventListener {
 
     protected interface IKey {
 
@@ -41,7 +43,7 @@ public abstract class AbstractModelProvider<T extends AbstractModel, T1 extends 
 
     protected static class NameKey implements IKey {
 
-        private String name;
+        private final String name;
 
         public NameKey(String name) {
             this.name = name;
@@ -65,7 +67,7 @@ public abstract class AbstractModelProvider<T extends AbstractModel, T1 extends 
 
     }
 
-    private Map<IKey, T> modelCache = new HashMap<IKey, T>();
+    private final Map<IKey, T> modelCache = new HashMap<IKey, T>();
 
     protected AbstractModelProvider() {
         DatabaseManagerFactory.getDatabaseManager().addDatabaseEventListener(this);
@@ -96,6 +98,7 @@ public abstract class AbstractModelProvider<T extends AbstractModel, T1 extends 
             break;
         default:
             // do nothing
+            break;
         }
     }
 

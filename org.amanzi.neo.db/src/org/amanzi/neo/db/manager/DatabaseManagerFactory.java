@@ -24,7 +24,7 @@ import org.apache.log4j.Logger;
  * @author gerzog
  * @since 1.0.0
  */
-public class DatabaseManagerFactory {
+public final class DatabaseManagerFactory {
 
     private static final Logger LOGGER = Logger.getLogger(DatabaseManagerFactory.class);
 
@@ -36,18 +36,14 @@ public class DatabaseManagerFactory {
 
     }
 
-    public static IDatabaseManager getDatabaseManager() {
+    public static synchronized IDatabaseManager getDatabaseManager() {
         if (dbManager == null) {
-            synchronized (DatabaseManagerFactory.class) {
-                if (dbManager == null) {
-                    try {
-                        dbManager = (IDatabaseManager)Class.forName(NEOCLIPSE_MANAGER_CLASS_NAME).newInstance();
-                    } catch (ClassNotFoundException e) {
-                        dbManager = new Neo4jDatabaseManager();
-                    } catch (Exception e) {
-                        LOGGER.fatal("Cannot instantiane Database Manager", e);
-                    }
-                }
+            try {
+                dbManager = (IDatabaseManager)Class.forName(NEOCLIPSE_MANAGER_CLASS_NAME).newInstance();
+            } catch (ClassNotFoundException e) {
+                dbManager = new Neo4jDatabaseManager();
+            } catch (Exception e) {
+                LOGGER.fatal("Cannot instantiane Database Manager", e);
             }
         }
 

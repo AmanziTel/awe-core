@@ -13,6 +13,8 @@
 
 package org.amanzi.testing;
 
+import java.io.IOException;
+
 import org.amanzi.log4j.LogStarter;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -28,7 +30,7 @@ import org.junit.BeforeClass;
 public class AbstractTest {
 
     @BeforeClass
-    public static void setUpClass() throws Exception {
+    public static void setUpClass() throws IOException {
         new LogStarter().earlyStartup();
     }
 

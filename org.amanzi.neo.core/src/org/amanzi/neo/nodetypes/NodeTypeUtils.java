@@ -25,6 +25,10 @@ import java.util.Locale;
  */
 public final class NodeTypeUtils {
 
+    private NodeTypeUtils() {
+        // hide consturctor
+    }
+
     public static String getTypeId(Enum< ? extends INodeType> enumItem) {
         return enumItem.name().toLowerCase(Locale.getDefault());
     }

@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.services.impl;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -64,12 +65,12 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
 
     private static final String UNEXPECTED_CHILD = "unexpected child";
 
-    private static final IGeneralNodeProperties nodeProperties = new GeneralNodeProperties();
+    private static final IGeneralNodeProperties GENERAL_NODE_PROPERTIES = new GeneralNodeProperties();
 
     private INodeService nodeService;
 
     @BeforeClass
-    public static void setUpClass() throws Exception {
+    public static void setUpClass() throws IOException {
         AbstractIntegrationTest.setUpClass();
 
         NodeTypeManager.registerNodeType(TestNodeType.class);
@@ -80,13 +81,13 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
     public void setUp() {
         super.setUp();
 
-        nodeService = new NodeService(getGraphDatabaseService(), nodeProperties);
+        nodeService = new NodeService(getGraphDatabaseService(), GENERAL_NODE_PROPERTIES);
     }
 
     @Test
     public void testCheckGetAllNodes() throws Exception {
         Node parent = createNode();
-        createChildren(NodeService.NodeServiceRelationshipType.CHILD, parent);
+        createChildren(NodeService.NodeServiceRelationshipType.CHILD, TestNodeType.TEST_NODE_TYPE1, parent);
 
         Iterator<Node> result = nodeService.getChildren(parent);
 
@@ -98,7 +99,7 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
         assertEquals("Unexpected size of children", CHILDREN_NAMES.length, resultList.size());
 
         for (Node node : resultList) {
-            String name = (String)node.getProperty(nodeProperties.getNodeNameProperty());
+            String name = (String)node.getProperty(GENERAL_NODE_PROPERTIES.getNodeNameProperty());
 
             assertTrue("name should exists in original children names", ArrayUtils.contains(CHILDREN_NAMES, name));
         }
@@ -116,7 +117,7 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
     @Test
     public void testCheckGetAllChildrenWithOtherRelationship() throws Exception {
         Node parent = createNode();
-        createChildren(TestRelatinshipType.TEST_REL, parent);
+        createChildren(TestRelatinshipType.TEST_REL, TestNodeType.TEST_NODE_TYPE1, parent);
 
         Iterator<Node> result = nodeService.getChildren(parent);
 
@@ -126,8 +127,8 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
     @Test
     public void testCheckGetAllNodesWithMixedRelTypes() throws Exception {
         Node parent = createNode();
-        createChildren(NodeService.NodeServiceRelationshipType.CHILD, parent);
-        createChildren(TestRelatinshipType.TEST_REL, parent);
+        createChildren(NodeService.NodeServiceRelationshipType.CHILD, TestNodeType.TEST_NODE_TYPE1, parent);
+        createChildren(TestRelatinshipType.TEST_REL, TestNodeType.TEST_NODE_TYPE1, parent);
 
         Iterator<Node> result = nodeService.getChildren(parent);
 
@@ -139,7 +140,7 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
         assertEquals("Unexpected size of childrent", CHILDREN_NAMES.length, resultList.size());
 
         for (Node node : resultList) {
-            String name = (String)node.getProperty(nodeProperties.getNodeNameProperty());
+            String name = (String)node.getProperty(GENERAL_NODE_PROPERTIES.getNodeNameProperty());
 
             assertTrue("name should exists in original children names", ArrayUtils.contains(CHILDREN_NAMES, name));
         }
@@ -153,13 +154,13 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
     @Test
     public void testCheckGetChildByName() throws Exception {
         Node parent = createNode();
-        createChildren(NodeService.NodeServiceRelationshipType.CHILD, parent);
+        createChildren(NodeService.NodeServiceRelationshipType.CHILD, TestNodeType.TEST_NODE_TYPE1, parent);
 
         Node result = nodeService.getChildByName(parent, CHILD_FOR_SEARCH, TestNodeType.TEST_NODE_TYPE1);
 
         assertNotNull("result of search should not be null", result);
 
-        String name = (String)result.getProperty(nodeProperties.getNodeNameProperty());
+        String name = (String)result.getProperty(GENERAL_NODE_PROPERTIES.getNodeNameProperty());
 
         assertEquals("name of found node is not the same as original", CHILD_FOR_SEARCH, name);
     }
@@ -167,7 +168,7 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
     @Test
     public void testCheckGetChildByNameThatIsNotExists() throws Exception {
         Node parent = createNode();
-        createChildren(NodeService.NodeServiceRelationshipType.CHILD, parent);
+        createChildren(NodeService.NodeServiceRelationshipType.CHILD, TestNodeType.TEST_NODE_TYPE1, parent);
 
         Node result = nodeService.getChildByName(parent, UNEXPECTED_CHILD, TestNodeType.TEST_NODE_TYPE1);
 
@@ -177,8 +178,8 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
     @Test(expected = DuplicatedNodeException.class)
     public void testCheckDuplicatedNodeException() throws Exception {
         Node parent = createNode();
-        createChildren(NodeService.NodeServiceRelationshipType.CHILD, parent);
-        createChildren(NodeService.NodeServiceRelationshipType.CHILD, parent);
+        createChildren(NodeService.NodeServiceRelationshipType.CHILD, TestNodeType.TEST_NODE_TYPE1, parent);
+        createChildren(NodeService.NodeServiceRelationshipType.CHILD, TestNodeType.TEST_NODE_TYPE1, parent);
 
         nodeService.getChildByName(parent, CHILD_FOR_SEARCH, TestNodeType.TEST_NODE_TYPE1);
     }
@@ -195,7 +196,7 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
     @Test
     public void testCheckGetNodeByNameWithChildrenByOtherRel() throws Exception {
         Node parent = createNode();
-        createChildren(TestRelatinshipType.TEST_REL, parent);
+        createChildren(TestRelatinshipType.TEST_REL, TestNodeType.TEST_NODE_TYPE1, parent);
 
         Node result = nodeService.getChildByName(parent, CHILD_FOR_SEARCH, TestNodeType.TEST_NODE_TYPE1);
 
@@ -205,30 +206,30 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
     @Test
     public void testCheckGetNodeByNameWithChildrenByMixedOtherRel() throws Exception {
         Node parent = createNode();
-        createChildren(NodeService.NodeServiceRelationshipType.CHILD, parent);
-        createChildren(TestRelatinshipType.TEST_REL, parent);
+        createChildren(NodeService.NodeServiceRelationshipType.CHILD, TestNodeType.TEST_NODE_TYPE1, parent);
+        createChildren(TestRelatinshipType.TEST_REL, TestNodeType.TEST_NODE_TYPE1, parent);
 
         Node result = nodeService.getChildByName(parent, CHILD_FOR_SEARCH, TestNodeType.TEST_NODE_TYPE1);
 
         assertNotNull("result of search should not be null", result);
 
-        String name = (String)result.getProperty(nodeProperties.getNodeNameProperty());
+        String name = (String)result.getProperty(GENERAL_NODE_PROPERTIES.getNodeNameProperty());
 
         assertEquals("name of found node is not the same as original", CHILD_FOR_SEARCH, name);
     }
 
     @Test
     public void testGetNameForNodeWithName() throws Exception {
-        Node node = createNode(nodeProperties.getNodeNameProperty(), nodeProperties.getNodeNameProperty());
+        Node node = createNode(GENERAL_NODE_PROPERTIES.getNodeNameProperty(), GENERAL_NODE_PROPERTIES.getNodeNameProperty());
 
         String name = nodeService.getNodeName(node);
 
-        assertEquals("unexpected name of node", nodeProperties.getNodeNameProperty(), name);
+        assertEquals("unexpected name of node", GENERAL_NODE_PROPERTIES.getNodeNameProperty(), name);
     }
 
     @Test
     public void testGetNameForNodeWithType() throws Exception {
-        Node node = createNode(nodeProperties.getNodeTypeProperty(), TestNodeType.TEST_NODE_TYPE1.getId());
+        Node node = createNode(GENERAL_NODE_PROPERTIES.getNodeTypeProperty(), TestNodeType.TEST_NODE_TYPE1.getId());
 
         INodeType type = nodeService.getNodeType(node);
 
@@ -238,7 +239,7 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
     @Test
     public void testGetParent() throws Exception {
         Node parent = createNode();
-        List<Node> children = createChildren(NodeService.NodeServiceRelationshipType.CHILD, parent);
+        List<Node> children = createChildren(NodeService.NodeServiceRelationshipType.CHILD, TestNodeType.TEST_NODE_TYPE1, parent);
 
         for (Node child : children) {
             Node result = nodeService.getParent(child);
@@ -261,7 +262,8 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
         Node parent = createNode();
         Node anotherParent = createNode();
 
-        List<Node> children = createChildren(NodeService.NodeServiceRelationshipType.CHILD, parent, anotherParent);
+        List<Node> children = createChildren(NodeService.NodeServiceRelationshipType.CHILD, TestNodeType.TEST_NODE_TYPE1, parent,
+                anotherParent);
 
         for (Node child : children) {
             nodeService.getParent(child);
@@ -271,20 +273,16 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
     @Test
     public void testGetChildrenByNameWithDifferentNodeTypes() throws Exception {
         Node parent = createNode();
-        createChildren(NodeService.NodeServiceRelationshipType.CHILD, parent);
+        createChildren(NodeService.NodeServiceRelationshipType.CHILD, TestNodeType.TEST_NODE_TYPE1, parent);
         createChildren(NodeService.NodeServiceRelationshipType.CHILD, TestNodeType.TEST_NODE_TYPE2, parent);
 
         Node result = nodeService.getChildByName(parent, CHILD_FOR_SEARCH, TestNodeType.TEST_NODE_TYPE1);
 
         assertNotNull("result of search should not be null", result);
 
-        String name = (String)result.getProperty(nodeProperties.getNodeNameProperty());
+        String name = (String)result.getProperty(GENERAL_NODE_PROPERTIES.getNodeNameProperty());
 
         assertEquals("name of found node is not the same as original", CHILD_FOR_SEARCH, name);
-    }
-
-    private List<Node> createChildren(RelationshipType relType, Node... parents) {
-        return createChildren(relType, TestNodeType.TEST_NODE_TYPE1, parents);
     }
 
     private List<Node> createChildren(RelationshipType relType, INodeType childNodeType, Node... parents) {
@@ -293,8 +291,8 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
         Transaction tx = getGraphDatabaseService().beginTx();
 
         for (String name : CHILDREN_NAMES) {
-            Node child = createNode(nodeProperties.getNodeTypeProperty(), childNodeType.getId());
-            child.setProperty(nodeProperties.getNodeNameProperty(), name);
+            Node child = createNode(GENERAL_NODE_PROPERTIES.getNodeTypeProperty(), childNodeType.getId());
+            child.setProperty(GENERAL_NODE_PROPERTIES.getNodeNameProperty(), name);
 
             for (Node parent : parents) {
                 parent.createRelationshipTo(child, relType);

@@ -164,15 +164,13 @@ public class NodeService extends AbstractService implements INodeService {
 
         assert throwExceptionIfNotExist && (defaultValue == null);
 
-        Object result = null;
-
         boolean throwPropertyNotFoundException = false;
 
         try {
             if (throwExceptionIfNotExist && !node.hasProperty(propertyName)) {
                 throwPropertyNotFoundException = true;
             } else {
-                result = node.getProperty(propertyName, defaultValue);
+                return node.getProperty(propertyName, defaultValue);
             }
         } catch (Exception e) {
             throw new DatabaseException(e);
@@ -182,6 +180,6 @@ public class NodeService extends AbstractService implements INodeService {
             throw new PropertyNotFoundException(propertyName, node);
         }
 
-        return result;
+        return null;
     }
 }

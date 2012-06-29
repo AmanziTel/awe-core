@@ -35,7 +35,7 @@ public class AbstractServiceTest extends AbstractMockitoTest {
 
     private static final IGeneralNodeProperties GENERAL_NODE_PROPERTIES = new GeneralNodeProperties();
 
-    private class TestAbstractService extends AbstractService {
+    private static class TestAbstractService extends AbstractService {
 
         /**
          * @param graphDb

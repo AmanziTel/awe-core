@@ -16,7 +16,6 @@ package org.amanzi.neo.services;
 import java.util.Iterator;
 
 import org.amanzi.neo.nodetypes.INodeType;
-import org.amanzi.neo.services.exceptions.PropertyNotFoundException;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.internal.IService;
 import org.neo4j.graphdb.Node;
@@ -56,7 +55,7 @@ public interface INodeService extends IService {
      * 
      * @param child
      * @return
-     * @throws PropertyNotFoundException in case 'parent' property node found
+     * @throws ServiceException in case 'parent' property node found
      */
     Node getParent(Node child) throws ServiceException;
 
