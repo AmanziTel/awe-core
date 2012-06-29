@@ -21,18 +21,9 @@
     </repository>		
   </repositories>
 
-  <dependencies>
-    <dependency>
-      <groupId>org.jacoco</groupId>
-      <artifactId>jacoco-maven-plugin</artifactId>
-      <version>0.5.7.201204190339</version>
-    </dependency>
-  </dependencies>
-
   <modules>
     <module>org.amanzi.awe</module>
     <module>org.amanzi.awe.catalog.neo</module>
-    <module>org.amanzi.awe.catalog.neo.testing</module>
     <module>org.amanzi.awe.console</module>
     <module>org.amanzi.awe.extras.feature</module>
     <module>org.amanzi.awe.feature</module>
@@ -58,7 +49,6 @@
     <module>org.amanzi.neo.core</module>
     <module>org.amanzi.neo.core.testing</module>
     <module>org.amanzi.neo.loader.core</module>
-    <module>org.amanzi.neo.loader.core.testing</module>
     <module>org.amanzi.neo.loader.ui</module>
     <module>org.amanzi.neo.models</module>
     <module>org.amanzi.neo.models.impl</module>
@@ -68,7 +58,6 @@
     <module>org.amanzi.neo.services</module>
     <module>org.amanzi.neo.services.impl</module>
     <module>org.amanzi.neo.services.testing</module>
-    <module>org.amanzi.neo.services.impl.testing</module>
     <module>org.amanzi.neo.services.ui</module>
     <module>org.amanzi.testing</module>
     <module>org.jfree</module>
