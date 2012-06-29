@@ -16,6 +16,8 @@ package org.amanzi.neo.providers.context;
 import org.amanzi.neo.nodeproperties.INodeProperties;
 import org.amanzi.neo.nodeproperties.impl.GeneralNodeProperties;
 import org.amanzi.neo.providers.IProviderContext.ContextException;
+import org.amanzi.neo.providers.context.internal.TestService;
+import org.amanzi.neo.services.internal.IService;
 import org.amanzi.testing.AbstractTest;
 import org.eclipse.core.runtime.CoreException;
 import org.junit.Before;
@@ -38,6 +40,8 @@ public class ProviderContextImplIntegrationTest extends AbstractTest {
     private static final String UNKOWN_ID = "some id";
 
     private static final String INCORRECT_CLASS = "org.amanzi.neo.providers.testing.incorrectNodeProperties";
+
+    private static final String TEST_SERVICE_ID = "org.amanzi.neo.providers.testing.TestService";
 
     private ProviderContextImpl context;
 
@@ -66,5 +70,12 @@ public class ProviderContextImplIntegrationTest extends AbstractTest {
     @Test(expected = ContextException.class)
     public void testCheckNodePropertiesWithIncorrectClass() throws Exception {
         context.createNodeProperties(INCORRECT_CLASS);
+    }
+
+    @Test
+    public void testCheckResultOfCreateService() throws Exception {
+        IService instance = context.createService(TEST_SERVICE_ID);
+
+        assertEquals("Unexpected class of service", TestService.class, instance.getClass());
     }
 }

@@ -23,7 +23,6 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Status;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -35,6 +34,12 @@ import org.junit.Test;
  * @since 1.0.0
  */
 public class ProviderContextImplTest extends AbstractMockitoTest {
+
+    /** String PARAMETERS2 field */
+    private static final String PARAMETERS2 = "parameters";
+
+    /** String CLASS field */
+    private static final String CLASS = "class";
 
     private static final String NODEPROPERTIES_EXTENSION_POINT = "org.amanzi.nodeproperties";
 
@@ -80,7 +85,7 @@ public class ProviderContextImplTest extends AbstractMockitoTest {
         context.createNodeProperties(TEST_NODE_PROPERTIES_ID);
 
         verify(registry).getConfigurationElementsFor(NODEPROPERTIES_EXTENSION_POINT);
-        verify(element).createExecutableExtension("class");
+        verify(element).createExecutableExtension(CLASS);
     }
 
     @Test
@@ -108,7 +113,7 @@ public class ProviderContextImplTest extends AbstractMockitoTest {
         IConfigurationElement[] elements = getConfigurationElementsForNodeProperties(TEST_NODE_PROPERTIES_ID);
         when(registry.getConfigurationElementsFor(NODEPROPERTIES_EXTENSION_POINT)).thenReturn(elements);
 
-        doThrow(new CoreException(Status.OK_STATUS)).when(element).createExecutableExtension("class");
+        doThrow(new CoreException(Status.OK_STATUS)).when(element).createExecutableExtension(CLASS);
 
         context.createNodeProperties(TEST_NODE_PROPERTIES_ID);
     }
@@ -142,28 +147,34 @@ public class ProviderContextImplTest extends AbstractMockitoTest {
     }
 
     @Test
-    @Ignore
     public void testCheckActivityOnCreateService() throws Exception {
-        IConfigurationElement[] elements = getConfigurationElementsForService(TEST_SERVICE_ID);
+        IConfigurationElement[] parameters = getParameterConfigurationElements();
+        IConfigurationElement[] elements = getConfigurationElementsForService(TEST_SERVICE_ID, parameters);
 
         when(registry.getConfigurationElementsFor(SERVICE_EXTENSION_POINT)).thenReturn(elements);
 
         context.createService(TEST_SERVICE_ID);
 
         verify(registry).getConfigurationElementsFor(SERVICE_EXTENSION_POINT);
-        verify(element).getAttribute("class");
+        verify(element).getAttribute(CLASS);
+        verify(element).getChildren(PARAMETERS2);
     }
 
     @Test(expected = ContextException.class)
     public void testCheckContextExceptionOnUnexistingServiceId() throws Exception {
-        IConfigurationElement[] elements = getConfigurationElementsForService(null);
+        IConfigurationElement[] elements = getConfigurationElementsForService(null, null);
 
         when(registry.getConfigurationElementsFor(SERVICE_EXTENSION_POINT)).thenReturn(elements);
 
         context.createService(TEST_SERVICE_ID);
     }
 
-    private IConfigurationElement[] getConfigurationElementsForService(String correctId) throws Exception {
+    private IConfigurationElement[] getParameterConfigurationElements() {
+        return null;
+    }
+
+    private IConfigurationElement[] getConfigurationElementsForService(String correctId, IConfigurationElement[] parameters)
+            throws Exception {
         String[] ids = TEST_IDS;
         if (correctId != null) {
             ids = ArrayUtils.add(ids, correctId);
@@ -180,9 +191,9 @@ public class ProviderContextImplTest extends AbstractMockitoTest {
             result[i++] = element;
 
             if (id.equals(correctId)) {
-                when(element.getAttribute("class")).thenReturn(SOME_CLASS);
+                when(element.getAttribute(CLASS)).thenReturn(SOME_CLASS);
 
-                when(element.getChildren("parameters")).thenReturn(null);
+                when(element.getChildren(PARAMETERS2)).thenReturn(parameters);
 
                 this.element = element;
             }
@@ -208,7 +219,7 @@ public class ProviderContextImplTest extends AbstractMockitoTest {
             result[i++] = element;
 
             if (id.equals(correctId)) {
-                when(element.createExecutableExtension("class")).thenReturn(properties);
+                when(element.createExecutableExtension(CLASS)).thenReturn(properties);
 
                 this.element = element;
             }

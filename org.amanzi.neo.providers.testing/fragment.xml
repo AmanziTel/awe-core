@@ -15,13 +15,33 @@
             class="java.lang.String"
             id="org.amanzi.neo.providers.testing.incorrectNodeProperties">
       </nodeProperties>
+      <nodeProperties
+            class="org.amanzi.neo.providers.context.internal.TestNodeProperties"
+            id="org.amanzi.neo.providers.testing.TestNodeProperties">
+      </nodeProperties>
    </extension>
    <extension
          point="org.amanzi.services">
       <service
-            class="org.amanzi.neo.services.impl.NodeService"
-            id="org.amanzi.service.CorrectService">
-         <parameters></parameters>
+            class="org.amanzi.neo.providers.context.internal.TestService"
+            id="org.amanzi.neo.providers.testing.TestService">
+         <parameters>
+            <nodePropertiesReference
+                  refId="org.amanzi.neo.providers.testing.TestNodeProperties">
+            </nodePropertiesReference>
+         </parameters>
+      </service>
+      <service
+            class="org.amanzi.neo.providers.context.internal.AnotherTestService"
+            id="org.amanzi.neo.providers.testing.AnotherTestService">
+         <parameters>
+            <nodePropertiesReference
+                  refId="org.amanzi.neo.providers.testing.TestNodeProperties">
+            </nodePropertiesReference>
+            <serviceReference
+                  refId="org.amanzi.neo.providers.testing.TestService">
+            </serviceReference>
+         </parameters>
       </service>
    </extension>
 

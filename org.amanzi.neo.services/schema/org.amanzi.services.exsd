@@ -77,7 +77,7 @@
 
    <element name="parameters">
       <complexType>
-         <choice>
+         <choice minOccurs="0" maxOccurs="unbounded">
             <element ref="serviceReference"/>
             <element ref="nodePropertiesReference"/>
          </choice>

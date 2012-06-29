@@ -62,7 +62,7 @@ public class Neo4jDatabaseManagerTest {
 
     private static final String DATABASE_DIRECTORY = "neo";
 
-    private static final Random random = new Random();
+    private static final Random RANDOM = new Random();
 
     private final Mockery context = new Mockery();
 
@@ -130,7 +130,7 @@ public class Neo4jDatabaseManagerTest {
     }
 
     private String getRandomDatabaseLocation() throws IOException {
-        File databaseDirectory = new File(new File(getDirectoryLocation(TEST_DIRECTORIES)), DATABASE_DIRECTORY + random.nextInt());
+        File databaseDirectory = new File(new File(getDirectoryLocation(TEST_DIRECTORIES)), DATABASE_DIRECTORY + RANDOM.nextInt());
         FileUtils.forceMkdir(databaseDirectory);
         return databaseDirectory.getAbsolutePath();
     }

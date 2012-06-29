@@ -11,8 +11,10 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.providers;
+package org.amanzi.neo.providers.context.internal;
 
+import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
+import org.amanzi.neo.services.internal.IService;
 
 /**
  * TODO Purpose of
@@ -22,23 +24,10 @@ package org.amanzi.neo.providers;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface IProviderContext {
+public class AnotherTestService implements IService {
 
-    class ContextException extends Exception {
-
-        /** long serialVersionUID field */
-        private static final long serialVersionUID = -6470727859236377384L;
-
-        public ContextException(Exception e) {
-            super(e);
-        }
-
-        public ContextException(String message) {
-            super(message);
-        }
+    public AnotherTestService(ITestService testService, IGeneralNodeProperties nodeProperties) {
 
     }
-
-    <T extends IModelProvider< ? , ? >> T get(String id) throws ContextException;
 
 }
