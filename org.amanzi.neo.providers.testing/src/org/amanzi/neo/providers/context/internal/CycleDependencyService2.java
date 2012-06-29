@@ -25,8 +25,17 @@ import org.amanzi.neo.services.internal.IService;
  */
 public class CycleDependencyService2 implements IService {
 
-    public CycleDependencyService2(CycleDependencyService1 service) {
+    private final CycleDependencyService1 service;
 
+    public CycleDependencyService2(CycleDependencyService1 service) {
+        this.service = service;
+    }
+
+    /**
+     * @return Returns the service.
+     */
+    public CycleDependencyService1 getService() {
+        return service;
     }
 
 }

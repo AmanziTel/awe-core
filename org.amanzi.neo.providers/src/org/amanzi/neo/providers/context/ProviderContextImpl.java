@@ -15,7 +15,9 @@ package org.amanzi.neo.providers.context;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -65,6 +67,8 @@ public class ProviderContextImpl implements IProviderContext {
 
     private final IExtensionRegistry registry;
 
+    private List<String> serviceStack;
+
     public ProviderContextImpl() {
         registry = Platform.getExtensionRegistry();
     }
@@ -84,8 +88,16 @@ public class ProviderContextImpl implements IProviderContext {
         return result;
     }
 
-    protected IService getService(String id) throws CoreException, ContextException {
+    protected IService getService(String id) throws ContextException {
         assert !StringUtils.isEmpty(id);
+
+        // check cycle
+        serviceStack.add(id);
+        if ((serviceStack != null) && serviceStack.contains(id)) {
+            String message = "A cycle was detected <" + serviceStack + ">";
+            serviceStack = null;
+            throw new ContextException(message);
+        }
 
         IService result = servicesCache.get(id);
 
@@ -111,8 +123,11 @@ public class ProviderContextImpl implements IProviderContext {
         return result;
     }
 
-    protected IService createService(String id) throws CoreException, ContextException {
+    protected IService createService(String id) throws ContextException {
         assert !StringUtils.isEmpty(id);
+
+        serviceStack = new ArrayList<String>();
+        serviceStack.add(id);
 
         IConfigurationElement element = findConfigurationElement(SERVICES_EXTENSION_POINT, id);
 
