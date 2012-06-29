@@ -161,7 +161,7 @@ public class ProviderContextImpl implements IProviderContext {
     }
 
     @SuppressWarnings("unchecked")
-    private <T> T createInstance(IConfigurationElement configElement) throws ClassNotFoundException, NoSuchMethodException,
+    protected <T> T createInstance(IConfigurationElement configElement) throws ClassNotFoundException, NoSuchMethodException,
             CoreException, ContextException, InvocationTargetException, IllegalAccessException, InstantiationException {
         String className = configElement.getAttribute(CLASS_ATTRIBUTE);
         Class< ? extends T> clazz = (Class< ? extends T>)Class.forName(className);
@@ -171,9 +171,10 @@ public class ProviderContextImpl implements IProviderContext {
         return createInstance(clazz, parametersBlock);
     }
 
-    private <T> T createInstance(Class< ? extends T> clazz, IConfigurationElement[] parameterBlock) throws ContextException,
+    protected <T> T createInstance(Class< ? extends T> clazz, IConfigurationElement[] parameterBlock) throws ContextException,
             CoreException, InvocationTargetException, IllegalAccessException, InstantiationException {
         // should be 0 or 1 element
+        assert parameterBlock != null;
         assert parameterBlock.length < 2;
 
         IConfigurationElement singleParameterBlock = null;
@@ -185,7 +186,7 @@ public class ProviderContextImpl implements IProviderContext {
         return createInstance(clazz, singleParameterBlock);
     }
 
-    private <T> T createInstance(Class< ? extends T> clazz, IConfigurationElement parameterBlock) throws ContextException,
+    protected <T> T createInstance(Class< ? extends T> clazz, IConfigurationElement parameterBlock) throws ContextException,
             CoreException, InvocationTargetException, IllegalAccessException, InstantiationException {
         Map<Class< ? extends Object>, Object> parametersMap = new HashMap<Class< ? extends Object>, Object>();
 
@@ -214,7 +215,7 @@ public class ProviderContextImpl implements IProviderContext {
     }
 
     @SuppressWarnings("unchecked")
-    private <T> T createInstance(Class< ? extends T> clazz, Map<Class< ? extends Object>, Object> parametersMap)
+    protected <T> T createInstance(Class< ? extends T> clazz, Map<Class< ? extends Object>, Object> parametersMap)
             throws InvocationTargetException, IllegalAccessException, InstantiationException {
         Constructor< ? > correctConstructor = null;
         Object[] arguments = null;

@@ -13,6 +13,10 @@
 
 package org.amanzi.neo.providers.context;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.amanzi.neo.db.manager.DatabaseManagerFactory;
 import org.amanzi.neo.nodeproperties.INodeProperties;
 import org.amanzi.neo.providers.IProviderContext.ContextException;
 import org.amanzi.neo.services.internal.IService;
@@ -24,6 +28,7 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Status;
 import org.junit.Before;
 import org.junit.Test;
+import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
  * TODO Purpose of
@@ -47,13 +52,17 @@ public class ProviderContextImplTest extends AbstractMockitoTest {
 
     private static final String SOME_ID = "some id";
 
-    private static final String SOME_CLASS = "some class";
+    private static final String SOME_CLASS = String.class.getName();
 
     private static final String TEST_NODE_PROPERTIES_ID = "test.node.properties";
 
     private static final String TEST_SERVICE_ID = "test.service";
 
     private static final String[] TEST_IDS = new String[] {"other id 1", "other id 2"};
+
+    private static final String[] SERVICE_PARAMETERS = new String[] {"serviceReference", "nodePropertiesReference"};
+
+    private static final String[] UNKNOWN_SERVICE_PARAMTERS = new String[] {"unkonwn"};
 
     private ProviderContextImpl context;
 
@@ -65,6 +74,8 @@ public class ProviderContextImplTest extends AbstractMockitoTest {
 
     private IService service;
 
+    private GraphDatabaseService graphDb;
+
     @Before
     public void setUp() {
         registry = mock(IExtensionRegistry.class);
@@ -74,6 +85,9 @@ public class ProviderContextImplTest extends AbstractMockitoTest {
         service = mock(IService.class);
 
         context = new ProviderContextImpl(registry);
+
+        graphDb = mock(GraphDatabaseService.class);
+        DatabaseManagerFactory.getDatabaseManager().setDatabaseService(graphDb);
     }
 
     @Test
@@ -118,6 +132,16 @@ public class ProviderContextImplTest extends AbstractMockitoTest {
         context.createNodeProperties(TEST_NODE_PROPERTIES_ID);
     }
 
+    @Test(expected = ContextException.class)
+    public void testCheckClassCastExceptionOnCreateNodeProperties() throws Exception {
+        IConfigurationElement[] elements = getConfigurationElementsForNodeProperties(TEST_NODE_PROPERTIES_ID);
+        when(registry.getConfigurationElementsFor(NODEPROPERTIES_EXTENSION_POINT)).thenReturn(elements);
+
+        doThrow(new ClassCastException()).when(element).createExecutableExtension(CLASS);
+
+        context.createNodeProperties(TEST_NODE_PROPERTIES_ID);
+    }
+
     @Test
     public void testCacheOfNodeProperties() throws Exception {
         context = spy(new ProviderContextImpl());
@@ -146,18 +170,38 @@ public class ProviderContextImplTest extends AbstractMockitoTest {
         verify(context, atLeastOnce()).createService(SOME_ID);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testCheckActivityOnCreateService() throws Exception {
-        IConfigurationElement[] parameters = getParameterConfigurationElements();
+        IConfigurationElement[] subElements = getParameterConfigurationElements(SERVICE_PARAMETERS);
+        IConfigurationElement[] parameters = getParameterBlockConfigurationElements(subElements);
         IConfigurationElement[] elements = getConfigurationElementsForService(TEST_SERVICE_ID, parameters);
 
+        context = spy(context);
+
         when(registry.getConfigurationElementsFor(SERVICE_EXTENSION_POINT)).thenReturn(elements);
+
+        doReturn(service).when(context).getService(SOME_ID);
+        doReturn(properties).when(context).getNodeProperties(SOME_ID);
+        doReturn(service).when(context).createInstance(any(Class.class), any(Map.class));
 
         context.createService(TEST_SERVICE_ID);
 
         verify(registry).getConfigurationElementsFor(SERVICE_EXTENSION_POINT);
         verify(element).getAttribute(CLASS);
         verify(element).getChildren(PARAMETERS2);
+
+        for (IConfigurationElement parameterBlock : parameters) {
+            verify(parameterBlock).getChildren();
+        }
+
+        for (IConfigurationElement parameter : subElements) {
+            verify(parameter).getName();
+            verify(parameter).getAttribute("refId");
+        }
+
+        verify(context).getNodeProperties(SOME_ID);
+        verify(context).getService(SOME_ID);
     }
 
     @Test(expected = ContextException.class)
@@ -169,8 +213,93 @@ public class ProviderContextImplTest extends AbstractMockitoTest {
         context.createService(TEST_SERVICE_ID);
     }
 
-    private IConfigurationElement[] getParameterConfigurationElements() {
-        return null;
+    @Test(expected = ContextException.class)
+    public void testCheckGeneralExceptionHandlingForCreateService() throws Exception {
+        IConfigurationElement[] elements = getConfigurationElementsForService(TEST_SERVICE_ID, null);
+        when(registry.getConfigurationElementsFor(SERVICE_EXTENSION_POINT)).thenReturn(elements);
+
+        context = spy(context);
+
+        doThrow(new IllegalArgumentException()).when(context).createInstance(element);
+
+        context.createService(TEST_SERVICE_ID);
+    }
+
+    @Test(expected = ContextException.class)
+    public void testCheckUnkownServiceParameter() throws Exception {
+        IConfigurationElement[] subElements = getParameterConfigurationElements(UNKNOWN_SERVICE_PARAMTERS);
+        IConfigurationElement[] parameters = getParameterBlockConfigurationElements(subElements);
+        getConfigurationElementsForService(TEST_SERVICE_ID, parameters);
+
+        context.createInstance(element);
+    }
+
+    @Test
+    public void testCheckExistingParameterBlock() throws Exception {
+        IConfigurationElement[] subElements = getParameterConfigurationElements(UNKNOWN_SERVICE_PARAMTERS);
+        IConfigurationElement[] parameters = getParameterBlockConfigurationElements(subElements);
+
+        context = spy(context);
+
+        doReturn(service).when(context).createInstance(String.class, parameters[0]);
+
+        context.createInstance(String.class, parameters);
+
+        verify(context).createInstance(String.class, parameters[0]);
+    }
+
+    @Test
+    public void testCheckNonExistingParameterBlock() throws Exception {
+        IConfigurationElement[] parameters = new IConfigurationElement[0];
+
+        context = spy(context);
+
+        doReturn(service).when(context).createInstance(String.class, (IConfigurationElement)null);
+
+        context.createInstance(String.class, parameters);
+
+        verify(context).createInstance(String.class, (IConfigurationElement)null);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testEmptyParametersBlock() throws Exception {
+        context = spy(context);
+
+        Map<Class< ? extends Object>, Object> parametersMap = new HashMap<Class< ? extends Object>, Object>();
+        parametersMap.put(GraphDatabaseService.class, DatabaseManagerFactory.getDatabaseManager().getDatabaseService());
+
+        doReturn(service).when(context).createInstance(any(Class.class), any(Map.class));
+
+        context.createInstance(String.class, (IConfigurationElement)null);
+
+        verify(context).createInstance(eq(String.class), eq(parametersMap));
+    }
+
+    private IConfigurationElement[] getParameterConfigurationElements(String[] names) {
+        IConfigurationElement[] subResult = new IConfigurationElement[SERVICE_PARAMETERS.length];
+
+        int i = 0;
+        for (String reference : names) {
+            IConfigurationElement subElement = mock(IConfigurationElement.class);
+            when(subElement.getName()).thenReturn(reference);
+            when(subElement.getAttribute("refId")).thenReturn(SOME_ID);
+
+            subResult[i++] = subElement;
+        }
+
+        return subResult;
+    }
+
+    private IConfigurationElement[] getParameterBlockConfigurationElements(IConfigurationElement[] subElements) {
+        IConfigurationElement[] result = new IConfigurationElement[1];
+
+        IConfigurationElement resultElement = mock(IConfigurationElement.class);
+        when(resultElement.getChildren()).thenReturn(subElements);
+
+        result[0] = resultElement;
+
+        return result;
     }
 
     private IConfigurationElement[] getConfigurationElementsForService(String correctId, IConfigurationElement[] parameters)

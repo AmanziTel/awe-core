@@ -16,6 +16,7 @@ package org.amanzi.testing;
 import java.io.File;
 import java.io.IOException;
 
+import org.amanzi.neo.db.manager.DatabaseManagerFactory;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -102,6 +103,7 @@ public abstract class AbstractIntegrationTest extends AbstractTest {
     @Before
     public void setUp() {
         this.graphDb = new EmbeddedGraphDatabase(defaultLocation);
+        DatabaseManagerFactory.getDatabaseManager().setDatabaseService(graphDb);
 
         isRunning = true;
 
@@ -110,9 +112,7 @@ public abstract class AbstractIntegrationTest extends AbstractTest {
 
     @After
     public void tearDown() {
-        if (isRunning) {
-            graphDb.shutdown();
-        }
+        DatabaseManagerFactory.getDatabaseManager().shutdown();
     }
 
     private void cleanDatabase() {

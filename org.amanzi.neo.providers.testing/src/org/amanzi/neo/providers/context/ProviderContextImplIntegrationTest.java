@@ -18,7 +18,7 @@ import org.amanzi.neo.nodeproperties.impl.GeneralNodeProperties;
 import org.amanzi.neo.providers.IProviderContext.ContextException;
 import org.amanzi.neo.providers.context.internal.TestService;
 import org.amanzi.neo.services.internal.IService;
-import org.amanzi.testing.AbstractTest;
+import org.amanzi.testing.AbstractIntegrationTest;
 import org.eclipse.core.runtime.CoreException;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,7 +31,7 @@ import org.junit.Test;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class ProviderContextImplIntegrationTest extends AbstractTest {
+public class ProviderContextImplIntegrationTest extends AbstractIntegrationTest {
 
     private static final String CORRECT_NODE_PROPERTIES = "org.amanzi.neo.providers.testing.corretNodeProperties";
 
@@ -45,8 +45,11 @@ public class ProviderContextImplIntegrationTest extends AbstractTest {
 
     private ProviderContextImpl context;
 
+    @Override
     @Before
     public void setUp() {
+        super.setUp();
+
         context = new ProviderContextImpl();
     }
 
