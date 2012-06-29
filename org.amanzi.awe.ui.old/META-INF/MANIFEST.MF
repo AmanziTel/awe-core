@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Ui
+Bundle-SymbolicName: org.amanzi.awe.ui.old;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: org.amanzi.awe.ui.AweUiPlugin
+Bundle-Vendor: amanzi.org
+Require-Bundle: net.refractions.udig.project.ui;bundle-version="1.1.1",
+ org.amanzi.neo.services.ui;bundle-version="1.0.0"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-ActivationPolicy: lazy
+Export-Package: org.amanzi.awe.ui

@@ -9,7 +9,7 @@ Require-Bundle: org.amanzi.neo.services.impl;bundle-version="1.0.0",
  org.amanzi.neo.services.ui;bundle-version="1.0.0",
  org.amanzi.awe.console;bundle-version="1.0.0",
  org.eclipse.ui;bundle-version="3.7.0",
- org.amanzi.awe.ui;bundle-version="1.0.0"
+ org.amanzi.awe.ui.old;bundle-version="1.0.0"
 Export-Package: au.com.bytecode.opencsv,
  org.amanzi.neo.loader.core,
  org.amanzi.neo.loader.core.config,

@@ -15,34 +15,12 @@ package org.amanzi.awe;
 import net.refractions.udig.internal.ui.UDIGApplication;
 import net.refractions.udig.internal.ui.UDIGWorkbenchAdvisor;
 
-import org.amanzi.neo.db.manager.DatabaseManagerFactory;
-import org.amanzi.neo.db.manager.impl.Neo4jDatabaseManager;
+import org.amanzi.awe.ui.manager.AWEEventManager;
 import org.eclipse.equinox.app.IApplication;
-import org.eclipse.jface.dialogs.TitleAreaDialog;
-import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Dialog;
-import org.eclipse.swt.widgets.DirectoryDialog;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.application.IWorkbenchConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchAdvisor;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
-import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
  * This is the default application for the Amanzi Wireless Explorer. It is based directly on uDIG,
@@ -76,19 +54,6 @@ public class Application extends UDIGApplication implements IApplication {
     }
 
     private class AWEWorkbenchAdivsor extends UDIGWorkbenchAdvisor {
-        @Override
-        public void preStartup() {
-            GraphDatabaseService databaseService = DatabaseManagerFactory.getDatabaseManager().getDatabaseService();
-            if (databaseService == null) {
-                String dbPath = new DBLocatinInputDialog(PlatformUI.getWorkbench().getDisplay().getShells()[0]).open();
-                if (dbPath == null) {
-                    // Cancel click
-                    System.exit(0);
-                }
-
-                setDBLocation(dbPath);
-            }
-        }
 
         @Override
         public String getInitialWindowPerspectiveId() {
@@ -98,6 +63,8 @@ public class Application extends UDIGApplication implements IApplication {
 
         @Override
         public void postStartup() {
+            AWEEventManager.getManager().fireAWEStartedEvent();
+
             super.postStartup();
         }
 
@@ -106,151 +73,5 @@ public class Application extends UDIGApplication implements IApplication {
             configurer.setShowPerspectiveBar(true);
             return super.createWorkbenchWindowAdvisor(configurer);
         }
-    }
-
-    public static boolean setDBLocation(String dbPath) {
-
-        try {
-            Neo4jDatabaseManager databaseManager = new Neo4jDatabaseManager(dbPath);
-            GraphDatabaseService databaseService = databaseManager.getDatabaseService();
-            if (databaseService == null) {
-                return false;
-            }
-        } catch (Exception e) {
-            return false;
-        }
-
-        return true;
-    }
-}
-
-class DBLocatinInputDialog extends Dialog {
-    String path;
-
-    /**
-     * @param parent
-     */
-    public DBLocatinInputDialog(Shell parent) {
-        super(parent);
-    }
-
-    /**
-     * @param parent
-     * @param style
-     */
-    public DBLocatinInputDialog(Shell parent, int style) {
-        super(parent, style);
-    }
-
-    /**
-     * Makes the dialog visible.
-     * 
-     * @return
-     */
-    public String open() {
-        Shell parent = getParent();
-        final Shell shell = new Shell(parent, SWT.TITLE | SWT.BORDER | SWT.APPLICATION_MODAL);
-        shell.setText(Messages.Application_Neo4j_D_Location);
-
-        shell.setLayout(new GridLayout(1, false));
-
-        new Label(shell, SWT.NONE).setText(Messages.Application_Running_instance);
-
-        final Composite inputGroup = new Composite(shell, SWT.NONE);
-        inputGroup.setLayout(new GridLayout(2, false));
-        inputGroup.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));        
-
-        // Create the text box extra wide to show long paths
-        final Text text = new Text(inputGroup, SWT.BORDER);
-        GridData data = new GridData(GridData.FILL_HORIZONTAL);
-        text.setLayoutData(data);
-
-        final Composite errorGroup = new Composite(shell, SWT.NONE);
-        errorGroup.setLayout(new GridLayout(2, false));
-        errorGroup.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
-
-        Image image = JFaceResources.getImage(TitleAreaDialog.DLG_IMG_MESSAGE_ERROR);
-        Label imageLabel = new Label(errorGroup, SWT.NONE);
-        imageLabel.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false));
-        imageLabel.setImage(image);
-
-        Label errorLabel = new Label(errorGroup, SWT.WRAP);
-        errorLabel.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, true, false));
-        errorLabel.setText(Messages.Application_Inv_location);
-        
-        // Clicking the button will allow the user
-        // to select a directory
-        Button button = new Button(inputGroup, SWT.PUSH);
-        button.setText(Messages.Application_Browse);
-
-        final Composite buttonGroup = new Composite(shell, SWT.NONE);
-        buttonGroup.setLayout(new GridLayout(2, false));
-        buttonGroup.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));        
-
-        
-        final Button buttonOK = new Button(buttonGroup, SWT.NONE);
-        buttonOK.setText(Messages.Application_Ok);
-        buttonOK.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-        Button buttonCancel = new Button(buttonGroup, SWT.NONE);
-        buttonCancel.setText(Messages.Application_Cancel);
-
-        buttonOK.addListener(SWT.Selection, new Listener() {
-            public void handleEvent(Event event) {
-                path = text.getText();
-                shell.dispose();
-            }
-        });
-
-        buttonCancel.addListener(SWT.Selection, new Listener() {
-            public void handleEvent(Event event) {
-                path = null;
-                shell.dispose();
-            }
-        });
-
-        button.addSelectionListener(new SelectionAdapter() {
-            public void widgetSelected(SelectionEvent event) {
-                DirectoryDialog dlg = new DirectoryDialog(shell);
-                
-                // Set the initial filter path according
-                // to anything they've selected or typed in
-                dlg.setFilterPath(text.getText());
-                
-                // Change the title bar text
-                dlg.setText(Messages.Application_SWT_DD);
-                
-                // Customizable message displayed in the dialog
-                dlg.setMessage(Messages.Application_Select_Directory);
-                
-                String dir = dlg.open();
-                if (dir != null) {
-                    // Set the text box to the new selection
-                    text.setText(dir);
-                    boolean isValidPath = Application.setDBLocation(dir);
-                    errorGroup.setVisible(!isValidPath);
-                    
-                    buttonOK.setEnabled(isValidPath);
-                }
-            }
-        });
-
-        shell.addListener(SWT.Traverse, new Listener() {
-            public void handleEvent(Event event) {
-                if (event.detail == SWT.TRAVERSE_ESCAPE)
-                    event.doit = false;
-            }            
-        });
-
-        shell.setLocation(parent.getSize());
-        shell.pack();
-        shell.open();
-
-        Display display = parent.getDisplay();
-        while (!shell.isDisposed()) {
-            if (!display.readAndDispatch())
-                display.sleep();
-        }
-
-        return path;
     }
 }
