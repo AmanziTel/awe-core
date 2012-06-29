@@ -102,6 +102,8 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
             throw new FatalException(e);
         case PROPERTY_NOT_FOUND:
             throw new DataInconsistencyException(e);
+        default:
+            // do nothing
         }
     }
 
