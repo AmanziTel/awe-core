@@ -8,7 +8,7 @@
     <version>${awe-core-version}</version>
   </parent>
   <groupId>org.amanzi</groupId>
-  <artifactId>org.amanzi.neo.models.testing</artifactId>
+  <artifactId>org.amanzi.neo.models.impl.testing</artifactId>
   <version>1.0.0.qualifier</version>
   <packaging>eclipse-test-plugin</packaging>
   
@@ -19,7 +19,7 @@
   		<artifactId>tycho-surefire-plugin</artifactId>
   		<version>${tycho-version}</version>
   		<configuration>
-          <testSuite>org.amanzi.neo.models.testing</testSuite>
+          <testSuite>org.amanzi.neo.models.impl.testing</testSuite>
           <testClass>org.amanzi.neo.models.ModelsTestSuite</testClass>
         </configuration>
   	  </plugin>

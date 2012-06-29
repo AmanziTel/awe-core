@@ -61,7 +61,8 @@
     <module>org.amanzi.neo.loader.core.testing</module>
     <module>org.amanzi.neo.loader.ui</module>
     <module>org.amanzi.neo.models</module>
-    <module>org.amanzi.neo.models.testing</module>
+    <module>org.amanzi.neo.models.impl</module>
+    <module>org.amanzi.neo.models.impl.testing</module>
     <module>org.amanzi.neo.providers</module>
     <module>org.amanzi.neo.providers.testing</module>
     <module>org.amanzi.neo.services</module>
