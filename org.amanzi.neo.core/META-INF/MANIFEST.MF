@@ -10,3 +10,4 @@ Export-Package: org.amanzi.neo.nodeproperties,
 Require-Bundle: org.neo4j;bundle-version="1.8.0";visibility:=reexport,
  org.amanzi.log4j;bundle-version="1.0.0"
 Eclipse-ExtensibleAPI: true
+Bundle-ClassPath: .

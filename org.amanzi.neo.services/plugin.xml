@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension-point id="org.amanzi.services" name="Service" schema="schema/org.amanzi.services.exsd"/>
+   <extension
+         point="org.amanzi.services">
+      <service
+            class="org.amanzi.neo.services.impl.NodeService"
+            id="org.amanzi.service.NodeService">
+         <parameters>
+            <nodePropertiesReference
+                  refId="org.amanzi.nodeproperties.generalnodeproperties">
+            </nodePropertiesReference>
+         </parameters>
+      </service>
+   </extension>
+
+</plugin>
