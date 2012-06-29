@@ -15,7 +15,8 @@ package org.amanzi.neo.providers.internal;
 
 import org.amanzi.neo.providers.IProjectModelProvider;
 import org.amanzi.neo.providers.IProviderContext;
-import org.amanzi.neo.providers.factory.ProviderContextImpl;
+import org.amanzi.neo.providers.IProviderContext.ContextException;
+import org.amanzi.neo.providers.context.ProviderContextImpl;
 import org.eclipse.core.runtime.Plugin;
 
 /**
@@ -38,7 +39,7 @@ public abstract class AbstractProviderPlugin extends Plugin {
         return ProviderContextHolder.context;
     }
 
-    public IProjectModelProvider getProjectModelProvider() {
+    public IProjectModelProvider getProjectModelProvider() throws ContextException {
         return getContext().get(PROJECT_MODEL_PROVIDER_ID);
     }
 }

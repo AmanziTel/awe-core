@@ -74,6 +74,10 @@ public class AbstractMockitoTest extends AbstractTest {
         return Mockito.never();
     }
 
+    protected VerificationMode atLeastOnce() {
+        return Mockito.atLeastOnce();
+    }
+
     protected <T> T spy(T object) {
         return Mockito.spy(object);
     }

@@ -13,6 +13,8 @@
 
 package org.amanzi.neo.providers;
 
+import org.eclipse.core.runtime.CoreException;
+
 /**
  * TODO Purpose of
  * <p>
@@ -23,6 +25,25 @@ package org.amanzi.neo.providers;
  */
 public interface IProviderContext {
 
-    public <T extends IModelProvider< ? , ? >> T get(String id);
+    public class ContextException extends Exception {
+
+        /** long serialVersionUID field */
+        private static final long serialVersionUID = -6470727859236377384L;
+
+        public ContextException(CoreException e) {
+            super(e);
+        }
+
+        public ContextException(ClassCastException e) {
+            super(e);
+        }
+
+        public ContextException(String message) {
+            super(message);
+        }
+
+    }
+
+    <T extends IModelProvider< ? , ? >> T get(String id) throws ContextException;
 
 }

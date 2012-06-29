@@ -26,7 +26,11 @@ import org.junit.runners.Suite.SuiteClasses;
  * @since 1.0.0
  */
 @RunWith(Suite.class)
-@SuiteClasses({org.amanzi.neo.providers.impl.ProjectModelProviderTest.class, org.amanzi.neo.providers.impl.internal.AbstractModelProviderTest.class})
+@SuiteClasses({
+        org.amanzi.neo.providers.context.ProviderContextImplIntegrationTest.class,
+        org.amanzi.neo.providers.context.ProviderContextImplTest.class,
+        org.amanzi.neo.providers.impl.ProjectModelProviderTest.class,
+        org.amanzi.neo.providers.impl.internal.AbstractModelProviderTest.class})
 public class ProvidersTestSuite {
 
 }

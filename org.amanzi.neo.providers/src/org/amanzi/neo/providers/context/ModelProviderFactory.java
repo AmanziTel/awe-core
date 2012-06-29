@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.providers.factory;
+package org.amanzi.neo.providers.context;
 
 import org.amanzi.neo.nodeproperties.NodePropertiesFactory;
 import org.amanzi.neo.providers.IProjectModelProvider;

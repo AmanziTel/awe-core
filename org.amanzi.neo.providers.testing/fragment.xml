@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<fragment>
+   <extension
+         point="org.amanzi.nodeproperties">
+      <nodeProperties
+            class="org.amanzi.neo.nodeproperties.impl.GeneralNodeProperties"
+            id="org.amanzi.neo.providers.testing.corretNodeProperties">
+      </nodeProperties>
+      <nodeProperties
+            class="org.amanzi.neo.nodeproperties.impl.ClasNotFound"
+            id="org.amanzi.neo.providers.testing.unexistingClass">
+      </nodeProperties>
+      <nodeProperties
+            class="java.lang.String"
+            id="org.amanzi.neo.providers.testing.incorrectNodeProperties">
+      </nodeProperties>
+   </extension>
+
+</fragment>
