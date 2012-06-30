@@ -177,6 +177,18 @@ public class ProjectModelProviderTest extends AbstractMockitoTest {
         projectModelProvider.findProjectByName(PROJECT_NAME);
     }
 
+    @Test
+    public void testInitialActiveProject() throws Exception {
+        assertNull("Unexpected initial active project", projectModelProvider.getActiveProjectModel());
+    }
+
+    @Test
+    public void testCheckSetActiveProject() throws Exception {
+        projectModelProvider.setActiveProjectModel(projectModel);
+
+        assertEquals("unexpected active project", projectModel, projectModelProvider.getActiveProjectModel());
+    }
+
     private void spyProjectProvider() throws ModelException {
         projectModelProvider = spy(projectModelProvider);
         when(projectModelProvider.createInstance()).thenReturn(projectModel);

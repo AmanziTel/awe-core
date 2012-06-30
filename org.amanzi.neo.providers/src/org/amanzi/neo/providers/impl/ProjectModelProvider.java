@@ -13,8 +13,6 @@
 
 package org.amanzi.neo.providers.impl;
 
-import java.util.Set;
-
 import org.amanzi.neo.models.IProjectModel;
 import org.amanzi.neo.models.exceptions.DuplicatedModelException;
 import org.amanzi.neo.models.exceptions.FatalException;
@@ -47,14 +45,11 @@ public class ProjectModelProvider extends AbstractModelProvider<ProjectModel, IP
 
     private final IGeneralNodeProperties generalNodeProperties;
 
+    private IProjectModel activeProject;
+
     public ProjectModelProvider(INodeService nodeService, IGeneralNodeProperties generalNodeProperties) {
         this.nodeService = nodeService;
         this.generalNodeProperties = generalNodeProperties;
-    }
-
-    @Override
-    public Set<IProjectModel> findAllProjectModels() {
-        return null;
     }
 
     @Override
@@ -132,11 +127,14 @@ public class ProjectModelProvider extends AbstractModelProvider<ProjectModel, IP
 
     @Override
     public IProjectModel getActiveProjectModel() {
-        return null;
+        return activeProject;
     }
 
     @Override
     public void setActiveProjectModel(IProjectModel projectModel) {
+        assert projectModel != null;
+
+        this.activeProject = projectModel;
     }
 
     @Override

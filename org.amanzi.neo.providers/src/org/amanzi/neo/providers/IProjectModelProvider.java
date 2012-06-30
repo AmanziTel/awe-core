@@ -13,8 +13,6 @@
 
 package org.amanzi.neo.providers;
 
-import java.util.Set;
-
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.IProjectModel;
 import org.amanzi.neo.models.exceptions.ModelException;
@@ -28,8 +26,6 @@ import org.amanzi.neo.models.exceptions.ModelException;
  * @since 1.0.0
  */
 public interface IProjectModelProvider extends IModelProvider<IProjectModel, IModel> {
-
-    Set<IProjectModel> findAllProjectModels();
 
     IProjectModel findProjectByName(String name) throws ModelException;
 
