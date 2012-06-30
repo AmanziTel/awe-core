@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.services.impl;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -187,16 +188,31 @@ public class NodeService extends AbstractService implements INodeService {
 
     @Override
     public Node createNode(Node parentNode, INodeType nodeType) throws ServiceException {
-        return null;
+        assert parentNode != null;
+        assert nodeType != null;
+
+        Map<String, Object> properties = new HashMap<String, Object>();
+        return createNode(parentNode, nodeType, properties);
     }
 
     @Override
     public Node createNode(Node parentNode, INodeType nodeType, String name) throws ServiceException {
-        return null;
+        assert parentNode != null;
+        assert nodeType != null;
+        assert !StringUtils.isEmpty(name);
+
+        Map<String, Object> properties = new HashMap<String, Object>();
+        properties.put(getGeneralNodeProperties().getNodeNameProperty(), name);
+
+        return createNode(parentNode, nodeType, properties);
     }
 
     @Override
     public Node createNode(Node parentNode, INodeType nodeType, Map<String, Object> parameters) throws ServiceException {
+        assert parentNode != null;
+        assert nodeType != null;
+        assert parameters != null;
+
         return null;
     }
 }
