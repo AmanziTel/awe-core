@@ -24,7 +24,7 @@ import org.amanzi.awe.ui.listener.IAWEEventListenter;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class NoConstructorListener implements IAWEEventListenter {
+public final class NoConstructorListener implements IAWEEventListenter {
 
     /**
      * 
@@ -34,6 +34,10 @@ public class NoConstructorListener implements IAWEEventListenter {
 
     @Override
     public void onEvent(IEvent event) {
+    }
+
+    public static String convertToString() {
+        return new NoConstructorListener().toString();
     }
 
 }

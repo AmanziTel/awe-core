@@ -22,6 +22,7 @@ import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.ServiceException;
+import org.amanzi.neo.services.impl.NodeService;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
@@ -35,6 +36,9 @@ import org.neo4j.graphdb.Node;
  * @since 1.0.0
  */
 public abstract class AbstractModel extends AbstractLoggable implements IModel {
+    /** String INITIALIZE_METHOD_NAME field */
+    protected static final String INITIALIZE_METHOD_NAME = "initialize";
+
     private static final Logger LOGGER = Logger.getLogger(AbstractModel.class);
 
     private String name;
@@ -56,7 +60,7 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
         assert nodeType != null;
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(getStartLogStatement("initialize", parentNode, name, nodeType));
+            LOGGER.debug(getStartLogStatement(INITIALIZE_METHOD_NAME, parentNode, name, nodeType));
         }
 
         this.name = name;
@@ -64,13 +68,13 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
         this.parentNode = parentNode;
 
         try {
-            this.rootNode = nodeService.createNode(parentNode, nodeType, name);
+            this.rootNode = nodeService.createNode(parentNode, nodeType, NodeService.NodeServiceRelationshipType.CHILD, name);
         } catch (ServiceException e) {
             processException("Error on initializing new node for Model", e);
         }
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(getFinishLogStatement("initialize"));
+            LOGGER.debug(getFinishLogStatement(INITIALIZE_METHOD_NAME));
         }
     }
 
@@ -78,7 +82,7 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
         assert rootNode != null;
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(getStartLogStatement("initialize", rootNode));
+            LOGGER.debug(getStartLogStatement(INITIALIZE_METHOD_NAME, rootNode));
         }
 
         try {
@@ -91,7 +95,7 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
         }
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(getFinishLogStatement("initialize"));
+            LOGGER.debug(getFinishLogStatement(INITIALIZE_METHOD_NAME));
         }
     }
 

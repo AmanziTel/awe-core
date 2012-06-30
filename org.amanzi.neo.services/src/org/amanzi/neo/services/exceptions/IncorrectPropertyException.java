@@ -33,7 +33,7 @@ public class IncorrectPropertyException extends ServiceException {
 
     private static final String EXCEPTION_MESSAGE = "Node <{0}> contain property <{1}> with value <{2}> but should contain value <{3}>.";
 
-    private final Node node;
+    private final String node;
 
     private final String propertyName;
 
@@ -51,7 +51,7 @@ public class IncorrectPropertyException extends ServiceException {
 
         this.actualValue = actualValue;
         this.expectedValue = expectedValue;
-        this.node = node;
+        this.node = node.toString();
         this.propertyName = propertyName;
 
     }
@@ -64,7 +64,7 @@ public class IncorrectPropertyException extends ServiceException {
     /**
      * @return Returns the node.
      */
-    public Node getNode() {
+    public String getNode() {
         return node;
     }
 

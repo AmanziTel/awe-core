@@ -23,6 +23,7 @@ import java.util.Map.Entry;
 
 import org.amanzi.neo.db.manager.DatabaseManagerFactory;
 import org.amanzi.neo.nodeproperties.INodeProperties;
+import org.amanzi.neo.providers.ContextException;
 import org.amanzi.neo.providers.IModelProvider;
 import org.amanzi.neo.providers.IProviderContext;
 import org.amanzi.neo.services.internal.IService;

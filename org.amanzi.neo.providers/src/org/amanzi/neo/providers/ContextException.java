@@ -13,17 +13,17 @@
 
 package org.amanzi.neo.providers;
 
+public class ContextException extends Exception {
 
-/**
- * TODO Purpose of
- * <p>
- * </p>
- * 
- * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
- * @since 1.0.0
- */
-public interface IProviderContext {
+    /** long serialVersionUID field */
+    private static final long serialVersionUID = -6470727859236377384L;
 
-    <T extends IModelProvider< ? , ? >> T get(String id) throws ContextException;
+    public ContextException(Exception e) {
+        super(e);
+    }
+
+    public ContextException(String message) {
+        super(message);
+    }
 
 }

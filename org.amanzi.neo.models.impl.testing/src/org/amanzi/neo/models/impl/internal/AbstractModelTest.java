@@ -20,6 +20,7 @@ import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.PropertyNotFoundException;
+import org.amanzi.neo.services.impl.NodeService;
 import org.amanzi.testing.AbstractMockitoTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -144,11 +145,12 @@ public class AbstractModelTest extends AbstractMockitoTest {
         Node parentNode = getNodeMock();
         Node rootNode = getNodeMock();
 
-        when(nodeService.createNode(parentNode, TEST_NODE_TYPE, TEST_NODE_NAME)).thenReturn(rootNode);
+        when(nodeService.createNode(parentNode, TEST_NODE_TYPE, NodeService.NodeServiceRelationshipType.CHILD, TEST_NODE_NAME))
+                .thenReturn(rootNode);
 
         model.initialize(parentNode, TEST_NODE_NAME, TEST_NODE_TYPE);
 
-        verify(nodeService).createNode(parentNode, TEST_NODE_TYPE, TEST_NODE_NAME);
+        verify(nodeService).createNode(parentNode, TEST_NODE_TYPE, NodeService.NodeServiceRelationshipType.CHILD, TEST_NODE_NAME);
     }
 
     @Test
@@ -156,7 +158,8 @@ public class AbstractModelTest extends AbstractMockitoTest {
         Node parentNode = getNodeMock();
         Node rootNode = getNodeMock();
 
-        when(nodeService.createNode(parentNode, TEST_NODE_TYPE, TEST_NODE_NAME)).thenReturn(rootNode);
+        when(nodeService.createNode(parentNode, TEST_NODE_TYPE, NodeService.NodeServiceRelationshipType.CHILD, TEST_NODE_NAME))
+                .thenReturn(rootNode);
 
         model.initialize(parentNode, TEST_NODE_NAME, TEST_NODE_TYPE);
 
@@ -170,7 +173,7 @@ public class AbstractModelTest extends AbstractMockitoTest {
     public void testCheckUnderlyingDatabaseExceptionOnInitializeFromString() throws Exception {
         Node parentNode = getNodeMock();
         doThrow(new DatabaseException(new IllegalArgumentException())).when(nodeService).createNode(parentNode, TEST_NODE_TYPE,
-                TEST_NODE_NAME);
+                NodeService.NodeServiceRelationshipType.CHILD, TEST_NODE_NAME);
 
         model.initialize(parentNode, TEST_NODE_NAME, TEST_NODE_TYPE);
     }

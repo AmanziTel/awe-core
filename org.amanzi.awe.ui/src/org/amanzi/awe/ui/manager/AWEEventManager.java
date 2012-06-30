@@ -55,7 +55,7 @@ public final class AWEEventManager {
 
     private static final IEvent AWE_STARTED_EVENT = new AWEStartedEvent();
 
-    protected final Map<EventStatus, List<IAWEEventListenter>> listeners = new HashMap<EventStatus, List<IAWEEventListenter>>();
+    private final Map<EventStatus, List<IAWEEventListenter>> listeners = new HashMap<EventStatus, List<IAWEEventListenter>>();
 
     private final IExtensionRegistry registry;
 
@@ -140,7 +140,7 @@ public final class AWEEventManager {
         return EventStatus.valueOf(statusName);
     }
 
-    protected final Map<EventStatus, List<IAWEEventListenter>> getListeners() {
+    protected Map<EventStatus, List<IAWEEventListenter>> getListeners() {
         return listeners;
     }
 }

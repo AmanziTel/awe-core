@@ -46,7 +46,7 @@ import org.neo4j.kernel.Traversal;
  */
 public class NodeService extends AbstractService implements INodeService {
 
-    enum NodeServiceRelationshipType implements RelationshipType {
+    public enum NodeServiceRelationshipType implements RelationshipType {
         CHILD;
     }
 
@@ -187,16 +187,17 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     @Override
-    public Node createNode(Node parentNode, INodeType nodeType) throws ServiceException {
+    public Node createNode(Node parentNode, INodeType nodeType, RelationshipType relationshipType) throws ServiceException {
         assert parentNode != null;
         assert nodeType != null;
 
         Map<String, Object> properties = new HashMap<String, Object>();
-        return createNode(parentNode, nodeType, properties);
+        return createNode(parentNode, nodeType, relationshipType, properties);
     }
 
     @Override
-    public Node createNode(Node parentNode, INodeType nodeType, String name) throws ServiceException {
+    public Node createNode(Node parentNode, INodeType nodeType, RelationshipType relationshipType, String name)
+            throws ServiceException {
         assert parentNode != null;
         assert nodeType != null;
         assert !StringUtils.isEmpty(name);
@@ -204,11 +205,12 @@ public class NodeService extends AbstractService implements INodeService {
         Map<String, Object> properties = new HashMap<String, Object>();
         properties.put(getGeneralNodeProperties().getNodeNameProperty(), name);
 
-        return createNode(parentNode, nodeType, properties);
+        return createNode(parentNode, nodeType, relationshipType, properties);
     }
 
     @Override
-    public Node createNode(Node parentNode, INodeType nodeType, Map<String, Object> parameters) throws ServiceException {
+    public Node createNode(Node parentNode, INodeType nodeType, RelationshipType relationshipType, Map<String, Object> parameters)
+            throws ServiceException {
         assert parentNode != null;
         assert nodeType != null;
         assert parameters != null;

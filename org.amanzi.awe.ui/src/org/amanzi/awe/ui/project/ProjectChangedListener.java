@@ -51,10 +51,13 @@ public class ProjectChangedListener implements IAWEEventListenter {
     public void onEvent(IEvent event) {
         switch (event.getStatus()) {
         case PROJECT_CHANGED:
-            onProjectChangedEvent((ProjectNameChangedEvent)event);
+            if (event instanceof ProjectNameChangedEvent) {
+                onProjectChangedEvent((ProjectNameChangedEvent)event);
+            }
             break;
         default:
             // do nothing
+            break;
         }
     }
 

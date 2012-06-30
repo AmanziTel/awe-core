@@ -58,7 +58,7 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
         assert name != null;
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(getStartLogStatement("initialize", name));
+            LOGGER.debug(getStartLogStatement(INITIALIZE_METHOD_NAME, name));
         }
 
         try {
@@ -70,7 +70,7 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
         }
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(getFinishLogStatement("initialize"));
+            LOGGER.debug(getFinishLogStatement(INITIALIZE_METHOD_NAME));
         }
     }
 
@@ -79,7 +79,7 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
         assert rootNode != null;
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(getStartLogStatement("initialize", rootNode));
+            LOGGER.debug(getStartLogStatement(INITIALIZE_METHOD_NAME, rootNode));
         }
 
         super.initialize(rootNode);
@@ -101,7 +101,7 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
         }
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(getStartLogStatement("initialize", rootNode));
+            LOGGER.debug(getStartLogStatement(INITIALIZE_METHOD_NAME, rootNode));
         }
     }
 

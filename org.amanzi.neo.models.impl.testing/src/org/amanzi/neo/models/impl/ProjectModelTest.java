@@ -20,6 +20,7 @@ import org.amanzi.neo.nodeproperties.impl.GeneralNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.nodetypes.NodeTypeUtils;
 import org.amanzi.neo.services.INodeService;
+import org.amanzi.neo.services.impl.NodeService;
 import org.amanzi.testing.AbstractMockitoTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -129,11 +130,14 @@ public class ProjectModelTest extends AbstractMockitoTest {
         Node referencedNode = getNodeMock();
         Node rootNode = getNodeMock();
         when(nodeService.getReferencedNode()).thenReturn(referencedNode);
-        when(nodeService.createNode(referencedNode, ProjectModelNodeType.PROJECT, PROJECT_NAME)).thenReturn(rootNode);
+        when(
+                nodeService.createNode(referencedNode, ProjectModelNodeType.PROJECT, NodeService.NodeServiceRelationshipType.CHILD,
+                        PROJECT_NAME)).thenReturn(rootNode);
 
         model.initialize(PROJECT_NAME);
 
         verify(nodeService).getReferencedNode();
-        verify(nodeService).createNode(referencedNode, ProjectModelNodeType.PROJECT, PROJECT_NAME);
+        verify(nodeService).createNode(referencedNode, ProjectModelNodeType.PROJECT, NodeService.NodeServiceRelationshipType.CHILD,
+                PROJECT_NAME);
     }
 }

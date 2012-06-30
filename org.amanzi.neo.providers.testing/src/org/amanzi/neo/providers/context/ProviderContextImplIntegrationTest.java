@@ -15,7 +15,7 @@ package org.amanzi.neo.providers.context;
 
 import org.amanzi.neo.nodeproperties.INodeProperties;
 import org.amanzi.neo.nodeproperties.impl.GeneralNodeProperties;
-import org.amanzi.neo.providers.IProviderContext.ContextException;
+import org.amanzi.neo.providers.ContextException;
 import org.amanzi.neo.providers.context.internal.AnotherTestService;
 import org.amanzi.neo.providers.context.internal.MultiConstructorService;
 import org.amanzi.neo.providers.context.internal.TestService;

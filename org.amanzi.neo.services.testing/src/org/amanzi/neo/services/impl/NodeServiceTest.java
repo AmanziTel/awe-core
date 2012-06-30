@@ -29,6 +29,7 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.RelationshipType;
 
 /**
  * TODO Purpose of
@@ -39,6 +40,10 @@ import org.neo4j.graphdb.Relationship;
  * @since 1.0.0
  */
 public class NodeServiceTest extends AbstractServiceTest {
+
+    private enum TestRelationshipTypes implements RelationshipType {
+        TEST_RELATION;
+    }
 
     private static final String NODE_NAME = "node_name";
 
@@ -256,9 +261,9 @@ public class NodeServiceTest extends AbstractServiceTest {
         Node parentNode = getNodeMock();
         Map<String, Object> properties = new HashMap<String, Object>();
 
-        nodeService.createNode(parentNode, TestNodeType.TEST1);
+        nodeService.createNode(parentNode, TestNodeType.TEST1, TestRelationshipTypes.TEST_RELATION);
 
-        verify(nodeService).createNode(parentNode, TestNodeType.TEST1, properties);
+        verify(nodeService).createNode(parentNode, TestNodeType.TEST1, TestRelationshipTypes.TEST_RELATION, properties);
     }
 
     @Test
@@ -269,9 +274,19 @@ public class NodeServiceTest extends AbstractServiceTest {
         nodeService = spy(nodeService);
         Node parentNode = getNodeMock();
 
-        nodeService.createNode(parentNode, TestNodeType.TEST1, NODE_NAME);
+        nodeService.createNode(parentNode, TestNodeType.TEST1, TestRelationshipTypes.TEST_RELATION, NODE_NAME);
 
-        verify(nodeService).createNode(parentNode, TestNodeType.TEST1, properties);
+        verify(nodeService).createNode(parentNode, TestNodeType.TEST1, TestRelationshipTypes.TEST_RELATION, properties);
+    }
+
+    @Test
+    public void testCheckCreateNodeActivity() throws Exception {
+        Node parentNode = getNodeMock();
+        Node createdNode = getNodeMock();
+
+        GraphDatabaseService service = getService();
+
+        when(service.createNode()).thenReturn(createdNode);
     }
 
     private void setReferencedNode(Node node) {

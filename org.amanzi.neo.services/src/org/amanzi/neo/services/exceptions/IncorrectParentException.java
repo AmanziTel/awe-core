@@ -33,11 +33,11 @@ public class IncorrectParentException extends ServiceException {
 
     private static final String MESSAGE_TEMPLATE = "Incorrect parent of node <{0}>. Expected <{1}> but was <{2}>.";
 
-    private final Node child;
+    private final String child;
 
-    private final Node expectedNode;
+    private final String expectedNode;
 
-    private final Node actualNode;
+    private final String actualNode;
 
     /**
      * @param e
@@ -45,9 +45,9 @@ public class IncorrectParentException extends ServiceException {
     public IncorrectParentException(Node child, Node expectedParent, Node actualParent) {
         super(ServiceExceptionReason.INCORRECT_PARENT);
 
-        this.child = child;
-        this.expectedNode = expectedParent;
-        this.actualNode = actualParent;
+        this.child = child.toString();
+        this.expectedNode = expectedParent.toString();
+        this.actualNode = actualParent.toString();
     }
 
     @Override
@@ -58,21 +58,21 @@ public class IncorrectParentException extends ServiceException {
     /**
      * @return Returns the child.
      */
-    public Node getChild() {
+    public String getChild() {
         return child;
     }
 
     /**
      * @return Returns the expectedNode.
      */
-    public Node getExpectedNode() {
+    public String getExpectedNode() {
         return expectedNode;
     }
 
     /**
      * @return Returns the actualNode.
      */
-    public Node getActualNode() {
+    public String getActualNode() {
         return actualNode;
     }
 }

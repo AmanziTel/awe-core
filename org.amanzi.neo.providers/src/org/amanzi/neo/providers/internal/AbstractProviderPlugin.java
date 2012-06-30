@@ -13,10 +13,10 @@
 
 package org.amanzi.neo.providers.internal;
 
+import org.amanzi.neo.providers.ContextException;
 import org.amanzi.neo.providers.IModelProvider;
 import org.amanzi.neo.providers.IProjectModelProvider;
 import org.amanzi.neo.providers.IProviderContext;
-import org.amanzi.neo.providers.IProviderContext.ContextException;
 import org.amanzi.neo.providers.context.ProviderContextImpl;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.Plugin;

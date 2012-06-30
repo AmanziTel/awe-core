@@ -20,6 +20,7 @@ import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.internal.IService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.RelationshipType;
 
 /**
  * TODO Purpose of
@@ -66,9 +67,10 @@ public interface INodeService extends IService {
 
     Node getReferencedNode() throws ServiceException;
 
-    Node createNode(Node parentNode, INodeType nodeType) throws ServiceException;
+    Node createNode(Node parentNode, INodeType nodeType, RelationshipType relationshipType) throws ServiceException;
 
-    Node createNode(Node parentNode, INodeType nodeType, String name) throws ServiceException;
+    Node createNode(Node parentNode, INodeType nodeType, RelationshipType relationshipType, String name) throws ServiceException;
 
-    Node createNode(Node parentNode, INodeType nodeType, Map<String, Object> parameters) throws ServiceException;
+    Node createNode(Node parentNode, INodeType nodeType, RelationshipType relationshipType, Map<String, Object> parameters)
+            throws ServiceException;
 }

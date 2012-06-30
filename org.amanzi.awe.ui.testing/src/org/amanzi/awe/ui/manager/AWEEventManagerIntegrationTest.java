@@ -56,6 +56,7 @@ public class AWEEventManagerIntegrationTest extends AbstractIntegrationTest {
                 break;
             default:
                 // do notning
+                break;
             }
 
             for (IAWEEventListenter listener : listenerMap.get(status)) {
