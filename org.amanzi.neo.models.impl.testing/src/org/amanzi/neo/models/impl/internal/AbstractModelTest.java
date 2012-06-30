@@ -41,7 +41,7 @@ public class AbstractModelTest extends AbstractMockitoTest {
          * @param nodeService
          */
         public TestModel(INodeService nodeService) {
-            super(nodeService);
+            super(nodeService, null);
         }
 
         @Override
@@ -139,4 +139,39 @@ public class AbstractModelTest extends AbstractMockitoTest {
         model.initialize(rootNode);
     }
 
+    @Test
+    public void testCheckActivityOnInitializationFromString() throws Exception {
+        Node parentNode = getNodeMock();
+        Node rootNode = getNodeMock();
+
+        when(nodeService.createNode(parentNode, TEST_NODE_TYPE, TEST_NODE_NAME)).thenReturn(rootNode);
+
+        model.initialize(parentNode, TEST_NODE_NAME, TEST_NODE_TYPE);
+
+        verify(nodeService).createNode(parentNode, TEST_NODE_TYPE, TEST_NODE_NAME);
+    }
+
+    @Test
+    public void testCheckResultOnInitializationFromString() throws Exception {
+        Node parentNode = getNodeMock();
+        Node rootNode = getNodeMock();
+
+        when(nodeService.createNode(parentNode, TEST_NODE_TYPE, TEST_NODE_NAME)).thenReturn(rootNode);
+
+        model.initialize(parentNode, TEST_NODE_NAME, TEST_NODE_TYPE);
+
+        assertEquals("Unexpected parent node", parentNode, model.getParentNode());
+        assertEquals("Unexpected rootNode", rootNode, model.getRootNode());
+        assertEquals("Unexpected name", TEST_NODE_NAME, model.getName());
+        assertEquals("Unexpected type", TEST_NODE_TYPE, model.getType());
+    }
+
+    @Test(expected = FatalException.class)
+    public void testCheckUnderlyingDatabaseExceptionOnInitializeFromString() throws Exception {
+        Node parentNode = getNodeMock();
+        doThrow(new DatabaseException(new IllegalArgumentException())).when(nodeService).createNode(parentNode, TEST_NODE_TYPE,
+                TEST_NODE_NAME);
+
+        model.initialize(parentNode, TEST_NODE_NAME, TEST_NODE_TYPE);
+    }
 }

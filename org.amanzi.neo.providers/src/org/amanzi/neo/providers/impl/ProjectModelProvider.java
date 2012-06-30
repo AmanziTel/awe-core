@@ -139,6 +139,6 @@ public class ProjectModelProvider extends AbstractModelProvider<ProjectModel, IP
 
     @Override
     protected ProjectModel createInstance() {
-        return new ProjectModel(nodeService);
+        return new ProjectModel(nodeService, generalNodeProperties);
     }
 }

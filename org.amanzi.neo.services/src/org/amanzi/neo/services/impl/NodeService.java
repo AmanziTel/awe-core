@@ -14,6 +14,7 @@
 package org.amanzi.neo.services.impl;
 
 import java.util.Iterator;
+import java.util.Map;
 
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
@@ -24,6 +25,7 @@ import org.amanzi.neo.services.exceptions.DuplicatedNodeException;
 import org.amanzi.neo.services.exceptions.PropertyNotFoundException;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.impl.internal.AbstractService;
+import org.apache.commons.lang3.StringUtils;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -101,7 +103,7 @@ public class NodeService extends AbstractService implements INodeService {
     @Override
     public Node getChildByName(Node parentNode, String name, INodeType nodeType) throws ServiceException {
         assert parentNode != null;
-        assert name != null;
+        assert !StringUtils.isEmpty(name);
         assert nodeType != null;
 
         Node result = null;
@@ -160,7 +162,7 @@ public class NodeService extends AbstractService implements INodeService {
     private Object getNodeProperty(Node node, String propertyName, String defaultValue, boolean throwExceptionIfNotExist)
             throws ServiceException {
         assert node != null;
-        assert propertyName != null;
+        assert !StringUtils.isEmpty(propertyName);
 
         assert throwExceptionIfNotExist && (defaultValue == null);
 
@@ -180,6 +182,21 @@ public class NodeService extends AbstractService implements INodeService {
             throw new PropertyNotFoundException(propertyName, node);
         }
 
+        return null;
+    }
+
+    @Override
+    public Node createNode(Node parentNode, INodeType nodeType) throws ServiceException {
+        return null;
+    }
+
+    @Override
+    public Node createNode(Node parentNode, INodeType nodeType, String name) throws ServiceException {
+        return null;
+    }
+
+    @Override
+    public Node createNode(Node parentNode, INodeType nodeType, Map<String, Object> parameters) throws ServiceException {
         return null;
     }
 }

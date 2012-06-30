@@ -14,6 +14,7 @@
 package org.amanzi.neo.services;
 
 import java.util.Iterator;
+import java.util.Map;
 
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.exceptions.ServiceException;
@@ -64,4 +65,10 @@ public interface INodeService extends IService {
     Node getChildByName(Node parentNode, String name, INodeType nodeType) throws ServiceException;
 
     Node getReferencedNode() throws ServiceException;
+
+    Node createNode(Node parentNode, INodeType nodeType) throws ServiceException;
+
+    Node createNode(Node parentNode, INodeType nodeType, String name) throws ServiceException;
+
+    Node createNode(Node parentNode, INodeType nodeType, Map<String, Object> parameters) throws ServiceException;
 }

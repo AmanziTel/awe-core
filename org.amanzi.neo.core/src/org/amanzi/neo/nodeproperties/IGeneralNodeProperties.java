@@ -27,4 +27,6 @@ public interface IGeneralNodeProperties extends INodeProperties {
 
     String getNodeTypeProperty();
 
+    String getParentProperty();
+
 }

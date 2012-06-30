@@ -17,6 +17,7 @@ import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.impl.dto.DataElement;
 import org.amanzi.neo.models.IDataModel;
 import org.amanzi.neo.models.exceptions.ModelException;
+import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.apache.log4j.Logger;
@@ -37,8 +38,8 @@ public abstract class AbstractDataModel extends AbstractModel implements IDataMo
     /**
      * @param nodeService
      */
-    public AbstractDataModel(INodeService nodeService) {
-        super(nodeService);
+    public AbstractDataModel(INodeService nodeService, IGeneralNodeProperties generalNodeProperties) {
+        super(nodeService, generalNodeProperties);
     }
 
     @Override

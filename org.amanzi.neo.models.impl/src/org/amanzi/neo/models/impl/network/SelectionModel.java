@@ -17,6 +17,7 @@ import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.impl.internal.AbstractDataModel;
 import org.amanzi.neo.models.network.ISelectionModel;
+import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.services.INodeService;
 
 /**
@@ -32,8 +33,8 @@ public class SelectionModel extends AbstractDataModel implements ISelectionModel
     /**
      * @param nodeService
      */
-    public SelectionModel(INodeService nodeService) {
-        super(nodeService);
+    public SelectionModel(INodeService nodeService, IGeneralNodeProperties generalNodeProperties) {
+        super(nodeService, generalNodeProperties);
     }
 
     @Override

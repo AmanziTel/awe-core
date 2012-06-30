@@ -43,7 +43,7 @@ public class AbstractDataModelTest extends AbstractMockitoTest {
          * @param nodeService
          */
         public TestDataModel(INodeService nodeService) {
-            super(nodeService);
+            super(nodeService, null);
         }
 
         @Override

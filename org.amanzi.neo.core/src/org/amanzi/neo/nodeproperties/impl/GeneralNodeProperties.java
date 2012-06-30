@@ -29,6 +29,8 @@ public class GeneralNodeProperties implements IGeneralNodeProperties {
 
     private static final String NODE_TYPE = "type";
 
+    private static final String PARENT_ID = "parent_id";
+
     @Override
     public String getNodeNameProperty() {
         return NODE_NAME;
@@ -37,6 +39,11 @@ public class GeneralNodeProperties implements IGeneralNodeProperties {
     @Override
     public String getNodeTypeProperty() {
         return NODE_TYPE;
+    }
+
+    @Override
+    public String getParentProperty() {
+        return PARENT_ID;
     }
 
 }

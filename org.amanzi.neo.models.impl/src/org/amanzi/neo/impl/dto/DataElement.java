@@ -53,12 +53,11 @@ public class DataElement implements IDataElement {
 
     @Override
     public boolean equals(Object anotherObject) {
-        if (node == null) {
-            return super.equals(anotherObject);
-        } else {
-            if (anotherObject instanceof DataElement) {
-                DataElement anotherElement = (DataElement)anotherObject;
-
+        if (anotherObject instanceof DataElement) {
+            DataElement anotherElement = (DataElement)anotherObject;
+            if (node == null) {
+                return properties.equals(anotherElement.properties);
+            } else {
                 return node.equals(anotherElement.getNode());
             }
         }

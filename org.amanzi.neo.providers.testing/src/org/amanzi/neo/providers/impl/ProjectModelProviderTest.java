@@ -131,6 +131,8 @@ public class ProjectModelProviderTest extends AbstractMockitoTest {
     public void testCheckCacheActivityWithEmptyCache() throws Exception {
         when(nodeService.getChildByName(referencedNode, PROJECT_NAME_FOR_CACHE_CHECK, ProjectModel.ProjectModelNodeType.PROJECT))
                 .thenReturn(node);
+        when(nodeService.getParent(node)).thenReturn(referencedNode);
+        when(nodeService.getNodeType(node)).thenReturn(ProjectModel.ProjectModelNodeType.PROJECT);
 
         // without cache
         projectModelProvider.findProjectByName(PROJECT_NAME_FOR_CACHE_CHECK);
@@ -154,6 +156,8 @@ public class ProjectModelProviderTest extends AbstractMockitoTest {
     @Test
     public void testCheckModelFoundByName() throws Exception {
         when(nodeService.getChildByName(referencedNode, PROJECT_NAME, ProjectModel.ProjectModelNodeType.PROJECT)).thenReturn(node);
+        when(nodeService.getParent(node)).thenReturn(referencedNode);
+        when(nodeService.getNodeType(node)).thenReturn(ProjectModel.ProjectModelNodeType.PROJECT);
 
         IProjectModel result = projectModelProvider.findProjectByName(PROJECT_NAME);
 
@@ -197,6 +201,7 @@ public class ProjectModelProviderTest extends AbstractMockitoTest {
     }
 
     private void setProjectFound(boolean isFound) throws ModelException {
-        doReturn(isFound ? new ProjectModel(nodeService) : null).when(projectModelProvider).findProjectByName(PROJECT_NAME);
+        doReturn(isFound ? new ProjectModel(nodeService, GENERAL_NODE_PROPERTIES) : null).when(projectModelProvider)
+                .findProjectByName(PROJECT_NAME);
     }
 }

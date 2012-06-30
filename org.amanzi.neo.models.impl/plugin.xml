@@ -4,7 +4,7 @@
    <extension
          point="org.amanzi.nodetypes">
       <nodetype
-            class="org.amanzi.neo.models.IProjectModel.ProjectModelNodeType"
+            class="org.amanzi.neo.models.impl.ProjectModel.ProjectModelNodeType"
             id="org.amanzi.nodetypes.project">
       </nodetype>
    </extension>
