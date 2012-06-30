@@ -54,4 +54,8 @@ public class AbstractTest {
         Assert.assertFalse(message, condition);
     }
 
+    protected void fail(String message) {
+        Assert.fail(message);
+    }
+
 }

@@ -2,5 +2,14 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension-point id="org.amanzi.awe.ui.listeners" name="AWE Event Listener" schema="schema/org.amanzi.awe.ui.listeners.exsd"/>
+   <extension
+         point="org.amanzi.awe.ui.listeners">
+      <listener
+            class="org.amanzi.awe.ui.project.ProjectChangedListener">
+         <eventStatus
+               status="PROJECT_CHANGED">
+         </eventStatus>
+      </listener>
+   </extension>
 
 </plugin>

@@ -11,16 +11,23 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.ui.events;
+package org.amanzi.awe.ui.manager.internal;
+
+import org.amanzi.awe.ui.events.IEvent;
+import org.amanzi.awe.ui.listener.IAWEEventListenter;
 
 /**
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface IEventStatus {
+public class Listener3 implements IAWEEventListenter {
+
+    @Override
+    public void onEvent(IEvent event) {
+    }
 
 }

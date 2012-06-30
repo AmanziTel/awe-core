@@ -14,6 +14,8 @@
 package org.amanzi.neo.impl.dto;
 
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 import org.amanzi.neo.dto.IDataElement;
 import org.neo4j.graphdb.Node;
@@ -26,12 +28,11 @@ import org.neo4j.graphdb.Node;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class DataElement extends HashMap<String, Object> implements IDataElement {
-
-    /** long serialVersionUID field */
-    private static final long serialVersionUID = -1059786021821194557L;
+public class DataElement implements IDataElement {
 
     private Node node;
+
+    private final Map<String, Object> properties = new HashMap<String, Object>();
 
     public DataElement() {
 
@@ -47,7 +48,7 @@ public class DataElement extends HashMap<String, Object> implements IDataElement
 
     @Override
     public String toString() {
-        return node == null ? super.toString() : node.toString();
+        return node == null ? properties.toString() : node.toString();
     }
 
     @Override
@@ -68,5 +69,20 @@ public class DataElement extends HashMap<String, Object> implements IDataElement
     @Override
     public int hashCode() {
         return node == null ? super.hashCode() : node.hashCode();
+    }
+
+    @Override
+    public Object get(String header) {
+        return properties.get(header);
+    }
+
+    @Override
+    public Object put(String key, Object value) {
+        return properties.put(key, value);
+    }
+
+    @Override
+    public Set<String> keySet() {
+        return properties.keySet();
     }
 }

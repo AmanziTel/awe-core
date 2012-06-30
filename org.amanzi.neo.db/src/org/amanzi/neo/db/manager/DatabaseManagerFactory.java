@@ -32,10 +32,6 @@ public final class DatabaseManagerFactory {
 
     private static IDatabaseManager dbManager = null;
 
-    private DatabaseManagerFactory() {
-
-    }
-
     public static synchronized IDatabaseManager getDatabaseManager() {
         if (dbManager == null) {
             try {

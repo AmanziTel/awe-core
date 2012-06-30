@@ -20,7 +20,6 @@ import java.util.Map;
 
 import org.amanzi.awe.ui.events.EventStatus;
 import org.amanzi.awe.ui.events.IEvent;
-import org.amanzi.awe.ui.events.IEventStatus;
 import org.amanzi.awe.ui.events.impl.AWEStartedEvent;
 import org.amanzi.awe.ui.events.impl.ProjectNameChangedEvent;
 import org.amanzi.awe.ui.listener.IAWEEventListenter;
@@ -56,12 +55,16 @@ public final class AWEEventManager {
 
     private static final IEvent AWE_STARTED_EVENT = new AWEStartedEvent();
 
-    private final Map<IEventStatus, List<IAWEEventListenter>> listeners = new HashMap<IEventStatus, List<IAWEEventListenter>>();
+    protected final Map<EventStatus, List<IAWEEventListenter>> listeners = new HashMap<EventStatus, List<IAWEEventListenter>>();
 
     private final IExtensionRegistry registry;
 
-    private AWEEventManager() {
-        registry = Platform.getExtensionRegistry();
+    protected AWEEventManager() {
+        this(Platform.getExtensionRegistry());
+    }
+
+    protected AWEEventManager(IExtensionRegistry registry) {
+        this.registry = registry;
         initializeExtensionPointListeners();
     }
 
@@ -69,11 +72,11 @@ public final class AWEEventManager {
         return AWEEventManagerInstanceHandler.instance;
     }
 
-    public synchronized void addListener(IAWEEventListenter listener, IEventStatus... statuses) {
+    public synchronized void addListener(IAWEEventListenter listener, EventStatus... statuses) {
         assert listener != null;
         assert statuses != null;
 
-        for (IEventStatus eventStatus : statuses) {
+        for (EventStatus eventStatus : statuses) {
             List<IAWEEventListenter> eventListeners = listeners.get(eventStatus);
 
             if (eventListeners == null) {
@@ -111,6 +114,8 @@ public final class AWEEventManager {
                 initializeListenerFromElement(listenerElement);
             } catch (CoreException e) {
                 LOGGER.error("Error on initialization Listener <" + listenerElement.getAttribute(CLASS_ATTRIBUTE) + ">", e);
+            } catch (ClassCastException e) {
+                LOGGER.error("Class <" + listenerElement.getAttribute(CLASS_ATTRIBUTE) + "> is not a Listener class", e);
             }
         }
     }
@@ -125,8 +130,6 @@ public final class AWEEventManager {
 
             if (status != null) {
                 addListener(listener, status);
-            } else {
-                LOGGER.error("No Status was found by string <" + singleEventStatus.getAttribute(STATUS_ATTRIBUTE) + ">");
             }
         }
     }
@@ -134,6 +137,10 @@ public final class AWEEventManager {
     private EventStatus getEventStatusFromElement(IConfigurationElement element) {
         String statusName = element.getAttribute(STATUS_ATTRIBUTE);
 
-        return EventStatus.findByName(statusName);
+        return EventStatus.valueOf(statusName);
+    }
+
+    protected final Map<EventStatus, List<IAWEEventListenter>> getListeners() {
+        return listeners;
     }
 }

@@ -11,7 +11,10 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.ui.events;
+package org.amanzi.awe.ui.manager.internal;
+
+import org.amanzi.awe.ui.events.IEvent;
+import org.amanzi.awe.ui.listener.IAWEEventListenter;
 
 /**
  * TODO Purpose of
@@ -21,7 +24,16 @@ package org.amanzi.awe.ui.events;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public enum EventStatus {
+public class NoConstructorListener implements IAWEEventListenter {
 
-    AWE_STARTED, PROJECT_CHANGED;
+    /**
+     * 
+     */
+    private NoConstructorListener() {
+    }
+
+    @Override
+    public void onEvent(IEvent event) {
+    }
+
 }

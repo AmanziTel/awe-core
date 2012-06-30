@@ -37,4 +37,18 @@ public abstract class AbstractEvent implements IEvent {
         return status;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof IEvent) {
+            return ((IEvent)o).getStatus().equals(status);
+        }
+
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return status.name().hashCode();
+    }
+
 }

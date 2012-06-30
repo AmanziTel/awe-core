@@ -27,6 +27,8 @@ import org.junit.runners.Suite.SuiteClasses;
  */
 @RunWith(Suite.class)
 @SuiteClasses({
+    org.amanzi.awe.ui.manager.AWEEventManagerIntegrationTest.class,
+    org.amanzi.awe.ui.manager.AWEEventManagerTest.class,
     org.amanzi.awe.ui.project.ProjectChangedListenerTest.class
 })
 public class AWEUITests {

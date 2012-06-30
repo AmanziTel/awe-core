@@ -31,7 +31,7 @@ public interface IDataElement {
      * @param header the property name
      * @return Property value or <code>null</code>.
      */
-    Object get(Object header);
+    Object get(String header);
 
     /**
      * Put any object to DataElement

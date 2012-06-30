@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<fragment>
+   <extension
+         point="org.amanzi.awe.ui.listeners">
+      <listener
+            class="org.amanzi.awe.ui.manager.internal.Listener1">
+         <eventStatus
+               status="AWE_STARTED">
+         </eventStatus>
+      </listener>
+      <listener
+            class="org.amanzi.awe.ui.manager.internal.Listener2">
+         <eventStatus
+               status="PROJECT_CHANGED">
+         </eventStatus>
+      </listener>
+      <listener
+            class="org.amanzi.awe.ui.manager.internal.Listener3">
+         <eventStatus
+               status="AWE_STARTED">
+         </eventStatus>
+         <eventStatus
+               status="PROJECT_CHANGED">
+         </eventStatus>
+      </listener>
+      <listener
+            class="org.amanzi.awe.ui.manager.internal.Listener4">
+      </listener>
+      <listener
+            class="java.lang.String">
+      </listener>
+      <listener
+            class="org.amanzi.awe.ui.manager.internal.NoConstructorListener">
+      </listener>
+   </extension>
+
+</fragment>
