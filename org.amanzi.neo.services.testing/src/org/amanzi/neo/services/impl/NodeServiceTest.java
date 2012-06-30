@@ -121,7 +121,7 @@ public class NodeServiceTest extends AbstractServiceTest {
         // property exists
         when(node.hasProperty(this.generalNodeProperties.getNodeTypeProperty())).thenReturn(true);
         // return this property
-        when(node.getProperty(this.generalNodeProperties.getNodeTypeProperty(), null)).thenReturn(NODE_TYPE_ID);
+        when(node.getProperty(this.generalNodeProperties.getNodeTypeProperty())).thenReturn(NODE_TYPE_ID);
 
         this.nodeService.getNodeType(node);
 

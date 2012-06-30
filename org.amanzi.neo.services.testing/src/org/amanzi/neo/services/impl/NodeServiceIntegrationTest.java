@@ -15,8 +15,11 @@ package org.amanzi.neo.services.impl;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.impl.GeneralNodeProperties;
@@ -33,6 +36,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
 
@@ -286,6 +290,50 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
         String name = (String)result.getProperty(GENERAL_NODE_PROPERTIES.getNodeNameProperty());
 
         assertEquals("name of found node is not the same as original", CHILD_FOR_SEARCH, name);
+    }
+
+    @Test
+    public void testCheckCreateChildProperties() throws Exception {
+        Node parent = createNode();
+        Map<String, Object> nodeProperties = getNodeProperties();
+
+        Node child = nodeService.createNode(parent, TestNodeType.TEST_NODE_TYPE1, TestRelatinshipType.TEST_REL, nodeProperties);
+
+        assertNotNull("result of creation should not be null", child);
+
+        assertEquals("Unexpected type of node", TestNodeType.TEST_NODE_TYPE1.getId(),
+                child.getProperty(GENERAL_NODE_PROPERTIES.getNodeTypeProperty(), null));
+
+        for (Entry<String, Object> entry : nodeProperties.entrySet()) {
+            assertEquals("Unexpected property", entry.getValue(), child.getProperty(entry.getKey(), null));
+        }
+    }
+
+    @Test
+    public void testCheckCreateChildRelationship() throws Exception {
+        Node parent = createNode();
+
+        Node child = nodeService.createNode(parent, TestNodeType.TEST_NODE_TYPE1, TestRelatinshipType.TEST_REL);
+
+        Iterator<Relationship> relationship = child.getRelationships().iterator();
+
+        assertTrue("it should be a relation to parent", relationship.hasNext());
+
+        Relationship relToParent = relationship.next();
+
+        assertTrue("is should be only 1 relationship", relationship.hasNext());
+
+        assertEquals("unexepcted type of relationship", TestRelatinshipType.TEST_REL, relToParent.getType());
+        assertEquals("unexpected parent", parent, relToParent.getStartNode());
+    }
+
+    private Map<String, Object> getNodeProperties() {
+        Map<String, Object> result = new HashMap<String, Object>();
+
+        result.put("string", "string");
+        result.put("long", 123l);
+
+        return result;
     }
 
     private List<Node> createChildren(RelationshipType relType, INodeType childNodeType, Node... parents) {
