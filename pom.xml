@@ -37,6 +37,7 @@
     <module>org.amanzi.awe.star.tool</module>
     <module>org.amanzi.awe.startup.splash</module>
     <module>org.amanzi.awe.ui</module>
+    <module>org.amanzi.awe.ui.testing</module>
     <module>org.amanzi.awe.ui.udig</module>
     <module>org.amanzi.awe.views.drive</module>
     <module>org.amanzi.awe.views.explorer</module>
