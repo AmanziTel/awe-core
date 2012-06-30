@@ -56,7 +56,7 @@ public class AbstractServiceTest extends AbstractMockitoTest {
     @BeforeClass
     public static void setUpClass() throws IOException {
         AbstractTest.setUpClass();
-        NodeTypeManager.registerNodeType(TestNodeType.class);
+        NodeTypeManager.getInstance().registerNodeType(TestNodeType.class);
     }
 
     protected void setUp() {

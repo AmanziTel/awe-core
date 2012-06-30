@@ -71,7 +71,7 @@ public class NodeService extends AbstractService implements INodeService {
     public INodeType getNodeType(Node node) throws ServiceException {
         String nodeType = (String)getNodeProperty(node, getGeneralNodeProperties().getNodeTypeProperty(), null, true);
 
-        return NodeTypeManager.getType(nodeType);
+        return NodeTypeManager.getInstance().getType(nodeType);
     }
 
     @Override

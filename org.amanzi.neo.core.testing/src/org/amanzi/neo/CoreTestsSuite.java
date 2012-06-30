@@ -11,11 +11,11 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.nodetypes;
+package org.amanzi.neo;
 
-import java.util.Locale;
-
-import org.apache.commons.lang3.StringUtils;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+import org.junit.runners.Suite.SuiteClasses;
 
 /**
  * TODO Purpose of
@@ -25,22 +25,8 @@ import org.apache.commons.lang3.StringUtils;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public final class NodeTypeUtils {
-
-    private NodeTypeUtils() {
-        // hide consturctor
-    }
-
-    public static String getTypeId(Enum< ? extends INodeType> enumItem) {
-        assert enumItem != null;
-
-        return enumItem.name().toLowerCase(Locale.getDefault());
-    }
-
-    public static String getTypeName(String id) {
-        assert !StringUtils.isEmpty(id);
-
-        return id.trim().toUpperCase(Locale.getDefault());
-    }
+@RunWith(Suite.class)
+@SuiteClasses({org.amanzi.neo.nodetypes.NodeTypeManagerTest.class})
+public class CoreTestsSuite {
 
 }

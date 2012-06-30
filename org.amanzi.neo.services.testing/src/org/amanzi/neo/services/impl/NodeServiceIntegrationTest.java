@@ -73,7 +73,7 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
     public static void setUpClass() throws IOException {
         AbstractIntegrationTest.setUpClass();
 
-        NodeTypeManager.registerNodeType(TestNodeType.class);
+        NodeTypeManager.getInstance().registerNodeType(TestNodeType.class);
     }
 
     @Before

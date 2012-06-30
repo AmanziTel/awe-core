@@ -29,7 +29,7 @@ import org.junit.runners.Suite.SuiteClasses;
 @SuiteClasses({
         org.amanzi.awe.ui.AWEUITests.class,
         org.amanzi.neo.db.testing.DbTestSuite.class, 
-        org.amanzi.neo.core.CoreTestsSuite.class,
+        org.amanzi.neo.CoreTestsSuite.class,
         org.amanzi.neo.models.ModelsTestSuite.class,
         org.amanzi.neo.providers.ProvidersTestSuite.class,
         org.amanzi.neo.services.ServicesTestSuite.class

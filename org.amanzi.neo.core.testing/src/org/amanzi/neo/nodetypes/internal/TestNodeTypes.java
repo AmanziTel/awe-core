@@ -11,11 +11,10 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.core;
+package org.amanzi.neo.nodetypes.internal;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import org.amanzi.neo.nodetypes.INodeType;
+import org.amanzi.neo.nodetypes.NodeTypeUtils;
 
 /**
  * TODO Purpose of
@@ -25,8 +24,12 @@ import org.junit.runners.Suite.SuiteClasses;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-@RunWith(Suite.class)
-@SuiteClasses({org.amanzi.neo.core.nodetypes.NodeTypeManagerTest.class})
-public class CoreTestsSuite {
+public enum TestNodeTypes implements INodeType {
+    TYPE1, TYPE2, TYPE3;
+
+    @Override
+    public String getId() {
+        return NodeTypeUtils.getTypeId(this);
+    }
 
 }
