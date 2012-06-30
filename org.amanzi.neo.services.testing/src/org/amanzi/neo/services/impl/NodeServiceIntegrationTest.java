@@ -46,6 +46,9 @@ import org.neo4j.graphdb.Transaction;
  */
 public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
 
+    /** String RESULT_OF_SEARCH_SHOULD_NOT_BE_NULL field */
+    private static final String RESULT_OF_SEARCH_SHOULD_NOT_BE_NULL = "result of search should not be null";
+
     private enum TestRelatinshipType implements RelationshipType {
         TEST_REL;
     }
@@ -91,7 +94,7 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
 
         Iterator<Node> result = nodeService.getChildren(parent);
 
-        assertNotNull("result of search should not be null", result);
+        assertNotNull(RESULT_OF_SEARCH_SHOULD_NOT_BE_NULL, result);
 
         @SuppressWarnings("unchecked")
         List<Node> resultList = IteratorUtils.toList(result);
@@ -132,7 +135,7 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
 
         Iterator<Node> result = nodeService.getChildren(parent);
 
-        assertNotNull("result of search should not be null", result);
+        assertNotNull(RESULT_OF_SEARCH_SHOULD_NOT_BE_NULL, result);
 
         @SuppressWarnings("unchecked")
         List<Node> resultList = IteratorUtils.toList(result);
@@ -158,7 +161,7 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
 
         Node result = nodeService.getChildByName(parent, CHILD_FOR_SEARCH, TestNodeType.TEST_NODE_TYPE1);
 
-        assertNotNull("result of search should not be null", result);
+        assertNotNull(RESULT_OF_SEARCH_SHOULD_NOT_BE_NULL, result);
 
         String name = (String)result.getProperty(GENERAL_NODE_PROPERTIES.getNodeNameProperty());
 
@@ -211,7 +214,7 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
 
         Node result = nodeService.getChildByName(parent, CHILD_FOR_SEARCH, TestNodeType.TEST_NODE_TYPE1);
 
-        assertNotNull("result of search should not be null", result);
+        assertNotNull(RESULT_OF_SEARCH_SHOULD_NOT_BE_NULL, result);
 
         String name = (String)result.getProperty(GENERAL_NODE_PROPERTIES.getNodeNameProperty());
 
@@ -278,7 +281,7 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
 
         Node result = nodeService.getChildByName(parent, CHILD_FOR_SEARCH, TestNodeType.TEST_NODE_TYPE1);
 
-        assertNotNull("result of search should not be null", result);
+        assertNotNull(RESULT_OF_SEARCH_SHOULD_NOT_BE_NULL, result);
 
         String name = (String)result.getProperty(GENERAL_NODE_PROPERTIES.getNodeNameProperty());
 

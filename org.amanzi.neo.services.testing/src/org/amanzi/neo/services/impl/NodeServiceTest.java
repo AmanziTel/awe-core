@@ -96,7 +96,7 @@ public class NodeServiceTest extends AbstractServiceTest {
         this.nodeService.getNodeName(node);
 
         verify(node).hasProperty(this.generalNodeProperties.getNodeNameProperty());
-        verify(node).getProperty(this.generalNodeProperties.getNodeNameProperty(), null);
+        verify(node).getProperty(this.generalNodeProperties.getNodeNameProperty());
         verifyNoMoreInteractions(node);
     }
 
@@ -107,7 +107,7 @@ public class NodeServiceTest extends AbstractServiceTest {
         // property exists
         when(node.hasProperty(this.generalNodeProperties.getNodeNameProperty())).thenReturn(true);
         // return this property
-        when(node.getProperty(this.generalNodeProperties.getNodeNameProperty(), null)).thenReturn(NODE_NAME);
+        when(node.getProperty(this.generalNodeProperties.getNodeNameProperty())).thenReturn(NODE_NAME);
 
         String result = this.nodeService.getNodeName(node);
 
@@ -126,7 +126,7 @@ public class NodeServiceTest extends AbstractServiceTest {
         this.nodeService.getNodeType(node);
 
         verify(node).hasProperty(this.generalNodeProperties.getNodeTypeProperty());
-        verify(node).getProperty(this.generalNodeProperties.getNodeTypeProperty(), null);
+        verify(node).getProperty(this.generalNodeProperties.getNodeTypeProperty());
         verifyNoMoreInteractions(node);
     }
 
@@ -137,7 +137,7 @@ public class NodeServiceTest extends AbstractServiceTest {
         // property exists
         when(node.hasProperty(this.generalNodeProperties.getNodeTypeProperty())).thenReturn(true);
         // return this property
-        when(node.getProperty(this.generalNodeProperties.getNodeTypeProperty(), null)).thenReturn(NODE_TYPE_ID);
+        when(node.getProperty(this.generalNodeProperties.getNodeTypeProperty())).thenReturn(NODE_TYPE_ID);
 
         INodeType result = this.nodeService.getNodeType(node);
 

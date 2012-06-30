@@ -46,8 +46,6 @@ public final class NodeTypeManager {
 
     private static final String NODE_TYPE_EXTENSION_ID = "org.amanzi.nodetypes";
 
-    private static final String NODE_TYPE_CHILDREN_NAME = "nodetype";
-
     private static final String CLASS_ATTRIBUTE = "class";
 
     @SuppressWarnings("rawtypes")

@@ -177,7 +177,11 @@ public class NodeService extends AbstractService implements INodeService {
             if (throwExceptionIfNotExist && !node.hasProperty(propertyName)) {
                 throwPropertyNotFoundException = true;
             } else {
-                result = node.getProperty(propertyName, defaultValue);
+                if (defaultValue == null) {
+                    result = node.getProperty(propertyName);
+                } else {
+                    result = node.getProperty(propertyName, defaultValue);
+                }
             }
         } catch (Exception e) {
             throw new DatabaseException(e);

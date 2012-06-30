@@ -25,7 +25,7 @@ import org.amanzi.neo.nodetypes.NodeTypeUtils;
  * @since 1.0.0
  */
 public enum TestNodeTypes implements INodeType {
-    TYPE1, TYPE2, TYPE3;
+    TEST_TYPE1, TEST_TYPE2, TEST_TYPE3;
 
     @Override
     public String getId() {

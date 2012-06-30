@@ -16,7 +16,6 @@ import net.refractions.udig.internal.ui.MapPerspective;
 
 import org.eclipse.ui.IFolderLayout;
 import org.eclipse.ui.IPageLayout;
-import org.eclipse.ui.IPerspectiveFactory;
 
 /**
  * Class for udig perspective
@@ -24,7 +23,7 @@ import org.eclipse.ui.IPerspectiveFactory;
  * @author Ladornaya_A
  * @since 1.0.0
  */
-public class UdigPerspectiveFactory implements IPerspectiveFactory {
+public class UdigPerspectiveFactory extends AbstractPerspectiveFactory {
 
     public static final String UDIG_PERSPECTIVE = "org.amanzi.awe.perspective.uDig"; //$NON-NLS-1$
     private static final String CATALOG = "net.refractions.udig.catalog.ui.CatalogView"; //$NON-NLS-1$
@@ -36,14 +35,14 @@ public class UdigPerspectiveFactory implements IPerspectiveFactory {
         // Get the editor area.
         String editorArea = layout.getEditorArea();
 
-        IFolderLayout topLeft = layout.createFolder("topLeft", IPageLayout.LEFT, 0.25f, editorArea);
+        IFolderLayout topLeft = layout.createFolder("topLeft", IPageLayout.LEFT, getTopLeft(), editorArea);
         topLeft.addView(PROJECTS);
 
-        IFolderLayout bottom = layout.createFolder("bottom", IPageLayout.BOTTOM, 0.65f, editorArea);
+        IFolderLayout bottom = layout.createFolder("bottom", IPageLayout.BOTTOM, getBottom(), editorArea);
         bottom.addView(CATALOG);
 
         // Here we are making folder layout to show two views side by side
-        IFolderLayout bottomLeft = layout.createFolder("bottomLeft", IPageLayout.BOTTOM, 0.25f, PROJECTS);
+        IFolderLayout bottomLeft = layout.createFolder("bottomLeft", IPageLayout.BOTTOM, getBottomLeft(), PROJECTS);
         bottomLeft.addView(LAYERS);
 
         layout.addPerspectiveShortcut(UDIG_PERSPECTIVE);

@@ -16,7 +16,6 @@ import net.refractions.udig.internal.ui.UDIGApplication;
 import net.refractions.udig.internal.ui.UDIGWorkbenchAdvisor;
 
 import org.amanzi.awe.ui.manager.AWEEventManager;
-import org.eclipse.equinox.app.IApplication;
 import org.eclipse.ui.application.IWorkbenchConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchAdvisor;
@@ -29,7 +28,7 @@ import org.eclipse.ui.application.WorkbenchWindowAdvisor;
  * @since AWE 1.0.0
  * @author craig
  */
-public class Application extends UDIGApplication implements IApplication {
+public class Application extends UDIGApplication {
 
     /**
      * Create the AWE workbench advisor by using the UDIGWorkbenchAdvisor with only the perspective
