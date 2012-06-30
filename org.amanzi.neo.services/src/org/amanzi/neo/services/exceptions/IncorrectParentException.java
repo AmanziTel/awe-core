@@ -16,6 +16,7 @@ package org.amanzi.neo.services.exceptions;
 import java.text.MessageFormat;
 
 import org.amanzi.neo.services.exceptions.enums.ServiceExceptionReason;
+import org.apache.commons.lang3.ObjectUtils;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -47,7 +48,7 @@ public class IncorrectParentException extends ServiceException {
 
         this.child = child.toString();
         this.expectedNode = expectedParent.toString();
-        this.actualNode = actualParent.toString();
+        this.actualNode = ObjectUtils.toString(actualParent);
     }
 
     @Override

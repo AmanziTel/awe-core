@@ -15,6 +15,7 @@ package org.amanzi.neo.services.impl;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.impl.GeneralNodeProperties;
@@ -60,7 +61,7 @@ public class NodeServiceTest extends AbstractServiceTest {
 
         this.nodeService = new NodeService(getService(), this.generalNodeProperties);
 
-        setReadOnly();
+        setReadOnly(true);
     }
 
     @Test(expected = DatabaseException.class)
@@ -261,6 +262,9 @@ public class NodeServiceTest extends AbstractServiceTest {
         Node parentNode = getNodeMock();
         Map<String, Object> properties = new HashMap<String, Object>();
 
+        doReturn(null).when(nodeService)
+                .createNode(parentNode, TestNodeType.TEST1, TestRelationshipTypes.TEST_RELATION, properties);
+
         nodeService.createNode(parentNode, TestNodeType.TEST1, TestRelationshipTypes.TEST_RELATION);
 
         verify(nodeService).createNode(parentNode, TestNodeType.TEST1, TestRelationshipTypes.TEST_RELATION, properties);
@@ -274,6 +278,9 @@ public class NodeServiceTest extends AbstractServiceTest {
         nodeService = spy(nodeService);
         Node parentNode = getNodeMock();
 
+        doReturn(null).when(nodeService)
+                .createNode(parentNode, TestNodeType.TEST1, TestRelationshipTypes.TEST_RELATION, properties);
+
         nodeService.createNode(parentNode, TestNodeType.TEST1, TestRelationshipTypes.TEST_RELATION, NODE_NAME);
 
         verify(nodeService).createNode(parentNode, TestNodeType.TEST1, TestRelationshipTypes.TEST_RELATION, properties);
@@ -281,12 +288,49 @@ public class NodeServiceTest extends AbstractServiceTest {
 
     @Test
     public void testCheckCreateNodeActivity() throws Exception {
+        setReadOnly(false);
         Node parentNode = getNodeMock();
         Node createdNode = getNodeMock();
 
         GraphDatabaseService service = getService();
 
         when(service.createNode()).thenReturn(createdNode);
+
+        Map<String, Object> properties = getNodeProperties();
+
+        nodeService.createNode(parentNode, TestNodeType.TEST1, TestRelationshipTypes.TEST_RELATION, properties);
+
+        verify(service).createNode();
+        verify(parentNode).createRelationshipTo(createdNode, TestRelationshipTypes.TEST_RELATION);
+        verify(createdNode).setProperty(generalNodeProperties.getNodeTypeProperty(), TestNodeType.TEST1.getId());
+        for (Entry<String, Object> entry : properties.entrySet()) {
+            verify(createdNode).setProperty(entry.getKey(), entry.getValue());
+        }
+    }
+
+    @Test(expected = DatabaseException.class)
+    public void testCheckDatabaseExceptionOnCreatingNewNode() throws Exception {
+        setReadOnly(false);
+        setMethodFailure();
+
+        Node parentNode = getNodeMock();
+
+        GraphDatabaseService service = getService();
+
+        doThrow(new IllegalArgumentException()).when(service).createNode();
+
+        Map<String, Object> properties = getNodeProperties();
+
+        nodeService.createNode(parentNode, TestNodeType.TEST1, TestRelationshipTypes.TEST_RELATION, properties);
+    }
+
+    private Map<String, Object> getNodeProperties() {
+        Map<String, Object> result = new HashMap<String, Object>();
+
+        result.put("string", "string");
+        result.put("long", 123l);
+
+        return result;
     }
 
     private void setReferencedNode(Node node) {

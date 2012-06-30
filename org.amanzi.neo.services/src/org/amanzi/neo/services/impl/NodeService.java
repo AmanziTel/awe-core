@@ -16,6 +16,7 @@ package org.amanzi.neo.services.impl;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
@@ -32,6 +33,7 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
+import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.traversal.Evaluators;
 import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.kernel.Traversal;
@@ -169,11 +171,13 @@ public class NodeService extends AbstractService implements INodeService {
 
         boolean throwPropertyNotFoundException = false;
 
+        Object result = null;
+
         try {
             if (throwExceptionIfNotExist && !node.hasProperty(propertyName)) {
                 throwPropertyNotFoundException = true;
             } else {
-                return node.getProperty(propertyName, defaultValue);
+                result = node.getProperty(propertyName, defaultValue);
             }
         } catch (Exception e) {
             throw new DatabaseException(e);
@@ -183,13 +187,14 @@ public class NodeService extends AbstractService implements INodeService {
             throw new PropertyNotFoundException(propertyName, node);
         }
 
-        return null;
+        return result;
     }
 
     @Override
     public Node createNode(Node parentNode, INodeType nodeType, RelationshipType relationshipType) throws ServiceException {
         assert parentNode != null;
         assert nodeType != null;
+        assert relationshipType != null;
 
         Map<String, Object> properties = new HashMap<String, Object>();
         return createNode(parentNode, nodeType, relationshipType, properties);
@@ -201,6 +206,7 @@ public class NodeService extends AbstractService implements INodeService {
         assert parentNode != null;
         assert nodeType != null;
         assert !StringUtils.isEmpty(name);
+        assert relationshipType != null;
 
         Map<String, Object> properties = new HashMap<String, Object>();
         properties.put(getGeneralNodeProperties().getNodeNameProperty(), name);
@@ -214,7 +220,31 @@ public class NodeService extends AbstractService implements INodeService {
         assert parentNode != null;
         assert nodeType != null;
         assert parameters != null;
+        assert relationshipType != null;
 
-        return null;
+        Transaction tx = getGraphDb().beginTx();
+
+        Node result = null;
+
+        try {
+            result = getGraphDb().createNode();
+
+            result.setProperty(getGeneralNodeProperties().getNodeTypeProperty(), nodeType.getId());
+
+            for (Entry<String, Object> property : parameters.entrySet()) {
+                result.setProperty(property.getKey(), property.getValue());
+            }
+
+            parentNode.createRelationshipTo(result, relationshipType);
+
+            tx.success();
+        } catch (Exception e) {
+            tx.failure();
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
+
+        return result;
     }
 }

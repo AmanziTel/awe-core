@@ -81,14 +81,15 @@ public class AbstractServiceTest extends AbstractMockitoTest {
 
             verify(transaction).finish();
         }
+
     }
 
     protected void setMethodFailure() {
         isSuccess = false;
     }
 
-    protected void setReadOnly() {
-        isReadOnlyTest = true;
+    protected void setReadOnly(boolean isReadOnly) {
+        isReadOnlyTest = isReadOnly;
     }
 
     protected GraphDatabaseService getService() {
