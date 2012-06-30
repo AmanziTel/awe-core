@@ -124,18 +124,17 @@ public class ProjectModelProviderTest extends AbstractMockitoTest {
     public void testCheckActivityOnFindByName() throws Exception {
         projectModelProvider.findProjectByName(PROJECT_NAME);
 
-        verify(nodeService).getChildByName(referencedNode, PROJECT_NAME, IProjectModel.ProjectModelNodeType.PROJECT);
+        verify(nodeService).getChildByName(referencedNode, PROJECT_NAME, ProjectModel.ProjectModelNodeType.PROJECT);
     }
 
     @Test
     public void testCheckCacheActivityWithEmptyCache() throws Exception {
-        when(nodeService.getChildByName(referencedNode, PROJECT_NAME_FOR_CACHE_CHECK, IProjectModel.ProjectModelNodeType.PROJECT))
+        when(nodeService.getChildByName(referencedNode, PROJECT_NAME_FOR_CACHE_CHECK, ProjectModel.ProjectModelNodeType.PROJECT))
                 .thenReturn(node);
 
         // without cache
         projectModelProvider.findProjectByName(PROJECT_NAME_FOR_CACHE_CHECK);
-        verify(nodeService)
-                .getChildByName(referencedNode, PROJECT_NAME_FOR_CACHE_CHECK, IProjectModel.ProjectModelNodeType.PROJECT);
+        verify(nodeService).getChildByName(referencedNode, PROJECT_NAME_FOR_CACHE_CHECK, ProjectModel.ProjectModelNodeType.PROJECT);
 
         // get model from cache
         projectModelProvider.findProjectByName(PROJECT_NAME_FOR_CACHE_CHECK);
@@ -144,7 +143,7 @@ public class ProjectModelProviderTest extends AbstractMockitoTest {
 
     @Test
     public void testCheckNohingFoundByName() throws Exception {
-        when(nodeService.getChildByName(referencedNode, NOT_FOUND_PROJECT, IProjectModel.ProjectModelNodeType.PROJECT)).thenReturn(
+        when(nodeService.getChildByName(referencedNode, NOT_FOUND_PROJECT, ProjectModel.ProjectModelNodeType.PROJECT)).thenReturn(
                 null);
 
         IProjectModel result = projectModelProvider.findProjectByName(NOT_FOUND_PROJECT);
@@ -154,7 +153,7 @@ public class ProjectModelProviderTest extends AbstractMockitoTest {
 
     @Test
     public void testCheckModelFoundByName() throws Exception {
-        when(nodeService.getChildByName(referencedNode, PROJECT_NAME, IProjectModel.ProjectModelNodeType.PROJECT)).thenReturn(node);
+        when(nodeService.getChildByName(referencedNode, PROJECT_NAME, ProjectModel.ProjectModelNodeType.PROJECT)).thenReturn(node);
 
         IProjectModel result = projectModelProvider.findProjectByName(PROJECT_NAME);
 

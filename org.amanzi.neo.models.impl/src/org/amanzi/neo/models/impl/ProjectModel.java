@@ -16,6 +16,8 @@ package org.amanzi.neo.models.impl;
 import org.amanzi.neo.models.IProjectModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.impl.internal.AbstractModel;
+import org.amanzi.neo.nodetypes.INodeType;
+import org.amanzi.neo.nodetypes.NodeTypeUtils;
 import org.amanzi.neo.services.INodeService;
 
 /**
@@ -27,6 +29,15 @@ import org.amanzi.neo.services.INodeService;
  * @since 1.0.0
  */
 public class ProjectModel extends AbstractModel implements IProjectModel {
+
+    public enum ProjectModelNodeType implements INodeType {
+        PROJECT;
+
+        @Override
+        public String getId() {
+            return NodeTypeUtils.getTypeId(this);
+        }
+    }
 
     /**
      * @param nodeService
