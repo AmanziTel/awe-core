@@ -11,27 +11,24 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.ui.events;
+package org.amanzi.awe.ui;
+
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+import org.junit.runners.Suite.SuiteClasses;
 
 /**
- * TODO Purpose of
+ * TODO Purpose of 
  * <p>
+ *
  * </p>
- * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public enum EventStatus implements IEventStatus {
+@RunWith(Suite.class)
+@SuiteClasses({
+    org.amanzi.awe.ui.project.ProjectChangedListenerTest.class
+})
+public class AWEUITests {
 
-    AWE_STARTED, PROJECT_CHANGED;
-
-    public static EventStatus findByName(String name) {
-        for (EventStatus status : values()) {
-            if (status.name().equals(name)) {
-                return status;
-            }
-        }
-
-        return null;
-    }
 }

@@ -11,3 +11,5 @@ Export-Package: org.amanzi.awe.ui.events,
  org.amanzi.awe.ui.events.impl,
  org.amanzi.awe.ui.listener,
  org.amanzi.awe.ui.manager
+Eclipse-ExtensibleAPI: true
+ 

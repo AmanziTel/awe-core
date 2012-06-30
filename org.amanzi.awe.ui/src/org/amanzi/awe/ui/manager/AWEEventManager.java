@@ -18,11 +18,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.amanzi.awe.ui.events.EventStatus;
 import org.amanzi.awe.ui.events.IEvent;
 import org.amanzi.awe.ui.events.IEventStatus;
 import org.amanzi.awe.ui.events.impl.AWEStartedEvent;
 import org.amanzi.awe.ui.events.impl.ProjectNameChangedEvent;
 import org.amanzi.awe.ui.listener.IAWEEventListenter;
+import org.apache.log4j.Logger;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExtensionRegistry;
+import org.eclipse.core.runtime.Platform;
 
 /**
  * TODO Purpose of
@@ -34,16 +40,29 @@ import org.amanzi.awe.ui.listener.IAWEEventListenter;
  */
 public final class AWEEventManager {
 
+    private static final Logger LOGGER = Logger.getLogger(AWEEventManager.class);
+
     private static class AWEEventManagerInstanceHandler {
         private static volatile AWEEventManager instance = new AWEEventManager();
     }
+
+    private static final String AWE_LISTENER_EXTENSION_POINT_ID = "org.amanzi.awe.ui.listeners";
+
+    private static final String EVENT_STATUS_CHILD = "eventStatus";
+
+    private static final String CLASS_ATTRIBUTE = "class";
+
+    private static final String STATUS_ATTRIBUTE = "status";
 
     private static final IEvent AWE_STARTED_EVENT = new AWEStartedEvent();
 
     private final Map<IEventStatus, List<IAWEEventListenter>> listeners = new HashMap<IEventStatus, List<IAWEEventListenter>>();
 
+    private final IExtensionRegistry registry;
+
     private AWEEventManager() {
-        // hide constructor
+        registry = Platform.getExtensionRegistry();
+        initializeExtensionPointListeners();
     }
 
     public static AWEEventManager getManager() {
@@ -86,4 +105,35 @@ public final class AWEEventManager {
         fireEvent(new ProjectNameChangedEvent(newProjectName));
     }
 
+    private void initializeExtensionPointListeners() {
+        for (IConfigurationElement listenerElement : registry.getConfigurationElementsFor(AWE_LISTENER_EXTENSION_POINT_ID)) {
+            try {
+                initializeListenerFromElement(listenerElement);
+            } catch (CoreException e) {
+                LOGGER.error("Error on initialization Listener <" + listenerElement.getAttribute(CLASS_ATTRIBUTE) + ">", e);
+            }
+        }
+    }
+
+    private void initializeListenerFromElement(IConfigurationElement element) throws CoreException {
+        IAWEEventListenter listener = (IAWEEventListenter)element.createExecutableExtension(CLASS_ATTRIBUTE);
+
+        IConfigurationElement[] eventStatusElement = element.getChildren(EVENT_STATUS_CHILD);
+
+        for (IConfigurationElement singleEventStatus : eventStatusElement) {
+            EventStatus status = getEventStatusFromElement(singleEventStatus);
+
+            if (status != null) {
+                addListener(listener, status);
+            } else {
+                LOGGER.error("No Status was found by string <" + singleEventStatus.getAttribute(STATUS_ATTRIBUTE) + ">");
+            }
+        }
+    }
+
+    private EventStatus getEventStatusFromElement(IConfigurationElement element) {
+        String statusName = element.getAttribute(STATUS_ATTRIBUTE);
+
+        return EventStatus.findByName(statusName);
+    }
 }
