@@ -26,22 +26,15 @@ public class ParameterInconsistencyException extends ModelException {
     /** long serialVersionUID field */
     private static final long serialVersionUID = -7590389635119439062L;
 
-    private String parameterName;
+    private final String parameterName;
 
-    private Object parameterValue;
+    private final Object parameterValue;
 
     public ParameterInconsistencyException(String parameterName, Object parameterValue) {
         super();
 
         this.parameterName = parameterName;
         this.parameterValue = parameterValue;
-    }
-
-    /**
-     * @return Returns the serialversionuid.
-     */
-    public static long getSerialversionuid() {
-        return serialVersionUID;
     }
 
     /**
