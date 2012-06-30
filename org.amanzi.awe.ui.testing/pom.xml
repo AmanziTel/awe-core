@@ -19,7 +19,7 @@
   		<artifactId>tycho-surefire-plugin</artifactId>
   		<version>${tycho-version}</version>
   		<configuration>
-          <testSuite>org.amanzi.awe.ui</testSuite>
+          <testSuite>org.amanzi.awe.ui.testing</testSuite>
           <testClass>org.amanzi.awe.ui.AWEUITests</testClass>
         </configuration>
   	  </plugin>

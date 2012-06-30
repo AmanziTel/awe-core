@@ -13,6 +13,9 @@
 
 package org.amanzi.neo.services.impl;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.impl.GeneralNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
@@ -245,6 +248,30 @@ public class NodeServiceTest extends AbstractServiceTest {
                 new IllegalArgumentException());
 
         nodeService.getParent(node);
+    }
+
+    @Test
+    public void testCheckCreateNodeCalledByCreateNodeWithOnlyType() throws Exception {
+        nodeService = spy(nodeService);
+        Node parentNode = getNodeMock();
+        Map<String, Object> properties = new HashMap<String, Object>();
+
+        nodeService.createNode(parentNode, TestNodeType.TEST1);
+
+        verify(nodeService).createNode(parentNode, TestNodeType.TEST1, properties);
+    }
+
+    @Test
+    public void testCheckCreateNodeCalledByCreateNodeWithTypeAndString() throws Exception {
+        Map<String, Object> properties = new HashMap<String, Object>();
+        properties.put(generalNodeProperties.getNodeNameProperty(), NODE_NAME);
+
+        nodeService = spy(nodeService);
+        Node parentNode = getNodeMock();
+
+        nodeService.createNode(parentNode, TestNodeType.TEST1, NODE_NAME);
+
+        verify(nodeService).createNode(parentNode, TestNodeType.TEST1, properties);
     }
 
     private void setReferencedNode(Node node) {
