@@ -14,6 +14,7 @@ package org.amanzi.awe;
 
 import net.refractions.udig.internal.ui.MapPerspective;
 
+import org.amanzi.awe.internal.AbstractPerspectiveFactory;
 import org.eclipse.ui.IFolderLayout;
 import org.eclipse.ui.IPageLayout;
 

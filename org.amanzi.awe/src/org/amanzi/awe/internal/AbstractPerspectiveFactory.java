@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe;
+package org.amanzi.awe.internal;
 
 import org.eclipse.ui.IPerspectiveFactory;
 
