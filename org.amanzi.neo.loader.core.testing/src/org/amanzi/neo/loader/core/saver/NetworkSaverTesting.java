@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.amanzi.awe.ui.AweUiPlugin;
 import org.amanzi.log4j.LogStarter;
 import org.amanzi.neo.db.manager.IDatabaseManager;
 import org.amanzi.neo.loader.core.config.NetworkConfiguration;
@@ -58,7 +57,7 @@ public class NetworkSaverTesting extends AbstractAWEDBTest {
     private static final String NETWORK_NAME = "testNetwork";
     private static final String PROJECT_KEY = "Project";
     private static final String PROJECT_NAME = "project";
-    private int MINIMAL_COLUMN_SIZE = 2;
+    private final int MINIMAL_COLUMN_SIZE = 2;
     private static DataLoadPreferenceInitializer initializer;
     private static final Map<String, Object> BSC = new HashMap<String, Object>();
     private static final Map<String, Object> SITE = new HashMap<String, Object>();
@@ -68,7 +67,7 @@ public class NetworkSaverTesting extends AbstractAWEDBTest {
     private static NetworkModel networkModelMock;
     private static Long startTime;
     private static IDatabaseManager dbManager;
-    
+
     private static final String SITE_NAME_FROM_SECTOR_NAME = "SITE_SECTOR_NAME";
 
     @BeforeClass
@@ -197,8 +196,8 @@ public class NetworkSaverTesting extends AbstractAWEDBTest {
         hashMap.remove("lon");
         MappedData dataElement = new MappedData(hashMap);
         try {
-            AweUiPlugin.getDefault()
-            .getPreferenceStore().setValue(SITE_NAME_FROM_SECTOR_NAME, false);
+            // AweUiPlugin.getDefault()
+            // .getPreferenceStore().setValue(SITE_NAME_FROM_SECTOR_NAME, false);
             networkSaver.save(dataElement);
             verify(networkModelMock, never()).createElement(any(IDataElement.class), any(Map.class));
         } catch (Exception e) {
