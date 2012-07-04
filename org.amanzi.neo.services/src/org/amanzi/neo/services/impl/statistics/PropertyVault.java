@@ -11,39 +11,16 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.providers.context.internal;
-
-import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
+package org.amanzi.neo.services.impl.statistics;
 
 /**
- * TODO Purpose of
+ * TODO Purpose of 
  * <p>
+ *
  * </p>
- * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class TestNodeProperties implements IGeneralNodeProperties {
-
-    @Override
-    public String getNodeNameProperty() {
-        return null;
-    }
-
-    @Override
-    public String getNodeTypeProperty() {
-        return null;
-    }
-
-    @Override
-    public String getParentProperty() {
-        return null;
-    }
-
-    @Override
-    public String getCountProperty() {
-        // TODO Auto-generated method stub
-        return null;
-    }
+public class PropertyVault {
 
 }

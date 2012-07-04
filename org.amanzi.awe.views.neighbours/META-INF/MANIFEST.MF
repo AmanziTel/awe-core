@@ -13,13 +13,3 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ActivationPolicy: lazy
 Export-Package: org.amanzi.awe.views.neighbours,
  org.amanzi.awe.views.neighbours.views
-Import-Package: org.amanzi.neo.loader.ui.utils,
- org.eclipse.jface.resource,
- org.eclipse.jface.viewers,
- org.eclipse.swt,
- org.eclipse.swt.events,
- org.eclipse.swt.graphics,
- org.eclipse.swt.layout,
- org.eclipse.swt.widgets,
- org.eclipse.ui.part,
- org.eclipse.ui.plugin

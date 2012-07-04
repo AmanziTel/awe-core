@@ -31,6 +31,8 @@ public class GeneralNodeProperties implements IGeneralNodeProperties {
 
     private static final String PARENT_ID = "parent_id";
 
+    private static final String COUNT = "count";
+
     @Override
     public String getNodeNameProperty() {
         return NODE_NAME;
@@ -44,6 +46,11 @@ public class GeneralNodeProperties implements IGeneralNodeProperties {
     @Override
     public String getParentProperty() {
         return PARENT_ID;
+    }
+
+    @Override
+    public String getCountProperty() {
+        return COUNT;
     }
 
 }
