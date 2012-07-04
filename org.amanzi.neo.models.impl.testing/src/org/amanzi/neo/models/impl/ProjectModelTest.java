@@ -14,7 +14,6 @@
 package org.amanzi.neo.models.impl;
 
 import org.amanzi.neo.models.exceptions.DataInconsistencyException;
-import org.amanzi.neo.models.impl.ProjectModel.ProjectModelNodeType;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.impl.GeneralNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
@@ -75,7 +74,7 @@ public class ProjectModelTest extends AbstractMockitoTest {
         when(nodeService.getReferencedNode()).thenReturn(referencedNode);
         when(nodeService.getParent(node)).thenReturn(referencedNode);
         when(nodeService.getNodeName(node)).thenReturn(PROJECT_NAME);
-        when(nodeService.getNodeType(node)).thenReturn(ProjectModel.ProjectModelNodeType.PROJECT);
+        when(nodeService.getNodeType(node)).thenReturn(ProjectModelNodeType.PROJECT);
 
         model.initialize(node);
 
@@ -94,7 +93,7 @@ public class ProjectModelTest extends AbstractMockitoTest {
         when(nodeService.getReferencedNode()).thenReturn(referencedNode);
         when(nodeService.getParent(node)).thenReturn(parentNode);
         when(nodeService.getNodeName(node)).thenReturn(PROJECT_NAME);
-        when(nodeService.getNodeType(node)).thenReturn(ProjectModel.ProjectModelNodeType.PROJECT);
+        when(nodeService.getNodeType(node)).thenReturn(ProjectModelNodeType.PROJECT);
 
         model.initialize(node);
     }
@@ -107,7 +106,7 @@ public class ProjectModelTest extends AbstractMockitoTest {
         when(nodeService.getReferencedNode()).thenReturn(referencedNode);
         when(nodeService.getParent(node)).thenReturn(null);
         when(nodeService.getNodeName(node)).thenReturn(PROJECT_NAME);
-        when(nodeService.getNodeType(node)).thenReturn(ProjectModel.ProjectModelNodeType.PROJECT);
+        when(nodeService.getNodeType(node)).thenReturn(ProjectModelNodeType.PROJECT);
 
         model.initialize(node);
     }

@@ -19,6 +19,7 @@ import org.amanzi.neo.models.exceptions.FatalException;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.exceptions.ParameterInconsistencyException;
 import org.amanzi.neo.models.impl.ProjectModel;
+import org.amanzi.neo.models.impl.ProjectModelNodeType;
 import org.amanzi.neo.nodeproperties.impl.GeneralNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.INodeService;
@@ -124,19 +125,19 @@ public class ProjectModelProviderTest extends AbstractMockitoTest {
     public void testCheckActivityOnFindByName() throws Exception {
         projectModelProvider.findProjectByName(PROJECT_NAME);
 
-        verify(nodeService).getChildByName(referencedNode, PROJECT_NAME, ProjectModel.ProjectModelNodeType.PROJECT);
+        verify(nodeService).getChildByName(referencedNode, PROJECT_NAME, ProjectModelNodeType.PROJECT);
     }
 
     @Test
     public void testCheckCacheActivityWithEmptyCache() throws Exception {
-        when(nodeService.getChildByName(referencedNode, PROJECT_NAME_FOR_CACHE_CHECK, ProjectModel.ProjectModelNodeType.PROJECT))
+        when(nodeService.getChildByName(referencedNode, PROJECT_NAME_FOR_CACHE_CHECK, ProjectModelNodeType.PROJECT))
                 .thenReturn(node);
         when(nodeService.getParent(node)).thenReturn(referencedNode);
-        when(nodeService.getNodeType(node)).thenReturn(ProjectModel.ProjectModelNodeType.PROJECT);
+        when(nodeService.getNodeType(node)).thenReturn(ProjectModelNodeType.PROJECT);
 
         // without cache
         projectModelProvider.findProjectByName(PROJECT_NAME_FOR_CACHE_CHECK);
-        verify(nodeService).getChildByName(referencedNode, PROJECT_NAME_FOR_CACHE_CHECK, ProjectModel.ProjectModelNodeType.PROJECT);
+        verify(nodeService).getChildByName(referencedNode, PROJECT_NAME_FOR_CACHE_CHECK, ProjectModelNodeType.PROJECT);
 
         // get model from cache
         projectModelProvider.findProjectByName(PROJECT_NAME_FOR_CACHE_CHECK);
@@ -145,7 +146,7 @@ public class ProjectModelProviderTest extends AbstractMockitoTest {
 
     @Test
     public void testCheckNohingFoundByName() throws Exception {
-        when(nodeService.getChildByName(referencedNode, NOT_FOUND_PROJECT, ProjectModel.ProjectModelNodeType.PROJECT)).thenReturn(
+        when(nodeService.getChildByName(referencedNode, NOT_FOUND_PROJECT, ProjectModelNodeType.PROJECT)).thenReturn(
                 null);
 
         IProjectModel result = projectModelProvider.findProjectByName(NOT_FOUND_PROJECT);
@@ -155,9 +156,9 @@ public class ProjectModelProviderTest extends AbstractMockitoTest {
 
     @Test
     public void testCheckModelFoundByName() throws Exception {
-        when(nodeService.getChildByName(referencedNode, PROJECT_NAME, ProjectModel.ProjectModelNodeType.PROJECT)).thenReturn(node);
+        when(nodeService.getChildByName(referencedNode, PROJECT_NAME, ProjectModelNodeType.PROJECT)).thenReturn(node);
         when(nodeService.getParent(node)).thenReturn(referencedNode);
-        when(nodeService.getNodeType(node)).thenReturn(ProjectModel.ProjectModelNodeType.PROJECT);
+        when(nodeService.getNodeType(node)).thenReturn(ProjectModelNodeType.PROJECT);
 
         IProjectModel result = projectModelProvider.findProjectByName(PROJECT_NAME);
 

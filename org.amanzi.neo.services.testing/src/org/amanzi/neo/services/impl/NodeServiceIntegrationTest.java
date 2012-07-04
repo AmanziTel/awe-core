@@ -321,7 +321,7 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
 
         Relationship relToParent = relationship.next();
 
-        assertTrue("is should be only 1 relationship", relationship.hasNext());
+        assertFalse("is should be only 1 relationship", relationship.hasNext());
 
         assertEquals("unexepcted type of relationship", TestRelatinshipType.TEST_REL, relToParent.getType());
         assertEquals("unexpected parent", parent, relToParent.getStartNode());

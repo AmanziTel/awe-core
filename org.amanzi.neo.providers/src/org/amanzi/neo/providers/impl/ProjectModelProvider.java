@@ -19,6 +19,7 @@ import org.amanzi.neo.models.exceptions.FatalException;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.exceptions.ParameterInconsistencyException;
 import org.amanzi.neo.models.impl.ProjectModel;
+import org.amanzi.neo.models.impl.ProjectModelNodeType;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.providers.IProjectModelProvider;
 import org.amanzi.neo.providers.impl.internal.AbstractModelProvider;
@@ -73,7 +74,7 @@ public class ProjectModelProvider extends AbstractModelProvider<ProjectModel, IP
 
             try {
                 Node referencedNode = nodeService.getReferencedNode();
-                modelNode = nodeService.getChildByName(referencedNode, name, ProjectModel.ProjectModelNodeType.PROJECT);
+                modelNode = nodeService.getChildByName(referencedNode, name, ProjectModelNodeType.PROJECT);
             } catch (ServiceException e) {
                 LOGGER.error("Error on Searching for a Project Model)");
 

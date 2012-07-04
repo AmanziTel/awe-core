@@ -17,8 +17,6 @@ import org.amanzi.neo.models.IProjectModel;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.impl.internal.AbstractModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
-import org.amanzi.neo.nodetypes.INodeType;
-import org.amanzi.neo.nodetypes.NodeTypeUtils;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.IncorrectParentException;
 import org.amanzi.neo.services.exceptions.IncorrectPropertyException;
@@ -37,15 +35,6 @@ import org.neo4j.graphdb.Node;
 public class ProjectModel extends AbstractModel implements IProjectModel {
 
     private static final Logger LOGGER = Logger.getLogger(ProjectModel.class);
-
-    public enum ProjectModelNodeType implements INodeType {
-        PROJECT;
-
-        @Override
-        public String getId() {
-            return NodeTypeUtils.getTypeId(this);
-        }
-    }
 
     /**
      * @param nodeService
