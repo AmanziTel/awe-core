@@ -13,6 +13,18 @@
             </nodePropertiesReference>
          </parameters>
       </service>
+      <service
+      		class="org.amanzi.neo.services.impl.StatisticsService"
+            id="org.amanzi.service.StatisticsService">
+         <parameters>
+            <nodePropertiesReference
+                  refId="org.amanzi.nodeproperties.generalnodeproperties">
+            </nodePropertiesReference>
+            <serviceReference
+                  refId="org.amanzi.service.NodeService">
+            </serviceReference>
+         </parameters>
+      </service>
    </extension>
 
 </plugin>

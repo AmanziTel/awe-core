@@ -11,9 +11,11 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.providers.context.internal;
+package org.amanzi.neo.services;
 
-import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
+import org.amanzi.neo.services.impl.statistics.StatisticsVault;
+import org.amanzi.neo.services.internal.IService;
+import org.neo4j.graphdb.Node;
 
 /**
  * TODO Purpose of
@@ -23,27 +25,10 @@ import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class TestNodeProperties implements IGeneralNodeProperties {
+public interface IStatisticsService extends IService {
 
-    @Override
-    public String getNodeNameProperty() {
-        return null;
-    }
+    void saveStatistics(Node node, StatisticsVault vault);
 
-    @Override
-    public String getNodeTypeProperty() {
-        return null;
-    }
-
-    @Override
-    public String getParentProperty() {
-        return null;
-    }
-
-    @Override
-    public String getCountProperty() {
-        // TODO Auto-generated method stub
-        return null;
-    }
+    StatisticsVault loadStatistics(Node rootNode);
 
 }

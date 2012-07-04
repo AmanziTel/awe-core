@@ -11,9 +11,11 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.providers.context.internal;
+package org.amanzi.neo.models.impl.internal;
 
-import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
+import org.amanzi.testing.AbstractMockitoTest;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * TODO Purpose of
@@ -23,27 +25,18 @@ import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class TestNodeProperties implements IGeneralNodeProperties {
+public class AbstractStatisticsModelTest extends AbstractMockitoTest {
 
-    @Override
-    public String getNodeNameProperty() {
-        return null;
+    /**
+     * @throws java.lang.Exception
+     */
+    @Before
+    public void setUp() throws Exception {
     }
 
-    @Override
-    public String getNodeTypeProperty() {
-        return null;
-    }
-
-    @Override
-    public String getParentProperty() {
-        return null;
-    }
-
-    @Override
-    public String getCountProperty() {
-        // TODO Auto-generated method stub
-        return null;
+    @Test
+    public void test() {
+        fail("Not yet implemented");
     }
 
 }
