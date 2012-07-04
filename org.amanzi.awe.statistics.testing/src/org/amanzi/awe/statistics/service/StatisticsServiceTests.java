@@ -13,7 +13,11 @@
 
 package org.amanzi.awe.statistics.service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import org.amanzi.awe.statistics.enumeration.Period;
 import org.amanzi.awe.statistics.enumeration.StatisticsNodeTypes;
@@ -23,8 +27,11 @@ import org.amanzi.neo.services.AbstractNeoServiceTest;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.DatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.DatasetService.DatasetTypes;
+import org.amanzi.neo.services.DatasetService.DriveTypes;
+import org.amanzi.neo.services.NeoServiceFactory;
 import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
+import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.model.impl.DriveModel;
 import org.apache.log4j.Logger;
 import org.junit.After;
@@ -50,10 +57,12 @@ public class StatisticsServiceTests extends AbstractNeoServiceTest {
     private static Logger LOGGER = Logger.getLogger(StatisticsServiceTests.class);
     private static final String DATASET_NAME = "dataset";
     private static final String STATISTIC_ROOT_NAME = DATASET_NAME + " Statistics";
-    private static final INodeType TYPE = DatasetTypes.DRIVE;
+    private static final DatasetTypes DATASET_TYPE = DatasetTypes.DRIVE;
+    private static final String SCELL_NAME = "scell name";
     private static Node datasetNode = null;
     private Node projectNode;
-    private StatisticsService service;
+    private StatisticsService statisticsService;
+    private DatasetService datasetService = NeoServiceFactory.getInstance().getDatasetService();
 
     @BeforeClass
     public static final void beforeClass() {
@@ -70,7 +79,7 @@ public class StatisticsServiceTests extends AbstractNeoServiceTest {
 
     @Before
     public void before() {
-        service = StatisticsService.getInstance();
+        statisticsService = StatisticsService.getInstance();
         initProjectNode();
     }
 
@@ -87,28 +96,28 @@ public class StatisticsServiceTests extends AbstractNeoServiceTest {
     public void testCreateStatisticModelRootIfParentNull() throws DatabaseException {
         LOGGER.info("testCreateStatisticModelRootIfParentNull started");
         initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
-        service.createStatisticsModelRoot(null, STATISTIC_ROOT_NAME);
+        statisticsService.createStatisticsModelRoot(null, STATISTIC_ROOT_NAME);
     }
 
     @Test(expected = DatabaseException.class)
     public void testCreateStatisticModelRootIfNameIsNull() throws DatabaseException {
         LOGGER.info("testCreateStatisticModelRootIfNameIsNull started");
         initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
-        service.createStatisticsModelRoot(datasetNode, null);
+        statisticsService.createStatisticsModelRoot(datasetNode, null);
     }
 
     @Test
     public void testCreateStatisticModelRoot() throws DatabaseException {
         LOGGER.info("testCreateStatisticModelRoot started");
         initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
-        service.createStatisticsModelRoot(datasetNode, STATISTIC_ROOT_NAME);
+        statisticsService.createStatisticsModelRoot(datasetNode, STATISTIC_ROOT_NAME);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testFindStatisticModelIfParentNull() throws DatabaseException {
         LOGGER.info("testFindStatisticModelIfParentNull started");
         initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
-        service.findStatistic(null, STATISTIC_ROOT_NAME);
+        statisticsService.findStatistic(null, STATISTIC_ROOT_NAME);
     }
 
     @Test
@@ -116,7 +125,7 @@ public class StatisticsServiceTests extends AbstractNeoServiceTest {
         LOGGER.info("testFindStatisticModelIfExist started");
         initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
         Node statisticsModelRoot = createStatisticsRoot(datasetNode);
-        Node result = service.findStatistic(datasetNode, STATISTIC_ROOT_NAME);
+        Node result = statisticsService.findStatistic(datasetNode, STATISTIC_ROOT_NAME);
         Assert.assertEquals("Different result detected. The same expected", statisticsModelRoot, result);
     }
 
@@ -124,7 +133,7 @@ public class StatisticsServiceTests extends AbstractNeoServiceTest {
     public void testFindStatisticModelIfNotExist() throws DatabaseException {
         LOGGER.info("testFindStatisticModelIfExist started");
         initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
-        Node result = service.findStatistic(datasetNode, STATISTIC_ROOT_NAME);
+        Node result = statisticsService.findStatistic(datasetNode, STATISTIC_ROOT_NAME);
         Assert.assertNull("Null expected. Node must not be found", result);
     }
 
@@ -132,7 +141,7 @@ public class StatisticsServiceTests extends AbstractNeoServiceTest {
     public void testAddSourceIfOneOfParameterNull() throws DatabaseException {
         LOGGER.info("testAddSourceIfOneOfParameterNull started");
         initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
-        service.addSource(null, null);
+        statisticsService.addSource(null, null);
     }
 
     @Test
@@ -142,7 +151,7 @@ public class StatisticsServiceTests extends AbstractNeoServiceTest {
         Node statRoot = createStatisticsRoot(datasetNode);
         Node periodH = createPeriodNode(statRoot, Period.HOURLY);
         Node periodD = createPeriodNode(statRoot, Period.DAILY);
-        service.addSource(periodD, periodH);
+        statisticsService.addSource(periodD, periodH);
         Assert.assertNotNull("SOURCE relationship not exists",
                 periodD.getSingleRelationship(StatisticsRelationshipTypes.SOURCE, Direction.OUTGOING));
     }
@@ -162,22 +171,108 @@ public class StatisticsServiceTests extends AbstractNeoServiceTest {
             tx.finish();
         }
 
-        Iterator<Node> sources = service.getSources(periodD).iterator();
+        Iterator<Node> sources = statisticsService.getSources(periodD).iterator();
         Assert.assertEquals("Source not found", periodH, sources.next());
     }
 
+    @Test
+    public void testFindNodeInChain() {
+        LOGGER.info("testFindNodeInChain started");
+        initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
+        Node statRoot = createStatisticsRoot(datasetNode);
+        Node periodH = createPeriodNode(statRoot, Period.HOURLY);
+        List<Node> chainList = createChildNextChain(periodH, 5, StatisticsNodeTypes.S_ROW);
+
+        for (Node storedNode : chainList) {
+            Node findedNode = statisticsService.findNodeInChain(periodH, DriveModel.TIMESTAMP,
+                    storedNode.getProperty(DriveModel.TIMESTAMP));
+            Assert.assertEquals("Unexpected nodes.", storedNode, findedNode);
+        }
+    }
+
+    @Test
+    public void testCreateSRowIfNotExist() throws DatabaseException, IllegalNodeDataException {
+        LOGGER.info("testCreateSRowIfNotExist started");
+        initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
+        Node statRoot = createStatisticsRoot(datasetNode);
+        Node periodH = createPeriodNode(statRoot, Period.HOURLY);
+        Long timestamp = (long)(Math.random() * 100000);
+        statisticsService.createSRow(periodH, timestamp, true);
+        Iterator<Node> srows = datasetService.getChildrenChainTraverser(periodH).iterator();
+        Node existed = srows.next();
+        Assert.assertEquals("Unexpected timestamp found", existed.getProperty(DriveModel.TIMESTAMP), timestamp);
+        Assert.assertEquals("Unexpected type found", existed.getProperty(DatasetService.TYPE), StatisticsNodeTypes.S_ROW.getId());
+    }
+
+    @Test(expected = DatabaseException.class)
+    public void testCreateSRowIfExist() throws DatabaseException, IllegalNodeDataException {
+        LOGGER.info("testCreateSRowIfExist started");
+        initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
+        Node statRoot = createStatisticsRoot(datasetNode);
+        Node periodH = createPeriodNode(statRoot, Period.HOURLY);
+        Long timestamp = (long)(Math.random() * 100000);
+        statisticsService.createSRow(periodH, timestamp, true);
+        statisticsService.createSRow(periodH, timestamp, true);
+    }
+
+    @Test
+    public void testCreateSCellIfNotExist() throws DatabaseException, IllegalNodeDataException {
+        LOGGER.info("testCreateSCell started");
+        initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
+        Node statRoot = createStatisticsRoot(datasetNode);
+        Node periodH = createPeriodNode(statRoot, Period.HOURLY);
+        Long timestamp = (long)(Math.random() * 100000);
+        statisticsService.createSRow(periodH, timestamp, true);
+        Iterator<Node> srows = datasetService.getChildrenChainTraverser(periodH).iterator();
+        Node existedSrow = srows.next();
+        statisticsService.createSCell(existedSrow, SCELL_NAME, true);
+        Iterator<Node> scells = datasetService.getChildrenChainTraverser(existedSrow).iterator();
+        Node existedSCell = scells.next();
+        Assert.assertEquals("Unexpected name found", existedSCell.getProperty(DatasetService.NAME), SCELL_NAME);
+        Assert.assertEquals("Unexpected type found", existedSCell.getProperty(DatasetService.TYPE),
+                StatisticsNodeTypes.S_CELL.getId());
+    }
+
+    @Test(expected = DatabaseException.class)
+    public void testCreateSCellIfExist() throws DatabaseException, IllegalNodeDataException {
+        LOGGER.info("testCreateSCell started");
+        initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
+        Node statRoot = createStatisticsRoot(datasetNode);
+        Node periodH = createPeriodNode(statRoot, Period.HOURLY);
+        Long timestamp = (long)(Math.random() * 100000);
+        statisticsService.createSRow(periodH, timestamp, true);
+        Iterator<Node> srows = datasetService.getChildrenChainTraverser(periodH).iterator();
+        Node existedSrow = srows.next();
+        statisticsService.createSCell(existedSrow, SCELL_NAME, true);
+        statisticsService.createSCell(existedSrow, SCELL_NAME, true);
+    }
+
+    private List<Node> createChildNextChain(Node rootNode, int count, INodeType type) {
+        List<Node> chainList = new ArrayList<Node>();
+        Node newNode;
+        try {
+            for (int i = 0; i < count; i++) {
+                newNode = datasetService.createNode(type);
+                Long timestamp = (long)(Math.random() * 100000);
+                datasetService.setAnyProperty(newNode, DriveModel.TIMESTAMP, timestamp);
+                datasetService.setAnyProperty(newNode, DatasetService.NAME, DatasetService.NAME + timestamp);
+                datasetService.addChild(rootNode, newNode, null);
+                chainList.add(newNode);
+            }
+        } catch (Exception e) {
+            LOGGER.error("unexpectable exception thrown when try to create a chain of nodes", e);
+        }
+        return chainList;
+    }
+
     private Node createPeriodNode(Node statisticNode, Period period) {
-        Transaction tx = graphDatabaseService.beginTx();
         Node periodNode = null;
         try {
-            periodNode = graphDatabaseService.createNode();
-            setPropertyToNode(periodNode, DatasetService.NAME, period.getId());
-            setPropertyToNode(periodNode, DatasetService.TYPE, StatisticsNodeTypes.PERIOD_STATISTICS.getId());
-            datasetNode.createRelationshipTo(periodNode, DatasetRelationTypes.CHILD);
-            tx.success();
-        } finally {
-            tx.finish();
-            tx = null;
+            periodNode = datasetService
+                    .createNode(statisticNode, DatasetRelationTypes.CHILD, StatisticsNodeTypes.PERIOD_STATISTICS);
+            datasetService.setAnyProperty(periodNode, DatasetService.NAME, period.getId());
+        } catch (Exception e) {
+            LOGGER.error("cann't create period statistic root");
         }
         return periodNode;
     }
@@ -187,17 +282,13 @@ public class StatisticsServiceTests extends AbstractNeoServiceTest {
      * @return
      */
     private Node createStatisticsRoot(Node datasetNode) {
-        Transaction tx = graphDatabaseService.beginTx();
         Node statRot = null;
         try {
-            statRot = graphDatabaseService.createNode();
-            setPropertyToNode(statRot, DatasetService.NAME, STATISTIC_ROOT_NAME);
-            setPropertyToNode(statRot, DatasetService.TYPE, StatisticsNodeTypes.STATISTICS.getId());
-            datasetNode.createRelationshipTo(statRot, StatisticsRelationshipTypes.STATISTICS);
-            tx.success();
-        } finally {
-            tx.finish();
-            tx = null;
+            statRot = datasetService
+                    .createNode(datasetNode, StatisticsRelationshipTypes.STATISTICS, StatisticsNodeTypes.STATISTICS);
+            datasetService.setAnyProperty(statRot, DatasetService.NAME, STATISTIC_ROOT_NAME);
+        } catch (Exception e) {
+            LOGGER.error("cann't create statistics root");
         }
         return statRot;
     }
@@ -227,33 +318,16 @@ public class StatisticsServiceTests extends AbstractNeoServiceTest {
      * @return datasetNode
      */
     private Node initDatasetNode(long minTimestamp, long maxTimestamp) {
-        datasetNode = null;
-        Transaction tx = graphDatabaseService.beginTx();
         try {
-            datasetNode = graphDatabaseService.createNode();
-            projectNode.createRelationshipTo(datasetNode, DatasetRelationTypes.DATASET);
-            setPropertyToNode(datasetNode, DatasetService.NAME, DATASET_NAME);
-            setPropertyToNode(datasetNode, DatasetService.TYPE, TYPE.getId());
-            setPropertyToNode(datasetNode, DriveModel.MIN_TIMESTAMP, minTimestamp);
-            setPropertyToNode(datasetNode, DriveModel.MAX_TIMESTAMP, maxTimestamp);
-            tx.success();
-
-        } finally {
-            tx.finish();
-            tx = null;
+            datasetNode = datasetService.createDataset(projectNode, DATASET_NAME, DATASET_TYPE, DriveTypes.TEMS,
+                    StatisticsNodeTypes.STATISTICS);
+            Map<String, Object> propertyMap = new HashMap<String, Object>();
+            propertyMap.put(DriveModel.MIN_TIMESTAMP, minTimestamp);
+            propertyMap.put(DriveModel.MAX_TIMESTAMP, maxTimestamp);
+            datasetService.setProperties(datasetNode, propertyMap);
+        } catch (Exception e) {
+            LOGGER.error("unexpectable exception thrown", e);
         }
         return datasetNode;
-    }
-
-    /**
-     * this method properties for dataset node
-     * 
-     * @param datasetNode
-     * @param name
-     * @param type
-     * @param driveType
-     */
-    private void setPropertyToNode(Node datasetNode, String name, Object value) {
-        datasetNode.setProperty(name, value);
     }
 }

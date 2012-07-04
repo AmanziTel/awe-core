@@ -104,15 +104,14 @@ public class StatisticsModel extends AbstractModel {
      * @throws DatabaseException
      */
     private Node initPeriods(Period period) throws DatabaseException {
-        Node periodNode = statisticService.getPeriod(rootNode, period);
-        PeriodStatisticsModel periodModel = new PeriodStatisticsModel(periodNode);
+        PeriodStatisticsModel periodModel = new PeriodStatisticsModel(rootNode, period);
         periodList.add(periodModel);
         Period underlinePeriod = period.getUnderlyingPeriod();
         if (period.getUnderlyingPeriod() != null) {
             Node underline = initPeriods(underlinePeriod);
             periodModel.addSourcePeriod(new DataElement(underline));
         }
-        return periodNode;
+        return periodModel.getRootNode();
 
     }
 

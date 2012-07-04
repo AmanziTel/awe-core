@@ -21,8 +21,10 @@ import org.amanzi.awe.statistics.enumeration.StatisticsRelationshipTypes;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.DatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.NeoServiceFactory;
+import org.amanzi.neo.services.enums.INodeType;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
+import org.amanzi.neo.services.model.impl.DriveModel;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
@@ -180,4 +182,81 @@ public class StatisticsService {
         return datasetService.getFirstRelationTraverser(parentNode, StatisticsRelationshipTypes.SOURCE, Direction.OUTGOING);
     }
 
+    /**
+     * create new node in CHILD->NEXT chain {@link DatasetService#addChild(Node,Node,Node)}
+     * 
+     * @param rootNode
+     * @param propertyName
+     * @param value
+     * @param type
+     * @return
+     * @throws DatabaseException
+     * @throws IllegalNodeDataException
+     */
+    private Node createNodeInChain(Node rootNode, String propertyName, Object value, INodeType type) throws DatabaseException,
+            IllegalNodeDataException {
+        Node srowNode = null;
+        try {
+            srowNode = datasetService.createNode(type);
+            datasetService.setAnyProperty(srowNode, propertyName, value);
+        } catch (DatabaseException e) {
+            LOGGER.error("Unexpectable exception thrown. Cann't compleatly identify S_ROW node type", e);
+            throw e;
+        }
+        return datasetService.addChild(rootNode, srowNode, null);
+    }
+
+    /**
+     * try to findNode in chain
+     * 
+     * @param rootNode
+     * @param propertyName
+     * @param value
+     * @return
+     */
+    public Node findNodeInChain(Node rootNode, String propertyName, Object value) {
+        return datasetService.findNodeInChainByProperty(rootNode, propertyName, value);
+    }
+
+    /**
+     * create S_ROW node and added it to child->next chain
+     * 
+     * @param rootNode
+     * @param timestamp
+     * @param isNeedToSearchDuplicate
+     * @return
+     * @throws DatabaseException
+     * @throws IllegalNodeDataException
+     */
+    public Node createSRow(Node rootNode, Long timestamp, boolean isNeedToSearchDuplicate) throws DatabaseException,
+            IllegalNodeDataException {
+        if (isNeedToSearchDuplicate) {
+            Node srowNode = findNodeInChain(rootNode, DriveModel.TIMESTAMP, timestamp);
+            if (srowNode != null) {
+                LOGGER.error("Duplicated node found");
+                throw new DatabaseException("Duplicated node founded");
+            }
+        }
+        return createNodeInChain(rootNode, DriveModel.TIMESTAMP, timestamp, StatisticsNodeTypes.S_ROW);
+    }
+
+    /**
+     * create sCellNode
+     * 
+     * @param parentSrow S_ROW root of branch s_cell will belongs to
+     * @param name name of S_CELL
+     * @param isNeedToSearchDuplicate - if need to search dupli
+     * @return
+     */
+    public Node createSCell(Node parentSrow, String name, boolean isNeedToSearchDuplicate) throws DatabaseException,
+            IllegalNodeDataException {
+        if (isNeedToSearchDuplicate) {
+            Node sCellNode = findNodeInChain(parentSrow, DatasetService.NAME, name);
+            if (sCellNode != null) {
+                LOGGER.error("Duplicated node found");
+                throw new DatabaseException("Duplicated node founded");
+            }
+        }
+        return createNodeInChain(parentSrow, DatasetService.NAME, name, StatisticsNodeTypes.S_CELL);
+    }
 }

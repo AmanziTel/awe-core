@@ -16,19 +16,13 @@ package org.amanzi.awe.statistics.model;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import org.amanzi.awe.statistics.AbstractStatisticsTest;
 import org.amanzi.awe.statistics.enumeration.Period;
-import org.amanzi.awe.statistics.service.StatisticsService;
-import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
-import org.amanzi.neo.services.model.impl.DriveModel;
-import org.junit.Before;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
 
@@ -39,74 +33,7 @@ import org.neo4j.graphdb.Node;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class StatisticsModelTests extends AbstractStatisticsTest {
-
-    private static StatisticsService statisticsService;
-    private static final String PARENT_NAME = "model";
-    private static final String MODEL_NAME = "model";
-    private static Node parentNode;
-    private static Node statisticModelNode;
-
-    @Before
-    public void setUp() {
-        statisticsService = getMockedService();
-        initMockedParentNode();
-        initMockedStatisticsRootModel();
-        StatisticsModel.setStatisticsService(statisticsService);
-        PeriodStatisticsModel.setStatisticsService(statisticsService);
-    }
-
-    /**
-     * @param hourly
-     * @return
-     */
-    private Node getMockedPeriodNode(Period hourly) {
-        String id = hourly.getId();
-        Node period = getMockedNode();
-        when(period.getProperty(eq(DatasetService.NAME), any(String.class))).thenReturn(id);
-        return period;
-    }
-
-    /**
-     *
-     */
-    private void initMockedStatisticsRootModel() {
-        statisticModelNode = getMockedNode();
-        when(statisticModelNode.getProperty(eq(DatasetService.NAME), any(String.class))).thenReturn(MODEL_NAME);
-        when(statisticModelNode.getProperty(eq(DatasetService.NAME))).thenReturn(MODEL_NAME);
-    }
-
-    /**
-     * @return
-     */
-    private void initMockedParentNode() {
-        parentNode = getMockedNode();
-        when(parentNode.getProperty(eq(DatasetService.NAME), any(String.class))).thenReturn(PARENT_NAME);
-    }
-
-    /**
-     * @return
-     */
-    private StatisticsService getMockedService() {
-        statisticsService = mock(StatisticsService.class);
-        return statisticsService;
-    }
-
-    /**
-     * mock timestamp property in parent node
-     * 
-     * @param min
-     * @param max
-     */
-    private void mockTimestampParent(Long min, Long max) {
-        when(parentNode.getProperty(eq(DriveModel.MIN_TIMESTAMP))).thenReturn(min);
-        when(parentNode.getProperty(eq(DriveModel.MAX_TIMESTAMP))).thenReturn(max);
-    }
-
-    private Node getMockedNode() {
-        Node node = mock(Node.class);
-        return node;
-    }
+public class StatisticsModelTests extends AbstractStatisticsModelTests {
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructorIfParentIsNull() throws IllegalArgumentException, DatabaseException, IllegalNodeDataException,
