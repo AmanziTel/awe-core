@@ -163,13 +163,7 @@ public class StatisticsServiceTests extends AbstractNeoServiceTest {
         Node statRoot = createStatisticsRoot(datasetNode);
         Node periodH = createPeriodNode(statRoot, Period.HOURLY);
         Node periodD = createPeriodNode(statRoot, Period.DAILY);
-        Transaction tx = graphDatabaseService.beginTx();
-        try {
-            periodD.createRelationshipTo(periodH, StatisticsRelationshipTypes.SOURCE);
-            tx.success();
-        } finally {
-            tx.finish();
-        }
+        datasetService.createRelationship(periodD, periodH, StatisticsRelationshipTypes.SOURCE);
 
         Iterator<Node> sources = statisticsService.getSources(periodD).iterator();
         Assert.assertEquals("Source not found", periodH, sources.next());
@@ -245,6 +239,49 @@ public class StatisticsServiceTests extends AbstractNeoServiceTest {
         Node existedSrow = srows.next();
         statisticsService.createSCell(existedSrow, SCELL_NAME, true);
         statisticsService.createSCell(existedSrow, SCELL_NAME, true);
+    }
+
+    @Test
+    public void testGetAllPeriods() throws DatabaseException, IllegalNodeDataException {
+        LOGGER.info("testGetAllPeriods started");
+        initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
+        Node statRoot = createStatisticsRoot(datasetNode);
+        Node periodH = createPeriodNode(statRoot, Period.HOURLY);
+        Node periodD = createPeriodNode(statRoot, Period.DAILY);
+        Node periodW = createPeriodNode(statRoot, Period.WEEKLY);
+        List<Node> expectedNodes = new ArrayList<Node>();
+        expectedNodes.add(periodH);
+        expectedNodes.add(periodD);
+        expectedNodes.add(periodW);
+        datasetService.createRelationship(periodD, periodH, StatisticsRelationshipTypes.SOURCE);
+        datasetService.createRelationship(periodW, periodD, StatisticsRelationshipTypes.SOURCE);
+        Iterable<Node> periods = statisticsService.getAllPeriods(statRoot);
+        Assert.assertNotNull("Periods count cann't be null", periods);
+        Iterator<Node> periodsIterator = periods.iterator();
+
+        while (periodsIterator.hasNext()) {
+            Assert.assertTrue("Node not exist is expected nodes list", expectedNodes.contains(periodsIterator.next()));
+        }
+    }
+
+    @Test
+    public void testGetHighestPeriod() throws DatabaseException, IllegalNodeDataException {
+        LOGGER.info("testGetHighestPeriod started");
+        initDatasetNode(Long.MIN_VALUE, Long.MAX_VALUE);
+        Node statRoot = createStatisticsRoot(datasetNode);
+        Node periodH = createPeriodNode(statRoot, Period.HOURLY);
+        Node periodD = createPeriodNode(statRoot, Period.DAILY);
+        Node periodW = createPeriodNode(statRoot, Period.WEEKLY);
+        List<Node> expectedNodes = new ArrayList<Node>();
+        expectedNodes.add(periodH);
+        expectedNodes.add(periodD);
+        expectedNodes.add(periodW);
+        datasetService.createRelationship(periodD, periodH, StatisticsRelationshipTypes.SOURCE);
+        datasetService.createRelationship(periodW, periodD, StatisticsRelationshipTypes.SOURCE);
+        Iterable<Node> periods = statisticsService.getAllPeriods(statRoot);
+        Assert.assertNotNull("Periods count cann't be null", periods);
+        Node highestPeriod = statisticsService.getHighestPeriod(periods);
+        Assert.assertEquals("Unexpected highest period ", periodW, highestPeriod);
     }
 
     private List<Node> createChildNextChain(Node rootNode, int count, INodeType type) {

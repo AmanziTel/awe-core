@@ -33,7 +33,8 @@ import org.neo4j.graphdb.Node;
 
 /**
  * <p>
- * period statistics model
+ * Purposed to work with single period. User <b>must not have</b> possibility to create period model
+ * nodes . Access to period statistics model available only from {@link StatisticsModel}
  * </p>
  * 
  * @author Vladislav_Kondratenko
@@ -62,6 +63,11 @@ public class PeriodStatisticsModel extends AbstractModel {
     }
 
     /*
+     * source period
+     */
+    private PeriodStatisticsModel sourcePeriod;
+
+    /*
      * initialize statistics services
      */
     private static void initStatisticsService() {
@@ -76,9 +82,10 @@ public class PeriodStatisticsModel extends AbstractModel {
      * @param period
      * @throws DatabaseException
      */
-    public PeriodStatisticsModel(Node parent, Period period) throws DatabaseException, IllegalArgumentException {
+    PeriodStatisticsModel(Node parent, Period period) throws DatabaseException, IllegalArgumentException {
         super(StatisticsNodeTypes.PERIOD_STATISTICS);
         initStatisticsService();
+
         if (parent == null) {
             throw new IllegalArgumentException("Parent node cann't be null");
         }
@@ -88,6 +95,7 @@ public class PeriodStatisticsModel extends AbstractModel {
         rootNode = statisticService.getPeriod(parent, period);
         periodType = Period.findById(rootNode.getProperty(DatasetService.NAME, StringUtils.EMPTY).toString());
         name = periodType.getId();
+        initSourcePeriod();
     }
 
     /**
@@ -96,7 +104,7 @@ public class PeriodStatisticsModel extends AbstractModel {
      * @param periodNode
      * @throws IllegalArgumentException
      */
-    public PeriodStatisticsModel(Node periodNode) throws IllegalArgumentException {
+    PeriodStatisticsModel(Node periodNode) throws IllegalArgumentException {
         super(StatisticsNodeTypes.PERIOD_STATISTICS);
         initStatisticsService();
         if (periodNode == null) {
@@ -105,7 +113,22 @@ public class PeriodStatisticsModel extends AbstractModel {
         rootNode = periodNode;
         periodType = Period.findById(periodNode.getProperty(DatasetService.NAME, StringUtils.EMPTY).toString());
         name = periodType.getId();
+        initSourcePeriod();
 
+    }
+
+    /**
+     * initialize sources period
+     */
+    private void initSourcePeriod() {
+        Iterable<Node> sources = statisticService.getSources(rootNode);
+        if (sources == null) {
+            return;
+        }
+        Iterator<Node> sourceIterator = sources.iterator();
+        if (sourceIterator.hasNext()) {
+            sourcePeriod = new PeriodStatisticsModel(sourceIterator.next());
+        }
     }
 
     /**
@@ -114,17 +137,24 @@ public class PeriodStatisticsModel extends AbstractModel {
      * @return source period if exist -> else return null;
      */
     public PeriodStatisticsModel getSourcePeriod() {
-        Iterator<Node> sources = statisticService.getSources(rootNode).iterator();
-        if (sources.hasNext()) {
-            return new PeriodStatisticsModel(sources.next());
-        }
-        return null;
+        return sourcePeriod;
     }
 
-    public PeriodStatisticsModel addSourcePeriod(IDataElement source) throws DatabaseException {
-        Node node = ((DataElement)source).getNode();
-        statisticService.addSource(rootNode, node);
-        return new PeriodStatisticsModel(node);
+    /**
+     * add source period
+     * 
+     * @param source
+     * @return
+     * @throws DatabaseException
+     */
+    PeriodStatisticsModel addSourcePeriod(PeriodStatisticsModel source) throws DatabaseException {
+        if (source == null) {
+            LOGGER.error("source period cann't be null");
+            throw new IllegalArgumentException("source period is null");
+        }
+        statisticService.addSource(rootNode, source.getRootNode());
+        sourcePeriod = source;
+        return source;
     }
 
     /**
@@ -170,7 +200,7 @@ public class PeriodStatisticsModel extends AbstractModel {
             throw e;
         }
         Node parentSRowNode = ((DataElement)parentSRow).getNode();
-        Node srowNode = statisticService.findNodeInChain(parentSRowNode, DatasetService.PROPERTY_NAME, name);
+        Node srowNode = statisticService.findNodeInChain(parentSRowNode, DatasetService.NAME, name);
         if (srowNode != null) {
             return new DataElement(srowNode);
         }
@@ -178,7 +208,7 @@ public class PeriodStatisticsModel extends AbstractModel {
     }
 
     /**
-     * create source relationshop beween scellNode and list of source nodes
+     * create source relationship between scellNode and list of source nodes
      * 
      * @param scellNode
      * @param sources
@@ -201,12 +231,12 @@ public class PeriodStatisticsModel extends AbstractModel {
     }
 
     /**
-     * return kist of sources elements
+     * return list of sources elements
      * 
      * @param parentNode
      * @return
      */
-    public List<IDataElement> getSources(IDataElement parentNode) {
+    public Iterable<IDataElement> getSources(IDataElement parentNode) {
         if (parentNode == null) {
             LOGGER.error(" scell node cann't be null");
             throw new IllegalArgumentException("Scell cannt be null");

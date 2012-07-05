@@ -21,7 +21,6 @@ import static org.mockito.Mockito.when;
 
 import org.amanzi.awe.statistics.enumeration.Period;
 import org.amanzi.neo.services.exceptions.DatabaseException;
-import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
@@ -36,21 +35,12 @@ import org.neo4j.graphdb.Node;
 public class StatisticsModelTests extends AbstractStatisticsModelTests {
 
     @Test(expected = IllegalArgumentException.class)
-    public void testConstructorIfParentIsNull() throws IllegalArgumentException, DatabaseException, IllegalNodeDataException,
-            DuplicateNodeNameException {
+    public void testConstructorIfParentIsNull() throws IllegalArgumentException, DatabaseException, IllegalNodeDataException {
         new StatisticsModel(null);
     }
 
-    @Test(expected = DuplicateNodeNameException.class)
-    public void testConstructorIfStatisticsExist() throws IllegalArgumentException, DatabaseException, IllegalNodeDataException,
-            DuplicateNodeNameException {
-        when(statisticsService.findStatistic(eq(parentNode), any(String.class))).thenReturn(getMockedNode());
-        new StatisticsModel(parentNode);
-    }
-
     @Test
-    public void testConstructorIfStatisticsNotExist() throws IllegalArgumentException, DatabaseException, IllegalNodeDataException,
-            DuplicateNodeNameException {
+    public void testConstructorIfStatisticsNotExist() throws IllegalArgumentException, DatabaseException, IllegalNodeDataException {
 
         when(statisticsService.findStatistic(eq(parentNode), any(String.class))).thenReturn(null);
         when(statisticsService.createStatisticsModelRoot(eq(parentNode), any(String.class))).thenReturn(statisticModelNode);
@@ -60,8 +50,7 @@ public class StatisticsModelTests extends AbstractStatisticsModelTests {
     }
 
     @Test
-    public void testPeriodModelInitializationHourly() throws DatabaseException, IllegalArgumentException,
-            DuplicateNodeNameException {
+    public void testPeriodModelInitializationHourly() throws DatabaseException, IllegalArgumentException {
         PeriodRange range = generatePeriod(Period.HOURLY);
         when(statisticsService.findStatistic(eq(parentNode), any(String.class))).thenReturn(null);
         when(statisticsService.createStatisticsModelRoot(eq(parentNode), any(String.class))).thenReturn(statisticModelNode);
@@ -72,8 +61,7 @@ public class StatisticsModelTests extends AbstractStatisticsModelTests {
     }
 
     @Test
-    public void testPeriodModelInitializationMonthly() throws DatabaseException, IllegalArgumentException,
-            DuplicateNodeNameException {
+    public void testPeriodModelInitializationMonthly() throws DatabaseException, IllegalArgumentException {
         PeriodRange range = generatePeriod(Period.MONTHLY);
         when(statisticsService.findStatistic(eq(parentNode), any(String.class))).thenReturn(null);
         when(statisticsService.createStatisticsModelRoot(eq(parentNode), any(String.class))).thenReturn(statisticModelNode);
@@ -96,8 +84,7 @@ public class StatisticsModelTests extends AbstractStatisticsModelTests {
     }
 
     @Test
-    public void testPeriodModelInitializationWeekly() throws DatabaseException, IllegalArgumentException,
-            DuplicateNodeNameException {
+    public void testPeriodModelInitializationWeekly() throws DatabaseException, IllegalArgumentException {
         PeriodRange range = generatePeriod(Period.WEEKLY);
         when(statisticsService.findStatistic(eq(parentNode), any(String.class))).thenReturn(null);
         when(statisticsService.createStatisticsModelRoot(eq(parentNode), any(String.class))).thenReturn(statisticModelNode);

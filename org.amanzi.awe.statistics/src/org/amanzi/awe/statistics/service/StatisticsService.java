@@ -77,6 +77,47 @@ public class StatisticsService {
     }
 
     /**
+     * return all nodes from parent by OUTGOING CHILD relationship
+     * 
+     * @param statisticsRoot
+     * @return
+     */
+    public Iterable<Node> getAllPeriods(Node statisticsRoot) {
+        return getFirstRelationsipsNodes(statisticsRoot, DatasetRelationTypes.CHILD);
+    }
+
+    /**
+     * return all nodes by first OUTGOING Relationship
+     * 
+     * @param parent
+     * @param relType
+     * @return
+     */
+    private Iterable<Node> getFirstRelationsipsNodes(Node parent, RelationshipType relType) {
+        return datasetService.getFirstRelationTraverser(parent, relType, Direction.OUTGOING);
+    }
+
+    /**
+     * searching for a highest period;
+     * 
+     * @param existedPeriods
+     */
+    public Node getHighestPeriod(Iterable<Node> existedPeriods) {
+        Period[] sortedPeriods = Period.getSortedPeriods();
+        for (Period period : sortedPeriods) {
+            for (Node existed : existedPeriods) {
+                if (!existed.getProperty(DatasetService.TYPE).equals(StatisticsNodeTypes.PERIOD_STATISTICS.getId())) {
+                    continue;
+                }
+                if (period.getId().equals(existed.getProperty(DatasetService.NAME))) {
+                    return existed;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
      * method for search required node by firstRelationship
      * 
      * @param parentNode
@@ -88,8 +129,7 @@ public class StatisticsService {
     private Node findFirstRelationshipNode(Node parentNode, String propertyName, String propertyValue, RelationshipType relType) {
         LOGGER.info("try to find node with propetyName:" + propertyName + " value:" + propertyValue + " from parent:" + parentNode
                 + " by relationship: " + relType);
-        Iterator<Node> statisticsNodes = datasetService.getFirstRelationTraverser(parentNode, relType, Direction.OUTGOING)
-                .iterator();
+        Iterator<Node> statisticsNodes = getFirstRelationsipsNodes(parentNode, relType).iterator();
         while (statisticsNodes.hasNext()) {
             Node currentNode = statisticsNodes.next();
             if (currentNode.getProperty(propertyName, StringUtils.EMPTY).equals(propertyValue)) {

@@ -143,7 +143,7 @@ public enum Period {
     };
 
     private final String id;
-    private static final Period[] PERIODS = new Period[] {Period.ALL, Period.YEARLY, Period.MONTHLY, WEEKLY, Period.DAILY,
+    private static final Period[] SORTED_PERIODS = new Period[] {Period.ALL, Period.YEARLY, Period.MONTHLY, WEEKLY, Period.DAILY,
             Period.HOURLY};
     private Period underlyingPeriod;
 
@@ -228,8 +228,8 @@ public enum Period {
         Period highestPeriod;
         Period result = null;
 
-        for (int i = 0; i < PERIODS.length && result == null; i++) {
-            highestPeriod = PERIODS[i];
+        for (int i = 0; i < SORTED_PERIODS.length && result == null; i++) {
+            highestPeriod = SORTED_PERIODS[i];
 
             if (highestPeriod == Period.HOURLY) {
                 result = highestPeriod;
@@ -265,6 +265,13 @@ public enum Period {
      */
     public int getUnderlyingPeriodCalendarField() {
         return underlyingPeriodCalendarField;
+    }
+
+    /**
+     * @return Returns the sortedPeriods.
+     */
+    public static Period[] getSortedPeriods() {
+        return SORTED_PERIODS;
     }
 
 }
