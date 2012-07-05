@@ -11,16 +11,22 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.services.impl.statistics;
+package org.amanzi.neo.services.impl.statistics.internal;
 
 /**
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
 public class StatisticsVault {
+
+    private int count;
+
+    public int getCount() {
+        return count;
+    }
 
 }

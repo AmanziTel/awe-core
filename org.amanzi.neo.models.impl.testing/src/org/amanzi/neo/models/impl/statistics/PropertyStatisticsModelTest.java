@@ -18,10 +18,11 @@ import org.amanzi.neo.models.exceptions.FatalException;
 import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.impl.GeneralNodeProperties;
+import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.IStatisticsService;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicatedNodeException;
-import org.amanzi.neo.services.impl.statistics.StatisticsVault;
+import org.amanzi.neo.services.impl.statistics.IPropertyStatistics;
 import org.amanzi.testing.AbstractMockitoTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,13 +38,19 @@ import org.neo4j.graphdb.Node;
  */
 public class PropertyStatisticsModelTest extends AbstractMockitoTest {
 
+    private static final INodeType TEST_NODE_TYPE = PropertyStatisticsNodeType.PROPERTY_STATISTICS;
+
+    private static final String TEST_PROPERTY_NAME = "property";
+
+    private static final String TEST_PROPERTY_VALUE = "value";
+
     private static final IGeneralNodeProperties GENERAL_NODE_PROPERTIES = new GeneralNodeProperties();
 
     private IStatisticsService statisticsService;
 
     private IPropertyStatisticsModel model;
 
-    private StatisticsVault vault;
+    private IPropertyStatistics vault;
 
     /**
      * @throws java.lang.Exception
@@ -61,7 +68,7 @@ public class PropertyStatisticsModelTest extends AbstractMockitoTest {
 
         model.finishUp();
 
-        verify(statisticsService).saveStatistics(any(Node.class), any(StatisticsVault.class));
+        verify(statisticsService).saveStatistics(any(Node.class), any(IPropertyStatistics.class));
     }
 
     @Test
@@ -83,7 +90,7 @@ public class PropertyStatisticsModelTest extends AbstractMockitoTest {
         initializeStatistics();
 
         doThrow(new DuplicatedNodeException("statistics", "statistics")).when(statisticsService).saveStatistics(any(Node.class),
-                any(StatisticsVault.class));
+                any(IPropertyStatistics.class));
 
         model.finishUp();
     }
@@ -100,7 +107,7 @@ public class PropertyStatisticsModelTest extends AbstractMockitoTest {
         initializeStatistics();
 
         doThrow(new DatabaseException(new IllegalArgumentException())).when(statisticsService).saveStatistics(any(Node.class),
-                any(StatisticsVault.class));
+                any(IPropertyStatistics.class));
 
         model.finishUp();
     }
@@ -108,6 +115,69 @@ public class PropertyStatisticsModelTest extends AbstractMockitoTest {
     @Test(expected = AssertionError.class)
     public void testCheckExceptionOnInitializationFromString() throws Exception {
         ((PropertyStatisticsModel)model).initialize(null, null, null);
+    }
+
+    @Test
+    public void testCheckActivityOnGetCount() throws Exception {
+        initializeStatistics();
+
+        model.getCount();
+
+        verify(vault).getCount();
+    }
+
+    @Test
+    public void testCheckActivityOnGetCountWithNodeType() throws Exception {
+        initializeStatistics();
+
+        model.getCount(TEST_NODE_TYPE);
+
+        verify(vault).getCount(TEST_NODE_TYPE);
+    }
+
+    @Test
+    public void testCheckActivityOnGetPropertyCount() throws Exception {
+        initializeStatistics();
+
+        model.getPropertyCount(TEST_NODE_TYPE, TEST_PROPERTY_NAME, TEST_PROPERTY_VALUE);
+
+        verify(vault).getPropertyCount(TEST_NODE_TYPE, TEST_PROPERTY_NAME, TEST_PROPERTY_VALUE);
+    }
+
+    @Test
+    public void testCheckActivityOnGetPropertyNames() throws Exception {
+        initializeStatistics();
+
+        model.getPropertyNames();
+
+        verify(vault).getPropertyNames();
+    }
+
+    @Test
+    public void testCheckActivityOnGetPropertyNamesWithNodeTypes() throws Exception {
+        initializeStatistics();
+
+        model.getPropertyNames(TEST_NODE_TYPE);
+
+        verify(vault).getPropertyNames(TEST_NODE_TYPE);
+    }
+
+    @Test
+    public void testCheckActivityOnGetValues() throws Exception {
+        initializeStatistics();
+
+        model.getValues(TEST_NODE_TYPE, TEST_PROPERTY_NAME);
+
+        verify(vault).getValues(TEST_NODE_TYPE, TEST_PROPERTY_NAME);
+    }
+
+    @Test
+    public void testCheckActivityOnIndex() throws Exception {
+        initializeStatistics();
+
+        model.indexProperty(TEST_NODE_TYPE, TEST_PROPERTY_NAME, TEST_PROPERTY_VALUE);
+
+        verify(vault).indexProperty(TEST_NODE_TYPE, TEST_PROPERTY_NAME, TEST_PROPERTY_VALUE);
     }
 
     private Node initializeStatistics() throws Exception {
@@ -120,7 +190,7 @@ public class PropertyStatisticsModelTest extends AbstractMockitoTest {
     }
 
     private void mockStatistics(final Node node) throws Exception {
-        vault = mock(StatisticsVault.class);
+        vault = mock(IPropertyStatistics.class);
 
         when(statisticsService.loadStatistics(node)).thenReturn(vault);
     }

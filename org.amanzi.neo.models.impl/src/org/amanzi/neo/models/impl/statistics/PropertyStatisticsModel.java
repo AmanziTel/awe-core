@@ -22,7 +22,7 @@ import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.IStatisticsService;
 import org.amanzi.neo.services.exceptions.ServiceException;
-import org.amanzi.neo.services.impl.statistics.StatisticsVault;
+import org.amanzi.neo.services.impl.statistics.IPropertyStatistics;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
 
@@ -40,7 +40,7 @@ public class PropertyStatisticsModel extends AbstractModel implements IPropertyS
 
     private final IStatisticsService statisticsService;
 
-    private StatisticsVault statisticsVault;
+    private IPropertyStatistics statisticsVault;
 
     /**
      * @param nodeService
@@ -89,44 +89,37 @@ public class PropertyStatisticsModel extends AbstractModel implements IPropertyS
 
     @Override
     public void indexProperty(final INodeType nodeType, final String property, final Object value) {
-        // TODO Auto-generated method stub
-
+        statisticsVault.indexProperty(nodeType, property, value);
     }
 
     @Override
     public Set<String> getPropertyNames() {
-        // TODO Auto-generated method stub
-        return null;
+        return statisticsVault.getPropertyNames();
     }
 
     @Override
     public Set<String> getPropertyNames(final INodeType nodeType) {
-        // TODO Auto-generated method stub
-        return null;
+        return statisticsVault.getPropertyNames(nodeType);
     }
 
     @Override
     public int getCount() {
-        // TODO Auto-generated method stub
-        return 0;
+        return statisticsVault.getCount();
     }
 
     @Override
     public int getCount(final INodeType nodeType) {
-        // TODO Auto-generated method stub
-        return 0;
+        return statisticsVault.getCount(nodeType);
     }
 
     @Override
     public Set<Object> getValues(final INodeType nodeType, final String property) {
-        // TODO Auto-generated method stub
-        return null;
+        return statisticsVault.getValues(nodeType, property);
     }
 
     @Override
     public int getPropertyCount(final INodeType nodeType, final String property, final Object value) {
-        // TODO Auto-generated method stub
-        return 0;
+        return statisticsVault.getPropertyCount(nodeType, property, value);
     }
 
 }

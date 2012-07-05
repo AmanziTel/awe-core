@@ -53,6 +53,8 @@ public class PropertyStatisticsModelProvider extends AbstractModelProvider<Prope
 
     @Override
     public IPropertyStatisticsModel getPropertyStatistics(final IPropertyStatisticalModel parent) throws ModelException {
+        assert parent instanceof AbstractModel;
+
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("getPropertyStatistics", parent));
         }
@@ -63,15 +65,16 @@ public class PropertyStatisticsModelProvider extends AbstractModelProvider<Prope
             throw new ParameterInconsistencyException("parentStatisticsModel", null);
         }
 
-        Node parentNode = ((AbstractModel)parent).getRootNode();
-        IKey key = new NodeKey(parentNode);
+        if (parent instanceof AbstractModel) {
+            Node parentNode = ((AbstractModel)parent).getRootNode();
+            IKey key = new NodeKey(parentNode);
+            result = getFromCache(key);
+            if (result == null) {
+                result = createInstance();
+                result.initialize(parentNode);
 
-        result = getFromCache(key);
-        if (result == null) {
-            result = createInstance();
-            result.initialize(parentNode);
-
-            addToCache(result, key);
+                addToCache(result, key);
+            }
         }
 
         if (LOGGER.isDebugEnabled()) {

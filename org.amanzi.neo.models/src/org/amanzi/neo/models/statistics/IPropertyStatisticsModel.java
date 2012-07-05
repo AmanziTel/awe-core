@@ -13,10 +13,8 @@
 
 package org.amanzi.neo.models.statistics;
 
-import java.util.Set;
-
 import org.amanzi.neo.models.IModel;
-import org.amanzi.neo.nodetypes.INodeType;
+import org.amanzi.neo.services.impl.statistics.IPropertyStatistics;
 
 /**
  * Interface to PropertyStaticticalModel to work with statistics
@@ -24,19 +22,6 @@ import org.amanzi.neo.nodetypes.INodeType;
  * @author grigoreva_a
  * @since 1.0.0
  */
-public interface IPropertyStatisticsModel extends IModel {
+public interface IPropertyStatisticsModel extends IModel, IPropertyStatistics {
 
-    void indexProperty(INodeType nodeType, String property, Object value);
-
-    Set<String> getPropertyNames();
-
-    Set<String> getPropertyNames(INodeType nodeType);
-
-    int getCount();
-
-    int getCount(INodeType nodeType);
-
-    Set<Object> getValues(INodeType nodeType, String property);
-
-    int getPropertyCount(INodeType nodeType, String property, Object value);
 }
