@@ -6,6 +6,9 @@
       <nodetype
             class="org.amanzi.neo.nodetypes.internal.TestNodeTypes">
       </nodetype>
+      <nodetype
+            class="org.amanzi.neo.nodetypes.internal.UnknownNodeTypes">
+      </nodetype>
    </extension>
 
 </fragment>
