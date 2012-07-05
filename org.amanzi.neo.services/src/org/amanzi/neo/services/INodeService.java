@@ -65,6 +65,8 @@ public interface INodeService extends IService {
 
     Node getChildByName(Node parentNode, String name, INodeType nodeType) throws ServiceException;
 
+    Node getSingleChild(Node parentNode, INodeType nodeType, RelationshipType relationshipType) throws ServiceException;
+
     Node getReferencedNode() throws ServiceException;
 
     Node createNode(Node parentNode, INodeType nodeType, RelationshipType relationshipType) throws ServiceException;

@@ -327,6 +327,47 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
         assertEquals("unexpected parent", parent, relToParent.getStartNode());
     }
 
+    @Test
+    public void testCheckGetSingleChild() throws Exception {
+        Node parent = createNode();
+
+        Node child = nodeService.createNode(parent, TestNodeType.TEST_NODE_TYPE1, TestRelatinshipType.TEST_REL);
+
+        Node result = nodeService.getSingleChild(parent, TestNodeType.TEST_NODE_TYPE1, TestRelatinshipType.TEST_REL);
+
+        assertEquals("Unexpected child", child, result);
+    }
+
+    @Test
+    public void testCheckGetSingleChildWithoutChildren() throws Exception {
+        Node parent = createNode();
+
+        Node result = nodeService.getSingleChild(parent, TestNodeType.TEST_NODE_TYPE1, TestRelatinshipType.TEST_REL);
+
+        assertNull("Unexpected child", result);
+    }
+
+    @Test
+    public void testCheckGetSingleChildIncorrectNodeType() throws Exception {
+        Node parent = createNode();
+
+        nodeService.createNode(parent, TestNodeType.TEST_NODE_TYPE1, TestRelatinshipType.TEST_REL);
+
+        Node result = nodeService.getSingleChild(parent, TestNodeType.TEST_NODE_TYPE2, TestRelatinshipType.TEST_REL);
+
+        assertNull("Unexpected child", result);
+    }
+
+    @Test(expected = DuplicatedNodeException.class)
+    public void testCheckExceptionOnGetSingleChild() throws Exception {
+        Node parent = createNode();
+
+        nodeService.createNode(parent, TestNodeType.TEST_NODE_TYPE1, TestRelatinshipType.TEST_REL);
+        nodeService.createNode(parent, TestNodeType.TEST_NODE_TYPE1, TestRelatinshipType.TEST_REL);
+
+        nodeService.getSingleChild(parent, TestNodeType.TEST_NODE_TYPE1, TestRelatinshipType.TEST_REL);
+    }
+
     private Map<String, Object> getNodeProperties() {
         Map<String, Object> result = new HashMap<String, Object>();
 

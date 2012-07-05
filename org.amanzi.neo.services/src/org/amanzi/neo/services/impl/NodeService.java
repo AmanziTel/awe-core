@@ -52,8 +52,11 @@ public class NodeService extends AbstractService implements INodeService {
         CHILD;
     }
 
-    private static final TraversalDescription CHILDREN_TRAVERSAL = Traversal.description().breadthFirst()
-            .relationships(NodeServiceRelationshipType.CHILD, Direction.OUTGOING).evaluator(Evaluators.atDepth(1));
+    private static final TraversalDescription OUTGOING_LEVEL_1_TRAVERSAL = Traversal.description().breadthFirst()
+            .evaluator(Evaluators.atDepth(1));
+
+    private static final TraversalDescription CHILDREN_TRAVERSAL = OUTGOING_LEVEL_1_TRAVERSAL.relationships(
+            NodeServiceRelationshipType.CHILD, Direction.OUTGOING);
 
     /**
      * @param graphDb
@@ -147,6 +150,10 @@ public class NodeService extends AbstractService implements INodeService {
 
     protected TraversalDescription getChildrenTraversal() {
         return CHILDREN_TRAVERSAL;
+    }
+
+    protected TraversalDescription getDownlinkTraversal() {
+        return OUTGOING_LEVEL_1_TRAVERSAL;
     }
 
     /**
@@ -248,6 +255,37 @@ public class NodeService extends AbstractService implements INodeService {
             throw new DatabaseException(e);
         } finally {
             tx.finish();
+        }
+
+        return result;
+    }
+
+    @Override
+    public Node getSingleChild(Node parentNode, INodeType nodeType, RelationshipType relationshipType) throws ServiceException {
+        assert parentNode != null;
+        assert nodeType != null;
+
+        boolean throwDuplicatedException = false;
+
+        Node result = null;
+
+        try {
+            Iterator<Node> nodes = getDownlinkTraversal().relationships(relationshipType, Direction.OUTGOING)
+                    .evaluator(getPropertyEvaluatorForType(nodeType)).traverse(parentNode).nodes().iterator();
+
+            if (nodes.hasNext()) {
+                result = nodes.next();
+
+                if (nodes.hasNext()) {
+                    throwDuplicatedException = true;
+                }
+            }
+        } catch (Exception e) {
+            throw new DatabaseException(e);
+        }
+
+        if (throwDuplicatedException) {
+            throw new DuplicatedNodeException("child", nodeType.getId());
         }
 
         return result;
