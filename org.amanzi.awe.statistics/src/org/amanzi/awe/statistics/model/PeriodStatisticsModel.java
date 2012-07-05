@@ -242,11 +242,10 @@ public class PeriodStatisticsModel extends AbstractModel {
             throw new IllegalArgumentException("Scell cannt be null");
         }
         Node scell = ((DataElement)parentNode).getNode();
-        Iterator<Node> sources = statisticService.getSources(scell).iterator();
+        Iterable<Node> sources = statisticService.getSources(scell);
         List<IDataElement> sourcedElements = new ArrayList<IDataElement>();
-        while (sources.hasNext()) {
-            Node nextElement = sources.next();
-            sourcedElements.add(new DataElement(nextElement));
+        for (Node sourceNode : sources) {
+            sourcedElements.add(new DataElement(sourceNode));
         }
         return sourcedElements;
     }

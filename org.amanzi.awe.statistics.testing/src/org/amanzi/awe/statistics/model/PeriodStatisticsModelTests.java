@@ -209,13 +209,44 @@ public class PeriodStatisticsModelTests extends AbstractStatisticsModelTests {
         when(mockedScell.getProperty(eq(DatasetService.TYPE), eq(null))).thenReturn(StatisticsNodeTypes.S_CELL.getId());
         when(mockedScell.getProperty(eq(DatasetService.NAME), eq(null))).thenReturn(SCELL_NAME);
         DataElement scellDataElement = new DataElement(mockedScell);
+
         Node mockedDaily = getMockedPeriodNode(Period.DAILY);
         PeriodStatisticsModel modelDaily = new PeriodStatisticsModel(mockedDaily);
         modelDaily.addSources(scellDataElement, null);
     }
 
+    @Test
+    public void testGetSources() throws DatabaseException, IllegalNodeDataException {
+        LOGGER.info("testGetSources started ");
+        Node mockedScell = getMockedNode();
+        when(mockedScell.getProperty(eq(DatasetService.TYPE), eq(null))).thenReturn(StatisticsNodeTypes.S_CELL.getId());
+        when(mockedScell.getProperty(eq(DatasetService.NAME), eq(null))).thenReturn(SCELL_NAME);
+        DataElement scellDataElement = new DataElement(mockedScell);
+        int listSize = (int)(Math.random() * 100);
+        List<IDataElement> generatedSources = generateSources(listSize);
+        List<Node> generatedSourcesNodes = new ArrayList<Node>();
+        for (IDataElement dataElement : generatedSources) {
+            Node nodeSource = ((DataElement)dataElement).getNode();
+            generatedSourcesNodes.add(nodeSource);
+        }
+
+        when(statisticsService.getSources(eq(mockedScell))).thenReturn(generatedSourcesNodes);
+        Node mockedDaily = getMockedPeriodNode(Period.DAILY);
+        PeriodStatisticsModel modelDaily = new PeriodStatisticsModel(mockedDaily);
+        Iterable<IDataElement> elements = modelDaily.getSources(scellDataElement);
+        Assert.assertEquals("Expected the same sources list", generatedSources, elements);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetSourcesIfParentIsNull() throws DatabaseException, IllegalNodeDataException {
+        LOGGER.info("testGetSources started ");
+        Node mockedDaily = getMockedPeriodNode(Period.DAILY);
+        PeriodStatisticsModel modelDaily = new PeriodStatisticsModel(mockedDaily);
+        modelDaily.getSources(null);
+    }
+
     /**
-     * @param d
+     * @param size
      * @return
      */
     private List<IDataElement> generateSources(int size) {
