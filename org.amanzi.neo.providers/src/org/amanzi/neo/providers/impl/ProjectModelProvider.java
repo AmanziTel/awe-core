@@ -38,7 +38,7 @@ import org.neo4j.graphdb.Node;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public final class ProjectModelProvider extends AbstractModelProvider<ProjectModel, IProjectModel> implements IProjectModelProvider {
+public class ProjectModelProvider extends AbstractModelProvider<ProjectModel, IProjectModel> implements IProjectModelProvider {
 
     private static final Logger LOGGER = Logger.getLogger(ProjectModelProvider.class);
 

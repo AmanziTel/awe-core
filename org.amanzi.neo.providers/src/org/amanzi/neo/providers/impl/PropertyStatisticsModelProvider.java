@@ -34,7 +34,7 @@ import org.neo4j.graphdb.Node;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public final class PropertyStatisticsModelProvider extends AbstractModelProvider<PropertyStatisticsModel, IPropertyStatisticsModel>
+public class PropertyStatisticsModelProvider extends AbstractModelProvider<PropertyStatisticsModel, IPropertyStatisticsModel>
         implements
             IPropertyStatisticsModelProvider {
 

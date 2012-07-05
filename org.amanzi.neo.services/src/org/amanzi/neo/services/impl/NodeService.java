@@ -46,7 +46,7 @@ import org.neo4j.kernel.Traversal;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public final class NodeService extends AbstractService implements INodeService {
+public class NodeService extends AbstractService implements INodeService {
 
     public enum NodeServiceRelationshipType implements RelationshipType {
         CHILD;
