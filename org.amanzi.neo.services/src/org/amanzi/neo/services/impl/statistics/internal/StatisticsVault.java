@@ -39,6 +39,10 @@ public class StatisticsVault implements IPropertyStatistics {
 
     private boolean isChanged;
 
+    public StatisticsVault() {
+        isChanged = false;
+    }
+
     @Override
     public void indexProperty(final INodeType nodeType, final String property, final Object value) {
         assert nodeType != null;

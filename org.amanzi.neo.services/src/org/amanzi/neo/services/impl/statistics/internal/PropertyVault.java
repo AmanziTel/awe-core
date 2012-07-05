@@ -13,6 +13,9 @@
 
 package org.amanzi.neo.services.impl.statistics.internal;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 /**
@@ -25,8 +28,43 @@ import java.util.Set;
  */
 public class PropertyVault {
 
-    public PropertyVault(final String propertyName) {
+    private enum ClassType {
+        INTEGER {
+            @Override
+            public boolean canConvert(final ClassType anotherClass) {
+                switch (anotherClass) {
+                case FLOAT:
+                case LONG:
+                    return true;
+                default:
+                    return super.canConvert(anotherClass);
+                }
+            }
+        },
+        STRING, FLOAT, LONG;
 
+        public boolean canConvert(final ClassType anotherClass) {
+            switch (anotherClass) {
+            case STRING:
+                return true;
+            default:
+                return false;
+            }
+        }
+    }
+
+    private final String propertyName;
+
+    private boolean isChanged;
+
+    private Map<Object, Integer> values = new HashMap<Object, Integer>();
+
+    private ClassType classType;
+
+    public PropertyVault(final String propertyName) {
+        this.propertyName = propertyName;
+
+        isChanged = false;
     }
 
     public void index(final Object value) {
@@ -41,4 +79,46 @@ public class PropertyVault {
         return 0;
     }
 
+    public boolean isChanged() {
+        return isChanged;
+    }
+
+    public void setChanged(final boolean isChanged) {
+        this.isChanged = isChanged;
+    }
+
+    protected ClassType defineClass(final Object value) {
+        return null;
+    }
+
+    protected void updateToNewClass(final ClassType classType) {
+        Map<Object, Integer> newValues = new HashMap<Object, Integer>();
+
+        for (Entry<Object, Integer> oldValuesEntry : values.entrySet()) {
+            Object updatedValue = updateToNewClass(oldValuesEntry.getKey(), classType);
+            newValues.put(updatedValue, oldValuesEntry.getValue());
+        }
+
+        values = newValues;
+    }
+
+    private Object updateToNewClass(final Object value, final ClassType classType) {
+        switch (classType) {
+        case STRING:
+            return value.toString();
+        case FLOAT:
+            if (value instanceof Number) {
+                return ((Number)value).floatValue();
+            }
+            break;
+        case LONG:
+            if (value instanceof Number) {
+                return ((Number)value).longValue();
+            }
+        default:
+            break;
+        }
+
+        return null;
+    }
 }

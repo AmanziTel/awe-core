@@ -40,6 +40,8 @@ public class NodeTypeVault {
 
     public NodeTypeVault(final INodeType nodeType) {
         this.nodeType = nodeType;
+
+        isChanged = false;
     }
 
     public int getCount() {
