@@ -88,7 +88,7 @@ public class PropertyStatisticsModel extends AbstractModel implements IPropertyS
     }
 
     @Override
-    public void indexProperty(final INodeType nodeType, final String property, final Object value) {
+    public void indexProperty(final INodeType nodeType, final String property, final Object value) throws ServiceException {
         statisticsVault.indexProperty(nodeType, property, value);
     }
 

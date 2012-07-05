@@ -23,6 +23,7 @@ package org.amanzi.neo.services.exceptions.enums;
  */
 public enum ServiceExceptionReason {
 
+    STATISTICS_CONVERSION_EXCEPTION,
     DATABASE_EXCEPTION, 
     PROPERTY_NOT_FOUND, 
     FILTER_ERROR, 

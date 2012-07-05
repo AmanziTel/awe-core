@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.amanzi.neo.nodetypes.INodeType;
+import org.amanzi.neo.services.exceptions.ServiceException;
 
 /**
  * TODO Purpose of
@@ -48,7 +49,7 @@ public class NodeTypeVault {
         return count;
     }
 
-    public void indexProperty(final String propertyName, final Object propertyValue) {
+    public void indexProperty(final String propertyName, final Object propertyValue) throws ServiceException {
         getPropertyVault(propertyName).index(propertyValue);
 
         count++;

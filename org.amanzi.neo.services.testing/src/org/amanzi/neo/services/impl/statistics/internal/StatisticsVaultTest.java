@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.amanzi.neo.nodetypes.INodeType;
+import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.testing.AbstractMockitoTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -65,7 +66,7 @@ public class StatisticsVaultTest extends AbstractMockitoTest {
     }
 
     @Test
-    public void testCheckCountIncreased() {
+    public void testCheckCountIncreased() throws ServiceException {
         int previousCount = statisticsVault.getCount();
 
         for (int i = 0; i < 10; i++) {
@@ -83,7 +84,7 @@ public class StatisticsVaultTest extends AbstractMockitoTest {
     }
 
     @Test
-    public void testCheckActivityOnIndexProperty() {
+    public void testCheckActivityOnIndexProperty() throws ServiceException {
         statisticsVault.indexProperty(TEST_NODE_TYPE, TEST_PROPERTY, TEST_VALUE);
 
         verify(nodeTypeVault).indexProperty(TEST_PROPERTY, TEST_VALUE);
@@ -105,7 +106,7 @@ public class StatisticsVaultTest extends AbstractMockitoTest {
     }
 
     @Test
-    public void testCheckIsChanged() {
+    public void testCheckIsChanged() throws ServiceException {
         statisticsVault.setChanged(false);
 
         statisticsVault.indexProperty(TEST_NODE_TYPE, TEST_PROPERTY, TEST_VALUE);

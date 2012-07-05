@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.amanzi.neo.nodetypes.INodeType;
+import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.impl.statistics.IPropertyStatistics;
 import org.apache.commons.lang3.StringUtils;
 
@@ -44,7 +45,7 @@ public class StatisticsVault implements IPropertyStatistics {
     }
 
     @Override
-    public void indexProperty(final INodeType nodeType, final String property, final Object value) {
+    public void indexProperty(final INodeType nodeType, final String property, final Object value) throws ServiceException {
         assert nodeType != null;
         assert !StringUtils.isEmpty(property);
         assert value != null;

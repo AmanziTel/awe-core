@@ -16,6 +16,7 @@ package org.amanzi.neo.services.impl.statistics;
 import java.util.Set;
 
 import org.amanzi.neo.nodetypes.INodeType;
+import org.amanzi.neo.services.exceptions.ServiceException;
 
 /**
  * TODO Purpose of
@@ -27,7 +28,7 @@ import org.amanzi.neo.nodetypes.INodeType;
  */
 public interface IPropertyStatistics {
 
-    void indexProperty(INodeType nodeType, String property, Object value);
+    void indexProperty(INodeType nodeType, String property, Object value) throws ServiceException;
 
     Set<String> getPropertyNames();
 

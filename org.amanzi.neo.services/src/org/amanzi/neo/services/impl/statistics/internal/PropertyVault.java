@@ -18,6 +18,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.amanzi.neo.services.exceptions.ServiceException;
+import org.amanzi.neo.services.exceptions.StatisticsConversionException;
+
 /**
  * TODO Purpose of
  * <p>
@@ -28,12 +31,14 @@ import java.util.Set;
  */
 public class PropertyVault {
 
-    private enum ClassType {
-        INTEGER {
+    private static final int STATISTICS_LIMIT = 100;
+
+    protected enum ClassType {
+        INTEGER(Integer.class) {
             @Override
             public boolean canConvert(final ClassType anotherClass) {
                 switch (anotherClass) {
-                case FLOAT:
+                case DOUBLE:
                 case LONG:
                     return true;
                 default:
@@ -41,7 +46,13 @@ public class PropertyVault {
                 }
             }
         },
-        STRING, FLOAT, LONG;
+        STRING(String.class), DOUBLE(Double.class), LONG(Long.class);
+
+        private Class< ? > clazz;
+
+        private ClassType(Class< ? > clazz) {
+            this.clazz = clazz;
+        }
 
         public boolean canConvert(final ClassType anotherClass) {
             switch (anotherClass) {
@@ -50,6 +61,34 @@ public class PropertyVault {
             default:
                 return false;
             }
+        }
+
+        public Class< ? > getDataClass() {
+            return clazz;
+        }
+
+        public String getDataClassName() {
+            return clazz.getSimpleName();
+        }
+
+        public static ClassType findByClass(Class< ? > clazz) {
+            for (ClassType singleType : values()) {
+                if (singleType.clazz.equals(clazz)) {
+                    return singleType;
+                }
+            }
+
+            return null;
+        }
+
+        public static ClassType findByName(String className) {
+            for (ClassType singleType : values()) {
+                if (singleType.clazz.getSimpleName().equals(className)) {
+                    return singleType;
+                }
+            }
+
+            return null;
         }
     }
 
@@ -61,22 +100,56 @@ public class PropertyVault {
 
     private ClassType classType;
 
+    private boolean handleStatistics;
+
     public PropertyVault(final String propertyName) {
         this.propertyName = propertyName;
 
         isChanged = false;
+        handleStatistics = true;
     }
 
-    public void index(final Object value) {
+    public void index(final Object value) throws ServiceException {
+        if (handleStatistics) {
+            if (classType == null) {
+                defineClass(value);
+            }
 
+            if (!value.getClass().equals(classType.getDataClass())) {
+                ClassType previousClass = classType;
+                defineClass(value);
+
+                if (!previousClass.canConvert(classType)) {
+                    throw new StatisticsConversionException(previousClass.getDataClass(), classType.getDataClass(), value,
+                            propertyName);
+                }
+
+                updateToNewClass(classType);
+            }
+
+            Integer valueCount = values.get(value);
+            if (valueCount == null) {
+                valueCount = 0;
+            }
+            valueCount++;
+
+            values.put(value, valueCount);
+
+            if (values.size() > STATISTICS_LIMIT) {
+                handleStatistics = false;
+                values.clear();
+            }
+        }
+
+        isChanged = true;
     }
 
     public Set<Object> getValues() {
-        return null;
+        return values.keySet();
     }
 
     public int getValueCount(final Object value) {
-        return 0;
+        return values.get(value);
     }
 
     public boolean isChanged() {
@@ -87,8 +160,8 @@ public class PropertyVault {
         this.isChanged = isChanged;
     }
 
-    protected ClassType defineClass(final Object value) {
-        return null;
+    protected void defineClass(final Object value) {
+        this.classType = ClassType.findByClass(value.getClass());
     }
 
     protected void updateToNewClass(final ClassType classType) {
@@ -106,7 +179,7 @@ public class PropertyVault {
         switch (classType) {
         case STRING:
             return value.toString();
-        case FLOAT:
+        case DOUBLE:
             if (value instanceof Number) {
                 return ((Number)value).floatValue();
             }
@@ -120,5 +193,13 @@ public class PropertyVault {
         }
 
         return null;
+    }
+
+    public String getClassName() {
+        return classType == null ? null : classType.getDataClassName();
+    }
+
+    public String getPropertyName() {
+        return propertyName;
     }
 }
