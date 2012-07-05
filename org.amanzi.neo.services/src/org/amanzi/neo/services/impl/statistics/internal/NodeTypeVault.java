@@ -13,6 +13,9 @@
 
 package org.amanzi.neo.services.impl.statistics.internal;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import org.amanzi.neo.nodetypes.INodeType;
@@ -31,6 +34,10 @@ public class NodeTypeVault {
 
     private final INodeType nodeType;
 
+    private boolean isChanged;
+
+    private final Map<String, PropertyVault> propertyVaults = new HashMap<String, PropertyVault>();
+
     public NodeTypeVault(final INodeType nodeType) {
         this.nodeType = nodeType;
     }
@@ -39,20 +46,49 @@ public class NodeTypeVault {
         return count;
     }
 
-    public void indexProperty(final String propertyValue, final Object propetyValue) {
+    public void indexProperty(final String propertyName, final Object propertyValue) {
+        getPropertyVault(propertyName).index(propertyValue);
 
+        count++;
+        isChanged = true;
     }
 
     public Set<String> getPropertyNames() {
-        return null;
+        return propertyVaults.keySet();
     }
 
     public Set<Object> getValues(final String property) {
-        return null;
+        return getPropertyVault(property).getValues();
     }
 
     public int getValueCount(final String property, final Object value) {
-        return 0;
+        return getPropertyVault(property).getValueCount(value);
     }
 
+    protected PropertyVault getPropertyVault(final String property) {
+        PropertyVault result = propertyVaults.get(property);
+
+        if (result == null) {
+            result = new PropertyVault(property);
+            propertyVaults.put(property, result);
+        }
+
+        return result;
+    }
+
+    public Collection<PropertyVault> getAllPropertyVaults() {
+        return propertyVaults.values();
+    }
+
+    public INodeType getNodeType() {
+        return nodeType;
+    }
+
+    public boolean isChanged() {
+        return isChanged;
+    }
+
+    public void setChanged(final boolean isChanged) {
+        this.isChanged = isChanged;
+    }
 }

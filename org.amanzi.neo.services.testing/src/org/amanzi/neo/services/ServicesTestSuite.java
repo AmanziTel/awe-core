@@ -29,6 +29,7 @@ import org.junit.runners.Suite.SuiteClasses;
 @SuiteClasses({org.amanzi.neo.services.impl.NodeServiceTest.class, 
                org.amanzi.neo.services.impl.NodeServiceIntegrationTest.class,
                org.amanzi.neo.services.impl.internal.AbstractServiceTest.class,
+               org.amanzi.neo.services.impl.statistics.internal.NodeTypeVaultTest.class,
                org.amanzi.neo.services.impl.statistics.internal.StatisticsVaultTest.class
                })
 public class ServicesTestSuite {

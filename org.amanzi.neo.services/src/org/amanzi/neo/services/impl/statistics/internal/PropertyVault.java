@@ -13,14 +13,32 @@
 
 package org.amanzi.neo.services.impl.statistics.internal;
 
+import java.util.Set;
+
 /**
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
 public class PropertyVault {
+
+    public PropertyVault(final String propertyName) {
+
+    }
+
+    public void index(final Object value) {
+
+    }
+
+    public Set<Object> getValues() {
+        return null;
+    }
+
+    public int getValueCount(final Object value) {
+        return 0;
+    }
 
 }
