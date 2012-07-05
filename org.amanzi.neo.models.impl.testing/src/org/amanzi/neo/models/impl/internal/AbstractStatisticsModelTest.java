@@ -15,6 +15,7 @@ package org.amanzi.neo.models.impl.internal;
 
 import org.amanzi.testing.AbstractMockitoTest;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -35,6 +36,7 @@ public class AbstractStatisticsModelTest extends AbstractMockitoTest {
     }
 
     @Test
+    @Ignore
     public void test() {
         fail("Not yet implemented");
     }

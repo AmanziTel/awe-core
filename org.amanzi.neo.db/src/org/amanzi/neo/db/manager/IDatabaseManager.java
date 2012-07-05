@@ -131,6 +131,4 @@ public interface IDatabaseManager {
      * Removes new database event listener
      */
     void removeDatabaseEventListener(IDatabaseEventListener listener);
-
-    void cleanDatabaseEventListeners();
 }

@@ -18,7 +18,6 @@ import org.amanzi.neo.db.manager.IDatabaseManager;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.impl.GeneralNodeProperties;
 import org.amanzi.testing.AbstractMockitoTest;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -40,7 +39,7 @@ public class AbstractServiceTest extends AbstractMockitoTest {
         /**
          * @param graphDb
          */
-        protected TestAbstractService(GraphDatabaseService graphDb) {
+        protected TestAbstractService(final GraphDatabaseService graphDb) {
             super(graphDb, GENERAL_NODE_PROPERTIES);
         }
 
@@ -63,11 +62,6 @@ public class AbstractServiceTest extends AbstractMockitoTest {
         dbManager.setDatabaseService(graphDb);
 
         service = new TestAbstractService(graphDb);
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        dbManager.cleanDatabaseEventListeners();
     }
 
     @Test

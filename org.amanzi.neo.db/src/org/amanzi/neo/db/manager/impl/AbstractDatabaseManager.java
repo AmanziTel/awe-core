@@ -42,14 +42,14 @@ public abstract class AbstractDatabaseManager implements IDatabaseManager {
     /*
      * Map of Transactions-per-Thread
      */
-    private ThreadLocal<Transaction> transactionMap = new ThreadLocal<Transaction>();
+    private final ThreadLocal<Transaction> transactionMap = new ThreadLocal<Transaction>();
 
-    private ThreadLocal<Integer> transactionStack = new ThreadLocal<Integer>();
+    private final ThreadLocal<Integer> transactionStack = new ThreadLocal<Integer>();
 
     /*
      * Listeners for Database Events
      */
-    private List<IDatabaseEventListener> listeners = new ArrayList<IDatabaseEventListener>();
+    private final List<IDatabaseEventListener> listeners = new ArrayList<IDatabaseEventListener>();
 
     public AbstractDatabaseManager() {
 
@@ -118,12 +118,12 @@ public abstract class AbstractDatabaseManager implements IDatabaseManager {
     }
 
     @Override
-    public void addDatabaseEventListener(IDatabaseEventListener listener) {
+    public void addDatabaseEventListener(final IDatabaseEventListener listener) {
         listeners.add(listener);
     }
 
     @Override
-    public void removeDatabaseEventListener(IDatabaseEventListener listener) {
+    public void removeDatabaseEventListener(final IDatabaseEventListener listener) {
         listeners.remove(listener);
     }
 
@@ -132,7 +132,7 @@ public abstract class AbstractDatabaseManager implements IDatabaseManager {
      * 
      * @param eventType type of event
      */
-    protected void fireEvent(EventType eventType) {
+    protected void fireEvent(final EventType eventType) {
         DatabaseEvent event = new DatabaseEvent(eventType);
         for (IDatabaseEventListener listener : listeners) {
             listener.onDatabaseEvent(event);
@@ -157,11 +157,6 @@ public abstract class AbstractDatabaseManager implements IDatabaseManager {
         }
 
         return databaseDirectory.getAbsolutePath();
-    }
-
-    @Override
-    public void cleanDatabaseEventListeners() {
-        listeners.clear();
     }
 
 }

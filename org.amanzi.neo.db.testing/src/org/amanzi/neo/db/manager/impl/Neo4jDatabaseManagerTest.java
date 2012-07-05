@@ -96,7 +96,6 @@ public class Neo4jDatabaseManagerTest {
      */
     @After
     public void tearDown() throws Exception {
-        DatabaseManagerFactory.getDatabaseManager().cleanDatabaseEventListeners();
         DatabaseManagerFactory.getDatabaseManager().shutdown();
 
         clearDbLocation(new File(getDirectoryLocation(TEST_DIRECTORIES)));
@@ -104,7 +103,7 @@ public class Neo4jDatabaseManagerTest {
 
     }
 
-    private static String getDirectoryLocation(String[] subDirectories) throws IOException {
+    private static String getDirectoryLocation(final String[] subDirectories) throws IOException {
         String userHome = System.getProperty(USER_HOME);
 
         File testHomeFile = new File(userHome);
@@ -116,7 +115,7 @@ public class Neo4jDatabaseManagerTest {
         return testHomeFile.getAbsolutePath();
     }
 
-    private static void clearDbLocation(File dbLocation) throws IOException {
+    private static void clearDbLocation(final File dbLocation) throws IOException {
         if (dbLocation.exists()) {
             for (File subFile : dbLocation.listFiles()) {
                 if (subFile.isDirectory()) {
@@ -341,7 +340,7 @@ public class Neo4jDatabaseManagerTest {
      * @param eventType type of event to test
      * @return Neo4jDatabaseManager configured with corresponding mocks
      */
-    private Neo4jDatabaseManager getMockDbManagerForEvents(EventActionType actionType, EventType... eventTypes) {
+    private Neo4jDatabaseManager getMockDbManagerForEvents(final EventActionType actionType, final EventType... eventTypes) {
         Neo4jDatabaseManager dbManager = new Neo4jDatabaseManager();
         dbManager.setDatabaseService(getGraphDbServiceMock(actionType));
 
@@ -356,7 +355,7 @@ public class Neo4jDatabaseManagerTest {
      * 
      * @return
      */
-    private GraphDatabaseService getGraphDbServiceMock(EventActionType actionType) {
+    private GraphDatabaseService getGraphDbServiceMock(final EventActionType actionType) {
         final GraphDatabaseService service = context.mock(GraphDatabaseService.class);
 
         switch (actionType) {

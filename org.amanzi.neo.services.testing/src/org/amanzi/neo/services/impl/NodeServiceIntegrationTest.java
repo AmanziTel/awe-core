@@ -323,7 +323,7 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
 
         assertFalse("is should be only 1 relationship", relationship.hasNext());
 
-        assertEquals("unexepcted type of relationship", TestRelatinshipType.TEST_REL, relToParent.getType());
+        assertEquals("unexepcted type of relationship", TestRelatinshipType.TEST_REL.name(), relToParent.getType().name());
         assertEquals("unexpected parent", parent, relToParent.getStartNode());
     }
 
@@ -336,7 +336,7 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
         return result;
     }
 
-    private List<Node> createChildren(RelationshipType relType, INodeType childNodeType, Node... parents) {
+    private List<Node> createChildren(final RelationshipType relType, final INodeType childNodeType, final Node... parents) {
         List<Node> children = new ArrayList<Node>();
 
         Transaction tx = getGraphDatabaseService().beginTx();
