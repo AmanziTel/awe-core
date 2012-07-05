@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.services;
 
+import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.impl.statistics.StatisticsVault;
 import org.amanzi.neo.services.internal.IService;
 import org.neo4j.graphdb.Node;
@@ -27,8 +28,8 @@ import org.neo4j.graphdb.Node;
  */
 public interface IStatisticsService extends IService {
 
-    void saveStatistics(Node node, StatisticsVault vault);
+    void saveStatistics(Node node, StatisticsVault vault) throws ServiceException;
 
-    StatisticsVault loadStatistics(Node rootNode);
+    StatisticsVault loadStatistics(Node rootNode) throws ServiceException;
 
 }

@@ -13,13 +13,13 @@
 
 package org.amanzi.neo.providers.impl;
 
-import org.amanzi.neo.models.IProjectModel;
 import org.amanzi.neo.models.exceptions.DuplicatedModelException;
 import org.amanzi.neo.models.exceptions.FatalException;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.exceptions.ParameterInconsistencyException;
-import org.amanzi.neo.models.impl.ProjectModel;
-import org.amanzi.neo.models.impl.ProjectModelNodeType;
+import org.amanzi.neo.models.impl.project.ProjectModel;
+import org.amanzi.neo.models.impl.project.ProjectModelNodeType;
+import org.amanzi.neo.models.project.IProjectModel;
 import org.amanzi.neo.nodeproperties.impl.GeneralNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.INodeService;

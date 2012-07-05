@@ -46,7 +46,7 @@ import org.neo4j.kernel.Traversal;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class NodeService extends AbstractService implements INodeService {
+public final class NodeService extends AbstractService implements INodeService {
 
     public enum NodeServiceRelationshipType implements RelationshipType {
         CHILD;
@@ -58,24 +58,24 @@ public class NodeService extends AbstractService implements INodeService {
     /**
      * @param graphDb
      */
-    public NodeService(GraphDatabaseService graphDb, IGeneralNodeProperties generalNodeProperties) {
+    public NodeService(final GraphDatabaseService graphDb, final IGeneralNodeProperties generalNodeProperties) {
         super(graphDb, generalNodeProperties);
     }
 
     @Override
-    public String getNodeName(Node node) throws ServiceException {
+    public String getNodeName(final Node node) throws ServiceException {
         return (String)getNodeProperty(node, getGeneralNodeProperties().getNodeNameProperty(), null, true);
     }
 
     @Override
-    public INodeType getNodeType(Node node) throws ServiceException {
+    public INodeType getNodeType(final Node node) throws ServiceException {
         String nodeType = (String)getNodeProperty(node, getGeneralNodeProperties().getNodeTypeProperty(), null, true);
 
         return NodeTypeManager.getInstance().getType(nodeType);
     }
 
     @Override
-    public Node getParent(Node child) throws ServiceException {
+    public Node getParent(final Node child) throws ServiceException {
         assert child != null;
 
         Node parent = null;
@@ -94,7 +94,7 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     @Override
-    public Iterator<Node> getChildren(Node parentNode) throws ServiceException {
+    public Iterator<Node> getChildren(final Node parentNode) throws ServiceException {
         assert parentNode != null;
         try {
             return getChildrenTraversal().traverse(parentNode).nodes().iterator();
@@ -104,7 +104,7 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     @Override
-    public Node getChildByName(Node parentNode, String name, INodeType nodeType) throws ServiceException {
+    public Node getChildByName(final Node parentNode, final String name, final INodeType nodeType) throws ServiceException {
         assert parentNode != null;
         assert !StringUtils.isEmpty(name);
         assert nodeType != null;
@@ -162,8 +162,8 @@ public class NodeService extends AbstractService implements INodeService {
      * @return
      * @throws ServiceException
      */
-    private Object getNodeProperty(Node node, String propertyName, String defaultValue, boolean throwExceptionIfNotExist)
-            throws ServiceException {
+    private Object getNodeProperty(final Node node, final String propertyName, final String defaultValue,
+            final boolean throwExceptionIfNotExist) throws ServiceException {
         assert node != null;
         assert !StringUtils.isEmpty(propertyName);
 
@@ -195,7 +195,8 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     @Override
-    public Node createNode(Node parentNode, INodeType nodeType, RelationshipType relationshipType) throws ServiceException {
+    public Node createNode(final Node parentNode, final INodeType nodeType, final RelationshipType relationshipType)
+            throws ServiceException {
         assert parentNode != null;
         assert nodeType != null;
         assert relationshipType != null;
@@ -205,8 +206,8 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     @Override
-    public Node createNode(Node parentNode, INodeType nodeType, RelationshipType relationshipType, String name)
-            throws ServiceException {
+    public Node createNode(final Node parentNode, final INodeType nodeType, final RelationshipType relationshipType,
+            final String name) throws ServiceException {
         assert parentNode != null;
         assert nodeType != null;
         assert !StringUtils.isEmpty(name);
@@ -219,8 +220,8 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     @Override
-    public Node createNode(Node parentNode, INodeType nodeType, RelationshipType relationshipType, Map<String, Object> parameters)
-            throws ServiceException {
+    public Node createNode(final Node parentNode, final INodeType nodeType, final RelationshipType relationshipType,
+            final Map<String, Object> parameters) throws ServiceException {
         assert parentNode != null;
         assert nodeType != null;
         assert parameters != null;

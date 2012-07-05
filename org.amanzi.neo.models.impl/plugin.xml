@@ -4,7 +4,10 @@
    <extension
          point="org.amanzi.nodetypes">
       <nodetype
-            class="org.amanzi.neo.models.impl.ProjectModelNodeType">
+            class="org.amanzi.neo.models.impl.project.ProjectModelNodeType">
+      </nodetype>
+      <nodetype
+            class="org.amanzi.neo.models.impl.statistics.PropertyStatisticsNodeType">
       </nodetype>
    </extension>
 

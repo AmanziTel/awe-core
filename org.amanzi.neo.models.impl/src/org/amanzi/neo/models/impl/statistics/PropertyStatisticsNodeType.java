@@ -11,9 +11,10 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.nodeproperties.impl;
+package org.amanzi.neo.models.impl.statistics;
 
-import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
+import org.amanzi.neo.nodetypes.INodeType;
+import org.amanzi.neo.nodetypes.NodeTypeUtils;
 
 /**
  * TODO Purpose of
@@ -23,27 +24,12 @@ import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public final class GeneralNodeProperties implements IGeneralNodeProperties {
-
-    private static final String NODE_NAME = "name";
-
-    private static final String NODE_TYPE = "type";
-
-    private static final String PARENT_ID = "parent_id";
+public enum PropertyStatisticsNodeType implements INodeType {
+    PROPERTY_STATISTICS;
 
     @Override
-    public String getNodeNameProperty() {
-        return NODE_NAME;
-    }
-
-    @Override
-    public String getNodeTypeProperty() {
-        return NODE_TYPE;
-    }
-
-    @Override
-    public String getParentProperty() {
-        return PARENT_ID;
+    public String getId() {
+        return NodeTypeUtils.getTypeId(this);
     }
 
 }

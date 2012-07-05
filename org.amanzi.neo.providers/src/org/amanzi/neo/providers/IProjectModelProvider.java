@@ -14,8 +14,8 @@
 package org.amanzi.neo.providers;
 
 import org.amanzi.neo.models.IModel;
-import org.amanzi.neo.models.IProjectModel;
 import org.amanzi.neo.models.exceptions.ModelException;
+import org.amanzi.neo.models.project.IProjectModel;
 
 /**
  * TODO Purpose of

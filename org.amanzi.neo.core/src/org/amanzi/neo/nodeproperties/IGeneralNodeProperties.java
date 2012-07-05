@@ -29,6 +29,4 @@ public interface IGeneralNodeProperties extends INodeProperties {
 
     String getParentProperty();
 
-    String getCountProperty();
-
 }

@@ -28,16 +28,16 @@ public class DuplicatedModelException extends ModelException {
     /** long serialVersionUID field */
     private static final long serialVersionUID = -6504791027632079488L;
 
-    private Class< ? extends IModel> model;
+    private final Class< ? extends IModel> model;
 
-    private String propertyName;
+    private final String propertyName;
 
-    private String propertyValue;
+    private final Object propertyValue;
 
     /**
      * @param e
      */
-    public DuplicatedModelException(Class< ? extends IModel> model, String propertyName, String propertyValue) {
+    public DuplicatedModelException(final Class< ? extends IModel> model, final String propertyName, final Object propertyValue) {
         super();
 
         this.model = model;
@@ -62,7 +62,7 @@ public class DuplicatedModelException extends ModelException {
     /**
      * @return Returns the propertyValue.
      */
-    public String getPropertyValue() {
+    public Object getPropertyValue() {
         return propertyValue;
     }
 

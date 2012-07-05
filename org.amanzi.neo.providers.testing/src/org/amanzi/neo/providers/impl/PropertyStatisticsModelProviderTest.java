@@ -77,7 +77,7 @@ public class PropertyStatisticsModelProviderTest extends AbstractMockitoTest {
         model = mock(PropertyStatisticsModel.class);
         parent = mock(TestStatisticalModel.class);
 
-        provider = new PropertyStatisticsModelProvider(null, null, null);
+        provider = new PropertyStatisticsModelProvider(null, null);
     }
 
     @Test(expected = ParameterInconsistencyException.class)

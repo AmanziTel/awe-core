@@ -16,6 +16,7 @@ package org.amanzi.neo.services.impl;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.IStatisticsService;
+import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.impl.internal.AbstractService;
 import org.amanzi.neo.services.impl.statistics.StatisticsVault;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -29,7 +30,7 @@ import org.neo4j.graphdb.Node;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class StatisticsService extends AbstractService implements IStatisticsService {
+public final class StatisticsService extends AbstractService implements IStatisticsService {
 
     private final INodeService nodeService;
 
@@ -45,13 +46,13 @@ public class StatisticsService extends AbstractService implements IStatisticsSer
     }
 
     @Override
-    public void saveStatistics(final Node node, final StatisticsVault vault) {
+    public synchronized void saveStatistics(final Node node, final StatisticsVault vault) throws ServiceException {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public StatisticsVault loadStatistics(final Node rootNode) {
+    public synchronized StatisticsVault loadStatistics(final Node rootNode) throws ServiceException {
         // TODO Auto-generated method stub
         return null;
     }

@@ -11,17 +11,16 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.models;
+package org.amanzi.neo.models.impl.project;
 
+import org.amanzi.neo.nodetypes.INodeType;
+import org.amanzi.neo.nodetypes.NodeTypeUtils;
 
-/**
- * TODO Purpose of
- * <p>
- * </p>
- * 
- * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
- * @since 1.0.0
- */
-public interface IProjectModel extends IModel {
+public enum ProjectModelNodeType implements INodeType {
+    PROJECT;
 
+    @Override
+    public String getId() {
+        return NodeTypeUtils.getTypeId(this);
+    }
 }

@@ -15,12 +15,14 @@ package org.amanzi.neo.models.impl.internal;
 
 import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.models.exceptions.DataInconsistencyException;
+import org.amanzi.neo.models.exceptions.DuplicatedModelException;
 import org.amanzi.neo.models.exceptions.FatalException;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.impl.internal.util.AbstractLoggable;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.INodeService;
+import org.amanzi.neo.services.exceptions.DuplicatedNodeException;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.impl.NodeService;
 import org.apache.commons.lang3.StringUtils;
@@ -49,12 +51,12 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
     private final INodeService nodeService;
     private final IGeneralNodeProperties generalNodeProperties;
 
-    public AbstractModel(INodeService nodeService, IGeneralNodeProperties generalNodeProperties) {
+    public AbstractModel(final INodeService nodeService, final IGeneralNodeProperties generalNodeProperties) {
         this.nodeService = nodeService;
         this.generalNodeProperties = generalNodeProperties;
     }
 
-    protected void initialize(Node parentNode, String name, INodeType nodeType) throws ModelException {
+    protected void initialize(final Node parentNode, final String name, final INodeType nodeType) throws ModelException {
         assert parentNode != null;
         assert !StringUtils.isEmpty(name);
         assert nodeType != null;
@@ -68,7 +70,7 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
         this.parentNode = parentNode;
 
         try {
-            this.rootNode = nodeService.createNode(parentNode, nodeType, NodeService.NodeServiceRelationshipType.CHILD, name);
+            rootNode = nodeService.createNode(parentNode, nodeType, NodeService.NodeServiceRelationshipType.CHILD, name);
         } catch (ServiceException e) {
             processException("Error on initializing new node for Model", e);
         }
@@ -78,7 +80,7 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
         }
     }
 
-    public void initialize(Node rootNode) throws ModelException {
+    public void initialize(final Node rootNode) throws ModelException {
         assert rootNode != null;
 
         if (LOGGER.isDebugEnabled()) {
@@ -87,9 +89,9 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
 
         try {
             this.rootNode = rootNode;
-            this.name = nodeService.getNodeName(rootNode);
-            this.nodeType = nodeService.getNodeType(rootNode);
-            this.parentNode = nodeService.getParent(rootNode);
+            name = nodeService.getNodeName(rootNode);
+            nodeType = nodeService.getNodeType(rootNode);
+            parentNode = nodeService.getParent(rootNode);
         } catch (ServiceException e) {
             processException("An error occured on Model Initialization", e);
         }
@@ -118,11 +120,15 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
         return rootNode;
     }
 
+    public void setRootNode(final Node rootNode) {
+        this.rootNode = rootNode;
+    }
+
     public Node getParentNode() {
         return parentNode;
     }
 
-    protected void processException(String logMessage, ServiceException e) throws ModelException {
+    protected void processException(final String logMessage, final ServiceException e) throws ModelException {
         LOGGER.error(logMessage, e);
 
         switch (e.getReason()) {
@@ -132,6 +138,9 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
         case INCORRECT_PARENT:
         case INCORRECT_PROPERTY:
             throw new DataInconsistencyException(e);
+        case DUPLICATED_NODE:
+            DuplicatedNodeException error = (DuplicatedNodeException)e;
+            throw new DuplicatedModelException(getClass(), error.getPropertyName(), error.getDuplicatedValue());
         default:
             // do nothing
         }

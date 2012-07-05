@@ -23,9 +23,6 @@
                   refId="org.amanzi.nodeproperties.generalnodeproperties">
             </nodePropertiesReference>
             <serviceReference
-                  refId="org.amanzi.service.NodeService">
-            </serviceReference>
-            <serviceReference
                   refId="org.amanzi.service.StatisticsService">
             </serviceReference>
          </parameters>

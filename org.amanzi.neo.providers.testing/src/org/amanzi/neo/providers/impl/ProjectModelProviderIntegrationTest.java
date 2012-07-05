@@ -16,8 +16,8 @@ package org.amanzi.neo.providers.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.amanzi.neo.models.IProjectModel;
-import org.amanzi.neo.models.impl.ProjectModelNodeType;
+import org.amanzi.neo.models.impl.project.ProjectModelNodeType;
+import org.amanzi.neo.models.project.IProjectModel;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.providers.IProjectModelProvider;
 import org.amanzi.neo.providers.util.AbstractProviderIntegrationTest;

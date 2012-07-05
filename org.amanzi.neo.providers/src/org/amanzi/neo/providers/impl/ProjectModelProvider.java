@@ -13,13 +13,13 @@
 
 package org.amanzi.neo.providers.impl;
 
-import org.amanzi.neo.models.IProjectModel;
 import org.amanzi.neo.models.exceptions.DuplicatedModelException;
 import org.amanzi.neo.models.exceptions.FatalException;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.exceptions.ParameterInconsistencyException;
-import org.amanzi.neo.models.impl.ProjectModel;
-import org.amanzi.neo.models.impl.ProjectModelNodeType;
+import org.amanzi.neo.models.impl.project.ProjectModel;
+import org.amanzi.neo.models.impl.project.ProjectModelNodeType;
+import org.amanzi.neo.models.project.IProjectModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.providers.IProjectModelProvider;
 import org.amanzi.neo.providers.impl.internal.AbstractModelProvider;
@@ -38,7 +38,7 @@ import org.neo4j.graphdb.Node;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class ProjectModelProvider extends AbstractModelProvider<ProjectModel, IProjectModel> implements IProjectModelProvider {
+public final class ProjectModelProvider extends AbstractModelProvider<ProjectModel, IProjectModel> implements IProjectModelProvider {
 
     private static final Logger LOGGER = Logger.getLogger(ProjectModelProvider.class);
 
@@ -48,13 +48,13 @@ public class ProjectModelProvider extends AbstractModelProvider<ProjectModel, IP
 
     private IProjectModel activeProject;
 
-    public ProjectModelProvider(INodeService nodeService, IGeneralNodeProperties generalNodeProperties) {
+    public ProjectModelProvider(final INodeService nodeService, final IGeneralNodeProperties generalNodeProperties) {
         this.nodeService = nodeService;
         this.generalNodeProperties = generalNodeProperties;
     }
 
     @Override
-    public IProjectModel findProjectByName(String name) throws ModelException {
+    public IProjectModel findProjectByName(final String name) throws ModelException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("findProjectByName", name));
         }
@@ -101,7 +101,7 @@ public class ProjectModelProvider extends AbstractModelProvider<ProjectModel, IP
     }
 
     @Override
-    public IProjectModel createProjectModel(String name) throws ModelException {
+    public IProjectModel createProjectModel(final String name) throws ModelException {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("createProjectModel", name));
         }
@@ -132,10 +132,10 @@ public class ProjectModelProvider extends AbstractModelProvider<ProjectModel, IP
     }
 
     @Override
-    public void setActiveProjectModel(IProjectModel projectModel) {
+    public void setActiveProjectModel(final IProjectModel projectModel) {
         assert projectModel != null;
 
-        this.activeProject = projectModel;
+        activeProject = projectModel;
     }
 
     @Override

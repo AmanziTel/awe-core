@@ -11,9 +11,11 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.models.impl;
+package org.amanzi.neo.models.impl.project;
 
 import org.amanzi.neo.models.exceptions.DataInconsistencyException;
+import org.amanzi.neo.models.impl.project.ProjectModel;
+import org.amanzi.neo.models.impl.project.ProjectModelNodeType;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.impl.GeneralNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
