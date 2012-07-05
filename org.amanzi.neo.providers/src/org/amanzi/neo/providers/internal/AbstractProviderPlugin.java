@@ -13,6 +13,7 @@
 
 package org.amanzi.neo.providers.internal;
 
+import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
 import org.amanzi.neo.providers.ContextException;
 import org.amanzi.neo.providers.IModelProvider;
 import org.amanzi.neo.providers.IProjectModelProvider;
@@ -37,6 +38,8 @@ public abstract class AbstractProviderPlugin extends Plugin {
 
     private static final String PROJECT_MODEL_PROVIDER_ID = "org.amanzi.providers.ProjectModelProvider";
 
+    private static final String PROPERTY_STATISTICS_MODEL_PROVIDER_ID = "org.amanzi.providers.PropertyStatisticsModelProvider";
+
     private static class ProviderContextHolder {
         private static volatile IProviderContext context = new ProviderContextImpl();
     }
@@ -45,7 +48,7 @@ public abstract class AbstractProviderPlugin extends Plugin {
         return ProviderContextHolder.context;
     }
 
-    private <T extends IModelProvider< ? , ? >> T getModelProvider(String id) {
+    private <T extends IModelProvider< ? , ? >> T getModelProvider(final String id) {
         try {
             return getContext().get(id);
         } catch (ContextException e) {
@@ -57,7 +60,7 @@ public abstract class AbstractProviderPlugin extends Plugin {
         return null;
     }
 
-    private void logError(ContextException e) {
+    private void logError(final ContextException e) {
         String message = "An error occured on initialization Provider context";
 
         LOGGER.fatal(message, e);
@@ -67,6 +70,10 @@ public abstract class AbstractProviderPlugin extends Plugin {
 
     public IProjectModelProvider getProjectModelProvider() {
         return getModelProvider(PROJECT_MODEL_PROVIDER_ID);
+    }
+
+    public IPropertyStatisticsModel getPropertyStatisticsModelProvider() {
+        return getModelProvider(PROPERTY_STATISTICS_MODEL_PROVIDER_ID);
     }
 
     public abstract String getPluginId();
