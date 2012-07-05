@@ -14,7 +14,7 @@
          </parameters>
       </service>
       <service
-      		class="org.amanzi.neo.services.impl.StatisticsService"
+      		class="org.amanzi.neo.services.impl.PropertyStatisticsService"
             id="org.amanzi.service.StatisticsService">
          <parameters>
             <nodePropertiesReference
@@ -25,6 +25,12 @@
             </serviceReference>
          </parameters>
       </service>
+   </extension>
+   <extension
+         point="org.amanzi.nodetypes">
+      <nodetype
+      	class="org.amanzi.neo.services.impl.PropertyStatisticsNodeType">
+      </nodetype>
    </extension>
 
 </plugin>

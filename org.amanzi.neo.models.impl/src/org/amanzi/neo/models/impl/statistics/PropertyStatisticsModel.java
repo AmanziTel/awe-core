@@ -20,7 +20,7 @@ import org.amanzi.neo.models.impl.internal.AbstractModel;
 import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
-import org.amanzi.neo.services.IStatisticsService;
+import org.amanzi.neo.services.IPropertyStatisticsService;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.impl.statistics.IPropertyStatistics;
 import org.apache.log4j.Logger;
@@ -38,7 +38,7 @@ public class PropertyStatisticsModel extends AbstractModel implements IPropertyS
 
     private static final Logger LOGGER = Logger.getLogger(PropertyStatisticsModel.class);
 
-    private final IStatisticsService statisticsService;
+    private final IPropertyStatisticsService statisticsService;
 
     private IPropertyStatistics statisticsVault;
 
@@ -46,7 +46,7 @@ public class PropertyStatisticsModel extends AbstractModel implements IPropertyS
      * @param nodeService
      * @param generalNodeProperties
      */
-    public PropertyStatisticsModel(final IGeneralNodeProperties generalNodeProperties, final IStatisticsService statisticsService) {
+    public PropertyStatisticsModel(final IGeneralNodeProperties generalNodeProperties, final IPropertyStatisticsService statisticsService) {
         super(null, generalNodeProperties);
 
         this.statisticsService = statisticsService;

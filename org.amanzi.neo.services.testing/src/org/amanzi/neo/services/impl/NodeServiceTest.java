@@ -30,7 +30,6 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.RelationshipType;
 
 /**
  * TODO Purpose of
@@ -41,10 +40,6 @@ import org.neo4j.graphdb.RelationshipType;
  * @since 1.0.0
  */
 public class NodeServiceTest extends AbstractServiceTest {
-
-    private enum TestRelationshipTypes implements RelationshipType {
-        TEST_RELATION;
-    }
 
     private static final String NODE_NAME = "node_name";
 

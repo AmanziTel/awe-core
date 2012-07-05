@@ -23,6 +23,7 @@ import org.amanzi.testing.AbstractTest;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
 
 /**
@@ -43,6 +44,10 @@ public class AbstractServiceTest extends AbstractMockitoTest {
             return NodeTypeUtils.getTypeId(this);
         }
 
+    }
+
+    protected enum TestRelationshipTypes implements RelationshipType {
+        TEST_RELATION;
     }
 
     private GraphDatabaseService service;

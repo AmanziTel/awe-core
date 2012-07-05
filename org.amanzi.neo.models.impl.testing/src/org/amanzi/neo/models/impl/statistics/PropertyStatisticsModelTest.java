@@ -19,9 +19,10 @@ import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.impl.GeneralNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
-import org.amanzi.neo.services.IStatisticsService;
+import org.amanzi.neo.services.IPropertyStatisticsService;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicatedNodeException;
+import org.amanzi.neo.services.impl.PropertyStatisticsNodeType;
 import org.amanzi.neo.services.impl.statistics.IPropertyStatistics;
 import org.amanzi.testing.AbstractMockitoTest;
 import org.junit.Before;
@@ -46,7 +47,7 @@ public class PropertyStatisticsModelTest extends AbstractMockitoTest {
 
     private static final IGeneralNodeProperties GENERAL_NODE_PROPERTIES = new GeneralNodeProperties();
 
-    private IStatisticsService statisticsService;
+    private IPropertyStatisticsService statisticsService;
 
     private IPropertyStatisticsModel model;
 
@@ -57,7 +58,7 @@ public class PropertyStatisticsModelTest extends AbstractMockitoTest {
      */
     @Before
     public void setUp() throws Exception {
-        statisticsService = mock(IStatisticsService.class);
+        statisticsService = mock(IPropertyStatisticsService.class);
 
         model = new PropertyStatisticsModel(GENERAL_NODE_PROPERTIES, statisticsService);
     }

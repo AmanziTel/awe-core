@@ -11,12 +11,10 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.services;
+package org.amanzi.neo.services.impl;
 
-import org.amanzi.neo.services.exceptions.ServiceException;
-import org.amanzi.neo.services.impl.statistics.IPropertyStatistics;
-import org.amanzi.neo.services.internal.IService;
-import org.neo4j.graphdb.Node;
+import org.amanzi.neo.nodetypes.INodeType;
+import org.amanzi.neo.nodetypes.NodeTypeUtils;
 
 /**
  * TODO Purpose of
@@ -26,10 +24,12 @@ import org.neo4j.graphdb.Node;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface IStatisticsService extends IService {
+public enum PropertyStatisticsNodeType implements INodeType {
+    PROPERTY_STATISTICS;
 
-    void saveStatistics(Node node, IPropertyStatistics vault) throws ServiceException;
-
-    IPropertyStatistics loadStatistics(Node rootNode) throws ServiceException;
+    @Override
+    public String getId() {
+        return NodeTypeUtils.getTypeId(this);
+    }
 
 }
