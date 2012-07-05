@@ -41,16 +41,42 @@ public abstract class AbstractModelProvider<T extends AbstractModel, T1 extends 
 
     }
 
+    protected static class NodeKey implements IKey {
+
+        private final Node node;
+
+        public NodeKey(final Node node) {
+            this.node = node;
+        }
+
+        @Override
+        public boolean equals(final Object o) {
+            if (o instanceof NodeKey) {
+                NodeKey anotherKey = (NodeKey)o;
+
+                return node.equals(anotherKey.node);
+            }
+
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return node.hashCode();
+        }
+
+    }
+
     protected static class NameKey implements IKey {
 
         private final String name;
 
-        public NameKey(String name) {
+        public NameKey(final String name) {
             this.name = name;
         }
 
         @Override
-        public boolean equals(Object o) {
+        public boolean equals(final Object o) {
             if (o instanceof NameKey) {
                 NameKey anotherKey = (NameKey)o;
 
@@ -73,7 +99,7 @@ public abstract class AbstractModelProvider<T extends AbstractModel, T1 extends 
         DatabaseManagerFactory.getDatabaseManager().addDatabaseEventListener(this);
     }
 
-    protected T initializeFromNode(Node node) throws ModelException {
+    protected T initializeFromNode(final Node node) throws ModelException {
         T model = createInstance();
         model.initialize(node);
 
@@ -82,16 +108,16 @@ public abstract class AbstractModelProvider<T extends AbstractModel, T1 extends 
 
     protected abstract T createInstance();
 
-    protected T getFromCache(IKey key) {
+    protected T getFromCache(final IKey key) {
         return modelCache.get(key);
     }
 
-    protected void addToCache(T model, IKey key) {
+    protected void addToCache(final T model, final IKey key) {
         modelCache.put(key, model);
     }
 
     @Override
-    public void onDatabaseEvent(DatabaseEvent event) {
+    public void onDatabaseEvent(final DatabaseEvent event) {
         switch (event.getEventType()) {
         case BEFORE_SHUTDOWN:
             modelCache.clear();

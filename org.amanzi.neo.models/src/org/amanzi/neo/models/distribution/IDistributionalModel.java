@@ -13,8 +13,8 @@
 
 package org.amanzi.neo.models.distribution;
 
-import org.amanzi.neo.models.IPropertyStatisticalModel;
 import org.amanzi.neo.models.exceptions.ModelException;
+import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
 
 /**
  * Interface that describes model that can be analysed with Distribution
@@ -22,7 +22,7 @@ import org.amanzi.neo.models.exceptions.ModelException;
  * @author grigoreva_a
  * @since 1.0.0
  */
-public interface IDistributionalModel extends IPropertyStatisticalModel {
+public interface IDistributionalModel extends IPropertyStatisticsModel {
 
     /**
      * Returns a Distribution Model by it's type

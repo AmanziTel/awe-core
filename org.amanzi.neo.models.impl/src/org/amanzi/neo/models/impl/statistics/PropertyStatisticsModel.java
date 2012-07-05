@@ -11,15 +11,17 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.models.impl.internal;
+package org.amanzi.neo.models.impl.statistics;
 
 import java.util.Set;
 
-import org.amanzi.neo.models.IPropertyStatisticalModel;
 import org.amanzi.neo.models.exceptions.ModelException;
+import org.amanzi.neo.models.impl.internal.AbstractModel;
+import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.INodeService;
+import org.amanzi.neo.services.IStatisticsService;
 
 /**
  * TODO Purpose of
@@ -29,15 +31,19 @@ import org.amanzi.neo.services.INodeService;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class AbstractStatisticalModel extends AbstractDataModel implements IPropertyStatisticalModel {
+public class PropertyStatisticsModel extends AbstractModel implements IPropertyStatisticsModel {
+
+    private final IStatisticsService statisticsService;
 
     /**
      * @param nodeService
      * @param generalNodeProperties
      */
-    public AbstractStatisticalModel(final INodeService nodeService, final IGeneralNodeProperties generalNodeProperties) {
+    public PropertyStatisticsModel(final INodeService nodeService, final IGeneralNodeProperties generalNodeProperties,
+            final IStatisticsService statisticsService) {
         super(nodeService, generalNodeProperties);
-        // TODO Auto-generated constructor stub
+
+        this.statisticsService = statisticsService;
     }
 
     @Override

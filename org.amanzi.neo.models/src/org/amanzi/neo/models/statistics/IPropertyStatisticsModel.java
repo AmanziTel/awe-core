@@ -11,10 +11,11 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.models;
+package org.amanzi.neo.models.statistics;
 
 import java.util.Set;
 
+import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.nodetypes.INodeType;
 
 /**
@@ -23,7 +24,7 @@ import org.amanzi.neo.nodetypes.INodeType;
  * @author grigoreva_a
  * @since 1.0.0
  */
-public interface IPropertyStatisticalModel extends IDataModel {
+public interface IPropertyStatisticsModel extends IModel {
 
     void indexProperty(INodeType nodeType, String property, Object value);
 

@@ -36,7 +36,7 @@ public class AbstractMockitoTest extends AbstractTest {
         return mock(Node.class);
     }
 
-    protected Node getNodeMock(Map<String, Object> values) {
+    protected Node getNodeMock(final Map<String, Object> values) {
         Node result = getNodeMock();
 
         for (Entry<String, Object> singleEntry : values.entrySet()) {
@@ -46,27 +46,27 @@ public class AbstractMockitoTest extends AbstractTest {
         return result;
     }
 
-    protected <T> T mock(Class<T> mockedClass) {
+    protected <T> T mock(final Class<T> mockedClass) {
         return Mockito.mock(mockedClass);
     }
 
-    protected <T> OngoingStubbing<T> when(T methodCall) {
+    protected <T> OngoingStubbing<T> when(final T methodCall) {
         return Mockito.when(methodCall);
     }
 
-    protected <T> T eq(T value) {
+    protected <T> T eq(final T value) {
         return Mockito.eq(value);
     }
 
-    protected Stubber doThrow(Throwable toBeThrown) {
+    protected Stubber doThrow(final Throwable toBeThrown) {
         return Mockito.doThrow(toBeThrown);
     }
 
-    protected <T> T verify(T mock) {
+    protected <T> T verify(final T mock) {
         return Mockito.verify(mock);
     }
 
-    protected <T> T verify(T mock, VerificationMode mode) {
+    protected <T> T verify(final T mock, final VerificationMode mode) {
         return Mockito.verify(mock, mode);
     }
 
@@ -78,20 +78,24 @@ public class AbstractMockitoTest extends AbstractTest {
         return Mockito.atLeastOnce();
     }
 
-    protected <T> T spy(T object) {
+    protected <T> T spy(final T object) {
         return Mockito.spy(object);
     }
 
-    protected <T> T any(Class<T> clazz) {
+    protected <T> T any(final Class<T> clazz) {
         return Mockito.any(clazz);
     }
 
-    protected Stubber doReturn(Object toBeReturned) {
+    protected Stubber doReturn(final Object toBeReturned) {
         return Mockito.doReturn(toBeReturned);
     }
 
-    protected void verifyNoMoreInteractions(Object... mocks) {
+    protected void verifyNoMoreInteractions(final Object... mocks) {
         Mockito.verifyNoMoreInteractions(mocks);
+    }
+
+    protected VerificationMode atLeast(final int minNumberOfInvocations) {
+        return Mockito.atLeast(minNumberOfInvocations);
     }
 
 }

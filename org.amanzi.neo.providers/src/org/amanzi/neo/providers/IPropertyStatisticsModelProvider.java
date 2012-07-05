@@ -13,9 +13,9 @@
 
 package org.amanzi.neo.providers;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import org.amanzi.neo.models.exceptions.ModelException;
+import org.amanzi.neo.models.statistics.IPropertyStatisticalModel;
+import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
 
 /**
  * TODO Purpose of
@@ -25,13 +25,8 @@ import org.junit.runners.Suite.SuiteClasses;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-@RunWith(Suite.class)
-@SuiteClasses({org.amanzi.neo.providers.context.ProviderContextImplIntegrationTest.class,
-        org.amanzi.neo.providers.context.ProviderContextImplTest.class,
-        org.amanzi.neo.providers.impl.ProjectModelProviderIntegrationTest.class,
-        org.amanzi.neo.providers.impl.ProjectModelProviderTest.class,
-        org.amanzi.neo.providers.impl.PropertyStatisticsModelProviderTest.class,
-        org.amanzi.neo.providers.impl.internal.AbstractModelProviderTest.class})
-public class ProvidersTestSuite {
+public interface IPropertyStatisticsModelProvider extends IModelProvider<IPropertyStatisticsModel, IPropertyStatisticalModel> {
+
+    IPropertyStatisticsModel getPropertyStatistics(IPropertyStatisticalModel parent) throws ModelException;
 
 }
