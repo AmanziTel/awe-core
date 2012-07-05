@@ -40,10 +40,4 @@ public class TestNodeProperties implements IGeneralNodeProperties {
         return null;
     }
 
-    @Override
-    public String getCountProperty() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
 }
