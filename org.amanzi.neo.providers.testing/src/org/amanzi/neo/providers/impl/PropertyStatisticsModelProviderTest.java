@@ -16,7 +16,6 @@ package org.amanzi.neo.providers.impl;
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.exceptions.FatalException;
 import org.amanzi.neo.models.exceptions.ModelException;
-import org.amanzi.neo.models.exceptions.ParameterInconsistencyException;
 import org.amanzi.neo.models.impl.internal.AbstractModel;
 import org.amanzi.neo.models.impl.statistics.PropertyStatisticsModel;
 import org.amanzi.neo.models.statistics.IPropertyStatisticalModel;
@@ -80,7 +79,7 @@ public class PropertyStatisticsModelProviderTest extends AbstractMockitoTest {
         provider = new PropertyStatisticsModelProvider(null, null);
     }
 
-    @Test(expected = ParameterInconsistencyException.class)
+    @Test(expected = AssertionError.class)
     public void testCheckExceptionWhenParentIsEmpty() throws Exception {
         provider.getPropertyStatistics(null);
     }

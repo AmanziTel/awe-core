@@ -11,7 +11,7 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.services.impl.statistics;
+package org.amanzi.neo.services.impl.statistics.internal;
 
 import java.util.Set;
 
@@ -25,20 +25,34 @@ import org.amanzi.neo.nodetypes.INodeType;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface IPropertyStatistics {
+public class NodeTypeVault {
 
-    void indexProperty(INodeType nodeType, String property, Object value);
+    private int count;
 
-    Set<String> getPropertyNames();
+    private final INodeType nodeType;
 
-    Set<String> getPropertyNames(INodeType nodeType);
+    public NodeTypeVault(final INodeType nodeType) {
+        this.nodeType = nodeType;
+    }
 
-    int getCount();
+    public int getCount() {
+        return count;
+    }
 
-    int getCount(INodeType nodeType);
+    public void indexProperty(final String propertyValue, final Object propetyValue) {
 
-    Set<Object> getValues(INodeType nodeType, String property);
+    }
 
-    int getValueCount(INodeType nodeType, String property, Object value);
+    public Set<String> getPropertyNames() {
+        return null;
+    }
+
+    public Set<Object> getValues(final String property) {
+        return null;
+    }
+
+    public int getValueCount(final String property, final Object value) {
+        return 0;
+    }
 
 }

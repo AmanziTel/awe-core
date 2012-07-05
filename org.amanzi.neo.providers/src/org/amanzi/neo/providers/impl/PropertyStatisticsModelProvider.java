@@ -14,7 +14,6 @@
 package org.amanzi.neo.providers.impl;
 
 import org.amanzi.neo.models.exceptions.ModelException;
-import org.amanzi.neo.models.exceptions.ParameterInconsistencyException;
 import org.amanzi.neo.models.impl.internal.AbstractModel;
 import org.amanzi.neo.models.impl.statistics.PropertyStatisticsModel;
 import org.amanzi.neo.models.statistics.IPropertyStatisticalModel;
@@ -60,10 +59,6 @@ public class PropertyStatisticsModelProvider extends AbstractModelProvider<Prope
         }
 
         PropertyStatisticsModel result = null;
-
-        if (parent == null) {
-            throw new ParameterInconsistencyException("parentStatisticsModel", null);
-        }
 
         if (parent instanceof AbstractModel) {
             Node parentNode = ((AbstractModel)parent).getRootNode();

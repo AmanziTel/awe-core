@@ -118,8 +118,8 @@ public class PropertyStatisticsModel extends AbstractModel implements IPropertyS
     }
 
     @Override
-    public int getPropertyCount(final INodeType nodeType, final String property, final Object value) {
-        return statisticsVault.getPropertyCount(nodeType, property, value);
+    public int getValueCount(final INodeType nodeType, final String property, final Object value) {
+        return statisticsVault.getValueCount(nodeType, property, value);
     }
 
 }

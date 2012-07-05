@@ -139,9 +139,9 @@ public class PropertyStatisticsModelTest extends AbstractMockitoTest {
     public void testCheckActivityOnGetPropertyCount() throws Exception {
         initializeStatistics();
 
-        model.getPropertyCount(TEST_NODE_TYPE, TEST_PROPERTY_NAME, TEST_PROPERTY_VALUE);
+        model.getValueCount(TEST_NODE_TYPE, TEST_PROPERTY_NAME, TEST_PROPERTY_VALUE);
 
-        verify(vault).getPropertyCount(TEST_NODE_TYPE, TEST_PROPERTY_NAME, TEST_PROPERTY_VALUE);
+        verify(vault).getValueCount(TEST_NODE_TYPE, TEST_PROPERTY_NAME, TEST_PROPERTY_VALUE);
     }
 
     @Test

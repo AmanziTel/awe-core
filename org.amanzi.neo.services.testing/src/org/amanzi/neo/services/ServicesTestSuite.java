@@ -28,7 +28,9 @@ import org.junit.runners.Suite.SuiteClasses;
 @RunWith(Suite.class)
 @SuiteClasses({org.amanzi.neo.services.impl.NodeServiceTest.class, 
                org.amanzi.neo.services.impl.NodeServiceIntegrationTest.class,
-               org.amanzi.neo.services.impl.internal.AbstractServiceTest.class})
+               org.amanzi.neo.services.impl.internal.AbstractServiceTest.class,
+               org.amanzi.neo.services.impl.statistics.internal.StatisticsVaultTest.class
+               })
 public class ServicesTestSuite {
 
 }
