@@ -20,7 +20,7 @@
 </listAttribute>
 <stringAttribute key="configLocation" value="${workspace_loc}/.metadata/.plugins/org.eclipse.pde.core/pde-junit"/>
 <booleanAttribute key="default" value="false"/>
-<stringAttribute key="deselected_workspace_plugins" value="org.amanzi.awe,org.amanzi.awe.catalog.neo,org.amanzi.awe.catalog.neo.testing,org.amanzi.awe.console,org.amanzi.awe.filters.ui,org.amanzi.awe.neostyle,org.amanzi.awe.render.core,org.amanzi.awe.render.drive,org.amanzi.awe.render.network,org.amanzi.awe.star.tool,org.amanzi.awe.startup.splash,org.amanzi.awe.views.drive,org.amanzi.awe.views.explorer,org.amanzi.awe.views.neighbours,org.amanzi.awe.views.network,org.amanzi.awe.views.property,org.amanzi.awe.views.reuse,org.amanzi.neo.loader.core,org.amanzi.neo.loader.core.testing,org.amanzi.neo.loader.ui,org.amanzi.neo.services.impl,org.amanzi.neo.services.impl.testing,org.amanzi.neo.services.ui,org.jfree"/>
+<stringAttribute key="deselected_workspace_plugins" value="org.amanzi.awe"/>
 <booleanAttribute key="includeOptional" value="true"/>
 <stringAttribute key="location" value="${workspace_loc}/../junit-workspace"/>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">

@@ -290,4 +290,18 @@ public class NodeService extends AbstractService implements INodeService {
 
         return result;
     }
+
+    @Override
+    public Node createNode(Node parentNode, INodeType nodeType, RelationshipType relationshipType, String name,
+            Map<String, Object> parameters) throws ServiceException {
+        assert parentNode != null;
+        assert nodeType != null;
+        assert relationshipType != null;
+        assert !StringUtils.isEmpty(name);
+        assert parameters != null;
+
+        parameters.put(getGeneralNodeProperties().getNodeNameProperty(), name);
+
+        return createNode(parentNode, nodeType, relationshipType, parameters);
+    }
 }

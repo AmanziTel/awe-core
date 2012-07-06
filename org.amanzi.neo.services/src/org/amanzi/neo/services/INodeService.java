@@ -73,6 +73,9 @@ public interface INodeService extends IService {
 
     Node createNode(Node parentNode, INodeType nodeType, RelationshipType relationshipType, String name) throws ServiceException;
 
+    Node createNode(Node parentNode, INodeType nodeType, RelationshipType relationshipType, String name,
+            Map<String, Object> parameters) throws ServiceException;
+
     Node createNode(Node parentNode, INodeType nodeType, RelationshipType relationshipType, Map<String, Object> parameters)
             throws ServiceException;
 }

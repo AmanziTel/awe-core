@@ -98,4 +98,8 @@ public class AbstractMockitoTest extends AbstractTest {
         return Mockito.atLeast(minNumberOfInvocations);
     }
 
+    protected Stubber doNothing() {
+        return Mockito.doNothing();
+    }
+
 }

@@ -17,8 +17,10 @@ import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.ServiceException;
+import org.amanzi.neo.services.impl.NodeService.NodeServiceRelationshipType;
 import org.amanzi.neo.services.impl.internal.AbstractService;
 import org.amanzi.neo.services.impl.statistics.internal.NodeTypeVault;
+import org.amanzi.neo.services.impl.statistics.internal.PropertyVault;
 import org.amanzi.neo.services.impl.statistics.internal.StatisticsVault;
 import org.amanzi.neo.services.statistics.IPropertyStatisticsNodeProperties;
 import org.amanzi.neo.services.statistics.IPropertyStatisticsService;
@@ -92,8 +94,39 @@ public class PropertyStatisticsService extends AbstractService implements IPrope
         }
     }
 
-    protected void saveNodeTypeVault(Node node, NodeTypeVault vault) {
+    protected void saveNodeTypeVault(Node statisticsNode, NodeTypeVault vault) throws ServiceException {
+        Node nodeTypeVault = updateNodeTypeVault(statisticsNode, vault);
 
+        for (PropertyVault propertyVault : vault.getAllPropertyVaults()) {
+            if (propertyVault.isChanged()) {
+                savePropertyStatistics(nodeTypeVault, propertyVault);
+            }
+        }
+    }
+
+    protected void savePropertyStatistics(Node nodeTypeVault, PropertyVault vault) {
+
+    }
+
+    protected Node updateNodeTypeVault(Node statisticsNode, NodeTypeVault vault) throws ServiceException {
+        Node vaultNode = getChildVaultNode(statisticsNode, vault.getNodeType().getId());
+
+        if (vaultNode == null) {
+            vaultNode = createChildVaultNode(statisticsNode, vault.getNodeType().getId());
+        }
+
+        Transaction tx = getGraphDb().beginTx();
+        try {
+            vaultNode.setProperty(statisticsNodeProperties.getCountProperty(), vault.getCount());
+            tx.success();
+        } catch (Exception e) {
+            tx.failure();
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
+
+        return vaultNode;
     }
 
     protected void updateStatisticsInfo(Node node, StatisticsVault vault) throws ServiceException {
@@ -126,4 +159,14 @@ public class PropertyStatisticsService extends AbstractService implements IPrope
 
         return result;
     }
+
+    private Node getChildVaultNode(Node parentVaultNode, String name) throws ServiceException {
+        return nodeService.getChildByName(parentVaultNode, name, PropertyStatisticsNodeType.STATISTICS_VAULT);
+    }
+
+    private Node createChildVaultNode(Node parentVaultNode, String name) throws ServiceException {
+        return nodeService.createNode(parentVaultNode, PropertyStatisticsNodeType.STATISTICS_VAULT,
+                NodeServiceRelationshipType.CHILD, name);
+    }
+
 }

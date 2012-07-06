@@ -282,6 +282,25 @@ public class NodeServiceTest extends AbstractServiceTest {
     }
 
     @Test
+    public void testCheckCreateNodeCalledByCreateNodeWithTypeAndStringAndMap() throws Exception {
+        Map<String, Object> properties = new HashMap<String, Object>();
+        properties.put("some property", NODE_NAME);
+
+        Map<String, Object> rawProperties = new HashMap<String, Object>(properties);
+        rawProperties.put(generalNodeProperties.getNodeNameProperty(), NODE_NAME);
+
+        nodeService = spy(nodeService);
+        Node parentNode = getNodeMock();
+
+        doReturn(null).when(nodeService).createNode(parentNode, TestNodeType.TEST1, TestRelationshipTypes.TEST_RELATION,
+                rawProperties);
+
+        nodeService.createNode(parentNode, TestNodeType.TEST1, TestRelationshipTypes.TEST_RELATION, NODE_NAME, properties);
+
+        verify(nodeService).createNode(parentNode, TestNodeType.TEST1, TestRelationshipTypes.TEST_RELATION, rawProperties);
+    }
+
+    @Test
     public void testCheckCreateNodeActivity() throws Exception {
         setReadOnly(false);
         Node parentNode = getNodeMock();

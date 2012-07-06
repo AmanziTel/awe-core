@@ -19,8 +19,10 @@ import java.util.List;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.impl.GeneralNodeProperties;
 import org.amanzi.neo.services.INodeService;
+import org.amanzi.neo.services.impl.NodeService.NodeServiceRelationshipType;
 import org.amanzi.neo.services.impl.statistics.PropertyStatisticsService.PropertyStatisticsRelationshipType;
 import org.amanzi.neo.services.impl.statistics.internal.NodeTypeVault;
+import org.amanzi.neo.services.impl.statistics.internal.PropertyVault;
 import org.amanzi.neo.services.impl.statistics.internal.StatisticsVault;
 import org.amanzi.neo.services.statistics.IPropertyStatisticsNodeProperties;
 import org.amanzi.neo.services.util.AbstractServiceTest;
@@ -48,6 +50,8 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
 
     private StatisticsVault vault;
 
+    private NodeTypeVault nodeTypeVault;
+
     private Node rootNode;
 
     private Node statNode;
@@ -61,6 +65,8 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
         statNode = getNodeMock();
 
         vault = mock(StatisticsVault.class);
+        nodeTypeVault = mock(NodeTypeVault.class);
+
         nodeService = mock(INodeService.class);
 
         service = spy(new PropertyStatisticsService(getService(), GENERAL_NODE_PROPERTIES, nodeService,
@@ -146,7 +152,7 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
     }
 
     @Test
-    public void testCheckNoActivityIfVaultChanged() throws Exception {
+    public void testCheckActivityIfVaultChanged() throws Exception {
         NodeTypeVault subVault1 = createNodeTypeVault(true);
         NodeTypeVault subVault2 = createNodeTypeVault(true);
 
@@ -156,16 +162,18 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
 
         when(vault.isChanged()).thenReturn(true);
         when(vault.getAllNodeTypeVaults()).thenReturn(subVaults);
+        doNothing().when(service).saveNodeTypeVault(statNode, subVault1);
+        doNothing().when(service).saveNodeTypeVault(statNode, subVault2);
 
-        service.saveStatisticsVault(rootNode, vault);
+        service.saveStatisticsVault(statNode, vault);
 
-        verify(service).updateStatisticsInfo(rootNode, vault);
-        verify(service).saveNodeTypeVault(rootNode, subVault1);
-        verify(service).saveNodeTypeVault(rootNode, subVault2);
+        verify(service).updateStatisticsInfo(statNode, vault);
+        verify(service).saveNodeTypeVault(statNode, subVault1);
+        verify(service).saveNodeTypeVault(statNode, subVault2);
     }
 
     @Test
-    public void testCheckNoActivityIfNodeTypeVaultChanged() throws Exception {
+    public void testCheckActivityIfNodeTypeVaultChanged() throws Exception {
         NodeTypeVault subVault1 = createNodeTypeVault(true);
         NodeTypeVault subVault2 = createNodeTypeVault(false);
 
@@ -175,11 +183,13 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
 
         when(vault.isChanged()).thenReturn(true);
         when(vault.getAllNodeTypeVaults()).thenReturn(subVaults);
+        doNothing().when(service).saveNodeTypeVault(statNode, subVault1);
+        doNothing().when(service).saveNodeTypeVault(statNode, subVault2);
 
-        service.saveStatisticsVault(rootNode, vault);
+        service.saveStatisticsVault(statNode, vault);
 
-        verify(service, never()).saveNodeTypeVault(rootNode, subVault2);
-        verify(service).saveNodeTypeVault(rootNode, subVault1);
+        verify(service, never()).saveNodeTypeVault(statNode, subVault2);
+        verify(service).saveNodeTypeVault(statNode, subVault1);
     }
 
     @Test
@@ -191,6 +201,97 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
         service.updateStatisticsInfo(statNode, vault);
 
         verify(statNode).setProperty(PROPERTY_STATISTICS_NODE_PROPERTIES.getCountProperty(), 5);
+    }
+
+    @Test
+    public void testCheckActivityOnUpdateNodeTypeVault() throws Exception {
+        setReadOnly(false);
+
+        Node nodeTypeNode = getNodeMock();
+
+        when(nodeTypeVault.getCount()).thenReturn(5);
+        when(nodeTypeVault.getNodeType()).thenReturn(TestNodeType.TEST1);
+        when(nodeService.getChildByName(statNode, TestNodeType.TEST1.getId(), PropertyStatisticsNodeType.STATISTICS_VAULT))
+                .thenReturn(null);
+        when(
+                nodeService.createNode(statNode, PropertyStatisticsNodeType.STATISTICS_VAULT, NodeServiceRelationshipType.CHILD,
+                        TestNodeType.TEST1.getId())).thenReturn(nodeTypeNode);
+
+        service.saveNodeTypeVault(statNode, nodeTypeVault);
+
+        verify(nodeTypeNode).setProperty(PROPERTY_STATISTICS_NODE_PROPERTIES.getCountProperty(), 5);
+        verify(nodeTypeVault, atLeast(2)).getNodeType();
+        verify(nodeService).getChildByName(statNode, TestNodeType.TEST1.getId(), PropertyStatisticsNodeType.STATISTICS_VAULT);
+        verify(nodeService).createNode(statNode, PropertyStatisticsNodeType.STATISTICS_VAULT, NodeServiceRelationshipType.CHILD,
+                TestNodeType.TEST1.getId());
+    }
+
+    @Test
+    public void testCheckActivityOnUpdateNodeTypeVaultWithExistingNode() throws Exception {
+        Node nodeTypeNode = getNodeMock();
+
+        when(nodeTypeVault.getNodeType()).thenReturn(TestNodeType.TEST1);
+        when(nodeService.getChildByName(statNode, TestNodeType.TEST1.getId(), PropertyStatisticsNodeType.STATISTICS_VAULT))
+                .thenReturn(nodeTypeNode);
+
+        service.saveNodeTypeVault(statNode, nodeTypeVault);
+
+        verify(nodeTypeVault).getNodeType();
+        verify(nodeService).getChildByName(statNode, TestNodeType.TEST1.getId(), PropertyStatisticsNodeType.STATISTICS_VAULT);
+        verify(nodeService, never()).createNode(statNode, PropertyStatisticsNodeType.STATISTICS_VAULT,
+                NodeServiceRelationshipType.CHILD, TestNodeType.TEST1.getId());
+    }
+
+    @Test
+    public void testCheckNoActivityIfNodeVaultChanged() throws Exception {
+        Node nodeTypeNode = getNodeMock();
+
+        PropertyVault subVault1 = createPropertyVault(true);
+        PropertyVault subVault2 = createPropertyVault(true);
+
+        List<PropertyVault> subVaults = new ArrayList<PropertyVault>();
+        subVaults.add(subVault1);
+        subVaults.add(subVault2);
+
+        when(nodeTypeVault.getNodeType()).thenReturn(TestNodeType.TEST1);
+        when(nodeTypeVault.getAllPropertyVaults()).thenReturn(subVaults);
+        doReturn(nodeTypeNode).when(service).updateNodeTypeVault(statNode, nodeTypeVault);
+
+        service.saveNodeTypeVault(statNode, nodeTypeVault);
+
+        verify(nodeTypeVault).getAllPropertyVaults();
+        verify(service).savePropertyStatistics(nodeTypeNode, subVault1);
+        verify(service).savePropertyStatistics(nodeTypeNode, subVault2);
+    }
+
+    @Test
+    public void testCheckNoActivityIfNodeVaultChangedWithNotChangedProperties() throws Exception {
+        Node nodeTypeNode = getNodeMock();
+
+        PropertyVault subVault1 = createPropertyVault(true);
+        PropertyVault subVault2 = createPropertyVault(false);
+
+        List<PropertyVault> subVaults = new ArrayList<PropertyVault>();
+        subVaults.add(subVault1);
+        subVaults.add(subVault2);
+
+        when(nodeTypeVault.getNodeType()).thenReturn(TestNodeType.TEST1);
+        when(nodeTypeVault.getAllPropertyVaults()).thenReturn(subVaults);
+        doReturn(nodeTypeNode).when(service).updateNodeTypeVault(statNode, nodeTypeVault);
+
+        service.saveNodeTypeVault(statNode, nodeTypeVault);
+
+        verify(nodeTypeVault).getAllPropertyVaults();
+        verify(service).savePropertyStatistics(nodeTypeNode, subVault1);
+        verify(service, never()).savePropertyStatistics(nodeTypeNode, subVault2);
+    }
+
+    private PropertyVault createPropertyVault(boolean isChanged) {
+        PropertyVault vault = mock(PropertyVault.class);
+
+        when(vault.isChanged()).thenReturn(isChanged);
+
+        return vault;
     }
 
     private NodeTypeVault createNodeTypeVault(boolean isChanged) {

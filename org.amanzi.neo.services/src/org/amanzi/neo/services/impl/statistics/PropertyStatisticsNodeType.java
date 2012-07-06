@@ -25,7 +25,7 @@ import org.amanzi.neo.nodetypes.NodeTypeUtils;
  * @since 1.0.0
  */
 public enum PropertyStatisticsNodeType implements INodeType {
-    PROPERTY_STATISTICS;
+    PROPERTY_STATISTICS, STATISTICS_VAULT;
 
     @Override
     public String getId() {
