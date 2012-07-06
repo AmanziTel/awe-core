@@ -52,8 +52,6 @@ public class PropertyStatisticsModelProvider extends AbstractModelProvider<Prope
 
     @Override
     public IPropertyStatisticsModel getPropertyStatistics(final IPropertyStatisticalModel parent) throws ModelException {
-        assert parent instanceof AbstractModel;
-
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(getStartLogStatement("getPropertyStatistics", parent));
         }
@@ -70,6 +68,8 @@ public class PropertyStatisticsModelProvider extends AbstractModelProvider<Prope
 
                 addToCache(result, key);
             }
+        } else {
+            throw new IllegalArgumentException("Cannot use not AbstractModel as a parent");
         }
 
         if (LOGGER.isDebugEnabled()) {

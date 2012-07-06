@@ -79,7 +79,7 @@ public class PropertyStatisticsModelProviderTest extends AbstractMockitoTest {
         provider = new PropertyStatisticsModelProvider(null, null);
     }
 
-    @Test(expected = AssertionError.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testCheckExceptionWhenParentIsEmpty() throws Exception {
         provider.getPropertyStatistics(null);
     }

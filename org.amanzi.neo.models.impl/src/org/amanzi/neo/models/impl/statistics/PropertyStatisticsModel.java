@@ -46,7 +46,8 @@ public class PropertyStatisticsModel extends AbstractModel implements IPropertyS
      * @param nodeService
      * @param generalNodeProperties
      */
-    public PropertyStatisticsModel(final IGeneralNodeProperties generalNodeProperties, final IPropertyStatisticsService statisticsService) {
+    public PropertyStatisticsModel(final IGeneralNodeProperties generalNodeProperties,
+            final IPropertyStatisticsService statisticsService) {
         super(null, generalNodeProperties);
 
         this.statisticsService = statisticsService;
@@ -54,7 +55,7 @@ public class PropertyStatisticsModel extends AbstractModel implements IPropertyS
 
     @Override
     protected void initialize(final Node parentNode, final String name, final INodeType nodeType) throws ModelException {
-        assert false : "PropertyStatisticsModel can be initialized only with node";
+        throw new UnsupportedOperationException("PropertyStatisticsModel can be initialized only with node");
     }
 
     @Override

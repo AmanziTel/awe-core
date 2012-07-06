@@ -113,7 +113,7 @@ public class PropertyStatisticsModelTest extends AbstractMockitoTest {
         model.finishUp();
     }
 
-    @Test(expected = AssertionError.class)
+    @Test(expected = UnsupportedOperationException.class)
     public void testCheckExceptionOnInitializationFromString() throws Exception {
         ((PropertyStatisticsModel)model).initialize(null, null, null);
     }
