@@ -10,16 +10,13 @@ Require-Bundle: org.amanzi.neo.services.impl;bundle-version="1.0.0",
  org.amanzi.awe.console;bundle-version="1.0.0",
  org.eclipse.ui;bundle-version="3.7.0",
  org.amanzi.awe.ui;bundle-version="1.0.0"
-Export-Package: au.com.bytecode.opencsv,
+Export-Package: 
  org.amanzi.neo.loader.core,
  org.amanzi.neo.loader.core.config,
  org.amanzi.neo.loader.core.parser,
  org.amanzi.neo.loader.core.parser.xml,
  org.amanzi.neo.loader.core.preferences,
  org.amanzi.neo.loader.core.saver
-Bundle-ClassPath: .,
- lib/opencsv-2.2.jar,
- lib/commons-io-2.0.1.jar
 Bundle-Vendor: amanzi.org
 Bundle-ActivationPolicy: lazy
 Eclipse-ExtensibleAPI: true

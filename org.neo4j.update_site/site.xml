@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/org.neo4j.feature_1.8.0.jar" id="org.neo4j.feature" version="1.8.0"/>
+</site>

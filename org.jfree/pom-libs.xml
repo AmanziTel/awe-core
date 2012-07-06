@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>org.amanzi</groupId>
+	<artifactId>org.jfree</artifactId>
+	<version>1.0.0.qualifier</version>
+
+	<packaging>pom</packaging>
+	<dependencies>
+		<dependency>
+			<groupId>jfree</groupId>
+			<artifactId>jfreechart</artifactId>
+			<version>1.0.13</version>
+		</dependency>
+		<!-- these dependencies used in old version <dependency> <groupId>jfree</groupId> 
+			<artifactId>jcommon</artifactId> <version>1.0.16</version> </dependency> 
+			<dependency> <groupId>jfree</groupId> <artifactId>jfreechart-swt</artifactId> 
+			<version>1.0.9</version> </dependency> <dependency> <groupId>com.lowagie</groupId> 
+			<artifactId>itext</artifactId> <version>2.1.7</version> </dependency> <dependency> 
+			<groupId>jfree</groupId> <artifactId>jfreechart-experimental</artifactId> 
+			<version>1.0.9</version> </dependency> <dependency> <groupId>junit</groupId> 
+			<artifactId>junit</artifactId> <version>4.9</version> </dependency> <dependency> 
+			<groupId>org.apache.geronimo.specs</groupId> <artifactId>geronimo-servlet_2.5_spec</artifactId> 
+			<version>1.2</version> </dependency> -->
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-clean-plugin</artifactId>
+				<version>2.4.1</version>
+				<configuration>
+					<filesets>
+						<fileset>
+							<directory>${basedir}/lib</directory>
+							<!-- these jars doesnt store in default maven repository -->
+							<!-- <excludes> <exclude>swtgraphics2d.jar</exclude> <exclude>gnujaxp.jar</exclude> 
+								</excludes> -->
+							<followSymlinks>false</followSymlinks>
+						</fileset>
+						<fileset>
+							<directory>${basedir}/lib/source/</directory>
+							<includes>
+								<include>*.*</include>
+							</includes>
+							<followSymlinks>false</followSymlinks>
+						</fileset>
+					</filesets>
+				</configuration>
+			</plugin>
+
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>2.3</version>
+				<executions>
+					<execution>
+						<id>copy-dependencies</id>
+						<phase>install</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<overWrite>true</overWrite>
+							<outputDirectory>${basedir}/lib</outputDirectory>
+							<overWriteReleases>true</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
+							<excludeScope>provided</excludeScope>
+						</configuration>
+
+					</execution>
+					<execution>
+						<id>copy-dependencies-sources</id>
+						<phase>install</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<classifier>sources</classifier>
+							<overWrite>true</overWrite>
+							<outputDirectory>${basedir}/lib/sources/</outputDirectory>
+							<overWriteReleases>true</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
+							<excludeScope>provided</excludeScope>
+							<failOnMissingClassifierArtifact>false</failOnMissingClassifierArtifact>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
