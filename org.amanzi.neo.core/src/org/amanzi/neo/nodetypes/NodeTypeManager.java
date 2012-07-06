@@ -134,7 +134,7 @@ public final class NodeTypeManager {
 
                 registerNodeType(clazz);
             } catch (ClassNotFoundException e) {
-                LOGGER.error("Cannot initialize NodeTypes <" + className + ">", e);
+                LOGGER.info("Cannot initialize NodeTypes <" + className + ">", e);
             }
 
         }
