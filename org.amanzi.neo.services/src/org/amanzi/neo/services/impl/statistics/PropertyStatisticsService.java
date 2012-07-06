@@ -11,18 +11,21 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.services.impl;
+package org.amanzi.neo.services.impl.statistics;
 
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.services.INodeService;
-import org.amanzi.neo.services.IPropertyStatisticsService;
+import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.impl.internal.AbstractService;
-import org.amanzi.neo.services.impl.statistics.IPropertyStatistics;
+import org.amanzi.neo.services.impl.statistics.internal.NodeTypeVault;
 import org.amanzi.neo.services.impl.statistics.internal.StatisticsVault;
+import org.amanzi.neo.services.statistics.IPropertyStatisticsNodeProperties;
+import org.amanzi.neo.services.statistics.IPropertyStatisticsService;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.RelationshipType;
+import org.neo4j.graphdb.Transaction;
 
 /**
  * TODO Purpose of
@@ -32,7 +35,7 @@ import org.neo4j.graphdb.RelationshipType;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public final class PropertyStatisticsService extends AbstractService implements IPropertyStatisticsService {
+public class PropertyStatisticsService extends AbstractService implements IPropertyStatisticsService {
 
     public enum PropertyStatisticsRelationshipType implements RelationshipType {
         PROPERTY_STATISTICS;
@@ -40,15 +43,18 @@ public final class PropertyStatisticsService extends AbstractService implements 
 
     private final INodeService nodeService;
 
+    private final IPropertyStatisticsNodeProperties statisticsNodeProperties;
+
     /**
      * @param graphDb
      * @param generalNodeProperties
      */
     protected PropertyStatisticsService(final GraphDatabaseService graphDb, final IGeneralNodeProperties generalNodeProperties,
-            final INodeService nodeService) {
+            final INodeService nodeService, final IPropertyStatisticsNodeProperties statisticsNodeProperties) {
         super(graphDb, generalNodeProperties);
 
         this.nodeService = nodeService;
+        this.statisticsNodeProperties = statisticsNodeProperties;
     }
 
     @Override
@@ -74,8 +80,35 @@ public final class PropertyStatisticsService extends AbstractService implements 
         return result;
     }
 
-    protected void saveStatisticsVault(Node node, StatisticsVault vault) {
+    protected void saveStatisticsVault(Node node, StatisticsVault vault) throws ServiceException {
+        if (vault.isChanged()) {
+            updateStatisticsInfo(node, vault);
 
+            for (NodeTypeVault nodeTypeVault : vault.getAllNodeTypeVaults()) {
+                if (nodeTypeVault.isChanged()) {
+                    saveNodeTypeVault(node, nodeTypeVault);
+                }
+            }
+        }
+    }
+
+    protected void saveNodeTypeVault(Node node, NodeTypeVault vault) {
+
+    }
+
+    protected void updateStatisticsInfo(Node node, StatisticsVault vault) throws ServiceException {
+        Transaction tx = getGraphDb().beginTx();
+
+        try {
+            node.setProperty(statisticsNodeProperties.getCountProperty(), vault.getCount());
+
+            tx.success();
+        } catch (Exception e) {
+            tx.failure();
+            throw new DatabaseException(e);
+        } finally {
+            tx.finish();
+        }
     }
 
     protected StatisticsVault loadStatisticsVault(Node node) {

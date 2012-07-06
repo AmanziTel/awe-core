@@ -11,10 +11,9 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.services.impl;
+package org.amanzi.neo.services.impl.statistics;
 
-import org.amanzi.neo.nodetypes.INodeType;
-import org.amanzi.neo.nodetypes.NodeTypeUtils;
+import org.amanzi.neo.services.statistics.IPropertyStatisticsNodeProperties;
 
 /**
  * TODO Purpose of
@@ -24,12 +23,13 @@ import org.amanzi.neo.nodetypes.NodeTypeUtils;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public enum PropertyStatisticsNodeType implements INodeType {
-    PROPERTY_STATISTICS;
+public final class PropertyStatisticsNodeProperties implements IPropertyStatisticsNodeProperties {
+
+    private static final String COUNT_PROPERTY = "count";
 
     @Override
-    public String getId() {
-        return NodeTypeUtils.getTypeId(this);
+    public String getCountProperty() {
+        return COUNT_PROPERTY;
     }
 
 }

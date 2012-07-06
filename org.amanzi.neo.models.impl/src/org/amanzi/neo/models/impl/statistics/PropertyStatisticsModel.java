@@ -20,9 +20,9 @@ import org.amanzi.neo.models.impl.internal.AbstractModel;
 import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
-import org.amanzi.neo.services.IPropertyStatisticsService;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.impl.statistics.IPropertyStatistics;
+import org.amanzi.neo.services.statistics.IPropertyStatisticsService;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
 

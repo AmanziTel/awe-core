@@ -21,7 +21,7 @@ import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.providers.IPropertyStatisticsModelProvider;
 import org.amanzi.neo.providers.impl.internal.AbstractModelProvider;
-import org.amanzi.neo.services.IPropertyStatisticsService;
+import org.amanzi.neo.services.statistics.IPropertyStatisticsService;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
 

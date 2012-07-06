@@ -9,8 +9,10 @@ Export-Package: org.amanzi.neo.services,
  org.amanzi.neo.services.exceptions.enums,
  org.amanzi.neo.services.impl,
  org.amanzi.neo.services.impl.statistics,
- org.amanzi.neo.services.internal
+ org.amanzi.neo.services.internal,
+ org.amanzi.neo.services.statistics
 Require-Bundle: org.amanzi.neo.db;bundle-version="1.0.0";visibility:=reexport,
  org.amanzi.neo.core;bundle-version="1.0.0"
 Eclipse-ExtensibleAPI: true
 Bundle-ClassPath: .
+Eclipse-RegisterBuddy: org.amanzi.neo.core
