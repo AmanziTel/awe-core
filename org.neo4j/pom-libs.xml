@@ -53,7 +53,7 @@
 									<followSymlinks>false</followSymlinks>
 								</fileset>
 								<fileset>
-									<directory>${basedir}/lib/source/</directory>
+									<directory>${basedir}/lib/source</directory>
 									<includes>
 										<include>*.*</include>
 									</includes>
@@ -62,8 +62,6 @@
 							</filesets>
 						</configuration>
 					</plugin>
-
-
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-dependency-plugin</artifactId>
@@ -120,21 +118,13 @@
 									<directory>${basedir}/lib</directory>
 									<includes>
 										<include>*.*</include>
-									</includes>
-									<followSymlinks>false</followSymlinks>
-								</fileset>
-								<fileset>
-									<directory>${basedir}/lib/source/</directory>
-									<includes>
-										<include>*.*</include>
+										<include>sources/*</include>
 									</includes>
 									<followSymlinks>false</followSymlinks>
 								</fileset>
 							</filesets>
 						</configuration>
 					</plugin>
-
-
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-dependency-plugin</artifactId>
@@ -160,5 +150,4 @@
 			</build>
 		</profile>
 	</profiles>
-
 </project>
