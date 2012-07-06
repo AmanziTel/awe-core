@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="org.eclipse.pde.ui.RuntimeWorkbench">
+<setAttribute key="additional_plugins"/>
+<booleanAttribute key="append.args" value="true"/>
+<stringAttribute key="application" value="org.amanzi.awe.id1"/>
+<booleanAttribute key="askclear" value="true"/>
+<booleanAttribute key="automaticAdd" value="true"/>
+<booleanAttribute key="automaticValidate" value="false"/>
+<stringAttribute key="bootstrap" value=""/>
+<stringAttribute key="checked" value="[NONE]"/>
+<booleanAttribute key="clearConfig" value="false"/>
+<booleanAttribute key="clearws" value="true"/>
+<booleanAttribute key="clearwslog" value="false"/>
+<stringAttribute key="configLocation" value="${workspace_loc}/.metadata/.plugins/org.eclipse.pde.core/AWE OpenSource"/>
+<booleanAttribute key="default" value="false"/>
+<stringAttribute key="deselected_workspace_plugins" value="org.amanzi.awe,org.amanzi.awe.catalog.neo,org.amanzi.awe.catalog.neo.testing,org.amanzi.awe.console,org.amanzi.awe.filters,org.amanzi.awe.filters.ui,org.amanzi.awe.libs,org.amanzi.awe.neostyle,org.amanzi.awe.render.core,org.amanzi.awe.render.drive,org.amanzi.awe.render.network,org.amanzi.awe.star.tool,org.amanzi.awe.startup.splash,org.amanzi.awe.ui,org.amanzi.awe.ui.testing,org.amanzi.awe.ui.udig,org.amanzi.awe.views.drive,org.amanzi.awe.views.explorer,org.amanzi.awe.views.neighbours,org.amanzi.awe.views.network,org.amanzi.awe.views.property,org.amanzi.awe.views.reuse,org.amanzi.log4j,org.amanzi.neo.core,org.amanzi.neo.core.testing,org.amanzi.neo.db,org.amanzi.neo.db.testing,org.amanzi.neo.loader.core,org.amanzi.neo.loader.core.testing,org.amanzi.neo.loader.ui,org.amanzi.neo.models,org.amanzi.neo.models.impl,org.amanzi.neo.models.impl.testing,org.amanzi.neo.providers,org.amanzi.neo.providers.testing,org.amanzi.neo.services,org.amanzi.neo.services.impl,org.amanzi.neo.services.impl.testing,org.amanzi.neo.services.testing,org.amanzi.neo.services.ui,org.amanzi.testing,org.amanzi.testing.sanity,org.jfree,org.neo4j"/>
+<stringAttribute key="featureDefaultLocation" value="workspace"/>
+<stringAttribute key="featurePluginResolution" value="workspace"/>
+<booleanAttribute key="includeOptional" value="true"/>
+<stringAttribute key="location" value="${workspace_loc}/../runtime-AWEOpenSource"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-os ${target.os} -ws ${target.ws} -arch ${target.arch} -nl ${target.nl} -consoleLog"/>
+<stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.pde.ui.workbenchClasspathProvider"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-enableassertions"/>
+<stringAttribute key="pde.version" value="3.3"/>
+<stringAttribute key="product" value="net.refractions.udig.product"/>
+<setAttribute key="selected_features">
+<setEntry value="org.amanzi.awe.extras.feature:default"/>
+<setEntry value="org.amanzi.awe.feature:default"/>
+<setEntry value="org.amanzi.awe.udig.feature:default"/>
+</setAttribute>
+<booleanAttribute key="show_selected_only" value="false"/>
+<stringAttribute key="templateConfig" value="${target_home}/configuration/config.ini"/>
+<booleanAttribute key="tracing" value="false"/>
+<booleanAttribute key="useCustomFeatures" value="true"/>
+<booleanAttribute key="useDefaultConfig" value="true"/>
+<booleanAttribute key="useDefaultConfigArea" value="true"/>
+<booleanAttribute key="useProduct" value="false"/>
+</launchConfiguration>

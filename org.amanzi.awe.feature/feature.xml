@@ -24,39 +24,17 @@
          unpack="false"/>
 
    <plugin
-         id="org.amanzi.awe.catalog.neo"
+         id="org.amanzi.awe.filters"
          download-size="0"
          install-size="0"
          version="0.0.0"
          unpack="false"/>
 
    <plugin
-         id="org.amanzi.awe.console"
+         id="org.amanzi.awe.libs"
          download-size="0"
          install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.amanzi.awe.neostyle"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.amanzi.awe.render.network"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.amanzi.awe.startup.splash"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="org.amanzi.awe.ui"
@@ -66,42 +44,22 @@
          unpack="false"/>
 
    <plugin
-         id="org.amanzi.awe.views.explorer"
+         id="org.amanzi.awe.ui.udig"
          download-size="0"
          install-size="0"
          version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.amanzi.awe.views.neighbours"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.amanzi.awe.views.network"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.amanzi.awe.views.property"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.amanzi.awe.views.reuse"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
+         fragment="true"
          unpack="false"/>
 
    <plugin
          id="org.amanzi.log4j"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.amanzi.neo.core"
          download-size="0"
          install-size="0"
          version="0.0.0"
@@ -115,14 +73,21 @@
          unpack="false"/>
 
    <plugin
-         id="org.amanzi.neo.loader.core"
+         id="org.amanzi.neo.models"
          download-size="0"
          install-size="0"
          version="0.0.0"
          unpack="false"/>
 
    <plugin
-         id="org.amanzi.neo.loader.ui"
+         id="org.amanzi.neo.models.impl"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.amanzi.neo.providers"
          download-size="0"
          install-size="0"
          version="0.0.0"
@@ -130,40 +95,6 @@
 
    <plugin
          id="org.amanzi.neo.services"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.amanzi.neo.services.ui"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.jfree"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"/>
-
-   <plugin
-         id="org.amanzi.awe.render.core"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.amanzi.awe.render.drive"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.amanzi.awe.star.tool"
          download-size="0"
          install-size="0"
          version="0.0.0"

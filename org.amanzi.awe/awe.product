@@ -54,8 +54,7 @@ For more information and support visit http://www.amanzitel.com/page/AWE
    <features>
       <feature id="org.amanzi.awe.extras.feature" version="1.0.0.qualifier"/>
       <feature id="org.amanzi.awe.feature" version="1.0.0.qualifier"/>
-      <feature id="org.neo4j.neoclipse" version="1.4.1"/>
-      <feature id="net.refractions.udig" version="1.2.2.201107241506"/>
+      <feature id="org.amanzi.awe.udig.feature" version="1.0.0.qualifier"/>
    </features>
 
 
