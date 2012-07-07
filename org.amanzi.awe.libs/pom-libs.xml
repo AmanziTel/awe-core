@@ -41,9 +41,9 @@
 	</dependencies>
 	<profiles>
 		<profile>
-			<id>libs_and_sources</id>
+			<id>development</id>
 			<activation>
-				<activeByDefault>true</activeByDefault>
+				<activeByDefault>false</activeByDefault>
 			</activation>
 			<build>
 				<plugins>
@@ -110,9 +110,9 @@
 			</build>
 		</profile>
 		<profile>
-			<id>libs_without_sources</id>
+			<id>build</id>
 			<activation>
-				<activeByDefault>false</activeByDefault>
+				<activeByDefault>true</activeByDefault>
 			</activation>
 			<build>
 				<plugins>
