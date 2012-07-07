@@ -26,7 +26,6 @@
 <setAttribute key="selected_features">
 <setEntry value="org.amanzi.awe.extras.feature:default"/>
 <setEntry value="org.amanzi.awe.feature:default"/>
-<setEntry value="org.amanzi.awe.udig.feature:default"/>
 </setAttribute>
 <booleanAttribute key="show_selected_only" value="false"/>
 <stringAttribute key="templateConfig" value="${target_home}/configuration/config.ini"/>
