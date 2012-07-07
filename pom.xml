@@ -38,7 +38,7 @@
     <module>org.amanzi.neo.providers</module>
     <module>org.amanzi.neo.providers.testing</module>
     <module>org.amanzi.neo.services</module>
-    <module>org.amanzi.neo.services.ui</module>
+    <module>org.amanzi.neo.services.testing</module>
     <module>org.amanzi.testing</module>
     <module>org.amanzi.testing.libs</module>
     <module>org.neo4j</module>
