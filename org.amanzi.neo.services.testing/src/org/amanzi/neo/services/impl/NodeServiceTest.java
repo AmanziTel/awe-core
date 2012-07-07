@@ -369,6 +369,7 @@ public class NodeServiceTest extends AbstractServiceTest {
 
     @Test
     public void testCheckUpdateNodePropertyWithNotEqualProperty() throws Exception {
+        setReadOnly(false);
         Node node = getNodeMock();
 
         when(node.hasProperty(TEST_NODE_PROPERTY)).thenReturn(true);
@@ -381,6 +382,8 @@ public class NodeServiceTest extends AbstractServiceTest {
 
     @Test(expected = DatabaseException.class)
     public void testCheckExceptionOnUpdateProperty() throws Exception {
+        setReadOnly(false);
+        setMethodFailure();
         Node node = getNodeMock();
 
         when(node.hasProperty(TEST_NODE_PROPERTY)).thenReturn(true);

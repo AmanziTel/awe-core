@@ -22,7 +22,6 @@ import java.util.Stack;
 
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.services.INodeService;
-import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.impl.NodeService.NodeServiceRelationshipType;
 import org.amanzi.neo.services.impl.internal.AbstractService;
@@ -35,7 +34,6 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.RelationshipType;
-import org.neo4j.graphdb.Transaction;
 
 /**
  * TODO Purpose of
@@ -182,33 +180,13 @@ public class PropertyStatisticsService extends AbstractService implements IPrope
             vaultNode = createChildVaultNode(statisticsNode, vault.getNodeType().getId());
         }
 
-        Transaction tx = getGraphDb().beginTx();
-        try {
-            vaultNode.setProperty(statisticsNodeProperties.getCountProperty(), vault.getCount());
-            tx.success();
-        } catch (Exception e) {
-            tx.failure();
-            throw new DatabaseException(e);
-        } finally {
-            tx.finish();
-        }
+        nodeService.updateProperty(vaultNode, statisticsNodeProperties.getCountProperty(), vault.getCount());
 
         return vaultNode;
     }
 
     protected void updateStatisticsInfo(Node node, StatisticsVault vault) throws ServiceException {
-        Transaction tx = getGraphDb().beginTx();
-
-        try {
-            node.setProperty(statisticsNodeProperties.getCountProperty(), vault.getCount());
-
-            tx.success();
-        } catch (Exception e) {
-            tx.failure();
-            throw new DatabaseException(e);
-        } finally {
-            tx.finish();
-        }
+        nodeService.updateProperty(node, statisticsNodeProperties.getCountProperty(), vault.getCount());
     }
 
     protected StatisticsVault loadStatisticsVault(Node node) {

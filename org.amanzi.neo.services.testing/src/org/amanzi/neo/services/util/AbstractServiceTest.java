@@ -85,8 +85,9 @@ public class AbstractServiceTest extends AbstractMockitoTest {
             }
 
             verify(transaction).finish();
+        } else {
+            verifyNoMoreInteractions(transaction);
         }
-
     }
 
     protected void setMethodFailure() {

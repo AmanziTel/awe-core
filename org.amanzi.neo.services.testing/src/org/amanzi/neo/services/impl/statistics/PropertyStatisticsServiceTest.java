@@ -202,19 +202,15 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
 
     @Test
     public void testCheckActivityOnUpdateStatisticsVault() throws Exception {
-        setReadOnly(false);
-
         when(vault.getCount()).thenReturn(5);
 
         service.updateStatisticsInfo(statNode, vault);
 
-        verify(statNode).setProperty(PROPERTY_STATISTICS_NODE_PROPERTIES.getCountProperty(), 5);
+        verify(nodeService).updateProperty(statNode, PROPERTY_STATISTICS_NODE_PROPERTIES.getCountProperty(), 5);
     }
 
     @Test
     public void testCheckActivityOnUpdateNodeTypeVault() throws Exception {
-        setReadOnly(false);
-
         Node nodeTypeNode = getNodeMock();
 
         when(nodeTypeVault.getCount()).thenReturn(5);
@@ -227,7 +223,7 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
 
         service.saveNodeTypeVault(statNode, nodeTypeVault);
 
-        verify(nodeTypeNode).setProperty(PROPERTY_STATISTICS_NODE_PROPERTIES.getCountProperty(), 5);
+        verify(nodeService).updateProperty(nodeTypeNode, PROPERTY_STATISTICS_NODE_PROPERTIES.getCountProperty(), 5);
         verify(nodeTypeVault, atLeast(2)).getNodeType();
         verify(nodeService).getChildByName(statNode, TestNodeType.TEST1.getId(), PropertyStatisticsNodeType.STATISTICS_VAULT);
         verify(nodeService).createNode(statNode, PropertyStatisticsNodeType.STATISTICS_VAULT, NodeServiceRelationshipType.CHILD,
@@ -241,6 +237,8 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
         when(nodeTypeVault.getNodeType()).thenReturn(TestNodeType.TEST1);
         when(nodeService.getChildByName(statNode, TestNodeType.TEST1.getId(), PropertyStatisticsNodeType.STATISTICS_VAULT))
                 .thenReturn(nodeTypeNode);
+        doReturn(null).when(nodeService).createNode(eq(statNode), eq(PropertyStatisticsNodeType.STATISTICS_VAULT),
+                eq(NodeServiceRelationshipType.CHILD), eq(TestNodeType.TEST1.getId()));
 
         service.saveNodeTypeVault(statNode, nodeTypeVault);
 
