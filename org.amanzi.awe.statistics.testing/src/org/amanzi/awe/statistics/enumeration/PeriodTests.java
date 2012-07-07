@@ -42,7 +42,7 @@ public class PeriodTests extends AbstractStatisticsTest {
     }
 
     @BeforeClass
-    public static void init() {
+    public static void init() throws Exception {
         setUpClass();
     }
 
