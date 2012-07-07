@@ -13,7 +13,12 @@
 
 package org.amanzi.neo.services.impl.statistics;
 
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Queue;
+import java.util.Stack;
 
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.services.INodeService;
@@ -123,21 +128,51 @@ public class PropertyStatisticsService extends AbstractService implements IPrope
         int size = nodeService.getNodeProperty(propertyVault, getGeneralNodeProperties().getSizeProperty(),
                 NumberUtils.INTEGER_ZERO, false);
 
+        Map<Object, Integer> values = new HashMap<Object, Integer>(vault.getValuesMap());
+
+        Queue<Integer> removedIndexes = new LinkedList<Integer>();
+        Stack<Integer> processedIndex = new Stack<Integer>();
+
         if (size > 0) {
             for (int i = 0; i < size; i++) {
+                Object property = nodeService.getNodeProperty(propertyVault, statisticsNodeProperties.getValuePrefix() + i, null,
+                        true);
 
-            }
-        } else {
-            int i = 0;
-            for (Entry<Object, Integer> statEntry : vault.getValuesMap().entrySet()) {
-                nodeService.updateProperty(propertyVault, statisticsNodeProperties.getValuePrefix() + i, statEntry.getKey());
-                nodeService.updateProperty(propertyVault, statisticsNodeProperties.getCountPrefix() + i, statEntry.getValue());
-
-                i++;
+                Integer newCount = values.remove(property);
+                if (newCount != null) {
+                    nodeService.updateProperty(propertyVault, statisticsNodeProperties.getCountPrefix() + i, newCount);
+                } else {
+                    removedIndexes.add(i);
+                }
+                processedIndex.add(i);
             }
         }
 
-        nodeService.updateProperty(propertyVault, getGeneralNodeProperties().getSizeProperty(), vault.getValuesMap().size());
+        // remove old values
+        for (Integer index : removedIndexes) {
+            nodeService.removeNodeProperty(propertyVault, statisticsNodeProperties.getValuePrefix() + index, false);
+            nodeService.removeNodeProperty(propertyVault, statisticsNodeProperties.getCountPrefix() + index, false);
+        }
+
+        int counter = size;
+        for (Entry<Object, Integer> statEntry : values.entrySet()) {
+            counter = removedIndexes.isEmpty() ? counter : removedIndexes.remove();
+
+            nodeService.updateProperty(propertyVault, statisticsNodeProperties.getValuePrefix() + counter, statEntry.getKey());
+            nodeService.updateProperty(propertyVault, statisticsNodeProperties.getCountPrefix() + counter, statEntry.getValue());
+
+            counter++;
+        }
+
+        for (Integer newIndex : removedIndexes) {
+            int oldIndex = processedIndex.pop();
+            nodeService.renameNodeProperty(propertyVault, statisticsNodeProperties.getValuePrefix() + oldIndex,
+                    statisticsNodeProperties.getValuePrefix() + newIndex, false);
+            nodeService.renameNodeProperty(propertyVault, statisticsNodeProperties.getCountPrefix() + oldIndex,
+                    statisticsNodeProperties.getCountPrefix() + newIndex, false);
+        }
+
+        nodeService.updateProperty(propertyVault, getGeneralNodeProperties().getSizeProperty(), values.size());
     }
 
     protected Node updateNodeTypeVault(Node statisticsNode, NodeTypeVault vault) throws ServiceException {

@@ -329,4 +329,18 @@ public class NodeService extends AbstractService implements INodeService {
             }
         }
     }
+
+    @Override
+    public void removeNodeProperty(Node node, String propertyName, boolean throwExceptionIfNotExists) {
+        assert node != null;
+        assert !StringUtils.isEmpty(propertyName);
+
+    }
+
+    @Override
+    public void renameNodeProperty(Node node, String oldPropertyName, String newPropertyName, boolean throwExceptionIfNotExists) {
+        assert node != null;
+        assert !StringUtils.isEmpty(newPropertyName);
+        assert !StringUtils.isEmpty(oldPropertyName);
+    }
 }
