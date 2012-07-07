@@ -29,6 +29,7 @@ import org.amanzi.neo.nodetypes.NodeTypeUtils;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicatedNodeException;
+import org.amanzi.neo.services.exceptions.PropertyNotFoundException;
 import org.amanzi.testing.AbstractIntegrationTest;
 import org.apache.commons.collections.IteratorUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -49,6 +50,12 @@ import org.neo4j.graphdb.Transaction;
  * @since 1.0.0
  */
 public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
+
+    /** String TEST_VALUE field */
+    private static final String TEST_VALUE = "value";
+
+    /** String TEST_PROPERTY field */
+    private static final String TEST_PROPERTY = "property";
 
     /** String RESULT_OF_SEARCH_SHOULD_NOT_BE_NULL field */
     private static final String RESULT_OF_SEARCH_SHOULD_NOT_BE_NULL = "result of search should not be null";
@@ -366,6 +373,31 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
         nodeService.createNode(parent, TestNodeType.TEST_NODE_TYPE1, TestRelatinshipType.TEST_REL);
 
         nodeService.getSingleChild(parent, TestNodeType.TEST_NODE_TYPE1, TestRelatinshipType.TEST_REL);
+    }
+
+    @Test
+    public void testCheckRemoveExistingProperty() throws Exception {
+        Node node = createNode(TEST_PROPERTY, TEST_VALUE);
+
+        nodeService.removeNodeProperty(node, TEST_PROPERTY, true);
+
+        assertFalse("property cannot exists", node.hasProperty(TEST_PROPERTY));
+    }
+
+    @Test
+    public void testCheckRemoveNotExistingProperty() throws Exception {
+        Node node = createNode();
+
+        nodeService.removeNodeProperty(node, TEST_PROPERTY, false);
+
+        assertFalse("property cannot exists", node.hasProperty(TEST_PROPERTY));
+    }
+
+    @Test(expected = PropertyNotFoundException.class)
+    public void testCheckRemoveNotExistingPropertyWithError() throws Exception {
+        Node node = createNode();
+
+        nodeService.removeNodeProperty(node, TEST_PROPERTY, true);
     }
 
     private Map<String, Object> getNodeProperties() {

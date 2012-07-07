@@ -455,6 +455,53 @@ public class NodeServiceTest extends AbstractServiceTest {
         nodeService.getNodeProperty(node, TEST_NODE_PROPERTY, TEST_NODE_VALUE, true);
     }
 
+    @Test(expected = DatabaseException.class)
+    public void testCheckExceptionOnRemoveProperty() throws Exception {
+        setReadOnly(false);
+        setMethodFailure();
+        Node node = getNodeMock();
+
+        when(node.hasProperty(TEST_NODE_PROPERTY)).thenReturn(true);
+        when(node.removeProperty(TEST_NODE_PROPERTY)).thenThrow(new IllegalArgumentException());
+
+        nodeService.removeNodeProperty(node, TEST_NODE_PROPERTY, false);
+    }
+
+    @Test(expected = PropertyNotFoundException.class)
+    public void testCheckExceptionOnRemoveNotExistingProperty() throws Exception {
+        Node node = getNodeMock();
+
+        when(node.hasProperty(TEST_NODE_PROPERTY)).thenReturn(false);
+
+        nodeService.removeNodeProperty(node, TEST_NODE_PROPERTY, true);
+    }
+
+    @Test
+    public void testCheckActivityOnRemoveExistingProperty() throws Exception {
+        setReadOnly(false);
+
+        Node node = getNodeMock();
+
+        when(node.hasProperty(TEST_NODE_PROPERTY)).thenReturn(true);
+
+        nodeService.removeNodeProperty(node, TEST_NODE_PROPERTY, true);
+
+        verify(node).hasProperty(TEST_NODE_PROPERTY);
+        verify(node).removeProperty(TEST_NODE_PROPERTY);
+    }
+
+    @Test
+    public void testCheckActivityOnRemoveNotExistingProperty() throws Exception {
+        Node node = getNodeMock();
+
+        when(node.hasProperty(TEST_NODE_PROPERTY)).thenReturn(false);
+
+        nodeService.removeNodeProperty(node, TEST_NODE_PROPERTY, false);
+
+        verify(node).hasProperty(TEST_NODE_PROPERTY);
+        verify(node, never()).removeProperty(TEST_NODE_PROPERTY);
+    }
+
     private void verifyNodeProperty(Node node, String name, Object value, boolean exists, boolean equal) {
         verify(node).hasProperty(name);
 

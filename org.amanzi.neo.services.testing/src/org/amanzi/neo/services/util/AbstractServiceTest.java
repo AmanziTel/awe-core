@@ -79,8 +79,10 @@ public class AbstractServiceTest extends AbstractMockitoTest {
     public void tearDown() {
         if (!isReadOnlyTest) {
             if (isSuccess) {
+                verify(transaction, never()).failure();
                 verify(transaction).success();
             } else {
+                verify(transaction, never()).success();
                 verify(transaction).failure();
             }
 

@@ -331,14 +331,32 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     @Override
-    public void removeNodeProperty(Node node, String propertyName, boolean throwExceptionIfNotExists) {
+    public void removeNodeProperty(Node node, String propertyName, boolean throwExceptionIfNotExists) throws ServiceException {
         assert node != null;
         assert !StringUtils.isEmpty(propertyName);
+
+        boolean exists = node.hasProperty(propertyName);
+
+        if (exists) {
+            Transaction tx = getGraphDb().beginTx();
+            try {
+                node.removeProperty(propertyName);
+                tx.success();
+            } catch (Exception e) {
+                tx.failure();
+                throw new DatabaseException(e);
+            } finally {
+                tx.finish();
+            }
+        } else if (throwExceptionIfNotExists) {
+            throw new PropertyNotFoundException(propertyName, node);
+        }
 
     }
 
     @Override
-    public void renameNodeProperty(Node node, String oldPropertyName, String newPropertyName, boolean throwExceptionIfNotExists) {
+    public void renameNodeProperty(Node node, String oldPropertyName, String newPropertyName, boolean throwExceptionIfNotExists)
+            throws ServiceException {
         assert node != null;
         assert !StringUtils.isEmpty(newPropertyName);
         assert !StringUtils.isEmpty(oldPropertyName);
