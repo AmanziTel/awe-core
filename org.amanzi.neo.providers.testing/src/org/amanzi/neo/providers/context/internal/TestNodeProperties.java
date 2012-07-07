@@ -36,7 +36,7 @@ public class TestNodeProperties implements IGeneralNodeProperties {
     }
 
     @Override
-    public String getParentProperty() {
+    public String getSizeProperty() {
         return null;
     }
 

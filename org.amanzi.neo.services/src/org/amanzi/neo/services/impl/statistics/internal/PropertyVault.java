@@ -202,4 +202,8 @@ public class PropertyVault {
     public String getPropertyName() {
         return propertyName;
     }
+
+    public Map<Object, Integer> getValuesMap() {
+        return values;
+    }
 }

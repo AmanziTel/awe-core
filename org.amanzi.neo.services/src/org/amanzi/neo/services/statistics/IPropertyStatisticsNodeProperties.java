@@ -27,4 +27,10 @@ public interface IPropertyStatisticsNodeProperties extends INodeProperties {
 
     String getCountProperty();
 
+    String getClassProperty();
+
+    String getValuePrefix();
+
+    String getCountPrefix();
+
 }

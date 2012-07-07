@@ -27,9 +27,30 @@ public final class PropertyStatisticsNodeProperties implements IPropertyStatisti
 
     private static final String COUNT_PROPERTY = "count";
 
+    private static final String CLASS_PROPERTY = "class";
+
+    private static final String VALUE_PREFIX = "v";
+
+    private static final String COUNT_PREFIX = "c";
+
     @Override
     public String getCountProperty() {
         return COUNT_PROPERTY;
+    }
+
+    @Override
+    public String getClassProperty() {
+        return CLASS_PROPERTY;
+    }
+
+    @Override
+    public String getValuePrefix() {
+        return VALUE_PREFIX;
+    }
+
+    @Override
+    public String getCountPrefix() {
+        return COUNT_PREFIX;
     }
 
 }

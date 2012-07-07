@@ -13,6 +13,8 @@
 
 package org.amanzi.neo.services.impl.statistics;
 
+import java.util.Map.Entry;
+
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.DatabaseException;
@@ -24,6 +26,7 @@ import org.amanzi.neo.services.impl.statistics.internal.PropertyVault;
 import org.amanzi.neo.services.impl.statistics.internal.StatisticsVault;
 import org.amanzi.neo.services.statistics.IPropertyStatisticsNodeProperties;
 import org.amanzi.neo.services.statistics.IPropertyStatisticsService;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.RelationshipType;
@@ -104,8 +107,37 @@ public class PropertyStatisticsService extends AbstractService implements IPrope
         }
     }
 
-    protected void savePropertyStatistics(Node nodeTypeVault, PropertyVault vault) {
+    protected void savePropertyStatistics(Node nodeTypeVault, PropertyVault vault) throws ServiceException {
+        Node propertyVault = getChildVaultNode(nodeTypeVault, vault.getPropertyName());
 
+        if (propertyVault == null) {
+            propertyVault = createChildVaultNode(nodeTypeVault, vault.getPropertyName());
+        }
+
+        updatePropertyVault(propertyVault, vault);
+    }
+
+    protected void updatePropertyVault(Node propertyVault, PropertyVault vault) throws ServiceException {
+        nodeService.updateProperty(propertyVault, statisticsNodeProperties.getClassProperty(), vault.getClassName());
+
+        int size = nodeService.getNodeProperty(propertyVault, getGeneralNodeProperties().getSizeProperty(),
+                NumberUtils.INTEGER_ZERO, false);
+
+        if (size > 0) {
+            for (int i = 0; i < size; i++) {
+
+            }
+        } else {
+            int i = 0;
+            for (Entry<Object, Integer> statEntry : vault.getValuesMap().entrySet()) {
+                nodeService.updateProperty(propertyVault, statisticsNodeProperties.getValuePrefix() + i, statEntry.getKey());
+                nodeService.updateProperty(propertyVault, statisticsNodeProperties.getCountPrefix() + i, statEntry.getValue());
+
+                i++;
+            }
+        }
+
+        nodeService.updateProperty(propertyVault, getGeneralNodeProperties().getSizeProperty(), vault.getValuesMap().size());
     }
 
     protected Node updateNodeTypeVault(Node statisticsNode, NodeTypeVault vault) throws ServiceException {

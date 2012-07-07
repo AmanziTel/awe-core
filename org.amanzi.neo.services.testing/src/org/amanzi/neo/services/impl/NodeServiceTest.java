@@ -41,9 +41,14 @@ import org.neo4j.graphdb.Relationship;
  */
 public class NodeServiceTest extends AbstractServiceTest {
 
+    /** String TEST_NODE_VALUE field */
+    private static final String TEST_NODE_VALUE = "some value";
+
     private static final String NODE_NAME = "node_name";
 
     private static final String NODE_TYPE_ID = TestNodeType.TEST1.getId();
+
+    private static final String TEST_NODE_PROPERTY = "property";
 
     private final IGeneralNodeProperties generalNodeProperties = new GeneralNodeProperties();
 
@@ -336,6 +341,133 @@ public class NodeServiceTest extends AbstractServiceTest {
         Map<String, Object> properties = getNodeProperties();
 
         nodeService.createNode(parentNode, TestNodeType.TEST1, TestRelationshipTypes.TEST_RELATION, properties);
+    }
+
+    @Test
+    public void testCheckUpdateNodePropertyWithoutProperty() throws Exception {
+        setReadOnly(false);
+        Node node = getNodeMock();
+
+        when(node.hasProperty(TEST_NODE_PROPERTY)).thenReturn(false);
+
+        nodeService.updateProperty(node, TEST_NODE_PROPERTY, TEST_NODE_VALUE);
+
+        verifyNodeProperty(node, TEST_NODE_PROPERTY, TEST_NODE_VALUE, false, false);
+    }
+
+    @Test
+    public void testCheckUpdateNodePropertyWithEqualProperty() throws Exception {
+        Node node = getNodeMock();
+
+        when(node.hasProperty(TEST_NODE_PROPERTY)).thenReturn(true);
+        when(node.getProperty(TEST_NODE_PROPERTY)).thenReturn(TEST_NODE_VALUE);
+
+        nodeService.updateProperty(node, TEST_NODE_PROPERTY, TEST_NODE_VALUE);
+
+        verifyNodeProperty(node, TEST_NODE_PROPERTY, TEST_NODE_VALUE, true, true);
+    }
+
+    @Test
+    public void testCheckUpdateNodePropertyWithNotEqualProperty() throws Exception {
+        Node node = getNodeMock();
+
+        when(node.hasProperty(TEST_NODE_PROPERTY)).thenReturn(true);
+        when(node.getProperty(TEST_NODE_PROPERTY)).thenReturn(TEST_NODE_VALUE + 1);
+
+        nodeService.updateProperty(node, TEST_NODE_PROPERTY, TEST_NODE_VALUE);
+
+        verifyNodeProperty(node, TEST_NODE_PROPERTY, TEST_NODE_VALUE, true, false);
+    }
+
+    @Test(expected = DatabaseException.class)
+    public void testCheckExceptionOnUpdateProperty() throws Exception {
+        Node node = getNodeMock();
+
+        when(node.hasProperty(TEST_NODE_PROPERTY)).thenReturn(true);
+        when(node.getProperty(TEST_NODE_PROPERTY)).thenReturn(TEST_NODE_VALUE + 1);
+
+        doThrow(new IllegalArgumentException()).when(node).setProperty(TEST_NODE_PROPERTY, TEST_NODE_VALUE);
+
+        nodeService.updateProperty(node, TEST_NODE_PROPERTY, TEST_NODE_VALUE);
+    }
+
+    @Test(expected = DatabaseException.class)
+    public void testCheckExceptionOnGetSingleChild() throws Exception {
+        NodeService nodeServiceImpl = spy(new NodeService(getService(), generalNodeProperties));
+
+        doThrow(new IllegalArgumentException()).when(nodeServiceImpl).getDownlinkTraversal();
+
+        nodeServiceImpl.getSingleChild(getNodeMock(), TestNodeType.TEST1, TestRelationshipTypes.TEST_RELATION);
+    }
+
+    @Test
+    public void testCheckGetNodePropertiesWithDefaultValueAndExistingProperty() throws Exception {
+        Node node = getNodeMock();
+
+        when(node.getProperty(TEST_NODE_PROPERTY, TEST_NODE_VALUE)).thenReturn("some value");
+
+        Object result = nodeService.getNodeProperty(node, TEST_NODE_PROPERTY, TEST_NODE_VALUE, false);
+
+        verify(node, never()).hasProperty(TEST_NODE_PROPERTY);
+        verify(node).getProperty(TEST_NODE_PROPERTY, TEST_NODE_VALUE);
+
+        assertEquals("unexpected property", "some value", result);
+    }
+
+    @Test
+    public void testCheckGetNodePropertiesWithDefaultValueAndExistingPropertyThrowException() throws Exception {
+        Node node = getNodeMock();
+
+        when(node.hasProperty(TEST_NODE_PROPERTY)).thenReturn(true);
+        when(node.getProperty(TEST_NODE_PROPERTY, TEST_NODE_VALUE)).thenReturn("some value");
+
+        Object result = nodeService.getNodeProperty(node, TEST_NODE_PROPERTY, TEST_NODE_VALUE, true);
+
+        verify(node).hasProperty(TEST_NODE_PROPERTY);
+        verify(node).getProperty(TEST_NODE_PROPERTY, TEST_NODE_VALUE);
+
+        assertEquals("unexpected property", "some value", result);
+    }
+
+    @Test
+    public void testCheckGetNodePropertiesWithDefaultValueAndNotExistingProperty() throws Exception {
+        Node node = getNodeMock();
+
+        when(node.getProperty(TEST_NODE_PROPERTY, TEST_NODE_VALUE)).thenReturn(TEST_NODE_VALUE);
+
+        Object result = nodeService.getNodeProperty(node, TEST_NODE_PROPERTY, TEST_NODE_VALUE, false);
+
+        verify(node, never()).hasProperty(TEST_NODE_PROPERTY);
+        verify(node).getProperty(TEST_NODE_PROPERTY, TEST_NODE_VALUE);
+
+        assertEquals("unexpected property", TEST_NODE_VALUE, result);
+    }
+
+    @Test(expected = PropertyNotFoundException.class)
+    public void testCheckGetNodePropertiesWithDefaultValueAndNotExistingPropertyThrowException() throws Exception {
+        Node node = getNodeMock();
+
+        when(node.hasProperty(TEST_NODE_PROPERTY)).thenReturn(false);
+
+        nodeService.getNodeProperty(node, TEST_NODE_PROPERTY, TEST_NODE_VALUE, true);
+    }
+
+    private void verifyNodeProperty(Node node, String name, Object value, boolean exists, boolean equal) {
+        verify(node).hasProperty(name);
+
+        if (exists) {
+            verify(node).getProperty(name);
+        } else {
+            verify(node, never()).getProperty(name);
+        }
+
+        if (exists && equal) {
+            verify(node, never()).setProperty(name, value);
+        } else {
+            verify(node).setProperty(name, value);
+        }
+
+        verifyNoMoreInteractions(node);
     }
 
     private Map<String, Object> getNodeProperties() {

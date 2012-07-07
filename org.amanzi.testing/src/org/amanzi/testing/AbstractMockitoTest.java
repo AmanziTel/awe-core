@@ -102,4 +102,8 @@ public class AbstractMockitoTest extends AbstractTest {
         return Mockito.doNothing();
     }
 
+    protected String contains(String substring) {
+        return Mockito.contains(substring);
+    }
+
 }

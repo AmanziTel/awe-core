@@ -169,25 +169,27 @@ public class NodeService extends AbstractService implements INodeService {
      * @return
      * @throws ServiceException
      */
-    private Object getNodeProperty(final Node node, final String propertyName, final String defaultValue,
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T extends Object> T getNodeProperty(final Node node, final String propertyName, final T defaultValue,
             final boolean throwExceptionIfNotExist) throws ServiceException {
         assert node != null;
         assert !StringUtils.isEmpty(propertyName);
 
-        assert throwExceptionIfNotExist && (defaultValue == null);
+        assert throwExceptionIfNotExist || (defaultValue != null);
 
         boolean throwPropertyNotFoundException = false;
 
-        Object result = null;
+        T result = null;
 
         try {
             if (throwExceptionIfNotExist && !node.hasProperty(propertyName)) {
                 throwPropertyNotFoundException = true;
             } else {
                 if (defaultValue == null) {
-                    result = node.getProperty(propertyName);
+                    result = (T)node.getProperty(propertyName);
                 } else {
-                    result = node.getProperty(propertyName, defaultValue);
+                    result = (T)node.getProperty(propertyName, defaultValue);
                 }
             }
         } catch (Exception e) {
@@ -303,5 +305,28 @@ public class NodeService extends AbstractService implements INodeService {
         parameters.put(getGeneralNodeProperties().getNodeNameProperty(), name);
 
         return createNode(parentNode, nodeType, relationshipType, parameters);
+    }
+
+    @Override
+    public void updateProperty(Node node, String propertyName, Object newValue) throws ServiceException {
+        assert node != null;
+        assert !StringUtils.isEmpty(propertyName);
+        assert newValue != null;
+
+        boolean shouldWrite = !node.hasProperty(propertyName) || !node.getProperty(propertyName).equals(newValue);
+
+        if (shouldWrite) {
+            Transaction tx = getGraphDb().beginTx();
+
+            try {
+                node.setProperty(propertyName, newValue);
+                tx.success();
+            } catch (Exception e) {
+                tx.failure();
+                throw new DatabaseException(e);
+            } finally {
+                tx.finish();
+            }
+        }
     }
 }

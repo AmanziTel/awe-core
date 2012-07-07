@@ -29,7 +29,7 @@ public final class GeneralNodeProperties implements IGeneralNodeProperties {
 
     private static final String NODE_TYPE = "type";
 
-    private static final String PARENT_ID = "parent_id";
+    private static final String SIZE = "size";
 
     @Override
     public String getNodeNameProperty() {
@@ -42,8 +42,8 @@ public final class GeneralNodeProperties implements IGeneralNodeProperties {
     }
 
     @Override
-    public String getParentProperty() {
-        return PARENT_ID;
+    public String getSizeProperty() {
+        return SIZE;
     }
 
 }

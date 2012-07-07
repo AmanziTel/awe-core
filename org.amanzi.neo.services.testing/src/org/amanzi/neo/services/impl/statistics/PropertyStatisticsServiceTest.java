@@ -14,7 +14,9 @@
 package org.amanzi.neo.services.impl.statistics;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.impl.GeneralNodeProperties;
@@ -26,6 +28,7 @@ import org.amanzi.neo.services.impl.statistics.internal.PropertyVault;
 import org.amanzi.neo.services.impl.statistics.internal.StatisticsVault;
 import org.amanzi.neo.services.statistics.IPropertyStatisticsNodeProperties;
 import org.amanzi.neo.services.util.AbstractServiceTest;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
@@ -44,6 +47,8 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
 
     private static final IPropertyStatisticsNodeProperties PROPERTY_STATISTICS_NODE_PROPERTIES = new PropertyStatisticsNodeProperties();
 
+    private static final String PROPERTY_NAME = "property";
+
     private PropertyStatisticsService service;
 
     private INodeService nodeService;
@@ -51,6 +56,8 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
     private StatisticsVault vault;
 
     private NodeTypeVault nodeTypeVault;
+
+    private PropertyVault propertyVault;
 
     private Node rootNode;
 
@@ -66,6 +73,7 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
 
         vault = mock(StatisticsVault.class);
         nodeTypeVault = mock(NodeTypeVault.class);
+        propertyVault = mock(PropertyVault.class);
 
         nodeService = mock(INodeService.class);
 
@@ -256,6 +264,8 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
         when(nodeTypeVault.getNodeType()).thenReturn(TestNodeType.TEST1);
         when(nodeTypeVault.getAllPropertyVaults()).thenReturn(subVaults);
         doReturn(nodeTypeNode).when(service).updateNodeTypeVault(statNode, nodeTypeVault);
+        doNothing().when(service).savePropertyStatistics(nodeTypeNode, subVault1);
+        doNothing().when(service).savePropertyStatistics(nodeTypeNode, subVault2);
 
         service.saveNodeTypeVault(statNode, nodeTypeVault);
 
@@ -278,12 +288,111 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
         when(nodeTypeVault.getNodeType()).thenReturn(TestNodeType.TEST1);
         when(nodeTypeVault.getAllPropertyVaults()).thenReturn(subVaults);
         doReturn(nodeTypeNode).when(service).updateNodeTypeVault(statNode, nodeTypeVault);
+        doNothing().when(service).savePropertyStatistics(nodeTypeNode, subVault1);
+        doNothing().when(service).savePropertyStatistics(nodeTypeNode, subVault2);
 
         service.saveNodeTypeVault(statNode, nodeTypeVault);
 
         verify(nodeTypeVault).getAllPropertyVaults();
         verify(service).savePropertyStatistics(nodeTypeNode, subVault1);
         verify(service, never()).savePropertyStatistics(nodeTypeNode, subVault2);
+    }
+
+    @Test
+    public void testCheckServiceActivityOnSavingPropertyToNewNode() throws Exception {
+        Node nodeTypeVaultNode = getNodeMock();
+        Node propertyVaultNode = getNodeMock();
+
+        when(propertyVault.getPropertyName()).thenReturn(PROPERTY_NAME);
+        when(nodeService.getChildByName(nodeTypeVaultNode, PROPERTY_NAME, PropertyStatisticsNodeType.STATISTICS_VAULT)).thenReturn(
+                null);
+        when(
+                nodeService.createNode(nodeTypeVaultNode, PropertyStatisticsNodeType.STATISTICS_VAULT,
+                        NodeServiceRelationshipType.CHILD, PROPERTY_NAME)).thenReturn(propertyVaultNode);
+
+        doNothing().when(service).updatePropertyVault(propertyVaultNode, propertyVault);
+
+        service.savePropertyStatistics(nodeTypeVaultNode, propertyVault);
+
+        verify(propertyVault, atLeast(2)).getPropertyName();
+        verify(nodeService).getChildByName(nodeTypeVaultNode, PROPERTY_NAME, PropertyStatisticsNodeType.STATISTICS_VAULT);
+        verify(nodeService).createNode(nodeTypeVaultNode, PropertyStatisticsNodeType.STATISTICS_VAULT,
+                NodeServiceRelationshipType.CHILD, PROPERTY_NAME);
+        verify(service).updatePropertyVault(propertyVaultNode, propertyVault);
+    }
+
+    @Test
+    public void testCheckServiceActivityOnSavingPropertyToExistingNode() throws Exception {
+        Node nodeTypeVaultNode = getNodeMock();
+        Node propertyVaultNode = getNodeMock();
+
+        when(propertyVault.getPropertyName()).thenReturn(PROPERTY_NAME);
+        when(nodeService.getChildByName(nodeTypeVaultNode, PROPERTY_NAME, PropertyStatisticsNodeType.STATISTICS_VAULT)).thenReturn(
+                propertyVaultNode);
+        doNothing().when(service).updatePropertyVault(propertyVaultNode, propertyVault);
+
+        service.savePropertyStatistics(nodeTypeVaultNode, propertyVault);
+
+        verify(propertyVault).getPropertyName();
+        verify(nodeService).getChildByName(nodeTypeVaultNode, PROPERTY_NAME, PropertyStatisticsNodeType.STATISTICS_VAULT);
+        verify(nodeService, never()).createNode(nodeTypeVaultNode, PropertyStatisticsNodeType.STATISTICS_VAULT,
+                NodeServiceRelationshipType.CHILD, PROPERTY_NAME);
+        verify(service).updatePropertyVault(propertyVaultNode, propertyVault);
+    }
+
+    @Test
+    public void testCheckServiceActivityOnUpdatingPropertyVault() throws Exception {
+        Node propertyVaultNode = initializeMockedPropertyVaultNode(0);
+
+        when(nodeService.getNodeProperty(propertyVaultNode, GENERAL_NODE_PROPERTIES.getSizeProperty(), 0, false)).thenReturn(0);
+
+        service.updatePropertyVault(propertyVaultNode, propertyVault);
+
+        verify(nodeService).updateProperty(propertyVaultNode, PROPERTY_STATISTICS_NODE_PROPERTIES.getClassProperty(), "some class");
+        verify(nodeService).updateProperty(propertyVaultNode, GENERAL_NODE_PROPERTIES.getSizeProperty(), 0);
+    }
+
+    @Test
+    public void testCheckServiceActivityOnUpdatingPropertyVaultWithValues() throws Exception {
+        int[] counts = new int[] {2, 3, 4};
+
+        Node propertyVaultNode = initializeMockedPropertyVaultNode(0, counts);
+
+        service.updatePropertyVault(propertyVaultNode, propertyVault);
+
+        verify(nodeService).getNodeProperty(propertyVaultNode, GENERAL_NODE_PROPERTIES.getSizeProperty(), NumberUtils.INTEGER_ZERO,
+                false);
+
+        verify(nodeService).updateProperty(propertyVaultNode, PROPERTY_STATISTICS_NODE_PROPERTIES.getClassProperty(), "some class");
+
+        verify(nodeService, atLeast(counts.length)).updateProperty(eq(propertyVaultNode),
+                contains(PROPERTY_STATISTICS_NODE_PROPERTIES.getValuePrefix()), contains(PROPERTY_NAME));
+
+        verify(nodeService, atLeast(counts.length)).updateProperty(eq(propertyVaultNode),
+                contains(PROPERTY_STATISTICS_NODE_PROPERTIES.getCountPrefix()), any(Integer.class));
+    }
+
+    private Node initializeMockedPropertyVaultNode(int size, int... counts) throws Exception {
+        Node propertyVaultNode = getNodeMock();
+        Map<Object, Integer> values = getValuesMap(counts);
+
+        when(propertyVault.getClassName()).thenReturn("some class");
+        when(propertyVault.getValuesMap()).thenReturn(values);
+
+        when(nodeService.getNodeProperty(propertyVaultNode, GENERAL_NODE_PROPERTIES.getSizeProperty(), 0, false)).thenReturn(size);
+
+        return propertyVaultNode;
+    }
+
+    private Map<Object, Integer> getValuesMap(int... counts) {
+        Map<Object, Integer> result = new HashMap<Object, Integer>();
+
+        int j = 0;
+        for (int i : counts) {
+            result.put(PROPERTY_NAME + j++, i);
+        }
+
+        return result;
     }
 
     private PropertyVault createPropertyVault(boolean isChanged) {

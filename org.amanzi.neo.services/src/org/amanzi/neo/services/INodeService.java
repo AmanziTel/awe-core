@@ -78,4 +78,9 @@ public interface INodeService extends IService {
 
     Node createNode(Node parentNode, INodeType nodeType, RelationshipType relationshipType, Map<String, Object> parameters)
             throws ServiceException;
+
+    void updateProperty(Node node, String propertyName, Object newValue) throws ServiceException;
+
+    <T extends Object> T getNodeProperty(final Node node, final String propertyName, final T defaultValue,
+            final boolean throwExceptionIfNotExist) throws ServiceException;
 }
