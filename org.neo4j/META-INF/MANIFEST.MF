@@ -1,0 +1,22 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: neo4j
+Bundle-SymbolicName: org.neo4j;singleton:=true
+Bundle-Version: 1.8.0
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-Vendor: Neo Technology
+Bundle-ClassPath: lib/geronimo-jta_1.1_spec-1.1.1.jar,
+ lib/lucene-core-3.5.0.jar,
+ lib/neo4j-1.8.M05.jar,
+ lib/neo4j-cypher-1.8.M05.jar,
+ lib/neo4j-graph-algo-1.8.M05.jar,
+ lib/neo4j-graph-matching-1.8.M05.jar,
+ lib/neo4j-jmx-1.8.M05.jar,
+ lib/neo4j-kernel-1.8.M05.jar,
+ lib/neo4j-lucene-index-1.8.M05.jar,
+ lib/neo4j-udc-1.8.M05.jar,
+ lib/scala-library-2.9.1-1.jar
+Export-Package: org.neo4j.graphdb,
+ org.neo4j.graphdb.index,
+ org.neo4j.graphdb.traversal,
+ org.neo4j.kernel

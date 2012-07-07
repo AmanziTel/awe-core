@@ -3,12 +3,12 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <artifactId>awe-core</artifactId>
-    <groupId>org.amanzi</groupId>
-    <version>${awe-core-version}</version>
+    <artifactId>awe-neo4j</artifactId>
+    <groupId>org.neo4j</groupId>
+    <version>${neo4j-version}</version>
   </parent>
-  <groupId>org.amanzi</groupId>
-  <artifactId>org.jfree</artifactId>
-  <version>1.0.13</version>
+  <groupId>org.neo4j</groupId>
+  <artifactId>org.neo4j</artifactId>
+  <version>1.8.0</version>
   <packaging>eclipse-plugin</packaging>
 </project>

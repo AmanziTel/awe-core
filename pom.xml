@@ -24,6 +24,17 @@
   <modules>
     <module>org.amanzi.awe.filters</module>
     <module>org.amanzi.awe.libs</module>
+<<<<<<< HEAD
+=======
+    <module>org.amanzi.awe.neostyle</module>
+    <module>org.amanzi.awe.render.core</module>
+    <module>org.amanzi.awe.render.drive</module>
+    <module>org.amanzi.awe.render.network</module>
+    <module>org.amanzi.awe.star.tool</module>
+    <module>org.amanzi.awe.startup.splash</module>
+    <module>org.amanzi.awe.statistics</module>
+    <module>org.amanzi.awe.statistics.testing</module>
+>>>>>>> awe-statistics
     <module>org.amanzi.awe.ui</module>
     <module>org.amanzi.awe.ui.testing</module>
     <module>org.amanzi.awe.ui.udig</module>
