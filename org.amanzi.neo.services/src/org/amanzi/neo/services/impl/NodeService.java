@@ -176,7 +176,7 @@ public class NodeService extends AbstractService implements INodeService {
         assert node != null;
         assert !StringUtils.isEmpty(propertyName);
 
-        assert throwExceptionIfNotExist || (defaultValue != null);
+        assert !(throwExceptionIfNotExist && (defaultValue != null));
 
         boolean throwPropertyNotFoundException = false;
 
@@ -331,7 +331,7 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     @Override
-    public void removeNodeProperty(Node node, String propertyName, boolean throwExceptionIfNotExists) throws ServiceException {
+    public void removeNodeProperty(Node node, String propertyName, boolean throwExceptionIfNotExist) throws ServiceException {
         assert node != null;
         assert !StringUtils.isEmpty(propertyName);
 
@@ -348,17 +348,26 @@ public class NodeService extends AbstractService implements INodeService {
             } finally {
                 tx.finish();
             }
-        } else if (throwExceptionIfNotExists) {
+        } else if (throwExceptionIfNotExist) {
             throw new PropertyNotFoundException(propertyName, node);
         }
 
     }
 
     @Override
-    public void renameNodeProperty(Node node, String oldPropertyName, String newPropertyName, boolean throwExceptionIfNotExists)
+    public void renameNodeProperty(Node node, String oldPropertyName, String newPropertyName, boolean throwExceptionIfNotExist)
             throws ServiceException {
         assert node != null;
         assert !StringUtils.isEmpty(newPropertyName);
         assert !StringUtils.isEmpty(oldPropertyName);
+
+        Object value = getNodeProperty(node, oldPropertyName, null, false);
+
+        if (value != null) {
+            removeNodeProperty(node, oldPropertyName, false);
+            updateProperty(node, newPropertyName, value);
+        } else if (throwExceptionIfNotExist) {
+            throw new PropertyNotFoundException(oldPropertyName, node);
+        }
     }
 }

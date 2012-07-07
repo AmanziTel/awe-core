@@ -84,8 +84,8 @@ public interface INodeService extends IService {
     <T extends Object> T getNodeProperty(final Node node, final String propertyName, final T defaultValue,
             final boolean throwExceptionIfNotExist) throws ServiceException;
 
-    void removeNodeProperty(Node node, String propertyName, boolean throwExceptionIfNotExists) throws ServiceException;
+    void removeNodeProperty(Node node, String propertyName, boolean throwExceptionIfNotExist) throws ServiceException;
 
-    void renameNodeProperty(Node node, String oldPropertyName, String newPropertyName, boolean throwExceptionIfNotExists)
+    void renameNodeProperty(Node node, String oldPropertyName, String newPropertyName, boolean throwExceptionIfNotExist)
             throws ServiceException;
 }

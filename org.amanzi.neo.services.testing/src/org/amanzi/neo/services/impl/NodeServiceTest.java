@@ -41,6 +41,9 @@ import org.neo4j.graphdb.Relationship;
  */
 public class NodeServiceTest extends AbstractServiceTest {
 
+    /** String NEW_TEST_NODE_PROPERTY field */
+    private static final String NEW_TEST_NODE_PROPERTY = "new property";
+
     /** String TEST_NODE_VALUE field */
     private static final String TEST_NODE_VALUE = "some value";
 
@@ -422,12 +425,12 @@ public class NodeServiceTest extends AbstractServiceTest {
         Node node = getNodeMock();
 
         when(node.hasProperty(TEST_NODE_PROPERTY)).thenReturn(true);
-        when(node.getProperty(TEST_NODE_PROPERTY, TEST_NODE_VALUE)).thenReturn("some value");
+        when(node.getProperty(TEST_NODE_PROPERTY)).thenReturn("some value");
 
-        Object result = nodeService.getNodeProperty(node, TEST_NODE_PROPERTY, TEST_NODE_VALUE, true);
+        Object result = nodeService.getNodeProperty(node, TEST_NODE_PROPERTY, null, true);
 
         verify(node).hasProperty(TEST_NODE_PROPERTY);
-        verify(node).getProperty(TEST_NODE_PROPERTY, TEST_NODE_VALUE);
+        verify(node).getProperty(TEST_NODE_PROPERTY);
 
         assertEquals("unexpected property", "some value", result);
     }
@@ -452,7 +455,7 @@ public class NodeServiceTest extends AbstractServiceTest {
 
         when(node.hasProperty(TEST_NODE_PROPERTY)).thenReturn(false);
 
-        nodeService.getNodeProperty(node, TEST_NODE_PROPERTY, TEST_NODE_VALUE, true);
+        nodeService.getNodeProperty(node, TEST_NODE_PROPERTY, null, true);
     }
 
     @Test(expected = DatabaseException.class)
@@ -500,6 +503,62 @@ public class NodeServiceTest extends AbstractServiceTest {
 
         verify(node).hasProperty(TEST_NODE_PROPERTY);
         verify(node, never()).removeProperty(TEST_NODE_PROPERTY);
+    }
+
+    @Test
+    public void testCheckActivityOnRenamePropertyWithThrow() throws Exception {
+        Node node = getNodeMock();
+        nodeService = spy(nodeService);
+
+        doReturn(TEST_NODE_VALUE).when(nodeService).getNodeProperty(node, TEST_NODE_PROPERTY, null, false);
+        doNothing().when(nodeService).removeNodeProperty(node, TEST_NODE_PROPERTY, true);
+        doNothing().when(nodeService).updateProperty(node, NEW_TEST_NODE_PROPERTY, TEST_NODE_VALUE);
+
+        nodeService.renameNodeProperty(node, TEST_NODE_PROPERTY, NEW_TEST_NODE_PROPERTY, true);
+
+        verify(nodeService).removeNodeProperty(node, TEST_NODE_PROPERTY, false);
+        verify(nodeService).getNodeProperty(node, TEST_NODE_PROPERTY, null, false);
+        verify(nodeService).updateProperty(node, NEW_TEST_NODE_PROPERTY, TEST_NODE_VALUE);
+    }
+
+    @Test
+    public void testCheckActivityOnRenamePropertyWithoutThrow() throws Exception {
+        Node node = getNodeMock();
+        nodeService = spy(nodeService);
+
+        doReturn(TEST_NODE_VALUE).when(nodeService).getNodeProperty(node, TEST_NODE_PROPERTY, null, false);
+        doNothing().when(nodeService).removeNodeProperty(node, TEST_NODE_PROPERTY, false);
+        doNothing().when(nodeService).updateProperty(node, NEW_TEST_NODE_PROPERTY, TEST_NODE_VALUE);
+
+        nodeService.renameNodeProperty(node, TEST_NODE_PROPERTY, NEW_TEST_NODE_PROPERTY, false);
+
+        verify(nodeService).removeNodeProperty(node, TEST_NODE_PROPERTY, false);
+        verify(nodeService).getNodeProperty(node, TEST_NODE_PROPERTY, null, false);
+        verify(nodeService).updateProperty(node, NEW_TEST_NODE_PROPERTY, TEST_NODE_VALUE);
+    }
+
+    @Test
+    public void testCheckActivityOnRenamePropertyWithNotExistingProperty() throws Exception {
+        Node node = getNodeMock();
+        nodeService = spy(nodeService);
+
+        doReturn(null).when(nodeService).getNodeProperty(node, TEST_NODE_PROPERTY, null, true);
+
+        nodeService.renameNodeProperty(node, TEST_NODE_PROPERTY, NEW_TEST_NODE_PROPERTY, false);
+
+        verify(nodeService, never()).removeNodeProperty(node, TEST_NODE_PROPERTY, false);
+        verify(nodeService).getNodeProperty(node, TEST_NODE_PROPERTY, null, false);
+        verify(nodeService, never()).updateProperty(node, NEW_TEST_NODE_PROPERTY, TEST_NODE_VALUE);
+    }
+
+    @Test(expected = PropertyNotFoundException.class)
+    public void testCheckActivityOnRenamePropertyWithNotExistingPropertyWithThrow() throws Exception {
+        Node node = getNodeMock();
+        nodeService = spy(nodeService);
+
+        doReturn(null).when(nodeService).getNodeProperty(node, TEST_NODE_PROPERTY, null, true);
+
+        nodeService.renameNodeProperty(node, TEST_NODE_PROPERTY, NEW_TEST_NODE_PROPERTY, true);
     }
 
     private void verifyNodeProperty(Node node, String name, Object value, boolean exists, boolean equal) {
