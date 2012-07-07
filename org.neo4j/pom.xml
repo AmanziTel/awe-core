@@ -3,9 +3,9 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <artifactId>awe-neo4j</artifactId>
-    <groupId>org.neo4j</groupId>
-    <version>${neo4j-version}</version>
+    <artifactId>awe-core</artifactId>
+    <groupId>org.amanzi</groupId>
+    <version>${awe-core-version}</version>
   </parent>
   <groupId>org.neo4j</groupId>
   <artifactId>org.neo4j</artifactId>
