@@ -4,8 +4,8 @@
   <modelVersion>4.0.0</modelVersion>
 
   <properties>
-    <tycho-version>0.15.1</tycho-version>
-    <awe-core-version>0.13.0</awe-core-version>
+    <tycho-version>0.15.0</tycho-version>
+    <awe-core-version>0.13.1</awe-core-version>
   </properties>
 
   <groupId>org.amanzi</groupId>
