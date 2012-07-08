@@ -94,4 +94,12 @@ public class NodeTypeVault {
     public void setChanged(final boolean isChanged) {
         this.isChanged = isChanged;
     }
+
+    public void setCount(int count) {
+        this.count = count;
+    }
+
+    public void addPropertyVault(PropertyVault propertyVault) {
+        propertyVaults.put(propertyVault.getPropertyName(), propertyVault);
+    }
 }

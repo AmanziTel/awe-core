@@ -12,6 +12,7 @@
  */
 package org.amanzi.neo.nodetypes;
 
+import org.amanzi.neo.nodetypes.NodeTypeManager.NodeTypeNotExistsException;
 import org.amanzi.neo.nodetypes.internal.TestNodeTypes;
 import org.amanzi.testing.AbstractTest;
 import org.junit.Before;
@@ -48,7 +49,7 @@ public class NodeTypeManagerTest extends AbstractTest {
     }
 
     @Test
-    public void testGetType() {
+    public void testGetType() throws Exception {
         manager.registerNodeType(NodeType.class);
         for (NodeType nodeType : NodeType.values()) {
             INodeType t = manager.getType(nodeType.getId());
@@ -57,7 +58,7 @@ public class NodeTypeManagerTest extends AbstractTest {
     }
 
     @Test
-    public void testGetTypeMultipleTypes() {
+    public void testGetTypeMultipleTypes() throws Exception {
         manager.registerNodeType(AnotherNodeTypes.class);
         for (AnotherNodeTypes nodeType : AnotherNodeTypes.values()) {
             INodeType t = manager.getType(nodeType.getId());
@@ -77,10 +78,15 @@ public class NodeTypeManagerTest extends AbstractTest {
     }
 
     @Test
-    public void testCheckNodeTypesIds() {
+    public void testCheckNodeTypesIds() throws Exception {
         for (TestNodeTypes t : TestNodeTypes.values()) {
             INodeType type = manager.getType(NodeTypeUtils.getTypeName(t.getId()));
             assertEquals("Unexpected NodeType", t.getId(), type.getId());
         }
+    }
+
+    @Test(expected = NodeTypeNotExistsException.class)
+    public void testCheckNodeTypeNotExistsException() throws Exception {
+        manager.getType("blablabla");
     }
 }

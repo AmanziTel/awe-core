@@ -21,6 +21,7 @@ import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.impl.internal.util.AbstractLoggable;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
+import org.amanzi.neo.nodetypes.NodeTypeManager.NodeTypeNotExistsException;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.DuplicatedNodeException;
 import org.amanzi.neo.services.exceptions.ServiceException;
@@ -92,7 +93,7 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
             name = nodeService.getNodeName(rootNode);
             nodeType = nodeService.getNodeType(rootNode);
             parentNode = nodeService.getParent(rootNode);
-        } catch (ServiceException e) {
+        } catch (Exception e) {
             processException("An error occured on Model Initialization", e);
         }
 
@@ -128,21 +129,28 @@ public abstract class AbstractModel extends AbstractLoggable implements IModel {
         return parentNode;
     }
 
-    protected void processException(final String logMessage, final ServiceException e) throws ModelException {
+    protected void processException(final String logMessage, final Exception e) throws ModelException {
         LOGGER.error(logMessage, e);
 
-        switch (e.getReason()) {
-        case DATABASE_EXCEPTION:
+        if (e instanceof ServiceException) {
+            ServiceException serviceException = (ServiceException)e;
+            switch (serviceException.getReason()) {
+            case DATABASE_EXCEPTION:
+                throw new FatalException(serviceException);
+            case PROPERTY_NOT_FOUND:
+            case INCORRECT_PARENT:
+            case INCORRECT_PROPERTY:
+                throw new DataInconsistencyException(serviceException);
+            case DUPLICATED_NODE:
+                DuplicatedNodeException error = (DuplicatedNodeException)e;
+                throw new DuplicatedModelException(getClass(), error.getPropertyName(), error.getDuplicatedValue());
+            default:
+                // do nothing
+            }
+        } else if (e instanceof NodeTypeNotExistsException) {
             throw new FatalException(e);
-        case PROPERTY_NOT_FOUND:
-        case INCORRECT_PARENT:
-        case INCORRECT_PROPERTY:
-            throw new DataInconsistencyException(e);
-        case DUPLICATED_NODE:
-            DuplicatedNodeException error = (DuplicatedNodeException)e;
-            throw new DuplicatedModelException(getClass(), error.getPropertyName(), error.getDuplicatedValue());
-        default:
-            // do nothing
+        } else {
+            throw new RuntimeException(e);
         }
     }
 

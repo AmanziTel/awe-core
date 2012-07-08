@@ -116,4 +116,12 @@ public class StatisticsVault implements IPropertyStatistics {
         this.isChanged = isChanged;
     }
 
+    public void setCount(int count) {
+        this.count = count;
+    }
+
+    public void addNodeTypeVault(NodeTypeVault nodeTypeVault) {
+        nodeTypeVaults.put(nodeTypeVault.getNodeType(), nodeTypeVault);
+    }
+
 }

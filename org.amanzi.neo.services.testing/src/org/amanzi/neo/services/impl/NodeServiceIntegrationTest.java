@@ -103,7 +103,7 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
         Node parent = createNode();
         createChildren(NodeService.NodeServiceRelationshipType.CHILD, TestNodeType.TEST_NODE_TYPE1, parent);
 
-        Iterator<Node> result = nodeService.getChildren(parent);
+        Iterator<Node> result = nodeService.getChildren(parent, TestNodeType.TEST_NODE_TYPE1);
 
         assertNotNull(RESULT_OF_SEARCH_SHOULD_NOT_BE_NULL, result);
 
@@ -123,7 +123,7 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
     public void testCheckGetAllNodesWhenEmpty() throws Exception {
         Node parent = createNode();
 
-        Iterator<Node> result = nodeService.getChildren(parent);
+        Iterator<Node> result = nodeService.getChildren(parent, TestNodeType.TEST_NODE_TYPE1);
 
         assertFalse("It should not be any children", result.hasNext());
     }
@@ -133,7 +133,7 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
         Node parent = createNode();
         createChildren(TestRelatinshipType.TEST_REL, TestNodeType.TEST_NODE_TYPE1, parent);
 
-        Iterator<Node> result = nodeService.getChildren(parent);
+        Iterator<Node> result = nodeService.getChildren(parent, TestNodeType.TEST_NODE_TYPE1);
 
         assertFalse("It should not be any children", result.hasNext());
     }
@@ -144,7 +144,29 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
         createChildren(NodeService.NodeServiceRelationshipType.CHILD, TestNodeType.TEST_NODE_TYPE1, parent);
         createChildren(TestRelatinshipType.TEST_REL, TestNodeType.TEST_NODE_TYPE1, parent);
 
-        Iterator<Node> result = nodeService.getChildren(parent);
+        Iterator<Node> result = nodeService.getChildren(parent, TestNodeType.TEST_NODE_TYPE1);
+
+        assertNotNull(RESULT_OF_SEARCH_SHOULD_NOT_BE_NULL, result);
+
+        @SuppressWarnings("unchecked")
+        List<Node> resultList = IteratorUtils.toList(result);
+
+        assertEquals("Unexpected size of childrent", CHILDREN_NAMES.length, resultList.size());
+
+        for (Node node : resultList) {
+            String name = (String)node.getProperty(GENERAL_NODE_PROPERTIES.getNodeNameProperty());
+
+            assertTrue("name should exists in original children names", ArrayUtils.contains(CHILDREN_NAMES, name));
+        }
+    }
+
+    @Test
+    public void testCheckGetAllNodesWithMixedNodeTypes() throws Exception {
+        Node parent = createNode();
+        createChildren(NodeService.NodeServiceRelationshipType.CHILD, TestNodeType.TEST_NODE_TYPE1, parent);
+        createChildren(NodeService.NodeServiceRelationshipType.CHILD, TestNodeType.TEST_NODE_TYPE2, parent);
+
+        Iterator<Node> result = nodeService.getChildren(parent, TestNodeType.TEST_NODE_TYPE1);
 
         assertNotNull(RESULT_OF_SEARCH_SHOULD_NOT_BE_NULL, result);
 

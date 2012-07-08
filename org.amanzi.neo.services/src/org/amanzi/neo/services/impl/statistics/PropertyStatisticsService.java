@@ -14,6 +14,7 @@
 package org.amanzi.neo.services.impl.statistics;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -21,6 +22,9 @@ import java.util.Queue;
 import java.util.Stack;
 
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
+import org.amanzi.neo.nodetypes.INodeType;
+import org.amanzi.neo.nodetypes.NodeTypeManager;
+import org.amanzi.neo.nodetypes.NodeTypeManager.NodeTypeNotExistsException;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.impl.NodeService.NodeServiceRelationshipType;
@@ -78,7 +82,7 @@ public class PropertyStatisticsService extends AbstractService implements IPrope
     }
 
     @Override
-    public synchronized IPropertyStatistics loadStatistics(final Node rootNode) throws ServiceException {
+    public synchronized IPropertyStatistics loadStatistics(final Node rootNode) throws ServiceException, NodeTypeNotExistsException {
         assert rootNode != null;
 
         Node statisticsNode = getStatisticsNode(rootNode);
@@ -86,6 +90,25 @@ public class PropertyStatisticsService extends AbstractService implements IPrope
         IPropertyStatistics result = loadStatisticsVault(statisticsNode);
 
         return result;
+    }
+
+    protected NodeTypeVault loadNodeTypeVault(Node nodeTypeVaultNode) throws ServiceException, NodeTypeNotExistsException {
+        String nodeTypeId = nodeService.getNodeName(nodeTypeVaultNode);
+        INodeType nodeType = NodeTypeManager.getInstance().getType(nodeTypeId);
+
+        NodeTypeVault vault = new NodeTypeVault(nodeType);
+        vault.setCount(getCount(nodeTypeVaultNode, true));
+
+        Iterator<Node> propertyVaultNodeIterator = getChildren(nodeTypeVaultNode);
+        while (propertyVaultNodeIterator.hasNext()) {
+            vault.addPropertyVault(loadPropertyVault(propertyVaultNodeIterator.next()));
+        }
+
+        return vault;
+    }
+
+    protected PropertyVault loadPropertyVault(Node propertyVaultNode) {
+        return null;
     }
 
     protected void saveStatisticsVault(Node node, StatisticsVault vault) throws ServiceException {
@@ -189,8 +212,17 @@ public class PropertyStatisticsService extends AbstractService implements IPrope
         nodeService.updateProperty(node, statisticsNodeProperties.getCountProperty(), vault.getCount());
     }
 
-    protected StatisticsVault loadStatisticsVault(Node node) {
-        return null;
+    protected StatisticsVault loadStatisticsVault(Node node) throws ServiceException, NodeTypeNotExistsException {
+        StatisticsVault vault = new StatisticsVault();
+
+        vault.setCount(getCount(node, false));
+
+        Iterator<Node> nodeTypeVaultNodesIterator = getChildren(node);
+        while (nodeTypeVaultNodesIterator.hasNext()) {
+            vault.addNodeTypeVault(loadNodeTypeVault(nodeTypeVaultNodesIterator.next()));
+        }
+
+        return vault;
     }
 
     protected Node getStatisticsNode(Node datasetNode) throws ServiceException {
@@ -212,6 +244,14 @@ public class PropertyStatisticsService extends AbstractService implements IPrope
     private Node createChildVaultNode(Node parentVaultNode, String name) throws ServiceException {
         return nodeService.createNode(parentVaultNode, PropertyStatisticsNodeType.STATISTICS_VAULT,
                 NodeServiceRelationshipType.CHILD, name);
+    }
+
+    private int getCount(Node node, boolean shouldExist) throws ServiceException {
+        return nodeService.getNodeProperty(node, statisticsNodeProperties.getCountProperty(), shouldExist ? null : 0, shouldExist);
+    }
+
+    private Iterator<Node> getChildren(Node node) throws ServiceException {
+        return nodeService.getChildren(node, PropertyStatisticsNodeType.STATISTICS_VAULT);
     }
 
 }

@@ -68,7 +68,7 @@ public class PropertyStatisticsModel extends AbstractModel implements IPropertyS
             statisticsVault = statisticsService.loadStatistics(rootNode);
 
             setRootNode(rootNode);
-        } catch (ServiceException e) {
+        } catch (Exception e) {
             processException("An error occured on initialization of PropertyStatistics Model", e);
         }
 

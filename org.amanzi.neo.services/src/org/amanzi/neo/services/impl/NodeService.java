@@ -21,6 +21,7 @@ import java.util.Map.Entry;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.nodetypes.NodeTypeManager;
+import org.amanzi.neo.nodetypes.NodeTypeManager.NodeTypeNotExistsException;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicatedNodeException;
@@ -71,7 +72,7 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     @Override
-    public INodeType getNodeType(final Node node) throws ServiceException {
+    public INodeType getNodeType(final Node node) throws ServiceException, NodeTypeNotExistsException {
         String nodeType = (String)getNodeProperty(node, getGeneralNodeProperties().getNodeTypeProperty(), null, true);
 
         return NodeTypeManager.getInstance().getType(nodeType);
@@ -97,16 +98,6 @@ public class NodeService extends AbstractService implements INodeService {
     }
 
     @Override
-    public Iterator<Node> getChildren(final Node parentNode) throws ServiceException {
-        assert parentNode != null;
-        try {
-            return getChildrenTraversal().traverse(parentNode).nodes().iterator();
-        } catch (Exception e) {
-            throw new DatabaseException(e);
-        }
-    }
-
-    @Override
     public Node getChildByName(final Node parentNode, final String name, final INodeType nodeType) throws ServiceException {
         assert parentNode != null;
         assert !StringUtils.isEmpty(name);
@@ -117,7 +108,7 @@ public class NodeService extends AbstractService implements INodeService {
         boolean throwDuplicatedException = false;
 
         try {
-            Iterator<Node> nodes = getChildrenTraversal().evaluator(getPropertyEvaluatorForType(nodeType))
+            Iterator<Node> nodes = getChildrenTraversal(nodeType)
                     .evaluator(new PropertyEvaluator(getGeneralNodeProperties().getNodeNameProperty(), name)).traverse(parentNode)
                     .nodes().iterator();
 
@@ -148,8 +139,8 @@ public class NodeService extends AbstractService implements INodeService {
         }
     }
 
-    protected TraversalDescription getChildrenTraversal() {
-        return CHILDREN_TRAVERSAL;
+    protected TraversalDescription getChildrenTraversal(INodeType nodeType) {
+        return CHILDREN_TRAVERSAL.evaluator(getPropertyEvaluatorForType(nodeType));
     }
 
     protected TraversalDescription getDownlinkTraversal() {
@@ -368,6 +359,17 @@ public class NodeService extends AbstractService implements INodeService {
             updateProperty(node, newPropertyName, value);
         } else if (throwExceptionIfNotExist) {
             throw new PropertyNotFoundException(oldPropertyName, node);
+        }
+    }
+
+    @Override
+    public Iterator<Node> getChildren(Node parentNode, INodeType nodeType) throws ServiceException {
+        assert parentNode != null;
+
+        try {
+            return getChildrenTraversal(nodeType).traverse(parentNode).nodes().iterator();
+        } catch (Exception e) {
+            throw new DatabaseException(e);
         }
     }
 }

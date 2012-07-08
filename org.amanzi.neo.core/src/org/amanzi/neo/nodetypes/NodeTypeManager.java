@@ -48,6 +48,19 @@ public final class NodeTypeManager {
 
     private static final String CLASS_ATTRIBUTE = "class";
 
+    public class NodeTypeNotExistsException extends Exception {
+
+        /** long serialVersionUID field */
+        private static final long serialVersionUID = 8996538121125391000L;
+
+        private final String id;
+
+        public NodeTypeNotExistsException(String id) {
+            this.id = id;
+        }
+
+    }
+
     @SuppressWarnings("rawtypes")
     private static final class StringToEnumConverter<T extends Enum> {
 
@@ -101,7 +114,7 @@ public final class NodeTypeManager {
      * @return
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public INodeType getType(String typeID) {
+    public INodeType getType(String typeID) throws NodeTypeNotExistsException {
         assert !StringUtils.isEmpty(typeID);
 
         INodeType result = null;
@@ -121,6 +134,11 @@ public final class NodeTypeManager {
             }
             nodeTypeCache.put(typeID, result);
         }
+
+        if (result == null) {
+            throw new NodeTypeNotExistsException(typeID);
+        }
+
         return result;
     }
 

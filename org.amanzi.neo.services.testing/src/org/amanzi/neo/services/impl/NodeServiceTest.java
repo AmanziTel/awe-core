@@ -171,7 +171,7 @@ public class NodeServiceTest extends AbstractServiceTest {
     public void testGetAllChildrentOfNode() throws Exception {
         setChildTraversalToNull();
 
-        nodeService.getChildren(getNodeMock());
+        nodeService.getChildren(getNodeMock(), TestNodeType.TEST1);
     }
 
     @Test(expected = DatabaseException.class)
@@ -601,7 +601,7 @@ public class NodeServiceTest extends AbstractServiceTest {
     private void setChildTraversalToNull() {
         NodeService spyService = spy(new NodeService(getService(), generalNodeProperties));
 
-        when(spyService.getChildrenTraversal()).thenReturn(null);
+        when(spyService.getChildrenTraversal(TestNodeType.TEST1)).thenReturn(null);
 
         nodeService = spyService;
     }

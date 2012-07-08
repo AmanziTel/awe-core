@@ -17,6 +17,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.amanzi.neo.nodetypes.INodeType;
+import org.amanzi.neo.nodetypes.NodeTypeManager.NodeTypeNotExistsException;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.internal.IService;
 import org.neo4j.graphdb.Node;
@@ -48,7 +49,7 @@ public interface INodeService extends IService {
      * @return
      * @throws ServiceException in case of Type Property not found
      */
-    INodeType getNodeType(Node node) throws ServiceException;
+    INodeType getNodeType(Node node) throws ServiceException, NodeTypeNotExistsException;
 
     /**
      * Returns a Paret of Node Parent is a Node that stand on higher hierarchy level for provided
@@ -61,7 +62,7 @@ public interface INodeService extends IService {
      */
     Node getParent(Node child) throws ServiceException;
 
-    Iterator<Node> getChildren(Node parentNode) throws ServiceException;
+    Iterator<Node> getChildren(Node parentNode, INodeType nodeType) throws ServiceException;
 
     Node getChildByName(Node parentNode, String name, INodeType nodeType) throws ServiceException;
 

@@ -14,6 +14,7 @@
 package org.amanzi.neo.services.impl.statistics;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -92,6 +93,8 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
                 nodeService.createNode(rootNode, PropertyStatisticsNodeType.PROPERTY_STATISTICS,
                         PropertyStatisticsRelationshipType.PROPERTY_STATISTICS)).thenReturn(statNode);
 
+        doReturn(vault).when(service).loadStatisticsVault(statNode);
+
         service.loadStatistics(rootNode);
 
         verify(nodeService).getSingleChild(rootNode, PropertyStatisticsNodeType.PROPERTY_STATISTICS,
@@ -124,6 +127,8 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
         when(
                 nodeService.getSingleChild(rootNode, PropertyStatisticsNodeType.PROPERTY_STATISTICS,
                         PropertyStatisticsRelationshipType.PROPERTY_STATISTICS)).thenReturn(statNode);
+
+        doReturn(vault).when(service).loadStatisticsVault(statNode);
 
         service.loadStatistics(rootNode);
 
@@ -481,6 +486,84 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
                 PROPERTY_STATISTICS_NODE_PROPERTIES.getValuePrefix() + 1, false);
         verify(nodeService).renameNodeProperty(propertyVaultNode, PROPERTY_STATISTICS_NODE_PROPERTIES.getCountPrefix() + 3,
                 PROPERTY_STATISTICS_NODE_PROPERTIES.getCountPrefix() + 1, false);
+    }
+
+    @Test
+    public void testCheckResultOfLoadStatisticsVault() throws Exception {
+        doReturn(vault).when(service).loadStatisticsVault(statNode);
+
+        IPropertyStatistics result = service.loadStatisticsVault(statNode);
+
+        assertNotNull("statistics cannot be null", result);
+    }
+
+    @Test
+    public void testCheckServiceActivityOnLoadStatistics() throws Exception {
+        doReturn(vault).when(service).loadStatisticsVault(statNode);
+        doReturn(statNode).when(service).getStatisticsNode(rootNode);
+
+        IPropertyStatistics result = service.loadStatistics(rootNode);
+
+        assertEquals("Unexpected statistics", vault, result);
+
+        verify(service).loadStatisticsVault(statNode);
+        verify(service).getStatisticsNode(rootNode);
+    }
+
+    @Test
+    public void testCheckServiceActivityOnLoadStatisticsVault() throws Exception {
+        when(nodeTypeVault.getNodeType()).thenReturn(TestNodeType.TEST1);
+        when(nodeService.getChildren(statNode, PropertyStatisticsNodeType.STATISTICS_VAULT)).thenReturn(
+                Arrays.asList(getNodeMock(), getNodeMock()).iterator());
+        doReturn(5).when(nodeService).getNodeProperty(statNode, PROPERTY_STATISTICS_NODE_PROPERTIES.getCountProperty(), 0, false);
+        doReturn(nodeTypeVault).when(service).loadNodeTypeVault(any(Node.class));
+
+        vault = service.loadStatisticsVault(statNode);
+
+        verify(nodeService).getNodeProperty(statNode, PROPERTY_STATISTICS_NODE_PROPERTIES.getCountProperty(), 0, false);
+        verify(service, atLeast(2)).loadNodeTypeVault(any(Node.class));
+
+        assertEquals("Unexpected count of vault", 5, vault.getCount());
+    }
+
+    @Test
+    public void testCheckServiceActivityOnLoadNodeTypeVault() throws Exception {
+        Node nodeTypeVaultNode = getNodeMock();
+
+        when(nodeService.getChildren(nodeTypeVaultNode, PropertyStatisticsNodeType.STATISTICS_VAULT)).thenReturn(
+                Arrays.asList(getNodeMock(), getNodeMock()).iterator());
+
+        when(nodeService.getNodeName(nodeTypeVaultNode)).thenReturn(PropertyStatisticsNodeType.STATISTICS_VAULT.getId());
+        when(nodeService.getNodeProperty(nodeTypeVaultNode, PROPERTY_STATISTICS_NODE_PROPERTIES.getCountProperty(), null, true))
+                .thenReturn(5);
+        doReturn(PROPERTY_NAME).when(propertyVault).getPropertyName();
+        doReturn(propertyVault).when(service).loadPropertyVault(any(Node.class));
+
+        nodeTypeVault = service.loadNodeTypeVault(nodeTypeVaultNode);
+
+        verify(nodeService).getNodeName(nodeTypeVaultNode);
+        verify(nodeService).getNodeProperty(nodeTypeVaultNode, PROPERTY_STATISTICS_NODE_PROPERTIES.getCountProperty(), null, true);
+        verify(service, atLeast(2)).loadPropertyVault(any(Node.class));
+    }
+
+    @Test
+    public void testCheckServiceResultOnLoadNodeTypeVault() throws Exception {
+        Node nodeTypeVaultNode = getNodeMock();
+
+        when(nodeService.getChildren(nodeTypeVaultNode, PropertyStatisticsNodeType.STATISTICS_VAULT)).thenReturn(
+                Arrays.asList(getNodeMock(), getNodeMock()).iterator());
+
+        when(nodeService.getNodeName(nodeTypeVaultNode)).thenReturn(PropertyStatisticsNodeType.STATISTICS_VAULT.getId());
+        when(nodeService.getNodeProperty(nodeTypeVaultNode, PROPERTY_STATISTICS_NODE_PROPERTIES.getCountProperty(), null, true))
+                .thenReturn(5);
+        doReturn(PROPERTY_NAME).when(propertyVault).getPropertyName();
+        doReturn(propertyVault).when(service).loadPropertyVault(any(Node.class));
+
+        NodeTypeVault result = service.loadNodeTypeVault(nodeTypeVaultNode);
+
+        assertNotNull("result cannot be null", result);
+        assertEquals("Unexpected node type", PropertyStatisticsNodeType.STATISTICS_VAULT, result.getNodeType());
+        assertEquals("Unexpected count", 5, result.getCount());
     }
 
     private Node initializeMockedPropertyVaultNode(int size, Integer... counts) throws Exception {
