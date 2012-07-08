@@ -11,9 +11,8 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.core.saver;
+package org.amanzi.neo.loader.core.impl.internal;
 
-import org.amanzi.neo.loader.core.IData;
 import org.amanzi.neo.loader.core.internal.IConfiguration;
 
 /**
@@ -24,10 +23,11 @@ import org.amanzi.neo.loader.core.internal.IConfiguration;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface ISaver<C extends IConfiguration, D extends IData> {
+public abstract class AbstractConfiguration implements IConfiguration {
 
-    void init(C configuration);
-
-    void save(D dataElement);
+    @Override
+    public String getDatasetName() {
+        return null;
+    }
 
 }

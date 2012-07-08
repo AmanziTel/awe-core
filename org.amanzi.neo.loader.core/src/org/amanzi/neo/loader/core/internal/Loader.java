@@ -11,12 +11,14 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.core;
+package org.amanzi.neo.loader.core.internal;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.amanzi.neo.loader.core.IData;
+import org.amanzi.neo.loader.core.exception.LoaderException;
 import org.amanzi.neo.loader.core.parser.IParser;
 import org.amanzi.neo.loader.core.saver.ISaver;
 import org.amanzi.neo.loader.core.validator.IValidationResult;
@@ -40,7 +42,7 @@ public final class Loader<C extends IConfiguration, D extends IData> {
 
     private final List<ISaver<C, D>> savers = new ArrayList<ISaver<C, D>>();
 
-    public void init(C configuration) {
+    public void init(C configuration) throws LoaderException {
         parser.init(configuration);
 
         for (ISaver<C, D> saver : savers) {

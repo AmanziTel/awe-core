@@ -13,6 +13,8 @@
 
 package org.amanzi.neo.loader.core;
 
+import java.util.Map;
+
 /**
  * TODO Purpose of
  * <p>
@@ -21,6 +23,6 @@ package org.amanzi.neo.loader.core;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface IConfiguration {
+public interface IMappedStringData extends IData, Map<String, String> {
 
 }

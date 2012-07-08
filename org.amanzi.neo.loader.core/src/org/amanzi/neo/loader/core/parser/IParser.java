@@ -15,8 +15,9 @@ package org.amanzi.neo.loader.core.parser;
 
 import java.util.Iterator;
 
-import org.amanzi.neo.loader.core.IConfiguration;
 import org.amanzi.neo.loader.core.IData;
+import org.amanzi.neo.loader.core.exception.LoaderException;
+import org.amanzi.neo.loader.core.internal.IConfiguration;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 /**
@@ -29,7 +30,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
  */
 public interface IParser<C extends IConfiguration, D extends IData> extends Iterator<D> {
 
-    void init(C configuration);
+    void init(C configuration) throws LoaderException;
 
     void setProgressMonitor(IProgressMonitor monitor);
 

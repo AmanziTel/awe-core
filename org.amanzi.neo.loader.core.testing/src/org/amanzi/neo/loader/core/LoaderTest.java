@@ -17,6 +17,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.amanzi.neo.loader.core.internal.IConfiguration;
+import org.amanzi.neo.loader.core.internal.Loader;
 import org.amanzi.neo.loader.core.parser.IParser;
 import org.amanzi.neo.loader.core.saver.ISaver;
 import org.amanzi.neo.loader.core.validator.IValidationResult;
@@ -96,7 +98,7 @@ public class LoaderTest extends AbstractMockitoTest {
     }
 
     @Test
-    public void testCheckLoaderActivityOnInitialization() {
+    public void testCheckLoaderActivityOnInitialization() throws Exception {
         loader.init(configuration);
 
         verify(parser).init(configuration);

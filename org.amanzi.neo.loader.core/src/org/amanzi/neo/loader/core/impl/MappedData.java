@@ -11,10 +11,11 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.core.saver;
+package org.amanzi.neo.loader.core.impl;
 
-import org.amanzi.neo.loader.core.IData;
-import org.amanzi.neo.loader.core.internal.IConfiguration;
+import java.util.HashMap;
+
+import org.amanzi.neo.loader.core.IMappedStringData;
 
 /**
  * TODO Purpose of
@@ -24,10 +25,9 @@ import org.amanzi.neo.loader.core.internal.IConfiguration;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface ISaver<C extends IConfiguration, D extends IData> {
+public class MappedData extends HashMap<String, String> implements IMappedStringData {
 
-    void init(C configuration);
-
-    void save(D dataElement);
+    /** long serialVersionUID field */
+    private static final long serialVersionUID = -2140010396275905307L;
 
 }

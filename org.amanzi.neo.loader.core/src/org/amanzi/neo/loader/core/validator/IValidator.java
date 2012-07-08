@@ -16,7 +16,7 @@ package org.amanzi.neo.loader.core.validator;
 import java.io.File;
 import java.util.List;
 
-import org.amanzi.neo.loader.core.IConfiguration;
+import org.amanzi.neo.loader.core.internal.IConfiguration;
 
 /**
  * TODO Purpose of
