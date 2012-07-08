@@ -566,6 +566,66 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
         assertEquals("Unexpected count", 5, result.getCount());
     }
 
+    @Test
+    public void testCheckServiceActivityOnLoadPropertyVault() throws Exception {
+        Node propertyVaultNode = getNodeMock();
+
+        when(nodeService.getNodeProperty(propertyVaultNode, GENERAL_NODE_PROPERTIES.getSizeProperty(), null, true)).thenReturn(3);
+        when(nodeService.getNodeProperty(propertyVaultNode, PROPERTY_STATISTICS_NODE_PROPERTIES.getClassProperty(), null, true))
+                .thenReturn("java.lang.Integer");
+
+        for (int i = 0; i < 3; i++) {
+            when(
+                    nodeService.getNodeProperty(propertyVaultNode, PROPERTY_STATISTICS_NODE_PROPERTIES.getValuePrefix() + i, null,
+                            true)).thenReturn(PROPERTY_NAME + i);
+            when(
+                    nodeService.getNodeProperty(propertyVaultNode, PROPERTY_STATISTICS_NODE_PROPERTIES.getCountPrefix() + i, null,
+                            true)).thenReturn(i);
+        }
+
+        service.loadPropertyVault(propertyVaultNode);
+
+        verify(nodeService).getNodeName(propertyVaultNode);
+        verify(nodeService).getNodeProperty(propertyVaultNode, GENERAL_NODE_PROPERTIES.getSizeProperty(), null, true);
+        verify(nodeService).getNodeProperty(propertyVaultNode, PROPERTY_STATISTICS_NODE_PROPERTIES.getClassProperty(), null, true);
+        verify(nodeService, atLeast(3)).getNodeProperty(eq(propertyVaultNode),
+                contains(PROPERTY_STATISTICS_NODE_PROPERTIES.getValuePrefix()), eq(null), eq(true));
+        verify(nodeService, atLeast(3)).getNodeProperty(eq(propertyVaultNode),
+                contains(PROPERTY_STATISTICS_NODE_PROPERTIES.getCountPrefix()), eq(null), eq(true));
+    }
+
+    @Test
+    public void testCheckResultOnLoadPropertyVault() throws Exception {
+        Node propertyVaultNode = getNodeMock();
+
+        when(nodeService.getNodeProperty(propertyVaultNode, GENERAL_NODE_PROPERTIES.getSizeProperty(), null, true)).thenReturn(3);
+        when(nodeService.getNodeProperty(propertyVaultNode, PROPERTY_STATISTICS_NODE_PROPERTIES.getClassProperty(), null, true))
+                .thenReturn("java.lang.Integer");
+
+        for (int i = 0; i < 3; i++) {
+            when(
+                    nodeService.getNodeProperty(propertyVaultNode, PROPERTY_STATISTICS_NODE_PROPERTIES.getValuePrefix() + i, null,
+                            true)).thenReturn(PROPERTY_NAME + i);
+            when(
+                    nodeService.getNodeProperty(propertyVaultNode, PROPERTY_STATISTICS_NODE_PROPERTIES.getCountPrefix() + i, null,
+                            true)).thenReturn(i);
+        }
+
+        PropertyVault result = service.loadPropertyVault(propertyVaultNode);
+
+        assertNotNull("loaded property vault cannot be null", result);
+        assertEquals("unexpected class", "java.lang.Integer", result.getClassName());
+        Map<Object, Integer> values = result.getValuesMap();
+
+        assertEquals("unexpected size", 3, values.size());
+
+        for (int i = 0; i < values.size(); i++) {
+            assertTrue("value should exist", values.containsKey(PROPERTY_NAME + i));
+            assertEquals("unexpected count of value", i, values.get(PROPERTY_NAME + i));
+
+        }
+    }
+
     private Node initializeMockedPropertyVaultNode(int size, Integer... counts) throws Exception {
         Node propertyVaultNode = getNodeMock();
         Map<Object, Integer> values = getValuesMap(counts);

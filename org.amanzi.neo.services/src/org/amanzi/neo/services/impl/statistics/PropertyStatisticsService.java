@@ -107,8 +107,24 @@ public class PropertyStatisticsService extends AbstractService implements IPrope
         return vault;
     }
 
-    protected PropertyVault loadPropertyVault(Node propertyVaultNode) {
-        return null;
+    protected PropertyVault loadPropertyVault(Node propertyVaultNode) throws ServiceException {
+        String propertyName = nodeService.getNodeName(propertyVaultNode);
+
+        PropertyVault vault = new PropertyVault(propertyName);
+        vault.setClass((String)nodeService.getNodeProperty(propertyVaultNode, statisticsNodeProperties.getClassProperty(), null,
+                true));
+
+        int size = nodeService.getNodeProperty(propertyVaultNode, getGeneralNodeProperties().getSizeProperty(), null, true);
+
+        for (int i = 0; i < size; i++) {
+            Object value = nodeService
+                    .getNodeProperty(propertyVaultNode, statisticsNodeProperties.getValuePrefix() + i, null, true);
+            int count = nodeService.getNodeProperty(propertyVaultNode, statisticsNodeProperties.getCountPrefix() + i, null, true);
+
+            vault.addValue(value, count);
+        }
+
+        return vault;
     }
 
     protected void saveStatisticsVault(Node node, StatisticsVault vault) throws ServiceException {

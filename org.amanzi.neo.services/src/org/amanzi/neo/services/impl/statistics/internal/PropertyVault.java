@@ -68,7 +68,7 @@ public class PropertyVault {
         }
 
         public String getDataClassName() {
-            return clazz.getSimpleName();
+            return clazz.getName();
         }
 
         public static ClassType findByClass(Class< ? > clazz) {
@@ -83,7 +83,7 @@ public class PropertyVault {
 
         public static ClassType findByName(String className) {
             for (ClassType singleType : values()) {
-                if (singleType.clazz.getSimpleName().equals(className)) {
+                if (singleType.clazz.getName().equals(className)) {
                     return singleType;
                 }
             }
@@ -205,5 +205,13 @@ public class PropertyVault {
 
     public Map<Object, Integer> getValuesMap() {
         return values;
+    }
+
+    public void setClass(String className) {
+        classType = ClassType.findByName(className);
+    }
+
+    public void addValue(Object value, int count) {
+        values.put(value, count);
     }
 }
