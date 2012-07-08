@@ -30,17 +30,6 @@
           </menu>
        </menuContribution>
     </extension>
-    
-         
-   <extension
-         point="org.eclipse.ui.commands">
-      <command
-            defaultHandler="org.amanzi.awe.views.explorer.newproject.NewProjectWizardInitHandler"
-            id="org.amanzi.awe.views.explorer.newproject.NewProjectWizardInitHandler"
-            name="New Project">
-      </command>
-   </extension>
-
 
 	<extension
          point="org.eclipse.ui.menus">
