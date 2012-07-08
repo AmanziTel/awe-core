@@ -12,6 +12,7 @@ Export-Package: org.hamcrest,
  org.jmock.lib.legacy,
  org.jmock.syntax,
  org.mockito,
+ org.mockito.invocation,
  org.mockito.stubbing,
  org.mockito.verification,
  org.objenesis

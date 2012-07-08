@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension-point id="org.amanzi.loaders" name="Loaders" schema="schema/org.amanzi.loaders.exsd"/>
+   <extension-point id="org.amanzi.validators" name="Validators" schema="schema/org.amanzi.validators.exsd"/>
+   <extension-point id="org.amanzi.savers" name="Savers" schema="schema/org.amanzi.savers.exsd"/>
+   <extension-point id="org.amanzi.parsers" name="Parsers" schema="schema/org.amanzi.parsers.exsd"/>
+
+</plugin>

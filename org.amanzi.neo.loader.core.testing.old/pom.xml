@@ -8,7 +8,7 @@
     <version>${awe-core-version}</version>
   </parent>
   <groupId>org.amanzi</groupId>
-  <artifactId>org.amanzi.neo.loader.core</artifactId>
+  <artifactId>org.amanzi.neo.loader.core.testing</artifactId>
   <version>1.0.0.qualifier</version>
   <packaging>eclipse-test-plugin</packaging>
   
@@ -19,8 +19,8 @@
   		<artifactId>tycho-surefire-plugin</artifactId>
   		<version>${tycho-version}</version>
   		<configuration>
-          <testSuite>org.amanzi.neo.loader.core</testSuite>
-          <testClass>org.amanzi.neo.loader.core.LoaderCoreTestSuite</testClass>
+          <testSuite>org.amanzi.neo.loader.core.testing</testSuite>
+          <testClass>org.amanzi.neo.loader.core.LoaderTests</testClass>
         </configuration>
   	  </plugin>
   	</plugins>

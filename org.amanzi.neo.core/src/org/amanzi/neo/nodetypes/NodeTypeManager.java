@@ -59,6 +59,10 @@ public final class NodeTypeManager {
             this.id = id;
         }
 
+        public String getNodeTypeId() {
+            return id;
+        }
+
     }
 
     @SuppressWarnings("rawtypes")

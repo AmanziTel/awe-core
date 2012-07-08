@@ -7,7 +7,8 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: org.amanzi.neo.nodeproperties,
  org.amanzi.neo.nodeproperties.impl,
  org.amanzi.neo.nodetypes
-Require-Bundle: org.amanzi.log4j;bundle-version="1.0.0"
+Require-Bundle: org.amanzi.log4j;bundle-version="1.0.0",
+ org.amanzi.neo.db;bundle-version="1.0.0"
 Eclipse-ExtensibleAPI: true
 Bundle-ClassPath: .
 Eclipse-BuddyPolicy: registered

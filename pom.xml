@@ -32,6 +32,8 @@
     <module>org.amanzi.neo.db.testing</module>
     <module>org.amanzi.neo.core</module>
     <module>org.amanzi.neo.core.testing</module>
+    <module>org.amanzi.neo.loader.core</module>
+    <module>org.amanzi.neo.loader.core.testing</module>
     <module>org.amanzi.neo.models</module>
     <module>org.amanzi.neo.models.impl</module>
     <module>org.amanzi.neo.models.impl.testing</module>
