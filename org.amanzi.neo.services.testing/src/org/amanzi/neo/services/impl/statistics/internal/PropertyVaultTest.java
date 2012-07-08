@@ -86,7 +86,7 @@ public class PropertyVaultTest extends AbstractMockitoTest {
             vault.index(o);
         }
 
-        assertEquals("Unexpected class", String.class.getSimpleName(), vault.getClassName());
+        assertEquals("Unexpected class", String.class.getName(), vault.getClassName());
         assertEquals("unexpected size of values", 3, vault.getValues().size());
         assertEquals("Unexpected size of string1", 1, vault.getValueCount("string1"));
         assertEquals("Unexpected size of string1", 1, vault.getValueCount("string2"));
@@ -99,7 +99,7 @@ public class PropertyVaultTest extends AbstractMockitoTest {
             vault.index(o);
         }
 
-        assertEquals("Unexpected class", Integer.class.getSimpleName(), vault.getClassName());
+        assertEquals("Unexpected class", Integer.class.getName(), vault.getClassName());
         assertEquals("unexpected size of values", 3, vault.getValues().size());
         assertEquals("Unexpected size of integer1", 1, vault.getValueCount(1));
         assertEquals("Unexpected size of integer2", 1, vault.getValueCount(2));
@@ -112,7 +112,7 @@ public class PropertyVaultTest extends AbstractMockitoTest {
             vault.index(o);
         }
 
-        assertEquals("Unexpected class", Long.class.getSimpleName(), vault.getClassName());
+        assertEquals("Unexpected class", Long.class.getName(), vault.getClassName());
         assertEquals("unexpected size of values", 3, vault.getValues().size());
         assertEquals("Unexpected size of long1", 1, vault.getValueCount(1l));
         assertEquals("Unexpected size of long2", 1, vault.getValueCount(2l));
@@ -125,7 +125,7 @@ public class PropertyVaultTest extends AbstractMockitoTest {
             vault.index(o);
         }
 
-        assertEquals("Unexpected class", Double.class.getSimpleName(), vault.getClassName());
+        assertEquals("Unexpected class", Double.class.getName(), vault.getClassName());
         assertEquals("unexpected size of values", 3, vault.getValues().size());
         assertEquals("Unexpected size of float1", 1, vault.getValueCount(1d));
         assertEquals("Unexpected size of float2", 1, vault.getValueCount(2d));
