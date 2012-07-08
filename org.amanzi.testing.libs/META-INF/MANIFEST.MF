@@ -9,6 +9,8 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: org.hamcrest,
  org.jmock,
  org.jmock.internal,
+ org.jmock.lib.legacy,
+ org.jmock.syntax,
  org.mockito,
  org.mockito.stubbing,
  org.mockito.verification,
@@ -17,4 +19,5 @@ Bundle-ClassPath: lib/mockito-core-1.9.0.jar,
  lib/jmock-2.5.1.jar,
  lib/hamcrest-core-1.1.jar,
  lib/objenesis-1.0.jar,
- lib/hamcrest-library-1.1.jar
+ lib/hamcrest-library-1.1.jar,
+ lib/jmock-legacy-2.5.1.jar
