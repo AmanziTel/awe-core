@@ -10,4 +10,3 @@ else
 	mvn clean install -f   org.neo4j/pom-libs.xml
 fi
 mvn clean install
-
