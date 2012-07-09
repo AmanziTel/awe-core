@@ -131,7 +131,7 @@ public class PropertyVaultTest extends AbstractMockitoTest {
         }
 
         assertEquals(UNEXPECTED_CLASS_MESSAGE, Double.class.getName(), vault.getClassName());
-        assertValues(LONG_VALUES);
+        assertValues(DOUBLE_VALUES);
     }
 
     @Test
