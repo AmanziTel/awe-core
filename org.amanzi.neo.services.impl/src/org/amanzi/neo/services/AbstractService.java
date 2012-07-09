@@ -324,7 +324,7 @@ public abstract class AbstractService implements IDatabaseEventListener {
 
     /**
      * Generates a node index for the defined <code>root</code> node and <code>nodeType</code>. Your
-     * code should call this method only once for each pair of parameters, to minimize calls to
+     * code should call this method only only() for each pair of parameters, to minimize calls to
      * database.
      * 
      * @param root a model root

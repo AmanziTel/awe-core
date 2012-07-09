@@ -245,7 +245,7 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
         service.saveNodeTypeVault(statNode, nodeTypeVault);
 
         verify(nodeService).updateProperty(nodeTypeNode, PROPERTY_STATISTICS_NODE_PROPERTIES.getCountProperty(), TEST_COUNT_VALUE);
-        verify(nodeTypeVault, atLeast(2)).getNodeType();
+        verify(nodeTypeVault, times(2)).getNodeType();
         verify(nodeService).getChildByName(statNode, TestNodeType.TEST1.getId(), PropertyStatisticsNodeType.STATISTICS_VAULT);
         verify(nodeService).createNode(statNode, PropertyStatisticsNodeType.STATISTICS_VAULT, NodeServiceRelationshipType.CHILD,
                 TestNodeType.TEST1.getId());
@@ -333,7 +333,7 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
 
         service.savePropertyStatistics(nodeTypeVaultNode, propertyVault);
 
-        verify(propertyVault, atLeast(2)).getPropertyName();
+        verify(propertyVault, times(2)).getPropertyName();
         verify(nodeService).getChildByName(nodeTypeVaultNode, PROPERTY_NAME, PropertyStatisticsNodeType.STATISTICS_VAULT);
         verify(nodeService).createNode(nodeTypeVaultNode, PropertyStatisticsNodeType.STATISTICS_VAULT,
                 NodeServiceRelationshipType.CHILD, PROPERTY_NAME);
@@ -384,11 +384,13 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
 
         verify(nodeService).updateProperty(propertyVaultNode, PROPERTY_STATISTICS_NODE_PROPERTIES.getClassProperty(), "some class");
 
-        verify(nodeService, atLeast(counts.length)).updateProperty(eq(propertyVaultNode),
-                contains(PROPERTY_STATISTICS_NODE_PROPERTIES.getValuePrefix()), contains(PROPERTY_NAME));
+        for (int i = 0; i < counts.length; i++) {
+            verify(nodeService).updateProperty(eq(propertyVaultNode), eq(PROPERTY_STATISTICS_NODE_PROPERTIES.getValuePrefix() + i),
+                    contains(PROPERTY_NAME));
 
-        verify(nodeService, atLeast(counts.length)).updateProperty(eq(propertyVaultNode),
-                contains(PROPERTY_STATISTICS_NODE_PROPERTIES.getCountPrefix()), any(Integer.class));
+            verify(nodeService).updateProperty(eq(propertyVaultNode), eq(PROPERTY_STATISTICS_NODE_PROPERTIES.getCountPrefix() + i),
+                    any(Integer.class));
+        }
     }
 
     @Test
@@ -405,8 +407,10 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
 
         service.updatePropertyVault(propertyVaultNode, propertyVault);
 
-        verify(nodeService, atLeast(counts.length)).updateProperty(eq(propertyVaultNode),
-                contains(PROPERTY_STATISTICS_NODE_PROPERTIES.getCountPrefix()), any(Integer.class));
+        for (int i = 0; i < counts.length; i++) {
+            verify(nodeService).updateProperty(eq(propertyVaultNode), eq(PROPERTY_STATISTICS_NODE_PROPERTIES.getCountPrefix() + i),
+                    any(Integer.class));
+        }
     }
 
     @Test
@@ -423,8 +427,10 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
 
         service.updatePropertyVault(propertyVaultNode, propertyVault);
 
-        verify(nodeService, atLeast(counts.length)).updateProperty(eq(propertyVaultNode),
-                contains(PROPERTY_STATISTICS_NODE_PROPERTIES.getCountPrefix()), any(Integer.class));
+        for (int i = 0; i < counts.length; i++) {
+            verify(nodeService).updateProperty(eq(propertyVaultNode), eq(PROPERTY_STATISTICS_NODE_PROPERTIES.getCountPrefix() + i),
+                    any(Integer.class));
+        }
 
         verify(nodeService).updateProperty(propertyVaultNode,
                 PROPERTY_STATISTICS_NODE_PROPERTIES.getValuePrefix() + (counts.length - 1), PROPERTY_NAME + (counts.length - 1));
@@ -444,8 +450,10 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
 
         service.updatePropertyVault(propertyVaultNode, propertyVault);
 
-        verify(nodeService, atLeast(counts.length - 1)).updateProperty(eq(propertyVaultNode),
-                contains(PROPERTY_STATISTICS_NODE_PROPERTIES.getCountPrefix()), any(Integer.class));
+        for (int i = 0; i < (counts.length - 1); i++) {
+            verify(nodeService).updateProperty(eq(propertyVaultNode), eq(PROPERTY_STATISTICS_NODE_PROPERTIES.getCountPrefix() + i),
+                    any(Integer.class));
+        }
 
         verify(nodeService).removeNodeProperty(propertyVaultNode,
                 PROPERTY_STATISTICS_NODE_PROPERTIES.getValuePrefix() + (counts.length - 1), false);
@@ -469,8 +477,10 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
 
         service.updatePropertyVault(propertyVaultNode, propertyVault);
 
-        verify(nodeService, atLeast(counts.length - 1)).updateProperty(eq(propertyVaultNode),
-                contains(PROPERTY_STATISTICS_NODE_PROPERTIES.getCountPrefix()), any(Integer.class));
+        for (int i = 0; i < (counts.length - 1); i++) {
+            verify(nodeService).updateProperty(eq(propertyVaultNode), eq(PROPERTY_STATISTICS_NODE_PROPERTIES.getCountPrefix() + i),
+                    any(Integer.class));
+        }
 
         verify(nodeService).removeNodeProperty(propertyVaultNode, PROPERTY_STATISTICS_NODE_PROPERTIES.getValuePrefix() + 1, false);
         verify(nodeService).removeNodeProperty(propertyVaultNode, PROPERTY_STATISTICS_NODE_PROPERTIES.getCountPrefix() + 1, false);
@@ -491,12 +501,12 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
 
         service.updatePropertyVault(propertyVaultNode, propertyVault);
 
-        verify(nodeService, atLeast(counts.length - 1)).updateProperty(eq(propertyVaultNode),
+        verify(nodeService, times(counts.length - 1)).updateProperty(eq(propertyVaultNode),
                 contains(PROPERTY_STATISTICS_NODE_PROPERTIES.getCountPrefix()), any(Integer.class));
 
-        verify(nodeService, atLeast(2)).removeNodeProperty(eq(propertyVaultNode),
+        verify(nodeService, times(2)).removeNodeProperty(eq(propertyVaultNode),
                 contains(PROPERTY_STATISTICS_NODE_PROPERTIES.getValuePrefix()), eq(Boolean.FALSE));
-        verify(nodeService, atLeast(2)).removeNodeProperty(eq(propertyVaultNode),
+        verify(nodeService, times(2)).removeNodeProperty(eq(propertyVaultNode),
                 contains(PROPERTY_STATISTICS_NODE_PROPERTIES.getCountPrefix()), eq(Boolean.FALSE));
         verify(nodeService).renameNodeProperty(propertyVaultNode,
                 PROPERTY_STATISTICS_NODE_PROPERTIES.getValuePrefix() + (DEFAULT_EMPTIED_COUNTS_FOR_VALUES.length - 1),
@@ -540,7 +550,7 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
         vault = service.loadStatisticsVault(statNode);
 
         verify(nodeService).getNodeProperty(statNode, PROPERTY_STATISTICS_NODE_PROPERTIES.getCountProperty(), 0, false);
-        verify(service, atLeast(2)).loadNodeTypeVault(any(Node.class));
+        verify(service, times(2)).loadNodeTypeVault(any(Node.class));
 
         assertEquals("Unexpected count of vault", TEST_COUNT_VALUE, vault.getCount());
     }
@@ -562,7 +572,7 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
 
         verify(nodeService).getNodeName(nodeTypeVaultNode);
         verify(nodeService).getNodeProperty(nodeTypeVaultNode, PROPERTY_STATISTICS_NODE_PROPERTIES.getCountProperty(), null, true);
-        verify(service, atLeast(2)).loadPropertyVault(any(Node.class));
+        verify(service, times(2)).loadPropertyVault(any(Node.class));
     }
 
     @Test
@@ -608,10 +618,13 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
         verify(nodeService).getNodeName(propertyVaultNode);
         verify(nodeService).getNodeProperty(propertyVaultNode, GENERAL_NODE_PROPERTIES.getSizeProperty(), null, true);
         verify(nodeService).getNodeProperty(propertyVaultNode, PROPERTY_STATISTICS_NODE_PROPERTIES.getClassProperty(), null, true);
-        verify(nodeService, atLeast(TEST_SIZE_VALUE)).getNodeProperty(eq(propertyVaultNode),
+        verify(nodeService, times(TEST_SIZE_VALUE)).getNodeProperty(eq(propertyVaultNode),
                 contains(PROPERTY_STATISTICS_NODE_PROPERTIES.getValuePrefix()), eq(null), eq(true));
-        verify(nodeService, atLeast(TEST_SIZE_VALUE)).getNodeProperty(eq(propertyVaultNode),
-                contains(PROPERTY_STATISTICS_NODE_PROPERTIES.getCountPrefix()), eq(null), eq(true));
+
+        for (int i = 0; i < TEST_SIZE_VALUE; i++) {
+            verify(nodeService).getNodeProperty(eq(propertyVaultNode),
+                    eq(PROPERTY_STATISTICS_NODE_PROPERTIES.getCountPrefix() + i), eq(null), eq(true));
+        }
     }
 
     @Test

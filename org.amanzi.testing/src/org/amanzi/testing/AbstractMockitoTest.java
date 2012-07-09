@@ -74,14 +74,6 @@ public class AbstractMockitoTest extends AbstractTest {
         return Mockito.never();
     }
 
-    protected VerificationMode atLeastOnce() {
-        return Mockito.atLeastOnce();
-    }
-
-    protected VerificationMode atMost(final int maxNumberOfInvocations) {
-        return Mockito.atMost(maxNumberOfInvocations);
-    }
-
     protected <T> T spy(final T object) {
         return Mockito.spy(object);
     }
@@ -96,10 +88,6 @@ public class AbstractMockitoTest extends AbstractTest {
 
     protected void verifyNoMoreInteractions(final Object... mocks) {
         Mockito.verifyNoMoreInteractions(mocks);
-    }
-
-    protected VerificationMode atLeast(final int minNumberOfInvocations) {
-        return Mockito.atLeast(minNumberOfInvocations);
     }
 
     protected VerificationMode times(int wantedNumberOfInvocations) {

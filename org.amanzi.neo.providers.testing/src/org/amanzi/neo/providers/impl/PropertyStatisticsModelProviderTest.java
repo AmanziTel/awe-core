@@ -107,8 +107,8 @@ public class PropertyStatisticsModelProviderTest extends AbstractMockitoTest {
         provider.getPropertyStatistics(parent);
         provider.getPropertyStatistics(parent);
 
-        verify(parent, atLeast(2)).getRootNode();
-        verify(model, atLeastOnce()).initialize(parentNode);
+        verify(parent, times(2)).getRootNode();
+        verify(model).initialize(parentNode);
     }
 
     @Test(expected = ModelException.class)

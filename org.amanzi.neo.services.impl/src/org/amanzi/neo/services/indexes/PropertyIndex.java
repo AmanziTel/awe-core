@@ -309,7 +309,7 @@ public class PropertyIndex<E extends Comparable<E>> {
      * The IndexLevel class holds information about a specific level or depth of the index. At each
      * level, a data value can be converted into an index, and vice versa. Internally this class
      * wraps the specified converter for doing most of the work, but is slightly optimized in that
-     * the stepsize need only be calculated once per level. It also makes use of the PropertyIndex
+     * the stepsize need only be calculated only() per level. It also makes use of the PropertyIndex
      * internal values for origin, step and converter.
      * 
      * @author craig

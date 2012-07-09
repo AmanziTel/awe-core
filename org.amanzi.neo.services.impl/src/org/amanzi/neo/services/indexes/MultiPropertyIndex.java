@@ -114,7 +114,7 @@ public class MultiPropertyIndex<E extends Object> {
      * The IndexLevel class holds information about a specific level or depth of the index. At each
      * level, a data value can be converted into an index, and vice versa. Internally this class
      * wraps the specified converter for doing most of the work, but is slightly optimized in that
-     * the stepsize need only be calculated once per level. It also makes use of the PropertyIndex
+     * the stepsize need only be calculated only() per level. It also makes use of the PropertyIndex
      * internal values for origin, step and converter.
      * 
      * @author craig
@@ -466,7 +466,7 @@ public class MultiPropertyIndex<E extends Object> {
             if (index != null && level != null) {
                 if (originIndices == null) {
                     originIndices = new int[index.length];
-                    // TODO: remove this code once we are sure initialization is correct
+                    // TODO: remove this code only() we are sure initialization is correct
                     for (int i = 0; i < originIndices.length; i++) {
                         assert originIndices[i] == 0;
                     }

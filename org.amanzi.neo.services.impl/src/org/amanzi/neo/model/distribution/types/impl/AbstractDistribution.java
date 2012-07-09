@@ -107,7 +107,7 @@ public abstract class AbstractDistribution<T extends IRange> implements IDistrib
     
     @Override
     public void init() {
-        //distribution can came from Cache, so initialize it only once
+        //distribution can came from Cache, so initialize it only only()
         if (!isInitialized) {
             isInitialized = true;
             createRanges();

@@ -52,7 +52,7 @@ public class LoaderTest extends AbstractMockitoTest {
     private final class ParserAnswer implements Answer<Boolean> {
         @Override
         public Boolean answer(final InvocationOnMock invocation) {
-            if (hasNextCall++ > ELEMENT_NUMBER) {
+            if (++hasNextCall > ELEMENT_NUMBER) {
                 return Boolean.FALSE;
             }
 
@@ -124,11 +124,11 @@ public class LoaderTest extends AbstractMockitoTest {
 
         verify(parser).setProgressMonitor(monitor);
 
-        verify(parser, atLeast(ELEMENT_NUMBER + 1)).hasNext();
-        verify(parser, atLeast(ELEMENT_NUMBER)).next();
+        verify(parser, times(ELEMENT_NUMBER + 1)).hasNext();
+        verify(parser, times(ELEMENT_NUMBER)).next();
 
         for (ISaver<IConfiguration, IData> saver : savers) {
-            verify(saver, atLeast(ELEMENT_NUMBER)).save(data);
+            verify(saver, times(ELEMENT_NUMBER)).save(data);
         }
     }
 

@@ -182,7 +182,7 @@ public class AbstractNamedModelProviderTest extends AbstractMockitoTest {
 
         verify(parent).getRootNode();
         verify(nodeService).getChildren(parentNode, TestNodeTypes.TEST1);
-        verify(provider, atLeast(nodes.size())).createInstance();
+        verify(provider, times(nodes.size())).createInstance();
         for (Node node : nodes) {
             verify(model).initialize(node);
         }

@@ -161,7 +161,7 @@ public class ProviderContextImplTest extends AbstractMockitoTest {
 
         // get from cache
         context.getNodeProperties(SOME_ID);
-        verify(context, atLeastOnce()).createNodeProperties(SOME_ID);
+        verify(context).createNodeProperties(SOME_ID);
     }
 
     @Test
@@ -175,7 +175,7 @@ public class ProviderContextImplTest extends AbstractMockitoTest {
 
         // get from cache
         context.getService(SOME_ID);
-        verify(context, atLeastOnce()).createService(SOME_ID);
+        verify(context).createService(SOME_ID);
     }
 
     @SuppressWarnings("unchecked")
@@ -295,7 +295,7 @@ public class ProviderContextImplTest extends AbstractMockitoTest {
 
         // get from cache
         context.get(SOME_ID);
-        verify(context, atLeastOnce()).createModelProvider(SOME_ID);
+        verify(context).createModelProvider(SOME_ID);
     }
 
     @SuppressWarnings("unchecked")
