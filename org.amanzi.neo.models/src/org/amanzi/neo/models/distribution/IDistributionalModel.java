@@ -13,7 +13,6 @@
 
 package org.amanzi.neo.models.distribution;
 
-import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
 
 /**
@@ -23,15 +22,5 @@ import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
  * @since 1.0.0
  */
 public interface IDistributionalModel extends IPropertyStatisticsModel {
-
-    /**
-     * Returns a Distribution Model by it's type
-     * 
-     * @param nodeType type of Node to analyse
-     * @param propertyName name of property for Distribution
-     * @param distributionType type of Distribution
-     * @return
-     */
-    IDistributionModel getDistributionModel(IDistribution< ? > distributionType) throws ModelException;
 
 }
