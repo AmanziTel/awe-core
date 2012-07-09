@@ -139,19 +139,7 @@ public class LoaderTest extends AbstractMockitoTest {
 
     @Test
     public void testCheckResultOnValidation() throws Exception {
-        IValidationResult validationResult = new IValidationResult() {
-
-            @Override
-            public Result getResult() {
-                return Result.UNKNOWN;
-            }
-
-            @Override
-            public String getMessages() {
-                return "some message";
-            }
-
-        };
+        IValidationResult validationResult = IValidationResult.UNKNOWN;
 
         when(validator.validate(configuration)).thenReturn(validationResult);
 
