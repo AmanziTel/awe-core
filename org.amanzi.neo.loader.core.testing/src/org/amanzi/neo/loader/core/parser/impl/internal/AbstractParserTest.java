@@ -13,7 +13,10 @@
 
 package org.amanzi.neo.loader.core.parser.impl.internal;
 
+import java.io.IOException;
+
 import org.amanzi.neo.loader.core.IData;
+import org.amanzi.neo.loader.core.exception.impl.GeneralParsingException;
 import org.amanzi.neo.loader.core.internal.IConfiguration;
 import org.amanzi.testing.AbstractMockitoTest;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -130,5 +133,12 @@ public class AbstractParserTest extends AbstractMockitoTest {
         parser.finishUp();
 
         verify(monitor).done();
+    }
+
+    @Test(expected = GeneralParsingException.class)
+    public void testCheckGeneralParsingException() {
+        doThrow(new IOException()).when(parser).parseNextElement();
+
+        parser.parseToNextElement();
     }
 }

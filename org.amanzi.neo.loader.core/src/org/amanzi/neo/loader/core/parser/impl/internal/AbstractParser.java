@@ -59,7 +59,7 @@ public abstract class AbstractParser<C extends IConfiguration, D extends IData> 
         return nextElement;
     }
 
-    private D parseToNextElement() throws LoaderException {
+    protected D parseToNextElement() throws LoaderException {
         try {
             return parseNextElement();
         } catch (EOFException e) {
@@ -88,10 +88,6 @@ public abstract class AbstractParser<C extends IConfiguration, D extends IData> 
 
     protected C getConfiguration() {
         return configuration;
-    }
-
-    protected IProgressMonitor getProgressMonitor() {
-        return monitor;
     }
 
     @Override
