@@ -41,6 +41,7 @@ public abstract class AbstractParser<C extends IConfiguration, D extends IData> 
     public boolean hasNext() {
         if (!parsed) {
             parseNextElement();
+            parsed = true;
         }
         return nextElement != null;
     }
@@ -53,7 +54,6 @@ public abstract class AbstractParser<C extends IConfiguration, D extends IData> 
 
     private void prepareNextElement() {
         nextElement = parseNextElement();
-        parsed = true;
     }
 
     protected abstract D parseNextElement();

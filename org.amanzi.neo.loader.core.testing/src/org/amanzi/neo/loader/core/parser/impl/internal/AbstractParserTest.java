@@ -61,4 +61,18 @@ public class AbstractParserTest extends AbstractMockitoTest {
 
         verify(parser, times(NEXT_TIMES)).parseNextElement();
     }
+
+    @Test
+    public void testCheckOneTimeParsingOnHasNext() {
+        for (int i = 0; i < NEXT_TIMES; i++) {
+            parser.hasNext();
+        }
+
+        verify(parser).parseNextElement();
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testCheckExceptionOnRemove() {
+        parser.remove();
+    }
 }
