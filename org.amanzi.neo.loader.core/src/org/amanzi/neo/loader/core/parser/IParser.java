@@ -34,4 +34,6 @@ public interface IParser<C extends IConfiguration, D extends IData> extends Iter
 
     void setProgressMonitor(IProgressMonitor monitor);
 
+    void finishUp() throws LoaderException;
+
 }

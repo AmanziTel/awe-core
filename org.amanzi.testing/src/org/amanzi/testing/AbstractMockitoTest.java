@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.mockito.Mockito;
+import org.mockito.stubbing.Answer;
 import org.mockito.stubbing.OngoingStubbing;
 import org.mockito.stubbing.Stubber;
 import org.mockito.verification.VerificationMode;
@@ -100,6 +101,10 @@ public class AbstractMockitoTest extends AbstractTest {
 
     protected String contains(String substring) {
         return Mockito.contains(substring);
+    }
+
+    protected Stubber doAnswer(Answer< ? > answer) {
+        return Mockito.doAnswer(answer);
     }
 
 }

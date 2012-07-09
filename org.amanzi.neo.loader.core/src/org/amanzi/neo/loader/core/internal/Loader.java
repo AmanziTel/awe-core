@@ -53,12 +53,16 @@ public final class Loader<C extends IConfiguration, D extends IData> {
     public void run(IProgressMonitor monitor) throws ModelException {
         parser.setProgressMonitor(monitor);
 
-        while (parser.hasNext()) {
-            D data = parser.next();
+        try {
+            while (parser.hasNext()) {
+                D data = parser.next();
 
-            for (ISaver<C, D> saver : savers) {
-                saver.save(data);
+                for (ISaver<C, D> saver : savers) {
+                    saver.save(data);
+                }
             }
+        } finally {
+            finishUp();
         }
     }
 
@@ -86,6 +90,14 @@ public final class Loader<C extends IConfiguration, D extends IData> {
             return false;
         default:
             return true;
+        }
+    }
+
+    protected void finishUp() {
+        parser.finishUp();
+
+        for (ISaver<C, D> saver : savers) {
+            saver.finishUp();
         }
     }
 }

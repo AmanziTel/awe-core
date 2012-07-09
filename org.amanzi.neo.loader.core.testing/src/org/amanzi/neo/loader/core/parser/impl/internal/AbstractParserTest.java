@@ -16,6 +16,7 @@ package org.amanzi.neo.loader.core.parser.impl.internal;
 import org.amanzi.neo.loader.core.IData;
 import org.amanzi.neo.loader.core.internal.IConfiguration;
 import org.amanzi.testing.AbstractMockitoTest;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
@@ -119,5 +120,15 @@ public class AbstractParserTest extends AbstractMockitoTest {
         }
 
         assertFalse("next element should not exists", parser.hasNext());
+    }
+
+    @Test
+    public void testCheckActivityOnFinishUp() {
+        IProgressMonitor monitor = mock(IProgressMonitor.class);
+        parser.setProgressMonitor(monitor);
+
+        parser.finishUp();
+
+        verify(monitor).done();
     }
 }

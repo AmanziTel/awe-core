@@ -13,8 +13,12 @@
 
 package org.amanzi.neo.loader.core.parser.impl.internal;
 
+import java.io.EOFException;
+import java.io.IOException;
+
 import org.amanzi.neo.loader.core.IData;
 import org.amanzi.neo.loader.core.exception.LoaderException;
+import org.amanzi.neo.loader.core.exception.impl.GeneralParsingException;
 import org.amanzi.neo.loader.core.internal.IConfiguration;
 import org.amanzi.neo.loader.core.parser.IParser;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -40,7 +44,7 @@ public abstract class AbstractParser<C extends IConfiguration, D extends IData> 
     @Override
     public boolean hasNext() {
         if (!actual) {
-            nextElement = parseNextElement();
+            nextElement = parseToNextElement();
             actual = true;
         }
         return nextElement != null;
@@ -49,13 +53,23 @@ public abstract class AbstractParser<C extends IConfiguration, D extends IData> 
     @Override
     public D next() {
         if (!actual) {
-            nextElement = parseNextElement();
+            nextElement = parseToNextElement();
         }
         actual = false;
         return nextElement;
     }
 
-    protected abstract D parseNextElement();
+    private D parseToNextElement() throws LoaderException {
+        try {
+            return parseNextElement();
+        } catch (EOFException e) {
+            return null;
+        } catch (IOException e) {
+            throw new GeneralParsingException(e);
+        }
+    }
+
+    protected abstract D parseNextElement() throws IOException;
 
     @Override
     public void remove() {
@@ -78,5 +92,10 @@ public abstract class AbstractParser<C extends IConfiguration, D extends IData> 
 
     protected IProgressMonitor getProgressMonitor() {
         return monitor;
+    }
+
+    @Override
+    public void finishUp() {
+        monitor.done();
     }
 }

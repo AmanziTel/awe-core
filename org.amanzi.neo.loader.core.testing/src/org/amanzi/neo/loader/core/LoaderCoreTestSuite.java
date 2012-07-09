@@ -28,6 +28,7 @@ import org.junit.runners.Suite.SuiteClasses;
 @RunWith(Suite.class)
 @SuiteClasses({
     org.amanzi.neo.loader.core.LoaderTest.class,
+    org.amanzi.neo.loader.core.parser.impl.CSVParserTest.class,
     org.amanzi.neo.loader.core.parser.impl.internal.AbstractParserTest.class,
     org.amanzi.neo.loader.core.parser.impl.internal.AbstractStreamParserTest.class
     })

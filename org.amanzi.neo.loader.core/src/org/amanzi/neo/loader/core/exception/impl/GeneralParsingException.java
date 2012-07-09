@@ -11,11 +11,11 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.loader.core.impl;
+package org.amanzi.neo.loader.core.exception.impl;
 
-import java.util.HashMap;
+import java.io.IOException;
 
-import org.amanzi.neo.loader.core.IMappedStringData;
+import org.amanzi.neo.loader.core.exception.LoaderException;
 
 /**
  * TODO Purpose of
@@ -25,9 +25,15 @@ import org.amanzi.neo.loader.core.IMappedStringData;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class MappedData extends HashMap<String, String> implements IMappedStringData {
+public class GeneralParsingException extends LoaderException {
 
     /** long serialVersionUID field */
-    private static final long serialVersionUID = -2140010396275905307L;
+    private static final long serialVersionUID = -1324312060152038666L;
 
+    /**
+     * 
+     */
+    public GeneralParsingException(IOException e) {
+        super(e);
+    }
 }

@@ -193,4 +193,28 @@ public class LoaderTest extends AbstractMockitoTest {
 
         assertTrue("validation result should be true", result);
     }
+
+    @Test
+    public void testCheckFinishUpAction() throws Exception {
+        IProgressMonitor monitor = mock(IProgressMonitor.class);
+
+        loader.run(monitor);
+
+        verify(parser).finishUp();
+        for (ISaver<IConfiguration, IData> saver : savers) {
+            verify(saver).finishUp();
+        }
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCheckFinishUpWhenException() throws Exception {
+        when(parser.next()).thenThrow(new IllegalArgumentException());
+
+        loader.run(null);
+
+        verify(parser).finishUp();
+        for (ISaver<IConfiguration, IData> saver : savers) {
+            verify(saver).finishUp();
+        }
+    }
 }

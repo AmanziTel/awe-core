@@ -149,4 +149,42 @@ public class AbstractStreamParserTest extends AbstractMockitoTest {
 
         parser.initializeStream(configuration);
     }
+
+    @Test
+    public void testCheckActivityOnFinishUp() throws Exception {
+        doReturn(stream).when(parser).initializeStream(configuration);
+        doReturn(reader).when(parser).initializeReader(stream);
+
+        parser.getStream();
+        parser.getReader();
+
+        parser.finishUp();
+
+        verify(reader).close();
+        verify(stream).close();
+    }
+
+    @Test
+    public void testCheckOnlyStreamActivityOnFinishUp() throws Exception {
+        doReturn(stream).when(parser).initializeStream(configuration);
+        doReturn(reader).when(parser).initializeReader(stream);
+
+        parser.getStream();
+
+        parser.finishUp();
+
+        verify(reader, never()).close();
+        verify(stream).close();
+    }
+
+    @Test
+    public void testCheckNoActivityOnFinishUp() throws Exception {
+        doReturn(stream).when(parser).initializeStream(configuration);
+        doReturn(reader).when(parser).initializeReader(stream);
+
+        parser.finishUp();
+
+        verify(reader, never()).close();
+        verify(stream, never()).close();
+    }
 }

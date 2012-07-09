@@ -21,9 +21,17 @@ package org.amanzi.neo.loader.core.exception;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public abstract class LoaderException extends Exception {
+public abstract class LoaderException extends RuntimeException {
 
     /** long serialVersionUID field */
     private static final long serialVersionUID = 8211269813100379807L;
+
+    protected LoaderException() {
+        super();
+    }
+
+    protected LoaderException(Exception e) {
+        super(e);
+    }
 
 }

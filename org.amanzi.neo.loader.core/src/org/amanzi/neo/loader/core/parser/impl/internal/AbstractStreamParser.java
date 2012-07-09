@@ -21,6 +21,7 @@ import org.amanzi.neo.loader.core.IData;
 import org.amanzi.neo.loader.core.ISingleFileConfiguration;
 import org.amanzi.neo.loader.core.exception.LoaderException;
 import org.amanzi.neo.loader.core.exception.impl.FileNotFoundException;
+import org.apache.commons.io.IOUtils;
 
 /**
  * TODO Purpose of
@@ -63,4 +64,9 @@ public abstract class AbstractStreamParser<C extends ISingleFileConfiguration, D
         return new InputStreamReader(stream);
     }
 
+    @Override
+    public void finishUp() {
+        IOUtils.closeQuietly(reader);
+        IOUtils.closeQuietly(stream);
+    }
 }

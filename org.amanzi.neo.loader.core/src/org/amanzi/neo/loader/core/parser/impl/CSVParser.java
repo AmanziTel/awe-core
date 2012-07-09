@@ -13,11 +13,13 @@
 
 package org.amanzi.neo.loader.core.parser.impl;
 
+import java.io.IOException;
 import java.io.InputStreamReader;
 
 import org.amanzi.neo.loader.core.IMappedStringData;
 import org.amanzi.neo.loader.core.ISingleFileConfiguration;
 import org.amanzi.neo.loader.core.exception.LoaderException;
+import org.amanzi.neo.loader.core.impl.MappedStringData;
 import org.amanzi.neo.loader.core.parser.impl.internal.AbstractStreamParser;
 
 import au.com.bytecode.opencsv.CSVReader;
@@ -34,22 +36,50 @@ public class CSVParser extends AbstractStreamParser<ISingleFileConfiguration, IM
 
     private CSVReader csvReader;
 
+    private boolean headersParsed;
+
+    private String[] headers;
+
     @Override
-    protected IMappedStringData parseNextElement() {
-        return null;
+    protected IMappedStringData parseNextElement() throws IOException {
+        if (!headersParsed) {
+            headers = getCSVReader().readNext();
+            headersParsed = true;
+        }
+
+        return convertToMappedData(headers, getCSVReader().readNext());
     }
 
     @Override
     public void init(ISingleFileConfiguration configuration) throws LoaderException {
         super.init(configuration);
         csvReader = initializeCSVReader(getReader());
+
+        headersParsed = false;
     }
 
-    protected CSVReader initializeCSVReader(InputStreamReader stream) {
-        return new CSVReader(stream);
+    protected CSVReader initializeCSVReader(InputStreamReader reader) {
+        return new CSVReader(reader);
     }
 
     protected CSVReader getCSVReader() {
         return csvReader;
     }
+
+    protected IMappedStringData convertToMappedData(String[] headers, String[] values) {
+        MappedStringData result = new MappedStringData();
+
+        for (int i = 0; i < headers.length; i++) {
+            String value = null;
+
+            if (i < values.length) {
+                value = values[i];
+            }
+
+            result.put(headers[i], value);
+        }
+
+        return result;
+    }
+
 }
