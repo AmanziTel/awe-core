@@ -23,7 +23,7 @@ package org.amanzi.neo.loader.core.validator;
  */
 public interface IValidationResult {
 
-    public static final IValidationResult SUCCESS = new IValidationResult() {
+    final IValidationResult SUCCESS = new IValidationResult() {
 
         @Override
         public Result getResult() {
@@ -37,7 +37,7 @@ public interface IValidationResult {
 
     };
 
-    public static final IValidationResult FAIL = new IValidationResult() {
+    final IValidationResult FAIL = new IValidationResult() {
 
         @Override
         public Result getResult() {
@@ -51,7 +51,7 @@ public interface IValidationResult {
 
     };
 
-    public static final IValidationResult UNKNOWN = new IValidationResult() {
+    final IValidationResult UNKNOWN = new IValidationResult() {
 
         @Override
         public Result getResult() {
@@ -73,7 +73,7 @@ public interface IValidationResult {
      * @author tsinkel_a
      * @since 1.0.0
      */
-    public static enum Result {
+    enum Result {
         SUCCESS, FAIL, UNKNOWN;
     }
 

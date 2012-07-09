@@ -21,7 +21,7 @@ import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.impl.internal.util.AbstractLoggable;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
-import org.amanzi.neo.nodetypes.NodeTypeManager.NodeTypeNotExistsException;
+import org.amanzi.neo.nodetypes.NodeTypeNotExistsException;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.DuplicatedNodeException;
 import org.amanzi.neo.services.exceptions.ServiceException;

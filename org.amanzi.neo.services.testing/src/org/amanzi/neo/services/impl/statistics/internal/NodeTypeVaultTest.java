@@ -35,6 +35,9 @@ import org.junit.Test;
  */
 public class NodeTypeVaultTest extends AbstractMockitoTest {
 
+    /** int TEST_NUMBER_OF_PROPERTIES field */
+    private static final int TEST_NUMBER_OF_PROPERTIES = 10;
+
     private static final INodeType TEST_NODE_TYPE = new INodeType() {
 
         @Override
@@ -66,11 +69,11 @@ public class NodeTypeVaultTest extends AbstractMockitoTest {
 
         int previousCount = nodeTypeVault.getCount();
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < TEST_NUMBER_OF_PROPERTIES; i++) {
             nodeTypeVault.indexProperty(TEST_PROPERTY, TEST_VALUE);
         }
 
-        assertEquals("Count increased incorrect", previousCount + 10, nodeTypeVault.getCount());
+        assertEquals("Count increased incorrect", previousCount + TEST_NUMBER_OF_PROPERTIES, nodeTypeVault.getCount());
     }
 
     @Test

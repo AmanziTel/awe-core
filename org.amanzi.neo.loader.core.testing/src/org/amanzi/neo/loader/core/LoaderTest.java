@@ -39,6 +39,25 @@ import org.mockito.stubbing.Answer;
 @SuppressWarnings("unchecked")
 public class LoaderTest extends AbstractMockitoTest {
 
+    /**
+     * TODO Purpose of
+     * <p>
+     * </p>
+     * 
+     * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
+     * @since 1.0.0
+     */
+    private final class ParserAnswer implements Answer<Boolean> {
+        @Override
+        public Boolean answer(final InvocationOnMock invocation) {
+            if (hasNextCall++ > ELEMENT_NUMBER) {
+                return Boolean.FALSE;
+            }
+
+            return Boolean.TRUE;
+        }
+    }
+
     private static final int SAVER_NUMBER = 3;
 
     private static final int ELEMENT_NUMBER = 3;
@@ -82,17 +101,7 @@ public class LoaderTest extends AbstractMockitoTest {
 
         hasNextCall = 0;
         when(parser.next()).thenReturn(data);
-        when(parser.hasNext()).thenAnswer(new Answer<Boolean>() {
-
-            @Override
-            public Boolean answer(InvocationOnMock invocation) throws Throwable {
-                if (hasNextCall++ > ELEMENT_NUMBER) {
-                    return Boolean.FALSE;
-                }
-
-                return Boolean.TRUE;
-            }
-        });
+        when(parser.hasNext()).thenAnswer(new ParserAnswer());
     }
 
     @Test

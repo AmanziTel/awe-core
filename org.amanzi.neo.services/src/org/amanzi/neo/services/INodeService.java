@@ -17,7 +17,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.amanzi.neo.nodetypes.INodeType;
-import org.amanzi.neo.nodetypes.NodeTypeManager.NodeTypeNotExistsException;
+import org.amanzi.neo.nodetypes.NodeTypeNotExistsException;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.internal.IService;
 import org.neo4j.graphdb.Node;

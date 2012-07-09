@@ -13,7 +13,7 @@
 
 package org.amanzi.neo.services.statistics;
 
-import org.amanzi.neo.nodetypes.NodeTypeManager.NodeTypeNotExistsException;
+import org.amanzi.neo.nodetypes.NodeTypeNotExistsException;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.impl.statistics.IPropertyStatistics;
 import org.amanzi.neo.services.internal.IService;

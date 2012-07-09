@@ -22,6 +22,7 @@ import java.util.Map;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.impl.GeneralNodeProperties;
 import org.amanzi.neo.services.INodeService;
+import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.impl.NodeService.NodeServiceRelationshipType;
 import org.amanzi.neo.services.impl.statistics.PropertyStatisticsService.PropertyStatisticsRelationshipType;
 import org.amanzi.neo.services.impl.statistics.internal.NodeTypeVault;
@@ -43,6 +44,21 @@ import org.neo4j.graphdb.Node;
  * @since 1.0.0
  */
 public class PropertyStatisticsServiceTest extends AbstractServiceTest {
+
+    /** int TEST_SIZE_VALUE field */
+    private static final int TEST_SIZE_VALUE = 3;
+
+    /** Integer[] DEFAULT_EMPTIED_COUNTS_FOR_VALUES field */
+    private static final Integer[] DEFAULT_EMPTIED_COUNTS_FOR_VALUES = {2, null, null, 5};
+
+    /** Integer[] DEFAULT_UPDATED_COUNTS_FOR_VALUES field */
+    private static final Integer[] DEFAULT_UPDATED_COUNTS_FOR_VALUES = {2, 3, 4, 5};
+
+    /** Integer[] DEFAULT_COUNTS_FOR_VALUES field */
+    private static final Integer[] DEFAULT_COUNTS_FOR_VALUES = {2, 3, 4};
+
+    /** int TEST_COUNT_VAULT field */
+    private static final int TEST_COUNT_VALUE = 5;
 
     private static final IGeneralNodeProperties GENERAL_NODE_PROPERTIES = new GeneralNodeProperties();
 
@@ -207,18 +223,18 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
 
     @Test
     public void testCheckActivityOnUpdateStatisticsVault() throws Exception {
-        when(vault.getCount()).thenReturn(5);
+        when(vault.getCount()).thenReturn(TEST_COUNT_VALUE);
 
         service.updateStatisticsInfo(statNode, vault);
 
-        verify(nodeService).updateProperty(statNode, PROPERTY_STATISTICS_NODE_PROPERTIES.getCountProperty(), 5);
+        verify(nodeService).updateProperty(statNode, PROPERTY_STATISTICS_NODE_PROPERTIES.getCountProperty(), TEST_COUNT_VALUE);
     }
 
     @Test
     public void testCheckActivityOnUpdateNodeTypeVault() throws Exception {
         Node nodeTypeNode = getNodeMock();
 
-        when(nodeTypeVault.getCount()).thenReturn(5);
+        when(nodeTypeVault.getCount()).thenReturn(TEST_COUNT_VALUE);
         when(nodeTypeVault.getNodeType()).thenReturn(TestNodeType.TEST1);
         when(nodeService.getChildByName(statNode, TestNodeType.TEST1.getId(), PropertyStatisticsNodeType.STATISTICS_VAULT))
                 .thenReturn(null);
@@ -228,7 +244,7 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
 
         service.saveNodeTypeVault(statNode, nodeTypeVault);
 
-        verify(nodeService).updateProperty(nodeTypeNode, PROPERTY_STATISTICS_NODE_PROPERTIES.getCountProperty(), 5);
+        verify(nodeService).updateProperty(nodeTypeNode, PROPERTY_STATISTICS_NODE_PROPERTIES.getCountProperty(), TEST_COUNT_VALUE);
         verify(nodeTypeVault, atLeast(2)).getNodeType();
         verify(nodeService).getChildByName(statNode, TestNodeType.TEST1.getId(), PropertyStatisticsNodeType.STATISTICS_VAULT);
         verify(nodeService).createNode(statNode, PropertyStatisticsNodeType.STATISTICS_VAULT, NodeServiceRelationshipType.CHILD,
@@ -357,7 +373,7 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
 
     @Test
     public void testCheckServiceActivityOnUpdatingPropertyVaultWithValues() throws Exception {
-        Integer[] counts = new Integer[] {2, 3, 4};
+        Integer[] counts = DEFAULT_COUNTS_FOR_VALUES;
 
         Node propertyVaultNode = initializeMockedPropertyVaultNode(0, counts);
 
@@ -377,7 +393,7 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
 
     @Test
     public void testCheckServiceActivityOnUpdatingPropertyVaultWithUnchangedValues() throws Exception {
-        Integer[] counts = new Integer[] {2, 3, 4};
+        Integer[] counts = DEFAULT_COUNTS_FOR_VALUES;
 
         Node propertyVaultNode = initializeMockedPropertyVaultNode(counts.length, counts);
 
@@ -395,7 +411,7 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
 
     @Test
     public void testCheckServiceActivityOnUpdatingPropertyVaultWithAddedValues() throws Exception {
-        Integer[] counts = new Integer[] {2, 3, 4, 5};
+        Integer[] counts = DEFAULT_UPDATED_COUNTS_FOR_VALUES;
 
         Node propertyVaultNode = initializeMockedPropertyVaultNode(counts.length - 1, counts);
 
@@ -416,7 +432,7 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
 
     @Test
     public void testCheckServiceActivityOnUpdatingPropertyVaultWithRemovedValues() throws Exception {
-        Integer[] counts = new Integer[] {2, 3, 4, 5};
+        Integer[] counts = DEFAULT_UPDATED_COUNTS_FOR_VALUES;
 
         Node propertyVaultNode = initializeMockedPropertyVaultNode(counts.length, counts);
 
@@ -439,7 +455,7 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
 
     @Test
     public void testCheckServiceActivityOnUpdatingPropertyVaultWithRemovedInMiddleValues() throws Exception {
-        Integer[] counts = new Integer[] {2, 3, 4, 5};
+        Integer[] counts = DEFAULT_UPDATED_COUNTS_FOR_VALUES;
 
         Node propertyVaultNode = initializeMockedPropertyVaultNode(counts.length, counts);
 
@@ -462,7 +478,7 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
 
     @Test
     public void testCheckServiceActivityOnUpdatingPropertyVaultWithRemovedInMiddleValuesWithRenaming() throws Exception {
-        Integer[] counts = new Integer[] {2, null, null, 5};
+        Integer[] counts = DEFAULT_EMPTIED_COUNTS_FOR_VALUES;
 
         Node propertyVaultNode = initializeMockedPropertyVaultNode(counts.length, counts);
 
@@ -482,9 +498,11 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
                 contains(PROPERTY_STATISTICS_NODE_PROPERTIES.getValuePrefix()), eq(Boolean.FALSE));
         verify(nodeService, atLeast(2)).removeNodeProperty(eq(propertyVaultNode),
                 contains(PROPERTY_STATISTICS_NODE_PROPERTIES.getCountPrefix()), eq(Boolean.FALSE));
-        verify(nodeService).renameNodeProperty(propertyVaultNode, PROPERTY_STATISTICS_NODE_PROPERTIES.getValuePrefix() + 3,
+        verify(nodeService).renameNodeProperty(propertyVaultNode,
+                PROPERTY_STATISTICS_NODE_PROPERTIES.getValuePrefix() + (DEFAULT_EMPTIED_COUNTS_FOR_VALUES.length - 1),
                 PROPERTY_STATISTICS_NODE_PROPERTIES.getValuePrefix() + 1, false);
-        verify(nodeService).renameNodeProperty(propertyVaultNode, PROPERTY_STATISTICS_NODE_PROPERTIES.getCountPrefix() + 3,
+        verify(nodeService).renameNodeProperty(propertyVaultNode,
+                PROPERTY_STATISTICS_NODE_PROPERTIES.getCountPrefix() + (DEFAULT_EMPTIED_COUNTS_FOR_VALUES.length - 1),
                 PROPERTY_STATISTICS_NODE_PROPERTIES.getCountPrefix() + 1, false);
     }
 
@@ -515,7 +533,8 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
         when(nodeTypeVault.getNodeType()).thenReturn(TestNodeType.TEST1);
         when(nodeService.getChildren(statNode, PropertyStatisticsNodeType.STATISTICS_VAULT)).thenReturn(
                 Arrays.asList(getNodeMock(), getNodeMock()).iterator());
-        doReturn(5).when(nodeService).getNodeProperty(statNode, PROPERTY_STATISTICS_NODE_PROPERTIES.getCountProperty(), 0, false);
+        doReturn(TEST_COUNT_VALUE).when(nodeService).getNodeProperty(statNode,
+                PROPERTY_STATISTICS_NODE_PROPERTIES.getCountProperty(), 0, false);
         doReturn(nodeTypeVault).when(service).loadNodeTypeVault(any(Node.class));
 
         vault = service.loadStatisticsVault(statNode);
@@ -523,7 +542,7 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
         verify(nodeService).getNodeProperty(statNode, PROPERTY_STATISTICS_NODE_PROPERTIES.getCountProperty(), 0, false);
         verify(service, atLeast(2)).loadNodeTypeVault(any(Node.class));
 
-        assertEquals("Unexpected count of vault", 5, vault.getCount());
+        assertEquals("Unexpected count of vault", TEST_COUNT_VALUE, vault.getCount());
     }
 
     @Test
@@ -535,7 +554,7 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
 
         when(nodeService.getNodeName(nodeTypeVaultNode)).thenReturn(PropertyStatisticsNodeType.STATISTICS_VAULT.getId());
         when(nodeService.getNodeProperty(nodeTypeVaultNode, PROPERTY_STATISTICS_NODE_PROPERTIES.getCountProperty(), null, true))
-                .thenReturn(5);
+                .thenReturn(TEST_COUNT_VALUE);
         doReturn(PROPERTY_NAME).when(propertyVault).getPropertyName();
         doReturn(propertyVault).when(service).loadPropertyVault(any(Node.class));
 
@@ -555,7 +574,7 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
 
         when(nodeService.getNodeName(nodeTypeVaultNode)).thenReturn(PropertyStatisticsNodeType.STATISTICS_VAULT.getId());
         when(nodeService.getNodeProperty(nodeTypeVaultNode, PROPERTY_STATISTICS_NODE_PROPERTIES.getCountProperty(), null, true))
-                .thenReturn(5);
+                .thenReturn(TEST_COUNT_VALUE);
         doReturn(PROPERTY_NAME).when(propertyVault).getPropertyName();
         doReturn(propertyVault).when(service).loadPropertyVault(any(Node.class));
 
@@ -563,18 +582,19 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
 
         assertNotNull("result cannot be null", result);
         assertEquals("Unexpected node type", PropertyStatisticsNodeType.STATISTICS_VAULT, result.getNodeType());
-        assertEquals("Unexpected count", 5, result.getCount());
+        assertEquals("Unexpected count", TEST_COUNT_VALUE, result.getCount());
     }
 
     @Test
     public void testCheckServiceActivityOnLoadPropertyVault() throws Exception {
         Node propertyVaultNode = getNodeMock();
 
-        when(nodeService.getNodeProperty(propertyVaultNode, GENERAL_NODE_PROPERTIES.getSizeProperty(), null, true)).thenReturn(3);
+        when(nodeService.getNodeProperty(propertyVaultNode, GENERAL_NODE_PROPERTIES.getSizeProperty(), null, true)).thenReturn(
+                TEST_SIZE_VALUE);
         when(nodeService.getNodeProperty(propertyVaultNode, PROPERTY_STATISTICS_NODE_PROPERTIES.getClassProperty(), null, true))
                 .thenReturn("java.lang.Integer");
 
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < TEST_SIZE_VALUE; i++) {
             when(
                     nodeService.getNodeProperty(propertyVaultNode, PROPERTY_STATISTICS_NODE_PROPERTIES.getValuePrefix() + i, null,
                             true)).thenReturn(PROPERTY_NAME + i);
@@ -588,9 +608,9 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
         verify(nodeService).getNodeName(propertyVaultNode);
         verify(nodeService).getNodeProperty(propertyVaultNode, GENERAL_NODE_PROPERTIES.getSizeProperty(), null, true);
         verify(nodeService).getNodeProperty(propertyVaultNode, PROPERTY_STATISTICS_NODE_PROPERTIES.getClassProperty(), null, true);
-        verify(nodeService, atLeast(3)).getNodeProperty(eq(propertyVaultNode),
+        verify(nodeService, atLeast(TEST_SIZE_VALUE)).getNodeProperty(eq(propertyVaultNode),
                 contains(PROPERTY_STATISTICS_NODE_PROPERTIES.getValuePrefix()), eq(null), eq(true));
-        verify(nodeService, atLeast(3)).getNodeProperty(eq(propertyVaultNode),
+        verify(nodeService, atLeast(TEST_SIZE_VALUE)).getNodeProperty(eq(propertyVaultNode),
                 contains(PROPERTY_STATISTICS_NODE_PROPERTIES.getCountPrefix()), eq(null), eq(true));
     }
 
@@ -598,11 +618,12 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
     public void testCheckResultOnLoadPropertyVault() throws Exception {
         Node propertyVaultNode = getNodeMock();
 
-        when(nodeService.getNodeProperty(propertyVaultNode, GENERAL_NODE_PROPERTIES.getSizeProperty(), null, true)).thenReturn(3);
+        when(nodeService.getNodeProperty(propertyVaultNode, GENERAL_NODE_PROPERTIES.getSizeProperty(), null, true)).thenReturn(
+                TEST_SIZE_VALUE);
         when(nodeService.getNodeProperty(propertyVaultNode, PROPERTY_STATISTICS_NODE_PROPERTIES.getClassProperty(), null, true))
                 .thenReturn("java.lang.Integer");
 
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < TEST_SIZE_VALUE; i++) {
             when(
                     nodeService.getNodeProperty(propertyVaultNode, PROPERTY_STATISTICS_NODE_PROPERTIES.getValuePrefix() + i, null,
                             true)).thenReturn(PROPERTY_NAME + i);
@@ -617,7 +638,7 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
         assertEquals("unexpected class", "java.lang.Integer", result.getClassName());
         Map<Object, Integer> values = result.getValuesMap();
 
-        assertEquals("unexpected size", 3, values.size());
+        assertEquals("unexpected size", TEST_SIZE_VALUE, values.size());
 
         for (int i = 0; i < values.size(); i++) {
             assertTrue("value should exist", values.containsKey(PROPERTY_NAME + i));
@@ -626,7 +647,7 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
         }
     }
 
-    private Node initializeMockedPropertyVaultNode(int size, Integer... counts) throws Exception {
+    private Node initializeMockedPropertyVaultNode(final int size, final Integer... counts) throws ServiceException {
         Node propertyVaultNode = getNodeMock();
         Map<Object, Integer> values = getValuesMap(counts);
 
@@ -638,7 +659,7 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
         return propertyVaultNode;
     }
 
-    private Map<Object, Integer> getValuesMap(Integer... counts) {
+    private Map<Object, Integer> getValuesMap(final Integer... counts) {
         Map<Object, Integer> result = new HashMap<Object, Integer>();
 
         int j = 0;
@@ -649,15 +670,15 @@ public class PropertyStatisticsServiceTest extends AbstractServiceTest {
         return result;
     }
 
-    private PropertyVault createPropertyVault(boolean isChanged) {
-        PropertyVault vault = mock(PropertyVault.class);
+    private PropertyVault createPropertyVault(final boolean isChanged) {
+        PropertyVault result = mock(PropertyVault.class);
 
-        when(vault.isChanged()).thenReturn(isChanged);
+        when(result.isChanged()).thenReturn(isChanged);
 
-        return vault;
+        return result;
     }
 
-    private NodeTypeVault createNodeTypeVault(boolean isChanged) {
+    private NodeTypeVault createNodeTypeVault(final boolean isChanged) {
         NodeTypeVault result = mock(NodeTypeVault.class);
 
         when(result.isChanged()).thenReturn(isChanged);

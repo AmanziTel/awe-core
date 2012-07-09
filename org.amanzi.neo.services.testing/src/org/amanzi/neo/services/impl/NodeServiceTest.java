@@ -41,6 +41,9 @@ import org.neo4j.graphdb.Relationship;
  */
 public class NodeServiceTest extends AbstractServiceTest {
 
+    /** long TEST_LONG_PROPERTY field */
+    private static final long TEST_LONG_PROPERTY = 123l;
+
     /** String NEW_TEST_NODE_PROPERTY field */
     private static final String NEW_TEST_NODE_PROPERTY = "new property";
 
@@ -62,7 +65,7 @@ public class NodeServiceTest extends AbstractServiceTest {
     public void setUp() {
         super.setUp();
 
-        this.nodeService = new NodeService(getService(), this.generalNodeProperties);
+        nodeService = new NodeService(getService(), generalNodeProperties);
 
         setReadOnly(true);
     }
@@ -72,9 +75,9 @@ public class NodeServiceTest extends AbstractServiceTest {
         setMethodFailure();
 
         Node node = getNodeMock();
-        when(node.hasProperty(this.generalNodeProperties.getNodeNameProperty())).thenThrow(new IllegalArgumentException());
+        when(node.hasProperty(generalNodeProperties.getNodeNameProperty())).thenThrow(new IllegalArgumentException());
 
-        this.nodeService.getNodeName(node);
+        nodeService.getNodeName(node);
     }
 
     @Test(expected = DatabaseException.class)
@@ -82,9 +85,9 @@ public class NodeServiceTest extends AbstractServiceTest {
         setMethodFailure();
 
         Node node = getNodeMock();
-        when(node.hasProperty(this.generalNodeProperties.getNodeTypeProperty())).thenThrow(new IllegalArgumentException());
+        when(node.hasProperty(generalNodeProperties.getNodeTypeProperty())).thenThrow(new IllegalArgumentException());
 
-        this.nodeService.getNodeType(node);
+        nodeService.getNodeType(node);
     }
 
     @Test
@@ -92,14 +95,14 @@ public class NodeServiceTest extends AbstractServiceTest {
         Node node = getNodeMock();
 
         // property exists
-        when(node.hasProperty(this.generalNodeProperties.getNodeNameProperty())).thenReturn(true);
+        when(node.hasProperty(generalNodeProperties.getNodeNameProperty())).thenReturn(true);
         // return this property
-        when(node.getProperty(this.generalNodeProperties.getNodeNameProperty(), null)).thenReturn(NODE_NAME);
+        when(node.getProperty(generalNodeProperties.getNodeNameProperty(), null)).thenReturn(NODE_NAME);
 
-        this.nodeService.getNodeName(node);
+        nodeService.getNodeName(node);
 
-        verify(node).hasProperty(this.generalNodeProperties.getNodeNameProperty());
-        verify(node).getProperty(this.generalNodeProperties.getNodeNameProperty());
+        verify(node).hasProperty(generalNodeProperties.getNodeNameProperty());
+        verify(node).getProperty(generalNodeProperties.getNodeNameProperty());
         verifyNoMoreInteractions(node);
     }
 
@@ -108,11 +111,11 @@ public class NodeServiceTest extends AbstractServiceTest {
         Node node = getNodeMock();
 
         // property exists
-        when(node.hasProperty(this.generalNodeProperties.getNodeNameProperty())).thenReturn(true);
+        when(node.hasProperty(generalNodeProperties.getNodeNameProperty())).thenReturn(true);
         // return this property
-        when(node.getProperty(this.generalNodeProperties.getNodeNameProperty())).thenReturn(NODE_NAME);
+        when(node.getProperty(generalNodeProperties.getNodeNameProperty())).thenReturn(NODE_NAME);
 
-        String result = this.nodeService.getNodeName(node);
+        String result = nodeService.getNodeName(node);
 
         assertEquals("Unexpected Name of Node", NODE_NAME, result);
     }
@@ -122,14 +125,14 @@ public class NodeServiceTest extends AbstractServiceTest {
         Node node = getNodeMock();
 
         // property exists
-        when(node.hasProperty(this.generalNodeProperties.getNodeTypeProperty())).thenReturn(true);
+        when(node.hasProperty(generalNodeProperties.getNodeTypeProperty())).thenReturn(true);
         // return this property
-        when(node.getProperty(this.generalNodeProperties.getNodeTypeProperty())).thenReturn(NODE_TYPE_ID);
+        when(node.getProperty(generalNodeProperties.getNodeTypeProperty())).thenReturn(NODE_TYPE_ID);
 
-        this.nodeService.getNodeType(node);
+        nodeService.getNodeType(node);
 
-        verify(node).hasProperty(this.generalNodeProperties.getNodeTypeProperty());
-        verify(node).getProperty(this.generalNodeProperties.getNodeTypeProperty());
+        verify(node).hasProperty(generalNodeProperties.getNodeTypeProperty());
+        verify(node).getProperty(generalNodeProperties.getNodeTypeProperty());
         verifyNoMoreInteractions(node);
     }
 
@@ -138,11 +141,11 @@ public class NodeServiceTest extends AbstractServiceTest {
         Node node = getNodeMock();
 
         // property exists
-        when(node.hasProperty(this.generalNodeProperties.getNodeTypeProperty())).thenReturn(true);
+        when(node.hasProperty(generalNodeProperties.getNodeTypeProperty())).thenReturn(true);
         // return this property
-        when(node.getProperty(this.generalNodeProperties.getNodeTypeProperty())).thenReturn(NODE_TYPE_ID);
+        when(node.getProperty(generalNodeProperties.getNodeTypeProperty())).thenReturn(NODE_TYPE_ID);
 
-        INodeType result = this.nodeService.getNodeType(node);
+        INodeType result = nodeService.getNodeType(node);
 
         assertEquals("Unepected Type of Node", TestNodeType.TEST1, result);
     }
@@ -152,9 +155,9 @@ public class NodeServiceTest extends AbstractServiceTest {
         Node node = getNodeMock();
 
         // property exists
-        when(node.hasProperty(this.generalNodeProperties.getNodeNameProperty())).thenReturn(false);
+        when(node.hasProperty(generalNodeProperties.getNodeNameProperty())).thenReturn(false);
 
-        this.nodeService.getNodeName(node);
+        nodeService.getNodeName(node);
     }
 
     @Test(expected = PropertyNotFoundException.class)
@@ -162,9 +165,9 @@ public class NodeServiceTest extends AbstractServiceTest {
         Node node = getNodeMock();
 
         // property exists
-        when(node.hasProperty(this.generalNodeProperties.getNodeTypeProperty())).thenReturn(false);
+        when(node.hasProperty(generalNodeProperties.getNodeTypeProperty())).thenReturn(false);
 
-        this.nodeService.getNodeType(node);
+        nodeService.getNodeType(node);
     }
 
     @Test(expected = DatabaseException.class)
@@ -410,14 +413,14 @@ public class NodeServiceTest extends AbstractServiceTest {
     public void testCheckGetNodePropertiesWithDefaultValueAndExistingProperty() throws Exception {
         Node node = getNodeMock();
 
-        when(node.getProperty(TEST_NODE_PROPERTY, TEST_NODE_VALUE)).thenReturn("some value");
+        when(node.getProperty(TEST_NODE_PROPERTY, TEST_NODE_VALUE)).thenReturn(TEST_NODE_VALUE);
 
         Object result = nodeService.getNodeProperty(node, TEST_NODE_PROPERTY, TEST_NODE_VALUE, false);
 
         verify(node, never()).hasProperty(TEST_NODE_PROPERTY);
         verify(node).getProperty(TEST_NODE_PROPERTY, TEST_NODE_VALUE);
 
-        assertEquals("unexpected property", "some value", result);
+        assertEquals("unexpected property", TEST_NODE_VALUE, result);
     }
 
     @Test
@@ -425,14 +428,14 @@ public class NodeServiceTest extends AbstractServiceTest {
         Node node = getNodeMock();
 
         when(node.hasProperty(TEST_NODE_PROPERTY)).thenReturn(true);
-        when(node.getProperty(TEST_NODE_PROPERTY)).thenReturn("some value");
+        when(node.getProperty(TEST_NODE_PROPERTY)).thenReturn(TEST_NODE_VALUE);
 
         Object result = nodeService.getNodeProperty(node, TEST_NODE_PROPERTY, null, true);
 
         verify(node).hasProperty(TEST_NODE_PROPERTY);
         verify(node).getProperty(TEST_NODE_PROPERTY);
 
-        assertEquals("unexpected property", "some value", result);
+        assertEquals("unexpected property", TEST_NODE_VALUE, result);
     }
 
     @Test
@@ -561,7 +564,8 @@ public class NodeServiceTest extends AbstractServiceTest {
         nodeService.renameNodeProperty(node, TEST_NODE_PROPERTY, NEW_TEST_NODE_PROPERTY, true);
     }
 
-    private void verifyNodeProperty(Node node, String name, Object value, boolean exists, boolean equal) {
+    private void verifyNodeProperty(final Node node, final String name, final Object value, final boolean exists,
+            final boolean equal) {
         verify(node).hasProperty(name);
 
         if (exists) {
@@ -583,12 +587,12 @@ public class NodeServiceTest extends AbstractServiceTest {
         Map<String, Object> result = new HashMap<String, Object>();
 
         result.put("string", "string");
-        result.put("long", 123l);
+        result.put("long", TEST_LONG_PROPERTY);
 
         return result;
     }
 
-    private void setReferencedNode(Node node) {
+    private void setReferencedNode(final Node node) {
         GraphDatabaseService service = getService();
 
         if (node == null) {
