@@ -36,17 +36,14 @@ public abstract class AbstractStreamParser<C extends ISingleFileConfiguration, D
 
     private InputStreamReader reader;
 
-    @Override
-    public void init(C configuration) throws LoaderException {
-        super.init(configuration);
-        stream = initializeStream(configuration);
-    }
-
-    protected InputStream getStream() {
+    protected InputStream getStream() throws LoaderException {
+        if (stream == null) {
+            stream = initializeStream(getConfiguration());
+        }
         return stream;
     }
 
-    protected InputStreamReader getReader() {
+    protected InputStreamReader getReader() throws LoaderException {
         if (reader == null) {
             reader = initializeReader(getStream());
         }
@@ -57,7 +54,7 @@ public abstract class AbstractStreamParser<C extends ISingleFileConfiguration, D
     protected InputStream initializeStream(C configuration) throws LoaderException {
         try {
             return new FileInputStream(configuration.getFile());
-        } catch (Exception e) {
+        } catch (java.io.FileNotFoundException e) {
             throw new FileNotFoundException(configuration.getFile());
         }
     }

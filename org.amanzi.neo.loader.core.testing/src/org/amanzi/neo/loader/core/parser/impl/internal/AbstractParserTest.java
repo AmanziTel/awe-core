@@ -18,6 +18,8 @@ import org.amanzi.neo.loader.core.internal.IConfiguration;
 import org.amanzi.testing.AbstractMockitoTest;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 /**
  * TODO Purpose of
@@ -31,6 +33,34 @@ public class AbstractParserTest extends AbstractMockitoTest {
 
     private static final int NEXT_TIMES = 3;
 
+    /**
+     * TODO Purpose of
+     * <p>
+     * </p>
+     * 
+     * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
+     * @since 1.0.0
+     */
+    private final class TestParserIterator implements Answer<IData> {
+        /** IData data field */
+        private final IData data;
+
+        /**
+         * @param data
+         */
+        private TestParserIterator(IData data) {
+            this.data = data;
+        }
+
+        @Override
+        public IData answer(InvocationOnMock invocation) throws Throwable {
+            if (++parsedTimes < NEXT_TIMES) {
+                return data;
+            }
+            return null;
+        }
+    }
+
     public static class TestParser extends AbstractParser<IConfiguration, IData> {
 
         @Override
@@ -42,6 +72,8 @@ public class AbstractParserTest extends AbstractMockitoTest {
 
     private TestParser parser;
 
+    private int parsedTimes;
+
     /**
      * @throws java.lang.Exception
      */
@@ -49,8 +81,11 @@ public class AbstractParserTest extends AbstractMockitoTest {
     public void setUp() throws Exception {
         parser = spy(new TestParser());
 
-        IData data = mock(IData.class);
-        when(parser.parseNextElement()).thenReturn(data);
+        final IData data = mock(IData.class);
+
+        parsedTimes = 0;
+
+        when(parser.parseNextElement()).thenAnswer(new TestParserIterator(data));
     }
 
     @Test
@@ -74,5 +109,15 @@ public class AbstractParserTest extends AbstractMockitoTest {
     @Test(expected = UnsupportedOperationException.class)
     public void testCheckExceptionOnRemove() {
         parser.remove();
+    }
+
+    @Test
+    public void testCheckIterationForAllElements() {
+        for (int i = 0; i < (NEXT_TIMES - 1); i++) {
+            assertTrue("next element should exists", parser.hasNext());
+            parser.next();
+        }
+
+        assertFalse("next element should not exists", parser.hasNext());
     }
 }

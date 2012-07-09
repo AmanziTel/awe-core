@@ -35,25 +35,24 @@ public abstract class AbstractParser<C extends IConfiguration, D extends IData> 
 
     private D nextElement;
 
-    private boolean parsed = false;
+    private boolean actual = false;
 
     @Override
     public boolean hasNext() {
-        if (!parsed) {
-            parseNextElement();
-            parsed = true;
+        if (!actual) {
+            nextElement = parseNextElement();
+            actual = true;
         }
         return nextElement != null;
     }
 
     @Override
     public D next() {
-        prepareNextElement();
+        if (!actual) {
+            nextElement = parseNextElement();
+        }
+        actual = false;
         return nextElement;
-    }
-
-    private void prepareNextElement() {
-        nextElement = parseNextElement();
     }
 
     protected abstract D parseNextElement();
