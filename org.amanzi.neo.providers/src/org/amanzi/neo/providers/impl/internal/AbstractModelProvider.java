@@ -20,9 +20,13 @@ import org.amanzi.neo.db.manager.DatabaseManagerFactory;
 import org.amanzi.neo.db.manager.events.DatabaseEvent;
 import org.amanzi.neo.db.manager.events.IDatabaseEventListener;
 import org.amanzi.neo.models.IModel;
+import org.amanzi.neo.models.exceptions.FatalException;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.impl.internal.AbstractModel;
 import org.amanzi.neo.models.impl.internal.util.AbstractLoggable;
+import org.amanzi.neo.services.exceptions.ServiceException;
+import org.amanzi.neo.services.exceptions.enums.ServiceExceptionReason;
+import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
 
 /**
@@ -36,6 +40,8 @@ import org.neo4j.graphdb.Node;
 public abstract class AbstractModelProvider<T extends AbstractModel, T1 extends IModel> extends AbstractLoggable
         implements
             IDatabaseEventListener {
+
+    private static final Logger LOGGER = Logger.getLogger(AbstractModelProvider.class);
 
     protected interface IKey {
 
@@ -125,6 +131,16 @@ public abstract class AbstractModelProvider<T extends AbstractModel, T1 extends 
         default:
             // do nothing
             break;
+        }
+    }
+
+    protected abstract Class< ? extends T1> getModelClass();
+
+    protected void processException(final String message, final ServiceException e) throws ModelException {
+        LOGGER.error("Error on Searching for a Project Model)");
+
+        if (e.getReason() == ServiceExceptionReason.DATABASE_EXCEPTION) {
+            throw new FatalException(e);
         }
     }
 

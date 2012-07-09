@@ -24,6 +24,6 @@ import org.amanzi.neo.models.network.ISelectionModel;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface ISelectionModelProvider extends IModelProvider<ISelectionModel, INetworkModel> {
+public interface ISelectionModelProvider extends INamedModelProvider<ISelectionModel, INetworkModel> {
 
 }

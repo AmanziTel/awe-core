@@ -13,6 +13,11 @@
 
 package org.amanzi.neo.providers;
 
+import java.util.List;
+
+import org.amanzi.neo.models.IModel;
+import org.amanzi.neo.models.exceptions.ModelException;
+
 /**
  * TODO Purpose of
  * <p>
@@ -21,8 +26,9 @@ package org.amanzi.neo.providers;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface IProviderContext {
+public interface INamedModelProvider<M extends IModel, P extends IModel> extends IModelProvider<M> {
 
-    <T extends IModelProvider< ? >> T get(String id) throws ContextException;
+    List<M> findAll(P parent) throws ModelException;
 
+    M findByName(P parent, String name) throws ModelException;
 }

@@ -84,4 +84,9 @@ public class PropertyStatisticsModelProvider extends AbstractModelProvider<Prope
         return new PropertyStatisticsModel(generalNodeProperties, statisticsService);
     }
 
+    @Override
+    protected Class< ? extends IPropertyStatisticsModel> getModelClass() {
+        return PropertyStatisticsModel.class;
+    }
+
 }

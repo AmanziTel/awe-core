@@ -13,6 +13,9 @@
 
 package org.amanzi.neo.providers;
 
+import org.amanzi.neo.models.network.INetworkModel;
+import org.amanzi.neo.models.project.IProjectModel;
+
 /**
  * TODO Purpose of
  * <p>
@@ -21,8 +24,6 @@ package org.amanzi.neo.providers;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface IProviderContext {
-
-    <T extends IModelProvider< ? >> T get(String id) throws ContextException;
+public interface INetworkModelProvider extends INamedModelProvider<INetworkModel, IProjectModel> {
 
 }

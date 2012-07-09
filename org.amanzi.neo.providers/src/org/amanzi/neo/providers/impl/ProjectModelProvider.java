@@ -14,7 +14,6 @@
 package org.amanzi.neo.providers.impl;
 
 import org.amanzi.neo.models.exceptions.DuplicatedModelException;
-import org.amanzi.neo.models.exceptions.FatalException;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.exceptions.ParameterInconsistencyException;
 import org.amanzi.neo.models.impl.project.ProjectModel;
@@ -25,7 +24,6 @@ import org.amanzi.neo.providers.IProjectModelProvider;
 import org.amanzi.neo.providers.impl.internal.AbstractModelProvider;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.ServiceException;
-import org.amanzi.neo.services.exceptions.enums.ServiceExceptionReason;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
@@ -76,11 +74,7 @@ public class ProjectModelProvider extends AbstractModelProvider<ProjectModel, IP
                 Node referencedNode = nodeService.getReferencedNode();
                 modelNode = nodeService.getChildByName(referencedNode, name, ProjectModelNodeType.PROJECT);
             } catch (ServiceException e) {
-                LOGGER.error("Error on Searching for a Project Model)");
-
-                if (e.getReason() == ServiceExceptionReason.DATABASE_EXCEPTION) {
-                    throw new FatalException(e);
-                }
+                processException("Error on Searching for a Project Model", e);
             }
 
             if (modelNode != null) {
@@ -141,5 +135,10 @@ public class ProjectModelProvider extends AbstractModelProvider<ProjectModel, IP
     @Override
     protected ProjectModel createInstance() {
         return new ProjectModel(nodeService, generalNodeProperties);
+    }
+
+    @Override
+    protected Class< ? extends IProjectModel> getModelClass() {
+        return ProjectModel.class;
     }
 }
