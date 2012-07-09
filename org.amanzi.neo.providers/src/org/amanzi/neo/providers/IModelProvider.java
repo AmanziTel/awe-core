@@ -23,6 +23,6 @@ import org.amanzi.neo.models.IModel;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface IModelProvider<Model extends IModel, Parent extends IModel> {
+public interface IModelProvider<Model extends IModel> {
 
 }

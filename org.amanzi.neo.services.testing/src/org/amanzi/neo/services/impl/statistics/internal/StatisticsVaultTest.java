@@ -32,6 +32,8 @@ import org.junit.Test;
  */
 public class StatisticsVaultTest extends AbstractMockitoTest {
 
+    private static final int TEST_NUMBER_OF_PROPERTIES = 10;
+
     private static final INodeType TEST_NODE_TYPE = new INodeType() {
 
         @Override
@@ -69,11 +71,11 @@ public class StatisticsVaultTest extends AbstractMockitoTest {
     public void testCheckCountIncreased() throws ServiceException {
         int previousCount = statisticsVault.getCount();
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < TEST_NUMBER_OF_PROPERTIES; i++) {
             statisticsVault.indexProperty(TEST_NODE_TYPE, TEST_PROPERTY, TEST_VALUE);
         }
 
-        assertEquals("Count increased incorrect", previousCount + 10, statisticsVault.getCount());
+        assertEquals("Count increased incorrect", previousCount + TEST_NUMBER_OF_PROPERTIES, statisticsVault.getCount());
     }
 
     @Test

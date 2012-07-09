@@ -42,13 +42,19 @@ public class AbstractModelProviderTest extends AbstractMockitoTest {
 
         private final AbstractModel instance;
 
-        public TestModelProvider(AbstractModel instance) {
+        public TestModelProvider(final AbstractModel instance) {
             this.instance = instance;
         }
 
         @Override
         protected AbstractModel createInstance() {
             return instance;
+        }
+
+        @Override
+        protected Class< ? extends IModel> getModelClass() {
+            // TODO Auto-generated method stub
+            return null;
         }
     }
 

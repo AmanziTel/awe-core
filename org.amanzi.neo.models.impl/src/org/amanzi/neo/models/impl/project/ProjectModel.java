@@ -14,9 +14,10 @@
 package org.amanzi.neo.models.impl.project;
 
 import org.amanzi.neo.models.exceptions.ModelException;
-import org.amanzi.neo.models.impl.internal.AbstractModel;
+import org.amanzi.neo.models.impl.internal.AbstractNamedModel;
 import org.amanzi.neo.models.project.IProjectModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
+import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.IncorrectParentException;
 import org.amanzi.neo.services.exceptions.IncorrectPropertyException;
@@ -32,18 +33,18 @@ import org.neo4j.graphdb.Node;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class ProjectModel extends AbstractModel implements IProjectModel {
+public class ProjectModel extends AbstractNamedModel implements IProjectModel {
 
     private static final Logger LOGGER = Logger.getLogger(ProjectModel.class);
 
     /**
      * @param nodeService
      */
-    public ProjectModel(INodeService nodeService, IGeneralNodeProperties generalNodeProperties) {
+    public ProjectModel(final INodeService nodeService, final IGeneralNodeProperties generalNodeProperties) {
         super(nodeService, generalNodeProperties);
     }
 
-    public void initialize(String name) throws ModelException {
+    public void initialize(final String name) throws ModelException {
         assert name != null;
 
         if (LOGGER.isDebugEnabled()) {
@@ -53,7 +54,7 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
         try {
             Node parentNode = getNodeService().getReferencedNode();
 
-            initialize(parentNode, name, ProjectModelNodeType.PROJECT);
+            initialize(parentNode, name);
         } catch (ServiceException e) {
             processException("Exception on creating new ProjectModel by name <" + name + ">.", e);
         }
@@ -64,7 +65,7 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
     }
 
     @Override
-    public void initialize(Node rootNode) throws ModelException {
+    public void initialize(final Node rootNode) throws ModelException {
         assert rootNode != null;
 
         if (LOGGER.isDebugEnabled()) {
@@ -98,4 +99,8 @@ public class ProjectModel extends AbstractModel implements IProjectModel {
     public void finishUp() throws ModelException {
     }
 
+    @Override
+    protected INodeType getModelType() {
+        return ProjectModelNodeType.PROJECT;
+    }
 }

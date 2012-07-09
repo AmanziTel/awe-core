@@ -80,7 +80,7 @@ public class ProviderContextImplTest extends AbstractMockitoTest {
 
     private IService service;
 
-    private IModelProvider< ? , ? > provider;
+    private IModelProvider< ? > provider;
 
     @Before
     public void setUp() {
@@ -353,7 +353,7 @@ public class ProviderContextImplTest extends AbstractMockitoTest {
         context.createModelProvider(TEST_PROVIDER_ID);
     }
 
-    private IConfigurationElement[] getParameterConfigurationElements(String[] names) {
+    private IConfigurationElement[] getParameterConfigurationElements(final String[] names) {
         IConfigurationElement[] subResult = new IConfigurationElement[SERVICE_PARAMETERS.length];
 
         int i = 0;
@@ -368,7 +368,7 @@ public class ProviderContextImplTest extends AbstractMockitoTest {
         return subResult;
     }
 
-    private IConfigurationElement[] getParameterBlockConfigurationElements(IConfigurationElement[] subElements) {
+    private IConfigurationElement[] getParameterBlockConfigurationElements(final IConfigurationElement[] subElements) {
         IConfigurationElement[] result = new IConfigurationElement[1];
 
         IConfigurationElement resultElement = mock(IConfigurationElement.class);
@@ -379,7 +379,8 @@ public class ProviderContextImplTest extends AbstractMockitoTest {
         return result;
     }
 
-    private IConfigurationElement[] getConfigurationElementsForService(String correctId, IConfigurationElement[] parameters) {
+    private IConfigurationElement[] getConfigurationElementsForService(final String correctId,
+            final IConfigurationElement[] parameters) {
         String[] ids = TEST_IDS;
         if (correctId != null) {
             ids = ArrayUtils.add(ids, correctId);
@@ -400,14 +401,14 @@ public class ProviderContextImplTest extends AbstractMockitoTest {
 
                 when(serviceElement.getChildren(PARAMETERS2)).thenReturn(parameters);
 
-                this.element = serviceElement;
+                element = serviceElement;
             }
         }
 
         return result;
     }
 
-    private IConfigurationElement[] getConfigurationElementsForNodeProperties(String correctId) throws CoreException {
+    private IConfigurationElement[] getConfigurationElementsForNodeProperties(final String correctId) throws CoreException {
         String[] ids = TEST_IDS;
         if (correctId != null) {
             ids = ArrayUtils.add(ids, correctId);
@@ -426,7 +427,7 @@ public class ProviderContextImplTest extends AbstractMockitoTest {
             if (id.equals(correctId)) {
                 when(nodePropertiesElement.createExecutableExtension(CLASS)).thenReturn(properties);
 
-                this.element = nodePropertiesElement;
+                element = nodePropertiesElement;
             }
         }
 

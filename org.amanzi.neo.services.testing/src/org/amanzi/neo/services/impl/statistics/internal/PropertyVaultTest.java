@@ -30,9 +30,23 @@ import org.junit.Test;
  */
 public class PropertyVaultTest extends AbstractMockitoTest {
 
+    /** int LIMIT field */
+    private static final int LIMIT = 100;
+
+    /** int TEST_NUMBER_OF_VALUES field */
+    private static final int TEST_NUMBER_OF_VALUES = 3;
+
+    /** String UNEXPECTED_SIZE_OF_VALUES_MESSAGE field */
+    private static final String UNEXPECTED_SIZE_OF_VALUES_MESSAGE = "unexpected size of values";
+
+    /** String UNEXPECTED_CLASS_MESSAGE field */
+    private static final String UNEXPECTED_CLASS_MESSAGE = "Unexpected class";
+
     private static final String TEST_VALUE = "value";
 
     private static final String TEST_PROPERTY = "property";
+
+    private static final int[] COUNTS = {1, 1, 2, 2};
 
     private static final String[] STRING_VALUES = new String[] {"string1", "string2", "string3", "string3"};
 
@@ -86,11 +100,8 @@ public class PropertyVaultTest extends AbstractMockitoTest {
             vault.index(o);
         }
 
-        assertEquals("Unexpected class", String.class.getName(), vault.getClassName());
-        assertEquals("unexpected size of values", 3, vault.getValues().size());
-        assertEquals("Unexpected size of string1", 1, vault.getValueCount("string1"));
-        assertEquals("Unexpected size of string1", 1, vault.getValueCount("string2"));
-        assertEquals("Unexpected size of string1", 2, vault.getValueCount("string3"));
+        assertEquals(UNEXPECTED_CLASS_MESSAGE, String.class.getName(), vault.getClassName());
+        assertValues(STRING_VALUES);
     }
 
     @Test
@@ -99,11 +110,8 @@ public class PropertyVaultTest extends AbstractMockitoTest {
             vault.index(o);
         }
 
-        assertEquals("Unexpected class", Integer.class.getName(), vault.getClassName());
-        assertEquals("unexpected size of values", 3, vault.getValues().size());
-        assertEquals("Unexpected size of integer1", 1, vault.getValueCount(1));
-        assertEquals("Unexpected size of integer2", 1, vault.getValueCount(2));
-        assertEquals("Unexpected size of integer3", 2, vault.getValueCount(3));
+        assertEquals(UNEXPECTED_CLASS_MESSAGE, Integer.class.getName(), vault.getClassName());
+        assertValues(INTEGER_VALUES);
     }
 
     @Test
@@ -112,11 +120,8 @@ public class PropertyVaultTest extends AbstractMockitoTest {
             vault.index(o);
         }
 
-        assertEquals("Unexpected class", Long.class.getName(), vault.getClassName());
-        assertEquals("unexpected size of values", 3, vault.getValues().size());
-        assertEquals("Unexpected size of long1", 1, vault.getValueCount(1l));
-        assertEquals("Unexpected size of long2", 1, vault.getValueCount(2l));
-        assertEquals("Unexpected size of long3", 2, vault.getValueCount(3l));
+        assertEquals(UNEXPECTED_CLASS_MESSAGE, Long.class.getName(), vault.getClassName());
+        assertValues(LONG_VALUES);
     }
 
     @Test
@@ -125,23 +130,20 @@ public class PropertyVaultTest extends AbstractMockitoTest {
             vault.index(o);
         }
 
-        assertEquals("Unexpected class", Double.class.getName(), vault.getClassName());
-        assertEquals("unexpected size of values", 3, vault.getValues().size());
-        assertEquals("Unexpected size of float1", 1, vault.getValueCount(1d));
-        assertEquals("Unexpected size of float2", 1, vault.getValueCount(2d));
-        assertEquals("Unexpected size of float3", 2, vault.getValueCount(3d));
+        assertEquals(UNEXPECTED_CLASS_MESSAGE, Double.class.getName(), vault.getClassName());
+        assertValues(DOUBLE_VALUES);
     }
 
     @Test
     public void testCheckLimit() throws ServiceException {
-        for (int i = 0; i < 99; i++) {
+        for (int i = 0; i < (LIMIT - 1); i++) {
             vault.index(TEST_VALUE + i);
         }
 
-        assertEquals("unexpected size of values set", 99, vault.getValues().size());
+        assertEquals("unexpected size of values set", LIMIT - 1, vault.getValues().size());
 
-        vault.index(TEST_VALUE + 100);
-        vault.index(TEST_VALUE + 101);
+        vault.index(TEST_VALUE + LIMIT);
+        vault.index(TEST_VALUE + (LIMIT + 1));
 
         assertEquals("unexpected size of values set", 0, vault.getValues().size());
     }
@@ -214,6 +216,14 @@ public class PropertyVaultTest extends AbstractMockitoTest {
 
     private void spyVault() {
         vault = spy(vault);
+    }
+
+    private void assertValues(final Object[] values) {
+        assertEquals(UNEXPECTED_SIZE_OF_VALUES_MESSAGE, TEST_NUMBER_OF_VALUES, vault.getValues().size());
+        for (int i = 0; i < values.length; i++) {
+            Object o = values[i];
+            assertEquals("unexpected size of object <" + o + ">", COUNTS[i], vault.getValueCount(o));
+        }
     }
 
 }

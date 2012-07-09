@@ -15,12 +15,15 @@ package org.amanzi.neo.models.impl.statistics;
 
 import org.amanzi.neo.models.exceptions.DuplicatedModelException;
 import org.amanzi.neo.models.exceptions.FatalException;
+import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodeproperties.impl.GeneralNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
+import org.amanzi.neo.nodetypes.NodeTypeNotExistsException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicatedNodeException;
+import org.amanzi.neo.services.exceptions.ServiceException;
 import org.amanzi.neo.services.impl.statistics.IPropertyStatistics;
 import org.amanzi.neo.services.impl.statistics.PropertyStatisticsNodeType;
 import org.amanzi.neo.services.statistics.IPropertyStatisticsService;
@@ -38,6 +41,9 @@ import org.neo4j.graphdb.Node;
  * @since 1.0.0
  */
 public class PropertyStatisticsModelTest extends AbstractMockitoTest {
+
+    /** String STATISTICS_EXCEPTION_DATA field */
+    private static final String STATISTICS_EXCEPTION_DATA = "statistics";
 
     private static final INodeType TEST_NODE_TYPE = PropertyStatisticsNodeType.PROPERTY_STATISTICS;
 
@@ -81,7 +87,8 @@ public class PropertyStatisticsModelTest extends AbstractMockitoTest {
 
     @Test(expected = DuplicatedModelException.class)
     public void testCheckDataInconsistencyExceptionOnInitialize() throws Exception {
-        doThrow(new DuplicatedNodeException("statistics", "statistics")).when(statisticsService).loadStatistics(any(Node.class));
+        doThrow(new DuplicatedNodeException(STATISTICS_EXCEPTION_DATA, STATISTICS_EXCEPTION_DATA)).when(statisticsService)
+                .loadStatistics(any(Node.class));
 
         ((PropertyStatisticsModel)model).initialize(getNodeMock());
     }
@@ -90,8 +97,8 @@ public class PropertyStatisticsModelTest extends AbstractMockitoTest {
     public void testCheckDataInconsistencyExceptionOnFinishUp() throws Exception {
         initializeStatistics();
 
-        doThrow(new DuplicatedNodeException("statistics", "statistics")).when(statisticsService).saveStatistics(any(Node.class),
-                any(IPropertyStatistics.class));
+        doThrow(new DuplicatedNodeException(STATISTICS_EXCEPTION_DATA, STATISTICS_EXCEPTION_DATA)).when(statisticsService)
+                .saveStatistics(any(Node.class), any(IPropertyStatistics.class));
 
         model.finishUp();
     }
@@ -181,7 +188,7 @@ public class PropertyStatisticsModelTest extends AbstractMockitoTest {
         verify(vault).indexProperty(TEST_NODE_TYPE, TEST_PROPERTY_NAME, TEST_PROPERTY_VALUE);
     }
 
-    private Node initializeStatistics() throws Exception {
+    private Node initializeStatistics() throws ServiceException, ModelException, NodeTypeNotExistsException {
         Node rootNode = getNodeMock();
         mockStatistics(rootNode);
 
@@ -190,7 +197,7 @@ public class PropertyStatisticsModelTest extends AbstractMockitoTest {
         return rootNode;
     }
 
-    private void mockStatistics(final Node node) throws Exception {
+    private void mockStatistics(final Node node) throws ServiceException, NodeTypeNotExistsException {
         vault = mock(IPropertyStatistics.class);
 
         when(statisticsService.loadStatistics(node)).thenReturn(vault);

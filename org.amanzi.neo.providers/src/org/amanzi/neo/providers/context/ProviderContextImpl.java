@@ -62,7 +62,7 @@ public class ProviderContextImpl implements IProviderContext {
 
     private static final String REFERENCE_ATTRIBUTE = "refId";
 
-    private final Map<String, IModelProvider< ? , ? >> providersCache = new HashMap<String, IModelProvider< ? , ? >>();
+    private final Map<String, IModelProvider< ? >> providersCache = new HashMap<String, IModelProvider< ? >>();
 
     private final Map<String, IService> servicesCache = new HashMap<String, IService>();
 
@@ -76,13 +76,13 @@ public class ProviderContextImpl implements IProviderContext {
         registry = Platform.getExtensionRegistry();
     }
 
-    protected ProviderContextImpl(IExtensionRegistry registry) {
+    protected ProviderContextImpl(final IExtensionRegistry registry) {
         this.registry = registry;
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public synchronized <T extends IModelProvider< ? , ? >> T get(String id) throws ContextException {
+    public synchronized <T extends IModelProvider< ? >> T get(final String id) throws ContextException {
         T result = (T)providersCache.get(id);
 
         if (result == null) {
@@ -93,7 +93,7 @@ public class ProviderContextImpl implements IProviderContext {
         return result;
     }
 
-    protected IService getService(String id) throws ContextException {
+    protected IService getService(final String id) throws ContextException {
         assert !StringUtils.isEmpty(id);
 
         IService result = servicesCache.get(id);
@@ -107,7 +107,7 @@ public class ProviderContextImpl implements IProviderContext {
         return result;
     }
 
-    protected INodeProperties getNodeProperties(String id) throws CoreException, ContextException {
+    protected INodeProperties getNodeProperties(final String id) throws CoreException, ContextException {
         assert !StringUtils.isEmpty(id);
 
         INodeProperties result = nodePropertiesCache.get(id);
@@ -120,7 +120,7 @@ public class ProviderContextImpl implements IProviderContext {
         return result;
     }
 
-    protected IModelProvider< ? , ? > createModelProvider(String id) throws ContextException {
+    protected IModelProvider< ? > createModelProvider(final String id) throws ContextException {
         assert !StringUtils.isEmpty(id);
 
         IConfigurationElement element = findConfigurationElement(PROVIDERS_EXTENSION_POINT, id);
@@ -130,13 +130,13 @@ public class ProviderContextImpl implements IProviderContext {
         }
 
         try {
-            return (IModelProvider< ? , ? >)createInstance(element, false);
+            return (IModelProvider< ? >)createInstance(element, false);
         } catch (Exception e) {
             throw new ContextException(e);
         }
     }
 
-    protected IService createService(String id) throws ContextException {
+    protected IService createService(final String id) throws ContextException {
         assert !StringUtils.isEmpty(id);
 
         if (serviceStack == null) {
@@ -166,7 +166,7 @@ public class ProviderContextImpl implements IProviderContext {
         }
     }
 
-    protected INodeProperties createNodeProperties(String id) throws CoreException, ContextException {
+    protected INodeProperties createNodeProperties(final String id) throws CoreException, ContextException {
         assert !StringUtils.isEmpty(id);
 
         IConfigurationElement element = findConfigurationElement(NODE_PROPERTIES_EXTENSION_POINT, id);
@@ -184,7 +184,7 @@ public class ProviderContextImpl implements IProviderContext {
         throw new ContextException("NodeProperties <" + id + "> was not found in context");
     }
 
-    private IConfigurationElement findConfigurationElement(String extensionPoint, String id) {
+    private IConfigurationElement findConfigurationElement(final String extensionPoint, final String id) {
         IConfigurationElement result = null;
 
         IConfigurationElement[] nodePropertiesElements = registry.getConfigurationElementsFor(extensionPoint);
@@ -200,9 +200,9 @@ public class ProviderContextImpl implements IProviderContext {
     }
 
     @SuppressWarnings("unchecked")
-    protected <T> T createInstance(IConfigurationElement configElement, boolean isService) throws ClassNotFoundException,
-            NoSuchMethodException, CoreException, ContextException, InvocationTargetException, IllegalAccessException,
-            InstantiationException {
+    protected <T> T createInstance(final IConfigurationElement configElement, final boolean isService)
+            throws ClassNotFoundException, NoSuchMethodException, CoreException, ContextException, InvocationTargetException,
+            IllegalAccessException, InstantiationException {
         String className = configElement.getAttribute(CLASS_ATTRIBUTE);
         Class< ? extends T> clazz = (Class< ? extends T>)Class.forName(className);
 
@@ -211,8 +211,9 @@ public class ProviderContextImpl implements IProviderContext {
         return createInstance(clazz, parametersBlock, isService);
     }
 
-    protected <T> T createInstance(Class< ? extends T> clazz, IConfigurationElement[] parameterBlock, boolean isService)
-            throws ContextException, CoreException, InvocationTargetException, IllegalAccessException, InstantiationException {
+    protected <T> T createInstance(final Class< ? extends T> clazz, final IConfigurationElement[] parameterBlock,
+            final boolean isService) throws ContextException, CoreException, InvocationTargetException, IllegalAccessException,
+            InstantiationException {
         // should be 0 or 1 element
         assert parameterBlock != null;
         assert parameterBlock.length < 2;
@@ -226,8 +227,9 @@ public class ProviderContextImpl implements IProviderContext {
         return createInstance(clazz, singleParameterBlock, isService);
     }
 
-    protected <T> T createInstance(Class< ? extends T> clazz, IConfigurationElement parameterBlock, boolean isService)
-            throws ContextException, CoreException, InvocationTargetException, IllegalAccessException, InstantiationException {
+    protected <T> T createInstance(final Class< ? extends T> clazz, final IConfigurationElement parameterBlock,
+            final boolean isService) throws ContextException, CoreException, InvocationTargetException, IllegalAccessException,
+            InstantiationException {
         Map<Class< ? extends Object>, Object> parametersMap = new HashMap<Class< ? extends Object>, Object>();
 
         if (isService) {
@@ -257,7 +259,7 @@ public class ProviderContextImpl implements IProviderContext {
     }
 
     @SuppressWarnings("unchecked")
-    protected <T> T createInstance(Class< ? extends T> clazz, Map<Class< ? extends Object>, Object> parametersMap)
+    protected <T> T createInstance(final Class< ? extends T> clazz, final Map<Class< ? extends Object>, Object> parametersMap)
             throws InvocationTargetException, IllegalAccessException, InstantiationException, ContextException {
         Constructor< ? > correctConstructor = null;
         Object[] arguments = null;
@@ -302,7 +304,7 @@ public class ProviderContextImpl implements IProviderContext {
         return (T)correctConstructor.newInstance(arguments);
     }
 
-    private void initializeWithDatabaseService(Map<Class< ? extends Object>, Object> parametersMap) {
+    private void initializeWithDatabaseService(final Map<Class< ? extends Object>, Object> parametersMap) {
         GraphDatabaseService databaseService = DatabaseManagerFactory.getDatabaseManager().getDatabaseService();
 
         parametersMap.put(GraphDatabaseService.class, databaseService);

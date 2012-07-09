@@ -11,18 +11,21 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.providers;
+package org.amanzi.neo.nodetypes;
 
-/**
- * TODO Purpose of
- * <p>
- * </p>
- * 
- * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
- * @since 1.0.0
- */
-public interface IProviderContext {
+public class NodeTypeNotExistsException extends Exception {
 
-    <T extends IModelProvider< ? >> T get(String id) throws ContextException;
+    /** long serialVersionUID field */
+    private static final long serialVersionUID = 8996538121125391000L;
+
+    private final String id;
+
+    public NodeTypeNotExistsException(final String id) {
+        this.id = id;
+    }
+
+    public String getNodeTypeId() {
+        return id;
+    }
 
 }

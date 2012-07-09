@@ -13,9 +13,7 @@
 
 package org.amanzi.neo.models.network;
 
-import org.amanzi.neo.models.distribution.IDistributionalModel;
-import org.amanzi.neo.models.render.IRenderableModel;
-import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
+import org.amanzi.neo.models.statistics.IPropertyStatisticalModel;
 
 /**
  * TODO Purpose of
@@ -26,6 +24,6 @@ import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
  * @since 1.0.0
  */
 
-public interface INetworkModel extends IPropertyStatisticsModel, IRenderableModel, IDistributionalModel {
+public interface INetworkModel extends IPropertyStatisticalModel {
 
 }

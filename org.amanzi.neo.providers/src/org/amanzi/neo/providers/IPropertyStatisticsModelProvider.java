@@ -25,7 +25,7 @@ import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface IPropertyStatisticsModelProvider extends IModelProvider<IPropertyStatisticsModel, IPropertyStatisticalModel> {
+public interface IPropertyStatisticsModelProvider extends IModelProvider<IPropertyStatisticsModel> {
 
     IPropertyStatisticsModel getPropertyStatistics(IPropertyStatisticalModel parent) throws ModelException;
 

@@ -51,6 +51,9 @@ import org.neo4j.graphdb.Transaction;
  */
 public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
 
+    /** long TEST_LONG_PROPERTY field */
+    private static final long TEST_LONG_PROPERTY = 123l;
+
     /** String TEST_VALUE field */
     private static final String TEST_VALUE = "value";
 
@@ -426,7 +429,7 @@ public class NodeServiceIntegrationTest extends AbstractIntegrationTest {
         Map<String, Object> result = new HashMap<String, Object>();
 
         result.put("string", "string");
-        result.put("long", 123l);
+        result.put("long", TEST_LONG_PROPERTY);
 
         return result;
     }

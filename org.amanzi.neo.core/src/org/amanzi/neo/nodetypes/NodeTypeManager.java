@@ -48,34 +48,17 @@ public final class NodeTypeManager {
 
     private static final String CLASS_ATTRIBUTE = "class";
 
-    public class NodeTypeNotExistsException extends Exception {
-
-        /** long serialVersionUID field */
-        private static final long serialVersionUID = 8996538121125391000L;
-
-        private final String id;
-
-        public NodeTypeNotExistsException(String id) {
-            this.id = id;
-        }
-
-        public String getNodeTypeId() {
-            return id;
-        }
-
-    }
-
     @SuppressWarnings("rawtypes")
     private static final class StringToEnumConverter<T extends Enum> {
 
         private final Class<T> enumType;
 
-        public StringToEnumConverter(Class<T> enumType) {
+        public StringToEnumConverter(final Class<T> enumType) {
             this.enumType = enumType;
         }
 
         @SuppressWarnings("unchecked")
-        public T convert(String source) {
+        public T convert(final String source) {
             return (T)Enum.valueOf(this.enumType, source.trim().toUpperCase(Locale.getDefault()));
         }
     }
@@ -91,7 +74,7 @@ public final class NodeTypeManager {
     private final IExtensionRegistry registry;
 
     protected NodeTypeManager() {
-        this.registry = Platform.getExtensionRegistry();
+        registry = Platform.getExtensionRegistry();
         initializeNodeTypesFromExtensions();
     }
 
@@ -104,7 +87,7 @@ public final class NodeTypeManager {
      * 
      * @param nodeType a class that implements INodeType interface
      */
-    public void registerNodeType(Class< ? > nodeType) {
+    public void registerNodeType(final Class< ? > nodeType) {
         assert nodeType != null;
 
         registeredNodeTypes.add(nodeType);
@@ -118,7 +101,7 @@ public final class NodeTypeManager {
      * @return
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public INodeType getType(String typeID) throws NodeTypeNotExistsException {
+    public INodeType getType(final String typeID) throws NodeTypeNotExistsException {
         assert !StringUtils.isEmpty(typeID);
 
         INodeType result = null;

@@ -12,7 +12,6 @@
  */
 package org.amanzi.neo.nodetypes;
 
-import org.amanzi.neo.nodetypes.NodeTypeManager.NodeTypeNotExistsException;
 import org.amanzi.neo.nodetypes.internal.TestNodeTypes;
 import org.amanzi.testing.AbstractTest;
 import org.junit.Before;
