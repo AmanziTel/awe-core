@@ -78,6 +78,10 @@ public class AbstractMockitoTest extends AbstractTest {
         return Mockito.atLeastOnce();
     }
 
+    protected VerificationMode atMost(final int maxNumberOfInvocations) {
+        return Mockito.atMost(maxNumberOfInvocations);
+    }
+
     protected <T> T spy(final T object) {
         return Mockito.spy(object);
     }

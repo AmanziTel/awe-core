@@ -26,7 +26,10 @@ import org.junit.runners.Suite.SuiteClasses;
  * @since 1.0.0
  */
 @RunWith(Suite.class)
-@SuiteClasses({LoaderTest.class})
+@SuiteClasses({
+    org.amanzi.neo.loader.core.LoaderTest.class,
+    org.amanzi.neo.loader.core.parser.impl.internal.AbstractParserTest.class
+    })
 public class LoaderCoreTestSuite {
 
 }

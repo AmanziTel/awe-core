@@ -13,14 +13,11 @@
 
 package org.amanzi.neo.loader.core.parser.impl;
 
-import java.io.FileInputStream;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import org.amanzi.neo.loader.core.IMappedStringData;
 import org.amanzi.neo.loader.core.ISingleFileConfiguration;
 import org.amanzi.neo.loader.core.exception.LoaderException;
-import org.amanzi.neo.loader.core.exception.impl.FileNotFoundException;
 import org.amanzi.neo.loader.core.parser.impl.internal.AbstractStreamParser;
 
 import au.com.bytecode.opencsv.CSVReader;
@@ -50,15 +47,6 @@ public class CSVParser extends AbstractStreamParser<ISingleFileConfiguration, IM
 
     protected CSVReader initializeCSVReader(InputStreamReader stream) {
         return new CSVReader(stream);
-    }
-
-    @Override
-    protected InputStream initializeStream(ISingleFileConfiguration configuration) throws LoaderException {
-        try {
-            return new FileInputStream(configuration.getFile());
-        } catch (Exception e) {
-            throw new FileNotFoundException(configuration.getFile());
-        }
     }
 
     protected CSVReader getCSVReader() {

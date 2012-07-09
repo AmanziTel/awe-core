@@ -13,12 +13,14 @@
 
 package org.amanzi.neo.loader.core.parser.impl.internal;
 
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import org.amanzi.neo.loader.core.IData;
+import org.amanzi.neo.loader.core.ISingleFileConfiguration;
 import org.amanzi.neo.loader.core.exception.LoaderException;
-import org.amanzi.neo.loader.core.internal.IConfiguration;
+import org.amanzi.neo.loader.core.exception.impl.FileNotFoundException;
 
 /**
  * TODO Purpose of
@@ -28,7 +30,7 @@ import org.amanzi.neo.loader.core.internal.IConfiguration;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public abstract class AbstractStreamParser<C extends IConfiguration, D extends IData> extends AbstractParser<C, D> {
+public abstract class AbstractStreamParser<C extends ISingleFileConfiguration, D extends IData> extends AbstractParser<C, D> {
 
     private InputStream stream;
 
@@ -52,7 +54,13 @@ public abstract class AbstractStreamParser<C extends IConfiguration, D extends I
         return reader;
     }
 
-    protected abstract InputStream initializeStream(C configuration) throws LoaderException;
+    protected InputStream initializeStream(C configuration) throws LoaderException {
+        try {
+            return new FileInputStream(configuration.getFile());
+        } catch (Exception e) {
+            throw new FileNotFoundException(configuration.getFile());
+        }
+    }
 
     protected InputStreamReader initializeReader(InputStream stream) {
         return new InputStreamReader(stream);
