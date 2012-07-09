@@ -19,7 +19,7 @@
   		<artifactId>tycho-surefire-plugin</artifactId>
   		<version>${tycho-version}</version>
   		<configuration>
-          <testSuite>org.amanzi.neo.loader.core</testSuite>
+          <testSuite>org.amanzi.neo.loader.core.testing</testSuite>
           <testClass>org.amanzi.neo.loader.core.LoaderCoreTestSuite</testClass>
         </configuration>
   	  </plugin>
