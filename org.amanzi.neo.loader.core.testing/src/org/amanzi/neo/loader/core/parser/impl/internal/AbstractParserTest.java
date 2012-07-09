@@ -29,6 +29,8 @@ import org.junit.Test;
  */
 public class AbstractParserTest extends AbstractMockitoTest {
 
+    private static final int NEXT_TIMES = 3;
+
     public static class TestParser extends AbstractParser<IConfiguration, IData> {
 
         @Override
@@ -52,11 +54,11 @@ public class AbstractParserTest extends AbstractMockitoTest {
     }
 
     @Test
-    public void testCheckParsedOneTimeOnMultiNext() {
-        parser.next();
-        parser.next();
-        parser.next();
+    public void testCheckParsedFewTimeOnMultiNext() {
+        for (int i = 0; i < NEXT_TIMES; i++) {
+            parser.next();
+        }
 
-        verify(parser, atMost(1)).parseNextElement();
+        verify(parser, times(NEXT_TIMES)).parseNextElement();
     }
 }

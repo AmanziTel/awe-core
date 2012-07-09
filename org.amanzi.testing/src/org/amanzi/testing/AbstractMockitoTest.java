@@ -102,6 +102,10 @@ public class AbstractMockitoTest extends AbstractTest {
         return Mockito.atLeast(minNumberOfInvocations);
     }
 
+    protected VerificationMode times(int wantedNumberOfInvocations) {
+        return Mockito.times(wantedNumberOfInvocations);
+    }
+
     protected Stubber doNothing() {
         return Mockito.doNothing();
     }
