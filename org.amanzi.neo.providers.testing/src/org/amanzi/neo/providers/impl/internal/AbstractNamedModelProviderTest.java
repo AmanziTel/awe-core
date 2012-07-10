@@ -151,6 +151,7 @@ public class AbstractNamedModelProviderTest extends AbstractMockitoTest {
         verify(provider).findByName(parent, MODEL_NAME);
         verify(provider).createInstance();
         verify(model).initialize(parentNode, MODEL_NAME);
+        verify(provider).postInitialize(model);
     }
 
     @Test(expected = DuplicatedModelException.class)
@@ -186,6 +187,7 @@ public class AbstractNamedModelProviderTest extends AbstractMockitoTest {
         for (Node node : nodes) {
             verify(model).initialize(node);
         }
+        verify(provider, times(nodes.size())).postInitialize(model);
     }
 
     @Test
@@ -200,6 +202,7 @@ public class AbstractNamedModelProviderTest extends AbstractMockitoTest {
         verify(nodeService).getChildByName(parentNode, MODEL_NAME, TestNodeTypes.TEST1);
         verify(provider).createInstance();
         verify(model).initialize(node);
+        verify(provider).postInitialize(model);
     }
 
     @Test

@@ -109,7 +109,13 @@ public abstract class AbstractModelProvider<T extends AbstractModel, T1 extends 
         T model = createInstance();
         model.initialize(node);
 
+        postInitialize(model);
+
         return model;
+    }
+
+    protected void postInitialize(final T model) throws ModelException {
+
     }
 
     protected abstract T createInstance();

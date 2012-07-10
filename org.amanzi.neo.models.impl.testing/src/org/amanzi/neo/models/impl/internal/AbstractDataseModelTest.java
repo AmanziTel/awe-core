@@ -13,9 +13,12 @@
 
 package org.amanzi.neo.models.impl.internal;
 
+import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.IIndexModel;
+import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
+import org.amanzi.neo.nodetypes.INodeType;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.testing.AbstractMockitoTest;
 import org.junit.Before;
@@ -39,6 +42,18 @@ public class AbstractDataseModelTest extends AbstractMockitoTest {
          */
         public TestDatasetModel(final INodeService nodeService, final IGeneralNodeProperties generalNodeProperties) {
             super(nodeService, generalNodeProperties);
+        }
+
+        @Override
+        protected INodeType getModelType() {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
+        @Override
+        public IDataElement getParentElement(final IDataElement childElement) throws ModelException {
+            // TODO Auto-generated method stub
+            return null;
         }
 
     }

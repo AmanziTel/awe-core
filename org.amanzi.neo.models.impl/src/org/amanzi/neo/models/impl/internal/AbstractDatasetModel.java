@@ -15,6 +15,7 @@ package org.amanzi.neo.models.impl.internal;
 
 import org.amanzi.neo.models.IIndexModel;
 import org.amanzi.neo.models.exceptions.ModelException;
+import org.amanzi.neo.models.statistics.IPropertyStatisticalModel;
 import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.services.INodeService;
@@ -27,7 +28,7 @@ import org.amanzi.neo.services.INodeService;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public abstract class AbstractDatasetModel extends AbstractDataModel {
+public abstract class AbstractDatasetModel extends AbstractNamedModel implements IPropertyStatisticalModel {
 
     private IIndexModel indexModel;
 

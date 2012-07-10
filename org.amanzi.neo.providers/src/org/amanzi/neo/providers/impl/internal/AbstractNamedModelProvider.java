@@ -76,6 +76,8 @@ public abstract class AbstractNamedModelProvider<M extends IModel, P extends IMo
                     C model = createInstance();
                     model.initialize(modelNodes.next());
 
+                    postInitialize(model);
+
                     result.add((M)model);
                 }
             } catch (ServiceException e) {
@@ -117,6 +119,8 @@ public abstract class AbstractNamedModelProvider<M extends IModel, P extends IMo
                     result = createInstance();
                     result.initialize(modelNode);
 
+                    postInitialize(result);
+
                     addToCache(result, key);
                 }
             } catch (ServiceException e) {
@@ -154,6 +158,8 @@ public abstract class AbstractNamedModelProvider<M extends IModel, P extends IMo
 
             C resultModel = createInstance();
             resultModel.initialize(parentModel.getRootNode(), name);
+
+            postInitialize(resultModel);
 
             result = (M)resultModel;
         }

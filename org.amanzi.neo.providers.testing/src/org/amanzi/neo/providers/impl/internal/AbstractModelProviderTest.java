@@ -38,7 +38,7 @@ import org.neo4j.graphdb.Node;
  */
 public class AbstractModelProviderTest extends AbstractMockitoTest {
 
-    private static class TestModelProvider extends AbstractModelProvider<AbstractModel, IModel> {
+    public static class TestModelProvider extends AbstractModelProvider<AbstractModel, IModel> {
 
         private final AbstractModel instance;
 
@@ -55,6 +55,12 @@ public class AbstractModelProviderTest extends AbstractMockitoTest {
         protected Class< ? extends IModel> getModelClass() {
             // TODO Auto-generated method stub
             return null;
+        }
+
+        @Override
+        protected void postInitialize(final AbstractModel model) {
+            // TODO Auto-generated method stub
+
         }
     }
 
@@ -78,14 +84,17 @@ public class AbstractModelProviderTest extends AbstractMockitoTest {
 
         model = mock(AbstractModel.class);
 
-        provider = new TestModelProvider(model);
+        provider = spy(new TestModelProvider(model));
     }
 
     @Test
     public void testCheckActivityOnCreateFromNode() throws Exception {
+        doNothing().when(provider).postInitialize(model);
+
         provider.initializeFromNode(node);
 
         verify(model).initialize(eq(node));
+        verify(provider).postInitialize(model);
     }
 
     @Test(expected = DataInconsistencyException.class)

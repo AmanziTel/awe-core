@@ -31,6 +31,7 @@ import org.junit.runners.Suite.SuiteClasses;
         org.amanzi.neo.providers.impl.ProjectModelProviderIntegrationTest.class,
         org.amanzi.neo.providers.impl.ProjectModelProviderTest.class,
         org.amanzi.neo.providers.impl.PropertyStatisticsModelProviderTest.class,
+        org.amanzi.neo.providers.impl.internal.AbstractDatasetModelProviderTest.class,
         org.amanzi.neo.providers.impl.internal.AbstractNamedModelProviderTest.class,
         org.amanzi.neo.providers.impl.internal.AbstractModelProviderTest.class})
 public class ProvidersTestSuite {
