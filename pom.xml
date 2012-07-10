@@ -57,9 +57,8 @@
 	<activeByDefault>true</activeByDefault>
       </activation>
       <modules>
-		<module>org.amanzi.awe</module>
-		<module>org.amanzi.awe.extras.feature</module>
-		<module>org.amanzi.awe.feature</module>
+	<module>org.amanzi.awe</module>
+	<module>org.amanzi.awe.feature</module>
         <module>org.amanzi.awe.filters</module>
         <module>org.amanzi.awe.libs</module>
         <module>org.amanzi.awe.project</module>
