@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.amanzi.neo.db.manager.DatabaseManagerFactory;
+import org.amanzi.neo.models.IModel;
 import org.amanzi.neo.nodeproperties.INodeProperties;
 import org.amanzi.neo.providers.ContextException;
 import org.amanzi.neo.providers.IProjectModelProvider;
@@ -67,6 +68,9 @@ public class ProviderContextImplTest extends AbstractMockitoTest {
     private static final String[] TEST_IDS = new String[] {"other id 1", "other id 2"};
 
     private static final String[] SERVICE_PARAMETERS = new String[] {"serviceReference", "nodePropertiesReference"};
+
+    private static final String[] PROVIDER_PARAMETERS = new String[] {"serviceReference", "nodePropertiesReference",
+            "providerReference"};
 
     private static final String[] UNKNOWN_SERVICE_PARAMTERS = new String[] {"unkonwn"};
 
@@ -301,7 +305,7 @@ public class ProviderContextImplTest extends AbstractMockitoTest {
     @SuppressWarnings("unchecked")
     @Test
     public void testCheckActivityOnCreateProvider() throws Exception {
-        IConfigurationElement[] subElements = getParameterConfigurationElements(SERVICE_PARAMETERS);
+        IConfigurationElement[] subElements = getParameterConfigurationElements(PROVIDER_PARAMETERS);
         IConfigurationElement[] parameters = getParameterBlockConfigurationElements(subElements);
         IConfigurationElement[] elements = getConfigurationElementsForService(TEST_PROVIDER_ID, parameters);
 
@@ -309,6 +313,8 @@ public class ProviderContextImplTest extends AbstractMockitoTest {
 
         when(registry.getConfigurationElementsFor(PROVIDER_EXTENSION_POINT)).thenReturn(elements);
 
+        IModelProvider<IModel> modelProvider = mock(IModelProvider.class);
+        doReturn(modelProvider).when(context).get(SOME_ID);
         doReturn(service).when(context).getService(SOME_ID);
         doReturn(properties).when(context).getNodeProperties(SOME_ID);
         doReturn(provider).when(context).createInstance(any(Class.class), any(Map.class));
@@ -354,7 +360,7 @@ public class ProviderContextImplTest extends AbstractMockitoTest {
     }
 
     private IConfigurationElement[] getParameterConfigurationElements(final String[] names) {
-        IConfigurationElement[] subResult = new IConfigurationElement[SERVICE_PARAMETERS.length];
+        IConfigurationElement[] subResult = new IConfigurationElement[names.length];
 
         int i = 0;
         for (String reference : names) {

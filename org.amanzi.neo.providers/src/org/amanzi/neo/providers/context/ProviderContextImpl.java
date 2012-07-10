@@ -60,6 +60,8 @@ public class ProviderContextImpl implements IProviderContext {
 
     private static final String NODE_PROPERTIES_REFERENCE = "nodePropertiesReference";
 
+    private static final String PROVIDER_REFERENCES = "providerReference";
+
     private static final String REFERENCE_ATTRIBUTE = "refId";
 
     private final Map<String, IModelProvider< ? >> providersCache = new HashMap<String, IModelProvider< ? >>();
@@ -247,6 +249,8 @@ public class ProviderContextImpl implements IProviderContext {
                     parameterInstance = getService(reference);
                 } else if (name.equals(NODE_PROPERTIES_REFERENCE)) {
                     parameterInstance = getNodeProperties(reference);
+                } else if (name.equals(PROVIDER_REFERENCES)) {
+                    parameterInstance = get(reference);
                 } else {
                     throw new ContextException("Unknown parameter <" + name + ">");
                 }
