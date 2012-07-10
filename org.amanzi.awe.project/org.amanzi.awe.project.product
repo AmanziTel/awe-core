@@ -43,24 +43,17 @@ For more information and support visit http://www.amanzitel.com/page/AWE
       </win>
    </launcher>
 
-   <configurations>
-      <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="0" />
-   </configurations>
-
-   <vm>
-      <linux include="true">jre1.6.0_11_gdal</linux>
-      <windows include="true">jre6</windows>
-   </vm>
-
    <plugins>
    </plugins>
 
    <features>
-      <feature id="org.amanzi.awe.extras.feature" version="1.0.0.qualifier"/>
-      <feature id="org.amanzi.awe.feature" version="1.0.0.qualifier"/>
-      <feature id="org.neo4j.neoclipse.feature" version="1.4.1"/>
-      <feature id="net.refractions.udig" version="1.2.2.201107241506"/>
+      <feature id="org.amanzi.awe.feature"/>
       <feature id="org.eclipse.rcp" version="3.7.0.v20110216-9DB5Fm1FpBGy_AaVz-mFamgY"/>
+      <feature id="net.refractions.udig_printing-feature" version="1.3.0.201201051557"/>
    </features>
+
+   <configurations>
+      <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="0" />
+   </configurations>
 
 </product>

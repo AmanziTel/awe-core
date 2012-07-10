@@ -51,6 +51,31 @@
         <module>org.neo4j</module>
       </modules>
     </profile>
+    <profile>
+      <id>release</id>
+      <activation>
+	<activeByDefault>true</activeByDefault>
+      </activation>
+      <modules>
+		<module>org.amanzi.awe</module>
+		<module>org.amanzi.awe.extras.feature</module>
+		<module>org.amanzi.awe.feature</module>
+        <module>org.amanzi.awe.filters</module>
+        <module>org.amanzi.awe.libs</module>
+        <module>org.amanzi.awe.project</module>
+        <module>org.amanzi.awe.ui</module>
+        <module>org.amanzi.awe.ui.udig</module>
+        <module>org.amanzi.log4j</module>
+        <module>org.amanzi.neo.db</module>
+        <module>org.amanzi.neo.core</module>
+        <module>org.amanzi.neo.loader.core</module>
+        <module>org.amanzi.neo.models</module>
+        <module>org.amanzi.neo.models.impl</module>
+        <module>org.amanzi.neo.providers</module>
+        <module>org.amanzi.neo.services</module>
+        <module>org.neo4j</module>
+      </modules>
+    </profile>
   </profiles>
   <build>
     <plugins>
@@ -79,8 +104,52 @@
               <goal>report</goal>
             </goals>
           </execution>
-         </executions>
-       </plugin>
+        </executions>
+      </plugin>
+      <plugin>
+		<groupId>org.eclipse.tycho</groupId>
+		<artifactId>target-platform-configuration</artifactId>
+		<version>${tycho-version}</version>
+		<configuration>		  
+		  <environments>
+		    <environment>
+			  <os>linux</os>
+			  <ws>gtk</ws>
+			  <arch>x86_64</arch>
+		    </environment>
+			<environment>
+			  <os>linux</os>
+			  <ws>gtk</ws>
+			  <arch>x86</arch>
+		    </environment>
+			<environment>
+			  <os>macosx</os>
+			  <ws>carbon</ws>
+			  <arch>x86</arch>
+			</environment>
+			<environment>
+			  <os>macosx</os>
+              <ws>cocoa</ws>
+			  <arch>x86</arch>
+			</environment>
+			<environment>
+			  <os>macosx</os>
+			  <ws>cocoa</ws>
+			  <arch>x86_64</arch>
+			</environment>
+			<environment>
+			  <os>win32</os>
+			  <ws>win32</ws>
+			  <arch>x86</arch>
+			</environment>
+			<environment>
+			  <os>win32</os>
+			  <ws>win32</ws>
+			  <arch>x86_64</arch>
+			</environment>
+		  </environments>
+		</configuration>
+	   </plugin>
      </plugins>
   </build>
 </project>
