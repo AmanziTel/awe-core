@@ -4,7 +4,8 @@ Bundle-Name: Ui
 Bundle-SymbolicName: org.amanzi.awe.ui;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: org.amanzi.awe.ui.Activator
-Require-Bundle: org.amanzi.neo.providers;bundle-version="1.0.0"
+Require-Bundle: org.amanzi.neo.providers;bundle-version="1.0.0",
+ org.amanzi.awe.libs;bundle-version="1.0.0"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: org.amanzi.awe.ui.events,
