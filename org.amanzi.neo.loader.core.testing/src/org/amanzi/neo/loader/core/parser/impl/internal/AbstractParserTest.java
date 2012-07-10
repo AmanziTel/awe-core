@@ -57,7 +57,7 @@ public class AbstractParserTest extends AbstractMockitoTest {
         }
 
         @Override
-        public IData answer(final InvocationOnMock invocation) throws Exception {
+        public IData answer(final InvocationOnMock invocation) {
             if (++parsedTimes < NEXT_TIMES) {
                 return data;
             }

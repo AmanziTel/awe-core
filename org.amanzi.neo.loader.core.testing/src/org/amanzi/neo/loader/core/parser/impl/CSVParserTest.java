@@ -15,6 +15,7 @@ package org.amanzi.neo.loader.core.parser.impl;
 
 import java.io.EOFException;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStreamReader;
 
 import org.amanzi.neo.loader.core.IMappedStringData;
@@ -57,7 +58,7 @@ public class CSVParserTest extends AbstractMockitoTest {
      */
     private final class CSV_READER_ANSWER implements Answer<String[]> {
         @Override
-        public String[] answer(final InvocationOnMock invocation) throws Exception {
+        public String[] answer(final InvocationOnMock invocation) throws IOException {
             if (dataIndex < CSV_DATA.length) {
                 return CSV_DATA[dataIndex++];
             } else {
