@@ -80,6 +80,7 @@
          <choice minOccurs="0" maxOccurs="unbounded">
             <element ref="serviceReference"/>
             <element ref="nodePropertiesReference"/>
+            <element ref="providerReference"/>
          </choice>
       </complexType>
    </element>
@@ -108,6 +109,21 @@
                </documentation>
                <appinfo>
                   <meta.attribute kind="identifier" basedOn="org.amanzi.nodeproperties/nodeProperties/@id"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="providerReference">
+      <complexType>
+         <attribute name="refId" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appinfo>
+                  <meta.attribute kind="identifier" basedOn="org.amanzi.providers/provider/@id"/>
                </appinfo>
             </annotation>
          </attribute>

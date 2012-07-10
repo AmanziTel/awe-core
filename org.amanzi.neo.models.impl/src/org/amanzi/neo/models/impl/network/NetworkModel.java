@@ -15,7 +15,7 @@ package org.amanzi.neo.models.impl.network;
 
 import org.amanzi.neo.dto.IDataElement;
 import org.amanzi.neo.models.exceptions.ModelException;
-import org.amanzi.neo.models.impl.internal.AbstractNamedModel;
+import org.amanzi.neo.models.impl.internal.AbstractDatasetModel;
 import org.amanzi.neo.models.network.INetworkModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
@@ -29,7 +29,7 @@ import org.amanzi.neo.services.INodeService;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public class NetworkModel extends AbstractNamedModel implements INetworkModel {
+public class NetworkModel extends AbstractDatasetModel implements INetworkModel {
 
     /**
      * @param nodeService
