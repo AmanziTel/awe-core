@@ -7,11 +7,11 @@
    <extension-point id="org.amanzi.parsers" name="Parsers" schema="schema/org.amanzi.parsers.exsd"/>
    <extension-point id="org.amanzi.loaderSynonyms" name="Synonyms for Parsing" schema="schema/org.amanzi.loaderSynonyms.exsd"/>
    <extension
-         point="org.amanzi.loaderSynonyms">
-      <synonyms
-            id="org.amanzi.synonyms.network"
-            synonymsFile="synonyms/network.synonyms">
-      </synonyms>
+         point="org.amanzi.parsers">
+      <parser
+            class="org.amanzi.neo.loader.core.parser.impl.CSVParser"
+            id="org.amanzi.parser.CSVParser">
+      </parser>
    </extension>
 
 </plugin>
