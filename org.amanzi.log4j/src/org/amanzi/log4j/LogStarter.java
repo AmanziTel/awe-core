@@ -35,15 +35,13 @@ public class LogStarter implements IStartup {
     // The plug-in ID
     public static final String PLUGIN_ID = "org.amanzi.log4j";
 
-    private void initializeLogger(Bundle log4jBundle) throws IOException {
-        //using different Log4j configs for different modes
-        if (Platform.inDevelopmentMode()) {        
+    private void initializeLogger(final Bundle log4jBundle) throws IOException {
+        // using different Log4j configs for different modes
+        if (Platform.inDevelopmentMode()) {
             DOMConfigurator.configure(FileLocator.toFileURL(log4jBundle.getEntry("/log4j-development.xml")));
-        }
-        else if (Platform.inDebugMode()) {
+        } else if (Platform.inDebugMode()) {
             DOMConfigurator.configure(FileLocator.toFileURL(log4jBundle.getEntry("/log4j-debug.xml")));
-        }
-        else {
+        } else {
             DOMConfigurator.configure(FileLocator.toFileURL(log4jBundle.getEntry("/log4j-production.xml")));
         }
     }
@@ -51,16 +49,14 @@ public class LogStarter implements IStartup {
     @Override
     public void earlyStartup() {
         Bundle log4jBundle = Platform.getBundle(PLUGIN_ID);
-        
+
         try {
             initializeLogger(log4jBundle);
+        } catch (IOException e) {
+            // do nothing, Log4j will return error info
         }
-        catch (IOException e) {
-            System.err.println("Log4j was not initialized");
-        }
-        
+
         Logger.getLogger(this.getClass()).info("Log4j was successfully initialized");
     }
 
 }
-

@@ -19,7 +19,6 @@ import java.io.InputStreamReader;
 
 import org.amanzi.neo.loader.core.IData;
 import org.amanzi.neo.loader.core.ISingleFileConfiguration;
-import org.amanzi.neo.loader.core.exception.LoaderException;
 import org.amanzi.neo.loader.core.exception.impl.FileNotFoundException;
 import org.apache.commons.io.IOUtils;
 
@@ -37,14 +36,14 @@ public abstract class AbstractStreamParser<C extends ISingleFileConfiguration, D
 
     private InputStreamReader reader;
 
-    protected InputStream getStream() throws LoaderException {
+    protected InputStream getStream() {
         if (stream == null) {
             stream = initializeStream(getConfiguration());
         }
         return stream;
     }
 
-    protected InputStreamReader getReader() throws LoaderException {
+    protected InputStreamReader getReader() {
         if (reader == null) {
             reader = initializeReader(getStream());
         }
@@ -52,15 +51,15 @@ public abstract class AbstractStreamParser<C extends ISingleFileConfiguration, D
         return reader;
     }
 
-    protected InputStream initializeStream(C configuration) throws LoaderException {
+    protected InputStream initializeStream(final C configuration) {
         try {
             return new FileInputStream(configuration.getFile());
         } catch (java.io.FileNotFoundException e) {
-            throw new FileNotFoundException(configuration.getFile());
+            throw new FileNotFoundException(configuration.getFile(), e);
         }
     }
 
-    protected InputStreamReader initializeReader(InputStream stream) {
+    protected InputStreamReader initializeReader(final InputStream stream) {
         return new InputStreamReader(stream);
     }
 

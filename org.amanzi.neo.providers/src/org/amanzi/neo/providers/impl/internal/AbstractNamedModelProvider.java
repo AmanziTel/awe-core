@@ -44,7 +44,7 @@ public abstract class AbstractNamedModelProvider<M extends IModel, P extends IMo
         extends
             AbstractModelProvider<C, M> implements INamedModelProvider<M, P> {
 
-    private final static Logger LOGGER = Logger.getLogger(AbstractNamedModelProvider.class);
+    private static final Logger LOGGER = Logger.getLogger(AbstractNamedModelProvider.class);
 
     private final INodeService nodeService;
 
@@ -107,22 +107,20 @@ public abstract class AbstractNamedModelProvider<M extends IModel, P extends IMo
 
         C result = getFromCache(key);
 
-        if (result == null) {
-            if (parent instanceof AbstractModel) {
-                AbstractModel parentModel = (AbstractModel)parent;
+        if ((result == null) && (parent instanceof AbstractModel)) {
+            AbstractModel parentModel = (AbstractModel)parent;
 
-                try {
-                    Node modelNode = nodeService.getChildByName(parentModel.getRootNode(), name, getModelType());
+            try {
+                Node modelNode = nodeService.getChildByName(parentModel.getRootNode(), name, getModelType());
 
-                    if (modelNode != null) {
-                        result = createInstance();
-                        result.initialize(modelNode);
+                if (modelNode != null) {
+                    result = createInstance();
+                    result.initialize(modelNode);
 
-                        addToCache(result, key);
-                    }
-                } catch (ServiceException e) {
-                    processException("Error on searching for a model <" + getModelType() + "> by name <" + name + ">", e);
+                    addToCache(result, key);
                 }
+            } catch (ServiceException e) {
+                processException("Error on searching for a model <" + getModelType() + "> by name <" + name + ">", e);
             }
         }
 

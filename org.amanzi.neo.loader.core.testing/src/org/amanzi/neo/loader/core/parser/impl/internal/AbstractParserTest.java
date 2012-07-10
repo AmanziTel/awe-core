@@ -52,12 +52,12 @@ public class AbstractParserTest extends AbstractMockitoTest {
         /**
          * @param data
          */
-        private TestParserIterator(IData data) {
+        private TestParserIterator(final IData data) {
             this.data = data;
         }
 
         @Override
-        public IData answer(InvocationOnMock invocation) throws Throwable {
+        public IData answer(final InvocationOnMock invocation) throws Exception {
             if (++parsedTimes < NEXT_TIMES) {
                 return data;
             }

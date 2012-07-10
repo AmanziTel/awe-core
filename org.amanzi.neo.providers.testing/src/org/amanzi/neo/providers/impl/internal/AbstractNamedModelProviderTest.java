@@ -222,9 +222,9 @@ public class AbstractNamedModelProviderTest extends AbstractMockitoTest {
 
         when(nodeService.getChildByName(parentNode, MODEL_NAME, TestNodeTypes.TEST1)).thenReturn(node);
 
-        IModel model = provider.findByName(parent, MODEL_NAME);
+        IModel result = provider.findByName(parent, MODEL_NAME);
 
-        assertNotNull("Result cannot be null", model);
+        assertNotNull("Result cannot be null", result);
     }
 
     @Test

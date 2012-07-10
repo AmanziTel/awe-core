@@ -57,7 +57,7 @@ public class CSVParserTest extends AbstractMockitoTest {
      */
     private final class CSV_READER_ANSWER implements Answer<String[]> {
         @Override
-        public String[] answer(InvocationOnMock invocation) throws Throwable {
+        public String[] answer(final InvocationOnMock invocation) throws Exception {
             if (dataIndex < CSV_DATA.length) {
                 return CSV_DATA[dataIndex++];
             } else {
@@ -70,15 +70,13 @@ public class CSVParserTest extends AbstractMockitoTest {
 
     private ISingleFileConfiguration configuration;
 
-    private File file;
-
     private int dataIndex;
 
     private CSVReader reader;
 
     @Before
     public void setUp() throws Exception {
-        file = File.createTempFile("cp1", "file");
+        File file = File.createTempFile("cp1", "file");
 
         configuration = mock(ISingleFileConfiguration.class);
         when(configuration.getFile()).thenReturn(file);

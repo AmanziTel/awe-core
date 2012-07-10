@@ -35,8 +35,8 @@ public class FileNotFoundException extends LoaderException {
     /**
      * 
      */
-    public FileNotFoundException(File file) {
-        super();
+    public FileNotFoundException(final File file, final Exception e) {
+        super(e);
         this.file = file;
     }
 

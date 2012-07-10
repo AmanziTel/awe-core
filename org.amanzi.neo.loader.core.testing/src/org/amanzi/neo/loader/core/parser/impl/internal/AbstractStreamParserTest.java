@@ -43,6 +43,8 @@ public class AbstractStreamParserTest extends AbstractMockitoTest {
 
     }
 
+    private static final String TEST_FILE = System.getProperty("user.home") + File.separator + "test";
+
     private ISingleFileConfiguration configuration;
 
     private TestStreamParser parser;
@@ -144,7 +146,7 @@ public class AbstractStreamParserTest extends AbstractMockitoTest {
 
     @Test(expected = FileNotFoundException.class)
     public void testCheckStreamInitializationException() throws Exception {
-        file = new File("/home/user/file");
+        file = new File(TEST_FILE);
         when(configuration.getFile()).thenReturn(file);
 
         parser.initializeStream(configuration);
