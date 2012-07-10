@@ -13,27 +13,14 @@
 
 package org.amanzi.neo.models;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
-
 /**
- * TODO Purpose of
+ * TODO Purpose of 
  * <p>
+ *
  * </p>
- * 
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-@RunWith(Suite.class)
-@SuiteClasses({
-    org.amanzi.neo.models.impl.internal.AbstractDataModelTest.class,
-    org.amanzi.neo.models.impl.internal.AbstractDataseModelTest.class,
-    org.amanzi.neo.models.impl.internal.AbstractModelTest.class,    
-    org.amanzi.neo.models.impl.internal.AbstractNamedModelTest.class,
-    org.amanzi.neo.models.impl.project.ProjectModelTest.class,
-    org.amanzi.neo.models.impl.statistics.PropertyStatisticsModelTest.class
-    })
-public class ModelsTestSuite {
+public interface IIndexModel extends IModel {
 
 }
