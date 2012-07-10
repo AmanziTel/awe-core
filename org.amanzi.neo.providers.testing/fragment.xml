@@ -103,6 +103,24 @@
             </serviceReference>
          </parameters>
       </provider>
+      <provider
+            class="org.amanzi.neo.providers.context.internal.CycleDependencyProvider1"
+            id="cycledependencyprovider1">
+         <parameters>
+            <providerReference
+                  refId="cycledependencyprovider2">
+            </providerReference>
+         </parameters>
+      </provider>
+      <provider
+            class="org.amanzi.neo.providers.context.internal.CycleDependencyProvider2"
+            id="cycledependencyprovider2">
+         <parameters>
+            <providerReference
+                  refId="cycledependencyprovider1">
+            </providerReference>
+         </parameters>
+      </provider>
    </extension>
 
 </fragment>

@@ -74,6 +74,8 @@ public class ProviderContextImpl implements IProviderContext {
 
     private List<String> serviceStack;
 
+    private List<String> providerStack;
+
     public ProviderContextImpl() {
         registry = Platform.getExtensionRegistry();
     }
@@ -125,6 +127,16 @@ public class ProviderContextImpl implements IProviderContext {
     protected IModelProvider< ? > createModelProvider(final String id) throws ContextException {
         assert !StringUtils.isEmpty(id);
 
+        if (providerStack == null) {
+            providerStack = new ArrayList<String>();
+        }
+        if (providerStack.contains(id)) {
+            String message = "A cycle was detected <" + providerStack + ">";
+            providerStack = null;
+            throw new ContextException(message);
+        }
+        providerStack.add(id);
+
         IConfigurationElement element = findConfigurationElement(PROVIDERS_EXTENSION_POINT, id);
 
         if (element == null) {
@@ -135,6 +147,10 @@ public class ProviderContextImpl implements IProviderContext {
             return (IModelProvider< ? >)createInstance(element, false);
         } catch (Exception e) {
             throw new ContextException(e);
+        } finally {
+            if (providerStack != null) {
+                providerStack.remove(id);
+            }
         }
     }
 

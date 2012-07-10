@@ -48,6 +48,8 @@ public class ProviderContextImplIntegrationTest extends AbstractIntegrationTest 
 
     private static final String CYCLE_DEPENDENCY_SERVICE_ID = "org.amanzi.service.CycleDependencyService2";
 
+    private static final String CYCLE_DEPENDENCY_PROVIDER_ID = "cycledependencyprovider2";
+
     private static final String MULTI_CONSTRUCTOR_SERVICE_ID = "org.amanzi.service.MultiConstructorService";
 
     private static final String INCORRECT_PARAMETERS_SERVICE_ID = "org.amanzi.service.IncorrectParametersService";
@@ -96,6 +98,11 @@ public class ProviderContextImplIntegrationTest extends AbstractIntegrationTest 
     @Test(expected = ContextException.class)
     public void testCheckCycleDependencyOnServiceCreation() throws Exception {
         context.createService(CYCLE_DEPENDENCY_SERVICE_ID);
+    }
+
+    @Test(expected = ContextException.class)
+    public void testCheckCycleDependencyOnProviderCreation() throws Exception {
+        context.createService(CYCLE_DEPENDENCY_PROVIDER_ID);
     }
 
     @Test
