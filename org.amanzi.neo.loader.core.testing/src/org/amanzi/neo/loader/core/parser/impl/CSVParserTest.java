@@ -17,6 +17,7 @@ import java.io.EOFException;
 import java.io.File;
 import java.io.InputStreamReader;
 
+import org.amanzi.neo.loader.core.IMappedStringData;
 import org.amanzi.neo.loader.core.ISingleFileConfiguration;
 import org.amanzi.testing.AbstractMockitoTest;
 import org.junit.Before;
@@ -42,7 +43,9 @@ public class CSVParserTest extends AbstractMockitoTest {
 
     private static final String[] VALUES_2 = {"value4", "value5", "value6"};
 
-    private static final String[][] CSV_DATA = {HEADERS, VALUES, VALUES_2};
+    private static final String[] VALUES_3 = {"value7", "value8"};
+
+    private static final String[][] CSV_DATA = {HEADERS, VALUES, VALUES_2, VALUES_3};
 
     /**
      * TODO Purpose of
@@ -119,5 +122,32 @@ public class CSVParserTest extends AbstractMockitoTest {
         }
 
         assertEquals("Unexpected size of parsed elements", CSV_DATA.length - 1, count);
+    }
+
+    @Test
+    public void testCheckResultOfParsing() throws Exception {
+        doReturn(reader).when(parser).initializeCSVReader(any(InputStreamReader.class));
+        parser.init(configuration);
+
+        int count = 0;
+        while (parser.hasNext()) {
+            IMappedStringData data = parser.next();
+
+            for (int i = 0; i < HEADERS.length; i++) {
+                String header = HEADERS[i];
+                assertTrue("data should contain header", data.containsKey(header));
+
+                String[] values = CSV_DATA[count + 1];
+                String value = null;
+                if (i < values.length) {
+                    value = values[i];
+                }
+
+                assertEquals("Unexpected value of header", value, data.remove(header));
+            }
+            assertTrue("it should be handled all data", data.isEmpty());
+
+            count++;
+        }
     }
 }
