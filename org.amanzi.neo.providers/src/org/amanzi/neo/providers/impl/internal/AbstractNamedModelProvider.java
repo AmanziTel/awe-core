@@ -25,7 +25,7 @@ import org.amanzi.neo.models.impl.internal.AbstractModel;
 import org.amanzi.neo.models.impl.internal.AbstractNamedModel;
 import org.amanzi.neo.nodeproperties.IGeneralNodeProperties;
 import org.amanzi.neo.nodetypes.INodeType;
-import org.amanzi.neo.providers.INamedModelProvider;
+import org.amanzi.neo.providers.internal.INamedModelProvider;
 import org.amanzi.neo.services.INodeService;
 import org.amanzi.neo.services.exceptions.ServiceException;
 import org.apache.commons.lang3.StringUtils;

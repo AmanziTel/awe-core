@@ -15,7 +15,6 @@ package org.amanzi.neo.providers.internal;
 
 import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
 import org.amanzi.neo.providers.ContextException;
-import org.amanzi.neo.providers.IModelProvider;
 import org.amanzi.neo.providers.IProjectModelProvider;
 import org.amanzi.neo.providers.IProviderContext;
 import org.amanzi.neo.providers.context.ProviderContextImpl;

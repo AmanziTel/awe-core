@@ -13,6 +13,8 @@
 
 package org.amanzi.neo.providers;
 
+import org.amanzi.neo.providers.internal.IModelProvider;
+
 /**
  * TODO Purpose of
  * <p>

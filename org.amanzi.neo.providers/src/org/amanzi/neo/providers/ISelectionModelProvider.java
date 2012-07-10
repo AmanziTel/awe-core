@@ -15,6 +15,7 @@ package org.amanzi.neo.providers;
 
 import org.amanzi.neo.models.network.INetworkModel;
 import org.amanzi.neo.models.network.ISelectionModel;
+import org.amanzi.neo.providers.internal.INamedModelProvider;
 
 /**
  * TODO Purpose of

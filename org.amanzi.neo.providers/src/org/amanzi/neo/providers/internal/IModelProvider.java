@@ -11,12 +11,9 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.neo.providers;
-
-import java.util.List;
+package org.amanzi.neo.providers.internal;
 
 import org.amanzi.neo.models.IModel;
-import org.amanzi.neo.models.exceptions.ModelException;
 
 /**
  * TODO Purpose of
@@ -26,9 +23,6 @@ import org.amanzi.neo.models.exceptions.ModelException;
  * @author Nikolay Lagutko (nikolay.lagutko@amanzitel.com)
  * @since 1.0.0
  */
-public interface INamedModelProvider<M extends IModel, P extends IModel> extends IModelProvider<M> {
+public interface IModelProvider<Model extends IModel> {
 
-    List<M> findAll(P parent) throws ModelException;
-
-    M findByName(P parent, String name) throws ModelException;
 }

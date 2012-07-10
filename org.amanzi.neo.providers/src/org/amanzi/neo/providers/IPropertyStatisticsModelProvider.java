@@ -16,6 +16,7 @@ package org.amanzi.neo.providers;
 import org.amanzi.neo.models.exceptions.ModelException;
 import org.amanzi.neo.models.statistics.IPropertyStatisticalModel;
 import org.amanzi.neo.models.statistics.IPropertyStatisticsModel;
+import org.amanzi.neo.providers.internal.IModelProvider;
 
 /**
  * TODO Purpose of
