@@ -68,7 +68,7 @@ public class AbstractParserTest extends AbstractMockitoTest {
     public static class TestParser extends AbstractParser<IConfiguration, IData> {
 
         @Override
-        protected IData parseNextElement() {
+        protected IData parseNextElement() throws IOException {
             return null;
         }
 
@@ -93,7 +93,7 @@ public class AbstractParserTest extends AbstractMockitoTest {
     }
 
     @Test
-    public void testCheckParsedFewTimeOnMultiNext() {
+    public void testCheckParsedFewTimeOnMultiNext() throws Exception {
         for (int i = 0; i < NEXT_TIMES; i++) {
             parser.next();
         }
@@ -102,7 +102,7 @@ public class AbstractParserTest extends AbstractMockitoTest {
     }
 
     @Test
-    public void testCheckOneTimeParsingOnHasNext() {
+    public void testCheckOneTimeParsingOnHasNext() throws Exception {
         for (int i = 0; i < NEXT_TIMES; i++) {
             parser.hasNext();
         }
@@ -136,7 +136,7 @@ public class AbstractParserTest extends AbstractMockitoTest {
     }
 
     @Test(expected = GeneralParsingException.class)
-    public void testCheckGeneralParsingException() {
+    public void testCheckGeneralParsingException() throws Exception {
         doThrow(new IOException()).when(parser).parseNextElement();
 
         parser.parseToNextElement();

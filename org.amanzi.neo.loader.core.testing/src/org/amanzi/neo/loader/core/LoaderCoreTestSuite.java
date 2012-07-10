@@ -30,7 +30,8 @@ import org.junit.runners.Suite.SuiteClasses;
     org.amanzi.neo.loader.core.LoaderTest.class,
     org.amanzi.neo.loader.core.parser.impl.CSVParserTest.class,
     org.amanzi.neo.loader.core.parser.impl.internal.AbstractParserTest.class,
-    org.amanzi.neo.loader.core.parser.impl.internal.AbstractStreamParserTest.class
+    org.amanzi.neo.loader.core.parser.impl.internal.AbstractStreamParserTest.class,
+    org.amanzi.neo.loader.core.saver.impl.internal.AbstractSaverTest.class
     })
 public class LoaderCoreTestSuite {
 

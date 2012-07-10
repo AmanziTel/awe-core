@@ -25,9 +25,15 @@ import org.amanzi.neo.loader.core.internal.IConfiguration;
  */
 public abstract class AbstractConfiguration implements IConfiguration {
 
+    private String datasetName;
+
+    public void setDatasetName(String datasetName) {
+        this.datasetName = datasetName;
+    }
+
     @Override
     public String getDatasetName() {
-        return null;
+        return datasetName;
     }
 
 }
