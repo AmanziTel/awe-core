@@ -16,17 +16,18 @@ package org.amanzi.awe.statistics.model;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.times;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import junit.framework.Assert;
 
-import org.amanzi.awe.statistics.enumeration.Period;
+import org.amanzi.awe.statistics.enumeration.DimensionTypes;
 import org.amanzi.awe.statistics.enumeration.StatisticsNodeTypes;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.exceptions.DatabaseException;
@@ -36,6 +37,7 @@ import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.DriveModel;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
+import org.junit.Before;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
 
@@ -47,71 +49,103 @@ import org.neo4j.graphdb.Node;
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class PeriodStatisticsModelTests extends AbstractStatisticsModelTests {
-    private static final Logger LOGGER = Logger.getLogger(PeriodStatisticsModel.class);
+public class AggregatedStatisticsTests extends AbstractStatisticsModelTests {
+    private static final Logger LOGGER = Logger.getLogger(AggregatedStatisticsTests.class);
     private static final String SCELL_NAME = "scell";
+    private static final String SGROUP_NAME = "sgroup";
+    private StatisticsLevel firstLevel;
+    private StatisticsLevel secondLevel;
+    private static final String FIRST_LEVEL_NAME = "test";
+    private static final String SECOND_LEVEL_NAME = "hourly";
+    private static final String NAME_FORMAT = "%s, %s";
+
+    @Before
+    public void setUp() {
+        super.setUp();
+        firstLevel = mockLevel(DimensionTypes.NETWORK, FIRST_LEVEL_NAME);
+        secondLevel = mockLevel(DimensionTypes.TIME, SECOND_LEVEL_NAME);
+    }
+
+    /**
+     * return generated aggregated root + services mocked
+     * 
+     * @return
+     */
+    private Node getAggregatedRoot() {
+        String name = String.format(NAME_FORMAT, FIRST_LEVEL_NAME, SECOND_LEVEL_NAME);
+        Node aggr = getMockedAggregatedStatistics(name);
+        Node firstRoot = firstLevel.getRootNode();
+        Node secondRoot = secondLevel.getRootNode();
+        try {
+            when(statisticsService.createAggregatedStatistics(eq(firstRoot), eq(secondRoot), eq(name))).thenReturn(aggr);
+        } catch (Exception e) {
+            LOGGER.error("unexpectable exception");
+        }
+        return aggr;
+    }
+
+    /**
+     * @param type
+     * @param name
+     * @return
+     */
+    private StatisticsLevel mockLevel(DimensionTypes type, String name) {
+        StatisticsLevel level = mock(StatisticsLevel.class);
+        Node mockedDimension = mock(Node.class);
+        Node mockedRoot = getMockedNode();
+        when(statisticsService.getNodeProperty(eq(mockedDimension), eq(DatasetService.NAME))).thenReturn(type.getId());
+        when(level.getParentNode()).thenReturn(mockedDimension);
+        when(level.getName()).thenReturn(name);
+        when(level.getRootNode()).thenReturn(mockedRoot);
+        return level;
+    }
 
     @Test
-    public void testCounstructorIfEverythingIsOk() throws DatabaseException {
+    public void testCounstructorIfEverythingIsOk() throws DatabaseException, IllegalNodeDataException {
         LOGGER.info("testCounstructorIfEverythingIsOk started ");
-        Node mockedNode = getMockedPeriodNode(Period.HOURLY);
-        when(statisticsService.getPeriod(eq(statisticModelNode), eq(Period.HOURLY))).thenReturn(mockedNode);
-        PeriodStatisticsModel model = new PeriodStatisticsModel(statisticModelNode, Period.HOURLY);
-        assertEquals("Unexpected result", mockedNode, model.getRootNode());
+        new AggregatedStatistics(firstLevel, secondLevel);
+        Node firstRoot = firstLevel.getRootNode();
+        Node secondRoot = secondLevel.getRootNode();
+        String name = String.format(NAME_FORMAT, firstLevel.getName(), secondLevel.getName());
+        verify(statisticsService, atLeastOnce()).createAggregatedStatistics(eq(firstRoot), eq(secondRoot), eq(name));
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testCounstructorIfOneOfParametersIsNul() throws DatabaseException {
+    public void testCounstructorIfOneOfParametersIsNul() throws DatabaseException, IllegalNodeDataException {
         LOGGER.info("testCounstructorIfOneParameterIsNul started ");
-        Node mockedNode = getMockedPeriodNode(Period.HOURLY);
-        when(statisticsService.getPeriod(eq(statisticModelNode), eq(Period.HOURLY))).thenReturn(mockedNode);
-        PeriodStatisticsModel model = new PeriodStatisticsModel(null, Period.HOURLY);
-        assertEquals("Unexpected result", mockedNode, model.getRootNode());
-    }
-
-    @Test
-    public void testAddSourcePeriodIfEverythingIsOk() throws DatabaseException {
-        LOGGER.info("testAddSourcePeriodIfEverythingIsOk started ");
-        Node mockedHourly = getMockedPeriodNode(Period.HOURLY);
-        Node mockedDaily = getMockedPeriodNode(Period.DAILY);
-        when(statisticsService.getPeriod(eq(statisticModelNode), eq(Period.HOURLY))).thenReturn(mockedHourly);
-        when(statisticsService.getPeriod(eq(statisticModelNode), eq(Period.DAILY))).thenReturn(mockedDaily);
-        PeriodStatisticsModel modelHourly = new PeriodStatisticsModel(statisticModelNode, Period.HOURLY);
-        PeriodStatisticsModel modelDaily = new PeriodStatisticsModel(statisticModelNode, Period.DAILY);
-        modelDaily.addSourcePeriod(modelHourly);
-        Assert.assertEquals("Unexpected source period", modelHourly, modelDaily.getSourcePeriod());
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testAddSourcePeriodIfOneOfParametersIsNull() throws DatabaseException {
-        LOGGER.info("testAddSourcePeriodIfOneOfParametersIsNull started ");
-        Node mockedHourly = getMockedPeriodNode(Period.HOURLY);
-        Node mockedDaily = getMockedPeriodNode(Period.DAILY);
-        when(statisticsService.getPeriod(eq(statisticModelNode), eq(Period.HOURLY))).thenReturn(mockedHourly);
-        when(statisticsService.getPeriod(eq(statisticModelNode), eq(Period.DAILY))).thenReturn(mockedDaily);
-        PeriodStatisticsModel modelDaily = new PeriodStatisticsModel(statisticModelNode, Period.DAILY);
-        modelDaily.addSourcePeriod(null);
+        new AggregatedStatistics(null, secondLevel);
     }
 
     @Test
     public void testGetSRowIfNotFounded() throws DatabaseException, IllegalNodeDataException {
         LOGGER.info("testGetSRowIfNotFounded started ");
-        Node mockedDaily = getMockedPeriodNode(Period.DAILY);
-        when(statisticsService.findNodeInChain(eq(mockedDaily), eq(DriveModel.TIMESTAMP), any(Long.class))).thenReturn(null);
-        PeriodStatisticsModel modelDaily = new PeriodStatisticsModel(mockedDaily);
-        modelDaily.getSRow(Long.MIN_VALUE);
-        verify(statisticsService, atLeastOnce()).createSRow(eq(mockedDaily), eq(Long.MIN_VALUE), eq(Boolean.FALSE));
+        Node sGroup = getMockedGroup(SGROUP_NAME);
+        when(statisticsService.findNodeInChain(eq(sGroup), eq(DriveModel.TIMESTAMP), any(Long.class))).thenReturn(null);
+        AggregatedStatistics level = new AggregatedStatistics(firstLevel, secondLevel);
+        level.getSRow(new DataElement(sGroup), Long.MIN_VALUE);
+        verify(statisticsService, atLeastOnce()).createSRow(eq(sGroup), eq(Long.MIN_VALUE), eq(Boolean.FALSE));
+    }
+
+    /**
+     * @return
+     */
+    private Node getMockedGroup(String name) {
+        Node mockedGroup = getMockedNode();
+        when(mockedGroup.getProperty(eq(DatasetService.NAME), eq(null))).thenReturn(name);
+        when(mockedGroup.getProperty(eq(DatasetService.TYPE), eq(null))).thenReturn(StatisticsNodeTypes.S_GROUP.getId());
+        return mockedGroup;
     }
 
     @Test
     public void testGetSRowIfFounded() throws DatabaseException, IllegalNodeDataException {
         LOGGER.info("testGetSRowIfFounded started ");
         Node mockedSrow = getMockedNode();
-        Node mockedDaily = getMockedPeriodNode(Period.DAILY);
-        when(statisticsService.findNodeInChain(eq(mockedDaily), eq(DriveModel.TIMESTAMP), any(Long.class))).thenReturn(mockedSrow);
-        PeriodStatisticsModel modelDaily = new PeriodStatisticsModel(mockedDaily);
-        modelDaily.getSRow(Long.MIN_VALUE);
-        verify(statisticsService, never()).createSRow(eq(mockedDaily), eq(Long.MIN_VALUE), eq(Boolean.FALSE));
+        Node levelsRoot = getAggregatedRoot();
+        Node sGroup = getMockedGroup(SGROUP_NAME);
+        when(statisticsService.findNodeInChain(eq(levelsRoot), eq(DriveModel.TIMESTAMP), any(Long.class))).thenReturn(mockedSrow);
+        AggregatedStatistics level = new AggregatedStatistics(levelsRoot);
+        level.getSRow(new DataElement(sGroup), Long.MIN_VALUE);
+        verify(statisticsService, never()).createSRow(eq(levelsRoot), eq(Long.MIN_VALUE), eq(Boolean.FALSE));
     }
 
     @Test
@@ -121,10 +155,10 @@ public class PeriodStatisticsModelTests extends AbstractStatisticsModelTests {
         when(mockedSrow.getProperty(eq(DatasetService.TYPE), eq(null))).thenReturn(StatisticsNodeTypes.S_ROW.getId());
         DataElement srowDataElement = new DataElement(mockedSrow);
 
-        Node mockedDaily = getMockedPeriodNode(Period.DAILY);
+        Node levelsRoot = getAggregatedRoot();
         when(statisticsService.findNodeInChain(eq(mockedSrow), eq(DatasetService.NAME), any(String.class))).thenReturn(null);
-        PeriodStatisticsModel modelDaily = new PeriodStatisticsModel(mockedDaily);
-        modelDaily.getSCell(srowDataElement, SCELL_NAME);
+        AggregatedStatistics level = new AggregatedStatistics(levelsRoot);
+        level.getSCell(srowDataElement, SCELL_NAME);
         verify(statisticsService, atLeastOnce()).createSCell(eq(mockedSrow), eq(SCELL_NAME), eq(Boolean.FALSE));
     }
 
@@ -135,71 +169,71 @@ public class PeriodStatisticsModelTests extends AbstractStatisticsModelTests {
         when(mockedSrow.getProperty(eq(DatasetService.TYPE), eq(null))).thenReturn(StatisticsNodeTypes.S_ROW.getId());
         DataElement srowDataElement = new DataElement(mockedSrow);
         Node mockedScell = getMockedNode();
-        Node mockedDaily = getMockedPeriodNode(Period.DAILY);
+        Node levelsRoot = getAggregatedRoot();
         when(statisticsService.findNodeInChain(eq(mockedSrow), eq(DatasetService.NAME), any(String.class))).thenReturn(mockedScell);
 
-        PeriodStatisticsModel modelDaily = new PeriodStatisticsModel(mockedDaily);
+        AggregatedStatistics level = new AggregatedStatistics(levelsRoot);
 
-        modelDaily.getSCell(srowDataElement, SCELL_NAME);
+        level.getSCell(srowDataElement, SCELL_NAME);
         verify(statisticsService, never()).createSCell(eq(mockedSrow), eq(SCELL_NAME), eq(Boolean.FALSE));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testGetSCellIfSrowNull() throws DatabaseException, IllegalNodeDataException {
         LOGGER.info("testGetSCellIfSrowNull started ");
-        Node mockedDaily = getMockedPeriodNode(Period.DAILY);
+        Node levelsRoot = getAggregatedRoot();
 
-        PeriodStatisticsModel modelDaily = new PeriodStatisticsModel(mockedDaily);
+        AggregatedStatistics level = new AggregatedStatistics(levelsRoot);
 
-        modelDaily.getSCell(null, SCELL_NAME);
+        level.getSCell(null, SCELL_NAME);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testGetSCellIfSrowHasIncorrectType() throws DatabaseException, IllegalNodeDataException {
         LOGGER.info("testGetSCellIfSrowHasIncorrectType started ");
-        Node mockedDaily = getMockedPeriodNode(Period.DAILY);
+        Node levelsRoot = getAggregatedRoot();
         Node mockedSrow = getMockedNode();
         when(mockedSrow.getProperty(eq(DatasetService.TYPE), eq(null))).thenReturn(StatisticsNodeTypes.S_CELL.getId());
         DataElement srowDataElement = new DataElement(mockedSrow);
-        PeriodStatisticsModel modelDaily = new PeriodStatisticsModel(mockedDaily);
+        AggregatedStatistics level = new AggregatedStatistics(levelsRoot);
 
-        modelDaily.getSCell(srowDataElement, SCELL_NAME);
+        level.getSCell(srowDataElement, SCELL_NAME);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testGetSCellIfScellNameIsIncorrect() throws DatabaseException, IllegalNodeDataException {
         LOGGER.info("testGetSCellIfScellNameIsIncorrect started ");
-        Node mockedDaily = getMockedPeriodNode(Period.DAILY);
+        Node levelsRoot = getAggregatedRoot();
         Node mockedSrow = getMockedNode();
         when(mockedSrow.getProperty(eq(DatasetService.TYPE), eq(null))).thenReturn(StatisticsNodeTypes.S_CELL.getId());
         DataElement srowDataElement = new DataElement(mockedSrow);
-        PeriodStatisticsModel modelDaily = new PeriodStatisticsModel(mockedDaily);
-        modelDaily.getSCell(srowDataElement, StringUtils.EMPTY);
+        AggregatedStatistics level = new AggregatedStatistics(levelsRoot);
+        level.getSCell(srowDataElement, StringUtils.EMPTY);
     }
 
     @Test
     public void testAddSources() throws DatabaseException, IllegalNodeDataException {
         LOGGER.info("testAddSources started ");
-        Node mockedDaily = getMockedPeriodNode(Period.DAILY);
+        Node levelsRoot = getAggregatedRoot();
         Node mockedScell = getMockedNode();
         when(mockedScell.getProperty(eq(DatasetService.TYPE), eq(null))).thenReturn(StatisticsNodeTypes.S_CELL.getId());
         when(mockedScell.getProperty(eq(DatasetService.NAME), eq(null))).thenReturn(SCELL_NAME);
         DataElement scellDataElement = new DataElement(mockedScell);
-        PeriodStatisticsModel modelDaily = new PeriodStatisticsModel(mockedDaily);
+        AggregatedStatistics level = new AggregatedStatistics(levelsRoot);
         int listSize = (int)(Math.random() * 100);
         List<IDataElement> generatedSources = generateSources(listSize);
-        modelDaily.addSources(scellDataElement, generatedSources);
+        level.addSources(scellDataElement, generatedSources);
         verify(statisticsService, times(listSize)).addSource(eq(mockedScell), any(Node.class));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testAddSourcesIfSCellNull() throws DatabaseException, IllegalNodeDataException {
         LOGGER.info("testAddSourcesIfSCellNull started ");
-        Node mockedDaily = getMockedPeriodNode(Period.DAILY);
-        PeriodStatisticsModel modelDaily = new PeriodStatisticsModel(mockedDaily);
+        Node levelsRoot = getAggregatedRoot();
+        AggregatedStatistics level = new AggregatedStatistics(levelsRoot);
         int listSize = (int)(Math.random() * 100);
         List<IDataElement> generatedSources = generateSources(listSize);
-        modelDaily.addSources(null, generatedSources);
+        level.addSources(null, generatedSources);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -210,9 +244,9 @@ public class PeriodStatisticsModelTests extends AbstractStatisticsModelTests {
         when(mockedScell.getProperty(eq(DatasetService.NAME), eq(null))).thenReturn(SCELL_NAME);
         DataElement scellDataElement = new DataElement(mockedScell);
 
-        Node mockedDaily = getMockedPeriodNode(Period.DAILY);
-        PeriodStatisticsModel modelDaily = new PeriodStatisticsModel(mockedDaily);
-        modelDaily.addSources(scellDataElement, null);
+        Node levelsRoot = getAggregatedRoot();
+        AggregatedStatistics level = new AggregatedStatistics(levelsRoot);
+        level.addSources(scellDataElement, null);
     }
 
     @Test
@@ -231,18 +265,37 @@ public class PeriodStatisticsModelTests extends AbstractStatisticsModelTests {
         }
 
         when(statisticsService.getSources(eq(mockedScell))).thenReturn(generatedSourcesNodes);
-        Node mockedDaily = getMockedPeriodNode(Period.DAILY);
-        PeriodStatisticsModel modelDaily = new PeriodStatisticsModel(mockedDaily);
-        Iterable<IDataElement> elements = modelDaily.getSources(scellDataElement);
+        Node levelsRoot = getAggregatedRoot();
+        AggregatedStatistics level = new AggregatedStatistics(levelsRoot);
+        Iterable<IDataElement> elements = level.getSources(scellDataElement);
         Assert.assertEquals("Expected the same sources list", generatedSources, elements);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testGetSourcesIfParentIsNull() throws DatabaseException, IllegalNodeDataException {
         LOGGER.info("testGetSources started ");
-        Node mockedDaily = getMockedPeriodNode(Period.DAILY);
-        PeriodStatisticsModel modelDaily = new PeriodStatisticsModel(mockedDaily);
-        modelDaily.getSources(null);
+        Node levelsRoot = getAggregatedRoot();
+        AggregatedStatistics level = new AggregatedStatistics(levelsRoot);
+        level.getSources(null);
+    }
+
+    public void testGetGroupIfFounded() throws DatabaseException, IllegalNodeDataException {
+        LOGGER.info("testGetGroup started ");
+        Node levelsRoot = getAggregatedRoot();
+        AggregatedStatistics level = new AggregatedStatistics(levelsRoot);
+        Node sgroupNode = getMockedGroup(SGROUP_NAME);
+        when(statisticsService.findNodeInChain(eq(levelsRoot), eq(DatasetService.NAME), eq(SGROUP_NAME))).thenReturn(sgroupNode);
+        level.getSGroup(SGROUP_NAME);
+        verify(statisticsService, never()).createSGroup(eq(levelsRoot), eq(SGROUP_NAME), eq(Boolean.FALSE));
+    }
+
+    public void testGetGroupIfNotFounded() throws DatabaseException, IllegalNodeDataException {
+        LOGGER.info("testGetGroup started ");
+        Node levelsRoot = getAggregatedRoot();
+        AggregatedStatistics level = new AggregatedStatistics(levelsRoot);
+        when(statisticsService.findNodeInChain(eq(levelsRoot), eq(DatasetService.NAME), eq(SGROUP_NAME))).thenReturn(null);
+        level.getSGroup(SGROUP_NAME);
+        verify(statisticsService, atLeastOnce()).createSGroup(eq(levelsRoot), eq(SGROUP_NAME), eq(Boolean.FALSE));
     }
 
     /**

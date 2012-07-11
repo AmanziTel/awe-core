@@ -15,13 +15,13 @@ package org.amanzi.neo.services.model;
 
 //TODO: LN: comments
 /**
- * TODO Purpose of 
+ * TODO Purpose of
  * <p>
- *
  * </p>
+ * 
  * @author grigoreva_a
  * @since 1.0.0
  */
-public interface IDriveInquirerableModel {
+public interface IDriveInquirerableModel extends IModel {
 
 }

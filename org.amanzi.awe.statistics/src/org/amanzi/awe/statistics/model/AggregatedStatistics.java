@@ -14,147 +14,71 @@
 package org.amanzi.awe.statistics.model;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
-import org.amanzi.awe.statistics.enumeration.Period;
+import org.amanzi.awe.statistics.enumeration.DimensionTypes;
 import org.amanzi.awe.statistics.enumeration.StatisticsNodeTypes;
-import org.amanzi.awe.statistics.service.StatisticsService;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.IllegalNodeDataException;
 import org.amanzi.neo.services.model.IDataElement;
-import org.amanzi.neo.services.model.impl.AbstractModel;
 import org.amanzi.neo.services.model.impl.DataElement;
 import org.amanzi.neo.services.model.impl.DriveModel;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
 
 /**
  * <p>
- * Purposed to work with single period. User <b>must not have</b> possibility to create period model
- * nodes . Access to period statistics model available only from {@link StatisticsModel}
+ * Aggregated statistics consists of:<br>
+ * <b>S_GROUP-</b> unique property value <br>
+ * S_ROW -</b> list of periods separated in according with {@link DimensionTypes#TIME} dimension
+ * (see : {@link Dimension}) level (see : {@link StatisticsLevel}) <br>
+ * <b> S_CELL - </b> list of templates kpi's. S_CELL- has a list of sources.
  * </p>
  * 
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class PeriodStatisticsModel extends AbstractModel {
+public class AggregatedStatistics extends AbstractLevelElement {
+    /*
+     * logger instantiation
+     */
+    private static final Logger LOGGER = Logger.getLogger(AggregatedStatistics.class);
 
-    /*
-     * logger instantiation;
-     */
-    private static final Logger LOGGER = Logger.getLogger(PeriodStatisticsModel.class);
-    /*
-     * statistics service
-     */
-    private static StatisticsService statisticService;
-    /*
-     * period type
-     */
-    private Period periodType;
+    private static final String NAME_FORMAT = "%s, %s";
 
-    /*
-     * service instantiation
-     */
-    static void setStatisticsService(StatisticsService service) {
-        statisticService = service;
-    }
-
-    /*
-     * source period
-     */
-    private PeriodStatisticsModel sourcePeriod;
-
-    /*
-     * initialize statistics services
-     */
-    private static void initStatisticsService() {
-        if (statisticService == null) {
-            statisticService = StatisticsService.getInstance();
+    public AggregatedStatistics(StatisticsLevel firstLevel, StatisticsLevel secondLevel) throws DatabaseException,
+            IllegalNodeDataException {
+        super(StatisticsNodeTypes.STATISTICS);
+        if (firstLevel == null || secondLevel == null) {
+            LOGGER.error("can't create aggregated statistics element because of incorrect levels information");
+            throw new IllegalArgumentException("StatisticsLevel elements can't be null");
         }
+        Dimension firstLevelDimension = new Dimension(firstLevel.getParentNode());
+        String firstLevelName = (String)firstLevel.getName();
+        String secondLevelName = (String)secondLevel.getName();
+        switch (firstLevelDimension.getDimensionType()) {
+        case NETWORK:
+            name = String.format(NAME_FORMAT, firstLevelName, secondLevelName);
+            break;
+        default:
+            name = String.format(NAME_FORMAT, secondLevelName, firstLevelName);
+            break;
+        }
+        rootNode = statisticService.createAggregatedStatistics(firstLevel.getRootNode(), secondLevel.getRootNode(), name);
     }
 
     /**
-     * instantiation of period model
-     * 
-     * @param period
-     * @throws DatabaseException
+     * @param aggregatedNode
      */
-    PeriodStatisticsModel(Node parent, Period period) throws DatabaseException, IllegalArgumentException {
-        super(StatisticsNodeTypes.PERIOD_STATISTICS);
-        initStatisticsService();
-
-        if (parent == null) {
-            throw new IllegalArgumentException("Parent node cann't be null");
+    public AggregatedStatistics(Node aggregatedNode) {
+        super(StatisticsNodeTypes.STATISTICS);
+        if (aggregatedNode == null) {
+            LOGGER.error("can't create aggregated statistics element because of null ");
+            throw new IllegalArgumentException("can't create aggregated statistics element because of null ");
         }
-        if (period == null) {
-            throw new IllegalArgumentException("Period node cann't be null");
-        }
-        rootNode = statisticService.getPeriod(parent, period);
-        periodType = Period.findById(rootNode.getProperty(DatasetService.NAME, StringUtils.EMPTY).toString());
-        name = periodType.getId();
-        initSourcePeriod();
-    }
-
-    /**
-     * Init new period statisticsModel
-     * 
-     * @param periodNode
-     * @throws IllegalArgumentException
-     */
-    PeriodStatisticsModel(Node periodNode) throws IllegalArgumentException {
-        super(StatisticsNodeTypes.PERIOD_STATISTICS);
-        initStatisticsService();
-        if (periodNode == null) {
-            throw new IllegalArgumentException("Period node cann't be null");
-        }
-        rootNode = periodNode;
-        periodType = Period.findById(periodNode.getProperty(DatasetService.NAME, StringUtils.EMPTY).toString());
-        name = periodType.getId();
-        initSourcePeriod();
-
-    }
-
-    /**
-     * initialize sources period
-     */
-    private void initSourcePeriod() {
-        Iterable<Node> sources = statisticService.getSources(rootNode);
-        if (sources == null) {
-            return;
-        }
-        Iterator<Node> sourceIterator = sources.iterator();
-        if (sourceIterator.hasNext()) {
-            sourcePeriod = new PeriodStatisticsModel(sourceIterator.next());
-        }
-    }
-
-    /**
-     * get sources periods
-     * 
-     * @return source period if exist -> else return null;
-     */
-    public PeriodStatisticsModel getSourcePeriod() {
-        return sourcePeriod;
-    }
-
-    /**
-     * add source period
-     * 
-     * @param source
-     * @return
-     * @throws DatabaseException
-     */
-    PeriodStatisticsModel addSourcePeriod(PeriodStatisticsModel source) throws DatabaseException {
-        if (source == null) {
-            LOGGER.error("source period cann't be null");
-            throw new IllegalArgumentException("source period is null");
-        }
-        statisticService.addSource(rootNode, source.getRootNode());
-        sourcePeriod = source;
-        return source;
+        rootNode = aggregatedNode;
+        name = (String)statisticService.getNodeProperty(aggregatedNode, DatasetService.NAME);
     }
 
     /**
@@ -165,12 +89,25 @@ public class PeriodStatisticsModel extends AbstractModel {
      * @throws DatabaseException
      * @throws IllegalNodeDataException
      */
-    public IDataElement getSRow(Long timestamp) throws DatabaseException, IllegalNodeDataException {
-        Node srowNode = statisticService.findNodeInChain(rootNode, DriveModel.TIMESTAMP, timestamp);
+    public IDataElement getSRow(IDataElement sGroup, Long timestamp) throws DatabaseException, IllegalNodeDataException {
+        if (sGroup == null) {
+            LOGGER.error("group element is null.");
+            throw new IllegalArgumentException("S_GROUP element is null");
+        }
+        if (timestamp == null) {
+            LOGGER.error("timestamp element is null.");
+            throw new IllegalArgumentException("timestamp element is null");
+        }
+        if (!sGroup.get(DatasetService.TYPE).equals(StatisticsNodeTypes.S_GROUP.getId())) {
+            LOGGER.error("Parent element should have S_GROUP type, now is :" + sGroup.get(DatasetService.TYPE));
+            throw new IllegalNodeDataException("Node type doesn't support by this operation");
+        }
+        Node sGroupd = ((DataElement)(sGroup)).getNode();
+        Node srowNode = statisticService.findNodeInChain(sGroupd, DriveModel.TIMESTAMP, timestamp);
         if (srowNode != null) {
             return new DataElement(srowNode);
         }
-        return new DataElement(statisticService.createSRow(rootNode, timestamp, false));
+        return new DataElement(statisticService.createSRow(sGroupd, timestamp, false));
     }
 
     /**
@@ -251,9 +188,19 @@ public class PeriodStatisticsModel extends AbstractModel {
     }
 
     /**
-     * @return Returns the periodType.
+     * get s_group data Element or create new one if not exist
+     * 
+     * @param aggregationElement
+     * @param name
+     * @return
+     * @throws IllegalNodeDataException
+     * @throws DatabaseException
      */
-    public Period getPeriodType() {
-        return periodType;
+    public IDataElement getSGroup(String name) throws DatabaseException, IllegalNodeDataException {
+        Node srowNode = statisticService.findNodeInChain(rootNode, DatasetService.NAME, name);
+        if (srowNode != null) {
+            return new DataElement(srowNode);
+        }
+        return new DataElement(statisticService.createSGroup(rootNode, name, false));
     }
 }

@@ -13,54 +13,37 @@
 
 package org.amanzi.awe.statistics.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.amanzi.awe.statistics.enumeration.DimensionTypes;
 import org.amanzi.awe.statistics.enumeration.Period;
 import org.amanzi.awe.statistics.enumeration.StatisticsNodeTypes;
-import org.amanzi.awe.statistics.service.StatisticsService;
-import org.amanzi.neo.services.DatasetService;
+import org.amanzi.neo.services.DatasetService.DatasetRelationTypes;
 import org.amanzi.neo.services.exceptions.AWEException;
 import org.amanzi.neo.services.exceptions.DatabaseException;
 import org.amanzi.neo.services.exceptions.DuplicateNodeNameException;
-import org.amanzi.neo.services.model.impl.AbstractModel;
 import org.amanzi.neo.services.model.impl.DriveModel;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Node;
 
 /**
  * <p>
- * Statistics Model play role of container for {@link PeriodStatisticsModel}. may store some common
+ * Statistics Model play role of container for {@link Dimension}. may store some common
  * information about statistics;
  * </p>
  * 
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public class StatisticsModel extends AbstractModel {
+public class StatisticsModel extends AbstractStatisticsModel {
     /*
      * logger instantiation
      */
     private static final Logger LOGGER = Logger.getLogger(StatisticsModel.class);
-    private static final String STATISTICS_POSTFIX = "Statistics";
-    private static final String SPACE_SEPARATOR = " ";
-    private Node parentNode;
-    private PeriodStatisticsModel highestPeriod;
+
     private Long maxTimestamp;
     private Long minTimestamp;
-
-    static void setStatisticsService(StatisticsService service) {
-        statisticService = service;
-    }
-
-    static StatisticsService statisticService;
-
-    /*
-     * /** initialize statistics services
-     */
-    private static void initStatisticsService() {
-        if (statisticService == null) {
-            statisticService = StatisticsService.getInstance();
-        }
-    }
 
     /**
      * create new statistics if not exist .else initialize existed.
@@ -70,20 +53,23 @@ public class StatisticsModel extends AbstractModel {
      * @throws DatabaseException
      * @throws DuplicateNodeNameException
      */
-    public StatisticsModel(Node parentNode) throws IllegalArgumentException, DatabaseException {
-        super(StatisticsNodeTypes.STATISTICS);
+    public StatisticsModel(Node parentNode, String templateName) throws IllegalArgumentException, DatabaseException {
+        super(StatisticsNodeTypes.STATISTICS_MODEL);
         initStatisticsService();
         if (parentNode == null) {
             LOGGER.error("parentNode is null");
             throw new IllegalArgumentException("parentNode can't be null");
         }
         this.parentNode = parentNode;
-        this.name = (String)parentNode.getProperty(DatasetService.NAME, StringUtils.EMPTY) + SPACE_SEPARATOR + STATISTICS_POSTFIX;
+        this.name = (String)templateName;
         rootNode = statisticService.findStatistic(parentNode, name);
         if (rootNode == null) {
             rootNode = statisticService.createStatisticsModelRoot(parentNode, name);
         }
-        initPeriodsModel();
+        LOGGER.info("minTimestamp= " + minTimestamp + " maxTimestamp=" + maxTimestamp);
+        minTimestamp = (Long)this.parentNode.getProperty(DriveModel.MIN_TIMESTAMP);
+        maxTimestamp = (Long)this.parentNode.getProperty(DriveModel.MAX_TIMESTAMP);
+        initDimension();
     }
 
     /**
@@ -91,49 +77,74 @@ public class StatisticsModel extends AbstractModel {
      * 
      * @throws DatabaseException
      */
-    private void initPeriodsModel() throws DatabaseException {
-        minTimestamp = (Long)parentNode.getProperty(DriveModel.MIN_TIMESTAMP);
-        maxTimestamp = (Long)parentNode.getProperty(DriveModel.MAX_TIMESTAMP);
-        LOGGER.info("minTimestamp= " + minTimestamp + " maxTimestamp=" + maxTimestamp);
+    private void initDimension() throws DatabaseException {
+
         if (minTimestamp == null || maxTimestamp == null) {
             LOGGER.info("missing required parametrs");
             return;
         }
-        Iterable<Node> existedPeriods = statisticService.getAllPeriods(rootNode);
-        if (existedPeriods != null) {
-            highestPeriod = new PeriodStatisticsModel(statisticService.getHighestPeriod(existedPeriods));
-            return;
+        Iterable<Dimension> dimensions = getAllDimensions();
+        if (dimensions == null) {
+            initDefaultDimensions();
         }
+    }
+
+    /**
+     * get list of all dimension
+     * 
+     * @return
+     */
+    public Iterable<Dimension> getAllDimensions() {
+        Iterable<Node> dimensions = statisticService.getFirstRelationsipsNodes(rootNode, DatasetRelationTypes.CHILD);
+        List<Dimension> dimensionsList = new ArrayList<Dimension>();
+        if (dimensions == null) {
+            return dimensionsList;
+        }
+        for (Node dimension : dimensions) {
+            dimensionsList.add(new Dimension(dimension));
+        }
+        return dimensionsList;
+    }
+
+    /**
+     * initialize default dimensions for all models
+     * 
+     * @throws DatabaseException
+     */
+    private void initDefaultDimensions() throws DatabaseException {
+        Dimension timeModel = new Dimension(rootNode, DimensionTypes.TIME);
         Period highestPeriod = Period.getHighestPeriod(minTimestamp, maxTimestamp);
-        createPeriods(highestPeriod);
+        createPeriods(timeModel, highestPeriod);
+        new Dimension(rootNode, DimensionTypes.NETWORK);
+
+    }
+
+    /**
+     * get existed or new(if not found) dimension model
+     * 
+     * @param type
+     * @return
+     * @throws DatabaseException
+     */
+    public Dimension getDimension(DimensionTypes type) throws DatabaseException {
+        return new Dimension(rootNode, type);
     }
 
     /**
      * initialize period chain
      * 
+     * @param timeModel
      * @throws DatabaseException
      */
-    private Node createPeriods(Period period) throws DatabaseException {
-        PeriodStatisticsModel periodModel = new PeriodStatisticsModel(rootNode, period);
-        if (highestPeriod == null) {
-            highestPeriod = periodModel;
-        }
+    private Period createPeriods(Dimension timeModel, Period period) throws DatabaseException {
+        StatisticsLevel level = timeModel.getLevel(period.getId());
         Period underlinePeriod = period.getUnderlyingPeriod();
         if (period.getUnderlyingPeriod() != null) {
-            Node underline = createPeriods(underlinePeriod);
-            periodModel.addSourcePeriod(new PeriodStatisticsModel(underline));
+            createPeriods(timeModel, underlinePeriod);
+            level.addSourceLevel(timeModel.getLevel(underlinePeriod.getId()));
         }
-        return periodModel.getRootNode();
+        return period;
 
-    }
-
-    /**
-     * return highest period model of current statistics
-     * 
-     * @return
-     */
-    public PeriodStatisticsModel getHighestPeriod() {
-        return highestPeriod;
     }
 
     @Override

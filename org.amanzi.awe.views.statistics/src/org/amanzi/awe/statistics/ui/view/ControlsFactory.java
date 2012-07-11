@@ -29,13 +29,13 @@ import org.eclipse.swt.widgets.Label;
  * @since 1.0.0
  */
 public class ControlsFactory {
-    private static ControlsFactory FACTORY;
+    private static ControlsFactory factory;
 
     public static final ControlsFactory getInstance() {
-        if (FACTORY == null) {
-            FACTORY = new ControlsFactory();
+        if (factory == null) {
+            factory = new ControlsFactory();
         }
-        return FACTORY;
+        return factory;
     }
 
     private ControlsFactory() {

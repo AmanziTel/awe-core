@@ -17,18 +17,17 @@ import org.amanzi.neo.services.NodeTypeManager;
 import org.amanzi.neo.services.enums.INodeType;
 
 /**
- * TODO Purpose of
  * <p>
- * Statistics node Types
+ * dimension types
  * </p>
  * 
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public enum StatisticsNodeTypes implements INodeType {
-    STATISTICS_MODEL, PERIOD_STATISTICS, S_ROW, S_CELL, DIMENSION, STATISTICS, S_GROUP, LEVEL;
+public enum DimensionTypes implements INodeType {
+    TIME, NETWORK;
     static {
-        NodeTypeManager.registerNodeType(StatisticsNodeTypes.class);
+        NodeTypeManager.registerNodeType(DimensionTypes.class);
     }
 
     @Override
@@ -36,4 +35,18 @@ public enum StatisticsNodeTypes implements INodeType {
         return this.name().toLowerCase();
     }
 
+    /**
+     * find {@link DimensionTypes} by id
+     * 
+     * @param id
+     * @return
+     */
+    public static DimensionTypes findById(String id) {
+        for (DimensionTypes type : DimensionTypes.values()) {
+            if (type.getId().equals(id)) {
+                return type;
+            }
+        }
+        return null;
+    }
 }

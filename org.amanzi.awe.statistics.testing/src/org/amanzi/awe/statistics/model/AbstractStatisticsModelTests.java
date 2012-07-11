@@ -19,7 +19,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import org.amanzi.awe.statistics.AbstractStatisticsTest;
-import org.amanzi.awe.statistics.enumeration.Period;
+import org.amanzi.awe.statistics.enumeration.StatisticsNodeTypes;
 import org.amanzi.awe.statistics.service.StatisticsService;
 import org.amanzi.neo.services.DatasetService;
 import org.amanzi.neo.services.model.impl.DriveModel;
@@ -47,18 +47,20 @@ public abstract class AbstractStatisticsModelTests extends AbstractStatisticsTes
         initMockedParentNode();
         initMockedStatisticsRootModel();
         StatisticsModel.setStatisticsService(statisticsService);
-        PeriodStatisticsModel.setStatisticsService(statisticsService);
+        AbstractLevelElement.setStatisticsService(statisticsService);
     }
 
     /**
      * @param hourly
      * @return
      */
-    protected Node getMockedPeriodNode(Period hourly) {
-        String id = hourly.getId();
-        Node period = getMockedNode();
-        when(period.getProperty(eq(DatasetService.NAME), any(String.class))).thenReturn(id);
-        return period;
+    protected Node getMockedAggregatedStatistics(String name) {
+        Node aggregation = getMockedNode();
+        when(aggregation.getProperty(eq(DatasetService.NAME), any(String.class))).thenReturn(name);
+        when(statisticsService.getNodeProperty(eq(aggregation), eq(DatasetService.NAME))).thenReturn(name);
+        when(statisticsService.getNodeProperty(eq(aggregation), eq(DatasetService.TYPE))).thenReturn(
+                StatisticsNodeTypes.STATISTICS.getId());
+        return aggregation;
     }
 
     /**

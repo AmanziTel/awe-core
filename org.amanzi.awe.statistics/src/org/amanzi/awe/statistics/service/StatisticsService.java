@@ -15,6 +15,7 @@ package org.amanzi.awe.statistics.service;
 
 import java.util.Iterator;
 
+import org.amanzi.awe.statistics.enumeration.DimensionTypes;
 import org.amanzi.awe.statistics.enumeration.Period;
 import org.amanzi.awe.statistics.enumeration.StatisticsNodeTypes;
 import org.amanzi.awe.statistics.enumeration.StatisticsRelationshipTypes;
@@ -29,6 +30,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
 
 /**
@@ -77,13 +79,54 @@ public class StatisticsService {
     }
 
     /**
-     * return all nodes from parent by OUTGOING CHILD relationship
+     * find dimension root
      * 
-     * @param statisticsRoot
+     * @param rootNode
+     * @param type
      * @return
      */
-    public Iterable<Node> getAllPeriods(Node statisticsRoot) {
-        return getFirstRelationsipsNodes(statisticsRoot, DatasetRelationTypes.CHILD);
+    public Node findDimension(Node rootNode, DimensionTypes type) {
+        return findFirstRelationshipNode(rootNode, DatasetService.NAME, type.getId(), DatasetRelationTypes.CHILD);
+    }
+
+    public Node createDimension(Node parent, DimensionTypes type) throws DatabaseException {
+        LOGGER.info("create dimension model node . parent:" + parent + " name:" + type.getId());
+        Node newlyNode = datasetService.createNode(parent, DatasetRelationTypes.CHILD, StatisticsNodeTypes.DIMENSION);
+        try {
+            datasetService.setAnyProperty(newlyNode, DatasetService.NAME, type.getId());
+        } catch (IllegalNodeDataException e) {
+            LOGGER.error("Unexpected exception thrown", e);
+            // cann't be thrown
+        }
+        return newlyNode;
+    }
+
+    /**
+     * @param parentNode
+     * @param levelName
+     */
+    public Node findStatisticsLevelNode(Node parentNode, String levelName) {
+        return findFirstRelationshipNode(parentNode, DatasetService.NAME, levelName, DatasetRelationTypes.CHILD);
+    }
+
+    /**
+     * create statistics level node
+     * 
+     * @param parent
+     * @param name
+     * @return
+     * @throws DatabaseException
+     */
+    public Node createStatisticsLevelNode(Node parent, String name) throws DatabaseException {
+        LOGGER.info("create StatisticsLevel model node . parent:" + parent + " name:" + name);
+        Node newlyNode = datasetService.createNode(parent, DatasetRelationTypes.CHILD, StatisticsNodeTypes.LEVEL);
+        try {
+            datasetService.setAnyProperty(newlyNode, DatasetService.NAME, name);
+        } catch (IllegalNodeDataException e) {
+            LOGGER.error("Unexpected exception thrown", e);
+            // cann't be thrown
+        }
+        return newlyNode;
     }
 
     /**
@@ -93,7 +136,7 @@ public class StatisticsService {
      * @param relType
      * @return
      */
-    private Iterable<Node> getFirstRelationsipsNodes(Node parent, RelationshipType relType) {
+    public Iterable<Node> getFirstRelationsipsNodes(Node parent, RelationshipType relType) {
         return datasetService.getFirstRelationTraverser(parent, relType, Direction.OUTGOING);
     }
 
@@ -138,8 +181,8 @@ public class StatisticsService {
                 return currentNode;
             }
         }
-        LOGGER.info("node not found. propetyName:" + propertyName + " value:" + propertyValue + " from parent:" + parentNode
-                + " by relationship: " + relType);
+        LOGGER.info("node ngetFirstRelationsipsNodesot found. propetyName:" + propertyName + " value:" + propertyValue
+                + " from parent:" + parentNode + " by relationship: " + relType);
         return null;
     }
 
@@ -155,7 +198,8 @@ public class StatisticsService {
      */
     public Node createStatisticsModelRoot(Node parent, String name) throws DatabaseException {
         LOGGER.info("create statistic model node not found. parent:" + parent + " name:" + name);
-        Node newlyNode = datasetService.createNode(parent, StatisticsRelationshipTypes.STATISTICS, StatisticsNodeTypes.STATISTICS);
+        Node newlyNode = datasetService.createNode(parent, StatisticsRelationshipTypes.STATISTICS,
+                StatisticsNodeTypes.STATISTICS_MODEL);
         try {
             datasetService.setAnyProperty(newlyNode, DatasetService.NAME, name);
         } catch (IllegalNodeDataException e) {
@@ -298,5 +342,64 @@ public class StatisticsService {
             }
         }
         return createNodeInChain(parentSrow, DatasetService.NAME, name, StatisticsNodeTypes.S_CELL);
+    }
+
+    /**
+     * return node property value or null if not exist
+     * 
+     * @param node
+     * @param propertyName
+     * @return
+     */
+    public Object getNodeProperty(Node node, String propertyName) {
+        return node.getProperty(propertyName, null);
+    }
+
+    /**
+     * try to find aggregatedModel
+     * 
+     * @param rootNode
+     * @param rootNode2
+     * @return
+     */
+    public Node findAggregatedModel(Node firstLevel, Node secondLevel) {
+        Iterable<Node> firstLevelChilds = datasetService.getChildrenTraverser(firstLevel);
+        Iterable<Node> secondLevelChilds = datasetService.getChildrenTraverser(secondLevel);
+        if (firstLevelChilds == null || secondLevelChilds == null) {
+            return null;
+        }
+        for (Node aggregated : firstLevelChilds) {
+            for (Relationship rel : aggregated.getRelationships(Direction.INCOMING, DatasetRelationTypes.CHILD)) {
+                if (rel.getOtherNode(aggregated).equals(secondLevel)) {
+                    return aggregated;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * create new statistics node and correlate it between first and second levels
+     * 
+     * @param firstLevel
+     * @param secondLevel
+     * @param name
+     * @throws DatabaseException
+     * @throws IllegalNodeDataException
+     */
+    public Node createAggregatedStatistics(Node firstLevel, Node secondLevel, String name) throws DatabaseException,
+            IllegalNodeDataException {
+        Node newNode = datasetService.createNode(firstLevel, DatasetRelationTypes.CHILD, StatisticsNodeTypes.STATISTICS);
+        datasetService.createRelationship(secondLevel, newNode, DatasetRelationTypes.CHILD);
+        datasetService.setAnyProperty(newNode, DatasetService.NAME, name);
+        return newNode;
+    }
+
+    /**
+     * 
+     */
+    public Node createSGroup(Node rootNode, String name, boolean isNeedToSearchDuplicate) throws DatabaseException,
+            IllegalNodeDataException {
+        return createSCell(rootNode, name, isNeedToSearchDuplicate);
     }
 }

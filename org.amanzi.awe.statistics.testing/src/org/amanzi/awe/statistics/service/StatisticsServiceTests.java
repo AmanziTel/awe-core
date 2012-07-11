@@ -255,7 +255,7 @@ public class StatisticsServiceTests extends AbstractNeoServiceTest {
         expectedNodes.add(periodW);
         datasetService.createRelationship(periodD, periodH, StatisticsRelationshipTypes.SOURCE);
         datasetService.createRelationship(periodW, periodD, StatisticsRelationshipTypes.SOURCE);
-        Iterable<Node> periods = statisticsService.getAllPeriods(statRoot);
+        Iterable<Node> periods = statisticsService.getFirstRelationsipsNodes(statRoot, DatasetRelationTypes.CHILD);
         Assert.assertNotNull("Periods count cann't be null", periods);
         Iterator<Node> periodsIterator = periods.iterator();
 
@@ -278,7 +278,7 @@ public class StatisticsServiceTests extends AbstractNeoServiceTest {
         expectedNodes.add(periodW);
         datasetService.createRelationship(periodD, periodH, StatisticsRelationshipTypes.SOURCE);
         datasetService.createRelationship(periodW, periodD, StatisticsRelationshipTypes.SOURCE);
-        Iterable<Node> periods = statisticsService.getAllPeriods(statRoot);
+        Iterable<Node> periods = statisticsService.getFirstRelationsipsNodes(statRoot, DatasetRelationTypes.CHILD);
         Assert.assertNotNull("Periods count cann't be null", periods);
         Node highestPeriod = statisticsService.getHighestPeriod(periods);
         Assert.assertEquals("Unexpected highest period ", periodW, highestPeriod);
@@ -321,8 +321,8 @@ public class StatisticsServiceTests extends AbstractNeoServiceTest {
     private Node createStatisticsRoot(Node datasetNode) {
         Node statRot = null;
         try {
-            statRot = datasetService
-                    .createNode(datasetNode, StatisticsRelationshipTypes.STATISTICS, StatisticsNodeTypes.STATISTICS);
+            statRot = datasetService.createNode(datasetNode, StatisticsRelationshipTypes.STATISTICS,
+                    StatisticsNodeTypes.STATISTICS_MODEL);
             datasetService.setAnyProperty(statRot, DatasetService.NAME, STATISTIC_ROOT_NAME);
         } catch (Exception e) {
             LOGGER.error("cann't create statistics root");
@@ -357,7 +357,7 @@ public class StatisticsServiceTests extends AbstractNeoServiceTest {
     private Node initDatasetNode(long minTimestamp, long maxTimestamp) {
         try {
             datasetNode = datasetService.createDataset(projectNode, DATASET_NAME, DATASET_TYPE, DriveTypes.TEMS,
-                    StatisticsNodeTypes.STATISTICS);
+                    StatisticsNodeTypes.STATISTICS_MODEL);
             Map<String, Object> propertyMap = new HashMap<String, Object>();
             propertyMap.put(DriveModel.MIN_TIMESTAMP, minTimestamp);
             propertyMap.put(DriveModel.MAX_TIMESTAMP, maxTimestamp);

@@ -11,29 +11,15 @@
  * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.amanzi.awe.statistics.enumeration;
-
-import org.amanzi.neo.services.NodeTypeManager;
-import org.amanzi.neo.services.enums.INodeType;
+package org.amanzi.awe.statistics.model;
 
 /**
- * TODO Purpose of
  * <p>
- * Statistics node Types
  * </p>
  * 
  * @author Vladislav_Kondratenko
  * @since 1.0.0
  */
-public enum StatisticsNodeTypes implements INodeType {
-    STATISTICS_MODEL, PERIOD_STATISTICS, S_ROW, S_CELL, DIMENSION, STATISTICS, S_GROUP, LEVEL;
-    static {
-        NodeTypeManager.registerNodeType(StatisticsNodeTypes.class);
-    }
-
-    @Override
-    public String getId() {
-        return this.name().toLowerCase();
-    }
+public class DimensionTests extends AbstractStatisticsModelTests {
 
 }
